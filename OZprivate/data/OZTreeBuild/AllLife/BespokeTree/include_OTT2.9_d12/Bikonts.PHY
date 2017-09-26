@@ -1,0 +1,9 @@
+[Largely from a diagram from "The Eukaryotic Tree of Life from a Global Phylogenomic Perspective" by Fabien Burki (http://cshperspectives.cshlp.org/content/6/5/a016147), assuming the conventional root. I group the Collodictyonidae and Rigifilida together as approximately per http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3483872/.
+
+The difference from the OpenTree is that the grouping of Centrohelida, Picozoa is placed next to Haptophytes, and Cryptophyceae (or Cryptomonada) are the sister to Archaeplastida, rather than sister to the Chloroplastida.
+
+I remove some basal branches in Rhizaria, e.g. (5247609 "Novel Clade Gran-1").
+
+]
+(((Haptophyta_ott151014@,(Centrohelida_ott755852@,Picozoa_ott4738955@))Problematic_eukaryotes,((Alveolata_ott266751@,Stramenopiles_ott266745@),'Rhizaria_ott6929~-5247609@')SAR_ott5246039),(Cryptophyceae_ott5246159@,(Glaucophyta_ott664970@,(Rhodophyceae_ott878953@,CHLOROPLASTIDA@))Archaeplastida_ott5268475))Bikonta;
+

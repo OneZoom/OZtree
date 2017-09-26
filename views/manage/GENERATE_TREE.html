@@ -1,0 +1,13 @@
+{{response.title='OneZoom: Tree generation'}}
+{{extend 'layout.html'}}
+
+{{if script_fired:}}
+<h1>Tree being generated</h1>
+<h3>{{=time}}</h3>
+The routine
+<pre>ServerScripts/TreeBuild/generate_crowdfunding_files.py -v -db XXX://XXX_database</pre>
+has just been called to generate a new crowdfunding tree. A new tree should be produced in about an hour or two. To check, look for the file <pre>{{=lockfile}}</pre>, which will disappear when it is done. The output is being stored in <pre>{{=logfile}}</pre>.
+{{else:}}
+<h1>Tree processing already going on</h1>
+I think there is already a tree being generated. Please wait, or remove the file in <pre>{{=lockfile}}</pre>
+{{pass}}

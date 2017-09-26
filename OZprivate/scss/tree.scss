@@ -1,0 +1,637 @@
+/* UIkit-skin scss file for OneZoom. Author: Yan Wong for OneZoom CIO. License: MIT */
+
+body {
+  overflow:hidden; /* needed to force iframe scolling on safari */
+}
+
+body {
+    /* needed to override wikipedia css entries */
+    background-color: white;
+    height: auto;
+}
+
+#OneZoomCanvasID
+    {
+    z-index:1;
+    position:absolute;
+    top: 0px;
+    right: 0px;
+    width: 100%;
+    height: 100%;
+    image-rendering: optimizeSpeed;
+    image-rendering:-o-crisp-edges;
+    image-rendering:-webkit-optimize-contrast;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+#UI {
+    position: relative;
+    z-index:2; /* overlay the canvas with the UI */
+}
+
+.uk-navbar-item {
+    height:3rem;
+    line-height:3rem; /* force vertical centering */
+    display: block; /* don't use flex, as we want to position these outside a container */
+}
+
+.uk-navbar-item.advanced_mode {
+    background-color: #EEE;
+    border-bottom-left-radius: 5px;
+    height:auto;
+}
+.uk-navbar-item div {
+    line-height:1rem; /* force vertical centering */
+}
+#logo {
+    float: left;
+}
+#logo a {
+    opacity: 0.55;
+}
+#logo a:hover {
+    opacity: 1;
+}
+#logo a, #logo img {
+    vertical-align: middle;
+}
+#logo img {
+    height: 2rem;
+}
+
+#advanced_search_toggle, #searchnav {
+    float: right;
+}
+
+#advanced_search_button.dragover {
+    background-color: blue;
+}
+
+#searchnav {
+    padding: 0;
+}
+
+#searchnav button {
+    color: #999;
+    border-color: #999;
+}
+
+#searchnav button:hover {
+    color: #666;
+    border-color: #666;
+}
+
+
+#searchnav .searchbox {
+    width: 18rem;
+    background-color: white;
+    border: 1px solid #DDD;
+    border-radius: 5px;
+}
+
+#searchnav .searchbox, #add_searchbox, #common_ancestor_button {
+    margin: 0.25rem;
+}
+
+#searchnav .search_dropdown {
+    width: 18rem;
+    border: 1px solid #eee;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+}
+
+#searchnav .searchinput {
+    display:inline-block;
+}
+
+#searchnav .searchbox button {
+    margin: 0 0.5em;
+}
+
+#searchnav .searchbox input {
+    box-sizing: border-box;
+    width: calc(100% - 2rem);
+    border: 0;
+    height: 2.5rem;
+    border-left: 1px solid #DDD;
+
+}
+
+#searchnav #search-advanced .searchinput, #searchnav #search-advanced .searchresult {
+    width: calc(100% - 2rem);
+    border-right: 1px solid #DDD;
+}
+
+#searchnav .searchbox .remove-searchbox {
+    box-sizing: content-box;
+}
+
+#searchnav .icon-beside-input {
+    display: inline-block;
+    width: 2rem;
+}
+
+#searchnav .searchbox .icon-beside-input .spinner {
+    position: absolute;
+    margin: 0.3em 0.6em;
+    display: none;
+}
+
+#search-advanced .searchresult {
+    /* container for showing the chosen result clicked from the dropdown */
+    position: absolute;
+    display:none;
+}
+
+#searchnav #search-advanced,
+#searchnav.advanced_mode #search-basic,
+#searchnav .icon-beside-input .spinner,
+#searchnav #search-advanced .searchresult {
+    display:none;
+}
+
+#searchnav.advanced_mode #search-advanced, 
+#searchnav #search-basic, 
+#searchnav .icon-beside-input.waiting_for_search_result .spinner,
+#searchnav #search-advanced .result_displayed_in_box .searchresult {
+    display:block;
+}
+
+#searchnav .icon-beside-input.waiting_for_search_result .main-icon,
+#searchnav #search-advanced .result_displayed_in_box .searchinput {
+    visibility: hidden;
+}
+
+#searchnav .icon-beside-input main-icon,
+#searchnav #search-advanced .input {
+    visibility: visible;
+}
+
+#searchnav #search-basic .searchinput {
+    width: 100%;
+}
+
+#searchboxes {
+    margin:0;
+    padding:0;
+}
+
+ul#searchboxes {
+    margin:0;
+    padding:0;
+    list-style: none;
+}
+#searchboxes .searchbox {
+    display: list-item;
+}
+
+#search-advanced #common_ancestor_button {
+    float: left;
+    border-width: 1px;
+    border-style: solid;
+    background-color: white;
+    border-radius: 10px;
+    /*font-size: 0.8rem;*/
+    line-height: 1.5rem;
+}
+
+#search-advanced #common_ancestor_button span {
+    display: block;
+    float: left;
+    margin-top: 0.25rem;
+    margin-right: 0.25rem;
+}
+
+#search-advanced #add_searchbox {
+    padding: 0.5rem 0.45rem;
+    float: right;
+}
+#search-advanced #add_searchbox svg circle {
+    fill: white;
+}
+
+/* Dropdown for search results */
+
+#searchnav .search_dropdown {
+    padding: 1rem;
+    text-align: center;
+}
+
+#searchnav .search_dropdown .no_results {
+    display: none;
+}
+
+#searchnav .search_dropdown dl {
+    list-style-type: none;
+    margin:0;
+    padding: 0;
+}
+
+#searchnav.search_dropdown dt {
+    color: #444;
+    font-weight: bold;
+}
+
+#searchnav .search_dropdown dd {
+    color: #444;
+}
+
+#searchnav .search_dropdown dd:hover, #searchnav .search_dropdown dd p:hover {
+    color: black;
+}
+
+.search_dropdown dd p:first-letter {
+    text-transform:capitalize;
+}
+
+#searchnav .search_dropdown dd p {
+    font-size: 110%;
+    margin:0;
+    line-height:1.1em;
+}
+
+#searchnav .search_dropdown dd p.sponsorship-info {
+    font-size: 100%;
+    margin:0;
+}
+
+#searchnav .search_dropdown dd p.extra-info {
+    font-size: 90%;
+    margin:0;
+}
+
+
+/** Dividing lines in the search results **/
+
+#searchnav .search_dropdown dd:before {
+    /* lines between results */
+    content: "";
+    display: block;
+    height: 1px;
+    width: 10%;
+    margin: 0.25em auto;
+    background: #ddd;
+}
+
+#searchnav .search_dropdown dt.sponsorhits {
+    /* line above "sponsor" results */
+    margin-top: 1em;
+    padding-top: 1em;
+    border-top: 1px solid black;
+}
+#searchnav .search_dropdown dt + dd:before {
+    /* line below each subtitle */
+    content: "";
+    display: block;
+    height: 1px;
+    width: 60%;
+    margin: 0.25em auto;
+    background: #ddd;
+}
+        
+#controlButtons {
+    position: fixed;
+    bottom: 0.5em; 
+    left:0.5em; 
+    display:block; 
+    border: 1px solid #DDD; 
+    border-radius: 5px; 
+    background-color: white;
+    padding: 0.2em 0;
+    margin: 0;
+    }
+#controlButtons a:hover {text-decoration:none}
+#controlButtons > li {
+    padding:0;
+    margin:0;
+    border-radius: 5px;
+    text-align: center;
+}
+    
+#controlButtons > li a
+{
+  display: inline-block;
+  padding:0.5rem 0.1rem;
+  width: 2rem;
+  text-align: center;
+ 
+}
+#controlButtons #upButton {
+    padding: 0.25rem 0.1rem;
+}
+#controlButtons #upButton svg polyline {
+    stroke-width: 0.8; /* The up chevron is magnified to fill sideways, so make the line narrower */
+}
+
+#controlButtons [uk-dropdown] {
+    /* make sure dropdowns always fit in the viewport */
+    max-height: calc(100vh - 1rem);
+    overflow-y: auto;
+}
+#controlButtons #inButton {
+    border-top: 1px solid #DDD
+}
+#controlButtons #infoButton {
+    border-top: 1px solid #DDD
+}
+#controlButtons #resetButton {
+    /* put a ring around the reset chevron (no equivalent UIkit3 icon)*/
+    box-sizing: border-box;
+    padding: 0;
+    width: auto;
+    border: 1px solid #999;
+    border-radius: 20%; 
+    margin: 0.5rem auto;
+}
+#controlButtons #resetButton:hover {
+    border: 1px solid #666;
+}
+
+#locationDropdown {
+    font-size: small;
+    width: 200px;
+    text-align: center;
+    padding:0;
+    min-height: 100%; /*aligned to bottom of control buttons, so make sure we are the same height as containing control buttons*/
+}
+
+
+#locationDropdown ol {
+    box-sizing: border-box;
+    list-style-type:none;
+    background-color: white;
+    width: 200px;
+    margin:0;
+    padding:0;
+}
+#locationDropdown li {
+    margin:0;
+    padding:0;
+    text-align: center;    
+}
+#locationDropdown li {
+    border: 0 solid rgba(255, 255, 255, 0); /*  set to a percentage of 12 rem, e.g. */
+    border-top: 12px solid #DDDDDD;
+}
+#locationDropdown .toploc {
+    border-top:0;
+    background-color: #DDDDDD;
+}
+#locationDropdown .toploc a {
+    color: black;
+    border-color: #DDDDDD;
+}
+
+#locationDropdown li a {
+    box-sizing: border-box;
+    margin:0;
+    padding:0;
+    padding-left: 0.5em;
+    padding-right: 0.5em;    
+    display:inline-block;
+    width: 200px;
+    color: black;
+    text-align: center;
+    border-style: solid;
+    border-width: 1px 0;
+    border-color: #F9F9F9;
+}
+
+#locationDropdown li a:hover {
+    border-color: black
+}
+
+#locationDropdown li a:first-letter {
+    text-transform:capitalize;
+}
+
+#infoDropdown {
+    padding: 0.5em 0;
+}
+#infoDropdown li span {
+    margin-right: 1em;
+}
+
+
+#imageinfo-modal .uk-modal-dialog {
+    height: 100%; /* make sure dialog is full height, even if iframe has not been loaded */
+    display: flex;
+    flex-flow: column;
+}
+
+#imageinfo-modal .uk-modal-body {
+    flex: 1; /* fill remaining height */
+    display: flex; /* contents (e.g. iframe) should fill height too */
+}
+    
+#imageinfo-modal .uk-modal-header a {
+    float: right;
+}
+
+#external-modal .uk-modal-dialog {
+    height: 100%; /* always fill with the dialog */
+}
+
+#external-modal .external-content {
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+    background-color: white;
+}
+
+#external-modal .external-content .external-tabs {
+    box-sizing: border-box;
+    margin-top:0;
+    margin-bottom:0;
+    height: 2rem;
+    padding-right: 2rem; /* allow for the expand button */
+}
+#external-modal .external-content .external-tabs>li {
+    height:inherit;
+}
+#external-modal .external-content .external-tabs>li>a {
+    height:inherit;
+    box-sizing: border-box;
+    text-transform: none;
+}
+
+#external-modal .external-content .external-tabs img {
+    height: 1.5rem;
+    border: 0;
+    padding:0;
+    margin:0;
+}
+
+#external-modal .external-content .popup-container {
+    flex: 1;
+    display: flex;
+}
+
+#external-modal .external-content .popup-container > li {
+    flex: 1;
+}
+
+#external-modal .external-content .popup-container > li.uk-active {
+    display: flex; /* only set on the active item, othewise we mess with uk kit tab showing/hiding */
+}
+
+.popup-content {
+    flex: 1;
+    padding: 0 0.75em;
+  	overflow-y: scroll;
+}
+
+.popup-content.iframe-container {
+    padding: 3px;
+    display: flex;
+    -webkit-overflow-scrolling: touch; /* see https://davidwalsh.name/scroll-iframes-ios */
+}
+
+.popup-content.iframe-container > iframe {
+    flex: 1;
+}
+
+.popup-content > footer {
+    padding: 0.5em;
+    border: 1px solid black;
+    text-align: center;
+    /* These are technically the same, but use both */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    
+    -ms-word-break: break-all;
+    /* This is the dangerous one in WebKit, as it breaks things wherever */
+    word-break: break-all;
+    /* Instead use this non-standard one: */
+    word-break: break-word;
+    
+    /* Adds a hyphen where the word breaks, if supported (No Blink) */
+    -ms-hyphens: auto;
+    -moz-hyphens: auto;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+}
+
+.popup-container .loading_pic {
+    position: absolute;
+    z-index: -1;
+}
+
+#external-modal .expand-tab {
+    height: 2rem;
+}
+#external-modal .expand-tab a {
+    margin: 0.25rem;
+    width: 1.5em;
+    height: 1.5em;
+}
+
+#tourbox {
+    /* display:none; */
+    position: absolute;
+    padding: 1em;
+    right: 10%;
+    bottom: 10%;
+    color: black;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 1em;
+}    
+
+#tourbox select#next {
+    width: 8em;
+}
+
+.selectable {
+    user-select: text; 
+    -webkit-touch-callout: text;
+    -webkit-user-select: text;
+    -khtml-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+}
+
+/* responsive size changes */
+
+/* On small screens, shrink the top bar (e.g. logo and advanced search button) */    
+@media screen and (max-width: 800px) {
+    #external-modal .external-content .external-tabs::before {
+        left: 10px;
+    }
+    #external-modal .external-content .external-tabs {
+        margin-left: -10px;
+    }
+    #external-modal .external-content .external-tabs > li {
+        padding-left: 10px;
+    }
+}
+@media screen and (max-width: 640px) {
+    .uk-navbar-item {
+        padding: 0 5px;
+        height:2.5rem;
+        line-height:2.5rem;
+    }
+
+    #advanced_search_button {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+    #advanced_search_button svg {
+        height: 1rem;
+    }
+    #logo .logo img {
+        height: 1.5rem;
+    }
+    #searchnav .searchbox input {
+        height: 2rem;
+    }
+    .uk-modal-close-outside {
+        padding: 0;
+    }
+}
+
+/* On tiny screens, shrink the search box */    
+@media screen and (max-width: 440px) {
+    
+    #searchnav .searchbox, #searchnav .search_dropdown {
+        width: 14rem;
+    }
+    #external-modal .external-content .external-tabs::before {
+        left: 2px;
+    }
+    #external-modal .external-content .external-tabs {
+        margin-left: -2px;
+    }
+    #external-modal .external-content .external-tabs > li {
+        padding-left: 2px;
+    }
+    #external-modal .external-content .external-tabs img {
+        height: 1.2rem;
+    }    
+}
+
+/* On miniscule screens, shrink the search box further, and wrap the CA button */    
+@media screen and (max-width: 380px) {
+    #search-advanced #common_ancestor_button {
+        line-height: 1rem;
+        width: 9em;
+    }
+    #search-advanced #common_ancestor_button span {
+        margin-top: 0.45rem;
+    }
+    #searchnav .searchbox, #searchnav .search_dropdown {
+        width: 10rem;
+    }
+    #external-modal .external-content .external-tabs::before {
+        left: 0px;
+    }
+    #external-modal .external-content .external-tabs {
+        margin-left: 0px;
+    }
+    #external-modal .external-content .external-tabs > li {
+        padding-left: 0px;
+    }
+    #external-modal .external-content .external-tabs img {
+        height: 1rem;
+    }    
+}

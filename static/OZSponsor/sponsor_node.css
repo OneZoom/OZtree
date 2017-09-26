@@ -1,0 +1,79 @@
+
+.showall {
+    color: #888888;
+    text-align: right;    
+    font-size: smaller;
+}
+
+.problem {
+    /* display:none; */
+}
+
+.spList {
+    padding:0;
+    list-style-type: none;
+}
+
+.spList li {
+    vertical-align: top;
+    display: inline-block;
+    margin: 0 0.2em 0.4em 0.2em;
+}
+
+.spList li a.sponsor, .spList li label {
+    width: 130px;
+    height: 200px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center bottom;
+    color:rgb(130,130,130);
+    display: block;
+    border-radius: 3px;
+    border: 1px solid grey;
+    
+}
+
+.spList li a.sponsor:hover {
+    color:black;
+}
+
+.spList li p  {
+    display: table-cell;
+    line-height: 1.2;
+    height: 3em;
+    text-align: center;
+    padding: 0.5em;
+}
+
+.spList li > p  {
+    width: 130px;
+}
+
+.alphabetical_list {
+    list-style-type: none;
+    padding:0;
+    margin:0;
+    padding-left:1em;
+    -webkit-columns: 6 150px;
+       -moz-columns: 6 150px;
+            columns: 6 150px;
+            
+}
+
+.alphabetical_list li {
+    padding:0;
+    margin:0;
+    margin-left:0.5em;
+    text-indent: -0.5em;
+}
+
+.alphabetical_list li a {
+    display:inline-block; /*makes sure the name doesn't get split between columns*/
+}
+
+
+.cname:first-letter {
+    color: red;
+    text-transform: capitalize;
+}
+

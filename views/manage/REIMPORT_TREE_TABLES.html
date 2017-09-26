@@ -1,0 +1,13 @@
+{{extend 'layout.html'}}
+
+<p>reading node file from {{=nodefile}}</p>
+<p>reading leaf file from {{=leaffile}}</p>
+
+<h1>{{=status}}</h1>
+
+<p>To update this directly in mySQL, use:</p>
+<blockquote>
+{{for i in sql_cmds:}}
+<p>{{=i}}</p>
+{{pass}}
+</blockquote>

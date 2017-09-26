@@ -1,0 +1,106 @@
+html
+{
+    align="center";
+    height:100%;
+    width:100%;
+}
+
+body
+{
+    align="center";
+    overflow:hidden;
+    height:100%;
+    width:100%;
+    background-color: rgb(0,0,0);
+}
+
+#myCanvas
+{
+    padding-left: 3px;
+    padding-right: 0;
+    margin-left: 4px;
+    margin-right: auto;
+}
+
+#selection_form
+{
+	background-color:#FFFFFF;
+	text-color:#000000;
+	right:0px;
+	top:33px;
+	left:0px;
+	bottom:0px;
+	position:absolute;
+	height:auto;
+    	width:335px;
+	overflow:scroll;
+}
+
+#selection_bar
+{
+    position:absolute;
+    color:rgb(255,0,0);
+    top:00px;
+    left:10px;
+    width:335px;
+    bottom:29px;
+    height:auto;
+}
+
+#wholecontainer
+{
+    color:rgb(255,0,0);
+    top:0px;
+    bottom:0px;
+    left:350px;
+    right:0px;
+    width:auto;
+}
+
+select
+{
+	width:60%;
+}
+
+#selection_bar button
+{
+	clear:both;
+    float:right;    
+}
+
+#select_div_colours button
+{
+    clear:none;
+    float:right;    
+}
+
+ul
+{
+	background-color:#999999;
+}
+
+textarea
+{
+	width:100%;
+}
+
+#url_generator
+{
+	/* margin-right:0; */
+}
+
+#home_button
+{
+	background-color:#eeeeee;
+	opacity:0.8;
+	top:4px;
+	left:0px;
+	width:335px;
+	position:absolute;
+	height:25px;
+}
+
+body
+{
+color:black;
+}

@@ -1,0 +1,88 @@
+
+
+************************************************************************************************
+*  d 8   C A L C U L A T I O N                                                                 *
+************************************************************************************************
+
+Number of informative fixnodes:  12
+Number of informative minnodes:   0
+Number of informative maxnodes:   0
+
+d8 tree    : (Chimaeridae:420.000000,(Rajidae:300.000000,((((((CARCHARHINICAE_MINUS@:134.467193,SCYLIORHINIDAE2:134.467193):35.532807,SCYLIORHINIDAE3@:170.000000):3.555331,(Lamniformes_minus_Mitsukurinidae_ott32038-801828@:116.193063,Mitsukurinidae_ott801828@:116.193063):57.362269):9.696336,(((((Ginglymostoma_ott400230@:0.000000,Nebrius_ott833444@:0.000000)Ginglymostomatidae:33.281440,((Stegostomatidae_ott696403@:0.000000,Pseudoginglymostoma_ott356286@:0.000000):0.000000,Rhincodontidae_ott738324@:0.000000):33.281440):33.281440,Hemiscylliidae_ott438189@:66.562880):56.198912,(Brachaeluridae_ott274901@:89.334379,Orectolobidae_ott572732@:89.334379):33.427413):26.323449,Parascylliidae_ott154216@:149.085241)Orectolobiformes:34.166426):16.748333,Heterodontidae_ott335517@:200.000000):25.000000,(((Squalidae_ott856584@:132.860000,((DALATIIDAE@:116.100000,(SOMNIOSIDAEOXYNOTIDAE@:110.510000,ETMOPTERIDAE@:110.510000):5.590000):10.580000,Centrophoridae_ott852403@:126.680000):6.180000):44.480000,(SQUATINIDAE@:147.590000,(Echinorhiniformes_ott340760@:147.590000,PRISTIOPHORIDAE@:147.590000):0.000000):29.750000):25.460000,(Chlamydoselachidae_ott1093534@:146.024768,NotorynchidaeHexanchidae_ott32032-1093534@:146.024768)Hexanchiformes:56.775232):22.200000):75.000000):120.000000);
+
+Ancestor of          Ancestor of          Name                        Age  #Terminals              MPL         Rate *      minage      maxage
+Chimaeridae          NotorynchidaeHexanchidae_ott32032-1093534@ -                       420.000          27    469786199.926 1118538.571252       420.0       420.0 
+Rajidae              NotorynchidaeHexanchidae_ott32032-1093534@ -                       300.000          26    391248080.692 1304160.268974       300.0       300.0 
+CARCHARHINICAE_MINUS@ NotorynchidaeHexanchidae_ott32032-1093534@ -                       225.000          25    348699415.920 1549775.181867       225.0       225.0 
+CARCHARHINICAE_MINUS@ Heterodontidae_ott335517@ -                       200.000          15    316428013.333 1582140.066667       200.0       200.0 
+CARCHARHINICAE_MINUS@ Parascylliidae_ott154216@ -                       183.252          14    286902007.143 1565617.444906           -           - 
+CARCHARHINICAE_MINUS@ Mitsukurinidae_ott801828@ -                       173.555           5    257736760.000 1485040.868115           -           - 
+CARCHARHINICAE_MINUS@ SCYLIORHINIDAE3@     -                       170.000           3    225404200.000 1325907.058824       170.0       170.0 
+CARCHARHINICAE_MINUS@ SCYLIORHINIDAE2      -                       134.467           2    178291000.000 1325907.058824           -           - 
+Lamniformes_minus_Mitsukurinidae_ott32038-801828@ Mitsukurinidae_ott801828@ -                       116.193           2    183833700.000 1582140.066667           -           - 
+Ginglymostoma_ott400230@ Parascylliidae_ott154216@ Orectolobiformes        149.085           9    235873733.333 1582140.066667           -           - 
+Ginglymostoma_ott400230@ Orectolobidae_ott572732@ -                       122.762           8    194226350.000 1582140.066667           -           - 
+Ginglymostoma_ott400230@ Hemiscylliidae_ott438189@ -                        66.563           6    105311800.000 1582140.066667           -           - 
+Ginglymostoma_ott400230@ Rhincodontidae_ott738324@ -                        33.281           5     52655900.000 1582140.066667           -           - 
+Ginglymostoma_ott400230@ Nebrius_ott833444@   Ginglymostomatidae        0.000           2            0.000            nan           -           - 
+Stegostomatidae_ott696403@ Rhincodontidae_ott738324@ -                         0.000           3            0.000            nan           -           - 
+Stegostomatidae_ott696403@ Pseudoginglymostoma_ott356286@ -                         0.000           2            0.000            nan           -           - 
+Brachaeluridae_ott274901@ Orectolobidae_ott572732@ -                        89.334           2    141339500.000 1582140.066667           -           - 
+Squalidae_ott856584@ NotorynchidaeHexanchidae_ott32032-1093534@ -                       202.800          10    324589119.800 1600538.066075       202.8       202.8 
+Squalidae_ott856584@ PRISTIOPHORIDAE@     -                       177.340           8    262087499.750 1477881.469212       177.3       177.3 
+Squalidae_ott856584@ Centrophoridae_ott852403@ -                       132.860           5    169524259.600 1275961.610718       132.9       132.9 
+DALATIIDAE@          Centrophoridae_ott852403@ -                       126.680           4    134872999.500 1064674.767130       126.7       126.7 
+DALATIIDAE@          ETMOPTERIDAE@        -                       116.100           3    135180933.000 1164349.121447       116.1       116.1 
+SOMNIOSIDAEOXYNOTIDAE@ ETMOPTERIDAE@        -                       110.510           2    134872999.500 1220459.682382       110.5       110.5 
+SQUATINIDAE@         PRISTIOPHORIDAE@     -                       147.590           3    213394900.000 1445862.863338       147.6       147.6 
+Echinorhiniformes_ott340760@ PRISTIOPHORIDAE@     -                       147.590           2    213394900.000 1445862.863338           -           - 
+Chlamydoselachidae_ott1093534@ NotorynchidaeHexanchidae_ott32032-1093534@ Hexanchiformes          146.025           2    233718200.000 1600538.066075           -           - 
+
+
+  *) Rate = MPL / Age
+
+
+************************************************************************************************
+*  M P L  C A L C U L A T I O N                                                                *
+************************************************************************************************
+
+Clock test confidence: 0.950000
+Clock tests          : 26   (one for each node)
+Accepted             : 13
+Rejected             : 13
+
+MPL tree   : (Chimaeridae:469786199.925926,(Rajidae:391248080.692308,((((((CARCHARHINICAE_MINUS@:178291000.000000,SCYLIORHINIDAE2:178291000.000000):47113200.000000,SCYLIORHINIDAE3@:225404200.000000):32332560.000000,(Lamniformes_minus_Mitsukurinidae_ott32038-801828@:183833700.000000,Mitsukurinidae_ott801828@:183833700.000000):73903060.000000):29165247.142857,(((((Ginglymostoma_ott400230@:0.000000,Nebrius_ott833444@:0.000000)Ginglymostomatidae:52655900.000000,((Stegostomatidae_ott696403@:0.000000,Pseudoginglymostoma_ott356286@:0.000000):0.000000,Rhincodontidae_ott738324@:0.000000):52655900.000000):52655900.000000,Hemiscylliidae_ott438189@:105311800.000000):88914550.000000,(Brachaeluridae_ott274901@:141339500.000000,Orectolobidae_ott572732@:141339500.000000):52886850.000000):41647383.333333,Parascylliidae_ott154216@:235873733.333333)Orectolobiformes:51028273.809524):29526006.190476,Heterodontidae_ott335517@:316428013.333333):32271402.586667,(((Squalidae_ott856584@:169524259.600000,((DALATIIDAE@:134872999.500000,(SOMNIOSIDAEOXYNOTIDAE@:134872999.500000,ETMOPTERIDAE@:134872999.500000):0.000000):0.000000,Centrophoridae_ott852403@:134872999.500000):34651260.100000):92563240.150000,(SQUATINIDAE@:213394900.000000,(Echinorhiniformes_ott340760@:213394900.000000,PRISTIOPHORIDAE@:213394900.000000):0.000000):48692599.750000):62501620.050000,(Chlamydoselachidae_ott1093534@:233718200.000000,NotorynchidaeHexanchidae_ott32032-1093534@:233718200.000000)Hexanchiformes:90870919.800000):24110296.120000):42548664.772308):78538119.233618);
+
+Ancestor of          Ancestor of          Name                            MPL             #Terminals      Clock test: Acc/Rej
+Chimaeridae          NotorynchidaeHexanchidae_ott32032-1093534@ -                    469786199.926 +/- 25239.598           27      Rej, prob=0.000000
+Rajidae              NotorynchidaeHexanchidae_ott32032-1093534@ -                    391248080.692 +/- 19573.176           26      Rej, prob=0.000000
+CARCHARHINICAE_MINUS@ NotorynchidaeHexanchidae_ott32032-1093534@ -                    348699415.920 +/- 15778.346           25      Rej, prob=0.000000
+CARCHARHINICAE_MINUS@ Heterodontidae_ott335517@ -                    316428013.333 +/- 19092.750           15      Rej, prob=0.000000
+CARCHARHINICAE_MINUS@ Parascylliidae_ott154216@ -                    286902007.143 +/- 17288.465           14      Rej, prob=0.000000
+CARCHARHINICAE_MINUS@ Mitsukurinidae_ott801828@ -                    257736760.000 +/- 16267.620            5      Acc
+CARCHARHINICAE_MINUS@ SCYLIORHINIDAE3@     -                    225404200.000 +/- 18121.062            3      Acc
+CARCHARHINICAE_MINUS@ SCYLIORHINIDAE2      -                    178291000.000 +/- 18492.068            2      Acc
+Lamniformes_minus_Mitsukurinidae_ott32038-801828@ Mitsukurinidae_ott801828@ -                    183833700.000 +/- 18777.308            2      Acc
+Ginglymostoma_ott400230@ Parascylliidae_ott154216@ Orectolobiformes     235873733.333 +/- 20289.627            9      Rej, prob=0.000000
+Ginglymostoma_ott400230@ Orectolobidae_ott572732@ -                    194226350.000 +/- 18638.205            8      Rej, prob=0.000000
+Ginglymostoma_ott400230@ Hemiscylliidae_ott438189@ -                    105311800.000 +/- 14980.904            6      Acc
+Ginglymostoma_ott400230@ Rhincodontidae_ott738324@ -                    52655900.000 +/- 10248.515            5      Acc
+Ginglymostoma_ott400230@ Nebrius_ott833444@   Ginglymostomatidae        0.000 +/- 0.000                2      Acc
+Stegostomatidae_ott696403@ Rhincodontidae_ott738324@ -                         0.000 +/- 0.000                3      Acc
+Stegostomatidae_ott696403@ Pseudoginglymostoma_ott356286@ -                         0.000 +/- 0.000                2      Acc
+Brachaeluridae_ott274901@ Orectolobidae_ott572732@ -                    141339500.000 +/- 16464.651            2      Acc
+Squalidae_ott856584@ NotorynchidaeHexanchidae_ott32032-1093534@ -                    324589119.800 +/- 19094.115           10      Rej, prob=0.000000
+Squalidae_ott856584@ PRISTIOPHORIDAE@     -                    262087499.750 +/- 16709.305            8      Rej, prob=0.000000
+Squalidae_ott856584@ Centrophoridae_ott852403@ -                    169524259.600 +/- 13946.349            5      Rej, prob=0.000000
+DALATIIDAE@          Centrophoridae_ott852403@ -                    134872999.500 +/- 11372.823            4      Rej, prob=0.000000
+DALATIIDAE@          ETMOPTERIDAE@        -                    135180933.000 +/- 13147.187            3      Rej, prob=0.000000
+SOMNIOSIDAEOXYNOTIDAE@ ETMOPTERIDAE@        -                    134872999.500 +/- 16083.600            2      Rej, prob=0.000000
+SQUATINIDAE@         PRISTIOPHORIDAE@     -                    213394900.000 +/- 16518.369            3      Acc
+Echinorhiniformes_ott340760@ PRISTIOPHORIDAE@     -                    213394900.000 +/- 20230.787            2      Acc
+Chlamydoselachidae_ott1093534@ NotorynchidaeHexanchidae_ott32032-1093534@ Hexanchiformes       233718200.000 +/- 21172.251            2      Acc
+
+
+************************************************************************************************
+*  E N D  C A L C U L A T I O N                                                                *
+************************************************************************************************
+

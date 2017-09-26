@@ -1,0 +1,29 @@
+{{
+response.files.append(URL('static','css/bootstrap.min.css'))
+}}
+{{extend 'layout.html'}}
+<script>
+function delkey(id) {
+  jQuery('#'+id).hide();
+  jQuery('#'+id+' INPUT').val(String.fromCharCode(127));
+  jQuery('#'+id+' TEXTAREA').val(String.fromCharCode(127));
+  return false;
+}
+function hideShowTranslated(){
+  jQuery(".translated").closest("div.row-fluid").toggle();
+}
+</script>
+
+{{block sectionclass}}edit_language{{end}}
+<!-- begin "edit_language" block -->
+<h2>{{=T('Editing Language file')}} "{{=filename}}"</h2>
+<div class="controls">
+<button onclick="hideShowTranslated(this);">
+{{=T('Hide/Show Translated strings')}}</button>
+</a>
+</div>
+<div class="languageform">
+  {{=form}}
+</div>
+<button class="btn" style="position:fixed; right:10px; bottom: 10px;" onclick="jQuery('form input[type=submit]').click()"><img src="{{=URL('static','images','tick_green.png')}}" width="20" height="20" />&nbsp;Save Changes</button>
+<!-- end "edit_language" block -->

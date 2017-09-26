@@ -1,0 +1,43 @@
+{{try:}}<h1>{{=error}}</h1>{{except:}}
+<h2>Tours box for {{=tourname}}, stop {{=stopnum}}</h2>
+<p>{{=tour_text}}</p>
+{{if len(next) > 1:}}
+<select id='next' uk-tooltip="pos: left"  title='Other TreeTours also contain this stop: you can choose to switch to an alternative tour here.'>
+  <option class="placeholder" selected disabled value="">TreeTour</option>
+{{for stop in next:}}
+  {{if stop.get('id'):}}<option value="{{=','.join([str(stop[s]) for s in ('id','index','transition','tourabbrev')])}}">{{=stop['tourname']}}</option>{{pass}}
+{{pass}}
+</select>
+{{if len(next):}}<input id='default' type="hidden" value="{{=','.join([str(next[0][s]) for s in ('id','index','transition','tourabbrev')])}}">{{pass}}
+{{pass}}
+<button onclick="$('#tourbox').hide(); transition_to_next($('#next').val()?$('#next').val().split(','):$('#default').val().split(','), function(html) {$('#tourbox').html(html); $('#tourbox').show();});">Next</button>
+
+<script>
+/* this could possibly go in the outer code) */
+
+transitions = {
+    /* map the names in the database column 'transition' to functions in the onezoom controller */
+    'fly':'perform_flight_animation',
+    'jump':'jump_to_node'
+}
+
+function transition_to(id, next_stop_number, transition, tourname, final_func) {
+    if (onezoom.controller) {
+        onezoom.controller[transitions[transition]](id, false, function() {onezoom.tours.page(tourname, next_stop_number, final_func)})
+    } else {
+        onezoom.tours.page(tourname, next_stop_number, final_func);
+    }
+    return false;
+}
+
+function transition_to_next(next_details, final_func) {
+    var id = next_details[0];
+    var next_stop_number = next_details[1];
+    var transition = next_details[2];
+    var tourname = next_details[3];
+    transition_to(id, next_stop_number, transition, tourname, final_func);
+}
+
+
+</script>
+{{pass}}

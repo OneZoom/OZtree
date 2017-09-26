@@ -1,0 +1,144 @@
+import {set_horizon_calculator} from '../horizon_calc/horizon_calc'; // import a function which enables us to choose the horizon calc.
+
+/* precalc relationships */
+
+// you have to use the existing names becauase they are hard coded into
+
+class PolytomyPreCalc {
+    
+  constructor() {
+    this._viewtype = "polytomy";
+  }
+    
+  get viewtype() {
+    if (!this._viewtype) throw new Error("viewtype not defined in PolytomyPreCalc.");
+    else return this._viewtype;
+  }
+    
+  pre_calc(node, from_root) {
+    let angle = from_root ? Math.PI*(3/2) : node.arca;
+    if (from_root) {
+        //Kai
+        
+      node.ex = Math.cos(angle);
+      node.ey = Math.sin(angle);
+      node.sx = 0;
+      node.sy = -0.4;
+        
+        // James
+        /*
+        node.ex = 0;
+        node.ey = 0;
+        node.sx = 0;
+        node.sy = 0;
+         */
+        
+    }
+    _pre_calc(node, angle);
+  }
+    
+  setup() {
+    set_horizon_calculator('polytomy'); // this sets the horizon calculation type
+  }
+    
+}
+
+function _pre_calc(node, angle) {
+  node.arca = angle;
+  node.arcx = node.ex;
+  node.arcy = node.ey;
+  // James
+  //node.arcr = 0.01; // this is the size of the node arc compared to the size of the node itself
+  // Kai
+    
+  node.arcr = 0.08; // this is the size of the node arc compared to the size of the node itself
+  node.branch_width = 0.05;
+  
+  let new_angle_base = node.arca - Math.PI/2;
+  if (node.has_child) {
+    let total = 0;
+    let sqr_total = 0;
+      
+    let child_order_map = []
+      
+    for (let i=0; i<node.children.length; i++) {
+      child_order_map.push([i,node.children[i].richness_val]);
+    }
+    let looping = true;
+    while (looping) // order the child map
+    {
+        looping = false;
+        for (let i=1; i<child_order_map.length; i++) {
+            if (child_order_map[i-1][1]>child_order_map[i][1])
+            {
+                let tempswap = child_order_map[i-1];
+                child_order_map[i-1] = child_order_map[i];
+                child_order_map[i] = tempswap;
+                looping = true;
+            }
+        }
+    }
+      
+        // we're not staggering the children in two rows
+        for (let i=0; i<node.children.length; i++) {
+            // CHANGE THIS TO CHANGE RELATIVE IMPORTANCE OF BRANCHES
+            // clade_richness is defined using get clade_richness in polytomy_midnode.js
+            // within the 'factory' dir
+            
+            // one of these lines will most likely not be used but I'll leave them in for now
+            //total += Math.sqrt(node.children[i].richness_val);
+            total += Math.log(node.children[i].richness_val+1)
+        }
+        for (let j=0; j<node.children.length; j++) {
+            
+            let i = child_order_map[j][0];
+            
+            let ratio = Math.log(node.children[i].richness_val+1) / total;
+            //let ratio = Math.sqrt(node.children[i].richness_val) / total;
+
+            
+            let angle_assigned = ratio * Math.PI;
+            let child_angle = new_angle_base + angle_assigned/2
+            new_angle_base += angle_assigned;
+            
+            node.nextx[i] = node.ex; // position in x to pass to child i
+            node.nexty[i] = node.ey; // position in y to pass to child i
+            
+            // my edited lines
+            let tana = Math.tan(angle_assigned/2);
+            let newscale = (tana)/(1+tana);
+            let distance = 1-newscale;
+            let target = node.arcr*1.1*(1+newscale); // we want the distance to be at least this much so that nodes don't overlap
+            if (distance < (target))
+            {
+                distance = target;
+            }
+            
+            node.nextr[i] = newscale; // scale to pass to child node i
+            
+            // ex and ey are the start and end positions of the line belonging to the child.
+            // their position starts at position of the parent
+            // it's all as a multiple of the ratio.
+            
+            node.children[i].ex = Math.cos(child_angle) * (distance)/newscale;
+            node.children[i].ey = Math.sin(child_angle) * (distance)/newscale;
+            
+            
+            node.children[i].sx = 0; // same position as the node itself.
+            node.children[i].sy = 0; // this is where it connects to the child.
+            
+            _pre_calc(node.children[i], child_angle);
+        }
+      
+    
+  }
+  else
+  {
+      node.arcr = 0.75;
+  }
+}
+
+let polytomy_pre_calc = new PolytomyPreCalc();
+
+// export the class which does what we need for polytomy calculations.
+export default polytomy_pre_calc;

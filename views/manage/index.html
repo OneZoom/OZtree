@@ -1,0 +1,52 @@
+{{response.title='OneZoom: Management Pages'}}
+{{response.files.append(URL('static', 'OZSite/MANAGE.css'))}}
+{{extend 'layout.html'}}
+<div class="row-fluid">
+  <div class="col-md-12">
+
+<h1>Management pages</h1>
+<p>The following management pages exist. These should all be decorated with <code><pre>@auth.requires_membership(role='XXXX')</pre></code> in controllers/manage.py, where XXXX is a role such as <q>manager</q>. By OZ convention, pages which require <q>manager</q> access (the highest level of access) are named using CAPS.</p>
+
+<h3>Pages for translators</h3>
+<dl>
+<dt>Localization pages (of the form OneZoom/edit_language/XX)</dt>
+    <dd>These allow logged in users in the <q>translator</q> group to add translations. At the moment you need to add the language after the pagename, for example <a href="{{=URL('edit_language', args='fr')}}" class="biglink">{{=URL('edit_language', args='fr')}}</a>.</dd>
+</dl>
+
+<h3>Pages for managers</h3>
+<dl>
+<dt><a href="{{=URL('SPONSOR_VALIDATE')}}">Validate new sponsor texts</a></dt>
+    <dd>By default this will only show up rows in the reservations table that have sale_time != None and have something set in verified_time or  verified_kind or verified_name or verified_more_info or verified_preferred_image</dd>
+<dt><a href="{{=URL('SHOW_EMAILS')}}">Useful list of sponsor emails</a></dt>
+    <dd>shows sponsorships listed by validated_time, to paste into an email client</dd>
+<dt><a href="{{=URL('SHOW_SPONSOR_SUMS')}}">Summary of total donations by each sponsor</a></dt>
+    <dd>To look at our high-value donors</dd>
+
+<dt><a href="{{=URL('LIST_IMAGES')}}">List of species images on the server</a></dt>
+    <dd>Many thousands of images, so this is paged. Images are listed in quality order: public domain images have a green border. Use <a href="{{=URL('LIST_IMAGES?pdonly')}}"> this link to just show the PD ones</a>.</dd>
+<dt><a href="sponsored.html?highlight_pd=1">Show sponsored images, highlighting public domain ones in green</a></dt>
+    <dd>This page is also available to users, but the highlight PD function is not made easily accessible</dd>
+<dt><a href="{{=URL('debug','TEST_POST')}}">Fake a paypal post to a test page</a></dt>
+    <dd>This is purely for testing</dd>
+<hr />
+<dt><a href="{{=URL('SET_PRICES')}}">Set prices for all taxa</a></dt>
+    <dd>The takes the pre-calculated popularity measures and bands them into price bands</dd>
+
+<dt><a href="{{=URL('GENERATE_TREE')}}">Generate a new tree</a></dt>
+    <dd>This will take some time (e.g. 2 hours) to run, and should be do this on the beta server first, then moved to the OZlife_oldformat_file.
+    it will create a lock file so that you can't run parallel copies.
+    </dd>
+
+<dt><a href="{{=URL('REIMPORT_TREE_TABLES')}}" onClick="return(confirm('Are you sure you want to clear all the data and re-import') && confirm('Are you REALLY sure???!!!'))">REIMPORT ORDERED_LEAVES & NODES, etc</a></dt>
+    <dd class="warning">WARNING: this takes a long time to create MYSQL format csv files for import, deletes the contents of the existing database tables leaves_in_unsponsored_tree, ordered_leaves, and ordered_nodes, and may not update them properly!. Use sparingly</dd>
+<hr />
+<dt><a href="{{=URL()}}">This page</a></dt>
+    <dd>By default this will only show up rows in the reservations table that have sale_time != None and have something set in verified_time or  verified_kind or verified_name or verified_more_info or verified_preferred_image</dd>
+
+<h3>Pages for admins</h3>
+<dl>
+<dt><a href="appadmin">Web2py admin</a></dt>
+    <dd>Examine and manage databases, etc. Can also edit server files.</dd>
+</dl>
+</div>
+</div>

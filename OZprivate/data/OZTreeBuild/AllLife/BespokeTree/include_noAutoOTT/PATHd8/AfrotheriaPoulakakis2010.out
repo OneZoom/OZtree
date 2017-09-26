@@ -1,0 +1,174 @@
+
+WARNING -- root egde len 9400000.000000 is ignored
+
+
+************************************************************************************************
+*  d 8   C A L C U L A T I O N                                                                 *
+************************************************************************************************
+
+Number of informative fixnodes:   9
+Number of informative minnodes:   0
+Number of informative maxnodes:   0
+
+d8 tree    : (((((((((((Amblysomus_hottentotus:17.182007,Amblysomus_septentrionalis:17.182007):0.000000,Amblysomus_corriae:17.182007):0.000000,Amblysomus_marleyi:17.182007)Amblysomus:3.526438,(Neamblysomus_gunningi:8.553488,Neamblysomus_julianae:8.553488)Neamblysomus:12.154957):0.150061,Calcochloris_obtusirostris:20.858507):0.000000,((Chrysochloris_stuhlmanni:14.255814,Chrysochloris_visagiei:14.255814):0.000000,Chrysochloris_asiatica:14.255814)Chrysochloris:6.602693):0.000000,((Chrysospalax_trevelyani:9.003672,Chrysospalax_villosus:9.003672)Chrysospalax:11.854835,((Chlorotalpa_duthieae:20.708446,(Calcochloris_leucorhinus:20.708446,(Carpitalpa_arendsi:20.708446,Calcochloris_tytonis:20.708446):0.000000):0.000000):0.000000,Chlorotalpa_sclateri:20.708446):0.150061):0.000000)CHRYSOCHLORIDEA:40.441493,(((Geogale_aurita:42.917503,((Oryzorictes_tetradactylus:10.054100,Oryzorictes_hova:10.054100)Oryzorictes:25.660465,((Microgale_parvula:11.479682,((Microgale_thomasi:11.479682,Microgale_dobsoni:11.479682):0.000000,(Microgale_pusilla:11.479682,Microgale_principula:11.479682):0.000000):0.000000):0.000000,(Microgale_brevicaudata:11.479682,(Microgale_longicaudata:11.479682,((Microgale_gracilis:11.479682,(((Microgale_drouhardi:11.329621,Microgale_taiva:11.329621):0.000000,Microgale_cowani:11.329621):0.150061,Microgale_talazaci:11.479682):0.000000):0.000000,Microgale_dryas:11.479682):0.000000):0.000000):0.000000)Microgale:24.234883):7.202938):0.000000,((Potamogale_velox:16.806854,(Micropotamogale_lamottei:10.504284,Micropotamogale_ruwenzorii:10.504284)Micropotamogale:6.302570):26.110648,Limnogale_mergulus:42.917503):0.000000):0.000000,((Tenrec_ecaudatus:23.334517,(Hemicentetes_semispinosus:10.354223,Hemicentetes_nigriceps:10.354223)Hemicentetes:12.980294):0.000000,(Setifer_setosus:10.354223,Echinops_telfairi:10.354223):12.980294):19.582986)TENRECOMORPHA:18.382497)AFROSORICIDA:16.200000,((((((((Elephantulus_intufi:7.645631,Elephantulus_rupestris:7.645631):9.021845,(Elephantulus_brachyrhynchus:12.080097,(Elephantulus_fuscipes:7.339806,Elephantulus_fuscus:7.339806):4.740291):4.587379):0.000000,(Elephantulus_revoili:7.645631,Elephantulus_rufescens:7.645631):9.021845):6.116505,(Elephantulus_edwardii:13.762136,Elephantulus_myurus:13.762136):9.021845):8.410194,Elephantulus_rozeti:31.194175)Elephantulus:0.305825,Macroscelides_proboscideus:31.500000):0.000000,Petrodromus_tetradactylus:31.500000):15.716591,((Rhynchocyon_petersi:20.105714,Rhynchocyon_chrysopygus:20.105714):0.000000,Rhynchocyon_cirnei:20.105714)Rhynchocyon:27.110877)MACROSCELIDEA:30.283409):4.100000,Orycteropus_afer:81.600000):2.600000,((((Dendrohyrax_arboreus:10.521149,Dendrohyrax_dorsalis:10.521149)Dendrohyrax:0.158213,Heterohyrax_brucei:10.679362):0.079106,Procavia_capensis:10.758468)HYRACOIDEA:56.841532,((Elephas_maximus:6.900000,(Loxodonta_africana:5.236923,Loxodonta_cyclotis:5.236923)Loxodonta:1.663077)PROBOSCIDEA:54.900000,(Dugong_dugon:16.600000,(Trichechus_inunguis:11.162069,(Trichechus_manatus:7.536782,Trichechus_senegalensis:7.536782):3.625287)Trichechidae:5.437931)SIRENIA:45.200000):5.800000):16.600000)Afrotheria:0;
+
+Ancestor of          Ancestor of          Name                        Age  #Terminals              MPL         Rate *      minage      maxage
+Amblysomus_hottentotus Trichechus_senegalensis Afrotheria               84.200          69     91039130.246 1081224.824779        84.2        84.2 
+Amblysomus_hottentotus Orycteropus_afer     -                        81.600          58     89299999.776 1094362.742351        81.6        81.6 
+Amblysomus_hottentotus Rhynchocyon_cirnei   -                        77.500          57     87499999.772 1129032.255122        77.5        77.5 
+Amblysomus_hottentotus Echinops_telfairi    AFROSORICIDA             61.300          42     81699999.690 1332789.554494        61.3        61.3 
+Amblysomus_hottentotus Chlorotalpa_sclateri CHRYSOCHLORIDEA          20.859          17     27800000.000 1332789.554494           -           - 
+Amblysomus_hottentotus Chrysochloris_asiatica -                        20.859          10     27800000.000 1332789.554494           -           - 
+Amblysomus_hottentotus Calcochloris_obtusirostris -                        20.859           7     27800000.000 1332789.554494           -           - 
+Amblysomus_hottentotus Neamblysomus_julianae -                        20.708           6     27600000.000 1332789.554494           -           - 
+Amblysomus_hottentotus Amblysomus_marleyi   Amblysomus               17.182           4     22900000.000 1332789.554494           -           - 
+Amblysomus_hottentotus Amblysomus_corriae   -                        17.182           3     22900000.000 1332789.554494           -           - 
+Amblysomus_hottentotus Amblysomus_septentrionalis -                        17.182           2     22900000.000 1332789.554494           -           - 
+Neamblysomus_gunningi Neamblysomus_julianae Neamblysomus              8.553           2     11400000.000 1332789.554494           -           - 
+Chrysochloris_stuhlmanni Chrysochloris_asiatica Chrysochloris            14.256           3     19000000.000 1332789.554494           -           - 
+Chrysochloris_stuhlmanni Chrysochloris_visagiei -                        14.256           2     19000000.000 1332789.554494           -           - 
+Chrysospalax_trevelyani Chlorotalpa_sclateri -                        20.859           7     27800000.000 1332789.554494           -           - 
+Chrysospalax_trevelyani Chrysospalax_villosus Chrysospalax              9.004           2     12000000.000 1332789.554494           -           - 
+Chlorotalpa_duthieae Chlorotalpa_sclateri -                        20.708           5     27600000.000 1332789.554494           -           - 
+Chlorotalpa_duthieae Calcochloris_tytonis -                        20.708           4     27600000.000 1332789.554494           -           - 
+Calcochloris_leucorhinus Calcochloris_tytonis -                        20.708           3     27600000.000 1332789.554494           -           - 
+Carpitalpa_arendsi   Calcochloris_tytonis -                        20.708           2     27600000.000 1332789.554494           -           - 
+Geogale_aurita       Echinops_telfairi    TENRECOMORPHA            42.918          25     57199999.480 1332789.554494           -           - 
+Geogale_aurita       Limnogale_mergulus   -                        42.918          20     57199999.350 1332789.554494           -           - 
+Geogale_aurita       Microgale_dryas      -                        42.918          16     57199999.188 1332789.554494           -           - 
+Oryzorictes_tetradactylus Microgale_dryas      -                        35.715          15     47599999.133 1332789.554494           -           - 
+Oryzorictes_tetradactylus Oryzorictes_hova     Oryzorictes              10.054           2     13400000.000 1332789.554494           -           - 
+Microgale_parvula    Microgale_dryas      Microgale                11.480          13     15300000.000 1332789.554494           -           - 
+Microgale_parvula    Microgale_principula -                        11.480           5     15300000.000 1332789.554494           -           - 
+Microgale_thomasi    Microgale_principula -                        11.480           4     15300000.000 1332789.554494           -           - 
+Microgale_thomasi    Microgale_dobsoni    -                        11.480           2     15300000.000 1332789.554494           -           - 
+Microgale_pusilla    Microgale_principula -                        11.480           2     15300000.000 1332789.554494           -           - 
+Microgale_brevicaudata Microgale_dryas      -                        11.480           8     15300000.000 1332789.554494           -           - 
+Microgale_longicaudata Microgale_dryas      -                        11.480           7     15300000.000 1332789.554494           -           - 
+Microgale_gracilis   Microgale_dryas      -                        11.480           6     15300000.000 1332789.554494           -           - 
+Microgale_gracilis   Microgale_talazaci   -                        11.480           5     15300000.000 1332789.554494           -           - 
+Microgale_drouhardi  Microgale_talazaci   -                        11.480           4     15300000.000 1332789.554494           -           - 
+Microgale_drouhardi  Microgale_cowani     -                        11.330           3     15100000.000 1332789.554494           -           - 
+Microgale_drouhardi  Microgale_taiva      -                        11.330           2     15100000.000 1332789.554494           -           - 
+Potamogale_velox     Limnogale_mergulus   -                        42.918           4     57200000.000 1332789.569639           -           - 
+Potamogale_velox     Micropotamogale_ruwenzorii -                        16.807           3     22400000.000 1332789.554494           -           - 
+Micropotamogale_lamottei Micropotamogale_ruwenzorii Micropotamogale          10.504           2     14000000.000 1332789.554494           -           - 
+Tenrec_ecaudatus     Echinops_telfairi    -                        23.335           5     31100000.000 1332789.554494           -           - 
+Tenrec_ecaudatus     Hemicentetes_nigriceps -                        23.335           3     31100000.000 1332789.554494           -           - 
+Hemicentetes_semispinosus Hemicentetes_nigriceps Hemicentetes             10.354           2     13800000.000 1332789.554494           -           - 
+Setifer_setosus      Echinops_telfairi    -                        10.354           2     13800000.000 1332789.554494           -           - 
+Elephantulus_intufi  Rhynchocyon_cirnei   MACROSCELIDEA            47.217          15     46600000.000  986941.224440           -           - 
+Elephantulus_intufi  Petrodromus_tetradactylus -                        31.500          12     21800000.000  692063.492063           -           - 
+Elephantulus_intufi  Macroscelides_proboscideus -                        31.500          11     20600000.000  653968.253968        31.5        31.5 
+Elephantulus_intufi  Elephantulus_rozeti  Elephantulus             31.194          10     20400000.000  653968.253968           -           - 
+Elephantulus_intufi  Elephantulus_myurus  -                        22.784           9     14900000.000  653968.253968           -           - 
+Elephantulus_intufi  Elephantulus_rufescens -                        16.667           7     10900000.000  653968.253968           -           - 
+Elephantulus_intufi  Elephantulus_fuscus  -                        16.667           5     10900000.000  653968.253968           -           - 
+Elephantulus_intufi  Elephantulus_rupestris -                         7.646           2      5000000.000  653968.253968           -           - 
+Elephantulus_brachyrhynchus Elephantulus_fuscus  -                        12.080           3      7900000.000  653968.253968           -           - 
+Elephantulus_fuscipes Elephantulus_fuscus  -                         7.340           2      4800000.000  653968.253968           -           - 
+Elephantulus_revoili Elephantulus_rufescens -                         7.646           2      5000000.000  653968.253968           -           - 
+Elephantulus_edwardii Elephantulus_myurus  -                        13.762           2      9000000.000  653968.253968           -           - 
+Rhynchocyon_petersi  Rhynchocyon_cirnei   Rhynchocyon              20.106           3     22700000.000 1129032.255122           -           - 
+Rhynchocyon_petersi  Rhynchocyon_chrysopygus -                        20.106           2     22700000.000 1129032.255122           -           - 
+Dendrohyrax_arboreus Trichechus_senegalensis -                        67.600          11     85454545.455 1264120.494890        67.6        67.6 
+Dendrohyrax_arboreus Procavia_capensis    HYRACOIDEA               10.758           4     13600000.000 1264120.494890           -           - 
+Dendrohyrax_arboreus Heterohyrax_brucei   -                        10.679           3     13500000.000 1264120.494890           -           - 
+Dendrohyrax_arboreus Dendrohyrax_dorsalis Dendrohyrax              10.521           2     13300000.000 1264120.494890           -           - 
+Elephas_maximus      Trichechus_senegalensis -                        61.800           7     62821428.571 1016527.970411        61.8        61.8 
+Elephas_maximus      Loxodonta_cyclotis   PROBOSCIDEA               6.900           3     19500000.000 2826086.956522         6.9         6.9 
+Loxodonta_africana   Loxodonta_cyclotis   Loxodonta                 5.237           2     14800000.000 2826086.956522           -           - 
+Dugong_dugon         Trichechus_senegalensis SIRENIA                  16.600           4     52200000.000 3144578.313253        16.6        16.6 
+Trichechus_inunguis  Trichechus_senegalensis Trichechidae             11.162           3     35100000.000 3144578.313253           -           - 
+Trichechus_manatus   Trichechus_senegalensis -                         7.537           2     23700000.000 3144578.313253           -           - 
+
+
+  *) Rate = MPL / Age
+
+
+************************************************************************************************
+*  M P L  C A L C U L A T I O N                                                                *
+************************************************************************************************
+
+Clock test confidence: 0.950000
+Clock tests          : 68   (one for each node)
+Accepted             : 65
+Rejected             : 3
+
+MPL tree   : (((((((((((Amblysomus_hottentotus:22900000.000000,Amblysomus_septentrionalis:22900000.000000):0.000000,Amblysomus_corriae:22900000.000000):0.000000,Amblysomus_marleyi:22900000.000000)Amblysomus:4700000.000000,(Neamblysomus_gunningi:11400000.000000,Neamblysomus_julianae:11400000.000000)Neamblysomus:16200000.000000):200000.000000,Calcochloris_obtusirostris:27800000.000000):0.000000,((Chrysochloris_stuhlmanni:19000000.000000,Chrysochloris_visagiei:19000000.000000):0.000000,Chrysochloris_asiatica:19000000.000000)Chrysochloris:8800000.000000):0.000000,((Chrysospalax_trevelyani:12000000.000000,Chrysospalax_villosus:12000000.000000)Chrysospalax:15800000.000000,((Chlorotalpa_duthieae:27600000.000000,(Calcochloris_leucorhinus:27600000.000000,(Carpitalpa_arendsi:27600000.000000,Calcochloris_tytonis:27600000.000000):0.000000):0.000000):0.000000,Chlorotalpa_sclateri:27600000.000000):200000.000000):0.000000)CHRYSOCHLORIDEA:53899999.690476,(((Geogale_aurita:57199999.187500,((Oryzorictes_tetradactylus:13400000.000000,Oryzorictes_hova:13400000.000000)Oryzorictes:34199999.133333,((Microgale_parvula:15300000.000000,((Microgale_thomasi:15300000.000000,Microgale_dobsoni:15300000.000000):0.000000,(Microgale_pusilla:15300000.000000,Microgale_principula:15300000.000000):0.000000):0.000000):0.000000,(Microgale_brevicaudata:15300000.000000,(Microgale_longicaudata:15300000.000000,((Microgale_gracilis:15300000.000000,(((Microgale_drouhardi:15100000.000000,Microgale_taiva:15100000.000000):0.000000,Microgale_cowani:15100000.000000):200000.000000,Microgale_talazaci:15300000.000000):0.000000):0.000000,Microgale_dryas:15300000.000000):0.000000):0.000000):0.000000)Microgale:32299999.133333):9600000.054167):0.162500,((Potamogale_velox:22400000.000000,(Micropotamogale_lamottei:14000000.000000,Micropotamogale_ruwenzorii:14000000.000000)Micropotamogale:8400000.000000):34799999.350000,Limnogale_mergulus:57199999.350000):0.000000):0.130000,((Tenrec_ecaudatus:31100000.000000,(Hemicentetes_semispinosus:13800000.000000,Hemicentetes_nigriceps:13800000.000000)Hemicentetes:17300000.000000):0.000000,(Setifer_setosus:13800000.000000,Echinops_telfairi:13800000.000000):17300000.000000):26099999.480000)TENRECOMORPHA:24500000.210476)AFROSORICIDA:5800000.081454,((((((((Elephantulus_intufi:5000000.000000,Elephantulus_rupestris:5000000.000000):5900000.000000,(Elephantulus_brachyrhynchus:7900000.000000,(Elephantulus_fuscipes:4800000.000000,Elephantulus_fuscus:4800000.000000):3100000.000000):3000000.000000):0.000000,(Elephantulus_revoili:5000000.000000,Elephantulus_rufescens:5000000.000000):5900000.000000):4000000.000000,(Elephantulus_edwardii:9000000.000000,Elephantulus_myurus:9000000.000000):5900000.000000):5500000.000000,Elephantulus_rozeti:20400000.000000)Elephantulus:200000.000000,Macroscelides_proboscideus:20600000.000000):1200000.000000,Petrodromus_tetradactylus:21800000.000000):24800000.000000,((Rhynchocyon_petersi:22700000.000000,Rhynchocyon_chrysopygus:22700000.000000):0.000000,Rhynchocyon_cirnei:22700000.000000)Rhynchocyon:23900000.000000)MACROSCELIDEA:40899999.771930):1800000.003932,Orycteropus_afer:89299999.775862):1739130.470515,((((Dendrohyrax_arboreus:13300000.000000,Dendrohyrax_dorsalis:13300000.000000)Dendrohyrax:200000.000000,Heterohyrax_brucei:13500000.000000):100000.000000,Procavia_capensis:13600000.000000)HYRACOIDEA:71854545.454545,((Elephas_maximus:19500000.000000,(Loxodonta_africana:14800000.000000,Loxodonta_cyclotis:14800000.000000)Loxodonta:4700000.000000)PROBOSCIDEA:43321428.571429,(Dugong_dugon:52200000.000000,(Trichechus_inunguis:35100000.000000,(Trichechus_manatus:23700000.000000,Trichechus_senegalensis:23700000.000000):11400000.000000)Trichechidae:17100000.000000)SIRENIA:10621428.571429):22633116.883117):5584584.791831)Afrotheria:0;
+
+Ancestor of          Ancestor of          Name                            MPL             #Terminals      Clock test: Acc/Rej
+Amblysomus_hottentotus Trichechus_senegalensis Afrotheria           91039130.246 +/- 7873.679            69      Rej, prob=0.000000
+Amblysomus_hottentotus Orycteropus_afer     -                    89299999.776 +/- 9009.046            58      Acc
+Amblysomus_hottentotus Rhynchocyon_cirnei   -                    87499999.772 +/- 8776.423            57      Acc
+Amblysomus_hottentotus Echinops_telfairi    AFROSORICIDA         81699999.690 +/- 9432.705            42      Acc
+Amblysomus_hottentotus Chlorotalpa_sclateri CHRYSOCHLORIDEA      27800000.000 +/- 2950.343            17      Acc
+Amblysomus_hottentotus Chrysochloris_asiatica -                    27800000.000 +/- 4040.514            10      Acc
+Amblysomus_hottentotus Calcochloris_obtusirostris -                    27800000.000 +/- 4759.781             7      Acc
+Amblysomus_hottentotus Neamblysomus_julianae -                    27600000.000 +/- 5206.466             6      Acc
+Amblysomus_hottentotus Amblysomus_marleyi   Amblysomus           22900000.000 +/- 4686.229             4      Acc
+Amblysomus_hottentotus Amblysomus_corriae   -                    22900000.000 +/- 5411.191             3      Acc
+Amblysomus_hottentotus Amblysomus_septentrionalis -                    22900000.000 +/- 6627.329             2      Acc
+Neamblysomus_gunningi Neamblysomus_julianae Neamblysomus         11400000.000 +/- 4675.986             2      Acc
+Chrysochloris_stuhlmanni Chrysochloris_asiatica Chrysochloris        19000000.000 +/- 4928.922             3      Acc
+Chrysochloris_stuhlmanni Chrysochloris_visagiei -                    19000000.000 +/- 6036.672             2      Acc
+Chrysospalax_trevelyani Chlorotalpa_sclateri -                    27800000.000 +/- 4245.124             7      Acc
+Chrysospalax_trevelyani Chrysospalax_villosus Chrysospalax         12000000.000 +/- 4797.460             2      Acc
+Chlorotalpa_duthieae Chlorotalpa_sclateri -                    27600000.000 +/- 4601.562             5      Acc
+Chlorotalpa_duthieae Calcochloris_tytonis -                    27600000.000 +/- 5144.703             4      Acc
+Calcochloris_leucorhinus Calcochloris_tytonis -                    27600000.000 +/- 5940.591             3      Acc
+Carpitalpa_arendsi   Calcochloris_tytonis -                    27600000.000 +/- 7275.709             2      Acc
+Geogale_aurita       Echinops_telfairi    TENRECOMORPHA        57199999.480 +/- 7583.913            25      Acc
+Geogale_aurita       Limnogale_mergulus   -                    57199999.350 +/- 9025.305            20      Acc
+Geogale_aurita       Microgale_dryas      -                    57199999.188 +/- 10975.719           16      Acc
+Oryzorictes_tetradactylus Microgale_dryas      -                    47599999.133 +/- 9963.124            15      Acc
+Oryzorictes_tetradactylus Oryzorictes_hova     Oryzorictes          13400000.000 +/- 5069.594             2      Acc
+Microgale_parvula    Microgale_dryas      Microgale            15300000.000 +/- 2131.159            13      Acc
+Microgale_parvula    Microgale_principula -                    15300000.000 +/- 3426.072             5      Acc
+Microgale_thomasi    Microgale_principula -                    15300000.000 +/- 3830.465             4      Acc
+Microgale_thomasi    Microgale_dobsoni    -                    15300000.000 +/- 5417.095             2      Acc
+Microgale_pusilla    Microgale_principula -                    15300000.000 +/- 5417.095             2      Acc
+Microgale_brevicaudata Microgale_dryas      -                    15300000.000 +/- 2721.792             8      Acc
+Microgale_longicaudata Microgale_dryas      -                    15300000.000 +/- 2911.736             7      Acc
+Microgale_gracilis   Microgale_dryas      -                    15300000.000 +/- 3147.937             6      Acc
+Microgale_gracilis   Microgale_talazaci   -                    15300000.000 +/- 3452.839             5      Acc
+Microgale_drouhardi  Microgale_talazaci   -                    15300000.000 +/- 3867.836             4      Acc
+Microgale_drouhardi  Microgale_cowani     -                    15100000.000 +/- 4394.036             3      Acc
+Microgale_drouhardi  Microgale_taiva      -                    15100000.000 +/- 5381.573             2      Acc
+Potamogale_velox     Limnogale_mergulus   -                    57200000.000 +/- 10437.463            4      Acc
+Potamogale_velox     Micropotamogale_ruwenzorii -                    22400000.000 +/- 5983.484             3      Acc
+Micropotamogale_lamottei Micropotamogale_ruwenzorii Micropotamogale      14000000.000 +/- 5181.849             2      Acc
+Tenrec_ecaudatus     Echinops_telfairi    -                    31100000.000 +/- 5871.746             5      Acc
+Tenrec_ecaudatus     Hemicentetes_nigriceps -                    31100000.000 +/- 7383.287             3      Acc
+Hemicentetes_semispinosus Hemicentetes_nigriceps Hemicentetes         13800000.000 +/- 5144.703             2      Acc
+Setifer_setosus      Echinops_telfairi    -                    13800000.000 +/- 5144.703             2      Acc
+Elephantulus_intufi  Rhynchocyon_cirnei   MACROSCELIDEA        46600000.000 +/- 9130.218            15      Acc
+Elephantulus_intufi  Petrodromus_tetradactylus -                    21800000.000 +/- 5251.298            12      Acc
+Elephantulus_intufi  Macroscelides_proboscideus -                    20600000.000 +/- 5246.298            11      Acc
+Elephantulus_intufi  Elephantulus_rozeti  Elephantulus         20400000.000 +/- 5634.378            10      Acc
+Elephantulus_intufi  Elephantulus_myurus  -                    14900000.000 +/- 4138.734             9      Acc
+Elephantulus_intufi  Elephantulus_rufescens -                    10900000.000 +/- 3116.905             7      Acc
+Elephantulus_intufi  Elephantulus_fuscus  -                    10900000.000 +/- 3726.405             5      Acc
+Elephantulus_intufi  Elephantulus_rupestris -                    5000000.000 +/- 3096.747             2      Acc
+Elephantulus_brachyrhynchus Elephantulus_fuscus  -                    7900000.000 +/- 3569.851             3      Acc
+Elephantulus_fuscipes Elephantulus_fuscus  -                    4800000.000 +/- 3034.180             2      Acc
+Elephantulus_revoili Elephantulus_rufescens -                    5000000.000 +/- 3096.747             2      Acc
+Elephantulus_edwardii Elephantulus_myurus  -                    9000000.000 +/- 4154.722             2      Acc
+Rhynchocyon_petersi  Rhynchocyon_cirnei   Rhynchocyon          22700000.000 +/- 5387.510             3      Acc
+Rhynchocyon_petersi  Rhynchocyon_chrysopygus -                    22700000.000 +/- 6598.325             2      Acc
+Dendrohyrax_arboreus Trichechus_senegalensis -                    85454545.455 +/- 10438.981           11      Rej, prob=0.000000
+Dendrohyrax_arboreus Procavia_capensis    HYRACOIDEA           13600000.000 +/- 3644.439             4      Acc
+Dendrohyrax_arboreus Heterohyrax_brucei   -                    13500000.000 +/- 4175.189             3      Acc
+Dendrohyrax_arboreus Dendrohyrax_dorsalis Dendrohyrax          13300000.000 +/- 5050.642             2      Acc
+Elephas_maximus      Trichechus_senegalensis -                    62821428.571 +/- 8880.746             7      Rej, prob=0.000000
+Elephas_maximus      Loxodonta_cyclotis   PROBOSCIDEA          19500000.000 +/- 5379.593             3      Acc
+Loxodonta_africana   Loxodonta_cyclotis   Loxodonta            14800000.000 +/- 5327.845             2      Acc
+Dugong_dugon         Trichechus_senegalensis SIRENIA              52200000.000 +/- 8951.153             4      Acc
+Trichechus_inunguis  Trichechus_senegalensis Trichechidae         35100000.000 +/- 7389.058             3      Acc
+Trichechus_manatus   Trichechus_senegalensis -                    23700000.000 +/- 6742.096             2      Acc
+
+
+************************************************************************************************
+*  E N D  C A L C U L A T I O N                                                                *
+************************************************************************************************
+

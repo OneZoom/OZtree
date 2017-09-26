@@ -1,0 +1,188 @@
+.intro {
+    text-align: center;
+    font-size: 1.3em;
+}
+
+fieldset{
+    display: table;
+    border:none;
+    margin:0px auto;
+}
+
+fieldset div {
+    display: table-row;
+}
+
+fieldset .singlerow {
+    display: block;
+}
+
+fieldset .singlerow label {
+    display: inline-block;
+    margin-right: 1em;
+}
+
+fieldset div label {
+    display: table-cell;
+    font-weight: normal;
+    padding: 0.25em;
+}
+
+
+fieldset div p {
+    display: table-cell;
+    padding: 0.25em;
+    }
+
+fieldset div#gift_aid p {
+    display: block;
+}
+
+fieldset p.extra_info {
+    margin-left: 1em;
+    color: #999999;
+}
+
+.extra_info {
+    color: #999999;
+}
+
+
+h3, h4 {
+    text-align: center;
+}
+
+#leaf {
+    text-align: center;
+}
+
+#leaf h3 {
+    margin-top: 0px;
+}
+
+#licenceText {
+    display: none; /* this only gets shown if an image appears */
+}
+
+#select_pictures {
+    text-align: center;
+}
+
+#select_pictures fieldset {
+    display: block;
+    border: 1px solid #DDDDDD;
+}
+#select_pictures fieldset legend {
+    border: 0;
+    font-size: 1em;
+    padding: 0 0.5em;
+    width: auto;
+}
+
+#select_pictures ul {
+    list-style-type: none;
+    margin:0;
+    padding:0;
+}
+
+#select_pictures li {
+    display: inline-block;
+    position: relative;
+    margin: 0 0.5em 1em 0.5em; 
+    padding:0;
+}
+
+#select_pictures li a {
+    color: black;
+    position: absolute;
+    right: 0px;
+}
+
+#select_pictures li a:hover {
+    text-decoration: none;
+}
+
+
+#select_pictures li input {
+    display: none;
+}
+
+
+#select_pictures li label {
+    margin: 0;
+    border: 2px solid gray;
+    border-radius: 50%;
+}
+
+#select_pictures li input:checked + label {
+    border: 2px solid red;
+}
+
+
+.subleaf {
+    text-align: center;
+}
+
+.note {
+    /* border: 1px solid #DDDDDD; */
+    padding: 0.5em;
+    margin: 0 10%;
+}
+
+.twitter_at {
+    font-size: 1.5em;
+    vertical-align:middle;
+}
+
+.error_text{
+    color: #FF0000;
+}
+
+.error_text a {
+    color: #AA3333;
+}
+
+#leafCanvas {
+    width: 90%;
+    max-width: 350px;
+}
+
+#gift_aid {
+    display: none;
+    padding: 1em;
+    background-color: rgb(200,200,200);
+    
+}
+
+.submit_donate {
+    text-align: center;
+    font-size: 1.5em;
+    margin: 1em;
+}
+
+.submit_donate span {
+    text-color: grey;
+    font-size: 0.9em;
+}
+
+.submit_donate input {
+    vertical-align: baseline;
+    font-size: inherit;
+}
+
+.subtext {
+    text-align: center;
+    margin: 0 10%;
+    margin-bottom: 1em;
+}
+
+.right {
+    float:right;
+    border: 1px solid grey;
+    text-align: center;
+    padding:1em;
+}
+
+.right p {
+    margin:0;
+}

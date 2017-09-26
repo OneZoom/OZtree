@@ -1,0 +1,31 @@
+{{response.title='OneZoom: Test links'}}
+{{extend 'layout.html'}}
+<div class="row-fluid">
+    <div class="col-md-12">    
+
+<h1>A few links to help make movies etc</h1>
+<p>Click on these to be taken to the species with a slow zoom. You might want to <a href="http://resizemybrowser.com">resize your browser window</a> e.g. to 1280 x 720 (widescreen powerpoint) or 800×600 (small 4:3 aspect ratio).</p>
+
+<p>However, instead of clicking on the links directly, you will probably get a better effect if you pre-load the path to the leaf, so that side-branches etc. get properly cached. You can then run something like the following in the javascript console. The timeout (15 seconds / 15000 milliseconds) is to give enough time to close the console window and select the area to be captured using quicktime or any other screen capture program</p>
+<p><code><pre>
+$('#controlButtons').hide()
+onezoom.config.projection.draw_sponsors = false
+onezoom.config.projection.sign_thres = 50 //adjust level where signposts are shown: default is 70
+onezoom.config.threshold.dynamic_adjust = false
+onezoom.tree_state.threshold
+onezoom.controller.set_anim_speed(300) //slow for screen capture. Default is 30
+setTimeout(function() {onezoom.controller.reset(); onezoom.controller.perform_flight_animation(-{{=ids[770315]}})}, 15000);</pre></code></pre></p><p>
+You will need to find the leaf number in ordered_leaves for the taxon of interest, e.g. human is (currently) leaf number {{=ids[770315]}}.
+</p>
+<p>
+Note that after capturing the screen to video using quicktime, you will probably want to speed it up by dropping frames (which will mostly be duplicates). One way to do this is using ffmpage, e.g. speeding up 8x faster can be done using</p><p><code><pre>ffmpeg -i input.mov -filter:v "setpts=0.125*PTS" output.mov</pre></code>
+</p>
+
+
+<ul>
+{{for ott,text in labels.items():}}
+<li><a href="{{=URL('default','AT',args=['@={}'.format(ott)],vars={'init':'zoom', 'zspeed':3}, url_encode=False)}}">Zoom to {{=text}}: leaf {{=ids[ott]}}</a></li>
+{{pass}}
+</ul>
+</div>
+</div>

@@ -1,0 +1,137 @@
+html
+{
+    width:100%;
+    height:100%;
+    overflow-x:hidden;
+    overflow-y:hidden;
+}
+
+
+body
+{
+    width:100%;
+    height:100%;
+    background-color: rgb(0,0,0);
+    color:#999999;
+    text-shadow:0 -1px 0 rgba(0, 0, 0, 0.25);
+    overflow-x:hidden;
+    overflow-y:hidden;
+}
+
+#iframe_box
+{
+
+    top: 110px;
+    left: 7px;
+    right: 246px;
+    bottom: 40px;
+    position: absolute;
+	height: auto;
+    width:auto;
+    overflow-x:hidden;
+    overflow-y:hidden;
+}
+/* 
+.iframe_full
+{
+    position:fixed;
+    top:0px; 
+    left:0px;
+    bottom:0px;
+    right:0px; 
+    width:100%; 
+    height:100%;
+    border:none;
+    margin:0; 
+    padding:0; 
+    overflow:hidden; 
+    z-index:999999; 
+} */
+
+.iframe_full_exit
+{
+	width:100%;
+	height:100%;
+}
+
+#group_selection
+{
+    top: 110px;
+    right: 7px;
+    bottom: 40px;
+    position: absolute;
+	height:auto;
+	overflow-y:auto;
+    overflow-x:hidden;
+	width:239px;
+
+}
+
+#group_selection2
+{
+    position:relative;
+    top: 10px;
+    height: auto;
+    width: 90%;
+    left: 3%;
+    border-style: ridge;
+    border-width:3px;
+    border-color:#555555;
+}
+
+button, [class^=group_select_]
+{	
+	width:48%;
+	height:55%;
+}
+
+a
+{
+	color:#999999;
+    text-shadow:0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+
+#footer_box
+{
+
+	bottom: 2px;
+    left: 1%;
+    position: absolute;
+ 	width:100%;
+	height:30px;
+	float:bottom;
+}
+
+#title_div
+{
+	height: auto;
+    width: 90%;
+    position: relative;
+    left: 3%;
+
+}
+
+#group_div
+{
+	height: 60px;
+    width: 94%;
+    position: relative;
+    left: 4%;
+}
+
+.btn_selected
+{
+    color:#000000;
+    font-weight:bold;
+    text-decoration:underline;	
+}
+
+<style type="text/css">
+<!--
+a:link { COLOR: #AAAAAA; text-decoration:none;}
+a:visited { COLOR: #AAAAAA; text-decoration:none;}
+a:active { COLOR: #AAAAAA;  text-decoration:none;}
+a:hover { COLOR: white; text-decoration:none;}
+-->
+</style>
+

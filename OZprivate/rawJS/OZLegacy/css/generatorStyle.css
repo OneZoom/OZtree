@@ -1,0 +1,104 @@
+html
+{
+    align="center";
+    height:100%;
+    width:100%;
+}
+
+body
+{
+    align="center";
+    overflow:hidden;
+    height:100%;
+    width:100%;
+    background-color: rgb(0,0,0);
+}
+
+#myCanvas
+{
+    padding-left: 3px;
+    padding-right: 0;
+    margin-left: 4px;
+    margin-right: auto;
+}
+
+#selection_bar
+{
+	background-color:#FFFFFF;
+	height:95%;
+	width:30%;
+	float:left;
+	/* margin-top:2%; */
+	overflow:scroll;
+}
+
+#wholecontainer
+{
+	float:left;
+    color:rgb(255,0,0);
+    height:100%;
+    width:68%;
+    margin-left:1%;
+    margin-right:1%
+    padding:0px;
+}
+
+select
+{
+	width:60%;
+}
+
+#selection_bar button
+{
+	clear:both;
+    float:right;    
+}
+
+#select_div_colours button
+{
+    clear:none;
+    float:right;    
+}
+
+ul
+{
+	background-color:#999999;
+}
+
+textarea
+{
+	width:100%;
+}
+
+#url_generator
+{
+	/* margin-right:0; */
+}
+
+#selection_form
+{
+	opacity:0.8;
+	margin-right:2%;
+	margin-top:40px;
+	width:96%;
+	height:25px;
+}
+
+#selectionform
+{
+	opacity:0.8;
+	margin-right:2%;
+	margin-top:33px;
+	width:96%;
+	height:25px;
+}
+
+#home_button
+{
+	background-color:#eeeeee;
+	opacity:0.8;
+	margin-right:2%;
+	margin-top:10px;
+	width:96%;
+	height:25px;
+}

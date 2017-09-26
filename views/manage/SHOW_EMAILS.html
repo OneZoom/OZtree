@@ -1,0 +1,46 @@
+{{response.title='OneZoom Management: List of live sponsor emails'}}
+{{response.files.append(URL('static', 'OZSponsor/SHOW_EMAILS.css'))}}
+{{extend 'layout.html'}}
+{{from urllib import quote}}
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="col-md-12">
+
+    <h2>A list of sponsors at various stages, to email</h2>
+    <p>Most recent first. Images that are absent from the OneZoom site are shown in <span class="missing">yellow</span>. Items where payment has not gone through may simply be so recently sponsored that payment has not yet been emailed, or may have been reserved by admin. Ones with no admin comment are in <span class="no_admin">pink</span> - these may need attention.</p><p>The verification page is <a href="{{=URL('SPONSOR_VALIDATE')}}">here</a>.</p>
+<ul>
+{{for summary,data in email_list.items():}}
+<li><details>
+    <summary>{{=summary}} &mdash; ({{=len(data)}} sponsors)</summary>
+    <table>
+    <tr><th></th><th>Click each to email</th><th>Click each to view on tree</th><th><details><summary>Pictures used</summary><p>Run this from within OZprivate to download these images<blockquote>echo '{{=XML("<br />".join([s["doID"] for s in data if s]))}}' | ServerScripts/Utilities/getEOL_crops.py --file - --output_dir ../static/FinalOutputs/pics -v -f</blockquote></p></details></th></tr>
+    {{for s in data:}}<tr{{if s.get('rowflag'):}} class="{{=s['rowflag']}}"{{pass}}>
+    <td><input type="checkbox" /></td>
+    <td><a href="mailto:{{=s['email']}}?subject={{=quote(s['mail_subject'])}}&body={{=quote(s['mail_body'])}}">{{=s['email']}}</a></td>
+    <td><i><a href="{{=URL('life.html#ott' + str(s['ott']))}}" target="_blank">{{=s['name']}}</a></i></td>
+    <td class="{{if s['local_pic'] is not None:}}{{if s['local_pic']:}}downloaded{{else:}}missing{{pass}}{{pass}}"><a href="http://eol.org/data_objects/{{=s['doID']}}" target="_blank">{{=s['doID']}}</a></td>
+    <td>{{=s['mesg']}}</td>
+    </tr>
+    {{pass}}
+</table>
+</details>
+{{pass}}
+</li>
+</ul>
+</div></div>
+<div class="row-fluid"><div class="col-md-12">
+<h2>Other email lists, etc.</h2>
+<details>
+<summary><a href="mailto:?bcc={{=",".join([row.get('e_mail') or row.get('PP_e_mail') for row in contactable_emails])}}">Email sponsors that <q>allow further contact</q></a>
+ (or expand this summary to see a list, that can be pasted into the <q>bcc</q> field of your mail client</summary>
+    {{=",".join([row.get('e_mail') or row.get('PP_e_mail') for row in contactable_emails])}}
+</details>
+<details>
+<summary>Command to get all user-selected pictures</summary>
+    echo '
+    {{=XML("<br />".join(all_images))}}
+    ' |  ServerScripts/Utilities/getEOL_crops.py --file - --output_dir ../static/FinalOutputs/pics -v -f
+</details>
+
+</div></div>
+</div>

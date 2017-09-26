@@ -1,0 +1,23 @@
+.intro {
+    text-align: center;
+}
+
+.intro p {
+    text-align: left;
+    text-align: justify;
+}
+
+.boilerplate {
+    color: #BBBBBB;
+}
+
+form {
+   margin-top: 2em;
+   padding: 0.5em;
+    background-color: #EEEEEE;
+}
+
+#nodes, #leaves {
+    background-color: #EEEEEE;
+    border: 0.5em solid white;
+}

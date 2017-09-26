@@ -1,0 +1,49 @@
+{{response.title='OneZoom: validate and inspect sponsors'}}
+{{response.files.append(URL('static', 'OZSponsor/validate.css'))}}
+{{response.files.append(URL('static', 'OZSponsor/EOLqueries.js'))}}
+{{extend 'layout.html'}}
+{{if request.vars.get('show') == 'all':}}
+<h2>Revalidation page</h2>
+<p>You can also look at this page <a href="?show=unvalidated">showing only taxa that need to be validated.</a></p>
+{{else:}}
+<h2>Recently sponsored leaves to validate</h2>
+<p>You can also look at this page <a href="?show=all">with *all* taxa shown.</a></p>
+{{pass}}
+<p>Where a user chosen image has a red outline, the user has chosen something other than the default image (or the admin has loaded a new image in). To restore the default image, simply close the chosen image which will remove it entirely, reverting to the standard EoL one.</p>
+
+
+<div class="table">
+<div class="row-group">
+<div class="header-row">
+<div>Ids</div>
+<div>Scientific name</div>
+<div class='image'>Alt image</div>
+<div class='image'>Chosen image</div>
+<div>Kind</div>
+<div>Name</div>
+<div>More</div>
+<div>Mesg</div>
+<div>Time</div>
+<div>Paid</div>
+</div>
+</div>
+
+    {{if len(rows)==0:}}
+    <h1>No more records to validate</h1>
+    {{else:}}
+        <script>var loaded = {};</script>
+        {{for i,rowid in enumerate(rows):}}
+            {{if i==items_per_page: break}}
+            {{=LOAD('manage','SPONSOR_UPDATE.load', args=[rowid], ajax=True)}}
+        {{pass}}
+    {{pass}}
+    
+</div>
+    {{if page:}}
+    <a href="{{=URL(args=[page-1], vars=vars)}}">&lt previous ..</a>
+    {{pass}}
+    
+    {{if len(rows)>items_per_page:}}
+    <a href="{{=URL(args=[page+1], vars=vars)}}">.. next &gt;</a>
+    {{pass}}
+

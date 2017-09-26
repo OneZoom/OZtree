@@ -1,0 +1,104 @@
+{{response.files.append(URL('static', 'OZSite/index.js'))}}
+{{response.title='OneZoom Tree of Life Explorer'}}
+{{extend 'layout.html'}}
+
+<div class="col-sm-6" id = "left_column">
+<h2>Welcome to the OneZoom <a href="life/@Eukaryota">tree of life explorer</a></h2>
+<p class="main_text">An interactive map of the evolutionary relationships between 1.8 million species of life on our planet. Each leaf on the tree represents a species and the branches show how they are connected through evolution. Discover your favourites, see which species are under threat, and wonder at over 100,000 images on a single page.</p>
+<a id="carousel_link" href="life.html/@Mammalia?init=zoom">
+<div class="carousel" >
+   <!-- list the images inside 'cycler': use the 'title' attribute to determine which location in the tree to zoom to -->
+  <div id="cycler">
+    <img src="{{=URL('static','images/Screenshots/therian_mammals.jpg')}}" title="Mammalia" alt="Mammals" class="active">
+    <img src="{{=URL('static','images/Screenshots/AfricanApes.jpg')}}" title="Homininae" alt="Humans and our close relatives" >
+    <img src="{{=URL('static','images/Screenshots/Eukaryota.jpg')}}" title="Eukaryota" alt="All Complex Lifeforms">
+    <img src="{{=URL('static','images/Screenshots/Dogs.jpg')}}" title="Canidae" alt="The Dog Family">
+    <img src="{{=URL('static','images/Screenshots/vascular_plants.jpg')}}" title="Tracheophyta=67490" alt="Vascular plants">
+    <img src="{{=URL('static','images/Screenshots/Archelosauria.jpg')}}" title="Archelosauria" alt="Birds, Crocodiles, and Turtles">
+    <img src="{{=URL('static','images/Screenshots/frogs_toads_salamanders.jpg')}}" title="Batrachia" alt="Frogs, Toads and Salamanders">
+                              
+    <img src="{{=URL('static','images/Screenshots/diphoda.jpg')}}" title="Diphoda" alt="Plants, Algae and their relatives">
+    <img src="{{=URL('static','images/Screenshots/insects_with_complete_metamorphosis.jpg')}}" title="Endopterygota" alt="Insects with complete metamorphosis">
+    <!-- <img src="{{=URL('static','images/Screenshots/jellyfish_and_corals.jpg')}}" title="Cnidarians=658828" alt="Jellyfish, Corals and their relatives"> -->
+    <img src="{{=URL('static','images/Screenshots/arthropods.jpg')}}" title="Arthropoda" alt="Arthropods">
+    <img src="{{=URL('static','images/Screenshots/Gnathostomata.jpg')}}" title="Gnathostomata=278114" alt="The Jawed Vertebrates">
+ </div>
+</div>
+<p>Explore<br /><span class="targets">The Mammals</span></p></a>
+</div>
+
+<div class="col-sm-6" id = "right_column">
+<h2><a href="sponsor.html">Sponsor a leaf</a> for yourself or as a gift</h2>
+<p>We're a not for profit organisation, your donations help us provide easy access to scientific knowledge on biodiversity and evolution. Your support will be acknowledged on the leaf of the tree that you sponsor. For musuems and other public venues, you can become a partner and <a href="installations.html">install OneZoom as an eductional exhibit</a>.</p>
+
+
+
+<div class="sponsor_viz"><ul>
+<li>
+  <a href="life/@=927499">
+    <img src = "{{=thumbnail_url(2, 32635767)}}">
+    <span>Marsh fritillary</span>
+  </a>
+</li><li>
+  <a href="life/@=886851">
+    <img src = "{{=thumbnail_url(2,27776626)}}">
+    <span>Purple loosestrife</span>
+  </a>
+</li><li>
+  <a href="life/@Carcharodon_carcharias">
+    <img src = "{{=thumbnail_url(2,28671251)}}">
+    <span>Great white shark</span>
+  </a>
+</li><li>
+  <a href="life/@Quercus_robur">
+    <img src = "{{=thumbnail_url(2,27700647)}}">
+    <span>English Oak</span>
+  </a>
+</li><li>
+  <a href="life/@=774309">
+    <img src = "{{=thumbnail_url(2,28689888)}}">
+    <span>Oncilla</span>
+  </a>
+</li><li>
+  <a href="life/@=584702">
+    <img src = "{{=thumbnail_url(2,28694109)}}">
+    <span>Sabre squirrelfish</span>
+  </a>
+</li><li>
+  <a href="life/@=534514">
+    <img src = "{{=thumbnail_url(2,32364675)}}">
+    <span>Common kestrel</span>
+  </a>
+</li><li>
+  <a href="life/@=115764">
+    <img src = "{{=thumbnail_url(2,25661393)}}">
+    <span>Violescent sea-whip</span>
+  </a>
+</li>
+</ul>
+<h4>Sponsored recently, or see <a href="{{=URL('default', 'sponsored')}}">more examples&hellip;</a></h4>
+<ul>
+<li>
+  <a href="life/@=872573">
+    <img src = "{{=thumbnail_url(2,26559011)}}">
+    <span>Giant panda</span>
+  </a>
+</li><li>
+  <a href="life/@=378964">
+    <img src = "{{=thumbnail_url(2,27065064)}}">
+    <span>Garden tomato</span>
+  </a>
+</li><li>
+  <a href="life/@=666133">
+    <img src = "{{=thumbnail_url(2,34018438)}}">
+    <span>Tiger shrike</span>
+  </a>
+</li><li>
+  <a href="life/@=679373">
+    <img src = "{{=thumbnail_url(2,26857026)}}">
+    <span>Coco de mer</span>
+  </a>
+</li>
+</ul></div>
+</div>
+

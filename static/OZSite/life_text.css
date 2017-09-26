@@ -1,0 +1,20 @@
+.text_tree .root ul {
+    color: #AAAAAA;
+}
+
+.text_tree .root span {
+    opacity: 0.4;
+}
+
+
+.text_tree .root em, #root strong {
+    font-style: normal;
+}
+
+.text_tree .root em.species {
+    font-style: italic;
+}
+
+.text_tree div.species {
+    font-size: large;
+}

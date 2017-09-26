@@ -1,0 +1,6 @@
+[Latern shark arrangement from 'Elasmobranch Phylogeny: A Mitochondrial Estimate Based on 595 Species' (see http://sharksrays.org)
+Etmopteridae (esp Etmopterus) is scattered all over the OpenTree, so here we use the subtree from sharksrays.org, which is unfortunately missing many species
+
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Vertebrates]
+((((((Centroscyllium_fabricii_ott1027221,Centroscyllium_ritteri_ott1003425),(Centroscyllium_granulatum_ott521336,Centroscyllium_nigrum_ott1003422)),Centroscyllium_excelsum_ott3595274),Aculeola_nigra_ott550082),Trigonognathus_kabeyai_ott956126),((((Etmopterus_granulosus_ott975973,((Etmopterus_spinax_ott1059232,Etmopterus_princeps_ott832502),Etmopterus_unicolor_ott592868)),(Etmopterus_gracilispinis_ott720843,((Etmopterus_virens_ott426653,Etmopterus_polli_ott426663),Etmopterus_schultzi_ott370395))),((Etmopterus_bigelowi_ott624105,Etmopterus_pusillus_ott651004),(Etmopterus_splendidus_ott105820,Etmopterus_sentosus_ott426656))),(Etmopterus_lucifer_ott423439,((Etmopterus_molleri_ott624144,Etmopterus_brachyurus_ott624099),Etmopterus_sheikoi_ott624137))))Etmopteridae_ott875698;
+

@@ -1,0 +1,222 @@
+{{if request.vars.nolinks:}}
+{{#remove hyperlink from *all* links created via the web2py A() helper}}
+{{ def A(*args, **kwargs): return CAT(*args)}}
+{{else:}}
+{{#make *all* links created via the web2py A() helper open in a new tab, e.g. from load icons - this should override others}}
+{{web2py_A = A}}
+{{def A(*args, **kwargs): return web2py_A(*args, **dict(kwargs, _target='_blank'))}}
+{{pass}}
+<!-- This contains all the overlay on top of the OneZoom canvas. It can be reloaded in different languages -->
+
+<div id="logo" class="uk-navbar-item">{{=A(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('index', extension=False))}}</div>
+<div class="uk-navbar-item" id="searchnav">
+  <form id="search-basic">
+    <div class="searchbox uk-search uk-search-default" id="search_form_basic">
+      <div class="searchinput"><div class="icon-beside-input">
+          <button class="spinner" uk-spinner="ratio:0.5"></button>
+          <button class="main-icon" uk-icon="icon: search"></button>
+        </div><input class="uk-search-input" type="search" placeholder="{{=T('Search all life...')}}" /></div>
+      <div uk-dropdown="pos: bottom-left; offset: 1" class="search_dropdown selectable uk-overflow-auto">
+        <div class="no_results">{{=T("No results found")}}</div>
+        <dl class="search_hits"></dl>
+        <dl class="popular_species"></dl>
+      </div>
+    </div>
+  </form>
+  <form id="search-advanced">
+    <ul id="searchboxes"><script>
+//define the advanced searchbox html as a js variable so we can make an indefinate number of them
+advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="searchresult">\
+              <div class="icon-beside-input">\
+                <button class="main-icon" uk-icon="icon: location"></button>\
+              </div><input class="uk-search-input" type="search" value="" readonly />\
+            </div><div class="searchinput"><div class="icon-beside-input">\
+                <button class="spinner" uk-spinner="ratio:0.5"></button>\
+                <button class="main-icon" uk-icon="icon: search"></button>\
+              </div><input class="uk-search-input" type="search" placeholder="{{=T('Choose a location...')}}" />\
+            </div><div uk-dropdown="pos: bottom-left;  offset: 1; mode: click" class="search_dropdown" class="selectable uk-overflow-auto">\
+              <div class="no_results">{{=T("No results found")}}</div>\
+              <dl class="search_hits"></dl>\
+              <dl class="popular_species"></dl>\
+            </div><button class="remove-searchbox" title="{{=T('Remove location box')}}" uk-tooltip="pos: bottom-left" uk-icon="icon: minus-circle; ratio:0.8"></button></div></li>';
+      </script></ul>
+    <button id="common_ancestor_button" uk-tooltip="pos: bottom-left" title="{{=T('Go to common ancestor')}}"><span uk-icon="icon: git-fork"></span>common ancestor</button>
+    <button id="add_searchbox" title="{{=T('Add another location')}}" uk-tooltip="pos: bottom-left" uk-icon="icon: plus-circle;"></button>
+  </form>
+</div>
+<div id="advanced_search_toggle" class="uk-navbar-item">
+    <a id="advanced_search_button" class="uk-icon-button" uk-tooltip="pos: left" uk-icon="icon: git-fork"></a>
+</div>
+
+<ul id="controlButtons" class="uk-iconnav uk-iconnav-vertical">
+  <li ><a uk-icon="icon: compass"></a></li>
+  <div uk-dropdown="pos: right-bottom; delay-hide: 500000; boundary: #controlButtons; boundary-align: true" id="locationDropdown">
+      <ol class="location-list"></ol>
+  </div>
+  <li><a id="inButton"    uk-tooltip="pos: right" title="{{=T('Zoom in')}}" uk-icon="icon: plus"></a></li>
+  <li><a id="outButton"   uk-tooltip="pos: right" title="{{=T('Zoom out')}}" uk-icon="icon: minus"></a></li>
+  <li><a id="upButton"    uk-tooltip="pos: right" title="{{=T('Previous ancestor')}}" uk-icon="icon: chevron-up; ratio: 1.35"></a></li>
+  <li><a id="resetButton" uk-tooltip="pos: right" title="{{=T('Reset view')}}" uk-icon="icon: chevron-up;  ratio: 0.9"></a></li>
+  <li><a id="infoButton"   uk-tooltip="pos: right" title="{{=T('Information')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: info"></a></li>
+  <div id="infoDropdown" uk-dropdown="pos: right; mode: click;">
+    <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
+      <li><a href="#howuse-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('How to use')}}</a></li>
+      <li><a href="#about-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('About OneZoom')}}</a></li>
+      <li><a href="#datasources-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Data sources')}}</a></li>
+      <li><a><span uk-icon="icon: expand"></span>{{=T('Terms of use')}}</a></li>
+    </ul>
+  </div>
+  <li><a uk-tooltip="pos: right" title="{{=T('Settings')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: settings"></a></li>
+  <form id="settingsDropdown" class="uk-navbar-dropdown" uk-dropdown="pos: right-top; mode: click;">
+    <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
+      <li class="uk-nav-header">{{=T('Image sources')}}</li>
+      <li><label uk-tooltip="pos: right" title="{{=T('Show best image from any source: the image may not have been verified by a taxonomist. For any image, click or zoom on the © symbol for details.')}}">
+        <input class="uk-radio" type="radio" name="imgsource" value="best_any"> {{=T('Any')}}</label></li>
+      <li><label uk-tooltip="pos: right" title="{{=T('Only show images that have been verified by a taxonomist. For any image, click or zoom on the © symbol for details')}}">
+        <input class="uk-radio" type="radio" name="imgsource" value="best_verified"> {{=T('Verified')}}</label></li>
+      <li><label uk-tooltip="pos: right" title="{{=T('Only show public domain images (those not requiring the photographer or copyright holder to be listed when reusing OneZoom imagery)')}}">
+        <input class="uk-radio" type="radio" name="imgsource" value="best_pd"> {{=T('Public domain')}}</label></li>
+      <li class="uk-nav-header">{{=T('Tree shape')}}</li>
+      <li><label>
+        <input class="uk-radio" type="radio" name="treeshape" value="spiral"> {{=T('Spiral')}}</label></li>
+      <li><label>
+        <input class="uk-radio" type="radio" name="treeshape" value="natural"> {{=T('Natural')}}</label></li>
+      <li><label>
+        <input class="uk-radio" type="radio" name="treeshape" value="fern"> {{=T('Fern')}}</label></li>
+      <li><label>
+        <input class="uk-radio" type="radio" name="treeshape" value="balanced"> {{=T('Balanced')}}</label></li>
+      <li class="uk-nav-header">{{=T('Colours indicate')}}</li>
+      <li><label uk-tooltip="pos: right" title="{{=T('Colours like a botanical tree, leaf colour shows extinction risk')}}">
+        <input class="uk-radio" type="radio" name="colourtype" value="natural"> Natural</label></li>
+      <li><label>
+        <input class="uk-radio" type="radio" name="colourtype" value="at"> {{=T('Ancestor’s Tale')}}</label></li>
+      <li><label>
+        <input class="uk-radio" type="radio" name="colourtype" value="popularity"> {{=T('Popularity')}}</label></li>
+      <li class="uk-nav-header">{{=T('Tree## partner')}}</li>
+      <li><select id="treepage" class="uk-select uk-form-small">
+        <option value="life">Original OneZoom</option>
+        <option value="AT">Ancestor’s Tale</option>
+        <option value="linnean">Linnean Society</option>
+        <option value="kew">Kew</option>
+        </select></li>
+      <li class="uk-nav-header">{{=T("Language")}}</li>
+      <li><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1],)}}">
+        <option value="">{{=T('Browser default')}}</option>
+        <optgroup label="Translated">
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="sv">Svenska</option>
+        </optgroup>
+        <optgroup label="Not yet translated">
+          <option value="zh">中文</option>
+        </optgroup>
+        </select></li>
+    </ul>
+  </form>
+</ul>
+<div id="error-modal" class="uk-modal-container" uk-modal>
+    <div class="uk-modal-dialog uk-modal-body">
+        <button class="uk-modal-close-outside" type="button" uk-close></button>
+        <h2 class="uk-modal-title">Sorry</h2>
+        <p class="badOTT">{{include "default/badOTT.load"}}</p>
+    </div>
+</div>
+<div id="about-modal" class="uk-modal-container" uk-modal>
+    <div class="uk-modal-dialog">
+        <button class="uk-modal-close-outside" type="button" uk-close></button>
+        <div class="uk-modal-header">
+            <h2 class="uk-modal-title">{{=T('About the OneZoom tree of life')}}</h2>
+        </div>
+        <div class="uk-modal-body" uk-overflow-auto></div>
+    </div>
+</div>
+<div id="howuse-modal" class="uk-modal-container" uk-modal>
+    <div class="uk-modal-dialog">
+        <button class="uk-modal-close-outside" type="button" uk-close></button>
+        <div class="uk-modal-header">
+            <h2 class="uk-modal-title">{{=T('How to use the OneZoom explorer')}}</h2>
+        </div>
+        <div class="uk-modal-body" uk-overflow-auto></div>
+    </div>
+</div>
+<div id="datasources-modal" class="uk-modal-container" uk-modal>
+    <div class="uk-modal-dialog">
+        <button class="uk-modal-close-outside" type="button" uk-close></button>
+        <div class="uk-modal-header">
+            <h2 class="uk-modal-title">{{=T('Sources for the data used in this tree')}}</h2>
+        </div>
+        <div class="uk-modal-body" uk-overflow-auto></div>
+    </div>
+</div>
+<div id="imageinfo-modal" class="uk-modal-container" uk-modal>
+    <div class="uk-modal-dialog">
+        <button class="uk-modal-close-outside" type="button" uk-close></button>
+        <div class="uk-modal-header">
+            <h2 class="uk-modal-title">{{=T('Image information')}}<a href="" target="_blank" class="uk-icon-button expand-tab" uk-tooltip="pos: left" title="{{=T('Open this in a new window')}}" uk-icon="icon: expand; ratio: 0.75"></a></h2>
+        </div>
+        <div class="uk-modal-body popup-content"></div>
+    </div>
+</div>
+<div id="external-modal" class="uk-modal-container" uk-modal>
+  <div class="uk-modal-dialog">
+    <button class="uk-modal-close-outside" type="button" uk-close></button>
+    <p class="tab-loading_pic" class="uk-position-center"><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
+    <div class="external-content">
+      <ul uk-tab class="external-tabs">
+        <!--A list of all the available tabs-->
+        {{for tab in tabs:}}
+        <li id="{{=tab['id']}}"><a href="#">{{if 'icon' in tab:}}<img src="{{=tab['icon']}}" title="{{=tab['name']}}" class="uk-hidden@s" />{{pass}}<span class="uk-visible@s">{{=tab['name']}}</span></a></li>
+        {{pass}}
+      </ul>
+      <ul class="popup-container uk-switcher">
+        {{for tab in tabs:}}
+        <li class="{{=tab['id']}}" data-src="" aria-controls="{{=tab['id']}}-panel">
+          <div class="uk-position-top-right expand-tab">
+            <a href="" target="_blank" class="uk-icon-button" uk-tooltip="pos: left" title="{{=T('Open this %s tab in a new window') % (tab['name'],)}}" uk-icon="icon: expand; ratio: 0.75"></a>
+          </div>
+          <p class="loading_pic uk-position-center"><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
+        </li>
+        {{pass}}
+      </ul>
+    </div>
+  </div>
+</div>
+<script>
+/** variables and functions that need internationalization **/
+
+function toggleAdvancedSearch(state) {
+    //toggles advanced search mode, or switches it on (state=true) or off (state=false)
+    if (state == null) {
+        //toggle the current state
+        state = !$('#searchnav').hasClass("advanced_mode");
+    }
+    if (state) {
+        $('#searchnav').addClass("advanced_mode");
+        $('#advanced_search_button')
+            .attr('title','{{=T("Turn off advanced search mode")}}')
+            .attr('uk-icon','icon: close');
+    } else {
+        $('#searchnav').removeClass("advanced_mode");
+        $('#advanced_search_button')
+            .attr('title','{{=T("Advanced (common ancestor) search mode: click to turn on")}}')
+            .attr('uk-icon','icon: git-fork');
+    }
+}
+
+$('#external-modal .popup-container li').on('show', function (event) {
+    if ($(event.currentTarget).attr("data-src")) {
+        //console.log("showing a tab")
+        load_tab($(event.currentTarget), true, window.should_delete_links);
+    }
+    event.stopPropagation();
+});
+
+$('#external-modal .popup-container li').on('hidden', function (event) {
+    /* make sure hiding anything within the container does not bubble up
+     * and make us think the entire modal has been hidden
+     */
+    event.stopPropagation();
+});
+
+</script>
+{{#=LOAD('default', 'tourstop.load', target="tourbox", ajax=False)}}

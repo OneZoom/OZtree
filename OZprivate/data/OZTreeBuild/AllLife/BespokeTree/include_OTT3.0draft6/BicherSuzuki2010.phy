@@ -1,0 +1,5 @@
+[From https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3055249/, and original paper. Dates from Deepfin
+
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Vertebrates]
+(Erpetoichthys_calabaricus_ott451269:29.2,(Polypterus_mokelembembe_ott435396:16.6,((Polypterus_endlicheri_congicus_ott435400:0.0,(Polypterus_ansorgii_ott1012163:0.0,(Polypterus_endlicheri_endlicheri_ott435379:0.0,(Polypterus_bichir_bichir_ott1012167:0.0,Polypterus_bichir_lapradei_ott1012169):0.0):0.0):0.0):16.6,((Polypterus_retropinnis_ott451272:0.0,(Polypterus_ornatipinnis_ott979639:0.0,Polypterus_weeksi_ott435382:0.0):0.0):16.6,((Polypterus_palmas_buettikoferi_ott174683:0.0,Polypterus_teugelsi_ott435386:0.0),(Polypterus_senegalus_senegalus_ott61558:0.0,(Polypterus_delhezi_ott940741:0.0,Polypterus_palmas_polli_ott435390:0.0):0.0):0.0):16.6):0.0):0.0):12.6)Polypteriformes_ott458427;
+

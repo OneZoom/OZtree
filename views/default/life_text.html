@@ -1,0 +1,69 @@
+{{response.title='OneZoom: Text tree'}}
+{{response.files.append(URL('static', 'OZSite/life_text.css'))}}
+{{extend 'layout.html'}}
+<div class="row-fluid" class="text_tree">
+    <div class="col-md-12">
+<!-- see http://odyniec.net/articles/turning-lists-into-trees/ -->
+{{for root_id, root in bases.items():}}
+<h2>Base of the evolutionary tree for {{=XML(info[root_id]['htmlname'])}}</h2>
+{{if info[root_id]['real_parent']:}}<a href="{{=info[info[root_id]['real_parent']]['url']}}">&larr; parent</a>{{pass}}
+{{if root_id<0:}}
+<div class="species">Species {{=XML(info[root_id]['htmlname'])}}</div>
+<h3>OneZoom</h3>
+<a href="{{=URL('default','life')}}#ott{{=info[root_id]['ott']}}">Visit it on the OneZoom tree</a> or <a href="{{=URL('default','sponsor_leaf', vars={'ott':info[root_id]['ott']})}}">sponsor it!</a>
+{{else:}}
+<ul id="root">
+<li>{{=XML(info[root_id]['htmlname'])}}{{if root_id>=0:}} ({{=(info[root_id]['leaf_rgt']-info[root_id]['leaf_lft']+1)}} species){{pass}}
+<ul>
+  {{for id1, more1 in root.items():}}
+  <li><a href="{{=info[id1]['url']}}">{{=XML(info[id1]['htmlname'])}}{{if id1<0:}}</a>{{else:}} &rarr;</a> ({{=(info[id1]['leaf_rgt']-info[id1]['leaf_lft']+1)}} species){{pass}}
+  {{if more1:}}
+  <ul>
+    {{for id2, more2 in more1.items():}}
+    <li><a href="{{=info[id2]['url']}}">{{=XML(info[id2]['htmlname'])}}{{if id2<0:}}</a>{{else:}} &rarr;</a> ({{=(info[id2]['leaf_rgt']-info[id2]['leaf_lft']+1)}} species){{pass}}
+    {{if more2:}}
+    <ul>
+      {{for id3, more3 in more2.items():}}
+      <li><a href="{{=info[id3]['url']}}">{{=XML(info[id3]['htmlname'])}}{{if id3<0:}}</a>{{else:}} &rarr;</a> ({{=(info[id3]['leaf_rgt']-info[id3]['leaf_lft']+1)}} species){{pass}}
+      {{if more3:}}
+      <ul>
+        {{for id4, more4 in more3.items():}}
+        <li><a href="{{=info[id4]['url']}}">{{=XML(info[id4]['htmlname'])}}{{if id4<0:}}</a>{{else:}} &rarr;</a> ({{=(info[id4]['leaf_rgt']-info[id4]['leaf_lft']+1)}} species){{pass}}
+        </li>
+        {{pass}}
+      </ul>
+      {{pass}}
+      </li>
+      {{pass}}
+    </ul>
+    {{pass}}
+    </li>
+    {{pass}}
+  </ul>
+  {{pass}}
+  </li>
+  {{pass}}  
+</ul>
+</li>
+</ul>
+{{pass}}
+{{if info[root_id]['wikidata'] or info[root_id]['eol'] or info[root_id].get('iucn') or info[root_id]['ncbi'] or info[root_id]['ott']:}}
+<h3>Other links</h3>
+<ul>
+{{if info[root_id]['wikidata']:}}<li><a href="http://www.wikidata.org/wiki/Q{{=info[root_id]['wikidata']}}">Wikidata</a></li>{{pass}}
+{{if info[root_id]['wikipedia_lang_flag']:}}
+{{for wikilang,bit in wikiflags.items():}}
+{{if (info[root_id]['wikipedia_lang_flag'] & (1 << bit)):}}<li><a href="http://www.wikidata.org/wiki/Special:GoToLinkedPage?site={{=wikilang}}wiki&itemid=Q{{=info[root_id]['wikidata']}}">Wikipedia (language: {{=wikilang}})</a></li>
+{{pass}}
+{{pass}}
+{{pass}}
+{{if info[root_id]['eol']:}}<li><a href="http://eol.org/pages/{{=info[root_id]['eol']}}">Encyclopedia of life</a></li>{{pass}}
+{{if info[root_id].get('iucn'):}}<li><a href="http://www.iucnredlist.org/details/{{=info[root_id]['iucn']}}/0">IUCN (conservation)</a></li>{{pass}}
+{{if info[root_id]['ncbi']:}}<li><a href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{=info[root_id]['ncbi']}}">NCBI (genetics)</a></li>{{pass}}
+{{if info[root_id]['ott']:}}<li><a href="https://tree.opentreeoflife.org/opentree/argus/opentree@ott{{=info[root_id]['ott']}}">Open Tree of Life</a></li>{{pass}}
+</ul>
+{{pass}}
+<hr />
+{{pass}}
+</div>
+</div>

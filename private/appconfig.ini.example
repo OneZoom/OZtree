@@ -1,0 +1,42 @@
+; App configuration
+
+; db configuration
+[db]
+uri       = mysql://oz:passwd@127.0.0.1/OneZoom
+migrate   = 1
+pool_size = 1
+
+; smtp address and credentials
+[smtp]
+
+[twitter]
+
+; form styling
+[forms]
+formstyle = bootstrap3_inline
+separator =
+
+[paypal]
+url        = https://www.sandbox.paypal.com
+
+; general params. 
+; * maintenance_mins: to enable maintenance mode, set this
+;    to the number of minutes you expect the site to be down
+; * pics_dir: get thumbnail images from this source. If not
+;    defined, will default to the local version, but that
+;    means you will need to download >100,000 thumbnail images
+;    onto your machine. If you want to use the images on the 
+;    OneZoom server, set this to `http://images.onezoom.org/`
+; * oztree_js_suffix: use `.js` for dev mode or `.min.js` for production
+[general]
+maintenance_mins = 0
+pics_dir = http://images.onezoom.org/
+oztree_no_min = 1
+oztree_dir = OZTree_unminified
+oztree_module_dir = OZTree_module
+oztree_js_suffix = .js
+
+[api]
+;If you want to get data from the Encyclopedia of Life, you need to put your own API key here. 
+;Fill it in using instructions at http://eol.org/info/api_overview 
+;eol_api_key = 11111111111

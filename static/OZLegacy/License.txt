@@ -1,0 +1,63 @@
+Copyright (c) 2015 Imperial College, James Rosindell
+authors: James Rosindell, Kai Zhong 
+e-mail: james@rosindell.org
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+====================================================================================
+Not included in this license and not licenced for reuse at all but included for convenience as they are hosted on onezoom.org to enable old versions to continue to operate for third parties.
+====================================================================================
+
+1.) Anything found in folders of name OZ_W_*
+2.) Facebook icon and twitter icon found in /icons
+3.) Any logos found in /logos 
+4.) Anything found in /user (please see elsewhere in the repository for unminified versions of any elements here that are allowable for reuse)
+
+
+====================================================================================
+Scientific references for embedded data
+====================================================================================
+
+Mammal data: Bininda-Emonds OR, Cardillo M, Jones KE, MacPhee RD, Beck RM, et al. (2007) The delayed rise of present-day mammals. Nature 446: 507–512.
+
+Bacteria data: Pruesse E, Quast C, Knittel K, Fuchs BM, Ludwig W, et al. (2007) SILVA: a comprehensive online resource for quality checked and aligned ribosomal RNA sequence data compatible with ARB. Nucleic Acids Res 35: 7188–7196.
+
+Extinction risk data: IUCN (2012) The IUCN Red List of Threatened Species. Version 2012.1. Available: http://www.iucnredlist.org. Downloaded on 25 May 2012.
+
+Amphibian data: Isaac NJB, Redding DW, Meredith HM and Safi K (2012) Phylogenetically-Informed Priorities for Amphibian Conservation PLoS One
+
+Bird data: Jetz W, Thomas GH, Joy JB, Hartmann K, Mooers AO (2012) The global diversity of birds in space and time see also the special website birdtree.org
+
+Dates of common ancestry between clades: Timetree.org Hedges SB, Dudley J and Kumar S (2006). TimeTree: A public knowledge-base of divergence times among organisms. Bioinformatics 22: 2971-2972.
+
+Reference for some reptile metadata: The Reptile Database
+Squamates tree (excluding snakes): Bergmann PJ, Irschick1, DJ Vertebral Evolution and the Diversification of Squamate Reptiles Evolution 66(4) 2012
+
+Snake tree: Pyron RA, Kandambi HKD, Hendry CR, Pushpamal V, Burbrink FT and Somaweera R. 2013. Genus-level molecular phylogeny of snakes reveals the origins of species richness in Sri Lanka. Molecular Phylogenetics and Evolution 66(2013): 969-978
+
+Turtle tree: Jaffe AL, Slater GJ and Alfaro ME. The evolution of island gigantism and body size variation in tortoises and turtles. Biology Letters 2011 (7) doi: 10.1098/rsbl.2010.1084
+
+Crocodilian tree: Oaks JR. A time-calibrated species tree of crocodylia reveals a recent radiation of the true crocodiles Evolution 2011 doi:10.1111/j.1558-5646.2011.01373.x
+
+Additional mammal species data: Collen B, Turvey ST, Waterman C, Meredith HMR et al. (2011) Investing in evolutionary history: implementing a phylogenetic approach for mammal conservation Phil. Trans. R. Soc. B 2011 366, doi: 10.1098/rstb.2011.0109
+
+Additional mammal species data: Huchon D, Chevret P, Jordan U, Kilpatrick W, Ranwez V et al. (2007) Multiple molecular evidences for a living mammalian fossil PNAS 104(18): 7495–7499
+
+Plant data: Amy E. Zanne, David C. Tank, William K. Cornwell, Jonathan M. Eastman, Stephen A. Smith, Richard G. FitzJohn, Daniel J. McGlinn, Brian C. O'Meara, Angela T. Moles, Peter B. Reich, Dana L. Royer, Douglas E. Soltis, Peter F. Stevens, Mark Westoby, Ian J. Wright, Lonnie Aarssen, Robert I. Bertin, Andre Calaminus, Rafaël Govaerts, Frank Hemmings, Michelle R. Leishman, Jacek Oleksyn, Pamela S. Soltis, Nathan G. Swenson, Laura Warman, Jeremy M. Beaulieu. Three keys to the radiation of angiosperms into freezing environments. Nature. doi:10.1038/nature12872. (2013)
+
+Plant data: Zanne AE, Cornwell WK, McGlinn DJ, Beaulieu JM, Eastman JM, FitzJohn RG, Smith SA, Aarssen L, Bertin RI, Calaminus A, Govaerts R, Hemmings F, Leishman MR, Moles AT, Oleksyn J, Ordonez A, Reich PB, Royer DL, Soltis DE, Soltis PS, Stevens PF, Swenson NG, Warman L, Wright IJ, Tank DC. Data from: Three keys to the radiation of angiosperms into freezing environments. Nature. Dryad Digital Repository. http://dx.doi.org/10.5061/dryad.63q27. (2013).
+
+Plant data: William K. Cornwell, Rich FitzJohn, Peter F. Stevens, Andre Calaminus, Douglas E. Soltis, Pamela S. Soltis, Rafael Govaerts, Ian J. Wright, Jacek Oleksyn, Peter B. Reich, Dana L. Royer, Lonnie Aarssen, Frank Hemmings, Michelle Leishman, Angela T. Moles, Nathan G. Swenson, Laura Warman, Robert I. Bertin, A. Ordonez, and Amy E. Zanne. Global woodiness database. Data from: Three keys to the radiation of angiosperms into freezing environments. Nature. Dryad Digital Repository. http://dx.doi.org/10.5061/dryad.63q27/2. (2013).
+
+Plant data: Daniel J. McGlinn. Global plant species freezing exposure database. Data from: Three keys to the radiation of angiosperms into freezing environments. Nature. Dryad Digital Repository. http://dx.doi.org/10.5061/dryad.63q27/4. (2013).
+Plant data: David C. Tank, Jonathan M. Eastman, Jeremy M. Beaulieu, William K. Cornwell, Peter F. Stevens, Amy E. Zanne. Taxonomic lookup table containing clade-level mappings for 15.363 genera of Spermatophyta. Data from: Three keys to the radiation of angiosperms into freezing environments. Nature. Dryad Digital Repository. http://dx.doi.org/10.5061/dryad.63q27/1. (2013).
+
+Plant data: David C. Tank, Jonathan M. Eastman, Jeremy M. Beaulieu, Stephen A. Smith. Phylogenetic resources. Data from: Three keys to the radiation of angiosperms into freezing environments. Nature. Dryad Digital Repository. http://dx.doi.org/10.5061/dryad.63q27/3. (2013).
+
+ADEPD conservation ranking data for birds: Nunes LA, Turvey ST, Rosindell J. (2015) The Price of Conserving Avian Phylogenetic Diversity: A Global Prioritisation Approach. Philosophical Transactions of the Royal Society B. DOI: 10.1098/rstb.2014.0004
+
+Tree viewing algorithms and original software: Rosindell, J and Harmon, LJ (2012) OneZoom: A Fractal Explorer for the Tree of Life PLoS Biology

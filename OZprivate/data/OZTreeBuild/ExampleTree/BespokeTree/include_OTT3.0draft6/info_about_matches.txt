@@ -1,0 +1,5 @@
+Parsed OZprivate/data/OZTreeBuild/ExampleTree/BespokeTree/include_noAutoOTT/GreatApes.PHY, looking up 6 names out of 9 (omitted ['Pongo_ott417949@', 'Gorilla_ott417969', 'Homo_sapiens_ott770315'])
+ 6 names matched unambigously, first 10 are ['Gorilla beringei', 'Pan paniscus', 'Pan troglodytes', 'Pan', 'Gorilla gorilla', 'Hominidae']
+ ++> 0 ambiguous taxa in one batch from OZprivate/data/OZTreeBuild/ExampleTree/BespokeTree/include_noAutoOTT/GreatApes.PHY: []
+ ==> 0 unmatched taxa in one batch from OZprivate/data/OZTreeBuild/ExampleTree/BespokeTree/include_noAutoOTT/GreatApes.PHY: []
+Over all input files, 100.0% names were precisely matched, 0.0% matched via synonyms, and 0.0% have no match

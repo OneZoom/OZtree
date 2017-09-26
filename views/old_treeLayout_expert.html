@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta NAME="description" CONTENT="OneZoom Tree of Life Explorer" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    {{if response.canonical:}}<link rel="canonical" href="{{=response.canonical}}">{{pass}}
+    
+<script type="text/javascript">
+/* GLOBALS */
+/* site-specific OZ json urls are needed to locate the OneZoom API, so that iframe contents can be shown */
+OZ_leaf_json_url = function(ott) {return("{{=URL('default', 'leaf_linkouts', scheme=True, host=True, extension='json')}}" + "/" + ott.toString())};
+OZ_node_json_url = function(id) {return("{{=URL('default', 'node_linkouts', scheme=True, host=True, extension='json')}}" + "/" + id.toString())};
+
+
+var data_path_pics_main = "{{try:}}{{=myconf.take('general.pics_dir')}}{{except:}}{{=URL('static','FinalOutputs/pics', scheme=True, host=True)}}{{pass}}"+"/";
+var data_path_thumbs_main = "{{try:}}{{=myconf.take('general.thumbs_dir')}}{{except:}}{{=URL('static','FinalOutputs/pics', scheme=True, host=True)}}{{pass}}"+"/";
+var node_api = "{{try:}}{{=myconf.take('API.node')}}{{except:}}{{=URL('API','node_details.json', scheme=True, host=True)}}{{pass}}";
+var search_api = "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}";
+var search_sponsor_api = "{{try:}}{{=myconf.take('API.search_sponsor')}}{{except:}}{{=URL('API','search_for_sponsor.json', scheme=True, host=True)}}{{pass}}";
+var search_init_api = "{{try:}}{{=myconf.take('API.search_init')}}{{except:}}{{=URL('API','search_init.json', scheme=True, host=True)}}{{pass}}";
+var ott2id_api = "{{try:}}{{=myconf.take('API.ott2id')}}{{except:}}{{=URL('API','get_id_by_ott.json', scheme=True, host=True)}}{{pass}}";
+var ott2id_api_array = "{{try:}}{{=myconf.take('API.ott2id_array')}}{{except:}}{{=URL('API', 'get_ids_by_ott_array.json', scheme=True, host=True)}}{{pass}}";
+var otts2vns_api = "{{try:}}{{=myconf.take('API.ott2vns')}}{{except:}}{{=URL('API','otts2vns.json', scheme=True, host=True)}}{{pass}}";
+var link_from_image = "{{=URL('linkout_via_picID', scheme=True, host=True)}}";
+var data_logo_path = "{{=URL('static','images/OZ_logo5_grey.png')}}";
+var image_api = "{{try:}}{{=myconf.take('API.image')}}{{except:}}{{=URL('API', 'image_details.json', scheme=True, host=True)}}{{pass}}";
+var update_visit_count_api = "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}";
+
+var data_path_pics_main = "{{try:}}{{=myconf.take('general.pics_dir')}}{{except:}}{{=URL('static','FinalOutputs/pics', scheme=True, host=True)}}{{pass}}"+"/";
+var data_path_thumbs_main = "{{try:}}{{=myconf.take('general.thumbs_dir')}}{{except:}}{{=URL('static','FinalOutputs/pics', scheme=True, host=True)}}{{pass}}"+"/";
+
+var tour = {"api":"{{try:}}{{=myconf.take('API.tours')}}{{except:}}{{=URL('OneZoom','default','tour.json', scheme=True, host=True)}}{{pass}}", "tour_name":"{{= page_info.get('tourname') or ''}}"}
+</script>
+{{include 'strings.html'}}
+{{include}}
+<noscript>
+    <style>
+        /* hide control buttons if there is no JS */
+        #controlButtons {display:none;}
+    </style>
+</noscript>
+    
+<script type="text/javascript" src="{{=URL('static','site-specific/google-analytics.js')}}"></script>
+
+</head>
+
+<body id = "wholebody" onresize="special_resize()" style="overflow: hidden; user-select:none; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select:none; -ms-user-select:none;" unselectable = "on">
+on">
+    <!-- main body of document - only four elements -->
+    <canvas id="myCanvas" >
+    You must have javascript turned on. In non-expert mode, the text here will show a textual version of the tree, but in this expert mode, we don't bother, for speed
+    </canvas>
+    
+    
+    <div id="Logos"><img id = "Logo" src="{{=URL('static','images/OZ_logo5_grey3_small.png')}}"></div>
+    
+    
+    <ol id = "controlButtons" >
+        <li class = "dropdown" id = "menuButton"><button onclick="overMenu()" onmouseover="overMenu()"onmouseout="soonNotOverMenu()"><img src="{{=URL('static','images/menu.png')}}"/></button>
+        </li>
+        <li class = "nonzoomcb" id = "searchButton"><button onmouseover="overSearch()" onmouseout="soonNotOverSearch()"><img src="{{=URL('static','images/search.png')}}" /></button></li>
+        <li class = "nonzoomcb"id = "locateButton"><button onmouseover="overLocation()"onmouseout="soonNotOverLocation()"><img src="{{=URL('static','images/locate.png')}}" /></button></li>
+        <li class = "nonzoomcb"id = "upButton"><button onClick="Bzoomup()" onmouseover="overUp()" onmouseout="notOver()"><img src="{{=URL('static','images/up.png')}}" /></button></li>
+        <li class = "zoomcb"id = "plusButton"><button onClick="BZoomin()" onmouseover="overIn()" onmouseout="notOver()"><img src="{{=URL('static','images/plus.png')}}" /></button></li>
+        <li class = "zoomcb"id = "minusButton"><button onClick="CZoomout()" onmouseover="overOut()" onmouseout="notOver()"><img src="{{=URL('static','images/minus.png')}}" /></button></li>
+        <li><button style="width: 8em" onclick="toggle_signposts(this); return false;">Turn off signposts</button></li>
+        <li><button style="width: 8em" onclick="toggle_sponsors(this); return false;">Turn off sponsors</button></li>
+        <li><button style="width: 8em" onclick="toggle_details(this); return false;">Turn off text and details</button></li>
+        <li><button style="width: 8em" onclick="toggle_forceThreshold(this); return false;">Turn on force extreme detail</button></li>
+        <li><button style="width: 8em" onclick="save_canvas(this);">Save bitmap screenshot</button></li>
+        <li><button style="width: 8em" onclick="saveCanvasAsSVG(this);">Save vector screenshot</button></li>
+    </ol>
+    
+    <div id ="outerHint"></div>
+    <div id = "hintBox"></div>
+
+    <div id = "searchBox" class="dropdown_container" onmouseout="soonNotOverSearch()" onmouseover="overSearch()" >
+        <ol class = "sbuttons" >
+            <li id = "search_header">Search the tree</li>
+        </ol>
+        <input type="text" id = "search_input" name="search_input_text" autocomplete="off" onkeyup="UI_search(event)" onfocus="UI_search_go(3, 'search_input', 'focus')">
+        <div class="search_input2_container">
+          <input type="text" id = "search_input2" name="search_input_text" autocomplete="off" onkeyup="UI_search(event)" onfocus="UI_search_go(3, 'search_input2', 'focus')">
+          <img class="search_input2_close" src="{{=URL('static','images/close_black.png')}}" onclick="hide_second_search_input()">
+        </div>
+        <ol class ="sbuttons">
+          <li id = "search_common_path" onclick="find_common_ancestry()" onmouseout="hide_search_not_fillin_hint()">find most recent common ancestor</li>
+        </ol>
+        <ol class = "sbuttons" id="searchButtons" >
+            <!-- search results will be inserted here by js -->
+        </ol>
+        <ol id = "popularSpecies">
+        </ol>
+    </div>
+
+
+    <div id = "locationBox" class="dropdown_container" onmouseout="soonNotOverLocation()" onmouseover="overLocation()">
+        <ol id="locationButtons" >
+        </ol>
+    </div>
+    
+    <div id = "menuBox" onmouseout="soonNotOverMenu()" onmouseover="overMenu()">
+      <ol id="menuButtons" class="menuButtonContainer">
+          <li onClick="clickHow()" >How to use</li>
+          <li onClick="clickAbout()" >About this tree</li>
+          <li onClick="clickData()" >Data sources</li>
+          <li onClick="clickSetting()"> Settings </li>
+          <li><a href = "http://www.onezoom.org/sponsor">Sponsor a leaf</a></li>
+          <!-- <li onClick="form_change()" >Try another shape</li> --> <!-- this works to change shape if we want that feature, I think not on reflection. -->
+          <li><a href = "{{=URL('default', 'index')}}">Back to home </a></li>
+      </ol>
+      <ol id="menuSettings" class="menuButtonContainer">
+        <li onClick="clickImageSource()">Image Sources</li>
+        <li onClick="clickTreeShape()">Tree Shape</li>
+        <li onClick="clickSettingBack()">Back</li>
+      </ol>
+      <ol id="menuImageSource" class="menuButtonContainer">
+        <li onClick="clickImageSourceAny()" class="selected_setting">Any</li>
+        <li onClick="clickImageSourcePublicDomain()">Public Domain</li>
+        <li onClick="clickImageSourceVerified()">Verified</li>
+        <li onClick="clickImageSourceBack()">Back</li>
+      </ol>
+      <ol id="menuTreeShape" class="menuButtonContainer">
+        <li onClick="clickTreeShapeSpiral()" class="selected_setting">Spiral</li>
+        <li onClick="clickTreeShapeFern()">Fern</li>
+        <li onClick="clickTreeShapeNatural()">Natural</li>
+        <li onClick="clickTreeShapeBalanced()">Balanced</li>
+        <li onClick="clickTreeShapeBack()">Back</li>
+      </ol>
+    </div>
+
+
+<div id = "boxContainer">
+    <div id = "outsideBox" onClick="closeBox()"></div>
+    <div class = "popup_box" id = "aboutBox"></div>
+    <div class = "popup_box" id = "aboutBox2"></div>
+    <div id = "linkoutsBox" role="tablist">
+        <!-- this contains multiple tabs (as radio buttons, see http://alistapart.com/article/radio-controlled-web-design)
+         , associated with iframes to other sites (e.g. wikipedia). Tabbed labels are all defined here, but hidden and shown
+         by javascript, depending on if we have appropriate urls. The selected input and label should have aria-selected="true"
+         set by javascript -->
+        <div class="tabs" aria-hidden="true">
+            {{for tab in tabs:}}
+            <label for="{{tab['id']}}" class="{{tab['id']}}">{{if 'icon' in tab:}}<img src="{{=tab['icon']}}" title="{{=tab['name']}}" /><span>{{=tab['name']}}</span>{{else:}}{{=tab['name']}}{{pass}}</label>
+            {{pass}}
+        </div>
+        <div id="iframe_wrapper">
+            <p id="loading_pic"><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
+            {{for tab in tabs:}}
+             <input type="radio" title="{{tab['id']}}" name="linkout-state" role="tab" id="{{tab['id']}}" class="tabButton" aria-controls="{{tab['id']}}-panel" />
+            {{pass}}
+        </div>
+    </div>
+    <img id = "newTabButton" onClick="openTab()" src="{{=URL('static','images/new_tab.png')}}" />
+    <img id = "closeButton" onClick="closeBox()" src="{{=URL('static','images/close.png')}}"/>
+</div>
+
+
+<script>
+save_canvas = function(link_target) {
+    var dt = myCanvas.toDataURL("image/png");
+    /* Change MIME type to trick the browser to download the file instead of displaying it */
+    dt = dt.replace(/^data:image\/[^;]*/, 'data:application-x/force-download');
+    link_target.setAttribute('download', 'screenshot.png');
+    link_target.href = dt;
+}
+
+toggle_signposts = function(link_target) {
+    if (link_target.innerHTML == "Turn on signposts") {
+        drawsignposts = true;
+        link_target.innerHTML = "Turn off signposts";
+    } else {
+        drawsignposts = false;
+        link_target.innerHTML = "Turn on signposts";
+    }
+    draw2();
+    
+}
+
+
+toggle_sponsors = function(link_target) {
+        if (link_target.innerHTML == "Turn on sponsors") {
+            drawsponsors = true;
+            link_target.innerHTML = "Turn off sponsors";
+        } else {
+            drawsponsors = false;
+            link_target.innerHTML = "Turn on sponsors";
+        }
+        draw2();
+    }
+
+
+toggle_details = function(link_target) {
+    if (link_target.innerHTML == "Turn on text and details") {
+        drawAllDetails = true;
+        link_target.innerHTML = "Turn off text and details";
+    } else {
+        drawAllDetails = false;
+        link_target.innerHTML = "Turn on text and details";
+    }
+    draw2();
+}
+
+
+toggle_forceThreshold = function(link_target) {
+    if (link_target.innerHTML == "Turn on force extreme detail") {
+        forceThreshold = true;
+        link_target.innerHTML = "Turn off force extreme detail";
+    } else {
+        forceThreshold = false;
+        link_target.innerHTML = "Turn on force extreme detail";
+    }
+    draw2();
+}
+
+
+
+function saveCanvasAsSVG(link_target)
+{
+    var bitmap_context = context; //save current context
+    //    try {
+    context = new C2S(myCanvas.width,myCanvas.height);
+    //make a mock canvas context using canvas2svg. We use a C2S namespace for less typing:
+    draw2();
+    var svg_content = context.getSerializedSvg(true);
+    /* Change MIME type to trick the browser to download the file instead of displaying it */
+    link_target.setAttribute('download', 'fractal.svg');
+    link_target.href = 'data:application-x/force-download;charset=utf-8,' + encodeURIComponent(svg_content);
+    
+    //    } catch(err) {
+    //        alert("You can't save pictures with embedded images unless you enable '-allow-file-access-from-files' in chrome, or equivalent in other browsers. See ")
+    //        document.getElementById("saveCanvasLink").removeAttribute("href");
+    //    }
+    context = bitmap_context; //restore context
+}
+
+</script>
+
+</body>
+</html>

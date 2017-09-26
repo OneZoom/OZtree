@@ -1,0 +1,35 @@
+html
+{
+    align:center;
+	height:100%;
+	width:100%;
+}
+
+body
+{
+	align:center;
+	height:100%;
+	width:100%;
+	background-color: rgb(0,0,0);
+	overflow: hidden;
+}
+
+
+
+#wholecontainer
+{
+    align:left;
+	color: rgb(255,0,0);
+	height:100%;
+	width:100%;
+	margin:0px;
+	padding:0px;
+}
+
+#myCanvas
+{
+	padding-left: 0px;
+    padding-right: 0;
+    margin-left: 0px;
+    margin-right: auto;
+}

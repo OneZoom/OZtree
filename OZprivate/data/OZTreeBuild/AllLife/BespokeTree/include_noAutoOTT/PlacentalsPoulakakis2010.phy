@@ -1,0 +1,4 @@
+[Loosely support Atlantogenata, with divergence 0.9 Ma difference (see Recapitulating the evolution of Afrotheria: 57 genes and rare genomic changes (RGCs) consolidate their history N. Poulakakis a b & A. Stamatakis, http://dx.doi.org/10.1080/14772000.2010.484436)
+
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Mammals]
+(BOREOEUTHERIA@,(XENARTHRA@,AFROTHERIA@)Atlantogenata:0.9)Eutheria;

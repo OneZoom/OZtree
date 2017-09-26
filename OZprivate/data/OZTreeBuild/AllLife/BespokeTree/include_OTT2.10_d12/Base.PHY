@@ -1,0 +1,41 @@
+[
+For some vague but believable dates, see Stajich (2009) Current Biology 19:R840 http://www.sciencedirect.com/science/article/pii/S0960982209013827 
+
+Note that I have removed a single leaf called 'Clade_L_ott5247662' which has sneaked in to OTv7 at the root of choanoflagellates)
+
+I have spaced out the filasterans & DRIPs by 100 MY from the divergence of the fungi at 1100, pushing choanoflagellates to 800 MYA. Dates for the Ministeria/Capsaspora divergence are deep (~ 1/7th of the way from the filozoan root) as per fig 1 from Shalchian-Tabrizi et al 2008
+
+The position of various basal Eukaryote groups is under flux, see http://www.ncbi.nlm.nih.gov/pubmed/23587248, http://onlinelibrary.wiley.com/doi/10.1111/j.1550-7408.2012.00644.x/abstract and http://onlinelibrary.wiley.com/doi/10.1111/j.1550-7408.2008.00373.x/full. This tree is based on the diagram from "The Eukaryotic Tree of Life from a Global Phylogenomic Perspective" by Fabien Burki (http://cshperspectives.cshlp.org/content/6/5/a016147).
+
+I place the root of the eukaryotic tree within Excavates as in Derelle (2015, EUBAC tree), by setting most of the excavates on one side, minus Malawimonas (ott935422), Collodictyonidae and Rigifilida (Rigifilida as per Adl http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3483872/). Since Collodictyonidae and Rigifilida are not in the synth OpenTree, excavates are simply Excavata_ott2927065~-935422
+
+For Archaeal paraphyly, see http://gbe.oxfordjournals.org/content/6/3/474.full (Fig 2b, Fig 3). The position of the Eukaryotes within Archaea is very variable. Here I basically go with Fig 3 (the eocyte hypothesis), but to highlight to controversy I give the RV points number 39a, 39b, 39c.
+
+The archaeal groups are taken from OpenTree v5 which has a largely reasonable arrangement based on http://dx.doi.org/10.1371/journal.pone.0062510 and http://dx.doi.org/10.1038/ncomms3304 (PhyloPhlAn). I used the 'TACK' group arrangement (Thaumarchaeota, Crenarchaeota, Korarchaeota, 'Aigarchaeota': http://www.ncbi.nlm.nih.gov/pubmed/22018741) which in OT5 has
+
+(Crenarchaeota_ott114216,Thermococci_ott921413),(Thaumarchaeota_ott102415,Thermoplasmata_ott921398) 
+
+NB Aigarchaeota comes under Thaumarchaeota in the OTT. To make the tacK part, I also add Korarchaeota_ott266344
+
+(((Crenarchaeota_ott114216, Thermococci_ott921413),(Thaumarchaeota_ott102415,Thermoplasmata_ott921398)),Korarchaeota_ott266344)
+
+I remove Lokiarcheota, to place as sister to Eukaryotes, 
+
+Lokiarchaeota_ott5561807
+
+dPANN from http://gbe.oxfordjournals.org/content/6/3/474.full, consisting of
+
+(((Nanoarchaeota_ott678209@,Diapherotrites_ott5205266@),(Aenigmarchaeota_ott4795972@,Nanohaloarchaeota_ott5351807@)),Micrarchaeum_plus_Parvarchaeum_ott5248268@)
+
+Where Micrarchaeum_plus_Parvarchaeum is listed as 'Deep_Sea_Hydrothermal_Vent_Gp_2_DHVEG-2_ott5248268' in OT5
+
+That leaves Euryarchaeota as the remaining Archaea minus the rest:
+
+Euryarchaeota_ott635958~996421-5561807-114216-921413-102415-921398-266344-678209-5205266-4795972-5351807-5248234
+
+TAK groups form Thaumarchaeota and Aigarchaeota (Aigarchaeota comes under Thaumarchaeota in the OTT). In OpenTree v5 this is sister to Thermoplasmata_ott921398). We add Korarchaeota as the sister to this, then 
+TACK is this clade plus the siter group Crenarchaeota (In OpenTree v5 this is sister to Thermococci_ottott921413)
+
+]
+(((((((((((METAZOA@:150.0,'Choanoflagellida_ott202765~-5247662@':800.0)CollarClade_:100.0,(Ministeria_vibrans_ott787809:770.0,Capsaspora_owczarzaki_ott1053060:770.0)Filasterea_ott5246833:130.0)Filozoa:100.0,Ichthyosporea_ott623671@:1000.0)Holozoa_ott5246131:200.0,NUCLETMYCEA@:1200.0)Opisthokonta_ott332573:100.0,APUS@)Amorphea_minus_amoebozoa_:100.0,('Amoebozoa_ott1064655~-5246123@':1400.0,((Collodictyonidae_ott4738986@:1400.0,Rigifilida_ott973629@:1400.0),Malawimonas_ott935422@:1400.0):0.0):0.0)Amorphea:100.0,(BIKONTA@:1400.0,'Excavata_ott2927065~-935422@':1400.0)Diphoda:100.0)Eukaryota_ott304358:400.0,Lokiarchaeota_ott5561807@:1900.0)LE_clade_:25.0,(((Crenarchaeota_ott114216@,Thermococci_ott921413@),(Thaumarchaeota_ott102415@,Thermoplasmata_ott921398@)),Korarchaeota_ott266344@)TACK_group_ott5878036)TACKLE_clade_:100.0,(((Nanoarchaeota_ott678209@,Diapherotrites_ott5205266@),(Aenigmarchaeota_ott4795972@,Nanohaloarchaeota_ott5351807@)),Micrarchaeum_plus_Parvarchaeum__ott5248268@)dPANN_group_ott5877687)TACKLED_clade_:100.0,'Euryarchaeota_ott635958~996421-5561807-114216-921413-102415-921398-266344-678209-5205266-4795972-5351807-5248234@':2125.0)AllArchaeaAndEukaryotes_;
+

@@ -1,0 +1,37 @@
+{{response.title='OneZoom Management: List of images on server'}}
+{{response.files.append(URL('static', 'OZSite/list_images.css'))}}
+{{extend 'layout.html'}}
+<script>
+function showframe(doID) {
+    if (document.getElementById('edit_div').style.display == "none") {
+        document.getElementById('edit_div').style.display = "block";
+        document.getElementById('edit_frame').src = "http://eol.org/data_objects/" + doID
+        
+}
+</script>
+    <div id="edit_div">
+    <button  type="button" onclick="document.getElementById('edit_div').style.display = 'none'">Close</button>
+    <iframe id="edit_frame" src="http://eol.org"><p>You need a browser that supports iframes</p></iframe>
+    end</div>
+
+    <h2>A list of the thumbnail images saved to the database</h2>
+{{=form}}
+{{for src, images in pics.items():}}
+{{if len(images):}}
+<h3>Images from {{=src}}</h3>
+    <ol>
+        {{for i,image in enumerate(images):}}
+        {{if i==items_per_page: break}}
+        <li {{='class="pd"' if image['images_by_ott']['licence'].endswith('\u009C') else ''}} style="display: inline-block; position: relative"><div style="position: absolute; font-size:0.7em">{{=image['images_by_ott']['rating']}}</div><img style="border-radius: 50%;" src="{{=URL('static','FinalOutputs/pics')}}/{{=image['images_by_ott']['src_id']}}.jpg?{{=time}}" title="{{=image['images_by_ott']['rights']}}
+{{=image['images_by_ott']['licence']}}" onclick="showframe({{=image['images_by_ott']['src_id']}})" /></li>
+        {{pass}}
+    </ol>
+{{pass}}
+{{pass}}
+{{if page:}}
+<a href="{{=URL(args=[page-1], vars=vars)}}">previous {{=items_per_page}}</a>
+{{pass}}
+
+{{if max([len(p) for p in pics.values()])>items_per_page:}}
+<a href="{{=URL(args=[page+1], vars=vars)}}">next {{=items_per_page}}</a>
+{{pass}}

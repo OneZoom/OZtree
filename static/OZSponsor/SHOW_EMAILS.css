@@ -1,0 +1,45 @@
+ul {
+list-style-type: none;
+}
+
+li {
+    margin-bottom: 1em;
+}
+
+details td {
+    padding: 0 1em;
+}
+
+details th {
+    text-align: center;
+}
+
+
+details div.pics {
+    color: #888888;
+}
+
+.missing {
+    background-color: yellow;
+}
+
+details div.email {
+    font-size: 1.3em;
+    margin-left: 2em;
+}
+
+details details p {
+    font-weight: normal;
+}
+
+/* rows flagged as no_admin in the Payment not gone through row should be flagged */
+.no_admin {
+    background-color: #FFBBBB;
+}
+
+details details blockquote {
+    text-align: left;
+    font-size: smaller;
+    font-weight: normal;
+    border: 0;
+}

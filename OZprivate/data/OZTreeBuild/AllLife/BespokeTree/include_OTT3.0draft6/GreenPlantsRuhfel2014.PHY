@@ -1,0 +1,3 @@
+[Wickett (2014: http://www.pnas.org/content/111/45/E4859) places Klebsormidiophyceae (ott 372052) as the second branch to diverge from Streptophytes, after the Chlorokybophyceae/Mesostigmatophyceae branch (ott 897408 + 930075). The remaining choloroplastids do not have an OTT id, so we need to code it by hand: ]
+(Chlorophyta_ott979501@,((Klebsormidiophyceae_ott372052@,'Streptophyta_minus_first_2_branches__ott~916750-372052-897408-930075@40'),(Chlorokybophyceae_ott897408@,Mesostigmatophyceae_ott930075@))Streptophyta_ott916750)Chloroplastida_ott361838;
+

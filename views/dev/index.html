@@ -1,0 +1,16 @@
+{{response.title='OneZoom: Debug tools'}}
+{{extend 'layout.html'}}
+<div class="row-fluid">
+    <div class="col-md-12">    
+
+<h1>A few tools to help debug</h1>
+NB: http_accept_language is {{=request.env.http_accept_language}}
+<ul>
+<li><a href="{{=URL('DOCS')}}">Documentation for the modularised tree code</a></li>
+<li><a href="{{=URL('TEST_LINKS')}}">Help for making zooming movies</a></li>
+{{if mammal_id:}}
+<li><a href="{{=URL('API','node_details.json', vars={'node_ids':mammal_id})}}">A test API request for mammals</a> (ott = {{=mammal_ott}}, id = {{=mammal_id}})</li>
+{{pass}}
+</ul>
+</div>
+</div>

@@ -1,0 +1,8 @@
+[Chondrichthyes tree: 
+
+Basal split from Revealing Less Derived Nature of Cartilaginous Fish Genomes with Their Evolutionary Time Scale Inferred with Nuclear Genes (http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0066400), dates need setting so that 
+(HOLOCEPHALI@:420,(BATOIDEA@:300,SELACHIMORPHA@:300):120);
+
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Vertebrates]
+(HOLOCEPHALI@,(BATOIDEA@,SELACHII@:300.0):120.0)CHONDRICHTHYES_ott278108;
+

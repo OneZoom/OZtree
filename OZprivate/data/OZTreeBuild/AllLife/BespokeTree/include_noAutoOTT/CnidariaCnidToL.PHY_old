@@ -1,0 +1,11 @@
+[OToL has a massive polytomy at the cnidarian base, so here we attempt to resolve it from Allen G. Collins (2009) Recent Insights into Cnidarian Phylogeny (one of the authors of http://cnidtol.com, which reflects the taxonomy below). More recent analysis confirms Myxozoa as sister to Medusozoa (http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0054576)
+ 
+ ((Octocorallia,Hexacorallia)Anthozoa,(Myxozoa,(Staurozoa,((Polypodiozoa,Hydrozoa),(Cubozoa,(Coronatae,Discomedusae)Scyphozoa)Acrospeda))Medusozoa));
+ 
+ 
+ also see http://repository.si.edu/handle/10088/16116
+ 
+ Hydrozoa-Polypodiidae = Hydrozoa_ott641030~-258885
+ 
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Animals]
+((Octocorallia_ott507945@,Hexacorallia_ott1084485@)Anthozoa,(Myxozoa_ott412087@,(Stauromedusae_ott1003853@,((Polypodium_hydriforme_ott212026,Hydrozoa_ott641030~-258885@),(Cubozoa_ott507958@,(Coronatae_ott274733@, Discomedusae_ott5287560@))Acrospeda))Medusozoa))Cnidaria;

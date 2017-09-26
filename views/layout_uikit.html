@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <!--link rel="stylesheet" href="{{=URL('static','css/OZ_specific.css')}}" type="text/css" /-->
+    <link rel="stylesheet" href="{{=URL('static','uikit-3/css/uikit.min.css')}}" />
+    <script src="{{=URL('static','js/jquery.js')}}"></script>
+    <script src="{{=URL('static','uikit-3/js/uikit.min.js')}}"></script>
+    <script src="{{=URL('static','uikit-3/js/uikit-icons.min.js')}}"></script>
+    <style>
+    @font-face {
+      font-family: 'fontello';
+      src: url('../static/font/fontello.eot?72315770');
+      src: url('../static/font/fontello.eot?72315770#iefix') format('embedded-opentype'),
+           url('../static/font/fontello.woff?72315770') format('woff'),
+           url('../static/font/fontello.ttf?72315770') format('truetype'),
+           url('../static/font/fontello.svg?72315770#fontello') format('svg');
+      font-weight: normal;
+      font-style: normal;
+    }
+    
+    body {padding-top: 0} //temporary hack, to remove
+    
+    .icon
+    {
+      font-family: "fontello";
+      font-style: normal;
+      font-weight: normal;
+      speak: none;
+     
+      display: inline-block;
+      width: 1rem;
+      margin: -0.15rem .2rem 0.15rem .2rem;
+      text-align: center;
+     
+      /* For safety - reset parent styles, that can break glyph codes*/
+      font-variant: normal;
+      text-transform: none;
+     
+      /* fix buttons height, for twitter bootstrap */
+      line-height: 1rem;
+     
+      /* increased icon size */
+      font-size: 200%;
+     
+      /* Font smoothing. That was taken from TWBS */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+     
+    }
+    
+    body {
+        background-color: white;
+    }
+    
+    nav a:hover {
+        text-decoration:none;
+    }
+    #OZ-navbar.uk-navbar-container {
+        background-color: #141414;
+        height:3rem;
+        padding-right: 0.25rem;
+    }
+    
+    #OZ-navbar .uk-navbar-item {
+        text-transform: none;
+        height: 3rem;
+    }
+    
+    
+    #OZ-navbar .logo {
+        opacity: 0.7;
+        padding-left: 0.3em;
+        font-size: x-large; /* for the down triangle */
+    }
+    #OZ-navbar .logo:hover {
+        opacity: 1;
+    }
+   
+    #OZ-navbar .logo img {
+        height: 2rem;
+    }
+   
+    /* The search box */
+    #OZ-navbar form {
+        width: 16rem;
+    }
+   
+   
+    /* On small screens (<640px), hide the menu bar and have a drop down from the logo */    
+    @media screen and (max-width: 640px) {
+        #OZ-navbar .logo::after {
+            content: "\00a0\25be"; /* 	&#x25be; is &blacktriangledown; */
+        }
+        #OZ-navbar .uk-navbar-left li {
+            display:none;
+        }
+        #OZ-navbar .uk-navbar-left li:first-child {
+            display:block;
+        }
+    }
+
+    /* Shrink the search box for tiny screens and medium (where menu bar is showing, but screen is not large) */    
+    @media screen and (max-width: 480px), screen and (min-width: 640px) and (max-width: 768px) {
+        #OZ-navbar form {
+            width: 10.5rem;
+        }
+    }
+
+    /* On medium screeens *only*, we fit in the menu bar by shrinking the search box to an icon */
+    @media screen and (min-width: 640px) and (max-width: 768px) {
+        #OZ-navbar .bigSearch {
+            display: none;
+        }
+        #OZ-navbar .smallSearch {
+            display: flex;
+        }
+    }
+
+    figure {display: inline-block}
+    figcaption {text-align:center}
+    </style>
+  </head>
+  <body>
+    <nav id="OZ-navbar" class="uk-navbar-container" uk-navbar>
+      <div class="uk-navbar-left">
+        <ul class="uk-navbar-nav">
+          <li><a href="/" class="uk-navbar-item logo"><img src='../static/images/OZ_logo5_grey3_small_inv.png' /></a></li>
+          <li><a href="#" class="uk-navbar-item">Sponsor</a></li>
+          <li><a href="#" class="uk-navbar-item">Installations</a></li>
+          <li><a href="#" class="uk-navbar-item">Endorsements</a></li>
+          <li><a href="#" class="uk-navbar-item">More&thinsp;&blacktriangledown;</a>
+            <div class="uk-navbar-dropdown">
+              <ul class="uk-nav uk-navbar-dropdown-nav">
+                <li><a href="#">Milestones</a></li>
+                <li><a href="#">About OneZoom</a></li>
+                <li><a href="#">Team</a></li>
+                <li><a href="#">FAQ</a></li>
+                <li><a href="#">Legacy trees</a></li>
+                <li><a href="#">Developer tools</a></li>
+              </ul>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+
+      <div class="uk-navbar-right searchBox">
+        <form class="uk-navbar-nav uk-search uk-search-default">
+            <a id="search_from_text" uk-search-icon onclick="runsearch(document.getElementById('searchtext').value)"></a>   
+            <input id="searchtext" class="uk-search-input" type="search" onkeyup = "if ((event.keyCode == 13) || (this.value.length > 4)) runsearch(this.value)" placeholder="Search all life..." />
+        </form>
+          <div class="uk-dropdown" id="search_dropdown" uk-dropdown="toggle:#search_from_text" style="height: 20em; overflow-y:scroll;">
+            <ul id="selected_species" style="list-style-type:none; padding:0; margin:0;" uk-nav>
+                <li class="uk-nav-header">Selected</li>
+                <li class="uk-parent"><a href="#" onclick="alert('clicked')">Homo sapiens</a>
+                <ul class="uk-nav-sub uk-iconnav">
+                <li><a href="" uk-icon="icon: close" title="Remove" uk-tooltip></a></li>
+                <li><a href="" uk-icon="icon: location" title="Drop pin" uk-tooltip></a></li>
+                <li><a href="" uk-icon="icon: paint-bucket" title="Highlight path" uk-tooltip></a></li>
+                <li><a href="" uk-icon="icon: social" title="Find common ancestor" uk-tooltip></a></li>
+                </ul>
+                </li>
+            </ul>
+            <ul id="popular_species" style="list-style-type:none; padding:0; margin:0;">
+              <li class="uk-nav-header">Popular species</li>
+              <!-- permanently filled out by an AJAX call -->
+              <li><a href="#" style="color:black">&nbsp;Mammals</a></li>
+            </ul>
+            <ul id="searchresults">
+              <!-- filled out each time by an AJAX call -->
+            </ul>
+          </div>
+        </div>
+  </nav>
+        <script>
+        function runsearch(text) {
+            if (text.length ==0 ) {
+                $('#popular_species').show();
+                $('#searchresults').empty().hide();
+            } else {
+                $('#popular_species').hide()
+                if (text.length < 2) {
+                    $('#searchresults').html("<li>Sorry, at least 2 chars</li>");
+                } else { 
+                    $('#searchresults').html("<li>The search results for</li>" + "<li>" + text +  "</li>" + "<li>go here</li>");
+                };
+            };
+        }
+    $('#search_dropdown').on('beforeshow', function () {
+    //fired on click or mouseover
+    //check if the info in the search has changed. If so
+});
+    </script>
+    foo
+    <div class="uk-container uk-margin-top">
+    <ul class="uk-iconnav">
+    <li><a href="" uk-icon="icon: minus" title="Remove" uk-tooltip></a></li>
+    <li><a href="" uk-icon="icon: location" title="Drop pin" uk-tooltip></a></li>
+    <li><a href="" uk-icon="icon: paint-bucket" title="Highlight path" uk-tooltip></a></li>
+    <li><a href="" uk-icon="icon: social" title="Find common ancestor" uk-tooltip></a></li>
+    </ul>
+<div>
+  {{include}}
+  <script>
+  /* Stuff here to initialize dynamic stuff for search */
+  /* mouseover magnifying glass should show existing dropdown (could be list of popular species)
+     mouseout magnifying glass should hide it
+     
+     click on mag glass should show existing dropdown
+     
+     return in box should show dropdown and switch mouse focus to it
+  
+  /* when the magnifying glass is clicked on:
+    a) if the search box is empty, we display a list of popular species
+    b) when the search box contains < 2 chars, we pop up a dialog to say we don't support that
+    [c) previously, when the search was prefixed with 'sponsor' we only search in sponsors, but this is not international-friendly]
+    c) otherwise we search for that term both in taxa (returning the first 50) and sponsors (returning the first 50). 
+    
+   If there are more than 50, we put a 'more' button.
+
+
+    when the magnifying glass is hovered over
+
+    */ 
+  </script>
+  </body>
+</html>

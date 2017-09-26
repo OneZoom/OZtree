@@ -1,0 +1,32 @@
+{{try:}}
+{{if len(leaf_hits or [])==0 and len(node_hits or [])==0 :}} 
+    Sorry, no results found.
+{{else:}}
+    {{max_items = int(request.vars.display or 0)}}
+    {{start_item = int(request.vars.start or 0)}}    
+    {{vars=request.vars}}
+    <ul>
+    {{for i,s in enumerate(leaf_hits or []):}}
+        {{if max_items and i==max_items: break}}
+        <li><a href="{{=URL('default','sponsor_leaf', vars={'ott':s[headers['ott']]}, extension=False)}}">{{if len(s) > headers['vernacular']:}}{{=s[headers['vernacular']].capitalize()}} ({{pass}}<i class="taxonomy">{{=s[headers['name']].replace('_', ' ')}}</i>{{if len(s) > headers['vernacular']:}}){{pass}}{{if len(s) > headers['extra_vernaculars'] and s[headers['extra_vernaculars']]:}}. Also known as {{=', '.join(s[headers['extra_vernaculars']])}}{{pass}}</a>{{if 'price' in headers:}}&mdash; &pound;{{if s[headers['price']] is None:}}contact us{{else:}}{{="{:.2f}".format(1.0/100.0*s[headers['price']])}} or more to sponsor.{{pass}}{{pass}}</li>
+    {{pass}}
+    </ul>
+    <ul>
+    {{for i,s in enumerate(node_hits or []):}}
+        {{if max_items and i==max_items: break}}
+        <li><a href="{{=URL('default','sponsor_node', vars={'ott':s[headers['ott']]}, extension=False)}}">{{if len(s) > headers['vernacular']:}}{{=s[headers['vernacular']].capitalize()}} ({{pass}}<i class="taxonomy">{{=s[headers['name']].replace('_', ' ')}}</i>{{if len(s) > headers['vernacular']:}}){{pass}}{{if len(s) > headers['extra_vernaculars'] and s[headers['extra_vernaculars']]:}}. Also known as {{=', '.join(s[headers['extra_vernaculars']])}}{{pass}}</a></li>
+    {{pass}}
+    </ul>
+    {{if max_items and start_item:}}
+    {{vars.update({'start':0 if start_item-max_items < 0 else start_item-max_items})}}
+    {{=A(XML('&lt;&nbsp;previous&nbsp;'+str(max_items)+'..'),_href=URL(vars=vars),cid=request.cid)}}
+    {{pass}}
+        
+    {{if max_items and ((len(leaf_hits or [])> max_items) or (len(node_hits or [])> max_items)):}}
+    {{vars.update({'start': max_items + start_item})}}
+    {{=A(XML('..next&nbsp;'+str(max_items)+'&nbsp;&gt;'),_href=URL(vars=vars),cid=request.cid)}}
+    {{pass}}
+{{pass}}
+{{except:}}
+<p class="boilerplate">Please provide some text to search for</p>
+{{pass}}

@@ -1,0 +1,134 @@
+{{if request.vars.nolinks:}}
+{{def A(*args, **kwargs): return CAT(*args)}}
+{{pass}}
+
+<div class="row-fluid">
+<div class="col-md-12">
+<h1>About the OneZoom Tree of Life Explorer</h1>
+</div>
+</div>
+
+<div class="row-fluid">
+<div class="col-md-4">
+
+<h3>Our Software</h3>
+<p>The OneZoom software allows you to explore the tree of life in a completely new way that is similar to viewing a geographical map.  This is done using techniques from a branch of mathematics known as fractal geometry, which enable us to condense the entire tree of life into a single page. OneZoom is so named because all the information is on one page, all you have to do is zoom to reveal further details. </p>
+
+<p><img class="rt_edge" src="/static/images/leaves/Rpic3.png" /></p>
+
+<p>We hope you have fun exploring the OneZoom tree of life. We've certainly had fun developing it, even after many thousands of hours working with OneZoom, we are still frequently astonished at what it reveals about the world around us. Most of our {{=A("source code",_href="/developer.html")}} is publicly viewable enabling interested developers and scientists to contribute improvements if they wish.
+
+<h3>OneZoom Organisation</h3>
+
+OneZoom is a charitable incorporated organisation (non-profit) registered under {{=A('number 1163559',_href="static/images/RegistrationCertificate.jpg")}} in the UK. Our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. In pursuit of these aims, our current focus is on developing this visualization of the tree of life. Our registered address is OneZoom, Office 7, 35-37 Ludgate Hill, London, EC4M 7JN, UK</p>
+
+<p>The OneZoom project has a long {{=A("history of development",_href="/milestones.html")}} dating back to the first version of OneZoom that was conceived in 2011 and released under an open source license in 2012. The OneZoom codebase is now improved and maintained by the OneZoom charitable organisation since the charity's formation in 2015.
+
+
+</div>
+
+<div class="col-md-4">
+
+<h3>Sponsorship scheme</h3>
+
+<p>The names of donors to the OneZoom charity may appear on leaves of the tree. This is a thank you acknowledgement for individual support, it is not advertising and does not link to external pages. Donations contribute towards the overall aims of the OneZoom charity. Please note that donations do not contribute directly to (for example) conservation of a particular species, and neither are the species themselves named after sponsors (except that sometimes people sponsor a species that was already named after them, or that happens to share their name).</p>
+
+<p>We are especially grateful to Prof. Richard Dawkins and Prof. Jonathan Drori who have been most generous with their donations for sponsorship.</p>
+
+<p>There is only one sponsor permitted for each species (leaf) of the tree, sponsorship lasts for 4 years and include the first refusal on renewal. More popular species require larger donations for sponsorship. You can sponsor by selecting leaves on the tree explorer, or if you are viewing at a public venue where this feature may be disabled, you can sponsor from the onezoom.org website. You can search the tree by the names of sponsors as well as by species names in case you want to locate a particular sponosred leaf of the tree.</p>
+
+<p><img class="rt_edge" src="/static/images/leaves/Rpic4.png" /></p>
+
+<h3>Data sources summary</h3>
+
+<p>The data used to construct the main tree on this site is from a {{=A("hand-crafted mix of sources", _href="/data_sources.html")}}, but relies heavily on the {{=A('Open Tree of Life', _href="http://www.opentreeoflife.org")}} project, to whom we are extremely grateful. Images of species on the tree have been harvested from the internet by the {{=A("Encyclopedia of Life", _href="http://eol.org/")}} project (EoL). We must thank EoL for their fantastic resource, and helpful responses to our various requests. For further information on any image, zoom into the copyright symbol next to the picture, the symbol may also serve as a link to the source of the image. In the current version, red leaves of the tree correspond to species that are threatened with extinction according to the {{=A("IUCN Red List",_href="http://www.iucnredlist.org", _target="_blank")}} of threatened species.</p>
+
+</div>
+
+<div class="col-md-4">
+
+
+<h3>People and credits</h3>
+
+<p>All versions of the OneZoom software from 2.0 through to the current version 3.2 were developed jointly by Dr. James Rosindell, who primarily worked on visualisation and Dr. Yan Wong, who primarily worked on synthesising the tree data. Yan is a coauthor with Professor Richard Dawkins on <i>{{=A("The Ancestor’s Tale", _href="http://www.ancestorstale.net")}}</i>: a history of life, which has made extensive use of the OneZoom visualisations. The research done for the book has in turn contributed to the dataset used by the OneZoom software.</p>
+
+<p>James originally devised the OneZoom concept in 2011, he initially worked on the project only during his spare time, taking advice from Luke Harmon in particular. After that, James further developed OneZoom as part of his research program at {{=A("Imperial College London", _href="http://www3.imperial.ac.uk", _target="_blank")}}, which was funded by a research fellowship from the {{A("Natural Environment Research Council", _href="http://www.nerc.ac.uk", _target="_blank")}} (NERC). The first version 1.0 of the software and an associated academic paper authored by James and Luke was published in 2012. All ongoing OneZoom activities have been managed by the independent OneZoom charity since its formation in 2015.</p>
+
+<p> We thank Kai Zhong for his huge input into the OneZoom codebase and especially for code refactoring and the addition of dynamic caching to enable the complete tree of life to be displayed.</p>
+
+<p> We thank Jonathan Sutton for his significant contribution to the OneZoom codebase during his 2016 summer placement.</p>
+
+<p> We thank Hélène Morlon for her support in promoting and developing the OneZoom project since she joined the team in 2016.</p>
+
+<p> We thank Jonathan Drori for his advice and support in running the OneZoom charitable organisation.</p>
+
+<p> We thank Prof. Richard Dawkins and Prof. Alice Roberts for their kind ongoing promotion of OneZoom at events and on social media.</p>
+
+<p> We thank Prof. Duncan Gillies who assisted James in the supervision and recruitment of Kai Zhong.</p>
+
+<p> We would also like to thank the following people (in alphabetical order) for providing a wide range of help and advice at various stages in the OneZoom project history:
+
+Austin Burt,
+Joseph Brown,
+Noah Constant,
+Stephen Cornell,
+Joel Cracraft,
+Mick Crawley,
+Jonathan Eastman,
+Rampal Etienne,
+Robert Ewers,
+Rich FitzJohn,
+James Foster,
+Matt Gitzendanner,
+Mark Hammond,
+Lisa Harmon,
+Michelle Harrison,
+Klaas Hartmann,
+Jacob Hepworth-Bell,
+David Hillis,
+Nick Isaac,
+Sean Jordan,
+Walter Jetz,
+Jeff Joy,
+James Keirstead,
+Mike Kiparsky,
+Bill Kunin,
+Simon Levey,
+Curtis Lisle,
+Georgina Mace,
+Catriona MacCallum,
+Lynsey McInnes,
+Arne Mooers,
+Jack Nijjar,
+Laura Nunes,
+David Orme,
+Guillermo Orti,
+Ian Owens,
+Rod Page,
+Matishalin Patel,
+William Pearse,
+Matt Pennell,
+Albert Phillimore,
+Jacqueline Phillimore,
+Andy Purvis,
+Alex Pyron,
+Donald Quicke,
+Erica Bree Rosenblum,
+Jill Rosindell,
+Owen Rosindell,
+Martin Sayers,
+Nilay Shah,
+Graham Slater,
+Doug Soltis,
+Matthew Speight,
+David Tank,
+Gavin Thomas,
+Nina Thornhill,
+Oliver Worsfold,
+Amy Zanne
+</p>
+
+
+</div>
+</div><!--/row-->
+

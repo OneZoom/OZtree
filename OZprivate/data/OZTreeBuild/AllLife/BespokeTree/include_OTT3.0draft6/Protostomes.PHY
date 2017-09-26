@@ -1,0 +1,66 @@
+[ The OToL protosome base is replete with polytomies, especially in the lophotrochozoa. I resolve these manually below mostly using Kocot (2016) "On 20 years of Lophotrochozoa" on the recommendation of Jordi Paps. Also on his recommendation, and on the basis of Shen (2015) http://onlinelibrary.wiley.com/doi/10.1111/zsc.12140/abstract I put the chaetognath divergence at the base of the protostomes
+
+==ECDYSOZOA==
+
+Tardigrades in panarthropods i.e. ((Onychophora , Arthropoda),Tardigrades) from Campbell (2011) http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3179045/, with the sister group  (Nematoda, Nematomorpha) as recommended by Jordi Paps. Then Scalidophora (Priapulids, Loricifera, Kino), hence
+((((Onychophora,Arthropoda),Tardigrada),(Nematoda,Nematomorpha)),Scalidophora)Ecdysozoa
+
+I remove the branch Mesotardigrada_ott2943024 / Thermozodium_esakii_ott2943021, for earthquake reasons (http://icb.oxfordjournals.org/content/42/3/652.full) :)
+
+==SPIRALIA (as was LOPHOTROCHOZOA, see also "Assembling the Spiralian tree of life")==
+
+Contra Jordi Paps, I prefer 'Spiralia' over Lophotrochozoa, since it is simpler sounding, and Lophotrochozoa can be used in multiple senses. For the spiralian protostomes, I rely heavily on Laumer (2015) http://www.cell.com/current-biology/abstract/S0960-9822(15)00795-2
+
+Note that Acanthocephala are now thought to be derived rotifers, together forming a group named Syndermata. They belong within Gnathifera, and following Laumer, we have (((Rotifera, Acanthocephala)Syndermata, Micrognathozoa),Gnathostomulida)Gnathifera.
+
+Laumer and Kocot argue for a paraphyletic 'platyzoa', as in
+
+(('Trochozoa',(Gastrotricha,Platyhelminthes)),Gnathifera)'Spiralia'
+
+Overall, we thus have
+
+(('Trochozoa',(Gastrotricha,Platyhelminthes)),(((Rotifera,Acanthocephala)Syndermata,Micrognathozoa),Gnathostomulida)Gnathifera)Spiralia
+
+or with OTTs
+
+(('Trochozoa',(Gastrotricha_ott29723,Platyhelminthes_ott555379)),(((Rotifera_ott471706,Acanthocephala_ott49622)Syndermata,Micrognathozoa_ott435981),Gnathostomulida_ott242963)Gnathifera)Spiralia
+
+===Trochozoa===
+
+Within the 'trochozoa, Nesnidal, 2013 (http://www.biomedcentral.com/1471-2148/13/253/) and later authors find molecular support for an old morphological grouping, the lophophorates, including bryozoans (=ectoprocta) + phoronids + brachiopods, as
+((Bryozoa,Phoronida),Brachiopoda)Lophophorata
+
+Note that draftversion6.tre disputedly nests Phoronids (Phoroniformea_ott612209) within Brachiopoda (doi:  10.1098/rspb.2000.0991), so we need to exclude it and add it on elsewhere.
+
+
+Kocot (2016) suggest that polyzoa (bryozoa + entoprocta+cycliophora) could possibly be nested within the lophophorates, as sister to the Phoronids. I suspect this isn't the case, but in the absence of any other sensible placement, I place them there:
+
+(((Bryozoa,(Entoprocta,Cycliophora))Polyzoa,Phoronida),Brachiopoda)Lophophorata
+
+Following Laumer, I place the Lophophorata within the Trochozoa, as
+(((Nemertea, Lophophorata),Annelida),Mollusca)Trochozoa
+
+That leads to a 'trochozoa' tree like
+
+(((Nemertea,(((Bryozoa,(Entoprocta,Cycliophora))Polyzoa,Phoronida),Brachiopoda)Lophophorata),Annelida),Mollusca)Trochozoa
+
+or with OTTs
+
+(((Nemertea_ott445195,(((Bryozoa_ott442934,(Entoprocta_ott362916,Cycliophora_ott41147)Polyzoa),Phoronidae_ott612209),Brachiopoda_ott826261~-612209)Lophophorata),Annelida_ott941620),Mollusca_ott802117)Trochozoa
+
+There is an additional issue that in OpenTree v7, Annelids are 'missing' (nonmonophyletic), because some 
+authorities place Myzostomida outside the annelids. 
+So instead of using the OpenTree, the annelid phylogeny has been hived off to another file. 
+===================Overall tree====================
+
+The Chaetognaths are placed as a outgroup to all other pro
+
+
+(((((((Nemertea,(((Bryozoa,(Entoprocta,Cycliophora)Polyzoa),Phoronida),Brachiopoda)Lophophorata),Annelida),Mollusca)Trochozoa,(Gastrotricha,Platyhelminthes)),(((Rotifera,Acanthocephala)Syndermata,Micrognathozoa),Gnathostomulida)Gnathifera)Spiralia,((((Onychophora,Arthropoda),Tardigrada),(Nematoda,Nematomorpha)),Scalidophora)Ecdysozoa),Chaetognatha)Protostomia
+
+
+OpenTree v6 has a slighly improved phylogenetic structure for pancrustacea (including insects), so we simply take this from the OpenTree.
+
+from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Animals]
+(((((((Nemertea_ott445195@30,(((Bryozoa_ott442934@20,(Entoprocta_ott362916@,Cycliophora_ott41147@))Polyzoa_ott400508,Phoronida_ott612209@),'Brachiopoda_ott826261~-612209@20')Lophophorata),ANNELIDA@),Mollusca_ott802117@36)Trochozoa,(Gastrotricha_ott29723@20,Platyhelminthes_ott555379@24)),(((Rotifera_ott471706@,Acanthocephala_ott49622@)Syndermata,Micrognathozoa_ott435981@),Gnathostomulida_ott242963@)Gnathifera_ott3092390)Spiralia,((((Onychophora_ott1072433@20,Arthropoda_ott632179@38),'Tardigrada_ott111438~-2943021@32'),(Nematoda_ott395057@22,Nematomorpha_ott189836@22)),Scalidophora_ott434620@)Ecdysozoa_ott611099),Chaetognatha_ott570366@22)Protostomia_ott189832;
+

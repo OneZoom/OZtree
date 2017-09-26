@@ -1,0 +1,5 @@
+[Holocephalans from: Evolutionary Origin and Phylogeny of the Modern Holocephalans (Chondrichthyes: Chimaeriformes): A Mitogenomic Perspective
+
+http://mbe.oxfordjournals.org/content/27/11/2576.full
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Vertebrates]
+(Callorhinchidae_ott550645@:170,((Rhinochimaera_ott886233@:50,(Harriotta_ott776014@:50,Neoharriotta_ott195188@:50))Rhinochimaeridae:70,(Chimaera_ott29488@:80,Hydrolagus_ott29492@:80)Chimaeridae:40):50)Holocephali;

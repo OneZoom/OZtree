@@ -1,0 +1,116 @@
+{{
+OZstrings = {
+    'node_labels':{
+        #NB: these should all be 5-line strings
+         'with_pic':{
+            'dated':{
+                'named':   T("{date_with_units},\nduring {geo_time}, lived\nthe most recent common ancestor to today’s\n\n"),
+                'unnamed': T("{date_with_units},\nduring {geo_time},\nlived the most recent common\nancestor to species including\n")},
+            'undated':{
+                'named':   T("The most recent\ncommon ancestor to today’s\n\n\n"),
+                'unnamed': T("\nThe most recent\ncommon ancestor to species including\n\n")}
+            },
+        #NB: these should all be 3-line strings
+        'text_only':{
+            'dated':{
+                'named': T("{date_with_units},\nduring {geo_time}, lived\nthe most recent common ancestor to today’s"),
+                'unnamed':   T("{date_with_units},\nduring {geo_time}, lived\nthe most recent common ancestor to")},
+             'undated':{
+                'named': T("\nThe most recent\ncommon ancestor to today’s"),
+                'unnamed':   T("\n\nThe most recent common ancestor to")}
+                }
+        },
+    'sp': T("species## singular"),
+    'spp': T("species## plural"),
+    'Mya': T("{mya} million years ago"),
+    'tya': T("{tya} thousand years ago"),
+    'sciname': T("Scientific name: "),
+    'sponsor_text':{
+        'node':{
+            'named':T("Sponsor one of the {group_name}"),
+            'unnamed':T("Sponsor one of these")},
+        'leaf':[
+            [T("YOUR NAME COULD GO HERE"),T(". DONATIONS HELP IMPROVE THIS PUBLIC RESOURCE")],
+            [T("YOUR FRIEND'S NAME COULD GO HERE"),T(". DONATIONS HELP US CONTINUE OUR WORK")],
+            [T("YOU COULD SPONSOR THIS LEAF FOR A FRIEND"), T(". IT MAKES A GREAT GIFT")]
+        ]
+    },
+    'IUCN':{
+        'EX':T("Extinct"),
+        'EW':T("Extinct in the Wild"),
+        'CR':T("Critically Endangered"),
+        'EN':T("Endangered"),
+        'VU':T("Vulnerable"),
+        'NT':T("Near Threatened"),
+        'LC':T("Least Concern"),
+        'DD':T("Data Deficient"),
+        'NE':T("Not Evaluated"),
+        '':T("Not Evaluated") #used if others missing
+    },
+    'geological':{
+        'eons':[
+            {'Ma':541,'name':T("Phanerozoic"),'long':T("the Phanerozoic eon")},
+            {'Ma':2500,'name':T("Proterozoic"),'long':T("the Proterozoic eon")},
+            {'Ma':4000,'name':T("Archean"),'long':T("the Archean eon")},
+            {'Ma':5000,'name':T("Hadean"),'long':T("the Hadean eon")},
+        ],
+        'periods':[
+            {'Ma':2.58,'name':T("Quaternary"),'long':T("the Quaternary period")},
+            {'Ma':23.03,'name':T("Neogene"),'long':T("the Neogene period")},
+            {'Ma':66.0,'name':T("Paleogene"),'long':T("the Paleogene period")},
+            {'Ma':145.0,'name':T("Cretaceous"),'long':T("the Cretaceous period")},
+            {'Ma':201.3,'name':T("Jurassic"),'long':T("the Jurassic period")},
+            {'Ma':252.17,'name':T("Triassic"),'long':T("the Triassic period")},
+            {'Ma':298.9,'name':T("Permian"),'long':T("the Permian period")},
+            {'Ma':358.9,'name':T("Carboniferous"),'long':T("the Carboniferous period")},
+            {'Ma':419.2,'name':T("Devonian"),'long':T("the Devonian period")},
+            {'Ma':443.8,'name':T("Silurian"),'long':T("the Silurian period")},
+            {'Ma':485.4,'name':T("Ordovician"),'long':T("the Ordovician period")},
+            {'Ma':541.0,'name':T("Cambrian"),'long':T("the Cambrian period")},
+            {'Ma':635,'name':T("Ediacaran"),'long':T("the Ediacaran period")},
+            {'Ma':720,'name':T("Cryogenian"),'long':T("the Cryogenian period")},
+            {'Ma':1000,'name':T("Tonian"),'long':T("the Tonian period")},
+            {'Ma':1200,'name':T("Stenian"),'long':T("the Stenian period")},
+            {'Ma':1400,'name':T("Ectasian"),'long':T("the Ectasian period")},
+            {'Ma':1600,'name':T("Calymmian"),'long':T("the Calymmian period")},
+            {'Ma':1800,'name':T("Statherian"),'long':T("the Statherian period")},
+            {'Ma':2050,'name':T("Orosirian"),'long':T("the Orosirian period")},
+            {'Ma':2300,'name':T("Rhyacian"),'long':T("the Rhyacian period")},
+            {'Ma':2500,'name':T("Siderian"),'long':T("the Siderian period")},
+           ]
+    },
+    'loading...': T("loading..."),
+    'Loading...': T("Loading..."),
+    'Select 1st search box species':T('Please select a species in the first search box'),
+    'Select 2nd search box species':T('Please select a species in the second search box'),
+    'Also called:':T('Also called:'),
+    'Sponsor':T('Sponsor'),
+    'Sponsored':T('Sponsored'),
+    'Sponsored by':T('Sponsored by'),
+    'Sponsored by you':T('Sponsored by you'),
+    'Sponsored for':T('Sponsored for'),
+    'Sponsored for a person of your choice':T('Sponsored for a person of your choice'),
+    'Current location':T('Current location'),
+    'Zoom in':T('Zoom in'),
+    'Zoom out':T('Zoom out'),
+    'Reset view':T('Reset view'),
+    'Previous ancestor':T('Previous ancestor'),
+    'Click to search among sponsors of the tree':T('Click to search among sponsors of the tree'),
+    'No common name':T('No common name'),
+    'No known name':T('No known name'),
+    'Conservation':T('Conservation'),
+    'IUCN Red List status:':T('IUCN Red List status:'),
+    'EOLimage_problem':T("The Encyclopedia of Life may have other\nimages, but EoL is currently unavailable"),
+    'leaf_sponsored':T('This leaf has been sponsored'),
+    'leaf_sponsored_extra':T(', text awaiting confirmation'),
+    'Popular places':T('Popular places'),
+    'NameHits':T('Search results'),
+    'SponsorHits':T('Sponsorships'),
+    'WikiCitation':T('This is a summary of '),
+}
+try:
+   from gluon.serializers import json
+   response.write(json(OZstrings),escape=False)
+except:
+   raise HTTP(405,'no json')
+}}

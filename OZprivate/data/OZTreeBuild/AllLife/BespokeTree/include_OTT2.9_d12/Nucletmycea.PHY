@@ -1,0 +1,15 @@
+[NUCLETMYCEA includes the Fungi and their Nuclearid+Fonticula sister group.
+
+Initial branches from http://www.biomedcentral.com/1741-7007/10/47 (with first non-fungal branch as on the OpenTree, from http://www.ncbi.nlm.nih.gov/pubmed/19692665 and also as discussed in http://cmde.science.ubc.ca/pdf/09CavalierTCS.pdf). OPISTHOSPORIDIA includes the Cryptomycota and Microsporidia & Aphelidea (see http://journal.frontiersin.org/Journal/10.3389/fmicb.2014.00112/abstract), and are in a different file.
+
+The depth of this tree is assumed to be ~ 1200 Ma
+
+A nicely resolved summary phylogeny is at http://comenius.susqu.edu/biol/202/fungi/blastocladiomycota/default.htm, with a more conservative one at http://dx.doi.org/10.1016%2Fj.cub.2009.07.004
+
+Entomophthoromycota are placed as an outgroup to Kickxellomycotina + Zoopagomycotina as a result of http://www.ncbi.nlm.nih.gov/pubmed/22877646
+
+Dates from Stajich (2009) Current Biology 19:R840 http://www.sciencedirect.com/science/article/pii/S0960982209013827 ( in contrast see http://www.davidmoore.org.uk/Sec01_01.htm )
+
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Fungi]
+(Discicristoidea_ott5246837@:1000.0,((Chytridiomycota_ott177160@:800.0,(Blastocladiales_ott469418@:700.0,((Mucoromycotina_ott564951@:600.0,((Ascomycota_ott439373@30:450.0,Basidiomycota_ott634628@30:450.0)Dikarya:100.0,Glomeromycota_ott385878@:550.0):50.0),(Entomophthoromycota_ott97730@:550.0,(Kickxellomycotina_ott759290@:500.0,Zoopagales_ott956400@:500.0):50.0)EntoKickZoop_:50.0):100.0):100.0):100.0,OPISTHOSPORIDIA@:900.0)Fungi_ott352914:100.0)Nucletmycea_ott5246132;
+

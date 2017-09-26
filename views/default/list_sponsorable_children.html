@@ -1,0 +1,20 @@
+{{response.title='OneZoom: Alphabetical list of children'}}
+{{extend 'embed.html' if request.vars.get('embed') else 'layout.html'}}
+{{if len(species)==0:}} 
+    Sorry, no results found.
+{{else:}}
+    <h4>Alphabetical list of species in this group</h4>
+    <ul>
+    {{for i,s in enumerate(species):}}
+        {{if i==items_per_page: break}}
+        <li><a href="{{=URL('sponsor_leaf', vars={k:v for d in [request.vars, {'ott':s.ott}] for k,v in d.items()})}}"><i class="taxonomy">{{=s.name.replace('_', ' ')}}</i></a> &mdash; &pound;{{if s.price is None:}}contact us{{else:}}{{="{:.2f}".format(1.0/100.0*s.price)}}{{pass}} or more to sponsor.</li>
+    {{pass}}
+    </ul>
+    {{if page:}}
+    {{=A(XML('&lt;&nbsp;previous&nbsp;'+str(items_per_page)+'..'),_href=URL(args=[page-1], vars=request.vars))}}
+    {{pass}}
+        
+    {{if len(species)>items_per_page:}}
+    {{=A(XML('..next&nbsp;'+str(items_per_page)+'&nbsp;&gt;'),_href=URL(args=[page+1], vars=request.vars))}}
+    {{pass}}
+{{pass}}

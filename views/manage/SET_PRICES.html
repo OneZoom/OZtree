@@ -1,0 +1,33 @@
+{{response.title='OneZoom: Set prices'}}
+{{response.files.append(URL('static', 'OZSite/SET_PRICES.css'))}}
+{{extend 'layout.html'}}
+<div class="row-fluid">
+  <div class="col-md-12">
+<h1>Set the prices from the pre-calculated popularities</h1>
+{{=form.custom.begin}}
+Popularity ranges from {{=int(round(pop_min,0))}} to {{=int(round(pop_max,0))}}. As a guide, here are the popularities of a few species:
+
+<ul>
+{{for k,v in example_spp:}}
+<li>{{=k}} = {{=int(round(v,0))}}</li>
+{{pass}}
+</ul>
+<h2>previous pricing structure was:</h2>
+<table><tr>
+{{for r in previous_prices:}}
+<th>&pound;{{="{:.2f}".format(r.price/100)}} cutoff</th>
+{{pass}}
+</tr><tr>
+{{for r in previous_prices:}}
+<td>{{=r.current_cutoff}}</td>
+{{pass}}
+</tr></table>
+<h2>set cutoffs:</h2>
+{{for p in prices:}}
+<div>&pound;{{="{:.2f}".format(p/100)}} upper popularity cutoff {{=form.custom.widget['max_pop_{}_pence'.format(p)]}}</div>
+{{pass}}
+<div>Anything higher will be &pound;{{="{:.2f}".format(last_price/100)}}.</div>
+Click here to set all the prices in the database: {{=form.custom.submit}}
+{{=form.custom.end}}<h2>Submitted variables</h2>
+{{=BEAUTIFY(request.vars)}}
+</div></div>

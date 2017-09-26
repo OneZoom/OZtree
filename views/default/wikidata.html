@@ -1,0 +1,1 @@
+{{if data is not None:}}{{redirect(wikidata_url(data.get('Q')))}}{{else:}}{{=errors[0]}}{{pass}}

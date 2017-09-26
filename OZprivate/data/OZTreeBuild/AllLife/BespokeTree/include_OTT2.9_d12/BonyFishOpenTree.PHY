@@ -1,0 +1,28 @@
+[The OpenTree Teleostome phylogeny is largly taken from DeepFin1, so here we simply use the OpenTree phylogeny for the teleosts (although re-ordered according to deepfin2, placing Stomiatii as sister to Protacanthopterygii, as in http://currents.plos.org/treeoflife/article/the-tree-of-life-and-a-new-classification-of-bony-fishes/). The problem is that the OpenTree version doesn't have a timescale.
+
+This hand-crafted file takes the divergence of most of the orders from Deepfin3 and grafts the OpenTree nodes onto them.
+
+Once change is that the Beryciformes and Holocentriformes have been united into a single group, ott~108719-5551466 (Euacanthomorphacea minus Percomorphaceae)
+
+There is a bug in OpenTree-v2 (corrected in v3) which places gobiiformes within the genus Kurtus, so we require OpenTree > v3
+
+This has been hand-scaled to fit in with dates in the Ancestor's Tale, and Deepfin 3 (http://currents.plos.org/treeoflife/article/the-tree-of-life-and-a-new-classification-of-bony-fishes/ Fig 12).
+
+In particular: I ignore the shallow lungfish/human divergence, and place Dipnotetrapodomorpha @ 415Ma with Sarcopterygii @ 420 Ma.
+
+Base of Actinopterygii @ 430Ma (DeepFin gives 424.8Ma, but see https://yanwong.me/?p=1157).
+
+I have swapped Batrachoidimorpharia for Batrachoidaria (ott 5835211) so that it matches against the Opentree.
+
+The root node Gnathostomes (Gnathostomata) needs an ott id to distinguish it from the identically named echinoderm superorder
+
+In OpenTree v5 Syngnathimorpharia / Syngnathiaria is absent, and needs replacing with
+
+(((Syngnathidae_ott1007057@,Solenostomidae_ott498083@),(Dactylopteroidei_ott447618@,Pegasidae_ott731212@)),Callionymoidei_ott646016@)Syngnathiaria
+
+(see https://sites.google.com/site/guilleorti/home/classification)
+
+
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Vertebrates]
+(((COELACANTHIFORMES@,(DIPNOI@,TETRAPODA@)Dipnotetrapodomorpha_ott4940726:5.0)Sarcopterygii_ott458402:10.0,(POLYPTERIFORMES@,(ACIPENSERIFORMES@,(HOLOSTEI@,((Elopiformes_ott329625@:196.2,(Albuliformes_ott133416@:150.8,(Notacanthiformes_ott925748@:101.0,Anguilliformes_ott854188@:101.0):49.8):45.4)Elopomorpha_ott229564:87.1,((Hiodontiformes_ott5521757@:227.1,Osteoglossiformes_ott496754@:227.1)Osteoglossomorpha_ott291995:46.7,((Clupeiformes_ott400458@:230.2,(Alepocephaliformes_ott120101@:219.698547,(Gonorynchiformes_ott460873@:198.6,(Cypriniformes_ott1005931@:172.9,(Gymnotiformes_ott216180@:147.834643,((Citharinoidei_ott5548744@,Characoidei_ott5548745@)Characiformes_ott701511:137.012155,Siluriformes_ott701516@:137.012155)Characiphysae_ott285825:10.822489):25.065357)Otophysi_ott285818:25.7)Ostariophysi_ott803544:21.098547):10.501453)Otomorpha_ott761450:20.4,(Lepidogalaxias_salamandroides_ott1043388:231.8,((Argentiniformes_ott757259@:159.6,(Galaxiiformes_ott138716@:145.63663,(Esociformes_ott216172@:104.478403,Salmoniformes_ott216171@:104.478403):41.158226):13.963371)Protacanthopterygii_ott1024043:55.254892,((Osmeriformes_ott496756@:129.4,Stomiiformes_ott701557@:129.4)Stomiatii_ott5521753:81.9,(Ateleopodiformes_ott292503@:192.3,(Aulopiformes_ott19307@:182.8,(Myctophiformes_ott19303@:173.1,((Lampriformes_ott617745@:150.3,(Percopsiformes_ott326254@:134.991036,(Zeiformes_ott816143@:107.1,(Stylephorus_chordatus_ott146678:78.8,Gadiformes_ott114162@:78.8)Gadariae_ott5553758:28.3)Zeiogadaria_ott5551468:27.891036)Paracanthomorphacea_ott5548734:15.308964):11.083092,(Polymixiiformes_ott617750@:154.8,('Beryciformes_plus_Holocentriformes__ott~108719-5551466@':146.463667,(Ophidiimorpharia_ott5553749@:132.8,(Batrachoidaria_ott5835211@:126.8,(Gobiomorpharia_ott5553755@:121.6,(((((Syngnathidae_ott1007057@,Solenostomidae_ott498083@),(Dactylopteroidei_ott447618@,Pegasidae_ott731212@)),Callionymoidei_ott646016@)Syngnathiaria_ott5553756:94.57,Pelagimorpharia_ott37460@:94.57):21.920866,((((Synbranchiformes_ott765116@:80.7,Anabantiformes_ott5554917@:80.7)Anabantaria_ott5553754:15.7,Carangimorphariae_ott5553751@:96.4):12.050153,Ovalentaria_ott5553750@:108.450155):3.449148,Percomorpharia_ott5553753@:111.899303):4.591565):5.109134):5.2):6.0)Percomorphaceae_ott5551466:13.66366)Euacanthomorphacea_ott108719:8.336335):6.583092)Acanthomorphata_ott108720:11.716908)Ctenosquamata_ott108734:9.7):9.5)Neoteleostei_ott108736:19.0):3.554892):16.945108)Euteleosteomorpha_ott5517919:18.8)Clupeocephala_ott285819:23.2)Osteoglossocephalai_ott5506109:9.5)Teleostei_ott212201:39.2)Neopterygii_ott471203:27.6)Actinopteri_ott285821:32.5)Actinopterygii_ott773483:47.4)Euteleostomi_ott114654:30.0,CHONDRICHTHYES@:460.0)Gnathostomata_ott278114;
+

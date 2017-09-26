@@ -1,0 +1,3 @@
+[from Lamichhaney et al (2105) doi:10.1038/nature14181
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Birds]
+((Certhidea_olivacea:.827,Certhidea_fusca:.827):.083,(Platyspiza_crassirostris:.546,(Pinaroloxias_inornata:.529,(Geospiza_difficilis:.469,(((Camarhynchus_pauper:.174,Camarhynchus_psittacula:.174):.031,(Camarhynchus_parvulus:.204,(Camarhynchus_pallidus:.171,Camarhynchus_heliobates:.171):.033):.001):.207,(Geospiza_septentrionalis:.360,((Geospiza_fuliginosa:.250,(Geospiza_fortis:.240,Geospiza_acutirostris:.240):.010):.008,((Geospiza_scandens:.227,Geospiza_propinqua:.227):.009,(Geospiza_magnirostris:.170,Geospiza_conirostris:.170):.066):.022):.102):.052):.057):.060):.017):.355);

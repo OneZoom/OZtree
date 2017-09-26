@@ -1,0 +1,65 @@
+The idea is to calculate some measure of popularity for as many biological taxa as possible. The main problem as I see it is that we must work on many overlapping taxonomic levels. Some taxa are best know to humans at the species or even sub species level (e.g. Canis lupus familiaris), while others tend to be though of at much higher levels in the classification (e.g. ‘wasps’). Often people may not even realise, for example, that there are multiple species of wasp, buttercup, or of seahorse. This may be problematic when trying to calculate e.g. the popularity of specific species within these groups.
+
+My proposed solution to this is explicitly to use the tree of life, such that all species of buttercup inherit some (or all) of the popularity of the genus Ranuculus, and all species of seahorse inherit some (or all) of the popularity of the genus Hippocampus. This extends throughout the taxonomic levels, so that the buttercup species will also inherit popularity measures attached to angiosperms, wasp inherit popularity from insects, etc etc. I call this measure "phylogenetic popularity".
+
+In order to calculate phylogenetic popularity, we need a list of taxa that is phylogenetically structured. The obvious source for this is the Open Tree of Life.
+
+We also need a source of raw popularity measures. For this I suggest using the english version of wikipedia, and mapping Open Tree Taxon ids to wikipedia pages. Rather than matching using names, which is error-prone (especially since wikipedia pages may take the title of the common name or the scientific name of any taxon), I suggest mapping using the source ids present in the OpenTree taxonomy.tsv file. These have the form:
+
+worms:488703,gbif:4643010,irmng:10886445,irmng:10540168 
+
+We can map these to wikipedia pages via the ‘wikidata’ database, which collects (among other ‘items’) taxa stored on all the various language wikipedias, and associates them with IDs from various databases such as NCBI, WORMS, GBIF, Index Fungorum, etc. The data for each item in the wikidata database is present as a line in a single large wikidata dump file.
+
+Once we have a link to a wikipedia page, there are 2 simple variables we could use to predict popularity: page size, and number of recent page visits. At the moment, I take a crude measure: the square root of (the page size multiplied by mean number of visits per month in the last year (with the 2 highest months trimmed off, to smooth out spikes in activity) )
+
+This gives a ‘top 20’ which looks something like this:
+
+id,OTT_ID,name,popularity,eol,wikidata,ncbi,ifung,worms,irmng,gbif
+14961,247341,Canis_lupus,799810.8890862807,328607,18498,9612,,,11407661,5219173
+14996,42314,Panthera_tigris,734055.3814024292,328674,19939,9694,,,10762914,5219416
+14993,563151,Panthera_leo,621569.3223559452,328672,140,9689,,,10196306,5219404
+14647,158484,Pan_paniscus,620736.8905672515,326448,19537,9597,,,10419555,5219533
+14649,351685,Gorilla_beringei,593141.5941281281,2923523,307157,499232,,,,7262070
+14954,872567,Ursus_arctos,586412.2458217005,328581,36341,9644,,,10198727,2433433
+14650,417965,Gorilla_gorilla,583727.7062651875,326447,737838,9593,,,11039388,2436441
+14648,770315,Homo_sapiens,581563.5138310564,327955,15978631,9606,,,10857762,2436436
+14994,42324,Panthera_pardus,557112.5237827726,328673,34706,9691,,,10200769,5219436
+14955,10732,Ursus_maritimus,554200.2151881388,328580,33609,29073,,137085,11061491,2433451
+14958,872573,Ailuropoda_melanoleuca,552890.0434446086,328070,33602,9646,,,11403556,2433399
+8240,509853,Bubo_virginianus,549535.4547196906,914958,81515,56268,,,11272214,5959118
+8540,263127,Aquila_chrysaetos,548191.8071106321,1049119,41181,8962,,,10194898,2480506
+3476,140425,Corvus_corax,546357.7173845075,1177364,25357,56781,,,10195300,2482492
+8507,1012350,Haliaeetus_leucocephalus,542043.6232897317,1049121,127216,52644,,159374,10195185,2480446
+15031,42307,Puma_concolor,541838.8037546582,311910,35255,9696,,,10212875,2435099
+16399,124215,Orcinus_orca,540671.5347558619,328534,26843,9733,,137102,10193882,2440483
+9066,494370,Aptenodytes_forsteri,534186.9648856351,1049604,161829,9233,,225773,10190138,2481661
+14995,42322,Panthera_onca,534141.9252659874,328606,35694,9690,,,10201333,5219426
+8105,1065606,Tyto_alba,531453.9623393503,914939,25317,56313,,,10693437,2497921
+8251,402453,Bubo_bubo,529886.8271232287,1178250,130933,30461,,,11064471,5959092
+14960,247331,Canis_latrans,528426.9752534755,328608,44299,9614,,,10941214,5219153
+1063,786435,Falco_peregrinus,528360.4088891628,1049164,30535,8954,,,10835669,2481047
+16457,226190,Balaenoptera_musculus,527666.8940694246,328574,42196,9771,,137090,10200889,2440735
+200,647692,Struthio_camelus,527502.4161478314,1178371,17592,8801,,,10199490,2495150
+14645,770302,Pongo_pygmaeus,525576.6657715186,326450,599672,9600,,,11011124,5219532
+14644,770295,Pongo_abelii,525028.6098365089,2925671,543424,9601,,,,5707420
+14981,821964,Vulpes_vulpes,524983.0531709418,328609,8332,9627,,,11162128,5219243
+15032,752759,Acinonyx_jubatus,524912.6699026321,328680,23907,32536,,,10856341,2435270
+3455,808257,Corvus_coronoides,523873.99341484153,917349,1584072,108826,,,10862008,2482524
+5249,565813,Sturnus_vulgaris,523341.68597668747,922253,25469,9172,,,10878529,2489105
+3467,883103,Corvus_hawaiiensis,523155.7959226806,1177475,247472,134902,,,10197758,2482517
+3458,331952,Corvus_brachyrhynchos,522276.1095787759,1177464,267735,85066,,,10839764,2482507
+3471,219955,Corvus_frugilegus,520690.1901853497,916409,25386,75140,,,10195563,2482513
+9067,613299,Eudyptula_minor,520274.9466272356,1049616,203628,37083,,225932,11259790,2481646
+3465,711844,Corvus_corone,519776.6112202953,917348,26198,30422,,,11008682,2482501
+3490,872542,Corvus_tasmanicus,518730.4228900275,916245,1299780,1196310,,,10886852,2482522
+6930,745175,Passer_domesticus,517438.4277098218,922241,14683,48849,,,10582565,5231190
+3466,38262,Corvus_splendens,517288.6632729026,916246,507383,701737,,,10217534,2482499
+3492,200022,Corvus_moneduloides,517249.3625213781,917360,334206,1196302,,,11069854,2482475
+4185,1040135,Hirundo_rustica,516926.0140785504,917688,25429,43150,,,11035556,5230791
+
+Some problems to think about:
+
+1) cases where people don’t think taxonomically, so that e.g. dinosaurs (or archosaurs) contribute towards the phylogenetic popularity of birds
+2) there are two sources used by the OpenTree but not present in wikidata: IRMNG and SILVA (mostly for bacteira/microorganisms.
+
+3) coverage: 41.81% of the open tree can be mapped to wikidata entries (in comparison, 78.7% can be mapped to Encyclopedia of Life pages). But only about 60% of those have english wikipedia entries, so that the number of taxa from the OpenTree that can be mapped to en.wikipedia titles is only 26.85%. Even so, because of the inheritance patterns, we can still allocate a popularity measure to all taxa on the tree. 

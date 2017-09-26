@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+
+<!--
+
+OneZoom (R) web version 1.2 (2012)
+Copyright (c) 2013 owned by James Rosindell and Imperial College, London
+Development version only - not licensed for use 
+other than by OneZoom team members for development purposes
+-->
+
+<html>
+
+<!-- The order of these scripts does matter, midnode needs to be defined near the top -->
+
+<script type="text/javascript" src="scripts/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="scripts/OZ_script_V1.2.original.js"></script>
+<script type="text/javascript" src="scripts/plants_taxa_random.js"></script>
+
+<script type="text/javascript" src="user/userOptions_plants.js"></script>
+<link rel="stylesheet" type="text/css" href="css/front_iframe.css">
+
+<head>
+    <META NAME="robots" CONTENT="index,follow" />
+    <META NAME="description" CONTENT="OneZoom Tree of Life Explorer" />
+        <META NAME="keywords" CONTENT="OneZoom,tree,life,phylogeny,phylogenetics,phylogenetic,phylogeny,viewer,explorer,Rosindell,Harmon,mammal,mammals,conservation,amphibians,tetrapods,plants,birds,fish,red,list,redlist,IUCN,one,zoom,fractal,L-system,evolution,ecology,biodiversity,biology,science,museum,teaching,bioinformatics,visualisation,tree of life,zooming,deep-zoom,deep,big data,big,data,TOL,encyclopedia,discover,map,primates,ancestor,common ancestor,embed,tool,cool tools,interative,display,public,outreach,teacher,learning,education,lesson,lesson plan" />
+    <meta NAME="viewport" CONTENT="width=device-width ,initial-scale=1.0, user-scalable=no">
+
+    <title> OneZoom Tree of Life Explorer </title>
+    
+        <script type="text/javascript">
+            
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-35612933-1']);
+            _gaq.push(['_trackPageview']);
+            
+            (function() {
+             var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+             ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'stats.g.doubleclick.net/dc.js';
+             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+             })();
+            
+        </script>
+        
+        <script type="text/javascript">
+            var draft_only = true;
+            var file_name = "plants";
+            console.log(UserOptions.allowurlparse);
+            UserOptions.allowurlparse = false;
+            init_URL = 1;
+            var front_page_bottom_text = "Click to see how OneZoom works";
+        </script>
+        
+</head>
+
+<body id = "wholebody" onLoad="init();" onresize="(Resize())" >
+    <div id="wholecontainer">
+    <center>
+        <img id = "logo1" src="icons/black.jpg"  height="28" style = "cursor:pointer; display:none"onclick="Link2Logo1();" onmouseover = "popup_Logo1()" onmouseout = "popup_out()"/>
+        
+        <img id = "OZlogo" src="logos/OZ_logo.png"  height="28" style = "cursor:pointer"onclick="Link2OZ();" onmouseover = "popup_OZsite()" onmouseout = "popup_out()"/>
+        <img id = "about_icon" src="icons/About.png"  height="28" style = "cursor:pointer"onclick="AboutOZ();" onmouseover = "popup_AboutOZ()" onmouseout = "popup_out()"/>
+        <img id = "headerspace" src="icons/black.jpg" width = "50" height="28" />
+        <img id = "zoomin_icon" src="icons/Zoomin_icon.png"  height="28" style = "cursor:pointer"onclick="CZoomin();" onmouseover = "popup_Zoomin()" onmouseout = "popup_out()"/>
+        <img id = "zoomout_icon" src="icons/Zoomout_icon.png"  height="28" style = "cursor:pointer"onclick="CZoomout();" onmouseover = "popup_Zoomout()" onmouseout = "popup_out()"/>
+        
+        <img src="icons/Search_icon.png"  height="28" style = "cursor:pointer"onclick="searchoptions();" onmouseover = "popup_search()" onmouseout = "popup_out()"/>
+        <img src="icons/Grow_icon.png"  height="28" style = "cursor:pointer"onclick="growoptions();"onmouseover = "popup_grow()" onmouseout = "popup_out()"/>
+        <img src="icons/Shape_icon.png"  height="28" style = "cursor:pointer"onclick="form_change();"onmouseover = "popup_shape()" onmouseout = "popup_out()"/>
+        <img src="icons/Options_icon.png"  height="28" style = "cursor:pointer"onclick="viewoptions();"onmouseover = "popup_view()" onmouseout = "popup_out()"/>
+        <img src="icons/Reload_icon.png"  height="28" style = "cursor:pointer"onclick="userReset();"onmouseover = "popup_reset()" onmouseout = "popup_out()"/>
+        <img id = "help_icon" src="icons/Help_icon.png"  height="28" style = "cursor:pointer"onclick="tutorialstart();"onmouseover = "popup_tutorial()" onmouseout = "popup_out()"/>
+        <img src="icons/More_icon.png"  height="28" style = "cursor:pointer"onclick="moreoptions();"onmouseover = "popup_more()" onmouseout = "popup_out()"/>
+        <img src="icons/Twitter_icon.png"  height="28" style = "cursor:pointer"onclick="Link2Twitter();"onmouseover = "popup_twitter()" onmouseout = "popup_out()"/>
+        <img src="icons/Facebook_icon.png"  height="28" style = "cursor:pointer"onclick="Link2Facebook();"onmouseover = "popup_facebook()" onmouseout = "popup_out()"/>
+        
+    </center>
+    
+    
+    <!-- <canvas id="myCanvas" data_status="front_iframe">
+    </canvas> -->
+    
+    <canvas id="myCanvas" data_status="embedded_front">
+    </canvas>
+     
+    
+    <form name="myform">
+        <FONT style = "display:none" COLOR="FFFFFF" id = "Canvasnotsupported"> Canvas element not supported - please update your browser </FONT>
+        <p id="textoutunused"> </p>
+        <FONT COLOR="FFFFFF" id = "JSnotsupported"> <center>
+        <p>Please wait... </p>
+        <p>if you have waited for a long time and nothing has happened</p>
+        <p>then Javascript may be turned off in your browser settings</p>
+        <p>or Javascript may not be supported - please check your browser.</p></center></FONT>
+        <img id = "headerspace2" src="icons/black.jpg" width = "26" height="2" />
+        <FONT style = "display:none" COLOR="FFFFFF" id = "viewtxt"> View options </FONT>
+        <FONT style = "display:none" COLOR="FFFFFF" id = "growtitle"> Growth animation</FONT>
+        <FONT style = "display:none" COLOR="FFFFFF" id = "searchtxt"> Search: </FONT>
+        <FONT style = "display:none" COLOR="FFFFFF" id = "moretxt"> More options </FONT>
+        <button style = "cursor:pointer; display:none"id = "detailincbutton" type="button" onclick="detaildown();">Detail -</button>
+        <button style = "cursor:pointer; display:none"id = "detaildecbutton" type="button" onclick="detailup();">Detail +</button>
+        <button style = "cursor:pointer; display:none"id = "formbutton" type="button" onclick="form_change();">Change Shape</button>
+        <button style = "cursor:pointer; display:none"id = "colourbutton" type="button" onclick="colour_change();">Change Colours</button>
+        <button style = "cursor:pointer; display:none"id = "spbutton" type="button" onclick="signpost_change();">Signposts On/Off</button>
+        <button style = "cursor:pointer; display:none"id = "namebutton" type="button" onclick="name_change();">Latin/Common Names</button>
+        <button style = "cursor:pointer; display:none"id = "polybutton"type="button" onclick="polyt_change();">Show Polytomies</button>
+        <button style = "cursor:pointer; display:none"id = "info button" type="button" onclick="toggledisplay();">Show Magnification</button>
+        <button style = "cursor:pointer; display:none"id = "startgbutton" type="button" onclick="growstart();">Beginning</button>
+        <button style = "cursor:pointer; display:none"id = "revgbutton" type="button" onclick="growrev();">Reverse</button>
+        <button style = "cursor:pointer; display:none"id = "pausegbutton" type="button" onclick="growpause();">Pause</button>
+        <button style = "cursor:pointer; display:none"id = "playgbutton" type="button" onclick="growplay();">Play</button>
+        <button style = "cursor:pointer; display:none"id = "endgbutton" type="button" onclick="growend();">Stop</button>
+        <FONT style = "display:none" COLOR="FFFFFF" id = "numhittxt">no hits</FONT>
+        <input style = "display:none" id = "searchtf" type="text" name="tosearchfor" onchange="marksearch();"/>
+        <button style = "cursor:pointer; display:none"id = "searchbutton" type="button" id= "markbutton" onclick="marksearch();">Next hit</button>
+        <button style = "cursor:pointer; display:none"id = "searchclearbutton" type="button" id= "searchclearbutton" onclick="usersearchclear();">Clear</button>
+        <button style = "cursor:pointer; display:none"id = "searchbutton2" type="button" id= "markbutton" onclick="unmarksearch();">Markings On/Off</button>
+        <button style = "cursor:pointer; display:none"id = "leapbutton" name="Flybutton" type="button" onclick="performleap();">Show Results</button>
+        <input style = "display:none" id = "latincheckbox" type="checkbox" name="latinsearch" value="latinsearch" />
+        <FONT style = "display:none" COLOR="FFFFFF" id = "latintxt"> Latin </FONT>
+        <input style = "display:none" id = "commoncheckbox" type="checkbox" name="commonsearch" value="commonsearch" checked="checked" />
+        <FONT style = "display:none" COLOR="FFFFFF" id = "commontxt"> Common  </FONT>
+        <input style = "display:none" id = "traitcheckbox" type="checkbox" name="traitsearch" value="traitsearch" checked="checked" />
+        <FONT style = "display:none"COLOR="FFFFFF" id = "traittxt"> Conservation </FONT>
+        <button style = "cursor:pointer; display:none"id = "flybutton" name="Flybutton" type="button" onclick="performfly();">Fly to Results</button>
+        <input style = "display:none" id = "flightcheckbox" type="checkbox" name="flightsearch" value="flightsearch"/>
+        <FONT style = "display:none" COLOR="FFFFFF" id = "flighttxt"> Flyby </FONT>
+        <input style = "display:none" id = "markingscheckbox" type="checkbox" name="domarksearch" value="domarksearch" onchange="marksearchchange();" checked="checked"/>
+        <FONT style = "display:none" COLOR="FFFFFF" id = "markingstxt" > Markings </FONT>
+        
+        <button style = "cursor:pointer; display:none"id = "skip_into_button" type="button" onclick="skip_intro();">Skip Introduction</button>
+        <button style = "cursor:pointer; display:none"id = "stop_into_button" type="button" onclick="stop_intro();">Stop Introduction</button>
+        <button style = "cursor:pointer; display:none"id = "replay_into_button" type="button" onclick="replay_intro();">Replay Introduction</button>
+        
+        
+        <FONT style = "display:none"COLOR="FFFFFF" id = "datatxt"> - </FONT>
+        <input style = "display:none" type="text" id = "datatxtin" name="datain" width = "35" />
+        <button style = "cursor:pointer; display:none"type="button" id = "databutton" onclick="init();">Load data</button>
+        <button style = "cursor:pointer; display:none" type="button" id = "closebutton" onclick="Closebar();">Close</button>
+        <FONT COLOR="FFFFFF" id = "viewtxt2"> </FONT>
+        <FONT COLOR="FFFFFF" id = "growtxt"> </FONT>
+        <FONT id="textout"> </FONT>
+    </form>
+    </div>
+    
+    <script type="text/javascript">
+        var is_chrome = navigator.userAgent.indexOf('Chrome') > -1;
+        var is_safari = navigator.userAgent.indexOf("Safari") > -1;
+        if ((is_chrome)&&(is_safari)) {is_safari=false;}
+        if (is_safari) document.body.style.overflow = "scroll";
+    </script>
+</body>
+</html>

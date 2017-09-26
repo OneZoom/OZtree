@@ -1,0 +1,10 @@
+[OToL relies only on taxonomy and the 3 taxon tree in Ryan et al 2013. As far asI can tell, Poder (2001) "A molecular phylogenetic framework for the phylum Ctenophora using 18S rRNA genes" figure 3 still holds as the best summary of ctenophore phylogeny,
+(((((Beroida, Haeckeliidae),((Cestida,Thalassocalycida,Lobata), Pleurobrachiidae))),Platyctenida),Mertensiidae);
+
+As a shorthand using the OpenTree data, the trichotomy (Cestida,Thalassocalycida,Lobata) can be substituted with Cyclocoela_ott956365~-570650, since Cyclocoela_ott956365 = (Cestida_ott632527,Beroida_ott570650,Thalassocalycida_ott804416,Lobata_ott161874);
+
+Note this is phylogeny is missing about 20 spp, esp. genera Euplokamis & Lampea
+
+we must take care not to mix this up with Ctenophora, the fly genus, hence we place an OTT ID on the whole group
+from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Animals]
+((((Beroida_ott570650@,Haeckeliidae_ott1583@),(Cyclocoela_ott956365~-570650@,Pleurobrachiidae_ott747323@)),Platyctenida_ott574291@),Mertensiidae_ott1580@)Ctenophora_ott641212;

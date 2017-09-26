@@ -1,0 +1,5 @@
+[4 species of colugo from http://www.sciencedirect.com/science/article/pii/S0960982208011901, with associated divergence times recalibrated so that basal split is 15Ma. Total depth should equal perhaps 70
+
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Mammals]
+((Galeopterus_variegates_ott3607464:4.0,(Galeopterus_peninsulae_ott667352:3.0,Galeopterus_borneanus:3.0):1.0):11.0,Cynocephalus_volans_ott781510:15.0)DERMOPTERA_ott987673;
+

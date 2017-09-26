@@ -1,0 +1,8 @@
+{{
+try:
+  from gluon.serializers import json
+  response.write(json(response._vars),escape=False)
+  response.headers['Content-Type']='application/json'
+except:
+  raise HTTP(405,'no json')
+}}

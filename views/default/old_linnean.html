@@ -1,0 +1,20 @@
+{{try:}}
+{{partner = {'partner':'LinnSoc', 'logo_url':'https://www.linnean.org/', 'logo_src':'https://ia1-tls.edcdn.com/img/interface/logo.png','user_more_info':'supporting the Linnean Society'} }}
+{{version = str(version+0)}}
+{{extend 'treeLayout_partner.html'}}
+<title>OneZoom/LinnSoc Tree of Life Explorer{{try:}}{{=': '+page_info['subtitle']}}{{except:}}{{pass}}</title>
+{{try:}}{{OZTree_js_suffix = (myconf.take('general.oztree_js_suffix') if myconf.take('general.oztree_js_suffix') else non_existent_variable)}}{{except:}}{{OZTree_js_suffix = '.js'}}{{pass}}
+<link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree.css')}}" />
+<script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/completetree_' + str(version) +  '.js')}}"></script>
+<script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/cut_position_map_' + str(version) +  '.js')}}"></script>
+<script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/dates_' + str(version) + '.js')}}"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<!-- fallback to local jQuery version e.g. if offline -->
+<script>window.jQuery || document.write('<script src="{{=URL("static", "js/jquery.min.js")}}"><\/script>')</script>
+<script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common' + OZTree_js_suffix)}}"></script>
+<script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/life' + OZTree_js_suffix)}}"></script>
+{{except:}}
+</head><body><h1>Sorry - there has been a OneZoom error when getting the tree</h1>
+No appropriate tree version available (Error: {{=version}}). Please <a href="mailto:mail@onezoom.org">contact us</a> and tell us of the problem.
+<div style="display:none;">
+{{pass}}

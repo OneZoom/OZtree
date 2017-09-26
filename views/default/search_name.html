@@ -1,0 +1,30 @@
+{{response.title='OneZoom: Search for a species to sponsor'}}
+{{response.files.append(URL('static', 'OZSponsor/name_search.css'))}}
+{{extend 'layout.html'}}
+{{try:}}{{n = int(request.vars.get('n'))}}{{except:}}{{n=50}}{{pass}}
+<div class="container-fluid intro">
+    <div class="col-sm-8">
+        <h3>Search for a species or group in the tree</h3>
+        <p>The groups and species results below are ordered by how popular we think they are.
+        Click on any to look at the sponsorship possibilities.</p>
+    </div>
+    <div class="col-sm-4">
+        <form><input type="text" name="query" value="{{=request.vars.get('query') or ''}}" />
+        <button>Search{{if request.vars.get('query'):}} again{{pass}}</button>
+        <input type="hidden" name="n" value="{{=n}}" />
+        <input type="hidden" name="lang" value="{{=request.vars.get('lang')}}" />
+        </form>
+    </div>
+</div>
+
+<div class="container-fluid">
+<div class="col-sm-4" id = "nodes">
+<h4>Groups of organisms</h4>
+{{=LOAD('API','search_for_name.load', vars={'query':request.vars.get('query') or '', 'lang':request.vars.get('lang'), 'sorted':True, 'limit':n+1, 'display':n, 'restrict_tables':'nodes'}, ajax=True)}}
+</div>
+<div class="col-sm-8" id = "leaves">
+<h4>Sponsorable species</h4>
+{{=LOAD('API','search_for_name.load', vars={'query':request.vars.get('query') or '', 'lang':request.vars.get('lang'), 'sorted':True, 'limit':n+1, 'display':n, 'restrict_tables':'leaves', 'include_price':True}, ajax=True)}}
+</div>
+</div>
+<p><a href = "{{=URL('sponsor.html')}}">&lt;&nbsp;main sponsorship page</a></p>

@@ -1,0 +1,28 @@
+{{if len(otts):}}
+{{max_items = int(request.vars.n or 0)}}
+{{start_item = int(request.vars.start or 0)}}    
+{{vars=request.vars}}
+{{if price_pence:}}
+<h3>{{=T('Leaves requiring a minimum donation of £%s') % ('{:.0f}'.format(price_pence/100.0) if (float(price_pence)/100).is_integer() else '{:.2f}'.format(price_pence/100.0),)}}</h3>
+{{else:}}
+<h3>{{=XML(T('Leaves that are only sponsorable by negotiation (<a href="%s">email us</a>)') % ('mailto:mail@onezoom.org',))}}</h3>
+{{pass}}
+<ul class = "spList">
+    {{if max_items and start_item:}}
+    {{vars.update({'start':0 if start_item-max_items < 0 else start_item-max_items})}}
+    <li>{{=A(XML('&lt;'),_href=URL(vars=vars),cid=request.cid)}}</li>
+    {{pass}}
+{{for i, ott in enumerate(otts):}}
+{{if max_items and i==max_items: break}}
+    <li>{{new_vars = {k:vars[k] for k in ['embed','partner','user_more_info'] if vars[k]} }} {{new_vars['ott']=ott}}
+        <a class="sponsor" style="background-image:url('{{=image_urls[ott] if ott in image_urls else URL("static","images/noImage_transparent.png")}}')"  href="{{=URL('sponsor_leaf', extension=False,  vars=new_vars)}}" title="{{=attributions[ott].replace('"',"'") if ott in attributions else ''}}" > <p>{{=html_names[ott]}}</p> </a>
+    </li>
+{{pass}}
+    {{if max_items and (len(otts)> max_items):}}
+    {{vars.update({'start': start_item+max_items})}}
+    <li>{{=A(XML('&gt;'),_href=URL(vars=vars),cid=request.cid)}}<li>
+    {{pass}}
+</ul>
+        
+
+{{pass}}

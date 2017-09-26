@@ -1,0 +1,23 @@
+[Hagfish genus tree from Fernholm, 2013: Hagfish phylogeny and taxonomy, with description of the new genus Rubicundus (Craniata, Myxinidae): all 3 trees combined where possible.
+
+Note this tree uses the taxonomy-based opentree for genera, so is not to be relied upon for genus level-branching, which has been resolved at random. It is only useful for a schematic overview of the *sort of* pattern we might expect to see.
+
+Lampreys (18 parasitic spp) from http://gir.uoguelph.ca/article/view/61/127. Check on http://link.springer.com/chapter/10.1007/978-94-017-9306-3_2 (https://books.google.co.uk/books?id=ugGXBQAAQBAJ&lpg=PA35&ots=GQRKLwinGg&lr&pg=PA57#v=onepage&q&f=false). Also see http://www.bioone.org/doi/abs/10.1643/IA02-085.1 and fig 13 in http://www.fao.org/docrep/015/i2335e/i2335e02.pdf. 
+
+Original tree (~ 67 spp.):
+(((Rubicundus_lopheliae:0,Rubicundus_rubicundus:0):0,((Eptatretus_cheni:0,(Eptatretus_minor:0,(Eptatretus_cirrhatus:0,((Eptatretus_strickrotti:0,Eptatretus_longipinnis:0):0,((Eptatretus_deani:0,Eptatretus_stoutii):0,((Eptatretus_sheni:0,(((Eptatretus_taiwanae:0,Eptatretus_chinensis:0):0,Eptatretus_nelsoni:0):0,(Eptatretus_fernholmi:0,Eptatretus_yangi:0):0):0):0,(Eptatretus_burgeri:0,Eptatretus_sp_Korea:0):0):0):0):0):0):0):0,((Neomyxine_sp:0,Neomyxine_biniplicata:0):0,((Myxine_circifrons:0,(Myxine_formosana:0,Myxine_sp1CHK2001:0):0):0,(Myxine_australis:0,((Myxine_fernholmi:0,Myxine_affinis:0):0,(Myxine_jespersenae:0,(Myxine_glutinosa:0,Myxine_limosa:0):0):0):0):0):0):0):0)Myxiniformes:450,((((((Ichthyomyzon_greeleyi:0,Ichthyomyzon_bdellium:0):0,Ichthyomyzon_castaneus:0):0,(Ichthyomyzon_unicuspis:0,Ichthyomyzon_fossor:0):0):0,Petromyzon_marinus):0,(Caspiomyzon_wagneri:0,(Tetrapleurodon_spadiceus:0,((((Entosphenus_macrostomus:0,Entosphenus_tridentatus):0,Entosphenus_similis:0),Entosphenus_minimus:0):0,(Lethenteron_camtschaticum:0,((Eudontomyzon_morii:0,Eudontomyzon_danfordi:0):0,(Lampetra_ayresii:0,(Lampetra_aepyptera:0,(Lampetra_fluviatilis:0,Lampetra_planeri:0):0):0):0):0):0):0):0):0):250,(Geotria_australis:200,(Mordacia_lapicida:0,(Mordacia_mordax:0,Mordacia_praecox:0):0):200):50)Petromyzontiformes:200);
+
+
+Timescale from Kuraku (2008, Fig1A) http://kops.uni-konstanz.de/bitstream/handle/123456789/6947/Kuraku08_ZoolSci_Review.pdf, Within-genera divisions times unused, as we are only visulaizing contours for 100, 200, 300, 400, 500 Ma. Dates used are
+lamprey/hagfish split: 482Ma
+Myxine/Eptatretus spilt: 90Ma
+Mordacia/Geotria split: 130Ma
+Mordacia/Lampetra split: 150Ma
+Lampetra/Petromyzon split: 25Ma
+Rubicundus/Myxine split (Fig 3 from Fernholm, if myx/epta=90, extra depth = 20) => 110Ma
+
+To produce a rendezvous at 525Ma, the root needs to be 43Ma long. Eptatretus lopheliae (ott3644164) and Eptatretus rubicundus (ott772588) have been removed to be placed in Rubicundus
+
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Vertebrates]
+(((Rubicundus_lopheliae_ott3644164:0.0,Rubicundus_rubicundus_ott772588:0.0):110.0,('Eptatretus_ott852681~-772588-3644164@':90.0,(Neomyxine_ott3644215@:0.0,Myxine_ott34455@:0.0):90.0):20.0)Myxiniformes_ott852676:372.0,LAMPREYS@:332.0)CYCLOSTOMATA_ott5424564:43.0;
+

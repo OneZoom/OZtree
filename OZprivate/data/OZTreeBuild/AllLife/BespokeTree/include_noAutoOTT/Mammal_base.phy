@@ -1,0 +1,9 @@
+[uncontroversial tree, taken from OZ
+
+Dates for basal nodes have been simply moved so that the dates changes as follows:
+
+Theria 19.1 => 20 & Monotremes 102.6 => 116.4 ( moves Mammalia root 166.2 => 180 Ma)
+Mammalia 135.5 => 140 (moves Amniote root 301.7 => 320Ma)
+
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Mammals]
+(((Tachyglossus_aculeatus:13.7,((Zaglossus_bruijni:13.5,Zaglossus_bartoni:13.5):0.0,Zaglossus_attenboroughi:13.5)Zaglossus:0.2)Tachyglossidae:49.9,Ornithorhynchus_anatinus:63.6)MONOTREMATA:116.4,(EUTHERIA@,MARSUPIALIA@)Theria:20.0)Mammalia:140.0;

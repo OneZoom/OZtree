@@ -1,0 +1,111 @@
+{{response.title='OneZoom Tree of Life Explorer'}}
+{{extend 'layout_uikit.html'}}
+<div class="uk-container uk-margin-top">
+<div class="uk-grid-match uk-text-center uk-grid-margin" uk-grid>
+    <div class="uk-width-3-5@m">
+      <div class="uk-cover-container uk-height-medium">
+        <video autoplay loop id="video-background" muted style="border: 2px solid black; background-color: black;">
+          <source src="/static/videos/use.mp4" type="video/mp4" />
+        </video>
+        <a href="" class="uk-position-cover uk-overlay-default">
+           <h3 style="text-align: center">OneZoom: Intro video</h3>
+           <p>The video running in the background should be a short snippet of moving around the tree.
+           When clicked on, this should show the entire intro video, which should contain the same snippet</p>
+        </a>
+      </div>
+    </div>
+    <div class="uk-width-2-5@m">
+        <div class="uk-dark"><blockquote>
+  <p style="color: #DDDDDD">The Google Maps of Evolutionary Biology</p>
+  <footer style="text-align: right">Jonathon Eisen</footer>
+</blockquote></div>
+    </div>
+</div>
+<div>
+<h1>TreeTours!</h1>
+<a href="tour1">
+<figure>
+  <div>
+    <img src="{{=URL('static','images','LinnSocTour.jpg')}}" alt="The Linnean Society Tour" width="150" height="150">
+  </div>
+  <figcaption>TreeTour 1<br/>Linnaeus’ gems</figcaption>
+</figure>
+</a>
+</div>
+<div>
+<h1>Popular places!</h1>
+{{popular={"Mammals":[27758512, 27123592, 26808924, 26789190, 31408652, 27187685, 33288518]} }}
+{{info={27758512:"foobar", 27123592:"barbar", 26808924:"more info", 26789190:"Echidna", 31408652:"bat", 27187685:"", 33288518:""} }}
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0">
+  <defs>
+    <polygon id="hex" points="60,26 45,52 15,52 0,26 15,0 45,0" style="stroke:black;stroke-width:1"/>
+    {{for n in info:}}
+    <pattern id="pattern{{=n}}" x="0" y="0" height="60" width="60" patternUnits="userSpaceOnUse">
+       <image width="60" height="60" xlink:href="{{=thumbnail_url(2,n)}}"></image>
+    </pattern>
+    {{pass}}
+  </defs>
+</svg>
+{{for p in popular:}}
+<div>
+  <a href="life.html/@Mammalia=244265">
+    <figure>
+      <svg xmlns="http://www.w3.org/2000/svg" height="158" width="154">
+      {{for z in zip([46,1,91,46,1,91,46],[1,27,27,53,78,78,104],popular[p][:7]):}}
+        <use xlink:href="#hex" x="{{=z[0]}}" y="{{=z[1]}}" fill="url('#pattern{{=z[2]}}')"><title>{{=info[z[2]]}}</title></use>
+      {{pass}}
+      </svg>
+      <figcaption>Explore {{=p}}</figcaption>
+    </figure>
+  </a>
+{{pass}}
+</div>
+
+<div>
+<h1>Recently sponsored!</h1>
+
+<ol class="sponsored_list">
+            <li>
+                <figure>
+                    <figure>
+                        <figcaption>Titi monkey<br>(<i class="taxonomy species">Callicebus caligatus</i>)</figcaption>
+                        <a href="/life/@=210729"><img alt="Go to this species on the OneZoom tree of life" src="/OneZoom/static/images/noImage_transparent.png">
+                        </a>
+                    </figure>
+                <figcaption>Sponsored by<br><strong>Yan</strong><br></figcaption></figure>
+            </li>
+
+            <li>
+                <figure>
+                    <figure>
+                        <figcaption>Tiger shrike<br>(<i class="taxonomy species">Lanius tigrinus</i>)</figcaption>
+                        <a href="/life/@=666133"><img alt="Go to this species on the OneZoom tree of life" src="/OneZoom/static/FinalOutputs/pics/34018340.jpg" title="© Kim, Hyun-tae / CC-BY 4.0 (http://creativecommons.org/licenses/by/4.0/)">
+                        </a>
+                    </figure>
+                <figcaption>Sponsored by<br><strong>Silvio</strong><br>Hamburg</figcaption></figure>
+            </li>
+
+            <li>
+                <figure>
+                    <figure>
+                        <figcaption>Avocado<br>(<i class="taxonomy species">Persea americana</i>)</figcaption>
+                        <a href="/life/@=913249"><img alt="Go to this species on the OneZoom tree of life" src="/OneZoom/static/FinalOutputs/pics/29256683.jpg" title="© CostaPPPR / CC-BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0/)">
+                        </a>
+                    </figure>
+                <figcaption>Sponsored by<br><strong>Matt Dick</strong><br>Solidly Fourth</figcaption></figure>
+            </li>
+
+            <li>
+                <figure>
+                    <figure>
+                        <figcaption>Leopard cat<br>(<i class="taxonomy species">Prionailurus bengalensis</i>)</figcaption>
+                        <a href="/life/@=280108"><img alt="Go to this species on the OneZoom tree of life" src="/OneZoom/static/FinalOutputs/pics/27278541.jpg" title="© IltizamSpeed / CC-BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0/)">
+                        </a>
+                    </figure>
+                <figcaption>Sponsored by<br><strong>Alexander Grushetsky</strong><br>Mimi and Kiki</figcaption></figure>
+            </li>
+</ol>
+
+</div>
+</div>
+<img src="/static/images/temp_roots.png">

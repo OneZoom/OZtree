@@ -1,0 +1,303 @@
+{{response.title='OneZoom: Sponsor a leaf on the tree'}}
+{{response.files.append(URL('static', 'OZSponsor/sponsor_leaf.css'))}}
+{{response.files.append(URL('static', 'OZSponsor/EOLqueries.js'))}}
+
+{{try:}}{{OZTree_suffix = ("" if myconf.take('general.oztree_no_min') else non_existent_variable)}}{{except:}}{{OZTree_suffix = '.min'}}{{pass}}
+{{response.files.append(URL('static', 'OZTree/dist/Drawing'  + OZTree_suffix + '.js'))}}
+{{response.files.append(URL('static', 'OZTree/dist/Leaf_draw'   + OZTree_suffix + '.js'))}}
+
+{{extend ('embed.html' if request.vars.get('embed') else 'layout.html')}}
+        <!--error, invalid, banned, verified, unchecked, reserved, reserved for this user, available -->
+<script>var OZstrings={{include 'default/js_strings.json'}}</script>
+
+{{include 'default/sponsor_leaf.load'}}
+       
+
+<script>
+
+/* define global variables */
+
+var mintextsize = 3; // the smallest size text you want to have displayed
+var fonttype = 'Helvetica'; // change the text font to match the rest of your article and journal style // 'sans-serif' // is good too
+var green1 = 'rgb(135,215,90)';
+var green2 = 'rgb(70,135,30)';
+
+var newcanvas;
+var leafContext;
+var widthRes = 500;
+var heightRes = 500;
+
+var workingEOL = true; // is the API OK?
+var imageInfoReady = false; // is the image information (and common name) ready to be shown?
+var image_objects = Object.create(null); //to store the image_objects (like a dict)
+{{try:}}
+// initialise list of images & info with default image. 
+//This is keyed by {src}_{src_id}, but with src=eol_src for OneZoom specific images
+{{=XML('var which_img = "{}_{}"'.format(int(best_image.src) if best_image.src > eol_src else int(eol_src),int(best_image.src_id)))}};
+image_objects[which_img] = {"dataObjectVersionID":{{=best_image.src_id}},
+                            "url":"{{=thumbnail_url(best_image.src,best_image.src_id)}}",
+                            "default":1,
+                            "dataRating":10}; //highest data rating, so this gets put first
+{{except:}}
+var which_img = null; //which of the image objects in image_objects is to be rendered
+{{pass}}
+var leafImageFile = null; // image file (if null and image_objects exists then image is not loaded yet)
+var leaftext = [null,null];
+var leafCol = {
+    // relating to the leaf itself (not highlighted)
+    
+    "insideColor" : 'rgb(135,215,90)',
+    "outlineColor" : 'rgb(70,135,30)',
+    "BGColor" : 'rgb(255,255,255)',
+    "waterMark" : 'rgba(255,255,255,0.4)',
+    // relating to the leaf itself (highlighted)
+    "insideHighlight" : 'rgb(135,215,90)',
+    "outlineHighlight" : 'rgb(70,135,30)',
+    "BGHighlight" : 'rgb(255,255,255)',
+    "waterMarkHighlight" : 'rgba(255,255,255,0.4)',
+    
+    // relating to the sponsorship text part
+    "sponsorColor" : 'rgb(135,215,90)',
+    "sponsorHighlight" : 'rgb(255,255,255)',
+    
+    // relating to main text part
+    "textColor" : 'rgb(0,0,0)',
+    "textHighlight" : 'rgb(0,0,0)',
+    "textOutline" : 'rgba(255,255,255,0.6)',
+    
+    // image outside line
+    "imageLineColor" : 'rgb(110,110,110)',
+    "imageLineHighlight" : 'rgb(110,110,110)',
+    
+    // copyright symbol colors
+    "copyrightText" : 'rgb(135,215,90)',
+    "copyrightInside" : 'rgb(70,135,30)',
+    "copyrightTextHighlight" : 'rgb(255,255,255)',
+    "copyrightInsideHighlight" : 'rgb(0,0,0)'
+}
+
+
+// initialise the canvas
+newcanvas = document.getElementById("leafCanvas");
+if (newcanvas) {
+    leafContext = newcanvas.getContext('2d');
+    newcanvas.width = widthRes;
+    newcanvas.height = heightRes;
+    leafContext.textBaseline = 'middle';
+}
+
+
+// this draws a preview of the leaf
+// it gathers information from the form for sponsorship information
+// it requires the global information on workingEOL, imageReady, image_objects, which_img, and leafImageFile to be set.
+function drawPreview()
+{
+    // define sponsorship variables
+    var sponsorText = null;
+    var extraText = null;
+    var hasText = false;
+    
+    // get sponsor text and extra text
+    var sponsorTextInput = document.getElementById('user_sponsor_name_input')
+    var extraTextInput = document.getElementById('user_more_info_input')
+    if (sponsorTextInput.value)
+    {
+        sponsorText = sponsorTextInput.value
+    }
+    else
+    {
+        sponsorText = "";
+    }
+    if (extraTextInput.value)
+    {
+        extraText = extraTextInput.value
+    }
+    else
+    {
+        extraText = "";
+    }
+
+    // process the text
+    if (sponsorText=="")
+    {
+        // sort out if there is no information there from the form
+        if ((document.getElementById('sponsorBy').checked)==true)
+        {
+            sponsorText = OZstrings['Sponsored by you'].toUpperCase();
+            extraText = "";
+            hasText = false;
+        }
+        else
+        {
+            sponsorText = OZstrings['Sponsored for a person of your choice'].toUpperCase();
+            extraText = "";
+            hasText = false;
+        }
+    }
+    else
+    {
+        // sort out if there is information there from the form
+        if (extraText&&extraText!="")
+        {
+            extraText = ", "+ extraText.toUpperCase();
+        }
+        if ((document.getElementById('sponsorBy').checked)==true)
+        {
+            sponsorText = (OZstrings['Sponsored by'] + " " + sponsorText).toUpperCase();
+        }
+        else
+        {
+            sponsorText = (OZstrings['Sponsored for'] + " " + sponsorText).toUpperCase();
+        }
+        hasText = true;
+    }
+
+    // set colours based on whether text has been entered or not
+    var sponsorTextCol
+    if (hasText == true)
+    {
+        leafCol.sponsorTextCol = 'rgb(255,255,255)';
+    }
+    else
+    {
+        leafCol.sponsorTextCol = green1;
+    }
+    
+    // draw the leaf base again (to wipe out any previous renderings)
+    fullLeafBase(leafContext,widthRes/2.28,heightRes/2,widthRes/2.3,5.6,2,leafCol)
+    // draw the leaf details
+    
+    if (image_objects[which_img])
+    {
+        var cfout = crop_frac(image_objects[which_img],{{=percent_crop_expansion}});
+
+
+            fullLeaf(leafContext,widthRes/2.28,heightRes/2,widthRes/2.3,5.6,2,hasText,null,sponsorText,extraText,{{=XML(js_common_name or '')}},{{=XML(js_species_name)}},leaftext[0],leaftext[1],null,leafImageFile,null,leafCol,true, cfout[0]  , cfout[1] ,  cfout[2] )
+    }
+    else
+    {
+        fullLeaf(leafContext,widthRes/2.28,heightRes/2,widthRes/2.3,5.6,2,hasText,null,sponsorText,extraText,{{=XML(js_common_name or '')}},{{=XML(js_species_name)}},leaftext[0],leaftext[1],null,leafImageFile,null,leafCol)
+    }
+}
+
+// this function will be called automatically when information is returned from the API call by Yan's code
+function processAPI(image_objectsIn, common_namesIn , flagsIn)
+{
+    /* flagsIn possibilities are:
+        0 if OK
+        1 if timeout (API down)
+        2 bad response
+        3 bad data from response
+      Even if we get a bad response, we should try to draw a leaf, as image_objects might be filled
+      using the data from our own database
+    */
+    imageInfoReady = true;
+    leafImageFile = null;
+    imageReady = null;
+    leaftext = [null,null];
+    workingEOL = true;
+    /* process data and redraw */
+
+    //add the image objects returned by the api call as properties on image_objects
+    //potentially none could be returned by the API, but we might have one already in image_objects
+    for (var i = 0; i<image_objectsIn.length; i++) {
+        if (image_objectsIn[i].dataObjectVersionID) {
+            var key = "{{=eol_src}}_" + image_objectsIn[i].dataObjectVersionID.toString();
+            if (!(key in image_objects)) {
+                image_objects[key] = image_objectsIn[i];
+            }
+            if (!(which_img)) {
+                /* no default has been set: pick the first one */
+                which_img = key;
+                image_objects[key].default=1
+            }
+        }
+    }
+    //sort keys by rating
+    var img_keys = [];
+    for(key in image_objects)
+            img_keys.push({'key':key, 'rating':image_objects[key].dataRating});
+
+    img_keys.sort(function(a, b){return b.rating-a.rating});
+
+    if (img_keys.length == 0) {
+        // there will not be an image
+        leafImageFile = null;
+        if ((flagsIn == 1)||(flagsIn == 2))
+        {
+            workingEOL = false;
+            {{from gluon.serializers import json}}
+            leaftext = OZstrings['EOLimage_problem'].split("\n");
+            drawPreview();
+        }
+    } else {
+        leafImageFile = new Image();
+        leafImageFile.onload = function()
+        {
+             drawPreview();
+             $('#licenceText a').attr('href','{{=URL("linkout_via_picID", args=[src_flags["eol"]])}}/' + image_objects[which_img].dataObjectVersionID)
+            $('#licenceText').show();
+        }
+        leafImageFile.src = (image_objects[which_img].url);
+    
+        if (img_keys.length == 1) {
+            //Only 1 image - can't choose, so store the image ID so that it can be passed on in the form
+            $('#leaf').after('<input type="hidden" name="user_preferred_image" value="' +
+                             image_objects[which_img].dataObjectVersionID + 
+                             '" />');
+        } else {
+            //There are at least 2 images, so change the page layout to add image selection
+            $('#leaf').addClass("col-sm-6");
+            $('#leaf').after('<div class="col-sm-6" id="select_pictures"><fieldset><legend>{{=T("Choose your preferred picture")}}</legend><ul></ul></fieldset></div>');
+            for(i=0; i<img_keys.length; i++)
+            {
+                var key = img_keys[i].key
+                //Add a list of potential images to pick
+                var img_size_px = 100;
+                var bg_css = "background-image: url('"+ image_objects[key].url +"')";
+                if (image_objects[key].height && image_objects[key].width && image_objects[key].crop_width) {
+                    crop_vals = crop_frac(image_objects[key], {{=percent_crop_expansion}})
+                    bg_css = bg_css + ';background-size:' + crop_vals[0]* img_size_px + 'px;'
+                    bg_css = bg_css + ';background-position:' + (crop_vals[1]* img_size_px)+'px ' + (crop_vals[2]*img_size_px)+'px'
+                } else {
+                    bg_css = bg_css + ';background-size: cover'
+                    bg_css = bg_css + ';background-position:left top'
+                }
+                var html = '<li><a href="{{=URL("linkout_via_picID", args=[src_flags["eol"]])}}/' + image_objects[key].dataObjectVersionID + '" target="_blank">&boxbox;</a>' +
+                           '<input type="radio"' +
+                           'value="' + image_objects[key].dataObjectVersionID + '" name="user_preferred_image" ' +
+                           'id="r' + key + '" ' +
+                           (key==which_img?'checked="checked" ':'') +
+                           'onclick="which_img = ' + "'" + key + "'" +
+                           "; document.getElementById('user_nondefault_image_input').value = " + 
+                           "'" + ((!(image_objects[key].default))?"1":"0") + "'" +
+                           "; leafImageFile.src ='" + image_objects[key].url + "';" + ' drawPreview();"' +
+                           ' />' + 
+                           '<label class="radio" for="r' + key + '" ' +
+                           'style="width:' + img_size_px + 'px;height:' + img_size_px + 'px;' +
+                           bg_css + '"></label></li>';
+                 $('#select_pictures ul').append(html);
+            }
+        }
+    }
+    // redraw
+    drawPreview();
+}
+
+
+if (document.getElementById("leafCanvas")) {
+        drawPreview();
+}
+
+{{if (EOL_ID):}}
+setDataFromEoLpageID({{=EOL_ID}}, 
+    function(taxon_objects, flags) {
+    //could have taxon_objects.imageObjects == null here
+        processAPI(((taxon_objects && taxon_objects.imageObjects) || []), ((taxon_objects && taxon_objects.vernacularNames) || []), flags)
+    }, "{{=EoL_API_key}}", 9);
+{{else:}}
+imageInfoReady = true;
+{{pass}}
+
+
+</script>

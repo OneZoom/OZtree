@@ -1,0 +1,6 @@
+[Arrangement from 'Elasmobranch Phylogeny: A Mitochondrial Estimate Based on 595 Species' (see http://sharksrays.org)
+Note that this was labelled Scyliorhinidae-2 in TimeTree. OpenTree has non monophyletic Scyliorhinus (catfish), so here we use the Naylor tree, which unfortunately is missing about 10 spp.
+
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Vertebrates]
+(Cephaloscyllium_ott481014@,((Poroderma_africanum_ott553095,Poroderma_pantherinum_ott1037439),(Scyliorhinus_canicula_ott1026500,(Scyliorhinus_capensis_ott806125,(Scyliorhinus_retifer_ott150264,Scyliorhinus_stellaris_ott901864)))));
+

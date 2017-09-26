@@ -1,0 +1,499 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta NAME="description" CONTENT="OneZoom Tree of Life Explorer" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <link rel="canonical" href="http://www.onezoom.org/AT/@AllArchaeaAndEukaryotes_">
+    
+<script type="text/javascript">
+/* GLOBALS */
+/* site-specific OZ json urls are needed to locate the OneZoom API, so that iframe contents can be shown */
+OZ_leaf_json_url = function(ott) {return("http://www.onezoom.org/leaf_linkouts.json" + "/" + ott.toString())};
+OZ_node_json_url = function(id) {return("http://www.onezoom.org/node_linkouts.json" + "/" + id.toString())};
+
+var data_path_pics_main = "http://www.onezoom.org/OneZoom/static/FinalOutputs/pics"+"/";
+var data_path_thumbs_main = "http://www.onezoom.org/OneZoom/static/FinalOutputs/pics"+"/";
+var node_api = "http://www.onezoom.org/API/node_details.json";
+var search_api = "http://www.onezoom.org/API/search_node.json";
+var search_sponsor_api = "http://www.onezoom.org/API/search_for_sponsor.json";
+var search_init_api = "http://www.onezoom.org/API/search_init.json";
+var ott2id_api = "http://www.onezoom.org/API/get_id_by_ott.json";
+var ott2id_api_array = "http://www.onezoom.org/API/get_ids_by_ott_array.json";
+var otts2vns_api = "http://www.onezoom.org/API/otts2vns.json";
+var link_from_image = "http://www.onezoom.org/linkout_via_picID";
+var data_logo_path = "/OneZoom/static/images/OZ_logo5_grey.png";
+var image_api = "http://www.onezoom.org/API/image_details.json";
+var update_visit_count_api = "http://www.onezoom.org/API/update_visit_count.json";
+
+var data_path_pics_main = "http://www.onezoom.org/OneZoom/static/FinalOutputs/pics"+"/";
+var data_path_thumbs_main = "http://www.onezoom.org/OneZoom/static/FinalOutputs/pics"+"/";
+
+var tour = {"api":"http://www.onezoom.org/tour.json", "tour_name":""}
+</script>
+<script type="text/javascript">
+OZstrings={"spp": "species", "sponsor_text": {"node": {"named": "Sponsor one of the {group_name}", "unnamed": "Sponsor one of these"}, "leaf": [["YOUR NAME COULD GO HERE", ". DONATIONS HELP IMPROVE THIS PUBLIC RESOURCE"], ["YOUR FRIEND'S NAME COULD GO HERE", ". DONATIONS HELP US CONTINUE OUR WORK"], ["YOUR NAME COULD GO HERE", ". FUNDS HELP DEVELOP THIS TREE OF LIFE EXPLORER"], ["YOU COULD SPONSOR THIS LEAF FOR A FRIEND", ". IT MAKES A GREAT GIFT"]]}, "loading...": "loading...", "Also called:": "Also called:", "Select 1st search box species": "Please select a species in the first search box", "Zoom in": "Zoom in", "Sponsored for": "Sponsored for", "Zoom out": "Zoom out", "sciname": "Scientific name: ", "Reset view": "Reset view", "Sponsored by": "Sponsored by", "Popular places": "Popular places", "tya": "{tya} thousand years ago", "Current location": "Current location", "node_labels": {"with_pic": {"undated": {"named": "The most recent\ncommon ancestor to today\u2019s\n\n\n", "unnamed": "\nThe most recent\ncommon ancestor to species including\n\n"}, "dated": {"named": "{date_with_units},\nduring the {geo_period} period, lived\nthe most recent common ancestor to today\u2019s\n\n", "unnamed": "{date_with_units},\nduring the {geo_period} period,\nlived the most recent common\nancestor to species including\n"}}, "text_only": {"undated": {"named": "\nThe most recent\ncommon ancestor to today\u2019s", "unnamed": "\n\nThe most recent common ancestor to"}, "dated": {"named": "{date_with_units},\nduring the {geo_period} period, lived\nthe most recent common ancestor to today\u2019s", "unnamed": "{date_with_units},\nduring the {geo_period} period, lived\nthe most recent common ancestor to"}}}, "No common name": "No common name", "Select 2nd search box species": "Please select a species in the second search box", "Click to search among sponsors of the tree": "Click to search among sponsors of the tree", "sp": "species", "IUCN": {"": "Not Evaluated", "NE": "Not Evaluated", "EN": "Endangered", "EX": "Extinct", "CR": "Critically Endangered", "EW": "Extinct in the Wild", "NT": "Near Threatened", "DD": "Data Deficient", "LC": "Least Concern", "VU": "Vulnerable"}, "Previous ancestor": "Previous ancestor", "Mya": "{mya} million years ago", "Loading...": "Loading..."}
+</script>
+
+
+<title>Ancestor's Tale OneZoom Explorer: Archaea and Eukaryotes</title>
+
+<link rel="stylesheet" type="text/css" href="/OneZoom/static/css/tree.css" />
+<script type="text/javascript" src="/OneZoom/static/FinalOutputs/data/completetree_1487808934.js"></script>
+<script type="text/javascript" src="/OneZoom/static/FinalOutputs/data/cut_position_map_1487808934.js"></script>
+<script type="text/javascript" src="/OneZoom/static/FinalOutputs/data/dates_1487808934.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script type="text/javascript" src="/OneZoom/static/OZTreeModule/dist/common.min.js"></script>
+<script type="text/javascript" src="/OneZoom/static/OZTreeModule/dist/at.min.js"></script>
+
+<noscript>
+    <style>
+        /* hide control buttons if there is no JS */
+        #controlButtons {display:none;}
+    </style>
+</noscript>
+    
+<script type="text/javascript" src="/OneZoom/static/site-specific/google-analytics.js"></script>
+
+</head>
+
+<body id = "wholebody" onresize="special_resize()" style="overflow: hidden; user-select:none; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select:none; -ms-user-select:none;" unselectable = "on">
+    <!-- main body of document - only four elements -->
+    <canvas id="myCanvas" class="text_tree">
+        <!-- Text alternative to the tree. see http://odyniec.net/articles/turning-lists-into-trees/ -->
+    
+    
+        
+        
+        <h2>Base of the evolutionary tree for Archaea and Eukaryotes</h2>
+        
+        
+        <ul id="root">
+        <li>Archaea and Eukaryotes (1766888 species). Deepest divergence date between species estimated at 2125.037518 million years ago.
+        <ul>
+          
+          <li><a href="http://www.onezoom.org/AT/@TACKLED_clade_"><span class="unnamed">unnamed group 3456</span> &rarr;</a> (1763433 species)
+          
+          <ul>
+            
+            <li><a href="http://www.onezoom.org/AT/@TACKLE_clade_"><span class="unnamed">unnamed group 3476</span> &rarr;</a> (1763413 species)
+            
+            <ul>
+              
+              <li><a href="http://www.onezoom.org/AT/@LE_clade_"><span class="unnamed">unnamed group 4473</span> &rarr;</a> (1762416 species)
+              
+              <ul>
+                
+                <li><a href="http://www.onezoom.org/AT/@Eukaryota=304358">Eukaryotes (<span class="taxonomy">Eukaryota</span>) &rarr;</a> (1762415 species)
+                </li>
+                
+                <li><a href="http://www.onezoom.org/AT/@archaeon_Loki=5575009"><i class="taxonomy species">archaeon Loki</i></a>
+                </li>
+                
+              </ul>
+              
+              </li>
+              
+              <li><a href="http://www.onezoom.org/AT/@TACK_group=5878036"><span class="taxonomy">TACK group</span> &rarr;</a> (997 species)
+              
+              <ul>
+                
+                <li><a href="http://www.onezoom.org/AT/@3481"><span class="unnamed">unnamed group 3481</span> &rarr;</a> (993 species)
+                </li>
+                
+                <li><a href="http://www.onezoom.org/AT/@Korarchaeota=266344"><span class="taxonomy">Korarchaeota</span> &rarr;</a> (4 species)
+                </li>
+                
+              </ul>
+              
+              </li>
+              
+            </ul>
+            
+            </li>
+            
+            <li><a href="http://www.onezoom.org/AT/@dPANN_group=5877687"><span class="taxonomy">dPANN group</span> &rarr;</a> (20 species)
+            
+            <ul>
+              
+              <li><a href="http://www.onezoom.org/AT/@3465"><span class="unnamed">unnamed group 3465</span> &rarr;</a> (12 species)
+              
+              <ul>
+                
+                <li><a href="http://www.onezoom.org/AT/@3468"><span class="unnamed">unnamed group 3468</span> &rarr;</a> (9 species)
+                </li>
+                
+                <li><a href="http://www.onezoom.org/AT/@3466"><span class="unnamed">unnamed group 3466</span> &rarr;</a> (3 species)
+                </li>
+                
+              </ul>
+              
+              </li>
+              
+              <li><a href="http://www.onezoom.org/AT/@Micrarchaeum_plus_Parvarchaeum_=5248268"><span class="unnamed">unnamed group 3458</span> &rarr;</a> (8 species)
+              
+              <ul>
+                
+                <li><a href="http://www.onezoom.org/AT/@Candidatus_Aciduliprofundum=5249462"><span class="taxonomy">Candidatus Aciduliprofundum</span> &rarr;</a> (4 species)
+                </li>
+                
+                <li><a href="http://www.onezoom.org/AT/@uncultured_euryarchaeote_Alv-FOS1=5206201"><i class="taxonomy species">uncultured euryarchaeote Alv-FOS1</i></a>
+                </li>
+                
+                <li><a href="http://www.onezoom.org/AT/@Aciduliprofundum_sp._LAU09-1128=4796410"><i class="taxonomy species">Aciduliprofundum sp. LAU09-1128</i></a>
+                </li>
+                
+                <li><a href="http://www.onezoom.org/AT/@uncultured_euryarchaeote_Alv-FOS4=5206202"><i class="taxonomy species">uncultured euryarchaeote Alv-FOS4</i></a>
+                </li>
+                
+                <li><a href="http://www.onezoom.org/AT/@uncultured_archaeon_VC2.1_Arc13=5208731"><i class="taxonomy species">uncultured archaeon VC2.1 Arc13</i></a>
+                </li>
+                
+              </ul>
+              
+              </li>
+              
+            </ul>
+            
+            </li>
+            
+          </ul>
+          
+          </li>
+          
+          <li><a href="http://www.onezoom.org/AT/@Euryarchaeota=635958">euryarchaeotes (<span class="taxonomy">Euryarchaeota</span>) &rarr;</a> (3455 species)
+          
+          <ul>
+            
+            <li><a href="http://www.onezoom.org/AT/@21"><span class="unnamed">unnamed group 21</span> &rarr;</a> (3436 species)
+            
+            <ul>
+              
+              <li><a href="http://www.onezoom.org/AT/@291"><span class="unnamed">unnamed group 291</span> &rarr;</a> (3166 species)
+              
+              <ul>
+                
+                <li><a href="http://www.onezoom.org/AT/@321"><span class="unnamed">unnamed group 321</span> &rarr;</a> (3136 species)
+                </li>
+                
+                <li><a href="http://www.onezoom.org/AT/@Archaeoglobi=1072572"><span class="taxonomy">Archaeoglobi</span> &rarr;</a> (30 species)
+                </li>
+                
+              </ul>
+              
+              </li>
+              
+              <li><a href="http://www.onezoom.org/AT/@22"><span class="unnamed">unnamed group 22</span> &rarr;</a> (270 species)
+              
+              <ul>
+                
+                <li><a href="http://www.onezoom.org/AT/@78"><span class="unnamed">unnamed group 78</span> &rarr;</a> (214 species)
+                </li>
+                
+                <li><a href="http://www.onezoom.org/AT/@Methanococci=295896"><span class="taxonomy">Methanococci</span> &rarr;</a> (56 species)
+                </li>
+                
+              </ul>
+              
+              </li>
+              
+            </ul>
+            
+            </li>
+            
+            <li><a href="http://www.onezoom.org/AT/@Hadesarchaea=5877728"><span class="taxonomy">Hadesarchaea</span> &rarr;</a> (4 species)
+            
+            <ul>
+              
+              <li><a href="http://www.onezoom.org/AT/@Hadesarchaea_archaeon_DG-33-1=5877730"><i class="taxonomy species">Hadesarchaea archaeon DG-33-1</i></a>
+              
+              </li>
+              
+              <li><a href="http://www.onezoom.org/AT/@Hadesarchaea_archaeon_DG-33=5877729"><i class="taxonomy species">Hadesarchaea archaeon DG-33</i></a>
+              
+              </li>
+              
+              <li><a href="http://www.onezoom.org/AT/@Hadesarchaea_archaeon_YNP_N21=5877732"><i class="taxonomy species">Hadesarchaea archaeon YNP N21</i></a>
+              
+              </li>
+              
+              <li><a href="http://www.onezoom.org/AT/@Hadesarchaea_archaeon_YNP_45=5877731"><i class="taxonomy species">Hadesarchaea archaeon YNP 45</i></a>
+              
+              </li>
+              
+            </ul>
+            
+            </li>
+            
+            <li><a href="http://www.onezoom.org/AT/@Candidatus_Woesearchaeota=5877666"><span class="taxonomy">Candidatus Woesearchaeota</span> &rarr;</a> (4 species)
+            
+            <ul>
+              
+              <li><a href="http://www.onezoom.org/AT/@Candidatus_Woesearchaeota_archaeon_CG1_02_47_18=5877668"><i class="taxonomy species">Candidatus Woesearchaeota archaeon CG1 02 47 18</i></a>
+              
+              </li>
+              
+              <li><a href="http://www.onezoom.org/AT/@Candidatus_Woesearchaeota_archaeon_CG1_02_57_44=5877669"><i class="taxonomy species">Candidatus Woesearchaeota archaeon CG1 02 57 44</i></a>
+              
+              </li>
+              
+              <li><a href="http://www.onezoom.org/AT/@Candidatus_Woesearchaeota_archaeon_CG1_02_33_12=5877667"><i class="taxonomy species">Candidatus Woesearchaeota archaeon CG1 02 33 12</i></a>
+              
+              </li>
+              
+              <li><a href="http://www.onezoom.org/AT/@Candidatus_Woesearchaeota_archaeon_RBG_13_36_6=5877670"><i class="taxonomy species">Candidatus Woesearchaeota archaeon RBG 13 36 6</i></a>
+              
+              </li>
+              
+            </ul>
+            
+            </li>
+            
+            <li><a href="http://www.onezoom.org/AT/@Candidatus_Micrarchaeum_sp._AZ1=5603881"><i class="taxonomy species">Candidatus Micrarchaeum sp. AZ1</i></a>
+            
+            </li>
+            
+            <li><a href="http://www.onezoom.org/AT/@Candidatus_Pacearchaeota_archaeon_CG1_02_35_32=5877660"><i class="taxonomy species">Candidatus Pacearchaeota archaeon CG1 02 35 32</i></a>
+            
+            </li>
+            
+            <li><a href="http://www.onezoom.org/AT/@Candidatus_Pacearchaeota_archaeon_RBG_13_36_9=5877663"><i class="taxonomy species">Candidatus Pacearchaeota archaeon RBG 13 36 9</i></a>
+            
+            </li>
+            
+            <li><a href="http://www.onezoom.org/AT/@Candidatus_Pacearchaeota_archaeon_CG1_02_32_21=5877659"><i class="taxonomy species">Candidatus Pacearchaeota archaeon CG1 02 32 21</i></a>
+            
+            </li>
+            
+            <li><a href="http://www.onezoom.org/AT/@Candidatus_Pacearchaeota_archaeon_CG1_02_39_14=5877661"><i class="taxonomy species">Candidatus Pacearchaeota archaeon CG1 02 39 14</i></a>
+            
+            </li>
+            
+            <li><a href="http://www.onezoom.org/AT/@Candidatus_Pacearchaeota_archaeon_RBG_13_33_26=5877662"><i class="taxonomy species">Candidatus Pacearchaeota archaeon RBG 13 33 26</i></a>
+            
+            </li>
+            
+            <li><a href="http://www.onezoom.org/AT/@Candidatus_Pacearchaeota_archaeon_RBG_16_35_8=5877664"><i class="taxonomy species">Candidatus Pacearchaeota archaeon RBG 16 35 8</i></a>
+            
+            </li>
+            
+            <li><a href="http://www.onezoom.org/AT/@Candidatus_Pacearchaeota_archaeon_RBG_19FT_COMBO_34_9=5877665"><i class="taxonomy species">Candidatus Pacearchaeota archaeon RBG 19FT COMBO 34 9</i></a>
+            
+            </li>
+            
+            <li><a href="http://www.onezoom.org/AT/@Candidatus_Pacearchaeota_archaeon_CG1_02_32_132=5877658"><i class="taxonomy species">Candidatus Pacearchaeota archaeon CG1 02 32 132</i></a>
+            
+            </li>
+            
+            <li><a href="http://www.onezoom.org/AT/@Candidatus_Pacearchaeota_archaeon_CG1_02_30_18=5877656"><i class="taxonomy species">Candidatus Pacearchaeota archaeon CG1 02 30 18</i></a>
+            
+            </li>
+            
+            <li><a href="http://www.onezoom.org/AT/@Candidatus_Pacearchaeota_archaeon_CG1_02_31_27=5877657"><i class="taxonomy species">Candidatus Pacearchaeota archaeon CG1 02 31 27</i></a>
+            
+            </li>
+            
+          </ul>
+          
+          </li>
+            
+        </ul>
+        </li>
+        </ul>
+        
+        
+        <hr />
+        
+        <h4>Some illustrative species in this group</h4>
+        (follow link for a picture)
+        <ul>
+        
+        
+        <li><a href="/AT/%40%3D343294">1</a></li>
+        
+        
+        
+        <li><a href="/AT/%40%3D1094221">2</a></li>
+        
+        
+        
+        <li><a href="/AT/%40%3D335570">3</a></li>
+        
+        
+        
+        <li><a href="/AT/%40%3D420174">4</a></li>
+        
+        
+        
+        <li><a href="/AT/%40%3D880971">5</a></li>
+        
+        
+        
+        <li><a href="/AT/%40%3D3677320">6</a></li>
+        
+        
+        
+        <li><a href="/AT/%40%3D417422">7</a></li>
+        
+        
+        
+        <li><a href="/AT/%40%3D480004">8</a></li>
+        
+        
+        </ul>
+        
+
+        
+    
+    </canvas>    
+    
+    <img id = "Logo" src="/OneZoom/static/images/OZ_logo5_grey3_small.png">
+    
+    
+    <ol id = "controlButtons" >
+        <li class = "dropdown" id = "menuButton"><button><img src="/OneZoom/static/images/menu.png"/></button>
+        </li>
+        <li class = "nonzoomcb" id = "searchButton"><button><img src="/OneZoom/static/images/search.png" /></button></li>
+        <li class = "nonzoomcb"id = "locateButton"><button><img src="/OneZoom/static/images/locate.png" /></button></li>
+        <li class = "nonzoomcb"id = "upButton"><button><img src="/OneZoom/static/images/up.png" /></button></li>
+        <li class = "zoomcb"id = "plusButton"><button><img src="/OneZoom/static/images/plus.png" /></button></li>
+        <li class = "zoomcb"id = "minusButton"><button><img src="/OneZoom/static/images/minus.png" /></button></li>
+        <li class = "zoomcb"id = "resetButton"><button><img src="/OneZoom/static/images/reset.png" /></button></li>
+    </ol>
+    
+    <div id ="outerHint"></div>
+    <div id = "hintBox"></div>
+    <div id = "search_not_fillin_hint"></div>
+    <div id = "searchBox" class="dropdown_container">
+        <ol class = "sbuttons" >
+            <li id = "search_header">Search the tree</li>
+        </ol>
+        <input type="text" id = "search_input" name="search_input_text" autocomplete="off">
+        <div class="search_input2_container">
+          <input type="text" id = "search_input2" name="search_input_text" autocomplete="off">
+          <img class="search_input2_close" src="/OneZoom/static/images/close_black.png">
+        </div>
+        <ol class ="sbuttons">
+          <li id = "toggle_search_highlight" data-state="on">Clear search result</li>
+        </ol>
+        <ol class ="sbuttons">
+          <li id = "search_common_path">Find most recent common ancestor</li>
+        </ol>
+        <ol class = "sbuttons" id="searchButtons" >
+            <!-- search results will be inserted here by js -->
+        </ol>
+        <ol id = "popularSpecies">
+        </ol>
+    </div>
+
+    <div id = "locationBox" class="dropdown_container">
+        <ol id="locationButtons">
+        </ol>
+    </div>
+    
+    <div id = "menuBox">
+        <ol id="menuButtons" class="menuButtonContainer">
+            <li class="menu_how" >How to use</li>
+            <li class="menu_about" >About this tree</li>
+            <li class="menu_data" >Data sources</li>
+            <li class="menu_setting" >Settings</li>
+            <li><a href = "http://www.onezoom.org/sponsor">Sponsor a leaf</a></li>
+            <li><a href = "/">Back to home</a></li>
+        </ol>
+        <ol id="menuSettings" class="menuButtonContainer">
+          <li class="image_source" >Image sources</li>
+          <li class="tree_shape">Tree shape</li>
+          <!--<li class="color_theme">Color Theme</li>-->
+          <li class="setting_back">Back</li>
+        </ol>
+        <ol id="menuImageSource" class="menuButtonContainer">
+          <li class="image_source_any selected_setting">Any</li>
+          <li class="image_source_pb" >Public domain</li>
+          <li class="image_source_verified" >Verified</li>
+          <li class="image_source_back" >Back</li>
+        </ol>
+        <ol id="menuTreeShape" class="menuButtonContainer">
+          <li class="tree_shape_spiral selected_setting">Spiral</li>
+          <li class="tree_shape_natural" >Natural</li>
+          <li class="tree_shape_fern" >Fern</li>
+          <li class="tree_shape_balanced" >Balanced</li>
+          <!--<li class="tree_shape_polytomy" >Polytomy</li>-->
+          <li class="tree_shape_back" >Back</li>
+        </ol>
+        <!--<ol id="menuColorTheme" class="menuButtonContainer">
+          <li class="color_theme_natural selected_setting">Natural</li>
+          <li class="color_theme_ancestors_tale">Ancestor’s Tale</li>
+          <li class="color_theme_popularity" >Popularity</li>
+          <li class="color_theme_back" >Back</li>-->
+        </ol>
+    </div>
+
+
+    <div id = "boxContainer">
+        <div id = "outsideBox" ></div>
+        <div class="popup_box" id = "aboutBox"></div>
+        <div class="popup_box" id = "aboutBox2"></div>
+        <div id = "linkoutsBox" role="tablist">
+            <!-- this contains multiple tabs (as radio buttons, see http://alistapart.com/article/radio-controlled-web-design)
+            , associated with iframes to other sites (e.g. wikipedia). Tabbed labels are all defined here, but hidden and shown 
+            by javascript, depending on if we have appropriate urls. The selected input and label should have aria-selected="true" 
+            set by javascript -->
+            <div class="tabs" aria-hidden="true">
+                
+                <label for="wiki" class="wiki"><img src="/OneZoom/static/images/W.svg" title="Wiki" /><span>Wiki</span></label>
+                
+                <label for="eol" class="eol"><img src="/OneZoom/static/images/EoL.png" title="Encyclopedia of Life" /><span>Encyclopedia of Life</span></label>
+                
+                <label for="iucn" class="iucn"><img src="/OneZoom/static/images/IUCN_Red_List.svg" title="Conservation" /><span>Conservation</span></label>
+                
+                <label for="ncbi" class="ncbi"><img src="/OneZoom/static/images/DNA_icon.svg" title="Genetics" /><span>Genetics</span></label>
+                
+                <label for="powo" class="powo">Kew</label>
+                
+                <label for="ozspons" class="ozspons">Sponsor</label>
+                
+            </div>
+
+            <div id="iframe_wrapper">
+                <p id="loading_pic"><img src="/OneZoom/static/images/ajax-loader.gif" /></p>
+                
+                <input type="radio" title="Wiki" name="linkout-state" role="tab" id="wiki" class="tabButton" aria-controls="wiki-panel" />
+                
+                <input type="radio" title="Encyclopedia of Life" name="linkout-state" role="tab" id="eol" class="tabButton" aria-controls="eol-panel" />
+                
+                <input type="radio" title="Conservation" name="linkout-state" role="tab" id="iucn" class="tabButton" aria-controls="iucn-panel" />
+                
+                <input type="radio" title="Genetics" name="linkout-state" role="tab" id="ncbi" class="tabButton" aria-controls="ncbi-panel" />
+                
+                <input type="radio" title="Kew" name="linkout-state" role="tab" id="powo" class="tabButton" aria-controls="powo-panel" />
+                
+                <input type="radio" title="Sponsor" name="linkout-state" role="tab" id="ozspons" class="tabButton" aria-controls="ozspons-panel" />
+                
+            </div>
+        </div>
+		<img id = "newTabButton" src="/OneZoom/static/images/new_tab.png" />
+        <img id = "closeButton" src="/OneZoom/static/images/close.png"/>
+    </div>
+    
+    <script>
+    if(navigator.userAgent.match(/iPhone/i)
+        || navigator.userAgent.match(/iPad/i)
+        || navigator.userAgent.match(/iPod/i)){
+            //if user is on ios
+        window.addEventListener("orientationchange", function() {
+            setTimeout(function(){
+                //hide the url bar
+                window.scrollTo(0, 1);
+            }, 700);
+        }, false);
+    }
+    </script>
+
+<!-- OneZoom logo on a canvas, always on bottom right -->
+
+</body>
+</html>

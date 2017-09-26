@@ -1,0 +1,10 @@
+{{response.title='OneZoom: Picture information'}}
+{{extend 'layout.html'}}
+<div class="container-fluid">
+  <div class="col-sm-12" style="display:flex; flex-direction: column;">
+    <h3>{{=T('Image information held by OneZoom')}}</h3>
+    <div style="flex: 1; display: flex">
+      {{include 'default/linkout_via_picID.load'}}
+    </div>
+  </div>
+</div>

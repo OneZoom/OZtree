@@ -1,0 +1,42 @@
+{{response.title='OneZoom: Choose a species to sponsor'}}
+{{response.files.append(URL('static', 'OZSponsor/sponsor_node.css'))}}
+
+{{extend ('embed.html' if request.vars.get('embed') else 'layout.html')}}
+
+<!-- (ottid, name, eolid)*6*price + status in {error string} -->
+
+<div class="row-fluid intro">
+   <div class="col-md-12">
+   
+    <h2>Some great leaves to sponsor on the OneZoom Tree of Life Explorer</h2>
+    <p>These leaves are currently available to sponsor. Select a species to see a preview of what it would look like to sponsor it. The <a href="sponsor.html">sponsorship information page</a> has more ways to find a leaf you would like to sponsor.</p>   
+    </div>
+</div>
+
+<div class="row-fluid">
+  <div class="col-md-12">
+
+{{if error is not None:}}
+    <h4>{{=error}}</h4>
+{{else:}}
+    {{for price, ott_list in otts.items():}}
+        {{if len(ott_list) > 0:}}
+        <div>
+            <h3>Leaves requiring a minimum donation of £{{=price}}</h3>
+            <ul class = "spList">
+            {{for ott in ott_list:}}
+                <li>
+                    <a class="sponsor" style="background-image:url('{{=image_urls[ott] if ott in image_urls else URL("static","images/noImage_transparent.png")}}')" href="{{=URL('sponsor_leaf', extension=False,  vars=vars)}}"> <p>{{=html_names[ott]}}</p> </a>
+                    {{if ott in reserved:}}
+                    <p><a href="life/@={{=ott}}?init=zoom">Already sponsored {{=" ".join([t for t in reserved[ott] if t])}}</a></p>
+                    {{pass}}
+                </li>
+            {{pass}}
+            </ul>
+        </div>
+        {{pass}}
+    {{pass}}
+{{pass}}
+
+  </div>
+</div>

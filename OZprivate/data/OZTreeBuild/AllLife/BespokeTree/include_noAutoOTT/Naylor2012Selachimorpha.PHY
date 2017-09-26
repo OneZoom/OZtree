@@ -1,0 +1,30 @@
+[Selachimorpha (Selachii) tree, The opentree (draftversion3) is rather screwed up for sharks, especially the Carcharhiniformes, so ths is the most complex of the tree,s and involved inclusion of many other files, all labelled Naylor2012***, as they are mostly based on Naylor et al (2012): 'Elasmobranch Phylogeny: A Mitochondrial Estimate Based on 595 Species' from Biology of Sharks and Their Relatives (see http://sharksrays.org). Relative dates from an earlier Naylor paper in the timetree book (http://hedgeslab.com/pubs/216.pdf), with some polytomies broken using http://www.biomedcentral.com/1471-2148/15/162
+
+Then rescaled by path d8, using this:
+
+#sequence length should be irrelevant here, set it to something high
+Sequence length = 1000000; I subtract by hand a few misleading species around the great white.(Chimaeridae:470.2079,(Rajidae:392.60970000000003,((((((CARCHARHINICAE_MINUS@,SCYLIORHINIDAE2@:178.291):47.1132,SCYLIORHINIDAE3@:225.4042):32.3326,(Lamniformes_minus_Mitsukurinidae__ott~32038-801828-760455-3595159@:183.8337,Mitsukurinidae_ott801828@:183.8337)Lamniformes_ott32038:73.903):29.5612,(((((Ginglymostoma_ott400230@:0,Nebrius_ott833444@:0)Ginglymostomatidae:52.6559,((Stegostomatidae_ott696403@:0,Pseudoginglymostoma_ott356286@:0),Rhincodontidae_ott738324@:0):52.6559):52.6559,Hemiscylliidae_ott438189@:105.3118):88.6836,(Brachaeluridae_ott274901@:141.3395,Orectolobidae_ott572732@:141.3395):53.5797):41.5704,Parascylliidae_ott154216@:236.4896)Orectolobiformes:50.8083):29.5612,Heterodontidae_ott335517@:315.9353):32.3326,(((Squalidae_ott856584@:168.1293,((DALATIIDAE@:135.7968,(SOMNIOSIDAEOXYNOTIDAE@:133.9492,ETMOPTERIDAE@:135.7968):0.0):0.0,Centrophoridae_ott852403@:133.9492):35.0):92.3788,(SQUATINIDAE@:213.3949,(Echinorhiniformes_ott340760@:213.3949,PRISTIOPHORIDAE@:213.3949):0):49):62.8175,(Chlamydoselachidae_ott1093534@:233.7182,Notorynchidae_plus_Hexanchidae__ott~32032-1093534@:233.7182)Hexanchiformes_ott32032:89.6074):24.0185):42.4942):78.5219);mrca: Chimaeridae,Carcharhinicae, fixage=420;
+mrca: Rajidae,Carcharhinicae, fixage=300;
+
+#from N.C. Aschliman et al. / Molecular Phylogenetics and Evolution 63 (2012) 28–42 Supp Mat
+
+mrca:Squalidae_ott856584@,Heterodontidae_ott335517@, fixage=225;
+mrca:Heterodontidae_ott335517@,SCYLIORHINIDAE3@, fixage=200;
+mrca:CARCHARHINICAE_MINUS@,SCYLIORHINIDAE3@,    fixage=170;
+
+#from Straube et al. BMC Evolutionary Biology (2015) 15:162 (http://www.biomedcentral.com/content/pdf/s12862-015-0446-6.pdf) Fig 2
+
+mrca:Squalidae_ott856584@,Chlamydoselachidae_ott1093534,  fixage=202.8;
+mrca:Squalidae_ott856584@,Centrophoridae_ott852403@,      fixage=132.86;
+mrca:Centrophoridae_ott852403@,DALATIIDAE@,              fixage=126.68;
+mrca:DALATIIDAE@,ETMOPTERIDAE@,              fixage=116.1;
+mrca:ETMOPTERIDAE@,SOMNIOSIDAEOXYNOTIDAE@,   fixage=110.51;
+mrca:Squalidae_ott856584@,SQUATINIDAE@,      fixage=177.34;
+mrca:SQUATINIDAE@,Echinorhiniformes_ott340760@, fixage=147.59;
+
+##this produces (Chimaeridae:420.000000,(Rajidae:300.000000,((((((CARCHARHINICAE_MINUS@:134.467193,SCYLIORHINIDAE2@:134.467193):35.532807,SCYLIORHINIDAE3@:170.000000):3.555331,(Lamniformes_minus_Mitsukurinidae__ott~32038-801828-760455-3595159@:116.193063,Mitsukurinidae_ott801828@:116.193063)Lamniformes_ott32038:57.362269):9.696336,(((((Ginglymostoma_ott400230@:0.000000,Nebrius_ott833444@:0.000000)Ginglymostomatidae:33.281440,((Stegostomatidae_ott696403@:0.000000,Pseudoginglymostoma_ott356286@:0.000000):0.000000,Rhincodontidae_ott738324@:0.000000):33.281440):33.281440,Hemiscylliidae_ott438189@:66.562880):56.198912,(Brachaeluridae_ott274901@:89.334379,Orectolobidae_ott572732@:89.334379):33.427413):26.323449,Parascylliidae_ott154216@:149.085241)Orectolobiformes:34.166426):16.748333,Heterodontidae_ott335517@:200.000000):25.000000,(((Squalidae_ott856584@:132.860000,((DALATIIDAE@:116.100000,(SOMNIOSIDAEOXYNOTIDAE@:110.510000,ETMOPTERIDAE@:110.510000):5.590000):10.580000,Centrophoridae_ott852403@:126.680000):6.180000):44.480000,(SQUATINIDAE@:147.590000,(Echinorhiniformes_ott340760@:147.590000,PRISTIOPHORIDAE@:147.590000):0.000000):29.750000):25.460000,(Chlamydoselachidae_ott1093534@:146.024768,Notorynchidae_plus_Hexanchidae__ott~32032-1093534@:146.024768)Hexanchiformes:56.775232):22.200000):75.000000):120.000000)
+
+From which the Chimaeridae and Rajidae branches have been removed
+
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Vertebrates]
+((((((CARCHARHINICAE_MINUS@:134.467193,SCYLIORHINIDAE2@:134.467193):35.532807,SCYLIORHINIDAE3@:170.000000):3.555331,(Lamniformes_minus_Mitsukurinidae__ott~32038-801828-760455-3595159@:116.193063,Mitsukurinidae_ott801828@:116.193063)Lamniformes_ott32038:57.362269):9.696336,(((((Ginglymostoma_ott400230@:0.000000,Nebrius_ott833444@:0.000000)Ginglymostomatidae:33.281440,((Stegostomatidae_ott696403@:0.000000,Pseudoginglymostoma_ott356286@:0.000000):0.000000,Rhincodontidae_ott738324@:0.000000):33.281440):33.281440,Hemiscylliidae_ott438189@:66.562880):56.198912,(Brachaeluridae_ott274901@:89.334379,Orectolobidae_ott572732@:89.334379):33.427413):26.323449,Parascylliidae_ott154216@:149.085241)Orectolobiformes:34.166426):16.748333,Heterodontidae_ott335517@:200.000000):25.000000,(((Squalidae_ott856584@:132.860000,((DALATIIDAE@:116.100000,(SOMNIOSIDAEOXYNOTIDAE@:110.510000,ETMOPTERIDAE@:110.510000):5.590000):10.580000,Centrophoridae_ott852403@:126.680000):6.180000):44.480000,(SQUATINIDAE@:147.590000,(Echinorhiniformes_ott340760@:147.590000,PRISTIOPHORIDAE@:147.590000):0.000000):29.750000):25.460000,(Chlamydoselachidae_ott1093534@:146.024768,Notorynchidae_plus_Hexanchidae__ott~32032-1093534@:146.024768)Hexanchiformes:56.775232):22.200000)Selachii;

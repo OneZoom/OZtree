@@ -1,0 +1,6 @@
+[Echinoderm / Hemichordate divergence @530Ma from Peterson, K.J., Cotton, J.A., Gehling, J.G., et al. (2008) The Ediacaran emergence of bilaterians: congruence between the genetic and the geological fossil records. Philosophical Transactions of the Royal Society B: Biological Sciences 363: 1435–1443.
+
+Echinoderms including divergences from Pisani, D., Feuda, R., Peterson, K.J., et al. (2012) Resolving phylogenetic signal from noise when divergence is rapid: A new look at the old problem of echinoderm class relationships. Molecular Phylogenetics and Evolution 62: 27–34. doi:10.1016/j.ympev.2011.08.028 
+
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Animals]
+((((Echinozoa_ott669475@:475,Ophiuroidea_ott197634@:475):5,Asteroidea_ott451009@:480)Eleutherozoa:29,Crinoidea_ott732545@:509)Echinodermata_ott451020:21,Hemichordata_ott100746@:530)Ambulacraria;

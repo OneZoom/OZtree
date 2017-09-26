@@ -1,0 +1,8 @@
+#ignore created files for all trees
+/*/*.phy
+/*/BespokeTree/include_files
+/*/OpenTreeParts/OpenTree_all/*
+!/*/OpenTreeParts/OpenTree_all/README.markdown
+/*/OpenTreeParts/OpenTree_print/*
+/*/OpenTreeParts/OpenTree_selected/*
+

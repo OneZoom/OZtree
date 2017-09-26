@@ -1,0 +1,135 @@
+<!DOCTYPE HTML>
+
+<html lang="en" xml:lang="en">
+<head>
+<title>Test expansion cropping</title>
+<style type='text/css'>
+/* NB always set img dimensions in px */
+.test_img {height:200px; width:200px; background-image: url(http://media.eol.org/content/2016/03/24/09/50388_orig.jpg); border: 1px solid green;
+}
+
+.test_img.default {
+    background-size: cover;
+    background-position: left top;
+    }
+</style>
+<script src="jquery-1.10.2.min.js"></script>
+<script>
+function crop_frac_css(eol_API_data, add_percent, verbose) {
+    /* returns [bg-size, bg-pos-left, bg-pos-top] as fractions which need to be multiplied by thumbnail size */
+    add_percent=parseFloat(add_percent)
+    var top;
+    var left;
+    var size;
+    var initial_thumb_px = parseFloat(eol_API_data.crop_width)
+    var crop_top_fraction = parseFloat(eol_API_data.crop_y)/initial_thumb_px
+    var crop_bottom_fraction = (parseFloat(eol_API_data.height) - parseFloat(eol_API_data.crop_y) - initial_thumb_px)/initial_thumb_px
+    var crop_left_fraction = parseFloat(eol_API_data.crop_x)/initial_thumb_px
+    var crop_right_fraction = (parseFloat(eol_API_data.width) - parseFloat(eol_API_data.crop_x) - initial_thumb_px)/initial_thumb_px
+    var min_crop_fraction = Math.min(crop_top_fraction, crop_bottom_fraction, crop_left_fraction, crop_right_fraction)
+    if (min_crop_fraction < 0) {
+        //the crop is right against the corner, and we cannot make it bigger
+        top = Math.round(parseFloat(eol_API_data.crop_y))
+        left = Math.round(parseFloat(eol_API_data.crop_x))
+        size = Math.round(parseFloat(eol_API_data.crop_width))
+    } else {
+        if (min_crop_fraction > add_percent/100.0) {
+            min_crop_fraction = add_percent/100.0
+        }
+        var min_crop_pixels = min_crop_fraction * initial_thumb_px
+        top = Math.round(parseFloat(eol_API_data.crop_y) - min_crop_pixels)
+        left = Math.round(parseFloat(eol_API_data.crop_x) - min_crop_pixels)
+        size = Math.round(initial_thumb_px + 2.0*min_crop_pixels)
+    }
+    return [eol_API_data.width / size, -left/size, -top/ size]
+}
+
+</script>
+</head>
+<body>
+<h1 id="baz">css-cropping code</h1>
+
+This page is to test whether we can use css commands to crop an image using the crop locations provided by an EoL data object API call, while expanding the crop location by 12.5% if possible. We do this using a background image, since this can be positioned using <pre>{background-size: cover; background-position: left top;}</pre> for images without user crops.
+The python code is 
+<blockquote><pre style="font-size: 8pt">
+try:
+    initial_thumb_px = float(data_obj['crop_width'])
+    crop_top_fraction = float(data_obj['crop_y'])/initial_thumb_px
+    crop_bottom_fraction = (float(data_obj['height']) - float(data_obj['crop_y']) - initial_thumb_px)/initial_thumb_px
+    crop_left_fraction = float(data_obj['crop_x'])/initial_thumb_px
+    crop_right_fraction = (float(data_obj['width']) - float(data_obj['crop_x']) - initial_thumb_px)/initial_thumb_px
+    
+    min_crop_fraction = min(crop_top_fraction, crop_bottom_fraction, crop_left_fraction, crop_right_fraction)
+    if min_crop_fraction < 0:
+        #the crop is right against the corner, and we cannot make it bigger
+        top = str(int(round(float(data_obj['crop_y']))))
+        left = str(int(round(float(data_obj['crop_x']))))
+        size = str(int(round(float(data_obj['crop_width']))))
+        if args.add_percent>0 and args.verbose:
+            print("NOTICE: Cannot expand crop for data object {} by {}%: image is against the edge.".format(doID, args.add_percent))
+    else:
+        if min_crop_fraction > args.add_percent/100.0:
+            min_crop_fraction = args.add_percent/100.0
+        else:
+            if args.add_percent>0 and args.verbose:
+                print("NOTICE: Cannot expand crop for data object {} by {}%: borders are not large enough, so using {}%.".format(doID, args.add_percent, min_crop_fraction*100))
+        min_crop_pixels = min_crop_fraction * initial_thumb_px
+        top = str(int(round(float(data_obj['crop_y']) - min_crop_pixels)))
+        left = str(int(round(float(data_obj['crop_x']) - min_crop_pixels)))
+        size = str(int(round(initial_thumb_px + 2*min_crop_pixels)))
+    cmd = ['mogrify', '-crop', size+'x'+size+'+'+left+'+'+top, '+repage', 
+           '-resize', str(args.thumbnail_size)+'x'+str(args.thumbnail_size), image_file,
+           ]
+    if args.verbose:
+        print("Custom crop: {}.".format(" ".join(cmd)))
+except KeyError:
+    #hasn't got crop info: use default
+    cmd = ['mogrify', '-gravity', 'NorthWest', 
+           '-resize', str(args.thumbnail_size)+'x'+str(args.thumbnail_size)+'^',
+           "-extent", str(args.thumbnail_size)+'x'+str(args.thumbnail_size), 
+           image_file,
+           ]
+    if args.verbose:
+        print("Default crop: {}.".format(" ".join(cmd)))
+call(cmd)
+</pre></blockquote>
+An example is:
+<table><tr><td><h3>expanded crop</h3><img src="../../static/FinalOutputs/pics/13148796.jpg" /></td><td><pre>{
+  "identifier": 1049090,
+  "scientificName": "Buteo regalis",
+  "exemplar": false,
+  "richness_score": 77.0344,
+  "dataObjects": [
+    {
+      "identifier": "b9e86e2b1fc58a4bb0463a853fec4061",
+      "dataObjectVersionID": 13148796,
+... 
+      "height": 548,
+      "width": 696,
+      "crop_x": "236.64",
+      "crop_y": "142.48",
+      "crop_width": "174.0",
+...
+      "eolMediaURL": "http://media.eol.org/content/2016/03/24/09/50388_orig.jpg",
+   ...
+    }]}</pre></td><td><h3>normal EOL crop</h3><img src="http://media.eol.org/content/2016/03/24/09/50388_130_130.jpg" /></td></tr></table>
+<h3>css crop</h3>
+<table>
+<tr><td><h2 id="bar">Bespoke crop</h2><div class="test_img expanded" ></div></td><td><h2>Default crop</h2><div class="test_img default"></td></tr>
+</table>
+<script>
+crop_vals = crop_frac_css({
+      "height": 548,
+      "width": 696,
+      "crop_x": 236.64,
+      "crop_y": 142.48,
+      "crop_width": 174.0,
+    }, 12.5);
+res_px = parseFloat($(".test_img.expanded").css('width'))
+$(".test_img.expanded").css("background-size", crop_vals[0] * res_px + "px")
+$(".test_img.expanded").css("background-position", (crop_vals[1]*res_px)+"px " + (crop_vals[2]*res_px)+"px")
+
+</script>
+
+</body>
+</html>

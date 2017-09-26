@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="{{=URL("static", "js/jquery.min.js")}}"></script>
+  <link rel="stylesheet" href="{{=URL('static','uikit-3/css/uikit.min.css')}}" />
+  <script src="{{=URL('static','uikit-3/js/uikit.min.js')}}"></script>
+  <script src="{{=URL('static','uikit-3/js/uikit-icons.min.js')}}"></script>
+  <style>
+
+.uk-navbar-item {
+    height:3rem;
+    line-height:3rem; /* force vertical centering */
+}
+
+
+#external-modal .external-content {
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+}
+
+#external-modal .uk-modal-dialog {
+    height: 100%;
+}
+
+#external-modal .external-content .external-tabs {
+    /* add a bit below the tab bar */
+    margin-bottom: 0.5em;
+}
+
+#external-modal .external-content .popup-container {
+    flex: 1;
+    display: flex;
+}
+
+#external-modal .external-content .popup-container > li {
+    flex: 1;
+}
+
+#external-modal .external-content .popup-container > li.uk-active {
+    display: flex; /* only set on the active item, othewise we mess with uk kit tab showing/hiding */
+}
+
+#external-modal .external-content .popup-content {
+    flex: 1;
+  	overflow-y: scroll;
+}
+
+#external-modal .external-content .popup-content.iframe-container {
+    display: flex;
+    -webkit-overflow-scrolling: touch; /* see https://davidwalsh.name/scroll-iframes-ios */
+}
+
+#external-modal .external-content .popup-content.iframe-container > iframe {
+    flex: 1;
+}
+
+body,html{
+  overflow:hidden
+}
+  </style>
+</head>
+<body>
+<div class="uk-navbar-item">
+    <input class="uk-search-input" type="search" placeholder="Search">
+</div>
+{{tabs=[{"icon": "/OneZoom/static/images/W.svg", "id": "wiki", "name": "Wikipedia", "url":"http://en.wikipedia.org"}, {"icon": "/OneZoom/static/images/EoL.png", "id": "eol", "name": "Encyclopedia of Life", "url":"http://eol.org"}]}}
+<a href="#external-modal" uk-toggle>Open modal - scrolling inside the iframe is borked in Safari</a>
+<div id="external-modal" class="uk-modal-container" uk-modal>
+  <div class="uk-modal-dialog">
+    <button class="uk-modal-close-outside" type="button" uk-close></button>
+    <p id="tab-loading_pic" class="uk-position-center"><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
+    <div class="external-content">
+      <ul uk-tab class="external-tabs">
+        <!--A list of all the available tabs-->
+        {{for tab in tabs:}}
+        <li id="{{=tab['id']}}"><a href="#">{{if 'icon' in tab:}}<img src="{{=tab['icon']}}" title="{{=tab['name']}}" class="uk-hidden@s" />{{pass}}<span class="uk-visible@s">{{=tab['name']}}</span></a></li>
+        {{pass}}
+      </ul>
+      <ul class="popup-container uk-switcher">
+        {{for tab in tabs:}}
+        <li class="{{=tab['id']}}" data-src="" aria-controls="{{=tab['id']}}-panel">
+          <div class="uk-position-top-right expand-tab">
+            <a href="" target="_blank" class="uk-icon-button" uk-tooltip="pos: left" title="{{=T('Open this %s tab in a new window') % (tab['name'],)}}" uk-icon="icon: expand; ratio: 0.75"></a>
+          </div>
+          <p class="loading_pic uk-position-center"><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
+          <div class="popup-content"><iframe src="{{=tab['url']}}"></iframe></div>
+        </li>
+        {{pass}}
+      </ul>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,62 @@
+[OpenTree v9.1 has non monophyletic Annelids. One issues is that Myzostomida (a problematic group of crinoid parasites) is sometimes placed outside the Annelids (e.g. by NCBI)
+From a brief scan of the literature, it seems that (as of 2016)  Myzostomida are heading back into the Annelids, so I take a relatively recent
+synthetic phylogeny from Weigert & Bleidorn (2016) Current status of annelid phylogeny: Organisms Diversity & Evolution 16(2) DOI: 10.1007/s13127-016-0265-7 (fig 2)
+
+((Magelonidae,Oweniidae),(Chaetopteridae,((Sipuncula,Amphinomidae),(Sedentaria,Errantia))))
+
+Where Sedentaria has a basal 4-tomy ('incertae sedis' and other problematic taxa marked with *)
+
+(A,B,C,D)Sedentaria
+
+A=((Clitellata,(Terebelliformia,(Arenicolidae,Maldanidae))),(Echiura,(Capitellidae,Opheliidae)))
+B=((Spionidae,Sabellariidae),(Sabellidae,(Serpulidae,Fabriciidae)))
+C=(Cirratuliformia,Siboglinidae)
+D=((Diurodrilidae,(Orbiniidae,Parergodrilidae)),(*Dinophilidae,Nerillidae))
+
+OpenTree Terebelliformia is called "Terebellida" and is absent from v9.1. Instead, it has 
+
+(Alvinellidae,(Pectinariidae,Terebellidae))
+
+So we have
+
+((A,B),(C,D))=((((Clitellata,((Alvinellidae,(Pectinariidae,Terebellidae)),(Arenicolidae,Maldanidae))),(Echiura,(Capitellidae,Opheliidae))),((Spionidae,Sabellariidae),(Sabellidae,(Serpulidae,Fabriciidae)))),((*Cirratuliformia,Siboglinidae),((Diurodrilidae,(Orbiniidae,Parergodrilidae)),(*Dinophilidae,Nerillidae))))Sedentaria
+
+
+And Errantia has a basal 3-tomy
+(E,F,G)Errantia
+E=Myzostomida_ott260040
+F=(Polygordiidae,(Saccocirridae,(*Protodriloidae,Protodrilidae)))
+G=((((Phyllodocidae,(*Glyceriformia,Tomopteridae)),(Nereididae,Nephtyidae)),(Syllidae,(Polynoidae,Sigalionidae))),(Dorvilleidae,(Lumbrineridae,(Eunicidae,Onuphidae))))
+
+which I resolve with Myzostomida at the base:
+(E,(F,G)) = (Myzostomida_ott260040,((Polygordiidae,(Saccocirridae,(*Protodriloidae,Protodrilidae))),((((Phyllodocidae,(*Glyceriformia,Tomopteridae)),(Nereididae,Nephtyidae)),(Syllidae,(Polynoidae,Sigalionidae))),(Dorvilleidae,(Lumbrineridae,(Eunicidae,Onuphidae))))))Errantia
+
+Note that Lumbrineridae,(Eunicidae,Onuphidae)) have been rejigged with OT 9.1 and are now at 
+https://tree.opentreeoflife.org/opentree/opentree9.1@mrcaott42379ott140961/Parahyalinoecia--Marphysa 
+- this is a node with no established name, so for the moment we hack this by omitting a number of genera, and 
+hand-coding the phylogeny-specific branches from OpenTree (9.1), i.e.
+
+((Ninoe,Onuphis),((Lumbrineris,Diopatra),(Eunice,(Oenonidae,Marphysa))))
+
+Giving:
+
+((Magelonidae,Oweniidae),(Chaetopteridae,((Sipuncula,Amphinomidae),(Sedentaria,Errantia))))
+
+->
+
+((Magelonidae,Oweniidae),(Chaetopteridae,((Sipuncula,Amphinomidae),(((((Clitellata,((Alvinellidae,(Pectinariidae,Terebellidae)),(Arenicolidae,Maldanidae))),(Echiura,(Capitellidae,Opheliidae))),((Spionidae,Sabellariidae),(Sabellidae,(Serpulidae,Fabriciidae)))),((Cirratuliformia*,Siboglinidae),((Diurodrilidae,(Orbiniidae,Parergodrilidae)),(Dinophilidae*,Nerillidae))))Sedentaria,(Myzostomida_ott260040,((Polygordiidae,(Saccocirridae,(Protodriloidae*,Protodrilidae))),((((Phyllodocidae,(Glyceriformia*,Tomopteridae)),(Nereididae,Nephtyidae)),(Syllidae,(Polynoidae,Sigalionidae))),(Dorvilleidae,((Ninoe,Onuphis),((Lumbrineris,Diopatra),(Eunice,(Oenonidae,Marphysa))))))))Errantia))))
+
+or with otts:
+
+((Magelonidae_ott1067344@,Oweniidae_ott166828@),(Chaetopteridae_ott466487@,((Sipuncula_ott377817@, Amphinomidae_ott884677@),(((((Clitellata_ott563197@,((Alvinellidae_ott386356@,(Pectinariidae_ott208983@,Terebellidae_ott106108@)),(Arenicolidae_ott563193@,Maldanidae_ott694247@))),(Echiura_ott954036@,(Capitellidae_ott966425@,Opheliidae_ott336915@))),((Spionidae_ott912396@,Sabellariidae_ott336912@),(Sabellidae_ott992906@,(Serpulidae_ott440707@,Fabriciidae_ott455562@)))),((*Cirratuliformia_ott5677062@,Siboglinidae_ott1057367@),((Diurodrilidae_ott301584@,(Orbiniidae_ott918309@,Parergodrilidae_ott638598@)),(*Dinophilidae_ott446114@,Nerillidae_ott911577@))))Sedentaria,(Myzostomida_ott260040@,((Polygordiidae_ott914159@,(Saccocirridae_ott336933@,(*Protodriloidae_ott6327467@,Protodrilidae_ott222259@))),((((Phyllodocidae_ott890240@,(*Glyceriformia_ott5681386@,Tomopteridae_ott798210@)),(Nereididae_ott741326@,Nephtyidae_ott1072318@)),(Syllidae_ott881665@,(Polynoidae_ott1067347@,Sigalionidae_ott812184@))),(Dorvilleidae_ott989548@,((Ninoe_ott663397@,Onuphis_ott433141@),((Lumbrineris_ott834687@,Diopatra_ott1042378@),(Eunice_ott162291@,(Oenonidae_ott67118@,Marphysa_ott260032@))))))))Errantia))))Annelida
+
+
+We then have to remove the starred taxa, which are absent from the 9.1 OpenTree
+Cirratuliformia_ott5677062@
+Dinophilidae_ott446114@
+Protodriloidae@
+Glyceriformia_ott5681386@
+
+from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Animals]
+((Magelonidae_ott1067344@,Oweniidae_ott166828@),(Chaetopteridae_ott466487@,((Sipuncula_ott377817@,Amphinomidae_ott884677@),(((((Clitellata_ott563197@,((Alvinellidae_ott386356@,(Pectinariidae_ott208983@,Terebellidae_ott106108@)),(Arenicolidae_ott563193@,Maldanidae_ott694247@))),(Echiura_ott954036@,(Capitellidae_ott966425@,Opheliidae_ott336915@))),((Spionidae_ott912396@,Sabellariidae_ott336912@),(Sabellidae_ott992906@,(Serpulidae_ott440707@,Fabriciidae_ott455562@)))),(Siboglinidae_ott1057367@,((Diurodrilidae_ott301584@,(Orbiniidae_ott918309@,Parergodrilidae_ott638598@)),Nerillidae_ott911577@)))Sedentaria_ott5670225,(Myzostomida_ott260040@,((Polygordiidae_ott914159@,(Saccocirridae_ott336933@,Protodrilidae_ott222259@)),((((Phyllodocidae_ott890240@,Tomopteridae_ott798210@),(Nereididae_ott741326@,Nephtyidae_ott1072318@)),(Syllidae_ott881665@,(Polynoidae_ott1067347@,Sigalionidae_ott812184@))),(Dorvilleidae_ott989548@,((Ninoe_ott663397@,Onuphis_ott433141@),((Lumbrineris_ott834687@,Diopatra_ott1042378@),(Eunice_ott162291@,(Oenonidae_ott67118@,Marphysa_ott260032@))))))))Errantia_ott717916))))Annelida_ott941620;
+

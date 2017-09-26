@@ -1,0 +1,23 @@
+#img_list img {border:2px solid grey}
+#img_list .pd img {border: 2px solid blue}
+#img_list .pdnew img {border: 2px solid green}
+
+#edit_frame {
+    position: fixed;
+    height: 100%;
+    width:100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 5;
+    /* display:none */
+}
+
+#edit_frame iframe {
+    display: block;
+    width: 80%;
+    height: 80%;
+    margin-top: 2em;
+    margin-bottom: 2em;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: white;
+}

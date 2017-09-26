@@ -1,0 +1,54 @@
+{{response.title='OneZoom: Donors'}}
+{{extend 'layout.html'}}
+<div class="row-fluid intro donor_head">
+    <div class="col-md-12">
+        <h1>The OneZoom charity would like to thank the following generous donors</h1>
+    </div>
+</div>
+<div class="row-fluid">
+    <div class="col-md-12">
+        <ol class="blank">
+{{cutoffs, cutoff_index = [1000000,1000,150,0], 0}}
+{{for i,donor in enumerate(rows):}}{{if i==items_per_page: break}}
+{{ if rows[i][paid_col_name] <= cutoffs[cutoff_index] and (i<=0 or rows[i-1][paid_col_name]> cutoffs[cutoff_index]):}}
+{{  while ((rows[i][paid_col_name] or 0.1) <= cutoffs[cutoff_index]): cutoff_index+=1}}
+        </ol>
+        <ol class="donor_list cutoff_gt{{=cutoffs[cutoff_index]}}">
+{{ pass}}
+            <li>
+{{ if donor[n_col_name] > 1:}}
+                <p class="donor">{{=donor.reservations.verified_donor_name}}</p>
+{{  if donor[otts_col_name]:}}
+                <ul>
+{{   for OTT in donor[otts_col_name].split(","):}}
+{{    img = user_images.get(int(OTT)) or default_images.get(int(OTT))}}
+{{    if img:}}
+                <li><a href="{{=URL('life/@=' + str(OTT), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life"
+    src="{{=thumbnail_url(img.get('src'),img.get('src_id'))}}"
+    title="{{=' / '.join([t for t in [img.rights, img.licence] if t]).replace('"',"'")}}" /></a></li>
+{{    pass}}
+{{   pass}}
+                </ul>
+{{  pass}}
+{{ else:}}
+{{  OTT = int(donor[otts_col_name])}}
+                <a href="{{=URL('life/@=' + str(OTT), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life"
+{{  img = user_images.get(OTT) or default_images.get(OTT)}}
+{{  if img:}}
+    src="{{=thumbnail_url(img.get('src'),img.get('src_id'))}}"
+    title="{{=' / '.join([t for t in [img.rights, img.licence] if t]).replace('"',"'")}}"
+{{  else:}}
+    src="{{=URL('static','images/noImage_transparent.png')}}"
+{{  pass}} />
+</a>
+                <p>Sponsored {{=donor.reservations.verified_kind}}<br /><strong>{{=donor.reservations.verified_name}}</strong></p>
+{{ pass}}
+            </li>
+{{pass}}
+        </ol>
+{{if page:}}{{=A(XML('&lt;&nbsp;previous&nbsp;'+str(items_per_page)+'..'),_href=URL(args=[page-1], vars=vars),_class='hefty')}}{{pass}}
+{{if len(rows)>items_per_page:}}{{=A(XML('..next&nbsp;'+str(items_per_page)+'&nbsp;&gt;'),_href=URL(args=[page+1], vars=vars),_class='hefty')}}{{pass}}
+<hr />
+<div class="donor_foot">Particular thanks to our gold donors whose contributions total over £1000, and silver donors who have contributed over £150 in total.</div>
+    </div>
+</div>

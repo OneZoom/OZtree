@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta NAME="description" CONTENT="OneZoom Tree of Life Explorer" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="shortcut icon" href="{{=URL('static', 'images/favicon.ico')}}" type="image/ico" />
+  {{if response.canonical:}}<link rel="canonical" href="{{=response.canonical}}">{{pass}}
+{{try:}}
+{{version = str(version+0)}}
+{{include 'web2py_ajax.html' #only really needed for web2py ajax loading in sponsor_node tab (must be above the UIkit lines)}}
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <!-- fallback to local jQuery version e.g. if offline -->
+  <script>window.jQuery || document.write('<script src="{{=URL("static", "js/jquery.min.js")}}"><\/script>')</script>
+  <link rel="stylesheet" href="{{=URL('static','uikit-3/css/uikit.min.css')}}" />
+  <script src="{{=URL('static','uikit-3/js/uikit.min.js')}}"></script>
+  <script src="{{=URL('static','uikit-3/js/uikit-icons.min.js')}}"></script>
+  <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree.css')}}" />
+
+{{include}}
+{{try:}}{{OZTree_js_suffix = (myconf.take('general.oztree_js_suffix') if myconf.take('general.oztree_js_suffix') else non_existent_variable)}}{{except:}}{{OZTree_js_suffix = '.js'}}{{pass}}  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/completetree_' + str(version) +  '.js')}}"></script>
+  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/cut_position_map_' + str(version) +  '.js')}}"></script>
+  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/dates_' + str(version) + '.js')}}"></script>
+  <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common' + OZTree_js_suffix)}}"></script>
+  <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry' + OZTree_js_suffix)}}"></script>
+  <script> var OZstrings={{include 'default/js_strings.json'}}</script>
+  <script type="text/javascript">
+/* define most of the JS after the main page has loaded */
+var onezoom = null; //will be filled out on document ready
+
+var server_urls = {
+    /* These fill out the equivalently named variables in OneZoom global_config.
+       They need to be defined here to avoid hard-coding them into the OneZoom js code */
+    data_path_pics: {{=XML(js_thumbnail_url)}},
+    node_details_api: "{{try:}}{{=myconf.take('API.node')}}{{except:}}{{=URL('API','node_details.json', scheme=True, host=True)}}{{pass}}",
+    search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",
+    search_sponsor_api: "{{try:}}{{=myconf.take('API.search_sponsor')}}{{except:}}{{=URL('API','search_for_sponsor.json', scheme=True, host=True)}}{{pass}}",
+    search_init_api: "{{try:}}{{=myconf.take('API.search_init')}}{{except:}}{{=URL('API','search_init.json', scheme=True, host=True)}}{{pass}}",
+    ott2id_api: "{{try:}}{{=myconf.take('API.ott2id')}}{{except:}}{{=URL('API','get_id_by_ott.json', scheme=True, host=True)}}{{pass}}",
+    ott2id_arry_api: "{{try:}}{{=myconf.take('API.ott2id_array')}}{{except:}}{{=URL('API', 'get_ids_by_ott_array.json', scheme=True, host=True)}}{{pass}}",
+    otts2vns_api: "{{try:}}{{=myconf.take('API.otts2vns')}}{{except:}}{{=URL('API','otts2vns.json', scheme=True, host=True)}}{{pass}}",
+    image_details_api: "{{try:}}{{=myconf.take('API.image')}}{{except:}}{{=URL('API', 'image_details.json', scheme=True, host=True)}}{{pass}}",
+    update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
+    tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
+    OZ_leaf_json_url_func: function(ott) {return("{{=URL('default', 'leaf_linkouts', scheme=True, host=True, extension='json')}}" + "/" + ott.toString())},
+    OZ_node_json_url_func: function(id) {return("{{=URL('default', 'node_linkouts', scheme=True, host=True, extension='json')}}" + "/" + id.toString())},
+};
+
+/* UI functions that allow javascript in the main viewer to interact with the UI - these refer to items in the viewer_UI file */
+
+var UI_callbacks = {
+  
+  badOTT: function(ott) { /* used within setup_page.js when the page tries to load a bad location */
+    $('#error-modal .uk-modal-dialog > p').hide();
+    $('#error-modal .uk-modal-dialog > p.badOTT').show();
+    UIkit.modal('#error-modal').show();
+  },
+
+  closeAll: function() {
+    $('.uk-modal-container').each(function() {
+        UIkit.modal(this).hide();
+    });
+    $('[uk-dropdown]').each(function() {
+        UIkit.dropdown(this).hide();
+    });
+  },
+
+  openCopyright: function(pic_src, pic_fn) {
+    {{try:}}
+    {{url_params = '&'.join('{}={}'.format(k,v) for k,v in load_vars.iteritems())}}
+    var load_url = "{{=URL('linkout_via_picID', scheme=True, host=True, extension='load')}}" + "/" + pic_src + "/" + pic_fn + "?{{=url_params}}";
+    {{except:}}
+    var load_url = "{{=URL('linkout_via_picID', scheme=True, host=True, extension='load')}}" + "/" + pic_src + "/" + pic_fn + "?method=iframe";
+    {{pass}}
+    var link_url = "{{=URL('linkout_via_picID', scheme=True, host=True, extension=False)}}" +  "/" + pic_src + "/" + pic_fn + "?method=redirect";
+    $("#imageinfo-modal .popup-content").load(load_url, function() {if ($(this).find("> iframe")) {$(this).addClass("iframe-container")}});
+    $("#imageinfo-modal .uk-modal-header a").attr('href', link_url);
+    UIkit.modal('#imageinfo-modal').show();
+  },
+
+  openLinkouts: function() {
+    $('#external-modal .external-content').hide();
+    $('#external-modal .tab-loading_pic').show();
+    UIkit.modal('#external-modal').show();
+  },
+
+  populateLinkouts: function(responseJSON, initialSelected) { /* used within button_manager.js when the page needs to pop up a tabbed window */
+    //console.log("populating linkouts");
+    if (initialSelected) {
+        initialSelected = $('#external-modal .external-tabs li').index($("#"+ initialSelected))
+    } else {
+        initialSelected = 0
+    }
+    var select_tab_index=null;
+    // make sure the id names correspond to the names returned by the api
+    $("#external-modal .external-tabs li").each(function(index) {
+      var tab = $(this);
+      var linkout_name = tab.attr('id'); //'wiki', 'eol', etc. Visited in order specified in html file
+      if (linkout_name) {
+        //if ((responseJSON.data[linkout_name]) && (!linkout_name=="wiki" || match_wikidata_url(responseJSON.data[linkout_name]))) {
+        if (responseJSON.data[linkout_name]) {
+          if (select_tab_index == null) select_tab_index = index; //start selecting ealiest non-hidden tab
+          if (index == initialSelected) select_tab_index = index; //override if initialSelected is not hidden
+          tab.show();
+          var specific_popup = $("#external-modal .popup-container ." + linkout_name);
+          //set the data-src attribute to the url. When the tab is shown, it will get src from there
+          specific_popup.attr("data-src", responseJSON.data[linkout_name]);
+          //console.log("set data-src");
+          $(".expand-tab a", specific_popup).attr("href",responseJSON.data[linkout_name]);
+        } else {
+          tab.hide(); //hide irrelevant tabs (those not returned by the API)
+        }
+      }
+    });
+    UIkit.tab('#external-modal .external-tabs').show(select_tab_index);
+    load_tab($("#external-modal .popup-container li").eq(select_tab_index), true, window.should_delete_links);
+    $('#external-modal .tab-loading_pic').hide();
+    $('#external-modal .external-content').show();
+  }
+};
+
+function closeAndLeap(event, OZIDin, original_searchbox) {
+    //TODO: add hit in search count.
+    // add_hit_in_search_count(OZIDin);
+    var dropdown = $(".search_dropdown", original_searchbox)
+    if (dropdown.length) {
+        if ((dropdown.first().outerWidth()*2) > document.getElementById("OneZoomCanvasID").width) {
+            UI_callbacks.closeAll();
+        }
+    }
+    if (OZIDin) onezoom.controller.jump_to_OZid(OZIDin);
+}
+
+function match_wikidata_url(str) {
+    return str.match(/^(http:|https:|)\/\/www.wikidata.org\/wiki\/Special:GoToLinkedPage\?site=(.*?)&itemid=(Q.*)/);
+}
+
+function load_tab(tab_content, embed_if_possible, remove_embed_links) {
+  if (! tab_content.children().last().hasClass('popup-content')) {
+      $('.loading_pic',tab_content).show();
+      if (embed_if_possible) {
+        if (tab_content.hasClass('wiki')) {
+            // extract the Qid & lang from the url - a bit messy
+            var match = match_wikidata_url(tab_content.attr('data-src'));
+            if (match) {
+                inject_wikipage(tab_content, match[2], match[3], remove_embed_links);
+                return;
+            }
+        }
+        /*
+        //The following is only currently useful for the museum display, as it doesn't 
+        //work for the "available" sponsor page, or the sponsor_node page, both of which
+        //rely on javascript (e.g. AJAX) within the embedded html. We may want to adjust 
+        //the sponsor_node page to set ajax="false"
+        if (tab_content.hasClass('ozspons')) {
+            inject_web2py_page(tab_content, tab_content.attr('data-src'), remove_embed_links);
+            return;
+        }
+        */
+      }
+      //else default to embedding as an iframe
+      //console.log("trying to create iframe with src = " + tab_content.attr('data-src'))
+      var ifrm = document.createElement("iframe"); 
+      ifrm.setAttribute('src', tab_content.attr('data-src'));
+      ifrm.setAttribute('onload', '$(".loading_pic", $(this).parent().parent()).hide()');
+      ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
+      //add iframe inside a div wrapper
+      tab_content.append($('<div>', {'class':'popup-content iframe-container'}).append(ifrm));
+  }
+}
+
+/* sanitise links in an html file, possibly remove all but internal ones */
+function sanitise_links(html, remove_links, base_url) {
+  if (remove_links) {
+    $('[href]', html).not('[href^="#"]').each(function() {
+      if ($(this).contents().length) {
+          $(this).contents().unwrap();
+        } else {
+          $(this).remove();
+      }
+    });
+  } else {
+    $('[href]', html).not('[href^="#"]').attr('target','_blank');
+    /* get a url to use (if "base" is defined in the header) or default to the original */
+    var base_url =  ($('base', html) && $('base', html).attr('href'))?$('base', html).attr('href'):base_url;
+    var origin = $('<a>').prop('href', base_url).prop('origin'); //get the host/port etc
+    //relative refs
+    $('[href^="./"]', html).attr('href', function(i,attr) {return base_url + attr.substr(2);});
+    //absolute refs
+    $('[href^="/"]', html).not('[href^="//"]').attr('href', function(i,attr) {return origin + attr;});
+  }
+  return html;
+}
+
+
+/* Get a web2py page via ajax and inject it into the current page. This is open to abuse, and
+ * so should only by used for our own pages. The ".html" ending is swapped for a ".load" extension
+ * so that we only get the page fragment, rather than the full html wrapper
+ */
+function inject_web2py_page(selector, url, removelinks) {
+  $.ajax({
+    url: url.replace(".html", ".load"),
+    type: "GET",
+    dataType: "html",
+    success: function (data) {
+      var html_to_inject = $('<div class="popup-content"></div>').html(data);
+      sanitise_links(html_to_inject, removelinks, url);
+      $('base,meta,link,title,style,script', html_to_inject).remove();
+      $('.loading_pic',selector).hide();
+      selector.append($(html_to_inject));
+    }
+  });
+}
+
+
+/* Look up a wikidata Qid and a site language using the wikidata API to get a page name
+ * then use the page name to get the rest_v1 wikipedia machine-readable page (see
+ * https://en.wikipedia.org/api/rest_v1/ ), and inject it into the page within a <div>
+ * tag of class "popup-content", using Jquery to remove links from the injected html
+ * where necessary. Note that we also need to get the wikipedia stylesheet 
+ * for that page (which may differ from page to page, depending on loaded components), and
+ * inject that into the head of the current page. We need to make sure that wikipedia-defined 
+ * css rules do not interfere with our own layout.
+ */
+function inject_wikipage(selector, lang, Qid, removelinks) {
+  //console.log("Inject Wiki!");
+  var site = lang+'wiki';
+  $.ajax({
+    type: "GET",
+    id:Qid,
+    lang:lang,
+    sitecode: site,
+    dataType: "jsonp",
+    data: {action:'wbgetentities',
+    	props:'sitelinks',
+      sitefilter:site,
+      ids:Qid,
+      format:'json'},
+    url: "//www.wikidata.org/w/api.php",
+    success: function (data) {
+      var pagetitle = data.entities[this.id].sitelinks[this.sitecode].title;
+      var base_url = "https://"+this.lang+".wikipedia.org/";
+      $.ajax({
+        type: "GET",
+        pagetitle: pagetitle,
+        base_url: base_url,
+        url: base_url + "api/rest_v1/page/html/" + pagetitle,
+        dataType: "html",
+        success: function (data) {
+          //double-check that we haven't inserted it while waiting for a previous AJAX call
+          if (!selector.children().last().hasClass('popup-content')) {
+            //convert reponse to html (should throw away <head> and <body> tags)
+            var html_to_inject = $('<div class="popup-content"></div>').html(data);
+            //just make sure we don't have a stray head or body
+            $('head', html_to_inject).contents().unwrap();
+            $('body', html_to_inject).contents().unwrap();
+            //check if redirected and get current page title
+            var page = $('link[rel="dc:isVersionOf"]', html_to_inject).attr('href');
+            if (page && (page = page.match(/wikipedia.org\/wiki\/(.*)\/?$/))) {
+            	this.pagetitle = page[1];
+            }
+            //inject stylesheet
+            var ss = $('link[rel~="stylesheet"]', html_to_inject).addClass('injected-stylesheet');
+            $('head').prepend(ss);
+            //transform internal page links of the form ./<title>#internal_link to simply #internal_link
+            var url_start = './'+this.pagetitle;
+            $('a[href^="'+url_start+'#"]', html_to_inject).attr('href', function(i,attr) {return attr.substr(url_start.length);});
+            //append the URL so that we abide by wikipedia distribution
+            var original_page = this.base_url + 'wiki/' + this.pagetitle;
+            html_to_inject.append('<footer>' + OZstrings['WikiCitation'] + '<a href="'+ original_page +'">' + original_page + '</a></footer>');
+            sanitise_links(html_to_inject, removelinks, this.base_url);
+            $('base,meta,link,title,style,script', html_to_inject).remove();
+            $('div[role="note"]', html_to_inject).remove();
+            $('div[role="navigation"]', html_to_inject).remove();
+            html_to_inject.children('ul').remove(); //remove lists, e.g. "see also", etc.
+            $('.sistersitebox,.sisterlinks,.mw-editsection, #See_also, #External_links', html_to_inject).remove();
+            $('.loading_pic',selector).hide();
+            selector.append($(html_to_inject));
+          }
+        }
+	  });
+    }
+  })
+}
+
+// only used in searchPopulate(...)
+function compile_names(record) {
+    var is_leaf = record[2] < 0;
+    if (record[0] && record[1]) {
+        return "<p>" + record[0] + "</p>" + "(" + (is_leaf?"<i>"+record[1]+"</i>":record[1]) + ")";
+    } else if (record[0]) {
+        return "<p>" + record[0] + "</p>";
+    } else if (record[1]) {
+        return (is_leaf?"<p><i>"+record[1]+"</i></p>":"<p>"+record[1]+"</p>");
+    }
+}
+
+// only used in searchPopulate(...)
+function compile_sponsorship(record) {
+    if (record.length >= 5 && record[4] && record[4].info_type == "Sponsorship Info") {
+        return '<p class="sponsorship-info">' + record[4].text + "</p>";
+    } else if (record.length >= 5 && record[4] && record[4].info_type == "Extra Vernacular") {
+        return '<p class="extra-info">' + record[4].text + "</p>";
+    } else {
+        return "";
+    }
+}
+
+function is_sponsored(search_result_item) {
+    if (search_result_item.length > 4) {
+        return (search_result_item[4]['info_type']=="Sponsorship Info")
+    }
+    return false;
+}
+
+/* Callback function for when total search is complete.
+ * The parameter 'click_callback_id_name' should be another
+ * callback that is fired when an item is clicked on in the list
+ * (called with event, OZid, item_name, sci_name)
+ */
+function searchPopulate(searchbox, search_result, click_callback_id_name) {
+    $(".searchinput .icon-beside-input", searchbox).removeClass('waiting_for_search_result');
+    var dropdown = $(".search_dropdown", searchbox);
+    $('.popular_species', dropdown).hide();
+    $('.search_hits', dropdown).empty();
+    if (search_result.length == 0) {
+        $('.no_results', dropdown).show();
+    } else {
+        $('.no_results', dropdown).hide();
+        if (!is_sponsored(search_result[0])) {
+            $(".search_hits", dropdown).append($('<dt></dt>').text(OZstrings['NameHits']))
+        }
+        var sponsored=false;         
+        $.each(search_result, function() {
+            var result = this;
+            if ((sponsored==false) && (is_sponsored(result))) {
+                $(".search_hits", dropdown).append($('<dt class="sponsorhits"></dt>').html(OZstrings['SponsorHits']))
+                sponsored=true;
+            }
+            var tempHTML = compile_names(result);
+            tempHTML += compile_sponsorship(result);
+            $(".search_hits", dropdown).append(
+                $('<dd></dd>')
+                    .html(tempHTML)
+                    .click(function(event) {
+                        var OZid = result[2];
+                        var given_name = result[0];
+                        var sciname = result[1];
+                        click_callback_id_name(event, result[2], result[0], result[1]);})
+            );
+        })
+    }
+    UIkit.dropdown(dropdown).show();
+}
+
+/* Add a set of species (e.g. popular species) to a target list, 
+ * by using the onezoom.utils.process_taxon_list() function
+ * to map OTT ids to OneZoom IDs / vernacular names.
+ * The parameter 'click_callback_id_name' should be a
+ * callback that is fired when an item is clicked on in the list
+ * (called with event, OZid, item_name, sci_name, dropdown)
+ */
+function setup_location_list(target, taxon_list, click_callback_id_name) {
+    target.empty();
+    onezoom.utils.process_taxon_list(
+        //map the pop species headers to look up strings, for translations
+        taxon_list.map(function(x) {if (($.type(x) === "string") && (x in OZstrings)) {return OZstrings[x];} else {return x;}}), 
+        function(ott, given_name, sciname, OZid) {
+            if (OZid) {
+                target.append(
+                    $('<dd></dd>').html(
+                        $('<p></p>')
+                            .html(given_name?$('<span></span>').text(given_name):$('<i></i>').text(sciname))
+                            .addClass('taxon_location_button')
+                            .attr("draggable","true")
+                            .attr("id",'menuitem'+OZid.toString())
+                            .attr("data-OZid",OZid.toString())
+                            .attr("data-given_name", given_name)
+                            .attr("data-sciname", sciname)
+                            .click(function(event) {
+                                click_callback_id_name(event, OZid.toString(), given_name, sciname);
+                            })
+                            .on('dragstart', function(event){
+                                 event.originalEvent.dataTransfer.setData('drop_id', $(this).attr('id'));
+                                 event.originalEvent.dataTransfer.setData('taxon', true);
+                            })
+                    )
+                );
+            }
+        },
+        function(header, sciname) {target.append($('<dt></dt>').text(header))},
+        onezoom.data_repo);
+}
+
+var previous_location_codes;
+/* Function to call when location menu is clicked
+ * will be filled out with call to API using update_location_menu(onezoom.controller.get_my_location())
+ */
+function update_location_menu(loc_root) {
+  var my_location = loc_root[0]
+  var root = loc_root[1]
+  var my_location_names = my_location[0];
+  var my_location_codes = my_location[1];
+  var my_location_richness = my_location[3];
+  if (JSON.stringify(my_location_codes) === previous_location_codes) {
+    //Do not change location dropdown lists if the location has not changed.
+    return;
+  } else {
+    previous_location_codes = JSON.stringify(my_location_codes);
+  }
+  // first remove everything in the current list
+  var loc_list = $(".location-list").empty()
+  // now rebuild the list
+  loc_list.append(
+      $('<li>').addClass('toploc').append(
+          $('<a>').append(OZstrings["Current location"])));
+  // add the main elements, in reverse order
+  for (var i = my_location_names.length-1; i >= 0; i--)
+  {
+    /* TODO - we don't use the richness of the current location 
+    should be returned in my_location_richness[my_location_names.length] */
+    var richnessProportion = Math.min((my_location_richness[i])/(my_location_richness[my_location_names.length-1-i]),0.9);
+    var richnessRemainder = Math.floor((1.0 - richnessProportion)/2.0 * $('#locationDropdown').width());
+    var richnessWidth = $('#locationDropdown').width()-2*richnessRemainder;
+    loc_list.append(
+      $('<li>')
+        .width(richnessWidth)
+        .css({'border-right-width': richnessRemainder+'px','border-left-width': richnessRemainder+'px'})
+        .append(
+          $('<a>')
+            .css('margin-left', '-' + richnessRemainder + 'px')
+            .data('locationCode', my_location_codes[i])
+            .click(function() { /* close And Fly */
+              if (((document.getElementById("locationDropdown").offsetWidth)*2) > onezoom.tree_state.widthres) {
+                /* on mobiles - small screen so close box */
+                $("#locationDropdown").hide();
+              };
+              onezoom.controller.perform_flight_animation($(this).data('locationCode'));
+            })
+            .append(my_location_names[i] + "<br>(" + onezoom.utils.number_convert(my_location_richness[i]) + ")")
+        )
+    );
+  }
+}
+
+function load_into_searchbox(searchbox, OZIDin, given_name, sciname, colour) {
+    //Place a non-editable box of the selected item [given_name (/sci_name/)]
+    //over the top of the original search box and replace the search icon
+    //with an appropriately coloured pin icon. Clicking the pin should
+    //do a closeAndLeap() to the appropriate place
+    //will also jump to the common ancestor of all the marked places
+    //capitalise the common name
+    var searchresult = $('.searchresult', searchbox);    
+    if (given_name) given_name = given_name.charAt(0).toUpperCase() + given_name.slice(1);
+    if (given_name && sciname) {
+        $('input',searchresult).attr('value', given_name + " (" + sciname + ")");    
+    } else {
+        $('input',searchresult).attr('value',(given_name || '') + (sciname || ''));
+    }
+    searchresult.attr('data-OZid', OZIDin);
+    searchbox.addClass('result_displayed_in_box');
+    //once the svg is loaded into the icon, change the colour of the icon
+    UIkit.icon($('.icon-beside-input .main-icon',searchresult)).svg.then(function() {
+        $('.icon-beside-input .main-icon svg path',searchresult).css('fill',colour);
+        $('.icon-beside-input .main-icon svg circle',searchresult).css('fill','white');
+    });
+};
+
+function UI_reset_marked(searchbox, OZIDin, given_name, sciname, event) {
+    //create a new mark, and load into a searchbox 
+    var searchresult = $('.searchresult', searchbox);    
+    UIkit.dropdown($('.search_dropdown', searchbox)).hide();
+    if (searchresult.attr('data-OZid')) {
+        onezoom.controller.unmark_area(searchresult.attr('data-OZid'));
+    }
+    var colour = onezoom.controller.mark_area(OZIDin);
+    load_into_searchbox(searchbox, OZIDin, given_name, sciname, colour);    
+    closeAndLeap(event, onezoom.controller.get_ancestor_of_marked(), searchbox);
+}
+
+function UI_reset_marked_via_event(event, OZIDin, given_name, sciname) {
+    //fired when an item is selected in a dropdown
+    UI_reset_marked($(event.currentTarget).closest('.searchbox'), OZIDin, given_name, sciname, event);
+}
+
+
+function add_advanced_searchbox(OZid, name, sciname, col) {
+    /* Add an advanced searchbox, and attach all the necessary listeners.
+     * This is done dynamically so that we can add and remove them easily.
+     * If any parameters are given, we set the box to those values
+     */
+    var box_selector = $(advSchbx).appendTo('#searchboxes');
+    $('.search_dropdown', box_selector)
+        .on('show', function(event) {
+            //have to recalc the max height here as we need to dynamically work out the dropbox posn
+            $(event.currentTarget).css("max-height", "calc(100vh - 5px - " + $(event.currentTarget).offset().top + "px)");
+        });
+
+    $('.remove-searchbox', box_selector)
+        .click(function(event) {
+            var searchbox = $(event.currentTarget).closest('.searchbox');
+            var highlighted = $('.searchresult', searchbox).attr('data-OZid');
+            if (highlighted) onezoom.controller.unmark_area(highlighted);
+            searchbox.remove();
+            if ($('#search-advanced #searchboxes li').length == 0) {
+                toggleAdvancedSearch(false);
+                //add 2 searchboxes back
+                add_advanced_searchbox();
+                add_advanced_searchbox();
+            }
+        });
+
+    $('.searchresult .main-icon', box_selector).on('ready', function(event) {
+    console.log($(event.currentTarget).html());
+    });
+
+    
+    $('.searchresult .icon-beside-input .main-icon', box_selector)
+        .click(function(event) {
+            var OZid = $(event.currentTarget).closest('.searchresult').attr('data-OZid');
+            if (OZid) closeAndLeap(event, OZid, box_selector);
+            event.preventDefault();
+            event.stopPropagation();
+        })
+        
+    $('.searchresult input', box_selector)
+        .click(function(event) {
+            var searchbox = $(event.currentTarget).closest('.searchbox');
+            searchbox.removeClass('result_displayed_in_box');
+            $('.searchinput input', searchbox).focus();
+            UIkit.dropdown($('.search_dropdown', searchbox)).show();
+            event.preventDefault()
+            event.stopPropagation();
+        });
+    $('.searchinput .icon-beside-input .main-icon', box_selector)
+        .mousedown(function(event) {
+            // Fires before the blur event, catch this and stop overlaying the result, so that if 
+            // we lose focus because we touched the magnifying glass, we stil get the dropdown
+            var searchbox = $(event.currentTarget).closest('.searchbox');
+            if ($('.searchinput input', searchbox).is(":focus")) {
+                event.preventDefault()
+                event.stopPropagation();
+                return false;
+            } else {
+                return true;
+            };
+        })
+        
+    $('.searchinput input', box_selector)
+        .blur(function(event) {
+            // if we have an already-selected location, and we lose focus, we simply revert
+            var searchbox = $(event.currentTarget).closest('.searchbox');
+            if ($('.searchresult', searchbox).attr('data-OZid')) {
+                searchbox.addClass('result_displayed_in_box');
+            }
+        })
+        .on('input', function(event) {
+            var searchbox = $(this).closest('.searchbox');
+            var searchresult = $('.searchresult', searchbox);
+            var dropdown = $('.search_dropdown', searchbox);
+            if (searchresult.attr('data-OZid')) {
+                onezoom.controller.unmark_area(searchresult.attr('data-OZid'));
+                searchresult.attr('data-OZid','');
+            }
+            if (this.value.length==0) {
+                $('.popular_species', dropdown).show();
+                $('.no_results', dropdown).hide();
+                $('.search_hits', dropdown).empty();
+                onezoom.search_manager.full_search("");
+                $('.searchinput .icon-beside-input', searchbox).removeClass('waiting_for_search_result');
+            } else {
+                $('.searchinput .icon-beside-input', searchbox).addClass('waiting_for_search_result');
+                var delay_ms = 400;
+                if (event.which == 13) {
+                    delay_ms = 1;   //enter was pressed - don't delay
+                } else if (this.value.length == 1) {
+                    delay_ms = 800; //wait a bit longer before asking for a search if there is only one character
+                }
+                onezoom.search_manager.full_search(this.value, function(res,s) {
+                    searchPopulate(searchbox, res, UI_reset_marked_via_event)}, delay_ms);
+            }
+        });
+    
+     
+    setup_location_list($('.popular_species', box_selector), popular_locations, UI_reset_marked_via_event);
+
+    if (OZid) {
+        if (!col) col = onezoom.controller.mark_area(OZid);
+        //look up this OZid, and use OZid, name, sciname, colour to show the result
+        //use a timeout to allow the icon time to load, so we can colour it
+        load_into_searchbox(box_selector, OZid, name, sciname, col);
+    }
+}
+
+function preventTouchZoom(event) {
+    if(event.touches.length > 1) {
+        event.preventDefault(); 
+        event.stopPropagation();
+    };
+}
+
+function setupUI() {
+    /*
+     Used whenever the UI component is loaded (e.g. at start or on language change)
+    */
+
+    /* make sure we can't zoom on UI items */
+    $("#UI").on("touchstart touchmove touchend", preventTouchZoom);
+    $("[uk-modal]").on("touchstart touchmove touchend", preventTouchZoom);
+
+    $('#upButton')
+        .click(function(){onezoom.controller.button_zoom_up()});
+    $('#inButton')
+        .click(function(){onezoom.controller.button_zoom_in()});
+    $('#outButton')
+        .click(function(){onezoom.controller.button_zoom_out()});
+    $('#resetButton')
+        .click(function(){onezoom.controller.button_reset()});
+
+    $('input[name="imgsource"]').change(function() {onezoom.controller.set_image_source(this.value)});
+    $('input[name="treeshape"]').change(function() {onezoom.controller.set_view_type(this.value)});
+    $('input[name="colourtype"]').change(function() {onezoom.controller.set_color_theme(this.value)});
+    $('select#language').change(function() {
+        //reset the OZ strings to the new language
+        var lang_param = (this.value)?('lang='+this.value):'';
+        var self = this;
+        $.getJSON('{{=URL("default","js_strings.json")}}?' + lang_param, {}, function(json){
+            OZstrings = json;
+            onezoom.controller.set_language(self.value);
+            //reset the UI to a new language
+            $('[uk-modal]').remove(); //UIkit modals jump around the DOM, so need deleting by hand
+            $('#UI').load('{{=URL("default", setup_params["UI_layer"]["page"], vars=setup_params["UI_layer"].get("vars"))}}{{=XML("&" if setup_params["UI_layer"].get("vars") else "?")}}'+lang_param, setupUI)
+        });
+    })
+    $('select#treepage').val('{{=request.function}}');
+    $('select#treepage').change(function() {
+        /* slighly yucky function here - to go to the same location on another tree (another page), we 
+           replace the current url parameter (e.g. life.html, linnean.html, etc) with the
+           new value, by search-and-replace in the location.pathname component. We then paste
+           the url back together again as "origin + new_pathname + search + hash" */
+        window.location.href= window.location.origin + 
+            window.location.pathname.replace("/{{=request.function}}","/" + this.value) +
+            window.location.search +
+            window.location.hash;
+    });
+
+    $('#settingsDropdown')
+      .on('show', function() {
+       $('input[name=imgsource]').val([onezoom.controller.get_image_source()]);
+       $('input[name=treeshape]').val([onezoom.controller.get_view_type()]);
+       $('input[name=colourtype]').val([onezoom.controller.get_color_theme()]);
+       $('select#language').val(onezoom.controller.get_language());
+    });
+
+    $('#locationDropdown')
+      .on('beforeshow', function() {
+        update_location_menu(onezoom.controller.get_my_location());
+        return true;
+      })
+      /* this hack doesn't seem to work
+      .on('show', function () {
+        $('#locationDropdown').css("min-height","0");
+      })
+      .on('hide', function () {
+        $('#locationDropdown').css("min-height","100%");
+      })*/
+
+    
+    $('#advanced_search_button')
+      .on("dragover", function(event) {
+        $(this).addClass('dragover');
+        event.preventDefault();
+        event.stopPropagation();
+      })
+      .on("dragleave", function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        $(this).removeClass('dragover');
+      })
+      .on("drop", function(event) {
+        event.preventDefault();  
+        event.stopPropagation();
+        if (event.originalEvent.dataTransfer.getData('taxon')) {
+            var dropped_item = $('#' + event.originalEvent.dataTransfer.getData('drop_id'))
+            //find the first unused advanced search box
+            var to_fill = $('#search-advanced .searchresult:not([data-OZid])').first().closest('.searchbox');
+            if (to_fill.length) {
+                UI_reset_marked(
+                    to_fill,
+                    dropped_item.attr("data-OZid"),
+                    dropped_item.attr("data-given_name"), 
+                    dropped_item.attr("data-sciname")
+                );
+            } else {
+                add_advanced_searchbox(
+                    dropped_item.attr("data-OZid"),
+                    dropped_item.attr("data-given_name"), 
+                    dropped_item.attr("data-sciname")
+                );
+            }
+            toggleAdvancedSearch(true);
+            $(this).removeClass('dragover');
+        }
+      })
+      .click(function() {
+        //switch on or off common ancestor mode
+        toggleAdvancedSearch()
+      });
+    
+    $('#search_form_basic')
+      .submit(function(event) {
+        //stop form submission reloading the page
+        event.preventDefault();
+      })
+    
+    $('#search-basic .searchinput input')
+      .keyup(function(event) {
+        var searchbox = $(this).closest('.searchbox');
+        var dropdown = $('.search_dropdown', searchbox);
+        if (this.value.length==0) {
+            $('.popular_species', dropdown).show();
+            $('.no_results', dropdown).hide();
+            $('.search_hits', dropdown).empty();
+            onezoom.search_manager.full_search("");
+            $('.searchinput .icon-beside-input', searchbox).removeClass('waiting_for_search_result');
+        } else {
+            $(".searchinput .icon-beside-input", searchbox).addClass('waiting_for_search_result');
+            var delay_ms = 400;
+            if (event.which == 13) {
+                delay_ms = 1;   //enter was pressed - don't delay
+            } else if (this.value.length == 1) {
+                delay_ms = 800; //wait a bit longer before asking for a search if there is only one character
+            }
+            onezoom.search_manager.full_search(this.value, function(res,s) {
+                searchPopulate(searchbox, res, function(event, OZid) {closeAndLeap(event, OZid, $('#search-basic'))})
+            }, delay_ms);
+        }
+      });
+    
+    $('#search-basic .search_dropdown')
+        .on('show', function(event) {
+            //have to recalc the max height here as we need to dynamically work out the dropbox posn
+            $(event.currentTarget).css("max-height", "calc(100vh - 5px - " + $(event.currentTarget).offset().top + "px)");
+        })
+    
+    /* Advanced search stuff */
+    $('#add_searchbox')
+        .click(function(event) {
+            add_advanced_searchbox();
+            event.preventDefault();
+        });
+    $('#common_ancestor_button')
+        .click(function(event) {
+            var OZid = onezoom.controller.get_ancestor_of_marked();
+            if (OZid !== null) {
+                closeAndLeap(event, OZid);
+            }
+            event.preventDefault();
+        });
+        
+    /*** MODALS ***/
+    $('#about-modal')
+        .on('beforeshow', function() {
+            /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
+            if ($("#about-modal .uk-modal-body").children().length == 0)
+                $("#about-modal .uk-modal-body").load('{{=URL("default","about.load", vars=setup_params.get("page_params"))}}');
+        });
+
+    $('#howuse-modal')
+        .on('beforeshow', function() {
+            /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
+            if ($("#howuse-modal .uk-modal-body").children().length == 0)
+                $("#howuse-modal .uk-modal-body").load('{{=URL("default","how.load", vars=setup_params.get("page_params"))}}');
+        });
+
+    $('#datasources-modal')
+        .on('beforeshow', function() {
+            /* to avoid loading all the about text on page load, we check here and load it via ajax if necessary */
+            if ($("#datasources-modal .uk-modal-body").children().length == 0)
+                $("#datasources-modal .uk-modal-body").load('{{=URL("default","data_sources.load", vars=setup_params.get("page_params"))}}');
+        });
+
+    $('#imageinfo-modal')
+        .on('hide', function() {
+             $('#imageinfo-modal .popup-content').empty();
+             $('#imageinfo-modal .popup-content').removeClass("iframe-container");
+        })
+    
+    /*** Model for external tabs, e.g. wikipedia (must create & destroy tabbed content (e.g. iframes)) ***/
+    $('#external-modal')
+      .on('hidden', function() {
+        //remove content, data-src values, and injected css
+        $('#external-modal .popup-container li').each(function() {
+            $(this)
+                .attr("data-src","")
+                .children('.popup-content').remove()
+                .children('.loading_pic').show()
+        });
+        $('head .injected-stylesheet').remove();
+        //reset page zoom level
+        /* setTimeout(function() {
+            var viewportmeta = document.querySelector('meta[name="viewport"]');
+            if(viewportmeta===null){
+              viewportmeta = document.createElement("meta");
+              viewportmeta.setAttribute("name","viewport");
+              document.head.appendChild(viewportmeta);
+              
+              viewportmeta = document.querySelector('meta[name="viewport"]');
+            }
+            viewportmeta.setAttribute('content', "width=device-width, initial-scale=2, minimum-scale=1.01, maximum-scale=1.01,  user-scalable=0");
+        }, 1000);*/
+      });
+        
+    setup_location_list($('#search-basic .popular_species'), popular_locations, 
+        function(event, OZid) {closeAndLeap(event, OZid, $('#search-basic'))});
+
+    var existing_searchresults = onezoom.controller.list_all_marked().filter(function(id_col) {return !isNaN(id_col[0])});
+    if (existing_searchresults.length) {
+        var colours = {};
+        var ids = [];
+        for(var i=0; i<existing_searchresults.length; i++) {
+           ids.push(existing_searchresults[i][0]);
+           colours[existing_searchresults[i][0]]=existing_searchresults[i][1]
+        }
+        //must look up the names & values via the API
+        onezoom.search_manager.lookup_nodes(ids, function(OZIDin, ott, sciname, vernacular, image_src_ids, image_srcs, date) {
+           add_advanced_searchbox(OZIDin, vernacular, sciname, colours[OZIDin]);
+        },'best_pd');
+        toggleAdvancedSearch(true);
+    } else {
+        //add 2 searchboxes as default
+        add_advanced_searchbox();
+        add_advanced_searchbox();
+        toggleAdvancedSearch(false);        
+    }
+    
+}
+
+$(document).ready(function() {    /* Mainly a place to attach JS event handlers */
+    /** CREATE A ONEZOOM INSTANCE
+    this allows us to access e.g. onezoom.controller, onezoom.config, etc (defined in OZentry.js)
+     **/
+    onezoom = OZentry.default(
+        window.server_urls, 
+        window.UI_callbacks, 
+        window.pagetitle_func,
+        'OneZoomCanvasID', 
+        window.tree_config, 
+        window.rawData, 
+        window.metadata,
+        window.cut_position_map_json_str, 
+        window.polytomy_cut_position_map_json_str, 
+        window.cut_threshold,
+        window.tree_date);
+    setupUI();
+})
+
+  </script>
+  <noscript>
+    <style>
+        /* hide control buttons if there is no JS */
+        #controlButtons {display:none;}
+    </style>
+  </noscript>
+</head>
+<body id = "wholebody" style="user-select:none; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select:none; -ms-user-select:none;" unselectable = "on">
+    <!-- main body of document - canvas, then rest of UI elements in a single div -->
+  <canvas id="OneZoomCanvasID" tabindex="1"></canvas>
+  {{=LOAD("default",setup_params['UI_layer']['page'],vars=setup_params['UI_layer'].get("vars"), ajax=False, target="UI")}}
+{{except:}}
+<!-- had a problem with version mismatch -->
+  </head>
+  <body><h1>{{=T('Sorry - there has been a OneZoom error when getting the tree')}}</h1>
+{{=T('No appropriate tree version available (Version error: %s). Please <a href="mailto:mail@onezoom.org">contact us</a> and tell us of the problem') % (version,)}}
+{{pass}}
+
+
+</body>
+</html>

@@ -1,0 +1,45 @@
+h3 {
+    text-align: center;
+}
+
+q {
+    quotes: "\201C" "\201D" "\2018" "\2019";
+}
+
+.subtext {
+    font-size: 0.8em;
+    margin-left: 4em;
+    margin-top: -0.5em;
+}
+
+form{
+    text-align: center;
+}
+
+.toptext h2 {
+    text-align: center;
+}
+.toptext {
+    text-align: justify;
+}
+
+ul#suggestions {
+    list-style-type: none;
+    font-size: 1.3em;
+}
+
+#suggestions li.da {
+    margin-top: 0.5em;
+    padding-top: 0.5em;
+    border-top:1px solid #DDDDDD;
+}
+
+#suggestions li img {
+    vertical-align: center;
+    border-radius: 25%;
+    height: 2em;
+    width: 2em;
+    margin: 0.1em 0.5em 0.1em 0;
+    border: 1px solid grey;
+    
+}
