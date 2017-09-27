@@ -2,12 +2,12 @@
 routers = dict(
                # base router
                BASE=dict(
-                         default_application='OneZoomPublic',
+                         default_application='OZtree',
                          ),
                )
 
 routes_in=(
-  ('.*:/favicon.ico','/OneZoomPublic/static/images/favicon.ico'),
+  ('.*:/favicon.ico','/OZtree/static/images/favicon.ico'),
 )
 
 logging = 'off'
