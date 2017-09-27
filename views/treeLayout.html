@@ -149,7 +149,7 @@ function load_tab(tab_content, embed_if_possible, remove_embed_links) {
                 return;
             }
         }
-        /*
+{{if setup_params.get('md_hack_show_embedded_sponsorship'):}}
         //The following is only currently useful for the museum display, as it doesn't 
         //work for the "available" sponsor page, or the sponsor_node page, both of which
         //rely on javascript (e.g. AJAX) within the embedded html. We may want to adjust 
@@ -158,7 +158,7 @@ function load_tab(tab_content, embed_if_possible, remove_embed_links) {
             inject_web2py_page(tab_content, tab_content.attr('data-src'), remove_embed_links);
             return;
         }
-        */
+{{pass}}
       }
       //else default to embedding as an iframe
       //console.log("trying to create iframe with src = " + tab_content.attr('data-src'))
@@ -205,11 +205,14 @@ function inject_web2py_page(selector, url, removelinks) {
     type: "GET",
     dataType: "html",
     success: function (data) {
-      var html_to_inject = $('<div class="popup-content"></div>').html(data);
-      sanitise_links(html_to_inject, removelinks, url);
-      $('base,meta,link,title,style,script', html_to_inject).remove();
-      $('.loading_pic',selector).hide();
-      selector.append($(html_to_inject));
+      //double-check that we haven't inserted it while waiting for a previous AJAX call
+      if (!selector.children().last().hasClass('popup-content')) {
+        var html_to_inject = $('<div class="popup-content"></div>').html(data);
+        sanitise_links(html_to_inject, removelinks, url);
+        $('base,meta,link,title,style,script', html_to_inject).remove();
+        $('.loading_pic',selector).hide();
+        selector.append($(html_to_inject));
+      }
     }
   });
 }

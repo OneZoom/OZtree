@@ -5,8 +5,9 @@ setup_params = {
   'UI_layer': {
     'page':'viewer_UI.load', 
     'vars':{'tabs':['wiki', 'ozspons'], 'nolinks':1} }, 
-  'page_params': {'nolinks':1}
-  }
+  'page_params': {'nolinks':1}, #used to append to linkout_via_picID.load, about.load, how.load, data_sources.load, and in the load_tab() function 
+  'md_hack_show_embedded_sponsorship':True, #can be removed once we are able to properly embed a sponsor_leaf page (with leaf etc) without using an iframe
+}
 response.files.append(URL('static', 'css/tree_MD.css'))
 }}
 {{extend 'treeLayout.html'}}
