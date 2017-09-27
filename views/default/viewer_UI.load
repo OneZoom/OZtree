@@ -206,7 +206,7 @@ function toggleAdvancedSearch(state) {
 $('#external-modal .popup-container li').on('show', function (event) {
     if ($(event.currentTarget).attr("data-src")) {
         //console.log("showing a tab")
-        load_tab($(event.currentTarget), true, window.should_delete_links);
+        load_tab($(event.currentTarget), true, should_delete_links);
     }
     event.stopPropagation();
 });

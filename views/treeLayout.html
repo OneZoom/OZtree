@@ -68,12 +68,12 @@ var UI_callbacks = {
   },
 
   openCopyright: function(pic_src, pic_fn) {
-    {{try:}}
-    {{url_params = '&'.join('{}={}'.format(k,v) for k,v in load_vars.iteritems())}}
+{{if 'page_params' in setup_params:}}
+{{url_params = '&'.join('{}={}'.format(k,v) for k,v in setup_params['page_params'].iteritems())}}
     var load_url = "{{=URL('linkout_via_picID', scheme=True, host=True, extension='load')}}" + "/" + pic_src + "/" + pic_fn + "?{{=url_params}}";
-    {{except:}}
+{{else:}}
     var load_url = "{{=URL('linkout_via_picID', scheme=True, host=True, extension='load')}}" + "/" + pic_src + "/" + pic_fn + "?method=iframe";
-    {{pass}}
+{{pass}}
     var link_url = "{{=URL('linkout_via_picID', scheme=True, host=True, extension=False)}}" +  "/" + pic_src + "/" + pic_fn + "?method=redirect";
     $("#imageinfo-modal .popup-content").load(load_url, function() {if ($(this).find("> iframe")) {$(this).addClass("iframe-container")}});
     $("#imageinfo-modal .uk-modal-header a").attr('href', link_url);
@@ -115,7 +115,7 @@ var UI_callbacks = {
       }
     });
     UIkit.tab('#external-modal .external-tabs').show(select_tab_index);
-    load_tab($("#external-modal .popup-container li").eq(select_tab_index), true, window.should_delete_links);
+    load_tab($("#external-modal .popup-container li").eq(select_tab_index), true, should_delete_links);
     $('#external-modal .tab-loading_pic').hide();
     $('#external-modal .external-content').show();
   }
@@ -839,6 +839,8 @@ function setupUI() {
 }
 
 $(document).ready(function() {    /* Mainly a place to attach JS event handlers */
+    // Set up some global variables
+    should_delete_links = {{try:}}{{=setup_params['page_params']['nolinks']}}{{except:}}undefined{{pass}};
     /** CREATE A ONEZOOM INSTANCE
     this allows us to access e.g. onezoom.controller, onezoom.config, etc (defined in OZentry.js)
      **/

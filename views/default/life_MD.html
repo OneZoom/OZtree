@@ -20,7 +20,6 @@ document.oncontextmenu = function() {
 
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
 var tree_config = null;
-var should_delete_links = true;
 var pagetitle_func = function(nm) {return (nm)?"OneZoom Museum Display: "+ nm:"OneZoom Tree of Life Museum Display"};
 document.title = pagetitle_func("{{=page_info['title_name']}}");
 var popular_locations = [ /* strings are treated as headers (looked up in OZstrings), arrays as links with [ott,name] with name optional */
