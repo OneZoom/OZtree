@@ -316,10 +316,10 @@ ul#searchboxes {
   text-align: center;
  
 }
-#controlButtons #upButton {
+#controlButtons #upButton a {
     padding: 0.25rem 0.1rem;
 }
-#controlButtons #upButton svg polyline {
+#controlButtons #upButton a svg polyline {
     stroke-width: 0.8; /* The up chevron is magnified to fill sideways, so make the line narrower */
 }
 
@@ -328,13 +328,13 @@ ul#searchboxes {
     max-height: calc(100vh - 1rem);
     overflow-y: auto;
 }
-#controlButtons #inButton {
+#controlButtons #inButton a {
     border-top: 1px solid #DDD
 }
-#controlButtons #infoButton {
+#controlButtons #infoButton a {
     border-top: 1px solid #DDD
 }
-#controlButtons #resetButton {
+#controlButtons #resetButton a {
     /* put a ring around the reset chevron (no equivalent UIkit3 icon)*/
     box-sizing: border-box;
     padding: 0;
@@ -343,7 +343,7 @@ ul#searchboxes {
     border-radius: 20%; 
     margin: 0.5rem auto;
 }
-#controlButtons #resetButton:hover {
+#controlButtons #resetButton a:hover {
     border: 1px solid #666;
 }
 
