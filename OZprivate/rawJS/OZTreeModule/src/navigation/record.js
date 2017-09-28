@@ -23,6 +23,7 @@ function record_url_delayed() {
  * 3. exact position: #x=1,y=2,w=2.333
  * Besides record url, also change document title if find a node with name.
  * Only record url if current pin node is the different from previous pin node or popup dialog close or open.
+ * Also do not record file:/// links (not allowed for security reasons)
  * @param {Object} options It could contain the following properties:
  * record_popup: if true then check if global_button_action is live area.
  */
@@ -40,7 +41,7 @@ function record_url(options, force) {
   let querystring = get_params(options);
   if (current_view_near_previous_view(loc, querystring, hash) && !(force)) {
     return;
-  } else if window.location.protocol != "file:" {
+  } else if (window.location.protocol != "file:") {
     let state = get_current_state(node_with_ott, title, options); 
     let url = loc + querystring + hash;
     window.history.pushState(state, title, window.location.origin + pathname_exclude_append() + "/" + url);
