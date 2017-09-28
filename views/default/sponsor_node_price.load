@@ -15,7 +15,7 @@
 {{for i, ott in enumerate(otts):}}
 {{if max_items and i==max_items: break}}
     <li>{{new_vars = {k:vars[k] for k in ['embed','partner','user_more_info'] if vars[k]} }} {{new_vars['ott']=ott}}
-        <a class="sponsor" style="background-image:url('{{=image_urls[ott] if ott in image_urls else URL("static","images/noImage_transparent.png")}}')"  href="{{=URL('sponsor_leaf', extension=False,  vars=new_vars)}}" title="{{=attributions[ott].replace('"',"'") if ott in attributions else ''}}" > <p>{{=html_names[ott]}}</p> </a>
+        <a class="sponsor" style="background-image:url('{{=image_urls[ott] if ott in image_urls else URL("static","images/noImage_transparent.png")}}')"  href="{{=URL('sponsor_leaf', extension=False,  vars=new_vars)}}" data-href-component="{{=URL('sponsor_leaf', extension='load',  vars=new_vars)}}" onclick="if (typeof node_page_click == 'function') {return node_page_click(this);}" title="{{=attributions[ott].replace('"',"'") if ott in attributions else ''}}" > <p>{{=html_names[ott]}}</p> </a>
     </li>
 {{pass}}
     {{if max_items and (len(otts)> max_items):}}
