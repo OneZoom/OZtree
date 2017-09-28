@@ -81,7 +81,7 @@ npm install
 Once these are installed you can run grunt as follows:
 
 #### Compile documentation
-`grunt precompile_docs`: Use this command to generate a compiled documentation file. This will generate a large compiled markdown file in `OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown`, which is best viewed once you have got web2py running, by pointing your browser to `dev/DOCS` (e.g. at `http://127.0.0.1:8000/dev/DOCS`).
+`grunt precompile-docs`: Use this command to generate a compiled documentation file. This will generate a large compiled markdown file in `OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown`, which is best viewed once you have got web2py running, by pointing your browser to `dev/DOCS` (e.g. at `http://127.0.0.1:8000/dev/DOCS`).
 
 #### In development mode:
 `grunt compile`: This command bundles multiple js files into one.
