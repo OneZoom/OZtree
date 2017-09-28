@@ -153,6 +153,6 @@ module.exports = function (grunt) {
   grunt.registerTask("precompile-js_dev", ["exec:precompile_js_dev"]);
   grunt.registerTask("partial-install", ["curl:get_minlife", "exec:partial_install"]);
   grunt.registerTask("precompile-docs", ["jsdoc2md", "exec:precompile_docs"]);
-  grunt.registerTask("build", [ "precompile-python", "precompile-js", "copy:old_js", "compass","uglify", "compress", "clean:build", "copy:to_live","precompile_docs"]);
+  grunt.registerTask("build", [ "precompile-python", "precompile-js", "copy:old_js", "compass","uglify", "compress", "clean:build", "copy:to_live","precompile-docs"]);
   grunt.registerTask("compile", ["precompile-js_dev", "copy:old_js", "compass" ,"clean:compile", "copy:to_live", "precompile-docs"]);
 };
