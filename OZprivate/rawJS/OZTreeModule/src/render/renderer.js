@@ -72,6 +72,22 @@ function refresh(root) {
   release_shapes(shapes);
 }
 
+
+/**
+ * This function would first dynamically develop undeveloped parts.
+ * Then it would refresh the canvas unless it is called by user moving mouse and live area has not been changed.
+ * @param {Midnode} root
+ * @param {String} action indicates which action cause this function call.
+ */
+function draw_frame(root) {
+    reanchor_and_dynamic_load_tree();
+    let shapes = [];
+    controller.projection.get_shapes(root, shapes);
+    need_refresh(); // this still needs to be run so the render id is incremented even though we ignore the return value and draw a new frame regardless of what it says.
+    refresh_by_redraw(shapes, context);
+    release_shapes(shapes);
+}
+
 function release_shapes(shapes) {
   let length = shapes.length;
   for (let i=0; i<length; i++) {
@@ -200,4 +216,4 @@ function find_benchmark(root) {
   release_shapes(shapes);
 }
 
-export {refresh, add_controller, setup_canvas, draw_loading, find_benchmark, set_temp_context, unset_temp_context};
+export {refresh, draw_frame, add_controller, setup_canvas, draw_loading, find_benchmark, set_temp_context, unset_temp_context};

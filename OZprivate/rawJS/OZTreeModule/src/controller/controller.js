@@ -105,19 +105,21 @@ class Controller {
      * Draw a single frame on a given context
      */
     draw_single_frame(newcontext) {
-        this.stop_refresh_loop()
+        this.stop_refresh_loop() // stop refresh loop to prevent problems
         if (newcontext)
         {
             this.renderer.set_temp_context(newcontext);
+            // save old context if needed
         }
         reset_mr();
         reset_global_button_action();
-        this.renderer.refresh(this.root);
+        this.renderer.draw_frame(this.root); // this forces a frame draw unlike refresh which was built for a different purpose.
         if (newcontext)
         {
             this.renderer.unset_temp_context();
+            // reload old context
         }
-        this.start_refresh_loop()
+        this.start_refresh_loop() // restart refresh loop
     }
     
   start_refresh_loop() {
