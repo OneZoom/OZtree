@@ -20,8 +20,8 @@ module.exports = function (grunt) {
         cwd: "OZprivate/rawJS/OZTreeModule/docs",
         command: "perl compile_docs.pl index.markdown > _compiled.markdown"
       },
-      install_restricted: {
-        command: "perl -i OZprivate/ServerScripts/Utilities/install_restricted.pl static/minlife.html"
+      partial_install: {
+        command: "perl -i OZprivate/ServerScripts/Utilities/partial_install.pl static/minlife.html"
       }
     },
     jsdoc2md: {
@@ -130,7 +130,7 @@ module.exports = function (grunt) {
       },
     },
     curl: {
-        'get_restricted': {
+        'get_minlife': {
             //this should be changed to the production URL when live
             //src:'http://www.onezoom.org/minlife.html/?lang=' + grunt.option('lang') || '',
             src:'http://beta.onezoom.org/static/minlife.html',
@@ -151,7 +151,7 @@ module.exports = function (grunt) {
   grunt.registerTask("precompile-python", ["exec:precompile_python"]);
   grunt.registerTask("precompile-js", ["exec:precompile_js"]);
   grunt.registerTask("precompile-js_dev", ["exec:precompile_js_dev"]);
-  grunt.registerTask("install-restricted", ["curl:get_restricted", "exec:install_restricted"]);
+  grunt.registerTask("partial-install", ["curl:get_minlife", "exec:partial_install"]);
   grunt.registerTask("precompile-docs", ["jsdoc2md", "exec:precompile_docs"]);
   grunt.registerTask("build", [ "precompile-python", "precompile-js", "copy:old_js", "compass","uglify", "compress", "clean:build", "copy:to_live","precompile_docs"]);
   grunt.registerTask("compile", ["precompile-js_dev", "copy:old_js", "compass" ,"clean:compile", "copy:to_live", "precompile-docs"]);

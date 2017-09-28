@@ -1,19 +1,18 @@
-This README file contains instructions for installing your own OneZoom instance, including compiling the OneZoom explorer. For details on running a public OneZoom server, see [README_SERVER.markdown](README_SERVER.markdown). Details of how to customize the OneZoom javascript viewer, along with information about the OneZoom APIs, are available on your own OneZoom server by following the instructions below, then visiting /dev/DOCS (for example, https://127.0.0.1:8000/dev/DOCS - this requires an internet connection). 
+This README file contains instructions for installing a private copy of OneZoom, either the tree explorer or the entire website. For gory details on running a *public* OneZoom server, see [README_SERVER.markdown](README_SERVER.markdown). Details of how to customize the OneZoom javascript viewer, along with information about the OneZoom APIs, are available by following the instructions below, then opening the compiled markdown file (at `OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown` or if you are running your own private OneZoom web server, at /dev/DOCS (for example, https://127.0.0.1:8000/dev/DOCS). 
 
 # OneZoom setup
 
-The OneZoom web site is written using the web2py framework: this includes the front page, sponsorship pages, info pages (endorsements etc), and so on. 
+There are two ways in which you can install OneZoom on a personal computer: full installation and partial installation. 
 
-Note that the most important piece of the site, the tree viewer, is written in javascript and can be run independently of web2py.
+* *Partial installation* does not create a standalone OneZoom site, but simply creates a local web file containing the javascript tree viewer. Instead of your tree viewer getting information from your own computer, it must do so by contantly requesting data to the OneZoom website (via the OneZoom APIs). This restricts your OneZoom viewer in various ways:  you cannot make your own bespoke tree, you cannot change languages in the viewer, and you are dependent upon a permanent, fast internet connection. Also note that this installation method is also relatively untested, and there are unfixed problems with e.g. displaying lists of popular species. However, partial installation may be suitable for developers who simply want to re-program features of the tree viewer, such as colours, branch geometry, etc.
 
-HOWEVER, even though the OneZoom tree viewer does not strictly require a web2py server, it still requires access to an API to provide information to fill out the tree. This API is currently provided by web2py, so for a fully self-contained local system, you will need to get web2py running locally. This readme contains instructions for doing so.
+* *Full installation* creates an entire duplicate of the OneZoom website, which is built using the [web2py](http://web2py.com) framework. This creates a fully self-contained local system (apart from the picture files, which can be downloaded separately). This is the most reliable installation method, but requires you to install and run extra software packages, in particular wbe2py and a MySQL server. Since this can be quite complicated, the majority of this readme contains instructions for full installation.
 
-(NB:if you wish only to run the viewer code, you may soon be able to do so. Preliminary instructions are [here](README_VIEWER_ONLY.markdown)
 
 ## Requirements and packages
-To install a full OneZoom web site, you will need to first install web2py, and ensure that you have the programming language python (version 2) installed on your system, which is what web2py uses. You will also need to be running a database backend (e.g. mySQL).
+For compiling the OneZoom javascript code, you will need to install node.js (and npm, the node package manager), and the webpack package. To compile automatically, you will also need to install grunt. To generate documentation or make a partial install, you will also need perl installed on your system.
 
-For compiling the OneZoom javascript code, you will need to install node.js (and npm, the node package manager), and the webpack package. To compile automatically, you will also need to install grunt. To generate documentation, you will need perl.
+To install a full OneZoom web site, you will need to first install web2py, and ensure that you have the programming language python (version 2) installed on your system, which is what web2py uses. You will also need to be running a database backend (e.g. mySQL).
 
 To create trees, you will need python version 3 and perl, along with a number of libraries, as listed below.
 
@@ -46,22 +45,32 @@ The OneZoom codebase uses the following software (licenses for each listed in br
 * [ImageMagick](https://www.imagemagick.org/script/index.php) (Apache 2.0) for processing thumbnails
 * [UIkit 3](https://getuikit.com) (MIT) for the User Interface (included in the OneZoom github repo)
 
-## Quick installation
+## Quick installation steps
 
-1. Install a source code version of web2py, then install the OZtree app into your web2py `applications` directory from github (https://github.com/OneZoom/OZtree) - see "Downloading"
-2. Install npm & grunt if you don't have them, then do `npm install`, and compile the client-side explorer code using `grunt compile` (or `grunt build` if in production mode) - see "Building the OneZoom tree viewer"
+Before anything else, get the OZtree app from [github](https://github.com/OneZoom/OZtree) - see *"Downloading the OZtree app"*. You should also make sure you have node.js and the node package manager (npm) and the grunt command-line interface installed on your system - see *"Building the OneZoom tree viewer"*
+
+
+###For a partial installation:
+1. From anywhere within the OZtree download, run `npm install`, and compile the client-side explorer code using `grunt compile` - see *"Building the OneZoom tree viewer"*.
+2. Run `grunt partial-install`. This should download the "minlife' page from the central OneZoom website, modify links within it, and place a file named `minlife.html` into the `static` directory of your OZtree distribution.
+3. Open `minlife.html` with a web browser of your choice (we recommend Chrome or Safari). Note that this file needs to stay within the static directory to work at all.
+
+###For a full installation (recommended):
+	
+1. Install a source code version of web2py, placing your OZtree repository within the web2py `applications` directory.
+2. Compile the client-side explorer code using `grunt compile` (or `grunt build` if in production mode) - see *"Building the OneZoom tree viewer"*.
 3. Install & start MySQL, then create a new database (see "Setting up the database backend")
-4. Create a appconfig.ini file in `private`, with `migrate=1` and which references this database with the appropriate username and password. Also copy the `routes.py` file from `_MOVE_CONTENTS_TO_WEB2PY_DIR` to the top level of your web2py installation  (optional but recommended) - see "Web2py installation"
+4. Create a appconfig.ini file in `private`, with `migrate=1` and which references this database with the appropriate username and password. We also recommend copying the `routes.py` file from `_MOVE_CONTENTS_TO_WEB2PY_DIR` to the top level of your web2py installation - see "Web2py installation"
 5. Fire up a temporary web2py server and visit the main page to create the (empty) database tables
 6. Load up data into the tables (create a user and assign it a 'manager' role in the `auth_` tables using the web2py database admin pages, and load the other tables using data from the original OneZoom site (e.g. sent to you via file transfer) - see "Filling the database".
 7. Create the indexes on the tables by copying and pasting the text at the end of db.py into a mysql client.
 
 
-## Downloading web2py and the OneZoom app
+## Downloading the OZtree app
 
 Download a copy of the OZtree application from GitHub at [https://github.com/OneZoom/OZtree](https://github.com/OneZoom/OZtree), either as a zip file (not recommended), or probably better (easier to update), by cloning the repository (e.g. if you have [GitHub Desktop](https://desktop.github.com) installed, click "Open in Desktop" from the [OZtree repo](https://github.com/OneZoom/OZtree). Make sure the git folder is called "OZtree" (this is the default when you clone the repo, but not if you download it as a zip file).
 
-If you wish to run the entire website as a web2py app, rather than simply compiling the javascript viewer, you will also need to download the source code version of web2py, either via git (https://github.com/web2py/web2py/) or simply from the download link at http://www.web2py.com/. You can then place the OZtree directory into the `applications` directory of the web2py folder.
+For full installation, you will also need to download the source code version of web2py, either via git (https://github.com/web2py/web2py/) or simply from the download link at http://www.web2py.com/. You can then place the OZtree directory into the `applications` directory of the web2py folder.
 
 
 ## Building the OneZoom tree viewer
@@ -78,10 +87,10 @@ Then from within the `OZtree` directory, you can install any other required pack
 npm install
 ```
 
-Once these are installed you can run grunt as follows:
+Once these are installed you can run grunt as follows (feel free to examine the configuration options which are stored in `Gruntfile.js` in the main OZtree directory):
 
 #### Compile documentation
-`grunt precompile-docs`: Use this command to generate a compiled documentation file. This will generate a large compiled markdown file in `OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown`, which is best viewed once you have got web2py running, by pointing your browser to `dev/DOCS` (e.g. at `http://127.0.0.1:8000/dev/DOCS`).
+`grunt precompile-docs`: Use this command to generate a compiled documentation file. This will generate a large compiled markdown file in `OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown`, which is best viewed once you have got web2py running, by pointing your browser to `dev/DOCS` (e.g. at `http://127.0.0.1:8000/dev/DOCS`).  Note that viewing this page requires a working internet connection to get various formatting files)
 
 #### In development mode:
 `grunt compile`: This command bundles multiple js files into one.
@@ -177,14 +186,12 @@ oztree_js_suffix = .js
 ;eol_api_key = 11111111111
 ```
 
-++++
-??
 In order to use web2py you need to have a python v2 installed (v3 is not yet supported), the latest version can be found at
-https://www.python.org/downloads/
-Make sure to add python to the windows path during install, or the commands below will not work
-++++
+[https://www.python.org/downloads/](https://www.python.org/downloads/)
 
-You should now try starting web2py.
+NB: on Windows, make sure that you add `python` (and ideally `python2`) to the windows path during install, or the commands below will not work
+
+Assuming you have python version 2 installed, should now try starting web2py as follows.
 
 ### Starting and shutting down web2py
 
@@ -194,7 +201,7 @@ On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. 
 
 or over https (having created temp.crt and temp.key previously)
 
-`python2 web2py.py -c temp.crt -k temp.key -i 127.0.0.1 -p 8000 -a 'pass' &`
+`python2 web2py.py -c temp.crt -k temp.key -i 127.0.0.1 -p 8000 -a pass`
 
 
 It will print instructions telling how to shut down the server when it runs.
