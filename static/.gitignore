@@ -4,5 +4,6 @@ css/*
 !css/web2py*
 !css/boostrap*
 !css/calendar*
+css/*.gz
 #any user-created html files (e.g. minlife.html) can be ignored
 *.html
