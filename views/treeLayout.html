@@ -18,6 +18,8 @@
   <script src="{{=URL('static','uikit-3/js/uikit.min.js')}}"></script>
   <script src="{{=URL('static','uikit-3/js/uikit-icons.min.js')}}"></script>
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree.css')}}" />
+  <!-- for any embedded sponsor_node pages -->
+  <link rel="stylesheet" type="text/css" href="{{=URL('static', 'OZSponsor/sponsor_node.css')}}" />
 
 {{include}}
 {{try:}}{{OZTree_js_suffix = (myconf.take('general.oztree_js_suffix') if myconf.take('general.oztree_js_suffix') else non_existent_variable)}}{{except:}}{{OZTree_js_suffix = '.js'}}{{pass}}  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/completetree_' + str(version) +  '.js')}}"></script>
@@ -169,8 +171,7 @@ function load_tab(tab_content, embed_if_possible, remove_embed_links) {
 {{if setup_params.get('md_hack_show_embedded_sponsorship'):}}
         //The following is only currently useful for the museum display, as it doesn't 
         //work for the "available" sponsor page, or the sponsor_node page, both of which
-        //rely on javascript (e.g. AJAX) within the embedded html. We may want to adjust 
-        //the sponsor_node page to set ajax="false"
+        //rely on javascript (e.g. AJAX) within the embedded html. 
         if (tab_content.hasClass('ozspons')) {
             inject_web2py_page(tab_content, tab_content.attr('data-src'), remove_embed_links);
             return;
@@ -229,6 +230,10 @@ function inject_web2py_page(selector, url, removelinks) {
         $('base,meta,link,title,style,script', html_to_inject).remove();
         $('.loading_pic',selector).hide();
         selector.append($(html_to_inject));
+        //now loop through any LOAD() components, and force load them using web2py_component()
+        $('[data-w2p_remote]',selector).each(function() {
+            web2py_component($(this).attr("data-w2p_remote"),$(this).attr('id'))
+        })
       }
     }
   });
