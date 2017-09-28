@@ -284,7 +284,7 @@ def leaf_linkouts():
     """
     return_values = linkouts(is_leaf=True, ott=request.args[0])
     request.vars.update({'embed':True, 'ott':return_values['ott']})
-    return_values['data']['ozspons'] = URL("sponsor_leaf", vars=request.vars, scheme=True, host=True, extension=False)
+    return_values['data']['ozspons'] = URL("default","sponsor_leaf", vars=request.vars, scheme=True, host=True, extension=False)
     return(return_values)
 
 def node_linkouts():
@@ -293,7 +293,7 @@ def node_linkouts():
     """
     return_values = linkouts(is_leaf=False, id=request.args[0])
     request.vars.update({'embed':True, 'id':return_values['id']})
-    return_values['data']['ozspons'] = URL("sponsor_node", vars=request.vars, scheme=True, host=True, extension=False)
+    return_values['data']['ozspons'] = URL("default", "sponsor_node", vars=request.vars, scheme=True, host=True, extension=False)
     return(return_values)
     
 def getOTT():
