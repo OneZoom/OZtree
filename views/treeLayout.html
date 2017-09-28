@@ -767,21 +767,21 @@ function setupUI() {
         .on('beforeshow', function() {
             /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
             if ($("#about-modal .uk-modal-body").children().length == 0)
-                $("#about-modal .uk-modal-body").load('{{=URL("default","about.load", vars=setup_params.get("page_params"))}}');
+                $("#about-modal .uk-modal-body").load('{{=URL("default","about.load", vars=setup_params.get("page_params"), scheme=True, host=True)}}');
         });
 
     $('#howuse-modal')
         .on('beforeshow', function() {
             /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
             if ($("#howuse-modal .uk-modal-body").children().length == 0)
-                $("#howuse-modal .uk-modal-body").load('{{=URL("default","how.load", vars=setup_params.get("page_params"))}}');
+                $("#howuse-modal .uk-modal-body").load('{{=URL("default","how.load", vars=setup_params.get("page_params"), scheme=True, host=True)}}');
         });
 
     $('#datasources-modal')
         .on('beforeshow', function() {
             /* to avoid loading all the about text on page load, we check here and load it via ajax if necessary */
             if ($("#datasources-modal .uk-modal-body").children().length == 0)
-                $("#datasources-modal .uk-modal-body").load('{{=URL("default","data_sources.load", vars=setup_params.get("page_params"))}}');
+                $("#datasources-modal .uk-modal-body").load('{{=URL("default","data_sources.load", vars=setup_params.get("page_params"), scheme=True, host=True)}}');
         });
 
     $('#imageinfo-modal')
