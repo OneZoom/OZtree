@@ -18,8 +18,10 @@ module.exports = function (grunt) {
         //put all markdown files referred to in OZTreeModule/docs/index.markdown in a single _compiled.markdown file
         //and substitute .png / svg images with data (base64 encoded for png) so they become embedded in the doc
         cwd: "OZprivate/rawJS/OZTreeModule/docs",
-        command:
-          "perl compile_docs.pl index.markdown > _compiled.markdown"
+        command: "perl compile_docs.pl index.markdown > _compiled.markdown"
+      },
+      install_restricted: {
+        command: "perl -i OZprivate/ServerScripts/Utilities/install_restricted.pl static/minlife.html"
       }
     },
     jsdoc2md: {
@@ -127,6 +129,14 @@ module.exports = function (grunt) {
           expand: true, cwd: '<%=pkg.directories.old_js_src%>', src: '*.js', dest: '<%=pkg.directories.old_js_dist%>/', filter: 'isFile'
       },
     },
+    curl: {
+        'get_restricted': {
+            //this should be changed to the production URL when live
+            //src:'http://www.onezoom.org/minlife.html/?lang=' + grunt.option('lang') || '',
+            src:'http://beta.onezoom.org/static/minlife.html',
+            dest:'static/minlife.html',
+        }
+    }
   });
 
   grunt.loadNpmTasks("grunt-exec");
@@ -136,11 +146,13 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-compass');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-jsdoc-to-markdown');
+  grunt.loadNpmTasks('grunt-curl');
 
-  grunt.registerTask("precompile_python", ["exec:precompile_python"]);
-  grunt.registerTask("precompile_js", ["exec:precompile_js"]);
-  grunt.registerTask("precompile_js_dev", ["exec:precompile_js_dev"]);
-  grunt.registerTask("precompile_docs", ["jsdoc2md", "exec:precompile_docs"]);
-  grunt.registerTask("build", [ "precompile_python", "precompile_js", "copy:old_js", "compass","uglify", "compress", "clean:build", "copy:to_live","precompile_docs"]);
-  grunt.registerTask("compile", ["precompile_js_dev", "copy:old_js", "compass" ,"clean:compile", "copy:to_live", "precompile_docs"]);
+  grunt.registerTask("precompile-python", ["exec:precompile_python"]);
+  grunt.registerTask("precompile-js", ["exec:precompile_js"]);
+  grunt.registerTask("precompile-js_dev", ["exec:precompile_js_dev"]);
+  grunt.registerTask("install-restricted", ["curl:get_restricted", "exec:install_restricted"]);
+  grunt.registerTask("precompile-docs", ["jsdoc2md", "exec:precompile_docs"]);
+  grunt.registerTask("build", [ "precompile-python", "precompile-js", "copy:old_js", "compass","uglify", "compress", "clean:build", "copy:to_live","precompile_docs"]);
+  grunt.registerTask("compile", ["precompile-js_dev", "copy:old_js", "compass" ,"clean:compile", "copy:to_live", "precompile-docs"]);
 };

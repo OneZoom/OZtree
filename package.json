@@ -48,6 +48,7 @@
     "grunt-contrib-watch": "^0.6.1",
     "grunt-exec": "^1.0.1",
     "grunt-jsdoc-to-markdown": "^3.0.0",
+    "grunt-curl": "2.2.0",
     "webpack": "^1.14.0"
   },
   "dependencies": {
