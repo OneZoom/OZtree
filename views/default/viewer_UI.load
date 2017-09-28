@@ -63,7 +63,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
       <li><a href="#howuse-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('How to use')}}</a></li>
       <li><a href="#about-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('About OneZoom')}}</a></li>
       <li><a href="#datasources-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Data sources')}}</a></li>
-      <li><a><span uk-icon="icon: expand"></span>{{=T('Terms of use')}}</a></li>
+      <li><a href="#terms-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Terms of use')}}</a></li>
     </ul>
   </div>
   <li><a uk-tooltip="pos: right" title="{{=T('Settings')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: settings"></a></li>
@@ -144,6 +144,15 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <button class="uk-modal-close-outside" type="button" uk-close></button>
         <div class="uk-modal-header">
             <h2 class="uk-modal-title">{{=T('Sources for the data used in this tree')}}</h2>
+        </div>
+        <div class="uk-modal-body" uk-overflow-auto></div>
+    </div>
+</div>
+<div id="terms-modal" class="uk-modal-container" uk-modal>
+    <div class="uk-modal-dialog">
+        <button class="uk-modal-close-outside" type="button" uk-close></button>
+        <div class="uk-modal-header">
+            <h2 class="uk-modal-title">{{=T('Terms and conditions')}}</h2>
         </div>
         <div class="uk-modal-body" uk-overflow-auto></div>
     </div>

@@ -784,6 +784,13 @@ function setupUI() {
                 $("#datasources-modal .uk-modal-body").load('{{=URL("default","data_sources.load", vars=setup_params.get("page_params"), scheme=True, host=True)}}');
         });
 
+    $('#terms-modal')
+        .on('beforeshow', function() {
+            /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
+            if ($("#terms-modal .uk-modal-body").children().length == 0)
+                $("#terms-modal .uk-modal-body").load('{{=URL("default","terms.load", vars=setup_params.get("page_params"), scheme=True, host=True)}}');
+        });
+
     $('#imageinfo-modal')
         .on('hide', function() {
              $('#imageinfo-modal .popup-content').empty();

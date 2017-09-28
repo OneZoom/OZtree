@@ -1,0 +1,91 @@
+<div style="display:flex; flex-direction: column;"><!--allows leaf & general T&C to be swapped-->
+<div class="row-fluid" style="order: {{=(2 if request.args and request.args[0]=='site' else 1)}};">
+  <div class="col-md-12 intro">
+    <header>
+      <h1>Terms and conditions for leaf sponsorship</h1>
+      <p>Thank you for your interest in sponsoring a leaf in the OneZoom Tree of Life. OneZoom is a registered UK charity, and the funds we raise allow us to maintain and improve this tree of life explorer as a resource for everyone. Note that sponsorship text is publically visible on the tree so must be appropriate for this, and also that we aim to keep our scientific information as up to date as possible which may affect some aspects of your sponsored leaf in the future. We have written these guidelines to make you aware of how we will manage this; we hope you will find them fair.</p>
+    </header>
+  </div>
+  <div class="col-md-6">
+                    <ol>
+                       
+                        <li>Please use no offensive or inappropriate language</li>
+                        <li>Sponsoring for another person is a gift. It should not be in order to cause them distress e.g "Sponsored for my ex. partner, even more of a blood sucking parasite!"</li>
+                        <li>If you choose the 'sponsor by' text option, you must put your own name in the text field</li>
+                        <li>You agree for your sponsorship text to appear on the OneZoom tree of life and other related resources on a royalty free and perpetual basis</li>
+                        <li>Your sponsorship text will appear on our complete tree of life explorer at <a href="{{=URL('default','life.html')}}">OneZoom.org/life</a>, but is not guaranteed to appear on any similar resources elsewhere.</li>
+                        <li> We will remove your name from any resources under our control upon your request.</li>
+                        <img style="float:left; margin-left: -80px" src="{{=URL('static','images/leaves/Lpic1.png')}}" />
+                        <li>If you sponsor a leaf for another person and they contact us to request that we remove it, we will do so.</li>
+                        <li>If your sponsored leaf is removed from the tree for any reason (e.g. due to advances in scientific understanding) we will contact you to offer an equivalent alternative of your choice. If we are unable to contact you, we will make a choice on your behalf.</li>
+                        <li>The capitalisation of your sponsorship text may not be preserved. For example "From London, uk" may appear as "FROM LONDON, UK"</li>
+                        <li>Text that you write as a message to OneZoom may be used for publicity by OneZoom on our website or elsewhere.</li>
+                        <li>The orientation, colour, image, position and scientific data of your sponsored leaf may change due to advances in scientific understanding or enhancements to the OneZoom software.</li>
+                        <li>We may redesign the tree in future, but your sponsorship text will remain.</li>
+                        <li>At any time, a leaf can only have one sponsor - get your favourite species before someone else does!</li>
+                        <li>What you type may be changed by us, though we will discuss proposed changes to your sponsorship text by e-mail. If there is any disagreement which cannot be resolved, we will show your true name, town and country, or any combination of these that you would like.</li>
+                        <li>We can at our discretion change sponsorship text after initial acceptance if it is deemed inappropriate for any reason. For example, we will not accept any text that appears to promote causing harm to an animal you are sponsoring. We do however commit to show your true name, town and country, or any combination of these that you would like.</li>
+                        </ol>
+                </div>
+                
+                <div class="col-md-6">
+                    
+                    
+                    <ol start="16">
+                        <img style="float:right; margin-right: -30px" src="{{=URL('static','images/leaves/Rpic2.png')}}" />
+                        <li>All sponsorship of leaves has an expiry date, you will have the first refusal to continue your sponsorship of that leaf in future (but see next points). If your sponsorship expires and we are unable to contact you your leaf will become available for sponsorship by others. The donation required for sponsorship renewal may not be the same as the amount donated for initial sponsorship.</li>
+                        <li>A tiny handful of leaves can only be sponsored through direct negotiation with OneZoom. Different conditions may apply to these leaves: for example the automatic right to re-sponsorship does not apply. Other specific changes to conditions will be discussed during negotiation</li>                        
+                        <li>The purpose of the OneZoom charity is "To advance the education of the public in the subjects of evolution, biodiversity and conservation of the variety of life on earth." your donations (after a very small PayPal fee) will be spent in pursuit of this purpose. </li>
+                        <li>Sometimes we share donations from sponsorship with a partner not for profit organisation. We only accept partners that have charitable aims compatible with our own.  If this is the case for your donation it will be made clear on the page where you enter the details for your sponsored leaf.</li>
+                        <li>Leaf sponsorship and donations support our overall efforts rather than anything specific to that leaf or the species within it. You are not donating to work relating to that particular species, nor are you getting the species named after you.</li>
+                        <li>Donations will only be refunded in extraordinary circumstances.</li>
+                        <li>OneZoom cannot be held liable for: falling off a cliff, getting so engrossed in the tree that you get run over by a bus, or anything else that may happen as a result of your absorption in the tree of life.</li>
+                        <img style="float:right; margin-right: -30px" src="{{=URL('static','images/leaves/Rpic1.png')}}" />
+                        <li>You give us permission to use your first and last name as well as your town, state and country as sponsorship text on your leaf of the tree should the text you entered be deemed inappropriate and we are unable to contact you.</li>
+                        <li>In addition to your text appearing on a leaf, we may also use your information as displayed on the tree to acknowledge your donations on our <a href="{{=URL('donor_list')}}">donor page</a>. If you would prefer not to appear in this way, please let us know.</li>
+                        <li>The minimum donation amount required to sponsor each leaf is public knowledge.  It may therefore be possible for others to infer the approximate amount you have donated to OneZoom by looking at your sponsorships.</li>
+                        <li>We will only use your e-mail address to provide you with information about your sponsorship of the tree. We may also send you occasional e-mail updates which you will be able to opt out of. We will not pass your e-mail on to any third parties.</li>
+                        <li>We may change these terms and conditions in the future in a reasonable manner.</li>
+                        
+                    </ol>
+                </div>
+    </div>
+
+<div class="row-fluid" style="order: {{=(1 if request.args and request.args[0]=='site' else 2)}};">
+  <div class="col-md-12 intro">
+    <h1 id = "useterms">Terms and conditions for use of the OneZoom website</h1>
+  </div>
+  <div class="col-md-6">
+        <ul>
+            <li>By using the website you are assumed to have agreed to these terms and conditions</li>
+            <li>The software is provided as is without warranty of any kind and OneZoom cannot accept any liability to users of the site</li>
+            
+            <li>This is a fast changing field, and so the content of our site is not guaranteed to be entirely up to date and accurate all of the time.</li>
+            <li>The OneZoom tree deliberately excludes (eu)bacteria. For technical or taxonomic reasons other species may be also missing from our tree, especially if they are absent from the <a href="http://www.opentreeoflife.org">Open Tree of Life</a>.</li>
+</li>
+            <li>Any data we collect about you is subject to our <a href="dataprotection_and_privacy.html">Data Protection and Privacy Policy.</a></li>
+           
+
+            <li>The original OneZoom software is provided to the charity OneZoom under open source MIT licenses from James Rosindell, Imperial College London and Imperial Innovations.</li>
+            <li>Developers seeking to build their own projects using OneZoom should look at the <a href = "{{=URL('default','developer.html')}}">suite of software downloads</a> which are all available open source under an MIT license</li>
+            <li>The trademark OneZoom is registered in the UK and USA and is owned by Imperial Innovations. It is provided to the charity OneZoom under sub-license from James Rosindell.</li>
+
+            
+        </ul>
+    </div>
+    <div class="col-md-6">
+        <ul>
+            
+            <li>Images on this website are generally available under creative commons and public domain licenses with the licensor details being available from the copyright symbol next to each image in the main tree explorer.</li>
+            <li>Quotes and user opinions are owned by the original author of the text who in each case has given permission for OneZoom to use the quote, or made the text publicly available</li>
+            <li>Each tree on OneZoom, including the main tree of life has its own information about where the data has come from, generally it is collated by OneZoom, but not originally produced by OneZoom.</li>
+            <li>All other material on this site is owned by the OneZoom charity</li>
+            <li>Screenshots from anywhere on the site may be reused with proper citation, but it is your responsibility to check the license for any images appearing within the screenshot.</li>
+            <li>Text from anywhere on the site may be reused with proper citation.</li>
+            <li>The user and OneZoom agree to the governed by English law and by the English courts.</li>
+            <li >We may change these terms and conditions in the future in a reasonable manner.</li>
+
+        </ul>
+    </div>
+</div>
+</div>
