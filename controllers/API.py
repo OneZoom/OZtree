@@ -3,6 +3,7 @@ import unicodedata
 import string
 import sys
 import re
+from OZfunctions import get_common_names
 """
 This contains the API functions - node_details, image_details, search_names, and search_sponsors. search_node also exists, which is a combination of search_names and search_sponsors.
 # request.vars:
@@ -22,6 +23,7 @@ def node_details():
     3) split the call into 'detailed' and 'non detailed' versions, where the 'detailed' version is only called when e.g. image licence / 
     """
     session.forget(response)
+    response.headers["Access-Control-Allow-Origin"] = '*'
     try:
         leafIndices = request.vars.leaf_ids or "" 
         nodeIndices = request.vars.node_ids or ""
@@ -150,7 +152,6 @@ def node_details():
                    "leafIucn": [], "leafPic": [], "reservations":[]
                   }
     except: #e.g. if bad data has been passed in
-        raise
         res = {}
     return res
 
@@ -159,8 +160,8 @@ def image_details():
     e.g. image_details.json?2=25677433,27724652&1=31925837,-1
     where 1 and 2 are src names
     """
-    import re
     session.forget(response)
+    response.headers["Access-Control-Allow-Origin"] = '*'
     try:
         all_cols = ['src', 'src_id', 'rights','licence']
         col_names = {nm:index for index,nm in enumerate(all_cols)}
@@ -188,6 +189,7 @@ def search_node():
     So that we don't pollute the taxon searches with lots of sponsorship stuff
     """
     session.forget(response)
+    response.headers["Access-Control-Allow-Origin"] = '*'
     searchFor = request.vars.query
     res1 = search_for_name()
     if len(res1['leaf_hits']) + len(res1['node_hits']) <15:
@@ -247,6 +249,7 @@ def search_init():
 #  -- String: 'restrict_tables is one of 'leaves', 'nodes' or None.(default None)
 #  Sanitize parameters and then do actually search.
 def search_for_name():
+    response.headers["Access-Control-Allow-Origin"] = '*'
     try:
         searchFor = str(request.vars.query or "")
         language = request.vars.lang or request.env.http_accept_language or 'en'
@@ -467,6 +470,7 @@ def search_for_sponsor():
     :something?:`parameter1` And then describe the parameter.
 
     """
+    response.headers["Access-Control-Allow-Origin"] = '*'
     try:
         searchFor = str(request.vars.query)
         #remove initial punctuation, e.g. we might have been passed in 
@@ -477,6 +481,7 @@ def search_for_sponsor():
         start =request.vars.get('start') or 0
         return search_sponsor(searchFor, searchType, order, limit, start, defaultImages)
     except:
+        raise
         return {}
         
 def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, start=0, defaultImages=False):
@@ -544,6 +549,7 @@ def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, star
             return {"common_names": common_names, "lang":language, "reservations": reservations, "nodes": nodes, "leaves": leaves, "headers": colname_map}
         
     except:
+        raise
         return {}
 
 def get_ids_by_ott_array():
@@ -551,6 +557,8 @@ def get_ids_by_ott_array():
     used e.g. to map an array of popular species to the leaf (or node) IDs
     also returns scinames if any (this is cheap to do)
     """
+    session.forget(response)
+    response.headers["Access-Control-Allow-Origin"] = '*'
     try:
         ottArray = [int(x) for x in request.vars.ott_array.split(",")]
         query = db.ordered_nodes.ott.belongs(ottArray)
@@ -571,6 +579,8 @@ def otts2vns():
     can call with request.vars.lang=XX and with oz_special=1
     Will return nulls for unmatched otts if return_nulls=1
     """
+    session.forget(response)
+    response.headers["Access-Control-Allow-Origin"] = '*'
     try:
         return get_common_names([int(x) for x in request.vars.otts.split(',')],
             return_nulls = True if request.vars.nulls else False,
@@ -582,6 +592,8 @@ def otts2vns():
         return {}
     
 def update_visit_count():
+    session.forget(response)
+    response.headers["Access-Control-Allow-Origin"] = '*'
     try:
         if request.vars.api_hits:            
             values = []
@@ -616,6 +628,8 @@ def update_visit_count():
     
     
 def get_id_by_ott():
+    session.forget(response)
+    response.headers["Access-Control-Allow-Origin"] = '*'
     ott = request.vars.ott
     query = db.ordered_nodes.ott == ott
     result = db(query).select(db.ordered_nodes.id, db.ordered_nodes.ott)
