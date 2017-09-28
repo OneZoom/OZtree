@@ -40,7 +40,7 @@ function record_url(options, force) {
   let querystring = get_params(options);
   if (current_view_near_previous_view(loc, querystring, hash) && !(force)) {
     return;
-  } else {
+  } else if window.location.protocol != "file:" {
     let state = get_current_state(node_with_ott, title, options); 
     let url = loc + querystring + hash;
     window.history.pushState(state, title, window.location.origin + pathname_exclude_append() + "/" + url);
