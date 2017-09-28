@@ -92,17 +92,15 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <input class="uk-radio" type="radio" name="colourtype" value="at"> {{=T('Ancestor’s Tale')}}</label></li>
       <li><label>
         <input class="uk-radio" type="radio" name="colourtype" value="popularity"> {{=T('Popularity')}}</label></li>
-{{if request.vars.nolinks:}}{{pass}}{{else:}}
-      <li class="uk-nav-header">{{=T('Tree## partner')}}</li>
-      <li><select id="treepage" class="uk-select uk-form-small">
+      <li class="uk-nav-header treeswitch">{{=T('Tree## partner')}}</li>
+      <li class="treeswitch"><select id="treepage" class="uk-select uk-form-small">
         <option value="life">Original OneZoom</option>
         <option value="AT">Ancestor’s Tale</option>
         <option value="linnean">Linnean Society</option>
         <option value="kew">Kew</option>
         </select></li>
-{{pass}}
-      <li class="uk-nav-header">{{=T("Language")}}</li>
-      <li><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1],)}}">
+      <li class="uk-nav-header langswitch">{{=T("Language")}}</li>
+      <li class="langswitch"><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1],)}}">
         <option value="">{{=T('Browser default')}}</option>
         <optgroup label="Translated">
           <option value="en">English</option>
