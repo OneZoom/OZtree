@@ -8,6 +8,8 @@ Note that the most important piece of the site, the tree viewer, is written in j
 
 HOWEVER, even though the OneZoom tree viewer does not strictly require a web2py server, it still requires access to an API to provide information to fill out the tree. This API is currently provided by web2py, so for a fully self-contained local system, you will need to get web2py running locally. This readme contains instructions for doing so.
 
+(NB:if you wish only to run the viewer code, you may soon be able to do so. Preliminary instructions are [here](README_VIEWER_ONLY.markdown)
+
 ## Requirements and packages
 To install a full OneZoom web site, you will need to first install web2py, and ensure that you have the programming language python (version 2) installed on your system, which is what web2py uses. You will also need to be running a database backend (e.g. mySQL).
 
@@ -46,7 +48,7 @@ The OneZoom codebase uses the following software (licenses for each listed in br
 
 ## Quick installation
 
-1. Install a source code version of web2py, then install the OneZoomPublic app into your web2py `applications` directory from github (https://github.com/jrosindell/OneZoomPublic) - see "Downloading"
+1. Install a source code version of web2py, then install the OZtree app into your web2py `applications` directory from github (https://github.com/OneZoom/OZtree) - see "Downloading"
 2. Install npm & grunt if you don't have them, then do `npm install`, and compile the client-side explorer code using `grunt compile` (or `grunt build` if in production mode) - see "Building the OneZoom tree viewer"
 3. Install & start MySQL, then create a new database (see "Setting up the database backend")
 4. Create a appconfig.ini file in `private`, with `migrate=1` and which references this database with the appropriate username and password. Also copy the `routes.py` file from `_MOVE_CONTENTS_TO_WEB2PY_DIR` to the top level of your web2py installation  (optional but recommended) - see "Web2py installation"
@@ -57,9 +59,9 @@ The OneZoom codebase uses the following software (licenses for each listed in br
 
 ## Downloading web2py and the OneZoom app
 
-Download a copy of the OneZoomPublic application from GitHub at [https://github.com/jrosindell/OneZoomPublic](https://github.com/jrosindell/OneZoomPublic), either as a zip file (not recommended), or probably better (easier to update), by cloning the repository (e.g. if you have [GitHub Desktop](https://desktop.github.com) installed, click "Open in Desktop" from the [OneZoomPublic repo](https://github.com/jrosindell/OneZoomPublic). Make sure the git folder is called "OneZoomPublic" (this is the default when you clone the repo, but not if you download it as a zip file).
+Download a copy of the OZtree application from GitHub at [https://github.com/OneZoom/OZtree](https://github.com/OneZoom/OZtree), either as a zip file (not recommended), or probably better (easier to update), by cloning the repository (e.g. if you have [GitHub Desktop](https://desktop.github.com) installed, click "Open in Desktop" from the [OZtree repo](https://github.com/OneZoom/OZtree). Make sure the git folder is called "OZtree" (this is the default when you clone the repo, but not if you download it as a zip file).
 
-If you wish to run the entire website as a web2py app, rather than simply compiling the javascript viewer, you will also need to download the source code version of web2py, either via git (https://github.com/web2py/web2py/) or simply from the download link at http://www.web2py.com/. You can then place the OneZoomPublic directory into the `applications` directory of the web2py folder.
+If you wish to run the entire website as a web2py app, rather than simply compiling the javascript viewer, you will also need to download the source code version of web2py, either via git (https://github.com/web2py/web2py/) or simply from the download link at http://www.web2py.com/. You can then place the OZtree directory into the `applications` directory of the web2py folder.
 
 
 ## Building the OneZoom tree viewer
@@ -70,7 +72,7 @@ Compiling and creating the OneZoom explorer javascript code requires grunt to be
 npm install -g grunt-cli
 ```
 
-Then from within the `OneZoomPublic` directory, you can install any other required packages with:
+Then from within the `OZtree` directory, you can install any other required packages with:
 
 ```
 npm install
@@ -128,7 +130,7 @@ The database is now up and running. We recommend that you do *not* load data int
 
 ## Web2py installation
 
-Configuring the OneZoom application to use the database involves creating a file called 'appconfig.ini' in the `private` folder within the OneZoomPublic app, modified to use the username and password that you supplied above. A minimal appconfig.ini file to get the site working is
+Configuring the OneZoom application to use the database involves creating a file called 'appconfig.ini' in the `private` folder within the OZtree app, modified to use the username and password that you supplied above. A minimal appconfig.ini file to get the site working is
 
 ```
 ; App configuration
@@ -198,7 +200,7 @@ or over https (having created temp.crt and temp.key previously)
 It will print instructions telling how to shut down the server when it runs.
 e.g. on Windows use "taskkill /f /pid 2720" to shutdown the web2py server
 
-You should now visit `http://127.0.0.1:8000/OneZoomPublic/default/` or `https://127.0.0.1:8000/OneZoomPublic/default/` to force web2py to create database tables. To load data into the tables, see "Loading Data", below.
+You should now visit `http://127.0.0.1:8000/OZtree/default/` or `https://127.0.0.1:8000/OZtree/default/` to force web2py to create database tables. To load data into the tables, see "Loading Data", below.
 
 If you want to make OneZoom the default application, you can make a copy of the routes.py file in the folder labelled `_MOVE_CONTENTS_TO_WEB2PY_DIR` and place it in the top level web2py directory (see `_MOVE_CONTENTS_TO_WEB2PY_DIR/README.markdown`).
 
@@ -228,7 +230,7 @@ If you want to make OneZoom the default application, you can make a copy of the 
 
 ### Creating auth users & groups
 
-Web2py uses an `auth_` based system, which has tables for users, roles, and a mapping table assigning rols to users. This can be edited through the web interface: assuming you are running a temporary version of web2py on localhost, you can access the admin pages through http://127.0.0.1:8000/admin/design/OneZoom, which will require you to enter the temporary administrator password ('pass', above) that you used in the web2py startup command. The database tables can be seen at the url http://127.0.0.1:8000/OneZoomPublic/appadmin. You need to click to edit the `db.auth_user` table, from where you can click to add a "New Record", and submit a first name, last name, email, username, and password. You then need to go back to the appadmin page and create a "manager" role by adding a New Record to `db.auth_group` table (you can type anything in the description box). Finally, you need to create a New Record in the `db.auth_membership` table, and assign the "manager" group ID to your user ID in the resulting page.
+Web2py uses an `auth_` based system, which has tables for users, roles, and a mapping table assigning rols to users. This can be edited through the web interface: assuming you are running a temporary version of web2py on localhost, you can access the admin pages through http://127.0.0.1:8000/admin/design/OneZoom, which will require you to enter the temporary administrator password ('pass', above) that you used in the web2py startup command. The database tables can be seen at the url http://127.0.0.1:8000/OZtree/appadmin. You need to click to edit the `db.auth_user` table, from where you can click to add a "New Record", and submit a first name, last name, email, username, and password. You then need to go back to the appadmin page and create a "manager" role by adding a New Record to `db.auth_group` table (you can type anything in the description box). Finally, you need to create a New Record in the `db.auth_membership` table, and assign the "manager" group ID to your user ID in the resulting page.
 
 ### Other tables
 
@@ -268,7 +270,7 @@ Notes
 
 # Documentation
 
-Documentation is partially compiled fomr the source code using Grunt, and lives in `OZprivate/rawJS/OZTreeModule/docs`. Once compiled, it can be viewed online using your web2py server. For example, if you are running web2py on http://127.0.0.1:8000, you should be able to visit [http://127.0.0.1:8000/OneZoomPublic/dev/DOCS](http://127.0.0.1:8000/OneZoomPublic/dev/DOCS), or (if you have manager access to the OneZoom site) at [http://onezoom.org/dev/DOCS](http://onezoom.org/dev/DOCS).
+Documentation is partially compiled fomr the source code using Grunt, and lives in `OZprivate/rawJS/OZTreeModule/docs`. Once compiled, it can be viewed online using your web2py server. For example, if you are running web2py on http://127.0.0.1:8000, you should be able to visit [http://127.0.0.1:8000/OZtree/dev/DOCS](http://127.0.0.1:8000/OZtree/dev/DOCS), or (if you have manager access to the OneZoom site) at [http://onezoom.org/dev/DOCS](http://onezoom.org/dev/DOCS).
 
 # Keeping OneZoom updated
 
