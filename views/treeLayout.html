@@ -26,6 +26,24 @@
   <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common' + OZTree_js_suffix)}}"></script>
   <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry' + OZTree_js_suffix)}}"></script>
   <script> var OZstrings={{include 'tree/js_strings.json'}}</script>
+  <noscript>
+    <style>
+        /* hide control buttons if there is no JS */
+        #UI {display:none;}
+    </style>
+  </noscript>
+</head>
+<body id = "wholebody" style="user-select:none; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select:none; -ms-user-select:none;" unselectable = "on">
+    <!-- main body of document - canvas, then rest of UI elements in a single div -->
+  <canvas id="OneZoomCanvasID" tabindex="1"></canvas>
+  {{=LOAD("default",setup_params['UI_layer']['page'],vars=setup_params['UI_layer'].get("vars"), ajax=False, target="UI")}}
+{{except:}}
+<!-- had a problem with version mismatch -->
+  </head>
+  <body><h1>{{=T('Sorry - there has been a OneZoom error when getting the tree')}}</h1>
+{{=T('No appropriate tree version available (Version error: %s). Please <a href="mailto:mail@onezoom.org">contact us</a> and tell us of the problem') % (version,)}}
+{{pass}}
+
   <script type="text/javascript">
 /* define most of the JS after the main page has loaded */
 var onezoom = null; //will be filled out on document ready
@@ -487,6 +505,24 @@ function UI_reset_marked_via_event(event, OZIDin, given_name, sciname) {
     UI_reset_marked($(event.currentTarget).closest('.searchbox'), OZIDin, given_name, sciname, event);
 }
 
+function toggleAdvancedSearch(state) {
+    //toggles advanced search mode, or switches it on (state=true) or off (state=false)
+    if (state == null) {
+        //toggle the current state
+        state = !$('#searchnav').hasClass("advanced_mode");
+    }
+    if (state) {
+        $('#searchnav').addClass("advanced_mode");
+        $('#advanced_search_button')
+            .attr('title',OZstrings["Turn off advanced search mode"])
+            .attr('uk-icon','icon: close');
+    } else {
+        $('#searchnav').removeClass("advanced_mode");
+        $('#advanced_search_button')
+            .attr('title',OZstrings["Advanced (common ancestor) search mode: click to turn on"])
+            .attr('uk-icon','icon: git-fork');
+    }
+}
 
 function add_advanced_searchbox(OZid, name, sciname, col) {
     /* Add an advanced searchbox, and attach all the necessary listeners.
@@ -821,7 +857,21 @@ function setupUI() {
             viewportmeta.setAttribute('content', "width=device-width, initial-scale=2, minimum-scale=1.01, maximum-scale=1.01,  user-scalable=0");
         }, 1000);*/
       });
-        
+
+    $('#external-modal .popup-container li').on('show', function (event) {
+        if ($(event.currentTarget).attr("data-src")) {
+            load_tab($(event.currentTarget), true, should_delete_links);
+        }
+        event.stopPropagation();
+    });
+    
+    $('#external-modal .popup-container li').on('hidden', function (event) {
+        /* make sure hiding anything within the container does not bubble up
+         * and make us think the entire modal has been hidden
+         */
+        event.stopPropagation();
+    });
+
     setup_location_list($('#search-basic .popular_species'), popular_locations, 
         function(event, OZid) {closeAndLeap(event, OZid, $('#search-basic'))});
 
@@ -869,24 +919,5 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
 })
 
   </script>
-  <noscript>
-    <style>
-        /* hide control buttons if there is no JS */
-        #UI {display:none;}
-    </style>
-  </noscript>
-</head>
-<body id = "wholebody" style="user-select:none; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select:none; -ms-user-select:none;" unselectable = "on">
-    <!-- main body of document - canvas, then rest of UI elements in a single div -->
-  <canvas id="OneZoomCanvasID" tabindex="1"></canvas>
-  {{=LOAD("default",setup_params['UI_layer']['page'],vars=setup_params['UI_layer'].get("vars"), ajax=False, target="UI")}}
-{{except:}}
-<!-- had a problem with version mismatch -->
-  </head>
-  <body><h1>{{=T('Sorry - there has been a OneZoom error when getting the tree')}}</h1>
-{{=T('No appropriate tree version available (Version error: %s). Please <a href="mailto:mail@onezoom.org">contact us</a> and tell us of the problem') % (version,)}}
-{{pass}}
-
-
 </body>
 </html>

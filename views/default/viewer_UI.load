@@ -191,42 +191,4 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     </div>
   </div>
 </div>
-<script>
-/** variables and functions that need internationalization **/
-
-function toggleAdvancedSearch(state) {
-    //toggles advanced search mode, or switches it on (state=true) or off (state=false)
-    if (state == null) {
-        //toggle the current state
-        state = !$('#searchnav').hasClass("advanced_mode");
-    }
-    if (state) {
-        $('#searchnav').addClass("advanced_mode");
-        $('#advanced_search_button')
-            .attr('title','{{=T("Turn off advanced search mode")}}')
-            .attr('uk-icon','icon: close');
-    } else {
-        $('#searchnav').removeClass("advanced_mode");
-        $('#advanced_search_button')
-            .attr('title','{{=T("Advanced (common ancestor) search mode: click to turn on")}}')
-            .attr('uk-icon','icon: git-fork');
-    }
-}
-
-$('#external-modal .popup-container li').on('show', function (event) {
-    if ($(event.currentTarget).attr("data-src")) {
-        //console.log("showing a tab")
-        load_tab($(event.currentTarget), true, should_delete_links);
-    }
-    event.stopPropagation();
-});
-
-$('#external-modal .popup-container li').on('hidden', function (event) {
-    /* make sure hiding anything within the container does not bubble up
-     * and make us think the entire modal has been hidden
-     */
-    event.stopPropagation();
-});
-
-</script>
 {{#=LOAD('default', 'tourstop.load', target="tourbox", ajax=False)}}
