@@ -25,7 +25,7 @@
   <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/dates_' + str(version) + '.js')}}"></script>
   <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common' + OZTree_js_suffix)}}"></script>
   <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry' + OZTree_js_suffix)}}"></script>
-  <script> var OZstrings={{include 'default/js_strings.json'}}</script>
+  <script> var OZstrings={{include 'tree/js_strings.json'}}</script>
   <script type="text/javascript">
 /* define most of the JS after the main page has loaded */
 var onezoom = null; //will be filled out on document ready
@@ -38,14 +38,13 @@ var server_urls = {
     search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",
     search_sponsor_api: "{{try:}}{{=myconf.take('API.search_sponsor')}}{{except:}}{{=URL('API','search_for_sponsor.json', scheme=True, host=True)}}{{pass}}",
     search_init_api: "{{try:}}{{=myconf.take('API.search_init')}}{{except:}}{{=URL('API','search_init.json', scheme=True, host=True)}}{{pass}}",
-    ott2id_api: "{{try:}}{{=myconf.take('API.ott2id')}}{{except:}}{{=URL('API','get_id_by_ott.json', scheme=True, host=True)}}{{pass}}",
     ott2id_arry_api: "{{try:}}{{=myconf.take('API.ott2id_array')}}{{except:}}{{=URL('API', 'get_ids_by_ott_array.json', scheme=True, host=True)}}{{pass}}",
     otts2vns_api: "{{try:}}{{=myconf.take('API.otts2vns')}}{{except:}}{{=URL('API','otts2vns.json', scheme=True, host=True)}}{{pass}}",
     image_details_api: "{{try:}}{{=myconf.take('API.image')}}{{except:}}{{=URL('API', 'image_details.json', scheme=True, host=True)}}{{pass}}",
     update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
     tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
-    OZ_leaf_json_url_func: function(ott) {return("{{=URL('default', 'leaf_linkouts', scheme=True, host=True, extension='json')}}" + "/" + ott.toString())},
-    OZ_node_json_url_func: function(id) {return("{{=URL('default', 'node_linkouts', scheme=True, host=True, extension='json')}}" + "/" + id.toString())},
+    OZ_leaf_json_url_func: function(ott) {return("{{=URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json')}}" + "/" + ott.toString())},
+    OZ_node_json_url_func: function(id) {return("{{=URL('tree', 'node_linkouts', scheme=True, host=True, extension='json')}}" + "/" + id.toString())},
 };
 
 /* UI functions that allow javascript in the main viewer to interact with the UI - these refer to items in the viewer_UI file */
@@ -70,11 +69,11 @@ var UI_callbacks = {
   openCopyright: function(pic_src, pic_fn) {
 {{if 'page_params' in setup_params:}}
 {{url_params = '&'.join('{}={}'.format(k,v) for k,v in setup_params['page_params'].iteritems())}}
-    var load_url = "{{=URL('linkout_via_picID', scheme=True, host=True, extension='load')}}" + "/" + pic_src + "/" + pic_fn + "?{{=url_params}}";
+    var load_url = "{{=URL('tree','linkout_via_picID', scheme=True, host=True, extension='load')}}" + "/" + pic_src + "/" + pic_fn + "?{{=url_params}}";
 {{else:}}
-    var load_url = "{{=URL('linkout_via_picID', scheme=True, host=True, extension='load')}}" + "/" + pic_src + "/" + pic_fn + "?method=iframe";
+    var load_url = "{{=URL('tree','linkout_via_picID', scheme=True, host=True, extension='load')}}" + "/" + pic_src + "/" + pic_fn + "?method=iframe";
 {{pass}}
-    var link_url = "{{=URL('linkout_via_picID', scheme=True, host=True, extension=False)}}" +  "/" + pic_src + "/" + pic_fn + "?method=redirect";
+    var link_url = "{{=URL('tree','linkout_via_picID', scheme=True, host=True, extension=False)}}" +  "/" + pic_src + "/" + pic_fn + "?method=redirect";
     $("#imageinfo-modal .popup-content").load(load_url, function() {if ($(this).find("> iframe")) {$(this).addClass("iframe-container")}});
     $("#imageinfo-modal .uk-modal-header a").attr('href', link_url);
     UIkit.modal('#imageinfo-modal').show();
@@ -272,12 +271,12 @@ function inject_wikipage(selector, lang, Qid, removelinks) {
             $('a[href^="'+url_start+'#"]', html_to_inject).attr('href', function(i,attr) {return attr.substr(url_start.length);});
             //append the URL so that we abide by wikipedia distribution
             var original_page = this.base_url + 'wiki/' + this.pagetitle;
-            html_to_inject.append('<footer>' + OZstrings['WikiCitation'] + '<a href="'+ original_page +'">' + original_page + '</a></footer>');
+            html_to_inject.append('<footer style="clear:both;">' + OZstrings['WikiCitation'] + '<a href="'+ original_page +'">' + original_page + '</a></footer>');
             sanitise_links(html_to_inject, removelinks, this.base_url);
             $('base,meta,link,title,style,script', html_to_inject).remove();
             $('div[role="note"]', html_to_inject).remove();
             $('div[role="navigation"]', html_to_inject).remove();
-            html_to_inject.children('ul').remove(); //remove lists, e.g. "see also", etc.
+            html_to_inject.children('ul').remove(); //remove lists, e.g. "see also", etc. : Assumes references (to keep) are ordered lists (not always true)
             $('.sistersitebox,.sisterlinks,.mw-editsection, #See_also, #External_links', html_to_inject).remove();
             $('.loading_pic',selector).hide();
             selector.append($(html_to_inject));
@@ -629,7 +628,7 @@ function setupUI() {
         //reset the OZ strings to the new language
         var lang_param = (this.value)?('lang='+this.value):'';
         var self = this;
-        $.getJSON('{{=URL("default","js_strings.json")}}?' + lang_param, {}, function(json){
+        $.getJSON('{{=URL("tree","js_strings.json")}}?' + lang_param, {}, function(json){
             OZstrings = json;
             onezoom.controller.set_language(self.value);
             //reset the UI to a new language

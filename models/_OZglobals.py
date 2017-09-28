@@ -17,3 +17,48 @@ eol_inspect_via_flags = {'EoL_tab':1, 'copyright_symbol':2, 'sponsor':3, 'name':
 #classes of image (see comments in images_by_ott definition below). 
 #NB: we can probably assumed verified for e.g. arkive images
 image_status_labels = ['any', 'verified', 'pd']
+
+
+def nice_species_name(scientific=None, common=None, the=False, html=False, leaf=False, first_upper=False, break_line=None):
+    """
+    Constructs a nice species name, with common name in there too.
+    If leaf=True, add a 'species' tag to the scientific name
+    If break_line == 1, put a line break after common (if it exists)
+    If break_line == 2, put a line break after sciname, (even if common exists)
+    """
+    db = current.db
+    species_nicename = (scientific or '').replace('_',' ').strip()
+    common = (common or '').strip()
+    if the and common and not re.match(r'[Aa] ',common):
+        common = "the " + common #"common tern" -> "the common tern", but 'a nematode' kept as is
+    if first_upper:
+        common = common.capitalize()
+    if html:
+        if species_nicename:
+            if leaf: #species in italics
+                species_nicename = I(species_nicename, _class=" ".join(["taxonomy","species"]))
+            else:
+                species_nicename = SPAN(species_nicename, _class="taxonomy")
+            if common:
+                if break_line:
+                    return CAT(common, BR(), '(', species_nicename, ')')
+                else:
+                    return CAT(common, ' (', species_nicename, ')')                
+            else:
+                if break_line == 2:
+                    return CAT(BR(), species_nicename)
+                else:
+                    return species_nicename
+        else:
+            return common
+    else:
+        if common and species_nicename:
+            if break_line:
+                return common +'\n(' + species_nicename + ')'
+            else:
+                return common +' (' + species_nicename + ')'
+        else:
+            if break_line == 2:
+                return common + "\n" + species_nicename
+            else:
+                return common + species_nicename

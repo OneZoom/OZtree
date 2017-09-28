@@ -2,7 +2,7 @@
 import unicodedata
 import string
 import sys
-
+import re
 """
 This contains the API functions - node_details, image_details, search_names, and search_sponsors. search_node also exists, which is a combination of search_names and search_sponsors.
 # request.vars:
@@ -21,7 +21,6 @@ def node_details():
     2) Put some of the load on the SQL server, but adding SQL joins rather than making 7 queries (but mysql does not support full outer joins, which we would need)
     3) split the call into 'detailed' and 'non detailed' versions, where the 'detailed' version is only called when e.g. image licence / 
     """
-    import re
     session.forget(response)
     try:
         leafIndices = request.vars.leaf_ids or "" 

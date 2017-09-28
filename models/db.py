@@ -17,6 +17,7 @@ if request.vars.lang:
 
 ## app configuration made easy. Look inside private/appconfig.ini
 from gluon.contrib.appconfig import AppConfig
+from gluon import current
 
 #########################################################################
 ## Useful global variables
@@ -86,6 +87,8 @@ else:
     ## from gluon.contrib.memdb import MEMDB
     ## from google.appengine.api.memcache import Client
     ## session.connect(request, response, db = MEMDB(Client()))
+
+current.db = db
 
 ## by default give a view/generic.extension to all actions from localhost
 ## none otherwise. a pattern can be 'controller/function.extension'
