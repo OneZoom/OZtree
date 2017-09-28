@@ -99,8 +99,8 @@ var OZstrings={{include 'default/js_strings.json'}}
     <!-- main body of document - only four elements -->
     <canvas id="OneZoomCanvasID" class="text_tree" tabindex="1">
         <!-- Text alternative to the tree. see http://odyniec.net/articles/turning-lists-into-trees/ -->
-    {{if 'plaintext' in page_info:}}
-    {{=page_info['plaintext']}}
+    {{if 'title_name' in page_info:}}
+    {{=page_info['title_name']}}
     {{pass}}
     {{if 'tree' in page_info:}}
         {{info = page_info['tree']['info']}}
