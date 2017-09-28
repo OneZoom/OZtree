@@ -895,6 +895,12 @@ def life_MD():
     """
     return life()
 
+def life_expert():
+    """
+    The expert version, with screenshots etc
+    """
+    return life()
+
 def old_life():
     return life()
 

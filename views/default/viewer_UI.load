@@ -53,10 +53,11 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
   <div uk-dropdown="pos: right-bottom; delay-hide: 500000; boundary: #controlButtons; boundary-align: true" id="locationDropdown">
       <ol class="location-list"></ol>
   </div>
-  <li id="inButton"    ><a uk-tooltip="pos: right" title="{{=T('Zoom in')}}" uk-icon="icon: plus"></a></li>
-  <li id="outButton"  ><a uk-tooltip="pos: right" title="{{=T('Zoom out')}}" uk-icon="icon: minus"></a></li>
-  <li id="upButton"   ><a uk-tooltip="pos: right" title="{{=T('Previous ancestor')}}" uk-icon="icon: chevron-up; ratio: 1.35"></a></li>
-  <li id="resetButton"><a uk-tooltip="pos: right" title="{{=T('Reset view')}}" uk-icon="icon: chevron-up;  ratio: 0.9"></a></li>
+  <li id="inButton"        ><a uk-tooltip="pos: right" title="{{=T('Zoom in')}}" uk-icon="icon: plus"></a></li>
+  <li id="outButton"       ><a uk-tooltip="pos: right" title="{{=T('Zoom out')}}" uk-icon="icon: minus"></a></li>
+  <li id="upButton"        ><a uk-tooltip="pos: right" title="{{=T('Previous ancestor')}}" uk-icon="icon: chevron-up; ratio: 1.35"></a></li>
+  <li id="resetButton"     ><a uk-tooltip="pos: right" title="{{=T('Reset view')}}" uk-icon="icon: chevron-up;  ratio: 0.9"></a></li>
+  <li id="screenshotButton"><a uk-tooltip="pos: right" title="{{=T('Take an svg screenshot')}}" onclick="make_screenshot(this);" uk-icon="icon: camera"></a></li>
   <li id="infoButton" ><a uk-tooltip="pos: right" title="{{=T('Information')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: info"></a></li>
   <div id="infoDropdown" uk-dropdown="pos: right; mode: click;">
     <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">

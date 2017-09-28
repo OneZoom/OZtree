@@ -334,6 +334,7 @@ ul#searchboxes {
 #controlButtons #infoButton a {
     border-top: 1px solid #DDD
 }
+
 #controlButtons #resetButton a {
     /* put a ring around the reset chevron (no equivalent UIkit3 icon)*/
     box-sizing: border-box;
@@ -345,6 +346,12 @@ ul#searchboxes {
 }
 #controlButtons #resetButton a:hover {
     border: 1px solid #666;
+}
+
+/* hide any "expert-mode" buttons */
+#controlButtons #screenshotButton
+{
+    display: none;
 }
 
 #locationDropdown {
