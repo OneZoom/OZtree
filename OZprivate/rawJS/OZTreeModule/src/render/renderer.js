@@ -200,4 +200,4 @@ function find_benchmark(root) {
   release_shapes(shapes);
 }
 
-export {refresh, add_controller, setup_canvas, draw_loading, find_benchmark};
+export {refresh, add_controller, setup_canvas, draw_loading, find_benchmark, set_temp_context, unset_temp_context};
