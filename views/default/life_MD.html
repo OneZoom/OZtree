@@ -8,11 +8,11 @@ setup_params = {
   'page_params': {'nolinks':1}, #used to append to linkout_via_picID.load, about.load, how.load, data_sources.load, and in the load_tab() function 
   'md_hack_show_embedded_sponsorship':True, #can be removed once we are able to properly embed a sponsor_leaf page (with leaf etc) without using an iframe
 }
-response.files.append(URL('static', 'css/tree_MD.css'))
 }}
 {{extend 'treeLayout.html'}}
 <title>OneZoom Tree of Life Explorer, text page for {{=page_info['title_name']}}</title>
 <!-- could include bespoke css file here -->
+<link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree_MD.css')}}" />
 <script type="text/javascript">
 /** disable context menu for museum display */
 document.oncontextmenu = function() {
