@@ -53,12 +53,13 @@ export default function (orig_taxon_list, taxon_callback, header_callback, data_
         },
         success: function(xhr) {
           //add names to the unnamed taxa
+          console.log(xhr)
           for (let i = 0; i < unnamed_taxa.length ; i++) {
             if (xhr.hasOwnProperty(unnamed_taxa[i][0].toString())) {
               unnamed_taxa[i].push(xhr[unnamed_taxa[i][0].toString()]);
             }
           }
-          //and then call the main processing function to get the
+          //and then call the main processing function
           api_manager.ott2id_arry(process_taxa);
         }
       }

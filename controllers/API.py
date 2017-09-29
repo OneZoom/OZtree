@@ -588,7 +588,7 @@ def otts2vns():
             include_unpreferred = True if (request.vars.include_unpreferred or request.vars.all) else False,
             return_all = True if request.vars.all else False,
             lang = request.vars.lang or request.env.http_accept_language or 'en')
-    except:
+    except AttributeError, ValueError:
         return {}
     
 def update_visit_count():

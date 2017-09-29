@@ -1,4 +1,5 @@
-#should be executed first (begins with _ and the web2py book says "Models in the same folder/subfolder are executed in alphabetical order.")
+#NB: this should be executed first (begins with _ and the web2py book says "Models in the same folder/subfolder are executed in alphabetical order.")
+from gluon import current
 
 #some bitwise flags for use later
 #bitwise flags for existence of different language wikipedia articles - order must match those listed in construct_wiki_info in CSV_base_table_creator.py
@@ -18,7 +19,15 @@ eol_inspect_via_flags = {'EoL_tab':1, 'copyright_symbol':2, 'sponsor':3, 'name':
 #NB: we can probably assumed verified for e.g. arkive images
 image_status_labels = ['any', 'verified', 'pd']
 
+#allow them to be accessed in modules
+current.OZglobals = dict(
+    wikiflags = wikiflags, 
+    src_flags = src_flags, 
+    inv_src_flags = inv_src_flags, 
+    eol_inspect_via_flags = eol_inspect_via_flags, 
+    image_status_labels = image_status_labels)
 
+#put this common function here because it uses SPAN, CAT, etc, which are a pain to use in modules
 def nice_species_name(scientific=None, common=None, the=False, html=False, leaf=False, first_upper=False, break_line=None):
     """
     Constructs a nice species name, with common name in there too.

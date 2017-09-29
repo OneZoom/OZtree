@@ -47,9 +47,9 @@ def child_leaf_query(colname, search_for):
 
 
 def score(lang_full_search, lang_primary_search, lang_full_target, preferred_status, 
-    src_flag_target, prefer_oz_specialname=False, max_src_flag=8):#max_src_flag=max(inv_src_flags)):
+    src_flag_target, prefer_oz_specialname=False, max_src_flag=max(current.OZglobals['inv_src_flags'])):
     if prefer_oz_specialname:
-        score = max_src_flag - src_flag_target % src_flags['onezoom_special']
+        score = max_src_flag - src_flag_target % current.OZglobals['src_flags']['onezoom_special']
     else:
         score = max_src_flag - src_flag_target
     if (lang_full_target == lang_full_search):
