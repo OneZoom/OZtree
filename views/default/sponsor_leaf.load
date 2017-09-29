@@ -135,7 +135,7 @@
   <div class="col-md-12">
     <h3>{{=T('Reserved pending admin check')}}</h3>
     <p>{{=T("We are sorry, this leaf has been sponsored and is awaiting admin check before it's made public.")}}</p>
-    <p>{{=XML(T('Don’t worry we’ve still got <a href="%s" target="_top">lots of great leaves available for sponsorship</a>.') %(URL('default','sponsor.html'),))}}</p>
+    <p>{{=XML(T('Don’t worry we’ve still got <a %s target="_top">lots of great leaves available for sponsorship</a>.') %('href="{}"'.format(URL('default','sponsor.html'),))}}</p>
   </div>
 </div>
 {{elif (status == "verified"):}}
@@ -155,14 +155,14 @@
 <div class="row-fluid intro">
   <div class="col-md-12">
     <p>{{=T('You cannot sponsor this leaf using the online form but you may still be able to get it.')}}</p>
-    <p>{{=XML(T('Please <a href="%s">contact us</a> if you would like to discuss sponsorship of this leaf, <a href="%s" target="_top">or make another choice</a>.') % ('mailto:mail@onezoom.org',URL('default','sponsor.html')))}}</p>
+    <p>{{=XML(T('Please <a %s>contact us</a> if you would like to discuss sponsorship of this leaf, <a href="%s" target="_top">or make another choice</a>.') % ('''href="mailto:mail@onezoom.org" onclick="if (typeof sponsor_page_link == 'function') {return sponsor_page_link(this);}"''',URL('default','sponsor.html')))}}</p>
   </div>
 </div>
 {{elif (status == "unchecked waiting for payment"):}}
 <div class="row-fluid intro">
   <div class="col-md-12">
     <h3>{{=T('Reserved pending donation receipt')}}</h3>
-    <p>{{=XML(T('This leaf has been reserved and is waiting to be matched to a donation. If you are the person who reserved it you might wish to return to this page later to see if the status has progressed to <q>awaiting admin check</q>, it does sometimes take a while for payments to be processed and posted.  If you suspect something went wrong at the PayPal stage please <a href="%s">contact us</a> to resolve it. After 24 hours this leaf will become available again unless it is matched to a donation.') % ('mailto:mail@onezoom.org',))}}</p>
+    <p>{{=XML(T('This leaf has been reserved and is waiting to be matched to a donation. If you are the person who reserved it you might wish to return to this page later to see if the status has progressed to <q>awaiting admin check</q>, it does sometimes take a while for payments to be processed and posted.  If you suspect something went wrong at the PayPal stage please <a %s>contact us</a> to resolve it. After 24 hours this leaf will become available again unless it is matched to a donation.') % ('''href="mailto:mail@onezoom.org" onclick="if (typeof sponsor_page_link == 'function') {return sponsor_page_link(this);}"''',))}}</p>
     <p>{{=T('Only one sponsor per leaf so get your favourite species before someone else does.')}}</p>
   </div>
 </div>

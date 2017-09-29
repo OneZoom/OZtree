@@ -19,6 +19,17 @@ document.oncontextmenu = function() {
      return false;
 }
 
+sponsor_page_link = function(elem) {
+    if ($(elem).attr('data-href-component')) {
+        $(elem).closest('.popup-content').load($(elem).attr('data-href-component'));
+        return false;
+    } else if ($(elem).attr('href') && /^mailto:/.test($(elem).attr('href'))) {
+console.log($(elem).attr('href'));
+        alert(OZstrings["NoEmailFromMD"] + $(elem).attr('href').substring(7));
+        return false;
+    }
+}
+
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
 var tree_config = null;
 var pagetitle_func = function(nm) {return (nm)?"OneZoom Museum Display: "+ nm:"OneZoom Tree of Life Museum Display"};

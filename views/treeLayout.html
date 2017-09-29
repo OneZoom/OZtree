@@ -189,13 +189,17 @@ function load_tab(tab_content, embed_if_possible, remove_embed_links) {
   }
 }
 
-/* The function 'node_page_click', if defined, is called as an onclick event in anchor links from the sponsor_node page 
+/* The function 'sponsor_page_link', if defined, is called as an onclick event in anchor links from the sponsor_node page 
  * Here we tell it not to follow the normal link, but to take a .load page (saved as a url in data-href-component)
  * And load it into the parent 'popup-content' div
  */
-node_page_click = function(elem) {
-    $(elem).closest('.popup-content').load($(elem).attr('data-href-component'));
-    return false;
+if(typeof sponsor_page_link !== 'function'){
+    window.sponsor_page_link = function(elem) {
+        if ($(elem).attr('data-href-component')) {
+            $(elem).closest('.popup-content').load($(elem).attr('data-href-component'));
+            return false;
+        }
+    }
 }
 
 /* sanitise links in an html file, possibly remove all but internal ones */

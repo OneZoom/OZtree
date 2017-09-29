@@ -5,7 +5,7 @@
 {{if price_pence:}}
 <h3>{{=T('Leaves requiring a minimum donation of £%s') % ('{:.0f}'.format(price_pence/100.0) if (float(price_pence)/100).is_integer() else '{:.2f}'.format(price_pence/100.0),)}}</h3>
 {{else:}}
-<h3>{{=XML(T('Leaves that are only sponsorable by negotiation<span class="email-link"> (<a href="%s">email us</a>)') % ('mailto:mail@onezoom.org',))}}</span></h3>
+<h3>{{=XML(T('Leaves that are only sponsorable by negotiation (<a %s>email us</a>)') % ('''href="mailto:mail@onezoom.org" onclick="if (typeof sponsor_page_link == 'function') {return sponsor_page_link(this);}"''',))}}</span></h3>
 {{pass}}
 <ul class = "spList">
     {{if max_items and start_item:}}
@@ -15,7 +15,7 @@
 {{for i, ott in enumerate(otts):}}
 {{if max_items and i==max_items: break}}
     <li>{{new_vars = {k:vars[k] for k in ['embed','partner','user_more_info'] if vars[k]} }} {{new_vars['ott']=ott}}
-        <a class="sponsor" style="background-image:url('{{=image_urls[ott] if ott in image_urls else URL("static","images/noImage_transparent.png")}}')"  href="{{=URL('sponsor_leaf', extension=False,  vars=new_vars)}}" data-href-component="{{=URL('sponsor_leaf', extension='load',  vars=new_vars)}}" onclick="if (typeof node_page_click == 'function') {return node_page_click(this);}" title="{{=attributions[ott].replace('"',"'") if ott in attributions else ''}}" > <p>{{=html_names[ott]}}</p> </a>
+        <a class="sponsor" style="background-image:url('{{=image_urls[ott] if ott in image_urls else URL("static","images/noImage_transparent.png")}}')"  href="{{=URL('sponsor_leaf', extension=False,  vars=new_vars)}}" data-href-component="{{=URL('sponsor_leaf', extension='load',  vars=new_vars)}}" onclick="if (typeof sponsor_page_link == 'function') {return sponsor_page_link(this);}" title="{{=attributions[ott].replace('"',"'") if ott in attributions else ''}}" > <p>{{=html_names[ott]}}</p> </a>
     </li>
 {{pass}}
     {{if max_items and (len(otts)> max_items):}}
