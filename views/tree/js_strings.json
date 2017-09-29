@@ -102,8 +102,8 @@ OZstrings = {
     'Current location':T('Current location'),
     'Popular places':T('Popular places'),
     'NameHits':T('Search results'),
-    'Turn off advanced search mode':T('Turn off advanced search mode'),
-    'Advanced (common ancestor) search mode: click to turn on':T('Advanced (common ancestor) search mode: click to turn on'),
+    'AdvancedSearchOff':T('Turn off advanced search mode'),
+    'AdvancedSearchOn':T('Advanced (common ancestor) search mode: click to turn on'),
     'SponsorHits':T('Sponsorships'),
     'WikiCitation':T('This is a summary of '),
 }

@@ -173,7 +173,7 @@ function load_tab(tab_content, embed_if_possible, remove_embed_links) {
         //work for the "available" sponsor page, or the sponsor_node page, both of which
         //rely on javascript (e.g. AJAX) within the embedded html. 
         if (tab_content.hasClass('ozspons')) {
-            inject_web2py_page(tab_content, tab_content.attr('data-src'), "OZsponsor-content", remove_embed_links);
+            inject_web2py_page(tab_content, tab_content.attr('data-src'), remove_embed_links);
             return;
         }
 {{pass}}
@@ -191,10 +191,10 @@ function load_tab(tab_content, embed_if_possible, remove_embed_links) {
 
 /* The function 'node_page_click', if defined, is called as an onclick event in anchor links from the sponsor_node page 
  * Here we tell it not to follow the normal link, but to take a .load page (saved as a url in data-href-component)
- * And load it into the div whose id was defined in the inject_web2py_page() call (here, "OZsponsor-content")
+ * And load it into the parent 'popup-content' div
  */
 node_page_click = function(elem) {
-    web2py_component($(elem).attr('data-href-component'), "OZsponsor-content");
+    $(elem).closest('.popup-content').load($(elem).attr('data-href-component'));
     return false;
 }
 
@@ -226,7 +226,7 @@ function sanitise_links(html, remove_links, base_url) {
  * so that we only get the page fragment, rather than the full html wrapper. The div needs to be
  * given a unique ID so that we can load other HTML into it
  */
-function inject_web2py_page(selector, url, container_id, removelinks) {
+function inject_web2py_page(selector, url, removelinks) {
   $.ajax({
     url: url.replace(".html", ".load"),
     type: "GET",
@@ -234,7 +234,7 @@ function inject_web2py_page(selector, url, container_id, removelinks) {
     success: function (data) {
       //double-check that we haven't inserted it while waiting for a previous AJAX call
       if (!selector.children().last().hasClass('popup-content')) {
-        var html_to_inject = $('<div/>',{class:'popup-content',id: container_id}).html(data);
+        var html_to_inject = $('<div/>',{class:'popup-content'}).html(data);
         sanitise_links(html_to_inject, removelinks, url);
         $('base,meta,link,title,style,script', html_to_inject).remove();
         $('.loading_pic',selector).hide();
@@ -528,12 +528,12 @@ function toggleAdvancedSearch(state) {
     if (state) {
         $('#searchnav').addClass("advanced_mode");
         $('#advanced_search_button')
-            .attr('title',OZstrings["Turn off advanced search mode"])
+            .attr('title',OZstrings["AdvancedSearchOff"])
             .attr('uk-icon','icon: close');
     } else {
         $('#searchnav').removeClass("advanced_mode");
         $('#advanced_search_button')
-            .attr('title',OZstrings["Advanced (common ancestor) search mode: click to turn on"])
+            .attr('title',OZstrings["AdvancedSearchOn"])
             .attr('uk-icon','icon: git-fork');
     }
 }
