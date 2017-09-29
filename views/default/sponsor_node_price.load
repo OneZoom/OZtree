@@ -5,7 +5,7 @@
 {{if price_pence:}}
 <h3>{{=T('Leaves requiring a minimum donation of £%s') % ('{:.0f}'.format(price_pence/100.0) if (float(price_pence)/100).is_integer() else '{:.2f}'.format(price_pence/100.0),)}}</h3>
 {{else:}}
-<h3>{{=XML(T('Leaves that are only sponsorable by negotiation (<a href="%s">email us</a>)') % ('mailto:mail@onezoom.org',))}}</h3>
+<h3>{{=XML(T('Leaves that are only sponsorable by negotiation<span class="email-link"> (<a href="%s">email us</a>)') % ('mailto:mail@onezoom.org',))}}</span></h3>
 {{pass}}
 <ul class = "spList">
     {{if max_items and start_item:}}
