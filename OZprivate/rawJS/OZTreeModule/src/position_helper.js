@@ -7,11 +7,11 @@ let y_add = null;
 let r_mult = null;
 let intro_step_num = null;
 let intro_sec_step_num = null;
-let global_anim_speed = 10;
+let global_anim_speed = 10; // set this to 15 for recoding smoother flight animations larger numbers mean slower
 let length_intro = null;
 let num_intro_steps = null;
 let more_flying_needed = null;
-let flight_fps = 1000/60;
+let flight_fps = 1000/60; // set this to 1000/500 for recording much slower flight animations that can then be sped up after the screen casting process is complete.
 let into_node;
 let pre_xp, pre_yp, pre_ws;
 
