@@ -1,6 +1,7 @@
 /* UIkit-skin scss override file for OneZoom museum display. Author: Yan Wong for OneZoom CIO. License: MIT */
 
 /* should probably make the buttons larger here */
-
+html {font-size: 150%}
 .treeswitch {display: none !important} /* can't allow to switch to trees on other pages */
 .expand-tab {display: none !important} /* can't allow link out buttons */
+#controlButtons > li a {width: 4rem;}
