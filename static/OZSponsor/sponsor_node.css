@@ -20,9 +20,16 @@
     margin: 0 0.2em 0.4em 0.2em;
 }
 
-.spList li a.sponsor, .spList li label {
-    width: 130px;
+.spList li a {
+    text-decoration: none;
     height: 200px;
+    line-height: 200px;
+}
+
+
+.spList li a.sponsor, .spList li label {
+    line-height: 1em;
+    width: 130px;
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center bottom;
