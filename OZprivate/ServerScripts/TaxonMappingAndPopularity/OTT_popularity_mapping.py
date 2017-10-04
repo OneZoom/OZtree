@@ -466,7 +466,8 @@ def visits_for_titles(wiki_title_ptrs, wiki_visits_pagecounts_file, file_index, 
     
     Having several values (one per month) allows us to trim off any that show an unusual spike
     
-    NB: pageviews totals files have a wikicode project name in ascii followed by .z for wikipedias (e.g. en.z) followed by space, 
+    NB: see https://dumps.wikimedia.org/other/pagecounts-ez/ for format.
+    Pageviews totals files have a wikicode project name in ascii followed by .z for wikipedias (e.g. en.z) followed by space, 
     followed by uri-escaped title, followed by space, followed by integer. The format is a very difficult one to parse, as it varies
     e.g. there are multiple differently quoted version of the same title, sometime with spaces not underscores, unicode encoding sometimes fails, 
     the bzip file sometimes appears truncated, etc etc. I've found that the best way to do this is to unquote_to_bytes first 
