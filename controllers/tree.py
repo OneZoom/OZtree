@@ -30,11 +30,12 @@ def wikidata_sitelinks(Qid):
     except:
         raise HTTP(400,"No valid wikidata Q id provided")
 
-def wikipedia_url(Q, lang='en', flag='', flags=wikiflags, is_leaf=True, name=""):
+def wikipedia_url(Q, lang='en', flag='', flags=wikiflags, only_wikipedia=False, is_leaf=True, name=""):
     """
     returns a url that redirects to the wikipedia page for this wikidata Qid and this lang. Flag should be a
     number: if it is not given, it assumes the value '', and the wikipedia URL is always provided, even if we believe
-    it might be absent. If flag is given and numeric, check against the wikiflags, and 
+    it might be absent. If flag is given and numeric, check against the wikiflags, and return a url that will go to 
+    the wikipedia page (or no wikipedia page in that lang exists AND only_wikipedia==False, return a url which embeds the wikidata page)
     """
     try:
         if flag is None:
@@ -42,17 +43,20 @@ def wikipedia_url(Q, lang='en', flag='', flags=wikiflags, is_leaf=True, name="")
         if lang.isalnum():
             try:
                 if (int(flag) & int(2**flags[lang])) == 0:
-                    #this lang not present, provide WD page
-                    if is_leaf:
-                        return(URL("wikipedia_absent_from_wikidata", vars=dict(leaf=Q, name=name), scheme=True, host=True, extension=False))
+                    if only_wikipedia:
+                        return None
                     else:
-                        return(URL("wikipedia_absent_from_wikidata", vars=dict(node=Q, name=name), scheme=True, host=True, extension=False))
+                        #this lang not present, provide WD page
+                        if is_leaf:
+                            return(URL("wikipedia_absent_from_wikidata", vars=dict(leaf=Q, name=name), scheme=True, host=True, extension=False))
+                        else:
+                            return(URL("wikipedia_absent_from_wikidata", vars=dict(node=Q, name=name), scheme=True, host=True, extension=False))
             except:
                 pass #e.g. if flag == ''
             return("//www.wikidata.org/wiki/Special:GoToLinkedPage?site={}&itemid=Q{}".format(lang, int(Q)))
     except:
         pass
-    raise HTTP(400,"No valid flag or wikidata Q id provided")
+    raise HTTP(400,"No valid language or wikidata Q id provided")
 
 def iucn_url(IUCNid):
     try:
@@ -264,7 +268,7 @@ def linkouts(is_leaf, ott=None, id=None):
                 lang_primary ='en'
             wikilang = request.vars.get('wikilang') or lang_primary
             if row[core_table].wikidata:
-                urls['wiki'] = wikipedia_url(row[core_table].wikidata, wikilang, row[core_table].wikipedia_lang_flag, wikiflags, is_leaf=is_leaf, name=name)
+                urls['wiki'] = wikipedia_url(row[core_table].wikidata, wikilang, row[core_table].wikipedia_lang_flag, wikiflags, request.vars.only_wikipedia, is_leaf=is_leaf, name=name)
             if row[core_table].eol:
                 urls['eol']  = eol_url(row[core_table].eol, row[core_table].ott)
             if row[core_table].ncbi:
