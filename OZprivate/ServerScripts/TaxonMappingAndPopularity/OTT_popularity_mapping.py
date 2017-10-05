@@ -397,7 +397,21 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
                       replaced[common_name_taxon_Qid]=wikidata_cname_info[common_name_taxon_Qid]['Q']
                       wikidata_taxon_info[common_name_taxon_Qid].update(common_name_item)
                       wikilang_title_ptrs[common_name_item['l'][wikilang]] = wikidata_taxon_info[common_name_taxon_Qid]
+          elif 'Q13406463' in instance_of:
+            #this is a "Wikimedia list article", which explains why a taxon Qid might be present 
+            #(e.g. "List of Lepidoptera that feed on Solanum" which is a "list of" taxon)
+            #we can ignore it without printing a message
+            pass
+          elif 'Q4167836' in instance_of: 
+            #this is a "Wikimedia category", which explains why a taxon Qid might be present 
+            #e.g. "Category:Species described in 2016", which is a "category combines topics" taxon
+            #we can ignore it without printing a message
+            pass
+          elif 'Q19887878' in instance_of:
+            #a wikimedia template: we can ignore it without printing a message
+            pass
           else:
+            #possibly flag up problems here, in case there are taxa which are instances of more specific types, e.g. ichnotaxon, etc etc.
             if verbosity:
               print(" There might be a problem with wikidata item {} ({}), might be a taxon but cannot get taxon data from it".format(item['id'], taxon_name(item)), file=sys.stderr);
     if verbosity:
