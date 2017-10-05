@@ -1,7 +1,7 @@
 #this reads in already-calculated popularity data from nested_set_leaves
 #header is name,extinction_date,ott,wikidata,wikipedia_lang_flag,eol,iucn,popularity,price,image_updated,vname_updated,ncbi,ifung,worms,irmng,gbif
 
-pop <- read.delim("~/Documents/Research/OneZoom/OneZoomComplete/applications/OneZoom/OZprivate/data/DBinputs/ordered_leaves.csv",
+pop <- read.delim("~/Documents/Research/OneZoom/OneZoomComplete/applications/OneZoom/OZprivate/data/output_files/ordered_leaves.csv",
                   header=T,
                   sep=",",
                   colClasses=c("NULL", "NULL",'character',"NULL","NULL","NULL","NULL", "NULL","NULL", 'numeric',"NULL","NULL","NULL","NULL","NULL","NULL"),

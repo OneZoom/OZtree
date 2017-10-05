@@ -1,4 +1,4 @@
-pop <- read.delim("~/Documents/Research/OneZoom/OneZoomComplete/applications/OneZoom/OZprivate/data/DBinputs/Data_phylo_new.csv", 
+pop <- read.delim("~/Documents/Research/OneZoom/OneZoomComplete/applications/OneZoom/OZprivate/data/output_files/Data_phylo_new.csv", 
                   stringsAsFactors=F,
                   check.names=TRUE)
 rownames(pop) <- make.names(pop$name, unique=TRUE)
