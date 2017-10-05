@@ -238,8 +238,8 @@ def wikidata_makebaseinfo(json_item, wikilang=''):
     """
     Return a basic item of the form {'Q':XXX, 'l':{'fr':1,'en':'title'}} etc
     """
-    basic_item = {'Q':int(item['id'].replace("Q","",1)), 'l':{}}
-    for sitelink, data in item['sitelinks'].items():
+    basic_item = {'Q':int(json_item['id'].replace("Q","",1)), 'l':{}}
+    for sitelink, data in json_item['sitelinks'].items():
       if sitelink.endswith('wiki'):
         #this is a wikipedia link (to save memory, only save the title for the specified lang)
         lang = sitelink[:-4]
@@ -290,7 +290,7 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
     wikidata_db_props = {'P685':'ncbi','P846':'gbif','P850':'worms','P1391':'if'}
     #numbers to search for
     match_Qtypes = {'taxon':16521, 'monotypic taxon':310890, 'fossil taxon': 23038290, 'clade':713623, 'common name': 502895}
-    initial_byte_match = re.compile('numeric-id":(?:{})'.format('|'.join([str(v) for v in match_Qtypes.values()])).encode()) 
+    initial_byte_match = re.compile('numeric-id":(?:{})\D'.format('|'.join([str(v) for v in match_Qtypes.values()])).encode()) 
     filesize = os.path.getsize(wikidata_json_dump_file.name)
     with bz2.open(wikidata_json_dump_file, 'rb') as WDF: #open filehandle, to allow read as bytes (converted to UTF8 later)
       found=n_eol=n_iucn=n_ipni=n_titles=0
@@ -308,29 +308,8 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
           #done fast match, now check by parsing JSON (slower)
           item = json.loads(line.decode("UTF-8").rstrip().rstrip(","))
           instance_of = {int(wikidata_value(wd_json.get("mainsnak")).get("numeric-id")):wd_json for wd_json in item["claims"]["P31"]}
-          if match_Qtypes['common name'] in instance_of:
-            #This is a common name - it may have links to the correct wikipedia titles, but nothing else
-            common_name = instance_of[match_Qtypes['common name']]
-            for common_name_of in common_name["qualifiers"]["P642"]:
-              #e.g. https://www.wikidata.org/wiki/Q144
-              common_name_taxon_Qid = wikidata_value(common_name_of).get("numeric-id")
-              if common_name_taxon_Qid:
-                common_name_item = wikidata_makebaseinfo(item)
-                print(" Found a common name: {} ({}) is common name of Q{}, which could be a taxon item".format(item["id"]. taxon_name(item), taxon_item), file=sys.stderr);
-                if wikilang in common_name_item['l']:
-                  #we have e.g. sitelink = 'en.wiki' in this item
-                  wikidata_cname_info[common_name_taxon_Qid]=common_name_item
-                  if common_name_taxon_Qid in wikidata_taxon_info:
-                    #we have already stored taxon details in a previous pass, so we might want to change the the info
-                    if wikilang not in wikidata_taxon_info[common_name_taxon_Qid]['l'] or common_name_taxon_Qid in override_with_common_name:
-                      #only change if there was not a previous sitelink in the pre-specified wikilang (or an exception)
-                      if verbosity:
-                        print(" Updating taxon {} with Qid and sitelinks from Q{} ({}).".format(common_name_taxon_Qid, item['id'], taxon_name(item)),  file=sys.stderr)
-                      if len(wikidata_taxon_info[common_name_taxon_Qid]['l']):
-                        print(" Warning. Taxon {} is being swapped for a common-name equivalent {} ({}), losing sitelinks in the following languages: {}.".format(common_name_taxon_Qid, item['id'], taxon_name(item), wikidata_taxon_info[common_name_taxon_Qid]['l']), file=sys.stderr)
-                      wikidata_taxon_info[common_name_taxon_Qid].update(common_name_item)
-                      wikilang_title_ptrs[common_name_item['l'][wikilang]] = wikidata_taxon_info[common_name_taxon_Qid]
-          elif any([Q in instance_of for name,Q in match_Qtypes.items() if name != 'common name']):
+          
+          if any([Q in instance_of for name,Q in match_Qtypes.items() if name != 'common name']):
             #this is a taxon page
             taxon_item = wikidata_makebaseinfo(item)
             if JSON_contains_known_dbID(item, taxon_item, source_ptrs, verbosity):
@@ -339,8 +318,9 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
               if EOLid_property_id:
                 try:
                   eolid = wikidata_value(item['claims'][EOLid_property_id][0]['mainsnak'])
-                  taxon_item['EoL'] = int(eolid)
-                  n_eol += 1;
+                  if eolid:
+                    taxon_item['EoL'] = int(eolid)
+                    n_eol += 1;
                 except LookupError:
                   pass #no EOL id
                 except ValueError:
@@ -351,9 +331,10 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
                   for ref in item['claims'][IUCNid_property_id[0]][0]['references']:
                     try:
                       iucnid = wikidata_value(ref['snaks'][IUCNid_property_id[1]][0])
-                      taxon_item['iucn']= int(iucnid)
-                      n_iucn += 1
-                      break
+                      if iucnid:
+                        taxon_item['iucn']= int(iucnid)
+                        n_iucn += 1
+                        break
                     except LookupError:
                       pass #no IUCN id value
                 except LookupError:
@@ -364,8 +345,9 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
                 try:
                   ipni = wikidata_value(item['claims'][IPNIid_property_id][0]['mainsnak'])
                   #convert e.g. 391732-1 to 3917321 (assumes last digit has a dash before it)
-                  taxon_item['IPNI'] = ipni.replace("-","")
-                  n_ipni += 1;
+                  if ipni:
+                    taxon_item['IPNI'] = ipni.replace("-","")
+                    n_ipni += 1;
                 except LookupError:
                   pass #no IPNI id
                 except ValueError:
@@ -382,12 +364,38 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
                       print(" Warning. Taxon {} ({}) is being swapped for a common-name equivalent {}, losing sitelinks in the following languages: {}.".format(item['id'], taxon_name(item), wikidata_cname_info[taxon_item['Q']]['Q'], taxon_item['l']), file=sys.stderr)
                  
                     taxon_item.update(wikidata_cname_info[taxon_item['Q']])
-
+                
                 if wikilang in taxon_item['l']:
                   wikilang_title_ptrs[taxon_item['l'][wikilang]] = taxon_item
+          elif match_Qtypes['common name'] in instance_of:
+            #This is a common name - it may have links to the correct wikipedia titles, but nothing else
+            common_name = instance_of[match_Qtypes['common name']]
+            if "qualifiers" not in common_name or "P642" not in common_name["qualifiers"]:
+              if verbosity > 1:
+                print(" Found a common name property without any qualifiers for {} ({}). This could be a common name which doesn't apply to a monophyletic taxon (e.g. 'slugs', 'coral', 'rabbit', 'whale')".format(item["id"], taxon_name(item)), file=sys.stderr)
+              continue
+            for common_name_of in common_name["qualifiers"]["P642"]:
+              #e.g. https://www.wikidata.org/wiki/Q144
+              common_name_taxon_Qid = wikidata_value(common_name_of).get("numeric-id")
+              if common_name_taxon_Qid:
+                common_name_item = wikidata_makebaseinfo(item)
+                print(" Found a common name: {} ({}) is common name of Q{}, which could be a taxon item".format(item["id"], taxon_name(item), common_name_taxon_Qid), file=sys.stderr)
+                if wikilang in common_name_item['l']:
+                  #we have e.g. sitelink = 'en.wiki' in this item
+                  wikidata_cname_info[common_name_taxon_Qid]=common_name_item
+                  if common_name_taxon_Qid in wikidata_taxon_info:
+                    #we have already stored taxon details in a previous pass, so we might want to change the the info
+                    if wikilang not in wikidata_taxon_info[common_name_taxon_Qid]['l'] or common_name_taxon_Qid in override_with_common_name:
+                      #only change if there was not a previous sitelink in the pre-specified wikilang (or an exception)
+                      if verbosity:
+                        print(" Updating taxon {} with Qid and sitelinks from Q{} ({}).".format(common_name_taxon_Qid, item['id'], taxon_name(item)),  file=sys.stderr)
+                      if len(wikidata_taxon_info[common_name_taxon_Qid]['l']):
+                        print(" Warning. Taxon {} is being swapped for a common-name equivalent {} ({}), losing sitelinks in the following languages: {}.".format(common_name_taxon_Qid, item['id'], taxon_name(item), wikidata_taxon_info[common_name_taxon_Qid]['l']), file=sys.stderr)
+                      wikidata_taxon_info[common_name_taxon_Qid].update(common_name_item)
+                      wikilang_title_ptrs[common_name_item['l'][wikilang]] = wikidata_taxon_info[common_name_taxon_Qid]
           else:
             if verbosity:
-              print(" There might be a problem with wikidata item {} ({}), might be a taxon but cannot get taxon data from it.".format(item['id'], taxon_name(item)), file=sys.stderr);
+              print(" There might be a problem with wikidata item {} ({}), might be a taxon but cannot get taxon data from it".format(item['id'], taxon_name(item)), file=sys.stderr);
     if verbosity:
       print(" NB: {} wikidata matches, of which {} have eol IDs, {} have IUCN ids, {} have IPNI, and {} ({:.2f}%) have titles that exist on the {} wikipedia. mem usage {:.1f} Mb".format(len(wikidata_taxon_info), n_eol,n_iucn, n_ipni, n_titles, n_titles/len(wikidata_taxon_info) * 100, wikilang, memory_usage_resource()), file=sys.stderr)
     return(wikilang_title_ptrs)
@@ -401,19 +409,19 @@ def JSON_contains_known_dbID(json, wd_info, source_ptrs, verbosity=0):
     wikidata_db_props = {'P685':'ncbi','P846':'gbif','P850':'worms','P1391':'if'} #doesn't have irmng
     used = False
     for taxon_id_prop in wikidata_db_props.keys():
-        if prop in json['claims']:
+        if taxon_id_prop in json['claims']:
             try:
-                id = str(json['claims'][prop][0]['mainsnak']['datavalue']['value'])
+                id = str(json['claims'][taxon_id_prop][0]['mainsnak']['datavalue']['value'])
                 try:
-                    source_ptrs[wikidata_db_props[prop]][id]['wd'] = wd_info
+                    source_ptrs[wikidata_db_props[taxon_id_prop]][id]['wd'] = wd_info
                     used=True
                 except KeyError:
                     if verbosity>2:
                         #very common for OTT to be missing ids that are present in wikidata, so only output if -vvv
-                        print(" NB: can't find item source_ptrs[{} ({})][{}] in OTTids for taxon {} ({})".format(wikidata_prop_to_OTT[prop], prop, id, taxon_name(json), json['id']), file=sys.stderr);
+                        print(" NB: can't find item source_ptrs[{} ({})][{}] in OTTids for taxon {} ({})".format(wikidata_prop_to_OTT[taxon_id_prop], taxon_id_prop, id, taxon_name(json), json['id']), file=sys.stderr);
             except KeyError:
                 if verbosity>1:
-                    print(" Can't find an id value for source_ptrs[{} ({})] in OTTids for taxon {} ({})".format(wikidata_prop_to_OTT[prop], prop, taxon_name(json), json['id']), file=sys.stderr);
+                    print(" Can't find an id value for source_ptrs[{} ({})] in OTTids for taxon {} ({})".format(wikidata_prop_to_OTT[taxon_id_prop], taxon_id_prop, taxon_name(json), json['id']), file=sys.stderr);
     return used
         
 def identify_best_wikidata(OTT_ptrs, order_to_trust, verbosity):
