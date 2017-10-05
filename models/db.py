@@ -233,15 +233,15 @@ db.define_table('ordered_nodes',
     #all the remaining fields are not filled out in the original data tables, but are filled out by later algorithms
     #we might want to consider putting them in a different table, although they need recalculating every time the topology changes
     Field('vern_synth', type='text'), # a synthetic version of the vernacular name, e.g. Hamsters, Gerbils, True Mice, Rats and more
-    Field('rep1', type='integer'), # rep1 - rep8 are the leaf ids for the 8 'representative' species pictured 
+    Field('rep1', type='integer'), # rep1 - rep8 are the leaf otts for the 8 'representative' species pictured 
     Field('rep2', type='integer'), # these are chosen using some complex algorithm which depends on richness
-    Field('rep3', type='integer'), # and quality of picture. The algorithm is implemented in *****
+    Field('rep3', type='integer'), # and quality of picture. The algorithm is implemented in OZprivate/ServerScripts/Utilities/picProcess.py
     Field('rep4', type='integer'), # and needs to be regularly rerun.
     Field('rep5', type='integer'),
     Field('rep6', type='integer'),
     Field('rep7', type='integer'),
     Field('rep8', type='integer'),
-    Field('rtr1', type='integer'), # rtr1 - rtr8 are the leaf ids for the 8 'representative' species pictured 
+    Field('rtr1', type='integer'), # rtr1 - rtr8 are the leaf otts for the 8 'representative' species pictured 
     Field('rtr2', type='integer'), # that are guaranteed to be 'trusted'
     Field('rtr3', type='integer'), # 
     Field('rtr4', type='integer'), # 
@@ -249,7 +249,7 @@ db.define_table('ordered_nodes',
     Field('rtr6', type='integer'),
     Field('rtr7', type='integer'),
     Field('rtr8', type='integer'),
-    Field('rpd1', type='integer'), # rpd1 - rpd8 are the leaf ids for the 8 'representative' species pictured 
+    Field('rpd1', type='integer'), # rpd1 - rpd8 are the leaf otts for the 8 'representative' species pictured 
     Field('rpd2', type='integer'), # that are guaranteed to have a public domain image
     Field('rpd3', type='integer'), #
     Field('rpd4', type='integer'), #
