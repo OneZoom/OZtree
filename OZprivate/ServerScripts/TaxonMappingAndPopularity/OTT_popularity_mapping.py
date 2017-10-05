@@ -282,7 +282,7 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
     3) human (Q5) common name of taxon Q3238275 (Homo sapiens sapiens), Q15978631 (Homo sapiens+*)
     4) horse (Q726) common name of taxon Q10758650 (Equus caballus+*), Q26644764 (Equus ferus caballus)
     """
-    
+    replaced = {}
     wikilang_title_ptrs = {}
     wikidata_taxon_info = {}
     wikidata_cname_info = {}
@@ -307,6 +307,8 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
         if line.startswith(b'{"type":"item"') and initial_byte_match.search(line): #}'
           #done fast match, now check by parsing JSON (slower)
           item = json.loads(line.decode("UTF-8").rstrip().rstrip(","))
+          if 'claims' not in item or 'P31' not in item['claims']:
+            continue
           instance_of = {int(wikidata_value(wd_json.get("mainsnak")).get("numeric-id")):wd_json for wd_json in item["claims"]["P31"]}
           
           if any([Q in instance_of for name,Q in match_Qtypes.items() if name != 'common name']):
@@ -359,10 +361,11 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
                   if (wikilang in wikidata_cname_info[taxon_item['Q']]['l'] and wikilang not in taxon_item['l']) or taxon_item['Q'] in override_with_common_name:
                     #only change if there is no sitelink in the pre-specified wikilang but there *is* one in the common_name item (or is an exception)
                     if verbosity:
-                      print(" Updating taxon {} ({}) with Qid and sitelinks from Q{}.".format(item['id'], taxon_name(item)),  wikidata_cname_info[taxon_item['Q']]['Q'], file=sys.stderr)
+                      print(" Updating taxon {} ({}) with Qid and sitelinks from Q{}.".format(item['id'], taxon_name(item),  wikidata_cname_info[taxon_item['Q']]['Q']), file=sys.stderr)
                     if len(taxon_item['l']):
-                      print(" Warning. Taxon {} ({}) is being swapped for a common-name equivalent {}, losing sitelinks in the following languages: {}.".format(item['id'], taxon_name(item), wikidata_cname_info[taxon_item['Q']]['Q'], taxon_item['l']), file=sys.stderr)
+                      print("WARNING. Taxon {} ({}) is being swapped for a common-name equivalent {}, losing sitelinks in the following languages: {}.".format(item['id'], taxon_name(item), wikidata_cname_info[taxon_item['Q']]['Q'], taxon_item['l']), file=sys.stderr)
                  
+                    replaced[taxon_item['Q']]=wikidata_cname_info[taxon_item['Q']]['Q']
                     taxon_item.update(wikidata_cname_info[taxon_item['Q']])
                 
                 if wikilang in taxon_item['l']:
@@ -390,13 +393,15 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
                       if verbosity:
                         print(" Updating taxon {} with Qid and sitelinks from Q{} ({}).".format(common_name_taxon_Qid, item['id'], taxon_name(item)),  file=sys.stderr)
                       if len(wikidata_taxon_info[common_name_taxon_Qid]['l']):
-                        print(" Warning. Taxon {} is being swapped for a common-name equivalent {} ({}), losing sitelinks in the following languages: {}.".format(common_name_taxon_Qid, item['id'], taxon_name(item), wikidata_taxon_info[common_name_taxon_Qid]['l']), file=sys.stderr)
+                        print("WARNING. Taxon {} is being swapped for a common-name equivalent {} ({}), losing sitelinks in the following languages: {}.".format(common_name_taxon_Qid, item['id'], taxon_name(item), wikidata_taxon_info[common_name_taxon_Qid]['l']), file=sys.stderr)
+                      replaced[common_name_taxon_Qid]=wikidata_cname_info[common_name_taxon_Qid]['Q']
                       wikidata_taxon_info[common_name_taxon_Qid].update(common_name_item)
                       wikilang_title_ptrs[common_name_item['l'][wikilang]] = wikidata_taxon_info[common_name_taxon_Qid]
           else:
             if verbosity:
               print(" There might be a problem with wikidata item {} ({}), might be a taxon but cannot get taxon data from it".format(item['id'], taxon_name(item)), file=sys.stderr);
     if verbosity:
+      print(" The following taxon Qids were swapped for common name Qids: {}".format(replaced), file=sys.stderr)
       print(" NB: {} wikidata matches, of which {} have eol IDs, {} have IUCN ids, {} have IPNI, and {} ({:.2f}%) have titles that exist on the {} wikipedia. mem usage {:.1f} Mb".format(len(wikidata_taxon_info), n_eol,n_iucn, n_ipni, n_titles, n_titles/len(wikidata_taxon_info) * 100, wikilang, memory_usage_resource()), file=sys.stderr)
     return(wikilang_title_ptrs)
 
