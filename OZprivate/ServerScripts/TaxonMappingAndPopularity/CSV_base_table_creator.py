@@ -41,7 +41,7 @@ Download the wikidata JSON dump from  http://dumps.wikimedia.org/wikidatawiki/en
 To test, try e.g.  
 
 Usage: 
-OT_VERSION=9
+OT_VERSION=9_1
 ServerScripts/TaxonMappingAndPopularity/CSV_base_table_creator.py ../static/FinalOutputs/Life_full_tree.phy data/OpenTree/ott/taxonomy.tsv data/EOL/identifiers.csv data/Wiki/wd_JSON/* data/Wiki/wp_SQL/* data/Wiki/wp_pagecounts/pagecounts* --OpenTreeFile data/OpenTree/draftversion${OT_VERSION}.tre -o data/output_files/ordered -v --exclude Archosauria_ott335588 Dinosauria_ott90215 > data/output_files/ordered_output.log
 
 ServerScripts/TaxonMappingAndPopularity/CSV_base_table_creator.py ../static/FinalOutputs/Life_full_tree.phy data/OpenTree/ott/taxonomy.tsv data/EOL/identifiers.csv data/Wiki/wd_JSON/* data/Wiki/wp_SQL/* data/Wiki/wp_pagecounts/* --OpenTreeFile data/OpenTree/draftversion${OT_VERSION}.tre -o data/output_files/ordered -n
@@ -70,9 +70,12 @@ from dendropy import Node, Tree
 #local packages
 from dendropy_extras import write_pop_newick
 from OTT_popularity_mapping import memory_usage_resource
+# to get globals from ../../../models/_OZglobals.py
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir, "models")))
+from _OZglobals import wikiflags
 
 __author__ = "Yan Wong"
-__license__ = 'This is free and unencumbered software released into the public domain by the author, Yan Wong, for OneZoom CIO.
+__license__ = '''This is free and unencumbered software released into the public domain by the author, Yan Wong, for OneZoom CIO.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or distribute this software, either in source code form or as a compiled binary, for any purpose, commercial or non-commercial, and by any means.
 
@@ -80,7 +83,7 @@ In jurisdictions that recognize copyright laws, the author or authors of this so
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-For more information, please refer to <http://unlicense.org/>'
+For more information, please refer to <http://unlicense.org/>'''
 
 sql_subs_string = '' #  ? for sqlite, %s for mysql
 
@@ -317,12 +320,12 @@ def construct_wiki_info(OTT_ptrs):
     Construct a wikidata Qid, and a wikipedia lang flag, for outputting to csv files
     Languages are sorted roughly according to active users on https://en.wikipedia.org/wiki/List_of_Wikipedias
     """
-    lang_flags = {lang:2**i for i, lang in enumerate(['en','de','es','fr','ja','ru','it','zh','pt','ar','pl','nl','fa','tr','sv','he','uk','id','vi','ko'])}
+    lang_flags = {lang:2**bit for lang, bit in wikiflags}
     for OTTid, data in OTT_ptrs.items():
         try:
             #if this field has a number in, it must have at least one lang
             tot = 0
-            for lang in data['wd']['p']:
+            for lang in data['wd']['l']:
                 tot += (lang_flags.get(lang) or 0) #add together as bit fields                       
             data['wd']['wikipedia_lang_flag'] = tot
         except KeyError:
@@ -362,7 +365,7 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, verbosity=0, sa
     """ we should now have leaf entries attached to each node in the tree like
     data = {
      'ott':,
-     'wd': {'Q': 15478814, 'EoL': 1100788, 'p':['en','fr']}, 
+     'wd': {'Q': 15478814, 'EoL': 1100788, 'l':['en','fr']}, 
      'pop_dscdt': 0,
      'pop_ancst': 220183.23395609166,
      'sources': {'ncbi': None,
@@ -519,7 +522,7 @@ if __name__ == "__main__":
     parser.add_argument('--output_location', '-o', default="output", 
         help='The directory to store the csv, newick, and date files')
     parser.add_argument('--wikilang', '-l', default='en', 
-        help='The language wikipedia to check for popularity, e.g. "en"')
+        help='The language wikipedia to check for popularity, e.g. "en". Where there are multiple Wikidata items for a taxon (e.g. one under the common name, one under the scientific name), then we also default to using the WD item with the sitelink in this language.')
     parser.add_argument('--version', default=int(time()), 
         help='A unique version number for the tree, to be saved in the DB tables & output files')
     parser.add_argument('--extra_source_file', default=None, type=str, 
