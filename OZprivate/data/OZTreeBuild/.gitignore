@@ -1,5 +1,6 @@
 #ignore created files for all trees
 /*/*.phy
+/*/*.js
 /*/BespokeTree/include*
 !/*/BespokeTree/include_noAutoOTT
 /*/OpenTreeParts/OpenTree_all/*
