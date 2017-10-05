@@ -418,10 +418,10 @@ def JSON_contains_known_dbID(json, wd_info, source_ptrs, verbosity=0):
                 except KeyError:
                     if verbosity>2:
                         #very common for OTT to be missing ids that are present in wikidata, so only output if -vvv
-                        print(" NB: can't find item source_ptrs[{} ({})][{}] in OTTids for taxon {} ({})".format(wikidata_prop_to_OTT[taxon_id_prop], taxon_id_prop, id, taxon_name(json), json['id']), file=sys.stderr);
+                        print(" NB: can't find item source_ptrs[{} ({})][{}] in OTTids for taxon {} ({})".format(wikidata_db_props[taxon_id_prop], taxon_id_prop, id, taxon_name(json), json['id']), file=sys.stderr);
             except KeyError:
                 if verbosity>1:
-                    print(" Can't find an id value for source_ptrs[{} ({})] in OTTids for taxon {} ({})".format(wikidata_prop_to_OTT[taxon_id_prop], taxon_id_prop, taxon_name(json), json['id']), file=sys.stderr);
+                    print(" Can't find an id value for source_ptrs[{} ({})] in OTTids for taxon {} ({})".format(wikidata_db_props[taxon_id_prop], taxon_id_prop, taxon_name(json), json['id']), file=sys.stderr);
     return used
         
 def identify_best_wikidata(OTT_ptrs, order_to_trust, verbosity):
