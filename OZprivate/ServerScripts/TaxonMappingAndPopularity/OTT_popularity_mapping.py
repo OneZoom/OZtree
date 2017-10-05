@@ -375,7 +375,7 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
             common_name = instance_of[match_Qtypes['common name']]
             if "qualifiers" not in common_name or "P642" not in common_name["qualifiers"]:
               if verbosity > 1:
-                print(" Found a common name property without any qualifiers for {} ({}). This could be a common name which doesn't apply to a monophyletic taxon (e.g. 'slugs', 'coral', 'rabbit', 'whale')".format(item["id"], taxon_name(item)), file=sys.stderr)
+                print(" Found a common name property without any qualifiers for {} ({}). The name may be poly/paraphyletic (e.g. 'slugs', 'coral', 'rabbit', 'whale') or a name corresponding to a clade with no official taxonomic name (e.g. the 2 spp of minke whales within a larger genus, or the 2 genera of peafowl), or something else (e.g. the 'mysterious bird of Bobairo')".format(item["id"], taxon_name(item)), file=sys.stderr)
               continue
             for common_name_of in common_name["qualifiers"]["P642"]:
               #e.g. https://www.wikidata.org/wiki/Q144
