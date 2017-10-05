@@ -1,7 +1,0 @@
-[Arrangement from 'Elasmobranch Phylogeny: A Mitochondrial Estimate Based on 595 Species' (see http://sharksrays.org)
-Pristiophoridae is non-monophyletic in the Opentree, but this is probably an error. So we use the subtree from sharksrays.org, 
-but unfortunately this is missing about 5 species of Pristiophorus
-
-#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Vertebrates]
-(Pliotrema_warreni_ott12069,((Pristiophorus_nudipinnis_ott754113,Pristiophorus_cirratus_ott1095624),Pristiophorus_japonicus_ott234341))Pristiophoridae_ott234343;
-
