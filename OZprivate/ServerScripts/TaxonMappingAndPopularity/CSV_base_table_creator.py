@@ -481,7 +481,6 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, verbosity=0, sa
     if save_sql:
         from shutil import copyfile
         from subprocess import call
-        import os.path
         #make copies of the csv files that can be imported into mySQL (has \\N for null values)
         info("-> saving copies of the files for reading into mySQL: read them in using:")
         for tab in ['_leaves','_nodes']:
@@ -496,7 +495,6 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, verbosity=0, sa
 
 if __name__ == "__main__":
 
-    from collections import OrderedDict
     from OTT_popularity_mapping import *
     
     random_seed_addition = 1234

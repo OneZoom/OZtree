@@ -128,7 +128,7 @@ import csv
 import re
 import gzip
 import bz2
-import os
+import os.path
 import json
 
 __author__ = "Yan Wong"
