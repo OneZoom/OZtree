@@ -320,7 +320,7 @@ def construct_wiki_info(OTT_ptrs):
     Construct a wikidata Qid, and a wikipedia lang flag, for outputting to csv files
     Languages are sorted roughly according to active users on https://en.wikipedia.org/wiki/List_of_Wikipedias
     """
-    lang_flags = {lang:2**bit for lang, bit in wikiflags}
+    lang_flags = {lang:2**bit for lang, bit in wikiflags.items()}
     for OTTid, data in OTT_ptrs.items():
         try:
             #if this field has a number in, it must have at least one lang
