@@ -26,7 +26,7 @@
             <ul class = "spList">
             {{for ott in ott_list:}}
                 <li>
-                    <a class="sponsor" style="background-image:url('{{=image_urls[ott] if ott in image_urls else URL("static","images/noImage_transparent.png")}}')" href="{{=URL('sponsor_leaf', extension=False,  vars=vars)}}"> <p>{{=html_names[ott]}}</p> </a>
+                    <a class="sponsor" style="background-image:url('{{=image_urls[ott] if ott in image_urls else URL("static","images/noImage_transparent.png")}}')" href="{{=URL('sponsor_leaf', extension=False,  vars=dict(vars,ott=ott))}}"> <p>{{=html_names[ott]}}</p> </a>
                     {{if ott in reserved:}}
                     <p><a href="life/@={{=ott}}?init=zoom">Already sponsored {{=" ".join([t for t in reserved[ott] if t])}}</a></p>
                     {{pass}}
