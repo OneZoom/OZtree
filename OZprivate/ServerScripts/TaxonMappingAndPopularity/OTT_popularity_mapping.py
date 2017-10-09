@@ -130,6 +130,7 @@ import gzip
 import bz2
 import os.path
 import json
+from collections import defaultdict
 
 __author__ = "Yan Wong"
 __license__ = '''This is free and unencumbered software released into the public domain by the author, Yan Wong, for OneZoom CIO.
@@ -250,14 +251,7 @@ def wikidata_makebaseinfo(json_item, wikilang=''):
 def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=0, 
     EOLid_property_id='P830', 
     IUCNid_property_id=['P141','P627'], 
-    IPNIid_property_id='P961',
-    wikidata_Q_exceptions={
-        'Q144':['Q26972265','Q20717272'], #dog (Q144) -> Q20717272 (Canis familiaris) & Q26972265 (Canis lupus familiaris *)
-        'Q146':['Q20980826'], #cat
-        'Q830':['Q46889','Q20747320','Q20747334','Q20747712','Q20747726'], #cow
-        'Q5':['Q3238275','Q15978631'], #human
-        'Q726':['Q10758650','Q26644764'], #horse
-        }): #
+    IPNIid_property_id='P961'):
     """
     Maps the name in taxonomy.tsv to the property ID in wikidata (e.g. 'ncbi' in OTT, P685 in wikidata. Note that wikidata does not have 'silva' and 'irmng' types)
     Also save a list of wikipedia sitelinks, but only as comman-delimited presence/absence data, e.g. if there is an enwiki & frwiki entry, save sitelinks='en,fr'
@@ -293,8 +287,7 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
     initial_byte_match = re.compile('numeric-id":(?:{})\D'.format('|'.join([str(v) for v in match_Qtypes.values()])).encode()) 
     filesize = os.path.getsize(wikidata_json_dump_file.name)
     with bz2.open(wikidata_json_dump_file, 'rb') as WDF: #open filehandle, to allow read as bytes (converted to UTF8 later)
-      found=n_eol=n_iucn=n_ipni=n_titles=0
-      stored_wd_exception_taxa={}
+      found=n_eol=n_iucn=n_ipni=0
       for line_num, line in enumerate(WDF):
         if (line_num % 1000000 == 0) and verbosity:
                 print("Reading wikidata JSON dump: {}% done. "
@@ -311,112 +304,120 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
             continue
           instance_of = {int(wikidata_value(wd_json.get("mainsnak")).get("numeric-id")):wd_json for wd_json in item["claims"]["P31"]}
           
-          if any([Q in instance_of for name,Q in match_Qtypes.items() if name != 'common name']):
-            #this is a taxon page
-            taxon_item = wikidata_makebaseinfo(item)
-            if JSON_contains_known_dbID(item, taxon_item, source_ptrs, verbosity):
-              #we have matched against a known taxon
-              wikidata_taxon_info[taxon_item['Q']] = taxon_item
-              if EOLid_property_id:
-                try:
-                  eolid = wikidata_value(item['claims'][EOLid_property_id][0]['mainsnak'])
-                  if eolid:
-                    taxon_item['EoL'] = int(eolid)
-                    n_eol += 1;
-                except LookupError:
-                  pass #no EOL id
-                except ValueError:
-                  print(" Cannot convert EoL property {} to integer in {}.".format(eolid, taxon_name(item)), file=sys.stderr);
-              if IUCNid_property_id:
-                try:
-                  #IUCN number is stored as a reference
-                  for ref in item['claims'][IUCNid_property_id[0]][0]['references']:
-                    try:
-                      iucnid = wikidata_value(ref['snaks'][IUCNid_property_id[1]][0])
-                      if iucnid:
-                        taxon_item['iucn']= int(iucnid)
-                        n_iucn += 1
-                        break
-                    except LookupError:
-                      pass #no IUCN id value
-                except LookupError:
-                  pass #no IUCN property
-                except ValueError:
-                  print(" Cannot convert IUCN property {} to integer in {}.".format(iucnid, taxon_name(item)), file=sys.stderr);
-              if IPNIid_property_id:
-                try:
-                  ipni = wikidata_value(item['claims'][IPNIid_property_id][0]['mainsnak'])
-                  #convert e.g. 391732-1 to 3917321 (assumes last digit has a dash before it)
-                  if ipni:
-                    taxon_item['IPNI'] = ipni.replace("-","")
-                    n_ipni += 1;
-                except LookupError:
-                  pass #no IPNI id
-                except ValueError:
-                  print(" Cannot convert IPNI property {} to integer in {}.".format(eolid, taxon_name(item)), file=sys.stderr);
-                
-                #Check for common names 
-                if taxon_item['Q'] in wikidata_cname_info:
-                  #we previously found a common name for this one
-                  if (wikilang in wikidata_cname_info[taxon_item['Q']]['l'] and wikilang not in taxon_item['l']) or taxon_item['Q'] in override_with_common_name:
-                    #only change if there is no sitelink in the pre-specified wikilang but there *is* one in the common_name item (or is an exception)
-                    if verbosity:
-                      print(" Updating taxon {} ({}) with Qid and sitelinks from Q{}.".format(item['id'], taxon_name(item),  wikidata_cname_info[taxon_item['Q']]['Q']), file=sys.stderr)
-                    if len(taxon_item['l']):
-                      print("WARNING. Taxon {} ({}) is being swapped for a common-name equivalent {}, losing sitelinks in the following languages: {}.".format(item['id'], taxon_name(item), wikidata_cname_info[taxon_item['Q']]['Q'], taxon_item['l']), file=sys.stderr)
-                 
-                    replaced[taxon_item['Q']]=wikidata_cname_info[taxon_item['Q']]['Q']
-                    taxon_item.update(wikidata_cname_info[taxon_item['Q']])
-                
-                if wikilang in taxon_item['l']:
-                  wikilang_title_ptrs[taxon_item['l'][wikilang]] = taxon_item
-          elif match_Qtypes['common name'] in instance_of:
-            #This is a common name - it may have links to the correct wikipedia titles, but nothing else
-            common_name = instance_of[match_Qtypes['common name']]
-            if "qualifiers" not in common_name or "P642" not in common_name["qualifiers"]:
-              if verbosity > 1:
-                print(" Found a common name property without any qualifiers for {} ({}). The name may be poly/paraphyletic (e.g. 'slugs', 'coral', 'rabbit', 'whale') or a name corresponding to a clade with no official taxonomic name (e.g. the 2 spp of minke whales within a larger genus, or the 2 genera of peafowl), or something else (e.g. the 'mysterious bird of Bobairo')".format(item["id"], taxon_name(item)), file=sys.stderr)
-              continue
-            for common_name_of in common_name["qualifiers"]["P642"]:
-              #e.g. https://www.wikidata.org/wiki/Q144
-              common_name_taxon_Qid = wikidata_value(common_name_of).get("numeric-id")
-              if common_name_taxon_Qid:
-                common_name_item = wikidata_makebaseinfo(item)
-                print(" Found a common name: {} ({}) is common name of Q{}, which could be a taxon item".format(item["id"], taxon_name(item), common_name_taxon_Qid), file=sys.stderr)
-                if wikilang in common_name_item['l']:
-                  #we have e.g. sitelink = 'en.wiki' in this item
-                  wikidata_cname_info[common_name_taxon_Qid]=common_name_item
-                  if common_name_taxon_Qid in wikidata_taxon_info:
-                    #we have already stored taxon details in a previous pass, so we might want to change the the info
-                    if wikilang not in wikidata_taxon_info[common_name_taxon_Qid]['l'] or common_name_taxon_Qid in override_with_common_name:
-                      #only change if there was not a previous sitelink in the pre-specified wikilang (or an exception)
+          taxon = any([Q in instance_of for name,Q in match_Qtypes.items() if name != 'common name'])
+          common_name = match_Qtypes['common name'] in instance_of
+          if taxon or common_name:
+            if taxon:
+              taxon_item = wikidata_makebaseinfo(item, wikilang)
+              if JSON_contains_known_dbID(item, taxon_item, source_ptrs, verbosity):
+                #we have matched against a known taxon
+                wikidata_taxon_info[taxon_item['Q']] = taxon_item
+                if EOLid_property_id:
+                  try:
+                    eolid = wikidata_value(item['claims'][EOLid_property_id][0]['mainsnak'])
+                    if eolid:
+                      taxon_item['EoL'] = int(eolid)
+                      n_eol += 1;
+                  except LookupError:
+                    pass #no EOL id
+                  except ValueError:
+                    print(" Cannot convert EoL property {} to integer in {}.".format(eolid, taxon_name(item)), file=sys.stderr);
+                if IUCNid_property_id:
+                  try:
+                    #IUCN number is stored as a reference
+                    for ref in item['claims'][IUCNid_property_id[0]][0]['references']:
+                      try:
+                        iucnid = wikidata_value(ref['snaks'][IUCNid_property_id[1]][0])
+                        if iucnid:
+                          taxon_item['iucn']= int(iucnid)
+                          n_iucn += 1
+                          break
+                      except LookupError:
+                        pass #no IUCN id value
+                  except LookupError:
+                    pass #no IUCN property
+                  except ValueError:
+                    print(" Cannot convert IUCN property {} to integer in {}.".format(iucnid, taxon_name(item)), file=sys.stderr);
+                if IPNIid_property_id:
+                  try:
+                    ipni = wikidata_value(item['claims'][IPNIid_property_id][0]['mainsnak'])
+                    #convert e.g. 391732-1 to 3917321 (assumes last digit has a dash before it)
+                    if ipni:
+                      taxon_item['IPNI'] = ipni.replace("-","")
+                      n_ipni += 1;
+                  except LookupError:
+                    pass #no IPNI id
+                  except ValueError:
+                    print(" Cannot convert IPNI property {} to integer in {}.".format(eolid, taxon_name(item)), file=sys.stderr);
+                  
+                  #Check for common names 
+                  if taxon_item['Q'] in wikidata_cname_info:
+                    #we previously found a common name for this one
+                    if (wikilang in wikidata_cname_info[taxon_item['Q']]['l'] and wikilang not in taxon_item['l']) or taxon_item['Q'] in override_with_common_name:
+                      #only change if there is no sitelink in the pre-specified wikilang but there *is* one in the common_name item (or is an exception)
                       if verbosity:
-                        print(" Updating taxon {} with Qid and sitelinks from Q{} ({}).".format(common_name_taxon_Qid, item['id'], taxon_name(item)),  file=sys.stderr)
-                      if len(wikidata_taxon_info[common_name_taxon_Qid]['l']):
-                        print("WARNING. Taxon {} is being swapped for a common-name equivalent {} ({}), losing sitelinks in the following languages: {}.".format(common_name_taxon_Qid, item['id'], taxon_name(item), wikidata_taxon_info[common_name_taxon_Qid]['l']), file=sys.stderr)
-                      replaced[common_name_taxon_Qid]=wikidata_cname_info[common_name_taxon_Qid]['Q']
-                      wikidata_taxon_info[common_name_taxon_Qid].update(common_name_item)
-                      wikilang_title_ptrs[common_name_item['l'][wikilang]] = wikidata_taxon_info[common_name_taxon_Qid]
-          elif 'Q13406463' in instance_of:
-            #this is a "Wikimedia list article", which explains why a taxon Qid might be present 
+                        print(" Updating taxon {} ({}) with Qid and sitelinks from Q{}.".format(item['id'], taxon_name(item),  wikidata_cname_info[taxon_item['Q']]['Q']), file=sys.stderr)
+                      if len(taxon_item['l']):
+                        print("WARNING. Taxon {} ({}) is being swapped for a common-name equivalent {}, losing sitelinks in the following languages: {}.".format(item['id'], taxon_name(item), wikidata_cname_info[taxon_item['Q']]['Q'], taxon_item['l']), file=sys.stderr)
+                      replaced[taxon_item['Q']]=wikidata_cname_info[taxon_item['Q']]['Q']
+                      taxon_item.update(wikidata_cname_info[taxon_item['Q']])
+                    
+                  if wikilang in taxon_item['l']:
+                    wikilang_title_ptrs[taxon_item['l'][wikilang]] = taxon_item
+            if common_name:
+              #This is a common name - it may have links to the correct wikipedia titles, but nothing else
+              common_name_property = instance_of[match_Qtypes['common name']]
+              if "qualifiers" not in common_name_property or "P642" not in common_name_property["qualifiers"]:
+                if not taxon and verbosity > 1:
+                  print(" Found a common name property without any qualifiers for {} ({}). The name may be poly/paraphyletic (e.g. 'slugs', 'coral', 'rabbit', 'whale') or a name corresponding to a clade with no official taxonomic name (e.g. the 2 spp of minke whales within a larger genus, or the 2 genera of peafowl), or something else (e.g. the 'mysterious bird of Bobairo')".format(item["id"], taxon_name(item)), file=sys.stderr)
+                continue
+              for common_name_of in common_name_property["qualifiers"]["P642"]:
+                #e.g. https://www.wikidata.org/wiki/Q144
+                common_name_taxon_Qid = wikidata_value(common_name_of).get("numeric-id")
+                if common_name_taxon_Qid:
+                  common_name_item = wikidata_makebaseinfo(item, wikilang)
+                  print(" Found a common name: {} ({}) is common name of Q{}, which could be a taxon item".format(item["id"], taxon_name(item), common_name_taxon_Qid), file=sys.stderr)
+                  if wikilang in common_name_item['l']:
+                    #we have e.g. sitelink = 'en.wiki' in this item
+                    wikidata_cname_info[common_name_taxon_Qid]=common_name_item
+                    
+                    if common_name_taxon_Qid in wikidata_taxon_info:
+                      #we have already stored taxon details in a previous pass, so we might want to change the the info
+                      if wikilang not in wikidata_taxon_info[common_name_taxon_Qid]['l'] or common_name_taxon_Qid in override_with_common_name:
+                        #only change if there was not a previous sitelink in the pre-specified wikilang (or an exception)
+                        if verbosity:
+                          print(" Updating taxon {} with Qid and sitelinks from Q{} ({}).".format(common_name_taxon_Qid, item['id'], taxon_name(item)),  file=sys.stderr)
+                        if len(wikidata_taxon_info[common_name_taxon_Qid]['l']):
+                          print("WARNING. Taxon {} is being swapped for a common-name equivalent {} ({}), losing sitelinks in the following languages: {}.".format(common_name_taxon_Qid, item['id'], taxon_name(item), wikidata_taxon_info[common_name_taxon_Qid]['l']), file=sys.stderr)
+                        replaced[common_name_taxon_Qid]=wikidata_cname_info[common_name_taxon_Qid]['Q']
+                        wikidata_taxon_info[common_name_taxon_Qid].update(common_name_item)
+                        wikilang_title_ptrs[common_name_item['l'][wikilang]] = wikidata_taxon_info[common_name_taxon_Qid]
+          elif 13406463 in instance_of:
+            #this is a "Wikimedia list article" (Q13406463), which explains why a taxon Qid might be present 
             #(e.g. "List of Lepidoptera that feed on Solanum" which is a "list of" taxon)
             #we can ignore it without printing a message
             pass
-          elif 'Q4167836' in instance_of: 
-            #this is a "Wikimedia category", which explains why a taxon Qid might be present 
+          elif 4167836 in instance_of: 
+            #this is a "Wikimedia category" (Q4167836), which explains why a taxon Qid might be present 
             #e.g. "Category:Species described in 2016", which is a "category combines topics" taxon
             #we can ignore it without printing a message
             pass
-          elif 'Q19887878' in instance_of:
-            #a wikimedia template: we can ignore it without printing a message
+          elif 19887878 in instance_of:
+            #a wikimedia template (Q19887878): we can ignore it without printing a message
             pass
           else:
             #possibly flag up problems here, in case there are taxa which are instances of more specific types, e.g. ichnotaxon, etc etc.
             if verbosity:
               print(" There might be a problem with wikidata item {} ({}), might be a taxon but cannot get taxon data from it".format(item['id'], taxon_name(item)), file=sys.stderr);
+    cnames = defaultdict(set)
+    for k, v in replaced.items():
+      cnames[v].add(k)
     if verbosity:
       print(" The following taxon Qids were swapped for common name Qids: {}".format(replaced), file=sys.stderr)
-      print(" NB: {} wikidata matches, of which {} have eol IDs, {} have IUCN ids, {} have IPNI, and {} ({:.2f}%) have titles that exist on the {} wikipedia. mem usage {:.1f} Mb".format(len(wikidata_taxon_info), n_eol,n_iucn, n_ipni, n_titles, n_titles/len(wikidata_taxon_info) * 100, wikilang, memory_usage_resource()), file=sys.stderr)
+      duplicates = {k:v for k,v in cnames.items() if len(v) > 1}
+      if len(duplicates):
+        print("WARNING. The following common name wikdata items (listed by Qid) have been used for more than one taxon item: this may cause duplicate use of the same popularity measure. {}".format(duplicates), file=sys.stderr)
+      print(" NB: {} wikidata matches, of which {} have eol IDs, {} have IUCN ids, {} have IPNI, and {} ({:.2f}%) have titles that exist on the {} wikipedia. mem usage {:.1f} Mb".format(len(wikidata_taxon_info), n_eol,n_iucn, n_ipni, len(wikilang_title_ptrs), len(wikilang_title_ptrs)/len(wikidata_taxon_info) * 100, wikilang, memory_usage_resource()), file=sys.stderr)
     return(wikilang_title_ptrs)
 
 
