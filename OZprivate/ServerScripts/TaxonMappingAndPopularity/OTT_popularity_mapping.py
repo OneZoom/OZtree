@@ -24,10 +24,10 @@ The routines work by taking an OpenTree taxonomy file and map each line to wikid
     this allows us to add wiki info to the object
     which can then be seen from the OTT_ids reference, i.e.    
 
-    source_ptrs['ncbi'][NCBIid] -> {'id':NCBIid, 'wd':{'Q':Qid1, 'p':['en','fr'], 'iucn':IUCNid}} <- OTT_ptrs[OTTid]['sources']['ncbi']
+    source_ptrs['ncbi'][NCBIid] -> {'id':NCBIid, 'wd':{'Q':Qid1, 'l':['en','fr'], 'iucn':IUCNid}} <- OTT_ptrs[OTTid]['sources']['ncbi']
     source_ptrs['worms'][WORMSid] -> {'id':WORMSid, 'wd':{'Q':Qid2}} <- OTT_ptrs[OTTid]['sources']['worms']
 
-    where 'p' gives the sitelinks into the different language wikipedias
+    where 'l' gives the sitelinks into the different language wikipedias
 
     We also create a wikipedia_title array of pointers into the same dataset
     
@@ -271,10 +271,6 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
     
     We also store the few common-name wikidata pages in a separate variable, wikidata_cname_info. Then, if the equivalent taxon exists, and it has no `wikilang`.wikipedia.org sitelink (or is a special case), we set 'Q' and 'l' to the new
 
-    1) dog (Q144) common name of taxon 
-    2) cattle (Q830) common name of taxon Q46889 (Bos primigenius indicus), Q20747320 (Bos primigenius taurus), Q20747334 (Bos taurus *+), Q20747712, Q20747726
-    3) human (Q5) common name of taxon Q3238275 (Homo sapiens sapiens), Q15978631 (Homo sapiens+*)
-    4) horse (Q726) common name of taxon Q10758650 (Equus caballus+*), Q26644764 (Equus ferus caballus)
     """
     replaced = {}
     wikilang_title_ptrs = {}
@@ -287,14 +283,14 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
     initial_byte_match = re.compile('numeric-id":(?:{})\D'.format('|'.join([str(v) for v in match_Qtypes.values()])).encode()) 
     filesize = os.path.getsize(wikidata_json_dump_file.name)
     with bz2.open(wikidata_json_dump_file, 'rb') as WDF: #open filehandle, to allow read as bytes (converted to UTF8 later)
-      found=n_eol=n_iucn=n_ipni=0
+      n_eol=n_iucn=n_ipni=0
       for line_num, line in enumerate(WDF):
         if (line_num % 1000000 == 0) and verbosity:
                 print("Reading wikidata JSON dump: {}% done. "
                   "{} entries read, {} taxon entries found, "
                   "{} with EoL ids, {} with IUCN ids, {} with IPNIs:  mem usage {:.1f} Mb"
                   .format(wikidata_json_dump_file.tell()*100.0 / filesize, 
-                    line_num, found, n_eol, n_iucn, n_ipni, memory_usage_resource()),
+                    line_num, len(wikidata_taxon_info), n_eol, n_iucn, n_ipni, memory_usage_resource()),
                   file=sys.stderr)
         #this file is in byte form, so must match byte strings
         if line.startswith(b'{"type":"item"') and initial_byte_match.search(line): #}'

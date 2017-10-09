@@ -264,7 +264,7 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity):
              
 def save_csv(OTT_ids, n_leaves, sources, prefix):
     """ we should now have leaf entries like
-    {'wd': {'Q': 15478814, 'EoL': 1100788, 'p':['en','fr']}, 
+    {'wd': {'Q': 15478814, 'EoL': 1100788, 'l':['en','fr']}, 
      'pop_dscdt': 0,
      'leaf_id': 1997953,
      'pop_ancst': 220183.23395609166,
