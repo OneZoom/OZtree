@@ -584,11 +584,12 @@ if __name__ == "__main__":
         if args.popularity_file:
             write_popularity_tree(tree, args.output_location, args.popularity_file, args.version, args.verbosity)
         #NB to examine a taxon for popularity contributions here, you could try
-        #p = focal_taxon = tree.find_node_with_label("Canis_lupus")
-        #print("own pop: {}, descendant pop sum:{}"_.format(p.pop_store, p.descendants_popsum - p.pop_store)
+        #p = focal_taxon = tree.find_node_with_label("Canis lupus")
+        #print("own pop: {}, descendant pop sum:{}".format(p.pop_store, p.descendants_popsum))
         #while(p.parent_node):
+        # p = p.parent_node
         # if p.pop_store:
-        #   print("Ancestors: {} = {}".format(p.label, p.pop_store))
+        #   print("Ancestors: {} = {:.2f}".format(p.label, p.pop_store))
     
     info("Writing out results to {}/xxx".format(args.output_location))
     construct_wiki_info(OTT_ptrs)
