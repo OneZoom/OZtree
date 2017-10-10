@@ -43,7 +43,7 @@
 <!-- had a problem with version mismatch -->
   </head>
   <body><h1>{{=T('Sorry - there has been a OneZoom error when getting the tree')}}</h1>
-{{=T('No appropriate tree version available (Version error: %s). Please <a href="mailto:mail@onezoom.org">contact us</a> and tell us of the problem') % (version,)}}
+{{=XML(T('No appropriate tree version available (Version error: %s). Please <a href="mailto:mail@onezoom.org">contact us</a> and tell us of the problem') % (version,))}}
 {{pass}}
 
   <script type="text/javascript">
@@ -106,7 +106,7 @@ var UI_callbacks = {
   },
 
   populateLinkouts: function(responseJSON, initialSelected) { /* used within button_manager.js when the page needs to pop up a tabbed window */
-    //console.log("populating linkouts");
+    {{if not is_production:}}console.log("populating linkouts");{{pass}}
     if (initialSelected) {
         initialSelected = $('#external-modal .external-tabs li').index($("#"+ initialSelected))
     } else {
