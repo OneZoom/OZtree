@@ -29,7 +29,7 @@ class SearchManager {
    * @param {float} search_delay - number of milliseconds before actually making the search call. If another 
    *    call is made within this time, the original call is cancelled.
    */
-  full_search(toSearchFor, callback, search_delay=400) {
+  full_search(toSearchFor, callback, search_delay=400, callback_search_sent=null) {
     clearTimeout(this.search_timer);
     // detect if the search string has something in relating to sponsorship and catch that after running the text through the translation services.
     if (toSearchFor.toLowerCase().indexOf(OZstrings["Sponsored for"].toLowerCase()) === 0) {
@@ -48,34 +48,35 @@ class SearchManager {
         
         // this is a time out for the search
         this.search_timer = setTimeout(function() {
-                                       // this calls the API
-                                       api_manager.search({
-                                                          dont_resend: true,
-                                                          data: {
-                                                          query: toSearchFor
-                                                          },
-                                                          success: function(res) {
-                                                          // this sorts the results
-                                                          let newRes1 = self.populateByNodeResults(toSearchFor, res.nodes);
-                                                          // this calls the API again for sponsor search
-                                                          self.searchForSponsor(toSearchFor, function(res) {
-                                                                                let newRes = newRes1.concat(res);
-                                                                                // sort the results based on quality retuned with the search results.
-                                                                                // this sorts the results
-                                                                                newRes.sort(function(a, b) {
-                                                                                            if (a[3] < b[3]) {
-                                                                                            return 1;
-                                                                                            } else if (a[3] == b[3]) {
-                                                                                            return 0;
-                                                                                            } else {
-                                                                                            return -1;
-                                                                                            }
-                                                                                            });
-                                                                                callback(newRes, toSearchFor);
-                                                                                }, "all");
-                                                          }
-                                                          });
-                                       }, search_delay);
+            if (callback_search_sent) callback_search_sent();
+            // this calls the API
+            api_manager.search({
+                dont_resend: true,
+                data: {
+                query: toSearchFor
+                },
+                success: function(res) {
+                // this sorts the results
+                    let newRes1 = self.populateByNodeResults(toSearchFor, res.nodes);
+                    // this calls the API again for sponsor search
+                    self.searchForSponsor(toSearchFor, function(res) {
+                        let newRes = newRes1.concat(res);
+                        // sort the results based on quality retuned with the search results.
+                        // this sorts the results
+                        newRes.sort(function(a, b) {
+                            if (a[3] < b[3]) {
+                                return 1;
+                            } else if (a[3] == b[3]) {
+                                return 0;
+                            } else {
+                                return -1;
+                            }
+                        });
+                        callback(newRes, toSearchFor);
+                    }, "all");
+                }
+            });
+        }, search_delay);
     }
   }
   // Notes: the Python server side API calls to server later will throw out punctuation except for ' - . and hybrid X characters.

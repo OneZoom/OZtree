@@ -613,6 +613,7 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
             }
         })
         .on('input', function(event) {
+            var search_term = this.value;
             var searchbox = $(this).closest('.searchbox');
             var searchresult = $('.searchresult', searchbox);
             var dropdown = $('.search_dropdown', searchbox);
@@ -620,22 +621,26 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
                 onezoom.controller.unmark_area(searchresult.attr('data-OZid'));
                 searchresult.attr('data-OZid','');
             }
-            if (this.value.length==0) {
+            if (search_term.length==0) {
                 $('.popular_species', dropdown).show();
                 $('.no_results', dropdown).hide();
                 $('.search_hits', dropdown).empty();
-                onezoom.search_manager.full_search("");
+                onezoom.search_manager.full_search(""); // this clears the search
                 $('.searchinput .icon-beside-input', searchbox).removeClass('waiting_for_search_result');
             } else {
                 $('.searchinput .icon-beside-input', searchbox).addClass('waiting_for_search_result');
                 var delay_ms = 400;
                 if (event.which == 13) {
                     delay_ms = 1;   //enter was pressed - don't delay
-                } else if (this.value.length == 1) {
+                } else if (search_term.length == 1) {
                     delay_ms = 800; //wait a bit longer before asking for a search if there is only one character
                 }
-                onezoom.search_manager.full_search(this.value, function(res,s) {
-                    searchPopulate(searchbox, res, UI_reset_marked_via_event)}, delay_ms);
+                onezoom.search_manager.full_search(
+                    search_term, 
+                    function(res,s) {searchPopulate(searchbox, res, UI_reset_marked_via_event)}, 
+                    delay_ms{{if not is_production:}},
+                    function() {console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search")}{{pass}}
+                    );
             }
         });
     
@@ -773,9 +778,10 @@ function setupUI() {
     
     $('#search-basic .searchinput input')
       .keyup(function(event) {
+        var search_term = this.value;
         var searchbox = $(this).closest('.searchbox');
         var dropdown = $('.search_dropdown', searchbox);
-        if (this.value.length==0) {
+        if (search_term.length==0) {
             $('.popular_species', dropdown).show();
             $('.no_results', dropdown).hide();
             $('.search_hits', dropdown).empty();
@@ -786,12 +792,15 @@ function setupUI() {
             var delay_ms = 400;
             if (event.which == 13) {
                 delay_ms = 1;   //enter was pressed - don't delay
-            } else if (this.value.length == 1) {
+            } else if (search_term.length == 1) {
                 delay_ms = 800; //wait a bit longer before asking for a search if there is only one character
             }
-            onezoom.search_manager.full_search(this.value, function(res,s) {
-                searchPopulate(searchbox, res, function(event, OZid) {closeAndLeap(event, OZid, $('#search-basic'))})
-            }, delay_ms);
+            onezoom.search_manager.full_search(
+                search_term, 
+                function(res,s) {searchPopulate(searchbox, res, function(event, OZid) {closeAndLeap(event, OZid, $('#search-basic'))})},
+                delay_ms{{if not is_production:}},
+                    function() {console.log("Search for '" + search_term + "' sent to OneZoom API from basic search")}{{pass}}
+                );
         }
       });
     
