@@ -191,7 +191,7 @@ ul#searchboxes {
     border-style: solid;
     background-color: white;
     border-radius: 10px;
-    /*font-size: 0.8rem;*/
+    font-size: 0.7rem;
     line-height: 1.5rem;
 }
 
@@ -622,7 +622,7 @@ ul#searchboxes {
 @media screen and (max-width: 380px) {
     #search-advanced #common_ancestor_button {
         line-height: 1rem;
-        width: 9em;
+        width: 9rem;
     }
     #search-advanced #common_ancestor_button span {
         margin-top: 0.45rem;

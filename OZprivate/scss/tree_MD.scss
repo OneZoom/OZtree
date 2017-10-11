@@ -7,7 +7,6 @@ html {font-size: 150%}
 #controlButtons > li a {padding-right: 0.5rem; padding-left: 0.5rem;}
 #controlButtons > li a svg {width: 40px; height: 40px;}
 #advanced_search_button {width: 45px; height: 45px;}
-#advanced_search_button svg {width: 30px; height: 30px;}
-.searchbox .main-icon svg {width: 30px; height: 30px;}
-.searchbox .spinner svg {width: 25px; height: 25px;}
+#advanced_search_button svg, .searchbox .main-icon svg, #common_ancestor_button svg, #add_searchbox svg {width: 30px; height: 30px;}
+.searchbox .spinner svg, .remove-searchbox svg {width: 25px; height: 25px;}
 #settingsDropdown, #infoDropdown {width: 12em;}
