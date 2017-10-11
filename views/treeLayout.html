@@ -106,7 +106,7 @@ var UI_callbacks = {
   },
 
   populateLinkouts: function(responseJSON, initialSelected) { /* used within button_manager.js when the page needs to pop up a tabbed window */
-    {{if not is_production:}}console.log("populating linkouts");{{pass}}
+    {{if not is_production:}}console.log("populating linkout tabs with API data");{{pass}}
     if (initialSelected) {
         initialSelected = $('#external-modal .external-tabs li').index($("#"+ initialSelected))
     } else {
@@ -126,7 +126,7 @@ var UI_callbacks = {
           var specific_popup = $("#external-modal .popup-container ." + linkout_name);
           //set the data-src attribute to the url. When the tab is shown, it will get src from there
           specific_popup.attr("data-src", responseJSON.data[linkout_name]);
-          //console.log("set data-src");
+          {{if not is_production:}}console.log("set data-src for '" + linkout_name + "' to " + responseJSON.data[linkout_name]);{{pass}}
           $(".expand-tab a", specific_popup).attr("href",responseJSON.data[linkout_name]);
         } else {
           tab.hide(); //hide irrelevant tabs (those not returned by the API)
