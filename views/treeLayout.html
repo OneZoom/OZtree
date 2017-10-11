@@ -448,6 +448,7 @@ function update_location_menu(loc_root) {
   } else {
     previous_location_codes = JSON.stringify(my_location_codes);
   }
+  {{if not is_production:}}console.log("constructing location menu from " + my_location + " (richness: " + my_location_richness + ")");{{pass}}
   // first remove everything in the current list
   var loc_list = $(".location-list").empty()
   // now rebuild the list
@@ -457,9 +458,9 @@ function update_location_menu(loc_root) {
   // add the main elements, in reverse order
   for (var i = my_location_names.length-1; i >= 0; i--)
   {
-    /* TODO - we don't use the richness of the current location 
-    should be returned in my_location_richness[my_location_names.length] */
-    var richnessProportion = Math.min((my_location_richness[i])/(my_location_richness[my_location_names.length-1-i]),0.9);
+    {{if not is_production:}}console.log("adding '" + my_location_names[i] + "' with richness " + my_location_richness[i+1] + " / " +my_location_richness[i]);{{pass}}
+    var richnessProportion = my_location_richness[i+1]/my_location_richness[i];
+    richnessProportion = Math.min(richnessProportion, 1.0-6.0/$('#locationDropdown').width()); //never have richness prop = 1 (looks odd): always add 6 px on
     var richnessRemainder = Math.floor((1.0 - richnessProportion)/2.0 * $('#locationDropdown').width());
     var richnessWidth = $('#locationDropdown').width()-2*richnessRemainder;
     loc_list.append(
