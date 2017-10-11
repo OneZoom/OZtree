@@ -14,10 +14,12 @@ setup_params = {
 <!-- could include bespoke css file here -->
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree_MD.css')}}" />
 <script type="text/javascript">
-/** disable context menu for museum display */
+{{#disable context menu for museum display
+if is_production:}}
 document.oncontextmenu = function() {
      return false;
 }
+{{pass}}
 
 sponsor_page_link = function(elem) {
     if ($(elem).attr('data-href-component')) {
