@@ -851,7 +851,7 @@ function setupUI() {
         .on('beforeshow', function() {
             /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
             if ($("#terms-modal .uk-modal-body").children().length == 0)
-                $("#terms-modal .uk-modal-body").load('{{=URL("default","terms.load", vars=setup_params.get("page_params"), scheme=True, host=True)}}');
+                $("#terms-modal .uk-modal-body").load('{{=URL("default","terms.load", args="site", vars=setup_params.get("page_params"), scheme=True, host=True)}}');
         });
 
     $('#imageinfo-modal')
