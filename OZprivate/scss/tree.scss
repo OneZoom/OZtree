@@ -356,7 +356,6 @@ ul#searchboxes {
 
 #locationDropdown {
     font-size: small;
-    width: 200px;
     text-align: center;
     padding:0;
     min-height: 100%; /*aligned to bottom of control buttons, so make sure we are the same height as containing control buttons*/
@@ -367,7 +366,6 @@ ul#searchboxes {
     box-sizing: border-box;
     list-style-type:none;
     background-color: white;
-    width: 200px;
     margin:0;
     padding:0;
 }
@@ -396,7 +394,6 @@ ul#searchboxes {
     padding-left: 0.5em;
     padding-right: 0.5em;    
     display:inline-block;
-    width: 200px;
     color: black;
     text-align: center;
     border-style: solid;
@@ -410,6 +407,10 @@ ul#searchboxes {
 
 #locationDropdown li a:first-letter {
     text-transform:capitalize;
+}
+
+#locationDropdown, #locationDropdown ol, #locationDropdown ol li, #locationDropdown ol li a {
+    width:12rem;
 }
 
 #infoDropdown {
