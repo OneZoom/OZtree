@@ -42,19 +42,21 @@ function get_location_code(node) {
 
 /** 
 * Get metadatas of nodes on the branch from the root to the common ancestor of all nodes in current view. 
-* Only nodes with a common name are returned, apart from the last element of the richness_array
+* Only nodes with a common name are returned, (TO DO: apart from the last element of the richness_array).
+* Recurses down because it calls get_child_loc() which in turn calls get_location3()
+* Question: should we not use "get_largest_visible_node" from record.js?
 * The returned results are in the following format:
 * [
 *  [node1.cname, node2.cname, node3.cname, ....]
 *  [node1.metacode, node2.metacode, node3.metacode, ....]
 *  boolean of some kind
-*  [node1.richness_val, node2.richness_val, node3.richness_val, .... curr_view_ancestoral_node.richness_val]
+*  [node1.richness_val, node2.richness_val, node3.richness_val, .... (TO DO: curr_view_ancestral_node.richness_val)]
 * ]
 */
 function get_location3(node) {
   if(node.dvar) {
     if(node.gvar && node.has_child) {
-      // stop
+      // stop 
       return concat_node_loc_with_loc(node, get_empty_loc(true));
     } else if (node.gvar && !node.has_child) {
       return get_empty_loc(false);
@@ -64,6 +66,7 @@ function get_location3(node) {
       return get_empty_loc(false);
     }
   } else {
+    // stop: node not on screen
     return get_empty_loc(false);
   }
 }

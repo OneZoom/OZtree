@@ -73,7 +73,7 @@ function current_view_near_previous_view(loc, querystring, hash) {
 
 /**
  * Get largest visible node on the screen which meets the condition.
- * If part of the node is not on the screen and part of it is on, only the part that is on the screen count.
+ * If part of the node is not on the screen and part of it is on, only the part that is on the screen counts.
  */
 function get_largest_visible_node(node, condition) {
   let condition_satisfy = !condition || condition(node);
