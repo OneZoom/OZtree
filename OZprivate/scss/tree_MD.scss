@@ -4,4 +4,9 @@
 html {font-size: 150%}
 .treeswitch {display: none !important} /* can't allow to switch to trees on other pages */
 .expand-tab {display: none !important} /* can't allow link out buttons */
-#controlButtons > li a {width: 4rem;}
+#controlButtons > li a {padding-right: 0.5rem; padding-left: 0.5rem;}
+#controlButtons > li a svg {width: 40px; height: 40px;}
+#advanced_search_button {width: 45px; height: 45px;}
+#advanced_search_button svg {width: 30px; height: 30px;}
+.searchinput .main-icon svg {width: 30px; height: 30px;}
+.searchinput .spinner svg {width: 25px; height: 25px;}
