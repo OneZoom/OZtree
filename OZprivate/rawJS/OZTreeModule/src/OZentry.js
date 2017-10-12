@@ -98,7 +98,7 @@ function setup(
       controller.find_proper_initial_threshold();
       controller.start_refresh_loop();
       
-      //listen to user mouse, touch, icon click, window resize and user navigation evetns.
+      //listen to user mouse, touch, icon click, window resize and user navigation events.
       controller.bind_listener();
       //start garbage collection of tree to keep the size of the tree in memory reasonable
       garbage_collection_start();

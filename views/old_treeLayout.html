@@ -20,7 +20,7 @@ var onezoom = null; //will be filled out on document ready
 var server_urls = {
     /* These fill out the equivalently named variables in OneZoom global_config.
        They need to be defined here to avoid hard-coding them into the OneZoom js code */
-    data_path_pics: "{{try:}}{{=myconf.take('general.pics_dir')}}{{except:}}{{=URL('static','FinalOutputs/pics', scheme=True, host=True)}}{{pass}}"+"/",
+    data_path_pics: {{=XML(js_thumbnail_url)}},
     link_from_image: "{{=URL('linkout_via_picID', scheme=True, host=True)}}",
     node_details_api: "{{try:}}{{=myconf.take('API.node')}}{{except:}}{{=URL('API','node_details.json', scheme=True, host=True)}}{{pass}}",
     search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",
@@ -177,7 +177,7 @@ var OZstrings={{include 'tree/js_strings.json'}}
     {{pass}}
     </canvas>    
     
-    <div id="Logos"><a id="Logo"><img src="{{=URL('static','images/OZ_logo5_grey3_small.png')}}" /></a></div>
+    <div id="Logos"><a id="Logo">{{=IMG(_src=URL('static','images/OZ_logo5_grey3.png'))}}</a></div>
     
     
     <ol id = "controlButtons" >
@@ -373,7 +373,7 @@ function UI_search_go(charLimit, input_id, jump_to_top_hit) {
     var searchPopulateCallback = function(_search_result, needFurtherSearchSponsor) {
         searchPopulate(toSearchFor, charLimit, input_id, _search_result, needFurtherSearchSponsor);
     }
-    onezoom.search_manager.full_search(toSearchFor, charLimit, searchPopulateCallback, onezoom.data_repo)  // this does the main search stuff.
+    onezoom.search_manager.full_search(toSearchFor, searchPopulateCallback)  // this does the main search stuff.
 }
 
 function UI_search(event) {
@@ -590,7 +590,7 @@ function searchPopulate(toSearchFor, charLimit, input_id, _search_result, needFu
                 .addClass('button_header')
                 .click(function() { // this appends a button to click to search in sponsor results.
                     $("#searchButtons").html($("<li></li>").text(OZstrings["loading..."]).addClass('loading'));
-                    onezoom.search_manager.searchForSponsor(toSearchFor, charLimit, function(res) {replace_items_in_search_menu(res, 'search_input');}, 'all', onezoom.data_repo);
+                    onezoom.search_manager.searchForSponsor(toSearchFor, function(res) {replace_items_in_search_menu(res, 'search_input');}, 'all');
             })
         );
     }
@@ -634,7 +634,6 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
         window.cut_threshold,
         window.tree_date);
 
-    $('body').on('resize', onezoom.controller.canvas_resize());
 
     /*** MENU ***/
     /* set some defaults */

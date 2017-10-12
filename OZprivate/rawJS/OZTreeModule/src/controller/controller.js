@@ -27,9 +27,6 @@ class Controller {
     this.factory = get_factory();
     this.interactor.add_controller(this);
     this.renderer.add_controller(this);
-    this.canvas_resize = function() {
-        console.log("Resize called but function is not yet bound");
-    };
   }
   
   rebuild_tree() {
@@ -50,12 +47,10 @@ class Controller {
     this.reset();
   }
   /**
-   * special_resize is called on window resize. This function has already been bound in html file.
    * onpopstate listens to browser history navigation. The popupstate callback would navigate the tree view according to url.
    */
   bind_listener() {
     this.interactor.bind_listener(this.canvas);
-    //this.canvas_resize = this.window_resize.bind(this);
     window.onpopstate = popupstate;
   }
   setup_canvas(canvas) {
