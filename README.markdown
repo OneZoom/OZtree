@@ -199,9 +199,9 @@ On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. 
 
 `python2 web2py.py -i 127.0.0.1 -p 8000 -a pass`
 
-or over https (having created temp.crt and temp.key previously)
+or over https (having created oz.crt and oz.key, e.g. by running the following in the web2py root directory: `openssl req -newkey rsa:2048 -x509 -days 365 -nodes -keyout oz.key -out oz.crt`)
 
-`python2 web2py.py -c temp.crt -k temp.key -i 127.0.0.1 -p 8000 -a pass`
+`python2 web2py.py -c oz.crt -k oz.key -i 127.0.0.1 -p 8000 -a pass`
 
 
 It will print instructions telling how to shut down the server when it runs.
