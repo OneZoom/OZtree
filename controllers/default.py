@@ -153,6 +153,7 @@ def sponsor_leaf():
         species_name = leaf_entry.name
         the_name = nice_species_name(leaf_entry.name, common_name, html=True, leaf=True, the=True)
     except:
+        OTT_ID_Varin = None
         leaf_entry = None
     if ((leaf_entry is None) or                                     #invalid if not in ordered_leaves
         (leaf_entry.get('ott') is None) or                          #invalid if no OTT ID

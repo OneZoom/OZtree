@@ -290,8 +290,13 @@ def leaf_linkouts():
     """
     called with an OTT, since all leaves with info should have an OTT. Any leaves that don't, can't be associated with data
     """
-    return_values = linkouts(is_leaf=True, ott=request.args[0])
+    try:
+        return_values = linkouts(is_leaf=True, ott=request.args[0])
+    except:
+        return_values = {'ott':None, 'data':{}}
+
     request.vars.update({'embed':True, 'ott':return_values['ott']})
+        
     return_values['data']['ozspons'] = URL("default","sponsor_leaf", vars=request.vars, scheme=True, host=True, extension=False)
     return(return_values)
 

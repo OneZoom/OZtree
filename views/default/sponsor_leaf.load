@@ -1,7 +1,7 @@
 {{from math import ceil}}
 <div class="row-fluid intro">
   <div class="col-md-12">
-    <h1 id = "sponsor_title">{{=XML(T('Sponsor %s on the OneZoom Tree of Life Explorer') % (the_name,))}}</h1>
+    <h1 id = "sponsor_title">{{=XML(T('Sponsor %s on the OneZoom Tree of Life Explorer') % (the_name or T("a species"),))}}</h1>
     {{if (status == "available") or (status == "available only to session"):}}
     <p>{{=T('You can sponsor this leaf for yourself or as a unique gift for someone you know.')}}</p>
 
