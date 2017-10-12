@@ -171,10 +171,15 @@ url        = https://www.sandbox.paypal.com
 ;    means you will need to download >100,000 thumbnail images
 ;    onto your machine. If you want to use the images on the 
 ;    OneZoom server, set this to `//images.onezoom.org/`
+; * allow_sponsorship. Should we allow the sponsorship page to be 
+;    shown on this machine? Usually not allowed, except on the 
+;    main OneZoom site (on museum displays people will not want
+;    to enter paypal etc details.
 ; * oztree_js_suffix: use `.js` for dev mode or `.min.js` for production
 [general]
 maintenance_mins = 0
 pics_dir = //images.onezoom.org/
+allow_sponsorship = 0
 oztree_no_min = 1
 oztree_dir = OZTree_unminified
 oztree_module_dir = OZTree_module
