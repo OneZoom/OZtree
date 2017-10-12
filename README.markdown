@@ -195,21 +195,18 @@ Assuming you have python version 2 installed, should now try starting web2py as 
 
 ### Starting and shutting down web2py
 
-On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. This is complete overkill if you just want to run a localcopy of OneZoom for testing purposes. You can simply run a temporary and basic web2py server using Python (version 2, *not* version 3) by typing the following on a command line prompt (NB: you have to be located in the root web2py folder in order to run these commands, and you may need to use `python2.7` as the command, or simply `python` if your python version defaults to 2)
+On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. This is complete overkill if you just want to run a localcopy of OneZoom for testing purposes. You can simply run a [temporary and basic web2py server using Python](http://www.web2py.com/books/default/chapter/29/03/overview#Startup) (version 2, *not* version 3). The simplest is to open a command-line prompt in the root web2py folder, and run the following (assuming the command `python2` is linked to something like Python 2.7)
 
 `python2 web2py.py -i 127.0.0.1 -p 8000 -a pass`
 
-or over https (having created oz.crt and oz.key, e.g. by running the following in the web2py root directory: `openssl req -newkey rsa:2048 -x509 -days 365 -nodes -keyout oz.key -out oz.crt`)
-
-`python2 web2py.py -c oz.crt -k oz.key -i 127.0.0.1 -p 8000 -a pass`
+* (NB: it is possible to run a secure OneZoom site over https, but this is untested, and *may have problems when linking out to other sites*. To try this anyway (not currently recommended), create a `.crt` and `.key` file, e.g. by running the following in the web2py root directory: `openssl req -newkey rsa:2048 -x509 -days 365 -nodes -keyout oz.key -out oz.crt`, then use them when running web2py, as in: `python2 web2py.py -c oz.crt -k oz.key -i 127.0.0.1 -p 8000 -a pass`)
 
 
-It will print instructions telling how to shut down the server when it runs.
-e.g. on Windows use "taskkill /f /pid 2720" to shutdown the web2py server
+When web2py is run, it will print instructions telling how to shut down the web2py server. For example, on Windows you might use `taskkill /f /pid XXXX`, where `XXXX` is the process name.
 
-You should now visit `http://127.0.0.1:8000/OZtree/default/` or `https://127.0.0.1:8000/OZtree/default/` to force web2py to create database tables. To load data into the tables, see "Loading Data", below.
+**If this is a new installation** you should now visit `http://127.0.0.1:8000/OZtree/default/` or `https://127.0.0.1:8000/OZtree/default/` to force web2py to create database tables. To load data into the tables, see "Loading Data", below.
 
-If you want to make OneZoom the default application, you can make a copy of the routes.py file in the folder labelled `_MOVE_CONTENTS_TO_WEB2PY_DIR` and place it in the top level web2py directory (see `_MOVE_CONTENTS_TO_WEB2PY_DIR/README.markdown`).
+Also, if you want to make OneZoom the default application, make a copy of the routes.py file in the folder labelled `_MOVE_CONTENTS_TO_WEB2PY_DIR` and place it in the top level web2py directory (see `_MOVE_CONTENTS_TO_WEB2PY_DIR/README.markdown`).
 
 ### web2py folder structure
 
