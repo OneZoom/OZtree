@@ -13,20 +13,20 @@ def js_strings():
 
 def opentree_url(ott):
     try:
-        return("https://tree.opentreeoflife.org/opentree/argus/ottol@{}".format(int(ott)))
+        return("//tree.opentreeoflife.org/opentree/argus/ottol@{}".format(int(ott)))
     except:
         raise HTTP(400,"No valid OpenTree id provided")
 
 
 def wikidata_url(Qid):
     try:
-        return("http://www.wikidata.org/wiki/Q{}".format(int(Qid)))
+        return("//www.wikidata.org/wiki/Q{}".format(int(Qid)))
     except:
         raise HTTP(400,"No valid wikidata Q id provided")
 
 def wikidata_sitelinks(Qid):
     try:
-        return("http://www.wikidata.org/wiki/Q{}#sitelinks-wikipedia".format(int(Qid)))
+        return("//www.wikidata.org/wiki/Q{}#sitelinks-wikipedia".format(int(Qid)))
     except:
         raise HTTP(400,"No valid wikidata Q id provided")
 
@@ -59,6 +59,9 @@ def wikipedia_url(Q, lang='en', flag='', flags=wikiflags, only_wikipedia=False, 
     raise HTTP(400,"No valid language or wikidata Q id provided")
 
 def iucn_url(IUCNid):
+    """
+    IUCN has no https site
+    """
     try:
         return("http://www.iucnredlist.org/details/{}/0".format(int(IUCNid)))
     except:
@@ -83,7 +86,7 @@ def powo_url(IPNIid):
 
 def ncbi_url(NCBIid):
     try:
-        return("http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={}".format(int(NCBIid)))
+        return("//www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={}".format(int(NCBIid)))
     except:
         raise HTTP(400,"No valid NCBI id provided")
 
@@ -139,7 +142,8 @@ def linkout_via_picID():
         
 def eol_ID():
     """
-    Log the eol page visited, and redirect there
+    Log the eol page visited, and redirect there.
+    EoL has no https site currently
     """
     import datetime
     try:
