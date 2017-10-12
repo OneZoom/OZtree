@@ -1,6 +1,6 @@
 {{try:}}
 {{version = str(version+0)}}
-{{extend 'treeLayout.html'}}
+{{extend 'old_treeLayout.html'}}
 <title>OneZoom Tree of Life Explorer{{try:}}{{=': '+page_info['subtitle']}}{{except:}}{{pass}}</title>
 {{try:}}{{OZTree_js_suffix = (myconf.take('general.oztree_js_suffix') if myconf.take('general.oztree_js_suffix') else non_existent_variable)}}{{except:}}{{OZTree_js_suffix = '.js'}}{{pass}}
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/oldtree.css')}}" />

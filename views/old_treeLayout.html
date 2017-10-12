@@ -81,7 +81,7 @@ var UI_callbacks = {
     showonly($('.closeable'),'#boxContainer, #linkoutsBox');
   }
 };
-var OZstrings={{include 'default/js_strings.json'}}
+var OZstrings={{include 'tree/js_strings.json'}}
 </script>
 {{include}}
 <noscript>
@@ -262,12 +262,12 @@ var OZstrings={{include 'default/js_strings.json'}}
     <div id = "boxContainer" class="closeable">
         <div id = "outsideBox" ><!--to contain the close button, etc--></div>
         <div id = "aboutBox" class="popup_box closeable">
-            <div id = "htmltext_about" class="hideable">{{include "default/htmltext_about.html"}}</div>
-            <div id = "htmltext_how" class="hideable">{{include "default/htmltext_how.html"}}</div>
-            <div id = "htmltext_data_sources" class="hideable">{{include "default/htmltext_data_sources.html"}}</div>
+            <div id = "htmltext_about" class="hideable">{{include "default/about.load"}}</div>
+            <div id = "htmltext_how" class="hideable">{{include "default/how.load"}}</div>
+            <div id = "htmltext_data_sources" class="hideable">{{include "default/data_sources.load"}}</div>
         </div>
         <div id = "errorBox" class="popup_box closeable">
-            <div id = "htmltext_badOTT">{{include "default/htmltext_badOTT.html"}}</div>
+            <div id = "htmltext_badOTT">{{include "default/badOTT.load"}}</div>
         </div>
         <div id = "linkoutsBox" role="tablist" class="closeable">
             <!-- this contains multiple tabs (as radio buttons, see http://alistapart.com/article/radio-controlled-web-design)

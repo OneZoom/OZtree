@@ -902,13 +902,19 @@ def life_expert():
     return life()
 
 def old_life():
-    return life()
+    merged_dict = {}
+    merged_dict.update(viewer_UI())
+    merged_dict.update(life())
+    return merged_dict
 
 def old_AT():
     """
     The ancestor's tale version, with a different colour scheme
     """
-    return life()
+    merged_dict = {}
+    merged_dict.update(viewer_UI())
+    merged_dict.update(life())
+    return merged_dict
     
 def old_trail2016():
     """
@@ -916,34 +922,44 @@ def old_trail2016():
     user_more_info=Ancestor's+Trail+2016&user_message_OZ=AT16
     so that these defaults are passed to the sponsorship page
     """
-    return life()
+    merged_dict = {}
+    merged_dict.update(viewer_UI())
+    merged_dict.update(life())
+    return merged_dict
 
 def old_life_MD():
     """
     The museum display version - James to explore. Perhaps we might not want tabs here?
     """
-    return life()
+    merged_dict = {}
+    merged_dict.update(viewer_UI())
+    merged_dict.update(life())
+    return merged_dict
 
 def old_life_expert():
     """
     Has some aditional buttons etc for screenshots, svg capture, etc.
     """
-    return_value = life()
-    return_value['tabs'] = [
+    merged_dict = {}
+    merged_dict.update(viewer_UI())
+    merged_dict['tabs'] = [ #override
         {'id':'opentree','name':'Open Tree of Life',    'icon':URL('static','images/W.svg')},
         {'id':'wiki',    'name':'Wiki',                 'icon':URL('static','images/W.svg')},
         {'id':'eol',     'name':'Encyclopedia of Life', 'icon':URL('static','images/EoL.png')},
         {'id':'iucn',    'name':'Conservation',         'icon':URL('static','images/IUCN_Red_List.svg')},
         {'id':'ncbi',    'name':'Genetics',             'icon':URL('static','images/DNA_icon.svg')},
         {'id':'powo',    'name':'Kew'},
-        {'id':'ozspons', 'name':'Sponsor'}]
-    return return_value
+        {'id':'ozspons', 'name':'Sponsor'}].update(life())
+    return merged_dict
 
 def old_linnean():
     """
     The Linnean Society version, with partner sponsorship
     """
-    return life()
+    merged_dict = {}
+    merged_dict.update(viewer_UI())
+    merged_dict.update(life())
+    return merged_dict
 
 
 def old_kew():
@@ -952,15 +968,16 @@ def old_kew():
     and have this as the default (first) tab open
     TO DO: default to the view centring on plants
     """
-    return_value = life()
-    return_value['tabs'] = [
-        {'id':'powo',   'name':'Kew'},
-        {'id':'wiki',   'name':'Wiki',                 'icon':URL('static','images/W.svg')},
-        {'id':'eol',    'name':'Encyclopedia of Life', 'icon':URL('static','images/EoL.png')},
-        {'id':'iucn',   'name':'Conservation',         'icon':URL('static','images/IUCN_Red_List.svg')},
-        {'id':'ncbi',   'name':'Genetics',             'icon':URL('static','images/DNA_icon.svg')},
-        {'id':'ozspons','name':'Sponsor'}]
-    return return_value
+    merged_dict = {}
+    merged_dict.update(viewer_UI())
+    merged_dict['tabs'] = [ #override
+        {'id':'wiki',    'name':'Wiki',                 'icon':URL('static','images/W.svg')},
+        {'id':'eol',     'name':'Encyclopedia of Life', 'icon':URL('static','images/EoL.png')},
+        {'id':'iucn',    'name':'Conservation',         'icon':URL('static','images/IUCN_Red_List.svg')},
+        {'id':'ncbi',    'name':'Genetics',             'icon':URL('static','images/DNA_icon.svg')},
+        {'id':'powo',    'name':'Kew'},
+        {'id':'ozspons', 'name':'Sponsor'}].update(life())
+    return merged_dict
 
 """ Some controllers that simply redirect to other OZ pages, for brevity """
 def gnathostomata():
