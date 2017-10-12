@@ -71,7 +71,7 @@ $tree.substitute('Planomonadidae_ott494997@\\d*', 'OpenTreeParts/OpenTree_all/49
 $tree.substitute('Apusomonadidae_ott575898@\\d*', 'OpenTreeParts/OpenTree_all/575898.phy');
 $tree.substitute('Breviatea_ott5246141@\\d*', 'OpenTreeParts/OpenTree_all/5246141.phy');
 
-//;#  == AllArchaeaAndEukaryotes_ ==, from file BespokeTree/include_files/Base.PHY
+//;#  == None ==, from file BespokeTree/include_files/Base.PHY
 $tree.substitute('Choanoflagellida_ott202765~-5247662@\\d*', 'OpenTreeParts/OpenTree_all/202765.phy');
 $tree.substitute('Ichthyosporea_ott623671@\\d*', 'OpenTreeParts/OpenTree_all/623671.phy');
 $tree.substitute('Amoebozoa_ott1064655~-5246123@\\d*', 'OpenTreeParts/OpenTree_all/1064655.phy');
@@ -92,6 +92,7 @@ $tree.substitute('Nanohaloarchaeota_ott5351807@\\d*', 'OpenTreeParts/OpenTree_al
 $tree.substitute('Micrarchaeum_ott5248238@\\d*', 'OpenTreeParts/OpenTree_all/5248238.phy');
 $tree.substitute('Parvarchaeum_ott4796454@\\d*', 'OpenTreeParts/OpenTree_all/4796454.phy');
 $tree.substitute('Euryarchaeota_ott635958~996421-5561807-114216-921413-102415-921398-266344-678209-5205266-4795972-5351807-5248234-4796454-5248238@\\d*', 'OpenTreeParts/OpenTree_all/635958.phy');
+$tree.substitute('Eubacteria_ott844192@\\d*', 'OpenTreeParts/OpenTree_all/844192.phy');
 
 //;#  == Batoidea_ott195928 ==, from file BespokeTree/include_files/Batoids_Aschliman2012.PHY
 $tree.substitute('Rajidae_ott978560@\\d*', 'OpenTreeParts/OpenTree_all/978560.phy');
