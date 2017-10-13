@@ -1,18 +1,18 @@
-This README file contains instructions for installing a private copy of OneZoom, either the tree explorer or the entire website. For gory details on running a *public* OneZoom server, see [README_SERVER.markdown](README_SERVER.markdown). Details of how to customize the OneZoom javascript viewer, along with information about the OneZoom APIs, are available by following the instructions below, then opening the compiled markdown file (at `OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown` or if you are running your own private OneZoom web server, at /dev/DOCS (for example, https://127.0.0.1:8000/dev/DOCS). 
+This README file contains instructions for installing a private copy of OneZoom, either the tree explorer or the entire website. For gory details on running a *public* OneZoom server, see [README_SERVER.markdown](README_SERVER.markdown). Details of how to customize the OneZoom javascript viewer, along with information about the OneZoom APIs, are available by following the instructions below, then opening the compiled markdown file (at `OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown` or if you are running your own private OneZoom web server, at /dev/DOCS - for example, https://127.0.0.1:8000/dev/DOCS). 
 
 # OneZoom setup
 
 There are two ways in which you can install OneZoom on a personal computer: full installation and partial installation. 
 
-* *Partial installation* does not create a standalone OneZoom site, but simply creates a local web file containing the javascript tree viewer. Instead of your tree viewer getting information from your own computer, it must do so by contantly requesting data to the OneZoom website (via the OneZoom APIs). This restricts your OneZoom viewer in various ways:  you cannot make your own bespoke tree, you cannot change languages in the viewer, and you are dependent upon a permanent, fast internet connection. Also note that this installation method is also relatively untested, and there are unfixed problems with e.g. displaying lists of popular species. However, partial installation may be suitable for developers who simply want to re-program features of the tree viewer, such as colours, branch geometry, etc.
+* *Partial installation* does not create a standalone OneZoom site, but simply creates a local web file containing the javascript tree viewer. Instead of your tree viewer getting information from your own computer, it must do so by contantly requesting data from the OneZoom website (via the OneZoom APIs). This restricts your OneZoom viewer in various ways:  you cannot make your own bespoke tree, you cannot change languages in the viewer, and you are dependent upon a permanent, fast internet connection. Also note that this installation method is also relatively untested, and there are unfixed problems with e.g. displaying lists of popular species. However, partial installation may be suitable for developers who simply want to re-program features of the tree viewer, such as colours, branch geometry, etc.
 
-* *Full installation* creates an entire duplicate of the OneZoom website, which is built using the [web2py](http://web2py.com) framework. This creates a fully self-contained local system (apart from the picture files, which can be downloaded separately). This is the most reliable installation method, but requires you to install and run extra software packages, in particular wbe2py and a MySQL server. Since this can be quite complicated, the majority of this readme contains instructions for full installation.
+* *Full installation* creates an entire duplicate of the OneZoom website, which is built using the [web2py](http://web2py.com) framework. This creates a fully self-contained local system (apart from the picture files, which can be downloaded separately). This is the most reliable installation method, but requires you to install and run extra software packages, in particular [web2py](http://web2py.com) and a [MySQL](https://www.mysql.com) server. Since this can be quite complicated, the majority of this readme contains instructions for full installation.
 
 
 ## Requirements and packages
-For compiling the OneZoom javascript code, you will need to install node.js (and npm, the node package manager), and the webpack package. To compile automatically, you will also need to install grunt. To generate documentation or make a partial install, you will also need perl installed on your system.
+For all installation methods, you will need to install node.js (and npm, the node package manager), and the webpack package. To compile the OneZoom javascript codebase automatically, you will then need to install grunt. To generate documentation or make a partial install, you will also need perl installed on your system.
 
-To install a full OneZoom web site, you will need to first install web2py, and ensure that you have the programming language python (version 2) installed on your system, which is what web2py uses. You will also need to be running a database backend (e.g. mySQL).
+For full installation, you will additionally need to install web2py, and ensure that you have the programming language python (version 2) installed on your system, which is what web2py uses. You will also need access to a database backend (e.g. mySQL running on your own computer, or on a remote server which you can administer).
 
 To create trees, you will need python version 3 and perl, along with a number of libraries, as listed below.
 
@@ -50,7 +50,7 @@ The OneZoom codebase uses the following software (licenses for each listed in br
 Before anything else, get the OZtree app from [github](https://github.com/OneZoom/OZtree) - see *"Downloading the OZtree app"*. You should also make sure you have node.js and the node package manager (npm) and the grunt command-line interface installed on your system - see *"Building the OneZoom tree viewer"*
 
 
-###For a partial installation:
+###For a partial installation (less tested):
 1. From anywhere within the OZtree download, run `npm install`, and compile the client-side explorer code using `grunt compile` - see *"Building the OneZoom tree viewer"*.
 2. Run `grunt partial-install`. This should download the "minlife' page from the central OneZoom website, modify links within it, and place a file named `minlife.html` into the `static` directory of your OZtree distribution.
 3. Open `minlife.html` with a web browser of your choice (we recommend Chrome or Safari). Note that this file needs to stay within the static directory to work at all.
@@ -62,7 +62,7 @@ Before anything else, get the OZtree app from [github](https://github.com/OneZoo
 3. Install & start MySQL, then create a new database (see "Setting up the database backend")
 4. Create a appconfig.ini file in `private`, with `migrate=1` and which references this database with the appropriate username and password. We also recommend copying the `routes.py` file from `_MOVE_CONTENTS_TO_WEB2PY_DIR` to the top level of your web2py installation - see "Web2py installation"
 5. Fire up a temporary web2py server and visit the main page to create the (empty) database tables
-6. Load up data into the tables (create a user and assign it a 'manager' role in the `auth_` tables using the web2py database admin pages, and load the other tables using data from the original OneZoom site (e.g. sent to you via file transfer) - see "Filling the database".
+6. Load up data into the tables: first create a user and assign it a 'manager' role in the `auth_` tables using the web2py database admin pages, then load the other tables using data from the original OneZoom site (e.g. sent to you via file transfer) - see "Filling the database".
 7. Create the indexes on the tables by copying and pasting the text at the end of db.py into a mysql client.
 
 
@@ -116,13 +116,9 @@ So a major step when installing OneZoom is:
 
 	The mysqld program is responsible for running the new database just created. When this program is  running, you can connect to the database.
 
-We also find it useful to have a GUI interface to connect to the database and run SQL scripts, this can be used instead of using MySQL command line (similar to Windows command line) that is installed by default with MySQL, so the next step is
+2. (optional) We find it useful to have a GUI interface to connect to the database and run SQL scripts, this can be used instead of using MySQL command line (similar to Windows command line) that is installed by default with MySQL. On Mac OS X we use the (excellent) http://www.sequelpro.com. On windows you could try http://www.mysql.com/products/workbench/ or https://www.quest.com/products/toad-for-mysql/
 
-2. (optional) Install an SQL database viewer. On Mac OS X we use the (excellent) http://www.sequelpro.com. On windows you could try http://www.mysql.com/products/workbench/ or https://www.quest.com/products/toad-for-mysql/
-
-Once mysql is installed, you will need to set a root password, and create a database for web2py to use. See http://dev.mysql.com/doc/refman/5.7/en/default-privileges.html. So once mysqld is running, you need to
-
-3. Log in to the sql server with the root name and password (if you are using the command line, log in using `mysql -u root -p`), and issue the following SQL commands (the text after the `mysql>` prompt) to create a database for web2py to use: feel free to use a different 'passwd'.
+3. 	Once mysql is installed, you will need to set a root password, and create a database for web2py to use. See http://dev.mysql.com/doc/refman/5.7/en/default-privileges.html. So once mysqld is running, you need to log in to the sql server with the root name and password (if you are using the command line, log in using `mysql -u root -p`), and issue the following SQL commands (the text after the `mysql>` prompt) to create a database for web2py to use: feel free to use a different 'passwd'.
 
 	```
 	mysql> create database OneZoom
@@ -200,7 +196,7 @@ Assuming you have python version 2 installed, should now try starting web2py as 
 
 ### Starting and shutting down web2py
 
-On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. This is complete overkill if you just want to run a localcopy of OneZoom for testing purposes. You can simply run a [temporary and basic web2py server using Python](http://www.web2py.com/books/default/chapter/29/03/overview#Startup) (version 2, *not* version 3). The simplest is to open a command-line prompt in the root web2py folder, and run the following (assuming the command `python2` is linked to something like Python 2.7)
+On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. This is complete overkill if you just want to run a local copy of OneZoom for testing purposes. You can simply run a [temporary and basic web2py server using Python](http://www.web2py.com/books/default/chapter/29/03/overview#Startup) (version 2, *not* version 3). The simplest is to open a command-line prompt in the root web2py folder, and run the following (assuming the command `python2` is linked to something like Python 2.7)
 
 `python2 web2py.py -i 127.0.0.1 -p 8000 -a pass`
 
@@ -213,16 +209,16 @@ When web2py is run, it will print instructions telling how to shut down the web2
 
 Also, if you want to make OneZoom the default application, make a copy of the routes.py file in the folder labelled `_MOVE_CONTENTS_TO_WEB2PY_DIR` and place it in the top level web2py directory (see `_MOVE_CONTENTS_TO_WEB2PY_DIR/README.markdown`).
 
-### web2py folder structure
+### Web2py folder structure
 
 #### Standard folders
 `databases` stores all the database structure.
 
-`controllers` is where most of the bespoke web2py code that runs the site lives. The public pages are in `controllers\default.py`.
+`controllers` is where most of the bespoke web2py code that runs the site lives. The public pages are in `controllers/default.py`.
 
 `models` stores the python back end server code.
 
-`static` stores all static files including images, css, and compiled js. Files which are output by various server processes are stored in `FinalOutputs`. This includes very large numbers of thumbnail images (stored in `FinalOutputs\pics`) and static data files such as the tree topology and the tree cut positions (stored in `FinalOutputs\data`). The OZTreeModule folder contains the compiled verson of most of the core OneZoom code. `static/OZLegacy` contains most of the old trees.
+`static` stores all static files including images, css, and compiled js. Files which are output by various server processes are stored in `FinalOutputs`. This includes very large numbers of thumbnail images (stored in `FinalOutputs/pics`) and static data files such as the tree topology and the tree cut positions (stored in `FinalOutputs/data`). The OZTreeModule folder contains the compiled verson of most of the core OneZoom code. `static/OZLegacy` contains most of the old trees.
 
 `views` is where all the html is stored - it's OK to just use raw html in here if no server side functions are needed for that particular page.
 
@@ -231,7 +227,7 @@ Also, if you want to make OneZoom the default application, make a copy of the ro
 `OZprivate` stores external files that are not formally part of web2py, such as the tree viewer code itself, and scripts which we use for updating the tree and our own database tables. The most important are:
 
 1. `data`, which contains most of the data used to build the tree (e.g. EoL mappings, OpenTree components, Yan's specific tree-building code
-2. `rawJS`, which contains the javascript for the tree viewer
+2. `rawJS`, which contains the uncompiled javascript that when compiled, creates the OneZoom viewer
 3. `ServerScripts`, which contains scripts that the server can run to compile a tree, grab images from EoL, percolate images throughout the tree, etc.
 
 
@@ -273,7 +269,6 @@ OneZoom data list - this is data that's not stored anywhere else outside OneZoom
 
 Notes
 
-* there is a separate LinSoc app as well for image ratings
 * there a question mark over tours information and associated things
 * there are many critical source files in OZ_private, including tree sources.
 
@@ -296,13 +291,14 @@ If you wish to make sure your OneZoom data is up-to-date, there are a few steps 
 	```
 	OZprivate/ServerScripts/Utilities/IUCNquery.py
 	```
-3. Keep a running script that mines data from the Encyclopedia of Life (EoL). This will ensure that new images on EoL are eventually downloaded to OneZoom, but it does mean that your server will continuously be sending online requests to EoL. You can run the script by running
+3. Keep a running script that mines data from the Encyclopedia of Life (EoL). This will ensure that new images on EoL are eventually downloaded to OneZoom, but it does mean that your server will continuously be sending online requests to EoL. You wll need to obtain an EoL API key (http://eol.org/info/api_overview) and add it into your appconfig.ini file. Then you can run the script as follows:
 
 	```
 	OZprivate/ServerScripts/Utilities/EoLQueryPicsNames.py
 	```
-4. Recompile your own tree and database tables (complex, to be filled in...)
-
+	
+4. Recompile your own tree and database tables. Instructions for creating your own tree are in [OZprivate/ServerScripts/TreeBuild/README.markdown](OZprivate/ServerScripts/TreeBuild/README.markdown).
+ 
 # Customising OneZoom
 
 By running alternative versions of `picProcess.py`

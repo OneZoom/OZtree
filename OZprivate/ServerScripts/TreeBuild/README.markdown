@@ -1,6 +1,9 @@
-As agreed with James, now that we are not rebuilding the tree after each sponsorship, the polytomy resolution, subspecies deletion, etc etc should be done *after* the bespoke substitutions. The polytomy resolution and subspecies deletion can then be done by the `CSV_base_table_creator.py` script.  and , and downloaded various files as [documented](../../data/README.markdown).
+# Introduction
+Creating a bespoke OneZoom tree involves a number of steps, as documented below. These take an initial tree, map taxa onto Open Tree identifiers, add subtrees from the OpenTree of Life, resolve polytomies and delete subspecies, and calculate mappings to other databases together with creating wikipedia popularity metrics for all taxa. Finally, the resulting tree and database files are converted to a format usable by the OneZoom viewer. Mapping and popularity calculations require various large files to be downloaded e.g. from wikipedia, as [documented here](../../data/README.markdown).
 
-# Settings
+The instructions below are primarily intended for creating a full tree of all life on the main OneZoom site. If you are making a bespoke tree, you may need to tweak them slightly.
+
+## Settings
 
 We assume you are running in a bash shell, so that you can define the following settings before you create a tree, and use them in the scripts below as `${OT_VERSION}` and `${OZ_TREE}`
 
@@ -102,15 +105,15 @@ If you already have your own newick tree with open tree ids on it already, and d
 	OZprivate/ServerScripts/Utilities/make_js_treefiles.py
 	```
 	(see https://github.com/jrosindell/OneZoomComplete/issues/292)
-7. (if so inclined). Update the static version of the Ancestor's Tale tree, by downloading it form the web to a static copy
+7. (only necessary for the main server). Update the static version of the Ancestor's Tale tree, by downloading it from the web to a static copy
     `curl -o ../static/trees/AT.html http://www.onezoom.org/AT.html;
     gzip -9kf ../static/trees/AT.html`
     
-    ## upload data to the server and check it
+    ## Upload data to the server and check it
     
 8. Get the `basetree_XXXXXX.js`, `basetree_XXXXXX.js.gz`, `polytree_XXXXXX.js`, `polytree_XXXXXX.js.gz`, `cut_position_map_XXXXXX.js`, `cut_position_map_XXXXXX.js.gz`, `dates_XXXXXX.json`
 , `dates_XXXXXX.json.gz`, `AT.html` & `AT.html.gz` files onto the server. I usually do this by pushing to Github then pulling the latest github changes to the server.
-9. (15 mins) load the CSV tables into the DB on the server. Requires copying them to a local dir (e.g. using `scp -C` for compression) and then running a set of `LOAD DATA LOCAL INFILE` commands in mysql. If running mysql from the command line, requires you to start it with `mysql --local-infile`, e.g.:
+9. (15 mins) load the CSV tables into the DB on the server. Either do so via a GUI utility, or copy them to a local directory on the machine running your SQL server (e.g. using `scp -C` for compression) and run a set of `LOAD DATA LOCAL INFILE` commands in mysql. If running mysql from the command line, requires you to start it with `mysql --local-infile`, e.g.:
 
    ```
    mysql --local-infile --host db.sundivenetworks.net --user onezoom --password --database onezoom_dev
