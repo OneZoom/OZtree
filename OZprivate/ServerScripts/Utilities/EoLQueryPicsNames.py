@@ -211,7 +211,7 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
     info("== Loop {} ({}) ==> list of eol_pageID: ottIDs to check for {} are {}".format(loop_num, time.asctime(time.localtime(loop_starttime)), "names" if images_table is None else "images & names", eol_page_to_ott))
     EOLids = list(eol_page_to_ott.keys())
     OTTids = [int(eol_page_to_ott[k]) for k in EOLids]
-    url = "http://eol.org/api/pages/1.0.json"; #see http://eol.org/api/docs/pages
+    url = "http://eol.org/api/pages/1.0.json" #see http://eol.org/api/docs/pages
     cache_ttl_hack = cache_ttl_hack + 1 if cache_ttl_hack<50000 else 1000
     pages_params = {
         'batch'          : 'true',
@@ -368,7 +368,7 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
                 for loop in range(len(image_status_labels)*2):
                     if len(image_ranking_table) == 0:
                         #no images, previous or new
-                        break;
+                        break
                         
                     #sort by rating (desc)
                     best_image_id, best_image_ranks = sorted(image_ranking_table.items(), key=lambda row: row[1][image_label], reverse=True)[0]
@@ -378,7 +378,7 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
                         # refers to an out-of-date image which should be left to be deleted
                         if verbosity > 1:
                             info("No EoL images in the API for ott {}: but we had old ones (e.g. data object {}), which will be deleted".format(ott, -best_image_id))
-                        break;
+                        break
 
                     if best_image_ranks[image_label]==0:
                         break #we have hit rock bottom: there are no rated images of this type, so don't download any
@@ -402,7 +402,7 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
                             except:
                                 raise
                     if got_img[image_label] is not None:
-                        break;
+                        break
             #now we have everything, we can delete and insert from the DB
             #invert the mapping, so we have {1234:['any','pd'], ...}
             image_ids = {}
