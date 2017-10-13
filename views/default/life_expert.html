@@ -38,7 +38,10 @@ var popular_locations = [ /* strings are treated as headers (looked up in OZstri
 
 function make_screenshot(lnk) {
     try {
-        context = new C2S(document.getElementById("OneZoomCanvasID").width,document.getElementById("OneZoomCanvasID").height);
+        context = new C2S({
+            width:document.getElementById("OneZoomCanvasID").width,
+            height:document.getElementById("OneZoomCanvasID").height, 
+            embedImages : true});
         onezoom.controller.draw_single_frame(context);
         var svg_content = context.getSerializedSvg(true);
         /* Change MIME type to trick the browser to download the file instead of displaying it */
