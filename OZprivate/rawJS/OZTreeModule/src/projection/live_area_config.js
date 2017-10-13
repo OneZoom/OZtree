@@ -83,10 +83,10 @@ live_area_config.leaf_conservation_text = {
   }
 }
 
-live_area_config.leaf_copyright = {
-  register_button_event: function(node) {
+live_area_config.copyright = {
+  register_button_event: function(pic_src, pic_src_id) {
     global_button_action.action = "link";
-    global_button_action.data = [node.pic_src, node.pic_filename];
+    global_button_action.data = [pic_src, pic_src_id];
   }
 }
 

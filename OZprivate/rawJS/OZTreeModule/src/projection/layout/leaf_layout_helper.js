@@ -705,7 +705,15 @@ class LeafLayoutBase {
     if (imageObject) {
       if (r > 90 && r * 0.035 > 6) {
         let button_pos = (conservation_text.length > 0) ? (y+r*0.34) : (y+r*0.39); // find position for the copyright symbol
-        this.copyright(shapes,x+r*0.43,button_pos,r*0.035,copyText,mouseTouch,node); // draw copyright sympbol
+        this.copyright(shapes,x+r*0.43,button_pos,r*0.035,
+          [node.pic_src, node.pic_filename, copyText],
+          color_theme.get_color("leaf.copyright.text.fill", node),
+          color_theme.get_color("leaf.copyright.stroke", node),
+          color_theme.get_color("leaf.copyright.fill", node),
+          color_theme.get_color("leaf.copyright.text_hover.fill", node),
+          color_theme.get_color("leaf.copyright_hover.stroke", node),
+          color_theme.get_color("leaf.copyright_hover.fill", node)
+        ); // draw copyright sympbol
       }
     }
     this.fullLeaf_detail1(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
@@ -1021,23 +1029,24 @@ class LeafLayoutBase {
 
   /*
    * this function: draws a copyright symbol and handles zooming in as well as clicking
-   *
+   * picinfo should contain src, src_id, text_to_write
    */
-  copyright(shapes,x,y,r,text,mouseTouch,node,fillColor,textColor,highlightColor,fillHighlightColor) {
+  copyright(shapes,x,y,r, picinfo, textColor, strokeColor, fillColor, textHighlightColor, strokeHighlightColor, fillHighlightColor) {
+    let text = picinfo[2];
     if (!this.hovered && this.liveAreaTest(x,y,r)) {
       this.hovered = true;
       this.hovering = true;
-        live_area_config.leaf_copyright.register_button_event(node);
+        live_area_config.copyright.register_button_event(picinfo[0], picinfo[1]);
         
     };
     add_mr(x,y,r*3);
     let arc_shape = ArcShape.create();
     if (this.hovering) {
-      arc_shape.fill.color = color_theme.get_color("leaf.copyright_hover.fill", node);
-      arc_shape.stroke.color = color_theme.get_color("leaf.copyright_hover.stroke", node);
+      arc_shape.stroke.color = strokeHighlightColor;
+      arc_shape.fill.color = fillHighlightColor;
     } else {
-      arc_shape.stroke.color = color_theme.get_color("leaf.copyright.stroke", node);
-      arc_shape.fill.color = color_theme.get_color("leaf.copyright.fill", node);    
+      arc_shape.stroke.color = strokeColor;
+      arc_shape.fill.color = fillColor;    
     }
     arc_shape.height = 6;
     arc_shape.x = x;
@@ -1057,9 +1066,9 @@ class LeafLayoutBase {
     text_shape.do_fill = true;
     if (this.hovering) {
       text_shape.font_style = 'bold';  
-      text_shape.fill.color = color_theme.get_color("leaf.copyright.text_hover.fill", node);
+      text_shape.fill.color = textHighlightColor;
     } else {
-      text_shape.fill.color = color_theme.get_color("leaf.copyright.text.fill", node);
+      text_shape.fill.color = textColor;
     }
     if (text && r > 160) {
       text_shape.width = r * 1.8;

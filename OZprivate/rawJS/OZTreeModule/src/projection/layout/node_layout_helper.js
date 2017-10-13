@@ -119,9 +119,20 @@ class NodeLayoutBase {
     // this is the image to which (c) should be added
     let img_width = height > width ? width : height;
     let img_height = height > width ? width : height;
+    /* There is a bug here, because node.get_picset_src_info() doesn't always return 
+     * licence information (i.e. the text to write). Look in data_repo.js and image_details.js
+     * for details.
+     */
+    this.copyright(shapes,x+img_width*0.46,y+img_height*0.46,img_width/33,
+      node.get_picset_src_info(index), 
+      color_theme.get_color("interior.copyright.text.fill", node),
+      color_theme.get_color("interior.copyright.stroke", node),
+      color_theme.get_color("interior.copyright.fill", node),
+      color_theme.get_color("interior.copyright.text_hover.fill", node),
+      color_theme.get_color("interior.copyright_hover.stroke", node),
+      color_theme.get_color("interior.copyright_hover.fill", node)
+      ); // draw copyright sympbol
     
-      this.copyright(shapes,x+img_width*0.46,y+img_height*0.46,img_width/33,"copyText",node); // draw copyright sympbol
-      
     if (!this.hovered && this.live_area_autopic_text(img_width, img_height, x, y)) {
       this.hovering = true;
       this.hovered = true;
@@ -165,23 +176,25 @@ class NodeLayoutBase {
     
     /*
      * this function: draws a copyright symbol and handles zooming in as well as clicking
-     * copied from leaf_layout_helper but removed MouseTouch as not used.
+     * copied from leaf_layout_helper.
+     * picinfo should be an array of [pic_src, pic_src_id, text]
      */
-    copyright(shapes,x,y,r,text,node,fillColor,textColor,highlightColor,fillHighlightColor) {
+    copyright(shapes,x,y,r,picinfo, textColor, strokeColor, fillColor, textHighlightColor, strokeHighlightColor, fillHighlightColor) {
+        let text = picinfo[2] || "Click for more details";
         if (!this.hovered && this.liveAreaTest(x,y,r)) {
             this.hovered = true;
             this.hovering = true;
-            live_area_config.leaf_copyright.register_button_event(node);
+            live_area_config.copyright.register_button_event(picinfo[0], picinfo[1]);
             
         };
         add_mr(x,y,r*3);
         let arc_shape = ArcShape.create();
         if (this.hovering) {
-            arc_shape.fill.color = color_theme.get_color("interior.copyright_hover.fill", node);
-            arc_shape.stroke.color = color_theme.get_color("interior.copyright_hover.stroke", node);
+            arc_shape.stroke.color = strokeHighlightColor;
+            arc_shape.fill.color = fillHighlightColor;
         } else {
-            arc_shape.stroke.color = color_theme.get_color("interior.copyright.stroke", node);
-            arc_shape.fill.color = color_theme.get_color("interior.copyright.fill", node);
+            arc_shape.stroke.color = strokeColor;
+            arc_shape.fill.color = fillColor;
         }
         arc_shape.height = 6;
         arc_shape.x = x;
@@ -201,9 +214,9 @@ class NodeLayoutBase {
         text_shape.do_fill = true;
         if (this.hovering) {
             text_shape.font_style = 'bold';
-            text_shape.fill.color = color_theme.get_color("interior.copyright.text_hover.fill", node);
+            text_shape.fill.color = textHighlightColor;
         } else {
-            text_shape.fill.color = color_theme.get_color("interior.copyright.text.fill", node);
+            text_shape.fill.color = textColor;
         }
         if (text && r > 160) {
             text_shape.width = r * 1.8;

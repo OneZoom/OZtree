@@ -93,6 +93,11 @@ function start_fetch_loop(image_api) {
 
 
 /**
+ * This percolates down the tree and collects image details from nodes that are 
+ * sufficiently large.
+ * The problem is that this then doesn't fetch the copyright details for 
+ * internal node pictures. This needs fixing somehow.
+ *
  * Yan has mentioned maybe collect nodes which need image details while refreshing the canvas. 
  * Kai thinks that it is not critical as the cost for collecting nodes are very small, averaging less than 0.1 milliseconds.
  * Besides, if collect these nodes while refreshing, then the test in this function would run in each frame, which would makes each frame

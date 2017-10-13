@@ -444,7 +444,8 @@ class Midnode {
     if (code) {
       let srcID_col = data_repo.mc_key_l["picID"];
       let src_col = data_repo.mc_key_l["picID_src"];
-      return [data_repo.metadata.leaf_meta[code][src_col], data_repo.metadata.leaf_meta[code][srcID_col]];
+      let credit = data_repo.mc_key_l["picID_credit"];
+      return [data_repo.metadata.leaf_meta[code][src_col], data_repo.metadata.leaf_meta[code][srcID_col], data_repo.metadata.leaf_meta[code][credit]];
     }
   }
   get_picset_common(index) {
