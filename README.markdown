@@ -207,7 +207,7 @@ On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. 
 * (NB: it is possible to run a secure OneZoom site over https, but this is untested, and *may have problems when linking out to other sites*. To try this anyway (not currently recommended), create a `.crt` and `.key` file, e.g. by running the following in the web2py root directory: `openssl req -newkey rsa:2048 -x509 -days 365 -nodes -keyout oz.key -out oz.crt`, then use them when running web2py, as in: `python2 web2py.py -c oz.crt -k oz.key -i 127.0.0.1 -p 8000 -a pass`)
 
 
-When web2py is run, it will print instructions telling how to shut down the web2py server. For example, on Windows you might use `taskkill /f /pid XXXX`, where `XXXX` is the process name.
+When web2py is run, it will print instructions telling how to shut down the web2py server. For example, on Windows you might use `taskkill /f /pid XXXX`, where `XXXX` is the process id.
 
 **If this is a new installation** you should now visit `http://127.0.0.1:8000/OZtree/default/` or `https://127.0.0.1:8000/OZtree/default/` to force web2py to create database tables. To load data into the tables, see "Loading Data", below.
 
