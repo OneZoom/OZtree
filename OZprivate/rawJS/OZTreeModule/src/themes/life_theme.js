@@ -297,18 +297,18 @@ const theme = {
     },
       
     'copyright_hover': {
-      fill: copyright_highlight_fill,
-      stroke: copyright_highlight_stroke
+      fill: 'rgb(255,255,255)',
+      stroke: 'rgb(0,0,0)'
     },
       
     copyright: {
-      fill: bar_color,
-      stroke: bar_color,
+      fill: 'rgba(255,255,255,0.5)',
+      stroke: 'rgb(0,0,0)',
       text: {
-      fill: branch_color
+      fill: 'rgb(0,0,0)'
       },
         'text_hover': {
-        fill: copyright_text_highlight_fill
+        fill: 'rgb(0,0,0)',
       }
     }
       

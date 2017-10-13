@@ -120,7 +120,7 @@ class NodeLayoutBase {
     let img_width = height > width ? width : height;
     let img_height = height > width ? width : height;
     
-      this.copyright(shapes,x+img_width*0.57,y+img_height*0.46,img_width/25,"copyText",node); // draw copyright sympbol
+      this.copyright(shapes,x+img_width*0.46,y+img_height*0.46,img_width/33,"copyText",node); // draw copyright sympbol
       
     if (!this.hovered && this.live_area_autopic_text(img_width, img_height, x, y)) {
       this.hovering = true;
