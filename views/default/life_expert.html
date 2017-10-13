@@ -47,7 +47,6 @@ function make_screenshot(lnk) {
         /* Change MIME type to trick the browser to download the file instead of displaying it */
         lnk.setAttribute('download', 'OneZoomScreenshot.svg');
         lnk.href = 'data:application-x/force-download;charset=utf-8,' + encodeURIComponent(svg_content);
-        alert("Your SVG file has been created with web-linked images. To EMBED the images in the file (e.g. for editing) you should pass the file to the perl script called embed_jpgs_in_svg.pl in the OZprivate/ClientScripts folder");
         return true;
     } catch(err) {
         alert("You can't save pictures with embedded images unless you enable '-allow-file-access-from-files' in chrome, or equivalent in other browsers.")
