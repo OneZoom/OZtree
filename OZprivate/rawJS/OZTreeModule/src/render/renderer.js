@@ -155,12 +155,81 @@ function refresh_by_redraw(shapes, _context) {
   last_draw_by_redraw = true;
 }
 
+
+/**
+ * Has the view of the tree changed, or the mouseover state of a button changed?
+ * @return a boolean telling us if the tree view has changed such that it requires redrawing.
+ */
 function view_changed() {
-  return tree_state.xp != last_xp 
-      || tree_state.yp != last_yp 
-      || tree_state.ws != last_ws 
-      || global_button_action.action != last_btn_action 
-      || global_button_action.data != last_btn_data;
+    if (tree_state.xp != last_xp
+        || tree_state.yp != last_yp
+        || tree_state.ws != last_ws)
+    {
+        return true; // the tree position has changed
+    }
+    else if (!areEqual(global_button_action.action,last_btn_action))
+    {
+        return true; // the button action has changed
+    }
+    else if (!areEqual(global_button_action.data,last_btn_data))
+    {
+        return true; // the button data has changed
+    }
+    else {
+        return false; // nothing has changed if we got down to here without returning true
+    }
+}
+
+/**
+ * A test for two input parameters to see if they are the same
+ * this is needed because the inputs may be arrays, or they may not be arrays
+ * we're assuming the inputs are not generic JSON objects in which case it would be very hard to write such a function.
+ * @param x the first input parameter
+ * @param y the second input parameter
+ * @return a boolean telling us if the two inputs are the same
+ */
+function areEqual(x,y) {
+    if (Array.isArray(x))
+    {
+        if (Array.isArray(y))
+        {
+            // both arrays so need to test more
+            if (x.length != y.length)
+            {
+                // not the same length so return false
+                return false;
+            }
+            else
+            {
+                // the same length so need further checks
+                for (var i = x.length; i--;) {
+                    if (x[i] !== y[i])
+                    {
+                        return false; // we found an element that's not the same
+                    }
+                }
+                return true; // they must be the same if we haven't returned false already by this point
+            }
+        }
+        else
+        {
+            // one is an array the other isn't so aren't the same
+            return false;
+        }
+    }
+    else
+    {
+        if (Array.isArray(y))
+        {
+            // one is an array the other isn't so aren't the same
+            return false;
+        }
+        else
+        {
+            // neither is an array so it's easy
+            return x==y;
+        }
+    }
 }
 
 function record_view_position() {

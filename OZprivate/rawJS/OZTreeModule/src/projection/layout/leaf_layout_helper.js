@@ -697,12 +697,15 @@ class LeafLayoutBase {
     } else if (r > 20) {
       detail_level = 1;
     }
+    // these levels are defined but don't seem to be used later on. the leaf details functions below check again whether the value of r is at different detail levels.
+      
     this.fullLeaf_sponsor(shapes, x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
+    // this draws the sponsorship text.
     
     if (imageObject) {
       if (r > 90 && r * 0.035 > 6) {
-        let button_pos = (conservation_text.length > 0) ? (y+r*0.34) : (y+r*0.39);
-        this.copyright(shapes,x+r*0.43,button_pos,r*0.035,copyText,mouseTouch,node);
+        let button_pos = (conservation_text.length > 0) ? (y+r*0.34) : (y+r*0.39); // find position for the copyright symbol
+        this.copyright(shapes,x+r*0.43,button_pos,r*0.035,copyText,mouseTouch,node); // draw copyright sympbol
       }
     }
     this.fullLeaf_detail1(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
@@ -893,7 +896,7 @@ class LeafLayoutBase {
       if (conservation_hover_test1 || conservation_hover_test2) {
         this.hovered = true;
         this.hovering = true;
-        live_area_config.leaf_conservation_text.register_button_event(node);  
+        live_area_config.leaf_conservation_text.register_button_event(node);
       }
       let text_shape;
       if (imageObject) {
@@ -1024,7 +1027,8 @@ class LeafLayoutBase {
     if (!this.hovered && this.liveAreaTest(x,y,r)) {
       this.hovered = true;
       this.hovering = true;
-      live_area_config.leaf_copyright.register_button_event(node);
+        live_area_config.leaf_copyright.register_button_event(node);
+        
     };
     add_mr(x,y,r*3);
     let arc_shape = ArcShape.create();
