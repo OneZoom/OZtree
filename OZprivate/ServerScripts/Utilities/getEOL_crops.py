@@ -28,18 +28,18 @@ python -c 'import piexif; piexif.insert(piexif.dump({"0th":{piexif.ImageIFD.Copy
 import os
 import re
 import sys
+import filecmp
 
 def warn(*objs):
     print("WARNING: ", end="", file=sys.stderr)
     print(*objs, file=sys.stderr, flush=True)
 
-def info(*objs):
+def info(*objs, v=None):
     """
-    if you use this you have to define a global variable 'verbosity'
+    if you do not provide an in_verbosity, you are expected to define a global variable 'verbosity'
     """
-    import sys
     try:
-        if verbosity:
+        if v is not None or verbosity:
             print(*objs, file=sys.stdout, flush=True)
     except:
         return;
@@ -67,7 +67,7 @@ def get_credit(json_dict, doID, verbosity):
         else:
             rights = json_dict['rights']
         if verbosity > 1:
-            info("RIGHTS for {}: {}".format(doID, json_dict['rights']))
+            info("RIGHTS for {}: {}".format(doID, json_dict['rights']), v=verbosity)
 
     else:
     #must look in agents for person to credit
@@ -208,29 +208,33 @@ def get_file_from_json_struct(data_obj_json_struct, output_dir, thumbnail_size, 
                    '-resize', str(thumbnail_size)+'x'+str(thumbnail_size), image_intermediate
                    ]
             if verbosity > 1:
-                info("Custom crop: {}.".format(" ".join(cmd)))
+                info("Custom crop: {}.".format(" ".join(cmd)), v=verbosity)
         except KeyError:
             #hasn't got crop info: use default
             cmd = ['convert', image_orig, '-gravity', 'NorthWest', 
                    '-resize', str(thumbnail_size)+'x'+str(thumbnail_size)+'^', "-extent", str(thumbnail_size)+'x'+str(thumbnail_size), image_intermediate
                    ]
             if verbosity > 1:
-                info("Default crop: {}.".format(" ".join(cmd)))
+                info("Default crop: {}.".format(" ".join(cmd)), v=verbosity)
         call(cmd)
         r, l = get_credit(d, d['dataObjectVersionID'], verbosity)
         copyright_str = ' / '.join([r, l])
         rating = int(round(d['dataRating'] * 10000)) #EXIF 'Rating' is 16bit unsigned, i.e. 0-65535. EoL ratings are 0-5 floating point, so for ease of mapping we multiply EOL ratings by 10,000 to get ratings from 0-50,000
         #call(['exiftool', '-q', '-codedcharacterset=utf8', '-IPTC:Contact='+'http://eol.org/data_objects/'+d['dataObjectVersionID'], '-IPTC:Credit='+r, '-IPTC:CopyrightNotice='+l, '-overwrite_original', '-m', image_orig])
         piexif.insert(piexif.dump({"0th":{piexif.ImageIFD.Copyright:copyright_str.encode("utf8"), piexif.ImageIFD.Rating:rating}, "Exif":{}}), image_intermediate)
-        info("...\nDownloaded with rating {} and cropped into {}".format(rating, image_intermediate))
+        info("...\nDownloaded with rating {} and cropped into {}".format(rating, image_intermediate), v=verbosity)
     except OSError as e: 
         warn("Cannot call 'convert' properly: {}\n Have you installed Imagemagick?".format(e))      
         return None
     try:
         os.remove(image_orig)
         os.chmod(image_intermediate, 0o664) #allow both www & web2py to overwrite, etc
-        os.rename(image_intermediate, image_final)
-        info("Deleted large original and moved cropped image from {} into {}".format(image_intermediate, image_final))
+        if os.path.exists(image_final) and filecmp.cmp(image_intermediate, image_final, shallow=False):
+            info("Deleted large original, but cropped version is identical to old image ({}), so not replacing".format(image_final), v=verbosity)
+            os.remove(image_intermediate)
+        else:
+            os.replace(image_intermediate, image_final)
+            info("Deleted large original and moved cropped image from {} into {}".format(image_intermediate, image_final), v=verbosity)
     except OSError as e: 
         warn("Could not remove the original downloaded file, or move the new file to its final place: {} \nPerhaps EoL has a problem.".format(e))      
         return None
