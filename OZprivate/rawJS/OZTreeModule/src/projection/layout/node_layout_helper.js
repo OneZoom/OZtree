@@ -115,17 +115,23 @@ class NodeLayoutBase {
       my > (y-img_height/2) && my < (y+img_height/2 + img_height*0.15);
   }
 
-  autopic_shapes(node, index, x, y, width, height, draw_text, shapes) {   
+  autopic_shapes(node, index, x, y, width, height, draw_text, shapes) {
+    // this is the image to which (c) should be added
     let img_width = height > width ? width : height;
     let img_height = height > width ? width : height;
     
+      this.copyright(shapes,x+img_width*0.57,y+img_height*0.46,img_width/25,"copyText",node); // draw copyright sympbol
+      
     if (!this.hovered && this.live_area_autopic_text(img_width, img_height, x, y)) {
       this.hovering = true;
       this.hovered = true;
       live_area_config.interior_image.register_button_event(-node.get_picset_code(index));
     }
-
+      
     this.autodraw_ls_shape(node, index, x-img_width/2, y-img_height/2, img_width, img_height, shapes);
+    // draw the actual image itself
+  
+
     
     let common = node.get_picset_common(index);
     let latin = node.get_picset_latin(index);
@@ -156,7 +162,87 @@ class NodeLayoutBase {
     }
     this.hovering = false;
   }
+    
+    /*
+     * this function: draws a copyright symbol and handles zooming in as well as clicking
+     * copied from leaf_layout_helper but removed MouseTouch as not used.
+     */
+    copyright(shapes,x,y,r,text,node,fillColor,textColor,highlightColor,fillHighlightColor) {
+        if (!this.hovered && this.liveAreaTest(x,y,r)) {
+            this.hovered = true;
+            this.hovering = true;
+            live_area_config.leaf_copyright.register_button_event(node);
+            
+        };
+        add_mr(x,y,r*3);
+        let arc_shape = ArcShape.create();
+        if (this.hovering) {
+            arc_shape.fill.color = color_theme.get_color("interior.copyright_hover.fill", node);
+            arc_shape.stroke.color = color_theme.get_color("interior.copyright_hover.stroke", node);
+        } else {
+            arc_shape.stroke.color = color_theme.get_color("interior.copyright.stroke", node);
+            arc_shape.fill.color = color_theme.get_color("interior.copyright.fill", node);
+        }
+        arc_shape.height = 6;
+        arc_shape.x = x;
+        arc_shape.y = y;
+        arc_shape.r = r;
+        arc_shape.circle = true;
+        arc_shape.do_stroke = true;
+        arc_shape.stroke.line_width = r * 0.05;
+        arc_shape.do_fill = true;
+        shapes.push(arc_shape);
+        
+        let text_shape = TextShape.create();
+        text_shape.x = x;
+        text_shape.y = y;
+        text_shape.min_text_size_extra = 0;
+        text_shape.height = 7;
+        text_shape.do_fill = true;
+        if (this.hovering) {
+            text_shape.font_style = 'bold';
+            text_shape.fill.color = color_theme.get_color("interior.copyright.text_hover.fill", node);
+        } else {
+            text_shape.fill.color = color_theme.get_color("interior.copyright.text.fill", node);
+        }
+        if (text && r > 160) {
+            text_shape.width = r * 1.8;
+            text_shape.defpt = r;
+            text_shape.text = text;
+            text_shape.line = 3;
+        } else if (text && r <= 160 && r > 40) {
+            text_shape.width = r * 1.5;
+            text_shape.defpt = r;
+            text_shape.text = text.substr(0,30) + " ...";
+            text_shape.line = 2;
+        } else {
+            text_shape.width = r;
+            text_shape.defpt = r * 2;
+            text_shape.text = "C";
+        }
+        shapes.push(text_shape);
+        this.hovering = false;
+    }
 
+    liveAreaTest(x,y,r) {
+        return this.mouse_over_circle( x, y, r);
+    }
+
+    mouse_over_circle(x,y,r) {
+        let mx = tree_state.button_x;
+        let my = tree_state.button_y;
+        return mx && my && (this.dist_sqr_to_center(x,y,mx,my) <= r * r);
+    }
+    
+    dist_sqr_to_center(x,y,mx,my) {
+        if (mx && my) {
+            return (mx-x) * (mx-x) + (my-y) * (my-y);
+        } else {
+            return 0;
+        }
+    }
+    
+    
   autodraw_ls_shape(node, index, x, y, w, h, shapes) {
     let pic_info = node.get_picset_src_info(index);
     if(w > 800 || h > 800) {

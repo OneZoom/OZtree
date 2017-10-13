@@ -294,7 +294,24 @@ const theme = {
       inner: {
         fill: hightlight_color
       }
+    },
+      
+    'copyright_hover': {
+      fill: copyright_highlight_fill,
+      stroke: copyright_highlight_stroke
+    },
+      
+    copyright: {
+      fill: bar_color,
+      stroke: bar_color,
+      text: {
+      fill: branch_color
+      },
+        'text_hover': {
+        fill: copyright_text_highlight_fill
+      }
     }
+      
   },
     
   signpost: {
