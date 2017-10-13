@@ -2,7 +2,6 @@
 {{version = str(version+0)}}
 {{extend 'treeLayout.html'}}
 <title>Ancestor's Tale OneZoom Explorer{{try:}}{{=': '+page_info['subtitle']}}{{except:}}{{pass}}</title>
-{{try:}}{{OZTree_js_suffix = (myconf.take('general.oztree_js_suffix') if myconf.take('general.oztree_js_suffix') else non_existent_variable)}}{{except:}}{{OZTree_js_suffix = '.js'}}{{pass}}
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree.css')}}" />
 <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/completetree_' + str(version) +  '.js')}}"></script>
 <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/cut_position_map_' + str(version) +  '.js')}}"></script>
@@ -10,8 +9,8 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 <!-- fallback to local jQuery version e.g. if offline -->
 <script>window.jQuery || document.write('<script src="{{=URL("static", "js/jquery.min.js")}}"><\/script>')</script>
-<script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common' + OZTree_js_suffix)}}"></script>
-<script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry' + OZTree_js_suffix)}}"></script>
+<script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common.js')}}"></script>
+<script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry.js')}}"></script>
 <script>var popular_species = [ /* strings are treated as headers, arrays as links with [ott,name] with name optional */
   "{{=T('Rendezvous points')}}",
   [312031,"2"],

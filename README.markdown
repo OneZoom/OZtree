@@ -176,10 +176,6 @@ url        = https://www.sandbox.paypal.com
 maintenance_mins = 0
 pics_dir = //images.onezoom.org/
 allow_sponsorship = 0
-oztree_no_min = 1
-oztree_dir = OZTree_unminified
-oztree_module_dir = OZTree_module
-oztree_js_suffix = .js
 
 [api]
 ;If you want to get data from the Encyclopedia of Life, you need to put your own API key here. 

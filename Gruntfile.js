@@ -54,13 +54,11 @@ module.exports = function (grunt) {
     uglify: {
       main: {
         files: {
-          //'<%=pkg.directories.js_dist%>/polytomy.min.js': ['<%=pkg.directories.js_dist%>/polytomy.js'],
-          //'<%=pkg.directories.js_dist%>/at.min.js': ['<%=pkg.directories.js_dist%>/at.js'],
-          //'<%=pkg.directories.js_dist%>/life.min.js': ['<%=pkg.directories.js_dist%>/life.js'],
-          '<%=pkg.directories.js_dist%>/common.min.js': ['<%=pkg.directories.js_dist%>/common.js'],
-          '<%=pkg.directories.js_dist%>/OZentry.min.js': ['<%=pkg.directories.js_dist%>/OZentry.js'],
-          '<%=pkg.directories.old_js_dist%>/Drawing.min.js': ['<%=pkg.directories.old_js_dist%>/Drawing.js'],
-          '<%=pkg.directories.old_js_dist%>/Leaf_draw.min.js': ['<%=pkg.directories.old_js_dist%>/Leaf_draw.js'],
+          //also moves the files
+          '<%=pkg.directories.js_dest%>/common.js': ['<%=pkg.directories.js_dist%>/common.js'],
+          '<%=pkg.directories.js_dest%>/OZentry.js': ['<%=pkg.directories.js_dist%>/OZentry.js'],
+          '<%=pkg.directories.old_js_dest%>/Drawing.js': ['<%=pkg.directories.old_js_dist%>/Drawing.js'],
+          '<%=pkg.directories.old_js_dest%>/Leaf_draw.js': ['<%=pkg.directories.old_js_dist%>/Leaf_draw.js'],
         }
       }
     },
@@ -68,16 +66,14 @@ module.exports = function (grunt) {
       build:[
         '<%=pkg.directories.js_dest%>/*',
         '<%=pkg.directories.js_dist%>/*.js*',
-        '!<%=pkg.directories.js_dist%>/*.min.js*',
         '<%=pkg.directories.old_js_dest%>/*',
         '<%=pkg.directories.old_js_dist%>/*.js*',
-        '!<%=pkg.directories.old_js_dist%>/*.min.js*',
       ],
       compile:[
         '<%=pkg.directories.js_dest%>/*',
-        '<%=pkg.directories.js_dist%>/*.min.js*',
+        '<%=pkg.directories.js_dist%>/*.js*',
         '<%=pkg.directories.old_js_dest%>/*',
-        '<%=pkg.directories.old_js_dist%>/*.min.js*',
+        '<%=pkg.directories.old_js_dist%>/*.js*',
       ],
     },
     compress: {
@@ -88,29 +84,22 @@ module.exports = function (grunt) {
         files: [
           {
             expand: true,
-            cwd: '<%=pkg.directories.js_dist%>',
-            src: ['*.min.js'],
-            dest: '<%=pkg.directories.js_dist%>',
-            ext: '.min.js.gz'
+            cwd: '<%=pkg.directories.js_dest%>',
+            src: ['*.js'],
+            dest: '<%=pkg.directories.js_dest%>',
+            ext: '.js.gz'
           },
           { //quick hack for the fragments of old code
             expand: true,
-            cwd: '<%=pkg.directories.old_js_dist%>',
-            src: ['*.min.js'],
-            dest: '<%=pkg.directories.old_js_dist%>',
-            ext: '.min.js.gz'
+            cwd: '<%=pkg.directories.old_js_dest%>',
+            src: ['*.js'],
+            dest: '<%=pkg.directories.old_js_dest%>',
+            ext: '.js.gz'
           },
           {
             expand: true,
             cwd: '<%=pkg.directories.css_dist%>',
-            src: ['*.min.css'],
-            dest: '<%=pkg.directories.css_dist%>',
-            ext: '.min.css.gz'
-          },
-          {
-            expand: true,
-            cwd: '<%=pkg.directories.css_dist%>',
-            src: ['*.css', '!**/*.min.css'],
+            src: ['*.css'],
             dest: '<%=pkg.directories.css_dist%>',
             ext: '.css.gz'
           }
@@ -153,6 +142,6 @@ module.exports = function (grunt) {
   grunt.registerTask("precompile-js_dev", ["exec:precompile_js_dev"]);
   grunt.registerTask("partial-install", ["curl:get_minlife", "exec:partial_install"]);
   grunt.registerTask("precompile-docs", ["jsdoc2md", "exec:precompile_docs"]);
-  grunt.registerTask("build", [ "precompile-python", "precompile-js", "copy:old_js", "compass","uglify", "compress", "clean:build", "copy:to_live","precompile-docs"]);
-  grunt.registerTask("compile", ["precompile-js_dev", "copy:old_js", "compass" ,"clean:compile", "copy:to_live", "precompile-docs"]);
+  grunt.registerTask("build", ["clean:build", "precompile-python", "precompile-js", "copy:old_js", "compass","uglify", "compress","precompile-docs"]);
+  grunt.registerTask("compile", ["clean:compile", "precompile-js_dev", "copy:old_js", "compass" , "copy:to_live", "precompile-docs"]);
 };

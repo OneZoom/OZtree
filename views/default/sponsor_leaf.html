@@ -2,9 +2,8 @@
 {{response.files.append(URL('static', 'OZSponsor/sponsor_leaf.css'))}}
 {{response.files.append(URL('static', 'OZSponsor/EOLqueries.js'))}}
 
-{{try:}}{{OZTree_suffix = ("" if myconf.take('general.oztree_no_min') else non_existent_variable)}}{{except:}}{{OZTree_suffix = '.min'}}{{pass}}
-{{response.files.append(URL('static', 'OZTree/dist/Drawing'  + OZTree_suffix + '.js'))}}
-{{response.files.append(URL('static', 'OZTree/dist/Leaf_draw'   + OZTree_suffix + '.js'))}}
+{{response.files.append(URL('static', 'OZTree/dist/Drawing.js'))}}
+{{response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))}}
 
 {{extend ('embed.html' if request.vars.get('embed') else 'layout.html')}}
         <!--error, invalid, banned, verified, unchecked, reserved, reserved for this user, available -->
