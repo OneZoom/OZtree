@@ -168,7 +168,7 @@ function load_tab(tab_content, embed_if_possible, remove_embed_links) {
             // extract the Qid & lang from the url - a bit messy
             var match = match_wikidata_url(tab_content.attr('data-src'));
             if (match) {
-                inject_wikipage(tab_content, match[2], match[3], remove_embed_links);
+                show_wikipage_for_lang(tab_content, match[2], match[3], remove_embed_links);
                 return;
             }
         }
@@ -271,66 +271,73 @@ function inject_web2py_page(selector, url, removelinks) {
  * inject that into the head of the current page. We need to make sure that wikipedia-defined 
  * css rules do not interfere with our own layout.
  */
-function inject_wikipage(selector, lang, Qid, removelinks) {
+function show_wikipage_for_lang(selector, lang, Qid, removelinks) {
   {{if not is_production:}}console.log("Injecting Wikipage!");{{pass}}
   var site = lang+'wiki';
   $.ajax({
     type: "GET",
     id:Qid,
     lang:lang,
+    selector: selector,
+    removelinks: removelinks,
     sitecode: site,
     dataType: "jsonp",
     data: {action:'wbgetentities',
-    	props:'sitelinks',
+      props:'sitelinks',
       sitefilter:site,
       ids:Qid,
       format:'json'},
     url: "//www.wikidata.org/w/api.php",
-    success: function (data) {
-      var pagetitle = data.entities[this.id].sitelinks[this.sitecode].title;
-      var base_url = "https://"+this.lang+".wikipedia.org/";
-      $.ajax({
-        type: "GET",
-        pagetitle: pagetitle,
-        base_url: base_url,
-        url: base_url + "api/rest_v1/page/html/" + pagetitle,
-        dataType: "html",
-        success: function (data) {
-          //double-check that we haven't inserted it while waiting for a previous AJAX call
-          if (!selector.children().last().hasClass('popup-content')) {
-            //convert reponse to html (should throw away <head> and <body> tags)
-            var html_to_inject = $('<div class="popup-content"></div>').html(data);
-            //just make sure we don't have a stray head or body
-            $('head', html_to_inject).contents().unwrap();
-            $('body', html_to_inject).contents().unwrap();
-            //check if redirected and get current page title
-            var page = $('link[rel="dc:isVersionOf"]', html_to_inject).attr('href');
-            if (page && (page = page.match(/wikipedia.org\/wiki\/(.*)\/?$/))) {
-            	this.pagetitle = page[1];
-            }
-            //inject stylesheet
-            var ss = $('link[rel~="stylesheet"]', html_to_inject).addClass('injected-stylesheet');
-            $('head').prepend(ss);
-            //transform internal page links of the form ./<title>#internal_link to simply #internal_link
-            var url_start = './'+this.pagetitle;
-            $('a[href^="'+url_start+'#"]', html_to_inject).attr('href', function(i,attr) {return attr.substr(url_start.length);});
-            //append the URL so that we abide by wikipedia distribution
-            var original_page = this.base_url + 'wiki/' + this.pagetitle;
-            html_to_inject.append('<footer style="clear:both;">' + OZstrings['WikiCitation'] + '<a href="'+ original_page +'">' + original_page + '</a></footer>');
-            sanitise_links(html_to_inject, removelinks, this.base_url);
-            $('base,meta,link,title,style,script', html_to_inject).remove();
-            $('div[role="note"]', html_to_inject).remove();
-            $('div[role="navigation"]', html_to_inject).remove();
-            html_to_inject.children('ul').remove(); //remove lists, e.g. "see also", etc. : Assumes references (to keep) are ordered lists (not always true)
-            $('.sistersitebox,.sisterlinks,.mw-editsection, #See_also, #External_links', html_to_inject).remove();
-            {{if not is_production:}}console.log("Hiding wiki loading pic");{{pass}}
-            $('.loading_pic',selector).hide();
-            selector.append($(html_to_inject));
-          }
-        }
-	  });
+    success: function(data) {
+        //To do - check if title exists in this lang. If not, put up holding page
+        inject_wikipage(this.selector, data.entities[this.id].sitelinks[this.sitecode].title, "https://"+this.lang+".wikipedia.org/", this.removelinks);
     }
   })
+}
+
+function inject_wikipage(selector, pagetitle, base_url, removelinks) {
+  $.ajax({
+    type: "GET",
+    pagetitle: pagetitle,
+    base_url: base_url,
+    selector: selector,
+    removelinks: removelinks,
+    url: base_url + "api/rest_v1/page/html/" + pagetitle,
+    dataType: "html",
+    success: function (data) {
+      //double-check that we haven't inserted it while waiting for a previous AJAX call
+      if (!this.selector.children().last().hasClass('popup-content')) {
+        //convert reponse to html (should throw away <head> and <body> tags)
+        var html_to_inject = $('<div class="popup-content"></div>').html(data);
+        //just make sure we don't have a stray head or body
+        $('head', html_to_inject).contents().unwrap();
+        $('body', html_to_inject).contents().unwrap();
+        //check if redirected and get current page title
+        var page = $('link[rel="dc:isVersionOf"]', html_to_inject).attr('href');
+        if (page && (page = page.match(/wikipedia.org\/wiki\/(.*)\/?$/))) {
+        	this.pagetitle = page[1];
+        }
+        //inject stylesheet
+        var ss = $('link[rel~="stylesheet"]', html_to_inject).addClass('injected-stylesheet');
+        $('head').prepend(ss);
+        //transform internal page links of the form ./<title>#internal_link to simply #internal_link
+        var url_start = './'+this.pagetitle;
+        $('a[href^="'+url_start+'#"]', html_to_inject).attr('href', function(i,attr) {return attr.substr(url_start.length);});
+        //append the URL so that we abide by wikipedia distribution
+        var original_page = this.base_url + 'wiki/' + this.pagetitle;
+        html_to_inject.append('<footer style="clear:both;">' + OZstrings['WikiCitation'] + '<a href="'+ original_page +'">' + original_page + '</a></footer>');
+        sanitise_links(html_to_inject, this.removelinks, this.base_url);
+        $('base,meta,link,title,style,script', html_to_inject).remove();
+        $('div[role="note"]', html_to_inject).remove();
+        $('div[role="navigation"]', html_to_inject).remove();
+        html_to_inject.children('ul').remove(); //remove lists, e.g. "see also", etc. : Assumes references (to keep) are ordered lists (not always true)
+        $('.sistersitebox,.sisterlinks,.mw-editsection, #See_also, #External_links', html_to_inject).remove();
+        {{if not is_production:}}console.log("Hiding wiki loading pic");{{pass}}
+        $('.loading_pic',this.selector).hide();
+        this.selector.append($(html_to_inject));
+      }
+    }
+  });
 }
 
 // only used in searchPopulate(...)
