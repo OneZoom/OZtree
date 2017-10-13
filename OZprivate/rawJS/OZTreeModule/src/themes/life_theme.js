@@ -251,43 +251,43 @@ const theme = {
   },
     
   interior: {
-    'pic_text_hover': {
+    pic_text_hover: {
       stroke: int_text_stroke_hover,
       fill: int_text_fill_hover
     },
-    'pic_text': {
+    pic_text: {
       fill: int_text_fill
     },
     
     
-    'text_hover': {
+    text_hover: {
       stroke: int_text_stroke_hover
     },
-    'text': {
+    text: {
       fill: int_text_fill
     },
     
     
-    'sponsor_text_hover': {
+    sponsor_text_hover: {
       fill: int_sponsor_fill_hover
     },
-    'sponsor_text': {
+    sponsor_text: {
       fill: int_sponsor_fill
     },
     
     
-    'circle_hover': {
+    circle_hover: {
       stroke: bar_color,
       fill: bar_color
     },
-    'circle': {
+    circle: {
       stroke: bar_color,
       fill: branch_color
     },
-    'circle_searchin': {
+    circle_searchin: {
       stroke: hightlight_color
     },
-    'circle_highlight': {
+    circle_highlight: {
       outer: {
         fill: branch_color
       },
@@ -296,7 +296,7 @@ const theme = {
       }
     },
       
-    'copyright_hover': {
+    copyright_hover: {
       fill: 'rgb(255,255,255)',
       stroke: 'rgb(0,0,0)'
     },
@@ -307,7 +307,7 @@ const theme = {
       text: {
       fill: 'rgb(0,0,0)'
       },
-        'text_hover': {
+        text_hover: {
         fill: 'rgb(0,0,0)',
       }
     }

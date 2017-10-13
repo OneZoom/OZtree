@@ -181,7 +181,7 @@ const theme = {
       text: {
         fill: 'rgb(150,180,100)'
       },
-      'text_hover': {
+      text_hover: {
         fill: 'rgb(255,255,255)'
       }
     }
