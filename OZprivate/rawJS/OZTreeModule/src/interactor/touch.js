@@ -21,6 +21,7 @@ class TouchInteractor {
   touch_start(event) {
     this.controller.close_all();
     event.preventDefault();
+    event.stopPropagation();
     tree_state.flying = false;
     set_finger_position(this, event);
     tree_state.touch_hold = true;
@@ -33,6 +34,7 @@ class TouchInteractor {
   
   touch_move(event) {
     event.preventDefault();    
+    event.stopPropagation();
     if(event.targetTouches.length >= 2) {// might need to fix this
       //finger positions [f1x, f1y],  [f2x, f2y]
       let f1x = get_touch_x(this, event.targetTouches[0]);
@@ -72,6 +74,7 @@ class TouchInteractor {
   
   touch_end(event) {
     event.preventDefault();    
+    event.stopPropagation();
     if(event.targetTouches.length == 0) {
       /**
        * It's important to call record_url_delayed before controller.click. 
