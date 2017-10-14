@@ -209,6 +209,12 @@ if(typeof sponsor_page_link !== 'function'){
 
 /* sanitise links and src attributes in an html file, possibly remove all but internal ones */
 function sanitise_links(html, remove_links, base_url) {
+  // get a url to use (if "base" is defined in the header) or default to the original
+  var base_url =  ($('base', html) && $('base', html).attr('href'))?$('base', html).attr('href'):base_url;
+  var origin = $('<a>').prop('href', base_url).prop('origin'); //get the host/port etc
+  //sanitize image sources
+  $('[src^="./"]', html).attr('src', function(i,attr) {return base_url + attr.substr(2);});
+  $('[src^="/"]', html).not('[src^="//"]').attr('src', function(i,attr) {return origin + attr;});
   if (remove_links) {
     $('[href]', html).not('[href^="#"]').each(function() {
       if ($(this).contents().length) {
@@ -219,15 +225,10 @@ function sanitise_links(html, remove_links, base_url) {
     });
   } else {
     $('[href]', html).not('[href^="#"]').attr('target','_blank');
-    /* get a url to use (if "base" is defined in the header) or default to the original */
-    var base_url =  ($('base', html) && $('base', html).attr('href'))?$('base', html).attr('href'):base_url;
-    var origin = $('<a>').prop('href', base_url).prop('origin'); //get the host/port etc
     //relative refs
     $('[href^="./"]', html).attr('href', function(i,attr) {return base_url + attr.substr(2);});
-    $('[src^="./"]', html).attr('src', function(i,attr) {return base_url + attr.substr(2);});
     //absolute refs
     $('[href^="/"]', html).not('[href^="//"]').attr('href', function(i,attr) {return origin + attr;});
-    $('[src^="/"]', html).not('[src^="//"]').attr('src', function(i,attr) {return origin + attr;});
   }
   return html;
 }
@@ -242,18 +243,19 @@ function inject_web2py_page(selector, url, removelinks) {
     url: url.replace(".html", ".load"),
     type: "GET",
     dataType: "html",
+    selector: selector,   
     success: function (data) {
       //double-check that we haven't inserted it while waiting for a previous AJAX call
-      if (!selector.children().last().hasClass('popup-content')) {
-        var html_to_inject = $('<div/>',{class:'popup-content'}).html(data);
+      if (!this.selector.children().last().hasClass('popup-content')) {
+        var html_to_inject = $('<div class="popup-content"></div>').append($.parseHTML(data));
         sanitise_links(html_to_inject, removelinks, url);
         $('base,meta,link,title,style,script', html_to_inject).remove();
         {{if not is_production:}}console.log("Hiding loading pic");{{pass}}
-        $('.loading_pic',selector).hide();
+        $('.loading_pic',this.selector).hide();
         {{if not is_production:}}console.log("Injecting html into page");{{pass}}
-        selector.append($(html_to_inject));
+        this.selector.append(html_to_inject);
         //now loop through any LOAD() components, and force load them using web2py_component()
-        $('[data-w2p_remote]',selector).each(function() {
+        $('[data-w2p_remote]',this.selector).each(function() {
             web2py_component($(this).attr("data-w2p_remote"),$(this).attr('id'))
         })
       }
@@ -308,7 +310,7 @@ function inject_wikipage(selector, pagetitle, base_url, removelinks) {
       //double-check that we haven't inserted it while waiting for a previous AJAX call
       if (!this.selector.children().last().hasClass('popup-content')) {
         //convert reponse to html (should throw away <head> and <body> tags)
-        var html_to_inject = $('<div class="popup-content"></div>').html(data);
+        var html_to_inject = $('<div class="popup-content"></div>').append($.parseHTML(data));
         //just make sure we don't have a stray head or body
         $('head', html_to_inject).contents().unwrap();
         $('body', html_to_inject).contents().unwrap();
@@ -334,7 +336,7 @@ function inject_wikipage(selector, pagetitle, base_url, removelinks) {
         $('.sistersitebox,.sisterlinks,.mw-editsection, #See_also, #External_links', html_to_inject).remove();
         {{if not is_production:}}console.log("Hiding wiki loading pic");{{pass}}
         $('.loading_pic',this.selector).hide();
-        this.selector.append($(html_to_inject));
+        this.selector.append(html_to_inject);
       }
     }
   });
