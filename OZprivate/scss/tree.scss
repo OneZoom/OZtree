@@ -487,6 +487,7 @@ ul#searchboxes {
     flex: 1;
     padding: 0 0.75em;
   	overflow-y: scroll;
+  	position: relative; /* needed for contents that themselevs include position: absolute */
 }
 
 .popup-content.iframe-container {
