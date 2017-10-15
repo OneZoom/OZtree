@@ -643,3 +643,10 @@ ul#searchboxes {
         height: 1rem;
     }    
 }
+
+/* on short screens (mobile landscape), kill the zoom buttons, on the assumption that users can pinch zoom */
+@media screen and (max-height: 360px) {
+    #inButton, #outButton {
+        display: None;
+    }
+}
