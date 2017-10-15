@@ -19,7 +19,7 @@ function popupstate(event) {
   }
   if (state) {
     setup_page_by_navigation(state);  
-  }  
+  }
 }
 
 /**

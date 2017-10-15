@@ -668,7 +668,11 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
             }
         });
     
-     
+    $(".uk-modal-dialog")
+        .click(function(event) {
+            event.stopPropagation();
+        })
+    
     setup_location_list($('.popular_species', box_selector), popular_locations, UI_reset_marked_via_event);
 
     if (OZid) {
