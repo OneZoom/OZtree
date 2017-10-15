@@ -1007,10 +1007,9 @@ a.uk-link-reset:hover,
  * 4. Correct `font` properties and `color` not being inherited for `button`.
  * 5. Remove the inheritance of text transform in Edge, Firefox, and IE.
  * 6. Remove default `button` padding and background color
- * 7. Required for `button`.
- * 8. Style
- * 9. Fill all SVG elements with the current text color if no `fill` attribute is set
- * 10. Let the container fit the height of the icon
+ * 7. Style
+ * 8. Fill all SVG elements with the current text color if no `fill` attribute is set
+ * 9. Let the container fit the height of the icon
  */
 .uk-icon {
   /* 1 */
@@ -1028,13 +1027,15 @@ a.uk-link-reset:hover,
   padding: 0;
   background-color: transparent;
   /* 7 */
-  cursor: pointer;
-  /* 8 */
   display: inline-block;
-  /* 9 */
+  /* 8 */
   fill: currentcolor;
-  /* 10 */
+  /* 9 */
   line-height: 0;
+}
+/* Required for `button`. */
+button.uk-icon:not(:disabled) {
+  cursor: pointer;
 }
 /*
  * Remove the inner border and padding in Firefox.
@@ -1579,7 +1580,7 @@ select.uk-form-width-xsmall {
   background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2224%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2016%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%20%20%20%20%3Cpolygon%20fill%3D%22%23999%22%20points%3D%2212%201%209%206%2015%206%22%3E%3C%2Fpolygon%3E%0A%20%20%20%20%3Cpolygon%20fill%3D%22%23999%22%20points%3D%2212%2013%209%208%2015%208%22%3E%3C%2Fpolygon%3E%0A%3C%2Fsvg%3E%0A");
 }
 /* Radio and checkbox
- * Note: Only works in Chrome, Safari, Opera and Edge
+ * Note: Does not work in IE11
  ========================================================================== */
 /*
  * 1. Style
@@ -1602,6 +1603,7 @@ select.uk-form-width-xsmall {
   vertical-align: middle;
   /* 4 */
   -webkit-appearance: none;
+  -moz-appearance: none;
   /* 5 */
   background-color: transparent;
   /* 6 */
@@ -2216,9 +2218,6 @@ select.uk-form-width-xsmall {
 .uk-section-secondary {
   background: #222;
 }
-/*
- * Indicate that an image or video is used as background
- */
 /* Overlap modifier
  ========================================================================== */
 /*
@@ -2295,7 +2294,7 @@ select.uk-form-width-xsmall {
  ========================================================================== */
 /*
  * 1. Allow cells to wrap into the next line
- * 2. Reset lists
+ * 2. Reset list
  */
 .uk-grid {
   display: -ms-flexbox;
@@ -3945,7 +3944,7 @@ ul.uk-nav-sub {
 /* Nav
  ========================================================================== */
 /*
- * 1. Reset lists
+ * 1. Reset list
  */
 .uk-navbar-nav {
   display: -ms-flexbox;
@@ -4241,7 +4240,7 @@ ul.uk-nav-sub {
 /*
  * 1. Allow items to wrap into the next line
  * 2. Gutter
- * 3. Reset lists
+ * 3. Reset list
  */
 .uk-subnav {
   display: -ms-flexbox;
@@ -4362,7 +4361,7 @@ ul.uk-nav-sub {
  ========================================================================== */
 /*
  * 1. Allow items to wrap into the next line
- * 2. Reset lists
+ * 2. Reset list
  */
 .uk-breadcrumb {
   display: -ms-flexbox;
@@ -4418,7 +4417,7 @@ ul.uk-nav-sub {
 /*
  * 1. Allow items to wrap into the next line
  * 2. Gutter
- * 3. Reset lists
+ * 3. Reset list
  */
 .uk-pagination {
   display: -ms-flexbox;
@@ -4483,7 +4482,7 @@ ul.uk-nav-sub {
 /*
  * 1. Allow items to wrap into the next line
  * 2. Gutter
- * 3. Reset lists
+ * 3. Reset list
  */
 .uk-tab {
   display: -ms-flexbox;
@@ -4605,7 +4604,7 @@ ul.uk-nav-sub {
   border-bottom: none;
 }
 .uk-tab-left > * > a {
-  text-align: right;
+  text-align: left;
   border-right: 1px solid transparent;
   border-bottom: none;
 }
@@ -4659,7 +4658,7 @@ ul.uk-nav-sub {
  ========================================================================== */
 /*
  * 1. Allow items to wrap into the next line
- * 2. Reset lists
+ * 2. Reset list
  * 3. Gutter
  */
 .uk-dotnav {
@@ -4994,8 +4993,10 @@ ul.uk-nav-sub {
 /*
  * 1. Create position context for spinner and close button
  * 2. Dimensions
- * 3. Style
- * 4. Slide-in transition
+ * 3. Fix `max-width: 100%` not working in combination with flex and responsive images in IE11
+ *    `!important` needed to overwrite `uk-width-auto`. See `#modal-media-image` in tests
+ * 4. Style
+ * 5. Slide-in transition
  */
 .uk-modal-dialog {
   /* 1 */
@@ -5004,10 +5005,11 @@ ul.uk-nav-sub {
   box-sizing: border-box;
   margin: 0 auto;
   width: 600px;
-  max-width: 100%;
   /* 3 */
-  background: #fff;
+  max-width: calc(100% - 0.01px) !important;
   /* 4 */
+  background: #fff;
+  /* 5 */
   opacity: 0;
   -webkit-transform: translateY(-100px);
   transform: translateY(-100px);
@@ -5121,16 +5123,27 @@ ul.uk-nav-sub {
  */
 /*
  * Outside
+ * 1. Prevent scrollbar on small devices
  */
 .uk-modal-close-outside {
   top: 0;
-  right: 0;
-  -webkit-transform: translate(100%, -100%);
-  transform: translate(100%, -100%);
+  /* 1 */
+  right: -5px;
+  -webkit-transform: translate(0, -100%);
+  transform: translate(0, -100%);
   color: #ffffff;
 }
 .uk-modal-close-outside:hover {
   color: #fff;
+}
+/* Tablet landscape and bigger */
+@media (min-width: 960px) {
+  /* 1 */
+  .uk-modal-close-outside {
+    right: 0;
+    -webkit-transform: translate(100%, -100%);
+    transform: translate(100%, -100%);
+  }
 }
 /*
  * Full
@@ -5534,7 +5547,7 @@ ul.uk-nav-sub {
    Component: Switcher
  ========================================================================== */
 /*
- * Reset lists
+ * Reset list
  */
 .uk-switcher {
   margin: 0;
@@ -5560,7 +5573,7 @@ ul.uk-nav-sub {
  ========================================================================== */
 /*
  * 1. Allow items to wrap into the next line
- * 2. Reset lists
+ * 2. Reset list
  * 3. Gutter
  */
 .uk-iconnav {
@@ -9532,16 +9545,27 @@ td.uk-text-break {
   color: rgba(255, 255, 255, 0.7);
 }
 .uk-light hr,
+.uk-light .uk-hr,
 .uk-section-primary:not(.uk-preserve-color) hr,
+.uk-section-primary:not(.uk-preserve-color) .uk-hr,
 .uk-section-secondary:not(.uk-preserve-color) hr,
+.uk-section-secondary:not(.uk-preserve-color) .uk-hr,
 .uk-tile-primary:not(.uk-preserve-color) hr,
+.uk-tile-primary:not(.uk-preserve-color) .uk-hr,
 .uk-tile-secondary:not(.uk-preserve-color) hr,
+.uk-tile-secondary:not(.uk-preserve-color) .uk-hr,
 .uk-card-primary.uk-card-body hr,
+.uk-card-primary.uk-card-body .uk-hr,
 .uk-card-primary > :not([class*='uk-card-media']) hr,
+.uk-card-primary > :not([class*='uk-card-media']) .uk-hr,
 .uk-card-secondary.uk-card-body hr,
+.uk-card-secondary.uk-card-body .uk-hr,
 .uk-card-secondary > :not([class*='uk-card-media']) hr,
+.uk-card-secondary > :not([class*='uk-card-media']) .uk-hr,
 .uk-overlay-primary hr,
-.uk-offcanvas-bar hr {
+.uk-overlay-primary .uk-hr,
+.uk-offcanvas-bar hr,
+.uk-offcanvas-bar .uk-hr {
   border-top-color: rgba(255, 255, 255, 0.2);
 }
 .uk-light a.uk-link-muted,
