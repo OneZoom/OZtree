@@ -13,7 +13,7 @@ import config from '../global_config';
  */
 function popupstate(event) {
   let state = event.state;
-  if (!state) {
+  if (!state) { //state == null - we have followed a hash link.
     let loc = (window.location.pathname.indexOf("@") === -1) ? null : window.location.pathname.slice(window.location.pathname.indexOf("@"));
     state = parse_query(loc, window.location.search, window.location.hash);
   }

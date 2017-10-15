@@ -215,6 +215,8 @@ function sanitise_links(html, remove_links, base_url) {
   //sanitize image sources
   $('[src^="./"]', html).attr('src', function(i,attr) {return base_url + attr.substr(2);});
   $('[src^="/"]', html).not('[src^="//"]').attr('src', function(i,attr) {return origin + attr;});
+  //Any internal links need to be re-written to use scrollIntoView(), so that we don't change the URL by adding a hash
+  $('[href^="#"]', html).click(function() {document.getElementById($(this).attr('href').substr(1)).scrollIntoView(); return false;});
   if (remove_links) {
     $('[href]', html).not('[href^="#"]').each(function() {
       if ($(this).contents().length) {
@@ -667,12 +669,7 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
                     );
             }
         });
-    
-    $(".uk-modal-dialog")
-        .click(function(event) {
-            event.stopPropagation();
-        })
-    
+        
     setup_location_list($('.popular_species', box_selector), popular_locations, UI_reset_marked_via_event);
 
     if (OZid) {
