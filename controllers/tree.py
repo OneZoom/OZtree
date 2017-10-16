@@ -137,10 +137,10 @@ def linkout_via_picID():
             #method == 'iframe_if_possible' or similar, so we simply fall though and allow `external_url` to specify what to do
             pass
     #we do not want to jump or we do but this is not an EoL image, so return a stand-in page
-    rows = db((db.images_by_ott.src_id == src_id) & (db.images_by_ott.src == src)).select(db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.url, db.images_by_ott.rights, db.images_by_ott.licence)
-    if len(rows) == 0:
-        rows = db((db.images_by_name.src_id == src_id) & (db.images_by_name.src == src)).select(db.images_by_name.src, db.images_by_name.src_id, db.images_by_name.url, db.images_by_name.rights, db.images_by_name.licence)
-    return dict(images_info=rows, iframe_src=external_url)
+    row = db((db.images_by_ott.src_id == src_id) & (db.images_by_ott.src == src)).select(db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.url, db.images_by_ott.rights, db.images_by_ott.licence).first()
+    if row is None:
+        row = db((db.images_by_name.src_id == src_id) & (db.images_by_name.src == src)).select(db.images_by_name.src, db.images_by_name.src_id, db.images_by_name.url, db.images_by_name.rights, db.images_by_name.licence).first()
+    return dict(image=row, iframe_src=external_url)
         
 def eol_ID():
     """

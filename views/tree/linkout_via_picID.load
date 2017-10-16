@@ -1,6 +1,5 @@
 {{if request.vars.get('nolinks'):}}{{#remove hyperlink from *all* links created via the web2py A() helper}}{{def A(*args, **kwargs): return CAT(*args)}}{{pass}}{{if iframe_src is not None:}}<iframe src="{{=iframe_src}}"></iframe>{{else:}}
 <dl>
-  {{for image in images_info:}}
   <dt><img src="{{=thumbnail_url(image.src, image.src_id)}}"></dt>
   <dd>
     <ul>
@@ -9,6 +8,5 @@
       <li>{{=T('Provenance:')}} {{if image.url is None:}}{{=XML(T('No information available. Please <a href="mailto:mail@onezoom.org">contact us</a> if you require more information.'))}}{{elif image.url.startswith('http'):}}{{=A(image.url, _href=image.url)}}{{else:}}{{=image.url}}{{pass}}</li>
     <ul>
   </dd>
-  {{pass}}
 </dl>
 {{pass}}
