@@ -58,13 +58,13 @@ Before anything else, get the OZtree app from [github](https://github.com/OneZoo
 
 ### For a full installation (recommended):
 	
-1. Install a source code version of web2py, placing your OZtree repository within the web2py `applications` directory.
-2. Compile the client-side explorer code using `grunt compile` (or `grunt build` if in production mode) - see *"Building the OneZoom tree viewer"*.
-3. Install & start MySQL, then create a new database (see "Setting up the database backend")
-4. Create a appconfig.ini file in `private`, with `migrate=1` and which references this database with the appropriate username and password. We also recommend copying the `routes.py` file from `_MOVE_CONTENTS_TO_WEB2PY_DIR` to the top level of your web2py installation - see "Web2py installation"
-5. Fire up a temporary web2py server and visit the main page to create the (empty) database tables
-6. Load up data into the tables: first create a user and assign it a 'manager' role in the `auth_` tables using the web2py database admin pages, then load the other tables using data from the original OneZoom site (e.g. sent to you via file transfer) - see "Filling the database".
-7. Create the indexes on the tables by copying and pasting the text at the end of db.py into a mysql client.
+1. Install a source code version of [web2py](http://www.web2py.com), placing your [OZtree repository](https://github.com/OneZoom/OZtree) within the web2py `applications` directory.
+2. Compile the client-side explorer code using `grunt compile` (or `grunt build` if in production mode) - see *"[Building the OneZoom tree viewer](#building-the-onezoom-tree-viewer)"*.
+3. [Install](http://dev.mysql.com/downloads/mysql/) & start MySQL, then create a new database (see *"[Setting up the database backend](#setting-up-the-database-backend)"*)
+4. Create a appconfig.ini file in `OZtree/private`, with `migrate=1` and which references this database with the appropriate username and password. We also recommend copying the `routes.py` file from `OZtree/_MOVE_CONTENTS_TO_WEB2PY_DIR` to the top level of your web2py installation - see *"[Web2py installation](#web2py-installation)"*
+5. Fire up a temporary web2py server and visit the main page to create the (empty) database tables - see *"[Starting and shutting down web2py](#starting-and-shutting-down-web2py)"*
+6. Load up data into the tables: first create a user and assign it a 'manager' role in the `auth_` tables using the web2py database admin pages, then load the other tables using data from the original OneZoom site (e.g. sent to you via file transfer) - see *"[Filling the database](#filling-the-database)"*.
+7. Create the indexes on the tables by copying and pasting the text at the end of the `OZtree/models/db.py` file into a mysql client.
 
 
 ## Downloading the OZtree app
