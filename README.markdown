@@ -50,12 +50,13 @@ The OneZoom codebase uses the following software (licenses for each listed in br
 Before anything else, get the OZtree app from [github](https://github.com/OneZoom/OZtree) - see *"Downloading the OZtree app"*. You should also make sure you have node.js and the node package manager (npm) and the grunt command-line interface installed on your system - see *"Building the OneZoom tree viewer"*
 
 
-###For a partial installation (less tested):
+### For a partial installation (less tested):
+
 1. From anywhere within the OZtree download, run `npm install`, and compile the client-side explorer code using `grunt compile` - see *"Building the OneZoom tree viewer"*.
 2. Run `grunt partial-install`. This should download the "minlife' page from the central OneZoom website, modify links within it, and place a file named `minlife.html` into the `static` directory of your OZtree distribution.
 3. Open `minlife.html` with a web browser of your choice (we recommend Chrome or Safari). Note that this file needs to stay within the static directory to work at all.
 
-###For a full installation (recommended):
+### For a full installation (recommended):
 	
 1. Install a source code version of web2py, placing your OZtree repository within the web2py `applications` directory.
 2. Compile the client-side explorer code using `grunt compile` (or `grunt build` if in production mode) - see *"Building the OneZoom tree viewer"*.
