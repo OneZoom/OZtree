@@ -119,7 +119,7 @@ So a major step when installing OneZoom is:
 
 2. (optional) We find it useful to have a GUI interface to connect to the database and run SQL scripts, this can be used instead of using MySQL command line (similar to Windows command line) that is installed by default with MySQL. On Mac OS X we use the (excellent) http://www.sequelpro.com. On windows you could try http://www.mysql.com/products/workbench/ or https://www.quest.com/products/toad-for-mysql/
 
-3. 	Once mysql is installed, you will need to set a root password, and create a database for web2py to use. See http://dev.mysql.com/doc/refman/5.7/en/default-privileges.html. So once mysqld is running, you need to log in to the sql server with the root name and password (if you are using the command line, log in using `mysql -u root -p`), and issue the following SQL commands (the text after the `mysql>` prompt) to create a database for web2py to use: feel free to use a different 'passwd'.
+3. 	Once mysql is installed, you will need to set a root password, and create a database for web2py to use. See http://dev.mysql.com/doc/refman/5.7/en/default-privileges.html. So once mysqld is running, you need to log in to the sql server with the root name and password (if you are using the command line, log in using `mysql -u root -p`), and issue the following SQL commands (the text after the `mysql>` prompt) to create a database for web2py to use: feel free to use a different *'passwd'*.
 
 	```
 	mysql> create database OneZoom
@@ -171,8 +171,7 @@ url        = https://www.sandbox.paypal.com
 ; * allow_sponsorship. Should we allow the sponsorship page to be 
 ;    shown on this machine? Usually not allowed, except on the 
 ;    main OneZoom site (on museum displays people will not want
-;    to enter paypal etc details.
-; * oztree_js_suffix: use `.js` for dev mode or `.min.js` for production
+;    to enter paypal etc details).
 [general]
 maintenance_mins = 0
 pics_dir = //images.onezoom.org/
