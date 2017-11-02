@@ -153,11 +153,14 @@ def get_file_from_json_struct(data_obj_json_struct, output_dir, thumbnail_size, 
     """
     #NB: image_cols = ['dataObjectVersionID','eolMediaURL','vettedStatus','dataRating','crop_x', 'crop_y', 'crop_width']
     #note that crop_width is in percent ****
+    import shutil
+    from subprocess import call
     import urllib.request
     import urllib.error
-    import piexif
-    from subprocess import call
 
+    import piexif
+
+    CONVERT = shutil.which('convert') #needed in windows, to get the correct 'convert' command
     d=data_obj_json_struct
     if 'eolMediaURL' not in d or 'dataObjectVersionID' not in d:
         warn("Both 'eolMediaURL' and 'dataObjectVersionID' must be present in data object {}.".format(d))
@@ -204,14 +207,14 @@ def get_file_from_json_struct(data_obj_json_struct, output_dir, thumbnail_size, 
                 size = str(int(round(initial_thumb_px + 2*min_crop_pixels)))
                 if verbosity > 2:
                     info("crop info: {}...{}, {}".format(initial_thumb_px, 2*min_crop_pixels, size))
-            cmd = ['convert', image_orig, '-crop', size+'x'+size+'+'+left+'+'+top, '+repage', 
+            cmd = [CONVERT, image_orig, '-crop', size+'x'+size+'+'+left+'+'+top, '+repage', 
                    '-resize', str(thumbnail_size)+'x'+str(thumbnail_size), image_intermediate
                    ]
             if verbosity > 1:
                 info("Custom crop: {}.".format(" ".join(cmd)), v=verbosity)
         except KeyError:
             #hasn't got crop info: use default
-            cmd = ['convert', image_orig, '-gravity', 'NorthWest', 
+            cmd = [CONVERT, image_orig, '-gravity', 'NorthWest', 
                    '-resize', str(thumbnail_size)+'x'+str(thumbnail_size)+'^', "-extent", str(thumbnail_size)+'x'+str(thumbnail_size), image_intermediate
                    ]
             if verbosity > 1:
