@@ -365,6 +365,7 @@ db.define_table('images_by_name',
 db.define_table('eol_updated',
     Field('eol', type='integer', notnull=True, unique=True, requires=IS_NOT_EMPTY()),
     Field('updated', type = 'datetime', notnull=True, requires= IS_DATETIME()),
+    Field('not_available', type = boolean), #e.g. for pages that have been removed from EoL: useful to keep track of this as some of our EoL page IDs may be out-of-date
     format = '%(eol)s')
 
 # table for IUCN status: this can get updated by a call to the IUCN API
