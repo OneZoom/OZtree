@@ -200,6 +200,8 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
     We also put a delay in here to avoid overloading the EoL API.
     
     '''
+    if len(eol_page_to_ott) == 0:
+        return {}
     loop_seconds=loop_seconds or 60.0
     global loop_num
     global loop_starttime
