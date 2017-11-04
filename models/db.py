@@ -365,7 +365,10 @@ db.define_table('images_by_name',
 db.define_table('eol_updated',
     Field('eol', type='integer', notnull=True, unique=True, requires=IS_NOT_EMPTY()),
     Field('updated', type = 'datetime', notnull=True, requires= IS_DATETIME()),
-    Field('not_available', type = boolean), #e.g. for pages that have been removed from EoL: useful to keep track of this as some of our EoL page IDs may be out-of-date
+    #Some EoL pages may have moved to a different id, or have been permanently deleted (API calls return "unavailable page id").
+    #It is useful to keep track of these for monitoring purposes, e.g. so we can update our mapping in ordered_XX or correct on Wikidata
+    #if an eol ID has been deleted rather than moved, we should set this to None / NULL
+    Field('real_eol_id', type = 'integer'),
     format = '%(eol)s')
 
 # table for IUCN status: this can get updated by a call to the IUCN API

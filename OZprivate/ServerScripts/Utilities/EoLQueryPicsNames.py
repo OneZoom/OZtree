@@ -188,16 +188,18 @@ def lookup_and_save_bespoke_EoL_images(eol_dataobject_to_ott, sess, API_key, db_
 
 def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection, 
                              images_table, names_table, loop_seconds=None):
-    """
+    '''
     Given a mapping of EOL to OTT ids, call the EoL batch API for all these EOL ids to get best images and vernacular names.
     If images_table is none, then only look for (and save) vernacular names. Save the updated time both in the 
     images, and names tables. If there are no EoL ids returned for an OTT, we should delete these entries from the DB
     
-    This should return a list of the OTT ids that have been updated. If none, then there has been a failure. If an empty list,
-    none have succeeded.
+    This should return None on failure, otherwise a dict with keys for the EoL ids that have been updated, and values 
+    for the potentially new eol IDs returns from the api (these are usually the same as the keys). If the API has
+    returned "unavailable page id", then the value will be None, indicating we should flag up the "not_available" field in eol_updated
     
-    We also put a delay in here to avoid overloading the EoL API
-    """
+    We also put a delay in here to avoid overloading the EoL API.
+    
+    '''
     loop_seconds=loop_seconds or 60.0
     global loop_num
     global loop_starttime
@@ -262,14 +264,15 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
             req['pd'] = sess.send(prepped, timeout=10)
     except requests.exceptions.Timeout:
         warn('socket timed out - URL {}'.format(prepped.url))
-        return False
+        return None
     except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as error:
         warn('Data not retrieved because {}\nURL: {}'.format(error, prepped.url))
-        return False
+        return None
     except requests.exceptions.RetryError:
         warn('Failed retrying - URL {}'.format(prepped.url))
-        return False
+        return None
 
+    completed_eols = {} #will be returned
     db_cursor = db_connection.cursor()
     image_ranking_tables = {ott:{} for ott in OTTids} if images_table else {} #a set of 'tables', one for each ott, to help us choose which images to download/use for this OTT
     image_information = {} #accompanying information for each new data object ID saved into an image_ranking_tables
@@ -277,80 +280,85 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
         try:
             for EOLid, data in get_result.json().items():
                 EOLid = int(EOLid)
-                if EOLid != int(data['identifier']):
-                    warn("The requested EOL id ({}) has changed to {}. The mapping of OTT to EOL ids may need updating".format(EOLid, data['identifier']))
-                OTTid = eol_page_to_ott[EOLid]
-                if 'vernacularNames' in data:
-                    #remove all the outdated names for this ott (don't care if there are none)
-                    sql = "DELETE FROM {0} WHERE ott={1} AND src={1};".format(names_table, subs)
-                    dummy = db_cursor.execute(sql, (OTTid,src_flags['eol']))
-        
-                    for nm in data['vernacularNames']:
-                        vernacular = html.unescape(nm['vernacularName'])
-                        try:
-                            #lang_primary is the 'primary' letter (lowercase) language, e.g. 'en', 'cmn'
-                            lang_primary = nm['language'].split('-')[0].lower()
-                            if len(vernacular) > name_length_chars:
-                                warn("vernacular name for EOL {} (ott {}) > {} characters.\nTruncating".format(EOLid, OTTid, name_length_chars))
-                            if lang_primary=='en' and (vernacular.startswith("A ") or vernacular.startswith("a ")):
-                                #ignore english vernaculars like "a beetle" 
-                                continue
-                            sql = "INSERT INTO {0} (ott, vernacular, lang_primary, lang_full, preferred, src, src_id, updated) VALUES ({1}, {1}, {1}, {1}, {1}, {1},{1}, {2});".format(names_table, subs, datetime_now)
-                            db_cursor.execute(sql, (OTTid, vernacular[:name_length_chars], lang_primary, nm['language'].lower(), 1 if nm.get('eol_preferred') else 0, src_flags['eol'],EOLid))
-                        except:
-                            warn("problem inserting vernacular name for EOL {} (ott {})".format(EOLid, OTTid))
-                    db_connection.commit()
-                if images_table:
-                    if 'dataObjects' not in data:
-                        warn("API failure - the api is not returning data objects for OTT {}, so we are skipping image checking for this ott".format(OTTid))
-                        image_ranking_tables[OTTid] = None
-                    elif len(image_ranking_tables[OTTid]) == 0:
-                        #create the ranking table:
-                        # For each OTT, we want a table which contains the (up to) 3 new images specified by the API,
-                        # as well as the existing image entries for this OTT in our own database.
-                        # We will eventually rank these by image rating, but ensure that new images always have the highest 
-                        # rating if they have an appropriate image.
-                        # Making a table like this means that if we fail to get an image from EoL, we can get the next best
-                        #  ranked image, eventually reverting to the previously downloaded ones if necessary
-                        image_ranking_table = image_ranking_tables[OTTid] #this will contain the image ranking table
-                        db_fields1 = ['src', 'rating']
-                        db_fields2 = ['best_'+l for l in image_status_labels]
-                        sql="SELECT {0} FROM `{1}` WHERE ott = {2} AND src_id={2}".format(
-                            ",".join(db_fields1 + db_fields2),
-                             images_table,
-                             subs)
-                        db_cursor.execute(sql, (OTTid, src_flags['eol']))
-                        
-                        for r in db_cursor.fetchall():
-                            DOid, rating = int(r[0]), float(r[1])/10000.0
-                            is_best = {l:r[len(db_fields1)+i] for i,l in enumerate(db_fields2)}
-                            #Make the ranking table of previously downloaded images, putting original ratings
-                            # only where the image is marked as 'best' for that type, e.g. if doIDs are 1,2:
-                            #{ -1 : {best_any: 0, best_pd: 2.5, best_verified: 2.0},
-                            #{ -2 : {best_any: 4.1, best_pd: 0, best_verified: 0} 
-                            #NB: previously downloaded images are given a negative data object id, to distinguish them from 
-                            #the about-to-be downloaded ones
-                            image_ranking_table[-DOid]={lab: rating if is_best[colname] else 0 for colname,lab in zip(db_fields2, image_status_labels)}
-                        if verbosity > 1 and len(image_ranking_table):
-                            info("Created table of previously downloaded EoL images for ott {} (objects {})".format(ott, image_ranking_table.keys()))
-                    if image_ranking_tables[OTTid] is not None:
-                        image_ranking_table = image_ranking_tables[OTTid]
-                        #just use the first object from each API call (if there is one)
-                        if len(data['dataObjects']):
-                            d=data['dataObjects'][0]
-                            image_id = d['dataObjectVersionID']
-                            #we store ratings as integers from 10000-50000, which always makes them higher than existing
-                            image_rating = float(d['dataRating'])*10000.0
-                            #create a dict for the data object ID index if it doesn't exist
-                            if image_id not in image_ranking_table:
-                                image_ranking_table[image_id]={s:0 for s in image_status_labels}
-                            row = image_ranking_table[image_id]
-                            row["any"] = image_rating
-                            if d['vettedStatus']=='Trusted':
-                                row['verified'] = image_rating
-                            if req_focus=='pd':
-                                row['pd'] = image_rating
-                            image_information[image_id]={'data_object':d, 'page_id': data.get("identifier"), "sci_name":data.get("scientificName")}
+                if 'identifier' not in data:
+                    #this is probably "unavailable page id"
+                    completed_eols[EOLid] = None
+                else:
+                    completed_eols[EOLid]=int(data['identifier'])
+                    if EOLid  != completed_eols[EOLid]:
+                        warn("The requested EOL id ({}) has changed to {}. The mapping of OTT to EOL ids may need updating".format(EOLid, data['identifier']))
+                    OTTid = eol_page_to_ott[EOLid]
+                    if 'vernacularNames' in data:
+                        #remove all the outdated names for this ott (don't care if there are none)
+                        sql = "DELETE FROM {0} WHERE ott={1} AND src={1};".format(names_table, subs)
+                        dummy = db_cursor.execute(sql, (OTTid,src_flags['eol']))
+            
+                        for nm in data['vernacularNames']:
+                            vernacular = html.unescape(nm['vernacularName'])
+                            try:
+                                #lang_primary is the 'primary' letter (lowercase) language, e.g. 'en', 'cmn'
+                                lang_primary = nm['language'].split('-')[0].lower()
+                                if len(vernacular) > name_length_chars:
+                                    warn("vernacular name for EOL {} (ott {}) > {} characters.\nTruncating".format(EOLid, OTTid, name_length_chars))
+                                if lang_primary=='en' and (vernacular.startswith("A ") or vernacular.startswith("a ")):
+                                    #ignore english vernaculars like "a beetle" 
+                                    continue
+                                sql = "INSERT INTO {0} (ott, vernacular, lang_primary, lang_full, preferred, src, src_id, updated) VALUES ({1}, {1}, {1}, {1}, {1}, {1},{1}, {2});".format(names_table, subs, datetime_now)
+                                db_cursor.execute(sql, (OTTid, vernacular[:name_length_chars], lang_primary, nm['language'].lower(), 1 if nm.get('eol_preferred') else 0, src_flags['eol'],EOLid))
+                            except:
+                                warn("problem inserting vernacular name for EOL {} (ott {})".format(EOLid, OTTid))
+                        db_connection.commit()
+                    if images_table:
+                        if 'dataObjects' not in data:
+                            warn("API failure - the api is not returning data objects for OTT {}, so we are skipping image checking for this ott".format(OTTid))
+                            image_ranking_tables[OTTid] = None
+                        elif len(image_ranking_tables[OTTid]) == 0:
+                            #create the ranking table:
+                            # For each OTT, we want a table which contains the (up to) 3 new images specified by the API,
+                            # as well as the existing image entries for this OTT in our own database.
+                            # We will eventually rank these by image rating, but ensure that new images always have the highest 
+                            # rating if they have an appropriate image.
+                            # Making a table like this means that if we fail to get an image from EoL, we can get the next best
+                            #  ranked image, eventually reverting to the previously downloaded ones if necessary
+                            image_ranking_table = image_ranking_tables[OTTid] #this will contain the image ranking table
+                            db_fields1 = ['src', 'rating']
+                            db_fields2 = ['best_'+l for l in image_status_labels]
+                            sql="SELECT {0} FROM `{1}` WHERE ott = {2} AND src_id={2}".format(
+                                ",".join(db_fields1 + db_fields2),
+                                 images_table,
+                                 subs)
+                            db_cursor.execute(sql, (OTTid, src_flags['eol']))
+                            
+                            for r in db_cursor.fetchall():
+                                DOid, rating = int(r[0]), float(r[1])/10000.0
+                                is_best = {l:r[len(db_fields1)+i] for i,l in enumerate(db_fields2)}
+                                #Make the ranking table of previously downloaded images, putting original ratings
+                                # only where the image is marked as 'best' for that type, e.g. if doIDs are 1,2:
+                                #{ -1 : {best_any: 0, best_pd: 2.5, best_verified: 2.0},
+                                #{ -2 : {best_any: 4.1, best_pd: 0, best_verified: 0} 
+                                #NB: previously downloaded images are given a negative data object id, to distinguish them from 
+                                #the about-to-be downloaded ones
+                                image_ranking_table[-DOid]={lab: rating if is_best[colname] else 0 for colname,lab in zip(db_fields2, image_status_labels)}
+                            if verbosity > 1 and len(image_ranking_table):
+                                info("Created table of previously downloaded EoL images for ott {} (objects {})".format(ott, image_ranking_table.keys()))
+                        if image_ranking_tables[OTTid] is not None:
+                            image_ranking_table = image_ranking_tables[OTTid]
+                            #just use the first object from each API call (if there is one)
+                            if len(data['dataObjects']):
+                                d=data['dataObjects'][0]
+                                image_id = d['dataObjectVersionID']
+                                #we store ratings as integers from 10000-50000, which always makes them higher than existing
+                                image_rating = float(d['dataRating'])*10000.0
+                                #create a dict for the data object ID index if it doesn't exist
+                                if image_id not in image_ranking_table:
+                                    image_ranking_table[image_id]={s:0 for s in image_status_labels}
+                                row = image_ranking_table[image_id]
+                                row["any"] = image_rating
+                                if d['vettedStatus']=='Trusted':
+                                    row['verified'] = image_rating
+                                if req_focus=='pd':
+                                    row['pd'] = image_rating
+                                image_information[image_id]={'data_object':d, 'page_id': data.get("identifier"), "sci_name":data.get("scientificName")}
         except (AttributeError,ValueError):
             #there is no valid json in get_result
             warn("Problem interpreting json from the string returned from the EoL API for {} ({} request) so aborting the current OTT batch. Json string is\n {}".format(get_result.url, req_focus, get_result))
@@ -454,16 +462,19 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
             db_connection.commit()
 
             db_cursor.close()    
-    return True
+    return completed_eols
 
 
 def save_eol_to_ott(eol_page_to_ott, sess, API_key, db_connection, images_table, inspected_table):
     if len(eol_page_to_ott):
-        if lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection, images_table, names_table=args.save_names_table, loop_seconds=args.loop_seconds):
+        EoLdone = lookup_and_save_auto_EoL_info(
+            eol_page_to_ott, sess, API_key, db_connection, images_table, names_table=args.save_names_table, loop_seconds=args.loop_seconds)
+        if EoLdone is not None:
             db_curs = db_connection.cursor()
-            for eol, ott in eol_page_to_ott.items():
-                sql = "INSERT INTO `{0}` (eol, updated) VALUES ({1},{2}) ON DUPLICATE KEY UPDATE updated={2}".format(args.save_update_times_table, int(eol), datetime_now)
-                db_curs.execute(sql)
+            for old_eol, new_eol in EoLdone.items():
+                ott = eol_page_to_ott[old_eol]
+                sql = "INSERT INTO `{0}` (eol, updated, real_eol_id) VALUES ({1},{2},{1}) ON DUPLICATE KEY UPDATE updated={2}, real_eol_id={1}".format(args.save_update_times_table, subs, datetime_now)
+                db_curs.execute(sql, (int(old_eol), None if new_eol is None else int(new_eol), None if new_eol is None else int(new_eol)))
                 if inspected_table is not None:
                     sql = "DELETE FROM `{}` WHERE ott = {}".format(inspected_table, subs)
                     db_curs.execute(sql, int(ott))
@@ -678,20 +689,23 @@ if __name__ == "__main__":
             # Once all have been checked, look in the images table for the least recently updated images
             #  that also have an ott in any of the input tables.
             big_batch=batch_size*100 #to avoid many slow db queries, get a big_batch from the db and split it into smaller ones for the API
-    
+            info("Automatic mode - will first look at unchecked EoL IDs then update existing (any recently inspected on OneZoom will be updated first)")
             while True:
                 try:
-                    info("Getting a big db batch")
                     #first look for unchecked eol IDs in ordered_leaves or ordered_nodes (i.e. if the count of eol ids > count when joined with updated
                     for eolott_table, im_table in all_tables.items():
                         while True:
                             batches = []
                             db_curs = db_connection.cursor()
-                            db_curs.execute("SELECT(SELECT count(eol) FROM {0}) - (SELECT count(1) FROM {0} INNER JOIN {1} on {0}.eol = {1}.eol)".format(eolott_table, args.save_update_times_table))
+                            sql = "SELECT(SELECT count(eol) FROM {0}) - (SELECT count(1) FROM {0} INNER JOIN {1} on {0}.eol = {1}.eol)".format(eolott_table, args.save_update_times_table)
+                            db_curs.execute(sql)
                             if db_curs.fetchall()[0][0] == 0:
+                                info("All EoL ids have been checked at least once: switching to update mode")
                                 db_curs.close()
                                 break
                             #there are some eol IDs that have not been checked: get them in batches
+                            #we have a current problem that batches which contain an EoL ID which is "no longer available" causes the entire batch to fail
+                            info("Checking EoL ids that have never been looked at: getting a big batch")
                             sql = "SELECT ott, eol, popularity FROM {0} WHERE eol IS NOT NULL AND NOT EXISTS (SELECT(1) FROM {1} WHERE {0}.eol = {1}.eol) ORDER BY popularity DESC LIMIT {2}".format(eolott_table, args.save_update_times_table, big_batch)
                             db_curs.execute(sql)
                             rows=True
@@ -704,14 +718,17 @@ if __name__ == "__main__":
                             for eol_page_to_ott in batches:
                                 #within each loop, do an additional check in case there have been any recent inspections of stuff
                                 #these will all get done first, in sequential batches
-                                check_recently_inspected(s, args.EOL_API_key, db_connection, batch_size, all_tables, args. eol_inspected_table)
+                                check_recently_inspected(s, args.EOL_API_key, db_connection, batch_size, all_tables, args.eol_inspected_table)
 
                                 #now go ahead and do the batch lookup
-                                if lookup_and_save_auto_EoL_info(eol_page_to_ott, s, args.EOL_API_key, db_connection, images_table=im_table, names_table=args.save_names_table, loop_seconds=args.loop_seconds):
+                                EoLdone = lookup_and_save_auto_EoL_info(
+                                    eol_page_to_ott, s, args.EOL_API_key, db_connection, images_table=im_table, names_table=args.save_names_table, loop_seconds=args.loop_seconds)
+                                if EoLdone is not None:
                                     db_curs = db_connection.cursor()
-                                    for eol in eol_page_to_ott.keys():
-                                        sql = "INSERT INTO `{0}` (eol, updated) VALUES ({1},{2}) ON DUPLICATE KEY UPDATE updated={2}".format(args.save_update_times_table, int(eol), datetime_now)
-                                        db_curs.execute(sql)
+                                    for old_eol, new_eol in EoLdone.items():
+                                        ott = eol_page_to_ott[old_eol]
+                                        sql = "INSERT INTO `{0}` (eol, updated, real_eol_id) VALUES ({1},{2},{1}) ON DUPLICATE KEY UPDATE updated={2}, real_eol_id={1}".format(args.save_update_times_table, subs, datetime_now)
+                                        db_curs.execute(sql, (int(old_eol), None if new_eol is None else int(new_eol), None if new_eol is None else int(new_eol)))
                                     db_connection.commit()
                                     db_curs.close()
     
@@ -722,7 +739,7 @@ if __name__ == "__main__":
                     # existing entries, or ones in the recently inspected table.
                     #
                     # Search through the oldest updated eol id that is still in one of the ordered_leaves/nodes tables.
-                    # We have to separate this out by the table it is found in
+                    info("Updating info for EoL ids: getting a big batch")
                     db_curs = db_connection.cursor()
                     sql = "select eols_in_tree.ott, eols_in_tree.eol, eols_in_tree.table_index from ("
                     sql += " UNION ALL ".join(["(select eol, ott, {} AS table_index FROM {} WHERE eol IS NOT NULL)".format(i, list(all_tables.keys())[i]) for i in range(len(all_tables))])
@@ -748,14 +765,17 @@ if __name__ == "__main__":
                     #now we can go through the batches
                     for batch in batch_queue:
                         #within each loop, do an additional check in case there have been any recent inspections of stuff
-                        check_recently_inspected(s, args.EOL_API_key, db_connection, batch_size, all_tables, args. eol_inspected_table)
+                        check_recently_inspected(s, args.EOL_API_key, db_connection, batch_size, all_tables, args.eol_inspected_table)
 
                         if len(batch['eol_page_to_ott']):
-                            if lookup_and_save_auto_EoL_info(batch['eol_page_to_ott'], s, args.EOL_API_key, db_connection, images_table=all_tables[batch['table_name']], names_table=args.save_names_table, loop_seconds=args.loop_seconds):
+                            EoLdone = lookup_and_save_auto_EoL_info(
+                                batch['eol_page_to_ott'], s, args.EOL_API_key, db_connection, images_table=all_tables[batch['table_name']], names_table=args.save_names_table, loop_seconds=args.loop_seconds)
+                            if EoLdone is not None:
                                 db_curs = db_connection.cursor()
-                                for eol in batch['eol_page_to_ott'].keys():
-                                     sql = "INSERT INTO `{0}` (eol, updated) VALUES ({1},{2}) ON DUPLICATE KEY UPDATE updated={2}".format(args.save_update_times_table, int(eol), datetime_now)
-                                     db_curs.execute(sql)
+                                for old_eol, new_eol in EoLdone.items():
+                                    ott = batch['eol_page_to_ott'][old_eol]
+                                    sql = "INSERT INTO `{0}` (eol, updated, real_eol_id) VALUES ({1},{2},{1}) ON DUPLICATE KEY UPDATE updated={2}, real_eol_id={1}".format(args.save_update_times_table, subs, datetime_now)
+                                    db_curs.execute(sql, (int(old_eol), None if new_eol is None else int(new_eol), None if new_eol is None else int(new_eol)))
                                 db_connection.commit()
                                 db_curs.close()
                 except Exception as e:
