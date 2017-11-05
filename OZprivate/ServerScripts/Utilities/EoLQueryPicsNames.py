@@ -699,23 +699,20 @@ if __name__ == "__main__":
                         while True:
                             batches = []
                             db_curs = db_connection.cursor()
-                            sql = "SELECT(SELECT count(eol) FROM {0}) - (SELECT count(1) FROM {0} INNER JOIN {1} on {0}.eol = {1}.eol)".format(eolott_table, args.save_update_times_table)
-                            db_curs.execute(sql)
-                            if db_curs.fetchall()[0][0] == 0:
-                                info("All EoL ids have been checked at least once: switching to update mode")
-                                db_curs.close()
-                                break
-                            #there are some eol IDs that have not been checked: get them in batches
-                            #we have a current problem that batches which contain an EoL ID which is "no longer available" causes the entire batch to fail
-                            info("Checking EoL ids that have never been looked at: getting a big batch")
+                            #tackle eol IDs that have not been checked: get them in batches
+                            info("Checking EoL ids that have never been looked at: getting a big batch for {}".format(eolott_table))
                             sql = "SELECT ott, eol, popularity FROM {0} WHERE eol IS NOT NULL AND NOT EXISTS (SELECT(1) FROM {1} WHERE {0}.eol = {1}.eol) ORDER BY popularity DESC LIMIT {2}".format(eolott_table, args.save_update_times_table, big_batch)
                             db_curs.execute(sql)
                             rows=True
                             while rows:
                                 #get the rows in batches
-                                rows = db_curs.fetchmany(batch_size)
-                                batches.append({r[1]:r[0] for r in rows if r[0] and r[1]})
+                                rows = {row[1]:row[0] for row in db_curs.fetchmany(batch_size) if row[0] and row[1]}
+                                if rows:
+                                    batches.append(rows)
                             db_curs.close()
+                            if len(batches)==0:
+                                info("Checking EoL ids in {} that have never been looked at, but nothing left to check".format(eolott_table))
+                                break;
     
                             for eol_page_to_ott in batches:
                                 #within each loop, do an additional check in case there have been any recent inspections of stuff
@@ -741,7 +738,7 @@ if __name__ == "__main__":
                     # existing entries, or ones in the recently inspected table.
                     #
                     # Search through the oldest updated eol id that is still in one of the ordered_leaves/nodes tables.
-                    info("Updating info for EoL ids: getting a big batch")
+                    info("Updating info for EoL ids: getting a big batch of {} from the DB".format(big_batch))
                     db_curs = db_connection.cursor()
                     sql = "select eols_in_tree.ott, eols_in_tree.eol, eols_in_tree.table_index from ("
                     sql += " UNION ALL ".join(["(select eol, ott, {} AS table_index FROM {} WHERE eol IS NOT NULL)".format(i, list(all_tables.keys())[i]) for i in range(len(all_tables))])
