@@ -734,13 +734,16 @@ def life_text_init_taxa(text_tree):
 def check_version() : #this is a private function (has a space after the name)
     import os
     try:
-        version = -(db.ordered_nodes[1].parent) #the version number of the tree is hackily stored as a negative parent of the root
+        root = db.ordered_nodes[1] 
+        if root is None:
+            raise IndexError("no data in the ordered_nodes table, so cannot get version number from first row")   
+        version = -(root.parent) #the version number of the tree is hackily stored as a negative parent of the root
         if not os.path.isfile(os.path.join(request.folder,
                                   "static",
                                   "FinalOutputs",
                                   "data",
                                   "completetree_{}.js".format(version))):
-            raise IOError("completetree file does not exist for version {}".format(version))
+            raise IOError("a completetree file does not exist for version {}".format(version))
         return version
     except Exception as e:
         return str(e)
