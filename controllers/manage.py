@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
-pic_path = 'applications/OneZoom/static/FinalOutputs/pics' #where to save pics, and where to check if a local version of a picture exists
+from OZfunctions import *
+
+def pic_path ():
+    """
+    Where to save pics, and where to check if a local version of a picture exists
+    must be a function called with request.folder defined
+    """
+    return os.path.join(request.folder,'static','FinalOutputs','pics')
 
 @auth.requires_membership(role='manager')
 def index():
@@ -14,8 +21,10 @@ def edit_language():
     import time
     from gluon.languages import (read_dict, write_dict)
     from gluon.utils import md5_hash
-    if request.args[0] and re.match(request.args[0], r'[^\w\.\-]') is None:
-        filename = os.path.join("applications","OneZoom","languages",request.args[0] + ".py")
+    if len(request.args) == 0:
+        raise HTTP(400 , "No language provided") 
+    if re.match(request.args[0], r'[^\w\.\-]') is None:
+        filename = os.path.join(request.folder,"languages",request.args[0] + ".py")
         if os.path.isfile(filename):
             response.title = "OneZoom language strings for " + request.args[0]
             strings = read_dict(filename)
@@ -265,7 +274,7 @@ def SPONSOR_UPDATE():
             password = m.group(3) or ''
             EoLQueryPicsNames = ['applications/OneZoom/OZprivate/ServerScripts/Utilities/EoLQueryPicsNames.py',
                                  '--database', db_conn_string,
-                                 '--output_dir', pic_path, 
+                                 '--output_dir', pic_path(), 
                                  '--add_percent', str(percent_crop_expansion),
                                  '-v', '--script', '--opentree_id', str(int(ott))]
             if db.reservations[row_id].user_nondefault_image or request.vars.admin_changed_image:
@@ -428,7 +437,7 @@ def SHOW_EMAILS():
                'name': s.name,
                'cname':cnames.get(s.OTT_ID),
                'doID': str(s.user_preferred_image),
-               'local_pic': os.path.isfile(os.path.join(pic_path, str(s.user_preferred_image)+'.jpg')) if s.user_preferred_image else None,
+               'local_pic': os.path.isfile(os.path.join(pic_path(), str(s.user_preferred_image)+'.jpg')) if s.user_preferred_image else None,
                'rowflag':None if s.admin_comment else 'no_admin',
                'mesg': s.user_message_OZ})
             try:
@@ -460,7 +469,7 @@ def SHOW_EMAILS():
             'name': s.name,
             'cname':cnames.get(s.OTT_ID),
             'doID': str(s.user_preferred_image),
-            'local_pic': os.path.isfile(os.path.join(pic_path, str(s.user_preferred_image)+'.jpg')) if s.user_preferred_image else None,
+            'local_pic': os.path.isfile(os.path.join(pic_path(), str(s.user_preferred_image)+'.jpg')) if s.user_preferred_image else None,
             'mesg': s.user_message_OZ})
         try:
             email_list[details['type']].append(details)
@@ -490,7 +499,7 @@ def SHOW_EMAILS():
             'name': s.name,
             'cname': cnames.get(s.OTT_ID),
             'doID': str(s.verified_preferred_image),
-            'local_pic': os.path.isfile(os.path.join(pic_path, str(s.verified_preferred_image)+'.jpg')) if s.verified_preferred_image else None,
+            'local_pic': os.path.isfile(os.path.join(pic_path(), str(s.verified_preferred_image)+'.jpg')) if s.verified_preferred_image else None,
             'mesg': s.user_message_OZ})
         try:
             email_list[details['type'] + " " + s.verified_time.strftime("%A %e %b, %Y")].append(details)
