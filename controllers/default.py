@@ -1322,105 +1322,105 @@ def pp_process_post():
 
 """ legacy features pointing into static pages with their own JS"""
 def ADEPD_birds_nunes_etal_2015():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/ADEPD_birds_nunes_etal_2015.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/ADEPD_birds_nunes_etal_2015.htm', vars=(request.vars)))
     return dict()
 def amphibians():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/amphibians.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/amphibians.htm', vars=(request.vars)))
     return dict()
 def birds():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/birds.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/birds.htm', vars=(request.vars)))
     return dict()
 def custom_SFU():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/custom_SFU.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/custom_SFU.htm', vars=(request.vars)))
     return dict()
 def EDGE_birds_VEi38fwj():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/EDGE_birds_VEi38fwj.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/EDGE_birds_VEi38fwj.htm', vars=(request.vars)))
     return dict()
 def EDGE_birds():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/EDGE_birds.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/EDGE_birds.htm', vars=(request.vars)))
     return dict()
 def embed():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/embed.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/embed.htm', vars=(request.vars)))
     return dict()
 def embeded_ADEPD_birds_nunes_etal_2015():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/embeded_ADEPD_birds_nunes_etal_2015.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/embeded_ADEPD_birds_nunes_etal_2015.htm', vars=(request.vars)))
     return dict()
 def embeded_EDGE_birds():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/embeded_EDGE_birds.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/embeded_EDGE_birds.htm', vars=(request.vars)))
     return dict()
 def embeded_EDGE_birds():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/embeded_EDGE_birds.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/embeded_EDGE_birds.htm', vars=(request.vars)))
     return dict()
 def embeded_EDGE_birds2():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/embeded_EDGE_birds2.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/embeded_EDGE_birds2.htm', vars=(request.vars)))
     return dict()
 def embeded_mammals():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/embeded_mammals.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/embeded_mammals.htm', vars=(request.vars)))
     return dict()
 def embeded_plants():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/embeded_plants.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/embeded_plants.htm', vars=(request.vars)))
     return dict()
 def embeded_tetrapods():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/embeded_tetrapods.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/embeded_tetrapods.htm', vars=(request.vars)))
     return dict()
 def Euphorbia_2014():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/Euphorbia_2014.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/Euphorbia_2014.htm', vars=(request.vars)))
     return dict()
 def fish():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/fish.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/fish.htm', vars=(request.vars)))
     return dict()
 def mammals():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/mammals.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/mammals.htm', vars=(request.vars)))
     return dict()
 def OneZoom_Tree_of_life_explorer_Android_license():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/OneZoom_Tree_of_life_explorer_Android_license.pdf'))
+    redirect(URL('static', 'OZLegacy/OneZoom_Tree_of_life_explorer_Android_license.pdf'))
     return dict()
 def plants_Soltis1():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/plants_Soltis1.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/plants_Soltis1.htm', vars=(request.vars)))
     return dict()
 def plants_Soltis2():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/plants_Soltis2.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/plants_Soltis2.htm', vars=(request.vars)))
     return dict()
 def plants():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/plants.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/plants.htm', vars=(request.vars)))
     return dict()
 def porifera():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/porifera.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/porifera.htm', vars=(request.vars)))
     return dict()
 def River_project_James_S_2015_1ksd19efj():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/River_project_James_S_2015_1ksd19efj.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/River_project_James_S_2015_1ksd19efj.htm', vars=(request.vars)))
     return dict()
 def Squamates_Pyron():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/Squamates_Pyron.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/Squamates_Pyron.htm', vars=(request.vars)))
     return dict()
 def tetrapods_ballweg_arctic():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/tetrapods_ballweg_arctic.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/tetrapods_ballweg_arctic.htm', vars=(request.vars)))
     return dict()
 def tetrapods_SFU():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/tetrapods_SFU.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/tetrapods_SFU.htm', vars=(request.vars)))
     return dict()
 def tetrapods():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/tetrapods.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/tetrapods.htm', vars=(request.vars)))
     return dict()
 def vascularplants_tank2013nature():
-    redirect(URL('OneZoom', 'static', 'OZLegacy/vascularplants_tank2013nature.htm', vars=(request.vars)))
+    redirect(URL('static', 'OZLegacy/vascularplants_tank2013nature.htm', vars=(request.vars)))
     return dict()
 
 #error pages
 
 #legacy for the site pages - redirect old links to more relevant new links
 def software():
-    redirect(URL('OneZoom', 'default', 'developer.html'))
+    redirect(URL('default', 'developer.html'))
     return dict()
 
 def impact():
-    redirect(URL('OneZoom', 'default', 'impacts.html'))
+    redirect(URL('default', 'impacts.html'))
     return dict()
 
 def licence():
-    redirect(URL('OneZoom', 'default', 'developer.html'))
+    redirect(URL('default', 'developer.html'))
     return dict()
 
 def news():
-    redirect(URL('OneZoom', 'default', 'milestones.html'))
+    redirect(URL('default', 'milestones.html'))
     return dict()
