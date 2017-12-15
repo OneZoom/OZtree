@@ -237,11 +237,11 @@ Web2py uses an `auth_` based system, which has tables for users, roles, and a ma
 
 The main bulk of the data returned from the API is stored in the rest of the tables in the database, as detailed below. To get the API and the rest of the website working, you will have to obtain a database dump of the OneZoom tables by emailing the normal OneZoom address. If you are loading new data on top of old, it is a good idea to truncate all the non-auth tables before loading data.
 
-Note that mySQL stupidly has a resticted version of the unicode character set, so the `vernacular_by_ott`, `vernacular_by_name`, `images_by_ott`, and `images_by_name tables` (which may contain utf8 characters e.g. in chinese etc) need to be set to utf8mb4 which is not the default. When we send you the tables, they should contain `create` syntax which makes sure the tables are correctly defined, but it may be worth checking too.
+Note that mySQL stupidly has a resticted version of the unicode character set, so fields that could contain e.g. chinese characters  need to be set to utf8mb4 (which is not the default). These are the `vernacular` field in the `vernacular_by_ott` and `vernacular_by_name` tables, the `rights` field in the `images_by_ott` and `images_by_name` tables, and the following fields in the `reservations` table: `e_mail`, `twitter_name`, `user_sponsor_name`, `user_donor_name` `user_more_info`, `user_message_OZ`, `verified_sponsor_name`, `verified_donor_name` `verified_more_info`. When we send you the tables, they should contain `create` syntax which makes sure the tables are correctly defined, but it may be worth checking too.
 
-####Creating indices (IMPORTANT)
+#### Creating indices (IMPORTANT)
 
-To get any decent performance out of your OneZoom instance, you will need to create indexes on the resulting tables. The commands for doing this are listed in a large comment at the end of db.py, from where they can be copied and pasted into a mysql client.
+To get any decent performance out of your OneZoom instance, you will need to create indexes on the resulting tables. The commands for doing this are listed in a large comment at the end of `db.py`, from where they can be copied and pasted into a mysql client.
 
 The commands to create indices also include commands to drop the indexes if they already exist. This will cause SQL errors (Can't DROP XXX) if you have not previously created any indices. These errors can be safely ignored. If you are using mysql workbench you may want to untick the option under Query to "Stop Script Execution on Errors", so that the index creation continues after each error.
 
