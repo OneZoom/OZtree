@@ -17,7 +17,7 @@ from statistics import stdev, mean
 parser = argparse.ArgumentParser(description='Blat the OZ API')
 parser.add_argument('--protocol', default="http", help='protocol: http or https')
 parser.add_argument('--server', default="127.0.0.1:8000", help='The server to use: try 127.0.0.1:8000, or beta.onezoom.org')
-parser.add_argument('--pages', default=["node_details2", "node_details"], nargs="+", help='The API "page", e.g. node_details')
+parser.add_argument('--pages', default=["API/node_details.json"], nargs="+", help='The API "page", e.g. API/node_details.json')
 parser.add_argument('--method', default="get", help="'post' or 'get'")
 parser.add_argument('--ids', default=20, type=int, help="This many leaf id requests and node id requests in a batch")
 parser.add_argument('--requests', default=100, type=int, help='Average timings over this many random requests')
