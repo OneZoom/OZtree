@@ -645,16 +645,22 @@ def get_id_by_ott():
 #PRIVATE FUNCTIONS
 
 #define a complicated global subbing Separators & Punctuation with a normal space
-punctuation_to_space_table = {i:' ' for i in xrange(sys.maxunicode) \
-                      if unicodedata.category(unichr(i)).startswith('Z') \
-                      or (unicodedata.category(unichr(i)).startswith('P') \
-                      and unichr(i) not in [u"'",u"’",u"-",u".",u"×", u"#"])} # allow e.g. ' in names
-pinyinToneMarks = "".join({
-    u'a': u'āáǎà', u'e': u'ēéěè', u'i': u'īíǐì',
-    u'o': u'ōóǒò', u'u': u'ūúǔù', u'ü': u'ǖǘǚǜ',
-    u'A': u'ĀÁǍÀ', u'E': u'ĒÉĚÈ', u'I': u'ĪÍǏÌ',
-    u'O': u'ŌÓǑÒ', u'U': u'ŪÚǓÙ', u'Ü': u'ǕǗǙǛ'
-}.values())
+#this is a slow function, so we cache it in RAM
+punctuation_to_space_table = cache.ram('punctuation_to_space_table',
+    lambda: {i:' ' for i in xrange(sys.maxunicode) \
+        if unicodedata.category(unichr(i)).startswith('Z') \
+        or (unicodedata.category(unichr(i)).startswith('P') \
+        and unichr(i) not in [u"'",u"’",u"-",u".",u"×", u"#"])}, # allow e.g. ' in names
+    time_expire = None)
+    
+pinyinToneMarks = cache.ram('pinyinToneMarks', 
+    lambda: "".join({
+        u'a': u'āáǎà', u'e': u'ēéěè', u'i': u'īíǐì',
+        u'o': u'ōóǒò', u'u': u'ūúǔù', u'ü': u'ǖǘǚǜ',
+        u'A': u'ĀÁǍÀ', u'E': u'ĒÉĚÈ', u'I': u'ĪÍǏÌ',
+        u'O': u'ŌÓǑÒ', u'U': u'ŪÚǓÙ', u'Ü': u'ǕǗǙǛ'
+    }.values()),
+    time_expire = None)
 
 def punctuation_to_space(text):
     """
