@@ -7,6 +7,11 @@ Tardigrades in panarthropods i.e. ((Onychophora , Arthropoda),Tardigrades) from 
 
 I remove the branch Mesotardigrada_ott2943024 / Thermozodium_esakii_ott2943021, for earthquake reasons (http://icb.oxfordjournals.org/content/42/3/652.full) :)
 
+There are a number of duplicate names, esp in the insects, where synonyms have not been removed, e.g. ott5853691 (Musca tenax) should be synonymised with 621271 (Eristalis tenax). These should be reported to the source datasest, but while waiting for corrections to percolate through, they can be removed using a temporary hack e.g. using
+
+Arthropoda_ott632179-5853691@
+
+
 ==SPIRALIA (as was LOPHOTROCHOZOA, see also "Assembling the Spiralian tree of life")==
 
 Contra Jordi Paps, I prefer 'Spiralia' over Lophotrochozoa, since it is simpler sounding, and Lophotrochozoa can be used in multiple senses. For the spiralian protostomes, I rely heavily on Laumer (2015) http://www.cell.com/current-biology/abstract/S0960-9822(15)00795-2
@@ -62,4 +67,4 @@ The Chaetognaths are placed as a outgroup to all other pro
 OpenTree v6 has a slighly improved phylogenetic structure for pancrustacea (including insects), so we simply take this from the OpenTree.
 
 from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Animals]
-(((((((Nemertea_ott445195@30,(((Bryozoa_ott442934@20,(Entoprocta_ott362916@,Cycliophora_ott41147@))Polyzoa,Phoronida_ott612209@),Brachiopoda_ott826261~-612209@20)Lophophorata),ANNELIDA@),Mollusca_ott802117@36)Trochozoa,(Gastrotricha_ott29723@20,Platyhelminthes_ott555379@24)),(((Rotifera_ott471706@,Acanthocephala_ott49622@)Syndermata,Micrognathozoa_ott435981@),Gnathostomulida_ott242963@)Gnathifera)Spiralia,((((Onychophora_ott1072433@20,Arthropoda_ott632179@38),Tardigrada_ott111438~-2943021@32),(Nematoda_ott395057@22,Nematomorpha_ott189836@22)),Scalidophora_ott434620@)Ecdysozoa),Chaetognatha_ott570366@22)Protostomia;
+(((((((Nemertea_ott445195@30,(((Bryozoa_ott442934@20,(Entoprocta_ott362916@,Cycliophora_ott41147@))Polyzoa,Phoronida_ott612209@),Brachiopoda_ott826261~-612209@20)Lophophorata),ANNELIDA@),Mollusca_ott802117@36)Trochozoa,(Gastrotricha_ott29723@20,Platyhelminthes_ott555379@24)),(((Rotifera_ott471706@,Acanthocephala_ott49622@)Syndermata,Micrognathozoa_ott435981@),Gnathostomulida_ott242963@)Gnathifera)Spiralia,((((Onychophora_ott1072433@20,Arthropoda_ott632179-5853691@38),Tardigrada_ott111438~-2943021@32),(Nematoda_ott395057@22,Nematomorpha_ott189836@22)),Scalidophora_ott434620@)Ecdysozoa),Chaetognatha_ott570366@22)Protostomia;
