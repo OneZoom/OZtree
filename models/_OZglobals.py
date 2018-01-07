@@ -2,9 +2,17 @@
 
 #some bitwise flags for use later
 #bitwise flags for existence of different language wikipedia articles - order must match those listed in construct_wiki_info in CSV_base_table_creator.py
-wikiflags = {lang:bit for (bit,lang) in enumerate(['en','de','es','fr','ja','ru','it','zh','pt','ar','pl','nl','fa','tr','sv','he','uk','id','vi','ko'])} 
-src_flags = {'onezoom':1, 'eol':2, 'wikidata':3, 'iucn':4, 'arkive':5, 'onezoom_special':8}
-inv_src_flags = {src_flags[k]:k for k in src_flags}
+wikiflags = cache.ram('wikiflags',
+    lambda: {lang:bit for (bit,lang) in enumerate(['en','de','es','fr','ja','ru','it','zh','pt','ar','pl','nl','fa','tr','sv','he','uk','id','vi','ko'])},
+    time_expire = None)
+
+src_flags = cache.ram('src_flags',
+    lambda: {'onezoom':1, 'eol':2, 'wikidata':3, 'iucn':4, 'arkive':5, 'onezoom_special':8},
+    time_expire = None)
+    
+inv_src_flags = cache.ram('inv_src_flags',
+    lambda: {src_flags[k]:k for k in src_flags},
+    time_expire = None)    
 
 #For keeping track of where users are looking
 #NB: if eol ID was inspected via copyright symbol, the user is going straight to the
