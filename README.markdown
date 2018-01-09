@@ -64,7 +64,7 @@ Before anything else, get the OZtree app from [github](https://github.com/OneZoo
 4. Create a appconfig.ini file in `OZtree/private`, with `migrate=1` and which references this database with the appropriate username and password. We also recommend copying the `routes.py` file from `OZtree/_MOVE_CONTENTS_TO_WEB2PY_DIR` to the top level of your web2py installation - see *"[Web2py installation](#web2py-installation)"*
 5. Fire up a temporary web2py server and visit the main page to create the (empty) database tables - see *"[Starting and shutting down web2py](#starting-and-shutting-down-web2py)"*
 6. Load up data into the tables: first create a user and assign it a 'manager' role in the `auth_` tables using the web2py database admin pages, then load the other tables using data from the original OneZoom site (e.g. sent to you via file transfer) - see *"[Filling the database](#filling-the-database)"*.
-7. Create the indexes on the tables by copying and pasting the text at the end of the `OZtree/models/db.py` file into a mysql client.
+7. Optimise your installation: (a) create indexes on the tables by copying and pasting the text at the end of the `OZtree/models/db.py` file into a mysql client (b) set `is_testing = False` in `models/db.py` and `migrate=0` in appconfig.ini.
 
 
 ## Downloading the OZtree app
@@ -141,7 +141,7 @@ Configuring the OneZoom application to use the database involves creating a file
 ```
 ; App configuration
 
-; db configuration
+; db configuration - set migrate=0 once installed
 [db]
 uri       = mysql://oz:passwd@127.0.0.1/OneZoom
 migrate   = 1
@@ -205,6 +205,8 @@ When web2py is run, it will print instructions telling how to shut down the web2
 
 Also, if you want to make OneZoom the default application, make a copy of the routes.py file in the folder labelled `_MOVE_CONTENTS_TO_WEB2PY_DIR` and place it in the top level web2py directory (see `_MOVE_CONTENTS_TO_WEB2PY_DIR/README.markdown`).
 
+Once tables are created, and everything is working, you can set `is_testing = False` in `models/db.py` and `migrate=0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
+
 ### Web2py folder structure
 
 #### Standard folders
@@ -239,11 +241,13 @@ The main bulk of the data returned from the API is stored in the rest of the tab
 
 Note that mySQL stupidly has a resticted version of the unicode character set, so fields that could contain e.g. chinese characters  need to be set to utf8mb4 (which is not the default). These are the `vernacular` field in the `vernacular_by_ott` and `vernacular_by_name` tables, the `rights` field in the `images_by_ott` and `images_by_name` tables, and the following fields in the `reservations` table: `e_mail`, `twitter_name`, `user_sponsor_name`, `user_donor_name` `user_more_info`, `user_message_OZ`, `verified_sponsor_name`, `verified_donor_name` `verified_more_info`. When we send you the tables, they should contain `create` syntax which makes sure the tables are correctly defined, but it may be worth checking too.
 
-#### Creating indices (IMPORTANT)
+### Optimising tables (IMPORTANT)
 
 To get any decent performance out of your OneZoom instance, you will need to create indexes on the resulting tables. The commands for doing this are listed in a large comment at the end of `db.py`, from where they can be copied and pasted into a mysql client.
 
 The commands to create indices also include commands to drop the indexes if they already exist. This will cause SQL errors (Can't DROP XXX) if you have not previously created any indices. These errors can be safely ignored. If you are using mysql workbench you may want to untick the option under Query to "Stop Script Execution on Errors", so that the index creation continues after each error.
+
+
 
 ### Table information, for reference 
 
