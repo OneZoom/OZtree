@@ -64,7 +64,12 @@ if not request.env.web2py_runtime_gae:
     DALstring = myconf.take('db.uri')
     doMigration = myconf.take('db.migrate') in ['true', '1', 't', 'y', 'yes', 'True']
     if DALstring.startswith('mysql://'):
-        db = DAL(DALstring, driver_args={'read_default_file':os.path.join(request.folder, 'private','my.cnf')}, pool_size=myconf.take('db.pool_size', cast=int), check_reserved=['all'], migrate=doMigration)
+        db = DAL(DALstring, 
+            driver_args={'read_default_file':os.path.join(request.folder, 'private','my.cnf')}, 
+            pool_size=myconf.take('db.pool_size', cast=int), 
+            check_reserved=['all'], 
+            migrate=doMigration,
+            lazy_tables=True)
         ## allow mysql tinyint
         from gluon.dal import SQLCustomType
         boolean = SQLCustomType(
@@ -76,12 +81,16 @@ if not request.env.web2py_runtime_gae:
 
         db.placeholder = "%s"
     else:
-        db = DAL(DALstring, pool_size=myconf.take('db.pool_size', cast=int), check_reserved=['all'], migrate=doMigration)
+        db = DAL(DALstring, 
+            pool_size=myconf.take('db.pool_size', cast=int), 
+            check_reserved=['all'], 
+            migrate=doMigration, 
+            lazy_tables=True)
         db.placeholder = "?" #for sqlite
     
 else:
     ## connect to Google BigTable (optional 'google:datastore://namespace')
-    db = DAL('google:datastore+ndb')
+    db = DAL('google:datastore+ndb', migrate=doMigration, lazy_tables=True)
     ## store sessions and tickets there
     session.connect(request, response, db=db)
     ## or store session in Memcache, Redis, etc.
