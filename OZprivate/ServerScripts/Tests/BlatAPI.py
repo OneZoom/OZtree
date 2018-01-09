@@ -12,7 +12,7 @@ import argparse
 import requests
 from requests.packages.urllib3.util.retry import Retry
 import time
-from random import sample
+from random import sample, seed
 from statistics import stdev, mean
 parser = argparse.ArgumentParser(description='Blat the OZ API')
 parser.add_argument('--protocol', default="http", help='protocol: http or https')
@@ -21,6 +21,7 @@ parser.add_argument('--pages', default=["API/node_details.json"], nargs="+", hel
 parser.add_argument('--method', default="get", help="'post' or 'get'")
 parser.add_argument('--ids', default=20, type=int, help="This many leaf id requests and node id requests in a batch")
 parser.add_argument('--requests', default=100, type=int, help='Average timings over this many random requests')
+parser.add_argument('--seed', default=None, type=int, help='Use this random seed (allows replication)')
 args = parser.parse_args()
 
             
@@ -34,7 +35,8 @@ args = parser.parse_args()
 
 
 
-
+if args.seed is not None:
+    seed(args.seed)
 payload = {'node_ids':{}, 'leaf_ids':{}, 'imageSource':'best_any'}
 times={p:[] for p in args.pages}
 codes = {p:{} for p in args.pages}
