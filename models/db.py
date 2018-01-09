@@ -25,7 +25,7 @@ from gluon import current
 
 ## once in production, set is_testing=False to gain optimizations
 ## this will also set migration=False for all tables, so that the DB table definitions are fixed
-is_testing = False
+is_testing = True
 
 ## get config params etc
 if is_testing:
