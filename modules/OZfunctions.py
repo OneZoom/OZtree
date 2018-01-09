@@ -202,8 +202,5 @@ def get_common_name(ott, name=None, lang=None, include_unpreferred=False):
         return vernacular[0] if vernacular else None
     
 def language(two_letter):
-    """
-    Cribbed from wikipedia: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-    """
     return current.OZglobals['conversion_table'].get(two_letter)
 

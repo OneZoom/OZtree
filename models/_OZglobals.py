@@ -41,7 +41,7 @@ image_status_labels = cache.ram('image_status_labels',
     lambda:  ['any', 'verified', 'pd'],
     time_expire = None)
 
-
+#Cribbed from wikipedia: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
 conversion_table = cache.ram('conversion_table',
     lambda: {"ab":["Abkhaz","аҧсшәа"],
         "aa":["Afar","Afaraf"],
