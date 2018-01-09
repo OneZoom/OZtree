@@ -197,7 +197,7 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
     for the potentially new eol IDs returns from the api (these are usually the same as the keys). If the API has
     returned "unavailable page id", then the value will be None, indicating we should flag up the "not_available" field in eol_updated
     
-    We also put a delay in here to avoid overloading the EoL API.
+    We also put a delay in here of loop_seconds to avoid overloading the EoL API.
     
     '''
     if len(eol_page_to_ott) == 0:
@@ -251,18 +251,21 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
         prepped = requests.Request('GET',url,params=pages_params).prepare()
         if verbosity > 2:
             info("Getting {}".format(prepped.url))
+        time.sleep(1) #wait a second to avoid <Response [429]> timeouts
         req['verified'] = sess.send(prepped, timeout=10)
         if images_table:
             pages_params.update({'vetted':3, 'common_names': 'false'}) #don't bother getting common names, we have those already
             prepped = requests.Request('GET',url,params=pages_params).prepare() #get unreviewed images (might be better quality)
             if verbosity > 2:
                 info("Getting {}".format(prepped.url))
+            time.sleep(1) #wait a second to avoid <Response [429]> timeouts
             req['unreviewed'] = sess.send(prepped, timeout=10)
 
             pages_params.update({'vetted':2, 'common_names': 'false', 'licenses':'pd'}) 
             prepped = requests.Request('GET',url,params=pages_params).prepare() #get pd images
             if verbosity > 2:
                 info("Getting {}".format(prepped.url))
+            time.sleep(1) #wait a second to avoid <Response [429]> timeouts
             req['pd'] = sess.send(prepped, timeout=10)
     except requests.exceptions.Timeout:
         warn('socket timed out - URL {}'.format(prepped.url))
