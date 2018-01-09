@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-import unicodedata
-import string
 import sys
 import re
-from OZfunctions import get_common_names
 """
 This contains the API functions - node_details, image_details, search_names, and search_sponsors. search_node also exists, which is a combination of search_names and search_sponsors.
 # request.vars:
@@ -485,6 +482,7 @@ def search_for_sponsor():
         return {}
         
 def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, start=0, defaultImages=False):
+    from OZfunctions import get_common_names
     try:
         searchFor = searchFor.replace("%","").replace("_", " ").split(" ")
         verified_name = db.reservations.verified_name
@@ -520,7 +518,7 @@ def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, star
         #a very complicated query here, use alternative text if this is not an active node (waiting verification or expired)
         query += ",".join(["IF(active,{0},{1}) as {0}".format(nm, "NULL" if alt_txt[nm] is None else ("'" + alt_txt[nm].replace("'","''") + "'")) if nm in alt_txt else nm for nm in colnames])
         query += " FROM (SELECT " + ",".join(colnames) + ",(DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE() AND verified_kind IS NOT NULL) AS active FROM reservations"
-        query += " WHERE PP_transaction_code IS NOT NULL AND (deactivated IS NULL OR deactivated = '')"
+        query += " WHERE (deactivated IS NULL OR deactivated = '')"
         if order_by_recent:
             query += ' ORDER BY verified_time DESC'
         query += ") AS t1) as t2 WHERE " + search_query
@@ -579,6 +577,7 @@ def otts2vns():
     can call with request.vars.lang=XX and with oz_special=1
     Will return nulls for unmatched otts if return_nulls=1
     """
+    from OZfunctions import get_common_names
     session.forget(response)
     response.headers["Access-Control-Allow-Origin"] = '*'
     try:
@@ -645,11 +644,11 @@ def get_id_by_ott():
 #PRIVATE FUNCTIONS
 
 #define a complicated global subbing Separators & Punctuation with a normal space
-#this is a slow function, so we cache it in RAM
+#this is a slow function, so we cache it in RAM, and import unicodedata within the lambda
 punctuation_to_space_table = cache.ram('punctuation_to_space_table',
     lambda: {i:' ' for i in xrange(sys.maxunicode) \
-        if unicodedata.category(unichr(i)).startswith('Z') \
-        or (unicodedata.category(unichr(i)).startswith('P') \
+        if __import__('unicodedata').category(unichr(i)).startswith('Z') \
+        or (__import__('unicodedata').category(unichr(i)).startswith('P') \
         and unichr(i) not in [u"'",u"’",u"-",u".",u"×", u"#"])}, # allow e.g. ' in names
     time_expire = None)
     
@@ -678,6 +677,7 @@ def is_logographic(word, lang_primary):
     https://en.wikipedia.org/wiki/List_of_writing_systems#Logographic_writing_systems
     which, restricted to extant languages, is only chinese, japanese, and korean
     """
+    import string
     if lang_primary not in ["zh", "cnm", "ja", "ko"]:
         return False
     #if the word contains any ascii or accented ascii chars, it is not logographic (e.g. if chinese but searching for pinyin)
@@ -689,4 +689,5 @@ def acceptable_sciname(word):
     [-./A-Za-z 0-9×αβγδμëüö{}*#]
     (this includes e.g. in bacterial strains etc). If we get a search word containing anything outside these characters, we can treat it as a vernacular name match
     """
+    import string
     return all(ch in string.ascii_letters+string.digits+u" -./×αβγδμëüö{}*#" for ch in word) 
