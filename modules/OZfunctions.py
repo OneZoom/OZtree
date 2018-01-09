@@ -7,8 +7,6 @@ Functions defined in controllers and having a space after the () and before the 
 import re
 from gluon import current
 
-percent_crop_expansion = 12.5 #max amount to expand crops by to fit in circle
-
 
 def sponsorable_children_query(target_id, qtype="ott"):
     """
@@ -59,6 +57,51 @@ def score(lang_full_search, lang_primary_search, lang_full_target, preferred_sta
     if (preferred_status):
         score += 100
     return score
+
+def nice_species_name(scientific=None, common=None, the=False, html=False, leaf=False, first_upper=False, break_line=None):
+    """
+    Constructs a nice species name, with common name in there too.
+    If leaf=True, add a 'species' tag to the scientific name
+    If break_line == 1, put a line break after common (if it exists)
+    If break_line == 2, put a line break after sciname, (even if common exists)
+    """
+    from gluon.html import CAT, I, SPAN, BR
+    db = current.db
+    species_nicename = (scientific or '').replace('_',' ').strip()
+    common = (common or '').strip()
+    if the and common and not re.match(r'[Aa] ',common):
+        common = "the " + common #"common tern" -> "the common tern", but 'a nematode' kept as is
+    if first_upper:
+        common = common.capitalize()
+    if html:
+        if species_nicename:
+            if leaf: #species in italics
+                species_nicename = I(species_nicename, _class=" ".join(["taxonomy","species"]))
+            else:
+                species_nicename = SPAN(species_nicename, _class="taxonomy")
+            if common:
+                if break_line:
+                    return CAT(common, BR(), '(', species_nicename, ')')
+                else:
+                    return CAT(common, ' (', species_nicename, ')')                
+            else:
+                if break_line == 2:
+                    return CAT(BR(), species_nicename)
+                else:
+                    return species_nicename
+        else:
+            return common
+    else:
+        if common and species_nicename:
+            if break_line:
+                return common +'\n(' + species_nicename + ')'
+            else:
+                return common +' (' + species_nicename + ')'
+        else:
+            if break_line == 2:
+                return common + "\n" + species_nicename
+            else:
+                return common + species_nicename
 
 def get_common_names(identifiers, return_nulls=False, OTT=True, lang=None,
     prefer_oz_special_names=False, include_unpreferred=False, return_all=False):
@@ -163,3 +206,4 @@ def language(two_letter):
     Cribbed from wikipedia: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
     """
     return current.OZglobals['conversion_table'].get(two_letter)
+

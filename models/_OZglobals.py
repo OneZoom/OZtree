@@ -1,5 +1,16 @@
 #NB: this should be executed first (begins with _ and the web2py book says "Models in the same folder/subfolder are executed in alphabetical order.")
 
+try:
+    from gluon import current
+except ImportError:
+    #this is not being used in web2py, but instead in an independent python app
+    #simply define cache.ram to be a function that returns the result of calling the 2nd arg
+    #This is a complex HACK!!!
+    cache = type("", (), dict(ram=lambda self, name, func, **kw: func()))()
+    current = type("", (), {})() #allow us to set e.g. current.OZglobals, so we don't bomb out later
+    
+percent_crop_expansion = 12.5 #max amount to expand crops by to fit in circle
+
 #some bitwise flags for use later
 #bitwise flags for existence of different language wikipedia articles - order must match those listed in construct_wiki_info in CSV_base_table_creator.py
 wikiflags = cache.ram('wikiflags',
@@ -20,11 +31,16 @@ inv_src_flags = cache.ram('inv_src_flags',
 # altering the vernacular name, just cropping the image. If via the tab, then
 # they might be changing images or names. If via "name", then we can assume that
 # only the vernacular name has been inspected (e.g. an internal nodes)
-eol_inspect_via_flags = {'EoL_tab':1, 'copyright_symbol':2, 'sponsor':3, 'name':4} 
+eol_inspect_via_flags = cache.ram('eol_inspect_via_flags',
+    lambda: {'EoL_tab':1, 'copyright_symbol':2, 'sponsor':3, 'name':4},
+    time_expire = None)
 
 #classes of image (see comments in images_by_ott definition below). 
 #NB: we can probably assumed verified for e.g. arkive images
-image_status_labels = ['any', 'verified', 'pd']
+image_status_labels = cache.ram('image_status_labels',
+    lambda:  ['any', 'verified', 'pd'],
+    time_expire = None)
+
 
 conversion_table = cache.ram('conversion_table',
     lambda: {"ab":["Abkhaz","аҧсшәа"],
@@ -214,60 +230,10 @@ conversion_table = cache.ram('conversion_table',
     time_expire = None)
 
 #allow them to be accessed in modules
-try:
-    from gluon import current
-    current.OZglobals = dict(
-        wikiflags = wikiflags, 
-        src_flags = src_flags, 
-        inv_src_flags = inv_src_flags, 
-        eol_inspect_via_flags = eol_inspect_via_flags, 
-        image_status_labels = image_status_labels,
-        conversion_table = conversion_table)
-except ImportError:
-    #don't care about failing to import if we are using this outside web2py
-    pass
-    
-#put this common function here because it uses SPAN, CAT, etc, which are a pain to use in modules
-def nice_species_name(scientific=None, common=None, the=False, html=False, leaf=False, first_upper=False, break_line=None):
-    """
-    Constructs a nice species name, with common name in there too.
-    If leaf=True, add a 'species' tag to the scientific name
-    If break_line == 1, put a line break after common (if it exists)
-    If break_line == 2, put a line break after sciname, (even if common exists)
-    """
-    db = current.db
-    species_nicename = (scientific or '').replace('_',' ').strip()
-    common = (common or '').strip()
-    if the and common and not re.match(r'[Aa] ',common):
-        common = "the " + common #"common tern" -> "the common tern", but 'a nematode' kept as is
-    if first_upper:
-        common = common.capitalize()
-    if html:
-        if species_nicename:
-            if leaf: #species in italics
-                species_nicename = I(species_nicename, _class=" ".join(["taxonomy","species"]))
-            else:
-                species_nicename = SPAN(species_nicename, _class="taxonomy")
-            if common:
-                if break_line:
-                    return CAT(common, BR(), '(', species_nicename, ')')
-                else:
-                    return CAT(common, ' (', species_nicename, ')')                
-            else:
-                if break_line == 2:
-                    return CAT(BR(), species_nicename)
-                else:
-                    return species_nicename
-        else:
-            return common
-    else:
-        if common and species_nicename:
-            if break_line:
-                return common +'\n(' + species_nicename + ')'
-            else:
-                return common +' (' + species_nicename + ')'
-        else:
-            if break_line == 2:
-                return common + "\n" + species_nicename
-            else:
-                return common + species_nicename
+current.OZglobals = dict(
+    wikiflags = wikiflags, 
+    src_flags = src_flags, 
+    inv_src_flags = inv_src_flags, 
+    eol_inspect_via_flags = eol_inspect_via_flags, 
+    image_status_labels = image_status_labels,
+    conversion_table = conversion_table)

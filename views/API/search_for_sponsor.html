@@ -1,6 +1,7 @@
 {{response.title='OneZoom: search for a sponsorship'}}
 {{response.files.append(URL('static', 'OZSponsor/name_search.css'))}}
 {{extend 'layout.html'}}
+{{from OZfunctions import nice_species_name}}
 {{try:}}{{n = int(request.vars.get('n'))}}{{except:}}{{n=20}}{{pass}}
 <div class="container-fluid intro">
     <div class="col-sm-8">

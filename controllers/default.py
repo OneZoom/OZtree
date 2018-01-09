@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # this file is released under public domain and you can use without limitations
 import datetime
-from OZfunctions import *
+from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language
 """ our own variables for convenience"""
 
 reservation_time_limit = 360.0 #seconds - should give as float - how long to wait unfilled out
