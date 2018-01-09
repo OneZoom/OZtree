@@ -78,7 +78,7 @@ var UI_callbacks = {
   },
 
   closeAll: function() {
-    {{if not is_production:}}console.log("OneZoom internal JS has been asked to hide all open modals & dropdowns");{{pass}}
+    {{if is_testing:}}console.log("OneZoom internal JS has been asked to hide all open modals & dropdowns");{{pass}}
     $('.uk-modal-container').each(function() {
         UIkit.modal(this).hide();
     });
@@ -101,15 +101,15 @@ var UI_callbacks = {
   },
 
   openLinkouts: function() {
-    {{if not is_production:}}console.log("OneZoom internal JS has been asked to open tabs");{{pass}}
+    {{if is_testing:}}console.log("OneZoom internal JS has been asked to open tabs");{{pass}}
     $('#external-modal .external-content').hide();
     $('#external-modal .tab-loading_pic').show();
     UIkit.modal('#external-modal').show();
-    {{if not is_production:}}console.log("Hidden content and showing loading animation");{{pass}}
+    {{if is_testing:}}console.log("Hidden content and showing loading animation");{{pass}}
   },
 
   populateLinkouts: function(responseJSON, initialSelected) { /* used within button_manager.js when the page needs to pop up a tabbed window */
-    {{if not is_production:}}console.log("populating linkout tabs with API data");{{pass}}
+    {{if is_testing:}}console.log("populating linkout tabs with API data");{{pass}}
     if (initialSelected) {
         initialSelected = $('#external-modal .external-tabs li').index($("#"+ initialSelected))
     } else {
@@ -129,10 +129,10 @@ var UI_callbacks = {
           var specific_popup = $("#external-modal .popup-container ." + linkout_name);
           //set the data-src attribute to the url. When the tab is shown, it will get src from there
           specific_popup.attr("data-src", responseJSON.data[linkout_name]);
-          {{if not is_production:}}console.log("set data-src for '" + linkout_name + "' to " + responseJSON.data[linkout_name]);{{pass}}
+          {{if is_testing:}}console.log("set data-src for '" + linkout_name + "' to " + responseJSON.data[linkout_name]);{{pass}}
           $(".expand-tab a", specific_popup).attr("href",responseJSON.data[linkout_name]);
         } else {
-          {{if not is_production:}}console.log("Hiding tab for '" + linkout_name + "' which is not present for this taxon");{{pass}}
+          {{if is_testing:}}console.log("Hiding tab for '" + linkout_name + "' which is not present for this taxon");{{pass}}
           tab.hide(); //hide irrelevant tabs (those not returned by the API)
         }
       }
@@ -186,7 +186,7 @@ function load_tab(tab_content, embed_if_possible, remove_embed_links) {
       //console.log("trying to create iframe with src = " + tab_content.attr('data-src'))
       var ifrm = document.createElement("iframe"); 
       ifrm.setAttribute('src', tab_content.attr('data-src'));
-      {{if not is_production:}}ifrm.addEventListener('load', function() {console.log("Hiding iframe loading pic");$(".loading_pic", $(this).parent().parent()).hide()});{{else:}}
+      {{if is_testing:}}ifrm.addEventListener('load', function() {console.log("Hiding iframe loading pic");$(".loading_pic", $(this).parent().parent()).hide()});{{else:}}
       ifrm.addEventListener('load', function() {$(".loading_pic", $(this).parent().parent()).hide()});{{pass}}
       ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
       //add iframe inside a div wrapper
@@ -252,9 +252,9 @@ function inject_web2py_page(selector, url, removelinks) {
         var html_to_inject = $('<div class="popup-content"></div>').append($.parseHTML(data));
         sanitise_links(html_to_inject, removelinks, url);
         $('base,meta,link,title,style,script', html_to_inject).remove();
-        {{if not is_production:}}console.log("Hiding loading pic");{{pass}}
+        {{if is_testing:}}console.log("Hiding loading pic");{{pass}}
         $('.loading_pic',this.selector).hide();
-        {{if not is_production:}}console.log("Injecting html into page");{{pass}}
+        {{if is_testing:}}console.log("Injecting html into page");{{pass}}
         this.selector.append(html_to_inject);
         //now loop through any LOAD() components, and force load them using web2py_component()
         $('[data-w2p_remote]',this.selector).each(function() {
@@ -276,7 +276,7 @@ function inject_web2py_page(selector, url, removelinks) {
  * css rules do not interfere with our own layout.
  */
 function show_wikipage_for_lang(selector, lang, Qid, removelinks) {
-  {{if not is_production:}}console.log("Injecting Wikipage!");{{pass}}
+  {{if is_testing:}}console.log("Injecting Wikipage!");{{pass}}
   var site = lang+'wiki';
   $.ajax({
     type: "GET",
@@ -336,7 +336,7 @@ function inject_wikipage(selector, pagetitle, base_url, removelinks) {
         $('div[role="navigation"]', html_to_inject).remove();
         html_to_inject.children('ul').remove(); //remove lists, e.g. "see also", etc. : Assumes references (to keep) are ordered lists (not always true)
         $('.sistersitebox,.sisterlinks,.mw-editsection, #See_also, #External_links', html_to_inject).remove();
-        {{if not is_production:}}console.log("Hiding wiki loading pic");{{pass}}
+        {{if is_testing:}}console.log("Hiding wiki loading pic");{{pass}}
         $('.loading_pic',this.selector).hide();
         this.selector.append(html_to_inject);
       }
@@ -382,13 +382,13 @@ function is_sponsored(search_result_item) {
 function searchPopulate(searchbox, search_result, click_callback_id_name) {
     $(".searchinput .icon-beside-input", searchbox).removeClass('waiting_for_search_result');
     var dropdown = $(".search_dropdown", searchbox);
-    {{if not is_production:}}console.log("Hiding popular species section of dropdown");{{pass}}
+    {{if is_testing:}}console.log("Hiding popular species section of dropdown");{{pass}}
     $('.popular_species', dropdown).hide();
     $('.search_hits', dropdown).empty();
     if (search_result.length == 0) {
         $('.no_results', dropdown).show();
     } else {
-        {{if not is_production:}}console.log("Hiding no_result section of dropdown");{{pass}}
+        {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
         $('.no_results', dropdown).hide();
         if (!is_sponsored(search_result[0])) {
             $(".search_hits", dropdown).append($('<dt></dt>').text(OZstrings['NameHits']))
@@ -471,7 +471,7 @@ function update_location_menu(loc_root) {
   } else {
     previous_location_codes = JSON.stringify(my_location_codes);
   }
-  {{if not is_production:}}console.log("constructing location menu from " + my_location + " (richness: " + my_location_richness + ")");{{pass}}
+  {{if is_testing:}}console.log("constructing location menu from " + my_location + " (richness: " + my_location_richness + ")");{{pass}}
   // first remove everything in the current list
   var loc_list = $(".location-list").empty()
   // now rebuild the list
@@ -481,7 +481,7 @@ function update_location_menu(loc_root) {
   // add the main elements, in reverse order
   for (var i = my_location_names.length-1; i >= 0; i--)
   {
-    {{if not is_production:}}console.log("adding '" + my_location_names[i] + "' with richness " + my_location_richness[i+1] + " / " +my_location_richness[i]);{{pass}}
+    {{if is_testing:}}console.log("adding '" + my_location_names[i] + "' with richness " + my_location_richness[i+1] + " / " +my_location_richness[i]);{{pass}}
     var richnessProportion = my_location_richness[i+1]/my_location_richness[i];
     richnessProportion = Math.min(richnessProportion, 1.0-6.0/$('#locationDropdown').width()); //never have richness prop = 1 (looks odd): always add 6 px on
     var richnessRemainder = Math.floor((1.0 - richnessProportion)/2.0 * $('#locationDropdown').width());
@@ -496,7 +496,7 @@ function update_location_menu(loc_root) {
             .data('locationCode', my_location_codes[i])
             .click(function() { /* close And Fly */
               if (((document.getElementById("locationDropdown").offsetWidth)*2) > onezoom.tree_state.widthres) {
-                {{if not is_production:}}console.log("Small screen width detected, so closing location box before jump");{{pass}}
+                {{if is_testing:}}console.log("Small screen width detected, so closing location box before jump");{{pass}}
                 $("#locationDropdown").hide();
               };
               onezoom.controller.perform_flight_animation($(this).data('locationCode'));
@@ -533,7 +533,7 @@ function load_into_searchbox(searchbox, OZIDin, given_name, sciname, colour) {
 function UI_reset_marked(searchbox, OZIDin, given_name, sciname, event) {
     //create a new mark, and load into a searchbox 
     var searchresult = $('.searchresult', searchbox);
-    {{if not is_production:}}console.log("Hiding search dropdown");{{pass}}
+    {{if is_testing:}}console.log("Hiding search dropdown");{{pass}}
     UIkit.dropdown($('.search_dropdown', searchbox)).hide();
     if (searchresult.attr('data-OZid')) {
         onezoom.controller.unmark_area(searchresult.attr('data-OZid'));
@@ -648,7 +648,7 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
             }
             if (search_term.length==0) {
                 $('.popular_species', dropdown).show();
-                {{if not is_production:}}console.log("Hiding no_result section of dropdown");{{pass}}
+                {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
                 $('.no_results', dropdown).hide();
                 $('.search_hits', dropdown).empty();
                 onezoom.search_manager.full_search(""); // this clears the search
@@ -664,7 +664,7 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
                 onezoom.search_manager.full_search(
                     search_term, 
                     function(res,s) {searchPopulate(searchbox, res, UI_reset_marked_via_event)}, 
-                    delay_ms{{if not is_production:}},
+                    delay_ms{{if is_testing:}},
                     function() {console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search")}{{pass}}
                     );
             }
@@ -808,7 +808,7 @@ function setupUI() {
         var dropdown = $('.search_dropdown', searchbox);
         if (search_term.length==0) {
             $('.popular_species', dropdown).show();
-            {{if not is_production:}}console.log("Hiding no_result section of dropdown");{{pass}}
+            {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
             $('.no_results', dropdown).hide();
             $('.search_hits', dropdown).empty();
             onezoom.search_manager.full_search("");
@@ -824,7 +824,7 @@ function setupUI() {
             onezoom.search_manager.full_search(
                 search_term, 
                 function(res,s) {searchPopulate(searchbox, res, function(event, OZid) {closeAndLeap(event, OZid, $('#search-basic'))})},
-                delay_ms{{if not is_production:}},
+                delay_ms{{if is_testing:}},
                     function() {console.log("Search for '" + search_term + "' sent to OneZoom API from basic search")}{{pass}}
                 );
         }

@@ -23,16 +23,17 @@ from gluon import current
 ## Useful global variables
 #########################################################################
 
-## once in production, set is_production=True to gain optimizations
-is_production = False
+## once in production, set is_testing=False to gain optimizations
+## this will also set migration=False for all tables, so that the DB table definitions are fixed
+is_testing = False
 
 ## get config params etc
-if is_production:
+if is_testing:
+    myconf = AppConfig(reload=True) #changes to appconfig.ini do not require restart
+    T.is_writable = True #allow translators to add new languages e.g. on the test (beta) site, but not on prod
+else:
     myconf = AppConfig()
     T.is_writable = False
-else:
-    myconf = AppConfig(reload=True) #changes to appconfig.ini do not require restart
-    T.is_writable = True #allow translators to add new languages e.g. on the beta site, but not on prod
 
 ## thumbnail_url is a python function to return the url to get a thumbnail picture
 ## we also need to define a javascript equivalent for use on the client side
@@ -63,7 +64,7 @@ if not request.env.web2py_runtime_gae:
     DALstring = myconf.take('db.uri')
     doMigration = myconf.take('db.migrate') in ['true', '1', 't', 'y', 'yes', 'True']
     if DALstring.startswith('mysql://'):
-        db = DAL(myconf.take('db.uri'), driver_args={'read_default_file':os.path.join(request.folder, 'private','my.cnf')}, pool_size=myconf.take('db.pool_size', cast=int), check_reserved=['all'], migrate=doMigration)
+        db = DAL(DALstring, driver_args={'read_default_file':os.path.join(request.folder, 'private','my.cnf')}, pool_size=myconf.take('db.pool_size', cast=int), check_reserved=['all'], migrate=doMigration)
         ## allow mysql tinyint
         from gluon.dal import SQLCustomType
         boolean = SQLCustomType(
@@ -75,7 +76,7 @@ if not request.env.web2py_runtime_gae:
 
         db.placeholder = "%s"
     else:
-        db = DAL(myconf.take('db.uri'), pool_size=myconf.take('db.pool_size', cast=int), check_reserved=['all'], migrate=doMigration)
+        db = DAL(DALstring, pool_size=myconf.take('db.pool_size', cast=int), check_reserved=['all'], migrate=doMigration)
         db.placeholder = "?" #for sqlite
     
 else:
@@ -381,7 +382,7 @@ db.define_table('iucn',
     Field('ott', type='integer', unique=True, requires=IS_NOT_EMPTY()),
     Field('iucn', type='integer'), #can be empty if e.g. this is an extinct species not in IUCN
     Field('status_code', type = 'string', length=10), #LC, VN, etc.
-    format = '%(iucn)s', migrate=True)
+    format = '%(iucn)s', migrate=is_testing)
 
 # Table for availability of IPNIs in Kew's Plants of the World Online portal (PoWO):
 # this contains IPNIs which have live pages of the form 
@@ -506,7 +507,7 @@ db.define_table('reservations',
 db.define_table('expired_reservations', 
     Field('OTT_ID', type = 'integer', unique=False, requires=IS_NOT_EMPTY()), 
     *[f.clone() for f in db.reservations if f.name != 'OTT_ID' and f.name!='id'],
-    format = '%(OTT_ID)s_%(name)s', migrate=True)
+    format = '%(OTT_ID)s_%(name)s', migrate=is_testing)
 
 # this table defines the current pricing cutoff points
 db.define_table('prices',
@@ -521,7 +522,7 @@ db.define_table('visit_count',
     Field('detail_fetch_count', type = 'integer'),
     Field('search_count', type = 'integer'),
     Field('leaf_click_count', type = 'integer'),
-    format = '%(ott)s', migrate=True)
+    format = '%(ott)s', migrate=is_testing)
 
 # This table buffers recently 'visited' EoL taxa (visited through the window popup or via the copyright link)
 # taxa in this table are stored until at least 1 minute after the taxon is visited, and then read by the EOL update 
@@ -536,7 +537,7 @@ db.define_table('eol_inspected',
     Field('eol', type = 'integer'), #usually null, unless we want a backup number in the case of no ott match in ordered_leaves/nodes
     Field('via', type = 'integer', notnull=True),
     Field('inspected', type = 'datetime', notnull=True, requires=IS_DATETIME()),
-    format = '%(ott)s_%(name)s', migrate=True)
+    format = '%(ott)s_%(name)s', migrate=is_testing)
 
 # this table lists potential OneZoom 'partners' with whom we might share profits
 db.define_table('partners',
@@ -546,7 +547,7 @@ db.define_table('partners',
     Field('details', type='text'), #more info for sponsors, e.g. what the money goes towards. May be translated
     Field('percentage', type = 'double', notnull=True),
     Field('giftaid', type = boolean, notnull=True),
-    format = '%(name)s', migrate=True)
+    format = '%(name)s', migrate=is_testing)
 
 #some tables for tours
 #one row per tour, to store e.g. the name of the tour
@@ -555,7 +556,7 @@ db.define_table('tours',
     Field('name', type='text', notnull=True), #the name, to go before 'TreeTour', e.g. 'Iridescence' - this may be translated
     Field('description', type='text'), #a description of the tour
     Field('rating', type='double'), #average user rating
-    format = '%(identifier)s', migrate=True)
+    format = '%(identifier)s', migrate=is_testing)
 
 #the list of stops for each tour: one row per stop, giving ids into the tourstops table
 db.define_table('tourorders',
@@ -564,14 +565,14 @@ db.define_table('tourorders',
     Field('node_fullzoom', type = boolean), #when we transition to here, should we zoom so the node fills the screen?
     Field('stop_number', type='integer', notnull=True), #the 0-based order of this stop in the defined tour
     Field('stop_id', type='integer', notnull=True), #the id in the tourstops table corresponding to this tour
-    format = '%(identifier)s_%(stop_number)s', migrate=True)
+    format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
 
 
 db.define_table('tourstops',
     Field('ott', type='integer', notnull=True), #the ott of this taxon
     Field('description', type = 'text'), #text to show at this stop
     Field('video', type = 'string', length=20), #the youtube video number, if there is a video
-    format = '%(identifier)s_%(stop_number)s', migrate=True)
+    format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
 
 # add extra indexes on OTT_ID etc in tables. Index name (ott_index) is arbitrary 
 # http://stackoverflow.com/questions/4601138/what-is-the-significance-of-the-index-name-when-creating-an-index-in-mysql

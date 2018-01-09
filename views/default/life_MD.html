@@ -15,7 +15,7 @@ setup_params = {
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree_MD.css')}}" />
 <script type="text/javascript">
 {{#disable context menu for museum display
-if is_production:}}
+if not is_testing:}}
 document.oncontextmenu = function() {
      return false;
 }
