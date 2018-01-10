@@ -19,7 +19,7 @@ In the instructions which follow, we assume that your tree version corresponds t
 # Preliminaries
 
 
-First check that you have the required OpenTree, Wikimedia, and Encyclopedia of Life files, in particular `OZprivate/data/OpenTree/draftversion${OT_VERSION}.tre`, `OZprivate/data/OpenTree/ott/taxonomy.tsv`, `OZprivate/data/OpenTree/Wiki/wd_JSON`, `OZprivate/data/OpenTree/EOL/identifiers.csv` and for popularity calculations, `OZprivate/data/OpenTree/Wiki/wp_SQL` and `OZprivate/data/OpenTree/Wiki/wp_pagecounts`  (see [OZprivate/data/README.markdown](../../../OZprivate/data/README.markdown))
+First check that you have the required OpenTree, Wikimedia, and Encyclopedia of Life files, in particular `OZprivate/data/OpenTree/draftversion${OT_VERSION}.tre`, `OZprivate/data/OpenTree/ott/taxonomy.tsv`, `OZprivate/data/OpenTree/Wiki/wd_JSON`, `OZprivate/data/OpenTree/EOL/identifiers.csv` and for popularity calculations, `OZprivate/data/OpenTree/Wiki/wp_SQL` and `OZprivate/data/OpenTree/Wiki/wp_pagecounts`  (see [OZprivate/data/README.markdown](../../data/README.markdown) - in particular, to create the `.tre` file you may need to run `perl -pe 's/\)mrcaott\d+ott\d+/\)/g; s/[ _]+/_/g;' labelled_supertree_simplified_ottnames.tre > draftversion${OT_VERSION}.tre` as detailed [here](../../data/OpenTree/README.markdown))
 
 # Building a tree
 
