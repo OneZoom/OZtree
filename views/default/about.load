@@ -16,14 +16,19 @@
 
 <p><img class="rt_edge" src="/static/images/leaves/Rpic3.png" /></p>
 
-<p>We hope you have fun exploring the OneZoom tree of life. We've certainly had fun developing it, even after many thousands of hours working with OneZoom, we are still frequently astonished at what it reveals about the world around us. Most of our {{=A("source code",_href="/developer.html")}} is publicly viewable enabling interested developers and scientists to contribute improvements if they wish.
+<p>We hope you have fun exploring the OneZoom tree of life. We've certainly had fun developing it, even after many thousands of hours working with OneZoom, we are still frequently astonished at what it reveals about the world around us. Most of our {{=A("source code",_href="/developer.html")}} is publicly viewable enabling interested developers and scientists to contribute improvements if they wish.</p>
 
 <h3>OneZoom Organisation</h3>
 
 OneZoom is a charitable incorporated organisation (non-profit) registered under {{=A('number 1163559',_href="static/images/RegistrationCertificate.jpg")}} in the UK. Our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. In pursuit of these aims, our current focus is on developing this visualization of the tree of life. Our registered address is OneZoom, Office 7, 35-37 Ludgate Hill, London, EC4M 7JN, UK</p>
 
-<p>The OneZoom project has a long {{=A("history of development",_href="/milestones.html")}} dating back to the first version of OneZoom that was conceived in 2011 and released under an open source license in 2012. The OneZoom codebase is now improved and maintained by the OneZoom charitable organisation since the charity's formation in 2015.
+<p>The OneZoom project has a long {{=A("history of development",_href="/milestones.html")}} dating back to the first version of OneZoom that was conceived in 2011 and released under an open source license in 2012. The OneZoom codebase is now improved and maintained by the OneZoom charitable organisation since the charity's formation in 2015.</p>
 
+<h3>Our collaborators</h3>
+
+<p><img class="rt_edge" src="/static/images/LinneanLogo_small.png" /></p>
+
+<p>OneZoom is delighted to be in collaboration with the {{=A("Linnean Society of London", _href="http://linnean.org/")}} since 2017.</p>
 
 </div>
 
