@@ -21,6 +21,7 @@ module.exports = function (grunt) {
         command: "perl compile_docs.pl index.markdown > _compiled.markdown"
       },
       partial_install: {
+        //See documentation in https://github.com/OneZoom/OZtree#onezoom-setup
         command: "perl -i OZprivate/ServerScripts/Utilities/partial_install.pl static/minlife.html"
       }
     },
@@ -57,6 +58,9 @@ module.exports = function (grunt) {
           //also moves the files
           '<%=pkg.directories.js_dest%>/common.js': ['<%=pkg.directories.js_dist%>/common.js'],
           '<%=pkg.directories.js_dest%>/OZentry.js': ['<%=pkg.directories.js_dist%>/OZentry.js'],
+          //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
+          //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
+          //is solved
           '<%=pkg.directories.old_js_dest%>/Drawing.js': ['<%=pkg.directories.old_js_dist%>/Drawing.js'],
           '<%=pkg.directories.old_js_dest%>/Leaf_draw.js': ['<%=pkg.directories.old_js_dist%>/Leaf_draw.js'],
         }
@@ -66,12 +70,18 @@ module.exports = function (grunt) {
       build:[
         '<%=pkg.directories.js_dest%>/*',
         '<%=pkg.directories.js_dist%>/*.js*',
+        //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
+        //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
+        //is solved
         '<%=pkg.directories.old_js_dest%>/*',
         '<%=pkg.directories.old_js_dist%>/*.js*',
       ],
       compile:[
         '<%=pkg.directories.js_dest%>/*',
         '<%=pkg.directories.js_dist%>/*.js*',
+        //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
+        //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
+        //is solved
         '<%=pkg.directories.old_js_dest%>/*',
         '<%=pkg.directories.old_js_dist%>/*.js*',
       ],
@@ -90,6 +100,10 @@ module.exports = function (grunt) {
             ext: '.js.gz'
           },
           { //quick hack for the fragments of old code
+            //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
+            //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
+            //is solved
+
             expand: true,
             cwd: '<%=pkg.directories.old_js_dest%>',
             src: ['*.js'],
@@ -114,6 +128,9 @@ module.exports = function (grunt) {
           {expand: true, cwd: '<%=pkg.directories.old_js_dist%>', src: "**", dest: '<%=pkg.directories.old_js_dest%>/', filter: 'isFile'},
         ]
       },
+      //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
+      //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
+      //is solved
       old_js: {
           expand: true, cwd: '<%=pkg.directories.old_js_src%>', src: '*.js', dest: '<%=pkg.directories.old_js_dist%>/', filter: 'isFile'
       },
