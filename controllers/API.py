@@ -497,6 +497,8 @@ def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, star
     from OZfunctions import get_common_names
     try:
         searchFor = searchFor.replace("%","").replace("_", " ").split(" ")
+        if len(searchFor):
+            return {}
         verified_name = db.reservations.verified_name
         verified_more_info = db.reservations.verified_more_info
         colnames = ['OTT_ID', 'name', 'verified_name', 'verified_more_info', 'verified_kind', 'verified_url', 'verified_preferred_image']
