@@ -24,12 +24,13 @@ class SearchManager {
   /**
    * This function is the main function for carrying out text string searches
    * @param {string} toSearchFor - the string to search for. If blank, previous searches are cancelled
-   * @param {string} callback - the function that gets called and passed the results of the search
+   * @param {function} callback - the function that gets called and passed the results of the search
    *    and ott to id mappings. Found objects will be added to these mappings.
    * @param {float} search_delay - number of milliseconds before actually making the search call. If another 
    *    call is made within this time, the original call is cancelled.
+   * @param {function} onSend - the function that gets executed when the search has been sent to the server
    */
-  full_search(toSearchFor, callback, search_delay=400, callback_search_sent=null) {
+  full_search(toSearchFor, callback, search_delay=400, onSend=null) {
     clearTimeout(this.search_timer);
     let originalSearch = toSearchFor; // we want to return the original search string back to the UI.
     // detect if the search string has something in relating to sponsorship and catch that after running the text through the translation services.
@@ -49,7 +50,7 @@ class SearchManager {
         
         // this is a time out for the search
         this.search_timer = setTimeout(function() {
-            if (callback_search_sent) callback_search_sent();
+            if (onSend) onSend(); // this informs the UI that an API request has now been made.
             // this calls the API
             api_manager.search({
                 dont_resend: true,
