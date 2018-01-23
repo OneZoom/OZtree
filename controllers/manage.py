@@ -272,7 +272,7 @@ def SPONSOR_UPDATE():
             m = re.match(r'([^:]*:[^:]+)(:?)([^@]*)(.*)', db_conn_string)
             db_conn_string = (m.group(1) or '') + m.group(2) + m.group(4)
             password = m.group(3) or ''
-            EoLQueryPicsNames = ['applications/OneZoom/OZprivate/ServerScripts/Utilities/EoLQueryPicsNames.py',
+            EoLQueryPicsNames = [os.path.join(request.folder,'OZprivate','ServerScripts','Utilities','EoLQueryPicsNames.py'),
                                  '--database', db_conn_string,
                                  '--output_dir', pic_path(), 
                                  '--add_percent', str(percent_crop_expansion),
