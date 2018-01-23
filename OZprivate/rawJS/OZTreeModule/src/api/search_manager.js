@@ -31,6 +31,7 @@ class SearchManager {
    */
   full_search(toSearchFor, callback, search_delay=400, callback_search_sent=null) {
     clearTimeout(this.search_timer);
+    let originalSearch = toSearchFor; // we want to return the original search string back to the UI.
     // detect if the search string has something in relating to sponsorship and catch that after running the text through the translation services.
     if (toSearchFor.toLowerCase().indexOf(OZstrings["Sponsored for"].toLowerCase()) === 0) {
         this.searchForSponsor(toSearchFor.substr(OZstrings["Sponsored for"].length), callback, "for");
@@ -72,7 +73,7 @@ class SearchManager {
                                 return -1;
                             }
                         });
-                        callback(newRes, toSearchFor);
+                        callback(originalSearch,toSearchFor,newRes);
                     }, "all");
                 }
             });
