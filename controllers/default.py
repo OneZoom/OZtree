@@ -559,6 +559,9 @@ def team():
 def milestones():
     return dict()
 
+def about_plus_data():
+    return dict()
+
 #def gallery():
 #    return dict()
 
