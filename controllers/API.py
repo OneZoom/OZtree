@@ -190,7 +190,11 @@ def search_node():
     searchFor = make_unicode(request.vars.query or '')
     try:
         if myconf.take('general.log_search_strings'):
-            db.search_log.update_or_insert(search_string=searchFor, search_count=db.search_log.search_count+1)
+            if request.vars.no_log:
+                #'no_log' flag set: this is probably us blatting the search for testing purposes
+                pass
+            else:
+                db.search_log.update_or_insert(search_string=searchFor, search_count=db.search_log.search_count+1)
     except:
         pass
     res1 = search_for_name()
