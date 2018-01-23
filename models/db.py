@@ -32,7 +32,7 @@ if is_testing:
     myconf = AppConfig(reload=True) #changes to appconfig.ini do not require restart
     T.is_writable = True #allow translators to add new languages e.g. on the test (beta) site, but not on prod
 else:
-    myconf = AppConfig()
+    myconf = AppConfig() #faster to read once and never re-update
     T.is_writable = False
 
 ## thumbnail_url is a python function to return the url to get a thumbnail picture
@@ -69,7 +69,7 @@ if not request.env.web2py_runtime_gae:
             pool_size=myconf.take('db.pool_size', cast=int), 
             check_reserved=['all'], 
             migrate=doMigration,
-            lazy_tables=True)
+            lazy_tables= not is_testing)
         ## allow mysql tinyint
         from gluon.dal import SQLCustomType
         boolean = SQLCustomType(
@@ -379,7 +379,7 @@ db.define_table('eol_updated',
     #It is useful to keep track of these for monitoring purposes, e.g. so we can update our mapping in ordered_XX or correct on Wikidata
     #if an eol ID has been deleted rather than moved, we should set this to None / NULL
     Field('real_eol_id', type = 'integer'),
-    format = '%(eol)s')
+    format = '%(eol)s', migrate=is_testing)
 
 # table for IUCN status: this can get updated by a call to the IUCN API
 # it is useful for populating the metadata on the tree. There is some semi-duplicated
@@ -533,6 +533,12 @@ db.define_table('visit_count',
     Field('leaf_click_count', type = 'integer'),
     format = '%(ott)s', migrate=is_testing)
 
+# this table collects a list of search terms so we can optimise search
+db.define_table('search_log',
+    Field('search_string', type='string', notnull=True, unique=True, length=name_length_chars), #this should be utf8mb4
+    Field('search_count', type = 'integer', notnull=True),
+    format = '%(search_string)s', migrate=1)
+
 # This table buffers recently 'visited' EoL taxa (visited through the window popup or via the copyright link)
 # taxa in this table are stored until at least 1 minute after the taxon is visited, and then read by the EOL update 
 # script (EoLQueryPicsNames.py) to check for updates to the crop location, ratings, etc. Once checked, the taxon
@@ -598,6 +604,45 @@ if db._uri.startswith("sqlite://"):
 # http://stackoverflow.com/questions/36602374/web2py-how-to-call-a-call-a-function-on-table-creation
 # for mysql, try this one-off command
 """
+#set stupid mysql to use full 4 byte unicode (https://mathiasbynens.be/notes/mysql-utf8mb4)
+
+drop procedure if exists MakeFullUnicode;
+
+DELIMITER //
+
+CREATE PROCEDURE MakeFullUnicode(tablename CHAR(50), columnname CHAR(50))
+
+  BEGIN
+    DECLARE char_set TEXT;
+    DECLARE vtype TEXT;
+    
+    SELECT character_set_name, column_type INTO char_set, vtype FROM information_schema.`COLUMNS` 
+        WHERE table_schema = SCHEMA() AND table_name = tablename AND column_name = columnname;
+    IF char_set != 'utf8mb4' THEN 
+      SET @sql_cmd = CONCAT('ALTER TABLE ', tablename,' CHANGE ', columnname, ' ', columnname, ' ', vtype, ' CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;');
+      PREPARE stmt FROM @sql_cmd;
+      EXECUTE stmt;
+      SET @sql_cmd = CONCAT('REPAIR TABLE ', tablename, ';');
+      PREPARE stmt FROM @sql_cmd;
+      EXECUTE stmt;
+      SET @sql_cmd = CONCAT('OPTIMIZE TABLE ', tablename, ';');
+      PREPARE stmt FROM @sql_cmd;
+      EXECUTE stmt;
+    END IF;
+  END //
+
+DELIMITER ;
+
+#with an innoDB server, you may get ignorable errors like 'The storage engine for the table doesn't support repair'
+call MakeFullUnicode('vernacular_by_ott', 'vernacular');
+call MakeFullUnicode('vernacular_by_name', 'vernacular');
+call MakeFullUnicode('images_by_ott', 'rights');
+call MakeFullUnicode('images_by_ott', 'licence');
+call MakeFullUnicode('images_by_name', 'rights');
+call MakeFullUnicode('images_by_name', 'licence');
+call MakeFullUnicode('search_log', 'search_string');
+
+
 DROP   INDEX ott_index           ON banned;
 CREATE INDEX ott_index           ON banned (ott)                      USING HASH;
 
