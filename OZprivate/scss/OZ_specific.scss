@@ -54,6 +54,25 @@ input[type=checkbox], input[type=radio] {
 h1,h2,header {text-align: center}
 h3,h4,h5 {text-align: left}
 
+img.rgt_edge {
+    height: auto;
+    float:right; 
+    margin-left: 0;
+    margin-right:-20px;
+    background-color: white;
+}
+
+img.lft_edge {
+    height: auto;
+    float:left; 
+    margin-right: 0;
+    margin-left:-20px;
+    background-color: white;
+}
+
+img.centre {
+}
+
 // ===== Index ====== //
 h1 {
   margin-top:0.4em;
