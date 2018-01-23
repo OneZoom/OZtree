@@ -187,7 +187,12 @@ def search_node():
     """
     session.forget(response)
     response.headers["Access-Control-Allow-Origin"] = '*'
-    searchFor = request.vars.query
+    searchFor = make_unicode(request.vars.query or '')
+    try:
+        if myconf.take('general.log_search_strings'):
+            db.search_log.update_or_insert(search_string=searchFor, search_count=db.search_log.search_count+1)
+    except:
+        pass
     res1 = search_for_name()
     if len(res1['leaf_hits']) + len(res1['node_hits']) <15:
         res2 = search_sponsor(searchFor, "all")
@@ -203,7 +208,7 @@ def search_init():
     -- String: name
     return node or leaf id given ott number or scientific name
     
-    The logic here isn;t quite right: if we have multiple OTT hits, we should choose the one
+    The logic here isn't quite right: if we have multiple OTT hits, we should choose the one
     with the 'nearest' name. At the moment we choose only based on name (with no OTT considerations)
     
     """
@@ -248,7 +253,7 @@ def search_init():
 def search_for_name():
     response.headers["Access-Control-Allow-Origin"] = '*'
     try:
-        searchFor = str(request.vars.query or "")
+        searchFor = make_unicode(request.vars.query or "")
         language = request.vars.lang or request.env.http_accept_language or 'en'
         order = True if (request.vars.get('sorted')) else False
         limit=request.vars.get('limit')
@@ -262,10 +267,11 @@ def search_for_name():
 
 def search_by_name(searchFor, language='en', order_by_popularity=False, limit=None, start=0, restrict_tables=None, include_price=False):
     """
-    Search in latin and common names for species. To look only in leaves, set restrict_tables to 'leaves'.
+    Search in latin and vernacular names for species. To look only in leaves, set restrict_tables to 'leaves'.
     To look only in nodes set it to 'nodes', otherwise we default to searching in both
     """
     """
+    1) Kill off any searches where all non-chinese words are <= 1 letter
     1. if string length < 3, then it would run a start match. For example, search for 'zz' would return 'zz plant', search for 'ox ox' would
     return 'ox oxon'(if it exists)
     2. all words' length >= 3, then it would run natural language search on each word.
@@ -282,8 +288,10 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
 
     try:
         originalSearchFor = searchFor
-        searchFor = searchFor.replace("_", " ").split()
-        if len(searchFor)==0:
+        print("searching for {}".format(searchFor))
+        searchFor = punctuation_to_space(searchFor).split()
+        if len(searchFor)==0 or all([(len(word)<=1 and not is_logographic(word, lang_primary)) for word in searchFor]):
+            print("Too short!")
             raise
         longWords = []
         shortWords = []
@@ -469,7 +477,7 @@ def search_for_sponsor():
     """
     response.headers["Access-Control-Allow-Origin"] = '*'
     try:
-        searchFor = str(request.vars.query)
+        searchFor = make_unicode(request.vars.query)
         #remove initial punctuation, e.g. we might have been passed in 
         searchType = request.vars.type or 'all'
         defaultImages = True if (request.vars.get('default_images')) else False
@@ -646,7 +654,7 @@ def get_id_by_ott():
 #define a complicated global subbing Separators & Punctuation with a normal space
 #this is a slow function, so we cache it in RAM, and import unicodedata within the lambda
 punctuation_to_space_table = cache.ram('punctuation_to_space_table',
-    lambda: {i:' ' for i in xrange(sys.maxunicode) \
+    lambda: {i:u' ' for i in xrange(sys.maxunicode) \
         if __import__('unicodedata').category(unichr(i)).startswith('Z') \
         or (__import__('unicodedata').category(unichr(i)).startswith('P') \
         and unichr(i) not in [u"'",u"’",u"-",u".",u"×", u"#"])}, # allow e.g. ' in names
@@ -661,12 +669,19 @@ pinyinToneMarks = cache.ram('pinyinToneMarks',
     }.values()),
     time_expire = None)
 
-def punctuation_to_space(text):
+def make_unicode(input):
+    if type(input) != unicode:
+        input =  input.decode('utf-8')
+        return input
+    else:
+        return input
+        
+def punctuation_to_space(unicodetext):
     """
     Convert all space characters, and most punctuation, to normal spaces
     prior to separating search results into words
     """
-    return text.translate(punctuation_to_space_table)
+    return unicodetext.translate(punctuation_to_space_table)
 
 def is_logographic(word, lang_primary):
     """
