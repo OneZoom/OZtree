@@ -58,7 +58,8 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
   <li id="upButton"        ><a uk-tooltip="pos: right" title="{{=T('Previous ancestor')}}" uk-icon="icon: chevron-up; ratio: 1.35"></a></li>
   <li id="resetButton"     ><a uk-tooltip="pos: right" title="{{=T('Reset view')}}" uk-icon="icon: chevron-up;  ratio: 0.9"></a></li>
   <li id="screenshotButton"><a uk-tooltip="pos: right" title="{{=T('Take an svg screenshot')}}" onclick="make_screenshot(this);" uk-icon="icon: camera"></a></li>
-  <li id="infoButton" ><a uk-tooltip="pos: right" title="{{=T('Information')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: info"></a></li>
+  <li id="singleInfoButton" ><a uk-tooltip="pos: right" title="{{=T('Information')}}" href="#info-modal" uk-toggle uk-icon="icon: info"></a></li>
+  <li id="multipleInfoButton" ><a uk-tooltip="pos: right" title="{{=T('Information')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: info"></a></li>
   <div id="infoDropdown" uk-dropdown="pos: right; mode: click;">
     <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
       <li><a href="#howuse-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('How to use')}}</a></li>
@@ -120,6 +121,15 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <button class="uk-modal-close-outside" type="button" uk-close></button>
         <h2 class="uk-modal-title">Sorry</h2>
         <p class="badOTT">{{include "default/badOTT.load"}}</p>
+    </div>
+</div>
+<div id="info-modal" class="uk-modal-container" uk-modal>
+    <div class="uk-modal-dialog">
+        <button class="uk-modal-close-outside" type="button" uk-close></button>
+        <div class="uk-modal-header">
+            <h2 class="uk-modal-title">{{=T('More information')}}</h2>
+        </div>
+        <div class="uk-modal-body" uk-overflow-auto></div>
     </div>
 </div>
 <div id="about-modal" class="uk-modal-container" uk-modal>
