@@ -379,8 +379,8 @@ function is_sponsored(search_result_item) {
  * callback that is fired when an item is clicked on in the list
  * (called with event, OZid, item_name, sci_name)
  */
-function searchPopulate(searchbox, search_result, click_callback_id_name) {
-    $(".searchinput .icon-beside-input", searchbox).removeClass('waiting_for_search_result');
+function searchPopulate(searchbox, original_search, search_result, click_callback_id_name) {
+    $(".searchinput", searchbox).removeClass('waiting_for_search_result');
     var dropdown = $(".search_dropdown", searchbox);
     {{if is_testing:}}console.log("Hiding popular species section of dropdown");{{pass}}
     $('.popular_species', dropdown).hide();
@@ -652,9 +652,9 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
                 $('.no_results', dropdown).hide();
                 $('.search_hits', dropdown).empty();
                 onezoom.search_manager.full_search(""); // this clears the search
-                $('.searchinput .icon-beside-input', searchbox).removeClass('waiting_for_search_result');
+                $('.searchinput', searchbox).removeClass('waiting_for_search_result');
             } else {
-                $('.searchinput .icon-beside-input', searchbox).addClass('waiting_for_search_result');
+                $('.searchinput', searchbox).addClass('waiting_for_search_result');
                 var delay_ms = 400;
                 if (event.which == 13) {
                     delay_ms = 1;   //enter was pressed - don't delay
@@ -663,7 +663,9 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
                 }
                 onezoom.search_manager.full_search(
                     search_term, 
-                    function(res,s) {searchPopulate(searchbox, res, UI_reset_marked_via_event)}, 
+                    function(original_string, actual_search, results) {
+                        searchPopulate(searchbox, original_string, results, UI_reset_marked_via_event)
+                    }, 
                     delay_ms{{if is_testing:}},
                     function() {console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search")}{{pass}}
                     );
@@ -812,9 +814,9 @@ function setupUI() {
             $('.no_results', dropdown).hide();
             $('.search_hits', dropdown).empty();
             onezoom.search_manager.full_search("");
-            $('.searchinput .icon-beside-input', searchbox).removeClass('waiting_for_search_result');
+            $('.searchinput', searchbox).removeClass('waiting_for_search_result');
         } else {
-            $(".searchinput .icon-beside-input", searchbox).addClass('waiting_for_search_result');
+            $(".searchinput", searchbox).addClass('waiting_for_search_result');
             var delay_ms = 400;
             if (event.which == 13) {
                 delay_ms = 1;   //enter was pressed - don't delay
@@ -823,7 +825,9 @@ function setupUI() {
             }
             onezoom.search_manager.full_search(
                 search_term, 
-                function(res,s) {searchPopulate(searchbox, res, function(event, OZid) {closeAndLeap(event, OZid, $('#search-basic'))})},
+                function(original_string, actual_search, results) {
+                    searchPopulate(searchbox, original_string, results, UI_reset_marked_via_event)
+                }, 
                 delay_ms{{if is_testing:}},
                     function() {console.log("Search for '" + search_term + "' sent to OneZoom API from basic search")}{{pass}}
                 );
