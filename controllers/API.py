@@ -292,10 +292,8 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
 
     try:
         originalSearchFor = searchFor
-        print("searching for {}".format(searchFor))
         searchFor = punctuation_to_space(searchFor).split()
         if len(searchFor)==0 or all([(len(word)<=1 and not is_logographic(word, lang_primary)) for word in searchFor]):
-            print("Too short!")
             raise
         longWords = []
         shortWords = []
