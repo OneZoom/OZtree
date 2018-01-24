@@ -19,15 +19,19 @@ from requests.packages.urllib3.util.retry import Retry
 import time
 from random import sample
 from statistics import stdev, mean
-from collections import OrderedDict
-
+from collections import OrderedDict, defaultdict
+import time
+import colorama
 import js2py
 from js2py.es6 import js6_to_js5
+
+colorama.init()
 
 parser = argparse.ArgumentParser(description='Blat the OZ API')
 parser.add_argument('--url', default=["http://127.0.0.1:8000/API/search_node.json"], nargs="+", help='The full search url, e.g. "http://127.0.0.1:8000/API/search_node.json" or "http://beta.onezoom.org/API/search_node.json". You can give multiple values so as to test the speed of e.g. two different implementations')
 parser.add_argument('--requests', default=10, type=int, help='Average timings over this many duplicate requests')
-parser.add_argument("-s","--search", nargs="*", help="One or more search terms, to replace the standard set, for trial purposes only")    
+parser.add_argument("-s","--search", nargs="*", default = [], help="One or more search terms, to replace the standard set, for trial purposes only")    
+parser.add_argument("-l","--lang", default = None, help="Force language")    
 parser.add_argument("-v","--verbosity", action="count", help="Verbosity level: (do not print results, print results only for failures, print all results)", default=0)    
 
 args = parser.parse_args()
@@ -47,8 +51,8 @@ else:
         #list test here, keys give language (if key=None, test on all)
         (None, {
             '#':            dict(min_n = 0, max_n= 0, contains_within_top={}),
-            'Homo sap':     dict(min_n = 0, max_n= 0, contains_within_top={}),
-            'Homo sapiens': dict(min_n = 1, max_n= 1, contains_within_top={"Homo sapiens": 1}),
+            'Homo sap':     dict(min_n = 1, contains_within_top={"Homo sapiens": 1}),
+            'Homo sapiens': dict(min_n = 1, contains_within_top={"Homo sapiens": 1}),
         }),
         ('en', {
             '££££':         dict(min_n = 0, max_n= 0, contains_within_top={}),
@@ -74,11 +78,8 @@ else:
             "Mammals":      dict(min_n = 0, max_n= 0, contains_within_top={}),
             "Frog":         dict(min_n = 0, max_n= 0, contains_within_top={}),
             "Frogs":        dict(min_n = 0, max_n= 0, contains_within_top={}),
-            'Three men in a ':dict(min_n = 0, max_n= 0, contains_within_top={}),
-            'Three men in a boat':dict(min_n = 0, max_n= 0, contains_within_top={}),
-        }),
-        ('zh', {
-            '漢':            dict(min_n = 0, max_n= 0, contains_within_top={}),
+            'Three men in a ':dict(min_n = 0, max_n= 0, contains_within_top={"Tradescantia spathacea": 1}),
+            'Three men in a boat':dict(min_n = 0, max_n= 0, contains_within_top={"Tradescantia spathacea": 1}),
         }),
     ])
 
@@ -112,76 +113,92 @@ except FileNotFoundError:
     
 overall_search_score = js2py.eval_js(open(cache_fn, 'r').read())
 
-times={p:[] for p in args.url}
+
+times={p:defaultdict(list) for p in args.url}
 codes = {p:{} for p in args.url}
 lengths = {p:OrderedDict() for p in args.url}
 failed = {}
-print("Starting API requests")
+print("Starting API requests on the following APIs:")
+for ui, url in enumerate(args.url):
+    print("API {}: {}".format(ui+1, url))
 
 for i in range(1, args.requests+1):
     if args.verbosity:
         print('*', flush=True, end="")
     for lang, terms in search_terms.items():
         payload = {'no_log':1} #do not log the count in the db
+        if args.lang:
+            lang = args.lang
         if lang is not None:
             payload['lang']=lang
-        for searchterm in sorted(terms.keys()):
+        for ti, searchterm in enumerate(sorted(terms.keys())):
             expected = terms[searchterm]
             payload['query']=searchterm
             for ui, url in enumerate(args.url):
                 start = time.time()
                 r = requests.get(url, params=payload)
                 r.content  # wait until full content has been transfered
-                times[url].append(time.time() - start)
+                times[url][searchterm].append(time.time() - start)
                 lengths[url][searchterm]={k:len(v) for k,v in json.loads(r.text).items()}
                 if str(r.status_code) not in codes[url]:
                     codes[url][str(r.status_code)]=0
                 codes[url][str(r.status_code)] += 1
 
                 if i==args.requests:
+                    #check on expected
+                    result = json.loads(r.text)
+                    main_hits = result['nodes']
+                    sponsor_hits = result['sponsors']
+                    sciname_idx = main_hits['headers']['name']
+                    vername_idx = main_hits['headers']['vernacular']
+                    exvname_idx = main_hits['headers']['extra_vernaculars']
+                    scinames = {}
+                    scinames.update({sp[sciname_idx]:sp for sp in main_hits['leaf_hits']})
+                    scinames.update({sp[sciname_idx]:sp for sp in main_hits['node_hits']})
+                    total_hits = len(scinames)
+                    
                     #this is the last loop, we can print out the hits
-                    if url==args.url[0]:
-                        if args.verbosity:
-                            print("\n")
-                        #check on expected
-                        result = json.loads(r.text)
-                        main_hits = result['nodes']
-                        sponsor_hits = result['sponsors']
-                        sciname_idx = main_hits['headers']['name']
-                        vername_idx = main_hits['headers']['vernacular']
-                        exvname_idx = main_hits['headers']['extra_vernaculars']
-                        scinames = {}
-                        scinames.update({sp[sciname_idx]:sp for sp in main_hits['leaf_hits']})
-                        scinames.update({sp[sciname_idx]:sp for sp in main_hits['node_hits']})
-                        total_hits = len(scinames)
-                        
-                        ranking = {name:rank for rank, name in enumerate(
-                             sorted(scinames, reverse=True, key=lambda sn: overall_search_score(
-                                searchterm, 
-                                scinames[sn][sciname_idx],
-                                lang, 
-                                scinames[sn][vername_idx] if len(scinames[sn]) > vername_idx else None, 
-                                scinames[sn][exvname_idx] if len(scinames[sn]) > exvname_idx else [])[0]))}
+                    print("Testing search on API {} ({:4d} hits): ".format(ui, total_hits), end="")
 
-                        fail = False
-                        if not expected['min_n'] <= total_hits <= expected['max_n']:
-                            fail = True
-                        for sp, position in expected['contains_within_top'].items():
-                            if sp in scinames:
-                                if ranking[sp] > position:
-                                    fail = True
-                            else:
+                    ranking = {name:rank for rank, name in enumerate(
+                         sorted(scinames, reverse=True, key=lambda sn: overall_search_score(
+                            searchterm, 
+                            scinames[sn][sciname_idx],
+                            lang, 
+                            scinames[sn][vername_idx] if len(scinames[sn]) > vername_idx else None, 
+                            scinames[sn][exvname_idx] if len(scinames[sn]) > exvname_idx else [])[0]))}
+
+                    fail = False
+                    min_n = expected.get('min_n') or 0
+                    max_n = expected.get('max_n') or 1e9
+                        
+                    if not min_n <= total_hits <= max_n:
+                        fail = True
+                    for sp, position in expected['contains_within_top'].items():
+                        if sp in scinames:
+                            if ranking[sp] > position:
                                 fail = True
-                                
-                        if args.verbosity:
-                            if args.verbosity>1 or fail:
-                                #print out the returned list of species, one per line, ordered properly, so we can check
-                                for sn in sorted(ranking, key=ranking.get):
-                                    print("{}: {} [{}]".format(ranking[sn], scinames[sn][sciname_idx], 
-                                        scinames[sn][vername_idx] if len(scinames[sn]) > vername_idx else "no vernacular"))
-                    print("{}{} =\t{:.2g}±{:.2g}s per request".format(" "*ui, url, mean(times[url]), stdev(times[url]) if len(times[url])>1 else "N/A"))
+                        else:
+                            fail = True
+                    
+                    if len(args.search)==0:
+                        if fail:
+                            print(colorama.Fore.RED + "FAILED" + colorama.Style.RESET_ALL, end="")
+                        else:
+                            print(colorama.Fore.GREEN + "PASSED" + colorama.Style.RESET_ALL, end="")
+                    print(' {:.2g}±{:.2g}s/request for search term "{}".'.format(
+                        mean(times[url][searchterm]), 
+                        stdev(times[url][searchterm]) if len(times[url][searchterm])>1 else float('nan'), 
+                        searchterm))
                     if args.verbosity:
-                        print("Error reponses for", url, "('200'=OK):\n", codes[url])
+                        if args.verbosity>1 or fail:
+                            #print out the returned list of species, one per line, ordered properly, so we can check
+                            for sn in sorted(ranking, key=ranking.get):
+                                print("{}: {} [{}]".format(ranking[sn], scinames[sn][sciname_idx], 
+                                    scinames[sn][vername_idx] if len(scinames[sn]) > vername_idx else "no vernacular"))
+if args.verbosity:
+    for url in args.url:
+        print("Error reponses for", url, "('200'=OK):\n", codes[url])
 
 
 
