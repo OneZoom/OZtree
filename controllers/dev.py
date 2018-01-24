@@ -25,7 +25,7 @@ def COMPILED_DOCS():
 
 @auth.requires_membership(role='manager')
 def TEST_POST():
-    return(dict())
+    return dict()
 
 @auth.requires_membership(role='manager')
 def COMMAND_CALL_TEST():
@@ -38,7 +38,7 @@ def COMMAND_CALL_TEST():
         env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()})
     except CalledProcessError as e:
         ret_text=e.output
-    return(dict(data=ret_text))
+    return dict(data=ret_text)
 
 @auth.requires_membership(role='manager')
 def GARBAGE_COLLECT():
@@ -56,9 +56,9 @@ def PAUSE_WEB2PY_FOR_PDB():
             pdb.set_trace()
             return({})
         except Exception as e:
-            return({'errors':["{}".format(e), "perhaps you haven't installed pdb or objgraph"]})        
+            return {'errors':["{}".format(e), "perhaps you haven't installed pdb or objgraph"]}
     else:
-        return({'errors':'not a local request'})
+        return {'errors':'not a local request'}
 
 @auth.requires_membership(role='manager')
 def OBJGRAPH_DELTAS():
