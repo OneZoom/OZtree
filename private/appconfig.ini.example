@@ -31,10 +31,16 @@ url        = https://www.sandbox.paypal.com
 ;    shown on this machine? Usually not allowed, except on the 
 ;    main OneZoom site (on museum displays people will not want
 ;    to enter paypal etc details).
+; * log_search_strings. Should we keep a record of all the strings
+;    tried in search. This is simply a text string, and is not
+;    associated with time etc, so is entirely anonymised.
+;    There should therefore be no data protection issues.
+
 [general]
 maintenance_mins = 0
 pics_dir = //images.onezoom.org/
 allow_sponsorship = 0
+;log_search_strings = 1
 
 [api]
 ;If you want to get data from the Encyclopedia of Life, you need to put your own API key here. 
