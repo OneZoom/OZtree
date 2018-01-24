@@ -186,9 +186,9 @@ for i in range(1, args.requests+1):
                             print(colorama.Fore.RED + "FAILED" + colorama.Style.RESET_ALL, end="")
                         else:
                             print(colorama.Fore.GREEN + "PASSED" + colorama.Style.RESET_ALL, end="")
-                    print(' {:.2g}±{:.2g}s/request for search term "{}".'.format(
+                    print(' {:.2g}{}s/request for search term "{}".'.format(
                         mean(times[url][searchterm]), 
-                        stdev(times[url][searchterm]) if len(times[url][searchterm])>1 else float('nan'), 
+                        "±{:.2g}".format(stdev(times[url][searchterm])) if len(times[url][searchterm])>1 else "", 
                         searchterm))
                     if args.verbosity:
                         if args.verbosity>1 or fail:
