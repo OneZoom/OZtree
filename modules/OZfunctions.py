@@ -204,3 +204,34 @@ def get_common_name(ott, name=None, lang=None, include_unpreferred=False):
 def language(two_letter):
     return current.OZglobals['conversion_table'].get(two_letter)
 
+def punctuation_to_space(unicodetext):
+    """
+    Convert all space characters, and most punctuation, to normal spaces
+    prior to separating search results into words
+    """
+    return unicodetext.translate(current.OZglobals['unicode_punctuation_to_space_table'])
+
+def is_logographic(word, lang_primary):
+    """
+    Identify if this search is for logographic (e.g. chinese) characters, in which case 
+    we will not want to do a natural language search, and can search for each character 
+    independently. Since there is no obvious way to identify logographic characters, we
+    only do this if the search is for logographic languages, as described in
+    https://en.wikipedia.org/wiki/List_of_writing_systems#Logographic_writing_systems
+    which, restricted to extant languages, is only chinese, japanese, and korean
+    """
+    import string
+    if lang_primary not in ["zh", "cnm", "ja", "ko"]:
+        return False
+    #if the word is in a logographic language but contains any ascii or accented ascii chars, it can be
+    #treated as a logographic type, with spaces between words
+    return not any(ch in current.OZglobals['logographic_transcriptions'] for ch in word)
+
+def acceptable_sciname(word):
+    """
+    the following regexp matches characters that are reasonable to accept in scientific name:
+    [-./A-Za-z 0-9×αβγδμëüö{}*#]
+    (this includes e.g. in bacterial strains etc). If we get a search word containing anything outside these characters, we can treat it as a vernacular name match
+    """
+    import string
+    return all(ch in string.ascii_letters+string.digits+u" -./×αβγδμëüö{}*#" for ch in word) 

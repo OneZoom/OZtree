@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 #NB: this should be executed first (begins with _ and the web2py book says "Models in the same folder/subfolder are executed in alphabetical order.")
+import sys
 
 try:
     from gluon import current
@@ -229,11 +231,32 @@ conversion_table = cache.ram('conversion_table',
         "zu":["Zulu","isiZulu"]},
     time_expire = None)
 
-#allow them to be accessed in modules
+#allow global subbing Separators & Punctuation with a normal space
+#this is a slow definition, so we cache it in RAM, and import unicodedata within the lambda
+unicode_punctuation_to_space_table = cache.ram('unicode_punctuation_to_space_table',
+    lambda: {i:u' ' for i in xrange(sys.maxunicode) \
+        if __import__('unicodedata').category(unichr(i)).startswith('Z') \
+        or (__import__('unicodedata').category(unichr(i)).startswith('P') \
+        and unichr(i) not in [u"'",u"’",u"-",u".",u"×", u"#"])}, # allow e.g. ' in names
+    time_expire = None)
+    
+logographic_transcriptions = cache.ram('logographic_transcriptions', 
+    lambda: __import__('string').ascii_letters+__import__('string').digits+"".join({
+        u'a': u'āáǎà', u'e': u'ēéěè', u'i': u'īíǐì',
+        u'o': u'ōóǒò', u'u': u'ūúǔù', u'ü': u'ǖǘǚǜ',
+        u'A': u'ĀÁǍÀ', u'E': u'ĒÉĚÈ', u'I': u'ĪÍǏÌ',
+        u'O': u'ŌÓǑÒ', u'U': u'ŪÚǓÙ', u'Ü': u'ǕǗǙǛ'
+    }.values()),
+    time_expire = None)
+
+
+#allow these to be accessed in modules
 current.OZglobals = dict(
     wikiflags = wikiflags, 
     src_flags = src_flags, 
     inv_src_flags = inv_src_flags, 
     eol_inspect_via_flags = eol_inspect_via_flags, 
     image_status_labels = image_status_labels,
-    conversion_table = conversion_table)
+    conversion_table = conversion_table,
+    unicode_punctuation_to_space_table = unicode_punctuation_to_space_table,
+    logographic_transcriptions = logographic_transcriptions)

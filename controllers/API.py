@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import sys
 import re
+from OZfunctions import punctuation_to_space
+from OZfunctions import is_logographic
 """
 This contains the API functions - node_details, image_details, search_names, and search_sponsors. search_node also exists, which is a combination of search_names and search_sponsors.
 # request.vars:
@@ -194,7 +196,8 @@ def search_node():
                 #'no_log' flag set: this is probably us blatting the search for testing purposes
                 pass
             else:
-                db.search_log.update_or_insert(search_string=searchFor, search_count=db.search_log.search_count+1)
+                db.search_log.update_or_insert(db.search_log.search_string==searchFor, search_string=searchFor, search_count=db.search_log.search_count+1)
+                
     except:
         pass
     res1 = search_for_name()
@@ -273,7 +276,23 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
     """
     Search in latin and vernacular names for species. To look only in leaves, set restrict_tables to 'leaves'.
     To look only in nodes set it to 'nodes', otherwise we default to searching in both
+
+
+    We can do fast matches with against the start of words using full test searches in boolean mode, e.g. 
+        match(vernacular) against('o*' in boolean mode) and lang_primary='en'
+    (note that although you can put an asterisk at the start of the match it is ignored by mysql)
+    
+    The problem is that the minimum word size is set to innodb_ft_min_token_size = 3, so that one and two-letter
+    words are excluded from the index, and since we share databases with other users, we can't change this.
+    We can still match *search terms* of one and two letters, e.g. 'ox*' will match some things (e.g. 'oxford')
+    but nothing of 2 letters (e.g. 'ox').
+    
+    So if we want to also match against one or two letter words, we need to use normal text matches
+    *in addition* to full text matches. For speed, we are restricted to matching at the start of the 
+    entire phrase
     """
+    
+    
     """
     1) Kill off any searches where all non-chinese words are <= 1 letter
     1. if string length < 3, then it would run a start match. For example, search for 'zz' would return 'zz plant', search for 'ox ox' would
@@ -655,24 +674,6 @@ def get_id_by_ott():
 
 #PRIVATE FUNCTIONS
 
-#define a complicated global subbing Separators & Punctuation with a normal space
-#this is a slow function, so we cache it in RAM, and import unicodedata within the lambda
-punctuation_to_space_table = cache.ram('punctuation_to_space_table',
-    lambda: {i:u' ' for i in xrange(sys.maxunicode) \
-        if __import__('unicodedata').category(unichr(i)).startswith('Z') \
-        or (__import__('unicodedata').category(unichr(i)).startswith('P') \
-        and unichr(i) not in [u"'",u"’",u"-",u".",u"×", u"#"])}, # allow e.g. ' in names
-    time_expire = None)
-    
-pinyinToneMarks = cache.ram('pinyinToneMarks', 
-    lambda: "".join({
-        u'a': u'āáǎà', u'e': u'ēéěè', u'i': u'īíǐì',
-        u'o': u'ōóǒò', u'u': u'ūúǔù', u'ü': u'ǖǘǚǜ',
-        u'A': u'ĀÁǍÀ', u'E': u'ĒÉĚÈ', u'I': u'ĪÍǏÌ',
-        u'O': u'ŌÓǑÒ', u'U': u'ŪÚǓÙ', u'Ü': u'ǕǗǙǛ'
-    }.values()),
-    time_expire = None)
-
 def make_unicode(input):
     if type(input) != unicode:
         input =  input.decode('utf-8')
@@ -680,33 +681,3 @@ def make_unicode(input):
     else:
         return input
         
-def punctuation_to_space(unicodetext):
-    """
-    Convert all space characters, and most punctuation, to normal spaces
-    prior to separating search results into words
-    """
-    return unicodetext.translate(punctuation_to_space_table)
-
-def is_logographic(word, lang_primary):
-    """
-    Identify if this search is for logographic (e.g. chinese) characters, in which case 
-    we will not want to do a natural language search, and can search for each character 
-    independently. Since there is no obvious way to identify logographic characters, we
-    only do this if the search is for logographic languages, as described in
-    https://en.wikipedia.org/wiki/List_of_writing_systems#Logographic_writing_systems
-    which, restricted to extant languages, is only chinese, japanese, and korean
-    """
-    import string
-    if lang_primary not in ["zh", "cnm", "ja", "ko"]:
-        return False
-    #if the word contains any ascii or accented ascii chars, it is not logographic (e.g. if chinese but searching for pinyin)
-    return not any(ch in string.ascii_letters+string.digits+pinyinToneMarks for ch in word)
-
-def acceptable_sciname(word):
-    """
-    the following regexp matches characters that are reasonable to accept in scientific name:
-    [-./A-Za-z 0-9×αβγδμëüö{}*#]
-    (this includes e.g. in bacterial strains etc). If we get a search word containing anything outside these characters, we can treat it as a vernacular name match
-    """
-    import string
-    return all(ch in string.ascii_letters+string.digits+u" -./×αβγδμëüö{}*#" for ch in word) 
