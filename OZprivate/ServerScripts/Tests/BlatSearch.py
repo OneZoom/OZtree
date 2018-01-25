@@ -5,6 +5,8 @@ Test the OZ text search API with a set of queries
 
 Should return a list of times for the different terms
 
+Timings are dependent on database settings, in particular innodb_ft_min_token_size which is set to 3
+(SHOW VARIABLES LIKE 'innodb_ft_min_token_size';)
 
 could recode to use https://github.com/wg/wrk
 """
@@ -45,42 +47,46 @@ args = parser.parse_args()
 
 if len(args.search):
     search_terms = OrderedDict([
-        (None, {term:dict(min_n = -1, max_n = -1, contains_within_top={}) for term in args.search})])
+        (None, [(term,dict(min_n = -1, max_n = -1, contains_within_top={})) for term in args.search])])
 else:
     search_terms = OrderedDict([
         #list test here, keys give language (if key=None, test on all)
-        (None, {
-            '#':            dict(min_n = 0, max_n= 0, contains_within_top={}),
-            'Homo sap':     dict(min_n = 1, contains_within_top={"Homo sapiens": 1}),
-            'Homo sapiens': dict(min_n = 1, contains_within_top={"Homo sapiens": 1}),
-        }),
-        ('en', {
-            '££££':         dict(min_n = 0, max_n= 0, contains_within_top={}),
-            '漢':           dict(min_n = 0, max_n= 0, contains_within_top={}),
-            '💩':           dict(min_n = 0, max_n= 0, contains_within_top={}), #a 4 byte unicode char
-            'a':            dict(min_n = 0, max_n= 0, contains_within_top={}),
-            'a b':          dict(min_n = 0, max_n= 0, contains_within_top={}),
-            ' a b ':        dict(min_n = 0, max_n= 0, contains_within_top={}),
-            'aa':           dict(min_n = 0, max_n= 0, contains_within_top={}),
-            'aaa':          dict(min_n = 0, max_n= 0, contains_within_top={}),
-            'ox':           dict(min_n = 0, max_n= 0, contains_within_top={}),   
-            'zz':           dict(min_n = 0, max_n= 0, contains_within_top={}),
-            "Human":        dict(min_n = 0, max_n= 0, contains_within_top={}),
-            "Fish":         dict(min_n = 0, max_n= 0, contains_within_top={}),
-            "Fishes":       dict(min_n = 0, max_n= 0, contains_within_top={}),
-            "lion":         dict(min_n = 0, max_n= 0, contains_within_top={"Panthera leo": 3}),
-            "tiger":        dict(min_n = 0, max_n= 0, contains_within_top={}),
-            'Cat':          dict(min_n = 0, max_n= 0, contains_within_top={}),
-            'big cat':      dict(min_n = 0, max_n= 0, contains_within_top={}),
-            'Dog':          dict(min_n = 0, max_n= 0, contains_within_top={}),
-            "Darwin's":     dict(min_n = 0, max_n= 0, contains_within_top={}),
-            "Darwin’s":     dict(min_n = 0, max_n= 0, contains_within_top={}),
-            "Mammals":      dict(min_n = 0, max_n= 0, contains_within_top={}),
-            "Frog":         dict(min_n = 0, max_n= 0, contains_within_top={}),
-            "Frogs":        dict(min_n = 0, max_n= 0, contains_within_top={}),
-            'Three men in a ':dict(min_n = 0, max_n= 0, contains_within_top={"Tradescantia spathacea": 1}),
-            'Three men in a boat':dict(min_n = 0, max_n= 0, contains_within_top={"Tradescantia spathacea": 1}),
-        }),
+        (None, [
+            ('#',            dict(min_n = 0, max_n= 0, contains_within_top={})),
+            ('Homo sap',     dict(min_n = 1, max_n=1, contains_within_top={"Homo sapiens": 1})),
+            ('Homo sapiens', dict(min_n = 1, max_n=1, contains_within_top={"Homo sapiens": 1})),
+        ]),
+        ('en', [
+            'The following should be culled (not return anything)',
+            ('££££',         dict(min_n = 0, max_n= 0, contains_within_top={})),
+            ('漢',           dict(min_n = 0, max_n= 0, contains_within_top={})),
+            ('a',            dict(max_n= 0, contains_within_top={})),
+            ('a b',          dict(max_n= 0, contains_within_top={})),
+            (' a b ',        dict(max_n= 0, contains_within_top={})),
+            'Test a 4-byte unicode character (e.g. is it stored)',
+            ('💩',           dict(max_n= 0, contains_within_top={})), #a 4 byte unicode char
+            'Two-letter words are slow',
+            ('aa',           dict(min_n = 0, max_n= 0, contains_within_top={})),
+            ('aaa',          dict(min_n = 1, contains_within_top={"Cavaticovelia aaa":3})),
+            ('ox',           dict(min_n = 100, contains_within_top={})),   
+            ('zz',           dict(min_n = 1, contains_within_top={"Zamioculcas zamiifolia":1})),
+            'The following are all common search terms',
+            ("Human",        dict(min_n = 1, contains_within_top={})),
+            ("Fish",         dict(min_n = 0, max_n= 0, contains_within_top={})),
+            ("Fishes",       dict(min_n = 0, max_n= 0, contains_within_top={})),
+            ("lion",         dict(min_n = 0, max_n= 0, contains_within_top={"Panthera leo": 3})),
+            ("tiger",        dict(min_n = 0, max_n= 0, contains_within_top={})),
+            ('Cat',          dict(min_n = 0, max_n= 0, contains_within_top={})),
+            ('big cat',      dict(min_n = 0, max_n= 0, contains_within_top={})),
+            ('Dog',          dict(min_n = 0, max_n= 0, contains_within_top={})),
+            ("Darwin's",     dict(min_n = 1, contains_within_top={"Geospiza":10})),
+            ("Darwin’s",     dict(min_n = 1, max_n= 0, contains_within_top={"Geospiza":10})),
+            ("Mammals",      dict(min_n = 0, max_n= 0, contains_within_top={})),
+            ("Frog",         dict(min_n = 0, max_n= 0, contains_within_top={})),
+            ("Frogs",        dict(min_n = 0, max_n= 0, contains_within_top={})),
+            ('Three men in a ',dict(min_n = 0, max_n= 0, contains_within_top={"Tradescantia spathacea": 1})),
+            ('Three men in a boat',dict(min_n = 0, max_n= 0, contains_within_top={"Tradescantia spathacea": 1})),
+        ]),
     ])
 
 #To restrict load on the server, the ordering of returned results is done in javascript
@@ -126,76 +132,84 @@ for i in range(1, args.requests+1):
     if args.verbosity:
         print('*', flush=True, end="")
     for lang, terms in search_terms.items():
-        payload = {'no_log':1} #do not log the count in the db
+        payload = {} 
+        payload['no_log']=1 #do not log the count in the db
         if args.lang:
             lang = args.lang
         if lang is not None:
             payload['lang']=lang
-        for ti, searchterm in enumerate(sorted(terms.keys())):
-            expected = terms[searchterm]
-            payload['query']=searchterm
-            for ui, url in enumerate(args.url):
-                start = time.time()
-                r = requests.get(url, params=payload)
-                r.content  # wait until full content has been transfered
-                times[url][searchterm].append(time.time() - start)
-                lengths[url][searchterm]={k:len(v) for k,v in json.loads(r.text).items()}
-                if str(r.status_code) not in codes[url]:
-                    codes[url][str(r.status_code)]=0
-                codes[url][str(r.status_code)] += 1
-
+        for t in terms:
+            if isinstance(t, str):
                 if i==args.requests:
-                    #check on expected
-                    result = json.loads(r.text)
-                    main_hits = result['nodes']
-                    sponsor_hits = result['sponsors']
-                    sciname_idx = main_hits['headers']['name']
-                    vername_idx = main_hits['headers']['vernacular']
-                    exvname_idx = main_hits['headers']['extra_vernaculars']
-                    scinames = {}
-                    scinames.update({sp[sciname_idx]:sp for sp in main_hits['leaf_hits']})
-                    scinames.update({sp[sciname_idx]:sp for sp in main_hits['node_hits']})
-                    total_hits = len(scinames)
-                    
-                    #this is the last loop, we can print out the hits
-                    print("Testing search on API {} ({:4d} hits): ".format(ui, total_hits), end="")
-
-                    ranking = {name:rank for rank, name in enumerate(
-                         sorted(scinames, reverse=True, key=lambda sn: overall_search_score(
-                            searchterm, 
-                            scinames[sn][sciname_idx],
-                            lang, 
-                            scinames[sn][vername_idx] if len(scinames[sn]) > vername_idx else None, 
-                            scinames[sn][exvname_idx] if len(scinames[sn]) > exvname_idx else [])[0]))}
-
-                    fail = False
-                    min_n = expected.get('min_n') or 0
-                    max_n = expected.get('max_n') or 1e9
+                    print(colorama.Style.DIM + t + colorama.Style.RESET_ALL)
+            else:
+                searchterm = t[0]
+                expected = t[1]
+                payload['query']=searchterm
+                for ui, url in enumerate(args.url):
+                    start = time.time()
+                    r = requests.get(url, params=payload)
+                    r.content  # wait until full content has been transfered
+                    times[url][searchterm].append(time.time() - start)
+                    lengths[url][searchterm]={k:len(v) for k,v in json.loads(r.text).items()}
+                    if str(r.status_code) not in codes[url]:
+                        codes[url][str(r.status_code)]=0
+                    codes[url][str(r.status_code)] += 1
+    
+                    if i==args.requests:
+                        #check on expected
+                        result = json.loads(r.text)
+                        main_hits = result['nodes']
+                        sponsor_hits = result['sponsors']
+                        sciname_idx = main_hits['headers']['name']
+                        vername_idx = main_hits['headers']['vernacular']
+                        exvname_idx = main_hits['headers']['extra_vernaculars']
+                        scinames = {}
+                        scinames.update({sp[sciname_idx]:sp for sp in main_hits['leaf_hits']})
+                        scinames.update({sp[sciname_idx]:sp for sp in main_hits['node_hits']})
+                        total_hits = len(scinames)
                         
-                    if not min_n <= total_hits <= max_n:
-                        fail = True
-                    for sp, position in expected['contains_within_top'].items():
-                        if sp in scinames:
-                            if ranking[sp] > position:
-                                fail = True
-                        else:
+                        #this is the last loop, we can print out the hits
+                        print("Testing search on API {} ({:4d} hits): ".format(ui+1, total_hits), end="")
+    
+                        ranking = {name:rank for rank, name in enumerate(
+                             sorted(scinames, reverse=True, key=lambda sn: overall_search_score(
+                                searchterm, 
+                                scinames[sn][sciname_idx],
+                                lang, 
+                                scinames[sn][vername_idx] if len(scinames[sn]) > vername_idx else None, 
+                                scinames[sn][exvname_idx] if len(scinames[sn]) > exvname_idx else [])[0]))}
+    
+                        fail = False
+                        min_n = expected.get('min_n', 0)
+                        max_n = expected.get('max_n', 0)
+                            
+                        if not min_n <= total_hits <= max_n:
                             fail = True
-                    
-                    if len(args.search)==0:
-                        if fail:
-                            print(colorama.Fore.RED + "FAILED" + colorama.Style.RESET_ALL, end="")
-                        else:
-                            print(colorama.Fore.GREEN + "PASSED" + colorama.Style.RESET_ALL, end="")
-                    print(' {:.2g}{}s/request for search term "{}".'.format(
-                        mean(times[url][searchterm]), 
-                        "±{:.2g}".format(stdev(times[url][searchterm])) if len(times[url][searchterm])>1 else "", 
-                        searchterm))
-                    if args.verbosity:
-                        if args.verbosity>1 or fail:
-                            #print out the returned list of species, one per line, ordered properly, so we can check
-                            for sn in sorted(ranking, key=ranking.get):
-                                print("{}: {} [{}]".format(ranking[sn], scinames[sn][sciname_idx], 
-                                    scinames[sn][vername_idx] if len(scinames[sn]) > vername_idx else "no vernacular"))
+                        for sp, position in expected.get('contains_within_top',{}).items():
+                            if sp in scinames:
+                                if ranking[sp] > position:
+                                    fail = True
+                            else:
+                                fail = True
+                        
+                        if len(args.search)==0:
+                            if fail:
+                                print(colorama.Fore.RED + "FAILED" + colorama.Style.RESET_ALL, end="")
+                            else:
+                                print(colorama.Fore.GREEN + "PASSED" + colorama.Style.RESET_ALL, end="")
+                        print(' {:.2g}{}s/request for search term "{}".'.format(
+                            mean(times[url][searchterm]), 
+                            "±{:.2g}".format(stdev(times[url][searchterm])) if len(times[url][searchterm])>1 else "", 
+                            searchterm))
+                        if args.verbosity:
+                            if args.verbosity>1 or fail:
+                                #print out the returned list of species, one per line, ordered properly, so we can check
+                                for sn in sorted(ranking, key=ranking.get):
+                                    print("{}: {} [{}]".format(ranking[sn], scinames[sn][sciname_idx], 
+                                        scinames[sn][vername_idx] if len(scinames[sn]) > vername_idx else "no vernacular"))
+for url in args.url:
+    print("{}: total time for all queries = {} secs".format(url, sum([mean(times[url][t]) for t in times[url]])))
 if args.verbosity:
     for url in args.url:
         print("Error reponses for", url, "('200'=OK):\n", codes[url])
