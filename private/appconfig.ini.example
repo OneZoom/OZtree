@@ -1,8 +1,10 @@
 ; App configuration
 
-; db configuration
+; db configuration - using MySQL and the default web2py connector, we need to add 
+;  ?set_encoding=utf8mb4 to the end of the string to cope with adding all e.g. chinese
+;  characters etc into the database (e.g. for vernacular names)
 [db]
-uri       = mysql://oz:passwd@127.0.0.1/OneZoom
+uri       = mysql://oz:passwd@127.0.0.1/OneZoom?set_encoding=utf8mb4
 migrate   = 1
 pool_size = 1
 
