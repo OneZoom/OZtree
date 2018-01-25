@@ -619,6 +619,9 @@ CREATE PROCEDURE MakeFullUnicode(tablename CHAR(50), columnname CHAR(50))
     SELECT character_set_name, column_type INTO char_set, vtype FROM information_schema.`COLUMNS` 
         WHERE table_schema = SCHEMA() AND table_name = tablename AND column_name = columnname;
     IF char_set != 'utf8mb4' THEN 
+      SET @sql_cmd = CONCAT('ALTER TABLE ', tablename,' CONVERT TO CHARACTER SET utf8mb4;');
+      PREPARE stmt FROM @sql_cmd;
+      EXECUTE stmt;
       SET @sql_cmd = CONCAT('ALTER TABLE ', tablename,' CHANGE ', columnname, ' ', columnname, ' ', vtype, ' CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;');
       PREPARE stmt FROM @sql_cmd;
       EXECUTE stmt;
@@ -725,10 +728,17 @@ DROP   INDEX preferred_index     ON vernacular_by_ott;
 CREATE INDEX preferred_index     ON vernacular_by_ott (preferred);
 
 DROP            INDEX vernacular_index    ON vernacular_by_name;
-CREATE FULLTEXT INDEX vernacular_index    ON vernacular_by_name (vernacular);
+CREATE          INDEX vernacular_index    ON vernacular_by_name (vernacular);
 
 DROP            INDEX vernacular_index    ON vernacular_by_ott;
-CREATE FULLTEXT INDEX vernacular_index    ON vernacular_by_ott (vernacular);
+CREATE          INDEX vernacular_index    ON vernacular_by_ott (vernacular);
+
+
+DROP            INDEX ft_vernacular_index    ON vernacular_by_name;
+CREATE FULLTEXT INDEX ft_vernacular_index    ON vernacular_by_name (vernacular);
+
+DROP            INDEX ft_vernacular_index    ON vernacular_by_ott;
+CREATE FULLTEXT INDEX ft_vernacular_index    ON vernacular_by_ott (vernacular);
 
 DROP            INDEX sponsor_name_index  ON reservations;
 CREATE FULLTEXT INDEX sponsor_name_index  ON reservations (verified_name);
@@ -738,6 +748,9 @@ CREATE FULLTEXT INDEX sponsor_info_index  ON reservations (verified_more_info);
 
 DROP   INDEX ipni_index          ON PoWO;
 CREATE INDEX ipni_index          ON PoWO (ipni_int)         USING HASH;
+
+DROP   INDEX string_index    ON search_log;
+CREATE INDEX string_index    ON search_log (search_string)   USING HASH;
 
 DROP   INDEX identifier_index    ON partners;
 CREATE INDEX identifier_index    ON partners (identifier)   USING HASH;
