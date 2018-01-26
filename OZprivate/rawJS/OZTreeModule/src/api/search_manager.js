@@ -81,9 +81,10 @@ class SearchManager {
         }, search_delay);
     }
   }
-  // Notes: the Python server side API calls to server later will throw out punctuation except for ' - . and hybrid X characters.
-  // It will also sort out what happens if only 1 or 2 characters are requested by requiring exact match to return anything.
-  // It will also stip out leading spaces and punctations on the search for sponsors only
+  // Notes: the Python server side API calls to server throws out punctuation except for 
+  // ',’,-.×# (see: punctuation_to_space_table in API.py)
+  // It will also sort out what happens if only 2 characters are requested by requiring exact match to return anything.
+  // It will also strip out leading spaces and punctations on the search for sponsors only
     
   /**
    * Search specifically within sponsorship fields.
@@ -277,43 +278,62 @@ class SearchManager {
         if (tidy_common) this.data_repo.ott_name_map[ott][1] = tidy_common;
     }
     
-    let row = [tidy_common, tidy_latin, id * id_decider, 0];
-    
-    let latin_score = latinName ? search_match(latinName, toSearchFor)*3 : 0;
-    let vernacular_score = vernacular?  max(
-                                            search_match(vernacular,toSearchFor)*3+2,
-                                            search_match(vernacular,pluralize(toSearchFor, lang))*3+1,
-                                            search_match(vernacular,dedash(toSearchFor))*3+1) : 0;
-    
-    let extra_vernacular_score = -20;
-    if (extra_vernaculars) {
-        for (let k=0; k<extra_vernaculars.length; k++) {
-            let extra_vernacular = extra_vernaculars[k];
-            let temp_score = max(
-                                 search_match(extra_vernacular,toSearchFor)*3+2,
-                                 search_match(extra_vernacular,pluralize(toSearchFor, lang))*3+1,
-                                 search_match(extra_vernacular,dedash(toSearchFor))*3+1) - 20;
-            
-            if (temp_score >= extra_vernacular_score) {
-                row[4] = {
-                info_type: "Extra Vernacular",
-                text: OZstrings["Also called:"] + " " + extra_vernacular 
-                }
-                extra_vernacular = temp_score;
-            }
-        }  
+    let row = [tidy_common, tidy_latin, id * id_decider];
+    let score_result = overall_search_score(toSearchFor, latinName, lang, vernacular, extra_vernaculars);
+    if (score_result.length < 2) {
+        return row.concat(score_result)
+    } else {
+        //the second item retuend by the score function is a index into the extra_vernaculars
+        //array, if the match was only to an extra vernacular
+        let extra = OZstrings["Also called:"] + " " + extra_vernaculars[score_result[1]]
+        return row.concat([score_result[0], {info_type: "Extra Vernacular", text: extra}])
     }
-    row[3] = max(latin_score, vernacular_score, extra_vernacular_score);
-
-    return row;
   }
 }
 
+//** FUNCTIONS THAT FOLLOW OUTSIDE OF THE CLASS SHOULD BE CORRECTLY INDENTED, AT THEY
+//** ARE USED IN THE UNIT TESTING OF THE SEARCH API. IN PARTICULAR, THERE SHOULD BE 
+//** NO INDENT OF THE function DEFINITION, AND THE ONLY NON-INDENTED CLOSE-CURLY-BRACE
+//** SHOULD BE TO CLOSE THE FUNCTION
+
+
+/**
+ * @private
+ * Provides a total search score for a species given the scientific, vernacular, and extra (unpreferred) vernacular names
+ * Returns an array of the score plus (if matched) the index of the best matching extra vernacular score
+ */
+function overall_search_score(toSearchFor, latinName, lang, vernacular, extra_vernaculars) {
+    let latin_score = latinName ? match_score(toSearchFor, latinName)*3 : 0;
+    let toSearchFor_plural = pluralize(toSearchFor, lang)
+    let toSearchFor_dedash = dedash(toSearchFor)
+    let vernacular_score = vernacular?  Math.max(
+                                            match_score(toSearchFor,        vernacular)*3+2,
+                                            match_score(toSearchFor_plural, vernacular)*3+1,
+                                            match_score(toSearchFor_dedash, vernacular)*3+1) : 0;
+    
+    let extra_vernacular_score = -20;
+    let extra_vernacular_index=[];
+    if (extra_vernaculars) {
+        for (let k=0; k<extra_vernaculars.length; k++) {
+            let extra_vernacular = extra_vernaculars[k];
+            let temp_score = Math.max(
+                                 match_score(toSearchFor,        extra_vernacular)*3+2,
+                                 match_score(toSearchFor_plural, extra_vernacular)*3+1,
+                                 match_score(toSearchFor_dedash, extra_vernacular)*3+1) - 20;
+            
+            if (temp_score >= extra_vernacular_score) {
+                extra_vernacular_index = [k]
+                extra_vernacular_score = temp_score;
+            }
+        }  
+    }
+    return [Math.max(latin_score, vernacular_score, extra_vernacular_score)].concat(extra_vernacular_index)
+}
 /**
  * @private
  * Provides a numerical ranking for search quality which can be used for ranking search results locally
  */
-function search_match(toSearchIn,toSearchFor) {
+function match_score(toSearchFor, toSearchIn) {
     // when we use this we'll have to check there isn't a lowdash escape on the end of the toSearchIn
     if (toSearchIn==toSearchFor) {
         // perfect match
@@ -401,7 +421,7 @@ function search_match(toSearchIn,toSearchFor) {
  * @param {string} lang - the 2 or 4 letter language string, e.g. 'en' or 'en-GB'.
  */
 function pluralize(stringIn, lang='en') {
-    if (lang && lang.startsWith('en')) {
+    if (lang && /^en/.test(lang)) {
         let lastChar = stringIn.substr(stringIn.length - 1);
         let secondLastChar = stringIn.substr(stringIn.length - 2,1);
         let lastTwoChars = stringIn.substr(stringIn.length - 2,2);
