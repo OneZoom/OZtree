@@ -245,7 +245,7 @@ Note that mySQL stupidly has a resticted version of the unicode character set, s
 
 To get any decent performance out of your OneZoom instance, you will need to create indexes on the resulting tables. The commands for doing this are listed in a large comment at the end of `db.py`, from where they can be copied and pasted into a mysql client.
 
-The commands to create indices also include commands to drop the indexes if they already exist. This will cause SQL errors (Can't DROP XXX) if you have not previously created any indices. These errors can be safely ignored. If you are using mysql workbench you may want to untick the option under Query to "Stop Script Execution on Errors", so that the index creation continues after each error.
+The commands to create indices also include commands to convert some of the columns to 4-byte unicode if necessary (to incorporate e.g. full Japanese/Chinese common names), and to drop the indexes if they already exist. Some of these commands may cause SQL errors (e.g. "Can't DROP XXX") if you have not previously created any indices. These errors can be safely ignored. If you are using mysql workbench you may want to untick the option under Query to "Stop Script Execution on Errors", so that the index creation continues after each error.
 
 
 
