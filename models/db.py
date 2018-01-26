@@ -727,12 +727,11 @@ CREATE INDEX preferred_index     ON vernacular_by_name (preferred);
 DROP   INDEX preferred_index     ON vernacular_by_ott;
 CREATE INDEX preferred_index     ON vernacular_by_ott (preferred);
 
-DROP            INDEX vernacular_index    ON vernacular_by_name;
-CREATE          INDEX vernacular_index    ON vernacular_by_name (vernacular);
+DROP            INDEX vernacular_index       ON vernacular_by_name;
+CREATE          INDEX vernacular_index       ON vernacular_by_name (vernacular);
 
-DROP            INDEX vernacular_index    ON vernacular_by_ott;
-CREATE          INDEX vernacular_index    ON vernacular_by_ott (vernacular);
-
+DROP            INDEX vernacular_index       ON vernacular_by_ott;
+CREATE          INDEX vernacular_index       ON vernacular_by_ott (vernacular);
 
 DROP            INDEX ft_vernacular_index    ON vernacular_by_name;
 CREATE FULLTEXT INDEX ft_vernacular_index    ON vernacular_by_name (vernacular);
@@ -740,11 +739,17 @@ CREATE FULLTEXT INDEX ft_vernacular_index    ON vernacular_by_name (vernacular);
 DROP            INDEX ft_vernacular_index    ON vernacular_by_ott;
 CREATE FULLTEXT INDEX ft_vernacular_index    ON vernacular_by_ott (vernacular);
 
-DROP            INDEX sponsor_name_index  ON reservations;
-CREATE FULLTEXT INDEX sponsor_name_index  ON reservations (verified_name);
+DROP            INDEX sponsor_name_index     ON reservations;
+CREATE          INDEX sponsor_name_index     ON reservations (verified_name);
 
-DROP            INDEX sponsor_info_index  ON reservations;
-CREATE FULLTEXT INDEX sponsor_info_index  ON reservations (verified_more_info);
+DROP            INDEX sponsor_info_index     ON reservations;
+CREATE          INDEX sponsor_info_index     ON reservations (verified_more_info);
+
+DROP            INDEX ft_sponsor_name_index  ON reservations;
+CREATE FULLTEXT INDEX ft_sponsor_name_index  ON reservations (verified_name);
+
+DROP            INDEX ft_sponsor_info_index  ON reservations;
+CREATE FULLTEXT INDEX ft_sponsor_info_index  ON reservations (verified_more_info);
 
 DROP   INDEX ipni_index          ON PoWO;
 CREATE INDEX ipni_index          ON PoWO (ipni_int)         USING HASH;
@@ -756,6 +761,9 @@ DROP   INDEX identifier_index    ON partners;
 CREATE INDEX identifier_index    ON partners (identifier)   USING HASH;
 
 /* The following are the indexes for ordered leaves & ordered nodes, useful to re-do after a new tree is imported */
+
+DROP   INDEX price_index         ON ordered_leaves;
+CREATE INDEX price_index         ON ordered_leaves (price);
 
 DROP   INDEX ipni_index          ON ordered_nodes;
 CREATE INDEX ipni_index          ON ordered_nodes (ipni)    USING HASH;
@@ -798,9 +806,6 @@ CREATE INDEX name_index          ON ordered_leaves (name);
 
 DROP   INDEX name_index          ON ordered_nodes;
 CREATE INDEX name_index          ON ordered_nodes (name);
-
-DROP   INDEX price_index         ON ordered_leaves;
-CREATE INDEX price_index         ON ordered_leaves (price);
 
 DROP            INDEX name_fulltext_index ON ordered_nodes;
 CREATE FULLTEXT INDEX name_fulltext_index ON ordered_nodes (name);
