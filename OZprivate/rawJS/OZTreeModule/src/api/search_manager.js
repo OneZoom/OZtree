@@ -193,55 +193,55 @@ class SearchManager {
   populateBySponsorResults(toSearchFor, res, type='all') {
     let temp_ott_id_map = {}; // map from ottid to OZid
     let newRes = []; // the result that will get returned
-      if (res){
-          if (res.nodes){
-    for (let i=0; i<res.nodes.length; i++) {
-        temp_ott_id_map[res.nodes[i].ott] = res.nodes[i].id;
-        if (this.data_repo)
-            // If this.data_repo exists append data - this is to enable URL rewriting later
-            this.data_repo.id_ott_map[res.nodes[i].id] = res.nodes[i].ott;
-    }}
-         if (res.leaves){
-    for (let i=0; i<res.leaves.length; i++) {
-        temp_ott_id_map[res.leaves[i].ott] = -res.leaves[i].id;
-        if (this.data_repo)
-            // If this.data_repo exists append data - this is to enable URL rewriting later
-            this.data_repo.id_ott_map[-res.leaves[i].id] = res.leaves[i].ott;
-    }
-         }
-          if (res.reservations){
-    for (let i=0; i<res.reservations.length; i++) {
-        let record = res.reservations[i];
-
-        let ott = record[0];
-        let latinName = record[1];
-        let vernacular = res.common_names[ott];
-        let id = temp_ott_id_map[ott];
-        let searchScore = (record[4] == type)?1:0;
-        // give a low score, but higher if you asked for "for" and got "for or asked for "by" and got "by"
-        
-        let row = [vernacular, latinName, id, searchScore];
-        
-        let additional_info = {info_type: "Sponsorship Info", text: null};
-        let prefix = "";
-        if (record[4] && record[4] !== "null") prefix = OZstrings["Sponsored " + record[4]] + " ";
-        if (record[2] && record[3]) {
-            additional_info.text = prefix + record[2] + "</br>" + capitalizeFirstLetter(record[3]);
-            row.push(additional_info);
-        } else if (record[2]) {
-            additional_info.text = prefix + record[2];
-            row.push(additional_info);
-        } else if (record[3]) {
-            additional_info.text = capitalizeFirstLetter(record[3]);
-            row.push(additional_info);
+    if (res) { // check that a result has been returned at all
+        if (res.nodes){ // check if there are node search results before processing those
+            for (let i=0; i<res.nodes.length; i++) {
+                temp_ott_id_map[res.nodes[i].ott] = res.nodes[i].id;
+                if (this.data_repo)
+                    // If this.data_repo exists append data - this is to enable URL rewriting later
+                    this.data_repo.id_ott_map[res.nodes[i].id] = res.nodes[i].ott;
+            }
         }
+        if (res.leaves){ // check that there are leaf search results
+            for (let i=0; i<res.leaves.length; i++) {
+                temp_ott_id_map[res.leaves[i].ott] = -res.leaves[i].id;
+                if (this.data_repo)
+                    // If this.data_repo exists append data - this is to enable URL rewriting later
+                    this.data_repo.id_ott_map[-res.leaves[i].id] = res.leaves[i].ott;
+            }
+         }
+          if (res.reservations){ // check that there are reservation search results (sponsors)
+              for (let i=0; i<res.reservations.length; i++) {
+                  let record = res.reservations[i];
+
+                  let ott = record[0];
+                  let latinName = record[1];
+                  let vernacular = res.common_names[ott];
+                  let id = temp_ott_id_map[ott];
+                  let searchScore = (record[4] == type)?1:0;
+                  // give a low score, but higher if you asked for "for" and got "for or asked for "by" and got "by"
+                  
+                  let row = [vernacular, latinName, id, searchScore];
         
-        newRes.push(row);
-    }
-              
+                  let additional_info = {info_type: "Sponsorship Info", text: null};
+                  let prefix = "";
+                  if (record[4] && record[4] !== "null") prefix = OZstrings["Sponsored " + record[4]] + " ";
+                  if (record[2] && record[3]) {
+                      additional_info.text = prefix + record[2] + "</br>" + capitalizeFirstLetter(record[3]);
+                      row.push(additional_info);
+                  } else if (record[2]) {
+                      additional_info.text = prefix + record[2];
+                      row.push(additional_info);
+                  } else if (record[3]) {
+                      additional_info.text = capitalizeFirstLetter(record[3]);
+                      row.push(additional_info);
+                  }
+        
+                  newRes.push(row);
+              }
           }
       }
-    return newRes;
+    return newRes; // return the result ready for processsing, with all search results appended to it.
   }
 
   /**
