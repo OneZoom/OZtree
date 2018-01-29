@@ -383,6 +383,8 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
     // we want to test if we're waiting for a result at all and if we're not then do nothing regardless
     // think the status of the spinner should be used as this test i.e. the spinner starts going when an API call is actually made and stops going only when an API call is received 
     
+    console.log("populating search results");
+    
     if ($(".searchinput input", searchbox).val() == original_search)
     {
         // the results match what's still in the box so populate the results
@@ -648,7 +650,6 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
             }
         })
         .on('input', function(event) {
-            console.log("asdfasdf"); // james debug
             var search_term = this.value;
             var searchbox = $(this).closest('.searchbox');
             var searchresult = $('.searchresult', searchbox);
@@ -666,21 +667,25 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
                 $('.searchinput', searchbox).removeClass('waiting_for_search_result');
             } else {
                 $('.searchinput', searchbox).addClass('waiting_for_search_result');
-                var delay_ms = 400;
-                console.log(event.which); // debug line
+                var delay_ms = 1000;
                 if (event.which == 13) {
                     delay_ms = 1;   //enter was pressed - don't delay
-                } else if (search_term.length == 1) {
-                    delay_ms = 800; //wait a bit longer before asking for a search if there is only one character
-                }
-                onezoom.search_manager.full_search(
-                    search_term, 
-                    function(original_string, actual_search, results) {
-                        searchPopulate(searchbox, original_string, results, UI_reset_marked_via_event)
-                    }, 
-                    delay_ms{{if is_testing:}},
-                    function() {console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search")}{{pass}}
-                    );
+                } else if (search_term.replace(/ /g,'').length > 1) { // we're never going to search for a single character
+            
+            onezoom.search_manager.full_search(
+                                               search_term,
+                                               function(original_string, actual_search, results) {
+                                               searchPopulate(searchbox, original_string, results, UI_reset_marked_via_event)
+                                               },
+                                               delay_ms,
+                                               function() {console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search")
+                                               if(!($(".searchinput").hasClass('waiting_for_search_result')))
+                                               {
+                                               $(".searchinput", searchbox).addClass('waiting_for_search_result'); // switch flag for search to on
+                                               }
+                                               }
+                                               );
+            }
             }
         });
         
