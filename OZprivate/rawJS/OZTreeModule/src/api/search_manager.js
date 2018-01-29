@@ -193,19 +193,23 @@ class SearchManager {
   populateBySponsorResults(toSearchFor, res, type='all') {
     let temp_ott_id_map = {}; // map from ottid to OZid
     let newRes = []; // the result that will get returned
+      if (res){
+          if (res.nodes){
     for (let i=0; i<res.nodes.length; i++) {
         temp_ott_id_map[res.nodes[i].ott] = res.nodes[i].id;
         if (this.data_repo)
             // If this.data_repo exists append data - this is to enable URL rewriting later
             this.data_repo.id_ott_map[res.nodes[i].id] = res.nodes[i].ott;
-    }
+    }}
+         if (res.leaves){
     for (let i=0; i<res.leaves.length; i++) {
         temp_ott_id_map[res.leaves[i].ott] = -res.leaves[i].id;
         if (this.data_repo)
             // If this.data_repo exists append data - this is to enable URL rewriting later
             this.data_repo.id_ott_map[-res.leaves[i].id] = res.leaves[i].ott;
     }
-    
+         }
+          if (res.reservations){
     for (let i=0; i<res.reservations.length; i++) {
         let record = res.reservations[i];
 
@@ -234,6 +238,9 @@ class SearchManager {
         
         newRes.push(row);
     }
+              
+          }
+      }
     return newRes;
   }
 
