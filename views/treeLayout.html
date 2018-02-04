@@ -380,40 +380,52 @@ function is_sponsored(search_result_item) {
  * (called with event, OZid, item_name, sci_name)
  */
 function searchPopulate(searchbox, original_search, search_result, click_callback_id_name) {
-    $(".searchinput", searchbox).removeClass('waiting_for_search_result');
-    var dropdown = $(".search_dropdown", searchbox);
-    {{if is_testing:}}console.log("Hiding popular species section of dropdown");{{pass}}
-    $('.popular_species', dropdown).hide();
-    $('.search_hits', dropdown).empty();
-    if (search_result.length == 0) {
-        $('.no_results', dropdown).show();
-    } else {
-        {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
-        $('.no_results', dropdown).hide();
-        if (!is_sponsored(search_result[0])) {
-            $(".search_hits", dropdown).append($('<dt></dt>').text(OZstrings['NameHits']))
-        }
-        var sponsored=false;         
-        $.each(search_result, function() {
-            var result = this;
-            if ((sponsored==false) && (is_sponsored(result))) {
-                $(".search_hits", dropdown).append($('<dt class="sponsorhits"></dt>').html(OZstrings['SponsorHits']))
-                sponsored=true;
+    // we want to test if we're waiting for a result at all and if we're not then do nothing regardless
+    // think the status of the spinner should be used as this test i.e. the spinner starts going when an API call is actually made and stops going only when an API call is received 
+    
+    console.log("populating search results");
+    
+    if ($(".searchinput input", searchbox).val() == original_search)
+    {
+        // the results match what's still in the box so populate the results
+        // we want to check that the original_search is still the same as what's in the box
+        console.log($(".searchinput input", searchbox).val());
+        $(".searchinput", searchbox).removeClass('waiting_for_search_result');
+        var dropdown = $(".search_dropdown", searchbox);
+        {{if is_testing:}}console.log("Hiding popular species section of dropdown");{{pass}}
+        $('.popular_species', dropdown).hide();
+        $('.search_hits', dropdown).empty();
+        if (search_result.length == 0) {
+            $('.no_results', dropdown).show();
+        } else {
+            {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
+            $('.no_results', dropdown).hide();
+            if (!is_sponsored(search_result[0])) {
+                $(".search_hits", dropdown).append($('<dt></dt>').text(OZstrings['NameHits']))
             }
-            var tempHTML = compile_names(result);
-            tempHTML += compile_sponsorship(result);
-            $(".search_hits", dropdown).append(
-                $('<dd></dd>')
-                    .html(tempHTML)
-                    .click(function(event) {
-                        var OZid = result[2];
-                        var given_name = result[0];
-                        var sciname = result[1];
-                        click_callback_id_name(event, result[2], result[0], result[1]);})
-            );
-        })
+            var sponsored=false;
+            $.each(search_result, function() {
+                   var result = this;
+                   if ((sponsored==false) && (is_sponsored(result))) {
+                   $(".search_hits", dropdown).append($('<dt class="sponsorhits"></dt>').html(OZstrings['SponsorHits']))
+                   sponsored=true;
+                   }
+                   var tempHTML = compile_names(result);
+                   tempHTML += compile_sponsorship(result);
+                   $(".search_hits", dropdown).append(
+                                                      $('<dd></dd>')
+                                                      .html(tempHTML)
+                                                      .click(function(event) {
+                                                             var OZid = result[2];
+                                                             var given_name = result[0];
+                                                             var sciname = result[1];
+                                                             click_callback_id_name(event, result[2], result[0], result[1]);})
+                                                      );
+                   })
+        }
+        UIkit.dropdown(dropdown).show();
     }
-    UIkit.dropdown(dropdown).show();
+    // else the box has since changed contents do nothing
 }
 
 /* Add a set of species (e.g. popular species) to a target list, 
@@ -655,20 +667,25 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
                 $('.searchinput', searchbox).removeClass('waiting_for_search_result');
             } else {
                 $('.searchinput', searchbox).addClass('waiting_for_search_result');
-                var delay_ms = 400;
+                var delay_ms = 1000;
                 if (event.which == 13) {
                     delay_ms = 1;   //enter was pressed - don't delay
-                } else if (search_term.length == 1) {
-                    delay_ms = 800; //wait a bit longer before asking for a search if there is only one character
-                }
-                onezoom.search_manager.full_search(
-                    search_term, 
-                    function(original_string, actual_search, results) {
-                        searchPopulate(searchbox, original_string, results, UI_reset_marked_via_event)
-                    }, 
-                    delay_ms{{if is_testing:}},
-                    function() {console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search")}{{pass}}
-                    );
+                } else if (search_term.replace(/ /g,'').length > 1) { // we're never going to search for a single character
+            
+            onezoom.search_manager.full_search(
+                                               search_term,
+                                               function(original_string, actual_search, results) {
+                                               searchPopulate(searchbox, original_string, results, UI_reset_marked_via_event)
+                                               },
+                                               delay_ms,
+                                               function() {console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search")
+                                               if(!($(".searchinput").hasClass('waiting_for_search_result')))
+                                               {
+                                               $(".searchinput", searchbox).addClass('waiting_for_search_result'); // switch flag for search to on
+                                               }
+                                               }
+                                               );
+            }
             }
         });
         
@@ -816,21 +833,34 @@ function setupUI() {
             onezoom.search_manager.full_search("");
             $('.searchinput', searchbox).removeClass('waiting_for_search_result');
         } else {
-            $(".searchinput", searchbox).addClass('waiting_for_search_result');
-            var delay_ms = 400;
+            var delay_ms = 1000;
             if (event.which == 13) {
                 delay_ms = 1;   //enter was pressed - don't delay
-            } else if (search_term.length == 1) {
-                delay_ms = 800; //wait a bit longer before asking for a search if there is only one character
-            }
-            onezoom.search_manager.full_search(
-                search_term, 
-                function(original_string, actual_search, results) {
-                    searchPopulate(searchbox, original_string, results, UI_reset_marked_via_event)
-                }, 
-                delay_ms{{if is_testing:}},
-                    function() {console.log("Search for '" + search_term + "' sent to OneZoom API from basic search")}{{pass}}
-                );
+                // we should probably catch the case of short string here and give the user a warning - todo.
+            } else if (search_term.replace(/ /g,'').length > 1) { // we're never going to search for a single character
+             
+             // we want to test for whether the search is working already or not....
+             
+             onezoom.search_manager.full_search(
+                                                search_term,
+                                                function(original_string, actual_search, results) {
+                                                searchPopulate(searchbox, original_string, results, UI_reset_marked_via_event)
+                                                },
+                                                delay_ms,
+                                                function() {
+                                                        console.log("Search for '" + search_term + "' sent to OneZoom API from basic search")
+                                                        if(!($(".searchinput").hasClass('waiting_for_search_result')))
+                                                        {
+                                                            $(".searchinput", searchbox).addClass('waiting_for_search_result'); // switch flag for search to on
+                                                        }
+                                                    }
+                                                );
+             
+             }
+             else
+             {
+                // the user should get some comment back here ideally because they tried to search for a single character
+             }
         }
       });
     
