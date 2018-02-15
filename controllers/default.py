@@ -516,6 +516,322 @@ def sponsor():
     return dict(pick=sponsor_picks(), languages=languages, n_species =  db(db.ordered_leaves).count())
 
 
+def sponsor_node_price():
+    """
+    This refines the base_query to pick <max> leaves for a price band, for use in a 'subpage' (paged row) 
+    By default ranks by popularity. If price_pence is blank, this returns the 'contact us' details.
+    
+    This query is the one that we think slows down the website, because people click on nodes high up
+    in the tree, and a badly-formed query will need to sort millions of leaves according to the image ranking.
+    
+    For this reason, we make 2 queries, firstly for leaves with an image, ranked by image rating, and then 
+    (if we don't get enough results returned) for leaves without an image, ranked by popularity
+    """
+    try:
+        if request.vars.get('id'):
+            query = sponsorable_children_query(int(request.vars.id), qtype="id")
+        elif request.vars.get('ott'):
+            query = sponsorable_children_query(int(request.vars.ott), qtype="ott")
+        else:
+            raise
+        n = int(request.vars.get('n') or 6)
+        start = int(request.vars.get('start') or 0)
+        if request.vars.get('price'):
+            price_pence = int(request.vars.get('price'))
+        else:
+            price_pence = None
+        query = (db.ordered_leaves.price==price_pence) & query
+
+        if price_pence is None or price_pence > 750:
+            rows_with_images = db(query & (db.images_by_ott.overall_best_any)).select(
+                db.ordered_leaves.ott,
+                db.ordered_leaves.name,
+                db.images_by_ott.src,
+                db.images_by_ott.src_id,
+                db.images_by_ott.rights,
+                db.images_by_ott.licence,
+                join = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
+                limitby = (start, start+n+1), #add an extra on so we can see if there are any more
+                orderby = "images_by_ott.rating DESC")
+            image_urls = {species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows_with_images if (species.images_by_ott.src == src_flags['onezoom']) or (species.images_by_ott.src == src_flags['eol'])}
+            image_attributions = {species.ordered_leaves.ott:(' / '.join([t for t in [species.images_by_ott.rights, species.images_by_ott.licence] if t])) for species in rows_with_images}
+            otts = [species.ordered_leaves.ott for species in rows_with_images]
+            sci_names = {species.ordered_leaves.ott:species.ordered_leaves.name for species in rows_with_images}
+            
+            extra_needed = (n+1) - len(rows_with_images)
+            if extra_needed > 0:            #not enough leaves with images. We need to get ones without images too
+                count = db.ordered_leaves.ott.count()
+                total_with_images = db(query & (db.images_by_ott.overall_best_any)).select(
+                    count, 
+                    join = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott)
+                ).first()[count]
+                start = start - total_with_images + len(rows_with_images)
+                assert start >= 0
+                rows_without_images = db(query & (db.images_by_ott.ott == None)).select(
+                    db.ordered_leaves.ott, 
+                    db.ordered_leaves.name,
+                    left = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
+                    limitby=(start, start+extra_needed),
+                    orderby = "ordered_leaves.popularity DESC")
+                otts.extend([species.ott for species in rows_without_images])
+                sci_names.update({species.ott:species.name for species in rows_without_images})
+        else:
+            #for cheap leaves, reverse the order and show rows without images first
+            rows_without_images = db(query & (db.images_by_ott.ott == None)).select(
+                db.ordered_leaves.ott, 
+                db.ordered_leaves.name,
+                left = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
+                limitby=(start, start+n+1), #add an extra on so we can see if there are any more
+                orderby = "ordered_leaves.ott") #much faster to sort by a simple integer. We don't care for the £5 ones what the order is.
+            otts = [species.ott for species in rows_without_images]
+            sci_names = {species.ott:species.name for species in rows_without_images}
+            image_urls = image_attributions = {}
+            extra_needed = (n+1) - len(rows_without_images)
+            if extra_needed > 0:            #not enough leaves with images. We need to get ones without images too
+                count = db.ordered_leaves.ott.count()
+                total_without_images = db(query & (db.images_by_ott.ott == None)).select(
+                    count, 
+                    left = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott)
+                ).first()[count]
+                start = start - total_without_images + len(rows_without_images)
+                assert start >= 0
+                rows_with_images = db(query & (db.images_by_ott.overall_best_any)).select(
+                    db.ordered_leaves.ott, 
+                    db.ordered_leaves.name,
+                    db.images_by_ott.src,
+                    db.images_by_ott.src_id,
+                    db.images_by_ott.rights,
+                    db.images_by_ott.licence,
+                    join = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
+                    limitby=(start, start+extra_needed), 
+                    orderby = "images_by_ott.rating ASC")
+                image_urls = {species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows_with_images if (species.images_by_ott.src == src_flags['onezoom']) or (species.images_by_ott.src == src_flags['eol'])}
+                image_attributions = {species.ordered_leaves.ott:(' / '.join([t for t in [species.images_by_ott.rights, species.images_by_ott.licence] if t])) for species in rows_with_images}
+                otts.extend([species.ordered_leaves.ott for species in rows_with_images])
+                sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows_with_images})
+
+        #now construct the vernacular names
+        html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(otts, return_nulls=True).iteritems()}
+        return dict(otts=otts, image_urls=image_urls, html_names = html_names, attributions=image_attributions, price_pence = price_pence)
+        
+    except:
+        raise
+        pass
+    return dict(otts=[])
+        
+        
+def sponsor_node():
+    """
+    This picks <max> leaves per price band, and removes already sponsored leaves from the search    
+    By default ranks by popularity. We pass on any request.vars so that we can use embed, etc.
+    """
+    try:
+        if request.vars.get('id'):
+            query = sponsorable_children_query(int(request.vars.id), qtype="id")
+            common_name = get_common_name(db.ordered_nodes[int(request.vars.id)].ott, db.ordered_nodes[int(request.vars.id)].name)
+        elif request.vars.get('ott'):
+            ott = int(request.vars.ott)
+            query = sponsorable_children_query(ott, qtype="ott")
+            common_name = get_common_name(ott)
+        else:
+            raise
+        #global var 'partners' is defined at the top of the file, for request.vars.partner=='LinnSoc', 'Kew', etc.
+        partner = db(db.partners.identifier == request.vars.get('partner')).select().first() #this could be null
+        partner = partner.as_dict() if partner else {}
+        
+        first25 = db(query).select(limitby=(0, 25), orderby=db.ordered_leaves.name)
+        if len(first25) > 0:
+            prices_pence = sorted([r.price for r in db().select(db.prices.price)])
+            prices_pence.append("")
+            return(dict(prices_pence=prices_pence, first25=first25, vars=request.vars, common_name=common_name, partner=partner, error=None))
+        else:
+            return(dict(vars=request.vars, common_name=common_name, partner=partner, error="Sorry, there are no species you can sponsor in this group"))
+    except:
+        return(dict(vars=request.vars, partner=partner, error="Sorry, you passed in an ID that doesn't seem to correspond to a group on the tree"))
+
+def sponsor_node_redirect():
+    """
+    simply provides a link to jump out of an iframe
+    """    
+    return(dict(id=request.vars.get('id'), ott=request.vars.get('ott')))
+
+def sponsor_handpicks():
+    """
+    This differs from sponsor_node because it uses pre-selected lists of taxa, that have been 
+    hand picked by a manager (e.g. for David Attenborough's Birthday list). We should possibly 
+    be storing these in a database, but for the moment we get them from the sponsor_picks() function.
+    They should not need to be paged
+    """
+    valid_dict = sponsor_picks()
+    orderby = "images_by_ott.rating DESC"
+    if request.vars.group_name in valid_dict and len(valid_dict[request.vars.group_name]['otts']):
+        #this doesn't distinguish between sponsored and unsponsored, which is what we want
+        query = db.ordered_leaves.ott.belongs(valid_dict[request.vars.group_name]['otts'])
+    else:
+        return dict(error="Error: no group given")
+    try:
+        max_returned = int(request.vars.n)
+    except:
+        max_returned = 8
+    from collections import OrderedDict
+    
+    if db(query) > 0:
+        prices_pence = sorted([r.price for r in db().select(db.prices.price)]) + [None]
+        otts = OrderedDict()
+        image_urls = {}
+        sci_names = {}
+        html_names = {}
+        for p in prices_pence:
+            if (p):
+                if (float(p)/100).is_integer():
+                    price_pounds = '{:.0f}'.format(p/100.0)
+                else:
+                    price_pounds = '{:.2f}'.format(p/100.0)
+            else:
+                price_pounds = "contact us"
+            rows = db(query &
+                      (db.ordered_leaves.price==p) & 
+                      ((db.images_by_ott.overall_best_any == True) | (db.images_by_ott.overall_best_any == None))
+                      ).select(db.ordered_leaves.ott, 
+                               db.ordered_leaves.name,
+                               db.images_by_ott.src,
+                               db.images_by_ott.src_id,
+                               left = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
+                               orderby = orderby)
+            otts[price_pounds] = [r.ordered_leaves.ott for r in rows]
+            image_urls.update({species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows if (species.images_by_ott.src == src_flags['onezoom']) or (species.images_by_ott.src == src_flags['eol'])})
+            sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows})
+
+        #Now find the vernacular names for all these species
+        all_otts = [ott for price in otts for ott in otts[price]]
+        if all_otts:
+            html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(all_otts, return_nulls=True).iteritems()}
+            rows = db(db.reservations.OTT_ID.belongs(all_otts) & (db.reservations.verified_time != None)).select(db.reservations.OTT_ID, db.reservations.verified_kind, db.reservations.verified_name)
+            reserved = {r.OTT_ID:[r.verified_kind, r.verified_name] for r in rows}
+                    
+        return(dict(otts=otts, image_urls=image_urls, html_names=html_names, reserved=reserved, vars=request.vars, error=None))
+    else:
+        return(dict(otts=[], vars=request.vars, error="Sorry, there are no species you can sponsor in this group"))
+
+def list_sponsorable_children():
+    """
+    This lists children in alphabetical order, paged
+    """
+    items_per_page=500
+    try:
+        page=int(request.args[0])
+    except: 
+        page=0
+        
+    try:
+        if request.vars.get('id'):
+            query = sponsorable_children_query(int(request.vars.id), qtype="id")
+        elif request.vars.get('ott'):
+            query = sponsorable_children_query(int(request.vars.ott), qtype="ott")
+        limitby=(page*items_per_page,(page+1)*items_per_page+1)
+        species = db(query).select(db.ordered_leaves.ott, 
+                                   db.ordered_leaves.name,
+                                   db.ordered_leaves.price,
+                                   limitby= limitby, 
+                                   orderby= db.ordered_leaves.name)
+        return(dict(species=species,page=page,items_per_page=items_per_page, error=""))
+
+    except:
+        return(dict(species=[],page=page, items_per_page=items_per_page, error="Sorry, you passed in an ID that doesn't seem to correspond to a group on the tree"))
+
+
+def pp_process_post():
+    """
+    Should only ever be visited by paypal, to confirm the payment has been made. For debugging problems, see
+    https://developer.paypal.com/docs/classic/ipn/integration-guide/IPNOperations/
+     
+    If paypal.save_to_tmp_file_dir in appconfig.ini is e.g. '/var/tmp' then save a temp file called
+    www.onezoom.org_paypal_OTTXXX_TIMESTAMPmilliseconds.json to that dir
+    """
+    try:
+        OTT_ID_Varin = int(request.args[0])
+        if OTT_ID_Varin <= 0:
+            raise ValueError("Passed in OTT is not a positive integer")
+        reservation_query = ((db.reservations.OTT_ID == OTT_ID_Varin) & 
+                             (db.reservations.user_sponsor_name != None) & 
+                             (db.reservations.user_paid > 4.5)
+                            )
+        
+        #it must be the case that this row exists in the db and that it has at a minimum a
+        # user_sponsor_name and a user_paid > £4.50
+        try:
+            paid = float(request.vars.mc_gross)
+        except:
+            paid = None
+        updated = db(reservation_query &
+                     #check the fields we are about to update are null (if not, this could be malicious)
+                     (db.reservations.PP_first_name == None) &
+                     (db.reservations.PP_second_name == None) &
+                     (db.reservations.PP_town == None) &
+                     (db.reservations.PP_country == None) &
+                     (db.reservations.PP_e_mail == None) &
+                     (db.reservations.verified_paid == None) &
+                     ((db.reservations.PP_transaction_code == None) | (db.reservations.PP_transaction_code == 'reserved')) &
+                     (db.reservations.sale_time == None)
+                    ).update(PP_first_name = request.vars.get('first_name'),
+                             PP_second_name = request.vars.get('last_name'),
+                             PP_town = ", ".join([t for t in [request.vars.get('address_city'), request.vars.get('address_state')] if t]),
+                             PP_country = request.vars.get('address_country'),
+                             PP_e_mail = request.vars.get('payer_email'),
+                             verified_paid = paid,
+                             PP_transaction_code = request.vars.get('txn_id'),
+                             sale_time = request.vars.get('payment_date')
+                            )
+        if not updated:
+            raise NameError('No row updated: some details may already be filled out, or the OTT/name/paid may be invalid')
+        #should only update house/st and postcode if giftaid is true
+        db(reservation_query & 
+           (db.reservations.user_giftaid == True) &
+           (db.reservations.PP_house_and_street == None) &
+           (db.reservations.PP_postcode == None)
+        ).update(
+            PP_house_and_street = request.vars.get('address_street'),
+            PP_postcode = request.vars.get('address_zip')
+        )
+        err = None
+    except Exception as e:
+        err = e
+    try:
+        if myconf.take('paypal.save_to_tmp_file_dir'):
+            import os
+            import time
+            from json import dumps
+            
+            with open(
+                os.path.join(
+                    myconf.take('paypal.save_to_tmp_file_dir'),
+                    "{}{}_paypal_OTT{}_{}.json".format(
+                        "PP_" if err is None else "PP_ERROR_",
+                        "".join([char if char.isalnum() else "_" for char in request.env.http_host]),
+                        OTT_ID_Varin,
+                        int(round(time.time() * 1000)))),
+                    "w") as json_file:
+                json_file.write(dumps(request.vars))
+    except:
+        pass
+
+    #TO DO
+    #To check this is really from PP, we should post the message back to https://ipnpb.paypal.com/cgi-bin/webscr
+    #as per the request-response flow described at https://developer.paypal.com/docs/classic/ipn/integration-guide/IPNImplementation/
+    #e.g. 
+    #
+    #from gluon.tools import fetch
+    #pp_post_vars = request.post_vars
+    #pp_post_vars['cmd'] = '_notify-validate'
+    #headers = {'content-type': 'application/x-www-form-urlencoded', 'host': 'www.paypal.com'}
+    #r = fetch(https://ipnpb.paypal.com/cgi-bin/webscr, data=pp_post_vars, headers=headers, user_agent="WEB2PY-IPN-VerificationScript")
+    ##check that r contains "VERIFIED"
+    
+    if err:
+        raise HTTP(400, e.message) #should flag up to PP that there is a problem with this transaction
+    else:
+        return(dict(vars=request.vars, args=request.args))
+
 """ these empty controllers are for other OneZoom pages"""
 
 def sponsor_thanks():
@@ -577,11 +893,125 @@ def FAQ():
 def tree_index():
     return dict()
 
-""" These controllers are for OneZoom viz pages, whose views are in views/treeviewer NOT views/default as might be expected"""
+### REDIRECTS ###
 
-## What follows is a text representation NB: The 'normal' pages also have the text-only data embedded in them, for SEO reasons
+def AT16():
+    redirect(URL('default', 'sponsor_handpicks?n=12&group_name=trail2016&user_message_OZ=AT16&user_more_info=Ancestor’s+Trail+2016'))
+
+""" Legacy features pointing into static pages with their own JS"""
+
+def ADEPD_birds_nunes_etal_2015():
+    redirect(URL('static', 'OZLegacy/ADEPD_birds_nunes_etal_2015.htm', vars=(request.vars)))
+    return dict()
+def amphibians():
+    redirect(URL('static', 'OZLegacy/amphibians.htm', vars=(request.vars)))
+    return dict()
+def birds():
+    redirect(URL('static', 'OZLegacy/birds.htm', vars=(request.vars)))
+    return dict()
+def custom_SFU():
+    redirect(URL('static', 'OZLegacy/custom_SFU.htm', vars=(request.vars)))
+    return dict()
+def EDGE_birds_VEi38fwj():
+    redirect(URL('static', 'OZLegacy/EDGE_birds_VEi38fwj.htm', vars=(request.vars)))
+    return dict()
+def EDGE_birds():
+    redirect(URL('static', 'OZLegacy/EDGE_birds.htm', vars=(request.vars)))
+    return dict()
+def embed():
+    redirect(URL('static', 'OZLegacy/embed.htm', vars=(request.vars)))
+    return dict()
+def embeded_ADEPD_birds_nunes_etal_2015():
+    redirect(URL('static', 'OZLegacy/embeded_ADEPD_birds_nunes_etal_2015.htm', vars=(request.vars)))
+    return dict()
+def embeded_EDGE_birds():
+    redirect(URL('static', 'OZLegacy/embeded_EDGE_birds.htm', vars=(request.vars)))
+    return dict()
+def embeded_EDGE_birds():
+    redirect(URL('static', 'OZLegacy/embeded_EDGE_birds.htm', vars=(request.vars)))
+    return dict()
+def embeded_EDGE_birds2():
+    redirect(URL('static', 'OZLegacy/embeded_EDGE_birds2.htm', vars=(request.vars)))
+    return dict()
+def embeded_mammals():
+    redirect(URL('static', 'OZLegacy/embeded_mammals.htm', vars=(request.vars)))
+    return dict()
+def embeded_plants():
+    redirect(URL('static', 'OZLegacy/embeded_plants.htm', vars=(request.vars)))
+    return dict()
+def embeded_tetrapods():
+    redirect(URL('static', 'OZLegacy/embeded_tetrapods.htm', vars=(request.vars)))
+    return dict()
+def Euphorbia_2014():
+    redirect(URL('static', 'OZLegacy/Euphorbia_2014.htm', vars=(request.vars)))
+    return dict()
+def fish():
+    redirect(URL('static', 'OZLegacy/fish.htm', vars=(request.vars)))
+    return dict()
+def mammals():
+    redirect(URL('static', 'OZLegacy/mammals.htm', vars=(request.vars)))
+    return dict()
+def OneZoom_Tree_of_life_explorer_Android_license():
+    redirect(URL('static', 'OZLegacy/OneZoom_Tree_of_life_explorer_Android_license.pdf'))
+    return dict()
+def plants_Soltis1():
+    redirect(URL('static', 'OZLegacy/plants_Soltis1.htm', vars=(request.vars)))
+    return dict()
+def plants_Soltis2():
+    redirect(URL('static', 'OZLegacy/plants_Soltis2.htm', vars=(request.vars)))
+    return dict()
+def plants():
+    redirect(URL('static', 'OZLegacy/plants.htm', vars=(request.vars)))
+    return dict()
+def porifera():
+    redirect(URL('static', 'OZLegacy/porifera.htm', vars=(request.vars)))
+    return dict()
+def River_project_James_S_2015_1ksd19efj():
+    redirect(URL('static', 'OZLegacy/River_project_James_S_2015_1ksd19efj.htm', vars=(request.vars)))
+    return dict()
+def Squamates_Pyron():
+    redirect(URL('static', 'OZLegacy/Squamates_Pyron.htm', vars=(request.vars)))
+    return dict()
+def tetrapods_ballweg_arctic():
+    redirect(URL('static', 'OZLegacy/tetrapods_ballweg_arctic.htm', vars=(request.vars)))
+    return dict()
+def tetrapods_SFU():
+    redirect(URL('static', 'OZLegacy/tetrapods_SFU.htm', vars=(request.vars)))
+    return dict()
+def tetrapods():
+    redirect(URL('static', 'OZLegacy/tetrapods.htm', vars=(request.vars)))
+    return dict()
+def vascularplants_tank2013nature():
+    redirect(URL('static', 'OZLegacy/vascularplants_tank2013nature.htm', vars=(request.vars)))
+    return dict()
+
+#error pages
+
+#legacy for the site pages - redirect old links to more relevant new links
+def software():
+    redirect(URL('default', 'developer.html'))
+    return dict()
+
+def impact():
+    redirect(URL('default', 'impacts.html'))
+    return dict()
+
+def licence():
+    redirect(URL('default', 'developer.html'))
+    return dict()
+
+def news():
+    redirect(URL('default', 'milestones.html'))
+    return dict()
+
+
+### Controllers for OneZoom viz pages ###
+### For programming purposes, these views are in views/treeviewer NOT views/default as might be expected
 
 def life_text():
+    """
+    A text representation. NB: The 'normal' pages also have the text-only data embedded in them, for SEO reasons
+    """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     import re
     #target_string must consist only of chars that are allowed in web2py arg
@@ -1001,444 +1431,19 @@ def old_kew():
         {'id':'ozspons', 'name':'Sponsor'}].update(life())
     return merged_dict
 
-""" Some controllers that simply redirect to other OZ pages, for brevity """
+""" Some controllers that simply redirect to other OZ viewer pages, for brevity """
 def gnathostomata():
     redirect(URL('default', 'life.html/@Gnathostomata=278114', url_encode=False))
 
-def kew_plants():
-    """
-    redirect to the land plants
-    """
+#def kew_plants():
+#    """
+#    redirect to the land plants
+#    """
     redirect(URL('default', 'kew.html/@Embryophyta?init=jump', url_encode=False))
 
-def kew_fungi():
-    """
-    redirect to the fungi plants
-    """
-    redirect(URL('default', 'kew.html/@Embryophyta?init=jump', url_encode=False))
+#def kew_fungi():
+#    """
+#    redirect to the fungi plants
+#    """
+#    redirect(URL('default', 'kew.html/@Embryophyta?init=jump', url_encode=False))
 
-def AT16():
-    redirect(URL('default', 'sponsor_handpicks?n=12&ott=trail2016&user_message_OZ=AT16&user_more_info=Ancestor’s+Trail+2016'))
-
-
-def sponsor_node_price():
-    """
-    This refines the base_query to pick <max> leaves for a price band, for use in a 'subpage' (paged row) 
-    By default ranks by popularity. If price_pence is blank, this returns the 'contact us' details.
-    
-    This query is the one that we think slows down the website, because people click on nodes high up
-    in the tree, and a badly-formed query will need to sort millions of leaves according to the image ranking.
-    
-    For this reason, we make 2 queries, firstly for leaves with an image, ranked by image rating, and then 
-    (if we don't get enough results returned) for leaves without an image, ranked by popularity
-    """
-    try:
-        if request.vars.get('id'):
-            query = sponsorable_children_query(int(request.vars.id), qtype="id")
-        elif request.vars.get('ott'):
-            query = sponsorable_children_query(int(request.vars.ott), qtype="ott")
-        else:
-            raise
-        n = int(request.vars.get('n') or 6)
-        start = int(request.vars.get('start') or 0)
-        if request.vars.get('price'):
-            price_pence = int(request.vars.get('price'))
-        else:
-            price_pence = None
-        query = (db.ordered_leaves.price==price_pence) & query
-
-        if price_pence is None or price_pence > 750:
-            rows_with_images = db(query & (db.images_by_ott.overall_best_any)).select(
-                db.ordered_leaves.ott,
-                db.ordered_leaves.name,
-                db.images_by_ott.src,
-                db.images_by_ott.src_id,
-                db.images_by_ott.rights,
-                db.images_by_ott.licence,
-                join = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
-                limitby = (start, start+n+1), #add an extra on so we can see if there are any more
-                orderby = "images_by_ott.rating DESC")
-            image_urls = {species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows_with_images if (species.images_by_ott.src == src_flags['onezoom']) or (species.images_by_ott.src == src_flags['eol'])}
-            image_attributions = {species.ordered_leaves.ott:(' / '.join([t for t in [species.images_by_ott.rights, species.images_by_ott.licence] if t])) for species in rows_with_images}
-            otts = [species.ordered_leaves.ott for species in rows_with_images]
-            sci_names = {species.ordered_leaves.ott:species.ordered_leaves.name for species in rows_with_images}
-            
-            extra_needed = (n+1) - len(rows_with_images)
-            if extra_needed > 0:            #not enough leaves with images. We need to get ones without images too
-                count = db.ordered_leaves.ott.count()
-                total_with_images = db(query & (db.images_by_ott.overall_best_any)).select(
-                    count, 
-                    join = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott)
-                ).first()[count]
-                start = start - total_with_images + len(rows_with_images)
-                assert start >= 0
-                rows_without_images = db(query & (db.images_by_ott.ott == None)).select(
-                    db.ordered_leaves.ott, 
-                    db.ordered_leaves.name,
-                    left = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
-                    limitby=(start, start+extra_needed),
-                    orderby = "ordered_leaves.popularity DESC")
-                otts.extend([species.ott for species in rows_without_images])
-                sci_names.update({species.ott:species.name for species in rows_without_images})
-        else:
-            #for cheap leaves, reverse the order and show rows without images first
-            rows_without_images = db(query & (db.images_by_ott.ott == None)).select(
-                db.ordered_leaves.ott, 
-                db.ordered_leaves.name,
-                left = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
-                limitby=(start, start+n+1), #add an extra on so we can see if there are any more
-                orderby = "ordered_leaves.ott") #much faster to sort by a simple integer. We don't care for the £5 ones what the order is.
-            otts = [species.ott for species in rows_without_images]
-            sci_names = {species.ott:species.name for species in rows_without_images}
-            image_urls = image_attributions = {}
-            extra_needed = (n+1) - len(rows_without_images)
-            if extra_needed > 0:            #not enough leaves with images. We need to get ones without images too
-                count = db.ordered_leaves.ott.count()
-                total_without_images = db(query & (db.images_by_ott.ott == None)).select(
-                    count, 
-                    left = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott)
-                ).first()[count]
-                start = start - total_without_images + len(rows_without_images)
-                assert start >= 0
-                rows_with_images = db(query & (db.images_by_ott.overall_best_any)).select(
-                    db.ordered_leaves.ott, 
-                    db.ordered_leaves.name,
-                    db.images_by_ott.src,
-                    db.images_by_ott.src_id,
-                    db.images_by_ott.rights,
-                    db.images_by_ott.licence,
-                    join = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
-                    limitby=(start, start+extra_needed), 
-                    orderby = "images_by_ott.rating ASC")
-                image_urls = {species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows_with_images if (species.images_by_ott.src == src_flags['onezoom']) or (species.images_by_ott.src == src_flags['eol'])}
-                image_attributions = {species.ordered_leaves.ott:(' / '.join([t for t in [species.images_by_ott.rights, species.images_by_ott.licence] if t])) for species in rows_with_images}
-                otts.extend([species.ordered_leaves.ott for species in rows_with_images])
-                sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows_with_images})
-
-        #now construct the vernacular names
-        html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(otts, return_nulls=True).iteritems()}
-        return dict(otts=otts, image_urls=image_urls, html_names = html_names, attributions=image_attributions, price_pence = price_pence)
-        
-    except:
-        raise
-        pass
-    return dict(otts=[])
-        
-        
-def sponsor_node():
-    """
-    This picks <max> leaves per price band, and removes already sponsored leaves from the search    
-    By default ranks by popularity. We pass on any request.vars so that we can use embed, etc.
-    """
-    try:
-        if request.vars.get('id'):
-            query = sponsorable_children_query(int(request.vars.id), qtype="id")
-            common_name = get_common_name(db.ordered_nodes[int(request.vars.id)].ott, db.ordered_nodes[int(request.vars.id)].name)
-        elif request.vars.get('ott'):
-            ott = int(request.vars.ott)
-            query = sponsorable_children_query(ott, qtype="ott")
-            common_name = get_common_name(ott)
-        else:
-            raise
-        #global var 'partners' is defined at the top of the file, for request.vars.partner=='LinnSoc', 'Kew', etc.
-        partner = db(db.partners.identifier == request.vars.get('partner')).select().first() #this could be null
-        partner = partner.as_dict() if partner else {}
-        
-        first25 = db(query).select(limitby=(0, 25), orderby=db.ordered_leaves.name)
-        if len(first25) > 0:
-            prices_pence = sorted([r.price for r in db().select(db.prices.price)])
-            prices_pence.append("")
-            return(dict(prices_pence=prices_pence, first25=first25, vars=request.vars, common_name=common_name, partner=partner, error=None))
-        else:
-            return(dict(vars=request.vars, common_name=common_name, partner=partner, error="Sorry, there are no species you can sponsor in this group"))
-    except:
-        return(dict(vars=request.vars, partner=partner, error="Sorry, you passed in an ID that doesn't seem to correspond to a group on the tree"))
-
-def sponsor_node_redirect():
-    """
-    simply provides a link to jump out of an iframe
-    """    
-    return(dict(id=request.vars.get('id'), ott=request.vars.get('ott')))
-
-def sponsor_handpicks():
-    """
-    This differs from sponsor_node because it uses pre-selected lists of taxa, that have been 
-    hand picked by a manager (e.g. for David Attenborough's Birthday list). We should possibly 
-    be storing these in a database, but for the moment we get them from the sponsor_picks() function.
-    They should not need to be paged
-    """
-    valid_dict = sponsor_picks()
-    orderby = "images_by_ott.rating DESC"
-    if request.vars.group_name in valid_dict and len(valid_dict[request.vars.group_name]['otts']):
-        #this doesn't distinguish between sponsored and unsponsored, which is what we want
-        query = db.ordered_leaves.ott.belongs(valid_dict[request.vars.group_name]['otts'])
-    else:
-        return dict(error="Error: no group given")
-    try:
-        max_returned = int(request.vars.n)
-    except:
-        max_returned = 8
-    from collections import OrderedDict
-    
-    if db(query) > 0:
-        prices_pence = sorted([r.price for r in db().select(db.prices.price)]) + [None]
-        otts = OrderedDict()
-        image_urls = {}
-        sci_names = {}
-        html_names = {}
-        for p in prices_pence:
-            if (p):
-                if (float(p)/100).is_integer():
-                    price_pounds = '{:.0f}'.format(p/100.0)
-                else:
-                    price_pounds = '{:.2f}'.format(p/100.0)
-            else:
-                price_pounds = "contact us"
-            rows = db(query &
-                      (db.ordered_leaves.price==p) & 
-                      ((db.images_by_ott.overall_best_any == True) | (db.images_by_ott.overall_best_any == None))
-                      ).select(db.ordered_leaves.ott, 
-                               db.ordered_leaves.name,
-                               db.images_by_ott.src,
-                               db.images_by_ott.src_id,
-                               left = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
-                               orderby = orderby)
-            otts[price_pounds] = [r.ordered_leaves.ott for r in rows]
-            image_urls.update({species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows if (species.images_by_ott.src == src_flags['onezoom']) or (species.images_by_ott.src == src_flags['eol'])})
-            sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows})
-
-        #Now find the vernacular names for all these species
-        all_otts = [ott for price in otts for ott in otts[price]]
-        if all_otts:
-            html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(all_otts, return_nulls=True).iteritems()}
-            rows = db(db.reservations.OTT_ID.belongs(all_otts) & (db.reservations.verified_time != None)).select(db.reservations.OTT_ID, db.reservations.verified_kind, db.reservations.verified_name)
-            reserved = {r.OTT_ID:[r.verified_kind, r.verified_name] for r in rows}
-                    
-        return(dict(otts=otts, image_urls=image_urls, html_names=html_names, reserved=reserved, vars=request.vars, error=None))
-    else:
-        return(dict(otts=[], vars=request.vars, error="Sorry, there are no species you can sponsor in this group"))
-
-def list_sponsorable_children():
-    """
-    This lists children in alphabetical order, paged
-    """
-    items_per_page=500
-    try:
-        page=int(request.args[0])
-    except: 
-        page=0
-        
-    try:
-        if request.vars.get('id'):
-            query = sponsorable_children_query(int(request.vars.id), qtype="id")
-        elif request.vars.get('ott'):
-            query = sponsorable_children_query(int(request.vars.ott), qtype="ott")
-        limitby=(page*items_per_page,(page+1)*items_per_page+1)
-        species = db(query).select(db.ordered_leaves.ott, 
-                                   db.ordered_leaves.name,
-                                   db.ordered_leaves.price,
-                                   limitby= limitby, 
-                                   orderby= db.ordered_leaves.name)
-        return(dict(species=species,page=page,items_per_page=items_per_page, error=""))
-
-    except:
-        return(dict(species=[],page=page, items_per_page=items_per_page, error="Sorry, you passed in an ID that doesn't seem to correspond to a group on the tree"))
-
-
-def pp_process_post():
-    """
-    Should only ever be visited by paypal, to confirm the payment has been made. For debugging problems, see
-    https://developer.paypal.com/docs/classic/ipn/integration-guide/IPNOperations/
-     
-    If paypal.save_to_tmp_file_dir in appconfig.ini is e.g. '/var/tmp' then save a temp file called
-    www.onezoom.org_paypal_OTTXXX_TIMESTAMPmilliseconds.json to that dir
-    """
-    try:
-        OTT_ID_Varin = int(request.args[0])
-        if OTT_ID_Varin <= 0:
-            raise ValueError("Passed in OTT is not a positive integer")
-        reservation_query = ((db.reservations.OTT_ID == OTT_ID_Varin) & 
-                             (db.reservations.user_sponsor_name != None) & 
-                             (db.reservations.user_paid > 4.5)
-                            )
-        
-        #it must be the case that this row exists in the db and that it has at a minimum a
-        # user_sponsor_name and a user_paid > £4.50
-        try:
-            paid = float(request.vars.mc_gross)
-        except:
-            paid = None
-        updated = db(reservation_query &
-                     #check the fields we are about to update are null (if not, this could be malicious)
-                     (db.reservations.PP_first_name == None) &
-                     (db.reservations.PP_second_name == None) &
-                     (db.reservations.PP_town == None) &
-                     (db.reservations.PP_country == None) &
-                     (db.reservations.PP_e_mail == None) &
-                     (db.reservations.verified_paid == None) &
-                     ((db.reservations.PP_transaction_code == None) | (db.reservations.PP_transaction_code == 'reserved')) &
-                     (db.reservations.sale_time == None)
-                    ).update(PP_first_name = request.vars.get('first_name'),
-                             PP_second_name = request.vars.get('last_name'),
-                             PP_town = ", ".join([t for t in [request.vars.get('address_city'), request.vars.get('address_state')] if t]),
-                             PP_country = request.vars.get('address_country'),
-                             PP_e_mail = request.vars.get('payer_email'),
-                             verified_paid = paid,
-                             PP_transaction_code = request.vars.get('txn_id'),
-                             sale_time = request.vars.get('payment_date')
-                            )
-        if not updated:
-            raise NameError('No row updated: some details may already be filled out, or the OTT/name/paid may be invalid')
-        #should only update house/st and postcode if giftaid is true
-        db(reservation_query & 
-           (db.reservations.user_giftaid == True) &
-           (db.reservations.PP_house_and_street == None) &
-           (db.reservations.PP_postcode == None)
-        ).update(
-            PP_house_and_street = request.vars.get('address_street'),
-            PP_postcode = request.vars.get('address_zip')
-        )
-        err = None
-    except Exception as e:
-        err = e
-    try:
-        if myconf.take('paypal.save_to_tmp_file_dir'):
-            import os
-            import time
-            from json import dumps
-            
-            with open(
-                os.path.join(
-                    myconf.take('paypal.save_to_tmp_file_dir'),
-                    "{}{}_paypal_OTT{}_{}.json".format(
-                        "PP_" if err is None else "PP_ERROR_",
-                        "".join([char if char.isalnum() else "_" for char in request.env.http_host]),
-                        OTT_ID_Varin,
-                        int(round(time.time() * 1000)))),
-                    "w") as json_file:
-                json_file.write(dumps(request.vars))
-    except:
-        pass
-
-    #TO DO
-    #To check this is really from PP, we should post the message back to https://ipnpb.paypal.com/cgi-bin/webscr
-    #as per the request-response flow described at https://developer.paypal.com/docs/classic/ipn/integration-guide/IPNImplementation/
-    #e.g. 
-    #
-    #from gluon.tools import fetch
-    #pp_post_vars = request.post_vars
-    #pp_post_vars['cmd'] = '_notify-validate'
-    #headers = {'content-type': 'application/x-www-form-urlencoded', 'host': 'www.paypal.com'}
-    #r = fetch(https://ipnpb.paypal.com/cgi-bin/webscr, data=pp_post_vars, headers=headers, user_agent="WEB2PY-IPN-VerificationScript")
-    ##check that r contains "VERIFIED"
-    
-    if err:
-        raise HTTP(400, e.message) #should flag up to PP that there is a problem with this transaction
-    else:
-        return(dict(vars=request.vars, args=request.args))
-
-
-""" legacy features pointing into static pages with their own JS"""
-def ADEPD_birds_nunes_etal_2015():
-    redirect(URL('static', 'OZLegacy/ADEPD_birds_nunes_etal_2015.htm', vars=(request.vars)))
-    return dict()
-def amphibians():
-    redirect(URL('static', 'OZLegacy/amphibians.htm', vars=(request.vars)))
-    return dict()
-def birds():
-    redirect(URL('static', 'OZLegacy/birds.htm', vars=(request.vars)))
-    return dict()
-def custom_SFU():
-    redirect(URL('static', 'OZLegacy/custom_SFU.htm', vars=(request.vars)))
-    return dict()
-def EDGE_birds_VEi38fwj():
-    redirect(URL('static', 'OZLegacy/EDGE_birds_VEi38fwj.htm', vars=(request.vars)))
-    return dict()
-def EDGE_birds():
-    redirect(URL('static', 'OZLegacy/EDGE_birds.htm', vars=(request.vars)))
-    return dict()
-def embed():
-    redirect(URL('static', 'OZLegacy/embed.htm', vars=(request.vars)))
-    return dict()
-def embeded_ADEPD_birds_nunes_etal_2015():
-    redirect(URL('static', 'OZLegacy/embeded_ADEPD_birds_nunes_etal_2015.htm', vars=(request.vars)))
-    return dict()
-def embeded_EDGE_birds():
-    redirect(URL('static', 'OZLegacy/embeded_EDGE_birds.htm', vars=(request.vars)))
-    return dict()
-def embeded_EDGE_birds():
-    redirect(URL('static', 'OZLegacy/embeded_EDGE_birds.htm', vars=(request.vars)))
-    return dict()
-def embeded_EDGE_birds2():
-    redirect(URL('static', 'OZLegacy/embeded_EDGE_birds2.htm', vars=(request.vars)))
-    return dict()
-def embeded_mammals():
-    redirect(URL('static', 'OZLegacy/embeded_mammals.htm', vars=(request.vars)))
-    return dict()
-def embeded_plants():
-    redirect(URL('static', 'OZLegacy/embeded_plants.htm', vars=(request.vars)))
-    return dict()
-def embeded_tetrapods():
-    redirect(URL('static', 'OZLegacy/embeded_tetrapods.htm', vars=(request.vars)))
-    return dict()
-def Euphorbia_2014():
-    redirect(URL('static', 'OZLegacy/Euphorbia_2014.htm', vars=(request.vars)))
-    return dict()
-def fish():
-    redirect(URL('static', 'OZLegacy/fish.htm', vars=(request.vars)))
-    return dict()
-def mammals():
-    redirect(URL('static', 'OZLegacy/mammals.htm', vars=(request.vars)))
-    return dict()
-def OneZoom_Tree_of_life_explorer_Android_license():
-    redirect(URL('static', 'OZLegacy/OneZoom_Tree_of_life_explorer_Android_license.pdf'))
-    return dict()
-def plants_Soltis1():
-    redirect(URL('static', 'OZLegacy/plants_Soltis1.htm', vars=(request.vars)))
-    return dict()
-def plants_Soltis2():
-    redirect(URL('static', 'OZLegacy/plants_Soltis2.htm', vars=(request.vars)))
-    return dict()
-def plants():
-    redirect(URL('static', 'OZLegacy/plants.htm', vars=(request.vars)))
-    return dict()
-def porifera():
-    redirect(URL('static', 'OZLegacy/porifera.htm', vars=(request.vars)))
-    return dict()
-def River_project_James_S_2015_1ksd19efj():
-    redirect(URL('static', 'OZLegacy/River_project_James_S_2015_1ksd19efj.htm', vars=(request.vars)))
-    return dict()
-def Squamates_Pyron():
-    redirect(URL('static', 'OZLegacy/Squamates_Pyron.htm', vars=(request.vars)))
-    return dict()
-def tetrapods_ballweg_arctic():
-    redirect(URL('static', 'OZLegacy/tetrapods_ballweg_arctic.htm', vars=(request.vars)))
-    return dict()
-def tetrapods_SFU():
-    redirect(URL('static', 'OZLegacy/tetrapods_SFU.htm', vars=(request.vars)))
-    return dict()
-def tetrapods():
-    redirect(URL('static', 'OZLegacy/tetrapods.htm', vars=(request.vars)))
-    return dict()
-def vascularplants_tank2013nature():
-    redirect(URL('static', 'OZLegacy/vascularplants_tank2013nature.htm', vars=(request.vars)))
-    return dict()
-
-#error pages
-
-#legacy for the site pages - redirect old links to more relevant new links
-def software():
-    redirect(URL('default', 'developer.html'))
-    return dict()
-
-def impact():
-    redirect(URL('default', 'impacts.html'))
-    return dict()
-
-def licence():
-    redirect(URL('default', 'developer.html'))
-    return dict()
-
-def news():
-    redirect(URL('default', 'milestones.html'))
-    return dict()
