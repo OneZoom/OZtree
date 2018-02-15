@@ -577,11 +577,12 @@ def FAQ():
 def tree_index():
     return dict()
 
-""" These controllers are for OneZoom vis pages"""
+""" These controllers are for OneZoom viz pages, whose views are in views/treeviewer NOT views/default as might be expected"""
 
 ## What follows is a text representation NB: The 'normal' pages also have the text-only data embedded in them, for SEO reasons
 
 def life_text():
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
     import re
     #target_string must consist only of chars that are allowed in web2py arg
     # array (i.e. in the path: see http://stackoverflow.com/questions/7279198
@@ -757,6 +758,7 @@ def treetours():
     If the tours are stored in another app, we can access this
     using `exec_environment` (http://web2py.com/books/default/chapter/29/04/the-core#Execution-environment) 
     """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
     if len(request.args):
         # Redirect e.g. /tours/LinnSoc1 to /life/tours/LinnSoc1
         #  so that we use the default view for the tour
@@ -772,6 +774,7 @@ def treetour():
     """
     A demo version: should probably be a function in the default controller of a different app
     """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return dict()
  
 def tourstop():
@@ -788,6 +791,7 @@ def tourstop():
     case we would not have access to db.ordered_leaves and db.ordered_nodes, and would need to
     map otts using an API call (e.g. otts2id) instead
     """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
     tourname = request.vars.tourname or ""
     stopnum = int(request.vars.stopnum or 0)
     tourstop = db((db.tourorders.identifier == tourname) & (db.tourorders.stop_number == stopnum)).select(db.tourstops.ALL, join=db.tourstops.on(db.tourorders.stop_id==db.tourstops.id)).first()
@@ -854,6 +858,7 @@ def viewer_UI():
     We require any UI to provide the main html code for the UI in a separate page, viewer_UI,
     so the whole skin can be reloaded using a different language, e.g. if we switch to french
     """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
     tabs=[{'id':'wiki',   'name':T('Wikipedia'),            'icon':URL('static','images/W.svg')},
       {'id':'eol',    'name':T('Encyclopedia of Life'), 'icon':URL('static','images/EoL.png')},
       {'id':'iucn',   'name':T('Conservation'),         'icon':URL('static','images/IUCN_Red_List.svg')},
@@ -875,6 +880,7 @@ def life():
     The standard OneZoom app - the location string is the last of the slash
     separated paths, i.e. request.args[-1]
     """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
     if len(request.args)>1 and request.args[0] == 'tour':
         tour_name = request.args[1]
         page_info={'subtitle': 'Tours',
@@ -892,6 +898,7 @@ def minlife():
     A minimum version for restricted installation that does not contain the text tree and disallows language / tree switching
     This version will be downloaded from the main server
     """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return dict(
         page_info = {'title_name':'Minimal OneZoom page'},
         version=check_version())
@@ -900,15 +907,18 @@ def life_MD():
     """
     The museum display version, which is all-on-one-page (no iframes)
     """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return life()
 
 def life_expert():
     """
     The expert version, with screenshots etc
     """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return life()
 
 def old_life():
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
     merged_dict = {}
     merged_dict.update(viewer_UI())
     merged_dict.update(life())
@@ -918,6 +928,7 @@ def old_AT():
     """
     The ancestor's tale version, with a different colour scheme
     """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
     merged_dict = {}
     merged_dict.update(viewer_UI())
     merged_dict.update(life())
@@ -938,6 +949,7 @@ def old_life_MD():
     """
     The museum display version - James to explore. Perhaps we might not want tabs here?
     """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
     merged_dict = {}
     merged_dict.update(viewer_UI())
     merged_dict.update(life())
@@ -947,6 +959,7 @@ def old_life_expert():
     """
     Has some aditional buttons etc for screenshots, svg capture, etc.
     """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
     merged_dict = {}
     merged_dict.update(viewer_UI())
     merged_dict['tabs'] = [ #override
@@ -963,6 +976,7 @@ def old_linnean():
     """
     The Linnean Society version, with partner sponsorship
     """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
     merged_dict = {}
     merged_dict.update(viewer_UI())
     merged_dict.update(life())
@@ -975,6 +989,7 @@ def old_kew():
     and have this as the default (first) tab open
     TO DO: default to the view centring on plants
     """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
     merged_dict = {}
     merged_dict.update(viewer_UI())
     merged_dict['tabs'] = [ #override

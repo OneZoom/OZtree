@@ -3,19 +3,13 @@
 setup_params = {
   'UI_layer': {
     'page':'viewer_UI.load', 
-    'vars':{'tabs':'all'} }, #should also include an OpenTree tab in here
+    'vars':{'tabs':'all'} }, 
   }
 }}
 
-{{extend 'treeLayout.html'}}
+{{extend 'treeviewer/treeLayout.html'}}
 <title>OneZoom Tree of Life Explorer, text page for {{=page_info['title_name']}}</title>
-
-<style>
-#controlButtons #screenshotButton   {display:block;}
-#controlButtons #screenshotButton a {border-top: 1px solid #DDD}
-#controlButtons #infoButton a       {border: 0}
-</style>
-<script src="{{=URL('static','js/canvas2svg.js')}}"></script>
+<!-- could include bespoke css file here -->
 <script type="text/javascript">
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
 var tree_config=null;
@@ -35,23 +29,4 @@ var popular_locations = [ /* strings are treated as headers (looked up in OZstri
     [1012685], //Mushrooms
     [304358]   //Complex life (eukaryotes)
 ];
-
-function make_screenshot(lnk) {
-    try {
-        context = new C2S({
-            width:document.getElementById("OneZoomCanvasID").width,
-            height:document.getElementById("OneZoomCanvasID").height, 
-            embedImages : true});
-        onezoom.controller.draw_single_frame(context);
-        var svg_content = context.getSerializedSvg(true);
-        /* Change MIME type to trick the browser to download the file instead of displaying it */
-        lnk.setAttribute('download', 'OneZoomScreenshot.svg');
-        lnk.href = 'data:application-x/force-download;charset=utf-8,' + encodeURIComponent(svg_content);
-        return true;
-    } catch(err) {
-        alert("You can't save pictures with embedded images unless you enable '-allow-file-access-from-files' in chrome, or equivalent in other browsers.")
-        lnk.removeAttribute("href");
-        return false;
-    }
-};
 </script>

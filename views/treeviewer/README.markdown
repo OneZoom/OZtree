@@ -1,0 +1,1 @@
+This folder contains views for various pages defined in controllers/default.py which are used to make the main OneZoom tree viewer. They are placed in a separate directory for clean separation of the OneZoom website and the viewer code
