@@ -7,7 +7,11 @@ Functions defined in controllers and having a space after the () and before the 
 import re
 from gluon import current
 
-
+def lang_primary(req):
+    language=req.vars.lang or req.env.http_accept_language or 'en'
+    first_lang = language.split(',')[0]
+    return(first_lang.split("-")[0].lower())
+    
 def sponsorable_children_query(target_id, qtype="ott"):
     """
     A function that returns a web2py query selecting the sponsorable children of this node.

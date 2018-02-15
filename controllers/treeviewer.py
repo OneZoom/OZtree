@@ -2,11 +2,14 @@
 ### This allows URLs like onezoom.org/life/ rather than onezoom.org/treeviewer/life/
 ### but still allows us to place all the tree viewer code in a single directory
 
+from OZfunctions import lang_primary
+
 def UI_layer():
     """
     We require any UI to provide the main html code for the UI in a separate page, viewer_UI,
     so the whole skin can be reloaded using a different language, e.g. if we switch to french
     """
+
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     tabs=[{'id':'wiki',   'name':T('Wikipedia'),            'icon':URL('static','images/W.svg')},
       {'id':'eol',    'name':T('Encyclopedia of Life'), 'icon':URL('static','images/EoL.png')},
@@ -22,7 +25,7 @@ def UI_layer():
             requested_tabs=set(request.vars.tabs)
         tabs = [t for t in tabs if (t['id'] in requested_tabs) or ('all' in requested_tabs)]
 
-    return dict(browser_language=language((request.env.http_accept_language or 'en').split(',')[0].split("-")[0]), tabs=tabs)
+    return dict(browser_language=lang_primary(request), tabs=tabs)
 
 def minlife():
     """
