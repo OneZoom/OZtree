@@ -336,7 +336,6 @@ def sponsor_replace_page():
             raise IndexError("Could not match against a row in the database")
         return(dict(data=row))
     except:
-        raise
         raise HTTP(400,"Sorry, something went wrong")
     
 def paypal():
