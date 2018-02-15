@@ -139,7 +139,7 @@ module.exports = function (grunt) {
         'get_minlife': {
             //this should be changed to the production URL when live
             //src:'http://www.onezoom.org/minlife.html/?lang=' + grunt.option('lang') || '',
-            src:'http://beta.onezoom.org/static/minlife.html',
+            src:'http://beta.onezoom.org/minlife.html',
             dest:'static/minlife.html',
         }
     }
