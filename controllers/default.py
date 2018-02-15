@@ -1192,7 +1192,7 @@ def life_MD():
 
 def life_expert():
     """
-    The expert version, with screenshots etc
+    The expert version, with screenshot buttons etc
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return life()
