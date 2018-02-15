@@ -383,10 +383,11 @@ function is_sponsored(search_result_item) {
  */
 function searchPopulate(searchbox, original_search, search_result, click_callback_id_name) {
     // we want to test if we're waiting for a result at all and if we're not then do nothing regardless
-    // think the status of the spinner should be used as this test i.e. the spinner starts going when an API call is actually made and stops going only when an API call is received 
+    // think the status of the spinner should be used as this test i.e. the spinner starts going when an 
+    // API call is actually made and stops going only when an API call is received 
     
-    console.log("populating search results");
-    
+    {{if is_testing:}}console.log("populating search results");{{pass}}
+
     if ($(".searchinput input", searchbox).val() == original_search)
     {
         // the results match what's still in the box so populate the results
@@ -558,7 +559,7 @@ function UI_reset_marked(searchbox, OZIDin, given_name, sciname, event) {
 }
 
 function UI_reset_marked_via_event(event, OZIDin, given_name, sciname) {
-    //fired when an item is selected in a dropdown
+    //fired when an item is selected in an advanced dropdown
     UI_reset_marked($(event.currentTarget).closest('.searchbox'), OZIDin, given_name, sciname, event);
 }
 
@@ -846,7 +847,7 @@ function setupUI() {
              onezoom.search_manager.full_search(
                                                 search_term,
                                                 function(original_string, actual_search, results) {
-                                                searchPopulate(searchbox, original_string, results, UI_reset_marked_via_event)
+                                                searchPopulate(searchbox, original_string, results, function(event, OZid) {closeAndLeap(event, OZid, $('#search-basic'))})
                                                 },
                                                 delay_ms,
                                                 function() {
