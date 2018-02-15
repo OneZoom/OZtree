@@ -2,12 +2,12 @@
 {{#define a dict used for setup: must at a minimum define the UI_layer page (that is reloaded e.g. when language changes)
 setup_params = {
   'UI_layer': {
-    'page':'viewer_UI.load', 
+    'page':'UI_layer.load', 
     'vars':{'tabs':'all'} }, 
   }
 }}
 
-{{extend 'treeviewer/treeLayout.html'}}
+{{extend 'treeviewer/layout.html'}}
 <title>OneZoom Tree of Life Explorer, text page for {{=page_info['title_name']}}</title>
 <!-- could include bespoke css file here -->
 <script type="text/javascript">

@@ -38,7 +38,7 @@
 <body id = "wholebody" style="user-select:none; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select:none; -ms-user-select:none;" unselectable = "on">
     <!-- main body of document - canvas, then rest of UI elements in a single div -->
   <canvas id="OneZoomCanvasID" tabindex="1"></canvas>
-  {{=LOAD("default",setup_params['UI_layer']['page'],vars=setup_params['UI_layer'].get("vars"), ajax=False, target="UI")}}
+  {{=LOAD("treeviewer",setup_params['UI_layer']['page'],vars=setup_params['UI_layer'].get("vars"), ajax=False, target="UI")}}
 {{except:}}
 <!-- had a problem with version mismatch -->
   </head>
@@ -737,7 +737,7 @@ function setupUI() {
             onezoom.controller.set_language(self.value);
             //reset the UI to a new language
             $('[uk-modal]').remove(); //UIkit modals jump around the DOM, so need deleting by hand
-            $('#UI').load('{{=URL("default", setup_params["UI_layer"]["page"], vars=setup_params["UI_layer"].get("vars"))}}{{=XML("&" if setup_params["UI_layer"].get("vars") else "?")}}'+lang_param, setupUI)
+            $('#UI').load('{{=URL("treeviewer", setup_params["UI_layer"]["page"], vars=setup_params["UI_layer"].get("vars"))}}{{=XML("&" if setup_params["UI_layer"].get("vars") else "?")}}'+lang_param, setupUI)
         });
     })
     $('select#treepage').val('{{=request.function}}');
