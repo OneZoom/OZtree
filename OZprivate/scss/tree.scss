@@ -331,8 +331,13 @@ ul#searchboxes {
 #controlButtons #inButton a {
     border-top: 1px solid #DDD
 }
+
+#controlButtons #singleInfoButton {
+    display:none;
+}
+
 #controlButtons #multipleInfoButton a, #controlButtons #singleInfoButton a {
-    border-top: 1px solid #DDD
+    border-top: 1px solid #DDD;
 }
 
 #controlButtons #resetButton a {
