@@ -5,7 +5,23 @@ Functions defined in controllers and start with ‘__’ [double underscores] ar
 Functions defined in controllers and having a space after the () and before the ‘:’ are private. 
 """
 import re
+import os
 from gluon import current
+
+def check_version(): #this is a private function (has a space after the name)
+    db = current.db
+    request = current.request
+    try:
+        version = -(db.ordered_nodes[1].parent) #the version number of the tree is hackily stored as a negative parent of the root
+        if not os.path.isfile(os.path.join(request.folder,
+                                  "static",
+                                  "FinalOutputs",
+                                  "data",
+                                  "completetree_{}.js".format(version))):
+            raise IOError("completetree file does not exist for version {}".format(version))
+        return version
+    except Exception as e:
+        return str(e)
 
 def lang_primary(req):
     language=req.vars.lang or req.env.http_accept_language or 'en'

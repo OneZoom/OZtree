@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # this file is released under public domain and you can use without limitations
 import datetime
-from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language
+from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, check_version
 """ our own variables for convenience"""
 
 reservation_time_limit = 360.0 #seconds - should give as float - how long to wait unfilled out
@@ -1164,23 +1164,6 @@ def life_text():
 def life_text_init_taxa(text_tree):
     return [taxon for taxon in [text_tree['info'][k].get("vernacular") or text_tree['info'][k].get("sciname") or "OTT"+str(text_tree['info'][k].get("ott")) for k in text_tree['bases']] if taxon]
 
-def check_version() : #this is a private function (has a space after the name)
-    import os
-    try:
-        root = db.ordered_nodes[1] 
-        if root is None:
-            raise IndexError("no data in the ordered_nodes table, so cannot get version number from first row")   
-        version = -(root.parent) #the version number of the tree is hackily stored as a negative parent of the root
-        if not os.path.isfile(os.path.join(request.folder,
-                                  "static",
-                                  "FinalOutputs",
-                                  "data",
-                                  "completetree_{}.js".format(version))):
-            raise IOError("a completetree file does not exist for version {}".format(version))
-        return version
-    except Exception as e:
-        return str(e)
-    
 
 def life():
     """

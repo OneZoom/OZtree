@@ -2,7 +2,7 @@
 ### This allows URLs like onezoom.org/life/ rather than onezoom.org/treeviewer/life/
 ### but still allows us to place all the tree viewer code in a single directory
 
-from OZfunctions import lang_primary
+from OZfunctions import lang_primary, check_version
 
 def UI_layer():
     """
