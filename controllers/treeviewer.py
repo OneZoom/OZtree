@@ -24,14 +24,6 @@ def UI_layer():
 
     return dict(browser_language=language((request.env.http_accept_language or 'en').split(',')[0].split("-")[0]), tabs=tabs)
 
-def minlife():
-    """
-    A minimum version for restricted installation that does not contain the text tree and disallows language / tree switching
-    This version will be downloaded from the main server
-    """
-    return dict(
-        page_info = {'title_name':'Minimal OneZoom page'},
-        version=check_version())
 
 def treetours():
     """

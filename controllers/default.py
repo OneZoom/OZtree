@@ -1201,16 +1201,6 @@ def life():
         page_info = page_info,
         version=check_version())
 
-def minlife():
-    """
-    A minimum version for restricted installation that does not contain the text tree and disallows language / tree switching
-    This version will be downloaded from the main server
-    """
-    response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return dict(
-        page_info = {'title_name':'Minimal OneZoom page'},
-        version=check_version())
-
 def life_MD():
     """
     The museum display version, which is all-on-one-page (no iframes)
