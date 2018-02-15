@@ -143,7 +143,7 @@ Configuring the OneZoom application to use the database involves creating a file
 
 ; db configuration - set migrate=0 once installed
 [db]
-uri       = mysql://oz:passwd@127.0.0.1/OneZoom
+uri       = mysql://oz:passwd@127.0.0.1/OneZoom?set_encoding=utf8mb4
 migrate   = 1
 pool_size = 1
 
