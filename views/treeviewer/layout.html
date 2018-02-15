@@ -211,6 +211,8 @@ if(typeof sponsor_page_link !== 'function'){
 /* sanitise links and src attributes in an html file, possibly remove all but internal ones */
 function sanitise_links(html, remove_links, base_url) {
   // get a url to use (if "base" is defined in the header) or default to the original
+  // allows us to set internal URLs to their fully resolved host etc.
+  // (when we want to keep URLs)
   var base_url =  ($('base', html) && $('base', html).attr('href'))?$('base', html).attr('href'):base_url;
   var origin = $('<a>').prop('href', base_url).prop('origin'); //get the host/port etc
   //sanitize image sources
