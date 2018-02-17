@@ -105,11 +105,13 @@ function setup(
     }, 50);
 
     return_value.controller = controller;
+    return_value.page_settings = tree_setting.page_settings;
     return_value.tree_state = tree_state;
     return_value.data_repo = data_repo;
   } else {
     //on a page with no canvas, there is no point having either a controller or a data_repo
     api_manager.start();
+    return_value.page_settings = null;
     return_value.controller = null;
     return_value.tree_state = null;
     return_value.data_repo = null;

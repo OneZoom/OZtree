@@ -92,13 +92,26 @@ export default function (Controller) {
     return(tree_setting.viewtype);
   }
   
+  /**
+   * Set the colour theme using one of the property values in page_settings.options.colours.
+   * @method set_color_theme
+   * @memberof Controller
+   */
   Controller.prototype.set_color_theme = function(color_theme) {
-    if (color_theme !== tree_setting.color_theme) {
-      tree_setting.change_color_theme(color_theme, this);
+    if (tree_setting.page_settings.options.colours.hasOwnProperty(color_theme)) {
+        let theme = tree_setting.page_settings.options.colours[color_theme];
+        if (theme !== tree_setting.page_settings.current.colours) {
+          tree_setting.change_color_theme(color_theme);
+        }
     }
   }
   Controller.prototype.get_color_theme = function() {
-    return(tree_setting.color_theme);
+    for (let k of Object.keys(tree_setting.page_settings.options.colours)) {
+        if (tree_setting.page_settings.options.colours[k] == tree_setting.page_settings.current.colours) {
+            return(k);
+        }
+    }
+    return undefined;
   }
   
   Controller.prototype.set_image_source = function(image_source) {
@@ -114,7 +127,7 @@ export default function (Controller) {
   Controller.prototype.close_all = function() {
     if (typeof config.ui.closeAll !== 'function') {
       //we should have defined it!
-      alert("Developer error: you need to define a UI function called closeAll which close all popups etc");
+      throw new Error("Developer error: you need to define a UI function called closeAll which close all popups etc");
     } else {
       config.ui.closeAll();
     }

@@ -39,21 +39,48 @@ import popularity_theme from './themes/popularity_theme';
 import config from './global_config';
 
 export let viewtype;
-export let color_theme;
 export let pic_src_order;
 export let page_settings;
 
-// we might later want default colour for one projection to be different from default colour for another projection and so on.  The same is true for data_structure
-let default_page_settings = {
-    colours: 'natural',
-    layout: {
-        branch: LifeBranchLayout,
-        node: LifeNodeLayout,
-        leaf: LifeLeafLayout,
-        sign: LifeSignpostLayout
+page_settings = {
+  options: {
+    colours:   {natural:    life_theme,
+                AT:         at_theme,
+                popularity: popularity_theme},
+    layout:{
+        branch:{tree:     LifeBranchLayout,
+                AT:       ATBranchLayout,
+                polytomy: PolytomyBranchLayout},
+        node:  {tree:     LifeNodeLayout,
+                AT:       ATNodeLayout,
+                polytomy: PolytomyNodeLayout},
+        leaf:  {tree:     LifeLeafLayout,
+                AT:       ATLeafLayout,
+                polytomy: PolytomyLeafLayout},
+        sign:  {tree:     LifeSignpostLayout,
+                AT:       ATSignpostLayout,
+                polytomy: PolytomySignpostLayout}              
     },
-    projection: 'spiral',
-    data_structure: LifeMidnode
+    data_structure: {tree:     LifeMidnode,
+                     AT:       ATMidnode,
+                     polytomy: PolytomyMidnode},
+    projection: {spiral:  'spiral',
+                 balanced:'balanced',
+                 fern:    'fern',
+                 natural: 'natural',
+                 polytomy:'polytomy'}
+  }
+}
+page_settings.default = {
+    colours: page_settings.options.colours.natural,
+    layout: {
+        branch: page_settings.options.layout.branch.tree,
+        node:   page_settings.options.layout.node.tree,
+        leaf:   page_settings.options.layout.leaf.tree,
+        sign:   page_settings.options.layout.sign.tree
+    },
+    data_structure: LifeMidnode,
+    projection: page_settings.options.projection.spiral
 }
 
 export function change_language(lang, controller, data_repo) {
@@ -68,39 +95,75 @@ export function change_language(lang, controller, data_repo) {
 }
 
 export function change_color_theme(val) {
-  color_theme = val;
-  if (color_theme == 'natural') {
-    set_theme(life_theme);
-  } else if (color_theme == 'at') {
-    set_theme(at_theme);
-  } else if (color_theme == 'popularity') {
-    set_theme(popularity_theme);
+  if (typeof val === 'string') {
+    if (page_settings.options.colours.hasOwnProperty(val)) {
+        set_theme(page_settings.options.colours[val]);
+    }
+  } else {
+    set_theme(val);
   }
 }
 
-// settings is a JSON input for page configuration
-// settings.colours is a string that defines the colour theme e.g. 'at' or 'natural'
-// settings.layout contains 4 parts that describe the layout of the tree (branch, node, leaf, and sign)
-// settings.projection is the way in which branches (if any) leaves and nodes are placed on the canvas (but not the layout of each)
-// settings.data_structure shoud be a 'midnode' object that describes the data structure.  E.g. LifeMidnode, ATMidnode, or PolytomyMidnode
-// note that there is a view switcher from within each page that can be called and which might change the data structure to support other views - such as polytomy view.
+/**
+ * Configure the viewing parameters using a settings object.
+ * Note that there is a view switcher from within each page that can be called and which might change the data structure to support other views - such as polytomy view.
+ * @function config_page
+ * @param {Object} settings - An object containing some or all of the possible settings. 
+ *  If some or all are missing, use the defaults specified in default_page_settings. 
+ *  Options are given in the page_settings.options object, and can also be given by their name in that object
+ *  (see examples)
+ * @param {Object} settings.colours - An object that defines a set of colours to use: select from names or types available at
+ * @param {Object} settings.layout - Contains 4 parts that describe the layout of the tree (branch, node, leaf, and sign)
+ * @param {Object} settings.layout.branch -
+ * @param {Object} settings.layout.node -
+ * @param {Object} settings.layout.leaf -
+ * @param {Object} settings.layout.sign -
+ * @param {Object} settings.projection is the way in which branches (if any) leaves and nodes are placed on the canvas (but not the layout of each)
+ * @param {Object} settings.data_structure - A 'midnode' object that describes the data structure.  E.g. LifeMidnode, ATMidnode, or PolytomyMidnode
+ * @example config_page({colours: page_settings.options.colours.popularity})
+ * @example config_page({colours: "popularity"})
+ **/
 export function config_page(settings) {
+    //get & set params using dot notation
+    const getPath = (object, path, defaultValue) => path
+       .split('.')
+       .reduce((o, p) => o ? o[p] : defaultValue, object)
+    const setPath = (object, path, value) => path
+       .split('.')
+       .reduce((o,p) => o[p] = path.split('.').pop() === p ? value : o[p] || {}, object)
+
+    function save_page_setting_to_current(path) {
+        //
+        let curr = getPath(page_settings.current, path)
+        if (curr) {
+            if (typeof curr === 'string') {
+                //user has passed in the name in the options object, e.g. {projection:'spiral'}
+                if (getPath(page_settings.options, path).hasOwnProperty(curr)) {
+                    setPath(page_settings.current, path, getPath(page_settings.options, path)[curr])
+                } else {
+                    throw new Error("Setting " + curr + " is not one of the options in page_settings.options." + path);
+                }
+            } else {
+                //assume the object specified in the user-passed in settings is fine
+            }
+        } else {
+            setPath(page_settings.current, path, getPath(page_settings.default, path))
+        }
+    }
     // keep a copy of the settings object
-    page_settings = settings;
-    if (!page_settings) {page_settings = default_page_settings};
-    if (!page_settings.colours) {page_settings.colours = default_page_settings.colours};
-    if (!page_settings.projection) {page_settings.projection = default_page_settings.projection};
-    if (!page_settings.data_structure) {page_settings.datas_tructure = default_page_settings.data_structure};
-    if (!page_settings.layout) {page_settings.layout = default_page_settings.layout};
-    if (!page_settings.layout.branch) {page_settings.layout.branch = default_page_settings.layout.branch};
-    if (!page_settings.layout.node) {page_settings.layout.node = default_page_settings.layout.node};
-    if (!page_settings.layout.leaf) {page_settings.layout.leaf = default_page_settings.layout.leaf};
-    if (!page_settings.layout.sign) {page_settings.layout.sign = default_page_settings.layout.sign};
-    get_controller().set_color_theme(page_settings.colours);
-    set_layout(page_settings.layout.branch, page_settings.layout.node, page_settings.layout.leaf, page_settings.layout.sign);
-    set_factory_midnode(page_settings.data_structure);
-    set_viewtype(page_settings.projection);
-    if (page_settings.projection == 'polytomy')
+    page_settings.current = settings || {};
+    save_page_setting_to_current('colours');
+    save_page_setting_to_current('projection');
+    save_page_setting_to_current('data_structure');
+    save_page_setting_to_current('layout.branch');
+    save_page_setting_to_current('layout.node');
+    save_page_setting_to_current('layout.leaf');
+    save_page_setting_to_current('layout.sign');
+    change_color_theme(page_settings.current.colours);
+    set_layout(page_settings.current.layout.branch, page_settings.current.layout.node, page_settings.current.layout.leaf, page_settings.current.layout.sign);
+    set_factory_midnode(page_settings.current.data_structure);
+    set_viewtype(page_settings.current.projection);
+    if (page_settings.current.projection == 'polytomy')
     {
         set_horizon_calculator('polytomy');
     }
@@ -184,8 +247,8 @@ function rebuild_tree(curr, prev, controller) {
         }, 10);
       }
     } else if (is_binary_viewtype(curr) && prev === "polytomy") {
-      set_layout(page_settings.layout.branch, page_settings.layout.node, page_settings.layout.leaf, page_settings.layout.sign);
-      set_factory_midnode(page_settings.data_structure);
+      set_layout(page_settings.current.layout.branch, page_settings.current.layout.node, page_settings.current.layout.leaf, page_settings.current.layout.sign);
+      set_factory_midnode(page_settings.current.data_structure);
       controller.polytomy_tree = controller.factory.root;
       if (controller.binary_tree) {
         controller.factory.root = controller.binary_tree;
