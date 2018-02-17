@@ -29,8 +29,16 @@ functionality. At the moment, a single file is created, called OZentry.js
  *     off AJAX requests. See global_config.js for the list of necessary names
  * @param {Object} UI_functions A named key:value dict of UI functions that the OZ js might want to call
  * @param {String} canvasID The DOM ID of the canvas element, used e.g. in getElementById(canvasID)
- * @param {Object} default_viz_settings Specifications for the default colour, layout, tree shape, etc (see tree_setting.js)
- * @param {Object} pagetitle_function A function that takes a single string (could be null) and returns a title 
+ * @param {Object} default_viz_settings - Specifications for the default colour, layout, tree shape, etc. 
+ *  These can be specified as key:values to override the defaults, or given as an object of the correct sort.
+ *  That means, for example, that there are 4 ways to change the colour scheme:
+ *  1. Chose one of the default themes here, e.g. use default_viz_settings = {colours:'popularity'}
+ *  2. Write your own "theme" object and save it as e.g. src/themes/my_theme.js (see instructions insrc/themes/index.js),
+ *      then recompile OneZoom, and specify it here e.g. use default_viz_settings =  {colours:'my_theme'}
+ *  3. Write your own "theme" object and pass it here e.g. use default_viz_settings = {colours:my_theme_object}
+ *  4. Use an existing theme and modify it by passing additional parameters here, as described in tree_setting.config_page()
+ *     e.g. use default_viz_settings = {colours:'natural', 'colours.branch.stroke':'rgb(190,0,0)'}
+ * @param {Object} pagetitle_function - A function that takes a single string (could be null) and returns a title 
  *     to use in the &lt;title&gt; section of the page. E.g. <code>function(t) {return (t)?'OneZoom: '+t:'OneZoom Tree of Life Explorer'}</code>
  * @return {Object} a OneZoom object which exposes OneZoom objects and functions to the user. In particular, .data_repo contains a DataRepo object, and .controller contains a Controller object.
  */

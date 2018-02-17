@@ -93,7 +93,7 @@ export default function (Controller) {
   }
   
   /**
-   * Set the colour theme using one of the property values in page_settings.options.colours.
+   * Set the colour theme using one of the theme values listed in page_settings.options.colours.
    * @method set_color_theme
    * @memberof Controller
    */
