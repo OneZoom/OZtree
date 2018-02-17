@@ -1,4 +1,4 @@
-import theme from './life_theme';
+import theme from './natural_theme';
 import merge from 'lodash/merge';
 
 /**
