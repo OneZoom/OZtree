@@ -12,14 +12,12 @@ import ATLeafLayout from './projection/layout/AT/leaf_layout';
 import ATSignpostLayout from './projection/layout/AT/signpost_layout';
 import ATBranchLayout from './projection/layout/AT/branch_layout'; 
 import ATMidnode from './factory/at_midnode';
-import at_theme from './themes/at_theme';
 
 import LifeNodeLayout from './projection/layout/life/node_layout';
 import LifeLeafLayout from './projection/layout/life/leaf_layout';
 import LifeSignpostLayout from './projection/layout/life/signpost_layout';
 import LifeBranchLayout from './projection/layout/life/branch_layout';
 import LifeMidnode from './factory/life_midnode';
-import life_theme from './themes/life_theme';
 
 import PolytomyNodeLayout from './projection/layout/polytomy/node_layout';
 import PolytomyLeafLayout from './projection/layout/polytomy/leaf_layout';
@@ -33,9 +31,9 @@ import Polytomy2LeafLayout from './projection/layout/polytomy2/leaf_layout';
 import Polytomy2SignpostLayout from './projection/layout/polytomy2/signpost_layout';
 import Polytomy2BranchLayout from './projection/layout/polytomy2/branch_layout';
 
+import * as themes from './themes'
 import {record_url} from './navigation/record';
 import get_controller from './controller/controller';
-import popularity_theme from './themes/popularity_theme';
 import config from './global_config';
 
 export let viewtype; //NB we should probably delete this and simply access the matching key in page_settings.current.projection, as we do for colours (see Controller.prototype.get_color_theme). We will have to work out how to store the previous values for the rebuild_tree stuff, though.
@@ -44,9 +42,7 @@ export let page_settings;
 
 page_settings = {
   options: {
-    colours:   {natural:    life_theme,
-                AT:         at_theme,
-                popularity: popularity_theme},
+    colours:  Object.assign({}, ...Object.keys(themes).map(k => ({[k]: themes[k]}))), //assign each theme to an object by name,
     layout:{
         branch:{tree:     LifeBranchLayout,
                 AT:       ATBranchLayout,
@@ -97,10 +93,10 @@ export function change_language(lang, controller, data_repo) {
 export function change_color_theme(val) {
   if (typeof val === 'string') {
     if (page_settings.options.colours.hasOwnProperty(val)) {
-        set_theme(page_settings.options.colours[val]);
+        set_theme(page_settings.current.colours=page_settings.options.colours[val])
     }
   } else {
-    set_theme(val);
+    set_theme(page_settings.current.colours=val);
   }
 }
 
@@ -111,7 +107,8 @@ export function change_color_theme(val) {
  * @param {Object} settings - An object containing some or all of the possible settings. 
  *  If some or all are missing, use the defaults specified in default_page_settings. 
  *  Options are given in the page_settings.options object, and can also be given by their name in that object
- *  (see examples)
+ *  An option containing a dot (e.g. colours.branch) will replace *part* of the pre-specified option, which allows
+ *  e.g. some colours in a scheme to be replaced. (see examples)
  * @param {Object} settings.colours - An object that defines a set of colours to use: select from names or types available at
  * @param {Object} settings.layout - Contains 4 parts that describe the layout of the tree (branch, node, leaf, and sign)
  * @param {Object} settings.layout.branch -
@@ -122,6 +119,8 @@ export function change_color_theme(val) {
  * @param {Object} settings.data_structure - A 'midnode' object that describes the data structure.  E.g. LifeMidnode, ATMidnode, or PolytomyMidnode
  * @example config_page({colours: page_settings.options.colours.popularity})
  * @example config_page({colours: "popularity"})
+ * @example config_page({colours:'AT', layout:{branch:'AT', node:'AT', leaf:'AT', sign:'AT'}, data_structure:'AT'})
+ * @todo We should allow variations on a colour theme, e.g. {colours:'tree','colours.branch.stroke':'rgb(190,140,70)'}
  **/
 export function config_page(settings) {
     //get & set params using dot notation
