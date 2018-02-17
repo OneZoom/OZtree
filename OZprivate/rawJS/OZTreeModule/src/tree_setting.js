@@ -120,7 +120,7 @@ export function change_color_theme(val) {
  * @example config_page({colours: page_settings.options.colours.popularity})
  * @example config_page({colours: "popularity"})
  * @example config_page({colours:'AT', layout:{branch:'AT', node:'AT', leaf:'AT', sign:'AT'}, data_structure:'AT'})
- * @todo We should allow variations on a colour theme, e.g. {colours:'tree','colours.branch.stroke':'rgb(190,140,70)'}
+ * @example config_page({colours:'natural', 'colours.branch.stroke':'rgb(0,0,0)'}) #make branches black!
  **/
 export function config_page(settings) {
     //get & set params using dot notation
@@ -158,6 +158,16 @@ export function config_page(settings) {
     save_page_setting_to_current('layout.node');
     save_page_setting_to_current('layout.leaf');
     save_page_setting_to_current('layout.sign');
+    if (settings) {
+        //make any subsequent changes to specific sub-settings e.g. to change specific colours
+        for (let k of Object.keys(settings)) {
+            let start_dot_search = k.startsWith('layout.')?'layout.'.length:0;
+            if (k.indexOf('.', start_dot_search) > -1) {
+               setPath(page_settings.current, k, settings[k])
+            }
+        }
+        //page_settings.current.colours.branch.stroke
+    }
     change_color_theme(page_settings.current.colours);
     set_layout(page_settings.current.layout.branch, page_settings.current.layout.node, page_settings.current.layout.leaf, page_settings.current.layout.sign);
     set_factory_midnode(page_settings.current.data_structure);
