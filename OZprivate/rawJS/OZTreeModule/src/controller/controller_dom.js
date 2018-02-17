@@ -105,6 +105,12 @@ export default function (Controller) {
         }
     }
   }
+  /**
+   * Get the name of the current colour theme (one of the property name in page_settings.options.colours)
+   * or undefined if the current theme does not match any of those (i.e. is a bespoke theme)
+   * @method get_color_theme
+   * @memberof Controller
+   */
   Controller.prototype.get_color_theme = function() {
     for (let k of Object.keys(tree_setting.page_settings.options.colours)) {
         if (tree_setting.page_settings.options.colours[k] == tree_setting.page_settings.current.colours) {

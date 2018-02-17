@@ -38,7 +38,7 @@ import get_controller from './controller/controller';
 import popularity_theme from './themes/popularity_theme';
 import config from './global_config';
 
-export let viewtype;
+export let viewtype; //NB we should probably delete this and simply access the matching key in page_settings.current.projection, as we do for colours (see Controller.prototype.get_color_theme). We will have to work out how to store the previous values for the rebuild_tree stuff, though.
 export let pic_src_order;
 export let page_settings;
 
@@ -172,34 +172,6 @@ export function config_page(settings) {
         set_horizon_calculator('bezier');
     }
 }
-
-//export function config_at_page() {
-  //page_origin = "AT";
-  //get_controller().set_color_theme('at');
-  //set_layout(ATBranchLayout, ATNodeLayout, ATLeafLayout, ATSignpostLayout);
-  //set_factory_midnode(ATMidnode);
-  //set_viewtype('spiral');
-  //set_horizon_calculator('bezier');
-//}
-
-//export function config_life_page() {
-  //page_origin = "life";
-  //get_controller().set_color_theme('natural');
-  //set_layout(LifeBranchLayout, LifeNodeLayout, LifeLeafLayout, LifeSignpostLayout);
-  //set_factory_midnode(LifeMidnode);
-  //set_viewtype('spiral');
-  //set_horizon_calculator('bezier');
-//}
-
-// this is only called from within polytomy.js
-//export function config_polytomy_page() {
-  //page_origin = "life";
-  //get_controller().set_color_theme('natural');
-  //set_layout(PolytomyBranchLayout, PolytomyNodeLayout, PolytomyLeafLayout, PolytomySignpostLayout);
-  //set_factory_midnode(PolytomyMidnode);
-  //set_viewtype('polytomy');
-  //set_horizon_calculator('polytomy');
-//}
 
 function set_viewtype(value) {
   viewtype = value;
