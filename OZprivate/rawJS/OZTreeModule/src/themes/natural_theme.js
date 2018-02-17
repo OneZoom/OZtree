@@ -4,7 +4,7 @@ let red1 = 'rgb(225,180,155)'; // green1;//
 let red2 = 'rgb(140,20,20)'; // green2;//
 let branch_color = 'rgb(125, 125, 125)';
 let bar_color = 'rgb(107, 107, 107)';
-let hightlight_color = 'rgba(255, 255, 255, .5)';
+let highlight_color = 'rgba(255, 255, 255, .5)';
 let int_text_stroke_hover = 'rgb(96,96,96)';
 let int_text_fill_hover = 'rgb(255,255,255)';
 let int_text_fill = 'rgb(255,255,255)';
@@ -285,14 +285,14 @@ const theme = {
       fill: branch_color
     },
     circle_searchin: {
-      stroke: hightlight_color
+      stroke: highlight_color
     },
     circle_highlight: {
       outer: {
         fill: branch_color
       },
       inner: {
-        fill: hightlight_color
+        fill: highlight_color
       }
     },
       

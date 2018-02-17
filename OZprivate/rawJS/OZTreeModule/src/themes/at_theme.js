@@ -1,6 +1,6 @@
 let branch_color = 'rgb(207,180,95)';
 let bar_color = 'rgb(177,145,60)';
-let hightlight_color = 'rgb(177,145,60)';
+let highlight_color = 'rgb(177,145,60)';
 let int_text_stroke_hover = 'rgba(255,255,255,0.5)';
 let int_text_fill_hover = 'rgb(0,0,0)';
 let int_text_fill = 'rgb(0,0,0)';
@@ -36,10 +36,10 @@ const theme = {
   branch: {
     stroke: branch_color,
     highlight_concestor: {
-      stroke: hightlight_color
+      stroke: highlight_color
     },
     highlight_search_hit: {
-      stroke: hightlight_color
+      stroke: highlight_color
     },
     highlight_search_hit1: {
       stroke: 'rgba(255,255,255,0.6)'
@@ -48,10 +48,10 @@ const theme = {
       stroke: 'rgb(190,140,70)'
     },
     highlight_arrow_concestor: {
-      fill: hightlight_color
+      fill: highlight_color
     },
     highlight_arrow_search_hit: {
-      fill: hightlight_color
+      fill: highlight_color
     },
     highlight_arrow_search_hit1: {
       fill: 'rgba(255,255,255,0.6)'
@@ -96,14 +96,14 @@ const theme = {
       fill: branch_color
     },
     'circle_searchin': {
-      stroke: hightlight_color
+      stroke: highlight_color
     },
     'circle_highlight': {
       outer: {
         fill: branch_color
       },
       inner: {
-        fill: hightlight_color
+        fill: highlight_color
       }
     },
     
