@@ -1,0 +1,39 @@
+<!-- an example of how to override some of the API settings -->
+{{#define a dict used for setup: must at a minimum define the UI_layer page (that is reloaded e.g. when language changes)
+setup_params = {
+  'partner':None,
+  'UI_layer': {
+    'page':'UI_layer.load', 
+    'vars':{'tabs':'all'} }, 
+  }
+}}
+
+{{extend 'treeviewer/layout.html'}}
+<title>OneZoom Tree of Life Explorer, text page for {{=page_info['title_name']}}</title>
+<!-- could include bespoke css file here -->
+<script type="text/javascript">
+/* override default urls for linkouts */
+server_urls['OZ_leaf_json_url_func'] = function(ott) {return("{{=URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json')}}" + "/" + ott.toString() + "?user_more_info=" + encodeURIComponent("Ancestor's?&Trail 2016") + "&user_message_OZ=" + encodeURIComponent("AT16"))};
+server_urls['OZ_node_json_url_func'] = function(id) {return("{{=URL('tree', 'node_linkouts', scheme=True, host=True, extension='json')}}" + "/" + id.toString() + "?user_more_info=" + encodeURIComponent("Ancestor's Trail 2016") + "&user_message_OZ=" + encodeURIComponent("AT16"))};
+
+/* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
+var tree_config={layout:{node:'AT', sign:'AT'}, data_structure:'AT'};
+var pagetitle_func = function(nm) {return (nm)?"OneZoom + Ancestor’s Trail: "+ nm:"OneZoom Tree of Life Explorer"};
+document.title = pagetitle_func("{{=page_info['title_name']}}");
+var popular_locations = [ /* strings are treated as headers (looked up in OZstrings), arrays as links with [ott,name] with name optional */
+    'Trail routes',
+    [770315, 'Human trail start'],
+    [540235, 'Gazelle trail start'],
+    [81461, 'Bird trail start'], //Should pick a more recent node
+    [991547, 'Amphibian trail start'],  //Frogs and toads
+    [320137, 'Fish trail start'],  //Vertebrates
+    [99252, 'Plant trail start'],  
+    [1007130, 'Bacteria trail start'], 
+    [5334778, 'Humans meet gazelles'],
+    [229560, 'Mammals meet birds'],
+    [229562, 'Mammals & birds meet amphibians'],
+    [114654, 'Land vertebrates meet fish'],
+    [304358, 'Animals meet plants'],
+    [93302, 'All life meets']
+];
+</script>

@@ -20,14 +20,33 @@
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree.css')}}" />
   <!-- for any embedded sponsor_node pages -->
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'OZSponsor/sponsor_node.css')}}" />
-
-{{include}}
   <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/completetree_' + str(version) +  '.js')}}"></script>
   <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/cut_position_map_' + str(version) +  '.js')}}"></script>
   <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/dates_' + str(version) + '.js')}}"></script>
   <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common.js')}}"></script>
   <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry.js')}}"></script>
-  <script> var OZstrings={{include 'tree/js_strings.json'}}</script>
+  
+  <script>
+    //include a few default params early on, so they can be used / overridden in the file which includes this layout
+    var OZstrings={{include 'tree/js_strings.json'}}
+    var server_urls = {
+      /* These fill out the equivalently named variables in OneZoom global_config.
+         They need to be defined here to avoid hard-coding them into the OneZoom js code */
+      data_path_pics: {{=XML(js_thumbnail_url)}},
+      node_details_api: "{{try:}}{{=myconf.take('API.node')}}{{except:}}{{=URL('API','node_details.json', scheme=True, host=True)}}{{pass}}",
+      search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",
+      search_sponsor_api: "{{try:}}{{=myconf.take('API.search_sponsor')}}{{except:}}{{=URL('API','search_for_sponsor.json', scheme=True, host=True)}}{{pass}}",
+      search_init_api: "{{try:}}{{=myconf.take('API.search_init')}}{{except:}}{{=URL('API','search_init.json', scheme=True, host=True)}}{{pass}}",
+      ott2id_arry_api: "{{try:}}{{=myconf.take('API.ott2id_array')}}{{except:}}{{=URL('API', 'get_ids_by_ott_array.json', scheme=True, host=True)}}{{pass}}",
+      otts2vns_api: "{{try:}}{{=myconf.take('API.otts2vns')}}{{except:}}{{=URL('API','otts2vns.json', scheme=True, host=True)}}{{pass}}",
+      image_details_api: "{{try:}}{{=myconf.take('API.image')}}{{except:}}{{=URL('API', 'image_details.json', scheme=True, host=True)}}{{pass}}",
+      update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
+      tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
+      OZ_leaf_json_url_func: function(ott) {return("{{=URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json')}}" + "/" + (ott || "").toString())},
+      OZ_node_json_url_func: function(id) {return("{{=URL('tree', 'node_linkouts', scheme=True, host=True, extension='json')}}" + "/" + id.toString())},
+    };
+  </script>
+{{include}}
   <noscript>
     <style>
         /* hide control buttons if there is no JS */
@@ -50,22 +69,6 @@
 /* define most of the JS after the main page has loaded */
 var onezoom = null; //will be filled out on document ready
 
-var server_urls = {
-    /* These fill out the equivalently named variables in OneZoom global_config.
-       They need to be defined here to avoid hard-coding them into the OneZoom js code */
-    data_path_pics: {{=XML(js_thumbnail_url)}},
-    node_details_api: "{{try:}}{{=myconf.take('API.node')}}{{except:}}{{=URL('API','node_details.json', scheme=True, host=True)}}{{pass}}",
-    search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",
-    search_sponsor_api: "{{try:}}{{=myconf.take('API.search_sponsor')}}{{except:}}{{=URL('API','search_for_sponsor.json', scheme=True, host=True)}}{{pass}}",
-    search_init_api: "{{try:}}{{=myconf.take('API.search_init')}}{{except:}}{{=URL('API','search_init.json', scheme=True, host=True)}}{{pass}}",
-    ott2id_arry_api: "{{try:}}{{=myconf.take('API.ott2id_array')}}{{except:}}{{=URL('API', 'get_ids_by_ott_array.json', scheme=True, host=True)}}{{pass}}",
-    otts2vns_api: "{{try:}}{{=myconf.take('API.otts2vns')}}{{except:}}{{=URL('API','otts2vns.json', scheme=True, host=True)}}{{pass}}",
-    image_details_api: "{{try:}}{{=myconf.take('API.image')}}{{except:}}{{=URL('API', 'image_details.json', scheme=True, host=True)}}{{pass}}",
-    update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
-    tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
-    OZ_leaf_json_url_func: function(ott) {return("{{=URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json')}}" + "/" + (ott || "").toString())},
-    OZ_node_json_url_func: function(id) {return("{{=URL('tree', 'node_linkouts', scheme=True, host=True, extension='json')}}" + "/" + id.toString())},
-};
 
 /* UI functions that allow javascript in the main viewer to interact with the UI - these refer to items in the viewer_UI file */
 
