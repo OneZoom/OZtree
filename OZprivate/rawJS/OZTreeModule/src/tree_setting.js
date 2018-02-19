@@ -40,6 +40,14 @@ export let viewtype; //NB we should probably delete this and simply access the m
 export let pic_src_order;
 export let page_settings;
 
+//get & set params using dot notation
+const getPath = (object, path, defaultValue) => path
+   .split('.')
+   .reduce((o, p) => o ? o[p] : defaultValue, object)
+const setPath = (object, path, value) => path
+   .split('.')
+   .reduce((o,p) => o[p] = path.split('.').pop() === p ? value : o[p] || {}, object)
+
 page_settings = {
   options: {
     colours:  Object.assign({}, ...Object.keys(themes).map(k => ({[k]: themes[k]}))), //assign each theme to an object by name,
@@ -65,8 +73,28 @@ page_settings = {
                  fern:    'fern',
                  natural: 'natural',
                  polytomy:'polytomy'}
+  },
+  current: {},
+  save_to_current: function(user_set, path) {
+    //user_set could be e.g. {'branch.leaf':'tree'} or {branch:{leaf:'tree'}}
+    let curr = user_set[path] || getPath(user_set, path);
+    if (curr) {
+        if (typeof curr === 'string') {
+            //user has passed in the name in the options object, e.g. {projection:'spiral'}
+            if (getPath(this.options, path).hasOwnProperty(curr)) {
+                setPath(this.current, path, getPath(this.options, path)[curr])
+            } else {
+                throw new Error("Setting " + curr + " is not one of the options in page_settings.options." + path);
+            }
+        } else {
+            //assume the object specified in the user-passed in settings is fine
+        }
+    } else {
+        setPath(this.current, path, getPath(this.default, path));
+    }
   }
 }
+
 page_settings.default = {
     colours: page_settings.options.colours.natural,
     layout: {
@@ -123,50 +151,18 @@ export function change_color_theme(val) {
  * @example config_page({colours:'natural', 'colours.branch.stroke':'rgb(0,0,0)'}) #make branches black!
  **/
 export function config_page(settings) {
-    //get & set params using dot notation
-    const getPath = (object, path, defaultValue) => path
-       .split('.')
-       .reduce((o, p) => o ? o[p] : defaultValue, object)
-    const setPath = (object, path, value) => path
-       .split('.')
-       .reduce((o,p) => o[p] = path.split('.').pop() === p ? value : o[p] || {}, object)
 
-    function save_page_setting_to_current(path) {
-        //
-        let curr = getPath(page_settings.current, path)
-        if (curr) {
-            if (typeof curr === 'string') {
-                //user has passed in the name in the options object, e.g. {projection:'spiral'}
-                if (getPath(page_settings.options, path).hasOwnProperty(curr)) {
-                    setPath(page_settings.current, path, getPath(page_settings.options, path)[curr])
-                } else {
-                    throw new Error("Setting " + curr + " is not one of the options in page_settings.options." + path);
-                }
-            } else {
-                //assume the object specified in the user-passed in settings is fine
-            }
-        } else {
-            setPath(page_settings.current, path, getPath(page_settings.default, path))
-        }
-    }
-    // keep a copy of the settings object
-    page_settings.current = settings || {};
-    save_page_setting_to_current('colours');
-    save_page_setting_to_current('projection');
-    save_page_setting_to_current('data_structure');
-    save_page_setting_to_current('layout.branch');
-    save_page_setting_to_current('layout.node');
-    save_page_setting_to_current('layout.leaf');
-    save_page_setting_to_current('layout.sign');
+    page_settings.save_to_current(settings, 'colours');
+    page_settings.save_to_current(settings, 'projection');
+    page_settings.save_to_current(settings, 'data_structure');
+    page_settings.save_to_current(settings, 'layout');
     if (settings) {
         //make any subsequent changes to specific sub-settings e.g. to change specific colours
         for (let k of Object.keys(settings)) {
-            let start_dot_search = k.startsWith('layout.')?'layout.'.length:0;
-            if (k.indexOf('.', start_dot_search) > -1) {
-               setPath(page_settings.current, k, settings[k])
+            if (k.indexOf('.') > -1) {
+                page_settings.save_to_current(settings, k)
             }
         }
-        //page_settings.current.colours.branch.stroke
     }
     change_color_theme(page_settings.current.colours);
     set_layout(page_settings.current.layout.branch, page_settings.current.layout.node, page_settings.current.layout.leaf, page_settings.current.layout.sign);
