@@ -105,7 +105,24 @@ const theme = {
       inner: {
         fill: hightlight_color
       }
+    },
+    
+    copyright_hover: {
+      fill: 'rgb(255,255,255)',
+      stroke: 'rgb(0,0,0)'
+    },
+      
+    copyright: {
+      fill: 'rgba(255,255,255,0.5)',
+      stroke: 'rgb(0,0,0)',
+      text: {
+      fill: 'rgb(0,0,0)'
+      },
+        text_hover: {
+        fill: 'rgb(0,0,0)',
+      }
     }
+
   },
     
   signpost: {
