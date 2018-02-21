@@ -37,7 +37,7 @@ functionality. At the moment, a single file is created, called OZentry.js
  *      then recompile OneZoom, and specify it here e.g. use default_viz_settings =  {colours:'my_theme'}
  *  3. Write your own "theme" object and pass it here e.g. use default_viz_settings = {colours:my_theme_object}
  *  4. Use an existing theme and modify it by passing additional parameters here, as described in tree_settings.set_default()
- *     e.g. use default_viz_settings = {colours:'natural', 'colours.branch.stroke':'rgb(190,0,0)'}
+ *     e.g. use default_viz_settings = {cols:'natural', 'cols.branch.stroke':'rgb(190,0,0)'}
  * @param {Object} pagetitle_function - A function that takes a single string (could be null) and returns a title 
  *     to use in the &lt;title&gt; section of the page. E.g. <code>function(t) {return (t)?'OneZoom: '+t:'OneZoom Tree of Life Explorer'}</code>
  * @return {Object} a OneZoom object which exposes OneZoom objects and functions to the user. In particular, .data_repo contains a DataRepo object, and .controller contains a Controller object.
