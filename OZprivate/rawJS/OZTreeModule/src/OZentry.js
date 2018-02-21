@@ -12,7 +12,7 @@ import {setup_loading_page} from './navigation/setup_page';
 import config from './global_config';
 import tree_state from './tree_state';
 import data_repo from './factory/data_repo';
-import * as tree_setting from './tree_setting'; // import the tree settings from a separate document
+import tree_settings from './tree_settings';
 /**
  * Creates the main object that is exported to the browser. 
  * @todo This should possibly be separated so that 
@@ -36,7 +36,7 @@ functionality. At the moment, a single file is created, called OZentry.js
  *  2. Write your own "theme" object and save it as e.g. src/themes/my_theme.js (see instructions insrc/themes/index.js),
  *      then recompile OneZoom, and specify it here e.g. use default_viz_settings =  {colours:'my_theme'}
  *  3. Write your own "theme" object and pass it here e.g. use default_viz_settings = {colours:my_theme_object}
- *  4. Use an existing theme and modify it by passing additional parameters here, as described in tree_setting.config_page()
+ *  4. Use an existing theme and modify it by passing additional parameters here, as described in tree_settings.set_default()
  *     e.g. use default_viz_settings = {colours:'natural', 'colours.branch.stroke':'rgb(190,0,0)'}
  * @param {Object} pagetitle_function - A function that takes a single string (could be null) and returns a title 
  *     to use in the &lt;title&gt; section of the page. E.g. <code>function(t) {return (t)?'OneZoom: '+t:'OneZoom Tree of Life Explorer'}</code>
@@ -69,7 +69,7 @@ function setup(
   
   let return_value = {};
   if (canvasID) {
-    tree_setting.config_page(default_viz_settings); // implements the config for that tree.
+    tree_settings.set_default(default_viz_settings); // implements the config for that tree.
   
     //start fetching metadata for the tree, using global variables that have been defined in files like 
     //10000 is cut threshold for cut_position_map_json_str
@@ -113,13 +113,13 @@ function setup(
     }, 50);
 
     return_value.controller = controller;
-    return_value.page_settings = tree_setting.page_settings;
+    return_value.tree_settings = tree_settings;
     return_value.tree_state = tree_state;
     return_value.data_repo = data_repo;
   } else {
     //on a page with no canvas, there is no point having either a controller or a data_repo
     api_manager.start();
-    return_value.page_settings = null;
+    return_value.tree_settings = null;
     return_value.controller = null;
     return_value.tree_state = null;
     return_value.data_repo = null;

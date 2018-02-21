@@ -65,7 +65,9 @@ config.api = {
   
 }
 
-config.lang = '' //two letter language code. If empty, use the browser default
+config.lang = ''; //two letter language code. If empty, use the browser default
+
+config.default_setting = ''; //a place to save the default settings string passed in via the URL (anything starting d_)
 
 config.ui = {
   /* These are functions where the OneZoom javascript code needs to interact

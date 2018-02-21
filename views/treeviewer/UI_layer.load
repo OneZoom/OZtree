@@ -1,13 +1,14 @@
-{{if request.vars.nolinks:}}
+{{if request.vars.links=="none":}}
 {{#remove hyperlink from *all* links created via the web2py A() helper}}
 {{ def A(*args, **kwargs): return CAT(*args)}}
 {{else:}}
-{{#make *all* links created via the web2py A() helper open in a new tab, e.g. from load icons - this should override others}}
+{{#make *all* links created via the web2py A() helper open in a new tab, e.g. from logos - this should override others}}
 {{web2py_A = A}}
 {{def A(*args, **kwargs): return web2py_A(*args, **dict(kwargs, _target='_blank'))}}
 {{pass}}
 <!-- This contains all the overlay on top of the OneZoom canvas. It can be reloaded in different languages -->
 
+<div id="logo" class="uk-navbar-item">{{=A(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('index', extension=False))}}</div>
 <div id="logo" class="uk-navbar-item">{{=A(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('index', extension=False))}}</div>
 <div class="uk-navbar-item" id="searchnav">
   <form id="search-basic">
@@ -91,7 +92,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
       <li><label uk-tooltip="pos: right" title="{{=T('Colours like a botanical tree, leaf colour shows extinction risk')}}">
         <input class="uk-radio" type="radio" name="colourtype" value="natural"> Natural</label></li>
       <li><label>
-        <input class="uk-radio" type="radio" name="colourtype" value="at"> {{=T('Ancestor’s Tale')}}</label></li>
+        <input class="uk-radio" type="radio" name="colourtype" value="AT"> {{=T('Ancestor’s Tale')}}</label></li>
       <li><label>
         <input class="uk-radio" type="radio" name="colourtype" value="popularity"> {{=T('Popularity')}}</label></li>
       <li class="uk-nav-header treeswitch">{{=T('Tree## partner')}}</li>

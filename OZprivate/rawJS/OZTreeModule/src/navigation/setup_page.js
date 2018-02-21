@@ -71,7 +71,7 @@ function get_id_by_state(state) {
 
 function setup_page_by_loading(state) {
   let controller = get_controller();
-  if (state.vis_type) controller.set_view_type(state.vis_type);
+  if (state.vis_type) controller.change_view_type(state.vis_type);
   config.lang = state.lang || '';
   if (state.title) document.title = unescape(state.title);
   get_id_by_state(state)

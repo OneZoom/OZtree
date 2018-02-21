@@ -728,8 +728,8 @@ function setupUI() {
         .click(function(){onezoom.controller.button_reset()});
 
     $('input[name="imgsource"]').change(function() {onezoom.controller.set_image_source(this.value)});
-    $('input[name="treeshape"]').change(function() {onezoom.controller.set_view_type(this.value)});
-    $('input[name="colourtype"]').change(function() {onezoom.controller.set_color_theme(this.value)});
+    $('input[name="treeshape"]').change(function() {onezoom.controller.change_view_type(this.value)});
+    $('input[name="colourtype"]').change(function() {onezoom.controller.change_color_theme(this.value)});
     $('select#language').change(function() {
         //reset the OZ strings to the new language
         var lang_param = (this.value)?('lang='+this.value):'';

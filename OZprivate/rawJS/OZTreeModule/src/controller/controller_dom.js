@@ -3,8 +3,10 @@
  */
 import tree_state from '../tree_state';
 import config from '../global_config';
-import * as tree_setting from '../tree_setting';
+import tree_settings from '../tree_settings';
 import data_repo from '../factory/data_repo';
+import {record_url} from '../navigation/record';
+
 /**
  * @class Controller
  */
@@ -70,7 +72,8 @@ export default function (Controller) {
    */
   Controller.prototype.set_language = function(lang) {
     if (lang !== config.lang) {
-      tree_setting.change_language(lang, this, data_repo);
+      tree_settings.change_language(lang, this, data_repo);
+      record_url();
     }
   }
   /**
@@ -83,41 +86,45 @@ export default function (Controller) {
   }
 
 
-  Controller.prototype.set_view_type = function(viewtype) {
-    if (viewtype !== tree_setting.viewtype) {
-      tree_setting.change_view_type(viewtype, this);
+  /**
+   * Change the view type from the current setting to a new one.
+   * @method set_color_theme
+   * @param {String} - One of the keys listed in tree_settings.options.vis
+   * @memberof Controller
+   */
+  Controller.prototype.change_view_type = function(vis) {
+    if (vis !== tree_settings.vis) {
+      let prev = tree_settings.vis
+      tree_settings.vis = vis;
+      let self=this
+      tree_settings.rebuild_tree(vis, prev, this).then(function() {    
+        self.update_form();
+        self.reset();
+        record_url();
+      });
     }
   }
   Controller.prototype.get_view_type = function() {
-    return(tree_setting.viewtype);
+    return(tree_settings.vis);
   }
   
   /**
-   * Set the colour theme using one of the theme values listed in page_settings.options.colours.
+   * Change the colour theme
    * @method set_color_theme
+   * @param {String} - One of the theme names listed as keys in tree_settings.options.cols
    * @memberof Controller
    */
-  Controller.prototype.set_color_theme = function(color_theme) {
-    if (tree_setting.page_settings.options.colours.hasOwnProperty(color_theme)) {
-        let theme = tree_setting.page_settings.options.colours[color_theme];
-        if (theme !== tree_setting.page_settings.current.colours) {
-          tree_setting.change_color_theme(color_theme);
-        }
-    }
+  Controller.prototype.change_color_theme = function(color_theme) {
+    tree_settings.cols = color_theme;
   }
   /**
-   * Get the name of the current colour theme (one of the property name in page_settings.options.colours)
+   * Get the name of the current colour theme (one of the property name in tree_settings.options.cols)
    * or undefined if the current theme does not match any of those (i.e. is a bespoke theme)
    * @method get_color_theme
    * @memberof Controller
    */
   Controller.prototype.get_color_theme = function() {
-    for (let k of Object.keys(tree_setting.page_settings.options.colours)) {
-        if (tree_setting.page_settings.options.colours[k] == tree_setting.page_settings.current.colours) {
-            return(k);
-        }
-    }
-    return undefined;
+    return(tree_settings.cols);
   }
   
   Controller.prototype.set_image_source = function(image_source) {

@@ -13,7 +13,7 @@ setup_params = {
 <!-- could include bespoke css file here -->
 <script type="text/javascript">
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
-var tree_config= {colours:'AT', 'layout.branch':'AT', 'layout.node':'AT', 'layout.leaf':'AT', 'layout.sign':'AT', data_structure:'AT'};
+var tree_config= {cols:'AT', 'layout.branch':'AT', 'layout.node':'AT', 'layout.leaf':'AT', 'layout.sign':'AT', midnode:'AT'};
 var pagetitle_func = function(nm) {return (nm)?"OneZoom: "+ nm:"OneZoom Tree of Life Explorer"};
 document.title = pagetitle_func("{{=page_info['title_name']}}");
 var popular_locations = [ /* strings are treated as headers (looked up in OZstrings), arrays as links with [ott,name] with name optional */

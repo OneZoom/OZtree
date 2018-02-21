@@ -3,7 +3,7 @@ import {color_theme} from '../../../themes/color_theme';
 import ArcShape from '../../shapes/arc_shape';
 import TextShape from '../../shapes/text_shape';
 import ImageShape from '../../shapes/image_shape';
-import * as tree_setting from '../../../tree_setting';
+import tree_settings from '../../../tree_settings';
 import {get_image, image_ready} from '../../../image_cache'
 import {global_button_action} from '../../../button_manager';
 import {live_area_config} from '../../live_area_config';

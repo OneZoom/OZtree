@@ -1,6 +1,6 @@
 import get_controller from '../controller/controller';
 import tree_state from '../tree_state';
-import * as tree_setting from '../tree_setting';
+import tree_settings from '../tree_settings';
 import {global_button_action, is_popup_state} from '../button_manager';
 import {parse_query, encode_popup_action} from './utils';
 import {add_hook} from '../util/index';
@@ -19,7 +19,7 @@ function record_url_delayed() {
  * Record current position into url. 
  * Record the following information into url:
  * 1. current pin node: find the largest visble node with ott, then store in following format: @latin_name(if exist)=ott
- * 2. querystring arguments: viewtype, lang, popup type and popup ott: ?vis_type=spiral&popup=ott
+ * 2. querystring arguments: [default settings] + vis, cols, lang, popup type and popup ott: ?vis=spiral&popup=ott
  * 3. exact position: #x=1,y=2,w=2.333
  * Besides record url, also change document title if find a node with name.
  * Only record url if current pin node is the different from previous pin node or popup dialog close or open.
@@ -170,15 +170,35 @@ function get_pinpoint(node) {
 }
 
 function get_params(options) {
-  let querystring = "?vis=" + tree_setting.viewtype;
+  let querystring = [];
+  if (config.default_setting) {
+    //if we set some defaults in the original page, make sure we echo them here
+    querystring.push(config.default_setting)
+  }
+  if (!tree_settings.is_default_vis()) {
+    let vis_string = tree_settings.vis;
+    if (vis_string) {
+      querystring.push("vis=" + encodeURIComponent(vis_string));
+    } //else could be undefined if some random string was used
+  }
+  if (!tree_settings.is_default_cols()) {
+    let cols_string = tree_settings.cols;
+    if (cols_string) {
+      querystring.push("cols=" + encodeURIComponent(cols_string));
+    } //else could be undefined if we since changed components of the colours
+  }
   if (config.lang) {
-      querystring += "&lang=" + config.lang;
+      querystring.push("lang=" + encodeURIComponent(config.lang));
   }
   if (options.record_popup) {
     let popup_state = get_popup_state();
     if (popup_state) {
-      querystring += "&pop=" + encode_popup_action(popup_state[0]) + "_" + popup_state[1];
+      querystring.push("pop=" + encode_popup_action(popup_state[0]) + "_" + popup_state[1]);
     }  
+  }
+  querystring = querystring.join('&')
+  if (querystring !== '') {
+    querystring = "?" + querystring;
   }
   return querystring;
 }
@@ -200,7 +220,7 @@ function get_current_state(node, title, options) {
   state.yp = pos[1].toFixed(0);
   state.ws = pos[2].toFixed(4);
   state.ott = node.ott;
-  state.vis_type = tree_setting.viewtype;
+  state.vis_type = tree_settings.vis;
   if (title) state.title = title;
   if (options.record_popup) {
     let popup_state = get_popup_state();

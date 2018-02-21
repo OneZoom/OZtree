@@ -1,6 +1,6 @@
 import {call_hook} from '../util/index';
 import node_details_api from '../api/node_details';
-import {pic_src_order} from '../tree_setting';
+import {pic_src_order} from '../tree_settings';
 /**
  * A class to store all tree data, metadata and metadata related information. It also provides interface to update metadata.
  */
