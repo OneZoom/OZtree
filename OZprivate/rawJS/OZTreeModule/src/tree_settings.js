@@ -93,11 +93,13 @@ class TreeSettings {
     let val = user_set[path] || getPath(user_set, path); //e.g. 'tree'
     if (val) {
         if (typeof val === 'string') {
-            //user has passed in the name in the options object, e.g. {vis:'spiral'}
-            if (getPath(this.options, path).hasOwnProperty(val)) {
-                setPath(this.default, path, getPath(this.options, path)[val]);
+            let o = getPath(this.options, path)
+            if (o && o.hasOwnProperty(val)) {
+                //string passed by user is a NAME from the options selection, e.g. {midnode:'AT'}
+                setPath(this.default, path, o[val]);
             } else {
-                throw new Error("Setting " + val + " is not one of the options in tree_settings.options." + path);
+                //string passed by user does not correspond to a name => inject it directly, e.g. cols.branch.stroke':'rgb(0,100,100)'
+                setPath(this.default, path, val);
             }
         } else {
             setPath(this.default, path, val); //assume the object specified in the user-passed in settings is fine
@@ -184,17 +186,19 @@ class TreeSettings {
    * @example set_default({cols:'natural', 'cols.branch.stroke':'rgb(0,0,0)'}) #make branches black!
    **/
   set_default(settings) {
-    this._overwrite_default(settings, 'cols');
-    this._overwrite_default(settings, 'vis');
-    this._overwrite_default(settings, 'midnode');
-    this._overwrite_default(settings, 'layout');
     if (settings) {
+      this._overwrite_default(settings, 'cols');
+      this._overwrite_default(settings, 'vis');
+      this._overwrite_default(settings, 'midnode');
+      this._overwrite_default(settings, 'layout');
+      if (settings) {
         //make any subsequent changes to specific sub-settings e.g. to change specific colours
         for (let k of Object.keys(settings)) {
-            if (k.indexOf('.') > -1) {
-                this._overwrite_default(settings, k)
-            }
+          if (k.indexOf('.') > -1) {
+            this._overwrite_default(settings, k)
+          }
         }
+      }
     }
     this.current = Object.assign({}, this.default); //shallow copy
     this.cols = this.current.cols; //force theme to be loaded using getter
