@@ -29,7 +29,12 @@ is_testing = True
 
 ## get config params etc
 if is_testing:
-    myconf = AppConfig(reload=True) #changes to appconfig.ini do not require restart
+    #might want to load a different appconfig.ini file, which can be passed in during testing to the rocket server
+    # (on the main server this is not used, and we default back to appconfig.ini
+    if request.env.cmd_options and request.env.cmd_options.args[-1]:
+        myconf = AppConfig(request.env.cmd_options.args[-1], reload=True)
+    else:
+        myconf = AppConfig(reload=True) #changes to appconfig.ini do not require restart
     T.is_writable = True #allow translators to add new languages e.g. on the test (beta) site, but not on prod
 else:
     myconf = AppConfig() #faster to read once and never re-update
@@ -439,9 +444,12 @@ db.define_table('reservations',
     # self explanatory for sponsorship kind 'by' or 'for' a person. If the 
     Field('user_sponsor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # name of person as appears on leaf. Needs to be verified
+    Field('user_donor_title', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
+    # title of donor (Mr, Mrs, Dr, etc - needed for giftaid). . 
     Field('user_donor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # name of donor (different to user_sponsor_name if sponsored for someone). 
-    # can be blank if doner does not want online acknowledgment. Needs to be verified
+    Field('user_donor_show', type = boolean),
+    # True if user doesn't mind online acknowledgment (e.g. on donors page). Prob shouldn't use title
     Field('user_more_info', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(maxsize=30))), 
     # optional extra info about a person
     Field('user_nondefault_image', type = 'integer'),
@@ -455,7 +463,7 @@ db.define_table('reservations',
     Field('user_message_OZ', type = 'text', requires=(IS_LENGTH(maxsize=250))),
     # message for OZ e.g. to show on funding website or to request converstaion about url etc.
     Field('user_giftaid', type = boolean),
-    # message for OZ e.g. to show on funding website or to request converstaion about url etc.
+    # can we collect gift aid?
                
     # paypal returned information
     Field('PP_transaction_code', type = 'text'),
@@ -479,6 +487,8 @@ db.define_table('reservations',
     # matches 'user_sponsor_kind'
     Field('verified_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30)), widget=SQLFORM.widgets.text.widget), 
     # matches 'user_sponsor_name'
+    Field('verified_donor_title', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
+    # matches 'user_donor_title'
     Field('verified_donor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # matches 'user_donor_name'
     Field('verified_more_info', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(maxsize=30)), widget=SQLFORM.widgets.text.widget), 
@@ -556,13 +566,26 @@ db.define_table('eol_inspected',
 
 # this table lists potential OneZoom 'partners' with whom we might share profits
 db.define_table('partners',
-    Field('identifier', type = 'string', unique=True, length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
+    Field('partner_identifier', type = 'string', unique=True, length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
     Field('name', type='text', notnull=True), #the name, e.g. 'the Linnean Society of London',as in "50% will go to {{name}}" - this may be translated
-    Field('url', type='text'), #a url to give people further info
-    Field('details', type='text'), #more info for sponsors, e.g. what the money goes towards. May be translated
+    Field('url', type='text'), #a url to give people further info about the sponsorship scheme on the partner's web site
+    Field('general_url', type='text'), #a url to give people general info about the partner
+    Field('logo', type='text'), #a url to a logo, e.g. used on sponsorship page
+    Field('small_logo', type='text'), #a url to a small version of their logo (displayed at ~ 100x50 px), e.g. used on the main OneZoom viewer
+    Field('details', type='text'), #more info for sponsors, e.g. what the money goes towards. May be translated.
     Field('percentage', type = 'double', notnull=True),
-    Field('giftaid', type = boolean, notnull=True),
+    Field('giftaid', type = boolean, notnull=True), #can we collect gift aid?
+    Field('default_more_info', type='string', length=30), #what appears by default in the sponsorship text, e.g. "supporting the Linnean Society"
     format = '%(name)s', migrate=is_testing)
+
+# this table maps partners to node or leaf OTTs. When sponsorship windows
+# are opened on the main OZ website we check whether the 
+db.define_table('partner_taxa',
+    Field('partner_identifier', type = 'string', length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
+    Field('ott', type='text'), #if relevant, a number of ott ids, separated by commas. On the main OZ site, descendants of these IDs will have
+    Field('is_leaf', type = boolean, notnull=True), #is this a leaf? Helps us choose whether to look in leaf or node table
+    Field('deactived', type = boolean, notnull=True), #allows us to keep details in the DB but not to do sponsorship. However, it is more efficient to delete them from this table
+    format = '%(identifier)s', migrate=is_testing)
 
 #some tables for tours
 #one row per tour, to store e.g. the name of the tour
