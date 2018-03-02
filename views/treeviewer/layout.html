@@ -1,4 +1,11 @@
 <!DOCTYPE html>
+{{if request.vars.embed:
+ #this was accidentally called from within an iframe in another instance of the viewer => stop recursive inclusion
+}}
+<html><body>
+<div id="stop_recursion">{{=T('Please close this popup window to return to the OneZoom tree viewer')}}</div>
+</body></html>
+{{else:}}
 <html>
 <head>
   <meta NAME="description" CONTENT="OneZoom Tree of Life Explorer" />
@@ -42,8 +49,8 @@
       image_details_api: "{{try:}}{{=myconf.take('API.image')}}{{except:}}{{=URL('API', 'image_details.json', scheme=True, host=True)}}{{pass}}",
       update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
       tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
-      OZ_leaf_json_url_func: function(ott) {return("{{=URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json')}}" + "/" + (ott || "").toString())},
-      OZ_node_json_url_func: function(id) {return("{{=URL('tree', 'node_linkouts', scheme=True, host=True, extension='json')}}" + "/" + id.toString())},
+      OZ_leaf_json_url_func: function(ott) {return("{{=URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json', args='...OTT...', vars=(setup_params.get('popups') or {}).get('vars'))}}".replace('...OTT...', ott.toString() || ""))},
+      OZ_node_json_url_func: function(id) {return("{{=URL('tree', 'node_linkouts', scheme=True, host=True, extension='json', args='...ID...', vars=(setup_params.get('popups') or {}).get('vars'))}}".replace('...ID...', id.toString() || ""))},
     };
   </script>
 {{include}}
@@ -124,7 +131,6 @@ var UI_callbacks = {
       var tab = $(this);
       var linkout_name = tab.attr('id'); //'wiki', 'eol', etc. Visited in order specified in html file
       if (linkout_name) {
-        //if ((responseJSON.data[linkout_name]) && (!linkout_name=="wiki" || match_wikidata_url(responseJSON.data[linkout_name]))) {
         if (responseJSON.data[linkout_name]) {
           tab.show(); //show the tab at the top (but not necessarily the content yet)
           if (select_tab_index == null) select_tab_index = index; //start selecting earliest non-hidden tab
@@ -141,7 +147,7 @@ var UI_callbacks = {
       }
     });
     UIkit.tab('#external-modal .external-tabs').show(select_tab_index);
-    load_tab($("#external-modal .popup-container li").eq(select_tab_index), true, should_delete_links);
+    load_tab($("#external-modal .popup-container li").eq(select_tab_index));
     $('#external-modal .tab-loading_pic').hide();
     $('#external-modal .external-content').show();
   }
@@ -163,34 +169,15 @@ function match_wikidata_url(str) {
     return str.match(/^(http:|https:|)\/\/www.wikidata.org\/wiki\/Special:GoToLinkedPage\?site=(.*?)&itemid=(Q.*)/);
 }
 
-function load_tab(tab_content, embed_if_possible, remove_embed_links) {
+function load_tab(tab_content) {
   if (! tab_content.children().last().hasClass('popup-content')) {
       $('.loading_pic',tab_content).show();
-      if (embed_if_possible) {
-        if (tab_content.hasClass('wiki')) {
-            // extract the Qid & lang from the url - a bit messy
-            var match = match_wikidata_url(tab_content.attr('data-src'));
-            if (match) {
-                show_wikipage_for_lang(tab_content, match[2], match[3], remove_embed_links);
-                return;
-            }
-        }
-{{if setup_params.get('md_hack_show_embedded_sponsorship'):}}
-        //The following is only currently useful for the museum display, as it doesn't 
-        //work for the "available" sponsor page, or the sponsor_node page, both of which
-        //rely on javascript (e.g. AJAX) within the embedded html. 
-        if (tab_content.hasClass('ozspons')) {
-            inject_web2py_page(tab_content, tab_content.attr('data-src'), remove_embed_links);
-            return;
-        }
-{{pass}}
-      }
-      //else default to embedding as an iframe
-      //console.log("trying to create iframe with src = " + tab_content.attr('data-src'))
+      {{if is_testing:}}console.log("trying to create iframe with src = " + tab_content.attr('data-src'));{{pass}}
       var ifrm = document.createElement("iframe"); 
       ifrm.setAttribute('src', tab_content.attr('data-src'));
-      {{if is_testing:}}ifrm.addEventListener('load', function() {console.log("Hiding iframe loading pic");$(".loading_pic", $(this).parent().parent()).hide()});{{else:}}
-      ifrm.addEventListener('load', function() {$(".loading_pic", $(this).parent().parent()).hide()});{{pass}}
+      ifrm.addEventListener('load', function() {
+        {{if is_testing:}}console.log("Hiding iframe loading pic");{{pass}}
+        $(".loading_pic", $(this).parent().parent()).hide()});
       ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
       //add iframe inside a div wrapper
       tab_content.append($('<div>', {'class':'popup-content iframe-container'}).append(ifrm));
@@ -896,35 +883,35 @@ function setupUI() {
         .on('beforeshow', function() {
             /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
             if ($("#info-modal .uk-modal-body").children().length == 0)
-                $("#info-modal .uk-modal-body").load('{{=URL("default","about_plus_data.load", vars=setup_params.get("page_params"), scheme=True, host=True)}}');
+                $("#info-modal .uk-modal-body").load('{{=URL("default","about_plus_data.load", vars=(setup_params.get("popups") or {}).get("vars"), scheme=True, host=True)}}');
         });
 
     $('#about-modal')
         .on('beforeshow', function() {
             /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
             if ($("#about-modal .uk-modal-body").children().length == 0)
-                $("#about-modal .uk-modal-body").load('{{=URL("default","about.load", vars=setup_params.get("page_params"), scheme=True, host=True)}}');
+                $("#about-modal .uk-modal-body").load('{{=URL("default","about.load", vars=(setup_params.get("popups") or {}).get("vars"), scheme=True, host=True)}}');
         });
 
     $('#howuse-modal')
         .on('beforeshow', function() {
             /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
             if ($("#howuse-modal .uk-modal-body").children().length == 0)
-                $("#howuse-modal .uk-modal-body").load('{{=URL("default","how.load", vars=setup_params.get("page_params"), scheme=True, host=True)}}');
+                $("#howuse-modal .uk-modal-body").load('{{=URL("default","how.load", vars=(setup_params.get("popups") or {}).get("vars"), scheme=True, host=True)}}');
         });
 
     $('#datasources-modal')
         .on('beforeshow', function() {
             /* to avoid loading all the about text on page load, we check here and load it via ajax if necessary */
             if ($("#datasources-modal .uk-modal-body").children().length == 0)
-                $("#datasources-modal .uk-modal-body").load('{{=URL("default","data_sources.load", vars=setup_params.get("page_params"), scheme=True, host=True)}}');
+                $("#datasources-modal .uk-modal-body").load('{{=URL("default","data_sources.load", vars=(setup_params.get("popups") or {}).get("vars"), scheme=True, host=True)}}');
         });
 
     $('#terms-modal')
         .on('beforeshow', function() {
             /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
             if ($("#terms-modal .uk-modal-body").children().length == 0)
-                $("#terms-modal .uk-modal-body").load('{{=URL("default","terms.load", args="site", vars=setup_params.get("page_params"), scheme=True, host=True)}}');
+                $("#terms-modal .uk-modal-body").load('{{=URL("default","terms.load", args="site", vars=(setup_params.get("popups") or {}).get("vars"), scheme=True, host=True)}}');
         });
 
     $('#imageinfo-modal')
@@ -960,7 +947,7 @@ function setupUI() {
 
     $('#external-modal .popup-container li').on('show', function (event) {
         if ($(event.currentTarget).attr("data-src")) {
-            load_tab($(event.currentTarget), true, should_delete_links);
+            load_tab($(event.currentTarget));
         }
         event.stopPropagation();
     });
@@ -999,7 +986,6 @@ function setupUI() {
 
 $(document).ready(function() {    /* Mainly a place to attach JS event handlers */
     // Set up some global variables
-    should_delete_links = {{try:}}{{=setup_params['page_params']['nolinks']}}{{except:}}undefined{{pass}};
     /** CREATE A ONEZOOM INSTANCE
     this allows us to access e.g. onezoom.controller, onezoom.config, etc (defined in OZentry.js)
      **/
@@ -1021,3 +1007,4 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   </script>
 </body>
 </html>
+{{pass}}
