@@ -1,6 +1,62 @@
 <!DOCTYPE html>
-<!--[if (gt IE 9)|!(IE)]><!--> <html class="no-js" lang="{{=T.accepted_language or 'en'}}"> <!--<![endif]-->
-  <head>
+<html lang="{{=T.accepted_language or 'en'}}">
+<head>
+  <link rel="stylesheet" href="{{=URL('static','css/OZ_specific.css')}}" type="text/css" />
+  {{include 'web2py_ajax.html'}}
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <!-- fallback to local jQuery version e.g. if offline -->
+  <script>window.jQuery || document.write('<script src="{{=URL("static", "js/jquery.min.js")}}"><\/script>')</script>
+    <script>
+function preventTouchZoom(event) {
+    if(event.touches.length > 1) {
+        {{if is_testing:}}console.log("Touch zoom event blocked");{{pass}}
+        event.preventDefault(); 
+        event.stopPropagation();
+    };
+}
+$(document).ready(function() {
+    $("body").on("touchstart touchmove touchend", preventTouchZoom);
+})
+    </script>
+{{
+#Embedded pages are our own pages used as iframes within the viewer, and have e.g. toolbars etc absent.
+# They also have pinch-zooming turned off, as this zooms the entire page, not just the iframe
+# We may also wish to "sandbox" links within embedded pages e.g. for museum displays. 
+# The degree of sandboxing is specified by the 'embed' parameter as follows:
+#1 no sandboxing: all links open as normal. Links that are internal (i.e. use the URL helper) 
+#  should pass on the embed status (this also avoids embedding the tree viewer itself) (normal display)
+#2 minor "sandbox": all links open in a new tab (the "embed" need not be passed on to these links)
+#3 can only follow relative links without _target set (and cannot e.g. right click): embed status should be passed on (normal museum display)
+#4 cannot follow links at all (and cannot e.g. right click) 
+if request.vars.embed:
+}}
+{{
+  if request.vars.embed=='1':
+    #add embed status to internal links
+    web2py_URL = URL
+    def URL(*args, **kwargs): return web2py_URL(*args, **dict(kwargs, vars=dict(kwargs.get('vars') or {}, embed=request.vars.embed)))
+  elif request.vars.sandbox=='2':
+    #make *all* links created via the web2py A() helper open in a new tab, e.g. from logos - this should override others
+    web2py_A = A
+    def A(*args, **kwargs): return web2py_A(*args, **dict(kwargs, _target='_blank'))
+  else:
+}}
+<script>/* disable right click */ document.oncontextmenu = function() {return false;}</script>  
+{{
+    if request.vars.embed=='3':
+      #add embed to any internal URLs 
+      web2py_URL = URL
+      def URL(*args, **kwargs): return web2py_URL(*args, **dict(kwargs, vars=dict(kwargs.get('vars') or {}, embed=request.vars.embed)))
+      #remove external A href links
+      web2py_A = A
+      def A(*args, **kwargs): return web2py_A(*args, **kwargs) if '_target' not in kwargs and ('_href' not in kwargs or kwargs['_href'].startswith(".") or (kwargs['_href'].startswith("/") and not kwargs['_href'].startswith("//"))) else CAT(*args)
+    elif request.vars.embed=='4':
+      #remove hyperlink from *all* links created via the web2py A() helper
+      def A(*args, **kwargs): return CAT(*args)
+    pass
+  pass
+pass
+}}
     <meta charset="utf-8">
     <!-- www.phpied.com/conditional-comments-block-downloads/ -->
     <!-- Always force latest IE rendering engine
@@ -16,13 +72,7 @@
     <title>{{=response.title or request.application}}</title>
     <!-- http://dev.w3.org/html5/markup/meta.name.html -->
     <meta name="application-name" content="{{=request.application}}">
-    <!-- Speaking of Google, don't forget to set your site up:
-         http://google.com/webmasters -->
     <meta name="google-site-verification" content="">
-    <!-- include stylesheets -->
-    <link rel="stylesheet" href="{{=URL('static','css/bootstrap.min.css')}}"/>
-    <link rel="stylesheet" href="{{=URL('static','css/bootstrap-theme.min.css')}}"/>
-    <link rel="stylesheet" href="{{=URL('static','css/web2py-bootstrap3.css')}}"/>
     <link rel="shortcut icon" href="{{=URL('static','images/favicon.ico')}}" type="image/x-icon">
     <link rel="apple-touch-icon" href="{{=URL('static','images/favicon.png')}}">
     <!-- All JavaScript at the bottom, except for Modernizr which enables
@@ -31,8 +81,6 @@
     <!--[if lt IE 9]>
         <script src="{{=URL('static','js/respond-1.4.2.min.js')}}"></script>
         <![endif]-->
-    <!-- Favicons -->
-    {{include 'web2py_ajax.html'}} <!-- this includes jquery.js, calendar.js/.css and web2py.js -->
     {{block head}}{{end}}
     {{
     # using sidebars need to know what sidebar you want to use
@@ -46,24 +94,11 @@
     }}
   </head>
   <body style="padding:0; margin:0">
-    <!--[if lt IE 8]><p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p><![endif]-->
-    <div class="flash alert alert-dismissable">{{=response.flash or ''}}</div>
-    <!-- Main ========================================= -->
-    <!-- Begin page content -->
-
     <div class="container-fluid">
+    <span id="fill"></span>
         {{include}}
     </div>
-
     <!-- The javascript =============================== -->
-    <script src="{{=URL('static','js/bootstrap.min.js')}}"></script>
-    <script src="{{=URL('static','js/web2py-bootstrap3.js')}}"></script>
-
-    <!-- Analytics ==================================== -->
     <script type="text/javascript" src="{{=URL('static','site-specific/google-analytics.js')}}"></script>
-
-    <!-- Share ============================y============
-    <script src="{{=URL('static','js/share.js',vars=dict(static=URL('static','images')))}}"></script> -->
-    {{block page_js}}{{end page_js}}
   </body>
 </html>

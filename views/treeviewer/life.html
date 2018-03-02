@@ -1,9 +1,14 @@
-<!-- config stuff that is specific to the life vs kew vs linnsoc etc trees e.g. css file, default tree config options, page title function, logo -->
-{{#define a dict used for setup: must at a minimum define the UI_layer page (that is reloaded e.g. when language changes)
+{{
+#Config stuff that is specific to the life vs kew vs linnsoc etc trees e.g. css file, default tree config options, page title function, logo
+# Done by defining a dict used for setup: must at a minimum define the UI_layer 'page' URL that is reloaded e.g. when language changes
+# Note that 'vars' are passed on to sub-pages: popups should pretty much always have vars['embed'] set, so that popup windows use embedded onezoom pages
 setup_params = {
+  'partner':None,
   'UI_layer': {
     'page':'UI_layer.load', 
-    'vars':{'tabs':'all'} }, 
+    'vars':{'tabs':'all'} },
+  'popups': {
+    'vars':{'embed':'1'} }
   }
 }}
 
