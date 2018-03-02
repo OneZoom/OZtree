@@ -138,26 +138,6 @@
     <p>{{=XML(T('Don’t worry we’ve still got <a %s target="_top">lots of great leaves available for sponsorship</a>.') %('href="{}"'.format(URL('default','sponsor.html')),))}}</p>
   </div>
 </div>
-{{elif (status == "verified"):}}
-<div class="row-fluid intro">
-  <div class="col-md-12">
-    <h3>{{=T('This leaf has already been sponsored')}}</h3>
-    <!--<canvas id="leafCanvas"></canvas>--> <!-- this wasn't really working but just removed as it's not really needed now it's all in the tree if sponsored -->
-    <p>{{=XML(T('Don’t worry we’ve still got <a %s target="_top">lots of great leaves available for sponsorship</a>.') % ('href="{}"'.format(URL('default','sponsor.html')),))}}</p>
-    <!-- some leaf image here with a link to the tree-->
-        <!--
-            <h3>Preview of the sponsored leaf</h3>
-            <canvas id="leafCanvas" onclick="drawPreview()"></canvas>
-         -->
-  </div>
-</div>
-{{elif (status == "banned"):}}
-<div class="row-fluid intro">
-  <div class="col-md-12">
-    <p>{{=T('You cannot sponsor this leaf using the online form but you may still be able to get it.')}}</p>
-    <p>{{=XML(T('Please <a %s>contact us</a> if you would like to discuss sponsorship of this leaf, <a %s target="_top">or make another choice</a>.') % ('''href="mailto:mail@onezoom.org" onclick="if (typeof sponsor_page_link == 'function') {return sponsor_page_link(this);}"''','href="{}"'.format(URL('default','sponsor.html'))))}}</p>
-  </div>
-</div>
 {{elif (status == "unchecked waiting for payment"):}}
 <div class="row-fluid intro">
   <div class="col-md-12">
@@ -167,12 +147,4 @@
   </div>
 </div>
 {{else:}}
-<div class="row-fluid intro">
-  <div class="col-md-12">
-    <h3>{{=T('Unavailable for sponsorship')}}</h3>
-    <p>{{=T('It is likely that this leaf will not appear in its current form in future versions of the tree. For this reason we do not recommend sponsorship of this leaf.')}}</p>
-    <p>{{=XML(T('Many things can cause this, but if you have got here by clicking through from the OneZoom tree of life, the most likely explanation is that you have accidentally tried to sponsor something that is on the <a href="%s" target="_blank">Open Tree of Life</a>, but which may not be a bona-fide species.') % ('http://www.opentreeoflife.org',))}}</p>
-    <p>{{=XML(T('Don’t worry we’ve still got <a href="%s" target="_top"> lots of great leaves available for sponsorship</a>.') %(URL('default','sponsor.html'),))}}</p>
-  </div>
-</div>
 {{pass}}

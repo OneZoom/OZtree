@@ -137,7 +137,7 @@ def sponsor_leaf():
     # now search for OTTID in the leaf table
     try:
         if int(myconf.take('general.maintenance_mins')):
-            response.view = request.controller + "/spl_maintenance.html"
+            response.view = request.controller + "/spl_maintenance." + request.extension
             return dict(mins=str(myconf.take('general.maintenance_mins')))
     except:
         pass
@@ -151,30 +151,37 @@ def sponsor_leaf():
         leaf_entry = db(db.ordered_leaves.ott == OTT_ID_Varin).select().first()
         common_name = get_common_name(OTT_ID_Varin)
         species_name = leaf_entry.name
-        the_name = nice_species_name(leaf_entry.name, common_name, html=True, leaf=True, the=True)
+        long_name = nice_species_name(leaf_entry.name, common_name, html=True, leaf=True, the=False)
+        the_long_name = nice_species_name(leaf_entry.name, common_name, html=True, leaf=True, the=True)
     except:
         OTT_ID_Varin = None
-        leaf_entry = None
-    if ((leaf_entry is None) or                                     #invalid if not in ordered_leaves
+        leaf_entry = {}
+    if ((not leaf_entry) or                                         #invalid if not in ordered_leaves
         (leaf_entry.get('ott') is None) or                          #invalid if no OTT ID
         (leaf_entry.get('name') and ' ' not in leaf_entry.name)):   #invalid if not a species name (e.g. no space/underscore)
-        response.view = request.controller + "/spl_invalid.html"
+        response.view = request.controller + "/spl_invalid." + request.extension
         return dict(OTT_ID = OTT_ID_Varin, species_name = leaf_entry.get('name'))
     
     #we might come into this with an established partner set in request.vars (e.g. LinnSoc)
     partner = request.vars.get('partner')
+    """
+    TO DO & CHECK
     if partner is None:
-        #check in case this leaf is part of a partnership
+        #check through partner_taxa for leaves that might match this one
         partner = db((~db.partner_taxa.deactived) & 
                      (db.partner_taxa.is_leaf == True) &
                      (db.partner_taxa.ott == OTT_ID_Varin)
                     ).select(db.partner_taxa.partner_identifier).first()
     if partner is None:
+        #pull out potential partner *nodes* that we might need to check
+        #also check if this leaf lies within any of the node ranges
         partner = db((~db.partner_taxa.deactived) & 
                      (db.partner_taxa.is_leaf == False) &
-                     (db.partner_taxa.ott == OTT_ID_Varin)
-                    ).select().first()
-        #check if this leaf lies within a range given by the 
+                     (OTT_ID_Varin >= db.ordered_nodes.leaf_lft) &
+                     (OTT_ID_Varin <= db.ordered_nodes.leaf_rgt) &
+                     (db.ordered_nodes.ott == db.partner.ott).first()
+                    ).select(db.partner_taxa.partner_identifier) #this should include a join with ordered_nodes to get the ranges, and a select
+    """
     try:
         if partner is None:
             raise AttributeError
@@ -220,15 +227,15 @@ def sponsor_leaf():
     else:
         # there is already a row in the database so update
         reservation_query.update(last_view=request.now, num_views=reservation_entry.num_views+1)
-        if (isbanned != 0):
-            status = "banned"
-        else:
-            # this may be available (because valid and not banned) but could be sponsored, unverified, reserved or available still 
-            # easiest cases to rule out are relating to sponsored and unverified cases. In either case they would appear in the leger
-            ledger_user_name = reservation_entry.user_sponsor_name
-            ledger_verified_time = reservation_entry.verified_time
-            ledger_PP_transaction_code = reservation_entry.PP_transaction_code
 
+        # this may be available (because valid) but could be sponsored, unverified, reserved or available still 
+        # easiest cases to rule out are relating to banned, sponsored and unverified cases. In either case they would appear in the leger
+        ledger_user_name = reservation_entry.user_sponsor_name
+        ledger_PP_transaction_code = reservation_entry.PP_transaction_code
+        ledger_verified_time = reservation_entry.verified_time
+        if (isbanned != 0):
+            status = "sponsored" if ledger_verified_time else "banned"
+        else:
             # the way we know something is fully sponsored is if PP transaction code is filled out  
             #nb. this could be with us typing "yet to be paid" in which case verified_paid can be NULL 
             # so "verified paid " should not be used as a test of whether something is available or not
@@ -292,29 +299,34 @@ def sponsor_leaf():
         raise HTTP(400,"Error: row is not defined. Please try reloading the page")
 
     #get the best picture for this ott, if there is one.
-    best_image = db((db.images_by_ott.ott == OTT_ID_Varin) & (db.images_by_ott.overall_best_any == True)).select(db.images_by_ott.src, db.images_by_ott.src_id).first()
-    reservation_details = reservation_entry
+    default_image = db((db.images_by_ott.ott == OTT_ID_Varin) & (db.images_by_ott.overall_best_any == True)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence).first()
+    #also look at the nondefault images if present
+    if reservation_entry.user_nondefault_image:
+        doID = reservation_entry.verified_preferred_image
+        user_image = db(db.images_by_ott.src_id == doID).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.rights, db.images_by_ott.licence).first()
+    else:
+        user_image=None
 
-    if status == "banned" or leaf_entry.price is None:
-        # treat as banned
-        response.view = request.controller + "/spl_banned.html"
-        return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), the_name = the_name, release_time= release_time, best_image = best_image)
-    elif status == "sponsored":
-        response.view = request.controller + "/spl_sponsored.html"
-        return
+    if status == "sponsored":
+        response.view = request.controller + "/spl_sponsored." + request.extension
+        return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), long_name = long_name, default_image = default_image, user_image=user_image, verified_kind=reservation_entry.verified_kind, verified_name=reservation_entry.verified_name, verified_more_info=reservation_entry.verified_more_info)
     elif status.startswith("unverified"):
         if status == "unverified waiting for payment":
-            response.view = request.controller + "/spl_waitpay.html"        
+            response.view = request.controller + "/spl_waitpay." + request.extension        
         else:
-            response.view = request.controller + "/spl_unverified.html"
+            response.view = request.controller + "/spl_unverified." + request.extension
     elif status == "reserved":
-        response.view = request.controller + "/spl_reserved.html"
+        response.view = request.controller + "/spl_reserved." + request.extension
+    elif status == "banned" or leaf_entry.price is None:
+        # treat as banned
+        response.view = request.controller + "/spl_banned." + request.extension
+        return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), long_name = long_name, default_image = default_image, user_image=user_image)
 
     elif status.startswith("available"):
         #potentially sponsorable
         leaf_price = 0.01*float(leaf_entry.price) #in the leaf table, price is in pence, not a float, to allow binning
         if status == "available on main site":
-            response.view = request.controller + "/spl_elsewhere.html"
+            response.view = request.controller + "/spl_elsewhere." + request.extension
         else:
             #can sponsor here, go through to the main sponsor_leaf page
             form = SQLFORM(db.reservations, reservation_entry, 
@@ -349,10 +361,10 @@ def sponsor_leaf():
             else:
                #the form should simply be shown
                pass
-            return dict(form = form, id=reservation_entry.id, OTT_ID = OTT_ID_Varin, EOL_ID = EOL_ID, eol_src= src_flags['eol'], species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), the_name = the_name, leaf_price = leaf_price , status = status, form_session_id=form_session_id, release_time = release_time, percent_crop_expansion = percent_crop_expansion, best_image=best_image, partner=partner, EoL_API_key=EoL_API_key)
+            return dict(form = form, id=reservation_entry.id, OTT_ID = OTT_ID_Varin, EOL_ID = EOL_ID, eol_src= src_flags['eol'], species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), the_long_name = the_long_name, leaf_price = leaf_price , status = status, form_session_id=form_session_id, release_time = release_time, percent_crop_expansion = percent_crop_expansion, best_image=best_image, partner=partner, EoL_API_key=EoL_API_key)
     else:
         #catch all the errors here
-        response.view = request.controller + "/spl_error.html"
+        response.view = request.controller + "/spl_error." + request.extension
         return dict()
 
 

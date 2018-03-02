@@ -1,0 +1,20 @@
+{{response.title='OneZoom: '+T('already sponsored species')}}
+{{response.meta.viewfile = response.view}}
+{{extend ('embed.html' if request.vars.get('embed') else 'layout.html')}}
+    <h3>{{=T('This leaf has been sponsored')}}</h3>
+    <div class="sponsored_list">
+    <figure>
+        {{img = user_image or default_image}}
+        <figure>
+            <figcaption>{{=XML(long_name)}}</figcaption>
+            <img alt="{{=T('Image of %s') % (species_name)}}"
+{{if img:}}
+    src="{{=thumbnail_url(img.src, img.src_id)}}"
+    title="{{=' / '.join([t for t in [img.rights, img.licence] if t]).replace('"',"'")}}"
+{{else:}}
+    src="{{=URL('static','images/noImage_transparent.png')}}"
+{{pass}} />
+        </figure>
+    <figcaption>Sponsored {{=verified_kind}}<br /><strong>{{=verified_name}}</strong><br />{{=verified_more_info or ''}}</figcaption></figure>
+    </div>    
+    <p>{{=XML(T('If you would like to sponsor something, we’ve still got %s.') % (A(T('lots of great leaves available for sponsorship'), _href=URL('default','sponsor.html')),))}}</p>
