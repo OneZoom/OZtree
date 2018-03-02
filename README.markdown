@@ -23,6 +23,7 @@ The OneZoom codebase uses the following software (licenses for each listed in br
 
 * [Python](https://www.python.org) (versions 2.7 and 3.4) with the following libraries installed:
 	* Python 2.7: mysql-connector-python
+	* Python 2.7: selenium +  e.g. chromedriver_installer (for functional testing)
 	* Python 2.7: piexif
 	* Python 3.4: requests
 	* Python 3.4: pymysql
