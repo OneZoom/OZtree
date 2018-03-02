@@ -159,7 +159,7 @@ def sponsor_leaf():
         (leaf_entry.get('ott') is None) or                          #invalid if no OTT ID
         (leaf_entry.get('name') and ' ' not in leaf_entry.name)):   #invalid if not a species name (e.g. no space/underscore)
         response.view = request.controller + "/spl_invalid.html"
-        return dict(form = None, id=None, OTT_ID = OTT_ID_Varin, EOL_ID = EOL_ID, eol_src=src_flags['eol'], species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), the_name = the_name, leaf_price = 0 , form_session_id=None, release_time=release_time, percent_crop_expansion=percent_crop_expansion, EoL_API_key=EoL_API_key)
+        return dict(OTT_ID = OTT_ID_Varin, species_name = leaf_entry.get('name'))
     
     #we might come into this with an established partner set in request.vars (e.g. LinnSoc)
     partner = request.vars.get('partner')
@@ -286,19 +286,19 @@ def sponsor_leaf():
                                 reservation_query.update(reserve_time = request.now, session_id = form_session_id)
                     else:
                         status =  "available on main site"
-    """ write custom validator for form"""
     #re-do the query since we might have added the row ID now
     reservation_entry = reservation_query.select().first()
     if reservation_entry is None:
         raise HTTP(400,"Error: row is not defined. Please try reloading the page")
 
     #get the best picture for this ott, if there is one.
-    best_image = db((db.images_by_ott.ott == OTT_ID_Varin) & (db.images_by_ott.overall_best_any == True)).select(db.images_by_ott.src, db.images_by_ott.src_id).first()    
+    best_image = db((db.images_by_ott.ott == OTT_ID_Varin) & (db.images_by_ott.overall_best_any == True)).select(db.images_by_ott.src, db.images_by_ott.src_id).first()
+    reservation_details = reservation_entry
 
     if status == "banned" or leaf_entry.price is None:
         # treat as banned
         response.view = request.controller + "/spl_banned.html"
-        return dict(form = None, id=reservation_entry.id, OTT_ID = OTT_ID_Varin, EOL_ID = EOL_ID, eol_src= src_flags['eol'], species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), the_name = the_name, leaf_price = None, form_session_id=form_session_id, release_time= release_time, percent_crop_expansion = percent_crop_expansion, best_image = best_image, partner=partner, EoL_API_key=EoL_API_key)
+        return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), the_name = the_name, release_time= release_time, best_image = best_image)
     elif status == "sponsored":
         response.view = request.controller + "/spl_sponsored.html"
         return
