@@ -15,6 +15,7 @@ port = "8001"
 base_url="http://"+ip+":"+port+"/"
 web2py_app_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 appconfig_loc = os.path.join(web2py_app_dir, 'private', 'appconfig.ini')
+db = {'connection':None, 'subs':None}
 
 class FunctionalTest(unittest.TestCase):
 
@@ -32,12 +33,14 @@ class FunctionalTest(unittest.TestCase):
             self.web2py = web2py_server(self.appconfig_loc)
         except AttributeError:
             self.web2py = web2py_server()
+        
         self.browser = webdriver.Chrome(desired_capabilities = caps)
         self.browser.implicitly_wait(1)
 
     @classmethod    
     def tearDownClass(self):
-        self.browser.close()
+        #should test here that we don't have any console.log errors (although we might have logs).
+        self.browser.quit()
         self.web2py.kill()
 
     def element_by_tag_name_exists(self, tag_name):
@@ -104,7 +107,27 @@ def web2py_server(appconfig_file=None):
     else:
         return subprocess.Popen(cmd + ['--args', appconfig_file])
     
-def run_functional_tests(glob=None):
+def run_functional_tests(database_string, glob=None):
+    if database_string.startswith("sqlite://"):
+        from sqlite3 import dbapi2 as sqlite
+        db['connection'] = sqlite.connect(os.path.join(web2py_app_dir,'databases', database_string[len('sqlite://'):]))
+        db['subs'] = "?"
+        
+    elif args.database.startswith("mysql://"): #mysql://<mysql_user>:<mysql_password>@localhost/<mysql_database>
+        import pymysql
+        match = re.match(r'mysql://([^:]+):([^@]*)@([^/]+)/([^?]*)', args.database.strip())
+        if match.group(2) == '':
+            #enter password on the command line, if not given (more secure)
+            from getpass import getpass
+            pw = getpass("Enter the sql database password: ")
+        else:
+            pw = match.group(2)
+        db['connection'] = pymysql.connect(user=match.group(1), passwd=pw, host=match.group(3), db=match.group(4), port=3306, charset='utf8mb4')
+        db['subs'] = "%s"
+    else:
+        warn("No recognized database specified: {}".format(args.database))
+        sys.exit()
+
     suite = unittest.defaultTestLoader.discover('tests', pattern='test_*{}.py'.format(glob+'*' if glob else ""))
     runner = unittest.TextTestRunner(verbosity=2).run(suite)
 
@@ -114,5 +137,6 @@ if __name__ == '__main__':
         description="Carry out functional tests on OneZoom pages.")
     parser.add_argument(
         "--pattern", default=None, help="Only carry out tests whose file names match this pattern")
+    parser.add_argument('--database', '-db', default=None, help='name of the db in the same format as in web2py, e.g. sqlite://../databases/storage.sqlite or mysql://<mysql_user>:<mysql_password>@localhost/<mysql_database>. If not given, the script looks for the variable db.uri in the file {}'.format(appconfig_loc))
     args = parser.parse_args()
-    run_functional_tests(args.pattern)
+    run_functional_tests(args.database, args.pattern)
