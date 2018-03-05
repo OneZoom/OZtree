@@ -1,3 +1,4 @@
+{{from math import ceil}}
 {{response.title='OneZoom: '+T('species sponsorship reserved')}}
 {{if is_testing: response.meta.viewfile = response.view}}{{pass}}
 {{extend ('embed.html' if request.vars.get('embed') else 'layout.html')}}
