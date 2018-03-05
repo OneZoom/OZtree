@@ -1,5 +1,5 @@
 {{response.title='OneZoom: Maintenance mode'}}
-{{response.meta.viewfile = response.view}}
+{{if is_testing: response.meta.viewfile = response.view}}{{pass}}
 {{extend ('embed.html' if request.vars.get('embed') else 'layout.html')}}
 
 <div class="row-fluid intro">

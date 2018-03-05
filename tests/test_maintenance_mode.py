@@ -13,9 +13,11 @@ class TestMaintenanceMode(FunctionalTest):
         with open(appconfig_loc, "r") as orig, open(self.appconfig_loc, "w") as test:
             for line in orig:
                 if line.lstrip().startswith("maintenance_mins"):
-                    test.write("maintenance_mins = 99\n")
+                    pass #do not write these out
                 else:
                     test.write(line)
+                    if line.lstrip().startswith("[general]"):
+                        test.write("maintenance_mins = 99\n")
         
         super(TestMaintenanceMode, self).setUpClass()
     

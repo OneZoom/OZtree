@@ -77,16 +77,25 @@ def sponsor_leaf():
     """ 
         this function will take open tree ID and from that ...
         1.) figure out status of leaf and return the correct page
-            these options will all forward to different pages (the view is listed in square brackets)
-            * maintenance [spl_maintenance.html] - sponsorship is unavailable because the site is in maintenance mode
+            these options will all forward to different pages (the view is listed in square brackets), selected in the following order:
+
+            * maintenance [spl_maintenance.html] - the site is in maintenance mode, and we don't want to allow any access to reservations data
+
             * error [spl_error.html] - something went very wrong
+
+                The following can be shown even when sponsorship is turned off
+            * sponsored [spl_sponsored.html] - it's already been sponsored
             * invalid [spl_invalid.html] - not an actual sponsorable OTTid
             * banned [spl_banned.html] - cannot sponsor this
-            * sponsored [spl_sponsored.html] - it's already been sponsored
+            * available on main site [spl_elsewhere.html] - it may be available but this onezoom instance doesn't allow sponsorship (e.g. in a museum)
+            
+                The following can only be shown if sponsorship is on.
             * unverified [spl_unverified.html] - it's already been sponsored but the details haven't been verified yet
             * unverified waiting for payment [spl_waitpay.html] - has been sponsored but paypal hasn't sent us confirmation (could be that they didn't actually pay, so may become free after a few days)
+
+
+                The following are only shown when sponsorship is allowed and not in maintenance mode
             * reserved [spl_reserved.html] - another user was active on this page recently and it's being reserved for them for a few minutes
-            * available on main site [spl_elsewhere.html] - it may be available but this onezoom instance doesn't allow sponsorship (e.g. in a museum)
             * available [spl_leaf.html] - the leaf is fully available, so proceed
             * available only to session [sponsor_leaf.html] - it's available but for this user only
         it will also provide the current best picture for that taxon (if one exists)
@@ -120,6 +129,16 @@ def sponsor_leaf():
             user_message_OZ
 
         This function DOES NOT need up update the sponsor or verified info tables because these are handled separately. Additionally, e-mail, address and name as well as receipt should be captured from Paypal """
+
+    try:
+        maint = int(myconf.take('general.maintenance_mins'))
+    except:
+        maint = 0
+    if maint:
+        response.view = request.controller + "/spl_maintenance." + request.extension
+        return dict(mins=str(myconf.take('general.maintenance_mins')))
+
+
     from json import dumps
     if (request.vars.get('form_session_id')):
         form_session_id = request.vars.form_session_id
@@ -134,18 +153,12 @@ def sponsor_leaf():
     release_time = 0 #when this will become free, in seconds
    
     # todo this function should probably handle asking_price and set it from ordered_leaves
-    # now search for OTTID in the leaf table
-    try:
-        if int(myconf.take('general.maintenance_mins')):
-            response.view = request.controller + "/spl_maintenance." + request.extension
-            return dict(mins=str(myconf.take('general.maintenance_mins')))
-    except:
-        pass
     try:
         EoL_API_key=myconf.take('api.eol_api_key')
     except:
         EoL_API_key=""
 
+    # now search for OTTID in the leaf table
     try:
         OTT_ID_Varin = int(request.vars.get('ott'))
         leaf_entry = db(db.ordered_leaves.ott == OTT_ID_Varin).select().first()
@@ -196,7 +209,7 @@ def sponsor_leaf():
     # now search in db for ottid in banned
     isbanned = db(db.banned.ott == OTT_ID_Varin).count()
     # this will be >=1 if banned and 0 if not banned
-    # we need to update the reserved table here so find the id (regardless of banned status)
+    # we need to update the reserved table here so find the id (regardless of banned / maintenance status)
     reservation_query = db(db.reservations.OTT_ID == OTT_ID_Varin)
     reservation_entry = reservation_query.select().first()
     if reservation_entry is None:
@@ -213,7 +226,7 @@ def sponsor_leaf():
             # this line does not insert any leger id because no transaction has taken place yet
             # that entry in the db is allowed to be blank
         else:
-            status = "available" if allow_sponsorship else "available on main site"
+            status = "available"
             # update with full reservation
             db.reservations.insert(
                 OTT_ID = OTT_ID_Varin,
@@ -229,70 +242,63 @@ def sponsor_leaf():
         reservation_query.update(last_view=request.now, num_views=reservation_entry.num_views+1)
 
         # this may be available (because valid) but could be sponsored, unverified, reserved or available still 
-        # easiest cases to rule out are relating to banned, sponsored and unverified cases. In either case they would appear in the leger
+        # easiest cases to rule out are relating sponsored and unverified cases. In either case they would appear in the leger
         ledger_user_name = reservation_entry.user_sponsor_name
         ledger_PP_transaction_code = reservation_entry.PP_transaction_code
         ledger_verified_time = reservation_entry.verified_time
-        if (isbanned != 0):
-            status = "sponsored" if ledger_verified_time else "banned"
+        # the way we know something is fully sponsored is if PP transaction code is filled out  
+        #nb. this could be with us typing "yet to be paid" in which case verified_paid can be NULL 
+        # so "verified paid " should not be used as a test of whether something is available or not
+        # For forked sites, we do not pass PP transaction code (confidential), so we have to check first if 
+        # verified.
+        # Need to have another option here if verified_time is too long ago - we should move this to the expired_reservations table and clear it.
+        if (ledger_verified_time):
+            status = "sponsored"
         else:
-            # the way we know something is fully sponsored is if PP transaction code is filled out  
-            #nb. this could be with us typing "yet to be paid" in which case verified_paid can be NULL 
-            # so "verified paid " should not be used as a test of whether something is available or not
-            # For forked sites, we do not pass PP transaction code (confidential), so we have to check first if 
-            # verified.
-            # Need to have another option here if verified_time is too long ago - we should move this to the expired_reservations table and clear it.
-            if (ledger_verified_time):
-                status = "sponsored"
-            else:
-                if (ledger_user_name):
-                # something has been filled in
-                    if (ledger_PP_transaction_code):
-                        #we have a code (or have reserved this taxon)
-                        status = "unverified"
-                    else:
-                        # unverified and unpaid - test time
-                        startTime = reservation_entry.reserve_time
-                        endTime = request.now
-                        timesince = ((endTime-startTime).total_seconds())
-                        # now we check if the time is too great
-                        if (timesince < (unpaid_time_limit)):
-                            status = "unverified waiting for payment"
-                        else:
-                            # we've waited too long and can zap the table then set available
-                            reservation_query.update(user_id=None, e_mail=None, twitter_name=None, allow_contact=None, user_sponsor_kind=None, user_sponsor_name=None, user_more_info=None, user_nondefault_image=None, user_preferred_image=None, user_updated_time=None, user_paid=None, user_message_OZ=None, user_giftaid=None, PP_transaction_code=None, PP_e_mail=None, PP_first_name=None, PP_second_name=None, PP_town=None, PP_country=None, PP_house_and_street=None, PP_postcode=None, verified_kind=None, verified_name=None, verified_more_info=None, verified_preferred_image=None, verified_time=None, verified_paid=None, verified_url=None, live_time=None, admin_comment=None, sponsorship_duration_days=None, asking_price=None, deactivated=None, sale_time=None, partner_name=None, partner_percentage=None)
-                            #note that this e.g. clears deactivated taxa, etc etc.
-                            status = "available" if allow_sponsorship else "available on main site"
-                    
+            if (ledger_user_name):
+            # something has been filled in
+                if (ledger_PP_transaction_code):
+                    #we have a code (or have reserved this taxon)
+                    status = "unverified"
                 else:
-                    # the page has no user name entered but is also not valid or banned - it could only be reserved or available
-                    # first thing is to determine time difference since reserved
-                    startTime = reservation_entry.reserve_time   
+                    # unverified and unpaid - test time
+                    startTime = reservation_entry.reserve_time
                     endTime = request.now
-                    if allow_sponsorship:
-                        if (startTime == None):
-                            status = "available"
-                            # reserve the leaf because there is no reservetime on record
-                            reservation_query.update(reserve_time=request.now,session_id=form_session_id)
-                        else:
-                            # we need to compare times to figure out if there is a time difference
-                            timesince = ((endTime-startTime).total_seconds())
-                            if (timesince < (reservation_time_limit)):
-                                release_time = reservation_time_limit - timesince
-                                # we may be reserved if it wasn't us
-                                if(str(form_session_id)==str(reservation_entry.session_id)):
-                                    # it was the same user anyway so reset timer
-                                    status = "available only to session"
-                                    reservation_query.update(reserve_time=request.now)
-                                else:
-                                    status = "reserved"
-                            else:
-                                # it's available still
-                                status = "available"
-                                # reserve the leaf because there is no reservetime on record
-                                reservation_query.update(reserve_time = request.now, session_id = form_session_id)
+                    timesince = ((endTime-startTime).total_seconds())
+                    # now we check if the time is too great
+                    if (timesince < (unpaid_time_limit)):
+                        status = "unverified waiting for payment"
                     else:
-                        status =  "available on main site"
+                        # we've waited too long and can zap the table then set available
+                        reservation_query.update(user_id=None, e_mail=None, twitter_name=None, allow_contact=None, user_sponsor_kind=None, user_sponsor_name=None, user_more_info=None, user_nondefault_image=None, user_preferred_image=None, user_updated_time=None, user_paid=None, user_message_OZ=None, user_giftaid=None, PP_transaction_code=None, PP_e_mail=None, PP_first_name=None, PP_second_name=None, PP_town=None, PP_country=None, PP_house_and_street=None, PP_postcode=None, verified_kind=None, verified_name=None, verified_more_info=None, verified_preferred_image=None, verified_time=None, verified_paid=None, verified_url=None, live_time=None, admin_comment=None, sponsorship_duration_days=None, asking_price=None, deactivated=None, sale_time=None, partner_name=None, partner_percentage=None)
+                        #note that this e.g. clears deactivated taxa, etc etc.
+                        status = "available"
+            else:
+                # the page has no user name entered but is also not valid or banned - it could only be reserved or available
+                # first thing is to determine time difference since reserved
+                startTime = reservation_entry.reserve_time   
+                endTime = request.now
+                if (startTime == None):
+                    status = "available"
+                    # reserve the leaf because there is no reservetime on record
+                    reservation_query.update(reserve_time=request.now, session_id=form_session_id)
+                else:
+                    # we need to compare times to figure out if there is a time difference
+                    timesince = ((endTime-startTime).total_seconds())
+                    if (timesince < (reservation_time_limit)):
+                        release_time = reservation_time_limit - timesince
+                        # we may be reserved if it wasn't us
+                        if(str(form_session_id)==str(reservation_entry.session_id)):
+                            # it was the same user anyway so reset timer
+                            status = "available only to session"
+                            reservation_query.update(reserve_time=request.now)
+                        else:
+                            status = "reserved"
+                    else:
+                        # it's available still
+                        status = "available"
+                        # reserve the leaf because there is no reservetime on record
+                        reservation_query.update(reserve_time = request.now, session_id = form_session_id)
     #re-do the query since we might have added the row ID now
     reservation_entry = reservation_query.select().first()
     if reservation_entry is None:
@@ -307,27 +313,39 @@ def sponsor_leaf():
     else:
         user_image=None
 
+    if status == "error":
+        response.view = request.controller + "/spl_error." + request.extension
+        return dict()
+
+    #once we have got this far (not invalid or error), we can show certain pages
+    #even in maintenance mode or where allow_sponsorship is not True, e.g. if
+    #a leaf is already sponsored, or is banned from sponsorship
     if status == "sponsored":
         response.view = request.controller + "/spl_sponsored." + request.extension
         return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), long_name = long_name, default_image = default_image, user_image=user_image, verified_kind=reservation_entry.verified_kind, verified_name=reservation_entry.verified_name, verified_more_info=reservation_entry.verified_more_info)
     elif status.startswith("unverified"):
         if status == "unverified waiting for payment":
-            response.view = request.controller + "/spl_waitpay." + request.extension        
+            response.view = request.controller + "/spl_waitpay." + request.extension    
+            return dict(species_name = species_name,  the_long_name = the_long_name, unpaid_time_limit_hours= int(unpaid_time_limit/60.0/60.0))
         else:
             response.view = request.controller + "/spl_unverified." + request.extension
-    elif status == "reserved":
-        response.view = request.controller + "/spl_reserved." + request.extension
-    elif status == "banned" or leaf_entry.price is None:
-        # treat as banned
+            return dict(species_name = species_name)
+    elif isbanned:
         response.view = request.controller + "/spl_banned." + request.extension
         return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), long_name = long_name, default_image = default_image, user_image=user_image)
+    elif not allow_sponsorship:
+        response.view = request.controller + "/spl_elsewhere." + request.extension
+        return dict(species_name = species_name, the_long_name = the_long_name)
+        
+    elif status == "reserved":
+        response.view = request.controller + "/spl_reserved." + request.extension
+        return dict(species_name = species_name, the_long_name = the_long_name, release_time = release_time)
 
+    
     elif status.startswith("available"):
         #potentially sponsorable
-        leaf_price = 0.01*float(leaf_entry.price) #in the leaf table, price is in pence, not a float, to allow binning
-        if status == "available on main site":
-            response.view = request.controller + "/spl_elsewhere." + request.extension
-        else:
+        try:
+            leaf_price = 0.01*float(leaf_entry.price) #in the leaf table, price is in pence, not a float, to allow binning
             #can sponsor here, go through to the main sponsor_leaf page
             form = SQLFORM(db.reservations, reservation_entry, 
                 fields=['e_mail','allow_contact','twitter_name',
@@ -338,8 +356,8 @@ def sponsor_leaf():
             form.custom.widget.user_sponsor_kind["requires"] = IS_IN_SET(['by','for'])
             form.custom.widget.user_paid["requires"] = IS_FLOAT_IN_RANGE(leaf_price, 99999, dot=".", 
                 error_message=XML("Please donate at least £{:.2f} to sponsor this leaf, or you could simply ".format(leaf_price)))
+            
         
-    
             if form.process(session=None, formname='test').accepted:
                 #response.flash = 'temp form accepted' # debug
                 reservation_query.update(
@@ -355,15 +373,19 @@ def sponsor_leaf():
                 if request.vars.get('embed'):
                     v['embed'] = request.vars.get('embed')
                 redirect(URL("default", "paypal", vars=v))
-    
+        
             elif form.errors:
                response.flash = 'please check the errors shown in red'
             else:
                #the form should simply be shown
                pass
-            return dict(form = form, id=reservation_entry.id, OTT_ID = OTT_ID_Varin, EOL_ID = EOL_ID, eol_src= src_flags['eol'], species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), the_long_name = the_long_name, leaf_price = leaf_price , status = status, form_session_id=form_session_id, release_time = release_time, percent_crop_expansion = percent_crop_expansion, best_image=best_image, partner=partner, EoL_API_key=EoL_API_key)
+            return dict(form = form, id=reservation_entry.id, OTT_ID = OTT_ID_Varin, EOL_ID = EOL_ID, eol_src= src_flags['eol'], species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), the_long_name = the_long_name, leaf_price = leaf_price , status = status, form_session_id=form_session_id, percent_crop_expansion = percent_crop_expansion, best_image=best_image, partner=partner, EoL_API_key=EoL_API_key)
+        except TypeError: #leaf_entry.price is None, treat as banned
+            response.view = request.controller + "/spl_banned." + request.extension
+            return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), long_name = long_name, default_image = default_image, user_image=user_image)
+        
     else:
-        #catch all the errors here
+        #should never happen
         response.view = request.controller + "/spl_error." + request.extension
         return dict()
 

@@ -1,5 +1,5 @@
 {{response.title='OneZoom: '+T('invalid species to sponsor')}}
-{{response.meta.viewfile = response.view}}
+{{if is_testing: response.meta.viewfile = response.view}}{{pass}}
 {{extend ('embed.html' if request.vars.get('embed') else 'layout.html')}}
     <h3>{{=T('Unavailable for sponsorship')}}</h3>
     <p>{{=T('It is likely that this leaf will not appear in its current form in future versions of the tree. For this reason we do not recommend sponsorship of this leaf.')}}</p>

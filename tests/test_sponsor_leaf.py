@@ -1,13 +1,15 @@
-from functional_tests import FunctionalTest, base_url
+from functional_tests import FunctionalTest, base_url, appconfig_loc, test_email
+from selenium import webdriver #to fire up a duplicate page
 import os.path
 import shutil
 import requests
 
+
 class TestSponsorLeaf(FunctionalTest):
     """
-    Test the various pages fired when leaf sponsorship is done. We don't test maintenance mode here because
-    it requires editing appconfig.ini, which shuts off all the other pages, so maintenance mode is
-    tested in another file. Here we test
+    Test the various pages fired when leaf sponsorship is done. We don't test maintenance mode and sponsor_elsewhere
+    here because they both require editing appconfig.ini, which influences the other pages, so these are tested
+    in another file. Here we test
     
             [* error [spl_error.html] - something went very wrong]
             * invalid [spl_invalid.html] - not an actual sponsorable OTTid
@@ -16,12 +18,39 @@ class TestSponsorLeaf(FunctionalTest):
             * unverified [spl_unverified.html] - it's already been sponsored but the details haven't been verified yet
             * unverified waiting for payment [spl_waitpay.html] - has been sponsored but paypal hasn't sent us confirmation (could be that they didn't actually pay, so may become free after a few days)
             * reserved [spl_reserved.html] - another user was active on this page recently and it's being reserved for them for a few minutes
-            * available on main site [spl_elsewhere.html] - it may be available but this onezoom instance doesn't allow sponsorship (e.g. in a museum)
-            * available [spl_leaf.html] - the leaf is fully available, so proceed
-            * available only to session [sponsor_leaf.html] - it's available but for this user only
+            * available [sponsor_leaf.html] - the leaf is fully available, so proceed
+            * available only to session [sponsor_leaf.html] - it's available but for this user only (how does this differ from above?)
+
+    We want to set off one set of tests if allow_sponsorship is set in appconfig
 
     """
+    
+    @classmethod
+    def setUpClass(self):
+        """
+        We must set appconfig.ini so that maintenance mode is off and sponsorship is allowed
+        """
+        self.appconfig_loc = appconfig_loc + '.test_orig.ini'
+        with open(appconfig_loc, "r") as orig, open(self.appconfig_loc, "w") as test:
+            for line in orig:
+                if line.lstrip().startswith("maintenance_mins") or line.lstrip().startswith("allow_sponsorship"):
+                    pass #do not write these out
+                else:
+                    test.write(line)
+                    if line.lstrip().startswith("[general]"):
+                        test.write("maintenance_mins = 0\n")
+                        test.write("allow_sponsorship = 1\n")
+        
+        super(TestSponsorLeaf, self).setUpClass()
+
+    @classmethod    
+    def tearDownClass(self):
+        os.remove(self.appconfig_loc)
+        super(TestSponsorLeaf, self).tearDownClass()
+        
     page = base_url + 'sponsor_leaf'
+    
+    
     
     def test_invalid_OTT(self):
         """
@@ -47,16 +76,64 @@ class TestSponsorLeaf(FunctionalTest):
         
     def test_already_sponsored(self):
         """
-        
+        We might also want to test a sponsored banned species here, like the giant panda
         """
         #Find a sponsored species
         sponsored = requests.get('http://127.0.0.1:8000/sponsored.json').json()['rows']
-        assert len(sponsored), 'No sponsored species to test against'
-        example_sponsored_ott = sponsored[0]['OTT_ID']
-        self.browser.get(self.page + "?ott={}".format(example_sponsored_ott))
-        self.assertTrue(self.web2py_viewname_contains("spl_sponsored"))
-        self.browser.get(self.page + "?ott={}&embed=3".format(example_sponsored_ott))
-        self.assertTrue(self.web2py_viewname_contains("spl_sponsored"))
-        self.assertFalse(self.has_external_linkouts())
+        if len(sponsored)==0:
+            fail('No sponsored species to test against')
+        else:
+            example_sponsored_ott = sponsored[0]['OTT_ID']
+            self.browser.get(self.page + "?ott={}".format(example_sponsored_ott))
+            self.assertTrue(self.web2py_viewname_contains("spl_sponsored"))
+            self.browser.get(self.page + "?ott={}&embed=3".format(example_sponsored_ott))
+            self.assertTrue(self.web2py_viewname_contains("spl_sponsored"))
+            self.assertFalse(self.has_external_linkouts())
         
+    @unittest.skipIf(db['connection'] is None, "Needs a connection to the database, taken from {}".format(appconfig_loc))
+    def test_payment_pathway(self):
+        """
+        Go through the payment process, checking at each stage whether the correct page is given.
+        We need to test 0) sponsor_leaf (the 'normal' page) 1) spl_reserved (reserved for someone else) 2) spl_waitpay 3) spl_unverified.html
+
+       
+        """
+        ott, sciname = self.get_never_looked_at_species()
+        page = self.page + "?ott={}".format(ott)
+        self.browser.get(page)
+        self.assertTrue(self.web2py_viewname_contains("sponsor_leaf"))
+        #here we could test functionality of the main sponsor_leaf page
+        
+        
+        #look at the same page with another browser to check if session reservation works
+        alt_browser = webdriver.Chrome()
+        alt_browser.get(page)
+        self.assertTrue(self.web2py_viewname_contains("spl_reserved"))
+        alt_browser.quit()
+        
+        #fill in the form elements
+        #username = self.browser.find_element_by_id("username")
+        #password = selenium.find_element_by_id("password")
+        
+        #username.send_keys("YourUsername")
+        #password.send_keys("Pa55worD")
+        #selenium.find_element_by_name("submit").click()
+        
+        
+             
+        self.delete_reservation_entry(ott, sciname, test_email)
+
+    def test_unverified(self):
+        """
+        We need to fake an paid but unverified reservation for this. The simplest way is to ***
+        """
+        pass
+
+
+    def test_reserved(self):
+        """
+        Here we simply need to visit the page first, then check if it sets to reserved.
+        We might also want to check session reservations etc here.
+        """
+        pass
 
