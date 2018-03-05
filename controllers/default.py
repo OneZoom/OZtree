@@ -198,7 +198,7 @@ def sponsor_leaf():
     try:
         if partner is None:
             raise AttributeError
-        partner_data = db(db.partners.partner_identifier == partner).select().first().as_dict() #this could be null
+        partner_data = db(db.partners.partner_identifier == partner).select(db.partners.ALL).first().as_dict() #this could be null
     except AttributeError:
         partner_data = {}
         
@@ -379,7 +379,7 @@ def sponsor_leaf():
             else:
                #the form should simply be shown
                pass
-            return dict(form = form, id=reservation_entry.id, OTT_ID = OTT_ID_Varin, EOL_ID = EOL_ID, eol_src= src_flags['eol'], species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), the_long_name = the_long_name, leaf_price = leaf_price , status = status, form_session_id=form_session_id, percent_crop_expansion = percent_crop_expansion, best_image=best_image, partner=partner, EoL_API_key=EoL_API_key)
+            return dict(form = form, id=reservation_entry.id, OTT_ID = OTT_ID_Varin, EOL_ID = EOL_ID, eol_src= src_flags['eol'], species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), the_long_name = the_long_name, leaf_price = leaf_price, form_session_id=form_session_id, percent_crop_expansion = percent_crop_expansion, default_image = default_image, partner_data = partner_data, EoL_API_key=EoL_API_key)
         except TypeError: #leaf_entry.price is None, treat as banned
             response.view = request.controller + "/spl_banned." + request.extension
             return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), long_name = long_name, default_image = default_image, user_image=user_image)

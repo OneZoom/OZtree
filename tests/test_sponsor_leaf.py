@@ -1,4 +1,5 @@
 from functional_tests import FunctionalTest, base_url, appconfig_loc, test_email
+import unittest
 from selenium import webdriver #to fire up a duplicate page
 import os.path
 import shutil
@@ -90,13 +91,10 @@ class TestSponsorLeaf(FunctionalTest):
             self.assertTrue(self.web2py_viewname_contains("spl_sponsored"))
             self.assertFalse(self.has_external_linkouts())
         
-    @unittest.skipIf(db['connection'] is None, "Needs a connection to the database, taken from {}".format(appconfig_loc))
     def test_payment_pathway(self):
         """
         Go through the payment process, checking at each stage whether the correct page is given.
         We need to test 0) sponsor_leaf (the 'normal' page) 1) spl_reserved (reserved for someone else) 2) spl_waitpay 3) spl_unverified.html
-
-       
         """
         ott, sciname = self.get_never_looked_at_species()
         page = self.page + "?ott={}".format(ott)
