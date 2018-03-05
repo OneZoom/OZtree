@@ -1,6 +1,6 @@
 from functional_tests import FunctionalTest, base_url, appconfig_loc, chrome_cmd
 import os
-import shutil
+import time
 from selenium.webdriver.common.touch_actions import TouchActions
 
 class TestMaintenanceMode(FunctionalTest):
@@ -53,6 +53,7 @@ t2 = new Touch({identifier: 2,target: document.body, pageX: 1, pageY: 1});
 te = new TouchEvent("touchstart", {cancelable: true, bubbles: true, touches: [t1, t2]});
 document.body.dispatchEvent(te);
 ''')
+        time.sleep(1) #wait for event to bubble and be written to log
         #get new logs
         console_log = self.browser.get_log('browser')
         self.assertTrue(console_log[0]['source']=='console-api')
