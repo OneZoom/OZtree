@@ -281,6 +281,8 @@ db.define_table('ordered_nodes',
     Field('iucnCR', type='integer'),
     Field('iucnEW', type='integer'),
     Field('iucnEX', type='integer'),
+    Field('popleaf', type='integer'), #most popular leaf (index into ordered_leaves)
+    Field('popleaf_ott', type='integer'), #ott (if present) of most popular leaf above (to speed up lookups)
     format = '%(ott)s')
 
 # tables for common names - one name per line (allows multiple names for the same taxon)
