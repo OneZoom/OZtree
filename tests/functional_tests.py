@@ -46,12 +46,12 @@ class FunctionalTest(unittest.TestCase):
 
     def element_by_tag_name_exists(self, tag_name):
             try: self.browser.find_element_by_tag_name(tag_name)
-            except NoSuchElementException, e: return False
+            except NoSuchElementException: return False
             return True
             
     def element_by_id_exists(self, id):
             try: self.browser.find_element_by_id(id)
-            except NoSuchElementException, e: return False
+            except NoSuchElementException: return False
             return True
     
     def web2py_viewname_contains(self, expected_view):
