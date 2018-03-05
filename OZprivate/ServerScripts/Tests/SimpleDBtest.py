@@ -28,7 +28,7 @@ if __name__ == "__main__":
     elif args.database.startswith("mysql://"): #mysql://<mysql_user>:<mysql_password>@localhost/<mysql_database>
         import pymysql
         import re
-        match = re.match(r'mysql://([^:]+):([^@]+)@([^/]+)/(.*)', args.database.strip())
+        match = re.match(r'mysql://([^:]+):([^@]+)@([^/]+)/([^?]*)', args.database.strip())
         db_connection = pymysql.connect(user=match.group(1), passwd=match.group(2), host=match.group(3), db=match.group(4), port=3306, charset='utf8')
         datetime_now = "NOW()"
         subs="%s"

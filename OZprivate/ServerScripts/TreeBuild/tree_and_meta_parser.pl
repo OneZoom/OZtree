@@ -539,7 +539,7 @@ package Metadata;
        $dbh = DBI->connect("DBI:SQLite:dbname=$1", "","")
          or warn "Couldn't connect to database: " . DBI->errstr;
        return $dbh;
-     } elsif ($db_conn_string =~ m|^mysql://([^:]+):([^@]+)@([^/]+)/(.+)$|) {
+     } elsif ($db_conn_string =~ m|^mysql://([^:]+):([^@]+)@([^/]+)/([^?]+)|) {
        $dbh = DBI->connect("DBI:mysql:database=$4;host=$3;port=3306", $1, $2, {mysql_enable_utf8 => 1})
          or warn "Couldn't connect to database: " . DBI->errstr;
        return $dbh;
