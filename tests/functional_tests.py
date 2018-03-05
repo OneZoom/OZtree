@@ -136,10 +136,9 @@ def striptext_in_file(line, file):
 
 def web2py_server(appconfig_file=None):
     cmd = ['python2', os.path.join('..','..','web2py.py'), '-Q', '-i', ip, '-p', port, '-a pass']
-    if appconfig_file is None:
-        return subprocess.Popen(cmd)
-    else:
-        return subprocess.Popen(cmd + ['--args', appconfig_file])
+    if appconfig_file is not None:
+        cmd += ['--args', appconfig_file]
+    return subprocess.Popen(cmd)
 
 def get_db_connection():
     database_string = None
