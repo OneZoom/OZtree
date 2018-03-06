@@ -2,7 +2,7 @@
     <p>{{=T('You can sponsor this leaf for yourself or as a unique gift for someone you know.')}}</p>
 
     {{if partner_data:}}
-    <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the <a href="%s" target="_blank">OneZoom charity</a> and <a href="%s" target="_blank">%s</a> by displaying your chosen sponsor’s name on %s') % (URL('static','images/RegistrationCertificate.jpg'), partner.get('url') , partner_data.get('name') , the_long_name))}}.
+    <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the <a href="%s" target="_blank">OneZoom charity</a> and <a href="%s" target="_blank">%s</a> by displaying your chosen sponsor’s name on %s') % (URL('static','images/RegistrationCertificate.jpg'), partner_data.get('url') , partner_data.get('name') , the_long_name))}}.
        {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s.') % (int(round(100-partner_data.get('percentage'))), int(round(partner_data.get('percentage'))), T(partner_data.get('name'))))}}</p>
 
     {{else:}}
