@@ -78,9 +78,9 @@
   
   <p>I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of
   Gift Aid claimed on all my donations in that tax year it is my responsibility to pay any difference.</p>
-  <p>Please notify both OneZoom and <a href="{{=partner.get('url')}}">{{=partner.get('name')}}</a> if you want to cancel this declaration, change your name or home address, or if you no longer pay sufficient tax on your income and/or capital gains.</p>
+  <p>Please notify both OneZoom and <a href="{{=partner_data.get('url')}}">{{=partner_data.get('name')}}</a> if you want to cancel this declaration, change your name or home address, or if you no longer pay sufficient tax on your income and/or capital gains.</p>
       <p>If you pay Income Tax at the higher or additional rate and want to receive the additional tax relief due to you, you must include all your Gift Aid donations on your Self-Assessment tax return or ask HM Revenue and Customs to adjust your tax code.</p>
-      <p>Gift Aid is reclaimed by OneZoom and <a href="{{=partner.get('url')}}">{{=partner.get('name')}}</a> from the tax you pay for the current tax year. We will use the name and address from your PayPal receipt for this purpose and will share this information with <a href="{{=partner.get('url')}}">{{=partner.get('name')}}</a> for the purposes of Gift Aid - please make sure that information is up to date.</p>
+      <p>Gift Aid is reclaimed by OneZoom and <a href="{{=partner_data.get('url')}}">{{=partner_data.get('name')}}</a> from the tax you pay for the current tax year. We will use the name and address from your PayPal receipt for this purpose and will share this information with <a href="{{=partner_data.get('url')}}">{{=partner_data.get('name')}}</a> for the purposes of Gift Aid - please make sure that information is up to date.</p>
           
           
           
@@ -100,8 +100,8 @@
         <input type="hidden" name="id" value="{{=id}}" />
         <input type="hidden" name="form_session_id" value="{{=form_session_id}}" />
         <input type="hidden" name="_formname" value="test" />
-        {{if partner:}}
-        <input type="hidden" name="partner" value="{{=request.vars.partner or ''}}" />
+        {{if partner_data:}}
+        <input type="hidden" name="partner" value="{{=partner_data.get('partner_identifier') or ''}}" />
         {{pass}}
       </fieldset>
       <p class="submit_donate">{{=XML(T('Accept <a href="%s" target="_blank">terms</a> and <input type="submit" value = "Donate"/> using PayPal') % (URL('default','terms.html'), ))}}{{if request.vars.get('embed'):}} <span>{{=T('(opens in a new window)')}}</span>{{pass}}.</p>
