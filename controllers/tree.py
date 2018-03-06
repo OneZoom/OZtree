@@ -105,6 +105,11 @@ def eol_url(EOLid, OTTid):
 
 
 def linkout_via_picID():
+    """
+    This is the URL that we use to display copyright information about an image, where we pass in the image ID and image source ID.
+    We always have to option of using a OneZoom-only web page (possibly with links removed). However, we also have the option of 
+    embedding the content of an external page.
+    """
     try:
         src = int(request.args[0])  
         src_id = int(request.args[1]) # for src = 1 or 2, this is an EoL data object ID
@@ -116,7 +121,7 @@ def linkout_via_picID():
         (src==src_flags['eol']) or \
         ((src==src_flags['onezoom']) and (src_id>=0))\
     ): #this is an EoL picture
-        #we have inspected this EoL data object page - log all OTTs that use this data object
+        #we have inspected this EoL data object page - log all OTTs that use this data object so we can refresh e.g. cropped images
         rows = db((db.images_by_ott.src == src) & (db.images_by_ott.src_id == src_id)).select(db.images_by_ott.ott)
         for row in rows:
             db.eol_inspected.update_or_insert(db.eol_inspected.ott == row.ott,
@@ -297,7 +302,7 @@ def leaf_linkouts():
     except:
         return_values = {'ott':None, 'data':{}}
 
-    request.vars.update({'embed':True, 'ott':return_values['ott']})
+    request.vars.update({'ott':return_values['ott']})
         
     return_values['data']['ozspons'] = URL("default","sponsor_leaf", vars=request.vars, scheme=True, host=True, extension=False)
     return(return_values)
@@ -307,7 +312,7 @@ def node_linkouts():
     called with a node ID, since it makes sense to ask e.g. for all descendants of a node, even if this node has no OTT
     """
     return_values = linkouts(is_leaf=False, id=request.args[0])
-    request.vars.update({'embed':True, 'id':return_values['id']})
+    request.vars.update({'id':return_values['id']})
     return_values['data']['ozspons'] = URL("default", "sponsor_node", vars=request.vars, scheme=True, host=True, extension=False)
     return(return_values)
     
