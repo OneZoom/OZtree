@@ -1,14 +1,12 @@
-<div class="row-fluid intro">
-  <div class="col-md-12">
-    <h1 id = "sponsor_title">{{=XML(T('Sponsor %s on the OneZoom Tree of Life Explorer') % (the_name or T("a species"),))}}</h1>
+    <h1 id = "sponsor_title">{{=XML(T('Sponsor %s on the OneZoom Tree of Life Explorer') % (the_long_name or T("a species"),))}}</h1>
     <p>{{=T('You can sponsor this leaf for yourself or as a unique gift for someone you know.')}}</p>
 
-    {{if partner:}}
-    <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the <a href="%s" target="_blank">OneZoom charity</a> and <a href="%s" target="_blank">%s</a> by displaying your chosen sponsor’s name on %s') % (URL('static','images/RegistrationCertificate.jpg'), partner.get('url') , partner.get('name') , the_name))}}.
-       {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s.') % (int(round(100-partner.get('percentage'))), int(round(partner.get('percentage'))), T(partner.get('name'))))}}</p>
+    {{if partner_data:}}
+    <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the <a href="%s" target="_blank">OneZoom charity</a> and <a href="%s" target="_blank">%s</a> by displaying your chosen sponsor’s name on %s') % (URL('static','images/RegistrationCertificate.jpg'), partner.get('url') , partner_data.get('name') , the_long_name))}}.
+       {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s.') % (int(round(100-partner_data.get('percentage'))), int(round(partner_data.get('percentage'))), T(partner_data.get('name'))))}}</p>
 
     {{else:}}
-    <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the <a href="%s" target="_blank">OneZoom charity</a> by displaying your chosen sponsor’s name on %s. Your donations will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.') % (URL('static','images/RegistrationCertificate.jpg'), the_name))}}</p>
+    <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the <a href="%s" target="_blank">OneZoom charity</a> by displaying your chosen sponsor’s name on %s. Your donations will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.') % (URL('static','images/RegistrationCertificate.jpg'), the_long_name))}}</p>
 
     {{pass}}
     <p>{{=T('There can be only one sponsor for each leaf, so get your favourite creature before someone else does!')}}</p>
@@ -74,9 +72,9 @@
         <div id = "gift_aid">
           <h3>{{=T('Gift Aid declaration')}}</h3>
           <p>{{=T('Thank you for considering Gift Aid. All you have to do is confirm that you agree to the following statement:')}}</p>
-          {{if partner.get('giftaid'):}}
+          {{if partner_data.get('giftaid'):}}
           
-          <p>I want to Gift Aid this donation and any donations I make in the future or have made in the past 4 years to OneZoom and <a href="{{=partner.get('url')}}">{{=partner.get('name')}}</a></p>
+          <p>I want to Gift Aid this donation and any donations I make in the future or have made in the past 4 years to OneZoom and <a href="{{=partner_data.get('url')}}">{{=partner_data.get('name')}}</a></p>
   
   <p>I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of
   Gift Aid claimed on all my donations in that tax year it is my responsibility to pay any difference.</p>

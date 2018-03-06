@@ -33,9 +33,9 @@ var image_objects = Object.create(null); //to store the image_objects (like a di
 {{try:}}
 // initialise list of images & info with default image. 
 //This is keyed by {src}_{src_id}, but with src=eol_src for OneZoom specific images
-{{=XML('var which_img = "{}_{}"'.format(int(best_image.src) if best_image.src > eol_src else int(eol_src),int(best_image.src_id)))}};
-image_objects[which_img] = {"dataObjectVersionID":{{=best_image.src_id}},
-                            "url":"{{=thumbnail_url(best_image.src,best_image.src_id)}}",
+{{=XML('var which_img = "{}_{}"'.format(int(default_image.src) if default_image.src > eol_src else int(eol_src),int(default_image.src_id)))}};
+image_objects[which_img] = {"dataObjectVersionID":{{=default_image.src_id}},
+                            "url":"{{=thumbnail_url(default_image.src,default_image.src_id)}}",
                             "default":1,
                             "dataRating":10}; //highest data rating, so this gets put first
 {{except:}}
