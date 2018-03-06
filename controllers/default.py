@@ -178,9 +178,9 @@ def sponsor_leaf():
     except:
         OTT_ID_Varin = None
         leaf_entry = {}
-    if ((not leaf_entry) or                                         #invalid if not in ordered_leaves
-        (leaf_entry.get('ott') is None) or                          #invalid if no OTT ID
-        (leaf_entry.get('name') and ' ' not in leaf_entry.name)):   #invalid if not a species name (e.g. no space/underscore)
+    if ((not leaf_entry) or              #invalid if not in ordered_leaves
+        (leaf_entry.ott is None) or      #invalid if no OTT ID
+        (' ' not in leaf_entry.name)):   #invalid if not a species name (e.g. no space/underscore)
         response.view = request.controller + "/spl_invalid." + request.extension
         return dict(OTT_ID = OTT_ID_Varin, species_name = leaf_entry.get('name'))
     
