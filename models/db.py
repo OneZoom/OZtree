@@ -573,6 +573,7 @@ db.define_table('partners',
     Field('percentage', type = 'double', notnull=True),
     Field('giftaid', type = boolean, notnull=True), #can we collect gift aid?
     Field('default_more_info', type='string', length=30), #what appears by default in the sponsorship text, e.g. "supporting the Linnean Society"
+    Field('allow_own_site', type = boolean), #If True, allow a site like www.onezoom.org/life/partnername/
     format = '%(name)s', migrate=is_testing)
 
 # this table maps partners to node or leaf OTTs. When sponsorship windows
