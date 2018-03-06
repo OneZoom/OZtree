@@ -51,11 +51,6 @@ def thumbnail_url(src, src_id, preferred_px=150, square=True):
     return "{}{}.jpg".format(thumb_base_url, src_id)
 js_thumbnail_url = 'function(src, src_id, preferred_px, square) {{return "{}" + src_id + ".jpg";}}'.format(thumb_base_url)
 
-try:
-    allow_sponsorship = myconf.take('general.allow_sponsorship') in ['true', '1', 't', 'y', 'yes', 'True']
-except:
-    allow_sponsorship = False
-
 name_length_chars = 190 ##max length for a species name is 190 chars (allows indexing. NB: max OTT name is 108 chars)
 
 
@@ -584,7 +579,7 @@ db.define_table('partners',
 # are opened on the main OZ website we check whether the 
 db.define_table('partner_taxa',
     Field('partner_identifier', type = 'string', length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
-    Field('ott', type='text'), #if relevant, a number of ott ids, separated by commas. On the main OZ site, descendants of these IDs will have
+    Field('ott', type='text'), #an ott: on the main OZ site, descendants of these IDs will have this partner set
     Field('is_leaf', type = boolean, notnull=True), #is this a leaf? Helps us choose whether to look in leaf or node table
     Field('deactived', type = boolean, notnull=True), #allows us to keep details in the DB but not to do sponsorship. However, it is more efficient to delete them from this table
     format = '%(identifier)s', migrate=is_testing)

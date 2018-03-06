@@ -21,7 +21,7 @@ class TestUnsponsorableSite(FunctionalTest):
                     pass #do not write these out
                 else:
                     test.write(line)
-                    if line.lstrip().startswith("[general]"):
+                    if line.lstrip().startswith("[sponsorship]"):
                         test.write("maintenance_mins = 0\n")
                         test.write("allow_sponsorship = 0\n")
         

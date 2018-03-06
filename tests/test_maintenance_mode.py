@@ -16,7 +16,7 @@ class TestMaintenanceMode(FunctionalTest):
                     pass #do not write these out
                 else:
                     test.write(line)
-                    if line.lstrip().startswith("[general]"):
+                    if line.lstrip().startswith("[sponsorship]"):
                         test.write("maintenance_mins = 99\n")
         
         super(TestMaintenanceMode, self).setUpClass()

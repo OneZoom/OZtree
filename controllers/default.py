@@ -2,10 +2,19 @@
 # this file is released under public domain and you can use without limitations
 import datetime
 from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, check_version
-""" our own variables for convenience"""
-
-reservation_time_limit = 360.0 #seconds - should give as float - how long to wait unfilled out
-unpaid_time_limit = 24.0*60.0*60.0 #seconds - should give as float - how long to wait reserved for payment to come
+""" Some settings for sponsorship"""
+try:
+    allow_sponsorship = myconf.take('sponsorship.allow_sponsorship') in ['true', '1', 't', 'y', 'yes', 'True']
+except:
+    allow_sponsorship = False
+try:
+    reservation_time_limit = myconf.take('sponsorship.reservation_time_limit_mins') * 60.0
+except:
+    reservation_time_limit = 360.0 #seconds
+try:
+    unpaid_time_limit = myconf.take('sponsorship.unpaid_time_limit_mins') * 60.0
+except:
+    unpaid_time_limit = 2.0*24.0*60.0*60.0 #seconds
 
 """Standard web2py stuff"""
 
@@ -96,7 +105,7 @@ def sponsor_leaf():
 
                 The following are only shown when sponsorship is allowed and not in maintenance mode
             * reserved [spl_reserved.html] - another user was active on this page recently and it's being reserved for them for a few minutes
-            * available [spl_leaf.html] - the leaf is fully available, so proceed
+            * available [sponsor_leaf.html] - the leaf is fully available, so proceed
             * available only to session [sponsor_leaf.html] - it's available but for this user only
         it will also provide the current best picture for that taxon (if one exists)
         2.) update the 'reserved' table with new numbers of views and view times / session ids etc.
@@ -131,12 +140,12 @@ def sponsor_leaf():
         This function DOES NOT need up update the sponsor or verified info tables because these are handled separately. Additionally, e-mail, address and name as well as receipt should be captured from Paypal """
 
     try:
-        maint = int(myconf.take('general.maintenance_mins'))
+        maint = int(myconf.take('sponsorship.maintenance_mins'))
     except:
         maint = 0
     if maint:
         response.view = request.controller + "/spl_maintenance." + request.extension
-        return dict(mins=str(myconf.take('general.maintenance_mins')))
+        return dict(mins=str(maint))
 
 
     from json import dumps
