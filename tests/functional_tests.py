@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import sys
 import json
 import unittest
@@ -10,12 +11,18 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import subprocess
 import os.path
 
+
+if sys.version_info[0] < 3:
+    raise Exception("Python 3 only")
+
 ip = "127.0.0.1"
 port = "8001"
 base_url="http://"+ip+":"+port+"/"
 web2py_app_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 appconfig_loc = os.path.join(web2py_app_dir, 'private', 'appconfig.ini')
 test_email = 'test@onezoom.org' 
+
+sys.path.insert(1, web2py_app_dir)
 
 class FunctionalTest(unittest.TestCase):
 
@@ -54,14 +61,6 @@ class FunctionalTest(unittest.TestCase):
             except NoSuchElementException: return False
             return True
     
-    def web2py_viewname_contains(self, expected_view):
-        #assumes that we have injected the view name into a meta element called 'viewfile'
-        #using the web2py code {{response.meta.viewfile = response.view}}
-        try:
-            return expected_view in self.browser.find_element_by_xpath("//meta[@name='viewfile']").get_attribute("content")
-        except NoSuchElementException:
-            return False
-
     def has_external_linkouts(self):
         #find things with href attributes, e.g. <a>, <map>, etc.
         total_links = 0
@@ -104,18 +103,28 @@ class FunctionalTest(unittest.TestCase):
         db_cursor.close() 
         return ott, sciname
     
-    def delete_reservation_entry(self, ott, name):
+    def delete_reservation_entry(self, ott, name, email=test_email):
         """
         Warning: this will REMOVE data. Make sure that this is definitely one of the previously not looked at species
         Hence we pass *both* the ott and the name, and check that the reservation email matches test_email
         """
         db_cursor = self.db['connection'].cursor()
         sql="DELETE FROM `reservations` WHERE OTT_ID={0} AND name={0} AND e_mail={0} LIMIT 1".format(self.db['subs'])
-        db_cursor.execute(sql, (ott, name, test_email))
+        db_cursor.execute(sql, (ott, name, email))
         self.db['connection'].commit()
         #to do - verify that one was deleted
         db_cursor.close() 
 
+    def web2py_viewname_contains(self, expected_view):
+        return web2py_viewname_contains(self.browser, expected_view)
+        
+def web2py_viewname_contains(browser, expected_view):
+    #assumes that we have injected the view name into a meta element called 'viewfile'
+    #using the web2py code {{response.meta.viewfile = response.view}}
+    try:
+        return expected_view in browser.find_element_by_xpath("//meta[@name='viewfile']").get_attribute("content")
+    except NoSuchElementException:
+        return False
 
 def chrome_cmd(driver, cmd, params):
         resource = "/session/%s/chromium/send_command_and_get_result" % driver.session_id
@@ -135,7 +144,7 @@ def striptext_in_file(line, file):
     return False
 
 def web2py_server(appconfig_file=None):
-    cmd = ['python2', os.path.join('..','..','web2py.py'), '-Q', '-i', ip, '-p', port, '-a pass']
+    cmd = ['python2', os.path.join(web2py_app_dir, '..','..','web2py.py'), '-Q', '-i', ip, '-p', port, '-a pass']
     if appconfig_file is not None:
         cmd += ['--args', appconfig_file]
     return subprocess.Popen(cmd)
