@@ -104,7 +104,7 @@
         <input type="hidden" name="partner" value="{{=partner_data.get('partner_identifier') or ''}}" />
         {{pass}}
       </fieldset>
-      <p class="submit_donate">{{=XML(T('Accept <a href="%s" target="_blank">terms</a> and <input type="submit" value = "Donate"/> using PayPal') % (URL('default','terms.html'), ))}}{{if request.vars.get('embed'):}} <span>{{=T('(opens in a new window)')}}</span>{{pass}}.</p>
+      <p class="submit_donate">{{=XML(T('Accept <a href="%s" target="_blank">terms</a> and <input id="submit_button" type="submit" value = "Donate"/> using PayPal') % (URL('default','terms.html'), ))}}{{if request.vars.get('embed'):}} <span>{{=T('(opens in a new window)')}}</span>{{pass}}.</p>
     </div>
   </div>
 </form>

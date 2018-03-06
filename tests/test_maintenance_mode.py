@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from functional_tests import FunctionalTest, base_url, appconfig_loc, chrome_cmd
 import os
 import time

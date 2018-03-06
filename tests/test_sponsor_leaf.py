@@ -1,4 +1,7 @@
-from functional_tests import FunctionalTest, base_url, appconfig_loc, test_email
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from functional_tests import FunctionalTest, base_url, appconfig_loc, test_email, web2py_viewname_contains
 import unittest
 from selenium import webdriver #to fire up a duplicate page
 import os.path
@@ -96,6 +99,9 @@ class TestSponsorLeaf(FunctionalTest):
         Go through the payment process, checking at each stage whether the correct page is given.
         We need to test 0) sponsor_leaf (the 'normal' page) 1) spl_reserved (reserved for someone else) 2) spl_waitpay 3) spl_unverified.html
         """
+        test_name = "My tést <name> 漢字 + أبجدية عربية"
+        test_4byte_unicode = " &amp; <script>"
+        
         ott, sciname = self.get_never_looked_at_species()
         page = self.page + "?ott={}".format(ott)
         self.browser.get(page)
@@ -106,18 +112,21 @@ class TestSponsorLeaf(FunctionalTest):
         #look at the same page with another browser to check if session reservation works
         alt_browser = webdriver.Chrome()
         alt_browser.get(page)
-        self.assertTrue(self.web2py_viewname_contains("spl_reserved"))
+        self.assertTrue(web2py_viewname_contains(alt_browser, "spl_reserved"))
         alt_browser.quit()
         
         #fill in the form elements
-        #username = self.browser.find_element_by_id("username")
-        #password = selenium.find_element_by_id("password")
+        email = self.browser.find_element_by_id("e-mail_input")
+        sponsor_name = self.browser.find_element_by_id("user_sponsor_name_input")
+        more_info = self.browser.find_element_by_id("user_more_info_input")
         
-        #username.send_keys("YourUsername")
-        #password.send_keys("Pa55worD")
-        #selenium.find_element_by_name("submit").click()
+        email.send_keys(test_email) #should test too long a name
+        sponsor_name.send_keys(test_name) #probably worth testing weird characters here
+        more_info.send_keys(test_4byte_unicode) #probably worth testing weird characters here
         
+        self.browser.find_element_by_id("submit_button").click()
         
+        #try getting information from the API (should not return)
              
         self.delete_reservation_entry(ott, sciname, test_email)
 
