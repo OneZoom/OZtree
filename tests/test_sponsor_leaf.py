@@ -61,38 +61,51 @@ class TestSponsorLeaf(FunctionalTest):
         Give an invalid OTT. We should also test for 'species' with no space in the name, but we can't be guaranteed
         that there will be any of these
         """
-        self.browser.get(self.page + "?ott=0")
+        invalid_ott = -1
+        page = self.page + "?ott={}".format(invalid_ott)
+        self.browser.get(page)
         self.assertTrue(self.web2py_viewname_contains("spl_invalid"))
-        self.browser.get(self.page + "?ott=0&embed=3")
+        self.browser.get(page + "&embed=3")
         self.assertTrue(self.web2py_viewname_contains("spl_invalid"))
-        self.assertFalse(self.has_external_linkouts())
+        self.assertFalse(self.has_linkouts(include_internal=False))
+        self.browser.get(page + "&embed=4")
+        self.assertTrue(self.web2py_viewname_contains("spl_invalid"))
+        self.assertFalse(self.has_linkouts(include_internal=True))
 
     def test_banned(self):
         """
         Humans are always banned
         """
         human_ott = 770315
-        self.browser.get(self.page + "?ott={}".format(human_ott))
+        page = self.page + "?ott={}".format(human_ott)
+        self.browser.get(page)
         self.assertTrue(self.web2py_viewname_contains("spl_banned"))
-        self.browser.get(self.page + "?ott={}&embed=3".format(human_ott))
+        self.browser.get(page + "&embed=3")
         self.assertTrue(self.web2py_viewname_contains("spl_banned"))
-        self.assertFalse(self.has_external_linkouts())
+        self.assertFalse(self.has_linkouts(include_internal=False))
+        self.browser.get(page + "&embed=4")
+        self.assertTrue(self.web2py_viewname_contains("spl_banned"))
+        self.assertFalse(self.has_linkouts(include_internal=True))
         
     def test_already_sponsored(self):
         """
         We might also want to test a sponsored banned species here, like the giant panda
         """
         #Find a sponsored species
-        sponsored = requests.get('http://127.0.0.1:8000/sponsored.json').json()['rows']
+        sponsored = requests.get(base_url + 'sponsored.json').json()['rows']
         if len(sponsored)==0:
-            fail('No sponsored species to test against')
+            self.fail('No sponsored species to test against')
         else:
             example_sponsored_ott = sponsored[0]['OTT_ID']
-            self.browser.get(self.page + "?ott={}".format(example_sponsored_ott))
+            page = self.page + "?ott={}".format(example_sponsored_ott)
+            self.browser.get(page)
             self.assertTrue(self.web2py_viewname_contains("spl_sponsored"))
-            self.browser.get(self.page + "?ott={}&embed=3".format(example_sponsored_ott))
+            self.browser.get(page + "&embed=3")
             self.assertTrue(self.web2py_viewname_contains("spl_sponsored"))
-            self.assertFalse(self.has_external_linkouts())
+            self.assertFalse(self.has_linkouts(include_internal=False))
+            self.browser.get(page + "&embed=4")
+            self.assertTrue(self.web2py_viewname_contains("spl_sponsored"))
+            self.assertFalse(self.has_linkouts(include_internal=True))
         
     def test_payment_pathway(self):
         """
@@ -100,19 +113,24 @@ class TestSponsorLeaf(FunctionalTest):
         We need to test 0) sponsor_leaf (the 'normal' page) 1) spl_reserved (reserved for someone else) 2) spl_waitpay 3) spl_unverified.html
         """
         test_name = "My tést <name> 漢字 + أبجدية عربية"
-        test_4byte_unicode = " &amp; <script>"
+        test_4byte_unicode = " &amp; <script>" #annoying can't do this in selenium
         
         ott, sciname = self.get_never_looked_at_species()
         page = self.page + "?ott={}".format(ott)
         self.browser.get(page)
         self.assertTrue(self.web2py_viewname_contains("sponsor_leaf"))
+        #this also tests whether a reload in the same browser works
+        self.browser.get(page + "&embed=3")
+        self.assertTrue(self.web2py_viewname_contains("sponsor_leaf"))
+        self.assertFalse(self.has_linkouts(include_internal=False))
         #here we could test functionality of the main sponsor_leaf page
         
         
         #look at the same page with another browser to check if session reservation works
         alt_browser = webdriver.Chrome()
-        alt_browser.get(page)
+        alt_browser.get(page + "&embed=3")
         self.assertTrue(web2py_viewname_contains(alt_browser, "spl_reserved"))
+        self.assertFalse(self.has_linkouts(include_internal=False))
         alt_browser.quit()
         
         #fill in the form elements

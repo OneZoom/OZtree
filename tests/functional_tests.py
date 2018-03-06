@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Carry out functional tests on OneZoom pages using an automated browser.
+
+ Example: carry out all tests
+    ./functional_tests.py
+ Example: carry out all tests for maintenance mode
+    ./functional_tests.py maint
+ Example: carry out test that maintenance mode works for invalid otts 
+    ./functional_tests.py maint inval
+"""
+
 import sys
 import json
 import unittest
@@ -61,24 +71,29 @@ class FunctionalTest(unittest.TestCase):
             except NoSuchElementException: return False
             return True
     
-    def has_external_linkouts(self):
-        #find things with href attributes, e.g. <a>, <map>, etc.
-        total_links = 0
+    def has_linkouts(self, include_internal):
+        """
+        Find tags with href attributes, e.g. <a>, <map>, etc. but allow some (e.g. link href=***)
+        Depending on the param passed in, we may want to allow internal (relative) links such as 
+        <a href='/sponsored'></a>
+        """
         for tag in self.browser.find_elements_by_css_selector("[href^='http']"):
-            total_links+=1
             if tag.tag_name != u'link': #should allow e.g. <link href="styles.css">
                  return True
         for tag in self.browser.find_elements_by_css_selector("[href^='//']"):
-            total_links+=1
             if tag.tag_name != u'link': #should allow e.g. <link href="styles.css">
                  return True
 
         #all hrefs should now be http or https refs to local stuff. We should double check this
         #by looking at the tag.attribute which is fully expanded by selenium/chrome to include http
         for tag in self.browser.find_elements_by_css_selector('[href]'):
-            if tag.tag_name != u'link' and not tag.get_attribute('href').startswith('http'):
-                #this catches e.g. mailto:, ftp://, file:/// etc.
-                return True
+            if tag.tag_name != u'link':
+                if include_internal:
+                    return true
+                elif not tag.get_attribute('href').startswith('http'):
+                    #Allow http:// links which should all be internal / relative
+                    # but catch e.g. mailto:, ftp://, file:/// etc. and treat these all as linkouts
+                    return True
 
         #should be OK now - all elements are expanded to http but did not start with that originally
         return False    
@@ -185,16 +200,19 @@ def get_db_connection():
     return(db)
 
     
-def run_functional_tests(glob=None):
+def run_functional_tests(file_glob=None, test_prefix=None):
+    loader = unittest.TestLoader()
+    loader.testMethodPrefix = "test_" + test_prefix if test_prefix else "test"
 
-    suite = unittest.defaultTestLoader.discover('tests', pattern='test_*{}.py'.format(glob+'*' if glob else ""))
+    suite = loader.discover('tests', pattern='test_*{}.py'.format(file_glob+'*' if file_glob else ""))
     runner = unittest.TextTestRunner(verbosity=2).run(suite)
 
 if __name__ == '__main__':
-    import argparse;
-    parser = argparse.ArgumentParser(
-        description="Carry out functional tests on OneZoom pages.")
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(
-        "--pattern", default=None, help="Only carry out tests whose file names match this pattern")
+        "file_pattern", nargs='?', help="Only carry out tests in files whose name matches this pattern")
+    parser.add_argument(
+        "function_prefix", nargs='?', help="If function_prefix=XXX, only carry out tests whose function name starts with 'test_XXX'")
     args = parser.parse_args()
-    run_functional_tests(args.pattern)
+    run_functional_tests(args.file_pattern, args.function_prefix)

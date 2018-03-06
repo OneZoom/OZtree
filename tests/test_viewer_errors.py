@@ -20,6 +20,13 @@ class TestViewerErrors(FunctionalTest):
         """
         #self.browser.get(base_url + 'life?embed=1')
         pass
+    
+    
+    def test_viewer_loading_time(self):
+        """
+        Here we should check that in various browsers the loading time of a OneZoom page is acceptable
+        """
+        pass
         
     def test_viewer_normal(self):
         """
