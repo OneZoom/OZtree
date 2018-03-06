@@ -49,8 +49,8 @@
       image_details_api: "{{try:}}{{=myconf.take('API.image')}}{{except:}}{{=URL('API', 'image_details.json', scheme=True, host=True)}}{{pass}}",
       update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
       tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
-      OZ_leaf_json_url_func: function(ott) {return("{{=URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json', args='...OTT...', vars=(setup_params.get('popups') or {}).get('vars'))}}".replace('...OTT...', ott.toString() || ""))},
-      OZ_node_json_url_func: function(id) {return("{{=URL('tree', 'node_linkouts', scheme=True, host=True, extension='json', args='...ID...', vars=(setup_params.get('popups') or {}).get('vars'))}}".replace('...ID...', id.toString() || ""))},
+      OZ_leaf_json_url_func: function(ott) {return("{{=XML(URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json', args='...OTT...', vars=(setup_params.get('popups') or {}).get('vars')))}}".replace('...OTT...', ott.toString() || ""))},
+      OZ_node_json_url_func: function(id) {return("{{=XML(URL('tree', 'node_linkouts', scheme=True, host=True, extension='json', args='...ID...', vars=(setup_params.get('popups') or {}).get('vars')))}}".replace('...ID...', id.toString() || ""))},
     };
   </script>
 {{include}}
