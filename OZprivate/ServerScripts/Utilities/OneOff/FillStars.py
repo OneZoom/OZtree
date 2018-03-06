@@ -41,7 +41,7 @@ elif args.database.startswith("mysql://"): #mysql://<mysql_user>:<mysql_password
     import pymysql
     import re
     from getpass import getpass
-    match = re.match(r'mysql://([^:]+):([^@]*)@([^/]+)/(.*)', args.database.strip())
+    match = re.match(r'mysql://([^:]+):([^@]*)@([^/]+)/([^?]*)', args.database.strip())
     if match.group(2) == '':
         #enter password on the command line, if not given (more secure)
         pw = getpass("Enter the sql database password: ")

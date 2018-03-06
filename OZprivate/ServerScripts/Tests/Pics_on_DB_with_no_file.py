@@ -60,7 +60,7 @@ if __name__ == "__main__":
     elif args.database.startswith("mysql://"): #mysql://<mysql_user>:<mysql_password>@localhost/<mysql_database>
         import pymysql
         import re
-        match = re.match(r'mysql://([^:]+):([^@]*)@([^/]+)/(.*)', args.database.strip())
+        match = re.match(r'mysql://([^:]+):([^@]*)@([^/]+)/([^?]*)', args.database.strip())
         if match.group(2) == '':
             #enter password on the command line, if not given (more secure)
             if args.script:

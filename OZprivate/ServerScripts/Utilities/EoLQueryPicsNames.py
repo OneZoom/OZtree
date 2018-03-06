@@ -638,13 +638,13 @@ if __name__ == "__main__":
     
     if args.database.startswith("sqlite://"):
         from sqlite3 import dbapi2 as sqlite
-        db_connection = sqlite.connect(os.path.relpath(args.dbname[len("sqlite://"):], args.treedir))
+        db_connection = sqlite.connect(os.path.relpath(args.database[len("sqlite://"):], args.treedir))
         datetime_now = "datetime('now')";
         subs="?"
         
     elif args.database.startswith("mysql://"): #mysql://<mysql_user>:<mysql_password>@localhost/<mysql_database>
         import pymysql
-        match = re.match(r'mysql://([^:]+):([^@]*)@([^/]+)/(.*)', args.database.strip())
+        match = re.match(r'mysql://([^:]+):([^@]*)@([^/]+)/([^?]*)', args.database.strip())
         if match.group(2) == '':
             #enter password on the command line, if not given (more secure)
             if args.script:
