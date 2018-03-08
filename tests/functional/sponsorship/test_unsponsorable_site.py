@@ -24,7 +24,7 @@ class TestUnsponsorableSite(SponsorshipTest):
         """
         def assert_tests(browser):
             assert web2py_viewname_contains(browser, "spl_banned")
-        SponsorshipTest.test_ott(self, assert_tests, self.banned_ott())
+        SponsorshipTest.test_ott(self, assert_tests, self.banned_unsponsored_ott())
         
     def test_already_sponsored(self):
         """
@@ -33,10 +33,12 @@ class TestUnsponsorableSite(SponsorshipTest):
         def assert_tests(browser):
             assert web2py_viewname_contains(browser, "spl_sponsored")
         SponsorshipTest.test_ott(self, assert_tests, self.sponsored_ott())
+        print("(banned but sponsored not implemented) ...", end="", flush=True)
+        #SponsorshipTest.test_ott(self, assert_tests, self.banned_sponsored_ott())
 
     def test_sponsoring(self):
         """
-        In unsponsorable_site mode, looking at an unsponsored (unvisted) OTTs should also ping up the maintenance page
+        In unsponsorable_site mode, looking at an unsponsored (unvisted) OTTs should always ping up the sponsor-elsewhere page
         (also when revisiting from another browser, which would normally give a 'temporarily reserved' page)
         """
         def assert_tests(browser):

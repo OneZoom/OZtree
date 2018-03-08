@@ -21,7 +21,7 @@ class SponsorshipTest(FunctionalTest):
         When setting up the sponsorship pages testing suite we have to create a new appconfig.ini file
         and point out web2py instance at it so that we can adjust maintenance_mins and allow_sponsorship
         """
-        print("creating temporary appconfig")
+        print(">> creating temporary appconfig")
         FunctionalTest.appconfig_loc = appconfig_loc + '.test_orig.ini'
         with open(appconfig_loc, "r") as orig, open(FunctionalTest.appconfig_loc, "w") as test:
             for line in orig:
@@ -69,9 +69,9 @@ class SponsorshipTest(FunctionalTest):
 
     @classmethod
     def tearDownClass(self):
-        print("removing temporary appconfig")
-        os.remove(FunctionalTest.appconfig_loc)
         FunctionalTest.tearDownClass()
+        print(">> removing temporary appconfig")
+        os.remove(FunctionalTest.appconfig_loc)
         
     @tools.nottest
     def test_ott(self, extra_assert_tests, ott, extra_assert_tests_from_another_browser=None, browser=None):
@@ -156,11 +156,19 @@ class SponsorshipTest(FunctionalTest):
         return -1
 
     @tools.nottest
-    def banned_ott(self):
+    def banned_unsponsored_ott(self):
         """
         Return human ott = 770315 (always banned, never sponsored)
         """
         return 770315
+
+    @tools.nottest
+    def banned_sponsored_ott(self):
+        """
+        We could possibly pick pandas here, but we are not assured that they will be sponsored on all sites
+        """
+        raise NotImplementedError
+
        
     @tools.nottest
     def sponsored_ott(self):

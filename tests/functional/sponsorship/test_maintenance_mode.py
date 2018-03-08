@@ -22,7 +22,7 @@ class TestMaintenanceMode(SponsorshipTest):
         def assert_tests(browser):
             assert web2py_viewname_contains(browser, "spl_maintenance")
             assert browser.find_element_by_id('time').text == '99'
-        SponsorshipTest.test_ott(self, assert_tests, self.banned_ott())
+        SponsorshipTest.test_ott(self, assert_tests, self.banned_unsponsored_ott())
         
     def test_already_sponsored(self):
         """
@@ -32,6 +32,8 @@ class TestMaintenanceMode(SponsorshipTest):
             assert web2py_viewname_contains(browser, "spl_maintenance")
             assert browser.find_element_by_id('time').text == '99'
         SponsorshipTest.test_ott(self, assert_tests, self.sponsored_ott())
+        print("(banned but sponsored not implemented) ...", end="", flush=True)
+        #SponsorshipTest.test_ott(self, assert_tests, self.banned_sponsored_ott())
 
     def test_sponsoring(self):
         """

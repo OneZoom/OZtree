@@ -49,7 +49,7 @@ class FunctionalTest(object):
         with open(db_py_loc, 'r') as db_py:
             assert striptext_in_file("is_testing=True", db_py), "To do any testing you must set is_testing=True in " + db_py_loc
         self.db = get_db_connection()
-        print("starting web2py")
+        print("> starting web2py")
         try:
             self.web2py = web2py_server(self.appconfig_loc)
         except AttributeError:
@@ -67,7 +67,7 @@ class FunctionalTest(object):
     def tearDownClass(self):
         #should test here that we don't have any console.log errors (although we might have logs).
         self.browser.quit()
-        print("killing web2py")
+        print("> killing web2py")
         self.web2py.kill()
 
     @tools.nottest
