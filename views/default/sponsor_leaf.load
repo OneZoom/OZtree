@@ -24,7 +24,7 @@
         <div><label for="user_more_info_input">{{=T('Extra text (optional): ')}}</label><p><input type = "text" id="user_more_info_input" name = "user_more_info"  maxlength="30" size="30" onchange="drawPreview()" onkeyup="drawPreview()" placeholder = "{{=T('e.g. Edinburgh, UK')}}"
           value="{{if (request.vars['user_more_info']) is not None:}}{{=request.vars['user_more_info']}}{{pass}}"/>
           <em class = "error_text"> {{if (form.errors["user_more_info"]) is not None:}}{{=form.errors["user_more_info"]}}{{pass}} </em></p></div>
-        <p class="singlerow extra_info">{{=XML(T('Extra text will only show when fully zoomed in; it can be used for your location, or to say who it’s from if you are sponsoring as a gift for another person (e.g. Happy Birthday from John Smith). The extra text will appear on our main tree at <a href="%s" target="_blank">OneZoom.org/life</a>, but may not necessarily be shown on versions elsewhere.') % (URL  ('default','life.html'),))}}<p>
+        <p class="singlerow extra_info">{{=XML(T('Extra text will only show when fully zoomed in; it can be used for your location, or to say who it’s from if you are sponsoring as a gift for another person (e.g. Happy Birthday from John Smith). The extra text will appear on our main tree at %s, but may not necessarily be shown on versions elsewhere.') % (A('OneZoom.org/life', _href=URL('default','life', scheme=True, host=True),_target="blank"),))}}<p>
       </fieldset>
       <p>{{=T('We will check that the sponsorship text is appropriate, and contact you if there is a problem. This is not intended to be advertising so please do not include web links. Normally your text should appear on the tree within a week.')}}</p>
     </div>
