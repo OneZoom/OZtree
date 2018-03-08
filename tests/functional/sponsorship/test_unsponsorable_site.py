@@ -20,7 +20,7 @@ class TestUnsponsorableSite(SponsorshipTest):
             assert web2py_viewname_contains(browser, "spl_invalid")
         SponsorshipTest.test_ott(self, assert_tests, ott)
 
-    def test_banned(self):
+    def test_banned_unsponsored(self):
         """
         In unsponsorable_site mode, banned OTTs always ping up the banned page
         """
@@ -29,7 +29,7 @@ class TestUnsponsorableSite(SponsorshipTest):
         def assert_tests(browser):
             assert web2py_viewname_contains(browser, "spl_banned")
             n_visits, last_visit, reserve_time = self.visit_data(ott)
-            assert n_visits > prev_n_visits, "number of visits (was {}, now {}) should be recorded in unsponsorable_site mode".format(prev_n_visits, n_visits)
+            assert n_visits > prev_n_visits, "number of visits (was {}, now {}) should be augmented in unsponsorable_site mode".format(prev_n_visits, n_visits)
             assert abs(web2py_date_accessed(browser) - last_visit).seconds == 0, "last visit time should be recorded just now, even in unsponsorable_site mode"
             assert prev_reserve_time == reserve_time, "reserved time should not be recorded for banned species"
         SponsorshipTest.test_ott(self, assert_tests, ott)

@@ -16,7 +16,8 @@ class TestMaintenanceMode(SponsorshipTest):
             assert web2py_viewname_contains(browser, "spl_maintenance")
             assert browser.find_element_by_id('time').text == '99'
         SponsorshipTest.test_ott(self, assert_tests, ott)
-    def test_banned(self):
+
+    def test_banned_unsponsored(self):
         """
         In maintenance mode, banned OTTs should always ping up the maintenance page
         """
