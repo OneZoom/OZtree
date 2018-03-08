@@ -7,7 +7,7 @@ from time import sleep
 
 from selenium import webdriver #to fire up a duplicate page
 
-from .functional_tests import FunctionalTest, base_url, appconfig_loc, test_email, web2py_viewname_contains, has_linkouts
+from ..functional_tests import FunctionalTest, base_url, appconfig_loc, test_email, web2py_viewname_contains, has_linkouts
 
 
 class SponsorshipTest(FunctionalTest):
@@ -95,7 +95,7 @@ class SponsorshipTest(FunctionalTest):
         if extra_assert_tests_from_another_browser is not None:
             #look at the same page with another browser to check that session reservation
             #still forwards to the same page
-            print("also testing same pages from an alternative browser ...", end="")
+            print("also testing same pages from an alternative browser ...", end="", flush=True)
             alt_browser = webdriver.Chrome()
             self.test_ott(extra_assert_tests_from_another_browser, ott, None, alt_browser)
             alt_browser.quit()

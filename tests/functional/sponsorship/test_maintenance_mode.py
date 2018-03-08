@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from .sponsorship_tests import SponsorshipTest
-from .functional_tests import web2py_viewname_contains
+from ..functional_tests import web2py_viewname_contains
 from time import sleep
 
 class TestMaintenanceMode(SponsorshipTest):
@@ -35,7 +35,7 @@ class TestMaintenanceMode(SponsorshipTest):
 
     def test_sponsoring(self):
         """
-        In maintenance mode, looking at an unsponsored (unvisted) OTTs should also ping up the maintenance page
+        In maintenance mode, looking at an unsponsored (unvisted) OTTs should always ping up the maintenance page
         (also when revisiting from another browser, which would normally give a 'temporarily reserved' page)
         """
         def assert_tests(browser):
@@ -47,4 +47,4 @@ class TestMaintenanceMode(SponsorshipTest):
         SponsorshipTest.test_ott(self, assert_tests, ott, 
             extra_assert_tests_from_another_browser = alt_browser_assert_tests)
         n_deleted = self.delete_reservation_entry(ott, sciname, None) #delete the previously created entry
-        assert n_deleted == 0 #going through the sponsorship path should not be functioning
+        assert n_deleted == 0, "visiting an unvisited ott in maintenance mode should not allocate a reservations row"
