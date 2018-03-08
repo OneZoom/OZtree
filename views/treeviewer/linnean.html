@@ -1,19 +1,25 @@
 {{
 partner = 'LinnSoc'
-data = db(db.partners.identifier == partner).select().first()
 setup_params = {
+  'partner': db(db.partners.partner_identifier == partner).select().first(),
   'UI_layer': {
     'page':'UI_layer.load', 
-    'vars':{'tabs':'all'} }, 
-  }
+    'vars':{'tabs':'all'}, 
+  },
+  'popups': {
+    'vars':{'embed':'3'},
+  },
+}
+if setup_params['partner']:
+    setup_params['popups']['vars']['partner'] = partner
+    setup_params['popups']['vars']['user_more_info'] = setup_params['partner'].default_more_info
+    setup_params['popups']['vars']['user_message_OZ'] = partner
+pass
 }}
 {{extend 'treeviewer/layout.html'}}
 <title>OneZoom/{{=partner}} Tree of Life Explorer, text page for {{=page_info['title_name']}}</title>
 <!-- could include bespoke css file here -->
 <script type="text/javascript">
-/* override default urls for linkouts */
-server_urls['OZ_leaf_json_url_func'] = function(ott) {return("{{=URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json')}}" + "/" + ott.toString() + "?user_more_info=" + encodeURIComponent)"{{=data.default_more_info}}") + "&user_message_OZ=" + encodeURIComponent"{{=partner}}"))};
-server_urls['OZ_node_json_url_func'] = function(id) {return("{{=URL('tree', 'node_linkouts', scheme=True, host=True, extension='json')}}" + "/" + id.toString() + "?user_more_info=" + encodeURIComponent("{{=data.default_more_info}}" + "&user_message_OZ=" + encodeURIComponent("{{=partner}}"))};
 
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
 var tree_config=null;
