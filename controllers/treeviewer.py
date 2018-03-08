@@ -4,6 +4,13 @@
 
 from OZfunctions import lang_primary, check_version
 
+def js_strings():
+    """
+    A json response for all the translatable strings in our javascript, so that we can use translatable
+    strings in the viewer ECMAscript without compiling translations into the code
+    """
+    return dict()
+
 def UI_layer():
     """
     We require any UI to provide the main html code for the UI in a separate page, viewer_UI,

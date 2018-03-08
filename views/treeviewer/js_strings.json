@@ -106,7 +106,6 @@ OZstrings = {
     'AdvancedSearchOn':T('Advanced search (tracer) mode: click to turn on'),
     'NoEmailFromMD':T('Sorry, you can’t send an email directly from this display. Please use your own email program, and contact us at: '),
     'SponsorHits':T('Sponsorships'),
-    'WikiCitation':T('This is a summary of '),
 }
 try:
    from gluon.serializers import json

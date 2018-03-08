@@ -35,7 +35,7 @@
   
   <script>
     //include a few default params early on, so they can be used / overridden in the file which includes this layout
-    var OZstrings={{include 'tree/js_strings.json'}}
+    var OZstrings={{include 'treeviewer/js_strings.json'}}
     var server_urls = {
       /* These fill out the equivalently named variables in OneZoom global_config.
          They need to be defined here to avoid hard-coding them into the OneZoom js code */
@@ -131,15 +131,28 @@ var UI_callbacks = {
       var tab = $(this);
       var linkout_name = tab.attr('id'); //'wiki', 'eol', etc. Visited in order specified in html file
       if (linkout_name) {
-        if (responseJSON.data[linkout_name]) {
+        if (responseJSON.data[linkout_name].length) {
           tab.show(); //show the tab at the top (but not necessarily the content yet)
           if (select_tab_index == null) select_tab_index = index; //start selecting earliest non-hidden tab
           if (index == initialSelected) select_tab_index = index; //override if initialSelected is not hidden
           var specific_popup = $("#external-modal .popup-container ." + linkout_name);
           //set the data-src attribute to the url. When the tab is shown, it will get src from there
-          specific_popup.attr("data-src", responseJSON.data[linkout_name]);
-          {{if is_testing:}}console.log("set data-src for '" + linkout_name + "' to " + responseJSON.data[linkout_name]);{{pass}}
-          $(".expand-tab a", specific_popup).attr("href",responseJSON.data[linkout_name]);
+          specific_popup.attr("data-src", responseJSON.data[linkout_name][0]);
+          {{if is_testing:}}console.log("set data-src for '" + linkout_name + "' to " + responseJSON.data[linkout_name][0]);{{pass}}
+          //define the linkout (uses a 'post' request)
+          switch (responseJSON.data[linkout_name].length) {
+              case 1:
+                $(".expand-tab form", specific_popup).attr("action",responseJSON.data[linkout_name][0]);
+                break;
+              case 2:
+                $(".expand-tab form", specific_popup).attr("action",responseJSON.data[linkout_name][1]);
+                break;
+              case 3:
+                $.each(responseJSON.data[linkout_name][2], function(key, data) {
+                    $(".expand-tab form", specific_popup).append($('<input>').attr('type','hidden').attr('name',key).attr('value',data))
+                });
+                $(".expand-tab form", specific_popup).attr("action",responseJSON.data[linkout_name][1]);
+            }
         } else {
           {{if is_testing:}}console.log("Hiding tab for '" + linkout_name + "' which is not present for this taxon");{{pass}}
           tab.hide(); //hide irrelevant tabs (those not returned by the API)
@@ -165,9 +178,6 @@ function closeAndLeap(event, OZIDin, original_searchbox) {
     if (OZIDin) onezoom.controller.jump_to_OZid(OZIDin);
 }
 
-function match_wikidata_url(str) {
-    return str.match(/^(http:|https:|)\/\/www.wikidata.org\/wiki\/Special:GoToLinkedPage\?site=(.*?)&itemid=(Q.*)/);
-}
 
 function load_tab(tab_content) {
   if (! tab_content.children().last().hasClass('popup-content')) {
@@ -195,145 +205,6 @@ if(typeof sponsor_page_link !== 'function'){
             return false;
         }
     }
-}
-
-/* sanitise links and src attributes in an html file, possibly remove all but internal ones */
-function sanitise_links(html, remove_links, base_url) {
-  // get a url to use (if "base" is defined in the header) or default to the original
-  // allows us to set internal URLs to their fully resolved host etc.
-  // (when we want to keep URLs)
-  var base_url =  ($('base', html) && $('base', html).attr('href'))?$('base', html).attr('href'):base_url;
-  var origin = $('<a>').prop('href', base_url).prop('origin'); //get the host/port etc
-  //sanitize image sources
-  $('[src^="./"]', html).attr('src', function(i,attr) {return base_url + attr.substr(2);});
-  $('[src^="/"]', html).not('[src^="//"]').attr('src', function(i,attr) {return origin + attr;});
-  //Any internal links need to be re-written to use scrollIntoView(), so that we don't change the URL by adding a hash
-  $('[href^="#"]', html).click(function() {document.getElementById($(this).attr('href').substr(1)).scrollIntoView(); return false;});
-  if (remove_links) {
-    $('[href]', html).not('[href^="#"]').each(function() {
-      if ($(this).contents().length) {
-          $(this).contents().unwrap();
-        } else {
-          $(this).remove();
-      }
-    });
-  } else {
-    $('[href]', html).not('[href^="#"]').attr('target','_blank');
-    //relative refs
-    $('[href^="./"]', html).attr('href', function(i,attr) {return base_url + attr.substr(2);});
-    //absolute refs
-    $('[href^="/"]', html).not('[href^="//"]').attr('href', function(i,attr) {return origin + attr;});
-  }
-  return html;
-}
-
-/* Get a web2py page via ajax and inject it into the current page. This is open to abuse, and
- * so should only by used for our own pages. The ".html" ending is swapped for a ".load" extension
- * so that we only get the page fragment, rather than the full html wrapper. The div needs to be
- * given a unique ID so that we can load other HTML into it
- */
-function inject_web2py_page(selector, url, removelinks) {
-  $.ajax({
-    url: url.replace(".html", ".load"),
-    type: "GET",
-    dataType: "html",
-    selector: selector,   
-    success: function (data) {
-      //double-check that we haven't inserted it while waiting for a previous AJAX call
-      if (!this.selector.children().last().hasClass('popup-content')) {
-        var html_to_inject = $('<div class="popup-content"></div>').append($.parseHTML(data));
-        sanitise_links(html_to_inject, removelinks, url);
-        $('base,meta,link,title,style,script', html_to_inject).remove();
-        {{if is_testing:}}console.log("Hiding loading pic");{{pass}}
-        $('.loading_pic',this.selector).hide();
-        {{if is_testing:}}console.log("Injecting html into page");{{pass}}
-        this.selector.append(html_to_inject);
-        //now loop through any LOAD() components, and force load them using web2py_component()
-        $('[data-w2p_remote]',this.selector).each(function() {
-            web2py_component($(this).attr("data-w2p_remote"),$(this).attr('id'))
-        })
-      }
-    }
-  });
-}
-
-
-/* Look up a wikidata Qid and a site language using the wikidata API to get a page name
- * then use the page name to get the rest_v1 wikipedia machine-readable page (see
- * https://en.wikipedia.org/api/rest_v1/ ), and inject it into the page within a <div>
- * tag of class "popup-content", using Jquery to remove links from the injected html
- * where necessary. Note that we also need to get the wikipedia stylesheet 
- * for that page (which may differ from page to page, depending on loaded components), and
- * inject that into the head of the current page. We need to make sure that wikipedia-defined 
- * css rules do not interfere with our own layout.
- */
-function show_wikipage_for_lang(selector, lang, Qid, removelinks) {
-  {{if is_testing:}}console.log("Injecting Wikipage!");{{pass}}
-  var site = lang+'wiki';
-  $.ajax({
-    type: "GET",
-    id:Qid,
-    lang:lang,
-    selector: selector,
-    removelinks: removelinks,
-    sitecode: site,
-    dataType: "jsonp",
-    data: {action:'wbgetentities',
-      props:'sitelinks',
-      sitefilter:site,
-      ids:Qid,
-      format:'json'},
-    url: "//www.wikidata.org/w/api.php",
-    success: function(data) {
-        //To do - check if title exists in this lang. If not, put up holding page
-        inject_wikipage(this.selector, data.entities[this.id].sitelinks[this.sitecode].title, "https://"+this.lang+".wikipedia.org/", this.removelinks);
-    }
-  })
-}
-
-function inject_wikipage(selector, pagetitle, base_url, removelinks) {
-  $.ajax({
-    type: "GET",
-    pagetitle: pagetitle,
-    base_url: base_url,
-    selector: selector,
-    removelinks: removelinks,
-    url: base_url + "api/rest_v1/page/html/" + pagetitle,
-    dataType: "html",
-    success: function (data) {
-      //double-check that we haven't inserted it while waiting for a previous AJAX call
-      if (!this.selector.children().last().hasClass('popup-content')) {
-        //convert reponse to html (should throw away <head> and <body> tags)
-        var html_to_inject = $('<div class="popup-content"></div>').append($.parseHTML(data));
-        //just make sure we don't have a stray head or body
-        $('head', html_to_inject).contents().unwrap();
-        $('body', html_to_inject).contents().unwrap();
-        //check if redirected and get current page title
-        var page = $('link[rel="dc:isVersionOf"]', html_to_inject).attr('href');
-        if (page && (page = page.match(/wikipedia.org\/wiki\/(.*)\/?$/))) {
-        	this.pagetitle = page[1];
-        }
-        //inject stylesheet
-        var ss = $('link[rel~="stylesheet"]', html_to_inject).addClass('injected-stylesheet');
-        $('head').prepend(ss);
-        //transform internal page links of the form ./<title>#internal_link to simply #internal_link
-        var url_start = './'+this.pagetitle;
-        $('a[href^="'+url_start+'#"]', html_to_inject).attr('href', function(i,attr) {return attr.substr(url_start.length);});
-        //append the URL so that we abide by wikipedia distribution
-        var original_page = this.base_url + 'wiki/' + this.pagetitle;
-        html_to_inject.append('<footer style="clear:both;">' + OZstrings['WikiCitation'] + '<a href="'+ original_page +'">' + original_page + '</a></footer>');
-        sanitise_links(html_to_inject, this.removelinks, this.base_url);
-        $('base,meta,link,title,style,script', html_to_inject).remove();
-        $('div[role="note"]', html_to_inject).remove();
-        $('div[role="navigation"]', html_to_inject).remove();
-        html_to_inject.children('ul').remove(); //remove lists, e.g. "see also", etc. : Assumes references (to keep) are ordered lists (not always true)
-        $('.sistersitebox,.sisterlinks,.mw-editsection, #See_also, #External_links', html_to_inject).remove();
-        {{if is_testing:}}console.log("Hiding wiki loading pic");{{pass}}
-        $('.loading_pic',this.selector).hide();
-        this.selector.append(html_to_inject);
-      }
-    }
-  });
 }
 
 // only used in searchPopulate(...)
@@ -724,7 +595,7 @@ function setupUI() {
         //reset the OZ strings to the new language
         var lang_param = (this.value)?('lang='+this.value):'';
         var self = this;
-        $.getJSON('{{=URL("tree","js_strings.json")}}?' + lang_param, {}, function(json){
+        $.getJSON('{{=URL("treeviewer","js_strings.json")}}?' + lang_param, {}, function(json){
             OZstrings = json;
             onezoom.controller.set_language(self.value);
             //reset the UI to a new language
@@ -923,26 +794,14 @@ function setupUI() {
     /*** Model for external tabs, e.g. wikipedia (must create & destroy tabbed content (e.g. iframes)) ***/
     $('#external-modal')
       .on('hidden', function() {
-        //remove content, data-src values, and injected css
+        //remove content, data-src values, and hidden vars
         $('#external-modal .popup-container li').each(function() {
             $(this)
                 .attr("data-src","")
                 .children('.popup-content').remove()
+                .children('input').remove()
                 .children('.loading_pic').show()
         });
-        $('head .injected-stylesheet').remove();
-        //reset page zoom level
-        /* setTimeout(function() {
-            var viewportmeta = document.querySelector('meta[name="viewport"]');
-            if(viewportmeta===null){
-              viewportmeta = document.createElement("meta");
-              viewportmeta.setAttribute("name","viewport");
-              document.head.appendChild(viewportmeta);
-              
-              viewportmeta = document.querySelector('meta[name="viewport"]');
-            }
-            viewportmeta.setAttribute('content', "width=device-width, initial-scale=2, minimum-scale=1.01, maximum-scale=1.01,  user-scalable=0");
-        }, 1000);*/
       });
 
     $('#external-modal .popup-container li').on('show', function (event) {
@@ -954,7 +813,9 @@ function setupUI() {
     
     $('#external-modal .popup-container li').on('hidden', function (event) {
         /* make sure hiding anything within the container does not bubble up
-         * and make us think the entire modal has been hidden
+         * and make us think the entire modal has been hidden.
+         
+         We probably don't need this now...
          */
         event.stopPropagation();
     });
