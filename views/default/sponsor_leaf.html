@@ -1,5 +1,5 @@
 {{response.title='OneZoom: Sponsor a leaf on the tree'}}
-{{if is_testing: response.meta.viewfile = response.view}}{{pass}}
+{{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{response.files.append(URL('static', 'OZSponsor/sponsor_leaf.css'))}}
 {{response.files.append(URL('static', 'OZSponsor/EOLqueries.js'))}}
 

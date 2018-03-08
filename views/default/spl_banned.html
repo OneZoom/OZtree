@@ -1,5 +1,5 @@
 {{response.title='OneZoom: '+T('specially reserved species to sponsor')}}
-{{if is_testing: response.meta.viewfile = response.view}}{{pass}}
+{{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{extend ('embed.html' if request.vars.get('embed') else 'layout.html')}}
     <h3>{{=T('Unavailable for online sponsorship')}}</h3>
     <p>{{=T('You cannot sponsor this particular leaf using the online form but you may still be able to get it.')}}</p>

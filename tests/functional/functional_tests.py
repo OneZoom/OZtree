@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Carry out functional tests on OneZoom pages using an automated browser.
+"""Carry out functional tests on OneZoom pages using an automated browser via selenium
 
  Example: carry out all tests
     nosetests -w ./ tests/functional
- Example: carry out all tests for maintenance mode
-    ./functional_tests.py maint
- Example: carry out test that maintenance mode works for invalid otts 
-    ./functional_tests.py maint inval
+ Example: carry out all tests for unsponsorable sites (museum displays)
+    nosetests -vs functional/sponsorship/test_unsponsorable_site.py
+ Example: carry out test that unsponsorable sites give the correct page for invalid otts 
+    nosetests -vs functional/sponsorship/test_unsponsorable_site.py:TestUnsponsorableSite.test_invalid
 """
 
 import sys
 import json
 import subprocess
 import os.path
-from nose import tools
 import re
+from datetime import datetime
+from nose import tools
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -30,7 +31,8 @@ port = "8001"
 base_url="http://"+ip+":"+port+"/"
 web2py_app_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
 appconfig_loc = os.path.join(web2py_app_dir, 'private', 'appconfig.ini')
-test_email = 'test@onezoom.org' 
+date_format = "%Y-%m-%d %H:%M:%S.%f" #used when a web2py datetime on a webpage needs converting back to datetime format
+test_email = 'test@onezoom.org'
 
 class FunctionalTest(object):
 
@@ -110,9 +112,13 @@ def has_linkouts(browser, include_internal):
     #should be OK now - all elements are expanded to http but did not start with that originally
     return False    
 
+def web2py_date_accessed(browser):
+    #assumes that we have injected the access date into a meta element called 'date_accessed'
+    #using the web2py code {{response.meta.date_accessed = request.now}}
+    return datetime.strptime(browser.find_element_by_xpath("//meta[@name='date_accessed']").get_attribute("content"), date_format)
     
 def web2py_viewname_contains(browser, expected_view):
-    #assumes that we have injected the view name into a meta element called 'viewfile'
+    #Checks if we have injected the view name into a meta element called 'viewfile'
     #using the web2py code {{response.meta.viewfile = response.view}}
     try:
         return expected_view in browser.find_element_by_xpath("//meta[@name='viewfile']").get_attribute("content")
@@ -128,7 +134,7 @@ def web2py_viewname_contains(browser, expected_view):
         
 
 def web2py_server(appconfig_file=None):
-    cmd = ['python2', os.path.join(web2py_app_dir, '..','..','web2py.py'), '-Q', '-i', ip, '-p', port, '-a pass']
+    cmd = ['python2', os.path.join(web2py_app_dir, '..','..','web2py.py'), '-Q', '-i', ip, '-p', port, '-a', 'pass']
     if appconfig_file is not None:
         cmd += ['--args', appconfig_file]
     return subprocess.Popen(cmd)

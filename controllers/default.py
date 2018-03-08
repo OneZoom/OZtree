@@ -90,7 +90,7 @@ def sponsor_leaf():
 
             * maintenance [spl_maintenance.html] - the site is in maintenance mode, and we don't want to allow any access to reservations data
 
-            * error [spl_error.html] - something went very wrong
+            * no status set [spl_error.html] - something went very wrong
 
                 The following can be shown even when sponsorship is turned off
             * sponsored [spl_sponsored.html] - it's already been sponsored
@@ -154,8 +154,8 @@ def sponsor_leaf():
     else:
         form_session_id = response.session_id
         
-    # initialise status flag as error (it will get updated if all is OK)
-    status = "error"
+    # initialise status flag (it will get updated if all is OK)
+    status = ""
     # initialise other variables that will be parsed on to the page
     EOL_ID = -1
     species_name = common_name = the_name = None
@@ -224,7 +224,6 @@ def sponsor_leaf():
     if reservation_entry is None:
         # there is no row in the database for this case so add one
         if (isbanned != 0):
-            status = "banned"
             # update with full viewing data but no reservation as banned
             db.reservations.insert(
                 OTT_ID = OTT_ID_Varin,
@@ -234,6 +233,13 @@ def sponsor_leaf():
             )
             # this line does not insert any leger id because no transaction has taken place yet
             # that entry in the db is allowed to be blank
+        elif not allow_sponsorship:
+            # update but don't reserve
+            db.reservations.insert(
+                OTT_ID = OTT_ID_Varin,
+                name=leaf_entry.name,
+                last_view=request.now,
+                num_views=1)
         else:
             status = "available"
             # update with full reservation
@@ -263,7 +269,7 @@ def sponsor_leaf():
         # Need to have another option here if verified_time is too long ago - we should move this to the expired_reservations table and clear it.
         if (ledger_verified_time):
             status = "sponsored"
-        else:
+        elif allow_sponsorship and not isbanned:
             if (ledger_user_name):
             # something has been filled in
                 if (ledger_PP_transaction_code):
@@ -278,7 +284,7 @@ def sponsor_leaf():
                     if (timesince < (unpaid_time_limit)):
                         status = "unverified waiting for payment"
                     else:
-                        # we've waited too long and can zap the table then set available
+                        # we've waited too long and can zap the personal data previously in the table then set available
                         reservation_query.update(user_id=None, e_mail=None, twitter_name=None, allow_contact=None, user_sponsor_kind=None, user_sponsor_name=None, user_more_info=None, user_nondefault_image=None, user_preferred_image=None, user_updated_time=None, user_paid=None, user_message_OZ=None, user_giftaid=None, PP_transaction_code=None, PP_e_mail=None, PP_first_name=None, PP_second_name=None, PP_town=None, PP_country=None, PP_house_and_street=None, PP_postcode=None, verified_kind=None, verified_name=None, verified_more_info=None, verified_preferred_image=None, verified_time=None, verified_paid=None, verified_url=None, live_time=None, admin_comment=None, sponsorship_duration_days=None, asking_price=None, deactivated=None, sale_time=None, partner_name=None, partner_percentage=None)
                         #note that this e.g. clears deactivated taxa, etc etc.
                         status = "available"
@@ -321,10 +327,6 @@ def sponsor_leaf():
         user_image = db(db.images_by_ott.src_id == doID).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.rights, db.images_by_ott.licence).first()
     else:
         user_image=None
-
-    if status == "error":
-        response.view = request.controller + "/spl_error." + request.extension
-        return dict()
 
     #once we have got this far (not invalid or error), we can show certain pages
     #even in maintenance mode or where allow_sponsorship is not True, e.g. if

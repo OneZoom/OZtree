@@ -86,8 +86,10 @@ class SponsorshipTest(FunctionalTest):
         session id reservations work)
         """
         browser = self.browser if browser is None else browser
+        print("|plain", end="", flush=True)
         browser.get(self.urls['web2py'](ott))
         extra_assert_tests(browser)
+        print("|tree", end="", flush=True)
         browser.get(self.urls['treeviewer'](ott))
         extra_assert_tests(browser)
         #assert self.zoom_disabled()
@@ -95,14 +97,16 @@ class SponsorshipTest(FunctionalTest):
         if extra_assert_tests_from_another_browser is not None:
             #look at the same page with another browser to check that session reservation
             #still forwards to the same page
-            print("also testing same pages from an alternative browser ...", end="", flush=True)
+            print(" ... also testing same pages from an alternative browser ...", end="", flush=True)
             alt_browser = webdriver.Chrome()
             self.test_ott(extra_assert_tests_from_another_browser, ott, None, alt_browser)
             alt_browser.quit()
             
+        print("|MD", end="", flush=True)
         browser.get(self.urls['treeviewer_md'](ott))
         extra_assert_tests(browser)
         assert has_linkouts(browser, include_internal=False) == False
+        print("|nolink ", end="", flush=True)
         browser.get(self.urls['web2py_nolinks'](ott))
         extra_assert_tests(browser)
         assert has_linkouts(browser, include_internal=True) == False
@@ -125,6 +129,7 @@ class SponsorshipTest(FunctionalTest):
             ott, sciname = db_cursor.fetchone()
         except TypeError:
             self.fail("could not find a species which has not been looked at before")
+        self.db['connection'].commit() #need to commit here otherwise next select returns stale data
         db_cursor.close() 
         return ott, sciname
     
@@ -183,6 +188,19 @@ class SponsorshipTest(FunctionalTest):
         else:
             return sponsored[0]['OTT_ID']
             
+    @tools.nottest
+    def visit_data(self, ott):
+        """
+        Return the num_views, last_view and the reserve_time for this ott
+        """
+        db_cursor = self.db['connection'].cursor()
+        sql="SELECT num_views, last_view, reserve_time FROM `reservations` WHERE OTT_ID={0} LIMIT 1".format(self.db['subs'])        
+        db_cursor.execute(sql, (ott,))
+        row = db_cursor.fetchone()
+        self.db['connection'].commit() #need to commit here otherwise next select returns stale data
+        db_cursor.close() 
+        return row or (None, None, None)
+
     @tools.nottest
     def zoom_disabled(self):
         """

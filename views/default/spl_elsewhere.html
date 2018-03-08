@@ -1,5 +1,5 @@
 {{response.title='OneZoom: '+T('sponsor a species')}}
-{{if is_testing: response.meta.viewfile = response.view}}{{pass}}
+{{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{extend ('embed.html' if request.vars.get('embed') else 'layout.html')}}
     <h3>{{=T('Available for sponsorship')}}</h3>
     <p>{{=T('This leaf may be available for sponsorship. Please go to the OneZoom website to sponsor.')}}</p>
