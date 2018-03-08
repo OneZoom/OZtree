@@ -153,7 +153,7 @@ def sponsor_leaf():
         form_session_id = request.vars.form_session_id
     else:
         form_session_id = response.session_id
-        
+    
     # initialise status flag (it will get updated if all is OK)
     status = ""
     # initialise other variables that will be parsed on to the page
