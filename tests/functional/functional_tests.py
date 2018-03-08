@@ -82,39 +82,35 @@ class FunctionalTest(object):
             except NoSuchElementException: return False
             return True
     
-    @tools.nottest
-    def has_linkouts(self, include_internal):
-        """
-        Find tags with href attributes, e.g. <a>, <map>, etc. but allow some (e.g. link href=***)
-        Depending on the param passed in, we may want to allow internal (relative) links such as 
-        <a href='/sponsored'></a>
-        """
-        for tag in self.browser.find_elements_by_css_selector("[href^='http']"):
-            if tag.tag_name != u'link': #should allow e.g. <link href="styles.css">
-                 return True
-        for tag in self.browser.find_elements_by_css_selector("[href^='//']"):
-            if tag.tag_name != u'link': #should allow e.g. <link href="styles.css">
-                 return True
 
-        #all hrefs should now be http or https refs to local stuff. We should double check this
-        #by looking at the tag.attribute which is fully expanded by selenium/chrome to include http
-        for tag in self.browser.find_elements_by_css_selector('[href]'):
-            if tag.tag_name != u'link':
-                if include_internal:
-                    return true
-                elif not tag.get_attribute('href').startswith('http'):
-                    #Allow http:// links which should all be internal / relative
-                    # but catch e.g. mailto:, ftp://, file:/// etc. and treat these all as linkouts
-                    return True
+def has_linkouts(browser, include_internal):
+    """
+    Find tags with href attributes, e.g. <a>, <map>, etc. but allow some (e.g. link href=***)
+    Depending on the param passed in, we may want to allow internal (relative) links such as 
+    <a href='/sponsored'></a>
+    """
+    for tag in browser.find_elements_by_css_selector("[href^='http']"):
+        if tag.tag_name != u'link': #should allow e.g. <link href="styles.css">
+             return True
+    for tag in browser.find_elements_by_css_selector("[href^='//']"):
+        if tag.tag_name != u'link': #should allow e.g. <link href="styles.css">
+             return True
 
-        #should be OK now - all elements are expanded to http but did not start with that originally
-        return False    
+    #all hrefs should now be http or https refs to local stuff. We should double check this
+    #by looking at the tag.attribute which is fully expanded by selenium/chrome to include http
+    for tag in browser.find_elements_by_css_selector('[href]'):
+        if tag.tag_name != u'link':
+            if include_internal:
+                return true
+            elif not tag.get_attribute('href').startswith('http'):
+                #Allow http:// links which should all be internal / relative
+                # but catch e.g. mailto:, ftp://, file:/// etc. and treat these all as linkouts
+                return True
 
+    #should be OK now - all elements are expanded to http but did not start with that originally
+    return False    
 
-    @tools.nottest
-    def web2py_viewname_contains(self, expected_view):
-        return web2py_viewname_contains(self.browser, expected_view)
-        
+    
 def web2py_viewname_contains(browser, expected_view):
     #assumes that we have injected the view name into a meta element called 'viewfile'
     #using the web2py code {{response.meta.viewfile = response.view}}

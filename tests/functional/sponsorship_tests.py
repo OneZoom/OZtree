@@ -7,7 +7,7 @@ from time import sleep
 
 from selenium import webdriver #to fire up a duplicate page
 
-from .functional_tests import FunctionalTest, base_url, appconfig_loc, test_email, web2py_viewname_contains
+from .functional_tests import FunctionalTest, base_url, appconfig_loc, test_email, web2py_viewname_contains, has_linkouts
 
 
 class SponsorshipTest(FunctionalTest):
@@ -74,7 +74,41 @@ class SponsorshipTest(FunctionalTest):
         FunctionalTest.tearDownClass()
         
     @tools.nottest
-    def get_never_looked_at_species(self):
+    def test_ott(self, extra_assert_tests, ott, extra_assert_tests_from_another_browser=None, browser=None):
+        """
+        Test the 4 separate urls, each viewing the same page linked from a different place
+        (e.g. from the OZ tree viewer versus the min website, vs a museum display)
+        
+        If browser is None, use self.browser
+        
+        If extra_assert_tests_from_another_browser is set, then fire up another 
+        browser midway through, and test those on that browser (allows us to test whether
+        session id reservations work)
+        """
+        browser = self.browser if browser is None else browser
+        browser.get(self.urls['web2py'](ott))
+        extra_assert_tests(browser)
+        browser.get(self.urls['treeviewer'](ott))
+        extra_assert_tests(browser)
+        #assert self.zoom_disabled()
+        #here we should check that (most?) links open a new tab
+        if extra_assert_tests_from_another_browser is not None:
+            #look at the same page with another browser to check that session reservation
+            #still forwards to the same page
+            print("also testing same pages from an alternative browser ...", end="")
+            alt_browser = webdriver.Chrome()
+            self.test_ott(extra_assert_tests_from_another_browser, ott, None, alt_browser)
+            alt_browser.quit()
+            
+        browser.get(self.urls['treeviewer_md'](ott))
+        extra_assert_tests(browser)
+        assert has_linkouts(browser, include_internal=False) == False
+        browser.get(self.urls['web2py_nolinks'](ott))
+        extra_assert_tests(browser)
+        assert has_linkouts(browser, include_internal=True) == False
+
+    @tools.nottest
+    def never_looked_at_ottname(self):
         """
         Find an unpopular species that has never been looked at (i.e. does not have an entry in the reservations table
         Don't take the *most* unpopular, as this could be spacial. Take e.g. the 20th least popular
@@ -98,56 +132,38 @@ class SponsorshipTest(FunctionalTest):
     def delete_reservation_entry(self, ott, name, email=test_email):
         """
         Warning: this will REMOVE data. Make sure that this is definitely one of the previously not looked at species
-        Hence we pass *both* the ott and the name, and check that the reservation email matches test_email
+        Hence we pass *both* the ott and the name, and (normally) check that the reservation email matches test_email
         """
         db_cursor = self.db['connection'].cursor()
-        sql="DELETE FROM `reservations` WHERE OTT_ID={0} AND name={0} AND e_mail={0} LIMIT 1".format(self.db['subs'])
-        db_cursor.execute(sql, (ott, name, email))
+        if email is None:
+            #don't also check for email - be more wary of this, but needed e.g. when we can't add info via a sponsorship page
+            sql="DELETE FROM `reservations` WHERE OTT_ID={0} AND name={0} LIMIT 1".format(self.db['subs'])
+            n_rows = db_cursor.execute(sql, (ott, name))
+        else:
+            sql="DELETE FROM `reservations` WHERE OTT_ID={0} AND name={0} AND e_mail={0} LIMIT 1".format(self.db['subs'])        
+            n_rows = db_cursor.execute(sql, (ott, name, email))
         self.db['connection'].commit()
-        #to do - verify that one was deleted
+        #to do - return the number of rows deleted (should be 0 or 1)
         db_cursor.close() 
-    
-    
+        return n_rows
+
     @tools.nottest
-    def test_invalid_OTT(self, extra_assert_tests):
+    def invalid_ott(self):
         """
         Give an invalid OTT. We should also test for 'species' with no space in the name, but we can't be guaranteed
         that there will be any of these
         """
-        invalid_ott = -1
-        self.browser.get(self.urls['web2py'](invalid_ott))
-        extra_assert_tests(self)
-        self.browser.get(self.urls['treeviewer'](invalid_ott))
-        extra_assert_tests(self)
-        #assert self.zoom_disabled()
-        #here we should check that (most?) links open a new tab
-        self.browser.get(self.urls['treeviewer_md'](invalid_ott))
-        extra_assert_tests(self)
-        assert self.has_linkouts(include_internal=False) == False
-        self.browser.get(self.urls['web2py_nolinks'](invalid_ott))
-        extra_assert_tests(self)
-        assert self.has_linkouts(include_internal=True) == False
+        return -1
 
     @tools.nottest
-    def test_banned(self, extra_assert_tests):
+    def banned_ott(self):
         """
-        Humans are always banned
+        Return human ott = 770315 (always banned, never sponsored)
         """
-        human_ott = 770315
-        self.browser.get(self.urls['web2py'](human_ott))
-        extra_assert_tests(self)
-        self.browser.get(self.urls['treeviewer'](human_ott))
-        extra_assert_tests(self)
-        #here we should check that (most?) links open a new tab
-        self.browser.get(self.urls['treeviewer_md'](human_ott))
-        extra_assert_tests(self)
-        assert self.has_linkouts(include_internal=False) == False
-        self.browser.get(self.urls['web2py_nolinks'](human_ott))
-        extra_assert_tests(self)
-        assert self.has_linkouts(include_internal=True)  == False
+        return 770315
        
     @tools.nottest
-    def test_already_sponsored(self, extra_assert_tests):
+    def sponsored_ott(self):
         """
         We might also want to test a sponsored banned species here, like the giant panda
         """
@@ -155,52 +171,10 @@ class SponsorshipTest(FunctionalTest):
         sponsored = requests.get(base_url + 'sponsored.json').json()['rows']
         if len(sponsored)==0:
             assert False, 'No sponsored species to test against'
+            return None
         else:
-            example_sponsored_ott = sponsored[0]['OTT_ID']
-            self.browser.get(self.urls['web2py'](example_sponsored_ott))
-            extra_assert_tests(self)
-            self.browser.get(self.urls['treeviewer'](example_sponsored_ott))
-            extra_assert_tests(self)
-            #here we should check that (most?) links open a new tab
-            self.browser.get(self.urls['treeviewer_md'](example_sponsored_ott))
-            extra_assert_tests(self)
-            assert self.has_linkouts(include_internal=False) == False
-            self.browser.get(self.urls['web2py_nolinks'](example_sponsored_ott))
-            extra_assert_tests(self)
-            assert self.has_linkouts(include_internal=True)  == False
-
-    @tools.nottest
-    def test_can_be_sponsored(self, expected_name):
-        """
-        Look at an existing one
-        """
-        ott, sciname = self.get_never_looked_at_species()
-        page = self.page + "?ott={}".format(ott)
-        self.browser.get(page)
-        assert self.web2py_viewname_contains("spl_maintenance")
-        self.assertEquals('99', self.browser.find_element_by_id('time').text)
-        self.browser.get(page + "&embed=3")
-        self.assertTrue(self.web2py_viewname_contains("spl_maintenance"))
-        self.assertEquals('99', self.browser.find_element_by_id('time').text)
-        self.assertFalse(self.has_linkouts(include_internal=False))
-
-
-        #look at the same page with another browser to check that session reservation
-        #still forwards to the same page
-        alt_browser = webdriver.Chrome()
-        alt_browser.get(page + "&embed=3")
-        self.assertTrue(web2py_viewname_contains(alt_browser, "spl_maintenance"))
-        self.assertEquals('99', self.browser.find_element_by_id('time').text)
-        alt_browser.quit()
-
-        self.browser.get(page + "&embed=4")
-        self.assertTrue(self.web2py_viewname_contains("spl_maintenance"))
-        self.assertEquals('99', self.browser.find_element_by_id('time').text)
-        self.assertFalse(self.has_linkouts(include_internal=True))
-
-
-        self.delete_reservation_entry(ott, sciname)
-
+            return sponsored[0]['OTT_ID']
+            
     @tools.nottest
     def zoom_disabled(self):
         """
