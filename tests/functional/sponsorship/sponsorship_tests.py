@@ -52,7 +52,7 @@ class SponsorshipTest(FunctionalTest):
             """Get the link from a leaf_linkouts url"""
             leaf_links = self.browser.execute_script("return (" + url + ")" + "({})".format(ott))
             json = requests.get(leaf_links).json()
-            return json['data']['ozspons']
+            return json['data']['ozspons'][0]
 
         #make some functions that can be called that refer to the saved leaf_linkouts urls
         def life_link(ott):
