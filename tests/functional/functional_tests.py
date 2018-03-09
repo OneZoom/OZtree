@@ -12,7 +12,6 @@
 
 import sys
 import json
-import subprocess
 import os.path
 import re
 from datetime import datetime
@@ -25,11 +24,8 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 if sys.version_info[0] < 3:
     raise Exception("Python 3 only")
 
-from ..util import get_db_connection, web2py_app_dir
+from ..util import get_db_connection, web2py_app_dir, web2py_server
 
-ip = "127.0.0.1"
-port = "8001"
-base_url="http://"+ip+":"+port+"/"
 date_format = "%Y-%m-%d %H:%M:%S.%f" #used when a web2py datetime on a webpage needs converting back to datetime format
 test_email = 'test@onezoom.org'
 
@@ -130,10 +126,3 @@ def web2py_viewname_contains(browser, expected_view):
 #        body = json.dumps({'cmd':cmd, 'params': params})
 #        response = driver.command_executor._request('POST', url, body)
 #        return response.get('value')
-        
-
-def web2py_server(appconfig_file=None):
-    cmd = ['python2', os.path.join(web2py_app_dir, '..','..','web2py.py'), '-Q', '-i', ip, '-p', port, '-a', 'pass']
-    if appconfig_file is not None:
-        cmd += ['--args', appconfig_file]
-    return subprocess.Popen(cmd)

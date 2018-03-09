@@ -1,8 +1,12 @@
 import os.path
 import re
+import subprocess
 
 web2py_app_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 appconfig_loc = os.path.join(web2py_app_dir, 'private', 'appconfig.ini')
+ip = "127.0.0.1"
+port = "8001"
+base_url="http://"+ip+":"+port+"/"
 
 def get_db_connection():
     database_string = None
@@ -52,3 +56,9 @@ def appconfig_contains(start_of_line, section="general"):
                 if section==curr_section and line.startswith(start_of_line):
                     return True
     return False
+
+def web2py_server(appconfig_file=None):
+    cmd = ['python2', os.path.join(web2py_app_dir, '..','..','web2py.py'), '-Q', '-i', ip, '-p', port, '-a', 'pass']
+    if appconfig_file is not None:
+        cmd += ['--args', appconfig_file]
+    return subprocess.Popen(cmd)
