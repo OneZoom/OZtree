@@ -4,11 +4,12 @@ setup_params = {
   'UI_layer': {
     'page':'UI_layer.load', 
     'vars':{'tabs':'all'} }, 
+   'popups': {
+    'vars':{'embed':1} } #definitely don't encode session ID here, as this will be permanently stored in the html
   }
 }}
 
 {{extend 'treeviewer/layout.html'}}
-<title>OneZoom Tree of Life Explorer, text page for {{=page_info['title_name']}}</title>
 <!-- since this should be possible to run without a server, remove the ability to switch languages/pages -->
 <style>
 .treeswitch {display: none}
@@ -18,7 +19,6 @@ setup_params = {
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
 var tree_config=null;
 var pagetitle_func = function(nm) {return (nm)?"OneZoom restricted: "+ nm:"OneZoom Tree of Life Explorer: restricted version"};
-document.title = pagetitle_func("{{=page_info['title_name']}}");
 var popular_locations = [ /* strings are treated as headers (looked up in OZstrings), arrays as links with [ott,name] with name optional */
 /*    'Popular places',
  Can't get these to work at the moment for some reason    [244265],  //Mammals
