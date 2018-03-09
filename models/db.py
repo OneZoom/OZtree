@@ -45,7 +45,7 @@ else:
 try:
     thumb_base_url = myconf.take('general.pics_dir')
 except:
-    thumb_base_url = URL('static','FinalOutputs/pics', scheme=True, host=True)+"/"
+    thumb_base_url = URL('static','FinalOutputs/pics', scheme=True, host=True, extension=False)+"/"
 #should probably move to base/src_id/src.jpg or even (better) base/src_id/src_lastdigit/src.jpg (to set ~ 10 000 files per dir, not 100 000)
 def thumbnail_url(src, src_id, preferred_px=150, square=True):
     return "{}{}.jpg".format(thumb_base_url, src_id)
