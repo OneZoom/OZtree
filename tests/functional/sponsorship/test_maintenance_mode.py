@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+from time import sleep
+
 from .sponsorship_tests import SponsorshipTest
 from ..functional_tests import web2py_viewname_contains
-from time import sleep
 
 class TestMaintenanceMode(SponsorshipTest):
     maintenance_mins = 99
