@@ -1,3 +1,13 @@
+"""
+From https://github.com/OneZoom/OZtree/issues/62
+
+1) Test no js errors on main page (also that it zooms to the right place)
+2) From #57 - test that we can get minlife from the main website, and that it loads as a local file without errors
+3) Test the various tree views (linnean.html, AT.html, etc)
+4) Test the sponsorship pathway pages
+5) Test the iframe popups
+"""
+
 from functional_tests import FunctionalTest, base_url
 import os.path
 import shutil
