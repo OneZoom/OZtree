@@ -1,3 +1,4 @@
+{{if 'tree' in page_info:}}
 {{tt_info = page_info['tree']['info']}}{{for root_id, root in page_info['tree']['bases'].items():}}<h2>Base of the evolutionary tree for {{=XML(tt_info[root_id]['htmlname'])}}</h2>
 {{if tt_info[root_id]['real_parent']:}}<a href="{{=tt_info[tt_info[root_id]['real_parent']]['url']}}">&larr; parent</a>{{pass}}
 {{if root_id<0:}}<div class="species">Species {{=XML(tt_info[root_id]['htmlname'])}}</div>
@@ -29,3 +30,4 @@
 {{if tt_info[root_id]['ott']:}}<li><a href="https://tree.opentreeoflife.org/opentree/argus/opentree@ott{{=tt_info[root_id]['ott']}}">Open Tree of Life</a></li>{{pass}}
 </ul>{{pass}}
 <hr />{{pass}}
+{{pass}}
