@@ -7,7 +7,8 @@ from time import sleep
 
 from selenium import webdriver #to fire up a duplicate page
 
-from ..functional_tests import FunctionalTest, base_url, appconfig_loc, test_email, web2py_viewname_contains, has_linkouts
+from ...util import appconfig_loc
+from ..functional_tests import FunctionalTest, base_url, test_email, web2py_viewname_contains, has_linkouts
 
 
 class SponsorshipTest(FunctionalTest):
