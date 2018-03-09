@@ -2,7 +2,7 @@
 ### This allows URLs like onezoom.org/life/ rather than onezoom.org/treeviewer/life/
 ### but still allows us to place all the tree viewer code in a single directory
 
-from OZfunctions import lang_primary, check_version
+from OZfunctions import lang_primary, __check_version
 
 def js_strings():
     """
@@ -41,7 +41,7 @@ def minlife():
     """
     return dict(
         page_info = {'title_name':'Minimal OneZoom page'},
-        version=check_version())
+        version=__check_version())
 
 def treetours():
     """

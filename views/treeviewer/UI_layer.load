@@ -1,7 +1,7 @@
-{{if request.vars.links=='0':}}
+{{if request.vars.links=='none':}}
 {{#remove hyperlink from *all* links created via the web2py A() helper, e.g. for the logos}}
 {{ def A(*args, **kwargs): return CAT(*args)}}
-{{else:}}
+{{elif request.vars.links=='newtab':}}
 {{#make *all* links created via the web2py A() helper open in a new tab, e.g. from logos - this should override others}}
 {{web2py_A = A}}
 {{def A(*args, **kwargs): return web2py_A(*args, **dict(kwargs, _target='_blank'))}}
@@ -194,7 +194,9 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <li class="{{=tab['id']}}" data-src="" aria-controls="{{=tab['id']}}-panel">
           <div class="uk-position-top-right expand-tab">
             <!-- the linkout buttons are forms, to allow post requests to pass on session ids -->
+{{if request.vars.links!='none':}}
             <form target="_blank" method="post" onsubmit="return false"><button type="submit" class="uk-icon-button" uk-tooltip="pos: left" title="{{=T('Open this %s tab in a new window') % (tab['name'],)}}" uk-icon="icon: expand; ratio: 0.75"></button></form>
+{{pass}}
           </div>
           <p class="loading_pic uk-position-center"><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
         </li>

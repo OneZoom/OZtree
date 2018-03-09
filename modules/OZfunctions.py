@@ -8,7 +8,7 @@ import re
 import os
 from gluon import current
 
-def check_version(): #this is a private function (has a space after the name)
+def __check_version(): #this is a private function
     db = current.db
     request = current.request
     try:

@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 # this file is released under public domain and you can use without limitations
 import datetime
-from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, check_version
+import re
+
+from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __check_version
 """ Some settings for sponsorship"""
 try:
     allow_sponsorship = myconf.take('sponsorship.allow_sponsorship') in ['true', '1', 't', 'y', 'yes', 'True']
@@ -1096,11 +1098,13 @@ def news():
 ### For programming purposes, these views are in views/treeviewer NOT views/default as might be expected
 
 def life_text():
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+    return dict(page_info = {'tree': __text_tree()})
+
+def __text_tree():
     """
     A text representation. NB: The 'normal' pages also have the text-only data embedded in them, for SEO reasons
     """
-    response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    import re
     #target_string must consist only of chars that are allowed in web2py arg
     # array (i.e. in the path: see http://stackoverflow.com/questions/7279198
     # this by default restricts it to re.match(r'([\w@ -]|(?<=[\w@ -])[.=])*')
@@ -1265,11 +1269,11 @@ def life():
                    'tourname':request.args[1] #only *-=. and alphanumeric in args, so can use this in js
                    }
     else:
-        text_tree = life_text()
-        page_info = {'tree': text_tree, 'title_name': ", ".join(life_text_init_taxa(text_tree))}
+        tt = __text_tree()
+        page_info = {'tree': tt, 'title_name': ", ".join(life_text_init_taxa(tt))}
     return dict(
         page_info = page_info,
-        version=check_version())
+        version=__check_version())
 
 def life_MD():
     """

@@ -1,12 +1,10 @@
 <!DOCTYPE html>
-{{if request.vars.embed:
- #this was accidentally called from within an iframe in another instance of the viewer => stop recursive inclusion
-}}
+{{if request.vars.embed:}}
+<!-- Shouldn't embed a viewer within another: e.g. if accidentally called within an iframe of another viewer instance -->
 <html><body>
 <div id="stop_recursion">{{=T('Please close this popup window to return to the OneZoom tree viewer')}}</div>
 </body></html>
-{{
-else:
+{{else:
     extra_title = ''
     if setup_params.get('partner'):
         setup_params['partner_data'] = db(db.partners.partner_identifier == setup_params['partner']).select().first()
@@ -82,12 +80,12 @@ else:
 </head>
 <body id = "wholebody" style="user-select:none; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select:none; -ms-user-select:none;" unselectable = "on">
     <!-- main body of document - canvas, then rest of UI elements in a single div -->
-  <canvas id="OneZoomCanvasID" tabindex="1"></canvas>
+  <canvas id="OneZoomCanvasID" tabindex="1">{{include 'treeviewer/life_text.load'}}</canvas>
   {{=LOAD("treeviewer",setup_params['UI_layer']['page'],vars=setup_params['UI_layer'].get("vars"), ajax=False, target="UI")}}
-{{except:}}
+{{except NotImplementedError:}}
 <!-- had a problem with version mismatch -->
   </head>
-  <body><h1>{{=T('Sorry - there has been a OneZoom error when getting the tree')}}</h1>
+  <body><h1 id="OneZoom_error">{{=T('Sorry - there has been a OneZoom error when getting the tree')}}</h1>
 {{=XML(T('No appropriate tree version available (Error: %s). Please <a href="mailto:mail@onezoom.org">contact us</a> and tell us of the problem') % (version,))}}
 {{pass}}
 
