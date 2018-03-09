@@ -20,7 +20,7 @@ class TestImageFiles(object):
     def tearDownClass(self):
         pass
     
-    def test_images_in_db_present(self):
+    def test_all_images_in_db_present_locally(self):
         """
         All image numbers in the DB should have thumbnails on disk (takes a while: dots give batches)
         Will output the otts and numbers in line batches to a temporary file, so they can be re-harvested
