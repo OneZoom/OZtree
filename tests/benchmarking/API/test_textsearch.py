@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Test the OZ text search API with a set of queries 
+Test the OZ text search API with a set of queries - NOT YET nose-ified.
 
 Should return a list of times for the different terms
 
@@ -13,6 +13,10 @@ could recode to use https://github.com/wg/wrk
 
 for the moment run the non-working code using nosetests -vs test_textsearch.py
 or the working code simply by ./test_textsearch.py
+
+Note that we will want to be able to specify a different server for the blatting test, so that e.g. we can test beta remotely
+One way to do this is to place a testing setup after if __name__ == '__main__':, so that the file can be called directly with 
+a server parameter
 """
 
 import sys
