@@ -5,9 +5,24 @@
 <html><body>
 <div id="stop_recursion">{{=T('Please close this popup window to return to the OneZoom tree viewer')}}</div>
 </body></html>
-{{else:}}
+{{
+else:
+    extra_title = ''
+    if setup_params.get('partner'):
+        setup_params['partner_data'] = db(db.partners.partner_identifier == setup_params['partner']).select().first()
+        if setup_params['partner_data']:
+            extra_title = '/'+setup_params['partner']
+            setup_params['UI_layer']['vars']['partner_logo'] = setup_params['partner_data'].logo
+            setup_params['UI_layer']['vars']['partner_url'] = setup_params['partner_data'].url
+            setup_params['popups']['vars']['partner'] = setup_params['partner']
+            setup_params['popups']['vars']['user_more_info'] = setup_params['partner_data'].default_more_info
+            setup_params['popups']['vars']['user_message_OZ'] = setup_params['partner']
+        pass
+    pass
+}}
 <html>
 <head>
+  <title>OneZoom{{=extra_title}} Tree of Life Explorer, text page for {{=page_info['title_name']}}</title>
   <meta NAME="description" CONTENT="OneZoom Tree of Life Explorer" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -54,6 +69,10 @@
     };
   </script>
 {{include}}
+<script>
+    pagetitle_func = pagetitle_func || function(nm) {return (nm)?"OneZoom{{=extra_title}}: "+ nm:"OneZoom{{=extra_title}} Tree of Life Explorer"};
+    document.title = pagetitle_func("{{=page_info['title_name']}}");
+</script>
   <noscript>
     <style>
         /* hide control buttons if there is no JS */

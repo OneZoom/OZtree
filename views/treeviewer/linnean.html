@@ -1,7 +1,6 @@
 {{
-partner = 'LinnSoc'
 setup_params = {
-  'partner': db(db.partners.partner_identifier == partner).select().first(),
+  'partner': 'LinnSoc',
   'UI_layer': {
     'page':'UI_layer.load', 
     'vars':{'tabs':'all'}, 
@@ -10,21 +9,14 @@ setup_params = {
     'vars':{'embed':'3'},
   },
 }
-if setup_params['partner']:
-    setup_params['popups']['vars']['partner'] = partner
-    setup_params['popups']['vars']['user_more_info'] = setup_params['partner'].default_more_info
-    setup_params['popups']['vars']['user_message_OZ'] = partner
-pass
 }}
 {{extend 'treeviewer/layout.html'}}
-<title>OneZoom/{{=partner}} Tree of Life Explorer, text page for {{=page_info['title_name']}}</title>
 <!-- could include bespoke css file here -->
 <script type="text/javascript">
 
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
 var tree_config=null;
-var pagetitle_func = function(nm) {return (nm)?"OneZoom/{{=partner}}: "+ nm:"OneZoom/{{=partner}} Tree of Life Explorer"};
-document.title = pagetitle_func("{{=page_info['title_name']}}");
+var pagetitle_func = null;
 var popular_locations = [ /* strings are treated as headers (looked up in OZstrings), arrays as links with [ott,name] with name optional */
     'Linnean specials',
     [819501], // Twinflower (linneaus' favourite)
