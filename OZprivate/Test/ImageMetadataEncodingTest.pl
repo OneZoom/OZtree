@@ -1,4 +1,6 @@
 #!/usr/bin/perl -ws
+#Test how to encode / decode unicode strings in image metadata using ExifTool
+
 use Image::ExifTool qw(:Public);
 use JSON;
 use utf8;
