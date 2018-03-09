@@ -78,6 +78,12 @@ class FunctionalTest(object):
             try: self.browser.find_element_by_id(id)
             except NoSuchElementException: return False
             return True
+
+    @tools.nottest
+    def element_by_class_exists(self, cls):
+            try: self.browser.find_element_by_class_name(cls)
+            except NoSuchElementException: return False
+            return True
     
 
 def has_linkouts(browser, include_internal):

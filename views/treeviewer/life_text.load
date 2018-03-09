@@ -3,7 +3,7 @@
 {{if root_id<0:}}<div class="species">Species {{=XML(tt_info[root_id]['htmlname'])}}</div>
 <h3>OneZoom</h3>
 <a href="{{=URL('default','life')}}#ott{{=tt_info[root_id]['ott']}}">Visit it on the OneZoom tree</a> or <a href="{{=URL('default','sponsor_leaf', vars={'ott':tt_info[root_id]['ott']})}}">sponsor it!</a>
-{{else:}}<ul id="root">
+{{else:}}<ul class="text_tree_root">
 <li>{{=XML(tt_info[root_id]['htmlname'])}}{{if root_id>=0:}} ({{=(tt_info[root_id]['leaf_rgt']-tt_info[root_id]['leaf_lft']+1)}} species){{pass}}
 <ul>
   {{for id1, more1 in root.items():}}<li><a href="{{=tt_info[id1]['url']}}">{{=XML(tt_info[id1]['htmlname'])}}{{if id1<0:}}</a>{{else:}} &rarr;</a> ({{=(tt_info[id1]['leaf_rgt']-tt_info[id1]['leaf_lft']+1)}} species){{pass}}{{if more1:}}

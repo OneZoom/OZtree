@@ -1,7 +1,7 @@
 {{response.title='OneZoom: Text tree'}}
 {{response.files.append(URL('static', 'OZSite/life_text.css'))}}
 {{extend ('embed.html' if request.vars.get('embed') else 'layout.html')}}
-<div class="row-fluid" class="text_tree">
+<div class="row-fluid text_tree">
     <div class="col-md-12">
 <!-- see http://odyniec.net/articles/turning-lists-into-trees/ -->
 {{include 'treeviewer/life_text.load'}}
