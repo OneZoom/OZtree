@@ -4,11 +4,12 @@ setup_params = {
   'UI_layer': {
     'page':'UI_layer.load', 
     'vars':{'tabs':'all'} }, #should also include an OpenTree tab in here
+   'popups': {
+    'vars':{'embed':1, 'form_session_id': response.session_id} }
   }
 }}
 
 {{extend 'treeviewer/layout.html'}}
-<title>OneZoom Tree of Life Explorer, text page for {{=page_info['title_name']}}</title>
 
 <style>
 #controlButtons #screenshotButton   {display:block;}
@@ -19,8 +20,7 @@ setup_params = {
 <script type="text/javascript">
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
 var tree_config=null;
-var pagetitle_func = function(nm) {return (nm)?"OneZoom: "+ nm:"OneZoom Tree of Life Explorer"};
-document.title = pagetitle_func("{{=page_info['title_name']}}");
+var pagetitle_func = null;
 var popular_locations = [ /* strings are treated as headers (looked up in OZstrings), arrays as links with [ott,name] with name optional */
     'Popular places',
     [244265],  //Mammals
