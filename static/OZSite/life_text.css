@@ -1,17 +1,17 @@
-.text_tree .root ul {
+.text_tree .text_tree_root ul {
     color: #AAAAAA;
 }
 
-.text_tree .root span {
+.text_tree .text_tree_root span {
     opacity: 0.4;
 }
 
 
-.text_tree .root em, #root strong {
+.text_tree .text_tree_root em, #root strong {
     font-style: normal;
 }
 
-.text_tree .root em.species {
+.text_tree .text_tree_root em.species {
     font-style: italic;
 }
 
