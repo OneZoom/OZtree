@@ -6,7 +6,7 @@ import os.path
 import shutil
 from nose import tools
 
-from ...util import base_url
+from ...util import base_url, web2py_app_dir
 from ..functional_tests import FunctionalTest
 
 class TestViewerAvailability(FunctionalTest):
@@ -15,10 +15,10 @@ class TestViewerAvailability(FunctionalTest):
     """
     
     @tools.nottest
-    def test_available(self, controller):
-        self.browser.get(base_url + controller)
-        assert self.element_by_tag_name_exists('canvas'), "Should always have a canvas element"
-        assert not self.element_by_id_exists('OneZoom_error'), "Should not show the error text"
+    def test_available(self, controller, base=base_url):
+        self.browser.get(base + controller)
+        assert self.element_by_tag_name_exists('canvas'), "{} tree should always have a canvas element".format(controller)
+        assert not self.element_by_id_exists('OneZoom_error'), "{} tree should not show the error text".format(controller)
     
     def test_life_available(self):
         """
@@ -59,8 +59,20 @@ class TestViewerAvailability(FunctionalTest):
 
     def test_text_tree_available(self):
         """
-        The Linnean Soc tree (different sponsorship details) should be available
+        The text-only tree should be viewable
         """
         self.browser.get(base_url + "life_text")
         assert self.element_by_class_exists('text_tree'), "Should have the text tree in a labelled div"
         assert self.element_by_class_exists('text_tree_root'), "Should have the root of the text tree in a labelled ul"
+
+    def test_minlife_available(self):
+        """
+        The minlife view for restricted installation should be should be available on the site
+        """
+        self.test_available("treeviewer/minlife")
+
+    def test_minlife_available(self):
+        """
+        The minlife view should exist as a plain html file in static for restricted installation 
+        """
+        self.test_available("minlife", "file://" + web2py_app_dir + "/static/minlife.html")
