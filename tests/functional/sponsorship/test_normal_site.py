@@ -68,3 +68,47 @@ class TestNormalSite(SponsorshipTest):
             extra_assert_tests_from_another_browser = alt_browser_assert_tests)
         n_deleted = self.delete_reservation_entry(ott, sciname, None)
         assert n_deleted == 1, "visiting an unvisited ott should allocate a reservations row which has been deleted"
+
+'''
+    def test_payment_pathway(self):
+        """
+        Go through the payment process, checking at each stage whether the correct page is given.
+        Do this from scratch, by getting the links from the life.html and life_MD.html viewers
+        We need to test 0) sponsor_leaf (the 'normal' page) 1) spl_reserved (reserved for someone else) 2) spl_waitpay 3) spl_unverified.html
+        """
+        test_name = "My tést <name> 漢字 + أبجدية عربية"
+        test_4byte_unicode = " &amp; <script>" #annoying can't do this in selenium
+        
+        ott, sciname = self.get_never_looked_at_species()
+        page = self.page + "?ott={}".format(ott)
+        self.browser.get(page)
+        self.assertTrue(self.web2py_viewname_contains("sponsor_leaf"))
+        #this also tests whether a reload in the same browser works
+        self.browser.get(page + "&embed=3")
+        self.assertTrue(self.web2py_viewname_contains("sponsor_leaf"))
+        self.assertFalse(self.has_linkouts(include_internal=False))
+        #here we could test functionality of the main sponsor_leaf page
+        
+        
+        #look at the same page with another browser to check if session reservation works
+        alt_browser = webdriver.Chrome()
+        alt_browser.get(page + "&embed=3")
+        self.assertTrue(web2py_viewname_contains(alt_browser, "spl_reserved"))
+        self.assertFalse(self.has_linkouts(include_internal=False))
+        alt_browser.quit()
+        
+        #fill in the form elements
+        email = self.browser.find_element_by_id("e-mail_input")
+        sponsor_name = self.browser.find_element_by_id("user_sponsor_name_input")
+        more_info = self.browser.find_element_by_id("user_more_info_input")
+        
+        email.send_keys(test_email) #should test too long a name
+        sponsor_name.send_keys(test_name) #probably worth testing weird characters here
+        more_info.send_keys(test_4byte_unicode) #probably worth testing weird characters here
+        
+        self.browser.find_element_by_id("submit_button").click()
+        
+        #try getting information from the API (should not return)
+             
+        self.delete_reservation_entry(ott, sciname, test_email)
+'''
