@@ -15,9 +15,26 @@ setup_params = {
 .langswitch {display: none}
 </style>
 <script type="text/javascript">
+/* check that we are not using a non-matching tree version - a single one-off ajax call */
+$.ajax({
+    type:"GET", 
+    url: "{{=URL('API', 'version', scheme=True, host=True, extension='json')}}", 
+    success: function(data) {
+            if (parseInt(data.version) != version) {
+                $('body').prepend('<h1 class="OneZoom_error", style="z-index: 100; position:absolute; margin:1em; color:red;">' +
+                'WARNING: the version of the OneZoom tree you are running (' + version +
+                ') does not match the data returned from the OneZoom website (' + data.version + '). ' +
+                'The data shown on this tree may be matched to the wrong lifeforms</h1>')
+            }
+        }, 
+    error: function(jqXHR, textStatus, errorThrown) {
+            alert(jqXHR.status);
+        },
+});
+
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
 var tree_config=null;
-var pagetitle_func = function(nm) {return (nm)?"OneZoom restricted: "+ nm:"OneZoom Tree of Life Explorer: restricted version"};
+var pagetitle_func = function(nm) {return (nm)?("OneZoom restricted: "+ nm):"OneZoom Tree of Life Explorer: restricted version"};
 var popular_locations = [ /* strings are treated as headers (looked up in OZstrings), arrays as links with [ott,name] with name optional */
 /*    'Popular places',
  Can't get these to work at the moment for some reason    [244265],  //Mammals
