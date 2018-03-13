@@ -93,7 +93,7 @@ class TestViewerAvailability(FunctionalTest):
         """
         #here we should also test whether the 
         f = "minlife.html"
-        if os.path.isfile(os.path.join(web2py_app_dir, 'static', f):
+        if os.path.isfile(os.path.join(web2py_app_dir, 'static', f)):
             self.test_available(f, "file://" + web2py_app_dir + "/static/")
         else:
             raise FileNotFoundError("To mun this test you need to create minlife.html by running `grunt partial-install`")
