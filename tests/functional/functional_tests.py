@@ -64,7 +64,7 @@ class FunctionalTest(object):
     def tearDownClass(self):
         #should test here that we don't have any console.log errors (although we might have logs).
         self.browser.quit()
-        print("> killing web2py")
+        print("> stopping web2py")
         self.web2py.kill()
 
     @tools.nottest

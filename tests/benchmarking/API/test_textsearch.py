@@ -46,7 +46,7 @@ class TestTextsearch(object):
 
     @classmethod    
     def tearDownClass(self):
-        print("> killing web2py")
+        print("> stopping web2py")
         self.web2py.kill()
 
     def TestSearchReturnSpeed(self):

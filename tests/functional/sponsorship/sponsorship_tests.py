@@ -7,7 +7,7 @@ from time import sleep
 
 from selenium import webdriver #to fire up a duplicate page
 
-from ...util import appconfig_loc, base_url
+from ...util import appconfig_loc, base_url, humanOTT
 from ..functional_tests import FunctionalTest, test_email, web2py_viewname_contains, has_linkouts
 
 
@@ -164,9 +164,9 @@ class SponsorshipTest(FunctionalTest):
     @tools.nottest
     def banned_unsponsored_ott(self):
         """
-        Return human ott = 770315 (always banned, never sponsored)
+        Human ott is always banned, never sponsored
         """
-        return 770315
+        return humanOTT
 
     @tools.nottest
     def banned_sponsored_ott(self):
