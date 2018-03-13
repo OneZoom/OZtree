@@ -99,8 +99,11 @@ function show_wikipage_for_lang(selector, lang, Qid, restrict_links) {
 }
 
 function inject_wikipage(selector, pagetitle, base_url, restrict_links) {
+  /* Warning - this may inject scripts into the existing page, leading to XSS vulnerabilities. However, the wikipedia
+  rest_v1 API, which is used here, should not contain any JS, so we should be OK */
   $.ajax({
     type: "GET",
+    headers: {'User-Agent':'mail@onezoom.org'},
     pagetitle: pagetitle,
     base_url: base_url,
     selector: selector,
