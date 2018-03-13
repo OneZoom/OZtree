@@ -30,6 +30,14 @@
   {{if response.canonical:}}<link rel="canonical" href="{{=response.canonical}}">{{pass}}
 {{try:}}
 {{version = str(version+0)}}
+{{except TypeError:}}
+<!-- had a problem with version mismatch -->
+  </head>
+  <body><h1 class="OneZoom_error">{{=T('Sorry - there has been a OneZoom error when getting the tree')}}</h1>
+{{=XML(T('No appropriate tree version available (Error: %s). Please <a href="mailto:mail@onezoom.org">contact us</a> and tell us of the problem') % (version,))}}</body>
+</html>
+{{else:}}
+
 {{include 'web2py_ajax.html' #only really needed for web2py ajax loading in sponsor_node tab (must be above the UIkit lines)}}
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
   <!-- fallback to local jQuery version e.g. if offline -->
@@ -40,18 +48,20 @@
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree.css')}}" />
   <!-- for any embedded sponsor_node pages -->
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'OZSponsor/sponsor_node.css')}}" />
-  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/completetree_' + str(version) +  '.js')}}"></script>
-  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/cut_position_map_' + str(version) +  '.js')}}"></script>
-  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/dates_' + str(version) + '.js')}}"></script>
+  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/completetree_' + version +  '.js')}}"></script>
+  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/cut_position_map_' + version +  '.js')}}"></script>
+  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/dates_' + version + '.js')}}"></script>
   <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common.js')}}"></script>
   <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry.js')}}"></script>
   
   <script>
     //include a few default params early on, so they can be used / overridden in the file which includes this layout
+    var version = {{=version}};
     var OZstrings={{include 'treeviewer/js_strings.json'}}
     var server_urls = {
       /* These fill out the equivalently named variables in OneZoom global_config.
-         They need to be defined here to avoid hard-coding them into the OneZoom js code */
+         They need to be defined here to avoid hard-coding them into the OneZoom js code 
+         They are coded with the full URL so that they can be used remotely (e.g. in a partial install) */
       data_path_pics: {{=XML(js_thumbnail_url)}},
       node_details_api: "{{try:}}{{=myconf.take('API.node')}}{{except:}}{{=URL('API','node_details.json', scheme=True, host=True)}}{{pass}}",
       search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",
@@ -82,13 +92,6 @@
     <!-- main body of document - canvas, then rest of UI elements in a single div -->
   <canvas id="OneZoomCanvasID" tabindex="1">{{include 'treeviewer/life_text.load'}}</canvas>
   {{=LOAD("treeviewer",setup_params['UI_layer']['page'],vars=setup_params['UI_layer'].get("vars"), ajax=False, target="UI")}}
-{{except NotImplementedError:}}
-<!-- had a problem with version mismatch -->
-  </head>
-  <body><h1 id="OneZoom_error">{{=T('Sorry - there has been a OneZoom error when getting the tree')}}</h1>
-{{=XML(T('No appropriate tree version available (Error: %s). Please <a href="mailto:mail@onezoom.org">contact us</a> and tell us of the problem') % (version,))}}
-{{pass}}
-
   <script type="text/javascript">
 /* define most of the JS after the main page has loaded */
 var onezoom = null; //will be filled out on document ready
@@ -885,4 +888,5 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   </script>
 </body>
 </html>
-{{pass}}
+{{pass #version exception}}
+{{pass #embed not present}}
