@@ -12,14 +12,18 @@ def __check_version(): #this is a private function
     db = current.db
     request = current.request
     try:
-        version = -(db.ordered_nodes[1].parent) #the version number of the tree is hackily stored as a negative parent of the root
-        if not os.path.isfile(os.path.join(request.folder,
-                                  "static",
-                                  "FinalOutputs",
-                                  "data",
-                                  "completetree_{}.js".format(version))):
-            raise IOError("completetree file does not exist for version {}".format(version))
-        return version
+        row = db.ordered_nodes[1]
+        if row:
+            version = -(row.parent) #the version number of the tree is hackily stored as a negative parent of the root
+            if not os.path.isfile(os.path.join(request.folder,
+                                      "static",
+                                      "FinalOutputs",
+                                      "data",
+                                      "completetree_{}.js".format(version))):
+                raise IOError("completetree file does not exist for version {}".format(version))
+            return version
+        else:
+            raise IndexError("there seems to be no data for tree nodes in the database (the `ordered_nodes` table is not filled out)")
     except Exception as e:
         return str(e)
 
