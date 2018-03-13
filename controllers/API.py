@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import re
-from OZfunctions import punctuation_to_space
+from OZfunctions import punctuation_to_space, __check_version
 from OZfunctions import is_logographic
 """
 This contains the API functions - node_details, image_details, search_names, and search_sponsors. search_node also exists, which is a combination of search_names and search_sponsors.
@@ -13,6 +13,13 @@ This contains the API functions - node_details, image_details, search_names, and
 
 We should probably compile all docstrings in these files into markdown documentation
 """
+
+def version():
+    v = __check_version()
+    try:
+        return dict(version=int(v))
+    except ValueError:
+        return dict(version=None, error=v)
 
 def node_details():
     """
