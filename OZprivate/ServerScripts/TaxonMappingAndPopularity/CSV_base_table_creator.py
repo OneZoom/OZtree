@@ -521,8 +521,8 @@ if __name__ == "__main__":
         help='The directory to store the csv, newick, and date files')
     parser.add_argument('--wikilang', '-l', default='en', 
         help='The language wikipedia to check for popularity, e.g. "en". Where there are multiple Wikidata items for a taxon (e.g. one under the common name, one under the scientific name), then we also default to using the WD item with the sitelink in this language.')
-    parser.add_argument('--version', default=int(time()), 
-        help='A unique version number for the tree, to be saved in the DB tables & output files')
+    parser.add_argument('--version', default=int(time()/60.0), 
+        help='A unique version number for the tree, to be saved in the DB tables & output files. Defaults to minutes since epoch (time()/60)')
     parser.add_argument('--extra_source_file', default=None, type=str, 
         help='An optional additional file to supplement the taxonomy.tsv file, providing additional mappings from OTTs to source ids (useful for overriding . The first line should be a header contining "uid" and "sourceinfo" column headers, as taxonomy.tsv. NB the OTT can be a number, or an ID of the form "mrcaott409215ott616649").')
     parser.add_argument('--verbosity', '-v', action="count", default=0, 
