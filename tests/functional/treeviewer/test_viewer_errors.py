@@ -6,9 +6,9 @@ From https://github.com/OneZoom/OZtree/issues/62
 2) Test the iframe popups
 """
 
-from ..functional_tests import FunctionalTest, base_url
+from ...util import base_url
+from ..functional_tests import FunctionalTest
 import os.path
-import shutil
 
 class TestViewerErrors(FunctionalTest):
     """

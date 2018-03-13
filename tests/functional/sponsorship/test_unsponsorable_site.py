@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+import os.path
+from datetime import datetime
+
 from .sponsorship_tests import SponsorshipTest
 from ..functional_tests import web2py_viewname_contains, web2py_date_accessed
-from time import sleep
-from datetime import datetime
 
 class TestUnsponsorableSite(SponsorshipTest):
     """
@@ -11,6 +12,11 @@ class TestUnsponsorableSite(SponsorshipTest):
     maintenance_mins = 0
     allow_sponsorship = 0
     
+    @classmethod
+    def setUpClass(self):
+        print("Running {}".format(os.path.basename(__file__)))
+        super().setUpClass()
+
     def test_invalid(self):
         """
         In unsponsorable_site mode, invalid OTTs always ping up the invalid page

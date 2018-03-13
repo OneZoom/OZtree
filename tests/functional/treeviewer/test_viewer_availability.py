@@ -5,15 +5,22 @@ Test the various tree views (linnean.html, AT.html, etc)
 import os.path
 import shutil
 from nose import tools
+from time import sleep
 
 from ...util import base_url, web2py_app_dir
 from ..functional_tests import FunctionalTest
+
 
 class TestViewerAvailability(FunctionalTest):
     """
     Test whether the embedding functions work
     """
     
+    @classmethod
+    def setUpClass(self):
+        print("Running {}".format(os.path.basename(__file__)))
+        super().setUpClass()
+
     @tools.nottest
     def test_available(self, controller, base=base_url):
         self.browser.get(base + controller)
@@ -71,8 +78,9 @@ class TestViewerAvailability(FunctionalTest):
         """
         self.test_available("treeviewer/minlife")
 
-    def test_minlife_available(self):
+    def test_minlife_static(self):
         """
         The minlife view should exist as a plain html file in static for restricted installation 
         """
-        self.test_available("minlife", "file://" + web2py_app_dir + "/static/minlife.html")
+        #here we should also test whether the 
+        self.test_available("minlife.html", "file://" + web2py_app_dir + "/static/")

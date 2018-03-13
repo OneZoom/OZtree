@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from time import sleep
+import os.path
 
 from .sponsorship_tests import SponsorshipTest
 from ..functional_tests import web2py_viewname_contains
@@ -8,6 +8,11 @@ class TestMaintenanceMode(SponsorshipTest):
     maintenance_mins = 99
     allow_sponsorship = 1
     
+    @classmethod
+    def setUpClass(self):
+        print("Running {}".format(os.path.basename(__file__)))
+        super().setUpClass()
+
     def test_invalid(self):
         """
         In maintenance mode, invalid OTTs should always ping up the maintenance page

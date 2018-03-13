@@ -23,8 +23,8 @@ class SponsorshipTest(FunctionalTest):
         and point out web2py instance at it so that we can adjust maintenance_mins and allow_sponsorship
         """
         print(">> creating temporary appconfig")
-        FunctionalTest.appconfig_loc = appconfig_loc + '.test_orig.ini'
-        with open(appconfig_loc, "r") as orig, open(FunctionalTest.appconfig_loc, "w") as test:
+        self.appconfig_loc = appconfig_loc + '.test_orig.ini'
+        with open(appconfig_loc, "r") as orig, open(self.appconfig_loc, "w") as test:
             for line in orig:
                 if line.lstrip().startswith("maintenance_mins") or line.lstrip().startswith("allow_sponsorship"):
                     pass #do not write these out
@@ -33,7 +33,7 @@ class SponsorshipTest(FunctionalTest):
                     if line.lstrip().startswith("[sponsorship]"):
                         test.write("maintenance_mins = {}\n".format(self.maintenance_mins))
                         test.write("allow_sponsorship = {}\n".format(self.allow_sponsorship))
-        FunctionalTest.setUpClass()
+        super().setUpClass()
         
         #Now get sponsorship links from the main web2py site, from the "normal" OZ viewer, from a museum display, 
         #from a partner view and also a test case where all links are banned
@@ -70,9 +70,9 @@ class SponsorshipTest(FunctionalTest):
 
     @classmethod
     def tearDownClass(self):
-        FunctionalTest.tearDownClass()
+        super().tearDownClass()
         print(">> removing temporary appconfig")
-        os.remove(FunctionalTest.appconfig_loc)
+        os.remove(self.appconfig_loc)
         
     @tools.nottest
     def test_ott(self, extra_assert_tests, ott, extra_assert_tests_from_another_browser=None, browser=None):

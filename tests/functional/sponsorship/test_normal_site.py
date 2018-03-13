@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from .sponsorship_tests import SponsorshipTest
 from ..functional_tests import web2py_viewname_contains, web2py_date_accessed
-from time import sleep
+import os.path
 
 class TestNormalSite(SponsorshipTest):
     """
@@ -10,6 +10,11 @@ class TestNormalSite(SponsorshipTest):
     maintenance_mins = 0
     allow_sponsorship = 1
     
+    @classmethod
+    def setUpClass(self):
+        print("Running {}".format(os.path.basename(__file__)))
+        super().setUpClass()
+
     def test_invalid(self):
         """
         On the main OneZoom site, invalid OTTs always ping up the invalid page
