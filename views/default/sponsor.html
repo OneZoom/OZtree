@@ -1,5 +1,5 @@
 {{response.title='OneZoom: Search for a species to sponsor'}}
-{{extend ('embed.html' if request.vars.get('embed') else 'layout.html')}}
+{{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
 
 <div class="row-fluid">
     <div class="col-md-6">

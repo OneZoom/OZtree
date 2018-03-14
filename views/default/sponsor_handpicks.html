@@ -1,7 +1,6 @@
 {{response.title='OneZoom: Choose a species to sponsor'}}
 {{response.files.append(URL('static', 'OZSponsor/sponsor_node.css'))}}
-
-{{extend ('embed.html' if request.vars.get('embed') else 'layout.html')}}
+{{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
 
 <!-- (ottid, name, eolid)*6*price + status in {error string} -->
 
