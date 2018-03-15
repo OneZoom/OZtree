@@ -10,6 +10,12 @@ except ImportError:
     #This is a complex HACK!!!
     cache = type("", (), dict(ram=lambda self, name, func, **kw: func()))()
     current = type("", (), {})() #allow us to set e.g. current.OZglobals, so we don't bomb out later
+    if sys.version_info[0] == 3:
+        def unichr(x):
+            return chr(x)
+        def xrange(x):
+            return range(x)
+
     
 percent_crop_expansion = 12.5 #max amount to expand crops by to fit in circle
 
