@@ -52,7 +52,15 @@ h3, h4 {
     text-align: center;
 }
 
+#leaf-options {
+    display: flex;
+    flex-wrap: wrap;
+}
+
 #leaf {
+    flex-grow: 1;
+    margin-left:auto;
+    margin-right:auto;
     text-align: center;
 }
 
@@ -65,7 +73,10 @@ h3, h4 {
 }
 
 #select_pictures {
-    text-align: center;
+    flex-grow: 2;
+    max-width: 400px;
+    margin-left:auto;
+    margin-right:auto
 }
 
 #select_pictures fieldset {
@@ -96,11 +107,23 @@ h3, h4 {
     color: black;
     position: absolute;
     right: 0px;
+    text-decoration: none;
+}
+
+#select_pictures li .linkout-button {
+    /* hide linkout-button by default when it is not a link (e.g. for museum displays) */
+    display: none;
+}
+
+#select_pictures li a .linkout-button {
+    /* show linkout-button when it is a link */
+    display: inline;
 }
 
 #select_pictures li a:hover {
     text-decoration: none;
 }
+
 
 
 #select_pictures li input {
@@ -109,6 +132,7 @@ h3, h4 {
 
 
 #select_pictures li label {
+    display: inline-block;
     margin: 0;
     border: 2px solid gray;
     border-radius: 50%;
