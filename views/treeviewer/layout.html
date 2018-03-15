@@ -1,7 +1,16 @@
 <!DOCTYPE html>
+<html>
+<head>
+  <meta NAME="description" CONTENT="OneZoom Tree of Life Explorer" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="shortcut icon" href="{{=URL('static', 'images/favicon.ico')}}" type="image/ico" />
 {{if request.vars.embed:}}
 <!-- Shouldn't embed a viewer within another: e.g. if accidentally called within an iframe of another viewer instance -->
-<html><body>
+  <title>OneZoom embedded viewer</title>
+</head><body>
 <div id="stop_recursion">{{=T('Please close this popup window to return to the OneZoom tree viewer')}}</div>
 </body></html>
 {{else:
@@ -17,15 +26,7 @@
         pass
     pass
 }}
-<html>
-<head>
   <title>OneZoom Tree of Life Explorer, text page for {{=page_info.get('title_name')}}</title>
-  <meta NAME="description" CONTENT="OneZoom Tree of Life Explorer" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <link rel="shortcut icon" href="{{=URL('static', 'images/favicon.ico')}}" type="image/ico" />
   {{if response.canonical:}}<link rel="canonical" href="{{=response.canonical}}">{{pass}}
 {{try:}}
 {{version = str(page_info.get('version')+0)}}
