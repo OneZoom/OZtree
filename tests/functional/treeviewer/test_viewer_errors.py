@@ -26,18 +26,3 @@ class TestViewerErrors(FunctionalTest):
         """
         self.browser.get(base_url + 'life?embed=3')
         assert self.element_by_id_exists('stop_recursion')
-
-            
-    def test_viewer_normal(self):
-        """
-        Check there are no javascript errors on normal loading of the tree
-        """
-        for page in ['life','life.html','life/@Metazoa=691846', 'life/@=315707', ]:
-            self.browser.get(base_url + page)
-            ### to do
-        
-    def test_image_popup(self):
-        """
-        Here we should test that we can pop up local (OZ) information about an image (esp. in museum display mode)
-        """
-        pass
