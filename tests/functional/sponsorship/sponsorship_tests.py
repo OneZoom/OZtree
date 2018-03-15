@@ -8,7 +8,7 @@ from time import sleep
 from selenium import webdriver #to fire up a duplicate page
 
 from ...util import appconfig_loc, base_url, humanOTT
-from ..functional_tests import FunctionalTest, test_email, web2py_viewname_contains, has_linkouts
+from ..functional_tests import FunctionalTest, test_email, web2py_viewname_contains, has_linkouts, linkouts_url
 
 
 class SponsorshipTest(FunctionalTest):
@@ -42,30 +42,22 @@ class SponsorshipTest(FunctionalTest):
 
         def web2py_nolinks_url(ott):
             return base_url + 'sponsor_leaf?ott={}&embed=4'.format(ott)
-
-        #save the leaf_linkouts urls for a few different pages in some permanent variables
+        
+        #In the main OneZoom viewer, the sponsorship popup urls are returned by calling the
+        # server_urls.OZ_leaf_json_url_func javascript function, providing it with an ott, e.g.
+        # server_urls.OZ_leaf_json_url_func(1234). We need to coppture this function as javascript,
+        # and create a python function that will evaluate the js and create the correct url
+        #We save these functions for a the MD and the main life page in some permanent variables
         self.browser.get(base_url + 'life')
         js_get_life_link = self.browser.execute_script("return server_urls.OZ_leaf_json_url_func.toString()")
         self.browser.get(base_url + 'life_MD')
         js_get_md_link = self.browser.execute_script("return server_urls.OZ_leaf_json_url_func.toString()")
 
-        def leaf_link(ott, url):
-            """Get the link from a leaf_linkouts url"""
-            leaf_links = self.browser.execute_script("return (" + url + ")" + "({})".format(ott))
-            json = requests.get(leaf_links).json()
-            return json['data']['ozspons'][0]
-
-        #make some functions that can be called that refer to the saved leaf_linkouts urls
-        def life_link(ott):
-            return leaf_link(ott, js_get_life_link)
-        def md_link(ott):
-            return leaf_link(ott, js_get_md_link)
-
         self.urls={
             'web2py':web2py_url,
             'web2py_nolinks':web2py_nolinks_url,
-            'treeviewer':life_link,
-            'treeviewer_md':md_link,
+            'treeviewer': lambda ott: linkouts_url(self.browser, js_get_life_link, ott, "ozspons"), #converts the js function to a python version
+            'treeviewer_md': lambda ott: linkouts_url(self.browser, js_get_md_link, ott, "ozspons"), #converts the js function to a python version
             }
 
     @classmethod
@@ -87,14 +79,10 @@ class SponsorshipTest(FunctionalTest):
         session id reservations work)
         """
         browser = self.browser if browser is None else browser
-        print("|plain", end="", flush=True)
-        browser.get(self.urls['web2py'](ott))
-        extra_assert_tests(browser)
         print("|tree", end="", flush=True)
         browser.get(self.urls['treeviewer'](ott))
         extra_assert_tests(browser)
-        #assert self.zoom_disabled()
-        #here we should check that (most?) links open a new tab
+        assert self.zoom_disabled()
         if extra_assert_tests_from_another_browser is not None:
             #look at the same page with another browser to check that session reservation
             #still forwards to the same page
@@ -102,16 +90,41 @@ class SponsorshipTest(FunctionalTest):
             alt_browser = webdriver.Chrome()
             self.test_ott(extra_assert_tests_from_another_browser, ott, None, alt_browser)
             alt_browser.quit()
-            
+        #check all the alternative representations too
+        print("|plain", end="", flush=True)
+        browser.get(self.urls['web2py'](ott))
+        extra_assert_tests(browser)
         print("|MD", end="", flush=True)
         browser.get(self.urls['treeviewer_md'](ott))
         extra_assert_tests(browser)
         assert has_linkouts(browser, include_internal=False) == False
+        assert self.zoom_disabled()
         print("|nolink ", end="", flush=True)
         browser.get(self.urls['web2py_nolinks'](ott))
         extra_assert_tests(browser)
         assert has_linkouts(browser, include_internal=True) == False
 
+    @tools.nottest
+    def test_md_sandbox(self, ott):
+        """
+        Follow any links from the museum display page and collect a list. If any are external, return False
+        """
+        self.browser.get(self.urls['treeviewer_md'](ott))
+        #Although any element can potentially link out to another page using javascript, 
+        # the most likely elements that will cause a sandbox escape on our own page
+        # are <a href=...> <form action=...> <area href=...>, or <button onclick=...>
+        # For external pages (e.g. wikipages) we shoud ensure that JS is stripped.
+        def first_external_link(self, already_followed):
+            """
+            Recurse through possible links from this page until we find an external one
+            in which case we can return False, or 
+            """
+            return 
+            
+        for elem in self.browser.find_elements_by_tag_name('a'):
+            href = elem.get_attribute('href')
+        
+        
     @tools.nottest
     def never_looked_at_ottname(self):
         """
@@ -214,16 +227,16 @@ class SponsorshipTest(FunctionalTest):
             from selenium.webdriver.common.touch_actions import TouchActions'''
           self.assertTrue(zoom_level == self.browser.execute_script('return window.visualViewport.scale;'))
         """
-        #first clear console log
-        self.browser.get_log('browser')
+        #first clear console log and check nothing untoward
+        self.clear_log(check_errors=True)
         #imitate a touch zoom event
         self.browser.execute_script("""
 t1 = new Touch({identifier: 1,target: document.body, pageX: 0, pageY: 0});
 t2 = new Touch({identifier: 2,target: document.body, pageX: 1, pageY: 1});
 te = new TouchEvent('touchstart', {cancelable: true, bubbles: true, touches: [t1, t2]});
 document.body.dispatchEvent(te);""")
-        sleep(4) #wait for event to bubble and be written to log
+        sleep(3) #wait for event to bubble and be written to log
         #get new logs
         console_log = self.browser.get_log('browser')
-        assert console_log[0]['source']=='console-api'
-        assert "Touch zoom event blocked" in console_log[0]['message'] #in is_testing mode, should have a log message that event is blocked
+        # in is_testing mode, should have a log message that event is blocked
+        return console_log[0]['source']=='console-api' and console_log[0]['level']=='INFO' and "Touch zoom event blocked" in console_log[0]['message'] 

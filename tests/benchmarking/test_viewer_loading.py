@@ -6,7 +6,7 @@ from ...util import base_url
 from ..functional_tests import FunctionalTest
 import os.path
 
-class TestViewerErrors(FunctionalTest):
+class TestViewerLoading(FunctionalTest):
     """
     Test whether the embedding functions work
     """

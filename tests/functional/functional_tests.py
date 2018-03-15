@@ -111,7 +111,6 @@ class FunctionalTest(object):
         return True
     
     @tools.nottest
-    @classmethod
     def clear_log(self, check_errors=False):
         log = self.browser.get_log('browser')
         if check_errors:
@@ -158,6 +157,20 @@ def web2py_viewname_contains(browser, expected_view):
         return expected_view in browser.find_element_by_xpath("//meta[@name='viewfile']").get_attribute("content")
     except NoSuchElementException:
         return False
+
+def linkouts_url(browser, url, ott_or_id, tab_name):
+    """
+    This function can be used to convert a linkouts function in javascript
+    to a URL to visit.
+    Pass in a leaf_linkouts or node_linkouts function as a JS string 
+    together with the ott (for leaves) or node id (for nodes) and a
+    tab name such as 'wiki' or 'ozspons' (see linkouts() in controllers/tree.py).
+    requires a browser to evaluate the JS
+    """
+    links = browser.execute_script("return (" + url + ")" + "({})".format(ott_or_id))
+    json = requests.get(links).json()
+    return json['data'][tab_name][0]
+
 
 def make_temp_minlife_file(self):
     """Make a temporary minlife file in static, filename stored in self.minlife_file_location"""

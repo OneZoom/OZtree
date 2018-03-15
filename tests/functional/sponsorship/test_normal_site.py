@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
-from .sponsorship_tests import SponsorshipTest
-from ..functional_tests import web2py_viewname_contains, web2py_date_accessed
 import os.path
+from time import sleep
+
+from selenium import webdriver #to fire up a duplicate page
+
+from .sponsorship_tests import SponsorshipTest
+from ..functional_tests import web2py_viewname_contains, web2py_date_accessed, has_linkouts, linkouts_url
+from ...util import base_url
 
 class TestNormalSite(SponsorshipTest):
     """
@@ -53,27 +58,96 @@ class TestNormalSite(SponsorshipTest):
         print("(banned but sponsored not implemented) ...", end="", flush=True)
         #SponsorshipTest.test_ott(self, assert_tests, self.banned_sponsored_ott())
 
-    def test_sponsoring(self):
+    def test_sponsoring_from_normal(self):
         """
         On the main OneZoom site, looking at an unsponsored (unvisted) OTTs should work as normal
         (when revisiting from another browser, we should get a 'temporarily reserved' page)
         """
         ott, sciname = self.never_looked_at_ottname() #visiting this ott *may* make a new entry in the reservations table
-
-        def assert_tests(browser):
-            assert web2py_viewname_contains(browser, "sponsor_leaf")
-            n_visits, last_visit, reserve_time = self.visit_data(ott)
-            assert n_visits > 0, "number of visits should be recorded"
-            assert abs(web2py_date_accessed(browser) - last_visit).seconds == 0, "last visit time should be recorded as just now"
-            
-        def alt_browser_assert_tests(browser):
-            assert web2py_viewname_contains(browser, "spl_reserved")
-            
-        SponsorshipTest.test_ott(self, assert_tests, ott, 
-            extra_assert_tests_from_another_browser = alt_browser_assert_tests)
+        
+        #here we open then reopen the same ott to check that opening from the same treeviewer is OK
+        self.browser.get(self.urls['treeviewer'](ott)) #visit first
+        self.browser.get(self.urls['treeviewer'](ott)) #visit second (should have same session)
+        n_visits, last_visit, reserve_time = self.visit_data(ott)
+        assert web2py_viewname_contains(self.browser, "sponsor_leaf")
+        assert self.zoom_disabled()
+        assert n_visits == 2, "should have recorded two visits"
+        assert abs(web2py_date_accessed(self.browser) - last_visit).seconds == 0, "last visit time should be recorded as just now"
+        self.browser.get(self.urls['web2py'](ott)) #visit from another page (not the same session)
+        assert web2py_viewname_contains(self.browser, "spl_reserved")
+        self.browser.get(self.urls['web2py_nolinks'](ott)) #visit from another page (not the same session)
+        assert web2py_viewname_contains(self.browser, "spl_reserved")
+        self.browser.get(self.urls['treeviewer_md'](ott))
+        assert web2py_viewname_contains(self.browser, "spl_reserved")
+        assert self.zoom_disabled()
+        assert has_linkouts(self.browser, include_internal=False) == False
+        
+        alt_browser = webdriver.Chrome()
+        alt_browser.get(base_url + 'life')
+        alt_url = linkouts_url(alt_browser, alt_browser.execute_script("return server_urls.OZ_leaf_json_url_func.toString()"), ott, "ozspons")
+        alt_browser.get(alt_url)
+        assert web2py_viewname_contains(alt_browser, "spl_reserved")
+        alt_browser.quit()
+        
         n_deleted = self.delete_reservation_entry(ott, sciname, None)
         assert n_deleted == 1, "visiting an unvisited ott should allocate a reservations row which has been deleted"
 
+
+    def test_sponsoring_from_MD(self):
+        """
+        On the museum display OneZoom site, with sponsorship ENABLED (not recommended), looking at an unsponsored (unvisted) OTTs should work
+        (when revisiting from another browser, we should get a 'temporarily reserved' page)
+        """
+        ott, sciname = self.never_looked_at_ottname() #visiting this ott *may* make a new entry in the reservations table
+        
+        #here we open then reopen the same ott to check that opening from the same treeviewer is OK
+        self.browser.get(self.urls['treeviewer_md'](ott)) #only visit once, as this does not save session ids
+        n_visits, last_visit, reserve_time = self.visit_data(ott)
+        assert web2py_viewname_contains(self.browser, "sponsor_leaf")
+        assert has_linkouts(self.browser, include_internal=False) == False, "The museum display sponsorship link should not link out to other places"
+        assert n_visits == 1, "should have recorded one visit"
+        assert abs(web2py_date_accessed(self.browser) - last_visit).seconds == 0, "last visit time should be recorded as just now"
+        self.browser.get(self.urls['web2py'](ott)) #visit from another page (not the same session)
+        assert web2py_viewname_contains(self.browser, "spl_reserved")
+        self.browser.get(self.urls['web2py_nolinks'](ott)) #visit from another page (not the same session)
+        assert web2py_viewname_contains(self.browser, "spl_reserved")
+        self.browser.get(self.urls['treeviewer'](ott))
+        assert web2py_viewname_contains(self.browser, "spl_reserved")
+        assert self.zoom_disabled()
+        
+        alt_browser = webdriver.Chrome()
+        alt_browser.get(base_url + 'life_MD')
+        alt_url = linkouts_url(alt_browser, alt_browser.execute_script("return server_urls.OZ_leaf_json_url_func.toString()"), ott, "ozspons")
+        alt_browser.get(alt_url)
+        assert web2py_viewname_contains(alt_browser, "spl_reserved")
+        alt_browser.quit()
+        
+        n_deleted = self.delete_reservation_entry(ott, sciname, None)
+        assert n_deleted == 1, "visiting an unvisited ott should allocate a reservations row which has been deleted"
+
+
+    def test_sponsor_reservation_expiry(self):
+        """
+        Test that after X minutes, a reserved entry becomes free again
+        We need to do this by faking a reserve time into the database
+        """
+        ott, sciname = self.never_looked_at_ottname() #visiting this ott *may* make a new entry in the reservations table
+        self.browser.get(self.urls['web2py'](ott)) #visit from another page (not the same session)
+        self.browser.get(self.urls['treeviewer'](ott))
+        assert web2py_viewname_contains(self.browser, "spl_reserved")
+        mins = self.browser.find_element_by_class_name("reserve_mins_left")
+        mins = int(mins.get_attribute("innerHTML"))+1
+        db_cursor = self.db['connection'].cursor()
+        sql="UPDATE reservations SET reserve_time = DATE_ADD(reserve_time, INTERVAL {} MINUTE) where OTT_ID = {} LIMIT 1".format(self.db['subs'], self.db['subs'], self.db['subs'], self.db['subs'])
+        db_cursor.execute(sql, (-mins, ott)) # versions are stored as negative numbers
+        self.db['connection'].commit() #need to commit here otherwise next select returns stale data
+        self.browser.get(self.urls['treeviewer'](ott))
+        assert web2py_viewname_contains(self.browser, "sponsor_leaf")
+
+        
+        n_deleted = self.delete_reservation_entry(ott, sciname, None)
+        assert n_deleted == 1, "visiting an unvisited ott should allocate a reservations row which has been deleted"
+        
 '''
     def test_partner_sponsorship(self):
         *****
