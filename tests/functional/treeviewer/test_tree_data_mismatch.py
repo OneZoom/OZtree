@@ -9,9 +9,10 @@ import os.path
 from nose import tools
 
 from ...util import base_url, web2py_app_dir, humanOTT
-from ..functional_tests import FunctionalTest
+from ..functional_tests import FunctionalTest, make_temp_minlife_file, remove_temp_minlife_file
 
-class TestViewerErrors(FunctionalTest):
+
+class TestTreeDataMismatch(FunctionalTest):
     """
     Test whether we get an error page if there is a version mismatch 
     This requires a bit of database adjusting, but not too dangerously (we swap 2 numbers, then swap back)
@@ -22,6 +23,7 @@ class TestViewerErrors(FunctionalTest):
     def setUpClass(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
         super().setUpClass() #will assign db etc
+        make_temp_minlife_file(self) #must do this before changing table IDs
         print(">> swapping data in row 1 of ordered_nodes table to force temporary mismatch")
         db_cursor = self.db['connection'].cursor()
         #parent of row 1 should contain the (negative) version number and real_parent should always be 0
@@ -34,6 +36,7 @@ class TestViewerErrors(FunctionalTest):
     
     @classmethod
     def tearDownClass(self):
+        remove_temp_minlife_file(self)
         print(">> restoring original version number to database, and setting real_parent to 0")
         db_cursor = self.db['connection'].cursor()
         #parent of row 1 should contain the (negative) version number and real_parent should always be 0
@@ -113,8 +116,8 @@ class TestViewerErrors(FunctionalTest):
 
     def test_minlife_static(self):
         """
-        Test mismatches between static versions of the tree and the API
+        The temporary minlife file in static should show a mismatch error
         """
-        self.browser.get("file://" + web2py_app_dir + "/static/" + "minlife.html")
-        assert self.element_by_class_exists('OneZoom_error'), "Tree should display the injected error text"
+        self.browser.get("file://" + self.minlife_file_location)
+        assert self.element_by_class_exists('OneZoom_error'), "Tree at {} should display the injected error text".format(url)
 

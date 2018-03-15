@@ -17,10 +17,12 @@
 
 import sys
 import json
-import os.path
+import os
 import re
 from datetime import datetime
 from nose import tools
+import requests
+import subprocess
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -29,7 +31,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 if sys.version_info[0] < 3:
     raise Exception("Python 3 only")
 
-from ..util import get_db_connection, web2py_app_dir, web2py_server
+from ..util import get_db_connection, web2py_app_dir, web2py_server, base_url
 
 date_format = "%Y-%m-%d %H:%M:%S.%f" #used when a web2py datetime on a webpage needs converting back to datetime format
 test_email = 'test@onezoom.org'
@@ -157,6 +159,27 @@ def web2py_viewname_contains(browser, expected_view):
     except NoSuchElementException:
         return False
 
+def make_temp_minlife_file(self):
+    """Make a temporary minlife file in static, filename stored in self.minlife_file_location"""
+    test_file = "minlife-test.html"
+    self.created_temp_minlife = False
+    self.minlife_file_location = os.path.join(web2py_app_dir, 'static', test_file)
+    if os.path.isfile(self.minlife_file_location):
+        raise Exception("There is already a test file in {}. Please remove it before continuing".format(self.minlife_file_location))
+    else:
+        print(">> making a temporary minlife file")
+        response = requests.get(base_url+"treeviewer/minlife")
+        with open(self.minlife_file_location, 'wb') as f:
+            f.write(response.content)
+        self.created_temp_minlife = True
+        #process links (see the partial_install command in Gruntfile.js in the app dir)
+        subprocess.call(['perl', '-i', os.path.join(web2py_app_dir, 'OZprivate','ServerScripts','Utilities','partial_install.pl'), self.minlife_file_location])
+
+def remove_temp_minlife_file(self):
+    if self.created_temp_minlife:
+        os.remove(self.minlife_file_location) 
+
+    
 #def chrome_cmd(driver, cmd, params):
 #        resource = "/session/%s/chromium/send_command_and_get_result" % driver.session_id
 #        url = driver.command_executor._url + resource

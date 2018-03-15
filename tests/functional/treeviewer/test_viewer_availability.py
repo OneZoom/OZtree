@@ -3,12 +3,11 @@
 Test the various tree views (linnean.html, AT.html, etc)
 """
 import os.path
-import shutil
-from nose import tools
+from nose import tools, with_setup
 from time import sleep
 
 from ...util import base_url, web2py_app_dir, humanOTT
-from ..functional_tests import FunctionalTest
+from ..functional_tests import FunctionalTest, make_temp_minlife_file, remove_temp_minlife_file
 
 
 class TestViewerAvailability(FunctionalTest):
@@ -20,6 +19,12 @@ class TestViewerAvailability(FunctionalTest):
     def setUpClass(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
         super().setUpClass()
+        make_temp_minlife_file(self)
+        
+    @classmethod
+    def tearDownClass(self):
+        remove_temp_minlife_file(self)
+        super().tearDownClass()
 
     @tools.nottest
     def test_available(self, controller, base=base_url):
@@ -96,11 +101,6 @@ class TestViewerAvailability(FunctionalTest):
 
     def test_minlife_static(self):
         """
-        The minlife view should exist as a plain html file in static if running a partial installation
+        The static version of the minlife file should work with no error
         """
-        #here we should also test whether the 
-        f = "minlife.html"
-        if os.path.isfile(os.path.join(web2py_app_dir, 'static', f)):
-            self.test_available(f, "file://" + web2py_app_dir + "/static/")
-        else:
-            raise FileNotFoundError("To mun this test you need to create minlife.html by running `grunt partial-install`")
+        self.test_available(self.minlife_file_location, "file://")
