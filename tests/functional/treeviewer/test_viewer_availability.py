@@ -36,9 +36,10 @@ class TestViewerAvailability(FunctionalTest):
 
     def test_life_MD_available(self):
         """
-        The museum display viewer should be available
+        The museum display viewer should be available, but not have any underlying text tree
         """
         self.test_available("life_MD")
+        assert not self.element_by_class_exists('text_tree_root'), "Should not have the text tree underlying the canvas"
 
     def test_expert_mode_available(self):
         """
@@ -58,11 +59,17 @@ class TestViewerAvailability(FunctionalTest):
         """
         self.test_available("trail2016")
 
-    def test_linnean_available(self):
+    def test_partner_trees_available(self):
         """
-        The Linnean Soc tree (different sponsorship details) should be available
+        Partner trees (different sponsorship details) should be available under a few urls
         """
+        #self.test_available("trail2016")
         self.test_available("linnean")
+        assert self.browser.execute_script("return extra_title").endswith("LinnSoc"), "partner pages should have an extra element to the title"
+        assert "LinnSoc" in self.browser.title, "partner pages should have an appropriate page title"
+        self.test_available("life/LinnSoc")
+        assert self.browser.execute_script("return extra_title").endswith("LinnSoc"), "partner pages should have an extra element to the title"
+        assert "LinnSoc" in self.browser.title, "partner pages should have an appropriate page title"
 
     def test_text_tree_available(self):
         """
@@ -89,7 +96,7 @@ class TestViewerAvailability(FunctionalTest):
 
     def test_minlife_static(self):
         """
-        The minlife view should exist as a plain html file in static for restricted installation
+        The minlife view should exist as a plain html file in static if running a partial installation
         """
         #here we should also test whether the 
         f = "minlife.html"
