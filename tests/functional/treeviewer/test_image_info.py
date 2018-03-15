@@ -86,7 +86,7 @@ class TestImageInfo(FunctionalTest):
         """
         def extra_iframe_checks(self):
             assert not self.element_by_css_selector_exists("#imageinfo a.provenance-url"), 'Should not have a link out from a plain image with no url'
-        self.test_image_iframe_and_link(self.image_data_dict['plain'], base_url, oz_imageinfo_pagetitle, extra_iframe_checks)
+        self.test_normal_images(self.image_data_dict['plain'], base_url, oz_imageinfo_pagetitle, extra_iframe_checks)
         
     def test_wiki_images(self):
         """
@@ -99,42 +99,42 @@ class TestImageInfo(FunctionalTest):
             sleep(1)
             assert 'Wikimedia Commons' in self.browser.find_element_by_tag_name("title").get_attribute("innerHTML"), 'Link shoudl navigate iframe to wikimedia commons'
         self.browser.get(base_url + 'life')
-        self.test_image_iframe_and_link(self.image_data_dict['wiki'], base_url, oz_imageinfo_pagetitle, extra_iframe_checks)
+        self.test_normal_images(self.image_data_dict['wiki'], base_url, oz_imageinfo_pagetitle, extra_iframe_checks)
         
     def test_oz_images(self):
         """
         Test that a bespoke OZ image from EoL pops up the EoL site in the normal viewer 
         """
         self.browser.get(base_url + 'life')
-        self.test_image_iframe_and_link(self.image_data_dict['oz'], '//eol.org/', "Encyclopedia of Life")
+        self.test_normal_images(self.image_data_dict['oz'], '//eol.org/', "Encyclopedia of Life")
         
     def test_eol_images(self):
         """
         Test that a bespoke image inserted by hand from wikipedia pops up correctly in the normal viewer 
         """
         self.browser.get(base_url + 'life')
-        self.test_image_iframe_and_link(self.image_data_dict['eol'], '//eol.org/', "Encyclopedia of Life")
+        self.test_normal_images(self.image_data_dict['eol'], '//eol.org/', "Encyclopedia of Life")
         
     def test_plain_MD_images(self):
         """
         Test that a bespoke image inserted by hand with no URL pops up correctly in the museum display viewer 
         """
-        self.test_image_iframe(self.image_data_dict['plain'], )
+        self.test_md_images(self.image_data_dict['plain'], )
         
     def test_wiki_MD_images(self):
         """
         Test that a bespoke image inserted by hand from wikipedia pops up correctly in the museum display  viewer 
         """
-        self.test_image_iframe(self.image_data_dict['wiki'])
+        self.test_md_images(self.image_data_dict['wiki'])
         
     def test_oz_MD_images(self):
         """
         Test that a bespoke OZ image from EoL pops up the EoL site in the museum display viewer 
         """
-        self.test_image_iframe(self.image_data_dict['oz'])
+        self.test_md_images(self.image_data_dict['oz'])
         
     def test_eol_MD_images(self):
         """
         Test that a bespoke image inserted by hand from wikipedia pops up correctly in the museum display viewer 
         """
-        self.test_image_iframe(self.image_data_dict['eol'])
+        self.test_md_images(self.image_data_dict['eol'])
