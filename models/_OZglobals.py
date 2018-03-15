@@ -34,7 +34,7 @@ inv_src_flags = cache.ram('inv_src_flags',
 # they might be changing images or names. If via "name", then we can assume that
 # only the vernacular name has been inspected (e.g. an internal nodes)
 eol_inspect_via_flags = cache.ram('eol_inspect_via_flags',
-    lambda: {'EoL_tab':1, 'copyright_symbol':2, 'sponsor':3, 'name':4},
+    lambda: {'EoL_tab':1, 'image':2, 'sponsor':3, 'name':4},
     time_expire = None)
 
 #classes of image (see comments in images_by_ott definition below). 

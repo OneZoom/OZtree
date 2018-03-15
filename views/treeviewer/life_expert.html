@@ -14,7 +14,8 @@ setup_params = {
     'vars':{'tabs':'all'} }, #should also include an OpenTree tab in here
    'popups': {
     'vars':{'embed':1, 'form_session_id': response.session_id} }
-  }
+  },
+  'partner':page_info.get('partner'),
 }}
 
 {{extend 'treeviewer/layout.html'}}

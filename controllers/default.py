@@ -379,8 +379,8 @@ def sponsor_leaf():
                     asking_price=(leaf_price),
                     user_updated_time=request.now,
                     sponsorship_duration_days=365*4+1,
-                    partner_name=partner.get('identifier'),
-                    partner_percentage=partner.get('percentage'))
+                    partner_name=partner.get('partner_identifier'),
+                    partner_percentage=partner.get('partner_percentage'))
                 # now need to do our own other checks
                 v = {'ott':OTT_ID_Varin}
                 if request.vars.get('embed'):
@@ -712,7 +712,7 @@ def sponsor_node_price():
 def sponsor_node():
     """
     This picks <max> leaves per price band, and removes already sponsored leaves from the search    
-    By default ranks by popularity. We pass on any request.vars so that we can use embed, etc.
+    By default ranks by popularity. We pass on any request.vars so that we can use embed, form_session_id, etc.
     """
     try:
         if request.vars.get('id'):
@@ -725,8 +725,8 @@ def sponsor_node():
         else:
             raise
         #global var 'partners' is defined at the top of the file, for request.vars.partner=='LinnSoc', 'Kew', etc.
-        partner = db(db.partners.identifier == request.vars.get('partner')).select().first() #this could be null
-        partner = partner.as_dict() if partner else {}
+        #partner = db(db.partners.identifier == request.vars.get('partner')).select().first() #this could be null
+        #partner = partner.as_dict() if partner else {}
         
         first25 = db(query).select(limitby=(0, 25), orderby=db.ordered_leaves.name)
         if len(first25) > 0:
@@ -1097,11 +1097,29 @@ def news():
 ### Controllers for OneZoom viz pages ###
 ### For programming purposes, these views are in views/treeviewer NOT views/default as might be expected
 
+def remove_location_arg(args):
+    """
+    remove the last item from the args array if it is a location string
+    """
+    if len(args) and args[-1].startswith('@'):
+        return args.pop()
+    else:
+        return None
+
+def remove_partner_arg(args):
+    """
+    remove the first item from the args array if it is a partner string i.e. not 'tours'
+    """
+    if len(args) and args[0] != 'tour':
+        return args.pop(0)
+    else:
+        return None
+
 def life_text():
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return dict(page_info = {'tree': __text_tree()})
+    return dict(page_info = {'tree': text_tree(remove_location_arg(request.args))})
 
-def __text_tree():
+def text_tree(location_string):
     """
     A text representation. NB: The 'normal' pages also have the text-only data embedded in them, for SEO reasons
     """
@@ -1111,20 +1129,22 @@ def __text_tree():
     #So we use @ as a separator between species and prepend a letter to the 
     #ott number to indicate extra use for this species (e.g. whether to remove it)
     #e.g. @Hominidae=770311@Homo_sapiens=d770315@Gorilla_beringei=d351685
-    # The target string is contained in the args[-1] var, which has all the string up to the '?' or '#'
+    # The target string is contained in the location_string, copied from args[-1]
+    # which has all the string up to the '?' or '#'
     #we have to use both the name and the ott number to get the list of species. 
     #NB: both name or ott could have multiple matches.
     from collections import OrderedDict
 
     base_ott=base_name=''
     try:
-        taxa=request.args[-1].split("@")[1:]
+        taxa=location_string.split("@")[1:]
         for t in taxa:
             if t and re.search("=[a-z]", t)==None: #take the first one that doesn't have an ott = [letter]1234
                 base_name, sep, base_ott = t.partition("=")
                 if base_ott:
                     base_ott = int(base_ott)
     except:
+        #ignore all parsing errors and just show the root
         pass
     
     base_taxa_are_leaves = None
@@ -1167,7 +1187,9 @@ def __text_tree():
     info = {}
     for row in base_rows:
         if row.real_parent != 0:
-            info[row.real_parent] = db(db.ordered_nodes.id == abs(row.real_parent)).select(db.ordered_nodes.ott, db.ordered_nodes.name).first()
+            data = db(db.ordered_nodes.id == abs(row.real_parent)).select(db.ordered_nodes.ott, db.ordered_nodes.name).first()
+            if data:
+                info[row.real_parent] = data
         #find the rows that have this as a parent
         base = OrderedDict()
         if base_taxa_are_leaves:
@@ -1257,41 +1279,50 @@ def life_text_init_taxa(text_tree):
     return [taxon for taxon in [text_tree['info'][k].get("vernacular") or text_tree['info'][k].get("sciname") or "OTT"+str(text_tree['info'][k].get("ott")) for k in text_tree['bases']] if taxon]
 
 
+def treeview_info(has_text_tree=True):
+    """
+    Return the information used by the normal tree viewer (which always begins with '@') is the last of the slash
+    separated paths, i.e. request.args[-1], which we check for first The first of the separated paths can
+    be a partner ID, or the string 'tour'
+    """
+    location = remove_location_arg(request.args)
+    partner  = remove_partner_arg(request.args)
+    page_info={'partner': partner, 'version':__check_version()}
+    if len(request.args) and request.args[0] == 'tour':
+        #could have been life/trail2016/tour/newtour/@Mammalia or simply life/trail2016/tour/@Mammalia
+        tour_name = None if len(request.args)==1 else request.args[1]
+        page_info.update({'subtitle': 'Tours',
+                   'tourname': tour_name #only *-=. and alphanumeric in args, so can use this in js
+                   })
+    if has_text_tree:
+        tt = text_tree(location)
+        page_info.update({'tree': tt, 'title_name': ", ".join(life_text_init_taxa(tt))})
+    return dict(page_info = page_info)
+
 def life():
     """
-    The standard OneZoom app - the location string is the last of the slash
-    separated paths, i.e. request.args[-1]
+    The standard OneZoom app
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    if len(request.args)>1 and request.args[0] == 'tour':
-        tour_name = request.args[1]
-        page_info={'subtitle': 'Tours',
-                   'tourname':request.args[1] #only *-=. and alphanumeric in args, so can use this in js
-                   }
-    else:
-        tt = __text_tree()
-        page_info = {'tree': tt, 'title_name': ", ".join(life_text_init_taxa(tt))}
-    return dict(
-        page_info = page_info,
-        version=__check_version())
+    return treeview_info()
 
 def life_MD():
     """
-    The museum display version, which is all-on-one-page (no iframes)
+    The museum display version, which is sandboxed (and has no underlying text tree with links hidden by JS)
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return life()
+    return treeview_info(has_text_tree=False)
 
 def life_expert():
     """
     The expert version, with screenshot buttons etc
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return life()
+    return treeview_info()
 
 def AT():
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return life()
+    return treeview_info()
 
 def trail2016():
     """
@@ -1300,69 +1331,32 @@ def trail2016():
     so that these defaults are passed to the sponsorship page
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return life()
+    return treeview_info()
 
 def linnean():
     """
     The Linnean Society version, with partner sponsorship
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return life()
+    return treeview_info()
 
-
-def old_life():
-    response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    merged_dict = {}
-    merged_dict.update(viewer_UI())
-    merged_dict.update(life())
-    return merged_dict
-    
-
-def old_life_MD():
-    """
-    The museum display version - James to explore. Perhaps we might not want tabs here?
-    """
-    response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    merged_dict = {}
-    merged_dict.update(viewer_UI())
-    merged_dict.update(life())
-    return merged_dict
-
-def old_life_expert():
-    """
-    Has some aditional buttons etc for screenshots, svg capture, etc.
-    """
-    response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    merged_dict = {}
-    merged_dict.update(viewer_UI())
-    merged_dict['tabs'] = [ #override
-        {'id':'opentree','name':'Open Tree of Life',    'icon':URL('static','images/W.svg')},
-        {'id':'wiki',    'name':'Wiki',                 'icon':URL('static','images/W.svg')},
-        {'id':'eol',     'name':'Encyclopedia of Life', 'icon':URL('static','images/EoL.png')},
-        {'id':'iucn',    'name':'Conservation',         'icon':URL('static','images/IUCN_Red_List.svg')},
-        {'id':'ncbi',    'name':'Genetics',             'icon':URL('static','images/DNA_icon.svg')},
-        {'id':'powo',    'name':'Kew'},
-        {'id':'ozspons', 'name':'Sponsor'}].update(life())
-    return merged_dict
-
-
-def old_kew():
-    """
-    Like the standard, but show the tab for Plants of the World Online from Kew
-    and have this as the default (first) tab open
-    TO DO: default to the view centring on plants
-    """
-    response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    merged_dict = {}
-    merged_dict.update(viewer_UI())
-    merged_dict['tabs'] = [ #override
-        {'id':'wiki',    'name':'Wiki',                 'icon':URL('static','images/W.svg')},
-        {'id':'eol',     'name':'Encyclopedia of Life', 'icon':URL('static','images/EoL.png')},
-        {'id':'iucn',    'name':'Conservation',         'icon':URL('static','images/IUCN_Red_List.svg')},
-        {'id':'ncbi',    'name':'Genetics',             'icon':URL('static','images/DNA_icon.svg')},
-        {'id':'powo',    'name':'Kew'},
-        {'id':'ozspons', 'name':'Sponsor'}].update(life())
-    return merged_dict
+#def old_kew():
+#    """
+#    Like the standard, but show the tab for Plants of the World Online from Kew
+#    and have this as the default (first) tab open
+#    TO DO: default to the view centring on plants
+#    """
+#    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+#    merged_dict = {}
+#    merged_dict.update(viewer_UI())
+#    merged_dict['tabs'] = [ #override
+#        {'id':'wiki',    'name':'Wiki',                 'icon':URL('static','images/W.svg')},
+#        {'id':'eol',     'name':'Encyclopedia of Life', 'icon':URL('static','images/EoL.png')},
+#        {'id':'iucn',    'name':'Conservation',         'icon':URL('static','images/IUCN_Red_List.svg')},
+#        {'id':'ncbi',    'name':'Genetics',             'icon':URL('static','images/DNA_icon.svg')},
+#        {'id':'powo',    'name':'Kew'},
+#        {'id':'ozspons', 'name':'Sponsor'}].update(life())
+#    return merged_dict
 
 """ Some controllers that simply redirect to other OZ viewer pages, for brevity """
 def gnathostomata():

@@ -40,8 +40,7 @@ def minlife():
     This version will be downloaded from the main server
     """
     return dict(
-        page_info = {'title_name':'Minimal OneZoom page'},
-        version=__check_version())
+        page_info = {'title_name':'Minimal OneZoom page','version':__check_version()})
 
 def treetours():
     """
