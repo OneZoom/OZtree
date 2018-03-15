@@ -47,7 +47,9 @@ class TestImageInfo(FunctionalTest):
         iframe = self.browser.find_element_by_css_selector("#imageinfo-modal iframe")
         self.browser.switch_to.frame(iframe)
         #here we should use self.browser.current_url but there seems to be a bug whereby it always returns the top url, so we look in title instead
-        assert expected_iframe_title_contains in self.browser.find_element_by_tag_name("title").get_attribute("innerHTML"), "<title> attribute in the iframe should contain {}".format(expected_iframe_title_contains)
+        actual_title = self.browser.find_element_by_tag_name("title").get_attribute("innerHTML")
+        assert expected_iframe_title_contains in actual_title, "<title> attribute in the iframe should contain {}, but is {}".format(
+            expected_iframe_title_contains, actual_title)
         #if this is a OneZoom iframe, check that the link out is correct
         if extra_iframe_checks:
             extra_iframe_checks(self) #this should happen with in the iframe
@@ -110,31 +112,31 @@ class TestImageInfo(FunctionalTest):
         
     def test_eol_images(self):
         """
-        Test that a bespoke image inserted by hand from wikipedia pops up correctly in the normal viewer 
+        Test that an normal image taken from EoL pops up the EoL site in the normal viewer 
         """
         self.browser.get(base_url + 'life')
         self.test_normal_images(self.image_data_dict['eol'], '//eol.org/', "Encyclopedia of Life")
         
     def test_plain_MD_images(self):
         """
-        Test that a bespoke image inserted by hand with no URL pops up correctly in the museum display viewer 
+        Test that a bespoke image inserted by hand with no URL pops up the OZ page in the museum display viewer 
         """
         self.test_md_images(self.image_data_dict['plain'], )
         
     def test_wiki_MD_images(self):
         """
-        Test that a bespoke image inserted by hand from wikipedia pops up correctly in the museum display  viewer 
+        Test that a bespoke image inserted by hand from wikipedia pops up the OZ page in the museum display viewer 
         """
         self.test_md_images(self.image_data_dict['wiki'])
         
     def test_oz_MD_images(self):
         """
-        Test that a bespoke OZ image from EoL pops up the EoL site in the museum display viewer 
+        Test that a bespoke OZ image from EoL pops up the OZ page in the museum display viewer 
         """
         self.test_md_images(self.image_data_dict['oz'])
         
     def test_eol_MD_images(self):
         """
-        Test that a bespoke image inserted by hand from wikipedia pops up correctly in the museum display viewer 
+        Test that an normal image taken from EoL pops up the OZ page in the museum display viewer 
         """
         self.test_md_images(self.image_data_dict['eol'])
