@@ -118,7 +118,7 @@ class FunctionalTest(object):
                 assert message['level'] in ('INFO','WARNING'), "Javascript issue of level {}, : {}".format(message['level'], message['message'])
             
             
-def has_linkouts(browser, include_internal):
+def has_linkouts(browser, include_site_internal):
     """
     Find tags with href attributes, e.g. <a>, <map>, etc. but allow some (e.g. link href=***)
     Depending on the param passed in, we may want to allow internal (relative) links such as 
@@ -133,10 +133,11 @@ def has_linkouts(browser, include_internal):
 
     #all hrefs should now be http or https refs to local stuff. We should double check this
     #by looking at the tag.attribute which is fully expanded by selenium/chrome to include http
-    for tag in browser.find_elements_by_css_selector('[href]'):
+    #but we should exclude all page-local links (i.e. beginning with #)
+    for tag in browser.find_elements_by_css_selector('[href]:not([href^="#"])'):
         if tag.tag_name != u'link':
-            if include_internal:
-                return true
+            if include_site_internal:
+                return True
             elif not tag.get_attribute('href').startswith('http'):
                 #Allow http:// links which should all be internal / relative
                 # but catch e.g. mailto:, ftp://, file:/// etc. and treat these all as linkouts

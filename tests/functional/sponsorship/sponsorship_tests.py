@@ -35,13 +35,8 @@ class SponsorshipTest(FunctionalTest):
                         test.write("allow_sponsorship = {}\n".format(self.allow_sponsorship))
         super().setUpClass()
         
-        #Now get sponsorship links from the main web2py site, from the "normal" OZ viewer, from a museum display, 
+        #Now get s, from the "normal" OZ viewer, from a museum display, 
         #from a partner view and also a test case where all links are banned
-        def web2py_url(ott):
-            return base_url + 'sponsor_leaf?ott={}'.format(ott)
-
-        def web2py_nolinks_url(ott):
-            return base_url + 'sponsor_leaf?ott={}&embed=4'.format(ott)
         
         #In the main OneZoom viewer, the sponsorship popup urls are returned by calling the
         # server_urls.OZ_leaf_json_url_func javascript function, providing it with an ott, e.g.
@@ -54,10 +49,11 @@ class SponsorshipTest(FunctionalTest):
         js_get_md_link = self.browser.execute_script("return server_urls.OZ_leaf_json_url_func.toString()")
 
         self.urls={
-            'web2py':web2py_url,
-            'web2py_nolinks':web2py_nolinks_url,
-            'treeviewer': lambda ott: linkouts_url(self.browser, js_get_life_link, ott, "ozspons"), #converts the js function to a python version
-            'treeviewer_md': lambda ott: linkouts_url(self.browser, js_get_md_link, ott, "ozspons"), #converts the js function to a python version
+            'web2py': lambda ott: base_url + 'sponsor_leaf?ott={}'.format(ott), #sponsorship link from web2py directly
+            'web2py_nolinks': lambda ott: base_url + 'sponsor_leaf?ott={}&embed=4'.format(ott), #sponsorship links from web2py no links directly
+            # the next two use the linkouts_url function to convert the stringified js function to a python output
+            'treeviewer': lambda ott: linkouts_url(self.browser, js_get_life_link, ott, "ozspons"), #sponsorship links from js function in viewer
+            'treeviewer_md': lambda ott: linkouts_url(self.browser, js_get_md_link, ott, "ozspons"), #sponsorship links from js function in MD viewer
             }
 
     @classmethod
@@ -97,12 +93,12 @@ class SponsorshipTest(FunctionalTest):
         print("|MD", end="", flush=True)
         browser.get(self.urls['treeviewer_md'](ott))
         extra_assert_tests(browser)
-        assert has_linkouts(browser, include_internal=False) == False
+        assert has_linkouts(browser, include_site_internal=False) == False
         assert self.zoom_disabled()
         print("|nolink ", end="", flush=True)
         browser.get(self.urls['web2py_nolinks'](ott))
         extra_assert_tests(browser)
-        assert has_linkouts(browser, include_internal=True) == False
+        assert has_linkouts(browser, include_site_internal=True) == False
 
     @tools.nottest
     def test_md_sandbox(self, ott):

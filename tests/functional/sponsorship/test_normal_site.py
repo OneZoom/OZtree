@@ -80,7 +80,7 @@ class TestNormalSite(SponsorshipTest):
         self.browser.get(self.urls['treeviewer_md'](ott))
         assert web2py_viewname_contains(self.browser, "spl_reserved")
         assert self.zoom_disabled()
-        assert has_linkouts(self.browser, include_internal=False) == False
+        assert has_linkouts(self.browser, include_site_internal=False) == False
         
         alt_browser = webdriver.Chrome()
         alt_browser.get(base_url + 'life')
@@ -104,7 +104,7 @@ class TestNormalSite(SponsorshipTest):
         self.browser.get(self.urls['treeviewer_md'](ott)) #only visit once, as this does not save session ids
         n_visits, last_visit, reserve_time = self.visit_data(ott)
         assert web2py_viewname_contains(self.browser, "sponsor_leaf")
-        assert has_linkouts(self.browser, include_internal=False) == False, "The museum display sponsorship link should not link out to other places"
+        assert has_linkouts(self.browser, include_site_internal=False) == False, "The museum display sponsorship link should not link out to other places"
         assert n_visits == 1, "should have recorded one visit"
         assert abs(web2py_date_accessed(self.browser) - last_visit).seconds == 0, "last visit time should be recorded as just now"
         self.browser.get(self.urls['web2py'](ott)) #visit from another page (not the same session)
@@ -168,7 +168,7 @@ class TestNormalSite(SponsorshipTest):
         #this also tests whether a reload in the same browser works
         self.browser.get(page + "&embed=3")
         self.assertTrue(self.web2py_viewname_contains("sponsor_leaf"))
-        self.assertFalse(self.has_linkouts(include_internal=False))
+        assert self.has_linkouts(self.browser, include_site_internal=False)
         #here we could test functionality of the main sponsor_leaf page
         
         
@@ -176,7 +176,7 @@ class TestNormalSite(SponsorshipTest):
         alt_browser = webdriver.Chrome()
         alt_browser.get(page + "&embed=3")
         self.assertTrue(web2py_viewname_contains(alt_browser, "spl_reserved"))
-        self.assertFalse(self.has_linkouts(include_internal=False))
+        assert has_linkouts(self.browser, include_site_internal=False)
         alt_browser.quit()
         
         #fill in the form elements
