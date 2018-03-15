@@ -102,7 +102,7 @@ function inject_wikipage(selector, pagetitle, base_url, restrict_links) {
   rest_v1 API, which is used here, should not contain any JS, so we should be OK */
   $.ajax({
     type: "GET",
-    headers: {'User-Agent':'mail@onezoom.org'},
+    headers: {'Api-User-Agent':'mail@onezoom.org'}, /* as requested by https://en.wikipedia.org/api/rest_v1/ */
     pagetitle: pagetitle,
     base_url: base_url,
     selector: selector,
