@@ -14,7 +14,7 @@ class TestUnsponsorableSite(SponsorshipTest):
     
     @classmethod
     def setUpClass(self):
-        print("Running {}".format(os.path.basename(__file__)))
+        print("== Running {} ==".format(os.path.basename(__file__)))
         super().setUpClass()
 
     def test_invalid(self):
@@ -76,3 +76,7 @@ class TestUnsponsorableSite(SponsorshipTest):
             extra_assert_tests_from_another_browser = alt_browser_assert_tests)
         n_deleted = self.delete_reservation_entry(ott, sciname, None)
         assert n_deleted == 1, "visiting an unvisited ott should allocate a reservations row which has been deleted"
+
+    def test_sponsorship_sandbox(self):
+        """
+        """

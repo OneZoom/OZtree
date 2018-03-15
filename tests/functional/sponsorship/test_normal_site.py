@@ -12,7 +12,7 @@ class TestNormalSite(SponsorshipTest):
     
     @classmethod
     def setUpClass(self):
-        print("Running {}".format(os.path.basename(__file__)))
+        print("== Running {} ==".format(os.path.basename(__file__)))
         super().setUpClass()
 
     def test_invalid(self):
@@ -75,6 +75,9 @@ class TestNormalSite(SponsorshipTest):
         assert n_deleted == 1, "visiting an unvisited ott should allocate a reservations row which has been deleted"
 
 '''
+    def test_partner_sponsorship(self):
+        *****
+    
     def test_payment_pathway(self):
         """
         Go through the payment process, checking at each stage whether the correct page is given.
