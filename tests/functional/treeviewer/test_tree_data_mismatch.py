@@ -20,7 +20,7 @@ class TestViewerErrors(FunctionalTest):
 
     @classmethod
     def setUpClass(self):
-        print("Running {}".format(os.path.basename(__file__)))
+        print("== Running {} ==".format(os.path.basename(__file__)))
         super().setUpClass() #will assign db etc
         print(">> swapping data in row 1 of ordered_nodes table to force temporary mismatch")
         db_cursor = self.db['connection'].cursor()

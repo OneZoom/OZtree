@@ -18,7 +18,7 @@ class TestViewerAvailability(FunctionalTest):
     
     @classmethod
     def setUpClass(self):
-        print("Running {}".format(os.path.basename(__file__)))
+        print("== Running {} ==".format(os.path.basename(__file__)))
         super().setUpClass()
 
     @tools.nottest

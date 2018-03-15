@@ -16,7 +16,7 @@ class TestImageInfo(FunctionalTest):
     """
     @classmethod
     def setUpClass(self):
-        print("Running {}".format(os.path.basename(__file__)))
+        print("== Running {} ==".format(os.path.basename(__file__)))
         super().setUpClass()
         self.image_data_dict = {}
         db_cursor = self.db['connection'].cursor()

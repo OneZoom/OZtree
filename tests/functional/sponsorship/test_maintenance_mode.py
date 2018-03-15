@@ -10,7 +10,7 @@ class TestMaintenanceMode(SponsorshipTest):
     
     @classmethod
     def setUpClass(self):
-        print("Running {}".format(os.path.basename(__file__)))
+        print("== Running {} ==".format(os.path.basename(__file__)))
         super().setUpClass()
 
     def test_invalid(self):
