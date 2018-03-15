@@ -33,6 +33,7 @@ class TestViewerErrors(FunctionalTest):
         """
         for page in ['life','life.html','life/@Metazoa=691846', 'life/@=315707', ]:
             self.browser.get(base_url + page)
+            ### to do
         
     def test_image_popup():
         """
