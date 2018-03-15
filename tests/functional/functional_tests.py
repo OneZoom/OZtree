@@ -8,6 +8,11 @@
     nosetests -vs functional/sponsorship/test_unsponsorable_site.py
  Example: carry out test that unsponsorable sites give the correct page for invalid otts 
     nosetests -vs functional/sponsorship/test_unsponsorable_site.py:TestUnsponsorableSite.test_invalid
+    
+ If you have installed the 'rednose' package (pip3 install rednose), you can get nicer output by e.g.
+ 
+    nosetests -w ./ tests/functional --rednose
+ 
 """
 
 import sys
@@ -60,12 +65,24 @@ class FunctionalTest(object):
         self.browser = webdriver.Chrome(desired_capabilities = caps)
         self.browser.implicitly_wait(1)
 
-    @classmethod    
+    @classmethod
     def tearDownClass(self):
         #should test here that we don't have any console.log errors (although we might have logs).
         self.browser.quit()
         print("> stopping web2py")
         self.web2py.kill()
+
+    def setup(self):
+        """
+        By default, clear logs before each test
+        """
+        self.clear_log()
+
+    def teardown(self):
+        """
+        By default, check javascript errors after each test. If you don't want to do this, e.g. for iframes, thic can be overridden
+        """
+        self.clear_log(check_errors=True)
 
     @tools.nottest
     def element_by_tag_name_exists(self, tag_name):
@@ -91,7 +108,15 @@ class FunctionalTest(object):
         except NoSuchElementException: return False
         return True
     
-
+    @tools.nottest
+    @classmethod
+    def clear_log(self, check_errors=False):
+        log = self.browser.get_log('browser')
+        if check_errors:
+            for message in log:
+                assert message['level'] in ('INFO','WARNING'), "Javascript issue of level {}, : {}".format(message['level'], message['message'])
+            
+            
 def has_linkouts(browser, include_internal):
     """
     Find tags with href attributes, e.g. <a>, <map>, etc. but allow some (e.g. link href=***)
