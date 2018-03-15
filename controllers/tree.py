@@ -108,7 +108,7 @@ def eol_url(EOLid, OTTid):
     so we can check if images or common names may have been updated.
     """
     try:
-        return([URL('eol_ID', args=[int(EOLid), int(OTTid)], scheme=True, host=True), "http://eol.org/pages/{}".format(int(EOLid))])
+        return([URL('tree','eol_page_ID', args=[int(EOLid), int(OTTid)], scheme=True, host=True), "http://eol.org/pages/{}".format(int(EOLid))])
     except:
         raise HTTP(400,"No valid EOL id provided")
 
@@ -116,47 +116,56 @@ def eol_url(EOLid, OTTid):
 def linkout_via_picID():
     """
     This is the URL that we use to display copyright information about an image, where we pass in the image ID and image source ID.
-    We always have to option of using a OneZoom-only web page (possibly with links removed). However, we also have the option of 
-    embedding the content of an external page.
+    Within the tree viewer, this is always loaded into an iframe, but the embed status determines which iframe to load.
+    When embed >= 3 we want to always use our own image info page, but for embed <3 we could potentially use e.g. an EoL page if one exists.
     """
     try:
         src = int(request.args[0])  
         src_id = int(request.args[1]) # for src = 1 or 2, this is an EoL data object ID
-        external_url = None
+        embed = int(request.vars.embed) if 'embed' in request.vars else None
+    except:
+        raise HTTP(400,"No valid ids or embed parameter provided")
+    
+    src_is_eol_DOid = (src==src_flags['eol']) or ((src==src_flags['onezoom']) and (src_id>=0))
+    if src_is_eol_DOid and ((embed is not None and embed < 3) or request.vars.redirect):
+        eol_dataobject_ID()
+    else:
+        #we do not want to jump or we do but this is not an EoL image, so return a stand-in page
+        row = db((db.images_by_ott.src_id == src_id) & (db.images_by_ott.src == src)).select(db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.url, db.images_by_ott.rights, db.images_by_ott.licence).first()
+        if row is None:
+            row = db((db.images_by_name.src_id == src_id) & (db.images_by_name.src == src)).select(db.images_by_name.src, db.images_by_name.src_id, db.images_by_name.url, db.images_by_name.rights, db.images_by_name.licence).first()
+        return dict(image=row, url_override=URL('tree','eol_dataobject_ID',args=[src,src_id], scheme=True, host=True) if src_is_eol_DOid else None)
+
+
+def eol_dataobject_ID():
+    """
+    Called when jumping out from an image. Provide the DOid (src_id) as the first arg.
+    Log the eol data object visited, and redirect there.
+    EoL has no https site currently
+    """
+    try:
+        src = int(request.args[0]) # for src = 1 or 2, this is an EoL data object ID
+        src_id = int(request.args[1]) # for src = 1 or 2, this is an EoL data object ID
     except:
         raise HTTP(400,"No valid id provided")
     
-    if  request.vars.get('method') and (\
-        (src==src_flags['eol']) or \
-        ((src==src_flags['onezoom']) and (src_id>=0))\
-    ): #this is an EoL picture
-        #we have inspected this EoL data object page - log all OTTs that use this data object so we can refresh e.g. cropped images
-        rows = db((db.images_by_ott.src == src) & (db.images_by_ott.src_id == src_id)).select(db.images_by_ott.ott)
-        for row in rows:
-            db.eol_inspected.update_or_insert(db.eol_inspected.ott == row.ott,
-                                       ott=row.ott,
-                                       via=eol_inspect_via_flags['copyright_symbol'],
-                                       inspected=datetime.datetime.now())
-        # might as well also look for this image in the images_by_name table (probably won't find it)
-        rows = db((db.images_by_name.src == src) & (db.images_by_name.src_id == src_id)).select(db.images_by_name.name)
-        for row in rows:
-            db.eol_inspected.update_or_insert((db.eol_inspected.name != None) & (db.eol_inspected.name == row.name),
-                                       name=row.name,
-                                       via=eol_inspect_via_flags['copyright_symbol'],
-                                       inspected=datetime.datetime.now())
-        external_url = "http://eol.org/data_objects/{}".format(src_id)
-        if request.vars.get('method')=="redirect":
-            redirect(external_url)
-        else:
-            #method == 'iframe_if_possible' or similar, so we simply fall though and allow `external_url` to specify what to do
-            pass
-    #we do not want to jump or we do but this is not an EoL image, so return a stand-in page
-    row = db((db.images_by_ott.src_id == src_id) & (db.images_by_ott.src == src)).select(db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.url, db.images_by_ott.rights, db.images_by_ott.licence).first()
-    if row is None:
-        row = db((db.images_by_name.src_id == src_id) & (db.images_by_name.src == src)).select(db.images_by_name.src, db.images_by_name.src_id, db.images_by_name.url, db.images_by_name.rights, db.images_by_name.licence).first()
-    return dict(image=row, iframe_src=external_url)
+    #can redirect this to EoL, after logging so we can refresh e.g. cropped images
+    rows = db(db.images_by_ott.src_id == src_id).select(db.images_by_ott.ott)
+    for row in rows:
+        db.eol_inspected.update_or_insert(db.eol_inspected.ott == row.ott,
+                                   ott=row.ott,
+                                   via=eol_inspect_via_flags['image'],
+                                   inspected=datetime.datetime.now())
+    # might as well also look for this image in the images_by_name table (probably won't find it)
+    rows = db(db.images_by_ott.src_id == src_id).select(db.images_by_name.name)
+    for row in rows:
+        db.eol_inspected.update_or_insert((db.eol_inspected.name != None) & (db.eol_inspected.name == row.name),
+                                   name=row.name,
+                                   via=eol_inspect_via_flags['image'],
+                                   inspected=datetime.datetime.now())
+    redirect("http://eol.org/data_objects/{}".format(src_id))
         
-def eol_ID():
+def eol_page_ID():
     """
     Log the eol page visited, and redirect there.
     EoL has no https site currently

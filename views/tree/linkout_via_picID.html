@@ -1,10 +1,13 @@
 {{response.title='OneZoom: Picture information'}}
-{{extend 'layout.html'}}
-<div class="container-fluid">
-  <div class="col-sm-12" style="display:flex; flex-direction: column;">
-    <h3>{{=T('Image information held by OneZoom')}}</h3>
-    <div style="flex: 1; display: flex">
-      {{include 'tree/linkout_via_picID.load'}}
-    </div>
-  </div>
-</div>
+{{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
+{{if 'embed' in request.vars:}}<!--Page title in outer page-->{{else:}}<h3>{{=T('Image information held by OneZoom')}}</h3>{{pass}}
+<dl id="imageinfo">
+  <dt><img src="{{=thumbnail_url(image.src, image.src_id)}}"></dt>
+  <dd>
+    <ul>
+      {{if image.rights:}}<li>{{=image.rights}}</li>{{pass}}
+      <li>{{=T('Copyright licence:')}} {{=image.licence}}</li>
+      <li>{{=T('Provenance:')}} {{if image.url is None:}}{{=XML(T('No information available. Please <a href="mailto:mail@onezoom.org">contact us</a> if you require more information.'))}}{{elif url_override is not None or image.url.startswith('http') or image.url.startswith('//'):}}{{=A(image.url, _class="provenance-url", _href= url_override or image.url)}}{{else:}}{{=image.url}}{{pass}}</li>
+    <ul>
+  </dd>
+</dl>

@@ -5,22 +5,21 @@
 <div id="stop_recursion">{{=T('Please close this popup window to return to the OneZoom tree viewer')}}</div>
 </body></html>
 {{else:
-    extra_title = ''
+    partner = None
     if setup_params.get('partner'):
-        setup_params['partner_data'] = db(db.partners.partner_identifier == setup_params['partner']).select().first()
-        if setup_params['partner_data']:
-            extra_title = '/'+setup_params['partner']
-            setup_params['UI_layer']['vars']['partner_logo'] = setup_params['partner_data'].logo
-            setup_params['UI_layer']['vars']['partner_url'] = setup_params['partner_data'].url
-            setup_params['popups']['vars']['partner'] = setup_params['partner']
-            setup_params['popups']['vars']['user_more_info'] = setup_params['partner_data'].default_more_info
-            setup_params['popups']['vars']['user_message_OZ'] = setup_params['partner']
+        partner_data = db(db.partners.partner_identifier == setup_params['partner']).select().first()
+        if partner_data and partner_data.allow_own_site:
+            partner = partner_data.partner_identifier
+            setup_params['UI_layer']['vars']['partner_logo'] = partner_data.logo
+            setup_params['UI_layer']['vars']['partner_url'] = partner_data.url
+            setup_params['popups']['vars']['partner'] = partner_data.partner_identifier
+            setup_params['popups']['vars']['user_more_info'] = partner_data.default_more_info
         pass
     pass
 }}
 <html>
 <head>
-  <title>OneZoom{{=extra_title}} Tree of Life Explorer, text page for {{=page_info['title_name']}}</title>
+  <title>OneZoom Tree of Life Explorer, text page for {{=page_info.get('title_name')}}</title>
   <meta NAME="description" CONTENT="OneZoom Tree of Life Explorer" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -29,12 +28,12 @@
   <link rel="shortcut icon" href="{{=URL('static', 'images/favicon.ico')}}" type="image/ico" />
   {{if response.canonical:}}<link rel="canonical" href="{{=response.canonical}}">{{pass}}
 {{try:}}
-{{version = str(version+0)}}
+{{version = str(page_info.get('version')+0)}}
 {{except TypeError:}}
 <!-- had a problem with version mismatch -->
   </head>
   <body><h1 class="OneZoom_error">{{=T('Sorry - there has been a OneZoom error when getting the tree')}}</h1>
-{{=XML(T('No appropriate tree version available (Error: %s). Please <a href="mailto:mail@onezoom.org">contact us</a> and tell us of the problem') % (version,))}}</body>
+{{=XML(T('No appropriate tree version available (Error: %s). Please <a href="mailto:mail@onezoom.org">contact us</a> and tell us of the problem') % (page_info.get('version'),))}}</body>
 </html>
 {{else:}}
 
@@ -57,6 +56,7 @@
   <script>
     //include a few default params early on, so they can be used / overridden in the file which includes this layout
     var version = {{=version}};
+    var extra_title = "{{='/' + partner if partner else ''}}";
     var OZstrings={{include 'treeviewer/js_strings.json'}}
     var server_urls = {
       /* These fill out the equivalently named variables in OneZoom global_config.
@@ -72,14 +72,14 @@
       image_details_api: "{{try:}}{{=myconf.take('API.image')}}{{except:}}{{=URL('API', 'image_details.json', scheme=True, host=True)}}{{pass}}",
       update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
       tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
-      OZ_leaf_json_url_func: function(ott) {return("{{=XML(URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json', args='...OTT...', vars=(setup_params.get('popups') or {}).get('vars')))}}".replace('...OTT...', ott.toString() || ""))},
-      OZ_node_json_url_func: function(id) {return("{{=XML(URL('tree', 'node_linkouts', scheme=True, host=True, extension='json', args='...ID...', vars=(setup_params.get('popups') or {}).get('vars')))}}".replace('...ID...', id.toString() || ""))},
+      OZ_leaf_json_url_func: function(ott) {return("{{=XML(URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json', args=['...OTT...'], vars=(setup_params.get('popups') or {}).get('vars')))}}".replace('...OTT...', ott.toString() || ""))},
+      OZ_node_json_url_func: function(id) {return("{{=XML(URL('tree', 'node_linkouts', scheme=True, host=True, extension='json', args=['...ID...'], vars=(setup_params.get('popups') or {}).get('vars')))}}".replace('...ID...', id.toString() || ""))},
     };
   </script>
 {{include}}
 <script>
-    pagetitle_func = pagetitle_func || function(nm) {return (nm)?"OneZoom{{=extra_title}}: "+ nm:"OneZoom{{=extra_title}} Tree of Life Explorer"};
-    document.title = pagetitle_func("{{=page_info['title_name']}}");
+    pagetitle_func = pagetitle_func || function(nm) {return (nm)?("OneZoom" + extra_title + ": " + nm):"OneZoom" + extra_title + " Tree of Life Explorer"};
+    document.title = pagetitle_func("{{=page_info.get('title_name')}}");
 </script>
   <noscript>
     <style>
@@ -97,7 +97,9 @@
 var onezoom = null; //will be filled out on document ready
 
 
-/* UI functions that allow javascript in the main viewer to interact with the UI - these refer to items in the viewer_UI file */
+/* UI functions that allow javascript in the main viewer to interact with the UI.
+    Names for each function are hard-coded into the OneZoom viewer (in config.ui within global_config.js)
+these refer to items in the viewer_UI file */
 
 var UI_callbacks = {
   
@@ -118,16 +120,19 @@ var UI_callbacks = {
   },
 
   openCopyright: function(pic_src, pic_fn) {
-{{if 'page_params' in setup_params:}}
-{{url_params = '&'.join('{}={}'.format(k,v) for k,v in setup_params['page_params'].iteritems())}}
-    var load_url = "{{=URL('tree','linkout_via_picID', scheme=True, host=True, extension='load')}}" + "/" + pic_src + "/" + pic_fn + "?{{=url_params}}";
-{{else:}}
-    var load_url = "{{=URL('tree','linkout_via_picID', scheme=True, host=True, extension='load')}}" + "/" + pic_src + "/" + pic_fn + "?method=iframe";
-{{pass}}
-    var link_url = "{{=URL('tree','linkout_via_picID', scheme=True, host=True, extension=False)}}" +  "/" + pic_src + "/" + pic_fn + "?method=redirect";
-    $("#imageinfo-modal .popup-content").load(load_url, function() {if ($(this).find("> iframe")) {$(this).addClass("iframe-container")}});
+    var load_url = "{{=XML(URL('tree', 'linkout_via_picID', scheme=True, host=True, extension='html', args=['...PICSRC...', '...PICFN...'], vars=(setup_params.get('popups') or {}).get('vars')))}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
+    var link_url = "{{=URL('tree','linkout_via_picID', scheme=True, host=True, extension=False, args=['...PICSRC...', '...PICFN...'], vars={'redirect':1})}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
+    //Always load into a new iframe
+    var ifrm = document.createElement("iframe");
+    ifrm.setAttribute('src', load_url);
+    ifrm.addEventListener('load', function() {
+      {{if is_testing:}}console.log("Hiding image iframe loading pic");{{pass}}
+      $(".loading_pic", $(this).parent().parent()).hide()});
+    ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
+    $("#imageinfo-modal .popup-content").append(ifrm)
     $("#imageinfo-modal .uk-modal-header a").attr('href', link_url);
     UIkit.modal('#imageinfo-modal').show();
+    return [load_url, link_url]
   },
 
   openLinkouts: function() {
@@ -203,14 +208,14 @@ function load_tab(tab_content) {
   if (! tab_content.children().last().hasClass('popup-content')) {
       $('.loading_pic',tab_content).show();
       {{if is_testing:}}console.log("trying to create iframe with src = " + tab_content.attr('data-src'));{{pass}}
-      var ifrm = document.createElement("iframe"); 
+      var ifrm = document.createElement("iframe");
       ifrm.setAttribute('src', tab_content.attr('data-src'));
       ifrm.addEventListener('load', function() {
         {{if is_testing:}}console.log("Hiding iframe loading pic");{{pass}}
         $(".loading_pic", $(this).parent().parent()).hide()});
       ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
       //add iframe inside a div wrapper
-      tab_content.append($('<div>', {'class':'popup-content iframe-container'}).append(ifrm));
+      tab_content.append($('<div>', {'class':'popup-content'}).append(ifrm));
   }
 }
 
@@ -808,7 +813,6 @@ function setupUI() {
     $('#imageinfo-modal')
         .on('hide', function() {
              $('#imageinfo-modal .popup-content').empty();
-             $('#imageinfo-modal .popup-content').removeClass("iframe-container");
         })
     
     /*** Model for external tabs, e.g. wikipedia (must create & destroy tabbed content (e.g. iframes)) ***/

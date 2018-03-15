@@ -69,21 +69,27 @@ class FunctionalTest(object):
 
     @tools.nottest
     def element_by_tag_name_exists(self, tag_name):
-            try: self.browser.find_element_by_tag_name(tag_name)
-            except NoSuchElementException: return False
-            return True
+        try: self.browser.find_element_by_tag_name(tag_name)
+        except NoSuchElementException: return False
+        return True
 
     @tools.nottest
     def element_by_id_exists(self, id):
-            try: self.browser.find_element_by_id(id)
-            except NoSuchElementException: return False
-            return True
+        try: self.browser.find_element_by_id(id)
+        except NoSuchElementException: return False
+        return True
 
     @tools.nottest
     def element_by_class_exists(self, cls):
-            try: self.browser.find_element_by_class_name(cls)
-            except NoSuchElementException: return False
-            return True
+        try: self.browser.find_element_by_class_name(cls)
+        except NoSuchElementException: return False
+        return True
+
+    @tools.nottest
+    def element_by_css_selector_exists(self, css):
+        try: self.browser.find_element_by_css_selector(css)
+        except NoSuchElementException: return False
+        return True
     
 
 def has_linkouts(browser, include_internal):
