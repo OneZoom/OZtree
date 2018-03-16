@@ -512,7 +512,7 @@ db.define_table('reservations',
     # price in pounds - good idea to hang on to this for accounting purposes and verification the numbers add up later
     Field('partner_percentage', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
     # percentage of this donation that is diverted to a OZ partner like Linn Soc (after paypal fees are deducted) 
-    Field('partner_name', type = 'string', length=40), 
+    Field('partner_name', type = 'string', length=40),
     # a standardised name for the partner (or multiple partners if it comes to that - would then assume equal split between partners)
     Field('deactivated', type = 'text'),
     # true if this row in the reservations table has been deliberately deactivated for any reason other than expiry e.g. complaint / species disappears etc.
@@ -573,6 +573,7 @@ db.define_table('partners',
     Field('percentage', type = 'double', notnull=True),
     Field('giftaid', type = boolean, notnull=True), #can we collect gift aid?
     Field('default_more_info', type='string', length=30), #what appears by default in the sponsorship text, e.g. "supporting the Linnean Society"
+    Field('popular_locations_json', type='text'), #a JSON string used to fill the popular species menu (the popular_locations variable passed to treeviewer/layout.html)
     Field('allow_own_site', type = boolean), #If True, allow a site like www.onezoom.org/life/partnername/
     format = '%(name)s', migrate=is_testing)
 
