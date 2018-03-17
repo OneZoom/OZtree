@@ -77,10 +77,10 @@ function setup_page_by_loading(state) {
   get_id_by_state(state)
   .then(function(id) {
     tree_state.url_parsed = true;
-    if (!state.xp) {
-      page_loading_anim(id, state.init);
-    } else {
+    if (state.xp || (state.init && !['zoom','pzoom'].includes(state.init))) {
       jump_to_position(state, id);
+    } else {
+      page_loading_anim(id, state.init);
     }
   })
   .catch(function(error) {
@@ -110,8 +110,9 @@ function setup_page_by_navigation(state) {
   
   get_id_by_state(state)
   .then(function(id) {
-    if (state.xp) {
-      //jump if we have a hash position defined
+    tree_state.url_parsed = true;
+    if (state.xp || (state.init && !['zoom','pzoom'].includes(state.init))) {
+      //jump if we have a hash position defined or if init exists and is not 'zoom' or 'pzoom'
       jump_to_position(state, id);
     } else {
       controller.perform_leap_animation(id);
