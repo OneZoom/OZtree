@@ -4,7 +4,7 @@ setup_params = {
     'page':'UI_layer.load', 
     'vars':{'tabs':'all'} }, 
    'popups': {
-    'vars':{'embed':1} } #definitely don't encode session ID here, as this will be permanently stored in the html
+    'vars':{'embed':1} }, #definitely don't encode session ID here, as this will be permanently stored in the html
   'locations_json':('[' 
       '"Popular places",' 
       '{"OTT":244265},'  #Mammals - should get looked up automatically: this also allows the correct language to be used
@@ -18,7 +18,7 @@ setup_params = {
       '{"OTT":99252},'   #Flowering plants
       '{"OTT":1012685, "en":"Mushrooms"},' #the default OZ english name is bad for menus here, so we replace it
       '{"OTT":304358}'   #Complex life (eukaryotes)
-      ']'
+      ']')
   }
 }}
 
