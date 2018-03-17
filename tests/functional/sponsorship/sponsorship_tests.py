@@ -50,6 +50,7 @@ class SponsorshipTest(FunctionalTest):
 
         self.urls={
             'web2py': lambda ott: base_url + 'sponsor_leaf?ott={}'.format(ott), #sponsorship link from web2py directly
+            'web2py_md_spons': lambda ott: base_url + 'sponsor_leaf?ott={}&embed=3'.format(ott), #like the museum display only allow sponsorship (not ideal, 
             'web2py_nolinks': lambda ott: base_url + 'sponsor_leaf?ott={}&embed=4'.format(ott), #sponsorship links from web2py no links directly
             # the next two use the linkouts_url function to convert the stringified js function to a python output
             'treeviewer': lambda ott: linkouts_url(self.browser, js_get_life_link, ott, "ozspons"), #sponsorship links from js function in viewer
@@ -75,7 +76,7 @@ class SponsorshipTest(FunctionalTest):
         session id reservations work)
         """
         browser = self.browser if browser is None else browser
-        print("|tree", end="", flush=True)
+        print("|trview", end="", flush=True)
         browser.get(self.urls['treeviewer'](ott))
         extra_assert_tests(browser)
         assert self.zoom_disabled()
@@ -87,18 +88,24 @@ class SponsorshipTest(FunctionalTest):
             self.test_ott(extra_assert_tests_from_another_browser, ott, None, alt_browser)
             alt_browser.quit()
         #check all the alternative representations too
-        print("|plain", end="", flush=True)
+        print("|w2p", end="", flush=True)
         browser.get(self.urls['web2py'](ott))
         extra_assert_tests(browser)
-        print("|MD", end="", flush=True)
+        print("|trviewMD", end="", flush=True)
         browser.get(self.urls['treeviewer_md'](ott))
         extra_assert_tests(browser)
         assert has_linkouts(browser, include_site_internal=False) == False
         assert self.zoom_disabled()
-        print("|nolink ", end="", flush=True)
+        print("|w2pMD", end="", flush=True)
+        browser.get(self.urls['web2py_md_spons'](ott))
+        extra_assert_tests(browser)
+        assert has_linkouts(browser, include_site_internal=False) == False
+        assert self.zoom_disabled()
+        print("|w2pNoLink", end="", flush=True)
         browser.get(self.urls['web2py_nolinks'](ott))
         extra_assert_tests(browser)
         assert has_linkouts(browser, include_site_internal=True) == False
+        assert self.zoom_disabled()
 
     @tools.nottest
     def test_md_sandbox(self, ott):
@@ -235,4 +242,8 @@ document.body.dispatchEvent(te);""")
         #get new logs
         console_log = self.browser.get_log('browser')
         # in is_testing mode, should have a log message that event is blocked
-        return console_log[0]['source']=='console-api' and console_log[0]['level']=='INFO' and "Touch zoom event blocked" in console_log[0]['message'] 
+        if len(console_log):
+            return console_log[0]['source']=='console-api' and console_log[0]['level']=='INFO' and "Touch zoom event blocked" in console_log[0]['message'] 
+        else:
+            return False
+            
