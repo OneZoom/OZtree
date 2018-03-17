@@ -573,7 +573,7 @@ db.define_table('partners',
     Field('percentage', type = 'double', notnull=True),
     Field('giftaid', type = boolean, notnull=True), #can we collect gift aid?
     Field('default_more_info', type='string', length=30), #what appears by default in the sponsorship text, e.g. "supporting the Linnean Society"
-    Field('popular_locations_json', type='text'), #a JSON string used to fill the popular species menu (the popular_locations variable passed to treeviewer/layout.html). This is an long array containing elements which are either strings (which give menu headers) or dicts as {"OTT":1234,"en":"English name",...}. 
+    Field('popular_locations_json', type='text'), #a JSON string used to fill the popular species menu (the popular_locations variable passed to treeviewer/layout.html). This is an long array containing elements which are either strings (which give menu headers) or dicts as {"OTT":1234,"en":"English name",...}. No carriage returns or single quotes allowed.
     Field('allow_own_site', type = boolean), #If True, allow a site like www.onezoom.org/life/partnername/
     format = '%(name)s', migrate=is_testing)
 
