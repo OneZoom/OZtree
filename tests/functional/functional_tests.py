@@ -115,7 +115,7 @@ class FunctionalTest(object):
         log = self.browser.get_log('browser')
         if check_errors:
             for message in log:
-                assert message['level'] in ('INFO','WARNING'), "Javascript issue of level {}, : {}".format(message['level'], message['message'])
+                assert message['level'] in ('INFO','WARNING','DEBUG'), "Javascript issue of level {}, : {}".format(message['level'], message['message'])
             
             
 def has_linkouts(browser, include_site_internal):
@@ -159,7 +159,7 @@ def web2py_viewname_contains(browser, expected_view):
     except NoSuchElementException:
         return False
 
-def linkouts_url(browser, url, ott_or_id, tab_name):
+def linkouts_url(browser, url, ott_or_id, tab_name, lang=""):
     """
     This function can be used to convert a linkouts function in javascript
     to a URL to visit.
@@ -168,7 +168,7 @@ def linkouts_url(browser, url, ott_or_id, tab_name):
     tab name such as 'wiki' or 'ozspons' (see linkouts() in controllers/tree.py).
     requires a browser to evaluate the JS
     """
-    links = browser.execute_script("return (" + url + ")" + "({})".format(ott_or_id))
+    links = browser.execute_script("return (" + url + ")" + "({}, {})".format(ott_or_id, lang))
     json = requests.get(links).json()
     return json['data'][tab_name][0]
 
