@@ -6,10 +6,6 @@ import re
 from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __check_version
 """ Some settings for sponsorship"""
 try:
-    allow_sponsorship = myconf.take('sponsorship.allow_sponsorship') in ['true', '1', 't', 'y', 'yes', 'True']
-except:
-    allow_sponsorship = False
-try:
     reservation_time_limit = myconf.take('sponsorship.reservation_time_limit_mins') * 60.0
 except:
     reservation_time_limit = 360.0 #seconds
@@ -158,6 +154,12 @@ def sponsor_leaf():
     
     # initialise status flag (it will get updated if all is OK)
     status = ""
+    # sometimes (e.g. museum display on main OZ site) we shut off sponsoring without using appconfig
+    # which we do by passing a url param
+    try:
+        allow_sponsorship = myconf.take('sponsorship.allow_sponsorship') in ['true', '1', 't', 'y', 'yes', 'True'] and not response.vars.no_sponsoring
+    except:
+        allow_sponsorship = False
     # initialise other variables that will be parsed on to the page
     EOL_ID = -1
     species_name = common_name = the_name = None
