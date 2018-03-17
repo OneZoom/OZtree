@@ -37,7 +37,7 @@ class TestTreeDataMismatch(FunctionalTest):
     @classmethod
     def tearDownClass(self):
         remove_temp_minlife_file(self)
-        print(">> restoring original version number to database, and setting real_parent to 0")
+        print(">> restoring original version number to root node in database, and setting root node real_parent to 0")
         db_cursor = self.db['connection'].cursor()
         #parent of row 1 should contain the (negative) version number and real_parent should always be 0
         sql="UPDATE ordered_nodes set parent = real_parent WHERE id = 1 AND parent = {} LIMIT 1".format(self.db['subs'])
