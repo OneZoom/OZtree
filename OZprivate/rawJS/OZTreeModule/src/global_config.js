@@ -65,7 +65,7 @@ config.api = {
   
 }
 
-config.lang = ''; //two letter language code. If empty, use the browser default
+config.lang = ''; //two letter language code. If empty, try to use the browser default, which will need to be passed in by the server (not visible to js)
 
 config.default_setting = ''; //a place to save the default settings string passed in via the URL (anything starting d_)
 
