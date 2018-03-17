@@ -77,7 +77,7 @@ function setup_page_by_loading(state) {
   get_id_by_state(state)
   .then(function(id) {
     tree_state.url_parsed = true;
-    if (state.xp) {
+    if (state.xp !== undefined || (state.init && !['zoom','pzoom'].includes(state.init))) {
       jump_to_position(state, id);
     } else {
       page_loading_anim(id, state.init);
@@ -111,7 +111,7 @@ function setup_page_by_navigation(state) {
   get_id_by_state(state)
   .then(function(id) {
     tree_state.url_parsed = true;
-    if (state.xp || (state.init && !['zoom','pzoom'].includes(state.init))) {
+    if (state.xp  !== undefined || (state.init && !['zoom','pzoom'].includes(state.init))) {
       //jump if we have a hash position defined or if init exists and is not 'zoom' or 'pzoom'
       jump_to_position(state, id);
     } else {
@@ -127,9 +127,10 @@ function jump_to_position(state, codeIn) {
   let controller = get_controller();
   //jump to position pinpoint by reanchored node(codeIn) and position(state.xp, state.yp, state.ws)
   //TO DO - James says this needs to work even if the screen size etc has changed
-  tree_state.xp = parseInt(state.xp);
-  tree_state.yp = parseInt(state.yp);
-  tree_state.ws = parseFloat(state.ws);
+  //we might not have x,y,w defined if e.g. init=jump
+  tree_state.xp = parseInt(state.xp || 0);
+  tree_state.yp = parseInt(state.yp || 0);
+  tree_state.ws = parseFloat(state.ws || 1);
   controller.develop_and_reanchor_to(codeIn);
   controller.re_calc();
   
