@@ -103,7 +103,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <option value="kew">Kew</option>
         </select></li>
       <li class="uk-nav-header langswitch">{{=T("Language")}}</li>
-      <li class="langswitch"><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1],)}}">
+      <li class="langswitch"><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1] if browser_language else None,)}}">
         <option value="">{{=T('Browser default')}}</option>
         <optgroup label="Translated">
           <option value="en">English</option>
