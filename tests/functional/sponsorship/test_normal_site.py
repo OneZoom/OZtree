@@ -5,7 +5,7 @@ from time import sleep
 from selenium import webdriver #to fire up a duplicate page
 
 from .sponsorship_tests import SponsorshipTest
-from ..functional_tests import web2py_viewname_contains, web2py_date_accessed, has_linkouts, linkouts_url
+from ..functional_tests import web2py_viewname_contains, web2py_date_accessed, has_linkouts, linkouts_url, test_email
 from ...util import base_url
 
 class TestNormalSite(SponsorshipTest):
@@ -71,16 +71,28 @@ class TestNormalSite(SponsorshipTest):
         n_visits, last_visit, reserve_time = self.visit_data(ott)
         assert web2py_viewname_contains(self.browser, "sponsor_leaf")
         assert self.zoom_disabled()
+
         assert n_visits == 2, "should have recorded two visits"
         assert abs(web2py_date_accessed(self.browser) - last_visit).seconds == 0, "last visit time should be recorded as just now"
+        assert abs(web2py_date_accessed(self.browser) - reserve_time).seconds == 0, "reserve time should be recorded as just now"
         self.browser.get(self.urls['web2py'](ott)) #visit from another page (not the same session)
         assert web2py_viewname_contains(self.browser, "spl_reserved")
-        self.browser.get(self.urls['web2py_nolinks'](ott)) #visit from another page (not the same session)
+
+        self.browser.get(self.urls['web2py_md_spons'](ott)) #visit from another page (not the same session)
         assert web2py_viewname_contains(self.browser, "spl_reserved")
+        assert has_linkouts(self.browser, include_site_internal=False) == False
+        assert self.zoom_disabled()
+        
         self.browser.get(self.urls['treeviewer_md'](ott))
-        assert web2py_viewname_contains(self.browser, "spl_reserved")
+        assert web2py_viewname_contains(self.browser, "spl_elsewhere")
+        assert has_linkouts(self.browser, include_site_internal=False) == False
         assert self.zoom_disabled()
         assert has_linkouts(self.browser, include_site_internal=False) == False
+
+        self.browser.get(self.urls['web2py_nolinks'](ott)) #visit from another page (not the same session)
+        assert web2py_viewname_contains(self.browser, "spl_reserved")
+        assert has_linkouts(self.browser, include_site_internal=True) == False
+        assert self.zoom_disabled()
         
         alt_browser = webdriver.Chrome()
         alt_browser.get(base_url + 'life')
@@ -95,33 +107,36 @@ class TestNormalSite(SponsorshipTest):
 
     def test_sponsoring_from_MD(self):
         """
-        On the museum display OneZoom site, with sponsorship ENABLED (not recommended), looking at an unsponsored (unvisted) OTTs should work
-        (when revisiting from another browser, we should get a 'temporarily reserved' page)
+        On the museum display OneZoom site, even if sponsorship is enabled we should get a sponsor_elsewhere page
         """
         ott, sciname = self.never_looked_at_ottname() #visiting this ott *may* make a new entry in the reservations table
         
         #here we open then reopen the same ott to check that opening from the same treeviewer is OK
         self.browser.get(self.urls['treeviewer_md'](ott)) #only visit once, as this does not save session ids
         n_visits, last_visit, reserve_time = self.visit_data(ott)
-        assert web2py_viewname_contains(self.browser, "sponsor_leaf")
-        assert has_linkouts(self.browser, include_site_internal=False) == False, "The museum display sponsorship link should not link out to other places"
+        assert web2py_viewname_contains(self.browser, "spl_elsewhere")
         assert n_visits == 1, "should have recorded one visit"
         assert abs(web2py_date_accessed(self.browser) - last_visit).seconds == 0, "last visit time should be recorded as just now"
-        self.browser.get(self.urls['web2py'](ott)) #visit from another page (not the same session)
-        assert web2py_viewname_contains(self.browser, "spl_reserved")
-        self.browser.get(self.urls['web2py_nolinks'](ott)) #visit from another page (not the same session)
-        assert web2py_viewname_contains(self.browser, "spl_reserved")
-        self.browser.get(self.urls['treeviewer'](ott))
-        assert web2py_viewname_contains(self.browser, "spl_reserved")
+        assert reserve_time is None
+        assert has_linkouts(self.browser, include_site_internal=False) == False
         assert self.zoom_disabled()
-        
-        alt_browser = webdriver.Chrome()
-        alt_browser.get(base_url + 'life_MD')
-        alt_url = linkouts_url(alt_browser, alt_browser.execute_script("return server_urls.OZ_leaf_json_url_func.toString()"), ott, "ozspons")
-        alt_browser.get(alt_url)
-        assert web2py_viewname_contains(alt_browser, "spl_reserved")
-        alt_browser.quit()
-        
+        n_deleted = self.delete_reservation_entry(ott, sciname, None)
+        assert n_deleted == 1, "visiting an unvisited ott in the museum display should allocate a reservations row which has been deleted"
+    
+    
+    def test_sponsoring_from_MD_with_spons(self):
+        """
+        Test non-treeview museum display embed mode allowing sponsorship (pointless while paypal cannot be iframed) 
+        """
+        ott, sciname = self.never_looked_at_ottname() #visiting this ott *may* make a new entry in the reservations table
+        self.browser.get(self.urls['web2py_md_spons'](ott)) 
+        n_visits, last_visit, reserve_time = self.visit_data(ott)
+        assert web2py_viewname_contains(self.browser, "sponsor_leaf")
+        assert n_visits == 1, "should have recorded one visit"
+        assert abs(web2py_date_accessed(self.browser) - last_visit).seconds == 0, "last visit time should be recorded as just now"
+        assert abs(web2py_date_accessed(self.browser) - reserve_time).seconds == 0, "reserve time should be recorded as just now"
+        assert has_linkouts(self.browser, include_site_internal=False) == False
+        assert self.zoom_disabled()
         n_deleted = self.delete_reservation_entry(ott, sciname, None)
         assert n_deleted == 1, "visiting an unvisited ott should allocate a reservations row which has been deleted"
 
@@ -132,6 +147,8 @@ class TestNormalSite(SponsorshipTest):
         We need to do this by faking a reserve time into the database
         """
         ott, sciname = self.never_looked_at_ottname() #visiting this ott *may* make a new entry in the reservations table
+        print(self.urls['web2py'](ott))
+        sleep(100)
         self.browser.get(self.urls['web2py'](ott)) #visit from another page (not the same session)
         self.browser.get(self.urls['treeviewer'](ott))
         assert web2py_viewname_contains(self.browser, "spl_reserved")
@@ -154,30 +171,40 @@ class TestNormalSite(SponsorshipTest):
         Do this from scratch, by getting the links from the life viewer in a different language
         We need to test 0) sponsor_leaf (the 'normal' page) 1) spl_reserved (reserved for someone else) 2) spl_waitpay 3) spl_unverified.html
         """
+        
         test_name = "My tést <name> 漢字 + أبجدية عربية"
         test_4byte_unicode = " &amp; <script>" #annoyingly can't do this in selenium ChromeBrowser ()
         
-        ott, sciname = self.get_never_looked_at_species()
-        lang='fr' #just to force errors, try sponsoring in a non-default browser language
-        self.browser.get(base_url + 'life'+"/?init=jump&pop=osl_{}&lang={}".format(ott, lang))
-        self.assertTrue(self.web2py_viewname_contains("sponsor_leaf"))
-        
+        ott, sciname = self.never_looked_at_ottname()
+        lang, expected_word ='fr', 'sponsorisé' #just to force errors, try sponsoring in a non-default browser language
+        self.browser.get(base_url + 'life'+"/@={0}?init=jump&pop=osl_{0}&lang={1}".format(ott, lang))
+        sleep(1) #wait a little for popup to work
+        iframe = self.browser.find_element_by_css_selector(".ozspons iframe")
+        self.browser.switch_to.frame(iframe)
+        sleep(1)
+        assert web2py_viewname_contains(self.browser, "sponsor_leaf")
+        assert expected_word in self.browser.page_source
+                
         #fill in the form elements
         email = self.browser.find_element_by_id("e-mail_input")
         sponsor_name = self.browser.find_element_by_id("user_sponsor_name_input")
         more_info = self.browser.find_element_by_id("user_more_info_input")
+        amount = self.browser.find_element_by_id("user_paid_input")
         
         email.send_keys(test_email) #should test too long a name
         sponsor_name.send_keys(test_name) #probably worth testing weird characters here
         more_info.send_keys(test_4byte_unicode) #probably worth testing weird characters here
+        amount.send_keys("2") #deliberately fill in not enough money
+
+        #self.browser.find_element_by_id("submit_button").click()
         
-        self.browser.find_element_by_id("submit_button").click()
+        
         
         #has it filled out the DB
-        db_cursor = self.db['connection'].cursor()
-        sql="SELECT reserve_time, user_sponsor_lang FROM reservations where OTT_ID = {} LIMIT 1".format(self.db['subs'])
-        db_cursor.execute(sql, (-mins, ott)) # versions are stored as negative numbers
-        self.db['connection'].commit() #need to commit here otherwise next select returns stale data
+        #db_cursor = self.db['connection'].cursor()
+        #sql="SELECT reserve_time, user_sponsor_lang FROM reservations where OTT_ID = {} LIMIT 1".format(self.db['subs'])
+        #db_cursor.execute(sql, (-mins, ott)) # versions are stored as negative numbers
+        #self.db['connection'].commit() #need to commit here otherwise next select returns stale data
 
              
         self.delete_reservation_entry(ott, sciname, test_email)
