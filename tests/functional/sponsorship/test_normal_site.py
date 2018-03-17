@@ -148,36 +148,19 @@ class TestNormalSite(SponsorshipTest):
         n_deleted = self.delete_reservation_entry(ott, sciname, None)
         assert n_deleted == 1, "visiting an unvisited ott should allocate a reservations row which has been deleted"
         
-'''
-    def test_partner_sponsorship(self):
-        *****
-    
-    def test_payment_pathway(self):
+    def test_payment_pathway_noMD(self):
         """
         Go through the payment process, checking at each stage whether the correct page is given.
-        Do this from scratch, by getting the links from the life.html and life_MD.html viewers
+        Do this from scratch, by getting the links from the life viewer in a different language
         We need to test 0) sponsor_leaf (the 'normal' page) 1) spl_reserved (reserved for someone else) 2) spl_waitpay 3) spl_unverified.html
         """
         test_name = "My tést <name> 漢字 + أبجدية عربية"
-        test_4byte_unicode = " &amp; <script>" #annoying can't do this in selenium
+        test_4byte_unicode = " &amp; <script>" #annoyingly can't do this in selenium ChromeBrowser ()
         
         ott, sciname = self.get_never_looked_at_species()
-        page = self.page + "?ott={}".format(ott)
-        self.browser.get(page)
+        lang='fr' #just to force errors, try sponsoring in a non-default browser language
+        self.browser.get(base_url + 'life'+"/?init=jump&pop=osl_{}&lang={}".format(ott, lang))
         self.assertTrue(self.web2py_viewname_contains("sponsor_leaf"))
-        #this also tests whether a reload in the same browser works
-        self.browser.get(page + "&embed=3")
-        self.assertTrue(self.web2py_viewname_contains("sponsor_leaf"))
-        assert self.has_linkouts(self.browser, include_site_internal=False)
-        #here we could test functionality of the main sponsor_leaf page
-        
-        
-        #look at the same page with another browser to check if session reservation works
-        alt_browser = webdriver.Chrome()
-        alt_browser.get(page + "&embed=3")
-        self.assertTrue(web2py_viewname_contains(alt_browser, "spl_reserved"))
-        assert has_linkouts(self.browser, include_site_internal=False)
-        alt_browser.quit()
         
         #fill in the form elements
         email = self.browser.find_element_by_id("e-mail_input")
@@ -190,7 +173,15 @@ class TestNormalSite(SponsorshipTest):
         
         self.browser.find_element_by_id("submit_button").click()
         
-        #try getting information from the API (should not return)
+        #has it filled out the DB
+        db_cursor = self.db['connection'].cursor()
+        sql="SELECT reserve_time, user_sponsor_lang FROM reservations where OTT_ID = {} LIMIT 1".format(self.db['subs'])
+        db_cursor.execute(sql, (-mins, ott)) # versions are stored as negative numbers
+        self.db['connection'].commit() #need to commit here otherwise next select returns stale data
+
              
         self.delete_reservation_entry(ott, sciname, test_email)
+'''
+    def test_partner_sponsorship(self):
+        *****
 '''
