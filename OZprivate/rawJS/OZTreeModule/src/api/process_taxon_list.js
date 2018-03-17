@@ -16,7 +16,7 @@ import api_manager from './api_manager'; //for api_manager.ott2id_arry()
 export default function (taxon_json, taxon_callback, header_callback, data_repo) {
   if (taxon_json) {
     let taxon_list = JSON.parse(taxon_json);
-    if (taxon_list) {
+    if (taxon_list && taxon_list.length) {
       let taxa = taxon_list.filter(function(x) {return typeof(x) !== "string"}); //filter out the headers, return a view
       let otts = taxa.map(function(item){return item.OTT}).join(",")
       //must make an API call to add vernaculars to each item before processing
