@@ -77,7 +77,7 @@ function setup_page_by_loading(state) {
   get_id_by_state(state)
   .then(function(id) {
     tree_state.url_parsed = true;
-    if (state.xp || (state.init && !['zoom','pzoom'].includes(state.init))) {
+    if (state.xp) {
       jump_to_position(state, id);
     } else {
       page_loading_anim(id, state.init);
