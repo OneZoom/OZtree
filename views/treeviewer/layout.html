@@ -217,7 +217,7 @@ function load_tab(tab_content) {
         $(".loading_pic", $(this).parent().parent()).hide()});
       ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
       //add iframe inside a div wrapper
-      tab_content.append($('<div>', {'class':'popup-content'}).append(ifrm));
+      tab_content.append($('<div>', {'class':'popup-content iframe-container'}).append(ifrm));
   }
 }
 
