@@ -118,6 +118,7 @@ class TestTreeDataMismatch(FunctionalTest):
         """
         The temporary minlife file in static should show a mismatch error
         """
-        self.browser.get("file://" + self.minlife_file_location)
+        url = "file://" + self.minlife_file_location
+        self.browser.get(url)
         assert self.element_by_class_exists('OneZoom_error'), "Tree at {} should display the injected error text".format(url)
 

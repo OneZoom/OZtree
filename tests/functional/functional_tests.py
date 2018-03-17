@@ -51,7 +51,7 @@ class FunctionalTest(object):
             return False
         db_py_loc = os.path.realpath(os.path.join(web2py_app_dir, "models", "db.py"))
         with open(db_py_loc, 'r') as db_py:
-            assert striptext_in_file("is_testing=True", db_py), "To do any testing you must set is_testing=True in " + db_py_loc
+            assert striptext_in_file("is_testing=True", db_py), "To do any functional testing you must set is_testing=True in " + db_py_loc
         self.db = get_db_connection()
         print("> starting web2py")
         try:
