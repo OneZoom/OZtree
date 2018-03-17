@@ -1,7 +1,7 @@
-function parse_query(loc, search, hash) {
+function parse_query(loc, querystring, hash) {
   let state = {};
   parse_location(state, loc);
-  parse_querystring(state, search);
+  parse_querystring(state, querystring);
   parse_hash(state, hash);
   return state;
 }
@@ -29,22 +29,24 @@ function parse_location(state, loc) {
   if (parts.length > 1 && !isNaN(parseInt(parts[1]))) state.ott = parseInt(parts[1]);
 }
 
-//Object, String
-//This function parses the search string, then stores the result in state object.
-//The query string could be null or undefined or empty. 
-//Otherwise the query string must start with '?'. Besides, the string may contain the following parts, and these parts are joined by '&'.
-//Example:  ?part1&part2&part3.
-//Here are possible parts:
-//  -- 'pop=' + Number(ott) 
-//  -- 'vis_type' + (one of 'spiral', 'fern', 'natural', 'balanced')
-//  -- 'init'     + (one of 'jump', 'zoom', 'pzoom') 
-//  -- 'lang'     + (a language code, e.g. 'en', 'fr', etc.) 
-function parse_querystring(state, search) {
-  if (!search || search.length === 0) return;
-  search = search.substring(1).split("&");
-  for (let i=0; i<search.length; i++) {
-    if (/^pop=/.test(search[i])) {
-      let tap_params = search[i].substring(search[i].indexOf("=")+1).split("_");
+/**
+ * Parse the query string, then store the result in state object.
+ * @param {Object} state - the state that will be changed
+ * @param {String} querystring - the query string. Could be null or undefined or empty, otherwise must start with '?'
+    and continues until the end or a '#' is reached
+ *   The string may contain the following parts, joined by '&'
+ *    -- 'pop=' + prefix_Number (where prefix is ol (open leaf), osl (open sponsor_leaf), oil (open iucn leaf) and  
+ *    -- 'vis_type=' + (one of 'spiral', 'fern', 'natural', 'balanced')
+ *    -- 'init='     + (one of 'jump', 'zoom', 'pzoom') 
+ *    -- 'lang='     + (a language code, e.g. 'en', 'fr', etc.) 
+ *   Example:  ?part1&part2&part3.
+ */
+function parse_querystring(state, querystring) {
+  if ((typeof querystring  !== 'string') || !querystring.startsWith('?')) return;
+  querystring = querystring.substring(1).split("&"); //knock off initial '?'
+  for (let i=0; i<querystring.length; i++) {
+    if (/^pop=/.test(querystring[i])) {
+      let tap_params = querystring[i].substring(querystring[i].indexOf("=")+1).split("_");
       let tap_ott, tap_action;
       if (tap_params.length == 2) {        
         //new params. pop=ol_id
@@ -57,15 +59,15 @@ function parse_querystring(state, search) {
       }
       state.tap_action = tap_action;
       state.tap_ott = parseInt(tap_ott);      
-    } else if (/^vis=/.test(search[i])) {
-      let vis_type = search[i].substring(search[i].indexOf("=")+1);
+    } else if (/^vis=/.test(querystring[i])) {
+      let vis_type = querystring[i].substring(querystring[i].indexOf("=")+1);
       state.vis_type = vis_type;
-    } else if (/^init=/.test(search[i])) {
-      let init = search[i].substring(search[i].indexOf("=")+1);
+    } else if (/^init=/.test(querystring[i])) {
+      let init = querystring[i].substring(querystring[i].indexOf("=")+1);
       state.init = init;
-    } else if (/^lang=/.test(search[i])) {
+    } else if (/^lang=/.test(querystring[i])) {
       //if the user wants a specific language: not the one given by the browser
-      let lang = search[i].substring(search[i].indexOf("=")+1);
+      let lang = querystring[i].substring(querystring[i].indexOf("=")+1);
       state.lang = lang;
     }
   }
