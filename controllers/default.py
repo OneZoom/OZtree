@@ -157,7 +157,7 @@ def sponsor_leaf():
     # sometimes (e.g. museum display on main OZ site) we shut off sponsoring without using appconfig
     # which we do by passing a url param
     try:
-        allow_sponsorship = myconf.take('sponsorship.allow_sponsorship') in ['true', '1', 't', 'y', 'yes', 'True'] and not response.vars.no_sponsoring
+        allow_sponsorship = myconf.take('sponsorship.allow_sponsorship') in ['true', '1', 't', 'y', 'yes', 'True'] and not request.vars.no_sponsoring
     except:
         allow_sponsorship = False
     # initialise other variables that will be parsed on to the page
