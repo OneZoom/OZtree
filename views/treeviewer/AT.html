@@ -5,7 +5,20 @@ setup_params = {
     'page':'UI_layer.load', 
     'vars':{'tabs':'all'} }, 
    'popups': {
-    'vars':{'embed':1, 'form_session_id': response.session_id} } 
+    'vars':{'embed':1, 'form_session_id': response.session_id} },
+   'locations_json':('[' 
+        '"Rendezvous points",' 
+        '{"OTT": 312031, "":2},'
+        '{"OTT": 770311, "":3},'
+        '{"OTT": 386191, "":"4"},'
+        '{"OTT": 842867, "":"5"},'
+        '{"OTT": 386195, "en":"6"},'
+        '{"OTT": 702152, "en":"7"},'  
+        '{"OTT": 913935, "en":"8"},' 
+        '"Tales",'
+        '{"OTT": 820026}'
+      ']')
+
   }
 }}
 
@@ -16,16 +29,4 @@ setup_params = {
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
 var tree_config= {cols:'AT', 'layout.branch':'AT', 'layout.node':'AT', 'layout.leaf':'AT', 'layout.sign':'AT', midnode:'AT'};
 var pagetitle_func = null;
-var popular_locations = [ /* strings are treated as headers (looked up in OZstrings), arrays as links with [ott,name] with name optional */
-  "{{=T('Rendezvous points')}}",
-  [312031,"2"],
-  [770311,"3"],
-  [386191,"4"],
-  [842867,"5"],
-  [386195,"6"],
-  [702152,"7"],
-  [913935,"8"],
-  "{{=T('Tales')}}",
-  [820026], //Humped bladderwort
-];
 </script>

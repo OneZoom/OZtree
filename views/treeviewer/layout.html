@@ -23,6 +23,9 @@
             setup_params['UI_layer']['vars']['partner_url'] = partner_data.url
             setup_params['popups']['vars']['partner'] = partner_data.partner_identifier
             setup_params['popups']['vars']['user_more_info'] = partner_data.default_more_info
+            if partner_data.popular_locations_json:
+                setup_params['locations_json'] = partner_data.popular_locations_json
+            pass
         pass
     pass
 }}
@@ -46,8 +49,6 @@
   <script src="{{=URL('static','uikit-3/js/uikit.min.js')}}"></script>
   <script src="{{=URL('static','uikit-3/js/uikit-icons.min.js')}}"></script>
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree.css')}}" />
-  <!-- for any embedded sponsor_node pages -->
-  <link rel="stylesheet" type="text/css" href="{{=URL('static', 'OZSponsor/sponsor_node.css')}}" />
   <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/completetree_' + version +  '.js')}}"></script>
   <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/cut_position_map_' + version +  '.js')}}"></script>
   <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/dates_' + version + '.js')}}"></script>
@@ -96,7 +97,7 @@
   <script type="text/javascript">
 /* define most of the JS after the main page has loaded */
 var onezoom = null; //will be filled out on document ready
-
+var locations_json = '{{=XML(setup_params.get("locations_json") or "[]")}}';
 
 /* UI functions that allow javascript in the main viewer to interact with the UI.
     Names for each function are hard-coded into the OneZoom viewer (in config.ui within global_config.js)
@@ -325,16 +326,15 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
  * callback that is fired when an item is clicked on in the list
  * (called with event, OZid, item_name, sci_name, dropdown)
  */
-function setup_location_list(target, taxon_list, click_callback_id_name) {
+function setup_location_list(target, taxon_list_json, click_callback_id_name) {
     target.empty();
     onezoom.utils.process_taxon_list(
-        //map the pop species headers to look up strings, for translations
-        taxon_list.map(function(x) {if (($.type(x) === "string") && (x in OZstrings)) {return OZstrings[x];} else {return x;}}), 
+        taxon_list_json, 
         function(ott, given_name, sciname, OZid) {
             if (OZid) {
                 target.append(
-                    $('<dd></dd>').html(
-                        $('<p></p>')
+                    $('<dd>').html(
+                        $('<p>')
                             .html(given_name?$('<span></span>').text(given_name):$('<i></i>').text(sciname))
                             .addClass('taxon_location_button')
                             .attr("draggable","true")
@@ -353,7 +353,7 @@ function setup_location_list(target, taxon_list, click_callback_id_name) {
                 );
             }
         },
-        function(header, sciname) {target.append($('<dt></dt>').text(header))},
+        function(header) {target.append($('<dt>').text(OZstrings.hasOwnProperty(header)?OZstrings[header]:header))},
         onezoom.data_repo);
 }
 
@@ -579,7 +579,7 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
             }
         });
         
-    setup_location_list($('.popular_species', box_selector), popular_locations, UI_reset_marked_via_event);
+    setup_location_list($('.popular_species', box_selector), locations_json, UI_reset_marked_via_event);
 
     if (OZid) {
         if (!col) col = onezoom.controller.mark_area(OZid);
@@ -845,7 +845,7 @@ function setupUI() {
         event.stopPropagation();
     });
 
-    setup_location_list($('#search-basic .popular_species'), popular_locations, 
+    setup_location_list($('#search-basic .popular_species'), locations_json, 
         function(event, OZid) {closeAndLeap(event, OZid, $('#search-basic'))});
 
     var existing_searchresults = onezoom.controller.list_all_marked().filter(function(id_col) {return !isNaN(id_col[0])});

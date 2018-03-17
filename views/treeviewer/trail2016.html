@@ -6,7 +6,23 @@ setup_params = {
     'page':'UI_layer.load', 
     'vars':{'tabs':'all'} }, 
    'popups': {
-    'vars':{'embed':1, 'form_session_id': response.session_id, 'user_more_info':"Ancestor’s Trail 2016", 'user_message_OZ':"AT16"} } 
+    'vars':{'embed':1, 'form_session_id': response.session_id, 'user_more_info':"Ancestor’s Trail 2016", 'user_message_OZ':"AT16"} }, 
+  'locations_json':('[' 
+        '"Trail routes",' 
+        '{"OTT":770315, "en":"Human trail start"},'
+        '{"OTT":540235, "en":"Gazelle trail start"},'
+        '{"OTT":81461, "en":"Bird trail start"},' #Should pick a more recent node
+        '{"OTT":991547, "en":"Amphibian trail start"},'  #Frogs and toads
+        '{"OTT":320137, "en":"Fish trail start"},'  #Vertebrates
+        '{"OTT":99252, "en":"Plant trail start"},'  
+        '{"OTT":1007130, "en":"Bacteria trail start"},' 
+        '{"OTT":5334778, "en":"Humans meet gazelles"},'
+        '{"OTT":229560, "en":"Mammals meet birds"},'
+        '{"OTT":229562, "en":"Mammals & birds meet amphibians"},'
+        '{"OTT":114654, "en":"Land vertebrates meet fish"},'
+        '{"OTT":304358, "en":"Animals meet plants"},'
+        '{"OTT":93302, "en":"All life meets"}'
+      ']')
   }
 }}
 
@@ -18,20 +34,4 @@ setup_params = {
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
 var tree_config={'layout.node':'AT', 'layout.sign':'AT', midnode:'AT'};
 var pagetitle_func = function(nm) {return (nm)?"OneZoom + Ancestor’s Trail: "+ nm:"OneZoom Tree of Life Explorer"};
-var popular_locations = [ /* strings are treated as headers (looked up in OZstrings), arrays as links with [ott,name] with name optional */
-    'Trail routes',
-    [770315, 'Human trail start'],
-    [540235, 'Gazelle trail start'],
-    [81461, 'Bird trail start'], //Should pick a more recent node
-    [991547, 'Amphibian trail start'],  //Frogs and toads
-    [320137, 'Fish trail start'],  //Vertebrates
-    [99252, 'Plant trail start'],  
-    [1007130, 'Bacteria trail start'], 
-    [5334778, 'Humans meet gazelles'],
-    [229560, 'Mammals meet birds'],
-    [229562, 'Mammals & birds meet amphibians'],
-    [114654, 'Land vertebrates meet fish'],
-    [304358, 'Animals meet plants'],
-    [93302, 'All life meets']
-];
 </script>
