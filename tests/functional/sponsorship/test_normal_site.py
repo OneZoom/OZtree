@@ -148,7 +148,6 @@ class TestNormalSite(SponsorshipTest):
         """
         ott, sciname = self.never_looked_at_ottname() #visiting this ott *may* make a new entry in the reservations table
         print(self.urls['web2py'](ott))
-        sleep(100)
         self.browser.get(self.urls['web2py'](ott)) #visit from another page (not the same session)
         self.browser.get(self.urls['treeviewer'](ott))
         assert web2py_viewname_contains(self.browser, "spl_reserved")
@@ -178,10 +177,16 @@ class TestNormalSite(SponsorshipTest):
         ott, sciname = self.never_looked_at_ottname()
         lang, expected_word ='fr', 'sponsorisé' #just to force errors, try sponsoring in a non-default browser language
         self.browser.get(base_url + 'life'+"/@={0}?init=jump&pop=osl_{0}&lang={1}".format(ott, lang))
-        sleep(1) #wait a little for popup to work
-        iframe = self.browser.find_element_by_css_selector(".ozspons iframe")
+        css_sel = ".ozspons iframe"
+        for sleep_time in [0.1]*100: #try for 10 secs to get the iframe (takes some time to appear)
+            if self.element_by_css_selector_exists(css_sel):
+                break
+            sleep(sleep_time)
+        else:
+            assert False, "timed out before the sponsorship iframe popped up (couldn't find selector '{}')".format(css_sel)
+        iframe = self.browser.find_element_by_css_selector(css_sel)
         self.browser.switch_to.frame(iframe)
-        sleep(1)
+        sleep(1) #must wait for iframe to load properly
         assert web2py_viewname_contains(self.browser, "sponsor_leaf")
         assert expected_word in self.browser.page_source
                 
