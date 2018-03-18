@@ -115,7 +115,10 @@ class FunctionalTest(object):
         log = self.browser.get_log('browser')
         if check_errors:
             for message in log:
-                assert message['level'] in ('INFO','WARNING','DEBUG'), "Javascript issue of level {}, : {}".format(message['level'], message['message'])
+                if message['level'] not in ('INFO','WARNING','DEBUG'):
+                    #we sometimes have media not found in EoL: hack round this
+                    if not (message['message'].startswith("https://media.eol.org/content") and "404 (Not Found)" in message['message']):
+                        assert False, "Javascript issue of level {}, : {}".format(message['level'], message['message'])
             
             
 def has_linkouts(browser, include_site_internal):
