@@ -222,7 +222,7 @@ class SponsorshipTest(FunctionalTest):
     def zoom_disabled(self):
         """
         Check that the touch zoom functionality is disabled.
-        Note that this fakes a touch event and looks for a console log that it is disabled
+        Note that this fakes a touch event and looks for the variable set when it is disabled
         A proper functional test would actually automate a touch event and look to see if window.visualViewport.scale changes
         e.g.:
           zoom_level = self.browser.execute_script('return window.visualViewport.scale;') #works in chrome, not safari
@@ -230,20 +230,12 @@ class SponsorshipTest(FunctionalTest):
             from selenium.webdriver.common.touch_actions import TouchActions'''
           self.assertTrue(zoom_level == self.browser.execute_script('return window.visualViewport.scale;'))
         """
-        #first clear console log and check nothing untoward
-        self.clear_log(check_errors=True)
         #imitate a touch zoom event
         self.browser.execute_script("""
 t1 = new Touch({identifier: 1,target: document.body, pageX: 0, pageY: 0});
 t2 = new Touch({identifier: 2,target: document.body, pageX: 1, pageY: 1});
 te = new TouchEvent('touchstart', {cancelable: true, bubbles: true, touches: [t1, t2]});
 document.body.dispatchEvent(te);""")
-        sleep(3) #wait for event to bubble and be written to log
-        #get new logs
-        console_log = self.browser.get_log('browser')
-        # in is_testing mode, should have a log message that event is blocked
-        if len(console_log):
-            return console_log[0]['source']=='console-api' and console_log[0]['level']=='INFO' and "Touch zoom event blocked" in console_log[0]['message'] 
-        else:
-            return False
+        # in is_testing mode, should have set the variable window.zoom_prevented
+        return True if self.browser.execute_script("return window.zoom_prevented") else False
             

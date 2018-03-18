@@ -10,7 +10,7 @@
     <script>
 function preventTouchZoom(event) {
     if(event.touches.length > 1) {
-        {{if is_testing:}}console.log("Touch zoom event blocked");{{pass}}
+        {{if is_testing:}}window.zoom_prevented=true; /* used for functional testing */{{pass}}
         event.preventDefault(); 
         event.stopPropagation();
     };
