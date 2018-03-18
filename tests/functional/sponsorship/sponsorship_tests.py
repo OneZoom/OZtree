@@ -237,5 +237,6 @@ t2 = new Touch({identifier: 2,target: document.body, pageX: 1, pageY: 1});
 te = new TouchEvent('touchstart', {cancelable: true, bubbles: true, touches: [t1, t2]});
 document.body.dispatchEvent(te);""")
         # in is_testing mode, should have set the variable window.zoom_prevented
+        sleep(0.1)
         return True if self.browser.execute_script("return window.zoom_prevented") else False
             
