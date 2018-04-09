@@ -1,7 +1,7 @@
-{{if request.vars.links=="none":}}
-{{#remove hyperlink from *all* links created via the web2py A() helper}}
+{{if request.vars.links=='none':}}
+{{#remove hyperlink from *all* links created via the web2py A() helper, e.g. for the logos}}
 {{ def A(*args, **kwargs): return CAT(*args)}}
-{{else:}}
+{{elif request.vars.links=='newtab':}}
 {{#make *all* links created via the web2py A() helper open in a new tab, e.g. from logos - this should override others}}
 {{web2py_A = A}}
 {{def A(*args, **kwargs): return web2py_A(*args, **dict(kwargs, _target='_blank'))}}
@@ -9,7 +9,7 @@
 <!-- This contains all the overlay on top of the OneZoom canvas. It can be reloaded in different languages -->
 
 <div id="logo" class="uk-navbar-item">{{=A(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('index', extension=False))}}</div>
-<div id="logo" class="uk-navbar-item">{{=A(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('index', extension=False))}}</div>
+{{if request.vars.partner_logo:}}<div id="logo" class="uk-navbar-item">{{if request.vars.partner_url:}}{{=A(IMG(_src=request.vars.partner_logo), _href=request.vars.partner_url)}}{{else:}}IMG(_src=request.vars.partner_logo){{pass}}</div>{{pass}}
 <div class="uk-navbar-item" id="searchnav">
   <form id="search-basic">
     <div class="searchbox uk-search uk-search-default" id="search_form_basic">
@@ -103,7 +103,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <option value="kew">Kew</option>
         </select></li>
       <li class="uk-nav-header langswitch">{{=T("Language")}}</li>
-      <li class="langswitch"><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1],)}}">
+      <li class="langswitch"><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1] if browser_language else None,)}}">
         <option value="">{{=T('Browser default')}}</option>
         <optgroup label="Translated">
           <option value="en">English</option>
@@ -173,9 +173,9 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     <div class="uk-modal-dialog">
         <button class="uk-modal-close-outside" type="button" uk-close></button>
         <div class="uk-modal-header">
-            <h2 class="uk-modal-title">{{=T('Image information')}}<a href="" target="_blank" class="uk-icon-button expand-tab" uk-tooltip="pos: left" title="{{=T('Open this in a new window')}}" uk-icon="icon: expand; ratio: 0.75"></a></h2>
+            <h2 class="uk-modal-title">{{=T('Image information')}}{{if request.vars.links!='none':}}<a href="" target="_blank" class="uk-icon-button expand-tab" uk-tooltip="pos: left" title="{{=T('Open this in a new window')}}" uk-icon="icon: expand; ratio: 0.75"></a>{{pass}}</h2>
         </div>
-        <div class="uk-modal-body popup-content"></div>
+        <div class="uk-modal-body popup-content iframe-container"></div>
     </div>
 </div>
 <div id="external-modal" class="uk-modal-container" uk-modal>
@@ -193,7 +193,10 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         {{for tab in tabs:}}
         <li class="{{=tab['id']}}" data-src="" aria-controls="{{=tab['id']}}-panel">
           <div class="uk-position-top-right expand-tab">
-            <a href="" target="_blank" class="uk-icon-button" uk-tooltip="pos: left" title="{{=T('Open this %s tab in a new window') % (tab['name'],)}}" uk-icon="icon: expand; ratio: 0.75"></a>
+            <!-- the linkout buttons are forms, to allow post requests to pass on session ids -->
+{{if request.vars.links!='none':}}
+            <form target="_blank" method="post" onsubmit="return false"><button type="submit" class="uk-icon-button" uk-tooltip="pos: left" title="{{=T('Open this %s tab in a new window') % (tab['name'],)}}" uk-icon="icon: expand; ratio: 0.75"></button></form>
+{{pass}}
           </div>
           <p class="loading_pic uk-position-center"><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
         </li>

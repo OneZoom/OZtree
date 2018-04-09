@@ -1,39 +1,30 @@
-{{
-partner = 'LinnSoc'
-data = db(db.partners.identifier == partner).select().first()
+{{#Config settings that will change for different views, e.g. for AT, trail2016, etc. These are stored in the setup_params dictionary
+#UI_layer->page        The name of the UI layer view file
+#UI_layer->tabs        An array of names of tabs to use (names are in the linkouts() function in tree.py, 
+#                       as key names in the url dict) or 'all' for all
+#UI_layer->vars->links Can be 'none' for no links, 'newtab' for all links in new tab, or 'default' (or unset) to leave
+#popups->vars          Passed to linkout_via_picID.load, about.load, how.load, data_sources.load, and the 
+#                       internal linkouts urls. You will usually want to define 'embed':1 or 'embed':3. It's also sensible 
+#                       to set 'form_session_id': response.session_id, so that re-opening sponsor tabs remembers who you are
+#partner               (Optional): if it matches a partner_identifier in the partners table, we will automatically fill out 
+#                       the popups and UI_layer params to make am automatically created sponsorship site
+
 setup_params = {
+  'partner': 'LinnSoc',
   'UI_layer': {
     'page':'UI_layer.load', 
-    'vars':{'tabs':'all'} }, 
-  }
+    'vars':{'tabs':'all'}, 
+  },
+  'popups': {
+    'vars':{'embed':'3'},
+  },
+}
 }}
 {{extend 'treeviewer/layout.html'}}
-<title>OneZoom/{{=partner}} Tree of Life Explorer, text page for {{=page_info['title_name']}}</title>
 <!-- could include bespoke css file here -->
 <script type="text/javascript">
-/* override default urls for linkouts */
-server_urls['OZ_leaf_json_url_func'] = function(ott) {return("{{=URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json')}}" + "/" + ott.toString() + "?user_more_info=" + encodeURIComponent)"{{=data.default_more_info}}") + "&user_message_OZ=" + encodeURIComponent"{{=partner}}"))};
-server_urls['OZ_node_json_url_func'] = function(id) {return("{{=URL('tree', 'node_linkouts', scheme=True, host=True, extension='json')}}" + "/" + id.toString() + "?user_more_info=" + encodeURIComponent("{{=data.default_more_info}}" + "&user_message_OZ=" + encodeURIComponent("{{=partner}}"))};
 
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
 var tree_config=null;
-var pagetitle_func = function(nm) {return (nm)?"OneZoom/{{=partner}}: "+ nm:"OneZoom/{{=partner}} Tree of Life Explorer"};
-document.title = pagetitle_func("{{=page_info['title_name']}}");
-var popular_locations = [ /* strings are treated as headers (looked up in OZstrings), arrays as links with [ott,name] with name optional */
-    'Linnean specials',
-    [819501], // Twinflower (linneaus' favourite)
-    [70003], //Painter's mussel
-    'Popular places',
-    [244265],  //Mammals
-    [770315],  //Human
-    [81461],   //Birds
-    [991547],  //Frogs and toads
-    [801601],  //Vertebrates
-    [1062253], //Insects
-    [691846],  //Animals
-    [361838],  //Green plants
-    [99252],   //Flowering plants
-    [1012685], //Mushrooms
-    [304358]   //Complex life (eukaryotes)
-];
+var pagetitle_func = null;
 </script>

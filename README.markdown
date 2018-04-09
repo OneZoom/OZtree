@@ -24,7 +24,7 @@ The OneZoom codebase uses the following software (licenses for each listed in br
 * [Python](https://www.python.org) (versions 2.7 and 3.4) with the following libraries installed:
 	* Python 2.7: mysql-connector-python
 	* Python 3.4: piexif
-	* Python 3.4: selenium +  e.g. chromedriver_installer (for functional testing)
+	* Python 3.4: nose + js2py + selenium +  e.g. chromedriver_installer (for functional testing)
 	* Python 3.4: requests
 	* Python 3.4: pymysql
 	* Python 3.4: Dendropy
@@ -153,30 +153,38 @@ pool_size = 1
 
 [twitter]
 
-; form styling
 [forms]
+; form styling
 formstyle = bootstrap3_inline
 separator =
 
 [paypal]
 url        = https://www.sandbox.paypal.com
 
-; general params. 
-; * maintenance_mins: to enable maintenance mode, set this
-;    to the number of minutes you expect the site to be down
+[general]
 ; * pics_dir: get thumbnail images from this source. If not
 ;    defined, will default to the local version, but that
 ;    means you will need to download >100,000 thumbnail images
 ;    onto your machine. If you want to use the images on the 
 ;    OneZoom server, set this to `//images.onezoom.org/`
-; * allow_sponsorship. Should we allow the sponsorship page to be 
-;    shown on this machine? Usually not allowed, except on the 
+pics_dir = //images.onezoom.org/
+
+[sponsorship]
+; * allow. Should we allow the sponsorship page to be
+;    shown on this machine? Usually not allowed, except on the
 ;    main OneZoom site (on museum displays people will not want
 ;    to enter paypal etc details).
-[general]
-maintenance_mins = 0
-pics_dir = //images.onezoom.org/
+; * maintenance_mins: to enable maintenance mode (e.g. when 
+;    switching beta and production to enable a new website version)
+;    set to the number of minutes you expect the site to be down
+;    note that if is_testing=False then you will probably need to 
+;    restart the server for changes to this to take effect
+; * reservation_time_limit_mins: how long to reserve a leaf while a 
+;    user is looking at the sponsor page
+; * unpaid_time_limit_mins: how long before a sponsored leaf becomes 
+;    free again if we receive no payment notification
 allow_sponsorship = 0
+maintenance_mins = 0
 
 [api]
 ;If you want to get data from the Encyclopedia of Life, you need to put your own API key here. 

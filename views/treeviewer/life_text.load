@@ -1,0 +1,33 @@
+{{if 'tree' in page_info:}}
+{{tt_info = page_info['tree']['info']}}{{for root_id, root in page_info['tree']['bases'].items():}}<h2>Base of the evolutionary tree for {{=XML(tt_info[root_id]['htmlname'])}}</h2>
+{{if tt_info[root_id]['real_parent']:}}<a href="{{=tt_info[tt_info[root_id]['real_parent']]['url']}}">&larr; parent</a>{{pass}}
+{{if root_id<0:}}<div class="species">Species {{=XML(tt_info[root_id]['htmlname'])}}</div>
+<h3>OneZoom</h3>
+<a href="{{=URL('default','life')}}#ott{{=tt_info[root_id]['ott']}}">Visit it on the OneZoom tree</a> or <a href="{{=URL('default','sponsor_leaf', vars={'ott':tt_info[root_id]['ott']})}}">sponsor it!</a>
+{{else:}}<ul class="text_tree_root">
+<li>{{=XML(tt_info[root_id]['htmlname'])}}{{if root_id>=0:}} ({{=(tt_info[root_id]['leaf_rgt']-tt_info[root_id]['leaf_lft']+1)}} species){{pass}}
+<ul>
+  {{for id1, more1 in root.items():}}<li><a href="{{=tt_info[id1]['url']}}">{{=XML(tt_info[id1]['htmlname'])}}{{if id1<0:}}</a>{{else:}} &rarr;</a> ({{=(tt_info[id1]['leaf_rgt']-tt_info[id1]['leaf_lft']+1)}} species){{pass}}{{if more1:}}
+  <ul>
+    {{for id2, more2 in more1.items():}}<li><a href="{{=tt_info[id2]['url']}}">{{=XML(tt_info[id2]['htmlname'])}}{{if id2<0:}}</a>{{else:}} &rarr;</a> ({{=(tt_info[id2]['leaf_rgt']-tt_info[id2]['leaf_lft']+1)}} species){{pass}}{{if more2:}}
+    <ul>
+      {{for id3, more3 in more2.items():}}<li><a href="{{=tt_info[id3]['url']}}">{{=XML(tt_info[id3]['htmlname'])}}{{if id3<0:}}</a>{{else:}} &rarr;</a> ({{=(tt_info[id3]['leaf_rgt']-tt_info[id3]['leaf_lft']+1)}} species){{pass}}{{if more3:}}
+      <ul>
+        {{for id4, more4 in more3.items():}}<li><a href="{{=tt_info[id4]['url']}}">{{=XML(tt_info[id4]['htmlname'])}}{{if id4<0:}}</a>{{else:}} &rarr;</a> ({{=(tt_info[id4]['leaf_rgt']-tt_info[id4]['leaf_lft']+1)}} species){{pass}}</li>
+      {{pass}}</ul>{{pass}}</li>
+    {{pass}}</ul>{{pass}}</li>
+  {{pass}}</ul>{{pass}}</li>
+{{pass}}</ul></li></ul>{{pass}}
+{{if tt_info[root_id]['wikidata'] or tt_info[root_id]['eol'] or tt_info[root_id].get('iucn') or tt_info[root_id]['ncbi'] or tt_info[root_id]['ott']:}}
+<h3>Other links</h3>
+<ul>
+{{if tt_info[root_id]['wikidata']:}}<li><a href="http://www.wikidata.org/wiki/Q{{=tt_info[root_id]['wikidata']}}">Wikidata</a></li>{{pass}}
+{{if tt_info[root_id]['wikipedia_lang_flag']:}}{{for wikilang,bit in wikiflags.items():}}
+{{if (tt_info[root_id]['wikipedia_lang_flag'] & (1 << bit)):}}<li><a href="http://www.wikidata.org/wiki/Special:GoToLinkedPage?site={{=wikilang}}wiki&itemid=Q{{=tt_info[root_id]['wikidata']}}">Wikipedia (language: {{=wikilang}})</a></li>{{pass}}{{pass}}{{pass}}
+{{if tt_info[root_id]['eol']:}}<li><a href="http://eol.org/pages/{{=tt_info[root_id]['eol']}}">Encyclopedia of life</a></li>{{pass}}
+{{if tt_info[root_id].get('iucn'):}}<li><a href="http://www.iucnredlist.org/details/{{=tt_info[root_id]['iucn']}}/0">IUCN (conservation)</a></li>{{pass}}
+{{if tt_info[root_id]['ncbi']:}}<li><a href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{=tt_info[root_id]['ncbi']}}">NCBI (genetics)</a></li>{{pass}}
+{{if tt_info[root_id]['ott']:}}<li><a href="https://tree.opentreeoflife.org/opentree/argus/opentree@ott{{=tt_info[root_id]['ott']}}">Open Tree of Life</a></li>{{pass}}
+</ul>{{pass}}
+<hr />{{pass}}
+{{pass}}

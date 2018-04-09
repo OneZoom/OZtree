@@ -3,7 +3,7 @@
 .sass-cache
 progress.log
 
-private/appconfig.ini
+private/*.ini
 OZprivate/ServerScripts/TaxonMappingAndPopularity/testlist
 OZprivate/data/YanTree/generate_tree.lock
 OZprivate/data/YanTree/generate_tree.out

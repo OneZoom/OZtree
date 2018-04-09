@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
 # this file is released under public domain and you can use without limitations
 import datetime
-from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, check_version
-""" our own variables for convenience"""
+import re
 
-reservation_time_limit = 360.0 #seconds - should give as float - how long to wait unfilled out
-unpaid_time_limit = 24.0*60.0*60.0 #seconds - should give as float - how long to wait reserved for payment to come
+from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __check_version
+""" Some settings for sponsorship"""
+try:
+    reservation_time_limit = myconf.take('sponsorship.reservation_time_limit_mins') * 60.0
+except:
+    reservation_time_limit = 360.0 #seconds
+try:
+    unpaid_time_limit = myconf.take('sponsorship.unpaid_time_limit_mins') * 60.0
+except:
+    unpaid_time_limit = 2.0*24.0*60.0*60.0 #seconds
 
 """Standard web2py stuff"""
 
@@ -81,7 +88,7 @@ def sponsor_leaf():
 
             * maintenance [spl_maintenance.html] - the site is in maintenance mode, and we don't want to allow any access to reservations data
 
-            * error [spl_error.html] - something went very wrong
+            * no status set [spl_error.html] - something went very wrong
 
                 The following can be shown even when sponsorship is turned off
             * sponsored [spl_sponsored.html] - it's already been sponsored
@@ -96,7 +103,7 @@ def sponsor_leaf():
 
                 The following are only shown when sponsorship is allowed and not in maintenance mode
             * reserved [spl_reserved.html] - another user was active on this page recently and it's being reserved for them for a few minutes
-            * available [spl_leaf.html] - the leaf is fully available, so proceed
+            * available [sponsor_leaf.html] - the leaf is fully available, so proceed
             * available only to session [sponsor_leaf.html] - it's available but for this user only
         it will also provide the current best picture for that taxon (if one exists)
         2.) update the 'reserved' table with new numbers of views and view times / session ids etc.
@@ -131,12 +138,12 @@ def sponsor_leaf():
         This function DOES NOT need up update the sponsor or verified info tables because these are handled separately. Additionally, e-mail, address and name as well as receipt should be captured from Paypal """
 
     try:
-        maint = int(myconf.take('general.maintenance_mins'))
+        maint = int(myconf.take('sponsorship.maintenance_mins'))
     except:
         maint = 0
     if maint:
         response.view = request.controller + "/spl_maintenance." + request.extension
-        return dict(mins=str(myconf.take('general.maintenance_mins')))
+        return dict(mins=str(maint))
 
 
     from json import dumps
@@ -144,9 +151,15 @@ def sponsor_leaf():
         form_session_id = request.vars.form_session_id
     else:
         form_session_id = response.session_id
-        
-    # initialise status flag as error (it will get updated if all is OK)
-    status = "error"
+    
+    # initialise status flag (it will get updated if all is OK)
+    status = ""
+    # sometimes (e.g. museum display on main OZ site) we shut off sponsoring without using appconfig
+    # which we do by passing a url param
+    try:
+        allow_sponsorship = myconf.take('sponsorship.allow_sponsorship') in ['true', '1', 't', 'y', 'yes', 'True'] and not request.vars.no_sponsoring
+    except:
+        allow_sponsorship = False
     # initialise other variables that will be parsed on to the page
     EOL_ID = -1
     species_name = common_name = the_name = None
@@ -169,9 +182,9 @@ def sponsor_leaf():
     except:
         OTT_ID_Varin = None
         leaf_entry = {}
-    if ((not leaf_entry) or                                         #invalid if not in ordered_leaves
-        (leaf_entry.get('ott') is None) or                          #invalid if no OTT ID
-        (leaf_entry.get('name') and ' ' not in leaf_entry.name)):   #invalid if not a species name (e.g. no space/underscore)
+    if ((not leaf_entry) or              #invalid if not in ordered_leaves
+        (leaf_entry.ott is None) or      #invalid if no OTT ID
+        (' ' not in leaf_entry.name)):   #invalid if not a species name (e.g. no space/underscore)
         response.view = request.controller + "/spl_invalid." + request.extension
         return dict(OTT_ID = OTT_ID_Varin, species_name = leaf_entry.get('name'))
     
@@ -215,7 +228,6 @@ def sponsor_leaf():
     if reservation_entry is None:
         # there is no row in the database for this case so add one
         if (isbanned != 0):
-            status = "banned"
             # update with full viewing data but no reservation as banned
             db.reservations.insert(
                 OTT_ID = OTT_ID_Varin,
@@ -225,6 +237,13 @@ def sponsor_leaf():
             )
             # this line does not insert any leger id because no transaction has taken place yet
             # that entry in the db is allowed to be blank
+        elif not allow_sponsorship:
+            # update but don't reserve
+            db.reservations.insert(
+                OTT_ID = OTT_ID_Varin,
+                name=leaf_entry.name,
+                last_view=request.now,
+                num_views=1)
         else:
             status = "available"
             # update with full reservation
@@ -254,7 +273,7 @@ def sponsor_leaf():
         # Need to have another option here if verified_time is too long ago - we should move this to the expired_reservations table and clear it.
         if (ledger_verified_time):
             status = "sponsored"
-        else:
+        elif allow_sponsorship and not isbanned:
             if (ledger_user_name):
             # something has been filled in
                 if (ledger_PP_transaction_code):
@@ -269,7 +288,7 @@ def sponsor_leaf():
                     if (timesince < (unpaid_time_limit)):
                         status = "unverified waiting for payment"
                     else:
-                        # we've waited too long and can zap the table then set available
+                        # we've waited too long and can zap the personal data previously in the table then set available
                         reservation_query.update(user_id=None, e_mail=None, twitter_name=None, allow_contact=None, user_sponsor_kind=None, user_sponsor_name=None, user_more_info=None, user_nondefault_image=None, user_preferred_image=None, user_updated_time=None, user_paid=None, user_message_OZ=None, user_giftaid=None, PP_transaction_code=None, PP_e_mail=None, PP_first_name=None, PP_second_name=None, PP_town=None, PP_country=None, PP_house_and_street=None, PP_postcode=None, verified_kind=None, verified_name=None, verified_more_info=None, verified_preferred_image=None, verified_time=None, verified_paid=None, verified_url=None, live_time=None, admin_comment=None, sponsorship_duration_days=None, asking_price=None, deactivated=None, sale_time=None, partner_name=None, partner_percentage=None)
                         #note that this e.g. clears deactivated taxa, etc etc.
                         status = "available"
@@ -312,10 +331,6 @@ def sponsor_leaf():
         user_image = db(db.images_by_ott.src_id == doID).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.rights, db.images_by_ott.licence).first()
     else:
         user_image=None
-
-    if status == "error":
-        response.view = request.controller + "/spl_error." + request.extension
-        return dict()
 
     #once we have got this far (not invalid or error), we can show certain pages
     #even in maintenance mode or where allow_sponsorship is not True, e.g. if
@@ -366,8 +381,8 @@ def sponsor_leaf():
                     asking_price=(leaf_price),
                     user_updated_time=request.now,
                     sponsorship_duration_days=365*4+1,
-                    partner_name=partner.get('identifier'),
-                    partner_percentage=partner.get('percentage'))
+                    partner_name=partner.get('partner_identifier'),
+                    partner_percentage=partner.get('partner_percentage'))
                 # now need to do our own other checks
                 v = {'ott':OTT_ID_Varin}
                 if request.vars.get('embed'):
@@ -699,7 +714,7 @@ def sponsor_node_price():
 def sponsor_node():
     """
     This picks <max> leaves per price band, and removes already sponsored leaves from the search    
-    By default ranks by popularity. We pass on any request.vars so that we can use embed, etc.
+    By default ranks by popularity. We pass on any request.vars so that we can use embed, form_session_id, etc.
     """
     try:
         if request.vars.get('id'):
@@ -712,8 +727,8 @@ def sponsor_node():
         else:
             raise
         #global var 'partners' is defined at the top of the file, for request.vars.partner=='LinnSoc', 'Kew', etc.
-        partner = db(db.partners.identifier == request.vars.get('partner')).select().first() #this could be null
-        partner = partner.as_dict() if partner else {}
+        #partner = db(db.partners.identifier == request.vars.get('partner')).select().first() #this could be null
+        #partner = partner.as_dict() if partner else {}
         
         first25 = db(query).select(limitby=(0, 25), orderby=db.ordered_leaves.name)
         if len(first25) > 0:
@@ -1084,32 +1099,54 @@ def news():
 ### Controllers for OneZoom viz pages ###
 ### For programming purposes, these views are in views/treeviewer NOT views/default as might be expected
 
+def remove_location_arg(args):
+    """
+    remove the last item from the args array if it is a location string
+    """
+    if len(args) and args[-1].startswith('@'):
+        return args.pop()
+    else:
+        return None
+
+def remove_partner_arg(args):
+    """
+    remove the first item from the args array if it is a partner string i.e. not 'tours'
+    """
+    if len(args) and args[0] != 'tour':
+        return args.pop(0)
+    else:
+        return None
+
 def life_text():
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+    return dict(page_info = {'tree': text_tree(remove_location_arg(request.args))})
+
+def text_tree(location_string):
     """
     A text representation. NB: The 'normal' pages also have the text-only data embedded in them, for SEO reasons
     """
-    response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    import re
     #target_string must consist only of chars that are allowed in web2py arg
     # array (i.e. in the path: see http://stackoverflow.com/questions/7279198
     # this by default restricts it to re.match(r'([\w@ -]|(?<=[\w@ -])[.=])*')
     #So we use @ as a separator between species and prepend a letter to the 
     #ott number to indicate extra use for this species (e.g. whether to remove it)
     #e.g. @Hominidae=770311@Homo_sapiens=d770315@Gorilla_beringei=d351685
-    # The target string is contained in the args[-1] var, which has all the string up to the '?' or '#'
+    # The target string is contained in the location_string, copied from args[-1]
+    # which has all the string up to the '?' or '#'
     #we have to use both the name and the ott number to get the list of species. 
     #NB: both name or ott could have multiple matches.
     from collections import OrderedDict
 
     base_ott=base_name=''
     try:
-        taxa=request.args[-1].split("@")[1:]
+        taxa=location_string.split("@")[1:]
         for t in taxa:
             if t and re.search("=[a-z]", t)==None: #take the first one that doesn't have an ott = [letter]1234
                 base_name, sep, base_ott = t.partition("=")
                 if base_ott:
                     base_ott = int(base_ott)
     except:
+        #ignore all parsing errors and just show the root
         pass
     
     base_taxa_are_leaves = None
@@ -1152,7 +1189,9 @@ def life_text():
     info = {}
     for row in base_rows:
         if row.real_parent != 0:
-            info[row.real_parent] = db(db.ordered_nodes.id == abs(row.real_parent)).select(db.ordered_nodes.ott, db.ordered_nodes.name).first()
+            data = db(db.ordered_nodes.id == abs(row.real_parent)).select(db.ordered_nodes.ott, db.ordered_nodes.name).first()
+            if data:
+                info[row.real_parent] = data
         #find the rows that have this as a parent
         base = OrderedDict()
         if base_taxa_are_leaves:
@@ -1242,41 +1281,50 @@ def life_text_init_taxa(text_tree):
     return [taxon for taxon in [text_tree['info'][k].get("vernacular") or text_tree['info'][k].get("sciname") or "OTT"+str(text_tree['info'][k].get("ott")) for k in text_tree['bases']] if taxon]
 
 
+def treeview_info(has_text_tree=True):
+    """
+    Return the information used by the normal tree viewer (which always begins with '@') is the last of the slash
+    separated paths, i.e. request.args[-1], which we check for first The first of the separated paths can
+    be a partner ID, or the string 'tour'
+    """
+    location = remove_location_arg(request.args)
+    partner  = remove_partner_arg(request.args)
+    page_info={'partner': partner, 'version':__check_version()}
+    if len(request.args) and request.args[0] == 'tour':
+        #could have been life/trail2016/tour/newtour/@Mammalia or simply life/trail2016/tour/@Mammalia
+        tour_name = None if len(request.args)==1 else request.args[1]
+        page_info.update({'subtitle': 'Tours',
+                   'tourname': tour_name #only *-=. and alphanumeric in args, so can use this in js
+                   })
+    if has_text_tree:
+        tt = text_tree(location)
+        page_info.update({'tree': tt, 'title_name': ", ".join(life_text_init_taxa(tt))})
+    return dict(page_info = page_info)
+
 def life():
     """
-    The standard OneZoom app - the location string is the last of the slash
-    separated paths, i.e. request.args[-1]
+    The standard OneZoom app
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    if len(request.args)>1 and request.args[0] == 'tour':
-        tour_name = request.args[1]
-        page_info={'subtitle': 'Tours',
-                   'tourname':request.args[1] #only *-=. and alphanumeric in args, so can use this in js
-                   }
-    else:
-        text_tree = life_text()
-        page_info = {'tree': text_tree, 'title_name': ", ".join(life_text_init_taxa(text_tree))}
-    return dict(
-        page_info = page_info,
-        version=check_version())
+    return treeview_info()
 
 def life_MD():
     """
-    The museum display version, which is all-on-one-page (no iframes)
+    The museum display version, which is sandboxed (and has no underlying text tree with links hidden by JS)
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return life()
+    return treeview_info(has_text_tree=False)
 
 def life_expert():
     """
     The expert version, with screenshot buttons etc
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return life()
+    return treeview_info()
 
 def AT():
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return life()
+    return treeview_info()
 
 def trail2016():
     """
@@ -1285,69 +1333,32 @@ def trail2016():
     so that these defaults are passed to the sponsorship page
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return life()
+    return treeview_info()
 
 def linnean():
     """
     The Linnean Society version, with partner sponsorship
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return life()
+    return treeview_info()
 
-
-def old_life():
-    response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    merged_dict = {}
-    merged_dict.update(viewer_UI())
-    merged_dict.update(life())
-    return merged_dict
-    
-
-def old_life_MD():
-    """
-    The museum display version - James to explore. Perhaps we might not want tabs here?
-    """
-    response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    merged_dict = {}
-    merged_dict.update(viewer_UI())
-    merged_dict.update(life())
-    return merged_dict
-
-def old_life_expert():
-    """
-    Has some aditional buttons etc for screenshots, svg capture, etc.
-    """
-    response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    merged_dict = {}
-    merged_dict.update(viewer_UI())
-    merged_dict['tabs'] = [ #override
-        {'id':'opentree','name':'Open Tree of Life',    'icon':URL('static','images/W.svg')},
-        {'id':'wiki',    'name':'Wiki',                 'icon':URL('static','images/W.svg')},
-        {'id':'eol',     'name':'Encyclopedia of Life', 'icon':URL('static','images/EoL.png')},
-        {'id':'iucn',    'name':'Conservation',         'icon':URL('static','images/IUCN_Red_List.svg')},
-        {'id':'ncbi',    'name':'Genetics',             'icon':URL('static','images/DNA_icon.svg')},
-        {'id':'powo',    'name':'Kew'},
-        {'id':'ozspons', 'name':'Sponsor'}].update(life())
-    return merged_dict
-
-
-def old_kew():
-    """
-    Like the standard, but show the tab for Plants of the World Online from Kew
-    and have this as the default (first) tab open
-    TO DO: default to the view centring on plants
-    """
-    response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    merged_dict = {}
-    merged_dict.update(viewer_UI())
-    merged_dict['tabs'] = [ #override
-        {'id':'wiki',    'name':'Wiki',                 'icon':URL('static','images/W.svg')},
-        {'id':'eol',     'name':'Encyclopedia of Life', 'icon':URL('static','images/EoL.png')},
-        {'id':'iucn',    'name':'Conservation',         'icon':URL('static','images/IUCN_Red_List.svg')},
-        {'id':'ncbi',    'name':'Genetics',             'icon':URL('static','images/DNA_icon.svg')},
-        {'id':'powo',    'name':'Kew'},
-        {'id':'ozspons', 'name':'Sponsor'}].update(life())
-    return merged_dict
+#def old_kew():
+#    """
+#    Like the standard, but show the tab for Plants of the World Online from Kew
+#    and have this as the default (first) tab open
+#    TO DO: default to the view centring on plants
+#    """
+#    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+#    merged_dict = {}
+#    merged_dict.update(viewer_UI())
+#    merged_dict['tabs'] = [ #override
+#        {'id':'wiki',    'name':'Wiki',                 'icon':URL('static','images/W.svg')},
+#        {'id':'eol',     'name':'Encyclopedia of Life', 'icon':URL('static','images/EoL.png')},
+#        {'id':'iucn',    'name':'Conservation',         'icon':URL('static','images/IUCN_Red_List.svg')},
+#        {'id':'ncbi',    'name':'Genetics',             'icon':URL('static','images/DNA_icon.svg')},
+#        {'id':'powo',    'name':'Kew'},
+#        {'id':'ozspons', 'name':'Sponsor'}].update(life())
+#    return merged_dict
 
 """ Some controllers that simply redirect to other OZ viewer pages, for brevity """
 def gnathostomata():

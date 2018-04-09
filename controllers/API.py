@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import re
-from OZfunctions import punctuation_to_space
+from OZfunctions import punctuation_to_space, __check_version
 from OZfunctions import is_logographic
 """
 This contains the API functions - node_details, image_details, search_names, and search_sponsors. search_node also exists, which is a combination of search_names and search_sponsors.
@@ -13,6 +13,13 @@ This contains the API functions - node_details, image_details, search_names, and
 
 We should probably compile all docstrings in these files into markdown documentation
 """
+
+def version():
+    v = __check_version()
+    try:
+        return dict(version=int(v))
+    except ValueError:
+        return dict(version=None, error=v)
 
 def node_details():
     """
@@ -603,23 +610,27 @@ def get_ids_by_ott_array():
         return {"nodes": {}, "leaves": {}, "names": {}}
 
 def otts2vns():
-    """
-    Used e.g. to fill out the popular species lists, and for Lifemap
+    '''
+    Used e.g. to fill out the popular species lists,
     can call with request.vars.lang=XX and with oz_special=1
     Will return nulls for unmatched otts if return_nulls=1
-    """
-    from OZfunctions import get_common_names
+    Returns e.g. {"770315":"Human","872567":"Brown Bear", "lang":"en-gb"}
+    '''
     session.forget(response)
+    from OZfunctions import get_common_names
     response.headers["Access-Control-Allow-Origin"] = '*'
+    lang = request.vars.lang or request.env.http_accept_language or 'en'
     try:
-        return get_common_names([int(x) for x in request.vars.otts.split(',')],
+        ret_otts = get_common_names([int(x) for x in request.vars.otts.split(',')],
             return_nulls = True if request.vars.nulls else False,
             prefer_oz_special_names=True if request.vars.oz_special else False,
             include_unpreferred = True if (request.vars.include_unpreferred or request.vars.all) else False,
             return_all = True if request.vars.all else False,
-            lang = request.vars.lang or request.env.http_accept_language or 'en')
+            lang=lang)
+        ret_otts['lang']=lang
+        return ret_otts
     except AttributeError, ValueError:
-        return {}
+        return {'lang':lang}
     
 def update_visit_count():
     session.forget(response)

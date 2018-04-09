@@ -1,14 +1,42 @@
-<!-- config stuff that is specific to the life vs kew vs linnsoc etc trees e.g. css file, default tree config options, page title function, logo -->
-{{#define a dict used for setup: must at a minimum define the UI_layer page (that is reloaded e.g. when language changes)
+{{#Config settings that will change for different views, e.g. for AT, trail2016, etc. These are stored in the setup_params dictionary
+#UI_layer->page        The name of the UI layer view file
+#UI_layer->tabs        An array of names of tabs to use (names are in the linkouts() function in tree.py, 
+#                       as key names in the url dict) or 'all' for all
+#UI_layer->vars->links Can be 'none' for no links, 'newtab' for all links in new tab, or 'default' (or unset) to leave
+#popups->vars          Passed to linkout_via_picID.load, about.load, how.load, data_sources.load, and the 
+#                       internal linkouts urls. You will usually want to define 'embed':1 or 'embed':3. It's also sensible 
+#                       to set 'form_session_id': response.session_id, so that re-opening sponsor tabs remembers who you are
+#partner               (Optional): if it matches a partner_identifier in the partners table, we will automatically fill out 
+#                       the popups and UI_layer params to make am automatically created sponsorship site
+#locations_json        Partners can provide their own json string of locations to use, but if not is provided
+#                       or there is no partner, the json here is used. This is an array whose items are strings (headers) or 
+#                       dicts (each turned into a clickable items) with at least one key labelled 'OTT', and then any other optional 
+#                       names keyed by language, e.g. {'OTT':1012685, 'en':'Mushrooms'}.
 setup_params = {
   'UI_layer': {
     'page':'UI_layer.load', 
     'vars':{'tabs':'all'} }, #should also include an OpenTree tab in here
+   'popups': {
+    'vars':{'embed':1, 'form_session_id': response.session_id} },
+  'partner':page_info.get('partner'),
+  'locations_json':('[' 
+      '"Popular places",' 
+      '{"OTT":244265},'  #Mammals - should get looked up automatically: this also allows the correct language to be used
+      '{"OTT":770315},'  #Human - ditto
+      '{"OTT":81461},'   #Birds
+      '{"OTT":991547},'  #Frogs and toads
+      '{"OTT":801601},'  #Vertebrates
+      '{"OTT":1062253},' #Insects
+      '{"OTT":691846},'  #Animals
+      '{"OTT":361838},'  #Green plants
+      '{"OTT":99252},'   #Flowering plants
+      '{"OTT":1012685, "en":"Mushrooms"},' #the default OZ english name is bad for menus here, so we replace it
+      '{"OTT":304358}'   #Complex life (eukaryotes)
+      ']')
   }
 }}
 
 {{extend 'treeviewer/layout.html'}}
-<title>OneZoom Tree of Life Explorer, text page for {{=page_info['title_name']}}</title>
 
 <style>
 #controlButtons #screenshotButton   {display:block;}
@@ -19,22 +47,7 @@ setup_params = {
 <script type="text/javascript">
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
 var tree_config=null;
-var pagetitle_func = function(nm) {return (nm)?"OneZoom: "+ nm:"OneZoom Tree of Life Explorer"};
-document.title = pagetitle_func("{{=page_info['title_name']}}");
-var popular_locations = [ /* strings are treated as headers (looked up in OZstrings), arrays as links with [ott,name] with name optional */
-    'Popular places',
-    [244265],  //Mammals
-    [770315],  //Human
-    [81461],   //Birds
-    [991547],  //Frogs and toads
-    [801601],  //Vertebrates
-    [1062253], //Insects
-    [691846],  //Animals
-    [361838],  //Green plants
-    [99252],   //Flowering plants
-    [1012685], //Mushrooms
-    [304358]   //Complex life (eukaryotes)
-];
+var pagetitle_func = null;
 
 function make_screenshot(lnk) {
     try {

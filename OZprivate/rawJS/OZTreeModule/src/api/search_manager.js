@@ -22,7 +22,7 @@ class SearchManager {
   }
     
   /**
-   * This function is the main function for carrying out text string searches
+   * The main function for carrying out text string searches
    * @param {string} toSearchFor - the string to search for. If blank, previous searches are cancelled
    * @param {function} callback - the function that gets called and passed the results of the search
    *    and ott to id mappings. Found objects will be added to these mappings.

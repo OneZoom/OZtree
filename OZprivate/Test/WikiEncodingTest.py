@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-
+"""
+This is a quick test of how to encode titles in wikipedia parsing algorithms. It is not a OneZoom test, hence not in the normal tests directory
+"""
 import argparse
-parser = argparse.ArgumentParser(description='test')
+parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('inp', type=argparse.FileType('rb'), nargs='+', help='One or more bzipped "totals" pageview count files, from https://dumps.wikimedia.org/other/pagecounts-ez/merged/ (e.g. pagecounts-2016-01-views-ge-5-totals.bz2, or pagecounts*totals.bz2)')
 args = parser.parse_args()
 

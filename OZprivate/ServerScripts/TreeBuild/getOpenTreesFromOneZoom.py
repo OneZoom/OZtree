@@ -104,7 +104,7 @@ def getOpenTreesFromOneZoom(OpenTreeFile, output_dir, include_var, phy_files, ve
     id_pattern = re.compile(r"(\d*)~?([-\d]*)$")
     
     if not os.path.isfile(OpenTreeFile):
-        OpenTreeURL = "http://files.opentreeoflife.org/trees/draftversion4.tre.gz"
+        OpenTreeURL = "http://files.opentreeoflife.org/synthesis/opentree9.1/output/labelled_supertree/labelled_supertree_simplified_ottnames.tre"
         warn("Could not find the OpenTree file {}. Do you want to download it from {}".format(OpenTreeFile, OpenTreeURL))
         if (input("Press Enter to accept, or N to abort... ") == "N"):
             sys.exit(0)

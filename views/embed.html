@@ -2,6 +2,7 @@
 <html lang="{{=T.accepted_language or 'en'}}">
 <head>
   <link rel="stylesheet" href="{{=URL('static','css/OZ_specific.css')}}" type="text/css" />
+  <link rel="shortcut icon" href="{{=URL('static', 'images/favicon.ico')}}" type="image/ico" />
   {{include 'web2py_ajax.html'}}
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
   <!-- fallback to local jQuery version e.g. if offline -->
@@ -9,7 +10,7 @@
     <script>
 function preventTouchZoom(event) {
     if(event.touches.length > 1) {
-        {{if is_testing:}}console.log("Touch zoom event blocked");{{pass}}
+        {{if is_testing:}}window.zoom_prevented=true; /* used for functional testing */{{pass}}
         event.preventDefault(); 
         event.stopPropagation();
     };

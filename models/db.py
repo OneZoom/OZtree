@@ -45,16 +45,11 @@ else:
 try:
     thumb_base_url = myconf.take('general.pics_dir')
 except:
-    thumb_base_url = URL('static','FinalOutputs/pics', scheme=True, host=True)+"/"
+    thumb_base_url = URL('static','FinalOutputs/pics', scheme=True, host=True, extension=False)+"/"
 #should probably move to base/src_id/src.jpg or even (better) base/src_id/src_lastdigit/src.jpg (to set ~ 10 000 files per dir, not 100 000)
 def thumbnail_url(src, src_id, preferred_px=150, square=True):
     return "{}{}.jpg".format(thumb_base_url, src_id)
 js_thumbnail_url = 'function(src, src_id, preferred_px, square) {{return "{}" + src_id + ".jpg";}}'.format(thumb_base_url)
-
-try:
-    allow_sponsorship = myconf.take('general.allow_sponsorship') in ['true', '1', 't', 'y', 'yes', 'True']
-except:
-    allow_sponsorship = False
 
 name_length_chars = 190 ##max length for a species name is 190 chars (allows indexing. NB: max OTT name is 108 chars)
 
@@ -517,7 +512,7 @@ db.define_table('reservations',
     # price in pounds - good idea to hang on to this for accounting purposes and verification the numbers add up later
     Field('partner_percentage', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
     # percentage of this donation that is diverted to a OZ partner like Linn Soc (after paypal fees are deducted) 
-    Field('partner_name', type = 'string', length=40), 
+    Field('partner_name', type = 'string', length=40),
     # a standardised name for the partner (or multiple partners if it comes to that - would then assume equal split between partners)
     Field('deactivated', type = 'text'),
     # true if this row in the reservations table has been deliberately deactivated for any reason other than expiry e.g. complaint / species disappears etc.
@@ -578,13 +573,15 @@ db.define_table('partners',
     Field('percentage', type = 'double', notnull=True),
     Field('giftaid', type = boolean, notnull=True), #can we collect gift aid?
     Field('default_more_info', type='string', length=30), #what appears by default in the sponsorship text, e.g. "supporting the Linnean Society"
+    Field('popular_locations_json', type='text'), #a JSON string used to fill the popular species menu (the popular_locations variable passed to treeviewer/layout.html). This is an long array containing elements which are either strings (which give menu headers) or dicts as {"OTT":1234,"en":"English name",...}. No carriage returns or single quotes allowed.
+    Field('allow_own_site', type = boolean), #If True, allow a site like www.onezoom.org/life/partnername/
     format = '%(name)s', migrate=is_testing)
 
 # this table maps partners to node or leaf OTTs. When sponsorship windows
 # are opened on the main OZ website we check whether the 
 db.define_table('partner_taxa',
     Field('partner_identifier', type = 'string', length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
-    Field('ott', type='text'), #if relevant, a number of ott ids, separated by commas. On the main OZ site, descendants of these IDs will have
+    Field('ott', type='text'), #an ott: on the main OZ site, descendants of these IDs will have this partner set
     Field('is_leaf', type = boolean, notnull=True), #is this a leaf? Helps us choose whether to look in leaf or node table
     Field('deactived', type = boolean, notnull=True), #allows us to keep details in the DB but not to do sponsorship. However, it is more efficient to delete them from this table
     format = '%(identifier)s', migrate=is_testing)

@@ -2,14 +2,24 @@ import datetime
 
 from OZfunctions import child_leaf_query
 
-""" language-type functions and controllers"""
-def js_strings():
-    """
-    a json response for all the translatable strings in our javascript
-    """
-    return dict()
 
-""" Controllers for searching """
+def wikipedia_OZpage():
+    """
+    This throws up a page created and hosted on OneZoom that uses javascript to request a given wikipedia page
+    from a wikidata item, then gets the page using the the wikipedia rest v1 API (e.g https://en.wikipedia.org/api/rest_v1/) 
+    and (where appropriate) uses jquery to parse the html, remove non-internal links, etc, etc.
+    
+    Call as tree/wikipedia_OZpage/1234/en
+    """
+    try:
+        wikilang = request.args[1]
+        if len(wikilang)>10 or not wikilang.isalpha():
+            raise
+        return dict(Qid=int(request.args[0]), wikilang=wikilang)
+    except:
+        raise
+        raise HTTP(400,"No valid language or wikidata Q id provided")
+        
 
 # LINKOUTS: these all specify urls that can be used to link out to other resources, given an OTT id
 
@@ -19,20 +29,14 @@ def opentree_url(ott):
     except:
         raise HTTP(400,"No valid OpenTree id provided")
 
-
 def wikidata_url(Qid):
     try:
         return("//www.wikidata.org/wiki/Q{}".format(int(Qid)))
     except:
         raise HTTP(400,"No valid wikidata Q id provided")
 
-def wikidata_sitelinks(Qid):
-    try:
-        return("//www.wikidata.org/wiki/Q{}#sitelinks-wikipedia".format(int(Qid)))
-    except:
-        raise HTTP(400,"No valid wikidata Q id provided")
 
-def wikipedia_url(Q, lang='en', flag='', flags=wikiflags, only_wikipedia=False, is_leaf=True, name=""):
+def wikipedia_urls(Q, lang='en', flag='', flags=wikiflags, only_wikipedia=False, is_leaf=True, name=""):
     """
     returns a url that redirects to the wikipedia page for this wikidata Qid and this lang. Flag should be a
     number: if it is not given, it assumes the value '', and the wikipedia URL is always provided, even if we believe
@@ -50,12 +54,15 @@ def wikipedia_url(Q, lang='en', flag='', flags=wikiflags, only_wikipedia=False, 
                     else:
                         #this lang not present, provide WD page
                         if is_leaf:
-                            return(URL("wikipedia_absent_from_wikidata", vars=dict(leaf=Q, name=name), scheme=True, host=True, extension=False))
+                            return [URL("wikipedia_absent_from_wikidata", vars=dict(leaf=Q, name=name), scheme=True, host=True, extension=False), wikidata_sitelinks(Q)]
                         else:
-                            return(URL("wikipedia_absent_from_wikidata", vars=dict(node=Q, name=name), scheme=True, host=True, extension=False))
+                            return [URL("wikipedia_absent_from_wikidata", vars=dict(node=Q, name=name), scheme=True, host=True, extension=False), wikidata_sitelinks(Q)]
             except:
                 pass #e.g. if flag == ''
-            return("//www.wikidata.org/wiki/Special:GoToLinkedPage?site={}&itemid=Q{}".format(lang, int(Q)))
+            return([
+                URL('tree','wikipedia_OZpage', args=[Q,lang], vars={k:v for k,v in request.vars.items() if k=='embed'}, scheme=True, host=True, extension = False), 
+                "//www.wikidata.org/wiki/Special:GoToLinkedPage?site={}&itemid=Q{}".format(lang, int(Q))
+                ])
     except:
         pass
     raise HTTP(400,"No valid language or wikidata Q id provided")
@@ -65,7 +72,9 @@ def iucn_url(IUCNid):
     IUCN has no https site
     """
     try:
-        return("http://www.iucnredlist.org/details/{}/0".format(int(IUCNid)))
+        #we only have a single url to return as we haven't bothered to make a local IUCN page
+        #see https://github.com/OneZoom/OZtree/issues/67
+        return(["http://www.iucnredlist.org/details/{}/0".format(int(IUCNid))])
     except:
         raise HTTP(400,"No valid IUCN id provided")
 
@@ -76,11 +85,11 @@ def powo_url(IPNIid):
     """
     try:
         IPNIs = IPNIid.split("-")
-        return("http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[0]), int(IPNIs[1])))
+        return(["http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[0]), int(IPNIs[1]))])
     except AttributeError:
         try:
             IPNIs = str(int(IPNIid))
-            return("http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[:-1]), int(IPNIs[-1:])))
+            return(["http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[:-1]), int(IPNIs[-1:]))])
         except:
             raise          
     except:
@@ -88,7 +97,7 @@ def powo_url(IPNIid):
 
 def ncbi_url(NCBIid):
     try:
-        return("//www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={}".format(int(NCBIid)))
+        return(["//www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={}".format(int(NCBIid))])
     except:
         raise HTTP(400,"No valid NCBI id provided")
 
@@ -99,50 +108,64 @@ def eol_url(EOLid, OTTid):
     so we can check if images or common names may have been updated.
     """
     try:
-        return(URL('eol_ID', args=[int(EOLid), int(OTTid)], scheme=True, host=True))
+        return([URL('tree','eol_page_ID', args=[int(EOLid), int(OTTid)], scheme=True, host=True), "http://eol.org/pages/{}".format(int(EOLid))])
     except:
         raise HTTP(400,"No valid EOL id provided")
 
 
 def linkout_via_picID():
+    """
+    This is the URL that we use to display copyright information about an image, where we pass in the image ID and image source ID.
+    Within the tree viewer, this is always loaded into an iframe, but the embed status determines which iframe to load.
+    When embed >= 3 we want to always use our own image info page, but for embed <3 we could potentially use e.g. an EoL page if one exists.
+    """
     try:
         src = int(request.args[0])  
         src_id = int(request.args[1]) # for src = 1 or 2, this is an EoL data object ID
-        external_url = None
+        embed = int(request.vars.embed) if 'embed' in request.vars else None
+    except:
+        raise HTTP(400,"No valid ids or embed parameter provided")
+    
+    src_is_eol_DOid = (src==src_flags['eol']) or ((src==src_flags['onezoom']) and (src_id>=0))
+    if src_is_eol_DOid and ((embed is not None and embed < 3) or request.vars.redirect):
+        eol_dataobject_ID()
+    else:
+        #we do not want to jump or we do but this is not an EoL image, so return a stand-in page
+        row = db((db.images_by_ott.src_id == src_id) & (db.images_by_ott.src == src)).select(db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.url, db.images_by_ott.rights, db.images_by_ott.licence).first()
+        if row is None:
+            row = db((db.images_by_name.src_id == src_id) & (db.images_by_name.src == src)).select(db.images_by_name.src, db.images_by_name.src_id, db.images_by_name.url, db.images_by_name.rights, db.images_by_name.licence).first()
+        return dict(image=row, url_override=URL('tree','eol_dataobject_ID',args=[src,src_id], scheme=True, host=True) if src_is_eol_DOid else None)
+
+
+def eol_dataobject_ID():
+    """
+    Called when jumping out from an image. Provide the DOid (src_id) as the first arg.
+    Log the eol data object visited, and redirect there.
+    EoL has no https site currently
+    """
+    try:
+        src = int(request.args[0]) # for src = 1 or 2, this is an EoL data object ID
+        src_id = int(request.args[1]) # for src = 1 or 2, this is an EoL data object ID
     except:
         raise HTTP(400,"No valid id provided")
     
-    if  request.vars.get('method') and (\
-        (src==src_flags['eol']) or \
-        ((src==src_flags['onezoom']) and (src_id>=0))\
-    ): #this is an EoL picture
-        #we have inspected this EoL data object page - log all OTTs that use this data object
-        rows = db((db.images_by_ott.src == src) & (db.images_by_ott.src_id == src_id)).select(db.images_by_ott.ott)
-        for row in rows:
-            db.eol_inspected.update_or_insert(db.eol_inspected.ott == row.ott,
-                                       ott=row.ott,
-                                       via=eol_inspect_via_flags['copyright_symbol'],
-                                       inspected=datetime.datetime.now())
-        # might as well also look for this image in the images_by_name table (probably won't find it)
-        rows = db((db.images_by_name.src == src) & (db.images_by_name.src_id == src_id)).select(db.images_by_name.name)
-        for row in rows:
-            db.eol_inspected.update_or_insert((db.eol_inspected.name != None) & (db.eol_inspected.name == row.name),
-                                       name=row.name,
-                                       via=eol_inspect_via_flags['copyright_symbol'],
-                                       inspected=datetime.datetime.now())
-        external_url = "http://eol.org/data_objects/{}".format(src_id)
-        if request.vars.get('method')=="redirect":
-            redirect(external_url)
-        else:
-            #method == 'iframe_if_possible' or similar, so we simply fall though and allow `external_url` to specify what to do
-            pass
-    #we do not want to jump or we do but this is not an EoL image, so return a stand-in page
-    row = db((db.images_by_ott.src_id == src_id) & (db.images_by_ott.src == src)).select(db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.url, db.images_by_ott.rights, db.images_by_ott.licence).first()
-    if row is None:
-        row = db((db.images_by_name.src_id == src_id) & (db.images_by_name.src == src)).select(db.images_by_name.src, db.images_by_name.src_id, db.images_by_name.url, db.images_by_name.rights, db.images_by_name.licence).first()
-    return dict(image=row, iframe_src=external_url)
+    #can redirect this to EoL, after logging so we can refresh e.g. cropped images
+    rows = db(db.images_by_ott.src_id == src_id).select(db.images_by_ott.ott)
+    for row in rows:
+        db.eol_inspected.update_or_insert(db.eol_inspected.ott == row.ott,
+                                   ott=row.ott,
+                                   via=eol_inspect_via_flags['image'],
+                                   inspected=datetime.datetime.now())
+    # might as well also look for this image in the images_by_name table (probably won't find it)
+    rows = db(db.images_by_ott.src_id == src_id).select(db.images_by_name.name)
+    for row in rows:
+        db.eol_inspected.update_or_insert((db.eol_inspected.name != None) & (db.eol_inspected.name == row.name),
+                                   name=row.name,
+                                   via=eol_inspect_via_flags['image'],
+                                   inspected=datetime.datetime.now())
+    redirect("http://eol.org/data_objects/{}".format(src_id))
         
-def eol_ID():
+def eol_page_ID():
     """
     Log the eol page visited, and redirect there.
     EoL has no https site currently
@@ -163,6 +186,11 @@ def eol_ID():
 
 
 def wikipedia_absent_from_wikidata():
+    def wikidata_sitelinks(Qid):
+        try:
+            return("//www.wikidata.org/wiki/Q{}#sitelinks-wikipedia".format(int(Qid)))
+        except:
+            raise HTTP(400,"No valid wikidata Q id provided")
     try:
         if (request.vars.get('leaf')):
             return(dict(url = wikidata_sitelinks(int(request.vars.get('leaf'))), Q=request.vars.get('leaf'), type='leaf', name=request.vars.get('name')))
@@ -240,9 +268,15 @@ def linkouts(is_leaf, ott=None, id=None):
     6) (injected later) our sponsorship page
     
     we construct a python structure like
-    'data':{'opentree':url1, 'wiki':url2, 'eol':url3, 'iucn': url4, 'ncbi': url5, 'ozspons':url6}
+    'data':{'opentree':[url1], 'wiki':[url2], 'eol':[url3], 'iucn': [url4], 'ncbi': [url5], 'ozspons':[url6]}
+    
+    if any url lists are empty, there is no data for that tab (and it can be hidden). If there is a second url,
+    e.g. 'ozspons':[url6a, url6b], then the second url is used as the go to action for the 'link out' form button. 
+    This can be useful to remove embed information, go to the original wikipage, etc. Any third value in the list
+    gives the json passed in the form 'post' request, e.g. {'form_session_id':'blah-blah'} which allows us to pass
+    a session id to the leaf sponsorship stuff
     """
-    urls = {'opentree':None, 'wiki':None, 'eol':None, 'iucn': None, 'ncbi': None, 'powo': None, 'ozspons': None}
+    urls = {'opentree':[], 'wiki':[], 'eol':[], 'iucn':[], 'ncbi': [], 'powo': [], 'ozspons': []}
     name = None
     errors = []
 
@@ -274,7 +308,7 @@ def linkouts(is_leaf, ott=None, id=None):
                 lang_primary ='en'
             wikilang = request.vars.get('wikilang') or lang_primary
             if row[core_table].wikidata:
-                urls['wiki'] = wikipedia_url(row[core_table].wikidata, wikilang, row[core_table].wikipedia_lang_flag, wikiflags, request.vars.only_wikipedia, is_leaf=is_leaf, name=name)
+                urls['wiki'] = wikipedia_urls(row[core_table].wikidata, wikilang, row[core_table].wikipedia_lang_flag, wikiflags, request.vars.only_wikipedia, is_leaf=is_leaf, name=name)
             if row[core_table].eol:
                 urls['eol']  = eol_url(row[core_table].eol, row[core_table].ott)
             if row[core_table].ncbi:
@@ -297,9 +331,16 @@ def leaf_linkouts():
     except:
         return_values = {'ott':None, 'data':{}}
 
-    request.vars.update({'embed':True, 'ott':return_values['ott']})
+    request.vars.update({'ott':return_values['ott']})
         
-    return_values['data']['ozspons'] = URL("default","sponsor_leaf", vars=request.vars, scheme=True, host=True, extension=False)
+    return_values['data']['ozspons'] = d = []
+    d.append(URL("default","sponsor_leaf", vars=request.vars, scheme=True, host=True, extension=False))
+    #remove the embed functionality when popping out to a new window
+    d.append(URL("default","sponsor_leaf", vars={k:v for k,v in request.vars.items() if k not in ('embed', 'form_session_id')}, scheme=True, host=True, extension=False))
+    if request.vars.form_session_id:
+        #pass on the session if possible
+        d.append({'form_session_id':request.vars.form_session_id})
+    
     return(return_values)
 
 def node_linkouts():
@@ -307,8 +348,14 @@ def node_linkouts():
     called with a node ID, since it makes sense to ask e.g. for all descendants of a node, even if this node has no OTT
     """
     return_values = linkouts(is_leaf=False, id=request.args[0])
-    request.vars.update({'embed':True, 'id':return_values['id']})
-    return_values['data']['ozspons'] = URL("default", "sponsor_node", vars=request.vars, scheme=True, host=True, extension=False)
+    request.vars.update({'id':return_values['id']})
+    return_values['data']['ozspons'] = d = []
+    d.append(URL("default", "sponsor_node", vars=request.vars, scheme=True, host=True, extension=False))
+    #remove the embed functionality when popping out to a new window
+    d.append(URL("default","sponsor_node", vars={k:v for k,v in request.vars.items() if k not in ('embed', 'form_session_id')}, scheme=True, host=True, extension=False))
+    if request.vars.form_session_id:
+        #pass on the session if possible
+        d.append({'form_session_id':request.vars.form_session_id})
     return(return_values)
     
 def getOTT():

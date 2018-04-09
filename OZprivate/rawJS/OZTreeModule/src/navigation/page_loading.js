@@ -90,7 +90,7 @@ function get_details_of_nodes_in_view_during_fly() {
  * -- undefined or null(default as pzoom)
  * -- zoom
  * -- pzoom
- * -- jump(last branch)
+ * -- jump (or any other string, since this is the last branch)
  * Pzoom would be reset to zoom if the targeted node is too close to the root. Since pzoom would zoom a fixed length,
  * pzoom from a close node would result the tree being zoomed from a very small view.
  */
