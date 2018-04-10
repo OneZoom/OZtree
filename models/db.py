@@ -584,7 +584,7 @@ db.define_table('partner_taxa',
     Field('ott', type='text'), #an ott: on the main OZ site, descendants of these IDs will have this partner set
     Field('is_leaf', type = boolean, notnull=True), #is this a leaf? Helps us choose whether to look in leaf or node table
     Field('deactived', type = boolean, notnull=True), #allows us to keep details in the DB but not to do sponsorship. However, it is more efficient to delete them from this table
-    format = '%(identifier)s', migrate=is_testing)
+    format = '%(partner_identifier)s', migrate=is_testing)
 
 #some tables for tours
 #one row per tour, to store e.g. the name of the tour
@@ -800,7 +800,7 @@ DROP   INDEX string_index    ON search_log;
 CREATE INDEX string_index    ON search_log (search_string)   USING HASH;
 
 DROP   INDEX identifier_index    ON partners;
-CREATE INDEX identifier_index    ON partners (identifier)   USING HASH;
+CREATE INDEX identifier_index    ON partners (partner_identifier)   USING HASH;
 
 /* The following are the indexes for ordered leaves & ordered nodes, useful to re-do after a new tree is imported */
 
@@ -856,10 +856,10 @@ DROP            INDEX name_fulltext_index ON ordered_leaves;
 CREATE FULLTEXT INDEX name_fulltext_index ON ordered_leaves (name);
 
 DROP   INDEX key_index           ON API_users;
-CREATE INDEX key_index           ON API_users (key)    USING HASH;
+CREATE INDEX key_index           ON API_users (APIkey)    USING HASH;
 
 DROP   INDEX key_index          ON API_use;
-CREATE INDEX key_index          ON API_use (key)       USING HASH;
+CREATE INDEX key_index          ON API_use (APIkey)       USING HASH;
 
 DROP   INDEX API_index          ON API_use;
 CREATE INDEX API_index          ON API_use (API)       USING HASH;
