@@ -730,9 +730,10 @@ def sponsor_node():
         else:
             raise
         #global var 'partners' is defined at the top of the file, for request.vars.partner=='LinnSoc', 'Kew', etc.
-        #partner = db(db.partners.identifier == request.vars.get('partner')).select().first() #this could be null
-        #partner = partner.as_dict() if partner else {}
-        
+        if request.vars.partner:
+            partner = db(db.partners.partner_identifier == request.vars.partner).select().first() #this could be null
+        else:
+            partner = None    
         first25 = db(query).select(limitby=(0, 25), orderby=db.ordered_leaves.name)
         if len(first25) > 0:
             prices_pence = sorted([r.price for r in db().select(db.prices.price)])

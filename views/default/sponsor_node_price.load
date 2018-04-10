@@ -12,18 +12,14 @@
     {{vars.update({'start':0 if start_item-max_items < 0 else start_item-max_items})}}
     <li>{{=A(XML('&lt;'),_href=URL(vars=vars),cid=request.cid)}}</li>
     {{pass}}
+{{new_vars = {k:v for k,v in vars.items() if k not in ('n', 'start', 'id', 'price')} }}
 {{for i, ott in enumerate(otts):}}
 {{if max_items and i==max_items: break}}
-    <li><form>{{#
-        new_vars = {k:vars[k] for k in ['embed','partner','user_more_info'] if vars[k]} }} {{new_vars['ott']=ott}}
-        <a class="sponsor" style="background-image:url('{{=image_urls[ott] if ott in image_urls else URL("static","images/noImage_transparent.png")}}')"  href="{{=URL('sponsor_leaf', extension=False,  vars=new_vars)}}" data-href-component="{{=URL('sponsor_leaf', extension='load',  vars=new_vars)}}" onclick="this.parent.submit_form()" title="{{=attributions[ott].replace('"',"'") if ott in attributions else ''}}" > <p>{{=html_names[ott]}}</p> </a>
-    </form></li>
+    <li>{{=A(P(html_names[ott]), _class="sponsor", _style="background-image:url('{}')".format(image_urls[ott] if ott in image_urls else URL("static","images/noImage_transparent.png")), _href=URL("sponsor_leaf", extension=False,  vars=dict(ott=ott, **new_vars)), _title=attributions[ott].replace('"',"'") if ott in attributions else '')}}</li>
 {{pass}}
     {{if max_items and (len(otts)> max_items):}}
     {{vars.update({'start': start_item+max_items})}}
     <li>{{=A(XML('&gt;'),_href=URL(vars=vars),cid=request.cid)}}<li>
     {{pass}}
 </ul>
-        
-
 {{pass}}
