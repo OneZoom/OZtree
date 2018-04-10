@@ -88,19 +88,19 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <input class="uk-radio" type="radio" name="treeshape" value="fern"> {{=T('Fern')}}</label></li>
       <li><label>
         <input class="uk-radio" type="radio" name="treeshape" value="balanced"> {{=T('Balanced')}}</label></li>
-      <li class="uk-nav-header">{{=T('Colours indicate')}}</li>
+      <!-- <li class="uk-nav-header">{{=T('Colours indicate')}}</li>
       <li><label uk-tooltip="pos: right" title="{{=T('Colours like a botanical tree, leaf colour shows extinction risk')}}">
         <input class="uk-radio" type="radio" name="colourtype" value="natural"> Natural</label></li>
       <li><label>
         <input class="uk-radio" type="radio" name="colourtype" value="AT"> {{=T('Ancestor’s Tale')}}</label></li>
       <li><label>
-        <input class="uk-radio" type="radio" name="colourtype" value="popularity"> {{=T('Popularity')}}</label></li>
+        <input class="uk-radio" type="radio" name="colourtype" value="popularity"> {{=T('Popularity')}}</label></li> -->
       <li class="uk-nav-header treeswitch">{{=T('Tree## partner')}}</li>
       <li class="treeswitch"><select id="treepage" class="uk-select uk-form-small">
         <option value="life">Original OneZoom</option>
         <option value="AT">Ancestor’s Tale</option>
-        <option value="linnean">Linnean Society</option>
-        <option value="kew">Kew</option>
+        <!--<option value="linnean">Linnean Society</option>
+        <option value="kew">Kew</option> -->
         </select></li>
       <li class="uk-nav-header langswitch">{{=T("Language")}}</li>
       <li class="langswitch"><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1] if browser_language else None,)}}">
