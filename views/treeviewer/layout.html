@@ -280,7 +280,6 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
     {
         // the results match what's still in the box so populate the results
         // we want to check that the original_search is still the same as what's in the box
-        console.log($(".searchinput input", searchbox).val());
         $(".searchinput", searchbox).removeClass('waiting_for_search_result');
         var dropdown = $(".search_dropdown", searchbox);
         {{if is_testing:}}console.log("Hiding popular species section of dropdown");{{pass}}
@@ -316,6 +315,7 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
         }
         UIkit.dropdown(dropdown).show();
     }
+    {{if is_testing:}}else{console.log("ignoring search results return beacause box has changed");}{{pass}}
     // else the box has since changed contents do nothing
 }
 
@@ -496,12 +496,12 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
         });
 
     $('.searchresult .main-icon', box_selector).on('ready', function(event) {
-    console.log($(event.currentTarget).html());
     });
 
     
     $('.searchresult .icon-beside-input .main-icon', box_selector)
-        .click(function(event) {
+        .on('click',function(event) {
+               {{if is_testing:}}console.log("icon clicked for jumping");{{pass}}
             var OZid = $(event.currentTarget).closest('.searchresult').attr('data-OZid');
             if (OZid) closeAndLeap(event, OZid, box_selector);
             event.preventDefault();
@@ -539,7 +539,8 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
                 searchbox.addClass('result_displayed_in_box');
             }
         })
-        .on('input', function(event) {
+        .on('keyup', function(event) {
+            
             var search_term = this.value;
             var searchbox = $(this).closest('.searchbox');
             var searchresult = $('.searchresult', searchbox);
@@ -556,11 +557,14 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
                 onezoom.search_manager.full_search(""); // this clears the search
                 $('.searchinput', searchbox).removeClass('waiting_for_search_result');
             } else {
-                $('.searchinput', searchbox).addClass('waiting_for_search_result');
+                //$('.searchinput', searchbox).addClass('waiting_for_search_result');
                 var delay_ms = 1000;
                 if (event.which == 13) {
                     delay_ms = 1;   //enter was pressed - don't delay
-                } else if (search_term.replace(/ /g,'').length > 1) { // we're never going to search for a single character
+                }
+            if ((search_term.replace(/ /g,'').length > 2)||((search_term.replace(/ /g,'').length > 1)&&(delay_ms == 1))) { // we're never going to search for a single character and we only search for two characters if enter has been pressed.
+            
+            //if (search_term.replace(/ /g,'').length > 1) { // we're never going to search for a single character
             
             onezoom.search_manager.full_search(
                                                search_term,
@@ -568,7 +572,8 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
                                                searchPopulate(searchbox, original_string, results, UI_reset_marked_via_event)
                                                },
                                                delay_ms,
-                                               function() {console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search")
+                                               function() {
+                                               {{if is_testing:}}console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search");{{pass}}
                                                if(!($(".searchinput").hasClass('waiting_for_search_result')))
                                                {
                                                $(".searchinput", searchbox).addClass('waiting_for_search_result'); // switch flag for search to on
@@ -727,7 +732,8 @@ function setupUI() {
             if (event.which == 13) {
                 delay_ms = 1;   //enter was pressed - don't delay
                 // we should probably catch the case of short string here and give the user a warning - todo.
-            } else if (search_term.replace(/ /g,'').length > 1) { // we're never going to search for a single character
+            }
+            if ((search_term.replace(/ /g,'').length > 2)||((search_term.replace(/ /g,'').length > 1)&&(delay_ms == 1))) { // we're never going to search for a single character and we only search for two characters if enter has been pressed.
              
              // we want to test for whether the search is working already or not....
              
@@ -738,7 +744,8 @@ function setupUI() {
                                                 },
                                                 delay_ms,
                                                 function() {
-                                                        console.log("Search for '" + search_term + "' sent to OneZoom API from basic search")
+                                                    {{if is_testing:}}console.log("Search for '" + search_term + "' sent to OneZoom API from basic search");{{pass}}
+
                                                         if(!($(".searchinput").hasClass('waiting_for_search_result')))
                                                         {
                                                             $(".searchinput", searchbox).addClass('waiting_for_search_result'); // switch flag for search to on

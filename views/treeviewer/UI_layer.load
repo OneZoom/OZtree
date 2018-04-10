@@ -14,8 +14,8 @@
   <form id="search-basic">
     <div class="searchbox uk-search uk-search-default" id="search_form_basic">
       <div class="searchinput"><div class="icon-beside-input">
-          <button class="spinner" uk-spinner="ratio:0.5"></button>
-          <button class="main-icon" uk-icon="icon: search"></button>
+          <button type="button" class="spinner" uk-spinner="ratio:0.5"></button>
+          <button type="button" class="main-icon" uk-icon="icon: search"></button>
         </div><input class="uk-search-input" type="search" placeholder="{{=T('Search all life...')}}" /></div>
       <div uk-dropdown="pos: bottom-left; offset: 1" class="search_dropdown selectable uk-overflow-auto">
         <div class="no_results">{{=T("No results found")}}</div>
@@ -29,20 +29,20 @@
 //define the advanced searchbox html as a js variable so we can make an indefinate number of them
 advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="searchresult">\
               <div class="icon-beside-input">\
-                <button class="main-icon" uk-icon="icon: location"></button>\
+                <button type="button" class="main-icon" uk-icon="icon: location"></button>\
               </div><input class="uk-search-input" type="search" value="" readonly />\
             </div><div class="searchinput"><div class="icon-beside-input">\
-                <button class="spinner" uk-spinner="ratio:0.5"></button>\
-                <button class="main-icon" uk-icon="icon: search"></button>\
+                <button type="button" class="spinner" uk-spinner="ratio:0.5"></button>\
+                <button type="button" class="main-icon" uk-icon="icon: search"></button>\
               </div><input class="uk-search-input" type="search" placeholder="{{=T('Choose a location...')}}" />\
             </div><div uk-dropdown="pos: bottom-left;  offset: 1; mode: click" class="search_dropdown" class="selectable uk-overflow-auto">\
               <div class="no_results">{{=T("No results found")}}</div>\
               <dl class="search_hits"></dl>\
               <dl class="popular_species"></dl>\
-            </div><button class="remove-searchbox" title="{{=T('Remove location box')}}" uk-tooltip="pos: bottom-left" uk-icon="icon: minus-circle; ratio:0.8"></button></div></li>';
+            </div><button type="button" class="remove-searchbox" title="{{=T('Remove location box')}}" uk-tooltip="pos: bottom-left" uk-icon="icon: minus-circle; ratio:0.8"></button></div></li>';
       </script></ul>
-    <button id="common_ancestor_button" uk-tooltip="pos: bottom-left" title="{{=T('Go to common ancestor')}}"><span uk-icon="icon: git-fork"></span>common ancestor</button>
-    <button id="add_searchbox" title="{{=T('Add another location')}}" uk-tooltip="pos: bottom-left" uk-icon="icon: plus-circle;"></button>
+    <button type="button" id="common_ancestor_button" uk-tooltip="pos: bottom-left" title="{{=T('Go to common ancestor')}}"><span uk-icon="icon: git-fork"></span>common ancestor</button>
+    <button type="button" id="add_searchbox" title="{{=T('Add another location')}}" uk-tooltip="pos: bottom-left" uk-icon="icon: plus-circle;"></button>
   </form>
 </div>
 <div id="advanced_search_toggle" class="uk-navbar-item">
@@ -88,19 +88,19 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <input class="uk-radio" type="radio" name="treeshape" value="fern"> {{=T('Fern')}}</label></li>
       <li><label>
         <input class="uk-radio" type="radio" name="treeshape" value="balanced"> {{=T('Balanced')}}</label></li>
-      <li class="uk-nav-header">{{=T('Colours indicate')}}</li>
+      <!-- <li class="uk-nav-header">{{=T('Colours indicate')}}</li>
       <li><label uk-tooltip="pos: right" title="{{=T('Colours like a botanical tree, leaf colour shows extinction risk')}}">
         <input class="uk-radio" type="radio" name="colourtype" value="natural"> Natural</label></li>
       <li><label>
         <input class="uk-radio" type="radio" name="colourtype" value="AT"> {{=T('Ancestor’s Tale')}}</label></li>
       <li><label>
-        <input class="uk-radio" type="radio" name="colourtype" value="popularity"> {{=T('Popularity')}}</label></li>
+        <input class="uk-radio" type="radio" name="colourtype" value="popularity"> {{=T('Popularity')}}</label></li> -->
       <li class="uk-nav-header treeswitch">{{=T('Tree## partner')}}</li>
       <li class="treeswitch"><select id="treepage" class="uk-select uk-form-small">
         <option value="life">Original OneZoom</option>
         <option value="AT">Ancestor’s Tale</option>
-        <option value="linnean">Linnean Society</option>
-        <option value="kew">Kew</option>
+        <!--<option value="linnean">Linnean Society</option>
+        <option value="kew">Kew</option> -->
         </select></li>
       <li class="uk-nav-header langswitch">{{=T("Language")}}</li>
       <li class="langswitch"><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1] if browser_language else None,)}}">
