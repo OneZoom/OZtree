@@ -38,6 +38,7 @@ class TestViewerUrls(FunctionalTest):
     def test_nozoom_leaf(self):
         """
         Test jumping straight to a leaf without a hash specification
+        There was a problem with this that was fixed with 3a057db85f94a761d56acf1c8fdd14370527762e
         """
         self.browser.get(base_url + "life/@Homo_sapiens=770315?init=jump")
         assert self.browser.find_element_by_id("error-modal").is_displayed() == False

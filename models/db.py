@@ -426,7 +426,7 @@ db.define_table('reservations',
     # these are general useful stats for a page
     Field('last_view', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
     Field('reserve_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
-    Field('session_id', type = 'text'),
+    Field('user_registration_id', type = 'text'), #eventually this will correspond to a number in the registration_id field of the auth_user table (which should be initially filled out using OZfunctions/__make_user_code, but for the moment we generate a new UUID for each treeview session
     # these handle auto reservation of pages
                              
     Field('user_id', type = 'reference auth_user' , requires=IS_EMPTY_OR(IS_IN_DB(db, 'auth_user.id','%(first_name)s %(last_name)s'))),
@@ -610,6 +610,24 @@ db.define_table('tourstops',
     Field('description', type = 'text'), #text to show at this stop
     Field('video', type = 'string', length=20), #the youtube video number, if there is a video
     format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
+    
+#a list of API users, added by hand
+db.define_table('API_users',
+    Field('APIkey', type = 'string', length=32, unique=True, notnull=True),
+    Field('API_user_name', type = 'text'), # who this API user is
+    Field('max_taxa_per_query', type='integer'), #set this to 0 to deactivate this API user
+    Field('max_returns_per_taxon', type='integer'),
+    format = '%(APIkey)s', migrate=is_testing)
+
+#a record of the amounts of API use, by user
+db.define_table('API_use',
+    Field('APIkey', type = 'string', length=32), #which key was used
+    Field('API', type = 'string', length=100), #which API was used, e.g. popularity/
+    Field('start_date', type = 'datetime', notnull=True, requires=IS_DATETIME()), #when we started recording this data
+    Field('n_calls', type = 'bigint'), # number of times API called
+    Field('n_taxa', type = 'bigint'), # number of taxa requested (divide by n_calls to get av taxa per call)
+    Field('n_returns', type = 'bigint'), # number of taxa returned (divide by n_calls to get av taxa per call)
+    format = '%(APIkey)s_%(API)s', migrate=is_testing)
 
 # add extra indexes on OTT_ID etc in tables. Index name (ott_index) is arbitrary 
 # http://stackoverflow.com/questions/4601138/what-is-the-significance-of-the-index-name-when-creating-an-index-in-mysql
@@ -666,6 +684,8 @@ call MakeFullUnicode('images_by_ott', 'licence');
 call MakeFullUnicode('images_by_name', 'rights');
 call MakeFullUnicode('images_by_name', 'licence');
 call MakeFullUnicode('search_log', 'search_string');
+
+
 
 
 DROP   INDEX ott_index           ON banned;
@@ -834,5 +854,15 @@ CREATE FULLTEXT INDEX name_fulltext_index ON ordered_nodes (name);
 
 DROP            INDEX name_fulltext_index ON ordered_leaves;
 CREATE FULLTEXT INDEX name_fulltext_index ON ordered_leaves (name);
+
+DROP   INDEX key_index           ON API_users;
+CREATE INDEX key_index           ON API_users (key)    USING HASH;
+
+DROP   INDEX key_index          ON API_use;
+CREATE INDEX key_index          ON API_use (key)       USING HASH;
+
+DROP   INDEX API_index          ON API_use;
+CREATE INDEX API_index          ON API_use (API)       USING HASH;
+
 
 """

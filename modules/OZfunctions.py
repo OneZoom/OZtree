@@ -6,6 +6,7 @@ Functions defined in controllers and having a space after the () and before the 
 """
 import re
 import os
+import random
 from gluon import current
 
 def __check_version(): #this is a private function
@@ -259,3 +260,13 @@ def acceptable_sciname(word):
     """
     import string
     return all(ch in string.ascii_letters+string.digits+u" -./×αβγδμëüö{}*#" for ch in word) 
+
+def __make_user_code():
+    """
+    Generate a random string that is unlikely to clash with another. E.g. for the 'ultimate answer' (42)
+    100,000 entries 2^42 gives an expected clash rate of 1 in 880.
+    
+    Eventually, when we also use this to generate registration_ids in the auth_user table, 
+    we will want to check here that the random number generated does not exist in the auth_user table
+    """
+    return '{:x}'.format(random.getrandbits(42))    

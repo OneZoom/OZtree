@@ -3,7 +3,7 @@
 import datetime
 import re
 
-from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __check_version
+from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __check_version, __make_user_code
 """ Some settings for sponsorship"""
 try:
     reservation_time_limit = myconf.take('sponsorship.reservation_time_limit_mins') * 60.0
@@ -104,9 +104,9 @@ def sponsor_leaf():
                 The following are only shown when sponsorship is allowed and not in maintenance mode
             * reserved [spl_reserved.html] - another user was active on this page recently and it's being reserved for them for a few minutes
             * available [sponsor_leaf.html] - the leaf is fully available, so proceed
-            * available only to session [sponsor_leaf.html] - it's available but for this user only
+            * available only to user [sponsor_leaf.html] - it's available but for this user only
         it will also provide the current best picture for that taxon (if one exists)
-        2.) update the 'reserved' table with new numbers of views and view times / session ids etc.
+        2.) update the 'reserved' table with new numbers of views and view times / user ids etc.
         3.) collect the name, price and EOL ids from the database and return them to the page
         4.) look up the partner_taxa table, find the ranges of leaf ids that will trigger a partner deal,
             check if this leaf id is within any range, and if so, find the partner_identifier and return the
@@ -120,7 +120,7 @@ def sponsor_leaf():
             num_views
             last_view
             reserve_time
-            session_id
+            user_registration_id
     
             user_id (? - later)
             e_mail
@@ -145,13 +145,16 @@ def sponsor_leaf():
         response.view = request.controller + "/spl_maintenance." + request.extension
         return dict(mins=str(maint))
 
-
-    from json import dumps
-    if (request.vars.get('form_session_id')):
-        form_session_id = request.vars.form_session_id
-    else:
-        form_session_id = response.session_id
+    max_price = db.prices.price.max()
+    max_global_price = db().select(max_price).first()[max_price] / 100
+    min_price = db.prices.price.min()
+    min_global_price = db().select(min_price).first()[min_price] / 100
     
+    from json import dumps
+    if (request.vars.get('form_reservation_code')):
+        form_reservation_code = request.vars.form_reservation_code
+    else:
+        form_reservation_code = __make_user_code()
     # initialise status flag (it will get updated if all is OK)
     status = ""
     # sometimes (e.g. museum display on main OZ site) we shut off sponsoring without using appconfig
@@ -253,7 +256,7 @@ def sponsor_leaf():
                 last_view=request.now,
                 num_views=1,
                 reserve_time=request.now,
-                session_id=form_session_id)
+                user_registration_id =form_reservation_code)
             # this line does not insert any leger id because no transaction has taken place yet
             # that entry in the db is allowed to be blank
     else:
@@ -289,7 +292,7 @@ def sponsor_leaf():
                         status = "unverified waiting for payment"
                     else:
                         # we've waited too long and can zap the personal data previously in the table then set available
-                        reservation_query.update(user_id=None, e_mail=None, twitter_name=None, allow_contact=None, user_sponsor_kind=None, user_sponsor_name=None, user_more_info=None, user_nondefault_image=None, user_preferred_image=None, user_updated_time=None, user_paid=None, user_message_OZ=None, user_giftaid=None, PP_transaction_code=None, PP_e_mail=None, PP_first_name=None, PP_second_name=None, PP_town=None, PP_country=None, PP_house_and_street=None, PP_postcode=None, verified_kind=None, verified_name=None, verified_more_info=None, verified_preferred_image=None, verified_time=None, verified_paid=None, verified_url=None, live_time=None, admin_comment=None, sponsorship_duration_days=None, asking_price=None, deactivated=None, sale_time=None, partner_name=None, partner_percentage=None)
+                        reservation_query.update(user_id=None, e_mail=None, twitter_name=None, allow_contact=None, user_sponsor_kind=None, user_sponsor_name=None, user_more_info=None, user_nondefault_image=None, user_preferred_image=None, user_updated_time=None, user_paid=None, user_message_OZ=None, user_giftaid=None, user_registration_id=None, PP_transaction_code=None, PP_e_mail=None, PP_first_name=None, PP_second_name=None, PP_town=None, PP_country=None, PP_house_and_street=None, PP_postcode=None, verified_kind=None, verified_name=None, verified_more_info=None, verified_preferred_image=None, verified_time=None, verified_paid=None, verified_url=None, live_time=None, admin_comment=None, sponsorship_duration_days=None, asking_price=None, deactivated=None, sale_time=None, partner_name=None, partner_percentage=None)
                         #note that this e.g. clears deactivated taxa, etc etc.
                         status = "available"
             else:
@@ -300,16 +303,16 @@ def sponsor_leaf():
                 if (startTime == None):
                     status = "available"
                     # reserve the leaf because there is no reservetime on record
-                    reservation_query.update(reserve_time=request.now, session_id=form_session_id)
+                    reservation_query.update(reserve_time=request.now, user_registration_id=form_reservation_code)
                 else:
                     # we need to compare times to figure out if there is a time difference
                     timesince = ((endTime-startTime).total_seconds())
                     if (timesince < (reservation_time_limit)):
                         release_time = reservation_time_limit - timesince
                         # we may be reserved if it wasn't us
-                        if(str(form_session_id)==str(reservation_entry.session_id)):
+                        if(form_reservation_code == reservation_entry.user_registration_id):
                             # it was the same user anyway so reset timer
-                            status = "available only to session"
+                            status = "available only to user"
                             reservation_query.update(reserve_time=request.now)
                         else:
                             status = "reserved"
@@ -317,7 +320,7 @@ def sponsor_leaf():
                         # it's available still
                         status = "available"
                         # reserve the leaf because there is no reservetime on record
-                        reservation_query.update(reserve_time = request.now, session_id = form_session_id)
+                        reservation_query.update(reserve_time = request.now, user_registration_id = form_reservation_code)
     #re-do the query since we might have added the row ID now
     reservation_entry = reservation_query.select().first()
     if reservation_entry is None:
@@ -381,8 +384,8 @@ def sponsor_leaf():
                     asking_price=(leaf_price),
                     user_updated_time=request.now,
                     sponsorship_duration_days=365*4+1,
-                    partner_name=partner.get('partner_identifier'),
-                    partner_percentage=partner.get('partner_percentage'))
+                    partner_name=partner_data.get('partner_identifier'),
+                    partner_percentage=partner_data.get('partner_percentage'))
                 # now need to do our own other checks
                 v = {'ott':OTT_ID_Varin}
                 if request.vars.get('embed'):
@@ -394,7 +397,7 @@ def sponsor_leaf():
             else:
                #the form should simply be shown
                pass
-            return dict(form = form, id=reservation_entry.id, OTT_ID = OTT_ID_Varin, EOL_ID = EOL_ID, eol_src= src_flags['eol'], species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), the_long_name = the_long_name, leaf_price = leaf_price, form_session_id=form_session_id, percent_crop_expansion = percent_crop_expansion, default_image = default_image, partner_data = partner_data, EoL_API_key=EoL_API_key)
+            return dict(form = form, id=reservation_entry.id, OTT_ID = OTT_ID_Varin, EOL_ID = EOL_ID, eol_src= src_flags['eol'], species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), the_long_name = the_long_name, leaf_price = leaf_price, form_reservation_code=form_reservation_code, percent_crop_expansion = percent_crop_expansion, default_image = default_image, partner_data = partner_data, EoL_API_key=EoL_API_key, max_global_price=max_global_price, min_global_price=min_global_price)
         except TypeError: #leaf_entry.price is None, treat as banned
             response.view = request.controller + "/spl_banned." + request.extension
             return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), long_name = long_name, default_image = default_image, user_image=user_image)
@@ -714,7 +717,7 @@ def sponsor_node_price():
 def sponsor_node():
     """
     This picks <max> leaves per price band, and removes already sponsored leaves from the search    
-    By default ranks by popularity. We pass on any request.vars so that we can use embed, form_session_id, etc.
+    By default ranks by popularity. We pass on any request.vars so that we can use embed, form_reservation_code, etc.
     """
     try:
         if request.vars.get('id'):
@@ -1283,9 +1286,8 @@ def life_text_init_taxa(text_tree):
 
 def treeview_info(has_text_tree=True):
     """
-    Return the information used by the normal tree viewer (which always begins with '@') is the last of the slash
-    separated paths, i.e. request.args[-1], which we check for first The first of the separated paths can
-    be a partner ID, or the string 'tour'
+    Return the information used by the normal tree viewer. We parse the information from the URL
+    (e.g. anything after the '@' sign) so that we can construct the correct text tree)
     """
     location = remove_location_arg(request.args)
     partner  = remove_partner_arg(request.args)
@@ -1299,7 +1301,7 @@ def treeview_info(has_text_tree=True):
     if has_text_tree:
         tt = text_tree(location)
         page_info.update({'tree': tt, 'title_name': ", ".join(life_text_init_taxa(tt))})
-    return dict(page_info = page_info)
+    return dict(page_info = page_info, form_reservation_code=__make_user_code())
 
 def life():
     """

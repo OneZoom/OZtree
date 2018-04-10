@@ -193,7 +193,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         {{for tab in tabs:}}
         <li class="{{=tab['id']}}" data-src="" aria-controls="{{=tab['id']}}-panel">
           <div class="uk-position-top-right expand-tab">
-            <!-- the linkout buttons are forms, to allow post requests to pass on session ids -->
+            <!-- the linkout buttons are forms, to allow post requests to pass on reservation codes -->
 {{if request.vars.links!='none':}}
             <form target="_blank" method="post" onsubmit="return false"><button type="submit" class="uk-icon-button" uk-tooltip="pos: left" title="{{=T('Open this %s tab in a new window') % (tab['name'],)}}" uk-icon="icon: expand; ratio: 0.75"></button></form>
 {{pass}}

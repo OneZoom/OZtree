@@ -26,11 +26,11 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
   <div>
     <h3>{{=T('Type the name of the person you want to appear on the leaf')}}</h3>
     <fieldset>
-      <div class="singlerow"><label>{{=T('Sponsored by')}} <input type="radio"  value="by" onclick="drawPreview()" id = "sponsorBy" name = "user_sponsor_kind" checked /></label><label>{{=T('Sponsored as a gift for')}} <input type="radio"  value="for" id = "sponsorFor" name = "user_sponsor_kind" onclick="drawPreview()" /></label></div>
-      <div><label for="user_sponsor_name_input">{{=T('Sponsorship name (required): ')}}</label><p><input type = "text" id="user_sponsor_name_input" name = "user_sponsor_name" maxlength="30" size="30" onchange="drawPreview()" onkeyup="drawPreview()" placeholder = "{{=T('e.g. Jane Smith')}}"
+      <div class="singlerow"><label>{{=T('Sponsored by')}} <input type="radio" value="by" onclick="drawPreview()" id = "sponsorBy" name = "user_sponsor_kind" checked /></label><label>{{=T('Sponsored as a gift for')}} <input type="radio"  value="for" id = "sponsorFor" name = "user_sponsor_kind" onclick="drawPreview()" /></label></div>
+      <div><label for="user_sponsor_name_input">{{=T('Sponsorship name (required): ')}}</label><p><input type="text" autocomplete="off" id="user_sponsor_name_input" name = "user_sponsor_name" maxlength="30" size="30" onchange="drawPreview()" onkeyup="drawPreview()" placeholder="{{=T('e.g. Jane Smith')}}"
       value="{{if (request.vars['user_sponsor_name']) is not None:}}{{=request.vars['user_sponsor_name']}}{{pass}}" /> 
         <em class = "error_text" > {{if (form.errors["user_sponsor_name"]) is not None:}}{{=form.errors["user_sponsor_name"]}}{{pass}} </em></p></div>
-      <div><label for="user_more_info_input">{{=T('Extra text (optional): ')}}</label><p><input type = "text" id="user_more_info_input" name = "user_more_info"  maxlength="30" size="30" onchange="drawPreview()" onkeyup="drawPreview()" placeholder = "{{=T('e.g. Edinburgh, UK')}}"
+      <div><label for="user_more_info_input">{{=T('Extra text (optional): ')}}</label><p><input type="text" id="user_more_info_input" autocomplete="off" name = "user_more_info"  maxlength="30" size="30" onchange="drawPreview()" onkeyup="drawPreview()" placeholder = "{{=T('e.g. Edinburgh, UK')}}"
           value="{{if (request.vars['user_more_info']) is not None:}}{{=request.vars['user_more_info']}}{{pass}}"/>
         <em class = "error_text"> {{if (form.errors["user_more_info"]) is not None:}}{{=form.errors["user_more_info"]}}{{pass}} </em></p></div>
       <p class="singlerow extra_info">{{=XML(T('Extra text will only show when fully zoomed in; it can be used for your location, or to say who it’s from if you are sponsoring as a gift for another person (e.g. Happy Birthday from John Smith). The extra text will appear on our main tree at %s, but may not necessarily be shown on versions elsewhere.') % (A('OneZoom.org/life', _href=URL('default','life', scheme=True, host=True), _target="blank"),))}}<p>
@@ -53,20 +53,27 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
   <div>
     <h3>{{=T('A few more details')}}</h3>
     <fieldset>
-      <div><label for="e-mail_input">{{=T('Your e-mail (recommended):')}}</label><p><input type = "text" id="e-mail_input" name = "e_mail" size="40"
+      <div><label for="e-mail_input">{{=T('Your e-mail (recommended):')}}</label><p><input type="text" autocomplete="email" id="e-mail_input" name = "e_mail" size="40"
         value="{{if (request.vars['e_mail']) is not None:}}{{=request.vars['e_mail']}}{{pass}}" /> 
         <em class = "error_text"> {{if (form.errors["e_mail"]) is not None:}}{{=form.errors["e_mail"]}}{{pass}} </em></p></div>
       <p class="singlerow extra_info">{{=T('If we need to contact you about your donation or changes to your leaf, we will use the email entered here, otherwise we will use the email from your PayPal donation.')}}</p>
-      <div><label for="allow_contact_input">{{=T('Allow further contact?')}}</label><p><input type = "checkbox" id="allow_contact_input" name = "allow_contact" /></p></div>
+      
+      
+      <div><label for="user_donor_name_input">{{=T('Your title and name (if different from the sponsorship name):')}}</label><p><input type="text" autocomplete="honorific-prefix" id="user_donor_title_input" name = "user_donor_title" size="40"
+        value="{{if (request.vars['user_donor_title']) is not None:}}{{=request.vars['user_donor_title']}}{{pass}}" /><input type="text" autocomplete="name" id="user_donor_name_input" name = "user_donor_name" size="6" placeholder="{{=T('Mr/Mrs')}}"
+        value="{{if (request.vars['user_donor_name']) is not None:}}{{=request.vars['user_donor_name']}}{{pass}}" />
+        <em class = "error_text">{{if (form.errors["user_donor_title"]) is not None:}}{{=form.errors["user_donor_title"]}}{{pass}}{{if (form.errors["user_donor_name"]) is not None:}}{{=form.errors["user_donor_name"]}}{{pass}}</em></p></div>
+      <p class="singlerow extra_info">{{=T('If we need to contact you about your donation or changes to your leaf, we will use the email entered here, otherwise we will use the email from your PayPal donation.')}}</p>
+      <div><label for="allow_contact_input">{{=T('Allow further contact?')}}</label><p><input type="checkbox" autocomplete id="allow_contact_input" name = "allow_contact" /></p></div>
       <p class="singlerow extra_info">{{=XML(T('On rare occasions we may wish to inform you about new / major changes to OneZoom (for more frequent updates, you might also like to %s)') % (A(T('follow us on Twitter'), _href='https://twitter.com/OneZoomTree'),))}}</p>
-      <div><label for="user_paid_input">{{=T('Your donation amount (£):')}} </label><p><input type="number" step="0.01" id="user_paid_input" name = "user_paid"
+      <div><label for="user_paid_input">{{=T('Your donation amount (£%s or greater):') % (str(int(leaf_price)) if leaf_price.is_integer() else '{:f}'.format(leaf_price))}} </label><p><input type="number" step="0.01" id="user_paid_input" name = "user_paid"
           value="{{if (request.vars['user_paid']) is not None:}}{{=request.vars['user_paid']}}{{else:}}{{if(leaf_price.is_integer()):}}{{=str(int(leaf_price))}}{{else:}}{{='{:.2f}'.format(leaf_price)}}{{pass}}{{pass}}" /> 
         <em class = "error_text"> {{if (form.errors["user_paid"]) is not None:}}{{=form.errors["user_paid"]}}{{=A(T('choose another leaf'),_href=URL('sponsor'))}}{{pass}} </em></p></div>
-      <p class="singlerow extra_info">{{=T('Sponsorship is for a fixed period of %s years, but if you wish to renew sponsorship on your leaf, you will have the first refusal.') % (4,)}}</p>
-      <div><label for="user_message_OZ_input">{{=T('Your message to us (optional)')}} </label><p><input type = "text" id="user_message_OZ_input" name = "user_message_OZ"  size="40"
+      <p class="singlerow extra_info">{{=T('Leaves range from £%s to £%s depending on popularity. ') % (min_global_price, max_global_price)}}{{=T('Sponsorship is for a fixed period of %s years; after that, if you wish to renew your sponsorship, you will have the first refusal.') % (4,)}}</p>
+      <div><label for="user_message_OZ_input">{{=T('Your message to us (optional)')}} </label><p><input type="text" autocomplete="off" id="user_message_OZ_input" name = "user_message_OZ"  size="40"
         value="{{if (request.vars['user_message_OZ']) is not None:}}{{=request.vars['user_message_OZ']}}{{pass}}"/> 
         <em class = "error_text"> {{if (form.errors["user_message_OZ"]) is not None:}}{{=form.errors["user_message_OZ"]}}{{pass}} </em></p></div>
-      <div><label for="user_twitter_input">{{=T('Your Twitter handle (optional)')}} </label><p><span class="twitter_at">@</span><input type = "text" id="user_twitter_input" name = "twitter_name" size="37"
+      <div><label for="user_twitter_input">{{=T('Your Twitter handle (optional)')}} </label><p><span class="twitter_at">@</span><input type = "text" autocomplete="off" id="user_twitter_input" name="twitter_name" size="37"
         value="{{if (request.vars['twitter_name']) is not None:}}{{=request.vars['twitter_name']}}{{pass}}"/>
         <em class = "error_text"> {{if (form.errors["twitter_name"]) is not None:}}{{=form.errors["twitter_name"]}}{{pass}} </em></p></div>
       <p class="singlerow extra_info">{{=T('If you enter your Twitter handle, we will tweet when your leaf goes live')}}</p>
@@ -85,7 +92,7 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
         <p>If you pay Income Tax at the higher or additional rate and want to receive the additional tax relief due to you, you must include all your Gift Aid donations on your Self-Assessment tax return or ask HM Revenue and Customs to adjust your tax code.</p>
         <p>Gift Aid is reclaimed by OneZoom and {{=T(partner_data.get('name'))}} from the tax you pay for the current tax year. We will use the name and address from your PayPal receipt for this purpose and will share this information with {{=A(T(partner_data.get('name')), _href=partner_data.get('url'))}} for the purposes of Gift Aid - please make sure that information is up to date.</p>
 
-        <p> I agree to all the above statements: <input type = "checkbox" id="user_giftaid_input" name = "user_giftaid" /></p>
+        <p> I agree to all the above statements: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" /></p>
         {{else:}}
         <p>I want to Gift Aid this donation and any donations I make in the future or have made in the past 4 years to OneZoom</p>
         <p>I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of
@@ -94,12 +101,12 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
         <p>If you pay Income Tax at the higher or additional rate and want to receive the additional tax relief due to you, you must include all your Gift Aid donations on your Self-Assessment tax return or ask HM Revenue and Customs to adjust your tax code.</p>
         <p>Gift Aid is reclaimed by the charity from the tax you pay for the current tax year. We will use the name and address from your PayPal receipt for this purpose - please make sure that information is up to date</p>
           
-        <p> I agree: <input type = "checkbox" id="user_giftaid_input" name = "user_giftaid" /></p>
+        <p> I agree: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" /></p>
           {{pass}}
       </div>
       <input type="hidden" id="user_nondefault_image_input" name="user_nondefault_image" value="0" />
       <input type="hidden" name="id" value="{{=id}}" />
-      <input type="hidden" name="form_session_id" value="{{=form_session_id}}" />
+      <input type="hidden" name="form_reservation_code" value="{{=form_reservation_code}}" />
       <input type="hidden" name="_formname" value="test" />
       {{if partner_data:}}
       <input type="hidden" name="partner" value="{{=partner_data.get('partner_identifier') or ''}}" />

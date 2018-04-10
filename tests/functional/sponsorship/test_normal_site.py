@@ -164,7 +164,7 @@ class TestNormalSite(SponsorshipTest):
         n_deleted = self.delete_reservation_entry(ott, sciname, None)
         assert n_deleted == 1, "visiting an unvisited ott should allocate a reservations row which has been deleted"
         
-    def test_payment_pathway_noMD(self):
+    def test_payment_pathway(self):
         """
         Go through the payment process, checking at each stage whether the correct page is given.
         Do this from scratch, by getting the links from the life viewer in a different language
@@ -199,11 +199,23 @@ class TestNormalSite(SponsorshipTest):
         email.send_keys(test_email) #should test too long a name
         sponsor_name.send_keys(test_name) #probably worth testing weird characters here
         more_info.send_keys(test_4byte_unicode) #probably worth testing weird characters here
+        sponsorship_val = amount.get_attribute('value') #get what the value should be for later
         amount.send_keys("2") #deliberately fill in not enough money
 
-        #self.browser.find_element_by_id("submit_button").click()
+        assert len(self.browser.window_handles) == 1, "Should start with only one window open"
+
+        self.browser.find_element_by_id("submit_button").click()
         
-        
+        assert len(self.browser.window_handles) == 2, "Clicks on an iframed sponsor form always open in a new tab"
+        assert web2py_viewname_contains(self.browser, "sponsor_leaf"), "Too little money should be spotted and an error shown"
+
+        amount = self.browser.find_element_by_id("user_paid_input")
+        amount.send_keys(sponsorship_val) #deliberately fill in not enough money
+
+        self.browser.find_element_by_id("submit_button").click()
+        assert len(self.browser.window_handles) == 2, "Clicks on an iframed sponsor form always open in a new tab"
+
+
         
         #has it filled out the DB
         #db_cursor = self.db['connection'].cursor()
@@ -214,6 +226,40 @@ class TestNormalSite(SponsorshipTest):
              
         self.delete_reservation_entry(ott, sciname, test_email)
 '''
-    def test_partner_sponsorship(self):
-        *****
+    def test_partner_payment_pathway(self):
+        """
+        Go through the payment process for a partner site, checking at each stage whether the correct page is given.
+        Do this from scratch, by getting the links from the life viewer in a different language
+        We need to test 0) sponsor_leaf (the 'normal' page) 1) spl_reserved (reserved for someone else) 2) spl_waitpay 3) spl_unverified.html
+        """
+        
+        test_name = "My tést <name> 漢字 + أبجدية عربية"
+        test_4byte_unicode = " &amp; <script>" #annoyingly can't do this in selenium ChromeBrowser ()
+        
+        ott, sciname = self.never_looked_at_ottname()
+        lang, expected_word ='fr', 'sponsorisé' #just to force errors, try sponsoring in a non-default browser language
+        self.browser.get(base_url + 'life'+"/@={0}?init=jump&pop=osl_{0}&lang={1}".format(ott, lang))
+        css_sel = ".ozspons iframe"
+        for sleep_time in [0.1]*100: #try for 10 secs to get the iframe (takes some time to appear)
+            if self.element_by_css_selector_exists(css_sel):
+                break
+            sleep(sleep_time)
+        else:
+            assert False, "timed out before the sponsorship iframe popped up (couldn't find selector '{}')".format(css_sel)
+        iframe = self.browser.find_element_by_css_selector(css_sel)
+        self.browser.switch_to.frame(iframe)
+        sleep(1) #must wait for iframe to load properly
+        assert web2py_viewname_contains(self.browser, "sponsor_leaf")
+        assert expected_word in self.browser.page_source
+                
+        #fill in the form elements
+        email = self.browser.find_element_by_id("e-mail_input")
+        sponsor_name = self.browser.find_element_by_id("user_sponsor_name_input")
+        more_info = self.browser.find_element_by_id("user_more_info_input")
+        amount = self.browser.find_element_by_id("user_paid_input")
+        
+        email.send_keys(test_email) #should test too long a name
+        sponsor_name.send_keys(test_name) #probably worth testing weird characters here
+        more_info.send_keys(test_4byte_unicode) #probably worth testing weird characters here
+        amount.send_keys("2") #deliberately fill in not enough money
 '''
