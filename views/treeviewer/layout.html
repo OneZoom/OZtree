@@ -221,19 +221,6 @@ function load_tab(tab_content) {
   }
 }
 
-/* The function 'sponsor_page_link', if defined, is called as an onclick event in anchor links from the sponsor_node page 
- * Here we tell it not to follow the normal link, but to take a .load page (saved as a url in data-href-component)
- * And load it into the parent 'popup-content' div
- */
-if(typeof sponsor_page_link !== 'function'){
-    window.sponsor_page_link = function(elem) {
-        if ($(elem).attr('data-href-component')) {
-            $(elem).closest('.popup-content').load($(elem).attr('data-href-component'));
-            return false;
-        }
-    }
-}
-
 // only used in searchPopulate(...)
 function compile_names(record) {
     var is_leaf = record[2] < 0;
