@@ -336,10 +336,10 @@ def leaf_linkouts():
     return_values['data']['ozspons'] = d = []
     d.append(URL("default","sponsor_leaf", vars=request.vars, scheme=True, host=True, extension=False))
     #remove the embed functionality when popping out to a new window
-    d.append(URL("default","sponsor_leaf", vars={k:v for k,v in request.vars.items() if k not in ('embed', 'form_session_id')}, scheme=True, host=True, extension=False))
-    if request.vars.form_session_id:
-        #pass on the session if possible
-        d.append({'form_session_id':request.vars.form_session_id})
+    d.append(URL("default","sponsor_leaf", vars={k:v for k,v in request.vars.items() if k not in ('embed', 'form_reservation_code')}, scheme=True, host=True, extension=False))
+    if request.vars.form_reservation_code:
+        #pass on the reservation code if possible
+        d.append({'form_reservation_code':request.vars.form_reservation_code})
     
     return(return_values)
 
@@ -352,10 +352,10 @@ def node_linkouts():
     return_values['data']['ozspons'] = d = []
     d.append(URL("default", "sponsor_node", vars=request.vars, scheme=True, host=True, extension=False))
     #remove the embed functionality when popping out to a new window
-    d.append(URL("default","sponsor_node", vars={k:v for k,v in request.vars.items() if k not in ('embed', 'form_session_id')}, scheme=True, host=True, extension=False))
-    if request.vars.form_session_id:
+    d.append(URL("default","sponsor_node", vars={k:v for k,v in request.vars.items() if k not in ('embed', 'form_reservation_code')}, scheme=True, host=True, extension=False))
+    if request.vars.form_reservation_code:
         #pass on the session if possible
-        d.append({'form_session_id':request.vars.form_session_id})
+        d.append({'form_reservation_code':request.vars.form_reservation_code})
     return(return_values)
     
 def getOTT():
