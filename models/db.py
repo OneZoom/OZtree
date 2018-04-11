@@ -684,7 +684,7 @@ call MakeFullUnicode('images_by_ott', 'licence');
 call MakeFullUnicode('images_by_name', 'rights');
 call MakeFullUnicode('images_by_name', 'licence');
 call MakeFullUnicode('search_log', 'search_string');
-
+# note make sure that the name column in vernacular_by_name and the name column in ordered_leaves and ordered_nodes are of the same character set otherwise search can get incredibly slow even with indexes.
 
 
 
