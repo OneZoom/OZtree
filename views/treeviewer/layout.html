@@ -282,6 +282,12 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
             }
             var sponsored=false;
             $.each(search_result, function(index) {
+                 if (index==200) {
+                    //we have shown 200 items already
+                    $(".search_hits", dropdown).append(
+                        $('<dd></dd>').html("<em>(only showing top 200 hits)</em>"))
+                    return false
+                 }
                  var result = this;
                  if ((sponsored==false) && (is_sponsored(result))) {
                  $(".search_hits", dropdown).append($('<dt class="sponsorhits"></dt>').html(OZstrings['SponsorHits']))
@@ -298,7 +304,6 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
                                                            var sciname = result[1];
                                                            click_callback_id_name(event, result[2], result[0], result[1]);})
                                                     );
-                 return (index!=200);
                  })
         }
         UIkit.dropdown(dropdown).show();
