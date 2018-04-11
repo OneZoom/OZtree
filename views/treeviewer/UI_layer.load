@@ -11,11 +11,11 @@
 <div id="logo" class="uk-navbar-item">{{=A(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('index', extension=False))}}</div>
 {{if request.vars.partner_logo:}}<div id="logo" class="uk-navbar-item">{{if request.vars.partner_url:}}{{=A(IMG(_src=request.vars.partner_logo), _href=request.vars.partner_url)}}{{else:}}IMG(_src=request.vars.partner_logo){{pass}}</div>{{pass}}
 <div class="uk-navbar-item" id="searchnav">
-  <form id="search-basic">
+  <div id="search-basic">
     <div class="searchbox uk-search uk-search-default" id="search_form_basic">
       <div class="searchinput"><div class="icon-beside-input">
-          <button type="button" class="spinner" uk-spinner="ratio:0.5"></button>
-          <button type="button" class="main-icon" uk-icon="icon: search"></button>
+          <button   class="spinner" uk-spinner="ratio:0.5"></button>
+          <button   class="main-icon" uk-icon="icon: search"></button>
         </div><input class="uk-search-input" type="search" placeholder="{{=T('Search all life...')}}" /></div>
       <div uk-dropdown="pos: bottom-left; offset: 1" class="search_dropdown selectable uk-overflow-auto">
         <div class="no_results">{{=T("No results found")}}</div>
@@ -23,27 +23,27 @@
         <dl class="popular_species"></dl>
       </div>
     </div>
-  </form>
-  <form id="search-advanced">
+  </div>
+  <div id="search-advanced">
     <ul id="searchboxes"><script>
 //define the advanced searchbox html as a js variable so we can make an indefinate number of them
 advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="searchresult">\
               <div class="icon-beside-input">\
-                <button type="button" class="main-icon" uk-icon="icon: location"></button>\
+                <button   class="main-icon" uk-icon="icon: location"></button>\
               </div><input class="uk-search-input" type="search" value="" readonly />\
             </div><div class="searchinput"><div class="icon-beside-input">\
-                <button type="button" class="spinner" uk-spinner="ratio:0.5"></button>\
-                <button type="button" class="main-icon" uk-icon="icon: search"></button>\
+                <button   class="spinner" uk-spinner="ratio:0.5"></button>\
+                <button   class="main-icon" uk-icon="icon: search"></button>\
               </div><input class="uk-search-input" type="search" placeholder="{{=T('Choose a location...')}}" />\
             </div><div uk-dropdown="pos: bottom-left;  offset: 1; mode: click" class="search_dropdown" class="selectable uk-overflow-auto">\
               <div class="no_results">{{=T("No results found")}}</div>\
               <dl class="search_hits"></dl>\
               <dl class="popular_species"></dl>\
-            </div><button type="button" class="remove-searchbox" title="{{=T('Remove location box')}}" uk-tooltip="pos: bottom-left" uk-icon="icon: minus-circle; ratio:0.8"></button></div></li>';
+            </div><button   class="remove-searchbox" title="{{=T('Remove location box')}}" uk-tooltip="pos: bottom-left" uk-icon="icon: minus-circle; ratio:0.8"></button></div></li>';
       </script></ul>
-    <button type="button" id="common_ancestor_button" uk-tooltip="pos: bottom-left" title="{{=T('Go to common ancestor')}}"><span uk-icon="icon: git-fork"></span>common ancestor</button>
-    <button type="button" id="add_searchbox" title="{{=T('Add another location')}}" uk-tooltip="pos: bottom-left" uk-icon="icon: plus-circle;"></button>
-  </form>
+    <button   id="common_ancestor_button" uk-tooltip="pos: bottom-left" title="{{=T('Go to common ancestor')}}"><span uk-icon="icon: git-fork"></span>common ancestor</button>
+    <button   id="add_searchbox" title="{{=T('Add another location')}}" uk-tooltip="pos: bottom-left" uk-icon="icon: plus-circle;"></button>
+  </div>
 </div>
 <div id="advanced_search_toggle" class="uk-navbar-item">
     <a id="advanced_search_button" class="uk-icon-button" uk-tooltip="pos: left" uk-icon="icon: git-fork"></a>
