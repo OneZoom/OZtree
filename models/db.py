@@ -204,6 +204,7 @@ db.define_table('ordered_leaves',
     Field('eol', type='integer'),
     Field('iucn', type='text'), #this could contain multiple bar-separated numbers (|), if we have a conflict. Conflicts are resolved in the IUCN table
     Field('popularity', type='double'),
+    Field('popularity_rank', type='integer'),
     #the following 5 fields are sources listed by the OpenTree
     Field('ncbi', type='integer'),
     Field('ifung', type='integer'),
@@ -232,6 +233,7 @@ db.define_table('ordered_nodes',
     Field('wikipedia_lang_flag', type='integer'), #
     Field('eol', type='integer'),
     Field('popularity', type='double'),
+    Field('popularity_rank', type='integer'),
     #the following 5 fields are sources listed by the OpenTree
     Field('ncbi', type='integer'),
     Field('ifung', type='integer'),
@@ -684,6 +686,7 @@ call MakeFullUnicode('images_by_ott', 'licence');
 call MakeFullUnicode('images_by_name', 'rights');
 call MakeFullUnicode('images_by_name', 'licence');
 call MakeFullUnicode('search_log', 'search_string');
+
 # note make sure that the name column in vernacular_by_name and the name column in ordered_leaves and ordered_nodes are of the same character set otherwise search can get incredibly slow even with indexes.
 
 
@@ -840,8 +843,14 @@ CREATE INDEX real_parent_index   ON ordered_leaves (real_parent) USING HASH;
 DROP   INDEX pop_index           ON ordered_nodes;
 CREATE INDEX pop_index           ON ordered_nodes (popularity);
 
+DROP   INDEX poprank_index       ON ordered_nodes;
+CREATE INDEX poprank_index       ON ordered_nodes (popularity_rank);
+
 DROP   INDEX pop_index           ON ordered_leaves;
 CREATE INDEX pop_index           ON ordered_leaves (popularity);
+
+DROP   INDEX poprank_index       ON ordered_leaves;
+CREATE INDEX poprank_index       ON ordered_leaves (popularity_rank);
 
 DROP   INDEX name_index          ON ordered_leaves;
 CREATE INDEX name_index          ON ordered_leaves (name);
