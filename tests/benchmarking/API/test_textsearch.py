@@ -41,13 +41,13 @@ else:
 
 
 
-
 class TestTextsearch(object):
     @classmethod
     def setUpClass(self):
         print("> starting web2py")
         self.web2py = web2py_server()
         colorama.init()
+        self.overall_search_score = make_js_translation_code()
 
     @classmethod    
     def tearDownClass(self):
@@ -56,6 +56,41 @@ class TestTextsearch(object):
 
     def TestSearchReturnSpeed(self):
         raise NotImplementedError("We need to move the code in this file into the TestTextsearch class to run under nosetests")
+
+
+def make_js_translation_code():
+    """
+    To restrict load on the server, the ordering of returned results is done in javascript
+    using the overall_search_score function. We can run this using js2py by
+    extracting all the plain functions in OZTreeModule/src/api/search_manager.js and looking for
+    lines bounded by a start line of  ^function... and an end line of ^}
+    Since it is very slow to convert the JS to JS5, we keep a copy of the converted code locally
+    """
+    js_fn = os.path.join(web2py_app_dir,'OZprivate','rawJS','OZTreeModule','src','api','search_manager.js')
+    cache_fn = os.path.join(script_path,"BlatSearch.code_cache")
+    
+    js_modtime = os.path.getmtime(js_fn)
+    try:
+        if js_modtime > os.path.getmtime(cache_fn):
+            os.remove(cache_fn)
+            raise FileNotFoundError
+    except FileNotFoundError:
+        print("Creating cached JS code")
+        javascript = ""
+        with open(js_fn, 'r') as js_file, open(cache_fn, 'w') as cache_file:
+            use_line = False
+            for line in js_file:
+                if re.match("function",line):
+                    use_line = True
+                elif use_line and re.match("}",line):
+                    use_line=False
+                    javascript += line[:line.find(";")]+";\n"
+                if use_line:
+                    javascript += line
+            print(js6_to_js5(javascript+ "\noverall_search_score;"), file=cache_file)
+        
+    return js2py.eval_js(open(cache_fn, 'r').read())
+
 
 
 if __name__ == "__main__":
@@ -121,36 +156,7 @@ if __name__ == "__main__":
             ]),
         ])
     
-    #To restrict load on the server, the ordering of returned results is done in javascript
-    # using the overall_search_score function. We can run this using js2py by
-    # extracting all the plain functions in OZTreeModule/src/api/search_manager.js and looking for
-    # lines bounded by a start line of  ^function... and an end line of ^}
-    #Since it is very slow to convert the JS to JS5, we keep a copy of the converted code locally
-    js_fn = os.path.join(web2py_app_dir,'OZprivate','rawJS','OZTreeModule','src','api','search_manager.js')
-    cache_fn = os.path.join(script_path,"BlatSearch.code_cache")
-    
-    js_modtime = os.path.getmtime(js_fn)
-    try:
-        if js_modtime > os.path.getmtime(cache_fn):
-            os.remove(cache_fn)
-            raise FileNotFoundError
-    except FileNotFoundError:
-        print("Creating cached JS code")
-        javascript = ""
-        with open(js_fn, 'r') as js_file, open(cache_fn, 'w') as cache_file:
-            use_line = False
-            for line in js_file:
-                if re.match("function",line):
-                    use_line = True
-                elif use_line and re.match("}",line):
-                    use_line=False
-                    javascript += line[:line.find(";")]+";\n"
-                if use_line:
-                    javascript += line
-            print(js6_to_js5(javascript+ "\noverall_search_score;"), file=cache_file)
-        
-    overall_search_score = js2py.eval_js(open(cache_fn, 'r').read())
-    
+    overall_search_score = make_js_translation_code()
     
     times={p:defaultdict(list) for p in args.url}
     codes = {p:{} for p in args.url}
