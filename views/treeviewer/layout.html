@@ -281,8 +281,8 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
                 $(".search_hits", dropdown).append($('<dt></dt>').text(OZstrings['NameHits']))
             }
             var sponsored=false;
-            $.each(search_result, function() {
-                   var result = this;
+            for(var i=0; i<=Math.min(search_result.length, 200); i++) {
+                   var result = search_result[i];
                    if ((sponsored==false) && (is_sponsored(result))) {
                    $(".search_hits", dropdown).append($('<dt class="sponsorhits"></dt>').html(OZstrings['SponsorHits']))
                    sponsored=true;
@@ -298,7 +298,7 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
                                                              var sciname = result[1];
                                                              click_callback_id_name(event, result[2], result[0], result[1]);})
                                                       );
-                   })
+                   }
         }
         UIkit.dropdown(dropdown).show();
     }
