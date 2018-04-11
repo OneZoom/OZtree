@@ -51,7 +51,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
 
 <ul id="controlButtons" class="uk-iconnav uk-iconnav-vertical">
   <li id="locationButton"><a uk-icon="icon: compass"></a></li>
-  <div uk-dropdown="pos: right-bottom; delay-hide: 500000; boundary: #controlButtons; boundary-align: true" id="locationDropdown">
+  <div uk-dropdown="pos: right-bottom; delay-hide: 1000; boundary: #controlButtons; boundary-align: true" id="locationDropdown">
       <ol class="location-list"></ol>
   </div>
   <li id="inButton"        ><a uk-tooltip="pos: right" title="{{=T('Zoom in')}}" uk-icon="icon: plus"></a></li>
