@@ -11,7 +11,7 @@
     
  If you have installed the 'rednose' package (pip3 install rednose), you can get nicer output by e.g.
  
-    nosetests -w ./ tests/functional --rednose
+    nosetests -vs ./ tests/functional --rednose
  
 """
 
