@@ -5,11 +5,13 @@ import {capitalizeFirstLetter, max} from '../util/index'; // basic tools
 /** Class providing functions that send queries to the search API, via the API manager class, and process the returned results. Can be used even if there is no OneZoom canvas */
 class SearchManager {
   
+    
   /**
    * Create a search manager.
    */
   constructor() {
     this.search_timer = null;
+    this.last_search = null;
   }
 
   /**
@@ -31,6 +33,10 @@ class SearchManager {
    * @param {function} onSend - the function that gets executed when the search has been sent to the server
    */
   full_search(toSearchFor, callback, search_delay=400, onSend=null) {
+    
+    if ((!this.last_search)||(this.last_search != toSearchFor))
+    {
+      
     clearTimeout(this.search_timer);
     let originalSearch = toSearchFor; // we want to return the original search string back to the UI.
     // detect if the search string has something in relating to sponsorship and catch that after running the text through the translation services.
@@ -59,6 +65,7 @@ class SearchManager {
                 },
                 success: function(res) {
                 // this sorts the results
+                    this.last_search = null;
                     let newRes1 = self.populateByNodeResults(toSearchFor, res.nodes);
                     // this calls the API again for sponsor search
                     self.searchForSponsor(toSearchFor, function(res) {
@@ -79,6 +86,7 @@ class SearchManager {
                 }
             });
         }, search_delay);
+    }
     }
   }
   // Notes: the Python server side API calls to server throws out punctuation except for 
