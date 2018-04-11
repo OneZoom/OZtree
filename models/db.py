@@ -70,6 +70,7 @@ if not request.env.web2py_runtime_gae:
             check_reserved=['all'], 
             migrate=doMigration,
             lazy_tables= not is_testing)
+            ## ,fake_migrate_all=True) on the end can fix migration issues.
         ## allow mysql tinyint
         from gluon.dal import SQLCustomType
         boolean = SQLCustomType(
