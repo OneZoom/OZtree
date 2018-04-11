@@ -222,7 +222,8 @@
           }
         });
         /* help preventing double form submission for normal form (not LOADed) */
-        $(doc).on('submit', 'form', function() {
+        /* see https://github.com/web2py/web2py/issues/1893 */
+        $(doc).on('submit', 'form:not(.no_disable)', function() {
           var submit_button = $(this).find(web2py.formInputClickSelector);
           web2py.disableElement(submit_button);
         });
