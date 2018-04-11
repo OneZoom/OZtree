@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Test the OZ text search API with a set of queries - NOT YET nose-ified.
+Test the OZ text search API with a set of queries
 
-Should return a list of times for the different terms
+If you want to run this to benchmark the API running on a different computer to the one you are 
+testing on, you need to run it directly on the command-line, as in
+
+ ./test_textsearch.py --
 
 Timings are dependent on database settings, in particular innodb_ft_min_token_size which is set to 3
 (SHOW VARIABLES LIKE 'innodb_ft_min_token_size';)
-
-could recode to use https://github.com/wg/wrk
-
-
-for the moment run the non-working code using nosetests -vs test_textsearch.py
-or the working code simply by ./test_textsearch.py
 
 Note that we will want to be able to specify a different server for the blatting test, so that e.g. we can test beta remotely
 One way to do this is to place a testing setup after if __name__ == '__main__':, so that the file can be called directly with 
@@ -35,7 +32,15 @@ import colorama
 import js2py
 from js2py.es6 import js6_to_js5
 
-from ...util import web2py_app_dir, web2py_server, base_url
+if __name__ == '__main__':
+    script_path = os.path.dirname(os.path.realpath(__file__))
+    sys.path.append(os.path.join(script_path, "..",".."))
+    from util import web2py_app_dir, web2py_server, base_url
+else:
+    from ...util import web2py_app_dir, web2py_server, base_url
+
+
+
 
 class TestTextsearch(object):
     @classmethod
@@ -107,6 +112,8 @@ if __name__ == "__main__":
                 ("Darwin's",     dict(min_n = 1, contains_within_top={"Geospiza":10})),
                 ("Darwin’s",     dict(min_n = 1, max_n= 0, contains_within_top={"Geospiza":10})),
                 ("Mammals",      dict(min_n = 0, max_n= 0, contains_within_top={})),
+                ("rat",        dict(min_n = 0, max_n= 0, contains_within_top={})),
+                ("mouse",        dict(min_n = 0, max_n= 0, contains_within_top={})),
                 ("Frog",         dict(min_n = 0, max_n= 0, contains_within_top={})),
                 ("Frogs",        dict(min_n = 0, max_n= 0, contains_within_top={})),
                 ('Three men in a ',dict(min_n = 0, max_n= 0, contains_within_top={"Tradescantia spathacea": 1})),
@@ -119,8 +126,8 @@ if __name__ == "__main__":
     # extracting all the plain functions in OZTreeModule/src/api/search_manager.js and looking for
     # lines bounded by a start line of  ^function... and an end line of ^}
     #Since it is very slow to convert the JS to JS5, we keep a copy of the converted code locally
-    js_fn = os.path.join(sys.path[0],'..','..','rawJS','OZTreeModule','src','api','search_manager.js')
-    cache_fn = os.path.join(sys.path[0],"BlatSearch.code_cache")
+    js_fn = os.path.join(web2py_app_dir,'OZprivate','rawJS','OZTreeModule','src','api','search_manager.js')
+    cache_fn = os.path.join(script_path,"BlatSearch.code_cache")
     
     js_modtime = os.path.getmtime(js_fn)
     try:
