@@ -6,7 +6,7 @@ import os.path
 from nose import tools, with_setup
 from time import sleep
 
-from ...util import base_url, web2py_app_dir, humanOTT
+from ...util import base_url, web2py_app_dir
 from ..functional_tests import FunctionalTest, make_temp_minlife_file, remove_temp_minlife_file
 
 
@@ -88,7 +88,7 @@ class TestViewerAvailability(FunctionalTest):
         """
         Leaves of the text-only tree should be viewable
         """
-        self.browser.get(base_url + "life_text/@={}".format(humanOTT))
+        self.browser.get(base_url + "life_text/@={}".format(self.humanOTT))
         assert self.element_by_class_exists('text_tree'), "Should have the text tree in a labelled div"
         assert self.element_by_class_exists('species'), "Should have the species in a labelled div"
 

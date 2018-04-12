@@ -53,6 +53,23 @@ class FunctionalTest(object):
         with open(db_py_loc, 'r') as db_py:
             assert striptext_in_file("is_testing=True", db_py), "To do any functional testing you must set is_testing=True in " + db_py_loc
         self.db = get_db_connection()
+        db_cursor = self.db['connection'].cursor()
+        sql = "SELECT ott FROM ordered_leaves WHERE name = {}".format(self.db['subs'])
+        try:
+            db_cursor.execute(sql, ("Homo sapiens",))
+            self.humanOTT = int(db_cursor.fetchone()[0])
+            self.db['connection'].commit() #need to commit here otherwise next select returns stale data
+            db_cursor.execute(sql, ("Canis lupus",))
+            self.dogOTT = int(db_cursor.fetchone()[0])
+            self.db['connection'].commit() #need to commit here otherwise next select returns stale data
+            db_cursor.execute(sql, ("Felis silvestris",))
+            self.catOTT = db_cursor.fetchone()[0]
+            self.db['connection'].commit() #need to commit here otherwise next select returns stale data
+        except (ValueError, TypeError):
+            assert False, "Could not find human, dog, or cat OTTs"
+            
+        db_cursor.close()
+
         print("> starting web2py")
         try:
             self.web2py = web2py_server(self.appconfig_loc)

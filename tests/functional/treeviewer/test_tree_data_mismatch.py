@@ -8,7 +8,7 @@ From https://github.com/OneZoom/OZtree/issues/62
 import os.path
 from nose import tools
 
-from ...util import base_url, web2py_app_dir, humanOTT
+from ...util import base_url, web2py_app_dir
 from ..functional_tests import FunctionalTest, make_temp_minlife_file, remove_temp_minlife_file
 
 
@@ -96,7 +96,7 @@ class TestTreeDataMismatch(FunctionalTest):
         """
         The text-only tree (e.g. for humans=ott 770315) should still work, as it does not require files to match the db version
         """
-        self.browser.get(base_url + "life_text/@={}".format(humanOTT))
+        self.browser.get(base_url + "life_text/@={}".format(self.humanOTT))
         assert self.element_by_class_exists('text_tree'), "Should have the text tree in a labelled div"
         assert self.element_by_class_exists('species'), "Should have the species in a labelled div"
 

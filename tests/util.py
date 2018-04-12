@@ -7,7 +7,6 @@ appconfig_loc = os.path.join(web2py_app_dir, 'private', 'appconfig.ini')
 ip = "127.0.0.1"
 port = "8001"
 base_url="http://"+ip+":"+port+"/"
-humanOTT = 770315
 
 def get_db_connection():
     database_string = None
