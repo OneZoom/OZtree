@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import re
-from OZfunctions import punctuation_to_space, __check_version
-from OZfunctions import is_logographic
+from OZfunctions import punctuation_to_space, __check_version, is_logographic, child_leaf_query
 """
 This contains the API functions - node_details, image_details, search_names, and search_sponsors. search_node also exists, which is a combination of search_names and search_sponsors.
 # request.vars:
@@ -682,6 +681,91 @@ def get_id_by_ott():
         if len(result) > 0:
             return {"id": -result[0].id}
     return {"id": "none"}
+
+## A few convenience pages not used by the OneZoom viewer, which return JSON data about various identifiers, children, etc.
+
+def getOTT():
+    """ this is called as a json request with potentially multiple identifiers, e.g.
+        http://mysite/getOTT.json?eol=123&eol=456&ncbi=789 
+        and should return the OTT ids and scientific names  EOLid in JSON form: {'data':'5678'}
+        
+        This is useful for common-name searching, where the EoL search API returns EOL identifiers
+        which can then be matched against OneZoom leaves.
+    """
+    sources = ["eol", "ncbi", "iucn"]
+    data = {}
+    from numbers import Number
+    try:
+        for s in sources:
+            if s in request.vars:
+                if isinstance(request.vars[s], basestring) or isinstance(request.vars[s], Number):
+                    id_list = [int(request.vars[s])] #put it in an array anyway
+                else:
+                    id_list = [int(id) for id in request.vars[s]]
+                response.flash = id_list
+                rows = db(db.ordered_leaves[s].belongs(id_list)).select(db.ordered_leaves[s], db.ordered_leaves.ott)
+                data[s] = {r[s]:r.ott for r in rows}
+        return(dict(data=data, errors=[]))
+    except ValueError:
+        return(dict(data=None, errors=["Some of the passed-in ids could not be converted to numbers"]))
+
+def children_of_OTT():
+    """ Return a set of terminal nodes for this OTT taxon: easily done using the nested set representation. The URL is of the form
+        http://mysite/children_of_OTT.json/<OTT>?sort=<sortcol>&max=<max>&page=1 which returns <max> leaves sorted by <sortcol>, e.g.
+        http://mysite/children_of_OTT.json/13943?sort=popularity&max=10. The parameters <sortcol>, <max> and <page> are optional, with defaults
+        <sortcol> = id, <max> = 50 and <page>=1. if <max> is greater than 1000 it is set to 1000, to avoid responding with huge queries.
+        The JSON returned should have the ott, name (scientific name), eol, wikidataQ, and popularity  
+    """
+    try:
+        OTTid = int(request.args[0])
+        query = child_leaf_query('ott', OTTid)
+        query = query & (db.ordered_leaves.eol!=None)
+        rows = select_leaves(query,
+                             request.vars.get('page'),
+                             request.vars.get('max'),
+                             request.vars.get('sort'))
+        return(dict(data={'rows':rows.as_list(), 'EOL2OTT':{r.eol:r.ott for r in rows}}))
+    except ValueError: # probably bad int inputted
+        return(dict(errors=['OTT id must be an integer'], data=None))
+
+def children_of_EOL():
+    """ Return a set of terminal nodes for this OTT taxon: easily done using the nested set representation. The URL is of the form
+        http://mysite/descendant_leaves.json/<OTT>?sort=<sortcol>&max=<max>&page=1 which returns <max> leaves sorted by <sortcol>, e.g.
+        
+        http://mysite/descendant_leaves.json/2684257?sort=popularity&max=10. The parameters <sortcol>, <max> and <page> are optional, with defaults
+        <sortcol> = id, <max> = 50 and <page>=1. if <max> is greater than 1000 it is set to 1000, to avoid responding with huge queries.
+        The JSON returned should have the ott, name (scientific name), eol, wikidataQ, and popularity  
+    """
+    try:
+        EOLid = int(request.args[0])
+        query = child_leaf_query('eol', EOLid)
+        query = query & (db.ordered_leaves.eol!=None)
+        rows = select_leaves(query,
+                             request.vars.get('page'),
+                             request.vars.get('max'),
+                             request.vars.get('sort'))
+        return(dict(data={'EOL2OTT':{r.eol:r.ott for r in rows}}))
+    except ValueError: # probably bad int inputted
+        return(dict(errors=['EOL id must be an integer'], data=None))
+
+def select_leaves(query, page=None, limit=None, sortcol=""):
+    """ Selects on a query. If 'sortcol' is entered as uppercase, sort descending (requires all sortable cols to be lowercase names) """
+    limitby=(0,40)
+    orderby = ""
+    try:
+        select = [db.ordered_leaves[field] for field in ['ott', 'name', 'eol', 'wikidata', 'popularity']]
+        page = int(page or 1)
+        limit = min(int(limit or limitby[1]), 1000)
+        limitby = (limit*(page-1), limit*page)
+        if sortcol.lower() in db.ordered_leaves.fields:
+            if sortcol.lower() == sortcol:
+                orderby = "ordered_leaves." + sortcol.lower()
+            else:
+                orderby = "ordered_leaves." + sortcol.lower() + " DESC"
+    except:
+        pass
+    return db(query).select(limitby=limitby, orderby=orderby, *select)
+
 
 #PRIVATE FUNCTIONS
 
