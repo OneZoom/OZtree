@@ -28,11 +28,11 @@ class TestViewerUrls(FunctionalTest):
         #these should all be equivalent
         self.browser.get(base_url + "life/@Homo_sapiens")
         assert self.browser.find_element_by_id("error-modal").is_displayed() == False        
-        self.browser.get(base_url + "life/@=770315")
+        self.browser.get(base_url + "life/@={}".format(self.humanOTT))
         assert self.browser.find_element_by_id("error-modal").is_displayed() == False
-        self.browser.get(base_url + "life/@Homo_sapiens=770315")
+        self.browser.get(base_url + "life/@Homo_sapiens={}".format(self.humanOTT))
         assert self.browser.find_element_by_id("error-modal").is_displayed() == False
-        self.browser.get(base_url + "life/@Homo_sapiens=770315#x968,y237,w1.0172")
+        self.browser.get(base_url + "life/@Homo_sapiens={}#x968,y237,w1.0172".format(self.humanOTT))
         assert self.browser.find_element_by_id("error-modal").is_displayed() == False
         
     def test_nozoom_leaf(self):
@@ -40,5 +40,5 @@ class TestViewerUrls(FunctionalTest):
         Test jumping straight to a leaf without a hash specification
         There was a problem with this that was fixed with 3a057db85f94a761d56acf1c8fdd14370527762e
         """
-        self.browser.get(base_url + "life/@Homo_sapiens=770315?init=jump")
+        self.browser.get(base_url + "life/@Homo_sapiens={}?init=jump".format(self.humanOTT))
         assert self.browser.find_element_by_id("error-modal").is_displayed() == False
