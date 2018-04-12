@@ -201,7 +201,7 @@ db.define_table('ordered_leaves',
     Field('extinction_date', type='double'), #in Ma
     Field('ott', type = 'integer'),
     Field('wikidata', type='integer'),
-    Field('wikipedia_lang_flag', type='integer'), #which language wikipedia articles exist (enwiki=1, dewiki=2, eswiki=4, etc etc: listed in wikiflags above)
+    Field('wikipedia_lang_flag', type='integer'), #which language wikipedia articles exist (enwiki=1, dewiki=2, eswiki=4, etc etc: listed in wikiflags in _OZglobals.py)
     Field('eol', type='integer'),
     Field('iucn', type='text'), #this could contain multiple bar-separated numbers (|), if we have a conflict. Conflicts are resolved in the IUCN table
     Field('popularity', type='double'),
