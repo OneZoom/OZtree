@@ -829,6 +829,12 @@ CREATE INDEX eol_index           ON ordered_nodes (eol)     USING HASH;
 DROP   INDEX eol_index           ON ordered_leaves;
 CREATE INDEX eol_index           ON ordered_leaves (eol)    USING HASH;
 
+DROP   INDEX wiki_index          ON ordered_nodes;
+CREATE INDEX wiki_index          ON ordered_nodes (wikidata)  USING HASH;
+
+DROP   INDEX wiki_index          ON ordered_leaves;
+CREATE INDEX wiki_index          ON ordered_leaves (wikidata) USING HASH;
+
 DROP   INDEX parent_index        ON ordered_nodes;
 CREATE INDEX parent_index        ON ordered_nodes (parent)  USING HASH;
 
