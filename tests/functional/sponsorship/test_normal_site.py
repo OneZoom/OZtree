@@ -200,23 +200,32 @@ class TestNormalSite(SponsorshipTest):
         sponsor_name.send_keys(test_name) #probably worth testing weird characters here
         more_info.send_keys(test_4byte_unicode) #probably worth testing weird characters here
         sponsorship_val = amount.get_attribute('value') #get what the value should be for later
-        amount.send_keys("2") #deliberately fill in not enough money
+        amount.clear() #deliberately fill in not enough money
+        amount.send_keys("2")
 
         assert len(self.browser.window_handles) == 1, "Should start with only one window open"
+        main_oz_tab = self.browser.window_handles[0]
 
         self.browser.find_element_by_id("submit_button").click()
         
         assert len(self.browser.window_handles) == 2, "Clicks on an iframed sponsor form always open in a new tab"
+        new_tab = [x for x in self.browser.window_handles if x != main_oz_tab][0]
+        self.browser.switch_to.window(new_tab)
         assert web2py_viewname_contains(self.browser, "sponsor_leaf"), "Too little money should be spotted and an error shown"
 
         amount = self.browser.find_element_by_id("user_paid_input")
-        amount.send_keys(sponsorship_val) #deliberately fill in not enough money
+        amount.clear()
+        amount.send_keys(sponsorship_val) #fill in just enough money
 
         self.browser.find_element_by_id("submit_button").click()
-        assert len(self.browser.window_handles) == 2, "Clicks on an iframed sponsor form always open in a new tab"
+        assert len(self.browser.window_handles) == 2, "Clicks on a non iframed sponsor form should not open in new tab"
 
-
+        sleep(1)
+        assert 'paypal.com' in self.browser.current_url, "Should redirect to paypal"
         
+        self.browser.close()
+        self.browser.switch_to.window(main_oz_tab)
+
         #has it filled out the DB
         #db_cursor = self.db['connection'].cursor()
         #sql="SELECT reserve_time, user_sponsor_lang FROM reservations where OTT_ID = {} LIMIT 1".format(self.db['subs'])
