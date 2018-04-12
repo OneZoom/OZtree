@@ -122,8 +122,8 @@ var UI_callbacks = {
   },
 
   openCopyright: function(pic_src, pic_fn) {
-    var load_url = "{{=XML(URL('tree', 'linkout_via_picID', scheme=True, host=True, extension='html', args=['...PICSRC...', '...PICFN...'], vars=(setup_params.get('popups') or {}).get('vars')))}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
-    var link_url = "{{=URL('tree','linkout_via_picID', scheme=True, host=True, extension=False, args=['...PICSRC...', '...PICFN...'], vars={'redirect':1})}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
+    var load_url = "{{=XML(URL('tree', 'pic_info', scheme=True, host=True, extension='html', args=['...PICSRC...', '...PICFN...'], vars=(setup_params.get('popups') or {}).get('vars')))}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
+    var link_url = "{{=URL('tree','pic_info', scheme=True, host=True, extension=False, args=['...PICSRC...', '...PICFN...'], vars={'redirect':1})}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
     //Always load into a new iframe
     var ifrm = document.createElement("iframe");
     ifrm.setAttribute('src', load_url);
@@ -168,13 +168,13 @@ var UI_callbacks = {
           {{if is_testing:}}console.log("set data-src for '" + linkout_name + "' to " + responseJSON.data[linkout_name][0]);{{pass}}
           //define the linkout (uses a 'post' request)
           switch (responseJSON.data[linkout_name].length) {
-              case 1:
+              case 1: //only a single URL for the iframe and the linkout - use that for both
                 $(".expand-tab form", specific_popup).attr("action",responseJSON.data[linkout_name][0]);
                 break;
-              case 2:
+              case 2: //second value in the response gives a differen URL for the linkout
                 $(".expand-tab form", specific_popup).attr("action",responseJSON.data[linkout_name][1]);
                 break;
-              case 3:
+              case 3: //third value in the response gives a set of key:value params to add as POST variables
                 $.each(responseJSON.data[linkout_name][2], function(key, data) {
                     $(".expand-tab form", specific_popup).append($('<input>').attr('type','hidden').attr('name',key).attr('value',data))
                 });

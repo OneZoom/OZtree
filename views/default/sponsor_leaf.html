@@ -337,7 +337,7 @@ function processAPI(image_objectsIn, common_namesIn , flagsIn)
         leafImageFile.onload = function()
         {
              drawPreview();
-             $('#licenceText a').attr('href','{{=URL("tree","linkout_via_picID", args=[src_flags["eol"],"...PICFN..."])}}/'.replace("...PICFN...", image_objects[which_img].dataObjectVersionID))
+             $('#licenceText a').attr('href','{{=URL("tree","pic_info", args=[src_flags["eol"],"...PICFN..."])}}/'.replace("...PICFN...", image_objects[which_img].dataObjectVersionID))
             $('#licenceText').show();
         }
         leafImageFile.src = (image_objects[which_img].url);
@@ -365,7 +365,7 @@ function processAPI(image_objectsIn, common_namesIn , flagsIn)
                     bg_css = bg_css + ';background-position:left top'
                 }
                 var html = $('<li>').append([
-                    '{{=A(SPAN("⧉",_class="linkout-button"),_target="_blank",_href=URL("tree","linkout_via_picID", args=[src_flags["eol"],"...PICFN..."]))}}'.replace("...PICFN...", image_objects[key].dataObjectVersionID),
+                    '{{=A(SPAN("⧉",_class="linkout-button"),_target="_blank",_href=URL("tree","pic_info", args=[src_flags["eol"],"...PICFN..."]))}}'.replace("...PICFN...", image_objects[key].dataObjectVersionID),
                     $('<input/>',{type:    'radio', 
                                   value:   image_objects[key].dataObjectVersionID,
                                   name:    'user_preferred_image',
