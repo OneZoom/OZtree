@@ -427,12 +427,17 @@ ul.columns.last {
 
 // ===== Embedded pages (e.g. wikipedia) ====== //
 
-.wikiwarning {
+.wiki-warning {
     color: black;
     text-align: center;
     background-color: yellow;
 }
 
+.wikipage-source {
+    clear:both;
+    text-align: center;
+    background-color: lightgrey;
+}
 // ===== Media Queries =====
 
 @include respond-to(tiny) {

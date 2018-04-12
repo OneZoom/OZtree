@@ -102,7 +102,7 @@ function show_wikipage_for_Qid(selector, lang, Qid, backup_name, restrict_links)
         } else if (this.backup_name) {
             show_wikipage_for_name(this.selector, this.lang, this.id, this.backup_name, this.restrict_links);
         } else {
-            this.selector.append($('<div></div>').addClass("wikiwarning").text('{{=T("We have no record of an exact wikipedia page. The page below is the data page from %s which may contain additional information.") % ("www.wikidata.org")}}'))   
+            this.selector.append($('<div></div>').addClass("wiki-warning").text('{{=T("We have no record of an exact wikipedia page. The page below is the data page from %s which may contain additional information.") % ("www.wikidata.org")}}'))   
             inject_wikidata_page(this.selector, this.id, this.lang, this.restrict_links)
         }
     },
@@ -137,10 +137,10 @@ function show_wikipage_for_name(selector, lang, Qid, name, restrict_links) {
     url: "//" + lang + ".wikipedia.org/w/api.php",
     success: function(data) {
         if (data.query.search.length && data.query.search[0].hasOwnProperty("title")) {
-            this.selector.append($('<div></div>').addClass("wikiwarning").text('{{=T("We have no record of an exact wikipedia page. The page below is the first page returned by searching %s by name for ‘%s’") % (wikilang + ".wikipedia.org", "...NAME...")}}'.replace("...NAME...",name)))  
+            this.selector.append($('<div></div>').addClass("wiki-warning").text('{{=T("We have no record of an exact wikipedia page. The page below is the first page returned by searching %s by name for ‘%s’") % (wikilang + ".wikipedia.org", "...NAME...")}}'.replace("...NAME...",name)))  
             inject_wikipedia_page(this.selector, data.query.search[0].title, "https://"+this.lang+".wikipedia.org/", this.restrict_links);
         } else {
-            this.selector.append($('<div></div>').addClass("wikiwarning").text('{{=T("We could not find a wikipedia page. The page below is the data page from %s which may contain additional information.") % ("www.wikidata.org")}}'))   
+            this.selector.append($('<div></div>').addClass("wiki-warning").text('{{=T("We could not find a wikipedia page. The page below is the data page from %s which may contain additional information.") % ("www.wikidata.org")}}'))   
             inject_wikidata_page(this.selector, this.id, this.lang, this.restrict_links)
         }
     },
@@ -227,7 +227,7 @@ function inject_wikipage(data) {
     $('a[href^="'+url_start+'#"]', html_to_inject).attr('href', function(i,attr) {return attr.substr(url_start.length);});
     //append the URL so that we abide by wikipedia distribution
     var original_page = this.base_url + 'wiki/' + this.pagetitle;
-    html_to_inject.append('<footer style="clear:both;">' + '{{=T("This is a summary of ")}}' + '<a href="'+ original_page +'">' + original_page + '</a></footer>');
+    html_to_inject.append($('<footer></footer>').addClass('wikipage-source').html('{{=T("This is a summary of ")}} <a href="'+ original_page +'">' + original_page + '</a>'));
     sanitise_links(html_to_inject, this.restrict_links, this.base_url);
     $('base,meta,link,title,style,script', html_to_inject).remove();
     $('div[role="note"]', html_to_inject).remove();
