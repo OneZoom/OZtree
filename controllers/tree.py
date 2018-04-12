@@ -1,119 +1,46 @@
 import datetime
 
-from OZfunctions import child_leaf_query
-
-
 def wikipedia_OZpage():
     """
-    This throws up a page created and hosted on OneZoom that uses javascript to request a given wikipedia page
+    This creates a page on the local website that uses javascript to request a given wikipedia page
     from a wikidata item, then gets the page using the the wikipedia rest v1 API (e.g https://en.wikipedia.org/api/rest_v1/) 
     and (where appropriate) uses jquery to parse the html, remove non-internal links, etc, etc.
     
-    Call as tree/wikipedia_OZpage/1234/en
+    Call as tree/wikipedia_OZpage?Q=1234,wlang=en,name=Species%20name,leaf=1
+    
+    If no 'name' is given, then do not default to looking up the name if there is no
     """
     try:
-        wikilang = request.args[1]
+        wikilang = request.vars.wlang
         if len(wikilang)>10 or not wikilang.isalpha():
-            raise
-        return dict(Qid=int(request.args[0]), wikilang=wikilang)
-    except:
-        raise
-        raise HTTP(400,"No valid language or wikidata Q id provided")
-        
-
-# LINKOUTS: these all specify urls that can be used to link out to other resources, given an OTT id
-
-def opentree_url(ott):
-    try:
-        return("//tree.opentreeoflife.org/opentree/argus/ottol@{}".format(int(ott)))
-    except:
-        raise HTTP(400,"No valid OpenTree id provided")
-
-def wikidata_url(Qid):
-    try:
-        return("//www.wikidata.org/wiki/Q{}".format(int(Qid)))
-    except:
-        raise HTTP(400,"No valid wikidata Q id provided")
-
-
-def wikipedia_urls(Q, lang='en', flag='', flags=wikiflags, only_wikipedia=False, is_leaf=True, name=""):
-    """
-    returns a url that redirects to the wikipedia page for this wikidata Qid and this lang. Flag should be a
-    number: if it is not given, it assumes the value '', and the wikipedia URL is always provided, even if we believe
-    it might be absent. If flag is given and numeric, check against the wikiflags, and return a url that will go to 
-    the wikipedia page (or no wikipedia page in that lang exists AND only_wikipedia==False, return a url which embeds the wikidata page)
-    """
-    try:
-        if flag is None:
-            return(None)
-        if lang.isalnum():
-            try:
-                if (int(flag) & int(2**flags[lang])) == 0:
-                    if only_wikipedia:
-                        return None
-                    else:
-                        #this lang not present, provide WD page
-                        if is_leaf:
-                            return [URL("wikipedia_absent_from_wikidata", vars=dict(leaf=Q, name=name), scheme=True, host=True, extension=False), wikidata_sitelinks(Q)]
-                        else:
-                            return [URL("wikipedia_absent_from_wikidata", vars=dict(node=Q, name=name), scheme=True, host=True, extension=False), wikidata_sitelinks(Q)]
-            except:
-                pass #e.g. if flag == ''
-            return([
-                URL('tree','wikipedia_OZpage', args=[Q,lang], vars={k:v for k,v in request.vars.items() if k=='embed'}, scheme=True, host=True, extension = False), 
-                "//www.wikidata.org/wiki/Special:GoToLinkedPage?site={}&itemid=Q{}".format(lang, int(Q))
-                ])
-    except:
-        pass
-    raise HTTP(400,"No valid language or wikidata Q id provided")
-
-def iucn_url(IUCNid):
-    """
-    IUCN has no https site
-    """
-    try:
-        #we only have a single url to return as we haven't bothered to make a local IUCN page
-        #see https://github.com/OneZoom/OZtree/issues/67
-        return(["http://www.iucnredlist.org/details/{}/0".format(int(IUCNid))])
-    except:
-        raise HTTP(400,"No valid IUCN id provided")
-
-def powo_url(IPNIid):
-    """
-    Can either be provided with the normal IPNI, e.g. 391732-1, or an int with the last digit stuck on 
-    without the '-' sign: in this example 3917321
-    """
-    try:
-        IPNIs = IPNIid.split("-")
-        return(["http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[0]), int(IPNIs[1]))])
-    except AttributeError:
-        try:
-            IPNIs = str(int(IPNIid))
-            return(["http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[:-1]), int(IPNIs[-1:]))])
-        except:
-            raise          
-    except:
-        raise HTTP(400,"No valid IPNI id provided")
-
-def ncbi_url(NCBIid):
-    try:
-        return(["//www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={}".format(int(NCBIid))])
-    except:
-        raise HTTP(400,"No valid NCBI id provided")
-
-def eol_url(EOLid, OTTid):
-    """
-    Return a OneZoom URL that redirects to the true EoL url. 
-    The returned url should be one that logs the EoL visit on OneZoom
-    so we can check if images or common names may have been updated.
-    """
-    try:
-        return([URL('tree','eol_page_ID', args=[int(EOLid), int(OTTid)], scheme=True, host=True), "http://eol.org/pages/{}".format(int(EOLid))])
-    except:
-        raise HTTP(400,"No valid EOL id provided")
+            raise ValueError
+        is_leaf = int(request.vars.leaf)
+        #double-check that this Qid is in the DB, or if not, that the name is, 
+        #so that we can't show non-relevant (potentially dodgy) wikipedia pages on our web site
+        Qid = int(request.vars.Q)
+        sciname=request.vars.name
+        if is_leaf:
+            row = db.ordered_leaves(wikidata=Qid)
+            if not row:
+                raise LookupError("No such wikidata Qid ({}) in the OneZoom leaves table".format(Qid))
+            if sciname and not db.ordered_leaves(name=sciname):
+                raise LookupError("No such name in the OneZoom leaves table")
+        else:
+            row = db.ordered_nodes(wikidata=Qid)
+            if not row:
+                raise LookupError("No such wikidata Qid ({}) in the OneZoom nodes table".format(Qid))
+            if sciname and not db.ordered_nodes(name=sciname):
+                raise LookupError("No such name in the OneZoom nodes table")
+        #check if we have this language present
+        return dict(Qid=Qid, wikilang=wikilang, sciname=sciname)
+    except (ValueError, TypeError):
+        raise HTTP(400,"No valid language, wikidata Q id, or leaf status (0 or 1) provided")
+    except LookupError as e:
+        raise HTTP(400,e)
 
 
-def linkout_via_picID():
+
+def pic_info():
     """
     This is the URL that we use to display copyright information about an image, where we pass in the image ID and image source ID.
     Within the tree viewer, this is always loaded into an iframe, but the embed status determines which iframe to load.
@@ -135,126 +62,6 @@ def linkout_via_picID():
         if row is None:
             row = db((db.images_by_name.src_id == src_id) & (db.images_by_name.src == src)).select(db.images_by_name.src, db.images_by_name.src_id, db.images_by_name.url, db.images_by_name.rights, db.images_by_name.licence).first()
         return dict(image=row, url_override=URL('tree','eol_dataobject_ID',args=[src,src_id], scheme=True, host=True) if src_is_eol_DOid else None)
-
-
-def eol_dataobject_ID():
-    """
-    Called when jumping out from an image. Provide the DOid (src_id) as the first arg.
-    Log the eol data object visited, and redirect there.
-    EoL has no https site currently
-    """
-    try:
-        src = int(request.args[0]) # for src = 1 or 2, this is an EoL data object ID
-        src_id = int(request.args[1]) # for src = 1 or 2, this is an EoL data object ID
-    except:
-        raise HTTP(400,"No valid id provided")
-    
-    #can redirect this to EoL, after logging so we can refresh e.g. cropped images
-    rows = db(db.images_by_ott.src_id == src_id).select(db.images_by_ott.ott)
-    for row in rows:
-        db.eol_inspected.update_or_insert(db.eol_inspected.ott == row.ott,
-                                   ott=row.ott,
-                                   via=eol_inspect_via_flags['image'],
-                                   inspected=datetime.datetime.now())
-    # might as well also look for this image in the images_by_name table (probably won't find it)
-    rows = db(db.images_by_ott.src_id == src_id).select(db.images_by_name.name)
-    for row in rows:
-        db.eol_inspected.update_or_insert((db.eol_inspected.name != None) & (db.eol_inspected.name == row.name),
-                                   name=row.name,
-                                   via=eol_inspect_via_flags['image'],
-                                   inspected=datetime.datetime.now())
-    redirect("http://eol.org/data_objects/{}".format(src_id))
-        
-def eol_page_ID():
-    """
-    Log the eol page visited, and redirect there.
-    EoL has no https site currently
-    """
-    import datetime
-    try:
-        EOLid = int(request.args[0])
-        OTTid = int(request.args[1])
-    except:
-        raise HTTP(400,"No valid id provided")
-    
-    #we have inspected this EoL page - log it so we know to check EoL for changes   
-    db.eol_inspected.update_or_insert(db.eol_inspected.ott == OTTid,
-                               ott=OTTid,
-                               via=eol_inspect_via_flags['EoL_tab'],
-                               inspected=datetime.datetime.now())
-    redirect("http://eol.org/pages/{}".format(EOLid))
-
-
-def wikipedia_absent_from_wikidata():
-    def wikidata_sitelinks(Qid):
-        try:
-            return("//www.wikidata.org/wiki/Q{}#sitelinks-wikipedia".format(int(Qid)))
-        except:
-            raise HTTP(400,"No valid wikidata Q id provided")
-    try:
-        if (request.vars.get('leaf')):
-            return(dict(url = wikidata_sitelinks(int(request.vars.get('leaf'))), Q=request.vars.get('leaf'), type='leaf', name=request.vars.get('name')))
-        else:
-            return(dict(url = wikidata_sitelinks(int(request.vars.get('node'))), Q=request.vars.get('node'), type='node', name=request.vars.get('name')))
-    except:
-        raise HTTP(400,"No valid wikidata Qid provided")
-
-def eol():
-    """ e.g. http://mysite/eol.html/1234 for an OTT id 1234 redirects to the eol page for OTT id 1234
-         and http://mysite/eol.json/1234 returns the EOLid in JSON form: {'data':'5678'}"""
-    try:
-        OTTid = int(request.args[0])
-        row = db(db.ordered_leaves.ott == OTTid).select(db.ordered_leaves.eol).first()
-        if row is None:
-            row = db(db.ordered_nodes.ott == OTTid).select(db.ordered_nodes.eol).first()
-        return(dict(data={'eol':int(row.eol)}))
-    except AttributeError:
-        return(dict(errors=["Sorry, no EOL id found for this OpenTree id.", request.args[0] if len(request.args) else None], data=None))
-    except:
-        return(dict(errors=["Sorry, could not find OpenTree id in our database.", request.args[0] if len(request.args) else None], data=None))
-
-def wikidata():
-    """ e.g. http://mysite/wikidata.html/1234 for an OTT id 1234 redirects to the wikidata page for OTT id 1234
-         and http://mysite/wikidata.json/1234 returns the wikidata Qid in JSON form: {'data':'Q9101'}"""
-    try:
-        OTTid = int(request.args[0])
-        row = db(db.ordered_leaves.ott == OTTid).select(db.ordered_leaves.wikidata).first()
-        if row is None:
-            row = db(db.ordered_nodes.ott == OTTid).select(db.ordered_nodes.wikidata).first()
-        return(dict(data={'Q':int(row.wikidata)}))
-    except AttributeError:
-        return(dict(errors=["Sorry, no wikidata id found for this OpenTree id", request.args[0] if len(request.args) else None], data=None))
-    except:
-        return(dict(errors=["Sorry, could not find the OpenTree id in our database.", request.args[0] if len(request.args) else None], data=None))
-
-def wikipedia():
-    """ e.g. http://mysite/wikipedia.html/enwiki/1234 for an OTT id 1234 redirects to the wikidata redirection page for OTT id 1234
-             which is of the form (http://www.wikidata.org/wiki/Special:GoToLinkedPage?site=enwiki&itemid=Q5678)
-    """
-    try:
-        if not request.args[0].isalnum():
-            raise NameError("Bad wiki name")
-        wikisite = request.args[0]
-        OTTid = int(request.args[1])
-        row = db(db.ordered_leaves.ott == OTTid).select(db.ordered_leaves.wikidata).first()
-        if row is None:
-            row = db(db.ordered_nodes.ott == OTTid).select(db.ordered_nodes.wikidata).first()
-        return(dict(data={'site':wikisite,'Q':int(row.wikidata)}))
-    except AttributeError:
-        return(dict(errors=["Sorry, no wikidata id found for the OpenTree id, so cannot find link.",
-                            request.args[1] if len(request.args)>1 else None,
-                            request.args[0] if len(request.args) else None],
-                    data=None))
-    except NameError:
-        return(dict(errors=["Sorry, invalid wiki name.",
-                            request.args[1] if len(request.args)>1 else None,
-                            request.args[0] if len(request.args) else None],
-                    data=None))
-    except:
-        return(dict(errors=["Sorry, could not find this OpenTree id in our database.",
-                            request.args[1] if len(request.args)>1 else None,
-                            request.args[0] if len(request.args) else None],
-                    data=None))
 
 def linkouts(is_leaf, ott=None, id=None):
     """
@@ -308,7 +115,7 @@ def linkouts(is_leaf, ott=None, id=None):
                 lang_primary ='en'
             wikilang = request.vars.get('wikilang') or lang_primary
             if row[core_table].wikidata:
-                urls['wiki'] = wikipedia_urls(row[core_table].wikidata, wikilang, row[core_table].wikipedia_lang_flag, wikiflags, request.vars.only_wikipedia, is_leaf=is_leaf, name=name)
+                urls['wiki'] = wikipedia_urls(row[core_table].wikidata, row[core_table].wikipedia_lang_flag, wikilang, is_leaf, name, allow_namesearch=True)
             if row[core_table].eol:
                 urls['eol']  = eol_url(row[core_table].eol, row[core_table].ott)
             if row[core_table].ncbi:
@@ -319,7 +126,6 @@ def linkouts(is_leaf, ott=None, id=None):
                 urls['powo'] = powo_url(row[core_table].ipni) #would alter here if ipni availability calculated on the fly
     except:
         errors = ["Couldn't get any data"]
-        raise
     return(dict(data=urls, errors=errors, ott=ott, id=id, name=name))
 
 def leaf_linkouts():
@@ -329,6 +135,7 @@ def leaf_linkouts():
     try:
         return_values = linkouts(is_leaf=True, ott=request.args[0])
     except:
+        raise
         return_values = {'ott':None, 'data':{}}
 
     request.vars.update({'ott':return_values['ott']})
@@ -357,86 +164,145 @@ def node_linkouts():
         #pass on the session if possible
         d.append({'form_reservation_code':request.vars.form_reservation_code})
     return(return_values)
+
+
+# OneZoom pages that redirect to other sites. These are used to register site visits so we can
+# e.g. update the image or common names tables when they are visited (and potentially corrected)
+
+def eol_dataobject_ID():
+    """
+    Called when jumping out from an image. Provide the DOid (src_id) as the first arg.
+    Log the eol data object visited, and redirect there.
+    EoL has no https site currently
+    """
+    try:
+        src = int(request.args[0]) # for src = 1 or 2, this is an EoL data object ID
+        src_id = int(request.args[1]) # for src = 1 or 2, this is an EoL data object ID
+    except:
+        raise HTTP(400,"No valid id provided")
     
-def getOTT():
-    """ this is called as a json request with potentially multiple identifiers, e.g.
-        http://mysite/getOTT.json?eol=123&eol=456&ncbi=789 
-        and should return the OTT ids and scientific names  EOLid in JSON form: {'data':'5678'}
+    #can redirect this to EoL, after logging so we can refresh e.g. cropped images
+    rows = db(db.images_by_ott.src_id == src_id).select(db.images_by_ott.ott)
+    for row in rows:
+        db.eol_inspected.update_or_insert(db.eol_inspected.ott == row.ott,
+                                   ott=row.ott,
+                                   via=eol_inspect_via_flags['image'],
+                                   inspected=datetime.datetime.now())
+    # might as well also look for this image in the images_by_name table (probably won't find it)
+    rows = db(db.images_by_ott.src_id == src_id).select(db.images_by_name.name)
+    for row in rows:
+        db.eol_inspected.update_or_insert((db.eol_inspected.name != None) & (db.eol_inspected.name == row.name),
+                                   name=row.name,
+                                   via=eol_inspect_via_flags['image'],
+                                   inspected=datetime.datetime.now())
+    redirect("http://eol.org/data_objects/{}".format(src_id))
         
-        This is useful for common-name searching, where the EoL search API returns EOL identifiers
-        which can then be matched against OneZoom leaves.
+def eol_page_ID():
     """
-    sources = ["eol", "ncbi", "iucn"]
-    data = {}
-    from numbers import Number
-    try:
-        for s in sources:
-            if s in request.vars:
-                if isinstance(request.vars[s], basestring) or isinstance(request.vars[s], Number):
-                    id_list = [int(request.vars[s])] #put it in an array anyway
-                else:
-                    id_list = [int(id) for id in request.vars[s]]
-                response.flash = id_list
-                rows = db(db.ordered_leaves[s].belongs(id_list)).select(db.ordered_leaves[s], db.ordered_leaves.ott)
-                data[s] = {r[s]:r.ott for r in rows}
-        return(dict(data=data, errors=[]))
-    except ValueError:
-        return(dict(data=None, errors=["Some of the passed-in ids could not be converted to numbers"]))
-
-def children_of_OTT():
-    """ Return a set of terminal nodes for this OTT taxon: easily done using the nested set representation. The URL is of the form
-        http://mysite/children_of_OTT.json/<OTT>?sort=<sortcol>&max=<max>&page=1 which returns <max> leaves sorted by <sortcol>, e.g.
-        http://mysite/children_of_OTT.json/13943?sort=popularity&max=10. The parameters <sortcol>, <max> and <page> are optional, with defaults
-        <sortcol> = id, <max> = 50 and <page>=1. if <max> is greater than 1000 it is set to 1000, to avoid responding with huge queries.
-        The JSON returned should have the ott, name (scientific name), eol, wikidataQ, and popularity  
+    Log the eol page visited, and redirect there.
+    EoL has no https site currently
     """
-    try:
-        OTTid = int(request.args[0])
-        query = child_leaf_query('ott', OTTid)
-        query = query & (db.ordered_leaves.eol!=None)
-        rows = select_leaves(query,
-                             request.vars.get('page'),
-                             request.vars.get('max'),
-                             request.vars.get('sort'))
-        return(dict(data={'rows':rows.as_list(), 'EOL2OTT':{r.eol:r.ott for r in rows}}))
-    except ValueError: # probably bad int inputted
-        return(dict(errors=['OTT id must be an integer'], data=None))
-
-def children_of_EOL():
-    """ Return a set of terminal nodes for this OTT taxon: easily done using the nested set representation. The URL is of the form
-        http://mysite/descendant_leaves.json/<OTT>?sort=<sortcol>&max=<max>&page=1 which returns <max> leaves sorted by <sortcol>, e.g.
-        
-        http://mysite/descendant_leaves.json/2684257?sort=popularity&max=10. The parameters <sortcol>, <max> and <page> are optional, with defaults
-        <sortcol> = id, <max> = 50 and <page>=1. if <max> is greater than 1000 it is set to 1000, to avoid responding with huge queries.
-        The JSON returned should have the ott, name (scientific name), eol, wikidataQ, and popularity  
-    """
+    import datetime
     try:
         EOLid = int(request.args[0])
-        query = child_leaf_query('eol', EOLid)
-        query = query & (db.ordered_leaves.eol!=None)
-        rows = select_leaves(query,
-                             request.vars.get('page'),
-                             request.vars.get('max'),
-                             request.vars.get('sort'))
-        return(dict(data={'EOL2OTT':{r.eol:r.ott for r in rows}}))
-    except ValueError: # probably bad int inputted
-        return(dict(errors=['EOL id must be an integer'], data=None))
+        OTTid = int(request.args[1])
+    except:
+        raise HTTP(400,"No valid id provided")
+    
+    #we have inspected this EoL page - log it so we know to check EoL for changes   
+    db.eol_inspected.update_or_insert(db.eol_inspected.ott == OTTid,
+                               ott=OTTid,
+                               via=eol_inspect_via_flags['EoL_tab'],
+                               inspected=datetime.datetime.now())
+    redirect("http://eol.org/pages/{}".format(EOLid))
 
-def select_leaves(query, page=None, limit=None, sortcol=""):
-    """ Selects on a query. If 'sortcol' is entered as uppercase, sort descending (requires all sortable cols to be lowercase names) """
-    limitby=(0,40)
-    orderby = ""
+
+# LINKOUT FUNCTIONS: these all return urls used in the popups to embed other resources
+# They should all return an array with at least one element (the url used for iframes). If
+# there are further elements, they give the URL (and POST params) used for the link out
+# button
+
+def opentree_url(ott):
     try:
-        select = [db.ordered_leaves[field] for field in ['ott', 'name', 'eol', 'wikidata', 'popularity']]
-        page = int(page or 1)
-        limit = min(int(limit or limitby[1]), 1000)
-        limitby = (limit*(page-1), limit*page)
-        if sortcol.lower() in db.ordered_leaves.fields:
-            if sortcol.lower() == sortcol:
-                orderby = "ordered_leaves." + sortcol.lower()
-            else:
-                orderby = "ordered_leaves." + sortcol.lower() + " DESC"
+        return(["//tree.opentreeoflife.org/opentree/argus/ottol@{}".format(int(ott))])
+    except:
+        raise HTTP(400,"No valid OpenTree id provided")
+
+def wikidata_url(Qid):
+    try:
+        return(["//www.wikidata.org/wiki/Q{}".format(int(Qid))])
+    except:
+        raise HTTP(400,"No valid wikidata Q id provided")
+
+def iucn_url(IUCNid):
+    """
+    IUCN has no https site
+    """
+    try:
+        #we only have a single url to return as we haven't bothered to make a local IUCN page
+        #see https://github.com/OneZoom/OZtree/issues/67
+        return(["http://www.iucnredlist.org/details/{}/0".format(int(IUCNid))])
+    except:
+        raise HTTP(400,"No valid IUCN id provided")
+
+def powo_url(IPNIid):
+    """
+    Can either be provided with the normal IPNI, e.g. 391732-1, or an int with the last digit stuck on 
+    without the '-' sign: in this example 3917321
+    """
+    try:
+        IPNIs = IPNIid.split("-")
+        return(["http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[0]), int(IPNIs[1]))])
+    except AttributeError:
+        try:
+            IPNIs = str(int(IPNIid))
+            return(["http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[:-1]), int(IPNIs[-1:]))])
+        except:
+            raise          
+    except:
+        raise HTTP(400,"No valid IPNI id provided")
+
+def ncbi_url(NCBIid):
+    try:
+        return(["//www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={}".format(int(NCBIid))])
+    except:
+        raise HTTP(400,"No valid NCBI id provided")
+
+def eol_url(EOLid, OTTid):
+    """
+    Return a OneZoom URL that redirects to the true EoL url. 
+    The returned url should be one that logs the EoL visit on OneZoom
+    so we can check if images or common names may have been updated.
+    """
+    try:
+        return([URL('tree','eol_page_ID', args=[int(EOLid), int(OTTid)], scheme=True, host=True), "http://eol.org/pages/{}".format(int(EOLid))])
+    except:
+        raise HTTP(400,"No valid EOL id provided")
+
+def wikipedia_urls(Qid, wikipedia_lang_flag, requested_wikilang, is_leaf, name, allow_namesearch=True):
+    """
+    This is more complex as a wikipedia page is found through its wikidata Qid, and for a given Qid,
+    a wikipedia page may not exist for the requested language - this is stored in the bitfield 
+    `wikipedia_lang_flag` (bits correspond to the languages in the global dict `wikiflags`
+    
+    If it is not given, it assumes the value '', and we always try to get a sitelink from the Qid, even if we believe
+    it might be absent. If flag is given and numeric, check against the wikiflags, and return a url that will go to 
+    the wikipedia page. If allow_namesearch = True we allow the page to return a url which searches wikipedia for that
+    species name. Otherwise we don't give a name at all.
+    """
+    try:
+        if requested_wikilang.isalnum():
+            name = name if allow_namesearch else ""
+            var = {'embed':request.vars.embed} if 'embed' in request.vars else {}
+            OZ_wikipage = URL('tree','wikipedia_OZpage', vars=dict(Q=int(Qid), wlang=requested_wikilang, name=name, leaf=1 if is_leaf else 0, **var), scheme=True, host=True, extension = False)
+            try:
+                if (int(wikipedia_lang_flag) & int(2**wikiflags[requested_wikilang])):
+                    #a wikipedia page is expected in this lang: the linkout button should go to the wikipedia page
+                    return([OZ_wikipage, "//www.wikidata.org/wiki/Special:GoToLinkedPage?site={}&itemid=Q{}".format(requested_wikilang, int(Qid))])
+            except:
+                pass #e.g. if flag == ''
+            #no wikipedia page is expected in this lang: the linkout button should go to the wikidata page
+            return([OZ_wikipage, "//www.wikidata.org/wiki/Q{}#sitelinks-wikipedia".format(int(Qid))])
     except:
         pass
-    return db(query).select(limitby=limitby, orderby=orderby, *select)
-
+    raise HTTP(400,"No valid language or wikidata Q id provided")

@@ -1,5 +1,5 @@
 {{response.title='OneZoom wikipedia page'}}
-{{if is_testing: response.meta.viewfile = response.view}}{{pass}}
+{{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{  #note that embedding a remote page and removing links etc is trickier than if it is our own web2py page
     #as we can't override the URL and A helpers. Instead, we parse the html using Jquery and replace links. 
     #There are no links apart from ones within the page (e.g. to #anchor_refs) that can be considered 
@@ -25,6 +25,8 @@
 <script>
 /* this is where we do all the fancy wikipedia parsing stuff */
 
+var timeout_ms = 10000; //allow 10 secs for wiki pages to load
+
 /* Look up a wikidata Qid and a site language using the wikidata API to get a page name
  * then use the page name to get the rest_v1 wikipedia machine-readable page (see
  * https://en.wikipedia.org/api/rest_v1/ ), and inject it into the page within a <div>
@@ -38,7 +40,7 @@
 /**
  * Sanitise links and src attributes in an html file, possibly remove all but internal links
  * @function sanitise_links
- * @param {string} html - a Jquery object containing the html which needs sanitizing olve polytomies.
+ * @param {string} html - a Jquery object containing the html which needs sanitizing.
  * @param {Number} restrict_links -  if 0 if we leave all links as-is, if 1 if we make all links open 
  *  in a new tab, if 2 if we remove all links (except page-internal ones to #locations within the page) 
  * @param {string} base_url - if we do want relative URLs external to this page, we need to point them 
@@ -73,35 +75,116 @@ function sanitise_links(html, restrict_links, base_url) {
   return html;
 }
 
-function show_wikipage_for_lang(selector, lang, Qid, restrict_links) {
-  {{if is_testing:}}console.log("Finding wikipage");{{pass}}
+function show_wikipage_for_Qid(selector, lang, Qid, backup_name, restrict_links) {
+  {{if is_testing:}}console.log("Finding wikipage via Qid");{{pass}}
   var site = lang+'wiki';
   $.ajax({
     type: "GET",
+    timeout: timeout_ms, 
     id:Qid,
     lang:lang,
     selector: selector,
     restrict_links: restrict_links,
     sitecode: site,
+    backup_name: backup_name,
     dataType: "jsonp",
-    data: {action:'wbgetentities',
+    data: {
+      action:'wbgetentities',
       props:'sitelinks',
       sitefilter:site,
       ids:Qid,
-      format:'json'},
+      format:'json'
+    },
     url: "//www.wikidata.org/w/api.php",
     success: function(data) {
-        //To do - check if title exists in this lang. If not, put up holding page
-        inject_wikipage(this.selector, data.entities[this.id].sitelinks[this.sitecode].title, "https://"+this.lang+".wikipedia.org/", this.restrict_links);
+        if (data.entities[this.id].sitelinks.hasOwnProperty(this.sitecode)) {
+            inject_wikipedia_page(this.selector, data.entities[this.id].sitelinks[this.sitecode].title, "https://"+this.lang+".wikipedia.org/", this.restrict_links);
+        } else if (this.backup_name) {
+            show_wikipage_for_name(this.selector, this.lang, this.id, this.backup_name, this.restrict_links);
+        } else {
+            this.selector.append($('<div></div>').addClass("wikiwarning").text('{{=T("We have no record of an exact wikipedia page. The page below is the data page from %s which may contain additional information.") % ("www.wikidata.org")}}'))   
+            inject_wikidata_page(this.selector, this.id, this.lang, this.restrict_links)
+        }
+    },
+    error: function() {
+        $('.loading_pic',this.selector).hide();
+        this.selector.append("<h1>{{=T('Could not get wikidata information')}}</h1>");
+    }    
+  })
+}
+
+function show_wikipage_for_name(selector, lang, Qid, name, restrict_links) {
+  {{if is_testing:}}console.log("Finding wikipage via name");{{pass}}
+  var site = lang+'wiki';
+  $.ajax({
+    type: "GET",
+    timeout: timeout_ms, 
+    id:Qid,
+    lang:lang,
+    selector: selector,
+    restrict_links: restrict_links,
+    sitecode: site,
+    name:name,
+    dataType: "jsonp",
+    data: {
+      srsearch:name,
+      action:'query',
+      list:'search',
+      srprop:'',
+      srlimit:1,
+      format:'json'
+    },
+    url: "//" + lang + ".wikipedia.org/w/api.php",
+    success: function(data) {
+        if (data.query.search.length && data.query.search[0].hasOwnProperty("title")) {
+            this.selector.append($('<div></div>').addClass("wikiwarning").text('{{=T("We have no record of an exact wikipedia page. The page below is the first page returned by searching %s by name for ‘%s’") % (wikilang + ".wikipedia.org", "...NAME...")}}'.replace("...NAME...",name)))  
+            inject_wikipedia_page(this.selector, data.query.search[0].title, "https://"+this.lang+".wikipedia.org/", this.restrict_links);
+        } else {
+            this.selector.append($('<div></div>').addClass("wikiwarning").text('{{=T("We could not find a wikipedia page. The page below is the data page from %s which may contain additional information.") % ("www.wikidata.org")}}'))   
+            inject_wikidata_page(this.selector, this.id, this.lang, this.restrict_links)
+        }
+    },
+    error: function() {
+        $('.loading_pic',this.selector).hide();
+        this.selector.append("<h1>{{=T('Could not search for wikipedia page')}}</h1>");
     }
   })
 }
 
-function inject_wikipage(selector, pagetitle, base_url, restrict_links) {
+function inject_wikidata_page(selector, Qid, lang, restrict_links) {
+  /* Warning - this may inject scripts into the existing page, leading to XSS vulnerabilities. 
+     Hopefully negated by safemode=1 (see https://www.mediawiki.org/wiki/Manual:Parameters_to_index.php#User_preference_overriding) */
+  var base_url = "//www.wikidata.org/"
+  $.ajax({
+    type: "GET",
+    timeout: timeout_ms, 
+    pagetitle: Qid,
+    base_url: base_url,
+    selector: selector,
+    restrict_links: restrict_links,
+    //url: base_url + "api/rest_v1/page/html/" + Qid,
+    url: "http://cors-anywhere.herokuapp.com/" + base_url + "wiki/" + Qid,
+    dataType: "html",
+    data: {
+        printable:'yes',
+        safemode:1,
+        uselang: lang,
+        //format:'jsonp',
+    },
+    success: inject_wikipage,
+    error: function() {
+        $('.loading_pic',this.selector).hide();
+        this.selector.append("<h1>{{=T('Could not get wikidata page')}}</h1>");
+    }
+  });
+}
+
+function inject_wikipedia_page(selector, pagetitle, base_url, restrict_links) {
   /* Warning - this may inject scripts into the existing page, leading to XSS vulnerabilities. However, the wikipedia
   rest_v1 API, which is used here, should not contain any JS, so we should be OK */
   $.ajax({
     type: "GET",
+    timeout: timeout_ms, 
     headers: {'Api-User-Agent':'mail@onezoom.org'}, /* as requested by https://en.wikipedia.org/api/rest_v1/ */
     pagetitle: pagetitle,
     base_url: base_url,
@@ -109,44 +192,55 @@ function inject_wikipage(selector, pagetitle, base_url, restrict_links) {
     restrict_links: restrict_links,
     url: base_url + "api/rest_v1/page/html/" + pagetitle,
     dataType: "html",
-    success: function (data) {
-      {{if is_testing:}}console.log("Injecting wikipage!");{{pass}}
-      //double-check that we haven't inserted it while waiting for a previous AJAX call
-      if (!this.selector.children().last().hasClass('wiki-content')) {
-        //convert reponse to html (should throw away <head> and <body> tags)
-        var html_to_inject = $('<div class="wiki-content"></div>').append($.parseHTML(data));
-        //just make sure we don't have a stray head or body
-        $('head', html_to_inject).contents().unwrap();
-        $('body', html_to_inject).contents().unwrap();
-        //check if redirected and get current page title
-        var page = $('link[rel="dc:isVersionOf"]', html_to_inject).attr('href');
-        if (page && (page = page.match(/wikipedia.org\/wiki\/(.*)\/?$/))) {
-        	this.pagetitle = page[1];
-        }
-        //inject stylesheet
-        var ss = $('link[rel~="stylesheet"]', html_to_inject).addClass('injected-stylesheet');
-        $('head').prepend(ss);
-        //transform internal page links of the form ./<title>#internal_link to simply #internal_link
-        var url_start = './'+this.pagetitle;
-        $('a[href^="'+url_start+'#"]', html_to_inject).attr('href', function(i,attr) {return attr.substr(url_start.length);});
-        //append the URL so that we abide by wikipedia distribution
-        var original_page = this.base_url + 'wiki/' + this.pagetitle;
-        html_to_inject.append('<footer style="clear:both;">' + '{{=T("This is a summary of ")}}' + '<a href="'+ original_page +'">' + original_page + '</a></footer>');
-        sanitise_links(html_to_inject, this.restrict_links, this.base_url);
-        $('base,meta,link,title,style,script', html_to_inject).remove();
-        $('div[role="note"]', html_to_inject).remove();
-        $('div[role="navigation"]', html_to_inject).remove();
-        html_to_inject.children('ul').remove(); //remove lists, e.g. "see also", etc. : Assumes references (to keep) are ordered lists (not always true)
-        $('.sistersitebox,.sisterlinks,.mw-editsection, #See_also, #External_links', html_to_inject).remove();
-        {{if is_testing:}}console.log("Hiding wiki loading pic");{{pass}}
+    success: inject_wikipage,
+    error: function() {
         $('.loading_pic',this.selector).hide();
-        this.selector.append(html_to_inject);
-      }
+        this.selector.append("<h1>{{=T('Could not get wikipedia page')}}</h1>");
     }
   });
 }
 
-$(document).ready(function() { 
-    show_wikipage_for_lang($('#wikipage'), '{{=wikilang}}', 'Q{{=Qid}}', {{=restrict_links}});
+function inject_wikipage(data) {
+  {{if is_testing:}}console.log("Injecting wikipage!");{{pass}}
+  //double-check that we haven't inserted it while waiting for a previous AJAX call
+  if (!this.selector.children().last().hasClass('wiki-content')) {
+    //convert reponse to html (should throw away <head> and <body> tags)
+    var html_to_inject = $('<div class="wiki-content"></div>').append($.parseHTML(data));
+    //just make sure we don't have a stray head or body
+    $('head', html_to_inject).contents().unwrap();
+    $('body', html_to_inject).contents().unwrap();
+    //check if redirected and get current page title
+    var page = $('link[rel="dc:isVersionOf"]', html_to_inject).attr('href');
+    if (page && (page = page.match(/wikipedia.org\/wiki\/(.*)\/?$/))) {
+    	this.pagetitle = page[1];
+    }
+
+    //inject stylesheet
+    var ss = $('link[rel~="stylesheet"]', html_to_inject).addClass('injected-stylesheet');
+    //make into an absolute URL if necessary
+    var self = this;
+    ss.attr('href',function(i,v) {if (/^https?:\/\//.test(v) || /\/\//.test(v)) {} else {return (self.base_url + v)};});
+    $('head').prepend(ss);
+    
+    //transform internal page links of the form ./<title>#internal_link to simply #internal_link
+    var url_start = './'+this.pagetitle;
+    $('a[href^="'+url_start+'#"]', html_to_inject).attr('href', function(i,attr) {return attr.substr(url_start.length);});
+    //append the URL so that we abide by wikipedia distribution
+    var original_page = this.base_url + 'wiki/' + this.pagetitle;
+    html_to_inject.append('<footer style="clear:both;">' + '{{=T("This is a summary of ")}}' + '<a href="'+ original_page +'">' + original_page + '</a></footer>');
+    sanitise_links(html_to_inject, this.restrict_links, this.base_url);
+    $('base,meta,link,title,style,script', html_to_inject).remove();
+    $('div[role="note"]', html_to_inject).remove();
+    $('div[role="navigation"]', html_to_inject).remove();
+    html_to_inject.children('ul').remove(); //remove lists, e.g. "see also", etc. : Assumes references (to keep) are ordered lists (not always true)
+    $('.sistersitebox,.sisterlinks,.mw-editsection, #See_also, #External_links', html_to_inject).remove();
+    {{if is_testing:}}console.log("Hiding wiki loading pic");{{pass}}
+    $('.loading_pic',this.selector).hide();
+    this.selector.append(html_to_inject);
+  }
+}
+
+$(document).ready(function() {
+    show_wikipage_for_Qid($('#wikipage'), '{{=wikilang}}', 'Q{{=Qid}}', "{{=XML(sciname.replace(r'"', r'\"'))}}", {{=restrict_links}});
 })
 </script>
