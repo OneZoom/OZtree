@@ -146,7 +146,7 @@ var UI_callbacks = {
   },
 
   populateLinkouts: function(responseJSON, initialSelected) { /* used within button_manager.js when the page needs to pop up a tabbed window */
-    {{if is_testing:}}console.log("populating linkout tabs with API data");{{pass}}
+    {{if is_testing:}}console.log("populating linkout tabs with API data from", responseJSON);{{pass}}
     if (initialSelected) {
         initialSelected = $('#external-modal .external-tabs li').index($("#"+ initialSelected))
     } else {
