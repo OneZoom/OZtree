@@ -56,3 +56,4 @@ class TestSandbox(FunctionalTest):
             #check for no links in the page, even ones within the OZ website (although this does allow page-local links)
             assert has_linkouts(self.browser, include_site_internal=True) == False
         self.db['connection'].commit()
+        db_cursor.close()
