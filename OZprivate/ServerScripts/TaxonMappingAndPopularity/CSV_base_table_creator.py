@@ -60,7 +60,7 @@ import argparse
 import inspect
 import random
 import os.path
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from time import time
 from math import log
 from warnings import warn
@@ -344,7 +344,7 @@ def inherit_popularity(tree, verbosity):
             return((sum_of_all_ancestor_popularities + sum_of_all_descendant_popularities)/log(number_of_ancestors+ number_of_descendants)) 
             
     #NB: we must percolate popularities through the tree before deleting monotomies, since these often contain info
-    #this should allocate popularities even for nodes that have be created by polytomy resolving.
+    #this should allocate popularities even for nodes that have been created by polytomy resolving.
     sum_popularity_over_tree(tree, exclude=args.exclude, verbosity=verbosity)
     #now apply the popularity function
     for node in tree.preorder_node_iter():
@@ -354,7 +354,21 @@ def inherit_popularity(tree, verbosity):
         else:
             #even if there is no data in the node, we need to set a popularity. 
             #This can happen if there is, for example
-            node.data={'popularity':pop} 
+            node.data={'popularity':pop}
+
+
+def create_leaf_popularity_rankings(tree, verbosity):
+    """must be run once all invalid tips etc have been removed"""
+    leaf_popularities = defaultdict(int)
+    for node in tree.leaf_node_iter():
+        leaf_popularities[node.data['popularity']] += 1
+    cumsum = 1
+    for k in sorted(leaf_popularities.keys(), reverse=True):
+       add_next = leaf_popularities[k]
+       leaf_popularities[k] = cumsum
+       cumsum += add_next
+    for leaf in tree.leaf_node_iter():
+       leaf.data['popularity_rank'] = leaf_popularities[leaf.data['popularity']]
 
 def write_popularity_tree(tree, outdir, filename, version, verbosity=0):
     Node.write_pop_newick = write_pop_newick
@@ -402,6 +416,7 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, verbosity=0, sa
     Tree.write_preorder_ages = write_preorder_ages
     Tree.remove_unifurcations_keeping_higher_taxa = remove_unifurcations_keeping_higher_taxa
     Tree.write_preorder_to_csv = write_preorder_to_csv
+    Tree.create_leaf_popularity_rankings = create_leaf_popularity_rankings #not defined in dendropy_extras, but in this file
     Node.write_brief_newick = write_brief_newick
     
     n = len(tree.prune_children_of_otts(get_OTT_species(taxonomy_file), verbosity=verbosity))
@@ -409,8 +424,8 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, verbosity=0, sa
     
     bad_sp =['cf.', 'aff.', 'subsp.', 'environmental sample'] #species names containing these (even initially) are discarded
     bad_sp += [' cv.', ' sp.'] #species names containing these within the name are discarded: 
-    n = len(tree.prune_non_species(bad_matches = bad_sp, verbosity=verbosity))
-    info("-> removed {} leaves with no space in the name, or containing {} (assumed bad tips)".format(n, bad_sp))
+    n = {k:len(v) for k,v in tree.prune_non_species(bad_matches = bad_sp, verbosity=verbosity).items()}
+    info("-> removed {} blank leaves, {} with no space in the name, and {} containing {} (assumed bad tips)".format(n['unlabelled'],n['no_space'],n['bad_match'], bad_sp))
     
     a, n = tree.set_node_ages()
     info("-> set ages on {} nodes and leaves, and removed {} extinction props".format(a,n))
@@ -423,8 +438,9 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, verbosity=0, sa
     #NB: we shouldn't need to (re)set popularity or ages, since deleting nodes 
     #does not affect these, and both have been calculated *after* new
     #nodes were created by resolve_polytomies. 
-    info("-> setting real parents")
+    info("-> setting real parents and ranking leaf popularity")
     tree.set_real_parent_nodes()
+    tree.create_leaf_popularity_rankings()
     
     info("-> ladderizing tree (groups with fewer leaves first)")
     tree.ladderize(ascending=True) #warning: ladderize ascending is needed for the short OZ newick-like form
@@ -446,6 +462,7 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, verbosity=0, sa
         leaf_extras['iucn']=['iucn']
         leaf_extras['eol']=['eol']
         leaf_extras['popularity']=['popularity']
+        leaf_extras['popularity_rank']=['popularity_rank']
         leaf_extras['price']=None
         leaf_extras['ncbi']=['sources','ncbi','id']
         leaf_extras['ifung']=['sources','ifung','id']
@@ -461,6 +478,7 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, verbosity=0, sa
         node_extras['wikipedia_lang_flag']=['wd','wikipedia_lang_flag']
         node_extras['eol']=['eol']
         node_extras['popularity']=['popularity']
+        node_extras['popularity_rank']=['popularity_rank']
         node_extras['ncbi']=['sources','ncbi','id']
         node_extras['ifung']=['sources','ifung','id']
         node_extras['worms']=['sources','worms','id']

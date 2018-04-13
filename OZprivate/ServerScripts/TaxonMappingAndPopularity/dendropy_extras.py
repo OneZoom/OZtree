@@ -45,30 +45,34 @@ def prune_non_species(self,
         unlabelled nodes with a length, e.g.
         ((:65)Tyrannosaurus_rex,Birds)
         """
-        nodes_removed = []
-        while True:
-            nodes_to_remove = []
+        nodes_removed = {'no_space':[],'unlabelled':[],'bad_match':[]}
+        done = False
+        while not done:
+            nodes_to_remove = {k:[] for k in nodes_removed.keys()}
             for nd in self.leaf_node_iter():
                 if nd.label is None:
                     if nd.edge.length and nd.parent_node and nd.parent_node.label and (nd.parent_node.num_child_nodes()==1):
                         #only an extinction prop, if it has a length AND the parent node is a named unifurcation
                         pass
                     else:
-                        nodes_to_remove.append(nd)
+                        nodes_to_remove['no_space'].append(nd)
                 elif ' ' not in nd.label: #number of spaces is 0: a leaf, but probably not a species. Also catches label==''
                     if verbosity:
                         print("Removing '{}' since it does not seem to be a species (it does not contain a space)".format(nd.label))
-                    nodes_to_remove.append(nd)
+                    nodes_to_remove['unlabelled'].append(nd)
                 elif any(match in nd.label for match in bad_matches):
                     if verbosity:
                         print("Removing '{}' since it contains one of {}".format(nd.label, bad_matches))
-                    nodes_to_remove.append(nd)
-                    
-            for nd in nodes_to_remove:
-                nd.edge.tail_node.remove_child(nd)
-            nodes_removed += nodes_to_remove
-            if not nodes_to_remove or not recursive:
-                break
+                    nodes_to_remove['bad_match'].append(nd)
+            for k, nodes in nodes_to_remove.items():
+                for nd in nodes:
+                    nd.edge.tail_node.remove_child(nd)
+                nodes_removed[k] += nodes
+            if not recursive:
+                done = True
+            if all([len(v)==0 for v in nodes_to_remove.values()]):
+                done = True
+                
         if update_bipartitions:
             self.update_bipartitions()
         return nodes_removed
@@ -228,7 +232,7 @@ def write_preorder_to_csv(self, leaf_file, extra_leaf_data_properties, node_file
     * for nodes, always write the parent,node_rgt,leaf_lft,leaf_rgt, name, and age
     In addition to these, also write out the extra_leaf_data_properties and extra_node_data_properties
     contained in the data property dictionary of each node (or blank if the property does not exist), 
-    e.g. for leaves this might be extinction_date,ott,wikidata,wikipedia_lang_flag,eol,iucn,popularity,price,ncbi,ifung,worms,irmng,gbif
+    e.g. for leaves this might be extinction_date,ott,wikidata,wikipedia_lang_flag,eol,iucn,popularity,popularity_rank,price,ncbi,ifung,worms,irmng,gbif
     for nodes: age,ott,wikidata,wikipedia_lang_flag,eol,popularity,ncbi,ifung,worms,irmng,gbif,vern_synth,rep1,...,rtr1,...,iucnNE,...
     """
     import csv
