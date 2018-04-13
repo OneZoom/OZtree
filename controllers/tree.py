@@ -113,9 +113,9 @@ def linkouts(is_leaf, ott=None, id=None):
                 lang_primary = first_lang.split("-")[0]
             except:
                 lang_primary ='en'
-            wikilang = request.vars.get('wikilang') or lang_primary
+            wikilang = request.vars.wikilang or lang_primary
             if row[core_table].wikidata:
-                urls['wiki'] = wikipedia_urls(row[core_table].wikidata, row[core_table].wikipedia_lang_flag, wikilang, is_leaf, name, allow_namesearch=True)
+                urls['wiki'] = wikipedia_urls(row[core_table].wikidata, row[core_table].wikipedia_lang_flag, wikilang, is_leaf, name, allow_namesearch=False if request.vars.no_wikisearch else True)
             if row[core_table].eol:
                 urls['eol']  = eol_url(row[core_table].eol, row[core_table].ott)
             if row[core_table].ncbi:
