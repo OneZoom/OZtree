@@ -109,20 +109,17 @@ If you already have your own newick tree with open tree ids on it already, and d
 	OZprivate/ServerScripts/Utilities/make_js_treefiles.py
 	```
 	(see https://github.com/jrosindell/OneZoomComplete/issues/292)
-7. (only necessary for the main server). Update the static version of the Ancestor's Tale tree, by downloading it from the web to a static copy
-    `curl -o ../static/trees/AT.html http://www.onezoom.org/AT.html;
-    gzip -9kf ../static/trees/AT.html`
     
     ## Upload data to the server and check it
     
-8. Get the `basetree_XXXXXX.js`, `basetree_XXXXXX.js.gz`, `polytree_XXXXXX.js`, `polytree_XXXXXX.js.gz`, `cut_position_map_XXXXXX.js`, `cut_position_map_XXXXXX.js.gz`, `dates_XXXXXX.json`
-, `dates_XXXXXX.json.gz`, `AT.html` & `AT.html.gz` files onto the server. I usually do this by pushing to Github then pulling the latest github changes to the server.
-9. (15 mins) load the CSV tables into the DB on the server. Either do so via a GUI utility, or copy them to a local directory on the machine running your SQL server (e.g. using `scp -C` for compression) and run a set of `LOAD DATA LOCAL INFILE` commands in mysql. If running mysql from the command line, requires you to start it with `mysql --local-infile`, e.g.:
+7. If you are running the tree building scripts on a different computer to the one running the web server, you will need to push the `basetree_XXXXXX.js`, `basetree_XXXXXX.js.gz`, `polytree_XXXXXX.js`, `polytree_XXXXXX.js.gz`, `cut_position_map_XXXXXX.js`, `cut_position_map_XXXXXX.js.gz`, `dates_XXXXXX.json`
+, `dates_XXXXXX.json.gz` files onto your server, e.g. by pushing to your local Github repo then pulling the latest github changes to the server.
+8. (15 mins) load the CSV tables into the DB. Either do so via a GUI utility, or copy them to a local directory on the machine running your SQL server (e.g. using `scp -C` for compression) and run a set of `LOAD DATA LOCAL INFILE` commands in mysql. If running mysql from the command line, requires you to start it with `mysql --local-infile`, e.g.:
 
    ```
    mysql --local-infile --host db.sundivenetworks.net --user onezoom --password --database onezoom_dev
    ```
-10. Check for dups, and if any sponsors are no longer on the tree, using something like the following SQL command:
+9. Check for dups, and if any sponsors are no longer on the tree, using something like the following SQL command:
 
     ```
     select * from reservations left outer join ordered_leaves on reservations.OTT_ID = ordered_leaves.ott where ordered_leaves.ott is null and reservations.verified_name IS NOT NULL;
@@ -131,19 +128,19 @@ If you already have your own newick tree with open tree ids on it already, and d
     
     ## Fill in additional server fields
 
-11. (15 mins) create example pictures for each node by percolating up. This requires the most recent `images_by_ott` table, so either do this on the main server, or (if you are doing it locally) update your `images_by_ott` to the most recent server version.
+10. (15 mins) create example pictures for each node by percolating up. This requires the most recent `images_by_ott` table, so either do this on the main server, or (if you are doing it locally) update your `images_by_ott` to the most recent server version.
 
 	```
 	ServerScripts/Utilities/picProcess.py
 	```
-12. (5 mins) percolate the IUCN data up using 
+11. (5 mins) percolate the IUCN data up using 
 	
 	```
 	ServerScripts/Utilities/IUCNquery.py
 	```
 	(note that this both updates the ICUN data in the DB and percolates up interior node info)
-13. (10 mins) set the pricing structure using SET_PRICES.html (accessible from the management pages).
-14. (5 mins - this does seem to be necessary for ordered nodes & ordered leaves). Make sure indexes are reset. Look at the commands at the end of db.py for the SQL to do this - they involve logging in to the SQL server (e.g. via Sequel Pro on Mac) and pasting all the drop index and create index commands.
+12. (10 mins) set the pricing structure using SET_PRICES.html (accessible from the management pages).
+13. (5 mins - this does seem to be necessary for ordered nodes & ordered leaves). Make sure indexes are reset. Look at the commands at the end of db.py for the SQL to do this - they involve logging in to the SQL server (e.g. via Sequel Pro on Mac) and pasting all the drop index and create index commands.
     
     ## at last
-15. Have a well deserved cup of tea
+14. Have a well deserved cup of tea
