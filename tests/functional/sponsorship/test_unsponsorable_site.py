@@ -80,3 +80,4 @@ class TestUnsponsorableSite(SponsorshipTest):
     def test_sponsorship_sandbox(self):
         """
         """
+        pass

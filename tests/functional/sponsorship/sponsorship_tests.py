@@ -106,6 +106,7 @@ class SponsorshipTest(FunctionalTest):
         extra_assert_tests(browser)
         assert has_linkouts(browser, include_site_internal=True) == False
         assert self.zoom_disabled()
+        print(" ", end="", flush=True)
 
     @tools.nottest
     def test_md_sandbox(self, ott):
@@ -138,14 +139,14 @@ class SponsorshipTest(FunctionalTest):
         sql = "SELECT COUNT(1) FROM ordered_leaves WHERE price IS NOT NULL"
         db_cursor.execute(sql)
         if db_cursor.fetchone()[0]==0:
-            self.fail("Cannot test sponsorship: you need to set prices for leaves (go to {}/manage/SET_PRICES/)".format(base_url))
+            assert False, "Cannot test sponsorship: you need to set prices for leaves (go to {}/manage/SET_PRICES/)".format(base_url)
         sql="SELECT ol.ott, ol.name FROM ordered_leaves ol LEFT JOIN reservations r ON ol.ott = r.OTT_ID WHERE r.OTT_ID IS NULL AND ol.ott IS NOT NULL and ol.price IS NOT NULL ORDER BY ol.popularity LIMIT 1 OFFSET 20"
         db_cursor.execute(sql)
         ott = sciname = None
         try:
             ott, sciname = db_cursor.fetchone()
         except TypeError:
-            self.fail("could not find a species which has not been looked at before")
+            assert False, "Could not find a species which has not been looked at before - further sponsorship tests will fail"
         self.db['connection'].commit() #need to commit here otherwise next select returns stale data
         db_cursor.close() 
         return ott, sciname
