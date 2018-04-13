@@ -143,7 +143,7 @@ class TestNormalSite(SponsorshipTest):
 
     def test_sponsor_reservation_expiry(self):
         """
-        Test that after X minutes, a reserved entry becomes free again
+        Test that an leaf is reserved when visiting sponsor page, then becomes free again after reserve_time is decremented
         We need to do this by faking a reserve time into the database
         """
         ott, sciname = self.never_looked_at_ottname() #visiting this ott *may* make a new entry in the reservations table
@@ -155,7 +155,7 @@ class TestNormalSite(SponsorshipTest):
         mins = int(mins.get_attribute("innerHTML"))+1
         db_cursor = self.db['connection'].cursor()
         sql="UPDATE reservations SET reserve_time = DATE_ADD(reserve_time, INTERVAL {} MINUTE) where OTT_ID = {} LIMIT 1".format(self.db['subs'], self.db['subs'], self.db['subs'], self.db['subs'])
-        db_cursor.execute(sql, (-mins, ott)) # versions are stored as negative numbers
+        db_cursor.execute(sql, (-mins, ott)) # subtract interval
         self.db['connection'].commit() #need to commit here otherwise next select returns stale data
         self.browser.get(self.urls['treeviewer'](ott))
         assert web2py_viewname_contains(self.browser, "sponsor_leaf")
