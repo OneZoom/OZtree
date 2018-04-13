@@ -182,18 +182,23 @@ def web2py_viewname_contains(browser, expected_view):
     except NoSuchElementException:
         return False
 
+def linkouts_json(browser, url, ott_or_id, lang=""):
+    """
+    This function can be used to convert a linkouts function in javascript
+    to a JSON return value.
+    Pass in a leaf_linkouts or node_linkouts function as a JS string 
+    together with the ott (for leaves) or node id (for nodes).
+    Requires a browser to evaluate the JS
+    """
+    links = browser.execute_script("return (" + url + ")" + "({}, {})".format(ott_or_id, lang))
+    return requests.get(links).json()['data']
+
 def linkouts_url(browser, url, ott_or_id, tab_name, lang=""):
     """
     This function can be used to convert a linkouts function in javascript
-    to a URL to visit.
-    Pass in a leaf_linkouts or node_linkouts function as a JS string 
-    together with the ott (for leaves) or node id (for nodes) and a
-    tab name such as 'wiki' or 'ozspons' (see linkouts() in controllers/tree.py).
-    requires a browser to evaluate the JS
+    to a URL to visit (given by tab_name). See linkouts_json for details
     """
-    links = browser.execute_script("return (" + url + ")" + "({}, {})".format(ott_or_id, lang))
-    json = requests.get(links).json()
-    return json['data'][tab_name][0]
+    return linkouts_json(browser, url, ott_or_id, lang)[tab_name][0]
 
 
 def make_temp_minlife_file(self):
