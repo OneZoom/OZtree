@@ -196,7 +196,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
 {{#the linkout buttons are forms, to allow post requests to pass on reservation codes
   if request.vars.links!='none':
 }}
-            <form class="no_disable" target="_blank" method="post" onsubmit="return true"><button type="submit" class="uk-icon" uk-tooltip="pos: left" title="{{=T('Open this %s tab in a new window') % (tab['name'],)}}" uk-icon="icon: expand;" style="height: 1.6rem;width: 1.6rem;margin-top: 0.2em;margin-right: 0.2em;border-radius: 50%;background-color: #EEEEEE;"></button></form>
+            <form class="no_disable" target="_blank" method="post" onsubmit="return true"><a class="uk-icon-button" uk-tooltip="pos: left" title="{{=T('Open this %s tab in a new window') % (tab['name'],)}}" uk-icon="icon: expand; ratio: 0.75" target="_blank"></a></form>
 {{pass}}
           </div>
           <p class="loading_pic uk-position-center"><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>

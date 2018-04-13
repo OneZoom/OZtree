@@ -166,19 +166,22 @@ var UI_callbacks = {
           //set the data-src attribute to the url. When the tab is shown, it will get src from there
           specific_popup.attr("data-src", responseJSON.data[linkout_name][0]);
           {{if is_testing:}}console.log("set data-src for '" + linkout_name + "' to " + responseJSON.data[linkout_name][0]);{{pass}}
-          //define the linkout (uses a 'post' request)
+          //define the linkout (some hackery here to allow the same element to act as a plain link or a 'post' submission)
           switch (responseJSON.data[linkout_name].length) {
               case 1: //only a single URL for the iframe and the linkout - use that for both
-                $(".expand-tab form", specific_popup).attr("action",responseJSON.data[linkout_name][0]);
+                $(".expand-tab form", specific_popup).removeAttr("action");
+                $(".expand-tab form a", specific_popup).attr("href", responseJSON.data[linkout_name][0]).removeAttr("onclick");
                 break;
-              case 2: //second value in the response gives a differen URL for the linkout
-                $(".expand-tab form", specific_popup).attr("action",responseJSON.data[linkout_name][1]);
+              case 2: //second value in the response gives a different URL for the linkout
+                $(".expand-tab form", specific_popup).removeAttr("action");
+                $(".expand-tab form a", specific_popup).attr("href", responseJSON.data[linkout_name][1]).removeAttr("onclick");
                 break;
               case 3: //third value in the response gives a set of key:value params to add as POST variables
+                $(".expand-tab form", specific_popup).attr("action", responseJSON.data[linkout_name][1]);
                 $.each(responseJSON.data[linkout_name][2], function(key, data) {
-                    $(".expand-tab form", specific_popup).append($('<input>').attr('type','hidden').attr('name',key).attr('value',data))
+                    $(".expand-tab form", specific_popup).append($('<input>').attr({'type':'hidden','name':key,'value':data}));
                 });
-                $(".expand-tab form", specific_popup).attr("action",responseJSON.data[linkout_name][1]);
+                $(".expand-tab form a", specific_popup).attr("onclick", "$(this).parent().submit();return false").removeAttr("href");
             }
         } else {
           {{if is_testing:}}console.log("Hiding tab for '" + linkout_name + "' which is not present for this taxon");{{pass}}
