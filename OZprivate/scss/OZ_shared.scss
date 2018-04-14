@@ -1,4 +1,18 @@
-/* for the data sources box */
+/* CSS shared between the tree viewer and the main pages */
+
+.terms {
+  h2 {
+      text-align: center;
+      margin: 1em 0;
+  }
+  
+  .intro p {
+      text-align: center;
+  }
+}
+
+.how {
+}
 
 .data_sources {
   img {

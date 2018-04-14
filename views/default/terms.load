@@ -1,4 +1,4 @@
-<div style="display:flex; flex-direction: column;"><!--allows leaf & general T&C to be swapped-->
+<div style="display:flex; flex-direction: column;" class="terms"><!--allows leaf & general T&C to be swapped-->
 <div class="row-fluid" style="order: {{=(2 if request.args and request.args[0]=='site' else 1)}};">
   <div class="col-md-12 intro">
     <header>
@@ -51,7 +51,7 @@
                 </div>
     </div>
 
-<div class="row-fluid" style="order: {{=(1 if request.args and request.args[0]=='site' else 2)}};">
+  <div class="row-fluid" style="order: {{=(1 if request.args and request.args[0]=='site' else 2)}};">
   <div class="col-md-12 intro">
     <h2 id = "useterms">Use of the OneZoom website</h2>
   </div>
