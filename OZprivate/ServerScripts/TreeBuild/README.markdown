@@ -112,7 +112,7 @@ If you already have your own newick tree with open tree ids on it already, and d
     
     ## Upload data to the server and check it
     
-7. If you are running the tree building scripts on a different computer to the one running the web server, you will need to push the `basetree_XXXXXX.js`, `basetree_XXXXXX.js.gz`, `polytree_XXXXXX.js`, `polytree_XXXXXX.js.gz`, `cut_position_map_XXXXXX.js`, `cut_position_map_XXXXXX.js.gz`, `dates_XXXXXX.json`
+7. If you are running the tree building scripts on a different computer to the one running the web server, you will need to push the `basetree_XXXXXX.js`, `basetree_XXXXXX.js.gz`, `cut_position_map_XXXXXX.js`, `cut_position_map_XXXXXX.js.gz`, `dates_XXXXXX.json`
 , `dates_XXXXXX.json.gz` files onto your server, e.g. by pushing to your local Github repo then pulling the latest github changes to the server.
 8. (15 mins) load the CSV tables into the DB. Either do so via a GUI utility, or copy them to a local directory on the machine running your SQL server (e.g. using `scp -C` for compression) and run a set of `LOAD DATA LOCAL INFILE` commands in mysql. If running mysql from the command line, requires you to start it with `mysql --local-infile`, e.g.:
 
