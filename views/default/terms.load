@@ -2,7 +2,7 @@
 <div class="row-fluid" style="order: {{=(2 if request.args and request.args[0]=='site' else 1)}};">
   <div class="col-md-12 intro">
     <header>
-      <h1>Terms and conditions for leaf sponsorship</h1>
+      <h2>Leaf sponsorship</h2>
       <p>Thank you for your interest in sponsoring a leaf in the OneZoom Tree of Life. OneZoom is a registered UK charity, and the funds we raise allow us to maintain and improve this tree of life explorer as a resource for everyone. Note that sponsorship text is publically visible on the tree so must be appropriate for this, and also that we aim to keep our scientific information as up to date as possible which may affect some aspects of your sponsored leaf in the future. We have written these guidelines to make you aware of how we will manage this; we hope you will find them fair.</p>
     </header>
   </div>
@@ -53,7 +53,7 @@
 
 <div class="row-fluid" style="order: {{=(1 if request.args and request.args[0]=='site' else 2)}};">
   <div class="col-md-12 intro">
-    <h1 id = "useterms">Terms and conditions for use of the OneZoom website</h1>
+    <h2 id = "useterms">Use of the OneZoom website</h2>
   </div>
   <div class="col-md-6">
         <ul>

@@ -2,8 +2,6 @@
 {{def A(*args, **kwargs): return CAT(*args)}}
 {{pass}}
 
-<h1>OneZoom Data sources</h1>
-
 <h3>Images</h3>
 
 <p><img src="/static/FinalOutputs/pics/26793885.jpg" alt="" /></p>
