@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 -u -i
+#!/usr/bin/env python3 -u
 """
 Creates the base files for the dynamically-loaded tree, on the basis of a single newick tree with OTT numbers on the leaves and nodes.
 
@@ -190,7 +190,7 @@ def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mappin
     if verbosity:
         info(" Matched {} EoL entries in the EoL identifiers file. Mem usage {:.1f} Mb".format(used, memory_usage_resource()))
 
-def identify_best_EoLdata(OTT_ptrs, sources, verbosity):
+def identify_best_EoLdata(OTT_ptrs, sources, verbosity=0):
     '''
     Each OTT number may point to several EoL entries, one for the NCBI number, another for the WORMS number, etc etc.
     Hopefully these will be the same entry, but they may not be. If they are different we need to choose the best one
@@ -230,7 +230,7 @@ def identify_best_EoLdata(OTT_ptrs, sources, verbosity):
     if verbosity:
         info(" NB: of {} OpenTree taxa, {} ({:.2f}%) have EoL entries in the EoL identifiers file, and {} have multiple possible EOL ids. Mem usage {:.1f} Mb".format(validOTTs, OTTs_with_EOLmatch, OTTs_with_EOLmatch/validOTTs * 100, dups, memory_usage_resource()))
 
-def supplement_from_wikidata(OTT_ptrs, verbosity):
+def supplement_from_wikidata(OTT_ptrs, verbosity=0):
     """
     If no OTT_ptrs[OTTid]['eol'] exists, but there is an OTT_ptrs[OTTid]['wd']['EoL'] then put this into OTT_ptrs[OTTid]['eol']
     Similarly for IPNI (although this is currently unpopulated)
@@ -264,7 +264,7 @@ def supplement_from_wikidata(OTT_ptrs, verbosity):
         info("{} IPNI identifiers added via wikidata".format(IPNIsupp))
 
 
-def populate_iucn(OTT_ptrs, identifiers_file, verbosity):
+def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
     """
     Port the IUCN number from both EoL and Wikidata, and keep both if there is a conflict
     """
@@ -331,7 +331,7 @@ def construct_wiki_info(OTT_ptrs):
         except KeyError:
             pass
     
-def inherit_popularity(tree, verbosity):
+def inherit_popularity(tree, verbosity=0):
     def popularity_function(sum_of_all_ancestor_popularities, sum_of_all_descendant_popularities, number_of_ancestors, number_of_descendants):
         """
         a) Dividing by number_of_ancestors+number_of_descendants would mean averaging pop over all nodes
@@ -357,7 +357,7 @@ def inherit_popularity(tree, verbosity):
             node.data={'popularity':pop}
 
 
-def create_leaf_popularity_rankings(tree, verbosity):
+def create_leaf_popularity_rankings(tree, verbosity=0):
     """must be run once all invalid tips etc have been removed"""
     leaf_popularities = defaultdict(int)
     for node in tree.leaf_node_iter():
