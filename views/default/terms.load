@@ -35,7 +35,7 @@
                         <img style="float:right; margin-right: -30px" src="{{=URL('static','images/leaves/Rpic2.png')}}" />
                         <li>All sponsorship of leaves has an expiry date, you will have the first refusal to continue your sponsorship of that leaf in future (but see next points). If your sponsorship expires and we are unable to contact you your leaf will become available for sponsorship by others. The donation required for sponsorship renewal may not be the same as the amount donated for initial sponsorship.</li>
                         <li>A tiny handful of leaves can only be sponsored through direct negotiation with OneZoom. Different conditions may apply to these leaves: for example the automatic right to re-sponsorship does not apply. Other specific changes to conditions will be discussed during negotiation</li>                        
-                        <li>The purpose of the OneZoom charity is "To advance the education of the public in the subjects of evolution, biodiversity and conservation of the variety of life on earth." your donations (after a very small PayPal fee) will be spent in pursuit of this purpose. </li>
+                        <li>The purpose of the OneZoom charity is <q>to advance the education of the public in the subjects of evolution, biodiversity and conservation of the variety of life on earth.</q> Your donations (after a very small PayPal fee) will be spent in pursuit of this purpose. </li>
                         <li>Sometimes we share donations from sponsorship with a partner not for profit organisation. We only accept partners that have charitable aims compatible with our own.  If this is the case for your donation it will be made clear on the page where you enter the details for your sponsored leaf.</li>
                         <li>Leaf sponsorship and donations support our overall efforts rather than anything specific to that leaf or the species within it. You are not donating to work relating to that particular species, nor are you getting the species named after you.</li>
                         <li>Donations will only be refunded in extraordinary circumstances.</li>
@@ -60,10 +60,9 @@
             <li>By using the website you are assumed to have agreed to these terms and conditions</li>
             <li>The software is provided as is without warranty of any kind and OneZoom cannot accept any liability to users of the site</li>
             
-            <li>This is a fast changing field, and so the content of our site is not guaranteed to be entirely up to date and accurate all of the time.</li>
-            <li>The OneZoom tree deliberately excludes (eu)bacteria. For technical or taxonomic reasons other species may be also missing from our tree, especially if they are absent from the <a href="http://www.opentreeoflife.org">Open Tree of Life</a>.</li>
+            <li>This is a fast changing field, and so the content of our site is not guaranteed to be entirely up to date and accurate all of the time. Also, for technical or taxonomic reasons various species may be missing from our tree, especially if they are absent from the <a href="http://www.opentreeoflife.org">Open Tree of Life</a>.</li>
 </li>
-            <li>Any data we collect about you is subject to our <a href="dataprotection_and_privacy.html">Data Protection and Privacy Policy.</a></li>
+            <li>Any data we collect about you is subject to our <a href="{{=URL('default','dataprotection_and_privacy.html')}}">Data Protection and Privacy Policy.</a></li>
            
 
             <li>The original OneZoom software is provided to the charity OneZoom under open source MIT licenses from James Rosindell, Imperial College London and Imperial Innovations.</li>
