@@ -1,4 +1,8 @@
 {{response.title='OneZoom data sources'}}
+{{response.files.append(URL('static', 'css/data_sources.css'))}}
 {{extend 'layout.html'}}
+<div class="row-fluid">
+<div class="col-md-12">
 <h1>OneZoom Data sources</h1>
 {{include 'default/data_sources.load'}}
+</div></div>

@@ -1,7 +1,7 @@
 {{if request.vars.nolinks:}}
 {{def A(*args, **kwargs): return CAT(*args)}}
 {{pass}}
-
+<div class="data_sources">
 <h3>Images</h3>
 
 <p><img src="/static/FinalOutputs/pics/26793885.jpg" alt="" /></p>
@@ -35,3 +35,4 @@
 <h4>Legacy trees</h4>
 
 <p>Additional 'legacy' trees {{=A("featured on the OneZoom website", _href=URL("tree_index.html"))}} may use different data and each has its own acknowledgments for data use, in the tree caption and/or embedded in the viewer itself for that particular tree.</p>
+</div>

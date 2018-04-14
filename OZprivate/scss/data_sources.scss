@@ -1,0 +1,58 @@
+/* for the about box, especially the 'sources' version */
+
+.data_sources {
+  img {
+      height: 12em;
+      margin-left: 1em;
+      float: right;
+      background-color: black;
+  }
+  
+  img.rgt_edge {
+      height: auto;
+      float:right; 
+      margin-left: 0;
+      margin-right:-20px;
+      background-color: white;
+  }
+  
+  img.lft_edge {
+      height: auto;
+      float:left; 
+      margin-right: 0;
+      margin-left:-20px;
+      background-color: white;
+  }
+  
+  
+  
+  ul {
+    list-style-type: none
+  }
+      
+  ul img {
+      border: 1px solid grey;
+      width: 50px;
+      height:50px;
+      margin-right: 10px;
+      margin-left: -60px;
+      float: left;
+      border-radius:50%;
+      clear:both;
+  }
+  
+  ul {
+      margin:0;
+      padding: 0;
+      padding-left: 1em;
+  }
+  
+  h2, li {
+      clear:both;
+  }
+  
+  li {
+      margin: 0.5em 0;
+      margin-left: 50px;
+  }
+}
