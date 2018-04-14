@@ -3,12 +3,6 @@
 {{pass}}
 
 <div class="row-fluid">
-<div class="col-md-12">
-<h1>About the OneZoom Tree of Life Explorer</h1>
-</div>
-</div>
-
-<div class="row-fluid">
 <div class="col-md-4">
 
 <h3>Our Software</h3>
@@ -133,5 +127,5 @@ Amy Zanne
 
 
 </div>
-</div><!--/row-->
+</div>
 
