@@ -2,6 +2,7 @@
 {{def A(*args, **kwargs): return CAT(*args)}}
 {{pass}}
 
+<div class="about">
 <div class="row-fluid">
 <div class="col-md-4">
 
@@ -128,4 +129,4 @@ Amy Zanne
 
 </div>
 </div>
-
+</div>
