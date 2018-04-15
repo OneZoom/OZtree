@@ -1,4 +1,6 @@
-/* CSS shared between the tree viewer and the main pages */
+/* CSS shared between the tree viewer and the main pages. These will mostly be for pages in views/default
+that have a .load extension which (apart from sponsor_node_price.load) is likely to mean they are loaded
+into the tree viewer as well as being accessible as stand-alon pages */
 
 .terms {
   h2 {
@@ -11,10 +13,8 @@
   }
 }
 
-.how {
-}
 
-.data_sources {
+.terms, .how, .data_sources {
   img {
       height: 12em;
       margin-left: 1em;
@@ -39,6 +39,7 @@
   }
   
   
+.data_sources {
   
   ul {
     list-style-type: none

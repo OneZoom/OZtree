@@ -53,7 +53,7 @@
 
   <div class="row-fluid" style="order: {{=(1 if request.args and request.args[0]=='site' else 2)}};">
   <div class="col-md-12 intro">
-    <h2 id = "useterms">Use of the OneZoom website</h2>
+    <header><h2 id = "useterms">Use of the OneZoom website</h2></header>
   </div>
   <div class="col-md-6">
         <ul>
