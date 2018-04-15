@@ -1,14 +1,21 @@
-{{if request.vars.links=='none':}}
-{{#remove hyperlink from *all* links created via the web2py A() helper, e.g. for the logos & in the LOADed modals}}
-{{ def A(*args, **kwargs): return CAT(*args)}}
-{{elif request.vars.links=='newtab':}}
-{{#make *all* links created via the web2py A() helper open in a new tab, e.g. from logos - this should override others}}
-{{web2py_A = A}}
-{{def A(*args, **kwargs): return web2py_A(*args, **dict(kwargs, _target='_blank'))}}
-{{pass}}
+{{
+web2py_A = None
+if request.vars.links=='none':
+    #remove hyperlink from *all* links created via the web2py A() helper, e.g. for the logos & in the LOADed modals
+    def A(*args, **kwargs):
+        return CAT(*args)
+    pass
+elif request.vars.links=='newtab':
+    #make *all* links created via the web2py A() helper open in a new tab, e.g. from logos - this should override others
+    web2py_A = A
+    def A(*args, **kwargs):
+        return web2py_A(*args, **dict(kwargs, _target='_blank'))
+    pass
+pass
+}}
 <!-- This contains all the overlay on top of the OneZoom canvas. It can be reloaded in different languages -->
 
-<div id="logo" class="uk-navbar-item">{{=A(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('default','index', extension=False))}}</div>
+<div id="logo" class="uk-navbar-item">{{#The logo *never* opens a new tab (but it can be removed)}}{{=(web2py_A or A)(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('default','index', extension=False))}}</div>
 {{if request.vars.partner_logo:}}<div id="logo" class="uk-navbar-item">{{if request.vars.partner_url:}}{{=A(IMG(_src=request.vars.partner_logo), _href=request.vars.partner_url)}}{{else:}}IMG(_src=request.vars.partner_logo){{pass}}</div>{{pass}}
 <div class="uk-navbar-item" id="searchnav">
   <div id="search-basic">
