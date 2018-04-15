@@ -29,7 +29,10 @@ class TestWebpages(object):
 
     @classmethod    
     def tearDownClass(self):
-        pass
+        self.browser.quit()
+        print("> stopping web2py")
+        self.web2py.kill()
+        
     
     external_links = set()
     internal_pages = set()
