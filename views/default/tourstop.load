@@ -1,4 +1,4 @@
-{{include 'link_modifier.py'}}
+{{include 'link_modifier.html'}}
 {{try:}}<h1>{{=error}}</h1>{{except:}}
 <h2>Tours box for {{=tourname}}, stop {{=stopnum}}</h2>
 <p>{{=tour_text}}</p>

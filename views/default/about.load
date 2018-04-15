@@ -1,4 +1,4 @@
-{{include 'link_modifier.py'}}
+{{include 'link_modifier.html'}}
 
 <div class="about">
 <div class="row-fluid">
