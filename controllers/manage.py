@@ -344,9 +344,8 @@ def SPONSOR_UPDATE():
     try:
         EoL_API_key = myconf.take('api.eol_api_key')
     except:
-        raise
         EoL_API_key=""
-        response.flash="You must set an eol_api_key in your appconfig.ini file"
+        response.flash="You should really set an eol_api_key in your appconfig.ini file"
     return dict(form=form, vars=read_only, to_be_validated=to_be_validated, EoL_API_key=EoL_API_key)
 
 
