@@ -429,6 +429,9 @@ ul#searchboxes {
     margin-right: 1em;
 }
 
+.uk-modal-body {
+    padding: 0 20px; /* no need for top/bottom padding */
+}
 
 #imageinfo-modal .uk-modal-dialog {
     height: 100%; /* make sure dialog is full height, even if iframe has not been loaded */
