@@ -129,18 +129,26 @@ def SPONSOR_VALIDATE():
 
     if len(request.args): page=int(request.args[0])
     else: page=0
-    items_per_page=10
+    try:
+        items_per_page=int(request.vars.n)
+        if items_per_page<1:
+            raise ValueError
+    except:
+        items_per_page=10
+    
     limitby=(page*items_per_page,(page+1)*items_per_page+1)
 
-    if request.vars.get('show') == 'validated':
+    if request.vars.show == 'validated':
         query = ((db.reservations.PP_transaction_code != None) & 
                 ((db.reservations.verified_time != None) |
                 (db.reservations.verified_kind != None) |
                 (db.reservations.verified_name != None) |
                 (db.reservations.verified_more_info != None) |
                 (db.reservations.verified_preferred_image != None)))
-    elif request.vars.get('show') == 'all':
+    elif request.vars.show == 'all':
         query = (db.reservations.PP_transaction_code != None)
+    elif request.vars.show and request.vars.show.isdigit():
+        query = (db.reservations.OTT_ID == int(request.vars.show))
     else:
         query =  ((db.reservations.PP_transaction_code != None) & 
                  (db.reservations.verified_time == None) &
