@@ -1,18 +1,4 @@
-{{
-web2py_A = None
-if request.vars.links=='none':
-    #remove hyperlink from *all* links created via the web2py A() helper, e.g. for the logos & in the LOADed modals
-    def A(*args, **kwargs):
-        return CAT(*args)
-    pass
-elif request.vars.links=='newtab':
-    #make *all* links created via the web2py A() helper open in a new tab, e.g. from logos - this should override others
-    web2py_A = A
-    def A(*args, **kwargs):
-        return web2py_A(*args, **dict(kwargs, _target='_blank'))
-    pass
-pass
-}}
+{{include 'link_modifier.py'}}
 <!-- This contains all the overlay on top of the OneZoom canvas. It can be reloaded in different languages -->
 
 <div id="logo" class="uk-navbar-item">{{#The logo *never* opens a new tab (but it can be removed)}}{{=(web2py_A or A)(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('default','index', extension=False))}}</div>

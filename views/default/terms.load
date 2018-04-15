@@ -1,3 +1,4 @@
+{{include 'link_modifier.py'}}
 <div style="display:flex; flex-direction: column;" class="terms"><!--allows leaf & general T&C to be swapped-->
 <!-- if we put /site on the end then we want the main website terms first and sponsorship second, otherwise we want sponsorship first-->
 

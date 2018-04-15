@@ -1,6 +1,4 @@
-{{if request.vars.nolinks:}}
-{{def A(*args, **kwargs): return CAT(*args)}}
-{{pass}}
+{{include 'link_modifier.py'}}
 
 <div class="about">
 <div class="row-fluid">
