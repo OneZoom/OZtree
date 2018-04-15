@@ -5,9 +5,8 @@ body {
 }
 
 body {
-    /* needed to override wikipedia css entries */
     background-color: white;
-    height: auto;
+    height: 100vh; /* needed to stop control buttons disappearing on opening popup */
 }
 
 h2 {
