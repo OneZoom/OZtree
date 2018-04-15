@@ -1,5 +1,5 @@
 {{if request.vars.links=='none':}}
-{{#remove hyperlink from *all* links created via the web2py A() helper, e.g. for the logos}}
+{{#remove hyperlink from *all* links created via the web2py A() helper, e.g. for the logos & in the LOADed modals}}
 {{ def A(*args, **kwargs): return CAT(*args)}}
 {{elif request.vars.links=='newtab':}}
 {{#make *all* links created via the web2py A() helper open in a new tab, e.g. from logos - this should override others}}
