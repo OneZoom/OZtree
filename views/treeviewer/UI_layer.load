@@ -8,7 +8,7 @@
 {{pass}}
 <!-- This contains all the overlay on top of the OneZoom canvas. It can be reloaded in different languages -->
 
-<div id="logo" class="uk-navbar-item">{{=A(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('index', extension=False))}}</div>
+<div id="logo" class="uk-navbar-item">{{=A(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('default','index', extension=False))}}</div>
 {{if request.vars.partner_logo:}}<div id="logo" class="uk-navbar-item">{{if request.vars.partner_url:}}{{=A(IMG(_src=request.vars.partner_logo), _href=request.vars.partner_url)}}{{else:}}IMG(_src=request.vars.partner_logo){{pass}}</div>{{pass}}
 <div class="uk-navbar-item" id="searchnav">
   <div id="search-basic">
