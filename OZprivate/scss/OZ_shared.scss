@@ -2,17 +2,6 @@
 that have a .load extension which (apart from sponsor_node_price.load) is likely to mean they are loaded
 into the tree viewer as well as being accessible as stand-alon pages */
 
-.terms {
-  h2 {
-      text-align: center;
-      margin: 1em 0;
-  }
-  
-  .intro p {
-      text-align: center;
-  }
-}
-
 
 .terms, .how, .data_sources {
   img {
@@ -38,7 +27,19 @@ into the tree viewer as well as being accessible as stand-alon pages */
       background-color: white;
   }
   
+}
+
+.terms {
+  h3 {
+      text-align: center;
+      margin: 1em 0;
+  }
   
+  .intro p {
+      text-align: center;
+  }
+}
+
 .data_sources {
   
   ul {
