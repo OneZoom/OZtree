@@ -1,4 +1,6 @@
 <div style="display:flex; flex-direction: column;" class="terms"><!--allows leaf & general T&C to be swapped-->
+<!-- if we put /site on the end then we want the main website terms first and sponsorship second, otherwise we want sponsorship first-->
+
 <div class="row-fluid" style="order: {{=(2 if request.args and request.args[0]=='site' else 1)}};">
   <div class="col-md-12 intro">
     <header>
