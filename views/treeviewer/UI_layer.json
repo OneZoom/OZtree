@@ -1,0 +1,4 @@
+{{
+#mainly for testing purposes, so we can check e.g. which tabs are default
+from gluon.serializers import json}}{{=XML(json(response._vars))
+}}
