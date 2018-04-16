@@ -2,11 +2,11 @@
 <p>{{=e}}</p>
 {{pass}}
 
-<h3>Links from node OTT {{=ott}} (<i>{{=name.replace("_"," ")}}</i>)</h3>
+<h3>Links from node OTT {{=ott}} (<i>{{=name}}</i>)</h3>
 {{for k,d in data.items():}}
 {{if d is None:}}
 <p><b>{{=k}}</b>: None</p>
 {{else:}}
-<p><b>{{=k}}</b>: <a href="{{=d}}">{{=d}}</a></p>
+<p><b>{{=k}}</b>: [{{for link in d[0:2]:}}<a href="{{=link}}">{{=link}}</a>, {{pass}}]</p>
 {{pass}}
 {{pass}}
