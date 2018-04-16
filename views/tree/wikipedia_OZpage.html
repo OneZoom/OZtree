@@ -95,7 +95,7 @@ function show_wikipage_for_Qid(selector, lang, Qid, backup_name, restrict_links)
       ids:Qid,
       format:'json'
     },
-    url: "//www.wikidata.org/w/api.php",
+    url: "https://www.wikidata.org/w/api.php", /* use https so that we daon't fall foul of HSTS */
     success: function(data) {
         if (data.entities[this.id].sitelinks.hasOwnProperty(this.sitecode)) {
             inject_wikipedia_page(this.selector, data.entities[this.id].sitelinks[this.sitecode].title, "https://"+this.lang+".wikipedia.org/", this.restrict_links);
@@ -134,7 +134,7 @@ function show_wikipage_for_name(selector, lang, Qid, name, restrict_links) {
       srlimit:1,
       format:'json'
     },
-    url: "//" + lang + ".wikipedia.org/w/api.php",
+    url: "https://" + lang + ".wikipedia.org/w/api.php",
     success: function(data) {
         if (data.query.search.length && data.query.search[0].hasOwnProperty("title")) {
             this.selector.append($('<div></div>').addClass("wikipedia-warning").text('{{=T("We have no record of an exact wikipedia page. The page below is the first page returned by searching %s by name for ‘%s’") % (wikilang + ".wikipedia.org", "...NAME...")}}'.replace("...NAME...",name)))  
@@ -154,7 +154,7 @@ function show_wikipage_for_name(selector, lang, Qid, name, restrict_links) {
 function inject_wikidata_page(selector, Qid, lang, restrict_links) {
   /* Warning - this may inject scripts into the existing page, leading to XSS vulnerabilities. 
      Hopefully negated by safemode=1 (see https://www.mediawiki.org/wiki/Manual:Parameters_to_index.php#User_preference_overriding) */
-  var base_url = "//www.wikidata.org/"
+  var base_url = "https://www.wikidata.org/"
   $.ajax({
     type: "GET",
     timeout: timeout_ms, 
