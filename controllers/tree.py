@@ -63,7 +63,7 @@ def pic_info():
             row = db((db.images_by_name.src_id == src_id) & (db.images_by_name.src == src)).select(db.images_by_name.src, db.images_by_name.src_id, db.images_by_name.url, db.images_by_name.rights, db.images_by_name.licence).first()
         return dict(image=row, url_override=URL('tree','eol_dataobject_ID',args=[src,src_id], scheme=True, host=True) if src_is_eol_DOid else None)
 
-def linkouts(is_leaf, ott=None, id=None):
+def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
     """
     E.g. http://mysite/leaf_linkouts.json/1234 for an OTT id 1234 should return
     a JSON response that contains urls to other pages for this taxon, in particular
@@ -83,20 +83,16 @@ def linkouts(is_leaf, ott=None, id=None):
     gives the json passed in the form 'post' request, e.g. {'form_session_id':'blah-blah'} which allows us to pass
     a session id to the leaf sponsorship stuff
     """
-    urls = {'opentree':[], 'wiki':[], 'eol':[], 'iucn':[], 'ncbi': [], 'powo': [], 'ozspons': []} #these are also need asssociating with icons etc in treeviewer.py
+    urls = {} #for a list of the keys the UI expect to be returned (e.g. wiki, eol, ozspons) see UI_layer() in treeviewer.py
     name = None
     errors = []
 
     try:
-        #if id is not None:
-        #    query = db.ordered_leaves.ott == OTTid
-        #OTTid = int(OTT)
-        #urls['opentree'] = opentree_url(OTTid)
         core_table = "ordered_leaves" if is_leaf else "ordered_nodes"
         if id is not None:
-            query = db[core_table].id == int(id)
+            query = db[core_table].id == id
         elif ott is not None:
-            query = db[core_table].ott == int(ott)          
+            query = db[core_table].ott == ott
         else:
             raise
         
@@ -126,6 +122,8 @@ def linkouts(is_leaf, ott=None, id=None):
                 urls['iucn'] = iucn_url(row.iucn.iucn)
             if row[core_table].ipni:
                 urls['powo'] = powo_url(row[core_table].ipni) #would alter here if ipni availability calculated on the fly
+        if sponsorship_urls: #always return a sponsorship url, even if e.g. invalid or ott missing
+            urls['ozspons'] = sponsorship_urls
     except:
         errors = ["Couldn't get any data"]
     return(dict(data=urls, errors=errors, ott=ott, id=id, name=name))
@@ -135,19 +133,20 @@ def leaf_linkouts():
     called with an OTT, since all leaves with info should have an OTT. Any leaves that don't, can't be associated with data
     """
     try:
-        return_values = linkouts(is_leaf=True, ott=request.args[0])
-        request.vars.update({'ott':return_values['ott']})
-        return_values['data']['ozspons'] = d = []
-        d.append(URL("default","sponsor_leaf", vars=request.vars, scheme=True, host=True, extension=False))
-        #remove the embed functionality when popping out to a new window
-        d.append(URL("default","sponsor_leaf", vars={k:v for k,v in request.vars.items() if k not in ('embed', 'form_reservation_code')}, scheme=True, host=True, extension=False))
+        ott = int(request.args[0] if len(request.args) else -1) # ott = -1 marks an invalid ott
+        vars = dict(request.vars, ott=ott)
     except Exception as e:
-        return_values = dict(errors=['Sorry, there was an error getting your leaf data:', e], ott=None, data={}, name="error")
+        return dict(errors=['Sorry, there was an error getting your leaf data:', str(e)], ott=None, data={}, name="error")
 
+    sponsorship_urls = [
+        URL("default","sponsor_leaf", vars=vars, scheme=True, host=True, extension=False),
+        #remove the embed functionality when popping out to a new window
+        URL("default","sponsor_leaf", vars={k:v for k,v in vars.items() if k not in ('embed', 'form_reservation_code')}, scheme=True, host=True, extension=False)
+    ]
     if request.vars.form_reservation_code:
         #pass on the reservation code if possible
-        d.append({'form_reservation_code':request.vars.form_reservation_code})
-    
+        sponsorship_urls.append({'form_reservation_code':request.vars.form_reservation_code})
+    return_values = linkouts(is_leaf=True, ott=ott, sponsorship_urls=sponsorship_urls)
     return return_values
 
 def node_linkouts():
@@ -155,17 +154,20 @@ def node_linkouts():
     called with a node ID, since it makes sense to ask e.g. for all descendants of a node, even if this node has no OTT
     """
     try:
-        return_values = linkouts(is_leaf=False, id=request.args[0])
-        request.vars.update({'id':return_values['id']})
-        return_values['data']['ozspons'] = d = []
-        d.append(URL("default", "sponsor_node", vars=request.vars, scheme=True, host=True, extension=False))
-        #remove the embed functionality when popping out to a new window
-        d.append(URL("default","sponsor_node", vars={k:v for k,v in request.vars.items() if k not in ('embed', 'form_reservation_code')}, scheme=True, host=True, extension=False))
+        id = int(request.args[0])
+        vars=dict(request.vars, id=id)
     except Exception as e:
-        return_values = dict(errors=['Sorry, there was an error getting your node data:', e], ott=None, data={}, name="error")
+        dict(errors=['Sorry, there was an error getting your node data:', str(e)], ott=None, data={}, name="error")
+    sponsorship_urls = [
+        URL("default", "sponsor_node", vars=vars, scheme=True, host=True, extension=False),
+        #remove the embed functionality when popping out to a new window
+        URL("default","sponsor_node", vars={k:v for k,v in vars.items() if k not in ('embed', 'form_reservation_code')}, scheme=True, host=True, extension=False)
+    ]
     if request.vars.form_reservation_code:
         #pass on the session if possible
-        d.append({'form_reservation_code':request.vars.form_reservation_code})
+        sponsorship_urls.append({'form_reservation_code':request.vars.form_reservation_code})
+    return_values = linkouts(is_leaf=False, id=id, sponsorship_urls=sponsorship_urls)
+    request.vars.update({'id':return_values['id']})
     return return_values
 
 
