@@ -20,7 +20,7 @@
 }}
 {{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
 
-<div id="wikipage"><div class="loading_pic"><img src="{{=URL('static','images/ajax-loader.gif')}}" /></div></div>
+<div id="wikipage"><div class="ajax-loading-pic">Obtaining wiki information<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></div></div>
 
 <script>
 /* this is where we do all the fancy wikipedia parsing stuff */
@@ -174,7 +174,7 @@ function inject_wikidata_page(selector, Qid, lang, restrict_links) {
     success: inject_wikipage,
     error: function() {
         $('.loading_pic',this.selector).hide();
-        this.selector.append("<h1>{{=T('Could not get wikidata page')}}</h1>");
+        this.selector.html("<h1>{{=T('Could not get wikidata page')}}</h1>");
     }
   });
 }
@@ -195,7 +195,7 @@ function inject_wikipedia_page(selector, pagetitle, base_url, restrict_links) {
     success: inject_wikipage,
     error: function() {
         $('.loading_pic',this.selector).hide();
-        this.selector.append("<h1>{{=T('Could not get wikipedia page')}}</h1>");
+        this.selector.html("<h1>{{=T('Could not get wikipedia page')}}</h1>");
     }
   });
 }
@@ -236,7 +236,7 @@ function inject_wikipage(data) {
     $('.sistersitebox,.sisterlinks,.mw-editsection, #See_also, #External_links', html_to_inject).remove();
     {{if is_testing:}}console.log("Hiding wiki loading pic");{{pass}}
     $('.loading_pic',this.selector).hide();
-    this.selector.append(html_to_inject);
+    this.selector.html(html_to_inject);
   }
 }
 
