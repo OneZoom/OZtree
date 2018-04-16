@@ -75,7 +75,7 @@
       image_details_api: "{{try:}}{{=myconf.take('API.image')}}{{except:}}{{=URL('API', 'image_details.json', scheme=True, host=True)}}{{pass}}",
       update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
       tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
-      OZ_leaf_json_url_func: function(ott, lang) {return("{{=XML(URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json', args=['...OTT...'], vars=dict((setup_params.get('popups') or {}).get('vars') or {}, lang='...LANG...')))}}".replace('...OTT...', ott.toString() || "").replace('...LANG...', lang || ''))},
+      OZ_leaf_json_url_func: function(ott, lang) {return("{{=XML(URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json', args=['...OTT...'], vars=dict((setup_params.get('popups') or {}).get('vars') or {}, lang='...LANG...')))}}".replace('...OTT...', (ott || '').toString() || "").replace('...LANG...', lang || ''))},
       OZ_node_json_url_func: function(id, lang) {return("{{=XML(URL('tree', 'node_linkouts', scheme=True, host=True, extension='json', args=['...ID...'], vars=dict((setup_params.get('popups') or {}).get('vars') or {}, lang='...LANG...')))}}".replace('...ID...', id.toString() || "").replace('...LANG...', lang || ''))},
     };
   </script>
@@ -129,8 +129,8 @@ var UI_callbacks = {
     var ifrm = document.createElement("iframe");
     ifrm.setAttribute('src', load_url);
     ifrm.addEventListener('load', function() {
-      {{if is_testing:}}console.log("Hiding image iframe loading pic");{{pass}}
-      $(".loading_pic", $(this).parent().parent()).hide()});
+      {{if is_testing:}}console.log("Hiding image iframe loading info");{{pass}}
+      $(".iframe-loading-info", $(this).parent().parent()).hide()});
     ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
     $("#imageinfo-modal .popup-content").append(ifrm)
     $("#imageinfo-modal .uk-modal-header a").attr('href', link_url);
@@ -138,15 +138,18 @@ var UI_callbacks = {
     return [load_url, link_url]
   },
 
+  /* called as soon as a request to open a linkouts window is made */
   openLinkouts: function() {
     {{if is_testing:}}console.log("OneZoom internal JS has been asked to open tabs");{{pass}}
+    $('#external-modal .no-tab-data').hide()
     $('#external-modal .external-content').hide();
-    $('#external-modal .tab-loading_pic').show();
+    $('#external-modal .tab-loading-info').show();
     UIkit.modal('#external-modal').show();
     {{if is_testing:}}console.log("Hidden content and showing loading animation");{{pass}}
   },
 
-  populateLinkouts: function(responseJSON, initialSelected) { /* used within button_manager.js when the page needs to pop up a tabbed window */
+  /* called when the API returns with details about contents of the linkouts window */
+  populateLinkouts: function(responseJSON, initialSelected) {
     {{if is_testing:}}console.log("populating linkout tabs with API data from", responseJSON);{{pass}}
     if (initialSelected) {
         initialSelected = $('#external-modal .external-tabs li').index($("#"+ initialSelected))
@@ -154,32 +157,36 @@ var UI_callbacks = {
         initialSelected = 0
     }
     var select_tab_index=null;
+    var url_dict = responseJSON.data;
+    var n_tabs = 0;
     // make sure the id names correspond to the names returned by the api
     $("#external-modal .external-tabs li").each(function(index) {
       var tab = $(this);
       var linkout_name = tab.attr('id'); //'wiki', 'eol', etc. Visited in order specified in html file
       if (linkout_name) {
-        if (responseJSON.data[linkout_name].length) {
+        if (url_dict.hasOwnProperty(linkout_name) && url_dict[linkout_name].length) {
+          var url_arr = url_dict[linkout_name] //contains the list of urls for this tab
+          n_tabs += 1;
           tab.show(); //show the tab at the top (but not necessarily the content yet)
           if (select_tab_index == null) select_tab_index = index; //start selecting earliest non-hidden tab
           if (index == initialSelected) select_tab_index = index; //override if initialSelected is not hidden
           var specific_popup = $("#external-modal .popup-container ." + linkout_name);
           //set the data-src attribute to the url. When the tab is shown, it will get src from there
-          specific_popup.attr("data-src", responseJSON.data[linkout_name][0]);
-          {{if is_testing:}}console.log("set data-src for '" + linkout_name + "' to " + responseJSON.data[linkout_name][0]);{{pass}}
+          specific_popup.attr("data-src", url_arr[0]);
+          {{if is_testing:}}console.log("set data-src for '" + linkout_name + "' to " + url_arr[0]);{{pass}}
           //define the linkout (some hackery here to allow the same element to act as a plain link or a 'post' submission)
-          switch (responseJSON.data[linkout_name].length) {
+          switch (url_arr.length) {
               case 1: //only a single URL for the iframe and the linkout - use that for both
                 $(".expand-tab form", specific_popup).removeAttr("action");
-                $(".expand-tab form a", specific_popup).attr("href", responseJSON.data[linkout_name][0]).removeAttr("onclick");
+                $(".expand-tab form a", specific_popup).attr("href", url_arr[0]).removeAttr("onclick");
                 break;
               case 2: //second value in the response gives a different URL for the linkout
                 $(".expand-tab form", specific_popup).removeAttr("action");
-                $(".expand-tab form a", specific_popup).attr("href", responseJSON.data[linkout_name][1]).removeAttr("onclick");
+                $(".expand-tab form a", specific_popup).attr("href", url_arr[1]).removeAttr("onclick");
                 break;
               case 3: //third value in the response gives a set of key:value params to add as POST variables
-                $(".expand-tab form", specific_popup).attr("action", responseJSON.data[linkout_name][1]);
-                $.each(responseJSON.data[linkout_name][2], function(key, data) {
+                $(".expand-tab form", specific_popup).attr("action", url_arr[1]);
+                $.each(url_arr[2], function(key, data) {
                     $(".expand-tab form", specific_popup).append($('<input>').attr({'type':'hidden','name':key,'value':data}));
                 });
                 $(".expand-tab form a", specific_popup).attr("onclick", "$(this).parent().submit();return false").removeAttr("href");
@@ -190,9 +197,13 @@ var UI_callbacks = {
         }
       }
     });
+    if (n_tabs == 0) {
+      {{if is_testing:}}console.log("The API did not return any linkout URLs that match those expected in the UI");{{pass}}
+      $('#external-modal .no-tab-data').show()
+    }
     UIkit.tab('#external-modal .external-tabs').show(select_tab_index);
     load_tab($("#external-modal .popup-container li").eq(select_tab_index));
-    $('#external-modal .tab-loading_pic').hide();
+    $('#external-modal .tab-loading-info').hide();
     $('#external-modal .external-content').show();
   }
 };
@@ -212,13 +223,13 @@ function closeAndLeap(event, OZIDin, original_searchbox) {
 
 function load_tab(tab_content) {
   if (! tab_content.children().last().hasClass('popup-content')) {
-      $('.loading_pic',tab_content).show();
+      $('.iframe-loading-info',tab_content).show();
       {{if is_testing:}}console.log("trying to create iframe with src = " + tab_content.attr('data-src'));{{pass}}
       var ifrm = document.createElement("iframe");
       ifrm.setAttribute('src', tab_content.attr('data-src'));
       ifrm.addEventListener('load', function() {
         {{if is_testing:}}console.log("Hiding iframe loading pic");{{pass}}
-        $(".loading_pic", $(this).parent().parent()).hide()});
+        $(".iframe-loading-info", $(this).parent().parent()).hide()});
       ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
       //add iframe inside a div wrapper
       tab_content.append($('<div>', {'class':'popup-content iframe-container'}).append(ifrm));
@@ -829,7 +840,7 @@ function setupUI() {
                 .attr("data-src","")
                 .children('.popup-content').remove()
                 .children('input').remove()
-                .children('.loading_pic').show()
+                .children('.iframe-loading-info').show()
         });
       });
 

@@ -168,13 +168,16 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <div class="uk-modal-header">
             <h2 class="uk-modal-title">{{=T('Image information')}}{{if request.vars.links!='none':}}<a href="" target="_blank" class="uk-icon-button expand-tab" uk-tooltip="pos: left" title="{{=T('Open this in a new window')}}" uk-icon="icon: expand; ratio: 0.75"></a>{{pass}}</h2>
         </div>
-        <div class="uk-modal-body popup-content iframe-container"></div>
+        <div class="uk-modal-body popup-content iframe-container">
+          <p class="iframe-loading-info uk-position-center">{{=T('Waiting for image information to load')}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
+        </div>
     </div>
 </div>
 <div id="external-modal" class="uk-modal-container" uk-modal>
   <div class="uk-modal-dialog">
     <button class="uk-modal-close-outside" type="button" uk-close></button>
-    <p class="tab-loading_pic" class="uk-position-center"><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
+    <p class="tab-loading-info uk-position-center">{{=T('Waiting for further information details from OneZoom')}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
+    <div class="no-tab-data"><h3>{{=T('No data available')}}</h3><p>{{=T('Sorry, we do not have any extra information for this species or group')}}</p></div>
     <div class="external-content">
       <ul uk-tab class="external-tabs">
         <!--A list of all the available tabs-->
@@ -184,7 +187,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
       </ul>
       <ul class="popup-container uk-switcher">
         {{for tab in tabs:}}
-        <li class="{{=tab['id']}}" data-src="" aria-controls="{{=tab['id']}}-panel">
+        <li class="{{=tab['id']}}" data-name="{{=tab['name']}}" data-src="" aria-controls="{{=tab['id']}}-panel">
           <div class="uk-position-top-right expand-tab">
 {{#the linkout buttons are forms, to allow post requests to pass on reservation codes
   if request.vars.links!='none':
@@ -192,7 +195,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
             <form class="no_disable" target="_blank" method="post" onsubmit="return true"><a class="uk-icon-button" uk-tooltip="pos: left" title="{{=T('Open this %s tab in a new window') % (tab['name'],)}}" uk-icon="icon: expand; ratio: 0.75" target="_blank"></a></form>
 {{pass}}
           </div>
-          <p class="loading_pic uk-position-center"><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
+          <p class="iframe-loading-info uk-position-center">{{=T('Waiting for %s page to load') % (tab['name'])}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
         </li>
         {{pass}}
       </ul>

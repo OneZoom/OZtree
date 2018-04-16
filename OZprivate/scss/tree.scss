@@ -533,9 +533,13 @@ ul#searchboxes {
     hyphens: auto;
 }
 
-.popup-container .loading_pic {
+.iframe-loading-info, .tab-loading-info {
     position: absolute;
-    z-index: -1;
+    text-align: center;
+}
+
+iframe {
+    position: relative; /* required to make it a higher z-index thank the loading pics */
 }
 
 #external-modal .expand-tab {
