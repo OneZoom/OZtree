@@ -95,15 +95,16 @@ function show_wikipage_for_Qid(selector, lang, Qid, backup_name, restrict_links)
       ids:Qid,
       format:'json'
     },
-    url: "https://www.wikidata.org/w/api.php", /* use https so that we daon't fall foul of HSTS */
+    url: "https://www.wikidata.org/w/api.php", /* use https so that we don't fall foul of HSTS */
     success: function(data) {
         if (data.entities[this.id].sitelinks.hasOwnProperty(this.sitecode)) {
-            inject_wikipedia_page(this.selector, data.entities[this.id].sitelinks[this.sitecode].title, "https://"+this.lang+".wikipedia.org/", this.restrict_links);
+            this.selector.empty()
+            append_wikipedia_page(this.selector, data.entities[this.id].sitelinks[this.sitecode].title, "https://"+this.lang+".wikipedia.org/", this.restrict_links);
         } else if (this.backup_name) {
             show_wikipage_for_name(this.selector, this.lang, this.id, this.backup_name, this.restrict_links);
         } else {
-            this.selector.append($('<div></div>').addClass("wikidata-warning").text('{{=T("We have no record of an exact wikipedia page. The page below is the data page from %s which may contain additional information.") % ("www.wikidata.org")}}'))   
-            inject_wikidata_page(this.selector, this.id, this.lang, this.restrict_links)
+            this.selector.html($('<div></div>').addClass("wikidata-warning").text('{{=T("We have no record of an exact wikipedia page. The page below is the data page from %s which may contain additional information.") % ("www.wikidata.org")}}'))   
+            append_wikidata_page(this.selector, this.id, this.lang, this.restrict_links)
         }
     },
     error: function() {
@@ -137,11 +138,11 @@ function show_wikipage_for_name(selector, lang, Qid, name, restrict_links) {
     url: "https://" + lang + ".wikipedia.org/w/api.php",
     success: function(data) {
         if (data.query.search.length && data.query.search[0].hasOwnProperty("title")) {
-            this.selector.append($('<div></div>').addClass("wikipedia-warning").text('{{=T("We have no record of an exact wikipedia page. The page below is the first page returned by searching %s by name for ‘%s’") % (wikilang + ".wikipedia.org", "...NAME...")}}'.replace("...NAME...",name)))  
-            inject_wikipedia_page(this.selector, data.query.search[0].title, "https://"+this.lang+".wikipedia.org/", this.restrict_links);
+            this.selector.html($('<div></div>').addClass("wikipedia-warning").text('{{=T("We have no record of an exact wikipedia page. The page below is the first page returned by searching %s by name for ‘%s’") % (wikilang + ".wikipedia.org", "...NAME...")}}'.replace("...NAME...",name)))  
+            append_wikipedia_page(this.selector, data.query.search[0].title, "https://"+this.lang+".wikipedia.org/", this.restrict_links);
         } else {
-            this.selector.append($('<div></div>').addClass("wikidata-warning").text('{{=T("We could not find a wikipedia page. The page below is the data page from %s which may contain additional information.") % ("www.wikidata.org")}}'))   
-            inject_wikidata_page(this.selector, this.id, this.lang, this.restrict_links)
+            this.selector.html($('<div></div>').addClass("wikidata-warning").text('{{=T("We could not find a wikipedia page. The page below is the data page from %s which may contain additional information.") % ("www.wikidata.org")}}'))   
+            append_wikidata_page(this.selector, this.id, this.lang, this.restrict_links)
         }
     },
     error: function() {
@@ -151,7 +152,7 @@ function show_wikipage_for_name(selector, lang, Qid, name, restrict_links) {
   })
 }
 
-function inject_wikidata_page(selector, Qid, lang, restrict_links) {
+function append_wikidata_page(selector, Qid, lang, restrict_links) {
   /* Warning - this may inject scripts into the existing page, leading to XSS vulnerabilities. 
      Hopefully negated by safemode=1 (see https://www.mediawiki.org/wiki/Manual:Parameters_to_index.php#User_preference_overriding) */
   var base_url = "https://www.wikidata.org/"
@@ -171,7 +172,7 @@ function inject_wikidata_page(selector, Qid, lang, restrict_links) {
         uselang: lang,
         //format:'jsonp',
     },
-    success: inject_wikipage,
+    success: append_wikipage,
     error: function() {
         $('.loading_pic',this.selector).hide();
         this.selector.html("<h1>{{=T('Could not get wikidata page')}}</h1>");
@@ -179,7 +180,7 @@ function inject_wikidata_page(selector, Qid, lang, restrict_links) {
   });
 }
 
-function inject_wikipedia_page(selector, pagetitle, base_url, restrict_links) {
+function append_wikipedia_page(selector, pagetitle, base_url, restrict_links) {
   /* Warning - this may inject scripts into the existing page, leading to XSS vulnerabilities. However, the wikipedia
   rest_v1 API, which is used here, should not contain any JS, so we should be OK */
   $.ajax({
@@ -192,7 +193,7 @@ function inject_wikipedia_page(selector, pagetitle, base_url, restrict_links) {
     restrict_links: restrict_links,
     url: base_url + "api/rest_v1/page/html/" + pagetitle,
     dataType: "html",
-    success: inject_wikipage,
+    success: append_wikipage,
     error: function() {
         $('.loading_pic',this.selector).hide();
         this.selector.html("<h1>{{=T('Could not get wikipedia page')}}</h1>");
@@ -200,7 +201,7 @@ function inject_wikipedia_page(selector, pagetitle, base_url, restrict_links) {
   });
 }
 
-function inject_wikipage(data) {
+function append_wikipage(data) {
   {{if is_testing:}}console.log("Injecting wikipage!");{{pass}}
   //double-check that we haven't inserted it while waiting for a previous AJAX call
   if (!this.selector.children().last().hasClass('wiki-content')) {
@@ -236,7 +237,7 @@ function inject_wikipage(data) {
     $('.sistersitebox,.sisterlinks,.mw-editsection, #See_also, #External_links', html_to_inject).remove();
     {{if is_testing:}}console.log("Hiding wiki loading pic");{{pass}}
     $('.loading_pic',this.selector).hide();
-    this.selector.html(html_to_inject);
+    this.selector.append(html_to_inject);
   }
 }
 
