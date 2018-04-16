@@ -3,6 +3,7 @@
 ### but still allows us to place all the tree viewer code in a single directory
 
 from OZfunctions import lang_primary, language, __check_version
+from collections import OrderedDict
 
 def js_strings():
     """
@@ -18,21 +19,30 @@ def UI_layer():
     """
 
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    tabs=[{'id':'wiki',   'name':T('Wikipedia'),            'icon':URL('static','images/W.svg')},
-      {'id':'eol',    'name':T('Encyclopedia of Life'), 'icon':URL('static','images/EoL.png')},
-      {'id':'iucn',   'name':T('Conservation'),         'icon':URL('static','images/IUCN_Red_List.svg')},
-      {'id':'ncbi',   'name':T('Genetics'),             'icon':URL('static','images/DNA_icon.svg')},
-      #{'id':'powo',   'name':T('Kew')},
-      {'id':'ozspons','name':T('Sponsor'), 'icon':URL('static','images/sponsor.png')}]
-    if 'tabs' in request.vars:
-        #if tabs specified, then whittle down to the specified tags
-        if not isinstance(request.vars.tabs, list):
-            requested_tabs=set([request.vars.tabs])
-        else:
-            requested_tabs=set(request.vars.tabs)
-        tabs = [t for t in tabs if (t['id'] in requested_tabs) or ('all' in requested_tabs)]
+    tabs= OrderedDict([
+      ('opentree',{'id':'opentree',   'name':T('OpenTree'),     'icon':URL('static','images/mini-opentree-logo.png')}),
+      ('wiki',{'id':'wiki',   'name':T('Wikipedia'),            'icon':URL('static','images/W.svg')}),
+      ('eol',{'id':'eol',     'name':T('Encyclopedia of Life'), 'icon':URL('static','images/EoL.png')}),
+      ('iucn',{'id':'iucn',   'name':T('Conservation'),         'icon':URL('static','images/IUCN_Red_List.svg')}),
+      ('ncbi',{'id':'ncbi',   'name':T('Genetics'),             'icon':URL('static','images/DNA_icon.svg')}),
+      #'powo':{'id':'powo',   'name':T('Kew')},
+      ('ozspons',{'id':'ozspons','name':T('Sponsor'), 'icon':URL('static','images/sponsor.png')})])
+    default_tabs = ['wiki', 'eol', 'iucn', 'ncbi', 'ozspons']
 
-    return dict(browser_language=language(lang_primary(request)), tabs=tabs)
+    if 'tabs' not in request.vars:
+        requested_tabs = [tabs[x] for x in default_tabs if x in tabs]
+    else:
+        #if tabs specified, then whittle down to the specified tags, in the specified order
+        if not isinstance(request.vars.tabs, list):
+            request.vars.tabs = [request.vars.tabs]
+        if 'default' in request.vars.tabs:
+            requested_tabs=[tabs[x] for x in default_tabs if x in tabs]
+        elif 'all' in request.vars.tabs:
+            requested_tabs=tabs.values()
+        else:
+            requested_tabs = [tabs[x] for x in request.vars.tabs if x in tabs]
+
+    return dict(browser_language=language(lang_primary(request)), tabs=requested_tabs)
 
 def minlife():
     """

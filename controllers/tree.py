@@ -83,7 +83,7 @@ def linkouts(is_leaf, ott=None, id=None):
     gives the json passed in the form 'post' request, e.g. {'form_session_id':'blah-blah'} which allows us to pass
     a session id to the leaf sponsorship stuff
     """
-    urls = {'opentree':[], 'wiki':[], 'eol':[], 'iucn':[], 'ncbi': [], 'powo': [], 'ozspons': []}
+    urls = {'opentree':[], 'wiki':[], 'eol':[], 'iucn':[], 'ncbi': [], 'powo': [], 'ozspons': []} #these are also need asssociating with icons etc in treeviewer.py
     name = None
     errors = []
 
@@ -114,6 +114,8 @@ def linkouts(is_leaf, ott=None, id=None):
             except:
                 lang_primary ='en'
             wikilang = request.vars.wikilang or lang_primary
+            if row[core_table].ott:
+                urls['opentree'] = opentree_url(row[core_table].ott)
             if row[core_table].wikidata:
                 urls['wiki'] = wikipedia_urls(row[core_table].wikidata, row[core_table].wikipedia_lang_flag, wikilang, is_leaf, name, allow_namesearch=False if request.vars.no_wikisearch else True)
             if row[core_table].eol:
@@ -134,36 +136,37 @@ def leaf_linkouts():
     """
     try:
         return_values = linkouts(is_leaf=True, ott=request.args[0])
-    except:
-        raise
-        return_values = {'ott':None, 'data':{}}
+        request.vars.update({'ott':return_values['ott']})
+        return_values['data']['ozspons'] = d = []
+        d.append(URL("default","sponsor_leaf", vars=request.vars, scheme=True, host=True, extension=False))
+        #remove the embed functionality when popping out to a new window
+        d.append(URL("default","sponsor_leaf", vars={k:v for k,v in request.vars.items() if k not in ('embed', 'form_reservation_code')}, scheme=True, host=True, extension=False))
+    except Exception as e:
+        return_values = dict(errors=['Sorry, there was an error getting your leaf data:', e], ott=None, data={}, name="error")
 
-    request.vars.update({'ott':return_values['ott']})
-        
-    return_values['data']['ozspons'] = d = []
-    d.append(URL("default","sponsor_leaf", vars=request.vars, scheme=True, host=True, extension=False))
-    #remove the embed functionality when popping out to a new window
-    d.append(URL("default","sponsor_leaf", vars={k:v for k,v in request.vars.items() if k not in ('embed', 'form_reservation_code')}, scheme=True, host=True, extension=False))
     if request.vars.form_reservation_code:
         #pass on the reservation code if possible
         d.append({'form_reservation_code':request.vars.form_reservation_code})
     
-    return(return_values)
+    return return_values
 
 def node_linkouts():
     """
     called with a node ID, since it makes sense to ask e.g. for all descendants of a node, even if this node has no OTT
     """
-    return_values = linkouts(is_leaf=False, id=request.args[0])
-    request.vars.update({'id':return_values['id']})
-    return_values['data']['ozspons'] = d = []
-    d.append(URL("default", "sponsor_node", vars=request.vars, scheme=True, host=True, extension=False))
-    #remove the embed functionality when popping out to a new window
-    d.append(URL("default","sponsor_node", vars={k:v for k,v in request.vars.items() if k not in ('embed', 'form_reservation_code')}, scheme=True, host=True, extension=False))
+    try:
+        return_values = linkouts(is_leaf=False, id=request.args[0])
+        request.vars.update({'id':return_values['id']})
+        return_values['data']['ozspons'] = d = []
+        d.append(URL("default", "sponsor_node", vars=request.vars, scheme=True, host=True, extension=False))
+        #remove the embed functionality when popping out to a new window
+        d.append(URL("default","sponsor_node", vars={k:v for k,v in request.vars.items() if k not in ('embed', 'form_reservation_code')}, scheme=True, host=True, extension=False))
+    except Exception as e:
+        return_values = dict(errors=['Sorry, there was an error getting your node data:', e], ott=None, data={}, name="error")
     if request.vars.form_reservation_code:
         #pass on the session if possible
         d.append({'form_reservation_code':request.vars.form_reservation_code})
-    return(return_values)
+    return return_values
 
 
 # OneZoom pages that redirect to other sites. These are used to register site visits so we can
@@ -224,7 +227,7 @@ def eol_page_ID():
 
 def opentree_url(ott):
     try:
-        return(["//tree.opentreeoflife.org/opentree/argus/ottol@{}".format(int(ott))])
+        return(["//tree.opentreeoflife.org/opentree/argus/@ott{}".format(int(ott))])
     except:
         raise HTTP(400,"No valid OpenTree id provided")
 
