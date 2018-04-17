@@ -108,3 +108,16 @@ class TestDatabaseSettings(object):
             else:
                 assert v[0] == test_charset, "Table-column {} (charset '{}') is different to {} (charset '{}')".format(
                     k, v[0], ni, test_charset)
+
+    def test_range_optimizer_max_mem_size(self):
+        """Test that if we are using a mysql version > 5.7.9, the range_optimizer_max_mem_size is set to at least the default in 5.7.12
+        In versions from 5.7.9 - 5.7.11 it took a value of 1536000 which meant multiple warnings of the form:
+        'Memory capacity of 1536000 bytes for 'range_optimizer_max_mem_size' exceeded. Range optimization was not done for this query.''"""
+        min_range_optimizer_max_mem_size = 8388608 #see https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_range_optimizer_max_mem_size
+        with self.db['connection'].cursor() as db_cursor:
+            db_cursor.execute("SELECT @@GLOBAL.range_optimizer_max_mem_size")
+            range_optimizer_max_mem_size = db_cursor.fetchone()
+            if range_optimizer_max_mem_size:
+                assert range_optimizer_max_mem_size[0] >= min_range_optimizer_max_mem_size, \
+                    "range_optimizer_max_mem_size is {} which is less than {}. Please set it to at least this value in my.cnf, or upgrade to mysql > 5.7.11".format(
+                    range_optimizer_max_mem_size[0], min_range_optimizer_max_mem_size)
