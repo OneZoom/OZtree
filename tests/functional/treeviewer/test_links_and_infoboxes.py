@@ -21,7 +21,7 @@ class TestLinksAndInfoboxes(FunctionalTest):
         print("== Running {} ==".format(os.path.basename(__file__)))
         super().setUpClass()
 
-    def test_MD_nolinks():
+    def test_MD_nolinks(self):
         """
         There should be no links in the museum display, even once modals have been loaded in to the page
         """
