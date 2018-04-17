@@ -59,9 +59,10 @@ class TestWikipages(FunctionalTest):
 
     def test_wikidata_has_wikipedia(self):
         """
-        Test pages that *definitely* should have a wikipedia Qid, e.g. human, dog, cat, mammals
+        Test pages that *definitely* should have a wikipedia Qid:
         """
         #self.browser.get(base_url + "life/@Homo_sapiens?pop=ol_{}".format(self.humanOTT))
+        print("human", flush=True, end="")
         self.browser.get(self.urls['leaf'](self.humanOTT))
         sleep(5)
         assert self.element_by_css_selector_exists("footer.wikipage-source"), "Human should have wikipedia page"
@@ -73,18 +74,21 @@ class TestWikipages(FunctionalTest):
         assert not self.element_by_class_exists("wikipedia-warning"), "Human wikipage should have no warnings"
         assert not self.element_by_class_exists("wikidata-warning"), "Human wikipage should have no warnings"
 
+        print(", dog", flush=True, end="")
         self.browser.get(self.urls['leaf'](self.dogOTT))
         sleep(5)
         assert self.element_by_css_selector_exists("footer.wikipage-source"), "Dog should have wikipedia page"
         assert not self.element_by_class_exists("wikipedia-warning"), "Dog wikipage should have no warnings"
         assert not self.element_by_class_exists("wikidata-warning"), "Dog wikipage should have no warnings"
 
+        print(", cat", flush=True, end="")
         self.browser.get(self.urls['leaf'](self.catOTT))
         sleep(5)
         assert self.element_by_css_selector_exists("footer.wikipage-source"), "Wildcat should have wikipedia page"
         assert not self.element_by_class_exists("wikipedia-warning"), "Wildcat wikipage should have no warnings"
         assert not self.element_by_class_exists("wikidata-warning"), "Wildcat wikipage should have no warnings"
 
+        print(", mammals", flush=True, end="")
         self.browser.get(self.urls['node'](self.mammalID))
         sleep(5)
         assert self.element_by_css_selector_exists("footer.wikipage-source"), "Mammals should have wikipedia page"
@@ -95,6 +99,7 @@ class TestWikipages(FunctionalTest):
         assert self.element_by_css_selector_exists("footer.wikipage-source"), "Mammals should have wikipedia page"
         assert not self.element_by_class_exists("wikipedia-warning"), "Mammal wikipage should have no warnings"
         assert not self.element_by_class_exists("wikidata-warning"), "Mammal wikipage should have no warnings"
+        print(" ...", flush=True, end="")
 
     def test_wikidata_no_linked_wikipedia(self):
         """
