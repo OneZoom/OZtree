@@ -6,6 +6,8 @@ import sys
 import os.path
 from time import sleep
 
+import requests
+
 from ...util import base_url, web2py_app_dir
 from ..functional_tests import FunctionalTest, linkouts_json
 
@@ -23,36 +25,72 @@ class TestTabs(FunctionalTest):
         # server_urls.OZ_leaf_json_url_func(1234). We need to coppture this function as javascript,
         # and create a python function that will evaluate the js and create the correct url
         #We save these functions for a the MD and the main life page in some permanent variables
-        self.browser.get(base_url + 'life')
-        js_get_life_leaf_link = self.browser.execute_script("return server_urls.OZ_leaf_json_url_func.toString()")
-        js_get_life_node_link = self.browser.execute_script("return server_urls.OZ_node_json_url_func.toString()")
-        self.urls={
-            'leaf': lambda ott: linkouts_json(self.browser, js_get_life_leaf_link, ott), 
-            'node': lambda id: linkouts_json(self.browser, js_get_life_node_link, id),
+    
+        self.linkout_css_tests = {
+            'opentree': 'a[href="/about/open-tree-of-life"]',
+            'wiki': 'table.infobox.biota', #taxonomy pages on wikipedia usually have a taxobox in the style <table class="infobox biota"...
+            'eol':'h1.scientific_name', #current eol page flags up the scientific name
+            'ncbi':'a[href="mailto:info@ncbi.nlm.nih.gov"]',
+            'iucn':'a[href="http://www.iucn.org"]',
+            'powo':'a[href="http://www.kew.org/science-conservation"]'
         }
+        
+    def teardown(self):
+        """
+        By default, check javascript errors after each test. If you don't want to do this, e.g. for iframes, thic can be overridden
+        """
+        self.clear_log(check_errors=False) #errors accumulate in the iframes, so ignore them. Note that this means we can't check for JS errors in our own popup code
+
+        
+    def test_no_tabs(self):
+        """Deliberately call the tab popup function with no tabs asked for"""
     
     def test_all_tabs(self):
         """
-        Test tabs within the treeviewer.
+        Test tabs within the expert treeviewer
         For simplicity, most of the other tests in this file will work on the pages 
         outside of the viewer, but we should at least check one within the viewer
         
-        opentree only in expert mode
-        powo never
+        We get the list of possible tabs from UI_layer.json
         """
-        leaf_tab_names = sorted(self.urls['leaf'](self.humanOTT).keys())
-        node_tab_names = sorted(self.urls['leaf'](self.mammalOTT).keys())
-        self.browser.get(base_url + 'life.html/@={0}?pop=ol_{0}#x0,y0,w1'.format(self.humanOTT))
-        sleep(10) # 10 seconds should be enough to load and pop up a tab
-        for tab in leaf_tab_names:
-            css_sel = "li#{} a".format(tab)
-            assert self.element_by_css_selector_exists(css_sel), "A tabbed link should exist at `{}`".format(css_sel)
-            print(self.browser.find_elements_by_css_selector(css_sel))
-            print(self.browser.find_element_by_css_selector(css_sel))
-            self.browser.find_elements_by_css_selector(css_sel)[0].click()
-            sleep(3)
-            self.browser.switch_to_frame(self.browser.find_element_by_css_selector(".popup-container .{} iframe".format(tab)))
-            #for each tab, we need a different check
-            #assert self.element_by_css_selector_exists("footer.wikipage-source")
-            self.browser.switch_to.default_content()
-
+        checked_tabs = {t['id']:False for t in requests.get(base_url + 'treeviewer/UI_layer.json').json()['tabs']}
+        
+        for identifier, tip_type in [('oak','leaf'), ('human','leaf'), ('mammal','node')]:
+            print(identifier + ":", flush=True, end="")
+            self.browser.get(base_url + 'life_expert.html/@={0}?pop={1}_{2}#x0,y0,w1'.format(
+                getattr(self, identifier + 'OTT'),
+                'ol' if tip_type=='leaf' else 'on',
+                getattr(self, identifier + 'OTT') if tip_type=='leaf' else getattr(self, identifier + 'ID')))
+            sleep(5) # 10 seconds should be enough to load and pop up a tab
+            for tab in self.browser.find_elements_by_css_selector('.external-tabs li:not([style*="display: none"])'):
+                tabname = tab.get_attribute("id")
+                anchors = tab.find_elements_by_tag_name("a")
+                print(" " + tabname, flush=True, end="")
+                assert len(anchors)==1, "A single tabbed link should exist for `{}`".format(tabname)
+                anchors[0].click()
+                sleep(3)
+                iframe_css = ".popup-container .{} iframe".format(tabname)
+                iframes = self.browser.find_elements_by_css_selector(iframe_css)
+                assert len(iframes)==1, "A single iframe should exist in `{}` for '{}'".format(iframe_css, tabname)
+                form_css = ".popup-container .{} form".format(tabname)
+                forms = self.browser.find_elements_by_css_selector(form_css)
+                assert len(forms)==1, "A single linkout form should exist in `{}` for '{}'".format(form_css, tabname)
+                form_links = forms[0].find_elements_by_tag_name("a")
+                assert len(form_links)==1, "A single linkout button in the form should exist in `{}` for '{}'".format(form_css, tabname)
+                href = forms[0].get_attribute('action') or form_links[0].get_attribute('href')
+                assert href, "There should always be a link out from each iframe"
+                self.browser.switch_to_frame(iframes[0])
+                
+                #for each tab, we need a different check
+                if tabname in self.linkout_css_tests:
+                    for sleeptime in (2,2,3,4):
+                        if not self.element_by_css_selector_exists(self.linkout_css_tests[tabname]):
+                            sleep(sleeptime) #wait a bit more to see if the frame loads
+                    assert self.element_by_css_selector_exists(self.linkout_css_tests[tabname]), "{} should exist in {} iframe. Check if {} is accessible online".format(
+                        self.linkout_css_tests[tabname], tabname, href
+                    )
+                
+                checked_tabs[tabname] = True
+                self.browser.switch_to.default_content()
+            print(", ", flush=True, end="")
+        assert all(checked_tabs.values()), "All tab types should have been checked"
