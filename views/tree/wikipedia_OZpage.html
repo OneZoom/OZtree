@@ -107,9 +107,9 @@ function show_wikipage_for_Qid(selector, lang, Qid, backup_name, restrict_links)
             append_wikidata_page(this.selector, this.id, this.lang, this.restrict_links)
         }
     },
-    error: function() {
-        $('.loading_pic',this.selector).hide();
-        this.selector.append("<h1>{{=T('Could not get wikidata information')}}</h1>");
+    error: function(data) {
+        {{if is_testing:}}console.log("error ", data);{{pass}}
+        this.selector.html("<h1>{{=T('Could not get wikidata information')}}</h1>");
     }    
   })
 }
@@ -145,9 +145,9 @@ function show_wikipage_for_name(selector, lang, Qid, name, restrict_links) {
             append_wikidata_page(this.selector, this.id, this.lang, this.restrict_links)
         }
     },
-    error: function() {
-        $('.loading_pic',this.selector).hide();
-        this.selector.append("<h1>{{=T('Could not search for wikipedia page')}}</h1>");
+    error: function(data) {
+        {{if is_testing:}}console.log("error ", data);{{pass}}
+        this.selector.html("<h1>{{=T('Could not search for wikipedia page')}}</h1>");
     }
   })
 }
@@ -158,13 +158,14 @@ function append_wikidata_page(selector, Qid, lang, restrict_links) {
   var base_url = "https://www.wikidata.org/"
   $.ajax({
     type: "GET",
+    headers: {'X-Requested-With': 'XMLHttpRequest'},
     timeout: timeout_ms, 
     pagetitle: Qid,
     base_url: base_url,
     selector: selector,
     restrict_links: restrict_links,
     //url: base_url + "api/rest_v1/page/html/" + Qid,
-    url: "http://cors-anywhere.herokuapp.com/" + base_url + "wiki/" + Qid,
+    url: "http://cors-anywhere.herokuapp.com/" + base_url.replace(/https?:\/\//,'') + "wiki/" + Qid,
     dataType: "html",
     data: {
         printable:'yes',
@@ -173,8 +174,8 @@ function append_wikidata_page(selector, Qid, lang, restrict_links) {
         //format:'jsonp',
     },
     success: append_wikipage,
-    error: function() {
-        $('.loading_pic',this.selector).hide();
+    error: function(data) {
+        {{if is_testing:}}console.log("error ", data);{{pass}}
         this.selector.html("<h1>{{=T('Could not get wikidata page')}}</h1>");
     }
   });
@@ -194,15 +195,15 @@ function append_wikipedia_page(selector, pagetitle, base_url, restrict_links) {
     url: base_url + "api/rest_v1/page/html/" + pagetitle,
     dataType: "html",
     success: append_wikipage,
-    error: function() {
-        $('.loading_pic',this.selector).hide();
+    error: function(data) {
+        {{if is_testing:}}console.log("error ", data);{{pass}}
         this.selector.html("<h1>{{=T('Could not get wikipedia page')}}</h1>");
     }
   });
 }
 
 function append_wikipage(data) {
-  {{if is_testing:}}console.log("Injecting wikipage!");{{pass}}
+  {{if is_testing:}}console.log("Injecting wikipage from " + this.url);{{pass}}
   //double-check that we haven't inserted it while waiting for a previous AJAX call
   if (!this.selector.children().last().hasClass('wiki-content')) {
     //convert reponse to html (should throw away <head> and <body> tags)
@@ -218,7 +219,7 @@ function append_wikipage(data) {
 
     //inject stylesheet
     var ss = $('link[rel~="stylesheet"]', html_to_inject).addClass('injected-stylesheet');
-    //make into an absolute URL if necessary
+    //make stylesheet link into an absolute URL if necessary
     var self = this;
     ss.attr('href',function(i,v) {if (/^https?:\/\//.test(v) || /\/\//.test(v)) {} else {return (self.base_url + v)};});
     $('head').prepend(ss);
@@ -235,13 +236,11 @@ function append_wikipage(data) {
     $('div[role="navigation"]', html_to_inject).remove();
     html_to_inject.children('ul').remove(); //remove lists, e.g. "see also", etc. : Assumes references (to keep) are ordered lists (not always true)
     $('.sistersitebox,.sisterlinks,.mw-editsection, #See_also, #External_links', html_to_inject).remove();
-    {{if is_testing:}}console.log("Hiding wiki loading pic");{{pass}}
-    $('.loading_pic',this.selector).hide();
     this.selector.append(html_to_inject);
   }
 }
 
 $(document).ready(function() {
-    show_wikipage_for_Qid($('#wikipage'), '{{=wikilang}}', 'Q{{=Qid}}', "{{=XML(sciname.replace(r'"', r'\"'))}}", {{=restrict_links}});
+    show_wikipage_for_Qid($('#wikipage'), '{{=wikilang}}', 'Q{{=Qid}}', "{{=XML((sciname or '').replace(r'"', r'\"'))}}", {{=restrict_links}});
 })
 </script>
