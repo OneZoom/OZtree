@@ -68,7 +68,8 @@ class TestTabs(FunctionalTest):
                 print(" " + tabname, flush=True, end="")
                 assert len(anchors)==1, "A single tabbed link should exist for `{}`".format(tabname)
                 anchors[0].click()
-                sleep(3)
+                wait_time = 2
+                sleep(wait_time)
                 iframe_css = ".popup-container .{} iframe".format(tabname)
                 iframes = self.browser.find_elements_by_css_selector(iframe_css)
                 assert len(iframes)==1, "A single iframe should exist in `{}` for '{}'".format(iframe_css, tabname)
@@ -85,10 +86,11 @@ class TestTabs(FunctionalTest):
                 if tabname in self.linkout_css_tests:
                     for sleeptime in (2,2,3,4):
                         if not self.element_by_css_selector_exists(self.linkout_css_tests[tabname]):
+                            wait_time+=sleeptime
                             sleep(sleeptime) #wait a bit more to see if the frame loads
-                    assert self.element_by_css_selector_exists(self.linkout_css_tests[tabname]), "{} should exist in {} iframe. Check if {} is accessible online".format(
-                        self.linkout_css_tests[tabname], tabname, href
-                    )
+                    assert self.element_by_css_selector_exists(self.linkout_css_tests[tabname]), \
+                        "{} should exist in {} iframe, but is not accessible after {} secs. Check if {} is accessible online".format(
+                        self.linkout_css_tests[tabname], tabname, wait_time, href)
                 
                 checked_tabs[tabname] = True
                 self.browser.switch_to.default_content()
