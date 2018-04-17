@@ -65,11 +65,14 @@ class FunctionalTest(object):
             db_cursor.execute(sql['leaves'], ("Felis silvestris",))
             self.catOTT = db_cursor.fetchone()[0]
             self.db['connection'].commit() #need to commit here otherwise next select returns stale data
+            db_cursor.execute(sql['leaves'], ("Quercus robur",)) #get a plant with lot of data
+            self.oakOTT = db_cursor.fetchone()[0]
+            self.db['connection'].commit() #need to commit here otherwise next select returns stale data
             db_cursor.execute(sql['nodes'], ("Mammalia",))
             self.mammalOTT, self.mammalID = db_cursor.fetchone()
             self.db['connection'].commit() #need to commit here otherwise next select returns stale data
         except (ValueError, TypeError):
-            assert False, "Could not find human, dog, cat, or mammal OTTs"
+            assert False, "Could not find human, dog, cat, oak, or mammal OTTs"
             
         db_cursor.close()
 
