@@ -64,39 +64,39 @@ class TestWikipages(FunctionalTest):
         #self.browser.get(base_url + "life/@Homo_sapiens?pop=ol_{}".format(self.humanOTT))
         print("human", flush=True, end="")
         self.browser.get(self.urls['leaf'](self.humanOTT))
-        sleep(5)
-        assert self.element_by_css_selector_exists("footer.wikipage-source"), "Human should have wikipedia page"
+        check_elements_exist_after_sleep([
+            (self.element_by_css_selector_exists, "footer.wikipage-source", "Human should have wikipedia page")])
         assert not self.element_by_class_exists("wikipedia-warning"), "Human wikipage should have no warnings"
         assert not self.element_by_class_exists("wikidata-warning"), "Human wikipage should have no warnings"
         self.browser.get(self.urls['leaf_md'](self.humanOTT))
-        sleep(5)
-        assert self.element_by_css_selector_exists("footer.wikipage-source"), "Human should have wikipedia page"
+        check_elements_exist_after_sleep([
+            (self.element_by_css_selector_exists,"footer.wikipage-source", "Human should have wikipedia page")])
         assert not self.element_by_class_exists("wikipedia-warning"), "Human wikipage should have no warnings"
         assert not self.element_by_class_exists("wikidata-warning"), "Human wikipage should have no warnings"
 
         print(", dog", flush=True, end="")
         self.browser.get(self.urls['leaf'](self.dogOTT))
-        sleep(5)
-        assert self.element_by_css_selector_exists("footer.wikipage-source"), "Dog should have wikipedia page"
+        check_elements_exist_after_sleep([
+            (self.element_by_css_selector_exists, "footer.wikipage-source", "Dog should have wikipedia page")])
         assert not self.element_by_class_exists("wikipedia-warning"), "Dog wikipage should have no warnings"
         assert not self.element_by_class_exists("wikidata-warning"), "Dog wikipage should have no warnings"
 
         print(", cat", flush=True, end="")
         self.browser.get(self.urls['leaf'](self.catOTT))
-        sleep(5)
-        assert self.element_by_css_selector_exists("footer.wikipage-source"), "Wildcat should have wikipedia page"
+        check_elements_exist_after_sleep([
+            (self.element_by_css_selector_exists, "footer.wikipage-source", "Wildcat should have wikipedia page")])
         assert not self.element_by_class_exists("wikipedia-warning"), "Wildcat wikipage should have no warnings"
         assert not self.element_by_class_exists("wikidata-warning"), "Wildcat wikipage should have no warnings"
 
         print(", mammals", flush=True, end="")
         self.browser.get(self.urls['node'](self.mammalID))
-        sleep(5)
-        assert self.element_by_css_selector_exists("footer.wikipage-source"), "Mammals should have wikipedia page"
+        check_elements_exist_after_sleep([
+            (self.element_by_css_selector_exists, "footer.wikipage-source", "Mammals should have wikipedia page")])
         assert not self.element_by_class_exists("wikipedia-warning"), "Mammal wikipage should have no warnings"
         assert not self.element_by_class_exists("wikidata-warning"), "Mammal wikipage should have no warnings"
         self.browser.get(self.urls['node_md'](self.mammalID))
-        sleep(5)
-        assert self.element_by_css_selector_exists("footer.wikipage-source"), "Mammals should have wikipedia page"
+        check_elements_exist_after_sleep([
+            (self.element_by_css_selector_exists, "footer.wikipage-source", "Mammals should have wikipedia page")])
         assert not self.element_by_class_exists("wikipedia-warning"), "Mammal wikipage should have no warnings"
         assert not self.element_by_class_exists("wikidata-warning"), "Mammal wikipage should have no warnings"
         print(" ...", flush=True, end="")
@@ -107,14 +107,14 @@ class TestWikipages(FunctionalTest):
         """
         nolang_leaf_OTT, nolang_node_ID = self.get_nolang_wiki_entries()
         self.browser.get(self.urls['leaf'](nolang_leaf_OTT))
-        sleep(5)
-        assert self.element_by_css_selector_exists("footer.wikipage-source"), "Species with a wikidata number should have a wiki tab even if there is no enwiki sitelink"
-        assert self.element_by_class_exists("wikipedia-warning"), "Searching by name for a popular species with no enwiki sitelink should probably give a enwiki page"
+        check_elements_exist_after_sleep([
+            (self.element_by_css_selector_exists, "footer.wikipage-source", "Species with a wikidata number should have a wiki tab even if there is no enwiki sitelink"),
+            (self.element_by_class_exists, "wikipedia-warning", "Searching by name for a popular species with no enwiki sitelink should probably give a enwiki page")])
 
         self.browser.get(self.urls['node'](nolang_node_ID))
-        sleep(5)
-        assert self.element_by_css_selector_exists("footer.wikipage-source"), "Taxa with a wikidata number should have a wiki tab even if there is no enwiki sitelink"
-        assert self.element_by_class_exists("wikipedia-warning"), "Searching by name for a popular taxon with no enwiki sitelink should probably give a enwiki page"
+        check_elements_exist_after_sleep([
+            (self.element_by_css_selector_exists, "footer.wikipage-source", "Taxa with a wikidata number should have a wiki tab even if there is no enwiki sitelink"),
+            (self.element_by_class_exists,"wikipedia-warning", "Searching by name for a popular taxon with no enwiki sitelink should probably give a enwiki page")])
         
         
     def test_wikidata_only_page(self):
@@ -123,15 +123,15 @@ class TestWikipages(FunctionalTest):
         """
         nolang_leaf_OTT, nolang_node_ID = self.get_nolang_wiki_entries()
         self.browser.get(self.urls['leaf_nosearch'](nolang_leaf_OTT))
-        sleep(5)
-        assert self.element_by_css_selector_exists("footer.wikipage-source"), "Species with a wikidata number should have a wiki tab even if there is no enwiki sitelink"
-        assert self.element_by_class_exists("wikidata-warning"), "Searching for an unnamed species with no enwiki sitelink should give the wikidata page"
+        check_elements_exist_after_sleep([
+            (self.element_by_css_selector_exists, "footer.wikipage-source", "Species with a wikidata number should have a wiki tab even if there is no enwiki sitelink"),
+            (self.element_by_class_exists, "wikidata-warning", "Searching for an unnamed species with no enwiki sitelink should give the wikidata page")])
 
         self.browser.get(self.urls['node_nosearch'](nolang_node_ID))
-        sleep(5)
-        assert self.element_by_css_selector_exists("footer.wikipage-source"), "Taxa with a wikidata number should have a wiki tab even if there is no enwiki sitelink"
-        assert self.element_by_class_exists("wikidata-warning"), "Searching for an unnamed taxon with no enwiki sitelink should give the wikidata page"
-        
+        check_elements_exist_after_sleep([
+            (self.element_by_css_selector_exists, "footer.wikipage-source", "Taxa with a wikidata number should have a wiki tab even if there is no enwiki sitelink"),
+            (self.element_by_class_exists, "wikidata-warning", "Searching for an unnamed taxon with no enwiki sitelink should give the wikidata page")])
+        sleep(2) #wait for logs to be written
         self.clear_log() #otherwise we get a few errors about unloaded pngs, due to the hacky way we display wikidata pages (through cors-anywhere.herokuapp.com)
         
     def get_nolang_wiki_entries(self):
@@ -154,4 +154,15 @@ class TestWikipages(FunctionalTest):
         assert nolang_node_ID, "To test we need at least one leaf with a wikidata entry but no site languages - this could fail depending on wikidata completeness"
         db_cursor.close()
         return nolang_leaf_OTT, nolang_node_ID
-    
+
+def check_elements_exist_after_sleep(check_tuple_array):
+    """
+    Many of these elements will only exist once wikipedia or wikidata pages have been loaded
+    so we try a few times before asserting
+    """
+    for sleeptime in (2,2,2,3,4):
+        if any([not check[0](check[1]) for check in check_tuple_array]):
+            sleep(sleeptime)
+            continue
+    for check in check_tuple_array:
+        assert check[0](check[1]), check[2]
