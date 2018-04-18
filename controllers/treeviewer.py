@@ -96,7 +96,6 @@ def tourstop():
     
     if not tourstop:
         return dict(error="No tour")
-    print(tourstop.id)
     #find other tours which cover this point - might want to order here by rating or alphabetical name
     tourstops = db(db.tourorders.stop_id == tourstop.id).select(db.tourorders.ALL, db.tours.ALL, join=db.tours.on(db.tourorders.identifier==db.tours.identifier))
     #find maximum number of stops for each tour, so we know if there is a next
