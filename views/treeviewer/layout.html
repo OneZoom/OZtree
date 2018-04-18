@@ -104,11 +104,11 @@ var locations_json = '{{=XML(setup_params.get("locations_json") or "[]")}}';
     Names for each function are hard-coded into the OneZoom viewer (in config.ui within global_config.js)
 these refer to items in the viewer_UI file */
 
+
 var UI_callbacks = {
   
   badOTT: function(ott) { /* used within setup_page.js when the page tries to load a bad location */
-    $('#error-modal .uk-modal-dialog > p').hide();
-    $('#error-modal .uk-modal-dialog > p.badOTT').show();
+    $('#error-modal .uk-modal-dialog a').attr('href',function(i, v) {return v?v.toString().replace("...OTT...",ott.toString()):undefined});
     UIkit.modal('#error-modal').show();
   },
 

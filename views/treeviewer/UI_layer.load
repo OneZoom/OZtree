@@ -114,7 +114,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     <div class="uk-modal-dialog uk-modal-body">
         <button class="uk-modal-close-outside" type="button" uk-close></button>
         <h2 class="uk-modal-title">Sorry</h2>
-        <p class="badOTT">{{include "treeviewer/badOTT.load"}}</p>
+        <div class="badOTT">{{include "treeviewer/badOTT.load"}}</div>
     </div>
 </div>
 <div id="info-modal" class="uk-modal-container" uk-modal>
