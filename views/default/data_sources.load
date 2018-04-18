@@ -11,7 +11,7 @@
 
 <h3>Evolutionary Tree</h3>
 
-<p>The data used to construct the main tree on this site is from a {{=A("hand-crafted mix of sources",_href=URL("data_sources.html"))}}, but relies heavily on the {{=A("Open Tree of Life", _href="http://www.opentreeoflife.org")}} project, to whom we are extremely grateful. For further, extensive information and references, {{=A("please explore the tree", _href=URL('life.html'))}} where the <q>data sources</q> menu item reveals full details about where the data came from. If you are an expert on certain species, we encourage you to {{=A("contribute data",_href="https://tree.opentreeoflife.org/curator")}} to the OpenTree project. </p>
+<p>The data used to construct the main tree on this site is from a {{=A("hand-crafted mix of sources",_href=URL("default", "data_sources.html"))}}, but relies heavily on the {{=A("Open Tree of Life", _href="http://www.opentreeoflife.org")}} project, to whom we are extremely grateful. For further, extensive information and references, {{=A("please explore the tree", _href=URL('life.html'))}} where the <q>data sources</q> menu item reveals full details about where the data came from. If you are an expert on certain species, we encourage you to {{=A("contribute data",_href="https://tree.opentreeoflife.org/curator")}} to the OpenTree project. </p>
 
 <p>The OneZoom tree of life is based on a bespoke <q>backbone</q>, originally focussed on vertebrate species, but now extended more widely to encompass all archaea and eukaryotes.</p>
 
