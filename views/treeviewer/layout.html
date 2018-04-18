@@ -125,6 +125,8 @@ var UI_callbacks = {
   openCopyright: function(pic_src, pic_fn) {
     var load_url = "{{=XML(URL('tree', 'pic_info', scheme=True, host=True, extension='html', args=['...PICSRC...', '...PICFN...'], vars=(setup_params.get('popups') or {}).get('vars')))}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
     var link_url = "{{=URL('tree','pic_info', scheme=True, host=True, extension=False, args=['...PICSRC...', '...PICFN...'], vars={'redirect':1})}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
+    $("#imageinfo-modal .popup-content .iframe-loading-info").show();
+    $("#imageinfo-modal .popup-content .no-loading-info").hide();
     //Always load into a new iframe
     var ifrm = document.createElement("iframe");
     ifrm.setAttribute('src', load_url);
@@ -132,7 +134,7 @@ var UI_callbacks = {
       {{if is_testing:}}console.log("Hiding image iframe loading info");{{pass}}
       $(".iframe-loading-info", $(this).parent().parent()).hide()});
     ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
-    $("#imageinfo-modal .popup-content").append(ifrm)
+    $("#imageinfo-modal .popup-content").append(ifrm);
     $("#imageinfo-modal .uk-modal-header a").attr('href', link_url);
     UIkit.modal('#imageinfo-modal').show();
     return [load_url, link_url]
@@ -843,8 +845,10 @@ function setupUI() {
 
     $('#imageinfo-modal')
         .on('hide', function() {
-             $('#imageinfo-modal .popup-content').empty();
-        })
+             $("#imageinfo-modal .uk-modal-header a").removeAttr('href');
+             $('#imageinfo-modal .popup-content iframe').remove();
+             $('#imageinfo-modal .popup-content .no-loading-info').show();
+        });
     
     /*** Model for external tabs, e.g. wikipedia (must create & destroy tabbed content (e.g. iframes)) ***/
     $('#external-modal')

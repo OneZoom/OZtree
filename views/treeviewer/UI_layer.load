@@ -169,7 +169,8 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
             <h2 class="uk-modal-title">{{=T('Image information')}}{{if request.vars.links!='none':}}<a href="" target="_blank" class="uk-icon-button expand-tab" uk-tooltip="pos: left" title="{{=T('Open this in a new window')}}" uk-icon="icon: expand; ratio: 0.75"></a>{{pass}}</h2>
         </div>
         <div class="uk-modal-body popup-content iframe-container">
-          <p class="iframe-loading-info uk-position-center">{{=T('Waiting for image information to load')}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
+          <p class="no-loading-info uk-position-center">{{=T('No image specified, sorry')}}</p>
+          <p class="iframe-loading-info uk-position-center" style="display:none">{{=T('Waiting for image information to load')}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
         </div>
     </div>
 </div>
