@@ -113,7 +113,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
 <div id="error-modal" class="uk-modal-container" uk-modal>
     <div class="uk-modal-dialog uk-modal-body">
         <button class="uk-modal-close-outside" type="button" uk-close></button>
-        <h2 class="uk-modal-title">Sorry</h2>
+        <h2 class="uk-modal-title">{{=T('Error')}}</h2>
         <div class="badOTT">{{include "treeviewer/badOTT.load"}}</div>
     </div>
 </div>
@@ -177,9 +177,9 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
 <div id="external-modal" class="uk-modal-container" uk-modal>
   <div class="uk-modal-dialog">
     <button class="uk-modal-close-outside" type="button" uk-close></button>
-    <p class="tab-loading-info uk-position-center">{{=T('Waiting for further information details from OneZoom')}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
-    <div class="no-tab-data"><h3>{{=T('No data available')}}</h3><p>{{=T('Sorry, we do not have any extra information for this species or group')}}</p></div>
-    <div class="external-content">
+    <div class="no-tab-data uk-position-center"><h3>{{=T('No data available')}}</h3><p>{{=T('Sorry, we do not have any extra information for this species or group')}}</p></div>
+    <p class="tab-loading-info uk-position-center" style="display:none">{{=T('Waiting for further information details from OneZoom')}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
+    <div class="external-content" style="display:none">
       <ul uk-tab class="external-tabs">
         <!--A list of all the available tabs-->
         {{for tab in tabs:}}
