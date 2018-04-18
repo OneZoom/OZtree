@@ -3,14 +3,8 @@ that have a .load extension which (apart from sponsor_node_price.load) is likely
 into the tree viewer as well as being accessible as stand-alon pages */
 
 
-.terms, .how, .data_sources {
-  img {
-      height: 12em;
-      margin-left: 1em;
-      float: right;
-      background-color: black;
-  }
-  
+.terms, .how, .data_sources, .about {
+
   img.rgt_edge {
       height: auto;
       float:right; 
@@ -41,7 +35,13 @@ into the tree viewer as well as being accessible as stand-alon pages */
 }
 
 .data_sources {
-  
+  img {
+      height: 12em;
+      margin-left: 1em;
+      float: right;
+      background-color: black;
+  }
+    
   ul {
     list-style-type: none
   }
