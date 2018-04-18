@@ -123,7 +123,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <div class="uk-modal-header">
             <h2 class="uk-modal-title">{{=T('More information')}}</h2>
         </div>
-        <div class="uk-modal-body" uk-overflow-auto></div>
+        <div class="uk-modal-body" uk-overflow-auto><p class="uk-position-center unloaded">{{=T('Getting OneZoom information')}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p></div>
     </div>
 </div>
 <div id="about-modal" class="uk-modal-container" uk-modal>
@@ -132,7 +132,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <div class="uk-modal-header">
             <h2 class="uk-modal-title">{{=T('About the OneZoom tree of life')}}</h2>
         </div>
-        <div class="uk-modal-body" uk-overflow-auto></div>
+        <div class="uk-modal-body" uk-overflow-auto><p class="uk-position-center unloaded">{{=T('Getting OneZoom information')}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p></div>
     </div>
 </div>
 <div id="howuse-modal" class="uk-modal-container" uk-modal>
@@ -141,7 +141,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <div class="uk-modal-header">
             <h2 class="uk-modal-title">{{=T('How to use the OneZoom explorer')}}</h2>
         </div>
-        <div class="uk-modal-body" uk-overflow-auto></div>
+        <div class="uk-modal-body" uk-overflow-auto><p class="uk-position-center unloaded">{{=T('Getting OneZoom information')}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p></div>
     </div>
 </div>
 <div id="datasources-modal" class="uk-modal-container" uk-modal>
@@ -150,7 +150,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <div class="uk-modal-header">
             <h2 class="uk-modal-title">{{=T('Sources for the data used in this tree')}}</h2>
         </div>
-        <div class="uk-modal-body" uk-overflow-auto></div>
+        <div class="uk-modal-body" uk-overflow-auto><p class="uk-position-center unloaded">{{=T('Getting OneZoom information')}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p></div>
     </div>
 </div>
 <div id="terms-modal" class="uk-modal-container" uk-modal>
@@ -159,7 +159,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <div class="uk-modal-header">
             <h2 class="uk-modal-title">{{=T('Terms and conditions')}}</h2>
         </div>
-        <div class="uk-modal-body" uk-overflow-auto></div>
+        <div class="uk-modal-body" uk-overflow-auto><p class="uk-position-center unloaded">{{=T('Getting OneZoom information')}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p></div>
     </div>
 </div>
 <div id="imageinfo-modal" class="uk-modal-container" uk-modal>

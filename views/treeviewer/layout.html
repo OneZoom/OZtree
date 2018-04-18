@@ -794,46 +794,51 @@ function setupUI() {
     $('#info-modal')
         .on('beforeshow', function() {
             /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
-            if ($("#info-modal .uk-modal-body").children().length == 0)
+            if ($("#info-modal .uk-modal-body > .unloaded").length) {
                 var url = '{{=XML(URL("default","about_plus_data.load", vars=(setup_params.get("UI_layer") or {}).get("vars"), scheme=True, host=True))}}';
                 {{if is_testing:}}console.log("Loading url into page: " + url);{{pass}}
                 $("#info-modal .uk-modal-body").load(url);
+            }
         });
 
     $('#about-modal')
         .on('beforeshow', function() {
             /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
-            if ($("#about-modal .uk-modal-body").children().length == 0)
+            if ($("#about-modal .uk-modal-body > .unloaded").length) {
                 var url = '{{=XML(URL("default","about.load", vars=(setup_params.get("UI_layer") or {}).get("vars"), scheme=True, host=True))}}';
                 {{if is_testing:}}console.log("Loading url into page: " + url);{{pass}}
                 $("#about-modal .uk-modal-body").load(url);
+            }
         });
 
     $('#howuse-modal')
         .on('beforeshow', function() {
             /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
-            if ($("#howuse-modal .uk-modal-body").children().length == 0)
+            if ($("#howuse-modal .uk-modal-body > .unloaded").length) {
                 var url = '{{=XML(URL("default","how.load", vars=(setup_params.get("UI_layer") or {}).get("vars"), scheme=True, host=True))}}';
                 {{if is_testing:}}console.log("Loading url into page: " + url);{{pass}}
                 $("#howuse-modal .uk-modal-body").load(url);
+            }
         });
 
     $('#datasources-modal')
         .on('beforeshow', function() {
             /* to avoid loading all the about text on page load, we check here and load it via ajax if necessary */
-            if ($("#datasources-modal .uk-modal-body").children().length == 0)
+            if ($("#datasources-modal .uk-modal-body > .unloaded").length) {
                 var url = '{{=XML(URL("default","data_sources.load", vars=(setup_params.get("UI_layer") or {}).get("vars"), scheme=True, host=True))}}';
                 {{if is_testing:}}console.log("Loading url into page: " + url);{{pass}}
                 $("#datasources-modal .uk-modal-body").load(url);
+            };
         });
 
     $('#terms-modal')
         .on('beforeshow', function() {
             /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
-            if ($("#terms-modal .uk-modal-body").children().length == 0)
+            if ($("#terms-modal .uk-modal-body > .unloaded").length) {
                 var url = '{{=XML(URL("default","terms.load", args="site", vars=(setup_params.get("UI_layer") or {}).get("vars"), scheme=True, host=True))}}';
                 {{if is_testing:}}console.log("Loading url into page: " + url);{{pass}}
                 $("#terms-modal .uk-modal-body").load(url);
+            };
         });
 
     $('#imageinfo-modal')
