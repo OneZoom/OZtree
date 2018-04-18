@@ -20,7 +20,7 @@
 }}
 {{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
 
-<div id="wikipage"><div class="ajax-loading-pic">Obtaining wiki information<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></div></div>
+<div id="wikipage"><div class="ajax-loading-pic" style="height: 100%; display: flex; align-items: center; justify-content: center; background-color: white /* height 100 & bg:white hides the other loading pic */"><div>Obtaining wiki information<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></div></div></div>
 
 <script>
 /* this is where we do all the fancy wikipedia parsing stuff */
