@@ -132,7 +132,8 @@ var UI_callbacks = {
     ifrm.setAttribute('src', load_url);
     ifrm.addEventListener('load', function() {
       {{if is_testing:}}console.log("Hiding image iframe loading info");{{pass}}
-      $(".iframe-loading-info", $(this).parent().parent()).hide()});
+      $(".iframe-loading-info", $(this).parent().parent()).hide()
+    }, false);
     ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
     $("#imageinfo-modal .popup-content").append(ifrm);
     $("#imageinfo-modal .uk-modal-header a").attr('href', link_url);
@@ -230,8 +231,9 @@ function load_tab(tab_content) {
       var ifrm = document.createElement("iframe");
       ifrm.setAttribute('src', tab_content.attr('data-src'));
       ifrm.addEventListener('load', function() {
-        {{if is_testing:}}console.log("Hiding iframe loading pic");{{pass}}
-        $(".iframe-loading-info", $(this).parent().parent()).hide()});
+        {{if is_testing:}}console.log("Hiding iframe loading info");{{pass}}
+        $(".iframe-loading-info", $(this).parent().parent()).hide()
+        }, false);
       ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
       //add iframe inside a div wrapper
       tab_content.append($('<div>', {'class':'popup-content iframe-container'}).append(ifrm));
