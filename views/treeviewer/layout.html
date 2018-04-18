@@ -144,7 +144,7 @@ var UI_callbacks = {
   /* called as soon as a request to open a linkouts window is made */
   openLinkouts: function() {
     {{if is_testing:}}console.log("OneZoom internal JS has been asked to open tabs");{{pass}}
-    $('#external-modal .no-tab-data').hide()
+    $('#external-modal .no-tab-data').hide();
     $('#external-modal .external-content').hide();
     $('#external-modal .tab-loading-info').show();
     UIkit.modal('#external-modal').show();
@@ -855,14 +855,19 @@ function setupUI() {
     /*** Model for external tabs, e.g. wikipedia (must create & destroy tabbed content (e.g. iframes)) ***/
     $('#external-modal')
       .on('hidden', function() {
-        //remove content, data-src values, and hidden vars
+        {{if is_testing:}}console.log("Removing content, data-src values, and hidden vars from each tab");{{pass}}
         $('#external-modal .popup-container li').each(function() {
             $(this)
                 .attr("data-src","")
                 .children('.popup-content').remove()
-                .children('input').remove()
+                .children('form').removeAttr("action")
+                .children('form a').removeAttr("href onclick")
+                .children('form input').remove()
                 .children('.iframe-loading-info').show()
         });
+        $('#external-modal .no-tab-data').show();
+        $('#external-modal .external-content').hide();
+        $('#external-modal .tab-loading-info').hide();
       });
 
     $('#external-modal .popup-container li').on('show', function (event) {
