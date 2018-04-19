@@ -110,7 +110,7 @@ class TestTreeDataMismatch(FunctionalTest):
 
     def test_minlife_available(self):
         """
-        The minlife view for restricted installation should be should show mismatch
+        The minlife view for restricted installation should show mismatch error
         """
         self.test_mismatch("treeviewer/minlife")
 
