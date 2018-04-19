@@ -7,40 +7,25 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <link rel="shortcut icon" href="{{=URL('static', 'images/favicon.ico')}}" type="image/ico" />
-{{if request.vars.embed:}}
-<!-- Shouldn't embed a viewer within another: e.g. if accidentally called within an iframe of another viewer instance -->
-  <title>OneZoom embedded viewer</title>
-</head><body>
-<div id="stop_recursion">{{=T('Please close this popup window to return to the OneZoom tree viewer')}}</div>
-</body></html>
-{{else:
-    partner = None
-    if setup_params.get('partner'):
-        partner_data = db(db.partners.partner_identifier == setup_params['partner']).select().first()
-        if partner_data and partner_data.allow_own_site:
-            partner = partner_data.partner_identifier
-            setup_params['UI_layer']['vars']['partner_logo'] = partner_data.logo
-            setup_params['UI_layer']['vars']['partner_url'] = partner_data.url
-            setup_params['popups']['vars']['partner'] = partner_data.partner_identifier
-            setup_params['popups']['vars']['user_more_info'] = partner_data.default_more_info
-            if partner_data.popular_locations_json:
-                setup_params['locations_json'] = partner_data.popular_locations_json
-            pass
+{{
+partner = None
+if setup_params.get('partner'):
+    partner_data = db(db.partners.partner_identifier == setup_params['partner']).select().first()
+    if partner_data and partner_data.allow_own_site:
+        partner = partner_data.partner_identifier
+        setup_params['UI_layer']['vars']['partner_logo'] = partner_data.logo
+        setup_params['UI_layer']['vars']['partner_url'] = partner_data.url
+        setup_params['popups']['vars']['partner'] = partner_data.partner_identifier
+        setup_params['popups']['vars']['user_more_info'] = partner_data.default_more_info
+        if partner_data.popular_locations_json:
+            setup_params['locations_json'] = partner_data.popular_locations_json
         pass
     pass
+pass
+request.vars.links = setup_params['UI_layer']['vars'].get('links')
 }}
   <title>OneZoom Tree of Life Explorer, text page for {{=page_info.get('title_name')}}</title>
   {{if response.canonical:}}<link rel="canonical" href="{{=response.canonical}}">{{pass}}
-{{try:}}
-{{version = str(page_info.get('version')+0)}}
-{{except TypeError:}}
-<!-- had a problem with version mismatch -->
-  </head>
-  <body><h1 class="OneZoom_error">{{=T('Sorry - there has been a OneZoom error when getting the tree')}}</h1>
-{{=XML(T('No appropriate tree version available (Error: %s). Please <a href="mailto:mail@onezoom.org">contact us</a> and tell us of the problem') % (page_info.get('version'),))}}</body>
-</html>
-{{else:}}
-
 {{include 'web2py_ajax.html' #only really needed for web2py ajax loading in sponsor_node tab (must be above the UIkit lines)}}
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
   <!-- fallback to local jQuery version e.g. if offline -->
@@ -50,15 +35,15 @@
   <script src="{{=URL('static','uikit-3/js/uikit-icons.min.js')}}"></script>
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree.css')}}" />
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/OZ_shared.css')}}" />
-  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/completetree_' + version +  '.js')}}"></script>
-  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/cut_position_map_' + version +  '.js')}}"></script>
-  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/dates_' + version + '.js')}}"></script>
+  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/completetree_{}.js'.format(page_info['version']))}}"></script>
+  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/cut_position_map_{}.js'.format(page_info['version']))}}"></script>
+  <script type="text/javascript" src="{{=URL('static', 'FinalOutputs/data/dates_{}.js'.format(page_info['version']))}}"></script>
   <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common.js')}}"></script>
   <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry.js')}}"></script>
   
   <script>
     //include a few default params early on, so they can be used / overridden in the file which includes this layout
-    var version = {{=version}};
+    var version = {{=page_info['version']}};
     var extra_title = "{{='/' + partner if partner else ''}}";
     var OZstrings={{include 'treeviewer/js_strings.json'}}
     var server_urls = {
@@ -934,5 +919,3 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   </script>
 </body>
 </html>
-{{pass #version exception}}
-{{pass #embed not present}}
