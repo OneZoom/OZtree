@@ -22,30 +22,13 @@ setup_params = {
   }
 }}
 
-{{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html' if str(page_info.get('version')).isdigit() else 'treeviewer/layout_bad_version.html')}}
+{{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
 <!-- since this should be possible to run without a server, remove the ability to switch languages/pages -->
 <style>
 .treeswitch {display: none}
 .langswitch {display: none}
 </style>
 <script type="text/javascript">
-/* check that we are not using a non-matching tree version - a single one-off ajax call */
-$.ajax({
-    type:"GET", 
-    url: "{{=URL('API', 'version', scheme=True, host=True, extension='json')}}", 
-    success: function(data) {
-            if (data.version != '{{=page_info.get("version")}}') {
-                $('body').prepend('<h1 class="OneZoom_error", style="z-index: 100; position:absolute; margin:1em; color:red;">' +
-                'WARNING: the version of the OneZoom tree you are running ({{=page_info.get("version")}})' +
-                ' does not match the data returned from the OneZoom website (' + data.version + '). ' +
-                'The data shown on this tree may be matched to the wrong lifeforms</h1>')
-            }
-        }, 
-    error: function(jqXHR, textStatus, errorThrown) {
-            alert(jqXHR.status);
-        },
-});
-
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
 var tree_config=null;
 var pagetitle_func = function(nm) {return (nm)?("OneZoom restricted: "+ nm):"OneZoom Tree of Life Explorer: restricted version"};

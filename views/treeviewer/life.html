@@ -37,7 +37,7 @@ setup_params = {
     )
   }
 }}
-{{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html' if str(page_info.get('version')).isdigit() else 'treeviewer/layout_bad_version.html')}}
+{{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
 <!-- could include bespoke css file here -->
 <script type="text/javascript">
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */

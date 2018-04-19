@@ -3,7 +3,7 @@
 import datetime
 import re
 
-from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __check_version, __make_user_code
+from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code
 """ Some settings for sponsorship"""
 try:
     reservation_time_limit = myconf.take('sponsorship.reservation_time_limit_mins') * 60.0
@@ -1292,7 +1292,7 @@ def treeview_info(has_text_tree=True):
     """
     location = remove_location_arg(request.args)
     partner  = remove_partner_arg(request.args)
-    page_info={'partner': partner, 'version':__check_version()}
+    page_info={'partner': partner}
     if len(request.args) and request.args[0] == 'tour':
         #could have been life/trail2016/tour/newtour/@Mammalia or simply life/trail2016/tour/@Mammalia
         tour_name = None if len(request.args)==1 else request.args[1]
