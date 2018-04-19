@@ -37,38 +37,56 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/OZ_shared.css')}}" />
   <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common.js')}}"></script>
   <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry.js')}}"></script>
+{{if page_info.get('try_local_treefiles_version'):}}
+  <!-- Load local versions of the files first. If the return value from the API/version call does not match, variables in here will simply be replaced -->
+  <script type="text/javascript" src="{{=URL("static", "FinalOutputs/data/completetree_{}.js".format(page_info["try_local_treefiles_version"]))}}"></script>
+  <script type="text/javascript" src="{{=URL("static", "FinalOutputs/data/cut_position_map_{}.js".format(page_info["try_local_treefiles_version"]))}}"></script>
+  <script type="text/javascript" src="{{=URL("static", "FinalOutputs/data/dates_{}.js".format(page_info["try_local_treefiles_version"]))}}"></script>
+{{pass}}
   <script type="text/javascript">
-    /* we load the data files dynamically because they (a) are large and (b) depend on a version number
-     * collected via an ajax call 
+    /* we load the data files dynamically because they:
+     *  (a) are large and
+     *  (b) depend on a version number collected via an ajax call 
      */
     var version_error = function(data) {
       alert("Sorry, there has been a OneZoom version error: please contact mail@onezoom.org quoting the following error:\n" + data);
-      document.write('\<style type="text/css"\>#OneZoomCanvasID {display:none}\</script\>');
+      document.write('<style type="text/css"\>#OneZoomCanvasID {display:none}<\/style>');
     };
     var dynamic_scripts_to_load = [
-        '{{=URL("static", "FinalOutputs/data/completetree_...VERSION....js")}}',
-        '{{=URL("static", "FinalOutputs/data/cut_position_map_...VERSION....js")}}',
-        '{{=URL("static", "FinalOutputs/data/dates_...VERSION....js")}}'
+        '{{=URL("static", "FinalOutputs/data/completetree_...VERSION....js", scheme=True, host=True)}}',
+        '{{=URL("static", "FinalOutputs/data/cut_position_map_...VERSION....js", scheme=True, host=True)}}',
+        '{{=URL("static", "FinalOutputs/data/dates_...VERSION....js", scheme=True, host=True)}}'
     ];
-    $.each(dynamic_scripts_to_load, function() {$.holdReady(true);}); //wait until all dynamic_scripts are loaded
+    $.each(dynamic_scripts_to_load, function() {$.holdReady(true);}); //hold the ready state from firing until all dynamic_scripts are loaded
     $.ajax({
       type:"GET", 
       url: "{{=URL('API', 'version', scheme=True, host=True, extension='json')}}", 
       success: function(data) {
         if (parseInt(data.version)) {
-          $.each(dynamic_scripts_to_load, 
-            function(index, src_name) {
-              $.ajax({
-                url: src_name.replace("...VERSION...", data.version),
-                dataType: "script",
-                cache: true, //these version scripts never change, so we can always cache them
-                success: function() {
-                  $.holdReady(false);
-                  {{if is_testing:}}console.log("Loaded " + this.url);{{pass}}
-                },
-                error: function() {version_error("Could not get " + this.url);}
+          {{if page_info.get('try_local_treefiles_version'):}}
+          if (data.version == "{{=page_info.get('try_local_treefiles_version')}}") {
+            {{if is_testing:}}console.log("Local treefiles already loaded");{{pass}}
+            $.each(dynamic_scripts_to_load, function() {$.holdReady(false);}); //once added to the head, these should force page to wait until all loaded before ready
+          } else {
+            alert("The local files in this restricted version of the OneZoom viewer are out of date. Please update your version." + 
+                "Meanwhile, all data files are being supplanted by remote versions, which is slower")
+          {{else:}}
+          {
+          {{pass}}
+            $.each(dynamic_scripts_to_load, 
+              function(index, src_name) {
+                $.ajax({
+                  url: src_name.replace("...VERSION...", data.version),
+                  dataType: "script",
+                  cache: true, //these version scripts never change, so we can always cache them
+                  success: function() {
+                    $.holdReady(false);
+                    {{if is_testing:}}console.log("Loaded " + this.url);{{pass}}
+                  },
+                  error: function() {version_error("Could not get " + this.url);}
+                });
               });
-            });
+          }
         } else {
             version_error(data.error);
         }
