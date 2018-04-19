@@ -47,19 +47,19 @@ h2 {
 .uk-navbar-item div {
     line-height:1rem; /* force vertical centering */
 }
-#logo {
+.logo {
     float: left;
 }
-#logo a {
+.logo a {
     opacity: 0.55;
 }
-#logo a:hover {
+.logo a:hover {
     opacity: 1;
 }
-#logo a, #logo img {
+.logo a, #logo img {
     vertical-align: middle;
 }
-#logo img {
+.logo img {
     height: 2rem;
 }
 
@@ -604,7 +604,7 @@ iframe {
     #advanced_search_button svg {
         height: 1rem;
     }
-    #logo .logo img {
+    .logo img {
         height: 1.5rem;
     }
     #searchnav .searchbox input {

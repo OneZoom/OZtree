@@ -5,11 +5,13 @@ if request.vars.links=='none':
     def A(*args, **kwargs):
         return CAT(*args)
     pass
-elif request.vars.links=='newtab':
+pass
+if request.vars.links=='newtab':
     #make *all* links created via the web2py A() helper open in a new tab, e.g. from logos - this should override others
     web2py_A = A
     def A(*args, **kwargs):
         return web2py_A(*args, **dict(kwargs, _target='_blank'))
     pass
 pass
+no_tab_A = web2py_A or A
 }}
