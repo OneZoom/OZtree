@@ -34,10 +34,10 @@ $.ajax({
     type:"GET", 
     url: "{{=URL('API', 'version', scheme=True, host=True, extension='json')}}", 
     success: function(data) {
-            if (parseInt(data.version) != version) {
+            if (data.version != '{{=page_info.get("version")}}') {
                 $('body').prepend('<h1 class="OneZoom_error", style="z-index: 100; position:absolute; margin:1em; color:red;">' +
-                'WARNING: the version of the OneZoom tree you are running (' + version +
-                ') does not match the data returned from the OneZoom website (' + data.version + '). ' +
+                'WARNING: the version of the OneZoom tree you are running ({{=page_info.get("version")}})' +
+                ' does not match the data returned from the OneZoom website (' + data.version + '). ' +
                 'The data shown on this tree may be matched to the wrong lifeforms</h1>')
             }
         }, 
