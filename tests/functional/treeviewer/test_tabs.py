@@ -8,6 +8,10 @@ from time import sleep
 
 import requests
 
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+
 from ...util import base_url, web2py_app_dir
 from ..functional_tests import FunctionalTest, linkouts_json
 
@@ -63,16 +67,25 @@ class TestTabs(FunctionalTest):
                 getattr(self, identifier + 'OTT') if tip_type=='leaf' else getattr(self, identifier + 'ID')))
             sleep(5) # 10 seconds should be enough to load and pop up a tab
             for tab in self.browser.find_elements_by_css_selector('.external-tabs li:not([style*="display: none"])'):
+                self.browser.switch_to.default_content()
                 tabname = tab.get_attribute("id")
                 anchors = tab.find_elements_by_tag_name("a")
                 print(" " + tabname, flush=True, end="")
                 assert len(anchors)==1, "A single tabbed link should exist for `{}`".format(tabname)
                 anchors[0].click()
-                wait_time = 2
-                sleep(wait_time)
                 iframe_css = ".popup-container .{} iframe".format(tabname)
-                iframes = self.browser.find_elements_by_css_selector(iframe_css)
-                assert len(iframes)==1, "A single iframe should exist in `{}` for '{}'".format(iframe_css, tabname)
+                wait = WebDriverWait(self.browser, 10)
+                sleep(2) #not sure why we need a wait in here: perhaps for iframe to load properly?
+                wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, iframe_css)))
+                
+                #for each tab, we need a different check
+                if tabname in self.linkout_css_tests:
+                    wait = WebDriverWait(self.browser, 30)
+                    wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, self.linkout_css_tests[tabname])))
+                    
+                checked_tabs[tabname] = True
+                #now switch back and check the linkout
+                self.browser.switch_to.default_content()
                 form_css = ".popup-container .{} form".format(tabname)
                 forms = self.browser.find_elements_by_css_selector(form_css)
                 assert len(forms)==1, "A single linkout form should exist in `{}` for '{}'".format(form_css, tabname)
@@ -80,19 +93,5 @@ class TestTabs(FunctionalTest):
                 assert len(form_links)==1, "A single linkout button in the form should exist in `{}` for '{}'".format(form_css, tabname)
                 href = forms[0].get_attribute('action') or form_links[0].get_attribute('href')
                 assert href, "There should always be a link out from each iframe"
-                self.browser.switch_to_frame(iframes[0])
-                
-                #for each tab, we need a different check
-                if tabname in self.linkout_css_tests:
-                    for sleeptime in (2,2,3,4):
-                        if not self.element_by_css_selector_exists(self.linkout_css_tests[tabname]):
-                            wait_time+=sleeptime
-                            sleep(sleeptime) #wait a bit more to see if the frame loads
-                    assert self.element_by_css_selector_exists(self.linkout_css_tests[tabname]), \
-                        "{} should exist in {} iframe, but is not accessible after {} secs. Check if {} is accessible online".format(
-                        self.linkout_css_tests[tabname], tabname, wait_time, href)
-                
-                checked_tabs[tabname] = True
-                self.browser.switch_to.default_content()
             print(", ", flush=True, end="")
         assert all(checked_tabs.values()), "All tab types should have been checked"
