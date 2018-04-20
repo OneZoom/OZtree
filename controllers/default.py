@@ -4,10 +4,7 @@ import datetime
 import re
 import urllib
 
-from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code
-
-def raise_incorrect_url(example_url, info=current.T("Incorrect usage")):
-    raise HTTP(400,  info+ "<br />" + T("Try e.g. %s") % A(example_url, _href=example_url), link='<{}>; rel="example"'.format(example_url))
+from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code, raise_incorrect_url
 
 """ Some settings for sponsorship"""
 try:
