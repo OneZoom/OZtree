@@ -8,8 +8,12 @@ From https://github.com/OneZoom/OZtree/issues/62
 import os.path
 from nose import tools
 
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+
 from ...util import base_url, web2py_app_dir
-from ..functional_tests import FunctionalTest, make_temp_minlife_file, remove_temp_minlife_file
+from ..functional_tests import FunctionalTest, make_temp_minlife_file, remove_temp_minlife_files
 
 
 class TestTreeDataMismatch(FunctionalTest):
@@ -23,7 +27,7 @@ class TestTreeDataMismatch(FunctionalTest):
     def setUpClass(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
         super().setUpClass() #will assign db etc
-        make_temp_minlife_file(self) #must do this before changing table IDs
+        self.temp_minlife = make_temp_minlife_file(self) #must do this before changing table IDs
         print(">> swapping data in row 1 of ordered_nodes table to force temporary mismatch")
         db_cursor = self.db['connection'].cursor()
         #parent of row 1 should contain the (negative) version number and real_parent should always be 0
@@ -36,7 +40,7 @@ class TestTreeDataMismatch(FunctionalTest):
     
     @classmethod
     def tearDownClass(self):
-        remove_temp_minlife_file(self)
+        remove_temp_minlife_files(self)
         print(">> restoring original version number to root node in database, and setting root node real_parent to 0")
         db_cursor = self.db['connection'].cursor()
         #parent of row 1 should contain the (negative) version number and real_parent should always be 0
@@ -52,9 +56,10 @@ class TestTreeDataMismatch(FunctionalTest):
     @tools.nottest
     def test_mismatch(self, controller, base=base_url):
         self.browser.get(base + controller)
-        assert not self.element_by_tag_name_exists('canvas'), "On mismatch, {} tree should never have a canvas element".format(controller)
-        assert self.element_by_class_exists('OneZoom_error'), "On mismatch, {} tree should show the error text".format(controller)
-        assert '-1' in self.browser.page_source
+        wait = WebDriverWait(self.browser, 10)
+        wait.until(EC.presence_of_element_located((By.ID, "version-error")))
+        assert "version -1" in self.browser.find_element_by_tag_name("blockquote").text, \
+            "On mismatch, {} tree should show the version number".format(controller)
 
     def test_life_mismatch(self):
         """
@@ -118,7 +123,5 @@ class TestTreeDataMismatch(FunctionalTest):
         """
         The temporary minlife file in static should show a mismatch error
         """
-        url = "file://" + self.minlife_file_location
-        self.browser.get(url)
-        assert self.element_by_class_exists('OneZoom_error'), "Tree at {} should display the injected error text".format(url)
+        self.test_mismatch(self.temp_minlife, "file://")
 
