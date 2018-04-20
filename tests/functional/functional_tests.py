@@ -25,8 +25,9 @@ import requests
 import subprocess
 
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities    
+from selenium.webdriver.support.ui import WebDriverWait
 
 if sys.version_info[0] < 3:
     raise Exception("Python 3 only")
@@ -143,6 +144,48 @@ class FunctionalTest(object):
                     if not (message['message'].startswith("https://media.eol.org/content") and "404 (Not Found)" in message['message']):
                         assert False, "Javascript issue of level {}, : {}".format(message['level'], message['message'])
             
+    @tools.nottest
+    def zoom_disabled(self):
+        """
+        Check that the touch zoom functionality is disabled.
+        Note that this fakes a touch event and looks for the variable set when it is disabled
+        A proper functional test would actually automate a touch event and look to see if window.visualViewport.scale changes
+        e.g.:
+          zoom_level = self.browser.execute_script('return window.visualViewport.scale;') #works in chrome, not safari
+          raise NotImplementedError, '''To DO: we need to figure out how to invoke a touch zoom event in Selenium, probably using 
+            from selenium.webdriver.common.touch_actions import TouchActions'''
+          self.assertTrue(zoom_level == self.browser.execute_script('return window.visualViewport.scale;'))
+        """
+        #imitate a touch zoom event
+        self.browser.execute_script("""
+t1 = new Touch({identifier: 1,target: document.body, pageX: 0, pageY: 0});
+t2 = new Touch({identifier: 2,target: document.body, pageX: 1, pageY: 1});
+te = new TouchEvent('touchstart', {cancelable: true, bubbles: true, touches: [t1, t2]});
+document.body.dispatchEvent(te);""")
+        # in is_testing mode, should have set the variable window.zoom_prevented
+        try:
+            WebDriverWait(self.browser, 1).until(js_variable_set('zoom_prevented'))
+            return True
+        except TimeoutException:
+            return False
+            
+class js_variable_set(object):
+  """An expectation for checking that a global javascript variable (window.mayVar) is set to something other than undefined.
+
+  locator - used to find the element
+  returns the WebElement once it has the particular css class
+  """
+  def __init__(self, jsvar):
+    self.jsvar = jsvar
+
+  def __call__(self, driver):
+    undef = driver.execute_script("return typeof {} === 'undefined'".format(self.jsvar))
+    if undef:
+        return False
+    else:
+        to_return = driver.execute_script("return {}".format(self.jsvar))
+        driver.execute_script("{} = undefined".format(self.jsvar))
+        return to_return
             
 def has_linkouts(browser, include_site_internal):
     """
