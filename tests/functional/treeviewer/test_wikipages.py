@@ -80,7 +80,6 @@ class TestWikipages(FunctionalTest):
             assert False,  "Timeout waiting for human wikipedia page"
 
         self.browser.get(self.urls['leaf_md'](self.humanOTT))
-        wait = WebDriverWait(self.browser, 30)
         try:
             wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
             assert not self.element_by_class_exists("wikipedia-warning"), "Human wikipage should have no warnings"
@@ -90,7 +89,6 @@ class TestWikipages(FunctionalTest):
 
         print(", dog", flush=True, end="")
         self.browser.get(self.urls['leaf'](self.dogOTT))
-        wait = WebDriverWait(self.browser, 30)
         try:
             wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
             assert not self.element_by_class_exists("wikipedia-warning"), "Dog wikipage should have no warnings"
@@ -100,7 +98,6 @@ class TestWikipages(FunctionalTest):
 
         print(", cat", flush=True, end="")
         self.browser.get(self.urls['leaf'](self.catOTT))
-        wait = WebDriverWait(self.browser, 30)
         try:
             wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
             assert not self.element_by_class_exists("wikipedia-warning"), "Wildcat wikipage should have no warnings"
@@ -110,7 +107,6 @@ class TestWikipages(FunctionalTest):
 
         print(", mammals", flush=True, end="")
         self.browser.get(self.urls['node'](self.mammalID))
-        wait = WebDriverWait(self.browser, 30)
         try:
             wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
             assert not self.element_by_class_exists("wikipedia-warning"), "Mammal wikipage should have no warnings"
@@ -119,7 +115,6 @@ class TestWikipages(FunctionalTest):
             assert False,  "Timeout waiting for mammal wikipedia page"
 
         self.browser.get(self.urls['node_md'](self.mammalID))
-        wait = WebDriverWait(self.browser, 30)
         try:
             wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
             assert not self.element_by_class_exists("wikipedia-warning"), "Mammal wikipage should have no warnings"
@@ -143,7 +138,6 @@ class TestWikipages(FunctionalTest):
             assert False,  "Timeout waiting for species with a wikidata number (should have a wiki tab even if there is no enwiki sitelink)"
 
         self.browser.get(self.urls['node'](nolang_node_ID))
-        wait = WebDriverWait(self.browser, 30)
         try:
             wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
             self.element_by_class_exists("wikipedia-warning"), \
@@ -167,7 +161,6 @@ class TestWikipages(FunctionalTest):
             assert False,  "Timeout waiting for species with a wikidata number (should have a wiki tab even if there is no enwiki sitelink)"
 
         self.browser.get(self.urls['node_nosearch'](nolang_node_ID))
-        wait = WebDriverWait(self.browser, 30)
         try:
             wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
             self.element_by_class_exists("wikidata-warning"), \
