@@ -11,7 +11,7 @@ from gluon import current
 from gluon.http import HTTP
 
 def raise_incorrect_url(example_url, info=current.T("Incorrect usage")):
-    raise HTTP(400,  info+ "<br />" + T("Try e.g. %s") % A(example_url, _href=example_url), link='<{}>; rel="example"'.format(example_url))
+    raise HTTP(400,  info+ "<br />" + current.T("Try e.g. %s") % "<a href='{0}'>{0}</a>".format(example_url), link='<{}>; rel="example"'.format(example_url))
 
 def __check_version(): #this is a private function
     db = current.db
