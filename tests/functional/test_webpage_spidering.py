@@ -16,7 +16,7 @@ from ..util import web2py_server, web2py_app_dir
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities    
 
-class TestWebpages(object):
+class TestWebpageSpidering(object):
     @classmethod
     def setUpClass(self):
         self.web2py = web2py_server()
