@@ -6,6 +6,11 @@ import sys
 import os.path
 from time import sleep
 
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
+
 from ...util import base_url, web2py_app_dir
 from ..functional_tests import FunctionalTest, linkouts_url
 
@@ -51,10 +56,12 @@ class TestWikipages(FunctionalTest):
         outside of the viewer, but we should at least check one within the viewer
         """
         self.browser.get(base_url + 'life.html/@={0}?pop=ol_{0}#x0,y0,w1'.format(self.humanOTT))
-        sleep(10) # 10 seconds should be enough to load and pop up a tab
-        self.browser.switch_to_frame(self.browser.find_element_by_css_selector(".popup-container .wiki iframe"))
+        wait = WebDriverWait(self.browser, 10) # 10 seconds should be enough to load and pop up a tab
+        wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, ".popup-container .wiki iframe")))
         #this iframe should exist and contain a footer of class "wikipage-source"
-        assert self.element_by_css_selector_exists("footer.wikipage-source")
+        sleep(2) #not sure what we need this...
+        wait = WebDriverWait(self.browser, 30)
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
         self.browser.switch_to.default_content()
 
     def test_wikidata_has_wikipedia(self):
@@ -64,41 +71,61 @@ class TestWikipages(FunctionalTest):
         #self.browser.get(base_url + "life/@Homo_sapiens?pop=ol_{}".format(self.humanOTT))
         print("human", flush=True, end="")
         self.browser.get(self.urls['leaf'](self.humanOTT))
-        check_elements_exist_after_sleep([
-            (self.element_by_css_selector_exists, "footer.wikipage-source", "Human should have wikipedia page")])
-        assert not self.element_by_class_exists("wikipedia-warning"), "Human wikipage should have no warnings"
-        assert not self.element_by_class_exists("wikidata-warning"), "Human wikipage should have no warnings"
+        wait = WebDriverWait(self.browser, 30)
+        try:
+            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
+            assert not self.element_by_class_exists("wikipedia-warning"), "Human wikipage should have no warnings"
+            assert not self.element_by_class_exists("wikidata-warning"), "Human wikipage should have no warnings"
+        except TimeoutException:
+            assert False,  "Timeout waiting for human wikipedia page"
+
         self.browser.get(self.urls['leaf_md'](self.humanOTT))
-        check_elements_exist_after_sleep([
-            (self.element_by_css_selector_exists,"footer.wikipage-source", "Human should have wikipedia page")])
-        assert not self.element_by_class_exists("wikipedia-warning"), "Human wikipage should have no warnings"
-        assert not self.element_by_class_exists("wikidata-warning"), "Human wikipage should have no warnings"
+        wait = WebDriverWait(self.browser, 30)
+        try:
+            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
+            assert not self.element_by_class_exists("wikipedia-warning"), "Human wikipage should have no warnings"
+            assert not self.element_by_class_exists("wikidata-warning"), "Human wikipage should have no warnings"
+        except TimeoutException:
+            assert False,  "Timeout waiting for human wikipedia page"
 
         print(", dog", flush=True, end="")
         self.browser.get(self.urls['leaf'](self.dogOTT))
-        check_elements_exist_after_sleep([
-            (self.element_by_css_selector_exists, "footer.wikipage-source", "Dog should have wikipedia page")])
-        assert not self.element_by_class_exists("wikipedia-warning"), "Dog wikipage should have no warnings"
-        assert not self.element_by_class_exists("wikidata-warning"), "Dog wikipage should have no warnings"
+        wait = WebDriverWait(self.browser, 30)
+        try:
+            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
+            assert not self.element_by_class_exists("wikipedia-warning"), "Dog wikipage should have no warnings"
+            assert not self.element_by_class_exists("wikidata-warning"), "Dog wikipage should have no warnings"
+        except TimeoutException:
+            assert False,  "Timeout waiting for dog wikipedia page"
 
         print(", cat", flush=True, end="")
         self.browser.get(self.urls['leaf'](self.catOTT))
-        check_elements_exist_after_sleep([
-            (self.element_by_css_selector_exists, "footer.wikipage-source", "Wildcat should have wikipedia page")])
-        assert not self.element_by_class_exists("wikipedia-warning"), "Wildcat wikipage should have no warnings"
-        assert not self.element_by_class_exists("wikidata-warning"), "Wildcat wikipage should have no warnings"
+        wait = WebDriverWait(self.browser, 30)
+        try:
+            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
+            assert not self.element_by_class_exists("wikipedia-warning"), "Wildcat wikipage should have no warnings"
+            assert not self.element_by_class_exists("wikidata-warning"), "Wildcat wikipage should have no warnings"
+        except TimeoutException:
+            assert False,  "Timeout waiting for wildcat wikipedia page"
 
         print(", mammals", flush=True, end="")
         self.browser.get(self.urls['node'](self.mammalID))
-        check_elements_exist_after_sleep([
-            (self.element_by_css_selector_exists, "footer.wikipage-source", "Mammals should have wikipedia page")])
-        assert not self.element_by_class_exists("wikipedia-warning"), "Mammal wikipage should have no warnings"
-        assert not self.element_by_class_exists("wikidata-warning"), "Mammal wikipage should have no warnings"
+        wait = WebDriverWait(self.browser, 30)
+        try:
+            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
+            assert not self.element_by_class_exists("wikipedia-warning"), "Mammal wikipage should have no warnings"
+            assert not self.element_by_class_exists("wikidata-warning"), "Mammal wikipage should have no warnings"
+        except TimeoutException:
+            assert False,  "Timeout waiting for mammal wikipedia page"
+
         self.browser.get(self.urls['node_md'](self.mammalID))
-        check_elements_exist_after_sleep([
-            (self.element_by_css_selector_exists, "footer.wikipage-source", "Mammals should have wikipedia page")])
-        assert not self.element_by_class_exists("wikipedia-warning"), "Mammal wikipage should have no warnings"
-        assert not self.element_by_class_exists("wikidata-warning"), "Mammal wikipage should have no warnings"
+        wait = WebDriverWait(self.browser, 30)
+        try:
+            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
+            assert not self.element_by_class_exists("wikipedia-warning"), "Mammal wikipage should have no warnings"
+            assert not self.element_by_class_exists("wikidata-warning"), "Mammal wikipage should have no warnings"
+        except TimeoutException:
+            assert False,  "Timeout waiting for mammal wikipedia page"
         print(" ...", flush=True, end="")
 
     def test_wikidata_no_linked_wikipedia(self):
@@ -107,14 +134,22 @@ class TestWikipages(FunctionalTest):
         """
         nolang_leaf_OTT, nolang_node_ID = self.get_nolang_wiki_entries()
         self.browser.get(self.urls['leaf'](nolang_leaf_OTT))
-        check_elements_exist_after_sleep([
-            (self.element_by_css_selector_exists, "footer.wikipage-source", "Species with a wikidata number should have a wiki tab even if there is no enwiki sitelink"),
-            (self.element_by_class_exists, "wikipedia-warning", "Searching by name for a popular species with no enwiki sitelink should probably give a enwiki page")])
+        wait = WebDriverWait(self.browser, 30)
+        try:
+            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
+            assert self.element_by_class_exists("wikipedia-warning"), \
+                "Searching by name for a popular species with no enwiki sitelink should probably give a enwiki page"
+        except TimeoutException:
+            assert False,  "Timeout waiting for species with a wikidata number (should have a wiki tab even if there is no enwiki sitelink)"
 
         self.browser.get(self.urls['node'](nolang_node_ID))
-        check_elements_exist_after_sleep([
-            (self.element_by_css_selector_exists, "footer.wikipage-source", "Taxa with a wikidata number should have a wiki tab even if there is no enwiki sitelink"),
-            (self.element_by_class_exists,"wikipedia-warning", "Searching by name for a popular taxon with no enwiki sitelink should probably give a enwiki page")])
+        wait = WebDriverWait(self.browser, 30)
+        try:
+            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
+            self.element_by_class_exists("wikipedia-warning"), \
+                "Searching by name for a popular taxon with no enwiki sitelink should probably give a enwiki page"
+        except TimeoutException:
+            assert False,  "Timeout waiting for taxon with a wikidata number (should have a wiki tab even if there is no enwiki sitelink)"
         
         
     def test_wikidata_only_page(self):
@@ -123,14 +158,22 @@ class TestWikipages(FunctionalTest):
         """
         nolang_leaf_OTT, nolang_node_ID = self.get_nolang_wiki_entries()
         self.browser.get(self.urls['leaf_nosearch'](nolang_leaf_OTT))
-        check_elements_exist_after_sleep([
-            (self.element_by_css_selector_exists, "footer.wikipage-source", "Species with a wikidata number should have a wiki tab even if there is no enwiki sitelink"),
-            (self.element_by_class_exists, "wikidata-warning", "Searching for an unnamed species with no enwiki sitelink should give the wikidata page")])
+        wait = WebDriverWait(self.browser, 30)
+        try:
+            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
+            self.element_by_class_exists("wikidata-warning"), \
+                "Searching for an unnamed species with no enwiki sitelink should give the wikidata page"
+        except TimeoutException:
+            assert False,  "Timeout waiting for species with a wikidata number (should have a wiki tab even if there is no enwiki sitelink)"
 
         self.browser.get(self.urls['node_nosearch'](nolang_node_ID))
-        check_elements_exist_after_sleep([
-            (self.element_by_css_selector_exists, "footer.wikipage-source", "Taxa with a wikidata number should have a wiki tab even if there is no enwiki sitelink"),
-            (self.element_by_class_exists, "wikidata-warning", "Searching for an unnamed taxon with no enwiki sitelink should give the wikidata page")])
+        wait = WebDriverWait(self.browser, 30)
+        try:
+            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
+            self.element_by_class_exists("wikidata-warning"), \
+                "Searching for an unnamed taxon with no enwiki sitelink should give the wikidata page"
+        except TimeoutException:
+            assert False,  "Timeout waiting for taxon with a wikidata number (should have a wiki tab even if there is no enwiki sitelink)"
         sleep(2) #wait for logs to be written
         self.clear_log() #otherwise we get a few errors about unloaded pngs, due to the hacky way we display wikidata pages (through cors-anywhere.herokuapp.com)
         
@@ -155,14 +198,3 @@ class TestWikipages(FunctionalTest):
         db_cursor.close()
         return nolang_leaf_OTT, nolang_node_ID
 
-def check_elements_exist_after_sleep(check_tuple_array):
-    """
-    Many of these elements will only exist once wikipedia or wikidata pages have been loaded
-    so we try a few times before asserting
-    """
-    for sleeptime in (2,2,2,3,4):
-        if any([not check[0](check[1]) for check in check_tuple_array]):
-            sleep(sleeptime)
-            continue
-    for check in check_tuple_array:
-        assert check[0](check[1]), check[2]
