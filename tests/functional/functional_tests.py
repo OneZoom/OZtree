@@ -162,9 +162,10 @@ t1 = new Touch({identifier: 1,target: document.body, pageX: 0, pageY: 0});
 t2 = new Touch({identifier: 2,target: document.body, pageX: 1, pageY: 1});
 te = new TouchEvent('touchstart', {cancelable: true, bubbles: true, touches: [t1, t2]});
 document.body.dispatchEvent(te);""")
-        # in is_testing mode, should have set the variable window.zoom_prevented
+        # in is_testing mode, should have set the variable window.zoom_prevented set when zoom is detected
+        # it may take a while for this event to percolate though, so we poll for 5 seconds
         try:
-            WebDriverWait(self.browser, 1).until(js_variable_set('zoom_prevented'))
+            WebDriverWait(self.browser, 5).until(js_variable_set('zoom_prevented'))
             return True
         except TimeoutException:
             return False
