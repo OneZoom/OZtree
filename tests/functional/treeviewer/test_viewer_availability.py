@@ -7,7 +7,7 @@ from nose import tools, with_setup
 from time import sleep
 
 from ...util import base_url, web2py_app_dir
-from ..functional_tests import FunctionalTest, make_temp_minlife_file, remove_temp_minlife_file
+from ..functional_tests import FunctionalTest, make_temp_minlife_file, remove_temp_minlife_files
 
 
 class TestViewerAvailability(FunctionalTest):
@@ -19,11 +19,11 @@ class TestViewerAvailability(FunctionalTest):
     def setUpClass(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
         super().setUpClass()
-        make_temp_minlife_file(self)
+        self.tmp_minlife = make_temp_minlife_file(self)
         
     @classmethod
     def tearDownClass(self):
-        remove_temp_minlife_file(self)
+        remove_temp_minlife_files(self)
         super().tearDownClass()
 
     @tools.nottest
@@ -103,4 +103,4 @@ class TestViewerAvailability(FunctionalTest):
         """
         The static version of the minlife file should work with no error
         """
-        self.test_available(self.minlife_file_location, "file://")
+        self.test_available(self.tmp_minlife, "file://")
