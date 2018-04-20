@@ -1,7 +1,7 @@
 {{
 try:
 	from gluon.serializers import json
-    response.write(json(response._vars if is_testing else dict(errors=['To list all controllers, please switch is_testing to True in db.py'])), escape=False)
+    response.write(json(response._vars), escape=False)
 	response.headers['Content-Type'] = 'application/json; charset=utf-8'
 except (TypeError, ValueError):
 	raise HTTP(405, 'JSON serialization error')

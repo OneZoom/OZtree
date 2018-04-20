@@ -2,8 +2,6 @@
 # this file is released under public domain and you can use without limitations
 import datetime
 import re
-from gluon.compileapp import find_exposed_functions
-from gluon.admin import apath
 
 from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code
 """ Some settings for sponsorship"""
@@ -1383,10 +1381,19 @@ def gnathostomata():
 #    redirect(URL('default', 'kew.html/@Embryophyta?init=jump', url_encode=False))
 
 def list_controllers():
-    """Get all controllers, from applications/admin/controllers/default.py"""
-    data = safe_read(apath('%s/controllers/%s' % (request.application, request.controller) + ".py", r=request))
-    items = find_exposed_functions(data)
-    return dict(controllers = items and sorted(items) or [])
+    """
+    In testing mod only, list all controllers
+    Code taken from from applications/admin/controllers/default.py
+    """
+    from gluon.compileapp import find_exposed_functions
+    from gluon.admin import apath
+
+    if is_testing:
+        data = safe_read(apath('%s/controllers/%s' % (request.application, request.controller) + ".py", r=request))
+        items = find_exposed_functions(data)
+        return dict(controllers = items and sorted(items) or [])
+    else:
+        return dict(errors=['To list all controllers, please switch is_testing to True in db.py'])
 
 def safe_open(a, b):
     if PY2 or 'b' in b:
