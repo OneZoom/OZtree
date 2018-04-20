@@ -206,23 +206,27 @@ def linkouts_url(browser, url, ott_or_id, tab_name, lang=""):
 
 def make_temp_minlife_file(self):
     """Make a temporary minlife file in static, filename stored in self.minlife_file_location"""
-    test_file = "minlife-test.html"
-    self.created_temp_minlife = False
-    self.minlife_file_location = os.path.join(web2py_app_dir, 'static', test_file)
-    if os.path.isfile(self.minlife_file_location):
-        raise Exception("There is already a test file in {}. Please remove it before continuing".format(self.minlife_file_location))
-    else:
+    test_file = "minlife-test{}.html"
+    self.temp_minlife_created = []
+    minlife_file_location = os.path.join(web2py_app_dir, 'static', test_file)
+    for i in reversed(range(100)):
+        if not os.path.isfile(minlife_file_location.format(i)):
+            break
+    if i:
         print(">> making a temporary minlife file")
         response = requests.get(base_url+"treeviewer/minlife")
-        with open(self.minlife_file_location, 'wb') as f:
+        with open(minlife_file_location.format(i), 'wb') as f:
             f.write(response.content)
-        self.created_temp_minlife = True
+        self.temp_minlife_created += [minlife_file_location.format(i)]
         #process links (see the partial_install command in Gruntfile.js in the app dir)
-        subprocess.call(['perl', '-i', os.path.join(web2py_app_dir, 'OZprivate','ServerScripts','Utilities','partial_install.pl'), self.minlife_file_location])
+        subprocess.call(['perl', '-i', os.path.join(web2py_app_dir, 'OZprivate','ServerScripts','Utilities','partial_install.pl'), minlife_file_location.format(i)])
+        return minlife_file_location.format(i)
+    else:
+        raise Exception("There are already many test files in {}. Please remove some before continuing".format(minlife_file_location))
 
-def remove_temp_minlife_file(self):
-    if self.created_temp_minlife:
-        os.remove(self.minlife_file_location) 
+def remove_temp_minlife_files(self):
+    for fn in self.temp_minlife_created:
+        os.remove(fn) 
 
     
 #def chrome_cmd(driver, cmd, params):
