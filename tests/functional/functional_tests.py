@@ -247,7 +247,7 @@ def linkouts_url(browser, url, ott_or_id, tab_name, lang=""):
     """
     return linkouts_json(browser, url, ott_or_id, lang)[tab_name][0]
 
-
+#can't have these as we need to call them from a classmethod
 def make_temp_minlife_file(self):
     """Make a temporary minlife file in static, filename stored in self.minlife_file_location"""
     test_file = "minlife-test{}.html"
