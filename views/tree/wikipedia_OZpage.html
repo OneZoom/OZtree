@@ -158,7 +158,6 @@ function append_wikidata_page(selector, Qid, lang, restrict_links) {
   var base_url = "https://www.wikidata.org/"
   $.ajax({
     type: "GET",
-    headers: {'X-Requested-With': 'XMLHttpRequest'},
     timeout: timeout_ms, 
     pagetitle: Qid,
     base_url: base_url,
