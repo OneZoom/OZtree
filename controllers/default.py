@@ -2,6 +2,8 @@
 # this file is released under public domain and you can use without limitations
 import datetime
 import re
+from gluon.compileapp import find_exposed_functions
+from gluon.admin import apath
 
 from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code
 """ Some settings for sponsorship"""
@@ -13,6 +15,7 @@ try:
     unpaid_time_limit = myconf.take('sponsorship.unpaid_time_limit_mins') * 60.0
 except:
     unpaid_time_limit = 2.0*24.0*60.0*60.0 #seconds
+
 
 """Standard web2py stuff"""
 
@@ -1379,3 +1382,21 @@ def gnathostomata():
 #    """
 #    redirect(URL('default', 'kew.html/@Embryophyta?init=jump', url_encode=False))
 
+def list_controllers():
+    """Get all controllers, from applications/admin/controllers/default.py"""
+    data = safe_read(apath('%s/controllers/%s' % (request.application, request.controller) + ".py", r=request))
+    items = find_exposed_functions(data)
+    return dict(controllers = items and sorted(items) or [])
+
+def safe_open(a, b):
+    if PY2 or 'b' in b:
+        return open(a, b)
+    else:
+        return open(a, b, encoding="utf8")
+        
+def safe_read(a, b='r'):
+    safe_file = safe_open(a, b)
+    try:
+        return safe_file.read()
+    finally:
+        safe_file.close()
