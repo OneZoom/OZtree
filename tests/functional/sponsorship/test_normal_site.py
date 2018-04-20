@@ -60,7 +60,7 @@ class TestNormalSite(SponsorshipTest):
 
     def test_sponsoring_from_normal(self):
         """
-        On the main OneZoom site, looking at an unsponsored (unvisted) OTTs should work as normal
+        On the main OneZoom site, looking at an unsponsored (unvisted) OTT should work as normal
         (when revisiting from another browser, we should get a 'temporarily reserved' page)
         """
         ott, sciname = self.never_looked_at_ottname() #visiting this ott *may* make a new entry in the reservations table
