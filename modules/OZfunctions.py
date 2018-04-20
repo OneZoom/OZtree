@@ -9,6 +9,7 @@ import os
 import random
 from gluon import current
 
+
 def __check_version(): #this is a private function
     db = current.db
     request = current.request
@@ -21,10 +22,10 @@ def __check_version(): #this is a private function
                                       "FinalOutputs",
                                       "data",
                                       "completetree_{}.js".format(version))):
-                raise IOError("completetree file does not exist for version {}".format(version))
+                raise IOError(current.T("completetree file does not exist for version %s") % version)
             return version
         else:
-            raise IndexError("there seems to be no data for tree nodes in the database (the `ordered_nodes` table is not filled out)")
+            raise IndexError(current.T("there seems to be no data for tree nodes in the database (the `ordered_nodes` table is not filled out)"))
     except Exception as e:
         return str(e)
 
