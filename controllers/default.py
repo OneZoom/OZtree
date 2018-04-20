@@ -2,8 +2,13 @@
 # this file is released under public domain and you can use without limitations
 import datetime
 import re
+import urllib
 
 from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code
+
+def raise_incorrect_url(example_url, info=current.T("Incorrect usage")):
+    raise HTTP(400,  info+ "<br />" + T("Try e.g. %s") % A(example_url, _href=example_url), link='<{}>; rel="example"'.format(example_url))
+
 """ Some settings for sponsorship"""
 try:
     reservation_time_limit = myconf.take('sponsorship.reservation_time_limit_mins') * 60.0
@@ -64,15 +69,6 @@ def user():
         return dict(form=auth())
  
     return dict(form=auth())
-
-def call():
-    """
-    exposes services. for example:
-    http://..../[app]/default/call/jsonrpc
-    decorate with @services.jsonrpc the functions to expose
-    supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
-    """
-    return service()
 
 """ generally useful functions """
 
@@ -429,10 +425,12 @@ def sponsor_replace_page():
                                                                 db.reservations.user_paid,
                                                                 db.reservations.PP_transaction_code).first()
         if row is None:
-            raise IndexError("Could not match against a row in the database")
+            raise IndexError(T("Could not match against a row in the database"))
         return(dict(data=row))
-    except:
-        raise HTTP(400,"Sorry, something went wrong")
+    except TypeError:
+        raise_incorrect_url(URL('index', scheme=True, host=True), T("Error - you gave no OTT number.") + " " + T("Go back to the home page"))
+    except Exception as e:
+        raise_incorrect_url(URL('index', scheme=True, host=True), str(e) + ". " + T("Go back to the home page"))
     
 def paypal():
     """
@@ -441,7 +439,6 @@ def paypal():
     If there are problems, https://developer.paypal.com/docs/classic/ipn/integration-guide/IPNOperations/
     gives details for how to debug.
     """
-    import urllib
     error=""
     try:
         OTT_ID_Varin = int(request.vars.get('ott'))
@@ -622,6 +619,7 @@ def sponsor_node_price():
     For this reason, we make 2 queries, firstly for leaves with an image, ranked by image rating, and then 
     (if we don't get enough results returned) for leaves without an image, ranked by popularity
     """
+    price_levels_pence = sorted([row.price for row in db().select(db.prices.price)])
     try:
         if request.vars.get('id'):
             query = sponsorable_children_query(int(request.vars.id), qtype="id")
@@ -637,7 +635,7 @@ def sponsor_node_price():
             price_pence = None
         query = (db.ordered_leaves.price==price_pence) & query
 
-        if price_pence is None or price_pence > 750:
+        if price_pence is None or price_pence > price_levels_pence[0]:
             rows_with_images = db(query & (db.images_by_ott.overall_best_any)).select(
                 db.ordered_leaves.ott,
                 db.ordered_leaves.name,
@@ -710,9 +708,8 @@ def sponsor_node_price():
         return dict(otts=otts, image_urls=image_urls, html_names = html_names, attributions=image_attributions, price_pence = price_pence)
         
     except:
-        raise
-        pass
-    return dict(otts=[])
+        raise_incorrect_url(URL(vars={'id':1, 'price':price_levels_pence[1]}, scheme=True, host=True),
+            T("Sorry, you passed in no ID or one that doesn't seem to correspond to a group on the tree."))
         
         
 def sponsor_node():
@@ -743,7 +740,8 @@ def sponsor_node():
         else:
             return(dict(vars=request.vars, common_name=common_name, partner=partner, error="Sorry, there are no species you can sponsor in this group"))
     except:
-        return(dict(vars=request.vars, partner=partner, error="Sorry, you passed in an ID that doesn't seem to correspond to a group on the tree"))
+        raise_incorrect_url(URL(vars={'id':1}, scheme=True, host=True),
+            T("Sorry, you passed in no ID or one that doesn't seem to correspond to a group on the tree."))
 
 def sponsor_node_redirect():
     """
@@ -843,7 +841,11 @@ def pp_process_post():
      
     If paypal.save_to_tmp_file_dir in appconfig.ini is e.g. '/var/tmp' then save a temp file called
     www.onezoom.org_paypal_OTTXXX_TIMESTAMPmilliseconds.json to that dir
+    
+    If called with no args, return nothing, so as not to excite interest
     """
+    if len(request.args) == 0:
+        return {}
     try:
         OTT_ID_Varin = int(request.args[0])
         if OTT_ID_Varin <= 0:
@@ -1008,9 +1010,9 @@ def birds():
 def custom_SFU():
     redirect(URL('static', 'OZLegacy/custom_SFU.htm', vars=(request.vars)))
     return dict()
-def EDGE_birds_VEi38fwj():
-    redirect(URL('static', 'OZLegacy/EDGE_birds_VEi38fwj.htm', vars=(request.vars)))
-    return dict()
+#def EDGE_birds_VEi38fwj():
+#    redirect(URL('static', 'OZLegacy/EDGE_birds_VEi38fwj.htm', vars=(request.vars)))
+#    return dict()
 def EDGE_birds():
     redirect(URL('static', 'OZLegacy/EDGE_birds.htm', vars=(request.vars)))
     return dict()
@@ -1062,9 +1064,9 @@ def plants():
 def porifera():
     redirect(URL('static', 'OZLegacy/porifera.htm', vars=(request.vars)))
     return dict()
-def River_project_James_S_2015_1ksd19efj():
-    redirect(URL('static', 'OZLegacy/River_project_James_S_2015_1ksd19efj.htm', vars=(request.vars)))
-    return dict()
+#def River_project_James_S_2015_1ksd19efj():
+#    redirect(URL('static', 'OZLegacy/River_project_James_S_2015_1ksd19efj.htm', vars=(request.vars)))
+#    return dict()
 def Squamates_Pyron():
     redirect(URL('static', 'OZLegacy/Squamates_Pyron.htm', vars=(request.vars)))
     return dict()
@@ -1387,11 +1389,11 @@ def list_controllers():
     """
     from gluon.compileapp import find_exposed_functions
     from gluon.admin import apath
-
+    request.extension = "json" #force return to always be json
     if is_testing:
         data = safe_read(apath('%s/controllers/%s' % (request.application, request.controller) + ".py", r=request))
         items = find_exposed_functions(data)
-        return dict(controllers = items and sorted(items) or [])
+        return dict(errors=[], controllers = items and sorted(items) or [])
     else:
         return dict(errors=['To list all controllers, please switch is_testing to True in db.py'])
 
