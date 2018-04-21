@@ -8,9 +8,13 @@
   <!-- fallback to local jQuery version e.g. if offline -->
   <script>window.jQuery || document.write('<script src="{{=URL("static", "js/jquery.min.js")}}"><\/script>')</script>
     <script>
+/* When a page is embedded, we assume it is in the tree viewer, and thus needs pinch zoom functionality
+ * removing, otherwise the viewer itself will be pinch zoomed. A better way would be to pass this
+ * onto the iframe but not the rest of the viewer, e.g. by using http://timmywil.github.io/jquery.panzoom/.
+ */
 function preventTouchZoom(event) {
     if(event.touches.length > 1) {
-        {{if is_testing:}}window.zoom_prevented=true; /* used for functional testing */{{pass}}
+        {{if is_testing:}}if (window.zoom_prevented_func !== undefined) {window.zoom_prevented_func();};/* used for functional testing */{{pass}}
         event.preventDefault(); 
         event.stopPropagation();
     };
