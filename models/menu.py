@@ -34,13 +34,13 @@ response.google_analytics_id = None
 # james todo manager only menu?
 
 response.menu = [
-                 (T('Explore'), False, None , [
-                                            (T('All complex life'), False, 'life.html/@Eukaryota=304358'),
-                                            (T('Vascular plants'), False, 'life.html/@Tracheophyta=10210l'),
-                                            (T('Birds'), False , 'life.html/@Aves=81461'),
-                                            (T('Amphibians'), False , 'life.html/@Amphibia=544595'),
-                                            (T('Mammals'), False , 'life.html/@Mammalia'),
-                                            (T('Apes'), False, 'life.html/@Hominoidea=38619')
+                 (T('Explore'), False, None , [ #need to set url_encode=False to avoid web2py quoting the @ sign
+                                            (T('All complex life'), False, URL('default', 'life', args=['@Eukaryota=304358'], url_encode=False)),
+                                            (T('Vascular plants'), False, URL('default','life', args=['@Tracheophyta=10210'], url_encode=False)),
+                                            (T('Birds'), False , URL('default','life', args=['@Aves=81461'], url_encode=False)),
+                                            (T('Amphibians'), False , URL('default','life', args=['@Amphibia=544595'], url_encode=False)),
+                                            (T('Mammals'), False , URL('default','life', args=['@Mammalia'], url_encode=False)),
+                                            (T('Apes'), False, URL('default','life', args=['@Hominoidea=38619'], url_encode=False))
                                             ]),
                  (T('Sponsor'), False, URL('default' , 'sponsor.html')),
                  (T('Installations'), False, URL('default' , 'installations.html')),
