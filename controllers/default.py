@@ -16,6 +16,10 @@ try:
 except:
     unpaid_time_limit = 2.0*24.0*60.0*60.0 #seconds
 
+""" generally useful functions """
+
+def time_diff(startTime,endTime):
+    return (endTime-startTime)
 
 """Standard web2py stuff"""
 
@@ -25,13 +29,6 @@ def index():
     """
     here we should find a random selection of things with highly-rated photos which have not been sponsored, and pass them in.
     also check for the best rated photos for sponsorship, and pass those in.
-    """
-    return dict()
-
-@auth.requires_membership(role='manager')
-def index_uikit():
-    """
-    A test version of the frontpage using UIkit 3 (https://getuikit.com) rather than boostrap
     """
     return dict()
 
@@ -67,10 +64,10 @@ def user():
  
     return dict(form=auth())
 
-""" generally useful functions """
+""" general pages """
 
-def time_diff(startTime,endTime):
-    return (endTime-startTime)
+def custom_404():
+    return {}
 
 """ main leaf sponsorship routine """
 
@@ -983,7 +980,8 @@ def dataprotection_and_privacy():
     return dict()
 
 def FAQ():
-    return dict(n_species =  db(db.ordered_leaves).count())
+    price_levels_pence = sorted([row.price for row in db().select(db.prices.price)])
+    return dict(n_species =  db(db.ordered_leaves).count(), second_cheapest_price_pence=price_levels_pence[1])
 
 def tree_index():
     return dict()
