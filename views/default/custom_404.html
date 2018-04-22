@@ -1,0 +1,10 @@
+{{
+response.title='OneZoom: Invalid page'
+response.status = request.vars.code if 'code' in  request.vars else 200
+}}
+{{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
+{{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
+<div class="col-md-12">
+<h1>{{=T('Thats’s odd, the page %s doesn’t exist') % (('“' + request.vars.request_url + '”') if request.vars.request_url else 'you have asked for', )}}</h1>
+<p><figure class="right">{{=IMG(_src=URL('static','images/page_not_found.jpg'), _alt="Ape puzzle")}}<figcaption><p>{{=A("Gorilla gorilla gorilla", _href=URL('default', 'life/@Gorilla_gorilla', host=True, url_encode=False))}} puzzled too</p><p>{{=A("© Steven Straiton",_href="https://commons.wikimedia.org/wiki/File:Gorilla_Scratching_Head.jpg")}} {{=A(IMG(_src=URL('static','images/by.svg'), _alt="Creative commons attribution 2.0 generic licence"),_href="https://creativecommons.org/licenses/by/2.0/")}}</p></figcaption></figure><p>{{=T('You may have typed something wrong into your browser, as the page you have asked for doesn’t seem to exist on our web site.')}}</p><p>{{=XML(T('If got here by following a link, please %s, otherwise you might want to %s.') % (A('let us know', _href='mailto:mail@onezoom.org?subject=Bad%20link%from%OneZoom%20website'),A('return to the front page', _href=URL('default', 'index'))))}}</p>
+</div>

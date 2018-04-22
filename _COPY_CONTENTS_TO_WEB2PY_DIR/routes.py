@@ -10,6 +10,8 @@ routes_in=(
   ('.*:/favicon.ico','/OZtree/static/images/favicon.ico'),
 )
 
+routes_onerror = [('OZtree/404', '/OZtree/default/custom_404.html')]
+
 logging = 'off'
 
 if __name__ == '__main__':
