@@ -26,8 +26,9 @@
     <link rel="stylesheet" href="{{=URL('static','css/OZ_specific.css')}}" type="text/css" />
     <link rel="stylesheet" href="{{=URL('static','css/OZ_shared.css')}}" type="text/css" />
     <link rel="stylesheet" href="{{=URL('static','css/web2py-bootstrap3.css')}}" type="text/css" />
-    <link rel="shortcut icon" href="{{=URL('static','images/favicon.ico')}}" type="image/x-icon" />
-    <link rel="apple-touch-icon" href="{{=URL('static','images/favicon.png')}}" />
+    <!-- Favicons -->
+    <link rel="shortcut icon" href="{{=URL('static','favicon.ico')}}" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="{{=URL('static','favicon.png')}}" />
     {{if request.vars.get('login') is None:}}<style>.navbar-right {display: none;}</style>{{pass}}
     <!-- All JavaScript at the bottom, except for Modernizr which enables
          HTML5 elements & feature detects -->
@@ -35,7 +36,6 @@
     <!--[if lt IE 9]>
         <script src="{{=URL('static','js/respond-1.4.2.min.js')}}"></script>
         <![endif]-->
-    <!-- Favicons -->
     {{include 'web2py_ajax.html'}} <!-- this includes jquery.js, calendar.js/.css and web2py.js -->
     {{block head}}{{end}}
     {{
