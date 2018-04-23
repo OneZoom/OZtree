@@ -19,7 +19,7 @@
     <h4>{{=error}}</h4>
 {{else:}}
     {{for price in prices_pence:}}
-        {{=LOAD('default','sponsor_node_price.load', vars=dict(price=price, n=6, **vars), ajax=True)}}
+        {{=LOAD('default','sponsor_node_price.load', vars=dict({'n':6, 'price':price}, **vars), ajax=True)}}
     {{pass}}
     {{if len(first25) > 0:}}
         <h3>{{=T('Or browse all sponsorable species, in alphabetical order')}}</h3>
