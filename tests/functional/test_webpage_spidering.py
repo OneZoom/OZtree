@@ -64,23 +64,32 @@ class TestWebpageSpidering(FunctionalTest):
                 assert urlparse(link).hostname is not None, "Searching by css should have filled out the whole URL, but it is '{}'".format(link)
                 #visit the link (so we also test first level of external links)
                 if urldefrag(link)[0] not in self.all_links:
-                    browser_at_location.get(link) #change location if we have not visited this before
-                    if 'eol.org' in link:
-                        assert requests.get(link).status_code == 200, "Return code from {} is not 200".format(link)
-                    else:
-                        assert requests.head(link).status_code == 200, "Return code from {} is not 200".format(link)
-                    self.all_links.add(urldefrag(link)[0])
-                    sleep(1) #wait until new page loaded
-                    local_page_name = self.is_local_page_name(browser_at_location)
-                    if local_page_name:
-                        self.clear_log(check_errors=True)
-                        if local_page_name not in self.internal_pages:
-                            self.internal_pages.add(local_page_name)
-                            #recurse
-                            self.check_page(browser_at_location)
-                    else:
-                        self.external_links.add(link)
-                        self.clear_log(check_errors=False)
+                    try:
+                        link_info = requests.head(link, allow_redirects=True)
+                        if link_info.status_code != 200:
+                            assert False, "Return code from {} is not 200".format(link)
+                        else:
+                            if not link_info.headers['Content-Type'].startswith('text/html'):
+                                #don't get chrome to visit e.g. linked zip, pdf, jpg, or png files
+                                #print("{} is not html, but {}".format(link, link_info.headers['Content-Type']))
+                                pass
+                            else:
+                                browser_at_location.get(link) #change location if we have not visited this before
+                                self.all_links.add(urldefrag(link)[0])
+                                sleep(1) #wait until new page loaded
+                                local_page_name = self.is_local_page_name(browser_at_location)
+                                if local_page_name:
+                                    self.clear_log(check_errors=True)
+                                    if local_page_name not in self.internal_pages:
+                                        self.internal_pages.add(local_page_name)
+                                        #recurse
+                                        self.check_page(browser_at_location)
+                                else:
+                                    self.external_links.add(link)
+                                    self.clear_log(check_errors=False)
+                    except requests.ConnectionError:
+                        print("Error connecting to {}".format(link))
+                        raise 
         
     def is_local_page_name(self, browser):
         """
