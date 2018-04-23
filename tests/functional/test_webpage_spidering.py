@@ -34,9 +34,11 @@ class TestWebpageSpidering(FunctionalTest):
         sleep(1)
         public_page_list_url = base_url + "list_controllers.json"
         print(">> getting public webpages from " + public_page_list_url)
-        json = requests.get(public_page_list_url).json()
+        self.requests_session = requests.Session()
+        json = self.requests_session.get(public_page_list_url).json()
         assert 'controllers' in json, "No web pages listed: " + ", ".join(json['errors'])
         self.default_controller_funcs = json['controllers']
+
         
     external_links = set()
     all_links = set()
@@ -65,7 +67,8 @@ class TestWebpageSpidering(FunctionalTest):
                 #visit the link (so we also test first level of external links)
                 if urldefrag(link)[0] not in self.all_links:
                     try:
-                        link_info = requests.head(link, allow_redirects=True)
+                        #get the status & content type before visiting. Some sites require a User-Agent & session (for cookies)
+                        link_info = self.requests_session.head(link, allow_redirects=True, headers={'User-Agent': 'Mozilla/5.0'})
                         if link_info.status_code != 200:
                             assert False, "Return code from {} is not 200".format(link)
                         else:
