@@ -8,7 +8,27 @@ from nose import tools
 from ...util import base_url
 from ..functional_tests import FunctionalTest
 
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
+
 oz_imageinfo_pagetitle = "OneZoom: Picture information"
+
+class title_contains(object):
+  """An expectation for checking that a title contains some text.
+
+  locator - used to find the element
+  returns the text once it has the particular css class
+  """
+  def __init__(self, text):
+    self.text = text
+
+  def __call__(self, driver):
+    text = driver.find_element_by_tag_name("title").get_attribute("innerHTML")   # Finding the referenced element
+    if self.text in text:
+        return text
+    else:
+        return False
 
 class TestImageInfo(FunctionalTest):
     """
@@ -44,12 +64,16 @@ class TestImageInfo(FunctionalTest):
         self.browser.execute_script("UI_callbacks.closeAll(); UI_callbacks.openCopyright({},{})".format(image_data['src'],image_data['src_id']))
         #check that the standard browser produces the correct iframe
         sleep(1) #wait for redirects
-        iframe = self.browser.find_element_by_css_selector("#imageinfo-modal iframe")
+        iframe_css = "#imageinfo-modal iframe"
+        iframe = self.browser.find_element_by_css_selector(iframe_css)
         self.browser.switch_to.frame(iframe)
         #here we should use self.browser.current_url but there seems to be a bug whereby it always returns the top url, so we look in title instead
         actual_title = self.browser.find_element_by_tag_name("title").get_attribute("innerHTML")
-        assert expected_iframe_title_contains in actual_title, "<title> attribute in the iframe should contain {}, but is {}".format(
-            expected_iframe_title_contains, actual_title)
+        try:
+            WebDriverWait(self.browser, 5).until(title_contains(expected_iframe_title_contains))
+        except TimeoutException:
+            assert False, "<title> attribute in the iframe '{}' should contain '{}', but is '{}'".format(
+                iframe_css, expected_iframe_title_contains, actual_title)
         #if this is a OneZoom iframe, check that the link out is correct
         if extra_iframe_checks:
             extra_iframe_checks(self) #this should happen with in the iframe
