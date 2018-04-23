@@ -28,6 +28,8 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities    
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
 if sys.version_info[0] < 3:
     raise Exception("Python 3 only")
@@ -157,15 +159,19 @@ class FunctionalTest(object):
           self.assertTrue(zoom_level == self.browser.execute_script('return window.visualViewport.scale;'))
         """
         #imitate a touch zoom event
+        test_text = 'zoom_prevented'
         self.browser.execute_script("""
-t1 = new Touch({identifier: 1,target: document.body, pageX: 0, pageY: 0});
-t2 = new Touch({identifier: 2,target: document.body, pageX: 1, pageY: 1});
-te = new TouchEvent('touchstart', {cancelable: true, bubbles: true, touches: [t1, t2]});
-document.body.dispatchEvent(te);""")
+window.zoom_prevented_func = function() {{document.body.classList.add('{}');}};
+t1 = new Touch({{identifier: 1,target: document.body, pageX: 0, pageY: 0}});
+t2 = new Touch({{identifier: 2,target: document.body, pageX: 1, pageY: 1}});
+te = new TouchEvent('touchstart', {{cancelable: true, bubbles: true, touches: [t1, t2]}});
+document.body.dispatchEvent(te);""".format(test_text))
         # in is_testing mode, should have set the variable window.zoom_prevented set when zoom is detected
         # it may take a while for this event to percolate though, so we poll for 5 seconds
         try:
-            WebDriverWait(self.browser, 5).until(js_variable_set('zoom_prevented'))
+            #WebDriverWait(self.browser, 5).until(js_variable_set('zoom_prevented'))
+            alert = WebDriverWait(self.browser, 5).until(element_has_css_class((By.TAG_NAME, 'body'), test_text))
+            self.browser.execute_script("document.body.classList.remove('{}');".format(test_text))
             return True
         except TimeoutException:
             return False
@@ -272,7 +278,24 @@ def remove_temp_minlife_files(self):
     for fn in self.temp_minlife_created:
         os.remove(fn) 
 
-    
+class element_has_css_class(object):
+  """An expectation for checking that an element has a particular css class.
+
+  locator - used to find the element
+  returns the WebElement once it has the particular css class
+  """
+  def __init__(self, locator, css_class):
+    self.locator = locator
+    self.css_class = css_class
+
+  def __call__(self, driver):
+    element = driver.find_element(*self.locator)   # Finding the referenced element
+    if self.css_class in element.get_attribute("class"):
+        return element
+    else:
+        return False
+
+
 #def chrome_cmd(driver, cmd, params):
 #        resource = "/session/%s/chromium/send_command_and_get_result" % driver.session_id
 #        url = driver.command_executor._url + resource
