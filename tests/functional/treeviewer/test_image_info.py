@@ -10,6 +10,7 @@ from ..functional_tests import FunctionalTest
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
 oz_imageinfo_pagetitle = "OneZoom: Picture information"
@@ -89,14 +90,16 @@ class TestImageInfo(FunctionalTest):
         assert len(self.browser.window_handles) == 1, "Should be only one window/tab open"
         main_oz_tab = self.browser.window_handles[0]
         #follow the link out (should open in new tab)
-        link_out = self.browser.find_element_by_css_selector("#imageinfo-modal a")
-        assert link_out, 'There should be a button to link out'
-        link_out.click()
-        assert len(self.browser.window_handles) == 2, "Should have opened another tab"
-        new_tab = [x for x in self.browser.window_handles if x != main_oz_tab][0]
-        self.browser.switch_to.window(new_tab)
-        assert linkout_url_contains in self.browser.current_url, "Should have opened the correct url (containing '{}')".format(linkout_url_contains)
-        self.browser.close()
+        try:
+            elem = WebDriverWait(self.browser, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#imageinfo-modal a")))
+            elem.click()
+            assert len(self.browser.window_handles) == 2, "Should have opened another tab"
+            new_tab = [x for x in self.browser.window_handles if x != main_oz_tab][0]
+            self.browser.switch_to.window(new_tab)
+            assert linkout_url_contains in self.browser.current_url, "Should have opened the correct url (containing '{}')".format(linkout_url_contains)
+            self.browser.close()
+        except TimeoutException:
+            assert False, 'There should be a button to link out when using image info {}'.format(image_data)
         self.browser.switch_to.window(main_oz_tab)
         
     @tools.nottest
