@@ -146,7 +146,9 @@ these refer to items in the viewer_UI file */
 var UI_callbacks = {
   
   badOTT: function(ott) { /* used within setup_page.js when the page tries to load a bad location */
-    $('#error-modal .uk-modal-dialog a').attr('href',function(i, v) {return v?v.toString().replace("...OTT...",ott.toString()):undefined});
+    $("#error-modal a.OpenTreeSearchOnTree").attr("href","https://tree.opentreeoflife.org/opentree/argus/ottol@" +  ott.toString());
+    $("#error-modal a.OpenTreeSearchInTaxonomy").attr("href","https://tree.opentreeoflife.org/taxonomy/browse?id=" + ott.toString());
+    onezoom.controller.button_reset();
     UIkit.modal('#error-modal').show();
   },
 
