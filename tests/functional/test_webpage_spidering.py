@@ -64,8 +64,11 @@ class TestWebpageSpidering(FunctionalTest):
                 assert urlparse(link).hostname is not None, "Searching by css should have filled out the whole URL, but it is '{}'".format(link)
                 #visit the link (so we also test first level of external links)
                 if urldefrag(link)[0] not in self.all_links:
-                    print("Checking " + link)
                     browser_at_location.get(link) #change location if we have not visited this before
+                    if 'eol.org' in link:
+                        assert requests.get(link).status_code == 200, "Return code from {} is not 200".format(link)
+                    else:
+                        assert requests.head(link).status_code == 200, "Return code from {} is not 200".format(link)
                     self.all_links.add(urldefrag(link)[0])
                     sleep(1) #wait until new page loaded
                     local_page_name = self.is_local_page_name(browser_at_location)
@@ -94,10 +97,11 @@ class TestWebpageSpidering(FunctionalTest):
         path_parts = url.path.split("/")
         assert path_parts[0] == ""
         if len(path_parts) > 1 and path_parts[1] != '':
-            if path_parts[1] in self.default_controller_funcs:
+            if path_parts[1].rsplit('.',1)[0] in self.default_controller_funcs:
                 #this is in the 'default' controller, so the part after the first "/" is the page name
                 pagename = path_parts[1]
             elif len(path_parts) > 2 and path_parts[2] != '':
                 #this is in another controller, so so the part after the second "/" is the page name
                 pagename = path_parts[2]
+                
         return pagename.rsplit('.',1)[0] #chop off any extension
