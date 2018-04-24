@@ -564,6 +564,18 @@ db.define_table('eol_inspected',
     Field('inspected', type = 'datetime', notnull=True, requires=IS_DATETIME()),
     format = '%(ott)s_%(name)s', migrate=is_testing)
 
+# this table contains info to provide a list of interesting places to sponsor. 
+db.define_table('sponsor_picks',
+    Field('identifier', type = 'string', unique=True, length=20, notnull=True), #a unique identifier: if a number this refers to an OTT id
+    Field('name', type='text', notnull=True), #the name that appears on the webpage. May be translated
+    Field('subtext', type='text'), #optional subtext to explain the list. May be translated
+    Field('thumb_url', type='text'), #a url to a thumbnail picture. If NULL, use the thumb_src and thumb_src_id fields below
+    Field('thumb_src', type='integer'), #details of a potential thumbnail picture - a number from src_flags, e.g. 1 for OneZoom, 2 for Eol, etc.
+    Field('thumb_src_id', type='integer'), #details of a potential thumbnail picture - the identifier within src, e.g. the data_object id for EoL
+    Field('otts', type='text'), #a comma-separated list of ott ids. If NULL, generate a list of OTTs by converting the identifier field above to an integer and using the sponsor_node page. Otherwise use the sponsor_handpick page
+    Field('vars', type='text'), #a JSON string used to add variables to the linked web page, e.g. {'n':12} to increase the number of species in each price category, or {'user_more_info':'sponsor info'} or {'partner':partner_identifier} - where partner_identifier matches that value from the partners table below.
+    format = '%(identifier)s_%(name)s', migrate=is_testing)
+
 # this table lists potential OneZoom 'partners' with whom we might share profits
 db.define_table('partners',
     Field('partner_identifier', type = 'string', unique=True, length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
