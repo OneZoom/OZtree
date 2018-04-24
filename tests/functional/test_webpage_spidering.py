@@ -66,6 +66,7 @@ class TestWebpageSpidering(FunctionalTest):
                 assert urlparse(link).hostname is not None, "Searching by css should have filled out the whole URL, but it is '{}'".format(link)
                 #visit the link (so we also test first level of external links)
                 if urldefrag(link)[0] not in self.all_links:
+                    self.all_links.add(urldefrag(link)[0])
                     try:
                         #get the status & content type before visiting. Some sites require a User-Agent & session (for cookies)
                         link_info = self.requests_session.head(link, allow_redirects=True, headers={'User-Agent': 'Mozilla/5.0'})
@@ -78,7 +79,6 @@ class TestWebpageSpidering(FunctionalTest):
                                 pass
                             else:
                                 browser_at_location.get(link) #change location if we have not visited this before
-                                self.all_links.add(urldefrag(link)[0])
                                 sleep(1) #wait until new page loaded
                                 local_page_name = self.is_local_page_name(browser_at_location)
                                 if local_page_name:
