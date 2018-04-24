@@ -721,7 +721,7 @@ def sponsor_node():
             common_name = get_common_name(ott)
         else:
             raise
-        #global var 'partners' is defined at the top of the file, for request.vars.partner=='LinnSoc', 'Kew', etc.
+        #'partner' should match a partner_identifier listed in the db.partners table.
         if request.vars.partner:
             partner = db(db.partners.partner_identifier == request.vars.partner).select().first() #this could be null
         else:
