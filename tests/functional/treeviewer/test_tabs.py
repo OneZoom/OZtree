@@ -57,7 +57,7 @@ class TestTabs(FunctionalTest):
         
         We get the list of possible tabs from UI_layer.json
         """
-        checked_tabs = {t['id']:False for t in requests.get(base_url + 'treeviewer/UI_layer.json').json()['tabs']}
+        checked_tabs = {t['id']:False for t in requests.get(base_url + 'treeviewer/UI_layer.json', timeout=5).json()['tabs']}
         
         for identifier, tip_type in [('oak','leaf'), ('human','leaf'), ('mammal','node')]:
             print(identifier + ":", flush=True, end="")

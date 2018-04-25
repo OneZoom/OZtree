@@ -25,7 +25,7 @@ class TestFunctionsInDefault(object):
         sleep(1)
         public_page_list_url = base_url + "list_controllers.json"
         print(">> getting public webpages from " + public_page_list_url)
-        json = requests.get(public_page_list_url).json()
+        json = requests.get(public_page_list_url, timeout=5).json()
         assert 'controllers' in json, "No web pages listed: " + ", ".join(json['errors'])
         self.webpages = json['controllers']
         
@@ -42,13 +42,13 @@ class TestFunctionsInDefault(object):
         """
         for pagename in self.webpages:
             print(pagename)
-            r = requests.get(base_url + pagename)
+            r = requests.get(base_url + pagename, timeout=5)
             if r.status_code != 200:
                 if r.status_code == 400:
                     #this could be a page which requires args or vars setting
                     assert 'link' in r.headers and len(r.links) > 0, 'No link headers sent from {}'.format(base_url + pagename)
                     assert 'example' in r.links, 'No example link in link headers sent from {}'.format(base_url + pagename)
-                    assert requests.get(r.links['example']['url']).status_code == 200, "Example link in '{}' invalid".format(base_url + pagename)
+                    assert requests.get(r.links['example']['url'], timeout=5).status_code == 200, "Example link in '{}' invalid".format(base_url + pagename)
                 else:
                     assert False, "Bad status code ({}) for default page {}".format(r.status_code, pagename)
     

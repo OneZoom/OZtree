@@ -23,6 +23,7 @@ from datetime import datetime
 from nose import tools
 import requests
 import subprocess
+import logging
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
@@ -30,6 +31,8 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.remote_connection import LOGGER as selenium_logger
+
 
 if sys.version_info[0] < 3:
     raise Exception("Python 3 only")
@@ -85,6 +88,9 @@ class FunctionalTest(object):
         except AttributeError:
             self.web2py = web2py_server()
 
+        logging.getLogger("requests").setLevel(logging.WARNING)
+        logging.getLogger("urllib3").setLevel(logging.WARNING)
+        selenium_logger.setLevel(logging.WARNING)
         chrome_options = webdriver.ChromeOptions()
         # enable browser logging
         #chrome_options.add_experimental_option("mobileEmulation", { "deviceName": "iPhone 7" })
@@ -244,7 +250,7 @@ def linkouts_json(browser, url, ott_or_id, lang=""):
     Requires a browser to evaluate the JS
     """
     links = browser.execute_script("return (" + url + ")" + "({}, {})".format(ott_or_id, lang))
-    return requests.get(links).json()['data']
+    return requests.get(links, timeout=5).json()['data']
 
 def linkouts_url(browser, url, ott_or_id, tab_name, lang=""):
     """
@@ -264,7 +270,7 @@ def make_temp_minlife_file(self):
             break
     if i:
         print(">> making a temporary minlife file")
-        response = requests.get(base_url+"treeviewer/minlife")
+        response = requests.get(base_url+"treeviewer/minlife", timeout=5)
         with open(minlife_file_location.format(i), 'wb') as f:
             f.write(response.content)
         self.temp_minlife_created += [minlife_file_location.format(i)]
