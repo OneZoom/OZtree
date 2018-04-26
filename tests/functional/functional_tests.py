@@ -91,12 +91,12 @@ class FunctionalTest(object):
         logging.getLogger("requests").setLevel(logging.WARNING)
         logging.getLogger("urllib3").setLevel(logging.WARNING)
         selenium_logger.setLevel(logging.WARNING)
-        chrome_options = webdriver.ChromeOptions()
-        # enable browser logging
+        #chrome_options = webdriver.ChromeOptions()
         #chrome_options.add_experimental_option("mobileEmulation", { "deviceName": "iPhone 7" })
-        caps = chrome_options.to_capabilities()
-        caps['loggingPrefs'] = { 'browser':'ALL' }
-        self.browser = webdriver.Chrome(desired_capabilities = caps)
+        self.caps = webdriver.ChromeOptions().to_capabilities()
+        # enable browser logging
+        self.caps['loggingPrefs'] = { 'browser':'ALL' }
+        self.browser = webdriver.Chrome(desired_capabilities = self.caps)
         self.browser.implicitly_wait(1)
 
     @classmethod
