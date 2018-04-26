@@ -444,6 +444,21 @@ ul.columns.last {
     width: 100%;
     text-align: center;
 }
+
+// ===== Override some stupid web2py bootstrap defaults ==== //
+header {
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    margin-bottom: auto;
+}
+
+header h1 {
+    color: #000!important;
+    text-shadow: none;
+}
+
+
 // ===== Media Queries =====
 
 @include respond-to(tiny) {
