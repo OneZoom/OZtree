@@ -976,9 +976,6 @@ def about_plus_data():
 def terms():
     return dict()
 
-def dataprotection_and_privacy():
-    return dict()
-
 def FAQ():
     price_levels_pence = sorted([row.price for row in db().select(db.prices.price)])
     return dict(n_species =  db(db.ordered_leaves).count(), second_cheapest_price_pence=price_levels_pence[1])
@@ -1005,9 +1002,6 @@ def birds():
 def custom_SFU():
     redirect(URL('static', 'OZLegacy/custom_SFU.htm', vars=(request.vars)))
     return dict()
-#def EDGE_birds_VEi38fwj():
-#    redirect(URL('static', 'OZLegacy/EDGE_birds_VEi38fwj.htm', vars=(request.vars)))
-#    return dict()
 def EDGE_birds():
     redirect(URL('static', 'OZLegacy/EDGE_birds.htm', vars=(request.vars)))
     return dict()
@@ -1059,9 +1053,6 @@ def plants():
 def porifera():
     redirect(URL('static', 'OZLegacy/porifera.htm', vars=(request.vars)))
     return dict()
-#def River_project_James_S_2015_1ksd19efj():
-#    redirect(URL('static', 'OZLegacy/River_project_James_S_2015_1ksd19efj.htm', vars=(request.vars)))
-#    return dict()
 def Squamates_Pyron():
     redirect(URL('static', 'OZLegacy/Squamates_Pyron.htm', vars=(request.vars)))
     return dict()
