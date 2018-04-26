@@ -23,7 +23,7 @@
 .spList li a {
     text-decoration: none;
     height: 200px;
-    line-height: 200px;
+    /* line-height: 200px; */
 }
 
 
