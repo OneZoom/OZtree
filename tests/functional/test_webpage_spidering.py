@@ -19,6 +19,8 @@ from time import sleep
 from urllib.parse import urlparse, urldefrag
 import requests
 
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 
 if sys.version_info[0] < 3:
     raise Exception("Python 3 only")
@@ -38,7 +40,7 @@ class TestWebpageSpidering(FunctionalTest):
         json = self.requests_session.get(public_page_list_url).json()
         assert 'controllers' in json, "No web pages listed: " + ", ".join(json['errors'])
         self.default_controller_funcs = json['controllers']
-
+        self.user_agent = self.browser.execute_script("return navigator.userAgent")
         
     external_links = set()
     all_links = set()
@@ -47,9 +49,14 @@ class TestWebpageSpidering(FunctionalTest):
     
     def test_local_webpages(self):
         """
-        Recursively checking all local pages and first level links
+        Recursively checking site links (* = full local url check, . = partial local url check, + = full remote url check)
         """
         self.browser.get(base_url)
+        self.browser.set_page_load_timeout(20) #give this many seconds to load a page
+        #use an additional window which we can then close to hack around a weird selenium bug where hanging pages stop further page loading
+        #see https://stackoverflow.com/questions/50031290/how-to-get-a-new-page-after-selenium-times-out-on-indefinitely-loading-page
+        self.browser.execute_script("window.open('{}')".format(base_url))
+        self.browser.switch_to_window(self.browser.window_handles[-1])
         self.check_page(self.browser)
         print("Checked internal pages {}".format(self.internal_pages))
         print("Checked external links {}".format(self.external_links))
@@ -57,49 +64,105 @@ class TestWebpageSpidering(FunctionalTest):
     @tools.nottest
     def check_page(self, browser_at_location):
         """
-        recursively check pages. To avoid recursing through all species etc, chop off cgi params
+        Recursively check pages. To avoid recursing through all species etc, chop off cgi params
+        Print a dot for each page checked
         """
         #get all links on page
+        requests_params = dict(allow_redirects=True, headers={'User-Agent': self.user_agent}, timeout=10)
+        try:
+            curr_url = browser_at_location.current_url
+        except:
+            curr_url = "Unknown"
+            
         links = [link.get_attribute("href") for link in browser_at_location.find_elements_by_tag_name("a")] 
         for link in sorted(set([l for l in links if l and not l.startswith('mailto:')])):
             if link:
                 assert urlparse(link).hostname is not None, "Searching by css should have filled out the whole URL, but it is '{}'".format(link)
+                full_link = link #this definitely contians the hostname
                 #visit the link (so we also test first level of external links)
-                if urldefrag(link)[0] not in self.all_links:
-                    self.all_links.add(urldefrag(link)[0])
+                if urldefrag(full_link)[0] not in self.all_links:
+                    self.all_links.add(urldefrag(full_link)[0])
                     try:
                         #get the status & content type before visiting. Some sites require a User-Agent & session (for cookies)
-                        link_info = self.requests_session.head(link, allow_redirects=True, headers={'User-Agent': 'Mozilla/5.0'})
-                        if link_info.status_code != 200:
-                            assert False, "Return code from {} is not 200".format(link)
+                        try:
+                            link_info = self.requests_session.head(full_link, **requests_params)
+                            if link_info.status_code != 200:
+                                raise ValueError("Return code from HEAD request to {} is not 200".format(full_link))
+                        except:
+                            try:
+                                #try again as some websites only like .get responses
+                                link_info = self.requests_session.get(full_link, **requests_params)
+                                if link_info.status_code != 200:
+                                    print("Return code from GET request to {} is not 200".format(full_link))
+                                    continue
+                            except requests.exceptions.Timeout:
+                                print("Attempt to request {} from {} timed out".format(full_link, curr_url))
+                                continue
+                            except Exception as e:
+                                print("Attempt to request {} from {} had problems: {}".format(full_link, curr_url, str(e)))
+                                continue
+                            
+                        if not link_info.headers['Content-Type'].startswith('text/html'):
+                            #don't get chrome to visit e.g. linked zip, pdf, jpg, or png files
+                            #print("{} is not html, but {}".format(full_link, link_info.headers['Content-Type']))
+                            pass
                         else:
-                            if not link_info.headers['Content-Type'].startswith('text/html'):
-                                #don't get chrome to visit e.g. linked zip, pdf, jpg, or png files
-                                #print("{} is not html, but {}".format(link, link_info.headers['Content-Type']))
-                                pass
-                            else:
-                                browser_at_location.get(link) #change location if we have not visited this before
-                                sleep(1) #wait until new page loaded
-                                local_page_name = self.is_local_page_name(browser_at_location)
+                            try:
+                                local_page_name = self.is_local_page_name(full_link)
                                 if local_page_name:
-                                    self.clear_log(check_errors=True)
                                     if local_page_name not in self.internal_pages:
                                         self.internal_pages.add(local_page_name)
                                         #recurse
+                                        self.clear_log(check_errors=False)
+                                        browser_at_location.get(full_link) #visit internal links if not visited before
+                                        self.clear_log(check_errors=True)
+                                        print("*", end="", flush=True)
                                         self.check_page(browser_at_location)
+                                    else:
+                                        print(".", end="", flush=True)
                                 else:
-                                    self.external_links.add(link)
+                                    self.external_links.add(full_link)
                                     self.clear_log(check_errors=False)
-                    except requests.ConnectionError:
-                        print("Error connecting to {}".format(link))
-                        raise 
+                                    browser_at_location.get(full_link) #visited external sites before
+                                    sleep(1) #wait for logs to catch up
+                                    self.clear_log(check_errors=False)
+                                    print("+", end="", flush=True)
+                            except TimeoutException:
+                                print("Attempt to send browser to {} from {} timed out".format(full_link, curr_url))
+                                #after timeout we often need to close the window to regain control of the browser
+                                # see https://stackoverflow.com/questions/50031290/how-to-get-a-new-page-after-selenium-times-out-on-indefinitely-loading-page
+                                assert len(browser_at_location.window_handles) == 2
+                                #close existing
+                                old_window_handle = [h for h in browser_at_location.window_handles if h != browser_at_location.current_window_handle][0]
+                                while len(browser_at_location.window_handles) == 2:
+                                    try:
+                                        browser_at_location.close()
+                                        print("Closed stalled window", flush=True)
+                                        browser_at_location.switch_to_window(old_window_handle)
+                                    except WebDriverException as e: #sometimes get Message: unknown error: failed to close window in 20 seconds
+                                        print("Retrying after error: " + str(e), flush=True)
+                                        sleep(2)
+                                        
+                                #open new
+                                while len(browser_at_location.window_handles) < 2:
+                                    try:
+                                        browser_at_location.execute_script("window.open('about:blank')")
+                                        print("Opened new window", flush=True)
+                                        browser_at_location.switch_to_window(browser_at_location.window_handles[-1])  
+                                    except Exception as e: #sometimes get timout
+                                        print("Retrying after error: " + str(e), flush=True)
+                                        sleep(2)
+                                continue
+                    except Exception as e:
+                        print("Error connecting to {} from {}: {}".format(full_link, curr_url, str(e)))
+                        raise
         
-    def is_local_page_name(self, browser):
+    def is_local_page_name(self, full_link):
         """
         If a local page (to spider) return the raw page name (i.e. the function within a controller),
         otherwise return None (stop spidering)
         """
-        url = urlparse(browser.current_url)
+        url = urlparse(full_link)
         assert url.hostname is not None
         if not url.hostname.endswith(ip):
             #not the local server
