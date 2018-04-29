@@ -13,7 +13,7 @@
 
 <h3>OneZoom Organisation</h3>
 
-OneZoom is a charitable incorporated organisation (non-profit) registered under {{=A('number 1163559',_href="static/images/RegistrationCertificate.jpg")}} in the UK. Our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. In pursuit of these aims, our current focus is on developing this visualization of the tree of life. Our registered address is OneZoom, Office 7, 35-37 Ludgate Hill, London, EC4M 7JN, UK</p>
+OneZoom is a charitable incorporated organisation (non-profit) registered under {{=A('number 1163559',_href="static/images/RegistrationCertificate.jpg")}} in the UK. Our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. In pursuit of these aims, our current focus is on developing this visualization of the tree of life. Our registered address is OneZoom, Office 7, 35-37 Ludgate Hill, London, EC4M 7JN, UK - note that our street address will be changed at the end of 2018 so please do check back online before using it.</p>
 
 <p>The OneZoom project has a long {{=A("history of development",_href=URL("default","milestones.html"))}} dating back to the first version of OneZoom that was conceived in 2011 and released under an open source license in 2012. The OneZoom codebase is now improved and maintained by the OneZoom charitable organisation since the charity's formation in 2015.</p>
 
