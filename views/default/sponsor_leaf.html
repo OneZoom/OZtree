@@ -58,12 +58,36 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
         <em class = "error_text"> {{if (form.errors["e_mail"]) is not None:}}{{=form.errors["e_mail"]}}{{pass}} </em></p></div>
       <p class="singlerow extra_info">{{=T('If we need to contact you about your donation or changes to your leaf, we will use the email entered here, otherwise we will use the email from your PayPal donation.')}}</p>
       
+      <div><label for="user_donor_name_input">{{=T('Your title and name (if different from the sponsorship name):')}}</label><p>
+        
+        <select name="user_donor_title" autocomplete="honorific-prefix" id="user_donor_title_input"  value="{{if (request.vars['user_donor_title']) is not None:}}{{=request.vars['user_donor_title']}}{{pass}}">
+            <option value="   ">   </option>
+            <option value="Mr">Mr</option>
+            <option value="Mrs">Mrs</option>
+            <option value="Miss">Miss</option>
+            <option value="Ms">Ms</option>
+            <option value="Dr">Dr</option>
+            <option value="Prof">Prof</option>
+            <option value="Rev">Rev</option>
+            <option value="Sir">Sir</option>
+            <option value="Lord">Lord</option>
+            <option value="Lady">Lady</option>
+        </select>
+        
+        <input type="text" autocomplete="name" id="user_donor_name_input" name = "user_donor_name" size="40"
+        value="{{if (request.vars['user_donor_name']) is not None:}}{{=request.vars['user_donor_name']}}{{pass}}" /> </p>
+        
+        <em class = "error_text">{{if (form.errors["user_donor_title"]) is not None:}}{{=form.errors["user_donor_title"]}}{{pass}}{{if (form.errors["user_donor_name"]) is not None:}}{{=form.errors["user_donor_name"]}}{{pass}}</em></p>
+      </div>
       
-      <div><label for="user_donor_name_input">{{=T('Your title and name (if different from the sponsorship name):')}}</label><p><input type="text" autocomplete="honorific-prefix" id="user_donor_title_input" name = "user_donor_title" size="40"
-        value="{{if (request.vars['user_donor_title']) is not None:}}{{=request.vars['user_donor_title']}}{{pass}}" /><input type="text" autocomplete="name" id="user_donor_name_input" name = "user_donor_name" size="6" placeholder="{{=T('Mr/Mrs')}}"
-        value="{{if (request.vars['user_donor_name']) is not None:}}{{=request.vars['user_donor_name']}}{{pass}}" />
-        <em class = "error_text">{{if (form.errors["user_donor_title"]) is not None:}}{{=form.errors["user_donor_title"]}}{{pass}}{{if (form.errors["user_donor_name"]) is not None:}}{{=form.errors["user_donor_name"]}}{{pass}}</em></p></div>
-      <p class="singlerow extra_info">{{=T('If we need to contact you about your donation or changes to your leaf, we will use the email entered here, otherwise we will use the email from your PayPal donation.')}}</p>
+        <p class="singlerow extra_info">{{=T('We can use this in correspondance, on our public list of donors, and the information is required if you agree to gift aid your donation (see below)')}}</p>
+        
+      <div><label for="user_donor_show_input">{{=XML(T('Show your name on our public %s ?') % (A(T('list of donors'), _href=URL('default','donor_list.html', scheme=True, host=True), _target="blank"),))}}</label><p><input type="checkbox" autocomplete id="user_donor_show_input" name = "user_donor_show" checked/></p></div>
+      
+      
+      
+      
+      <p class="singlerow extra_info">{{=T('This is in addition to your sponsored leaf on the tree.')}}</p>
       <div><label for="allow_contact_input">{{=T('Allow further contact?')}}</label><p><input type="checkbox" autocomplete id="allow_contact_input" name = "allow_contact" /></p></div>
       <p class="singlerow extra_info">{{=XML(T('On rare occasions we may wish to inform you about new / major changes to OneZoom (for more frequent updates, you might also like to %s)') % (A(T('follow us on Twitter'), _href='https://twitter.com/OneZoomTree'),))}}</p>
       <div><label for="user_paid_input">{{=T('Your donation amount (£%s or greater):') % (str(int(leaf_price)) if leaf_price.is_integer() else '{:f}'.format(leaf_price))}} </label><p><input type="number" step="0.01" id="user_paid_input" name = "user_paid"
