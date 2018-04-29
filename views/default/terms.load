@@ -19,7 +19,6 @@
 <li>Sponsoring for another person is a gift. It should not be in order to cause them distress e.g. "Sponsored for my ex. partner, even more of a blood sucking parasite!"</li>
 <li>If you choose the 'sponsor by' text option, you must put your own name in the text field.</li>
 <li>If you put another person’s personal information into the sponsorship form it is your responsibility to check with them that they are happy with this before entering the data.</li>
-<img class="lft_edge" src="{{=URL('static','images/leaves/Lpic1.png')}}" />
 <li>Web links and text that appears like an advertisement are not permitted.</li>
 <li>Any text that appears in conflict with our goal of promoting appreciation and conservation of biodiversity is not permitted (for example text that appears to promote causing harm to an animal you are sponsoring).</li>
 <li>What constitutes appropriate sponsorship text is at our discretion and we reserve the right to make changes to sponsorship text, both before the text first appears publicly and at any time after initial acceptance. We do however commit to show your true name, town and country, or any combination of these that you would like.</li>
@@ -76,7 +75,7 @@
 <div class="row-fluid" style="order: {{=(1 if request.args and request.args[0]=='site' else 3)}};">
 <div class="col-md-12 intro">
 <h3 id = "useterms">Use of the OneZoom website</h3>
-<p>By using the website you are assumed to have agreed to these terms and conditions as well as our cookie policy and our data protection and privacy policy.</p>
+<p>By using the website you are assumed to have agreed to these terms and conditions as well as our cookie policy and our data protection and privacy policy. We are sorry that the terms are quite lengthy, however, we have worked hard to make the terms of use both clear and reasonable.</p>
 </div>
 <div class="col-md-6">
 
@@ -144,6 +143,7 @@
 <p>We use cookies. By using our website you must agree this.</p>
 </div>
 <div class="col-md-6">
+<img class="lft_edge" src="{{=URL('static','images/leaves/Lpic1.png')}}" />
 
 <p>Cookies are small files created when you visit a site and contain a unique, anonymous number. They are stored in the cookie directory of your hard drive and may not expire at the end of your session.</p>
 
