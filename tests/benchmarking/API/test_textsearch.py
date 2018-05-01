@@ -44,51 +44,126 @@ else:
 
 default_api_path = "API/search_node.json"
 
+'''
+Some prior tests
+> stopping web2py
+yans-air:tests yan$ ./benchmarking/API/test_textsearch.py -r 1 --url http://www.onezoom.org/API/search_node.json
+PASSED 3.3s/request for search term "#".
+PASSED 0.77s/request for search term "Homo sap".
+PASSED 0.78s/request for search term "Homo sapiens".
+PASSED 0.74s/request for search term "££££".
+PASSED 0.74s/request for search term "漢".
+FAILED 22s/request for search term "a".
+FAILED 3.3s/request for search term "a b".
+PASSED 2.9s/request for search term " a b ".
+PASSED 0.075s/request for search term "💩".
+PASSED 2.5s/request for search term "aa".
+PASSED 0.12s/request for search term "aaa".
+PASSED 2.8s/request for search term "ox".
+PASSED 3.1s/request for search term "zz".
+PASSED 0.11s/request for search term "Human".
+PASSED 0.35s/request for search term "Fish".
+PASSED 0.12s/request for search term "Fishes".
+PASSED 0.13s/request for search term "lion".
+PASSED 0.19s/request for search term "tiger".
+PASSED 1.2s/request for search term "Cat".
+PASSED 0.79s/request for search term "big cat".
+PASSED 0.19s/request for search term "Dog".
+PASSED 0.75s/request for search term "Mammals".
+PASSED 0.34s/request for search term "rat".
+PASSED 0.29s/request for search term "mouse".
+PASSED 0.92s/request for search term "Frog".
+PASSED 0.12s/request for search term "Frogs".
+PASSED 1s/request for search term "Three men in a ".
+PASSED 1.1s/request for search term "Three men in a boat".
+http://www.onezoom.org/API/search_node.json: total time for all queries = 51.463809967041016 secs
+
+./benchmarking/API/test_textsearch.py -r 2 --url http://beta.onezoom.org/API/search_node.json
+PASSED 0.089±0.011s/request for search term "#".
+PASSED 0.085±0.0014s/request for search term "Homo sap".
+PASSED 0.085±0.0044s/request for search term "Homo sapiens".
+PASSED 0.083±0.00044s/request for search term "££££".
+PASSED 0.08±0.0014s/request for search term "漢".
+PASSED 0.082±0.001s/request for search term "a".
+PASSED 0.08±0.002s/request for search term "a b".
+PASSED 0.081±0.0027s/request for search term " a b ".
+PASSED 0.089±0.013s/request for search term "💩".
+PASSED 0.097±0.0048s/request for search term "aa".
+PASSED 0.09±0.0046s/request for search term "aaa".
+PASSED 0.52±0.039s/request for search term "ox".
+PASSED 0.11±0.03s/request for search term "zz".
+PASSED 0.1±0.016s/request for search term "Human".
+PASSED 0.37±0.028s/request for search term "Fish".
+PASSED 0.088±0.0039s/request for search term "Fishes".
+PASSED 0.11±0.0028s/request for search term "lion".
+PASSED 0.17±0.0083s/request for search term "tiger".
+PASSED 0.88±0.0084s/request for search term "Cat".
+PASSED 0.098±0.0018s/request for search term "big cat".
+PASSED 0.18±6.9e-06s/request for search term "Dog".
+PASSED 0.086±0.0012s/request for search term "Mammals".
+PASSED 0.34±0.0053s/request for search term "rat".
+PASSED 0.26±0.0049s/request for search term "mouse".
+PASSED 0.58±0.008s/request for search term "Frog".
+PASSED 0.098±0.00025s/request for search term "Frogs".
+PASSED 0.084±0.00016s/request for search term "Three men in a ".
+PASSED 0.085±0.0024s/request for search term "Three men in a boat".
+'''
+standard_search_time = 0.15 #roughly max we expect for an easy search with few results
+
 default_search_terms = OrderedDict([
     #list test here, keys give language (if key=None, test on all)
     (None, [
-        ('#',            dict(min_n = 0, max_n= 0, contains_within_top={})),
-        ('Homo sap',     dict(min_n = 1, max_n=1, contains_within_top={"Homo sapiens": 1})),
-        ('Homo sapiens', dict(min_n = 1, max_n=1, contains_within_top={"Homo sapiens": 1})),
+        #max_time_secs is derived from prior testing above
+        ('#',            dict(max_n = 0, contains_within_top={}, max_time_secs = standard_search_time)),
+        ('Homo sap',     dict(min_n = 1, max_n=1, contains_within_top={"Homo sapiens": 1}, max_time_secs = standard_search_time)),
+        ('Homo sapiens', dict(min_n = 1, max_n=1, contains_within_top={"Homo sapiens": 1}, max_time_secs = standard_search_time)),
     ]),
     ('en', [
         'The following should be culled (not return anything)',
-        ('££££',         dict(min_n = 0, max_n= 0, contains_within_top={})),
-        ('漢',           dict(min_n = 0, max_n= 0, contains_within_top={})),
-        ('a',            dict(max_n= 0, contains_within_top={})),
-        ('a b',          dict(max_n= 0, contains_within_top={})),
-        (' a b ',        dict(max_n= 0, contains_within_top={})),
+        ('££££',         dict(max_n= 0, contains_within_top={}, max_time_secs = standard_search_time)),
+        ('漢',           dict(max_n= 0, contains_within_top={}, max_time_secs = standard_search_time)),
+        ('a',            dict(max_n= 0, contains_within_top={}, max_time_secs = standard_search_time)),
+        ('a b',          dict(max_n= 0, contains_within_top={}, max_time_secs = standard_search_time)),
+        (' a b ',        dict(max_n= 0, contains_within_top={}, max_time_secs = standard_search_time)),
         'Test a 4-byte unicode character (e.g. is it stored)',
-        ('💩',           dict(max_n= 0, contains_within_top={})), #a 4 byte unicode char
-        'Two-letter words are slow',
-        ('aa',           dict(min_n = 0, contains_within_top={})),
-        ('aaa',          dict(min_n = 1, contains_within_top={"Cavaticovelia aaa":3})),
-        ('ox',           dict(min_n = 100, contains_within_top={})),   
-        ('zz',           dict(min_n = 1, contains_within_top={"Zamioculcas zamiifolia":1})),
+        ('💩',           dict(max_n= 0, contains_within_top={}, max_time_secs = standard_search_time)), #a 4 byte unicode char
+        'Two-letter words use stem matching, rather than fultext index',
+        ('aa',           dict(min_n = 10, contains_within_top={}, max_time_secs = standard_search_time*3)), #quite a lot of hits here
+        ('ox',           dict(min_n = 100, contains_within_top={}, max_time_secs = 0.6)),   
+        ('zz',           dict(min_n = 1, contains_within_top={"Zamioculcas zamiifolia":1}, max_time_secs = standard_search_time)),
+        'Three-letter words fultext index, and may be slow',
+        ('aaa',          dict(min_n = 1, contains_within_top={"Cavaticovelia aaa":3}, max_time_secs = standard_search_time)),
+        ('Cat',          dict(min_n = 1000, contains_within_top={}, max_time_secs = 1.5)), #this is slow since there are so many hits
+        ('Dog',          dict(min_n = 10, contains_within_top={},  max_time_secs = 1)),
+        ("rat",          dict(min_n = 10, contains_within_top={},  max_time_secs = 1)),
+        ('big cat',      dict(min_n = 1, contains_within_top={})),
         'The following are all common search terms',
-        ("Human",        dict(min_n = 1, contains_within_top={})),
-        ("Fish",         dict(min_n = 0, contains_within_top={})),
-        ("Fishes",       dict(min_n = 0, contains_within_top={})),
-        ("lion",         dict(min_n = 0, contains_within_top={"Panthera leo": 3})),
-        ("tiger",        dict(min_n = 0, contains_within_top={})),
-        ('Cat',          dict(min_n = 0, contains_within_top={})),
-        ('big cat',      dict(min_n = 0, contains_within_top={})),
-        ('Dog',          dict(min_n = 0, contains_within_top={})),
-        ("Darwin's",     dict(min_n = 1, contains_within_top={"Geospiza":10})),
-        ("Darwin’s",     dict(min_n = 1, contains_within_top={"Geospiza":10})),
-        ("Mammals",      dict(min_n = 0, contains_within_top={})),
-        ("rat",        dict(min_n = 0, contains_within_top={})),
-        ("mouse",        dict(min_n = 0, contains_within_top={})),
-        ("Frog",         dict(min_n = 0, contains_within_top={})),
+        ("Human",        dict(min_n = 1, contains_within_top={}, max_time_secs = standard_search_time)),
+        ("Fish",         dict(min_n = 100, contains_within_top={})),
+        ("Fishes",       dict(min_n = 10, contains_within_top={})),
+        ("lion",         dict(min_n = 10, contains_within_top={"Panthera leo": 3})),
+        ("tiger",        dict(min_n = 10, contains_within_top={})),
+        #("Darwin's",     dict(min_n = 1, contains_within_top={"Geospiza":10})), #Darwin's finches are not in :(
+        #("Darwin’s",     dict(min_n = 1, contains_within_top={"Geospiza":10})),
+        ("Mammals",      dict(min_n = 1, contains_within_top={})),
+        ("mouse",        dict(min_n = 10, contains_within_top={})),
+        ("Frog",         dict(min_n = 0, contains_within_top={},  max_time_secs = 1)),
         ("Frogs",        dict(min_n = 0, contains_within_top={})),
-        ('Three men in a ',dict(min_n = 0, max_n= 4, contains_within_top={"Tradescantia spathacea": 1})),
-        ('Three men in a boat',dict(min_n = 0, max_n= 4, contains_within_top={"Tradescantia spathacea": 1})),
+        ('Three men in a ',dict(min_n = 1, max_n= 4, contains_within_top={"Tradescantia spathacea": 1})),
+        ('Three men in a boat',dict(min_n = 1, max_n= 4, contains_within_top={"Tradescantia spathacea": 1})),
     ]),
+    ('zh', [
+        'The following should be culled (not return anything)',
+        ('££££',         dict(max_n = 0, contains_within_top={}, max_time_secs = standard_search_time)),
+        ('a',            dict(max_n= 0, contains_within_top={}, max_time_secs = standard_search_time)),
+        'Some chinese characters should exist in vernacular names',
+        ('漢',           dict(min_n = 1, contains_within_top={}, max_time_secs = standard_search_time)),
+    ])
 ])
 
 class TestTextsearch(object):
 
-    replicates = 1
+    replicates = 3
 
     @classmethod
     def setUpClass(self):
@@ -159,6 +234,9 @@ def run_benchmark(search_terms, n_replicates, urls, overall_search_score, verbos
     #                status_forcelist=[ 500, 502, 503, 504 ])
     #s.mount('http://', HTTPAdapter(max_retries=retries))
 
+    #flags to record failures
+    errors = {k:2**v for v, k in enumerate(['wrong number of hits', 'av. response too slow', 'missing result', 'results in wrong order'])}
+    
     times={p:defaultdict(list) for p in urls}
     codes = {p:{} for p in urls}
     lengths = {p:OrderedDict() for p in urls}
@@ -214,21 +292,26 @@ def run_benchmark(search_terms, n_replicates, urls, overall_search_score, verbos
                                     scinames[sn][vername_idx] if len(scinames[sn]) > vername_idx else None, 
                                     scinames[sn][exvname_idx] if len(scinames[sn]) > exvname_idx else [])[0]))}
         
-                            fail = False
+                            fail = 0
                             min_n = expected.get('min_n', 0)
                             max_n = expected.get('max_n', math.inf)
                                 
                             if not min_n <= total_hits <= max_n:
-                                fail = True
+                                fail |= errors['wrong number of hits']
+                            if 'max_time_secs' in expected and mean(times[url][searchterm]) > expected['max_time_secs']:
+                                fail |= errors['av. response too slow']
+                                
                             for sp, position in expected.get('contains_within_top',{}).items():
                                 if sp in scinames:
                                     if ranking[sp] > position:
-                                        fail = True
+                                        fail |= errors['results in wrong order']
                                 else:
-                                    fail = True
+                                    fail |= errors['missing result']
                             
                             if fail:
-                                print(colorama.Fore.RED + "FAILED" + colorama.Style.RESET_ALL, end="")
+                                print(colorama.Fore.RED + \
+                                    "FAILED: {}".format(", ".join([e for e,b in errors.items() if (b & fail)])) + \
+                                    colorama.Style.RESET_ALL, end="")
                             else:
                                 print(colorama.Fore.GREEN + "PASSED" + colorama.Style.RESET_ALL, end="")
                             print(' {:.2g}{}s/request for search term "{}".'.format(
@@ -287,7 +370,11 @@ if __name__ == "__main__":
         if args.verbosity:
             print("Starting API requests on the following APIs:")
             for url in urls:
-                print("API {}: {}".format(url))
+                if url in url_abbrevs:
+                    print("API {}: {}".format(url_abbrevs[url],url))
+                else:
+                    print("{}".format(url))
+                
         run_benchmark(search_terms, args.requests, urls, js_search_score, verbosity = args.verbosity, lang_override = args.lang, url_abbrevs= url_abbrevs)
 
     except KeyboardInterrupt:        
