@@ -519,8 +519,8 @@ def search_for_sponsor():
 def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, start=0, defaultImages=False):
     from OZfunctions import get_common_names
     try:
-        searchFor = searchFor.replace("%","").replace("_", " ").split(" ")
-        if len(searchFor):
+        searchFor = searchFor.replace("%","").replace("_", " ").split()
+        if len(searchFor) == 0:
             return {}
         verified_name = db.reservations.verified_name
         verified_more_info = db.reservations.verified_more_info
