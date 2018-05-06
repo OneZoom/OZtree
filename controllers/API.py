@@ -275,7 +275,10 @@ def search_for_name():
         restrict_tables = request.vars.get('restrict_tables')
         return search_by_name(searchFor, language, order_by_popularity = order, limit=limit, start=start, restrict_tables=restrict_tables,include_price=include_price)
     except:
-        return dict()
+        if is_testing:
+            raise
+        else:
+            return {}
     
 
 def search_by_name(searchFor, language='en', order_by_popularity=False, limit=None, start=0, restrict_tables=None, include_price=False):
