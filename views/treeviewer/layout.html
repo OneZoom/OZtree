@@ -218,6 +218,7 @@ var UI_callbacks = {
           specific_popup.attr("data-src", url_arr[0]);
           {{if is_testing:}}console.log("set data-src for '" + linkout_name + "' to " + url_arr[0]);{{pass}}
           //define the linkout (some hackery here to allow the same element to act as a plain link or a 'post' submission)
+          $(".expand-tab form input[type=hidden]", specific_popup).remove()
           switch (url_arr.length) {
               case 1: //only a single URL for the iframe and the linkout - use that for both
                 $(".expand-tab form", specific_popup).removeAttr("action");
