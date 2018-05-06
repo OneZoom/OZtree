@@ -513,8 +513,10 @@ def search_for_sponsor():
         start =request.vars.get('start') or 0
         return search_sponsor(searchFor, searchType, order, limit, start, defaultImages)
     except:
-        raise
-        return {}
+        if is_testing:
+            raise
+        else:
+            return {}
         
 def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, start=0, defaultImages=False):
     from OZfunctions import get_common_names
@@ -581,8 +583,10 @@ def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, star
             return {"common_names": common_names, "lang":language, "reservations": reservations,  "leaves": leaves, "headers": colname_map}
         
     except:
-        raise
-        return {}
+        if is_testing:
+            raise
+        else:
+            return {}
 
 def get_ids_by_ott_array():
     """
