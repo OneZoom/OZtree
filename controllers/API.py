@@ -568,9 +568,6 @@ def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, star
         reservationsOttArray = []
         for row in reservations:
             reservationsOttArray.append(row[colname_map['OTT_ID']])
-            
-        query = db.ordered_nodes.ott.belongs(reservationsOttArray)
-        nodes = db(query).select(db.ordered_nodes.id, db.ordered_nodes.ott)
         
         query = db.ordered_leaves.ott.belongs(reservationsOttArray)
         leaves = db(query).select(db.ordered_leaves.id, db.ordered_leaves.ott)
@@ -579,9 +576,9 @@ def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, star
         common_names = get_common_names(reservationsOttArray, lang=language)
         
         if defaultImages:
-            return {"common_names": common_names, "lang":language, "reservations": reservations, "nodes": nodes, "leaves": leaves, "headers": colname_map, "default_images":{row.ott:[row.src, row.src_id] for row in db(db.images_by_ott.ott.belongs(reservationsOttArray) & (db.images_by_ott.best_any == True)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, orderby=~db.images_by_ott.src)} }
+            return {"common_names": common_names, "lang":language, "reservations": reservations,  "leaves": leaves, "headers": colname_map, "default_images":{row.ott:[row.src, row.src_id] for row in db(db.images_by_ott.ott.belongs(reservationsOttArray) & (db.images_by_ott.best_any == True)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, orderby=~db.images_by_ott.src)} }
         else:
-            return {"common_names": common_names, "lang":language, "reservations": reservations, "nodes": nodes, "leaves": leaves, "headers": colname_map}
+            return {"common_names": common_names, "lang":language, "reservations": reservations,  "leaves": leaves, "headers": colname_map}
         
     except:
         raise
