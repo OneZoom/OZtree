@@ -358,7 +358,7 @@ def sponsor_leaf():
             #can sponsor here, go through to the main sponsor_leaf page
             form = SQLFORM(db.reservations, reservation_entry, 
                 fields=['e_mail','allow_contact','twitter_name',
-                    'user_sponsor_kind','user_sponsor_name','user_more_info','user_paid','user_message_OZ',
+                    'user_sponsor_kind','user_sponsor_name','user_more_info','user_donor_title','user_donor_name','user_donor_show','user_paid','user_message_OZ',
                     'user_nondefault_image', 'user_preferred_image','user_giftaid'],
                 deletable = False)
             form.custom.widget.user_sponsor_name["requires"] = IS_LENGTH(minsize=1,maxsize=30)
