@@ -458,6 +458,7 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
         return temp_return_data_times
     except:
         #return {"headers":colname_map, "leaf_hits":[], "node_hits":[], "lang":language}
+        temp_return_data_times.update({"headers":colname_map, "leaf_hits":[], "node_hits":[], "lang":language})
         temp_return_data_times["End"] = str(datetime.datetime.now().time())
         return temp_return_data_times
 
