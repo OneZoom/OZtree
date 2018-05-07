@@ -208,7 +208,7 @@ def search_node():
         pass
     res1 = search_for_name()
     if len(res1['leaf_hits']) + len(res1['node_hits']) <15:
-        res2 = search_sponsor(searchFor, "all")
+        res2 = search_sponsor(searchFor, "all", res1.get('lang'))
     else:
         res2 = {"reservations": {}, "nodes": {}, "leaves": {}}
     return {"nodes": res1, "sponsors": res2}
@@ -265,9 +265,11 @@ def search_init():
 #  Sanitize parameters and then do actually search.
 def search_for_name():
     response.headers["Access-Control-Allow-Origin"] = '*'
+    language = request.vars.lang or request.env.http_accept_language or 'en'
     try:
         searchFor = make_unicode(request.vars.query or "")
-        language = request.vars.lang or request.env.http_accept_language or 'en'
+        first_lang = language.split(',')[0]
+        lang_primary = first_lang.split("-")[0]
         order = True if (request.vars.get('sorted')) else False
         limit=request.vars.get('limit')
         start =request.vars.get('start') or 0
@@ -278,10 +280,10 @@ def search_for_name():
         if is_testing:
             raise
         else:
-            return {}
+            return {'lang':language}
     
 
-def search_by_name(searchFor, language='en', order_by_popularity=False, limit=None, start=0, restrict_tables=None, include_price=False):
+def search_by_name(searchFor, language, order_by_popularity=False, limit=None, start=0, restrict_tables=None, include_price=False):
     """
     Search in latin and vernacular names for species. To look only in leaves, set restrict_tables to 'leaves'.
     To look only in nodes set it to 'nodes', otherwise we default to searching in both
@@ -311,7 +313,7 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
     4. TO DO: substitute all punctuation with spaces (except apostrophe, dash, dot & 'times'
     5. TO DO: in English, we should remove apostrophe-s at the end of a word
     """
-    lang_primary = language.split(',')[0].lower().split("-")[0]
+    lang_primary = language.split(',')[0].split("-")[0].lower()
     base_colnames = ['id','ott','name','popularity']
     if include_price:
         base_colnames += ['price']
@@ -506,6 +508,7 @@ def search_for_sponsor():
 
     """
     response.headers["Access-Control-Allow-Origin"] = '*'
+    language = request.vars.lang or request.env.http_accept_language or 'en'
     try:
         searchFor = make_unicode(request.vars.query)
         #remove initial punctuation, e.g. we might have been passed in 
@@ -514,16 +517,17 @@ def search_for_sponsor():
         order = True if (request.vars.get('sorted')) else False
         limit=request.vars.get('limit')
         start =request.vars.get('start') or 0
-        return search_sponsor(searchFor, searchType, order, limit, start, defaultImages)
+        return search_sponsor(searchFor, searchType, language, order, limit, start, defaultImages)
     except:
         if is_testing:
             raise
         else:
-            return {}
+            return {'lang':language}
         
-def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, start=0, defaultImages=False):
+def search_sponsor(searchFor, searchType, language, order_by_recent=None, limit=None, start=0, defaultImages=False):
     from OZfunctions import get_common_names
     try:
+        lang_primary = language.split(',')[0].split("-")[0].lower()
         searchFor = [s for s in searchFor.replace("%","").replace("_", " ").split() if s]
         if len(searchFor) == 0 or all(len(s)==1 for s in searchFor): #disallow single letter searching
             return {}
@@ -531,8 +535,8 @@ def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, star
         verified_more_info = db.reservations.verified_more_info
         colnames = ['OTT_ID', 'name', 'verified_name', 'verified_more_info', 'verified_kind', 'verified_url', 'verified_preferred_image']
         ##TO DO - should the alt_txt be translated somehow? How do we know the language asked for?
-        alt_txt = {"verified_name":T("This leaf has been sponsored"),
-                   "verified_more_info":T("text awaiting confirmation"),
+        alt_txt = {"verified_name":T("This leaf has been sponsored", language=language),
+                   "verified_more_info":T("text awaiting confirmation", language=language),
                    "verified_url":None}
         colname_map = {nm:index for index,nm in enumerate(colnames)}
         search_query = None
