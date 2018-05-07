@@ -322,11 +322,11 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
     temp_return_data_times.update({"SQL{}".format(x+1):[] for x in range(5)})
     try:
         originalSearchFor = searchFor
-        temp_return_data_times = {"M1": str(datetime.datetime.now().time())}
+        temp_return_data_times["M1"] = str(datetime.datetime.now().time())
         searchFor = punctuation_to_space(searchFor).split()
-        temp_return_data_times = {"M2": str(datetime.datetime.now().time())}
+        temp_return_data_times["M2"] = str(datetime.datetime.now().time())
         if len(searchFor)==0 or all([(len(word)<=1 and not is_logographic(word, lang_primary)) for word in searchFor]):
-            temp_return_data_times = {"M3": str(datetime.datetime.now().time())}
+            temp_return_data_times["M3"] = str(datetime.datetime.now().time())
             raise
         longWords = []
         shortWords = []
