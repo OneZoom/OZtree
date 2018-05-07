@@ -208,11 +208,13 @@ def search_node():
     except:
         pass
     res1 = search_for_name()
+    times = {"InitSponsSearch": str(datetime.datetime.now().time())}
     if len(res1['leaf_hits']) + len(res1['node_hits']) <15:
         res2 = search_sponsor(searchFor, "all")
     else:
         res2 = {"reservations": {}, "nodes": {}, "leaves": {}}
-    return {"nodes": res1, "sponsors": res2}
+    times = {"EndSponsSearch": str(datetime.datetime.now().time())}
+    return {"nodes": res1, "sponsors": res2, "times":times}
 
 def search_init():
     """
@@ -454,6 +456,7 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
                     except:
                         pass #might reach here if the latin name has matched, but no vernaculars
         #return {"headers":colname_map, "leaf_hits": results.get('ordered_leaves'), "node_hits": results.get('ordered_nodes'), "lang":language} 
+        temp_return_data_times.update({"headers":colname_map, "leaf_hits": results.get('ordered_leaves'), "node_hits": results.get('ordered_nodes'), "lang":language})
         temp_return_data_times["End"] = str(datetime.datetime.now().time())
         return temp_return_data_times
     except:
@@ -539,9 +542,10 @@ def search_for_sponsor():
 def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, start=0, defaultImages=False):
     from OZfunctions import get_common_names
     try:
-        searchFor = searchFor.replace("%","").replace("_", " ").split()
-        if len(searchFor) == 0:
-            return {}
+        temp_return_data_times = {"StartSponsSearch": str(datetime.datetime.now().time())}
+        searchFor = [s for s in searchFor.replace("%","").replace("_", " ").split() if s]
+        if len(searchFor) == 0 or all(len(s)==1 for s in searchFor): #disallow single letter searching
+            return {"timings": temp_return_data_times}
         verified_name = db.reservations.verified_name
         verified_more_info = db.reservations.verified_more_info
         colnames = ['OTT_ID', 'name', 'verified_name', 'verified_more_info', 'verified_kind', 'verified_url', 'verified_preferred_image']
@@ -574,8 +578,8 @@ def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, star
         query = "SELECT * FROM (SELECT "
         #a very complicated query here, use alternative text if this is not an active node (waiting verification or expired)
         query += ",".join(["IF(active,{0},{1}) as {0}".format(nm, "NULL" if alt_txt[nm] is None else ("'" + alt_txt[nm].replace("'","''") + "'")) if nm in alt_txt else nm for nm in colnames])
-        query += " FROM (SELECT " + ",".join(colnames) + ",(DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE() AND verified_kind IS NOT NULL) AS active FROM reservations"
-        query += " WHERE (deactivated IS NULL OR deactivated = '')"
+        query += " FROM (SELECT " + ",".join(colnames) + ",(DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE()) AS active FROM reservations"
+        query += " WHERE ((deactivated IS NULL OR deactivated = '') AND verified_kind IS NOT NULL AND verified_kind != '')"
         if order_by_recent:
             query += ' ORDER BY verified_time DESC'
         query += ") AS t1) as t2 WHERE " + search_query
@@ -584,6 +588,7 @@ def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, star
             if start:
                 query += ' OFFSET ' + str(int(start))
         reservations = db.executesql(query, search_terms)
+        temp_return_data_times["SQLa"] = "{} --- {}".format(db._lastsql, search_terms)
 
         reservationsOttArray = []
         for row in reservations:
@@ -591,14 +596,17 @@ def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, star
         
         query = db.ordered_leaves.ott.belongs(reservationsOttArray)
         leaves = db(query).select(db.ordered_leaves.id, db.ordered_leaves.ott)
+        temp_return_data_times["SQLb"] = "{}".format(db._lastsql)
     
         language=request.vars.lang or request.env.http_accept_language or 'en'
         common_names = get_common_names(reservationsOttArray, lang=language)
         
         if defaultImages:
-            return {"common_names": common_names, "lang":language, "reservations": reservations,  "leaves": leaves, "headers": colname_map, "default_images":{row.ott:[row.src, row.src_id] for row in db(db.images_by_ott.ott.belongs(reservationsOttArray) & (db.images_by_ott.best_any == True)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, orderby=~db.images_by_ott.src)} }
+            default_images = {row.ott:[row.src, row.src_id] for row in db(db.images_by_ott.ott.belongs(reservationsOttArray) & (db.images_by_ott.best_any == True)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, orderby=~db.images_by_ott.src)}
+            temp_return_data_times["SQLc"] = "{}".format(db._lastsql)
+            return {"common_names": common_names, "lang":language, "reservations": reservations,  "leaves": leaves, "headers": colname_map, "default_images": default_images, "timings": temp_return_data_times}
         else:
-            return {"common_names": common_names, "lang":language, "reservations": reservations,  "leaves": leaves, "headers": colname_map}
+            return {"common_names": common_names, "lang":language, "reservations": reservations,  "leaves": leaves, "headers": colname_map, "timings": temp_return_data_times}
         
     except:
         if is_testing:
