@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import re
+import datetime
 from OZfunctions import punctuation_to_space, __check_version, is_logographic, child_leaf_query
 """
 This contains the API functions - node_details, image_details, search_names, and search_sponsors. search_node also exists, which is a combination of search_names and search_sponsors.
@@ -311,13 +312,14 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
     4. TO DO: substitute all punctuation with spaces (except apostrophe, dash, dot & 'times'
     5. TO DO: in English, we should remove apostrophe-s at the end of a word
     """
+    temp_return_data_times = {"Start": str(datetime.datetime.now().time())}
     lang_primary = language.split(',')[0].lower().split("-")[0]
     base_colnames = ['id','ott','name','popularity']
     if include_price:
         base_colnames += ['price']
     colnames = base_colnames + ['vernacular','extra_vernaculars']
     colname_map = {nm:index for index,nm in enumerate(colnames)}
-    temp_return_data = {"SQL{}".format(x+1):[] for x in range(5)}
+    temp_return_data_times.update({"SQL{}".format(x+1):[] for x in range(5)})
     try:
         originalSearchFor = searchFor
         searchFor = punctuation_to_space(searchFor).split()
@@ -377,11 +379,11 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
                         
             if len(longWords)>0:
                 results[tab] = [list(row) for row in db.executesql(query.format(db.placeholder), (searchForLatin, searchForCommon, lang_primary, searchForCommon, lang_primary))]
-                temp_return_data["SQL1"].append("{}".format(db._lastsql))
+                temp_return_data_times["SQL1"].append("{}".format(db._lastsql))
             else:
                 temp = originalSearchFor + "%%"
                 results[tab] = [list(row) for row in db.executesql(query.format(db.placeholder), (temp, lang_primary, temp, lang_primary, temp))]
-                temp_return_data["SQL2"].append("{}".format(db._lastsql))
+                temp_return_data_times["SQL2"].append("{}, {}".format(db._lastsql, temp))
             #search for common name
             for row in results[tab]:
                 if row[1]:
@@ -396,14 +398,14 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
                 mtch = 'if(match(vernacular) against({} in boolean mode), TRUE, FALSE) as mtch'
                 query = ("select ott,vernacular,preferred,mtch from (select ott, vernacular, preferred, src, " + mtch + " from vernacular_by_ott where lang_primary={} and ott in ({})) t where (mtch or preferred) order by preferred DESC,src").format(db.placeholder, db.placeholder, ",".join([db.placeholder]*len(otts)))
                 temp = db.executesql(query, [searchForCommon] + [lang_primary] + list(otts))
-                temp_return_data["SQL3"].append("{}".format(db._lastsql))
+                temp_return_data_times["SQL3"].append("{}".format(db._lastsql))
 
             else:
                 mtch = "if(vernacular like {}, TRUE, FALSE) as mtch"
                 query = ("select ott,vernacular,preferred,mtch from (select ott, vernacular, preferred, src, " + mtch + " from vernacular_by_ott where lang_primary={} and ott in ({})) t where mtch order by preferred DESC,src")
                 query = query.format(db.placeholder, db.placeholder, ",".join([db.placeholder]*len(otts)))
                 temp = db.executesql(query, [originalSearchFor+'%%'] + [lang_primary] + list(otts))
-                temp_return_data["SQL4"].append("{}".format(db._lastsql))
+                temp_return_data_times["SQL4"].append("{}".format(db._lastsql))
             ott_to_vern = {}
 
             for row in temp:
@@ -436,7 +438,7 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
                     #the entry exists, so we must have already filled out some vernaculars
                     if row[3] and len(name_to_vern[row[0]])==2: #another match, and standard vernacular didn't match: add to extras
                         name_to_vern[row[0]][1].append(row[1])
-            temp_return_data["SQL5"].append("{}".format(db._lastsql))
+            temp_return_data_times["SQL5"].append("{}".format(db._lastsql))
         for tab in results:
             for row in results[tab]:
                 try:
@@ -449,7 +451,8 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
                     except:
                         pass #might reach here if the latin name has matched, but no vernaculars
         #return {"headers":colname_map, "leaf_hits": results.get('ordered_leaves'), "node_hits": results.get('ordered_nodes'), "lang":language} 
-        return temp_return_data
+        temp_return_data_times["End"] = str(datetime.datetime.now().time())
+        return temp_return_data_times
     except:
         return {"headers":colname_map, "leaf_hits":[], "node_hits":[], "lang":language}
 
