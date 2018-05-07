@@ -124,7 +124,7 @@ set_img_from_bespoke_val(document.getElementById('vimgform{{=vars['id']}}').chil
         <p>{{if not vars.get('live_time'):}}<input type="checkbox" name="auto_email" title="automatically email this sponsor when the button is clicked" {{if to_be_validated:}}checked="checked"{{pass}}>{{pass}}{{email = escape(vars['e_mail'] or vars['PP_e_mail'] or '')}}<a href="mailto:{{=email}}?Subject=Your%20sponsorship%20of%20{{=escape(vars['name'] or '')}}%20on%20OneZoom"><img src="{{=URL('static','images/email-icon.png')}}" alt="email" title="Compose new email to {{=(email or '<blank addressee>')}}" /></a></p>{{if vars.get('twitter_name'):}}<p>{{if not vars.get('live_time'):}}<input type="checkbox" name="auto_tweet" title="automatically tweet this sponsor when the button is clicked" {{if to_be_validated:}}checked="checked"{{pass}}>{{pass}}<a href="http://twitter.com/home/?status=@{{=vars.get('twitter_name')}}" target="_blank"><img src="{{=URL('static','images/tiny-twitter-icon.png')}}" alt="tweet" title="tweet to this sponsor" /></a></p>{{pass}}</div>
         <div class="adminComment">{{=form.custom.widget.admin_comment}}
         <script>
-        
+        thumb_func = {{=XML(js_thumbnail_url)}}
         
         function set_EOL_name_and_image_in_form(row_id, taxon_obj) {
             var fm = '#form_'+ row_id
@@ -155,25 +155,25 @@ set_img_from_bespoke_val(document.getElementById('vimgform{{=vars['id']}}').chil
         
         function set_img_from_bespoke_val(value, class_spec) {
             $(class_spec + ' input').val(value) //set the hidden field
-            url = "{{try:}}{{=myconf.take('general.pics_dir')}}{{except:}}{{=(URL('static','FinalOutputs/pics')+'/')}}{{pass}}"+ value.toString()+".jpg"
-            $(class_spec + ' img').css("background-image","url('"+ url + "')")
-            $(class_spec + ' img').css("backgroundSize", 'cover')
-            $(class_spec + ' img').css("backgroundPosition", 'left top')
-            $(class_spec + ' a').attr('href',url) 
+            url = thumb_func(2, value);
+            $(class_spec + ' img').css("background-image","url('"+ url + "')");
+            $(class_spec + ' img').css("backgroundSize", 'cover');
+            $(class_spec + ' img').css("backgroundPosition", 'left top');
+            $(class_spec + ' a').attr('href',url);
         }
         
         function set_img(path, class_spec) {
-            $(class_spec + ' input').val('') //set the hidden field
-            $(class_spec + ' img').css("background-image","url('"+path+"')")
-            $(class_spec + ' img').css("backgroundSize", 'cover')
-            $(class_spec + ' img').css("backgroundPosition", 'left top')
-            $(class_spec + ' a').attr('href','')
+            $(class_spec + ' input').val(''); //set the hidden field
+            $(class_spec + ' img').css("background-image","url('"+path+"')");
+            $(class_spec + ' img').css("backgroundSize", 'cover');
+            $(class_spec + ' img').css("backgroundPosition", 'left top');
+            $(class_spec + ' a').attr('href','');
         }
         
         function set_img_from_data_obj(img, class_spec) {
             /* img should be an object: adjust the variables contained in the jquery 'class_spec' */
-            var doID = img.dataObjectVersionID
-            var url =  img.url
+            var doID = img.dataObjectVersionID;
+            var url =  img.url;
             if (doID && url) {
                 $(class_spec + ' input').val(doID) //set the hidden field
                 $(class_spec + ' a').attr('href','http://eol.org/data_objects/' + doID) 
