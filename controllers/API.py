@@ -524,8 +524,8 @@ def search_for_sponsor():
 def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, start=0, defaultImages=False):
     from OZfunctions import get_common_names
     try:
-        searchFor = searchFor.replace("%","").replace("_", " ").split()
-        if len(searchFor) == 0:
+        searchFor = [s for s in searchFor.replace("%","").replace("_", " ").split() if s]
+        if len(searchFor) == 0 or all(len(s)==1 for s in searchFor): #disallow single letter searching
             return {}
         verified_name = db.reservations.verified_name
         verified_more_info = db.reservations.verified_more_info
@@ -559,11 +559,11 @@ def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, star
         query = "SELECT * FROM (SELECT "
         #a very complicated query here, use alternative text if this is not an active node (waiting verification or expired)
         query += ",".join(["IF(active,{0},{1}) as {0}".format(nm, "NULL" if alt_txt[nm] is None else ("'" + alt_txt[nm].replace("'","''") + "'")) if nm in alt_txt else nm for nm in colnames])
-        query += " FROM (SELECT " + ",".join(colnames) + ",(DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE() AND verified_kind IS NOT NULL) AS active FROM reservations"
-        query += " WHERE (deactivated IS NULL OR deactivated = '')"
+        query += " FROM (SELECT " + ",".join(colnames) + ",(DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE()) AS active FROM reservations"
+        query += " WHERE ((deactivated IS NULL OR deactivated = '') AND verified_kind IS NOT NULL AND verified_kind != '')"
         if order_by_recent:
             query += ' ORDER BY verified_time DESC'
-        query += ") AS t1) as t2 WHERE " + search_query
+        query += ") AS t1 WHERE " + search_query + ") as t2"
         if limit:
             query += ' LIMIT ' + str(int(limit))
             if start:
