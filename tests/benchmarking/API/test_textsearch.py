@@ -259,7 +259,7 @@ def run_benchmark(search_terms, n_replicates, urls, overall_search_score, verbos
                     payload['query']=searchterm
                     for url in urls:
                         start = time.time()
-                        r = requests.get(url, params={k:v for k,v in payload.items() if v is not None}, timeout=30)
+                        r = requests.get(url, params={k:v for k,v in payload.items() if v is not None}, timeout=60)
                         r.content  # wait until full content has been transfered
                         times[url][searchterm].append(time.time() - start)
                         lengths[url][searchterm]={k:len(v) for k,v in json.loads(r.text).items()}
