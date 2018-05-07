@@ -4,5 +4,5 @@
  * as one of the options available for the OneZoom object (in tree_settings.js)
  **/
 export {default as natural} from './natural_theme';
-export {default as AT} from './AT_theme';
+export {default as AT} from './at_theme';
 export {default as popularity} from './popularity_theme';
