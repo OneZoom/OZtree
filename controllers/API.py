@@ -374,9 +374,7 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
                 query += ' LIMIT ' + str(int(limit))
                 if start:
                     query += ' OFFSET ' + str(int(start))
-            
-            print(query)
-            
+                        
             if len(longWords)>0:
                 results[tab] = [list(row) for row in db.executesql(query.format(db.placeholder), (searchForLatin, searchForCommon, lang_primary, searchForCommon, lang_primary))]
                 temp_return_data["SQL1"].append("{}".format(db._lastsql))
@@ -577,7 +575,6 @@ def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, star
             if start:
                 query += ' OFFSET ' + str(int(start))
         reservations = db.executesql(query, search_terms)
-        print("SQL6 = {}".format(db._lastsql))
 
         reservationsOttArray = []
         for row in reservations:
