@@ -361,7 +361,7 @@ def sponsor_leaf():
             form.custom.widget.user_sponsor_name["requires"] = IS_LENGTH(minsize=1,maxsize=30)
             form.custom.widget.user_sponsor_kind["requires"] = IS_IN_SET(['by','for'])
             form.custom.widget.user_paid["requires"] = IS_FLOAT_IN_RANGE(leaf_price, 99999, dot=".", 
-                error_message=XML("Please donate at least £{:.2f} to sponsor this leaf, or you could simply ".format(leaf_price)))
+                error_message=XML("Please donate at least £{:.2f} to sponsor this leaf, or you could simply choose another leaf".format(leaf_price)))
             
         
             if form.process(session=None, formname='test').accepted:
