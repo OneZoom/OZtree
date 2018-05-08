@@ -37,9 +37,9 @@ script_path = os.path.dirname(os.path.realpath(__file__))
 
 if __name__ == '__main__':
     sys.path.append(os.path.join(script_path, "..",".."))
-    from util import web2py_app_dir, web2py_server, base_url
+    from util import web2py_app_dir, Web2py_server, base_url
 else:
-    from ...util import web2py_app_dir, web2py_server, base_url
+    from ...util import web2py_app_dir, Web2py_server, base_url
     
 
 default_api_path = "API/search_node.json"
@@ -167,16 +167,10 @@ class TestTextsearch(object):
 
     @classmethod
     def setUpClass(self):
-        print("> starting web2py")
-        self.web2py = web2py_server()
+        self.web2py = Web2py_server()
         wait_for_server_active()
         colorama.init()
         self.js_search_score = make_js_translation_code()
-
-    @classmethod    
-    def tearDownClass(self):
-        print("> stopping web2py")
-        self.web2py.kill()
 
     def TestSearchReturnSpeed(self):
         urls = [base_url + default_api_path]
@@ -215,16 +209,6 @@ def make_js_translation_code():
             print(js6_to_js5(javascript+ "\noverall_search_score;"), file=cache_file)
         
     return js2py.eval_js(open(cache_fn, 'r').read())
-
-def wait_for_server_active():
-    for i in range(1000):
-        try:
-            requests.get(base_url)
-            break
-        except requests.exceptions.ConnectionError:
-            time.sleep(0.1)
-    return i
-
     
 def run_benchmark(search_terms, n_replicates, urls, overall_search_score, verbosity=0, lang_override = None, url_abbrevs = {}):
     #make a single http session, which we can tweak
@@ -259,7 +243,7 @@ def run_benchmark(search_terms, n_replicates, urls, overall_search_score, verbos
                     payload['query']=searchterm
                     for url in urls:
                         start = time.time()
-                        r = requests.get(url, params={k:v for k,v in payload.items() if v is not None}, timeout=30)
+                        r = requests.get(url, params={k:v for k,v in payload.items() if v is not None}, timeout=60)
                         r.content  # wait until full content has been transfered
                         times[url][searchterm].append(time.time() - start)
                         lengths[url][searchterm]={k:len(v) for k,v in json.loads(r.text).items()}
@@ -358,12 +342,9 @@ if __name__ == "__main__":
             urls = args.url
             url_abbrevs = {url:i+1 for i,url in enumerate(urls)}
         else:
-            print("> starting web2py on {}".format(base_url))
-            web2py = web2py_server()
+            web2py = Web2py_server()
             #must wait until the http server is properly available
             start_time = time.time()
-            if wait_for_server_active() and args.verbosity:
-                print("Waited {} seconds for server to start".format(time.time()-start_time))
             urls = [base_url + default_api_path]
             url_abbrevs = {}
         
@@ -379,10 +360,6 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:        
         if web2py is not None:
-            print("> killing web2py")
-            web2py.kill()
+            web2py.stop_server()
         sys.exit()
 
-    if web2py is not None:
-        print("> stopping web2py")
-        web2py.kill()

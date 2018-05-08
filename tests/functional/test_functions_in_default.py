@@ -15,26 +15,21 @@ from nose import tools
 if sys.version_info[0] < 3:
     raise Exception("Python 3 only")
 
-from ..util import web2py_server, base_url
+from ..util import Web2py_server, base_url
 
 class TestFunctionsInDefault(object):
     @classmethod
     def setUpClass(self):
-        print("> starting web2py")
-        self.web2py = web2py_server()
-        sleep(1)
+        self.web2py = Web2py_server()
         public_page_list_url = base_url + "list_controllers.json"
         print(">> getting public webpages from " + public_page_list_url)
         json = requests.get(public_page_list_url, timeout=5).json()
         assert 'controllers' in json, "No web pages listed: " + ", ".join(json['errors'])
         self.webpages = json['controllers']
-        
-        
+                
     @classmethod    
     def tearDownClass(self):
-        print("> stopping web2py")
-        self.web2py.kill()
-        
+        self.web2py.stop_server()
     
     def test_default_webpages(self):
         """

@@ -12,6 +12,10 @@
  If you have installed the 'rednose' package (pip3 install rednose), you can get nicer output by e.g.
  
     nosetests -vs ./ tests/functional --rednose
+    
+ To carry out tests on a remote machine, only some of the tests will work. You can do
+ 
+    nosetests -vs ./ tests/functional --rednose -a remote=beta.onezoom.org
  
 """
 
@@ -37,7 +41,7 @@ from selenium.webdriver.remote.remote_connection import LOGGER as selenium_logge
 if sys.version_info[0] < 3:
     raise Exception("Python 3 only")
 
-from ..util import get_db_connection, web2py_app_dir, web2py_server, base_url
+from ..util import get_db_connection, web2py_app_dir, Web2py_server, base_url
 
 date_format = "%Y-%m-%d %H:%M:%S.%f" #used when a web2py datetime on a webpage needs converting back to datetime format
 test_email = 'test@onezoom.org'
@@ -81,12 +85,11 @@ class FunctionalTest(object):
             assert False, "Could not find human, dog, cat, oak, or mammal OTTs"
             
         db_cursor.close()
-
-        print("> starting web2py")
+        
         try:
-            self.web2py = web2py_server(self.appconfig_loc)
+            self.web2py = Web2py_server(self.appconfig_loc)
         except AttributeError:
-            self.web2py = web2py_server()
+            self.web2py = Web2py_server()
 
         logging.getLogger("requests").setLevel(logging.WARNING)
         logging.getLogger("urllib3").setLevel(logging.WARNING)
@@ -102,10 +105,8 @@ class FunctionalTest(object):
     @classmethod
     def tearDownClass(self):
         #should test here that we don't have any console.log errors (although we might have logs).
-        self.browser.quit()
-        print("> stopping web2py")
-        self.web2py.kill()
-
+        self.web2py.stop_server()
+        
     def setup(self):
         """
         By default, clear logs before each test

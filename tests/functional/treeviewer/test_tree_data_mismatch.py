@@ -20,6 +20,7 @@ class TestTreeDataMismatch(FunctionalTest):
     """
     Test whether we get an error page if there is a version mismatch 
     This requires a bit of database adjusting, but not too dangerously (we swap 2 numbers, then swap back)
+    It is only relevant if we are running a local version (i.e. if self.local_web2py exists)
     """
     unused_version = 2 # set to a non-allowed (negative) tree version number
     old_version = 1234 #should look up files that exist with an old version number
@@ -67,65 +68,75 @@ class TestTreeDataMismatch(FunctionalTest):
         The default tree viewer should show mismatch
         """
         #can't go to the top level here beacuse we have set a silly real_parent number (non-existent)
-        self.test_mismatch("life/@={}".format(self.humanOTT))
+        if self.web2py.is_local():
+            self.test_mismatch("life/@={}".format(self.humanOTT))
 
     def test_life_MD_mismatch(self):
         """
         The museum display viewer should show mismatch
         """
-        self.test_mismatch("life_MD/@={}".format(self.humanOTT))
+        if self.web2py.is_local():
+            self.test_mismatch("life_MD/@={}".format(self.humanOTT))
 
     def test_expert_mode_mismatch(self):
         """
         The expert mode viewer (e.g. with screenshot functionality) should show mismatch
         """
-        self.test_mismatch("life_expert/@={}".format(self.humanOTT))
+        if self.web2py.is_local():
+            self.test_mismatch("life_expert/@={}".format(self.humanOTT))
 
     def test_AT_mismatch(self):
         """
         The Ancestor's Tale tree (different colours) should show mismatch
         """
-        self.test_mismatch("AT/@={}".format(self.humanOTT))
+        if self.web2py.is_local():
+            self.test_mismatch("AT/@={}".format(self.humanOTT))
 
     def test_trail2016_mismatch(self):
         """
         The Ancestor's Trail tree (different sponsorship details) should show mismatch
         """
-        self.test_mismatch("trail2016/@={}".format(self.humanOTT))
+        if self.web2py.is_local():
+            self.test_mismatch("trail2016/@={}".format(self.humanOTT))
 
     def test_linnean_mismatch(self):
         """
         The Linnean Soc tree (different sponsorship details) should show mismatch
         """
-        self.test_mismatch("linnean/@={}".format(self.humanOTT))
+        if self.web2py.is_local():
+            self.test_mismatch("linnean/@={}".format(self.humanOTT))
 
     def test_text_tree_mismatch(self):
         """
         The text-only tree (e.g. for humans=ott 770315) should still work, as it does not require files to match the db version
         """
-        self.browser.get(base_url + "life_text/@={}".format(self.humanOTT))
-        assert self.element_by_class_exists('text_tree'), "Should have the text tree in a labelled div"
-        assert self.element_by_class_exists('species'), "Should have the species in a labelled div"
+        if self.web2py.is_local():
+            self.browser.get(base_url + "life_text/@={}".format(self.humanOTT))
+            assert self.element_by_class_exists('text_tree'), "Should have the text tree in a labelled div"
+            assert self.element_by_class_exists('species'), "Should have the species in a labelled div"
 
     def test_text_tree_root_absent(self):
         """
         TO DO --- Should the text-only tree should be missing the root node? Depends on what we expect. Needs more thought
         """
-        self.browser.get(base_url + "life_text/@={}".format(self.mammalOTT))
-        assert self.element_by_class_exists('text_tree'), "Should have the text tree in a labelled div"
+        if self.web2py.is_local():
+            self.browser.get(base_url + "life_text/@={}".format(self.mammalOTT))
+            assert self.element_by_class_exists('text_tree'), "Should have the text tree in a labelled div"
         #assert not self.element_by_class_exists('text_tree_root'), "Should not have the root of the text tree"
 
     def test_minlife_available(self):
         """
         The minlife view for restricted installation should show mismatch error
         """
-        self.test_mismatch("treeviewer/minlife".format(self.humanOTT))
+        if self.web2py.is_local():
+            self.test_mismatch("treeviewer/minlife".format(self.humanOTT))
 
     def test_minlife_static(self):
         """
         The temporary minlife file in static should show a mismatch error
         """
-        self.test_mismatch(self.temp_minlife, "file://")
+        if self.web2py.is_local():
+            self.test_mismatch(self.temp_minlife, "file://")
 
     def test_minlife_old_download(self):
         """
@@ -133,5 +144,6 @@ class TestTreeDataMismatch(FunctionalTest):
         Here we should set the 
         """
         #make a minlife file with the bad ("unused_version") number
-        old_minlife = make_temp_minlife_file(self)
+        if self.web2py.is_local():
+            old_minlife = make_temp_minlife_file(self)
         
