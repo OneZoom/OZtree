@@ -101,7 +101,7 @@
 
 <ol>
 <li>The original OneZoom software has been provided to the charity OneZoom under open source MIT licenses from James Rosindell, Imperial College London and Imperial Innovations.</li>
-<li>Developers seeking to build their own projects using OneZoom should look at our <a href="https://www.github.com/OneZoom/OZtree" target="_blank">GitHub repository</a>, where our full codebase is public and available for reuse under a {{=A('OneZoom non profit source available license', _href=URL('static','downloads/OneZoom_License_V1.pdf'))}}. There is also a {{=A('plain text FAQ document', _href=URL('static','downloads/OneZoom_License_V1_FAQ.pdf'))}} explaining the terms of this license in more detail, including the rationale behind those terms. If you are a developer wanting to work on our codebase and there is anything you are not sure about, please do contact us and we will do our best to clarify the terms and reassure you.</li>
+<li>Developers seeking to build their own projects using OneZoom should look at our {{=A("GitHub repository", _href="https://www.github.com/OneZoom/OZtree", _target="_blank")}}, where our full codebase is public and available for reuse under a {{=A('OneZoom non profit source available license', _href=URL('static','downloads/OneZoom_License_V1.pdf'))}}. There is also a {{=A('plain text FAQ document', _href=URL('static','downloads/OneZoom_License_V1_FAQ.pdf'))}} explaining the terms of this license in more detail, including the rationale behind those terms. If you are a developer wanting to work on our codebase and there is anything you are not sure about, please do contact us and we will do our best to clarify the terms and reassure you.</li>
 <li>We also provide a {{=A('suite of software downloads', _href=URL('default','developer.html'))}} available under an open source MIT license.</li>
 </ol>
 
@@ -127,7 +127,7 @@
 <ol>
 
 <li>Screenshots from anywhere on the site may be reused with citation to OneZoom. It is your responsibility to check the license for any images appearing within the screenshot, which may also require acknowledgements. You might find our {{=A('expert view', _href=URL('default','life_expert.html'))}} useful which has a button to download screenshots from the tree as an SVG. Note there there are also settings to include only images we believe to be in the public domain. Please write to us if you are not sure about image permissions.</li>
-<li>Scientific literature using screenshots or citing the OneZoom viewer should cite Rosindell J, Harmon LJ (2012) “OneZoom: A Fractal Explorer for the Tree of Life” <a href="http://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.1001406" target="_blank">PLoS Biol 10(10): e1001406.</a> doi:10.1371/journal.pbio.1001406 as well as the OneZoom.org website.</li>
+<li>Scientific literature using screenshots or citing the OneZoom viewer should cite Rosindell J, Harmon LJ (2012) “OneZoom: A Fractal Explorer for the Tree of Life” {{=A("PLoS Biol 10(10): e1001406.", _href="http://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.1001406", _target="_blank")}} (doi:10.1371/journal.pbio.1001406) as well as the OneZoom.org website.</li>
 <li>Text from anywhere on the site may be reused with proper citation.</li>
 
 </ol>
