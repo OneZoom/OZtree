@@ -208,13 +208,14 @@ def search_node():
     except:
         pass
     res1 = search_for_name()
-    times = {"InitSponsSearch": str(datetime.datetime.now().time())}
+    times = {"InitSponsSearch": datetime.datetime.now()}
     if len(res1['leaf_hits']) + len(res1['node_hits']) <15:
         res2 = search_sponsor(searchFor, "all", res1.get('lang'))
     else:
         res2 = {"reservations": {}, "nodes": {}, "leaves": {}}
-    times = {"EndSponsSearch": str(datetime.datetime.now().time())}
-    return {"nodes": res1, "sponsors": res2, "times":times}
+    times.update({"EndSponsSearch": datetime.datetime.now()})
+    times.update({"SponsSearch":str(times['EndSponsSearch']-times['InitSponsSearch'])})
+    return {"nodes": res1, "sponsors": res2, "times":{k:(str(v.time()) if hasattr(v,'time') else v) for k,v in times.items()}}
     #return {"nodes": res1, "sponsors": res2}
 
 def search_init():
@@ -317,7 +318,7 @@ def search_by_name(searchFor, language, order_by_popularity=False, limit=None, s
     4. TO DO: substitute all punctuation with spaces (except apostrophe, dash, dot & 'times'
     5. TO DO: in English, we should remove apostrophe-s at the end of a word
     """
-    temp_return_data_times = {"Start": str(datetime.datetime.now().time())}
+    temp_return_data_times = {"Start": datetime.datetime.now()}
     lang_primary = language.split(',')[0].split("-")[0].lower()
     base_colnames = ['id','ott','name','popularity']
     if include_price:
@@ -346,7 +347,7 @@ def search_by_name(searchFor, language, order_by_popularity=False, limit=None, s
         searchForLatin = searchForCommon
         
         #Double percentage sign to escape %.
-        searchForShortContains = " ".join(["and {0} like '%%" + word + "%%'" for word in shortWords])
+        searchForShortContains = " ".join(["and {0} like '%" + word + "%'" for word in shortWords])
         names=set()
         otts=set()
         
@@ -391,7 +392,7 @@ def search_by_name(searchFor, language, order_by_popularity=False, limit=None, s
                 results[tab] = [list(row) for row in db.executesql(query.format(db.placeholder), (searchForLatin, searchForCommon, lang_primary, searchForCommon, lang_primary))]
                 temp_return_data_times["SQL1"].append("{}".format(db._lastsql))
             else:
-                temp = originalSearchFor + "%%"
+                temp = originalSearchFor + "%"
                 results[tab] = [list(row) for row in db.executesql(query.format(db.placeholder), (temp, lang_primary, temp, lang_primary, temp))]
                 temp_return_data_times["SQL2"].append("{}, {}".format(db._lastsql, temp))
             #search for common name
@@ -413,7 +414,7 @@ def search_by_name(searchFor, language, order_by_popularity=False, limit=None, s
                 mtch = "if(vernacular like {}, TRUE, FALSE) as mtch"
                 query = ("select ott,vernacular,preferred,mtch from (select ott, vernacular, preferred, src, " + mtch + " from vernacular_by_ott where lang_primary={} and ott in ({})) t where mtch order by preferred DESC,src")
                 query = query.format(db.placeholder, db.placeholder, ",".join([db.placeholder]*len(otts)))
-                temp = db.executesql(query, [originalSearchFor+'%%'] + [lang_primary] + list(otts))                
+                temp = db.executesql(query, [originalSearchFor+'%'] + [lang_primary] + list(otts))                
                 temp_return_data_times["SQL4"].append("{}".format(db._lastsql))
             ott_to_vern = {}
 
@@ -461,13 +462,19 @@ def search_by_name(searchFor, language, order_by_popularity=False, limit=None, s
                         pass #might reach here if the latin name has matched, but no vernaculars
         #return {"headers":colname_map, "leaf_hits": results.get('ordered_leaves'), "node_hits": results.get('ordered_nodes'), "lang":language}    
         temp_return_data_times.update({"headers":colname_map, "leaf_hits": results.get('ordered_leaves'), "node_hits": results.get('ordered_nodes'), "lang":language})
-        temp_return_data_times["End"] = str(datetime.datetime.now().time())
+        temp_return_data_times["End"] = datetime.datetime.now()
+        temp_return_data_times["Time"] = str(temp_return_data_times["End"] - temp_return_data_times["Start"])
+        return  {k:(str(v.time()) if hasattr(v,'time') else v) for k,v in temp_return_data_times.items()}
+        
         return temp_return_data_times
     except:
         #return {"headers":colname_map, "leaf_hits":[], "node_hits":[], "lang":language}
         temp_return_data_times.update({"headers":colname_map, "leaf_hits":[], "node_hits":[], "lang":language})
-        temp_return_data_times["End"] = str(datetime.datetime.now().time())
-        return temp_return_data_times
+        temp_return_data_times["End"] = datetime.datetime.now()
+        temp_return_data_times["Time"] = str(temp_return_data_times["End"] - temp_return_data_times["Start"])
+        return  {k:(str(v.time()) if hasattr(v,'time') else v) for k,v in temp_return_data_times.items()}
+    #return {"nodes": res1, "sponsors": res2}
+
 
         
 #find best vernacular name which matches user's query group by ott.
