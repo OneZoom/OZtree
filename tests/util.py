@@ -8,7 +8,7 @@ appconfig_loc = os.path.join(web2py_app_dir, 'private', 'appconfig.ini')
 ip = "127.0.0.1"
 port = "8001"
 base_url="http://"+ip+":"+port+"/"
-base_url="http://beta.onezoom.org/"
+#base_url="http://beta.onezoom.org/"
 
 def get_db_connection():
     database_string = None
