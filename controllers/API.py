@@ -586,8 +586,6 @@ def search_sponsor(searchFor, searchType, language, order_by_recent=None, limit=
             if start:
                 query += ' OFFSET ' + str(int(start))
               
-        print(query)
-        
         reservations = db.executesql(query, search_terms + search_terms)
         
         reservationsOttArray = []
