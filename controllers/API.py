@@ -210,11 +210,12 @@ def search_node():
     res1 = search_for_name()
     times = {"InitSponsSearch": str(datetime.datetime.now().time())}
     if len(res1['leaf_hits']) + len(res1['node_hits']) <15:
-        res2 = search_sponsor(searchFor, "all")
+        res2 = search_sponsor(searchFor, "all", res1.get('lang'))
     else:
         res2 = {"reservations": {}, "nodes": {}, "leaves": {}}
     times = {"EndSponsSearch": str(datetime.datetime.now().time())}
     return {"nodes": res1, "sponsors": res2, "times":times}
+    #return {"nodes": res1, "sponsors": res2}
 
 def search_init():
     """
@@ -268,9 +269,11 @@ def search_init():
 #  Sanitize parameters and then do actually search.
 def search_for_name():
     response.headers["Access-Control-Allow-Origin"] = '*'
+    language = request.vars.lang or request.env.http_accept_language or 'en'
     try:
         searchFor = make_unicode(request.vars.query or "")
-        language = request.vars.lang or request.env.http_accept_language or 'en'
+        first_lang = language.split(',')[0]
+        lang_primary = first_lang.split("-")[0]
         order = True if (request.vars.get('sorted')) else False
         limit=request.vars.get('limit')
         start =request.vars.get('start') or 0
@@ -281,10 +284,10 @@ def search_for_name():
         if is_testing:
             raise
         else:
-            return {}
+            return {'lang':language}
     
 
-def search_by_name(searchFor, language='en', order_by_popularity=False, limit=None, start=0, restrict_tables=None, include_price=False):
+def search_by_name(searchFor, language, order_by_popularity=False, limit=None, start=0, restrict_tables=None, include_price=False):
     """
     Search in latin and vernacular names for species. To look only in leaves, set restrict_tables to 'leaves'.
     To look only in nodes set it to 'nodes', otherwise we default to searching in both
@@ -315,13 +318,14 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
     5. TO DO: in English, we should remove apostrophe-s at the end of a word
     """
     temp_return_data_times = {"Start": str(datetime.datetime.now().time())}
-    lang_primary = language.split(',')[0].lower().split("-")[0]
+    lang_primary = language.split(',')[0].split("-")[0].lower()
     base_colnames = ['id','ott','name','popularity']
     if include_price:
         base_colnames += ['price']
     colnames = base_colnames + ['vernacular','extra_vernaculars']
     colname_map = {nm:index for index,nm in enumerate(colnames)}
     temp_return_data_times.update({"SQL{}".format(x+1):[] for x in range(5)})
+
     try:
         originalSearchFor = searchFor
         temp_return_data_times["M1"] = str(datetime.datetime.now().time())
@@ -381,7 +385,8 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
                 query += ' LIMIT ' + str(int(limit))
                 if start:
                     query += ' OFFSET ' + str(int(start))
-                        
+            
+            
             if len(longWords)>0:
                 results[tab] = [list(row) for row in db.executesql(query.format(db.placeholder), (searchForLatin, searchForCommon, lang_primary, searchForCommon, lang_primary))]
                 temp_return_data_times["SQL1"].append("{}".format(db._lastsql))
@@ -404,12 +409,11 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
                 query = ("select ott,vernacular,preferred,mtch from (select ott, vernacular, preferred, src, " + mtch + " from vernacular_by_ott where lang_primary={} and ott in ({})) t where (mtch or preferred) order by preferred DESC,src").format(db.placeholder, db.placeholder, ",".join([db.placeholder]*len(otts)))
                 temp = db.executesql(query, [searchForCommon] + [lang_primary] + list(otts))
                 temp_return_data_times["SQL3"].append("{}".format(db._lastsql))
-
             else:
                 mtch = "if(vernacular like {}, TRUE, FALSE) as mtch"
                 query = ("select ott,vernacular,preferred,mtch from (select ott, vernacular, preferred, src, " + mtch + " from vernacular_by_ott where lang_primary={} and ott in ({})) t where mtch order by preferred DESC,src")
                 query = query.format(db.placeholder, db.placeholder, ",".join([db.placeholder]*len(otts)))
-                temp = db.executesql(query, [originalSearchFor+'%%'] + [lang_primary] + list(otts))
+                temp = db.executesql(query, [originalSearchFor+'%%'] + [lang_primary] + list(otts))                
                 temp_return_data_times["SQL4"].append("{}".format(db._lastsql))
             ott_to_vern = {}
 
@@ -455,7 +459,7 @@ def search_by_name(searchFor, language='en', order_by_popularity=False, limit=No
                         row.extend(name_to_vern[name])
                     except:
                         pass #might reach here if the latin name has matched, but no vernaculars
-        #return {"headers":colname_map, "leaf_hits": results.get('ordered_leaves'), "node_hits": results.get('ordered_nodes'), "lang":language} 
+        #return {"headers":colname_map, "leaf_hits": results.get('ordered_leaves'), "node_hits": results.get('ordered_nodes'), "lang":language}    
         temp_return_data_times.update({"headers":colname_map, "leaf_hits": results.get('ordered_leaves'), "node_hits": results.get('ordered_nodes'), "lang":language})
         temp_return_data_times["End"] = str(datetime.datetime.now().time())
         return temp_return_data_times
@@ -524,6 +528,7 @@ def search_for_sponsor():
 
     """
     response.headers["Access-Control-Allow-Origin"] = '*'
+    language = request.vars.lang or request.env.http_accept_language or 'en'
     try:
         searchFor = make_unicode(request.vars.query)
         #remove initial punctuation, e.g. we might have been passed in 
@@ -532,81 +537,91 @@ def search_for_sponsor():
         order = True if (request.vars.get('sorted')) else False
         limit=request.vars.get('limit')
         start =request.vars.get('start') or 0
-        return search_sponsor(searchFor, searchType, order, limit, start, defaultImages)
+        return search_sponsor(searchFor, searchType, language, order, limit, start, defaultImages)
     except:
         if is_testing:
             raise
         else:
-            return {}
+            return {'lang':language}
         
-def search_sponsor(searchFor, searchType, order_by_recent=None, limit=None, start=0, defaultImages=False):
+def search_sponsor(searchFor, searchType, language, order_by_recent=None, limit=None, start=0, defaultImages=False):
     from OZfunctions import get_common_names
     try:
-        temp_return_data_times = {"StartSponsSearch": str(datetime.datetime.now().time())}
+        lang_primary = language.split(',')[0].split("-")[0].lower()
         searchFor = [s for s in searchFor.replace("%","").replace("_", " ").split() if s]
         if len(searchFor) == 0 or all(len(s)==1 for s in searchFor): #disallow single letter searching
-            return {"timings": temp_return_data_times}
+            return {}
         verified_name = db.reservations.verified_name
         verified_more_info = db.reservations.verified_more_info
         colnames = ['OTT_ID', 'name', 'verified_name', 'verified_more_info', 'verified_kind', 'verified_url', 'verified_preferred_image']
-        ##TO DO - should the alt_txt be translated somehow? How do we know the language asked for?
-        alt_txt = {"verified_name":T("This leaf has been sponsored"),
-                   "verified_more_info":T("text awaiting confirmation"),
-                   "verified_url":None}
+        alt_txt = {"verified_name":T("This leaf has been sponsored", language=language),
+                   "verified_more_info":T("text awaiting confirmation", language=language),
+                   "verified_kind": "",
+                   "verified_preferred_image": None,
+                   "verified_url": None}
+        alt_colnames = [(("'"+alt_txt[c]+"'" if alt_txt[c] else "NULL") + " AS " + c) if c in alt_txt else c for c in colnames]     
         colname_map = {nm:index for index,nm in enumerate(colnames)}
-        search_query = None
+        search_query = {'verif':"", 'unverif':""}
         search_terms = []
         
         if searchType != "all":
-            search_query = "verified_kind = " + db.placeholder
+            search_query['verif'] = "verified_kind = " + db.placeholder
+            search_query['unverif'] = "user_sponsor_kind = " + db.placeholder
             search_terms.append(searchType)
             
         for word in ["%"+w+"%" for w in searchFor if w]:
-            if search_query is None and searchType == "all":
-                search_query = "(verified_name like " + db.placeholder + " or verified_more_info like " + db.placeholder + ")"
-                search_terms.extend([word, word])
-            elif search_query is None:
-                search_query = "verified_name like " + db.placeholder
-                search_terms.append(word)
-            elif searchType == "all":
-                search_query += " and " + "(verified_name like " + db.placeholder + " or verified_more_info like " + db.placeholder + ")"
-                search_terms.extend([word, word])
-            else:
-                search_query += " and " + "verified_name like " + db.placeholder
-                search_terms.append(word)
+            if search_terms:
+                search_query['verif'] += " AND "
+                search_query['unverif'] += " AND "
+            search_query['verif'] += "(verified_name like " + db.placeholder + " or verified_more_info like " + db.placeholder + ")"
+            search_query['unverif'] += "(user_sponsor_name like " + db.placeholder + " or user_more_info like " + db.placeholder + ")"
+            search_terms.extend([word, word])
+
+        #The logic here is complex. We might wish to allow people to search either for their entered text if not yet verified, 
+        #or their verified text once it appears. If the former, we should put up the holding text in alt_txt. We detect this by
+        #looking at verified_time (for verified text) or user_sponsor_kind (for unverified text)
+        #We also need to not return expired or otherwise deactivated leaves
                 
-        query = "SELECT * FROM (SELECT "
-        #a very complicated query here, use alternative text if this is not an active node (waiting verification or expired)
-        query += ",".join(["IF(active,{0},{1}) as {0}".format(nm, "NULL" if alt_txt[nm] is None else ("'" + alt_txt[nm].replace("'","''") + "'")) if nm in alt_txt else nm for nm in colnames])
-        query += " FROM (SELECT " + ",".join(colnames) + ",(DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE()) AS active FROM reservations"
-        query += " WHERE ((deactivated IS NULL OR deactivated = '') AND verified_kind IS NOT NULL AND verified_kind != '')"
+        #The verified ones
+        query = "SELECT * FROM (SELECT " + ",".join(colnames) + " FROM reservations"
+        query += " WHERE verified_time IS NOT NULL AND (deactivated IS NULL OR deactivated = '')"
+        query += " AND (DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE())"
+        query += " AND " + search_query['verif']
         if order_by_recent:
             query += ' ORDER BY verified_time DESC'
-        query += ") AS t1) as t2 WHERE " + search_query
+        query += ") AS t1"
+        
+        query += " UNION ALL "
+
+        query += "SELECT * FROM (SELECT " + ",".join(alt_colnames) + " FROM reservations"
+        query += " WHERE verified_time IS NULL AND user_sponsor_kind IS NOT NULL AND user_sponsor_kind != ''"
+        query += " AND (deactivated IS NULL OR deactivated = '')"
+        query += " AND " + search_query['unverif']
+        if order_by_recent:
+            query += ' ORDER BY user_updated_time DESC'
+        query += ") AS t2"
+
         if limit:
             query += ' LIMIT ' + str(int(limit))
             if start:
                 query += ' OFFSET ' + str(int(start))
-        reservations = db.executesql(query, search_terms)
-        temp_return_data_times["SQLa"] = "{} --- {}".format(db._lastsql, search_terms)
-
+              
+        reservations = db.executesql(query, search_terms + search_terms)
+        
         reservationsOttArray = []
         for row in reservations:
             reservationsOttArray.append(row[colname_map['OTT_ID']])
         
         query = db.ordered_leaves.ott.belongs(reservationsOttArray)
         leaves = db(query).select(db.ordered_leaves.id, db.ordered_leaves.ott)
-        temp_return_data_times["SQLb"] = "{}".format(db._lastsql)
     
         language=request.vars.lang or request.env.http_accept_language or 'en'
         common_names = get_common_names(reservationsOttArray, lang=language)
         
         if defaultImages:
-            default_images = {row.ott:[row.src, row.src_id] for row in db(db.images_by_ott.ott.belongs(reservationsOttArray) & (db.images_by_ott.best_any == True)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, orderby=~db.images_by_ott.src)}
-            temp_return_data_times["SQLc"] = "{}".format(db._lastsql)
-            return {"common_names": common_names, "lang":language, "reservations": reservations,  "leaves": leaves, "headers": colname_map, "default_images": default_images, "timings": temp_return_data_times}
+            return {"common_names": common_names, "lang":language, "reservations": reservations,  "leaves": leaves, "headers": colname_map, "default_images":{row.ott:[row.src, row.src_id] for row in db(db.images_by_ott.ott.belongs(reservationsOttArray) & (db.images_by_ott.best_any == True)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, orderby=~db.images_by_ott.src)} }
         else:
-            return {"common_names": common_names, "lang":language, "reservations": reservations,  "leaves": leaves, "headers": colname_map, "timings": temp_return_data_times}
+            return {"common_names": common_names, "lang":language, "reservations": reservations,  "leaves": leaves, "headers": colname_map}
         
     except:
         if is_testing:
