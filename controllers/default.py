@@ -943,13 +943,7 @@ def installations():
 def developer():
     return dict()
 
-#def future():
-#    return dict()
-
 def about():
-    return dict()
-
-def about_old():
     return dict()
 
 def data_sources():
@@ -963,12 +957,6 @@ def team():
 
 def milestones():
     return dict()
-
-def about_plus_data():
-    return dict()
-
-#def gallery():
-#    return dict()
 
 def terms():
     return dict()

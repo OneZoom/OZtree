@@ -52,6 +52,12 @@ def minlife():
     return dict(
         page_info = {'title_name':'Minimal OneZoom page','try_local_treefiles_version':__check_version()})
 
+def about_plus_data():
+    """
+    Only in the treeviewer
+    """
+    return dict()
+
 def treetours():
     """
     The page that summarises tours.

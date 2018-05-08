@@ -840,7 +840,7 @@ function setupUI() {
         .on('beforeshow', function() {
             /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
             if ($("#info-modal .uk-modal-body > .unloaded").length) {
-                var url = '{{=XML(URL("default","about_plus_data.load", vars=(setup_params.get("UI_layer") or {}).get("vars"), scheme=True, host=True))}}';
+                var url = '{{=XML(URL("treeviewer","about_plus_data.load", vars=(setup_params.get("UI_layer") or {}).get("vars"), scheme=True, host=True))}}';
                 {{if is_testing:}}console.log("Loading url into page: " + url);{{pass}}
                 $("#info-modal .uk-modal-body").load(url);
             }
