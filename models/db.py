@@ -746,11 +746,17 @@ CREATE INDEX name_index          ON vernacular_by_name (name, lang_primary, pref
 DROP   INDEX ott_index           ON reservations;
 CREATE INDEX ott_index           ON reservations (OTT_ID)           USING HASH;
 
+DROP   INDEX user_kind_index     ON reservations;
+CREATE INDEX user_kind_index     ON reservations (user_sponsor_kind) USING HASH;
+
 DROP   INDEX verified_index      ON reservations;
 CREATE INDEX verified_index      ON reservations (verified_kind)    USING HASH;
 
 DROP   INDEX verifiedtime_index  ON reservations;
 CREATE INDEX verifiedtime_index  ON reservations (verified_time);
+
+DROP   INDEX user_time_index     ON reservations;
+CREATE INDEX user_time_index     ON reservations (user_updated_time);
 
 DROP   INDEX PP_e_mail_index     ON reservations;
 CREATE INDEX PP_e_mail_index     ON reservations (PP_e_mail)        USING HASH;
@@ -797,8 +803,13 @@ CREATE FULLTEXT INDEX ft_vernacular_index    ON vernacular_by_name (vernacular);
 DROP            INDEX ft_vernacular_index    ON vernacular_by_ott;
 CREATE FULLTEXT INDEX ft_vernacular_index    ON vernacular_by_ott (vernacular);
 
+# some indexes for sponsor searching
+
 DROP            INDEX sponsor_name_index     ON reservations;
 CREATE          INDEX sponsor_name_index     ON reservations (verified_name);
+
+DROP            INDEX sponsor_name_index     ON reservations;
+CREATE          INDEX sponsor_name_index     ON reservations (verified_donor_name);
 
 DROP            INDEX sponsor_info_index     ON reservations;
 CREATE          INDEX sponsor_info_index     ON reservations (verified_more_info);
@@ -806,8 +817,24 @@ CREATE          INDEX sponsor_info_index     ON reservations (verified_more_info
 DROP            INDEX ft_sponsor_name_index  ON reservations;
 CREATE FULLTEXT INDEX ft_sponsor_name_index  ON reservations (verified_name);
 
+DROP            INDEX ft_sponsor_name_index  ON reservations;
+CREATE FULLTEXT INDEX ft_sponsor_name_index  ON reservations (verified_donor_name);
+
 DROP            INDEX ft_sponsor_info_index  ON reservations;
 CREATE FULLTEXT INDEX ft_sponsor_info_index  ON reservations (verified_more_info);
+
+DROP            INDEX sponsor_name_index     ON reservations;
+CREATE          INDEX sponsor_name_index     ON reservations (user_sponsor_name);
+
+DROP            INDEX sponsor_info_index     ON reservations;
+CREATE          INDEX sponsor_info_index     ON reservations (user_more_info);
+
+DROP            INDEX ft_sponsor_name_index  ON reservations;
+CREATE FULLTEXT INDEX ft_sponsor_name_index  ON reservations (user_sponsor_name);
+
+DROP            INDEX ft_sponsor_info_index  ON reservations;
+CREATE FULLTEXT INDEX ft_sponsor_info_index  ON reservations (user_more_info);
+
 
 DROP   INDEX ipni_index          ON PoWO;
 CREATE INDEX ipni_index          ON PoWO (ipni_int)         USING HASH;
@@ -818,7 +845,7 @@ CREATE INDEX string_index    ON search_log (search_string)   USING HASH;
 DROP   INDEX identifier_index    ON partners;
 CREATE INDEX identifier_index    ON partners (partner_identifier)   USING HASH;
 
-/* The following are the indexes for ordered leaves & ordered nodes, useful to re-do after a new tree is imported */
+# The following are the indexes for ordered leaves & ordered nodes, useful to re-do after a new tree is imported 
 
 DROP   INDEX price_index         ON ordered_leaves;
 CREATE INDEX price_index         ON ordered_leaves (price);

@@ -534,45 +534,61 @@ def search_sponsor(searchFor, searchType, language, order_by_recent=None, limit=
         verified_name = db.reservations.verified_name
         verified_more_info = db.reservations.verified_more_info
         colnames = ['OTT_ID', 'name', 'verified_name', 'verified_more_info', 'verified_kind', 'verified_url', 'verified_preferred_image']
-        ##TO DO - should the alt_txt be translated somehow? How do we know the language asked for?
         alt_txt = {"verified_name":T("This leaf has been sponsored", language=language),
                    "verified_more_info":T("text awaiting confirmation", language=language),
-                   "verified_url":None}
+                   "verified_kind": "",
+                   "verified_preferred_image": None,
+                   "verified_url": None}
+        alt_colnames = [(("'"+alt_txt[c]+"'" if alt_txt[c] else "NULL") + " AS " + c) if c in alt_txt else c for c in colnames]     
         colname_map = {nm:index for index,nm in enumerate(colnames)}
-        search_query = None
+        search_query = {'verif':"", 'unverif':""}
         search_terms = []
         
         if searchType != "all":
-            search_query = "verified_kind = " + db.placeholder
+            search_query['verif'] = "verified_kind = " + db.placeholder
+            search_query['unverif'] = "user_sponsor_kind = " + db.placeholder
             search_terms.append(searchType)
             
         for word in ["%"+w+"%" for w in searchFor if w]:
-            if search_query is None and searchType == "all":
-                search_query = "(verified_name like " + db.placeholder + " or verified_more_info like " + db.placeholder + ")"
-                search_terms.extend([word, word])
-            elif search_query is None:
-                search_query = "verified_name like " + db.placeholder
-                search_terms.append(word)
-            elif searchType == "all":
-                search_query += " and " + "(verified_name like " + db.placeholder + " or verified_more_info like " + db.placeholder + ")"
-                search_terms.extend([word, word])
-            else:
-                search_query += " and " + "verified_name like " + db.placeholder
-                search_terms.append(word)
+            if search_terms:
+                search_query['verif'] += " AND "
+                search_query['unverif'] += " AND "
+            search_query['verif'] += "(verified_name like " + db.placeholder + " or verified_more_info like " + db.placeholder + ")"
+            search_query['unverif'] += "(user_sponsor_name like " + db.placeholder + " or user_more_info like " + db.placeholder + ")"
+            search_terms.extend([word, word])
+
+        #The logic here is complex. We might wish to allow people to search either for their entered text if not yet verified, 
+        #or their verified text once it appears. If the former, we should put up the holding text in alt_txt. We detect this by
+        #looking at verified_time (for verified text) or user_sponsor_kind (for unverified text)
+        #We also need to not return expired or otherwise deactivated leaves
                 
-        query = "SELECT * FROM (SELECT "
-        #a very complicated query here, use alternative text if this is not an active node (waiting verification or expired)
-        query += ",".join(["IF(active,{0},{1}) as {0}".format(nm, "NULL" if alt_txt[nm] is None else ("'" + alt_txt[nm].replace("'","''") + "'")) if nm in alt_txt else nm for nm in colnames])
-        query += " FROM (SELECT " + ",".join(colnames) + ",(DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE()) AS active FROM reservations"
-        query += " WHERE ((deactivated IS NULL OR deactivated = '') AND verified_kind IS NOT NULL AND verified_kind != '')"
+        #The verified ones
+        query = "SELECT * FROM (SELECT " + ",".join(colnames) + " FROM reservations"
+        query += " WHERE verified_time IS NOT NULL AND (deactivated IS NULL OR deactivated = '')"
+        query += " AND (DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE())"
+        query += " AND " + search_query['verif']
         if order_by_recent:
             query += ' ORDER BY verified_time DESC'
-        query += ") AS t1 WHERE " + search_query + ") as t2"
+        query += ") AS t1"
+        
+        query += " UNION ALL "
+
+        query += "SELECT * FROM (SELECT " + ",".join(alt_colnames) + " FROM reservations"
+        query += " WHERE verified_time IS NULL AND user_sponsor_kind IS NOT NULL AND user_sponsor_kind != ''"
+        query += " AND (deactivated IS NULL OR deactivated = '')"
+        query += " AND " + search_query['unverif']
+        if order_by_recent:
+            query += ' ORDER BY user_updated_time DESC'
+        query += ") AS t2"
+
         if limit:
             query += ' LIMIT ' + str(int(limit))
             if start:
                 query += ' OFFSET ' + str(int(start))
-        reservations = db.executesql(query, search_terms)
+              
+        print(query)
+        
+        reservations = db.executesql(query, search_terms + search_terms)
         
         reservationsOttArray = []
         for row in reservations:
