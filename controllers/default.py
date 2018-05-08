@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # this file is released under public domain and you can use without limitations
-import datetime
 import re
 import urllib
 
@@ -22,8 +21,6 @@ def time_diff(startTime,endTime):
     return (endTime-startTime)
 
 """Standard web2py stuff"""
-
-from datetime import timedelta
 
 def index():
     """
