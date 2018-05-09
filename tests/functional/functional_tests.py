@@ -69,28 +69,28 @@ class FunctionalTest(object):
         
         
         try:
-            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Homo sapiens", leaves_only=1).json()
-            self.humanID, self.humanOTT = resp["result"][0][0:1]
-
-            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Canis lupus", leaves_only=1).json()
-            self.dogID, self.dogOTT = resp["result"][0][0:1]
-
-            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Felis silvestris", leaves_only=1).json()
-            self.catID, self.catOTT = resp["result"][0][0:1]
-
-            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Quercus robur", leaves_only=1).json()
-            self.oakID, self.oakOTT = resp["result"][0][0:1]
-            
-            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Mammalia", nodes_only=1).json()
-            self.mammalID, self.mammalOTT = resp["result"][0][0] #use the ID not the OTT for nodes
-        except (LookupError):
-            assert False, "Could not find human, dog, cat, oak, or mammal OTTs"
-        
-        try:
             self.web2py = Web2py_server(self.appconfig_loc)
         except AttributeError:
             self.web2py = Web2py_server()
             
+        try:
+            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Homo sapiens", leaves_only=1)).json()
+            self.humanID, self.humanOTT = resp["result"][0][0:2]
+
+            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Canis lupus", leaves_only=1)).json()
+            self.dogID, self.dogOTT = resp["result"][0][0:2]
+
+            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Felis silvestris", leaves_only=1)).json()
+            self.catID, self.catOTT = resp["result"][0][0:2]
+
+            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Quercus robur", leaves_only=1)).json()
+            self.oakID, self.oakOTT = resp["result"][0][0:2]
+            
+            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Mammalia", nodes_only=1)).json()
+            self.mammalID, self.mammalOTT = resp["result"][0][0:2] #use the ID not the OTT for nodes
+        except (LookupError):
+            assert False, "Could not find human, dog, cat, oak, or mammal OTTs"
+        
             
         logging.getLogger("requests").setLevel(logging.WARNING)
         logging.getLogger("urllib3").setLevel(logging.WARNING)
