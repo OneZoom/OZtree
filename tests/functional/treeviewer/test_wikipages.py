@@ -70,58 +70,26 @@ class TestWikipages(FunctionalTest):
         """
         #self.browser.get(base_url + "life/@Homo_sapiens?pop=ol_{}".format(self.humanOTT))
         print("human", flush=True, end="")
-        self.browser.get(self.urls['leaf'](self.humanOTT))
         wait = WebDriverWait(self.browser, 30)
-        try:
-            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
-            assert not self.element_by_class_exists("wikipedia-warning"), "Human wikipage should have no warnings"
-            assert not self.element_by_class_exists("wikidata-warning"), "Human wikipage should have no warnings"
-        except TimeoutException:
-            assert False,  "Timeout waiting for human wikipedia page"
+        for type, id, name in [
+            ('leaf', self.humanOTT, 'human'),
+            ('leaf_md', self.humanOTT, 'human'),
+            ('leaf', self.dogOTT, 'dog'),
+            ('leaf', self.catOTT, 'cat'),
+            ('node', self.mammalID, 'mammals'),
+            ('node_md', self.mammalID, 'mammals')]:
+            yield self.wikidata_has_wikipedia, type, id, wait, name
 
-        self.browser.get(self.urls['leaf_md'](self.humanOTT))
-        try:
-            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
-            assert not self.element_by_class_exists("wikipedia-warning"), "Human wikipage should have no warnings"
-            assert not self.element_by_class_exists("wikidata-warning"), "Human wikipage should have no warnings"
-        except TimeoutException:
-            assert False,  "Timeout waiting for human wikipedia page"
 
-        print(", dog", flush=True, end="")
-        self.browser.get(self.urls['leaf'](self.dogOTT))
+    def wikidata_has_wikipedia(self, type, id, wait, name):
+        print(name + " via " + type + ": ", flush=True, end="")
+        self.browser.get(self.urls[type](id))
         try:
             wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
-            assert not self.element_by_class_exists("wikipedia-warning"), "Dog wikipage should have no warnings"
-            assert not self.element_by_class_exists("wikidata-warning"), "Dog wikipage should have no warnings"
+            assert not self.element_by_class_exists("wikipedia-warning"), "{} wikipage should have no warnings".format(name)
+            assert not self.element_by_class_exists("wikidata-warning"), "{} wikipage should have no warnings".format(name)
         except TimeoutException:
-            assert False,  "Timeout waiting for dog wikipedia page"
-
-        print(", cat", flush=True, end="")
-        self.browser.get(self.urls['leaf'](self.catOTT))
-        try:
-            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
-            assert not self.element_by_class_exists("wikipedia-warning"), "Wildcat wikipage should have no warnings"
-            assert not self.element_by_class_exists("wikidata-warning"), "Wildcat wikipage should have no warnings"
-        except TimeoutException:
-            assert False,  "Timeout waiting for wildcat wikipedia page"
-
-        print(", mammals", flush=True, end="")
-        self.browser.get(self.urls['node'](self.mammalID))
-        try:
-            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
-            assert not self.element_by_class_exists("wikipedia-warning"), "Mammal wikipage should have no warnings"
-            assert not self.element_by_class_exists("wikidata-warning"), "Mammal wikipage should have no warnings"
-        except TimeoutException:
-            assert False,  "Timeout waiting for mammal wikipedia page"
-
-        self.browser.get(self.urls['node_md'](self.mammalID))
-        try:
-            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
-            assert not self.element_by_class_exists("wikipedia-warning"), "Mammal wikipage should have no warnings"
-            assert not self.element_by_class_exists("wikidata-warning"), "Mammal wikipage should have no warnings"
-        except TimeoutException:
-            assert False,  "Timeout waiting for mammal wikipedia page"
-        print(" ...", flush=True, end="")
+            assert False,  "Timeout waiting for {} wikipedia {} page".format(name, type)
 
     def test_wikidata_no_linked_wikipedia(self):
         """
