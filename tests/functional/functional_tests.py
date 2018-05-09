@@ -11,11 +11,13 @@
     
  If you have installed the 'rednose' package (pip3 install rednose), you can get nicer output by e.g.
  
-    nosetests -vs ./ tests/functional --rednose
+    nosetests -vs ./tests/functional --rednose
     
- To carry out tests on a remote machine, only some of the tests will work. You can do
+ To carry out tests on a remote machine, you can specify a [url][server] and [url][port]
+ in a config file, which will not give the FunctionalTest class an is_local attribute
+ and hence will skip tests marked @attr('is_local'). E.g. for testing beta.onezoom.org, you can do
  
-    nosetests -vs ./ tests/functional --rednose -a remote=beta.onezoom.org
+    nosetests -vs ./tests/functional --rednose --tc-file beta_cfg.ini
  
 """
 
@@ -47,6 +49,7 @@ date_format = "%Y-%m-%d %H:%M:%S.%f" #used when a web2py datetime on a webpage n
 test_email = 'test@onezoom.org'
 
 class FunctionalTest(object):
+    is_local = Web2py_server.is_local()
 
     @classmethod
     def setUpClass(self):
@@ -90,7 +93,8 @@ class FunctionalTest(object):
             self.web2py = Web2py_server(self.appconfig_loc)
         except AttributeError:
             self.web2py = Web2py_server()
-
+            
+            
         logging.getLogger("requests").setLevel(logging.WARNING)
         logging.getLogger("urllib3").setLevel(logging.WARNING)
         selenium_logger.setLevel(logging.WARNING)
@@ -105,6 +109,7 @@ class FunctionalTest(object):
     @classmethod
     def tearDownClass(self):
         #should test here that we don't have any console.log errors (although we might have logs).
+        self.browser.quit()
         self.web2py.stop_server()
         
     def setup(self):
