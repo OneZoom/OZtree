@@ -3,6 +3,8 @@
  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-ga('set', 'anonymizeIp', true);
 ga('create', 'UA-35612933-1', 'auto');
+ga('set', 'forceSSL', true);
+ga('set', 'displayFeaturesTask', null);
+ga('set', 'anonymizeIp', true);
 ga('send', 'pageview');
