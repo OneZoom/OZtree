@@ -1,6 +1,2 @@
-{{if request.vars.nolinks:}}
-{{def A(*args, **kwargs): return CAT(*args)}}
-{{pass}}
-
 {{include 'default/about.load'}}
 {{include 'default/data_sources.load'}}
