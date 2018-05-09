@@ -253,7 +253,22 @@ def search_init():
                 return {"id": node_hits.id}
     return {"empty": request.vars.ott}
 
-
+def search_for_sciname():
+    """
+    Search for a starting match on the latin name as stored in the ordered_leaves or ordered_nodes tables
+    String passed in is ?query=xxxx
+    """
+    session.forget(response)
+    response.headers["Access-Control-Allow-Origin"] = '*'
+    try:
+        db(db.ordered_leaves.name.startswith())    
+        searchFor = make_unicode(request.vars.query or "")
+    except:
+        if is_testing:
+            raise
+        else:
+            return {}
+        
 # request.vars contains:
 #  -- String: query
 #  -- String: 'lang' (default 'en') - used to override the default of request.env.http_accept_language
@@ -264,6 +279,7 @@ def search_init():
 #  -- String: 'restrict_tables is one of 'leaves', 'nodes' or None.(default None)
 #  Sanitize parameters and then do actually search.
 def search_for_name():
+    session.forget(response)
     response.headers["Access-Control-Allow-Origin"] = '*'
     language = request.vars.lang or request.env.http_accept_language or 'en'
     try:
