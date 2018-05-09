@@ -66,28 +66,25 @@ class FunctionalTest(object):
         with open(db_py_loc, 'r') as db_py:
             assert striptext_in_file("is_testing=True", db_py), "To do any functional testing you must set is_testing=True in " + db_py_loc
         self.db = get_db_connection()
-        db_cursor = self.db['connection'].cursor()
-        sql = {k:"SELECT ott, id FROM ordered_{} WHERE name = {}".format(k, self.db['subs']) for k in ('leaves','nodes')}
+        
+        
         try:
-            db_cursor.execute(sql['leaves'], ("Homo sapiens",))
-            self.humanOTT = int(db_cursor.fetchone()[0])
-            self.db['connection'].commit() #need to commit here otherwise next select returns stale data
-            db_cursor.execute(sql['leaves'], ("Canis lupus",))
-            self.dogOTT = int(db_cursor.fetchone()[0])
-            self.db['connection'].commit() #need to commit here otherwise next select returns stale data
-            db_cursor.execute(sql['leaves'], ("Felis silvestris",))
-            self.catOTT = db_cursor.fetchone()[0]
-            self.db['connection'].commit() #need to commit here otherwise next select returns stale data
-            db_cursor.execute(sql['leaves'], ("Quercus robur",)) #get a plant with lot of data
-            self.oakOTT = db_cursor.fetchone()[0]
-            self.db['connection'].commit() #need to commit here otherwise next select returns stale data
-            db_cursor.execute(sql['nodes'], ("Mammalia",))
-            self.mammalOTT, self.mammalID = db_cursor.fetchone()
-            self.db['connection'].commit() #need to commit here otherwise next select returns stale data
-        except (ValueError, TypeError):
-            assert False, "Could not find human, dog, cat, oak, or mammal OTTs"
+            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Homo sapiens", leaves_only=1).json()
+            self.humanID, self.humanOTT = resp["result"][0][0:1]
+
+            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Canis lupus", leaves_only=1).json()
+            self.dogID, self.dogOTT = resp["result"][0][0:1]
+
+            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Felis silvestris", leaves_only=1).json()
+            self.catID, self.catOTT = resp["result"][0][0:1]
+
+            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Quercus robur", leaves_only=1).json()
+            self.oakID, self.oakOTT = resp["result"][0][0:1]
             
-        db_cursor.close()
+            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Mammalia", nodes_only=1).json()
+            self.mammalID, self.mammalOTT = resp["result"][0][0] #use the ID not the OTT for nodes
+        except (LookupError):
+            assert False, "Could not find human, dog, cat, oak, or mammal OTTs"
         
         try:
             self.web2py = Web2py_server(self.appconfig_loc)
