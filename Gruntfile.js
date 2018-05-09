@@ -23,6 +23,10 @@ module.exports = function (grunt) {
       partial_install: {
         //See documentation in https://github.com/OneZoom/OZtree#onezoom-setup
         command: "perl -i OZprivate/ServerScripts/Utilities/partial_install.pl static/minlife.html"
+      },
+      partial_local_install: {
+        //See documentation in https://github.com/OneZoom/OZtree#onezoom-setup
+        command: "perl -i OZprivate/ServerScripts/Utilities/partial_install.pl static/minlife.html; perl -i -e 's|http://127.0.0.1:8000|http://beta.onezoom.org|g'  static/minlife.html"
       }
     },
     jsdoc2md: {
@@ -138,8 +142,13 @@ module.exports = function (grunt) {
     curl: {
         'get_minlife': {
             //this should be changed to the production URL when live
-            //src:'http://www.onezoom.org/minlife.html/?lang=' + grunt.option('lang') || '',
+            //src:'http://www.onezoom.org/treeviewer/minlife.html/?lang=' + grunt.option('lang') || '',
             src:'http://beta.onezoom.org/treeviewer/minlife.html',
+            dest:'static/minlife.html',
+        },
+        'get_local_minlife': {
+            //used for development, assuming you have a local server running on 127.0.0.1:8000
+            src:'http://127.0.0.1:8000/treeviewer/minlife.html',
             dest:'static/minlife.html',
         }
     }
@@ -158,6 +167,7 @@ module.exports = function (grunt) {
   grunt.registerTask("precompile-js", ["exec:precompile_js"]);
   grunt.registerTask("precompile-js_dev", ["exec:precompile_js_dev"]);
   grunt.registerTask("partial-install", ["curl:get_minlife", "exec:partial_install"]);
+  grunt.registerTask("partial-local-install", ["curl:get_local_minlife", "exec:partial_local_install"]);
   grunt.registerTask("precompile-docs", ["jsdoc2md", "exec:precompile_docs"]);
   grunt.registerTask("build", ["clean:build", "precompile-python", "precompile-js", "copy:old_js", "compass","uglify", "compress","precompile-docs"]);
   grunt.registerTask("compile", ["clean:compile", "precompile-js_dev", "copy:old_js", "compass" , "copy:to_live", "precompile-docs"]);
