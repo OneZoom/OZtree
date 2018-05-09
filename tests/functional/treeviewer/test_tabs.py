@@ -48,7 +48,8 @@ class TestTabs(FunctionalTest):
         
     def test_no_tabs(self):
         """Deliberately call the tab popup function with no tabs asked for"""
-    
+        pass
+        
     def test_all_tabs(self):
         """
         Test tabs within the expert treeviewer
