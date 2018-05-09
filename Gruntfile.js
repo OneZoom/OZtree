@@ -26,7 +26,7 @@ module.exports = function (grunt) {
       },
       partial_local_install: {
         //See documentation in https://github.com/OneZoom/OZtree#onezoom-setup
-        command: "perl -i OZprivate/ServerScripts/Utilities/partial_install.pl static/minlife.html; perl -i -e 's|http://127.0.0.1:8000|http://beta.onezoom.org|g'  static/minlife.html"
+        command: "perl -i OZprivate/ServerScripts/Utilities/partial_install.pl static/minlife.html; perl -i -pe 's|http://127.0.0.1:8000|http://beta.onezoom.org|g'  static/minlife.html"
       }
     },
     jsdoc2md: {
