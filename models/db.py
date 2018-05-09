@@ -58,46 +58,36 @@ name_length_chars = 190 ##max length for a species name is 190 chars (allows ind
 ## Set up database link
 #########################################################################
 
-if not request.env.web2py_runtime_gae:
-    import os.path
-    ## if NOT running on Google App Engine use SQLite or other DB
-    DALstring = myconf.take('db.uri')
-    doMigration = myconf.take('db.migrate') in ['true', '1', 't', 'y', 'yes', 'True']
-    if DALstring.startswith('mysql://'):
-        db = DAL(DALstring, 
-            driver_args={'read_default_file':os.path.join(request.folder, 'private','my.cnf')}, 
-            pool_size=myconf.take('db.pool_size', cast=int), 
-            check_reserved=['all'], 
-            migrate=doMigration,
-            lazy_tables= not is_testing)
-            ## ,fake_migrate_all=True) on the end can fix migration issues.
-        ## allow mysql tinyint
-        from gluon.dal import SQLCustomType
-        boolean = SQLCustomType(
-             type ='boolean',
-             native='TINYINT(1)',
-             encoder = (lambda x: 1 if x else 0),
-             decoder = (lambda x: True if x else False)
-        )
+import os.path
+## if NOT running on Google App Engine use SQLite or other DB
+DALstring = myconf.take('db.uri')
+doMigration = myconf.take('db.migrate') in ['true', '1', 't', 'y', 'yes', 'True']
+if DALstring.startswith('mysql://'):
+    db = DAL(DALstring, 
+        driver_args={'read_default_file':os.path.join(request.folder, 'private','my.cnf')}, 
+        pool_size=myconf.take('db.pool_size', cast=int), 
+        check_reserved=['all'], 
+        migrate=doMigration,
+        lazy_tables= not is_testing)
+        ## ,fake_migrate_all=True) on the end can fix migration issues.
+    ## allow mysql tinyint
+    from gluon.dal import SQLCustomType
+    boolean = SQLCustomType(
+         type ='boolean',
+         native='TINYINT(1)',
+         encoder = (lambda x: 1 if x else 0),
+         decoder = (lambda x: True if x else False)
+    )
 
-        db.placeholder = "%s"
-    else:
-        db = DAL(DALstring, 
-            pool_size=myconf.take('db.pool_size', cast=int), 
-            check_reserved=['all'], 
-            migrate=doMigration, 
-            lazy_tables=True)
-        db.placeholder = "?" #for sqlite
-    
+    db.placeholder = "%s"
 else:
-    ## connect to Google BigTable (optional 'google:datastore://namespace')
-    db = DAL('google:datastore+ndb', migrate=doMigration, lazy_tables=True)
-    ## store sessions and tickets there
-    session.connect(request, response, db=db)
-    ## or store session in Memcache, Redis, etc.
-    ## from gluon.contrib.memdb import MEMDB
-    ## from google.appengine.api.memcache import Client
-    ## session.connect(request, response, db = MEMDB(Client()))
+    db = DAL(DALstring, 
+        pool_size=myconf.take('db.pool_size', cast=int), 
+        check_reserved=['all'], 
+        migrate=doMigration, 
+        lazy_tables=True)
+    db.placeholder = "?" #for sqlite
+
 
 current.db = db
 

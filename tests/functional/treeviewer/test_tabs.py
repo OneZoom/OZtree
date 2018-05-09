@@ -99,4 +99,4 @@ class TestTabs(FunctionalTest):
             assert len(form_links)==1, "A single linkout button in the form should exist in `{}` for '{}'".format(form_css, tabname)
             href = forms[0].get_attribute('action') or form_links[0].get_attribute('href')
             assert href, "There should always be a link out from each iframe"
-        
+        print(" ", flush=True, end="")

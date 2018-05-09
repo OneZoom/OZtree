@@ -6,6 +6,7 @@ import sys
 import os.path
 from time import sleep
 
+import requests
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -141,19 +142,22 @@ class TestWikipages(FunctionalTest):
     def get_nolang_wiki_entries(self):
         """
         Here we get the most popular species and group that has a wikidata entry but no associated english language articles on wikipedia
+        This is a bit of a hack for remote sites, as we are looking for an OTT on the local DB
         """
         db_cursor = self.db['connection'].cursor()
-        sql = "SELECT ott, id, name from ordered_{} where wikidata is not NULL and (wikipedia_lang_flag & {}) = 0 ORDER BY popularity DESC LIMIT 1"
+        sql = "SELECT ott, name from ordered_{} where wikidata is not NULL and (wikipedia_lang_flag & {}) = 0 ORDER BY popularity DESC LIMIT 1"
         db_cursor.execute(sql.format('leaves', 2**wikiflags['en']))
         row = db_cursor.fetchone()
         nolang_leaf_OTT = int(row[0])
-        print("(using popular species: {})".format(row[2]), end=" ", flush=True)
+        print("(using popular species: {})".format(row[1]), end=" ", flush=True)
         assert nolang_leaf_OTT, "To test we need at least one leaf with a wikidata entry but no site languages - this could fail depending on wikidata completeness"
         self.db['connection'].commit() #need to commit here otherwise next select returns stale data
         db_cursor.execute(sql.format('nodes', 2**wikiflags['en']))
         row = db_cursor.fetchone()
-        nolang_node_ID = int(row[1])
-        print("(using popular taxon: {})".format(row[2]), end=" ...", flush=True)
+        nolang_node_OTT = int(row[0])
+        resp = requests.get(base_url + "API/get_ids_by_ott_array.json", params=dict(ott_array=nolang_node_OTT)).json()
+        nolang_node_ID = resp['nodes'][str(nolang_node_OTT)]
+        print("(using popular taxon: {})".format(resp['names'][str(nolang_node_OTT)]), end=" ...", flush=True)
         self.db['connection'].commit() #need to commit here otherwise next select returns stale data
         assert nolang_node_ID, "To test we need at least one leaf with a wikidata entry but no site languages - this could fail depending on wikidata completeness"
         db_cursor.close()

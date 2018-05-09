@@ -2,7 +2,6 @@
 try:
     web2py_A = web2py_A #if already included, skip
 except NameError:
-    print("foo")
     web2py_A = None
     if request.vars.links=='none':
         #remove hyperlink from *all* links created via the web2py A() helper, e.g. for the logos & in the LOADed modals

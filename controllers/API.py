@@ -261,8 +261,16 @@ def search_for_sciname():
     session.forget(response)
     response.headers["Access-Control-Allow-Origin"] = '*'
     try:
-        db(db.ordered_leaves.name.startswith())    
-        searchFor = make_unicode(request.vars.query or "")
+        searchFor = " ".join(make_unicode(request.vars.query or "").split())
+        result = []
+        if searchFor and len(searchFor)>1:
+            if not request.vars.nodes_only:
+                result += [[r.id, r.ott, r.name] for r in \
+                    db(db.ordered_leaves.name.startswith(searchFor)).select(db.ordered_leaves.id, db.ordered_leaves.ott, db.ordered_leaves.name)]
+            if not request.vars.leaves_only:
+                result += [[r.id, r.ott, r.name] for r in \
+                    db(db.ordered_nodes.name.startswith(searchFor)).select(db.ordered_nodes.id, db.ordered_nodes.ott, db.ordered_nodes.name)]
+        return dict(result=result)
     except:
         if is_testing:
             raise
