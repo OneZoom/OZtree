@@ -557,6 +557,7 @@ db.define_table('eol_inspected',
 # this table contains info to provide a list of interesting places to sponsor. 
 db.define_table('sponsor_picks',
     Field('identifier', type = 'string', unique=True, length=20, notnull=True), #a unique identifier: if a number this refers to an OTT id
+    Field('display_order', type = 'integer', unique=True), #What order to display them in on the page. If NULL, this is disabled
     Field('name', type='text', notnull=True), #the name that appears on the webpage. May be translated
     Field('subtext', type='text'), #optional subtext to explain the list. May be translated
     Field('thumb_url', type='text'), #a url to a thumbnail picture. If NULL, use the thumb_src and thumb_src_id fields below
