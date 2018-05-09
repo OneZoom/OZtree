@@ -147,8 +147,13 @@ module.exports = function (grunt) {
             dest:'static/minlife.html',
         },
         'get_local_minlife': {
-            //used for development, assuming you have a local server running on 127.0.0.1:8000, and you have 
-            //something like  pics_dir = http://images.onezoom.org/ set in your appconfig.ini.
+            //used for development only. This will create the minlife file as normal, but 
+            //using your local machine to source the page, rather than downloading the minlife
+            //file from the main OneZoom server. This means that as well as local changes to
+            //the treeviewer javascript, local changes you make to other files (such as
+            // treeviewer/layout.html and treeviewer/UI_layer.load) will be incorporated
+            //into the minlife tree. However, it assumes you have a local server running on
+            //127.0.0.1:8000, and pics_dir = http://images.onezoom.org/ set in your appconfig.ini.
             src:'http://127.0.0.1:8000/treeviewer/minlife.html',
             dest:'static/minlife.html',
         }
