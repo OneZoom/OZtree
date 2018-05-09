@@ -147,7 +147,8 @@ module.exports = function (grunt) {
             dest:'static/minlife.html',
         },
         'get_local_minlife': {
-            //used for development, assuming you have a local server running on 127.0.0.1:8000
+            //used for development, assuming you have a local server running on 127.0.0.1:8000, and you have 
+            //something like  pics_dir = http://images.onezoom.org/ set in your appconfig.ini.
             src:'http://127.0.0.1:8000/treeviewer/minlife.html',
             dest:'static/minlife.html',
         }
