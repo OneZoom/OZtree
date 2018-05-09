@@ -129,7 +129,7 @@ default_search_terms = OrderedDict([
         ('💩',           dict(max_n= 0, contains_within_top={}, max_time_secs = standard_search_time)), #a 4 byte unicode char
         'Two-letter words use stem matching, rather than fultext index',
         ('aa',           dict(min_n = 10, contains_within_top={}, max_time_secs = standard_search_time*3)), #quite a lot of hits here
-        ('ox',           dict(min_n = 100, contains_within_top={}, max_time_secs = 0.6)),   
+        ('ox',           dict(min_n = 100, contains_within_top={}, max_time_secs = standard_search_time*6)),   
         ('zz',           dict(min_n = 1, contains_within_top={"Zamioculcas zamiifolia":1}, max_time_secs = standard_search_time)),
         'Three-letter words fultext index, and may be slow',
         ('aaa',          dict(min_n = 1, contains_within_top={"Cavaticovelia aaa":3}, max_time_secs = standard_search_time)),
