@@ -10,8 +10,8 @@ export function resolve(obj, str) {
     }, obj || self)
 }
 
-
-export let is_on_mobile = navigator.userAgent.match(/Android/i)
+export let is_on_mobile = (global && !global.navigator) // i.e. a unit test
+    || navigator.userAgent.match(/Android/i)
     || navigator.userAgent.match(/webOS/i)
     || navigator.userAgent.match(/iPhone/i)
     || navigator.userAgent.match(/iPad/i)

@@ -8,6 +8,9 @@ module.exports = function (grunt) {
         cwd: "../../",
         command: 'python2 -c "import gluon.compileapp; gluon.compileapp.compile_application(\'' + process.cwd() + '\', skip_failed_views=True)"'
       },
+      test: {
+        command: 'npm run test'
+      },
       precompile_js: {
         command: 'npm run precompile_js' //command defined in package.json
       },
@@ -169,6 +172,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-jsdoc-to-markdown');
   grunt.loadNpmTasks('grunt-curl');
 
+  grunt.registerTask("test", ["exec:test"]);
   grunt.registerTask("precompile-python", ["exec:precompile_python"]);
   grunt.registerTask("precompile-js", ["exec:precompile_js"]);
   grunt.registerTask("precompile-js_dev", ["exec:precompile_js_dev"]);
