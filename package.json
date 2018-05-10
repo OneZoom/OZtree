@@ -32,6 +32,7 @@
   },
   "homepage": "https://github.com/jrosindell/OneZoomComplete",
   "devDependencies": {
+    "almost-equal": "^1.1.0",
     "babel-core": "^6.21.0",
     "babel-loader": "^6.2.10",
     "babel-polyfill": "^6.16.0",
