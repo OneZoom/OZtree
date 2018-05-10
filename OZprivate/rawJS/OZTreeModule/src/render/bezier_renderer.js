@@ -8,6 +8,13 @@ function render(context, shape) {
     context.strokeStyle = shape.stroke.color;
     context.stroke();  
   }
+  // Render all markings on top of this line
+  for (let i = 0; i < shape.markings_list.length; i++) {
+    context.lineCap = shape.stroke.line_cap ? shape.stroke.line_cap : "round";
+    context.lineWidth = shape.stroke.line_width * shape.markings_list[i][1];
+    context.strokeStyle = shape.markings_list[i][0];
+    context.stroke();
+  }
 }
 
 function follow_path(context, shape) {
