@@ -100,11 +100,15 @@ class BranchLayoutBase {
     shape.height = 1;
   }
 
+  node_line_width(node) {
+    return node.bezr * node.rvar;
+  }
+
   get_bezier_shapes(node, shapes) {
     let bezier_shape = BezierShape.create();
     this.set_bezier_shape(bezier_shape, node);
     bezier_shape.do_stroke = true;
-    bezier_shape.stroke.line_width = node.bezr * node.rvar;
+    bezier_shape.stroke.line_width = this.node_line_width(node);
     bezier_shape.height = 0;
     bezier_shape.stroke.color = color_theme.get_color('branch.stroke', node);
     shapes.push(bezier_shape);
