@@ -35,6 +35,9 @@ function leafcolor2(node) {
 const theme = {
   branch: {
     stroke: branch_color,
+    marked_area_pallette: {
+        '0': highlight_color,
+    },
     highlight_concestor: {
       stroke: highlight_color
     },
