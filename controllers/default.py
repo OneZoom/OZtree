@@ -545,48 +545,29 @@ def donor_list():
 
 def sponsor_picks() : #this is a private function
     """
-    Here we define a set of hand-picked nodes,listed in an (ordered) dictionary. If a node is
-    accessed via a numeric key, the key is an ott, and the node can be displayed using the 
+    Get the list of hand-picked nodes, from the sponsor_picks table. If a node has a
+    identifier which is a positive integer, this refers to an ott, and the node can be displayed using the 
     sponsor_node function. Otherwise it is a bespoke collection, displayed using sponsor_handpicks
     """
-    from collections import OrderedDict
-    pick=OrderedDict()
-    
-    pick[244265]={'name':'Mammals', 'thumb_src': thumbnail_url(src_flags["eol"], 27053125), 'vars':{'n':8}}
-        
-    pick[81461]={'name':'Birds', 'thumb_src':thumbnail_url(src_flags["eol"], 26823956), 'vars':{'n':8}}
-
-    pick[35888]={'name':'Lizards and snakes', 'thumb_src':thumbnail_url(src_flags["eol"], 26814956), 'vars':{'n':8}}
-
-    pick[773483]={'name':'Ray-finned fishes', 'thumb_src':thumbnail_url(src_flags["eol"], 5817441), 'vars':{'n':8}}
-
-    pick[7368]={'name':'Cephalopods', 'thumb_src':thumbnail_url(src_flags["eol"], 26819085), 'vars':{'n':12}}
-
-    pick[133665]={'name':'Dragonflies and Damselflies', 'thumb_src':thumbnail_url(src_flags["eol"], 16893200), 'vars':{'n':8}}
-
-    pick[965954]={'name':'Butterflies and moths', 'thumb_src':thumbnail_url(src_flags["eol"], 1997597), 'vars':{'n':12}}
-
-    pick[568878]={'name':'Orchids', 'thumb_src':thumbnail_url(src_flags["eol"], 5829089), 'vars':{'n':12}}
-
-    pick[208036]={'name':'Rose family (apples etc.)', 'thumb_src':thumbnail_url(src_flags["eol"], 26851969), 'vars':{'n':8}}
-
-    pick[584111]={'name':'Cactus family', 'thumb_src':thumbnail_url(src_flags["eol"], 5830878), 'vars':{'n':12}}
-    
-    pick['da']={'name':"David Attenborough's list", 'subtext':"These species are named after him, or were in Attenborough's Ark, or are among the Top 10 species he'd choose to save.", 'thumb_src':thumbnail_url(src_flags["eol"], 13144348), 'otts':
-        [3615204, 5846196, 3317844, 2981913, 5143980, 5146215, 566865, 1061679, 469465, 842080, 3600603, 459017, 644245, 313069, 74731, 164229]}
-    
-    pick['trail2016']={'name':"List for the Ancestor's Trail", 'subtext':'The <a href="http://www.ancestorstrail.org.uk">Ancestor&rsquo;s Trail</a> is partnering with us to promote sponsorship on the OneZoom tree of life: our list contains many species mentioned in the <a href="http://en.wikipedia.org/wiki/The_Ancestor%27s_Tale">Ancestor&rsquo;s Tale</a> (see <a href="sponsored?search_mesg=AT16&sum=true">those sponsored already</a>).', 'thumb_src':URL("static","images/AncestorsTrail.jpg"),  'vars':{'n':12, 'user_more_info':'Ancestor’s Trail', 'user_message_OZ':'AT16'}, 'otts':[10703, 78499, 164229, 175270, 199355, 292504, 306795, 342738, 392933, 412685, 453575, 473106, 510762, 511973, 516305, 542509, 558069, 558087, 589951, 616365, 637537, 659136, 677382, 680963, 709966, 721280, 739941, 746542, 781510, 781600, 796672, 799124, 801608, 801627, 801808, 813103, 840875, 887701, 896431, 904101, 905267, 962377, 986959, 995038, 1033356, 1048188, 1062222, 1091028, 3422746]}
 
     #save 'ott':123 in pick[xxx].vars
-    for key, val in pick.items():
-        if 'vars' not in val:
-            val['vars']={}
+    pick = {}
+    for row in db(db.sponsor_picks.display_order is not None).select(db.sponsor_picks.ALL, orderby=db.sponsor_picks.display_order):
+        
+        val = {v:row[v] for v in db.sponsor_picks.fields}
         try:
+            val['vars']=loads(row.vars)
+        except:
+            val['vars']={}
+        if not row.thumb_url:
+            val['thumb_url']=thumbnail_url(row.thumb_src,row.thumb_src_id)
+        if row.identifier.isdigit():
+            val['vars']['ott'] = row.identifier = int(row.identifier)
             val['page'] = 'sponsor_node'
-            val['vars']['ott'] = abs(key)
-        except TypeError:
+        else:
             val['page'] = 'sponsor_handpicks'
-            val['vars']['group_name'] = key
+            val['vars']['group_name'] = row.identifier
+        pick[row.identifier] = val
     return pick
     
 def sponsor():
