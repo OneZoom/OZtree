@@ -26,6 +26,6 @@ class ArcShape extends BaseShape {
     this.circle = false;
   }
 }
-ArcShape.obj_pool = new ObjectPool(ArcShape, 4000);
+ArcShape.obj_pool = new ObjectPool(ArcShape, 8000);
 
 export default ArcShape;
