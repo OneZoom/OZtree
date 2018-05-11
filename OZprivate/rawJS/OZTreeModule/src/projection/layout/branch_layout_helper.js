@@ -83,46 +83,6 @@ class BranchLayoutBase {
     arc_shape.fill.color =  color_theme.get_color('branch.stroke', node);
     shapes.push(arc_shape);
   }
-
-  draw_arrow(node, shapes, highlight_type, narrower) {
-    // the positioning of this arrow isn't quite perfect and probably needs to be fixed
-    let path_shape = PathShape.create();
-    let x = node.xvar + node.rvar * node.arcx;
-    let y = node.yvar + node.rvar * node.arcy;
-    let r = node.rvar * node.arcr;
-    let ctr_arg1 = narrower ? 0.17 : 0.4;
-    let ctr_arg2 = narrower ? 0.55 : 0.7;
-    let color_name = 'branch.highlight_arrow.fill';
-    if (highlight_type) {
-      color_name = 'branch.highlight_arrow_' + highlight_type + '.fill';  
-    }  
-    path_shape.path_length = 4;
-    path_shape.height = 1;
-    let tempsinpre = Math.sin(node.arca);
-    let tempcospre = Math.cos(node.arca);
-    let tempsin90pre = Math.sin(node.arca + Math.PI/2.0);
-    let tempcos90pre = Math.cos(node.arca + Math.PI/2.0);
-    let line_path = MoveToShape.create();
-    line_path.x = x + ctr_arg1 * r * tempcospre;
-    line_path.y = y + ctr_arg1 * r * tempsinpre;
-    path_shape.path[0] = line_path;
-    line_path = LineToShape.create();
-    line_path.x = x - r * tempcospre + ctr_arg2 * r * tempcos90pre;
-    line_path.y = y - r * tempsinpre + ctr_arg2 * r * tempsin90pre;
-    path_shape.path[1] = line_path;
-    line_path = LineToShape.create();
-    line_path.x = x - r * tempcospre - ctr_arg2 * r * tempcos90pre;
-    line_path.y = y - r * tempsinpre - ctr_arg2 * r * tempsin90pre;
-    path_shape.path[2] = line_path;
-    line_path = LineToShape.create();
-    line_path.x = x + ctr_arg1 * r * tempcospre;
-    line_path.y = y + ctr_arg1 * r * tempsinpre;
-    path_shape.path[3] = line_path;
-    path_shape.do_fill = true;
-    path_shape.fill.color = color_theme.get_color(color_name, node);
-    shapes.push(path_shape);
-  }
-  
 }
 
 export default BranchLayoutBase;
