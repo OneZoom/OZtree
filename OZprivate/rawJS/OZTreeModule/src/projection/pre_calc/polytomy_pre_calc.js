@@ -23,7 +23,7 @@ class PolytomyPreCalc {
       node.bezey = node.bezc2y = Math.sin(angle);
       node.bezsx = node.bezc1x = 0;
       node.bezsy = node.bezc1y = -0.4;
-      node.bezr = 0.1;
+      node.bezr = 0.02;
     }
     _pre_calc(node, angle);
   }

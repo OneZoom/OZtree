@@ -11,9 +11,17 @@ function render(context, shape) {
   // Render all markings on top of this line
   for (let i = 0; i < shape.markings_list.length; i++) {
     context.lineCap = shape.stroke.line_cap ? shape.stroke.line_cap : "round";
-    context.lineWidth = shape.stroke.line_width * shape.markings_list[i][1];
-    context.strokeStyle = shape.markings_list[i][0];
+    context.lineWidth = shape.stroke.line_width * (shape.markings_list[i].widthProportion || 1);
+    context.strokeStyle = shape.markings_list[i].strokeStyle;
+    if (shape.markings_list[i].dashSize) {
+        context.setLineDash([shape.markings_list[i].dashSize, 5 * (shape.markings_list[i].dashSize + context.lineWidth / 2)]);
+        context.lineDashOffset = i * (shape.markings_list[i].dashSize + context.lineWidth / 2);
+    }
     context.stroke();
+    if (shape.markings_list[i].dashSize) {
+      context.setLineDash([]);
+      context.lineDashOffset = 0;
+    }
   }
 }
 

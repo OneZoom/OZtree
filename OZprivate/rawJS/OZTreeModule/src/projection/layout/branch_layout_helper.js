@@ -19,6 +19,14 @@ class BranchLayoutBase {
     }
   }
 
+  /**
+   * Generate list of highlights for this node
+   * @param {Object} node The node in question
+   * @return {Array} A list of objects containing:
+   *  * strokeStyle: The stroke (i.e. colour) for this line
+   *  * widthProportion: The width proportion of the main line width
+   *  * dashSize: The size of dash to use, if the highlight is to be dashed
+   */
   get_markings_list(node) {
       // define an array to contain all the color markings we need
       let markings_list = [];
@@ -31,14 +39,14 @@ class BranchLayoutBase {
           if(node.marked_areas.has(area_id))
           {
               // we need to mark this color
-              markings_list.push([config.marked_area_color_map[i][1], null]);
+              markings_list.push({strokeStyle: config.marked_area_color_map[i][1]});
           }
       }
 
       // Annotate markings_list with width proportion
       let num_markings = markings_list.length;
       for (let i=0; i < num_markings; i++) {
-          markings_list[i][1] = num_markings === 1 ? 0.7 : (num_markings-i)/(num_markings+1.0);
+          markings_list[i].widthProportion = num_markings === 1 ? 0.7 : (num_markings-i)/(num_markings+1.0);
       }
 
       return markings_list;
