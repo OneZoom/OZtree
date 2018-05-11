@@ -86,7 +86,7 @@ class BranchLayoutBase {
     arc_shape.y = node.yvar + node.rvar * node.arcy;
     arc_shape.r = node.rvar * node.arcr;
     arc_shape.circle = true;
-    arc_shape.height = 1;
+    arc_shape.height = -1;
     arc_shape.do_fill = true;
     arc_shape.fill.color =  color_theme.get_color('branch.stroke', node);
     shapes.push(arc_shape);
