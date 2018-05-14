@@ -12,7 +12,7 @@ class Midnode {
     // general tree structure objects
     this._detail_fetched = false;
     this.children = []; // array of child notes
-    this.upnode = null;
+    this.upnode = null;  // This node's parent node
     this.start = null;
     this.end = null;
     this.richness_val = 0;
@@ -47,20 +47,20 @@ class Midnode {
     this.nextr = new Array(config.factory.child_num);
     this.nextx = new Array(config.factory.child_num);
     this.nexty = new Array(config.factory.child_num);
-    this.gxmin = 1.0;
-    this.gymin = 1.0;
-    this.hxmin = 1.0;
-    this.hymin = 1.0;
-    this.gxmax = 1.0;
-    this.gymax = 1.0;
-    this.hxmax = 1.0;
-    this.hymax = 1.0;
+    this.gxmin = 1.0;  // Node bounding box
+    this.gymin = 1.0;  // Node bounding box
+    this.hxmin = 1.0;  // Node-and-descendants bounding box
+    this.hymin = 1.0;  // Node-and-descendants bounding box
+    this.gxmax = 1.0;  // Node bounding box
+    this.gymax = 1.0;  // Node bounding box
+    this.hxmax = 1.0;  // Node-and-descendants bounding box
+    this.hymax = 1.0;  // Node-and-descendants bounding box
     
     this.xvar = 1.0;
     this.yvar = 1.0;
     this.rvar = 1.0;
-    this.gvar = false;
-    this.dvar = false;
+    this.gvar = false;  // dvar is true if this node (or a descendent node) needs to be drawn on the screen
+    this.dvar = false;  // gvar is true if this node itself needs to be drawn on screen
     this.graphref = false;
     this.targeted = false;
     

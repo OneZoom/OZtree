@@ -60,8 +60,11 @@ function get_shapes_of_node(node, shapes) {
   }
 }
 
-// this funciton controlls where the signposts are and ripples down the tree from root in its own right
-// visible_nodes and signpost_nodes are acutally used to put outputs to vectors
+
+/**
+ * Recurse from (node), populating the arrays (visible_nodes) & (signpost_nodes)
+ * with node objects that are visible and should have a signpost respectively.
+ */
 function get_visible_and_signpost_nodes(node, visible_nodes, signpost_nodes, under_signpost) {
   if (node.gvar) {
     visible_nodes.push(node);
