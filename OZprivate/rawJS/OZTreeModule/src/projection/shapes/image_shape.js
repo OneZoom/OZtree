@@ -14,6 +14,7 @@ class ImageShape extends BaseShape {
     this.sh = NaN;
     this.w = NaN;
     this.h = NaN;
+    this.alpha = 1;  // Specify an alpha-blend level to be used when rendering this image
   }
   release() {
     this.img = null;
@@ -24,6 +25,7 @@ class ImageShape extends BaseShape {
     this.sh = NaN;
     this.w = NaN;
     this.h = NaN;
+    this.alpha = 1;
     if (this.clip) {
       if (Object.prototype.toString.call(this.clip) === "[object Array]") {
         for (let i=0; i<this.clip.length; i++) {
