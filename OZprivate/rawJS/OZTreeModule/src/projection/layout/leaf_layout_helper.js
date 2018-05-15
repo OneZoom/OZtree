@@ -981,7 +981,7 @@ class LeafLayoutBase {
   /*
   * this routine:
   *
-  * draws an image in a circle
+  * draws an image in a circle, used for nodes when viewed at a distance
   *
   * inputs:
   *
@@ -1091,6 +1091,9 @@ class LeafLayoutBase {
 
 
 
+  /**
+   * Draw an image with rounded corners, used as a centerpiece for full nodes
+   */
   rounded_image(shapes,imageObject,x,y,w,borderColor,highlightColor,requiresCrop,cropMult,cropLeft,cropTop,node) {
     if (imageObject) {
       let path_shape;
