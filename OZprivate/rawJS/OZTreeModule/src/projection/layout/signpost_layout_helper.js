@@ -53,6 +53,7 @@ class SignpostLayoutBase {
     this.centerx = ratio12 * centerpointx3 + (1 - ratio12) * centerpointx2;
     this.centery = ratio12 * centerpointy3 + (1 - ratio12) * centerpointy2;
     this.centerr = ratio12r * radiusr3 + (1 - ratio12r) * radiusr2;
+    this.alpha = 1;
   }
 
   pic_shapes(node, shapes) {
@@ -69,6 +70,7 @@ class SignpostLayoutBase {
       image_shape.w = this.centerr * 2 * 0.97 * 0.6;
       image_shape.h = this.centerr * 2 * 0.97 * 0.6;
       image_shape.height = 5;
+      image_shape.alpha = this.alpha;
       let arc_shape = ArcShape.create();
       arc_shape.x = this.centerx;
       arc_shape.y = this.centery;
@@ -118,11 +120,11 @@ class SignpostLayoutBase {
     let text = node.cname ? node.cname  : node.latin_name;
     let text_shape = TextShape.create();
     if (this.hovering) {
-      text_shape.stroke.color = color_theme.get_color("signpost.pic_text_hover.stroke", node);
-      text_shape.fill.color = color_theme.get_color("signpost.pic_text_hover.fill", node);
+      text_shape.stroke.color = color_theme.get_color("signpost.pic_text_hover.stroke", node, this.alpha);
+      text_shape.fill.color = color_theme.get_color("signpost.pic_text_hover.fill", node, this.alpha);
     } else {
-      text_shape.stroke.color = color_theme.get_color("signpost.pic_text.stroke", node);
-      text_shape.fill.color = color_theme.get_color("signpost.pic_text.fill", node);
+      text_shape.stroke.color = color_theme.get_color("signpost.pic_text.stroke", node, this.alpha);
+      text_shape.fill.color = color_theme.get_color("signpost.pic_text.fill", node, this.alpha);
     }
     text_shape.text = text;
     text_shape.x = this.centerx;
@@ -142,11 +144,11 @@ class SignpostLayoutBase {
   name_without_pic_shapes(node, shapes) {
     let text_shape = TextShape.create();
     if (this.hovering) {
-      text_shape.stroke.color = color_theme.get_color("signpost.pic_text_hover.stroke", node);
-      text_shape.fill.color = color_theme.get_color("signpost.pic_text_hover.fill", node);
+      text_shape.stroke.color = color_theme.get_color("signpost.pic_text_hover.stroke", node, this.alpha);
+      text_shape.fill.color = color_theme.get_color("signpost.pic_text_hover.fill", node, this.alpha);
     } else {
-      text_shape.stroke.color = color_theme.get_color("signpost.pic_text.stroke", node);
-      text_shape.fill.color = color_theme.get_color("signpost.pic_text.fill", node);
+      text_shape.stroke.color = color_theme.get_color("signpost.pic_text.stroke", node, this.alpha);
+      text_shape.fill.color = color_theme.get_color("signpost.pic_text.fill", node, this.alpha);
     }
     text_shape.text = node.cname ? node.cname  : node.latin_name;
     text_shape.x = this.centerx;
