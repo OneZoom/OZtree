@@ -46,7 +46,7 @@ setup_params = {
 {{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
 <style>
 body {
-  background-image: url(/OZtree/static/images/otop_background_composed.jpg);
+  background-image: url({{=URL('static','images/otop_background_composed.jpg')}});
   linear-gradient(45deg, #4c4c4c 0%,#595959 12%,#666666 25%,#474747 41%,#474747 65%,#2b2b2b 76%,#2c2c2c 85%,#1c1c1c 91%,#000000 96%,#131313 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 }
 </style>
