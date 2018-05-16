@@ -28,8 +28,24 @@ module.exports = function (grunt) {
         command: "perl -i OZprivate/ServerScripts/Utilities/partial_install.pl static/minlife.html"
       },
       partial_local_install: {
+        //used for development only. This will create the minlife file as normal, but
+        //using your local machine to source the page, rather than downloading the minlife
+        //file from the main OneZoom server. This means that as well as local changes to
+        //the treeviewer javascript, local changes you make to other files (such as
+        // treeviewer/layout.html and treeviewer/UI_layer.load) will be incorporated
+        //into the minlife tree. However, it assumes you have a local server running on
+        //127.0.0.1:8000, and pics_dir = http://images.onezoom.org/ set in your appconfig.ini.
+        //
         //See documentation in https://github.com/OneZoom/OZtree#onezoom-setup
-        command: "perl -i OZprivate/ServerScripts/Utilities/partial_install.pl static/minlife.html; perl -i -pe 's|http://127.0.0.1:8000|http://beta.onezoom.org|g'  static/minlife.html"
+        command: function (input_file, output_file) {
+          if (!output_file) {
+            // Only one argument supplied, assume input and output are the same
+            output_file = input_file
+          }
+          return "curl -s 'http://127.0.0.1:8000/" + input_file + "' > static/" + output_file + ";" +
+                 "perl -i OZprivate/ServerScripts/Utilities/partial_install.pl static/" + output_file + ";" +
+                 "perl -i -pe 's|http://127.0.0.1:8000|http://beta.onezoom.org|g' static/" + output_file + ";";
+        }
       }
     },
     jsdoc2md: {
@@ -148,17 +164,6 @@ module.exports = function (grunt) {
             //src:'http://www.onezoom.org/treeviewer/minlife.html/?lang=' + grunt.option('lang') || '',
             src:'http://beta.onezoom.org/treeviewer/minlife.html',
             dest:'static/minlife.html',
-        },
-        'get_local_minlife': {
-            //used for development only. This will create the minlife file as normal, but 
-            //using your local machine to source the page, rather than downloading the minlife
-            //file from the main OneZoom server. This means that as well as local changes to
-            //the treeviewer javascript, local changes you make to other files (such as
-            // treeviewer/layout.html and treeviewer/UI_layer.load) will be incorporated
-            //into the minlife tree. However, it assumes you have a local server running on
-            //127.0.0.1:8000, and pics_dir = http://images.onezoom.org/ set in your appconfig.ini.
-            src:'http://127.0.0.1:8000/treeviewer/minlife.html',
-            dest:'static/minlife.html',
         }
     }
   });
@@ -177,7 +182,11 @@ module.exports = function (grunt) {
   grunt.registerTask("precompile-js", ["exec:precompile_js"]);
   grunt.registerTask("precompile-js_dev", ["exec:precompile_js_dev"]);
   grunt.registerTask("partial-install", ["curl:get_minlife", "exec:partial_install"]);
-  grunt.registerTask("partial-local-install", ["curl:get_local_minlife", "exec:partial_local_install"]);
+  grunt.registerTask("partial-local-install", [
+    "compile",
+    "exec:partial_local_install:minlife.html",
+    "exec:partial_local_install:otop.html:minotop.html",
+  ]);
   grunt.registerTask("precompile-docs", ["jsdoc2md", "exec:precompile_docs"]);
   grunt.registerTask("build", ["clean:build", "precompile-python", "precompile-js", "copy:old_js", "compass","uglify", "compress","precompile-docs"]);
   grunt.registerTask("compile", ["clean:compile", "precompile-js_dev", "copy:old_js", "compass" , "copy:to_live", "precompile-docs"]);
