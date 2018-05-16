@@ -9,6 +9,13 @@ import {global_button_action} from '../../button_manager';
 import {live_area_config} from '../live_area_config';
 
 class SignpostLayoutBase {
+  constructor() {
+    this.signpost_height = 5;  // The height of the signpost in the shape collection
+    this.text_image_y_offset = 0.6;  // How offset the text is vertically
+    this.text_image_defpt = 25;  // Size of the text
+    this.text_stroke_width = 6;  // Width of the text outline
+  }
+
   get_shapes(node, shapes) {
       //*
     this.reset_hover_state();
@@ -18,7 +25,8 @@ class SignpostLayoutBase {
       this.hovered = true;
       live_area_config.signpost.register_button_event(node);
     }
-    this.pic_shapes(node, shapes);
+    this.pic_image_shapes(node, shapes);
+    this.pic_outline_shapes(node, shapes);
     this.name_shapes(node, shapes);
     this.hovering = false;
        //*/
@@ -56,7 +64,10 @@ class SignpostLayoutBase {
     this.alpha = 1;
   }
 
-  pic_shapes(node, shapes) {
+  /**
+   * Draw the central image for this signpost
+   */
+  pic_image_shapes(node, shapes) {
     if (node.num_pics > 0) {
       let pic_info = node.get_picset_src_info(0);
       let image = get_image(pic_info[0],pic_info[1]);
@@ -69,8 +80,8 @@ class SignpostLayoutBase {
       image_shape.y = this.centery - this.centerr * 0.97 * 0.6;
       image_shape.w = this.centerr * 2 * 0.97 * 0.6;
       image_shape.h = this.centerr * 2 * 0.97 * 0.6;
-      image_shape.height = 5;
       image_shape.alpha = this.alpha;
+      image_shape.height = this.signpost_height;
       let arc_shape = ArcShape.create();
       arc_shape.x = this.centerx;
       arc_shape.y = this.centery;
@@ -78,8 +89,15 @@ class SignpostLayoutBase {
       arc_shape.circle = true;
       image_shape.clip = arc_shape;
       shapes.push(image_shape);
-      
-      arc_shape = ArcShape.create();
+    }
+  }
+
+  /**
+   * Draw the outline for this signpost
+   */
+  pic_outline_shapes(node, shapes) {
+    if (node.num_pics > 0) {
+      let arc_shape = ArcShape.create();
       if (this.hovering) {
         arc_shape.r = this.centerr * 1.02 * 0.6;
         arc_shape.stroke.color = color_theme.get_color("signpost.pic_hover.stroke", node);
@@ -90,7 +108,7 @@ class SignpostLayoutBase {
       arc_shape.x = this.centerx;
       arc_shape.y = this.centery;
       arc_shape.circle = true;
-      arc_shape.height = 6;
+      arc_shape.height = this.signpost_height + 1;
       arc_shape.do_stroke = true;
       arc_shape.stroke.line_width = this.centerr * 0.03 * 0.6;
       shapes.push(arc_shape);
@@ -128,14 +146,14 @@ class SignpostLayoutBase {
     }
     text_shape.text = text;
     text_shape.x = this.centerx;
-    text_shape.y = this.centery + this.centerr * 0.6;
+    text_shape.y = this.centery + this.centerr * this.text_image_y_offset;
     text_shape.width = this.centerr * 1.7;
-    text_shape.defpt = Math.min(this.centerr*0.17, 25);
+    text_shape.defpt = Math.min(this.centerr*0.17, this.text_image_defpt);
     text_shape.min_text_size = 9;
     text_shape.line = 2;
     text_shape.height = 7;
     text_shape.do_stroke = true;
-    text_shape.stroke.line_width = Math.min(this.centerr*0.08, 6);
+    text_shape.stroke.line_width = Math.min(this.centerr*0.08, this.text_stroke_width);
     text_shape.stroke.line_cap = 'round';
     text_shape.do_fill = true;
     shapes.push(text_shape);
@@ -154,11 +172,11 @@ class SignpostLayoutBase {
     text_shape.x = this.centerx;
     text_shape.y = this.centery;
     text_shape.width = this.centerr * 2;
-    text_shape.defpt = Math.min(this.centerr*0.6, 25);
+    text_shape.defpt = Math.min(this.centerr*0.6, this.text_image_defpt);
     text_shape.line = 2;
     text_shape.height = 7;
     text_shape.do_stroke = true;
-    text_shape.stroke.line_width = Math.min(this.centerr*0.08, 6);
+    text_shape.stroke.line_width = Math.min(this.centerr*0.08, this.text_stroke_width);
     text_shape.stroke.line_cap = 'round';
     text_shape.do_fill = true;
     shapes.push(text_shape);
