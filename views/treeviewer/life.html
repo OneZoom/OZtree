@@ -13,6 +13,8 @@
 #                       or there is no partner, the json here is used. This is an array whose items are strings (headers) or 
 #                       dicts (each turned into a clickable items) with at least one key labelled 'OTT', and then any other optional 
 #                       names keyed by language, e.g. {"OTT":1012685, "en":"Mushrooms", "":"Always use this instead of default VN"}.
+#pre_ui_setup          An array of javascript calls to make before Setup_UI, mostly to override global config, for example:
+#                       "onezoom.config.projection.draw_sponsors = false"
 setup_params = {
   'UI_layer': {
     'page':'UI_layer.load', 

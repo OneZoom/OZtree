@@ -970,6 +970,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
         window.polytomy_cut_position_map_json_str, 
         window.cut_threshold,
         window.tree_date);
+    {{";\n".join(setup_params.get('pre_ui_setup', []))}}
     setupUI();
 })
 
