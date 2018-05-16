@@ -798,6 +798,13 @@ class LeafLayoutBase {
    */
   fullLeaf_detail2(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
     if (r > 50 && r <= 90) {
+      if (imageObject) {
+        this.rounded_image(shapes,imageObject, x, y+r*0.2,r*0.95,
+          color_theme.get_color("leaf.inside.fill",node),
+          undefined,
+          requiresCrop,cropMult,cropLeft,cropTop, node);
+      }
+
       let text_shape = TextShape.create();
       text_shape.height = 5;
       text_shape.min_text_size_extra = 3;
@@ -812,10 +819,6 @@ class LeafLayoutBase {
         text_shape.defpt = r * 0.15;
         text_shape.line = 2;
         shapes.push(text_shape);
-        this.rounded_image(shapes,imageObject, x, y+r*0.2,r*0.95,
-          color_theme.get_color("leaf.inside.fill",node),
-          undefined,
-          requiresCrop,cropMult,cropLeft,cropTop, node);
       } else {
         text_shape.text = commonText ? commonText : latinText;
         text_shape.font_style = commonText ? null : 'italic';
@@ -843,10 +846,10 @@ class LeafLayoutBase {
   }
 
   fullLeaf_detail3(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
+    this.fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop,node)
     this.fullLeaf_detail3_imagecopyright(shapes,x,y,r,conservation_text,imageObject,copyText,node);
     this.fullLeaf_detail3_conservation(shapes,x,y,r,conservation_text,imageObject,node);
     this.fullLeaf_detail3_names(shapes,x,y,r,commonText,latinText,conservation_text,imageObject,node);
-    this.fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop,node)
   }
   
   /**
