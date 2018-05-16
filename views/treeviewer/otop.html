@@ -1,0 +1,64 @@
+{{#Config settings that will change for different views, e.g. for AT, trail2016, etc. These are stored in the setup_params dictionary
+#UI_layer->page        The name of the UI layer view file
+#UI_layer->tabs        A name or array of names of tabs to use (names are in the UI_layer() function in treeviewer.py and the linkouts() 
+#                       function in tree.py as key names in the url dict) or 'default' for the default set or 'all' for all. 
+#                       Tabs (if they exist) will be shown in this order when popping up linkouts to other pages.
+#UI_layer->vars->links Can be 'none' for no links, 'newtab' for all links (except the OZ logo) in new tab, or 'default' (or unset) to leave.
+#popups->vars          Passed to pic_info.load, about.load, how.load, data_sources.load, and the 
+#                       internal linkouts urls. You will usually want to define 'embed':1 or 'embed':3 (see embed.html). 
+#                       It's also sensible to set 'form_reservation_code' to a UID so that re-opening sponsor tabs remembers who you are
+#partner               (Optional): if it matches a partner_identifier in the partners table, we will automatically fill out 
+#                       the popups and UI_layer params to make am automatically created sponsorship site
+#locations_json        Partners can provide their own json string of locations to use, but if not is provided
+#                       or there is no partner, the json here is used. This is an array whose items are strings (headers) or 
+#                       dicts (each turned into a clickable items) with at least one key labelled 'OTT', and then any other optional 
+#                       names keyed by language, e.g. {"OTT":1012685, "en":"Mushrooms", "":"Always use this instead of default VN"}.
+#pre_ui_setup          An array of javascript calls to make before Setup_UI, mostly to override global config, for example:
+#                       "onezoom.config.projection.draw_sponsors = false"
+setup_params = {
+  'UI_layer': {
+    'page':'UI_layer.load', 
+    'vars':{'tabs':'default', 'links':'newtab'} },
+  'popups': {
+    'vars':{'embed':1, 'form_reservation_code': form_reservation_code} },
+  'partner':page_info.get('partner'),
+  'locations_json':('[' 
+      '"Popular places",' 
+      '{"OTT":244265},'  #Mammals - should get looked up automatically: this also allows the correct language to be used
+      '{"OTT":770315},'  #Human - ditto
+      '{"OTT":81461},'   #Birds
+      '{"OTT":991547},'  #Frogs and toads
+      '{"OTT":801601},'  #Vertebrates
+      '{"OTT":1062253},' #Insects
+      '{"OTT":691846},'  #Animals
+      '{"OTT":361838},'  #Green plants
+      '{"OTT":99252},'   #Flowering plants
+      '{"OTT":1012685, "en":"Mushrooms"},' #the default OZ english name is bad for menus here, so we replace it
+      '{"OTT":304358}'   #Complex life (eukaryotes)
+      ']'
+    ),
+  'pre_ui_setup': [
+    'onezoom.config.projection.draw_sponsors = false',
+    'onezoom.config.projection.sign_thres = 170'
+    ]
+  }
+}}
+{{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
+<style>
+body {
+  background-image: url(/OZtree/static/images/otop_background_composed.jpg);
+  linear-gradient(45deg, #4c4c4c 0%,#595959 12%,#666666 25%,#474747 41%,#474747 65%,#2b2b2b 76%,#2c2c2c 85%,#1c1c1c 91%,#000000 96%,#131313 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+}
+</style>
+<script type="text/javascript">
+var tree_config= {
+   cols: 'otop',
+   vis: 'polytomy',
+   'layout.branch': 'otop',
+   'layout.node': 'otop',
+   'layout.leaf': 'otop',
+   'layout.sign': 'otop',
+   midnode: 'polytomy',
+};
+var pagetitle_func=null;
+</script>

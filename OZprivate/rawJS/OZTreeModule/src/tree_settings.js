@@ -19,6 +19,9 @@ import LifeSignpostLayout from './projection/layout/life/signpost_layout';
 import LifeBranchLayout from './projection/layout/life/branch_layout';
 import LifeMidnode from './factory/life_midnode';
 
+import OtopLeafLayout from './projection/layout/otop/leaf_layout';
+import OtopSignpostLayout from './projection/layout/otop/signpost_layout';
+
 import PolytomyNodeLayout from './projection/layout/polytomy/node_layout';
 import PolytomyLeafLayout from './projection/layout/polytomy/leaf_layout';
 import PolytomySignpostLayout from './projection/layout/polytomy/signpost_layout';
@@ -53,15 +56,19 @@ class TreeSettings {
       layout:{
           branch:{tree:     LifeBranchLayout,
                   AT:       ATBranchLayout,
+                  otop:     PolytomyBranchLayout,  // NB: No customisations yet.
                   polytomy: PolytomyBranchLayout},
           node:  {tree:     LifeNodeLayout,
                   AT:       ATNodeLayout,
+                  otop:     PolytomyNodeLayout,  // NB: No customisations yet.
                   polytomy: PolytomyNodeLayout},
           leaf:  {tree:     LifeLeafLayout,
                   AT:       ATLeafLayout,
+                  otop:     OtopLeafLayout,
                   polytomy: PolytomyLeafLayout},
           sign:  {tree:     LifeSignpostLayout,
                   AT:       ATSignpostLayout,
+                  otop:     OtopSignpostLayout,
                   polytomy: PolytomySignpostLayout}},
     // James note - there should be some kind of table which defines which kind of underlying data/ midnode structure use each view requires - this will be neater if we start building other polytomy views and views that incorporate branch lengths.
       midnode: {tree:     LifeMidnode,
