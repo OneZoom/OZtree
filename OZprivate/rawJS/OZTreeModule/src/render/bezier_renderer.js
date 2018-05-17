@@ -19,8 +19,8 @@ function render(context, shape) {
   for (let i = 0; i < shape.markings_list.length; i++) {
     context.lineWidth = shape.stroke.line_width * (shape.markings_list[i].widthProportion || 1);
     context.strokeStyle = shape.markings_list[i].strokeStyle
-    context.lineCap = 'butt';  // NB: We'd need gaps to support other cap types
     if (shape.markings_list[i].dashSize) {
+        context.lineCap = 'butt';  // NB: We'd need gaps to support other cap types
         let dash = shape.markings_list[i].dashSize;
         // Dash, then a gap for total number of dashes
         context.setLineDash([dash, (shape.markings_list.length - 1) * dash]);
