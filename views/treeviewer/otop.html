@@ -20,7 +20,12 @@
 setup_params = {
   'UI_layer': {
     'page':'UI_layer.load', 
-    'vars':{'tabs':'default', 'links':'newtab', 'no_external_links': True} },
+    'vars':{
+      'tabs':['wiki', 'ozlinks'],
+      'links':'newtab',
+      'no_external_links': True,
+    }
+  },
   'popups': {
     'vars':{'embed':1, 'form_reservation_code': form_reservation_code} },
   'partner':page_info.get('partner'),
