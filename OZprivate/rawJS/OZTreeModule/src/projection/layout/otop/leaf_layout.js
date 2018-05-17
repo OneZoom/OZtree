@@ -29,6 +29,40 @@ class LeafLayout extends LeafLayoutBase {
   }
 
   /**
+   * Fake branches should be rendered with a semi-circle, not a leaf
+   */
+  get_fake_leaf_shapes(node, shapes) {
+    if (node.richness_val > 1) {
+      if (node.rvar < tree_state.threshold && node.has_child) {
+        if (node.children.length > 2) {
+           // This "fake leaf" has more than 2 children, so render as a semi-circle
+           let arc_shape = ArcShape.create();
+           arc_shape.x = node.xvar + node.rvar * node.arcx;
+           arc_shape.y = node.yvar + node.rvar * node.arcy;
+           arc_shape.r = node.rvar * node.arcr * 10;
+           arc_shape.circle = false;
+           arc_shape.start_angle = node.arca - Math.PI/2;
+           arc_shape.end_angle = node.arca + Math.PI/2;
+           arc_shape.height = 2;
+           arc_shape.do_fill = true;
+           arc_shape.fill.color = color_theme.get_color('branch.stroke', node);
+           shapes.push(arc_shape);
+
+        } else {
+          this.circularLeafBase(
+            node.xvar + node.rvar * node.nextx[0],
+            node.yvar + node.rvar * node.nexty[0],
+            node.rvar * config.projection.leafmult * 0.75 * config.projection.partc,
+            node.arca,
+            node,
+            shapes
+          );
+        }
+      }
+    }
+  }
+
+  /**
    * Cover the node with the image, don't just draw a small central node
    */
   fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop, node) {
