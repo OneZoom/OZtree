@@ -1,12 +1,9 @@
-{{for e in errors:}}
-<p>{{=e}}</p>
-{{pass}}
+{{response.title='OneZoom: Links for ' + name}}
+{{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
 
-<h3>Links from leaf OTT {{=ott}} (<i>{{=name}}</i>)</h3>
-{{for k,d in data.items():}}
-{{if d is None:}}
-<p><b>{{=k}}</b>: None</p>
-{{else:}}
-<p><b>{{=k}}</b>: [{{for link in d[0:2]:}}<a href="{{=link}}">{{=link}}</a>, {{pass}}]</p>
-{{pass}}
-{{pass}}
+<h3>Links for <i>{{=name}}</i> (OTT {{=ott}})</h3>
+<ul>{{for k,d in data.items():}}
+  {{if k.startswith('oz'): continue}}
+  {{if d is None or len(d) == 0: continue}}
+  <li><a href="{{=d[1] if len(d) > 1 else d[0]}}">{{=current.OZglobals['tab_definitions'][k]['name'] if k in current.OZglobals['tab_definitions'] else k}}</a></li>
+{{pass}}</ul>

@@ -256,6 +256,26 @@ logographic_transcriptions = cache.ram('logographic_transcriptions',
     time_expire = None)
 
 
+# id / name / icon of all tabs
+tab_definitions = cache.ram('tab_definitions',
+    lambda: __import__('collections').OrderedDict([
+      ('opentree',{'id':'opentree',   'name':T('OpenTree'),     'icon':URL('static','images/mini-opentree-logo.png')}),
+      ('wiki',{'id':'wiki',   'name':T('Wikipedia'),            'icon':URL('static','images/W.svg')}),
+      ('eol',{'id':'eol',     'name':T('Encyclopedia of Life'), 'icon':URL('static','images/EoL.png')}),
+      ('iucn',{'id':'iucn',   'name':T('Conservation'),         'icon':URL('static','images/IUCN_Red_List.svg')}),
+      ('ncbi',{'id':'ncbi',   'name':T('Genetics'),             'icon':URL('static','images/DNA_icon.svg')}),
+      #('powo',{'id':'powo',   'name':T('Kew')}),
+      ('ozlinks',{'id':'ozlinks','name':T('External Links'), 'icon':URL('static','images/links.svg')}),
+      ('ozspons',{'id':'ozspons','name':T('Sponsor'), 'icon':URL('static','images/sponsor.png')})]),
+    time_expire = None)
+
+
+# Default tabs to display
+tab_defaults = cache.ram('tab_defaults',
+    lambda: ['wiki', 'eol', 'iucn', 'ncbi', 'ozspons'],
+    time_expire = None)
+
+
 #allow these to be accessed in modules
 current.OZglobals = dict(
     wikiflags = wikiflags, 
@@ -265,4 +285,6 @@ current.OZglobals = dict(
     image_status_labels = image_status_labels,
     conversion_table = conversion_table,
     unicode_punctuation_to_space_table = unicode_punctuation_to_space_table,
-    logographic_transcriptions = logographic_transcriptions)
+    logographic_transcriptions = logographic_transcriptions,
+    tab_definitions = tab_definitions,
+    tab_defaults = tab_defaults)
