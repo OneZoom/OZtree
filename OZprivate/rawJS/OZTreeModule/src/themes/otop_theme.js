@@ -144,13 +144,13 @@ const theme = {
     },
     
     pic_text: {
-      stroke: 'rgb(251,255,208,0.5)',
+      stroke: 'rgb(66,66,66)',
       fill: 'rgba(255,255,255,1)'
     },
     
     pic_text_hover: {
       stroke: 'rgba(0,0,0,0.8)',
-      fill: 'rgba(255,255,255,1)'
+      fill: 'hsla(64, 100%, 83%, 1)',  // NB: We specify alpha so it's always opaque
     }
   },
     
@@ -177,11 +177,13 @@ const theme = {
     },
     
     text: {
-      fill: 'rgb(255,255,255)'
+      stroke: 'rgb(66,66,66)',
+      fill: 'rgba(255,255,255,1)'
     },
     
     'text_hover': {
-      stroke: 'rgba(0,0,0,0.6)'
+      stroke: 'rgba(0,0,0,0.8)',
+      fill: 'hsla(64, 100%, 83%, 1)',  // NB: We specify alpha so it's always opaque
     },
     
     sponsor: {
