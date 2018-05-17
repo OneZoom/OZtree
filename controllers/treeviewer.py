@@ -26,6 +26,7 @@ def UI_layer():
       ('iucn',{'id':'iucn',   'name':T('Conservation'),         'icon':URL('static','images/IUCN_Red_List.svg')}),
       ('ncbi',{'id':'ncbi',   'name':T('Genetics'),             'icon':URL('static','images/DNA_icon.svg')}),
       #('powo',{'id':'powo',   'name':T('Kew')}),
+      ('ozlinks',{'id':'ozlinks','name':T('External Links'), 'icon':URL('static','images/links.svg')}),
       ('ozspons',{'id':'ozspons','name':T('Sponsor'), 'icon':URL('static','images/sponsor.png')})])
     default_tabs = ['wiki', 'eol', 'iucn', 'ncbi', 'ozspons']
 
