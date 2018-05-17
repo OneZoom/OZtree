@@ -80,6 +80,9 @@ class BranchLayoutBase {
     shapes.push(bezier_shape);
   }
     
+  /**
+   * Draw circle to cover node endings, hiding any gap between branch shapes
+   */
   draw_interior_circle(node, shapes) {
     let arc_shape = ArcShape.create();
     arc_shape.x = node.xvar + node.rvar * node.arcx;
