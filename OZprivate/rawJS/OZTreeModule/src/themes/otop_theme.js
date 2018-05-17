@@ -2,7 +2,7 @@ import data_repo from '../factory/data_repo';
 
 let branch_color = 'rgb(255,255,255)';
 let bar_color = 'rgba(0,0,0,0)';
-let highlight_color = 'rgb(177,145,60)';
+let highlight_color = 'hsl(64, 100%, 83%)';
 let int_text_stroke_hover = 'rgba(255,255,255,0.5)';
 let int_text_fill_hover = 'rgb(0,0,0)';
 let int_text_fill = 'rgb(0,0,0)';
@@ -34,6 +34,11 @@ const theme = {
     stroke: branch_color,
     marked_area_pallette: {
         '0': highlight_color,
+        '1': 'hsl(133, 100%, 83%)',
+        '2': 'hsl(188, 100%, 83%)',
+        '3': 'hsl(252, 100%, 83%)',
+        '4': 'hsl(296, 100%, 83%)',
+        '5': 'hsl(332, 100%, 83%)',
     },
     highlight_concestor: {
       stroke: highlight_color
