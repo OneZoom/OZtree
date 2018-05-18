@@ -328,8 +328,8 @@ ul#searchboxes {
 }
 
 #controlButtons [uk-dropdown] {
-    /* make sure dropdowns always fit in the viewport */
-    max-height: calc(100vh - 1rem);
+    /* make sure dropdowns always fit in the viewport, but don't cover header (or possibly get lost under Safari URL bar) */
+    max-height: calc(100vh - 4rem);
     overflow-y: auto;
 }
 #controlButtons #inButton a {
