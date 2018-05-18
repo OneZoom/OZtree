@@ -145,6 +145,10 @@ export default function (Controller) {
       config.ui.closeAll();
     }
   }
+
+  Controller.prototype.is_open_modals = function() {
+    return config.ui.isOpenModals();
+  }
 }
 
 /**

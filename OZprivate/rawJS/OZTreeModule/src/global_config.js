@@ -75,6 +75,9 @@ config.ui = {
      canvas is clicked. They should be overridden when initializing the 
      OneZoom code */
   closeAll: function() {/* by default, do nothing */},
+  isOpenModals: function() {
+    return false;
+  },
   badOTT: function(ott) {
     alert('You have passed in a bad name or number, so we have\n' +
       'simply taken you to the root of the tree');},
