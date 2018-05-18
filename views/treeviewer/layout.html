@@ -659,6 +659,9 @@ function setupUI() {
      Used whenever the UI component is loaded (e.g. at start or on language change)
     */
 
+    /* Make sure we scroll the canvas, not the body behind it */
+    $(document.body).on("touchstart touchmove touchend", preventTouchZoom);
+
     /* make sure we can't zoom on UI items */
     $("#UI").on("touchstart touchmove touchend", preventTouchZoom);
     $("[uk-modal]").on("touchstart touchmove touchend", preventTouchZoom);
