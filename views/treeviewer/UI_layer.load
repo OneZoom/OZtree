@@ -1,7 +1,60 @@
 {{include 'link_modifier.html'}}
 <!-- This contains all the overlay on top of the OneZoom canvas. It can be reloaded in different languages -->
 
-<div class="logo uk-navbar-item">{{#The logo *never* opens a new tab (but it can be removed)}}{{=no_tab_A(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('default','index', extension=False), _id="OZ-logo")}}</div>
+<div class="logo uk-navbar-item">{{#The logo *never* opens a new tab (but it can be removed)}}{{=no_tab_A(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('default','index', extension=False), _id="OZ-logo")}}
+  <form id="settingsDropdown" class="uk-navbar-dropdown" uk-dropdown="mode: click;">
+    <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
+      <li class="uk-nav-header">{{=T('Information')}}</li>
+      <li><a href="#howuse-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('How to use')}}</a></li>
+      <li><a href="#about-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('About OneZoom')}}</a></li>
+      <li><a href="#datasources-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Data sources')}}</a></li>
+      <li><a href="#terms-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Terms of use')}}</a></li>
+      <li class="uk-nav-header">{{=T('Image sources')}}</li>
+      <li><label uk-tooltip="pos: right" title="{{=T('Show best image from any source: the image may not have been verified by a taxonomist. For any image, click or zoom on the © symbol for details.')}}">
+        <input class="uk-radio" type="radio" name="imgsource" value="best_any"> {{=T('Any')}}</label></li>
+      <li><label uk-tooltip="pos: right" title="{{=T('Only show images that have been verified by a taxonomist. For any image, click or zoom on the © symbol for details')}}">
+        <input class="uk-radio" type="radio" name="imgsource" value="best_verified"> {{=T('Verified')}}</label></li>
+      <li><label uk-tooltip="pos: right" title="{{=T('Only show public domain images (those not requiring the photographer or copyright holder to be listed when reusing OneZoom imagery)')}}">
+        <input class="uk-radio" type="radio" name="imgsource" value="best_pd"> {{=T('Public domain')}}</label></li>
+      <li class="uk-nav-header">{{=T('Tree shape')}}</li>
+      <li><label>
+        <input class="uk-radio" type="radio" name="treeshape" value="spiral"> {{=T('Spiral')}}</label></li>
+      <li><label>
+        <input class="uk-radio" type="radio" name="treeshape" value="natural"> {{=T('Natural')}}</label></li>
+      <li><label>
+        <input class="uk-radio" type="radio" name="treeshape" value="fern"> {{=T('Fern')}}</label></li>
+      <li><label>
+        <input class="uk-radio" type="radio" name="treeshape" value="balanced"> {{=T('Balanced')}}</label></li>
+      <!-- <li class="uk-nav-header">{{=T('Colours indicate')}}</li>
+      <li><label uk-tooltip="pos: right" title="{{=T('Colours like a botanical tree, leaf colour shows extinction risk')}}">
+        <input class="uk-radio" type="radio" name="colourtype" value="natural"> Natural</label></li>
+      <li><label>
+        <input class="uk-radio" type="radio" name="colourtype" value="AT"> {{=T('Ancestor’s Tale')}}</label></li>
+      <li><label>
+        <input class="uk-radio" type="radio" name="colourtype" value="popularity"> {{=T('Popularity')}}</label></li> -->
+      <li class="uk-nav-header treeswitch">{{=T('Tree## partner')}}</li>
+      <li class="treeswitch"><select id="treepage" class="uk-select uk-form-small">
+        <option value="life">Original OneZoom</option>
+        <option value="AT">Ancestor’s Tale</option>
+        <!--<option value="linnean">Linnean Society</option>
+        <option value="kew">Kew</option> -->
+        </select></li>
+      <li class="uk-nav-header langswitch">{{=T("Language")}}</li>
+      <li class="langswitch"><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1] if browser_language else None,)}}">
+        <option value="">{{=T('Browser default')}}</option>
+        <optgroup label="Translated">
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="sv">Svenska</option>
+        </optgroup>
+        <optgroup label="Not yet translated">
+          <option value="zh">中文</option>
+        </optgroup>
+        </select></li>
+    </ul>
+  </form>
+</div>
+
 {{if request.vars.partner_logo:}}<div class="logo uk-navbar-item">{{if request.vars.partner_url:}}{{=A(IMG(_src=request.vars.partner_logo), _href=request.vars.partner_url)}}{{else:}}IMG(_src=request.vars.partner_logo){{pass}}</div>{{pass}}
 <div class="uk-navbar-item" id="searchnav">
   <div id="search-basic">
@@ -53,62 +106,6 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
   <li id="resetButton" class="uk-visible@s"><a uk-tooltip="pos: right" title="{{=T('Reset view')}}" uk-icon="icon: chevron-up;  ratio: 0.9"></a></li>
   <li id="screenshotButton"                ><a uk-tooltip="pos: right" title="{{=T('Take an svg screenshot')}}" onclick="make_screenshot(this);" uk-icon="icon: camera"></a></li>
   <li id="singleInfoButton"                ><a uk-tooltip="pos: right" title="{{=T('Information')}}" href="#info-modal" uk-toggle uk-icon="icon: info"></a></li>
-  <li id="multipleInfoButton"              ><a uk-tooltip="pos: right" title="{{=T('Information')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: info"></a></li>
-  <div id="infoDropdown" uk-dropdown="pos: right; mode: click;">
-    <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
-      <li><a href="#howuse-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('How to use')}}</a></li>
-      <li><a href="#about-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('About OneZoom')}}</a></li>
-      <li><a href="#datasources-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Data sources')}}</a></li>
-      <li><a href="#terms-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Terms of use')}}</a></li>
-    </ul>
-  </div>
-  <li><a uk-tooltip="pos: right" title="{{=T('Settings')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: settings"></a></li>
-  <form id="settingsDropdown" class="uk-navbar-dropdown" uk-dropdown="pos: right-bottom; mode: click;">
-    <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
-      <li class="uk-nav-header">{{=T('Image sources')}}</li>
-      <li><label uk-tooltip="pos: right" title="{{=T('Show best image from any source: the image may not have been verified by a taxonomist. For any image, click or zoom on the © symbol for details.')}}">
-        <input class="uk-radio" type="radio" name="imgsource" value="best_any"> {{=T('Any')}}</label></li>
-      <li><label uk-tooltip="pos: right" title="{{=T('Only show images that have been verified by a taxonomist. For any image, click or zoom on the © symbol for details')}}">
-        <input class="uk-radio" type="radio" name="imgsource" value="best_verified"> {{=T('Verified')}}</label></li>
-      <li><label uk-tooltip="pos: right" title="{{=T('Only show public domain images (those not requiring the photographer or copyright holder to be listed when reusing OneZoom imagery)')}}">
-        <input class="uk-radio" type="radio" name="imgsource" value="best_pd"> {{=T('Public domain')}}</label></li>
-      <li class="uk-nav-header">{{=T('Tree shape')}}</li>
-      <li><label>
-        <input class="uk-radio" type="radio" name="treeshape" value="spiral"> {{=T('Spiral')}}</label></li>
-      <li><label>
-        <input class="uk-radio" type="radio" name="treeshape" value="natural"> {{=T('Natural')}}</label></li>
-      <li><label>
-        <input class="uk-radio" type="radio" name="treeshape" value="fern"> {{=T('Fern')}}</label></li>
-      <li><label>
-        <input class="uk-radio" type="radio" name="treeshape" value="balanced"> {{=T('Balanced')}}</label></li>
-      <!-- <li class="uk-nav-header">{{=T('Colours indicate')}}</li>
-      <li><label uk-tooltip="pos: right" title="{{=T('Colours like a botanical tree, leaf colour shows extinction risk')}}">
-        <input class="uk-radio" type="radio" name="colourtype" value="natural"> Natural</label></li>
-      <li><label>
-        <input class="uk-radio" type="radio" name="colourtype" value="AT"> {{=T('Ancestor’s Tale')}}</label></li>
-      <li><label>
-        <input class="uk-radio" type="radio" name="colourtype" value="popularity"> {{=T('Popularity')}}</label></li> -->
-      <li class="uk-nav-header treeswitch">{{=T('Tree## partner')}}</li>
-      <li class="treeswitch"><select id="treepage" class="uk-select uk-form-small">
-        <option value="life">Original OneZoom</option>
-        <option value="AT">Ancestor’s Tale</option>
-        <!--<option value="linnean">Linnean Society</option>
-        <option value="kew">Kew</option> -->
-        </select></li>
-      <li class="uk-nav-header langswitch">{{=T("Language")}}</li>
-      <li class="langswitch"><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1] if browser_language else None,)}}">
-        <option value="">{{=T('Browser default')}}</option>
-        <optgroup label="Translated">
-          <option value="en">English</option>
-          <option value="fr">Français</option>
-          <option value="sv">Svenska</option>
-        </optgroup>
-        <optgroup label="Not yet translated">
-          <option value="zh">中文</option>
-        </optgroup>
-        </select></li>
-    </ul>
-  </form>
 </ul>
 <div id="error-modal" class="uk-modal-container" uk-modal>
     <div class="uk-modal-dialog uk-modal-body">
