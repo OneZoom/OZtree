@@ -14,13 +14,13 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
 
     {{if partner_data:}}
     <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the %s and %s by displaying your chosen sponsor’s name on %s') % (A(T('OneZoom charity'),_href=URL('static','images/RegistrationCertificate.jpg', scheme=True, host=True), _target="_blank"), A(T(partner_data.get('name')), _href=partner_data.get('url'), _target="_blank"), the_long_name))}}.
-       {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s.') % (int(round(100-partner_data.get('percentage'))), int(round(partner_data.get('percentage'))), T(partner_data.get('name'))))}}</p>
+       {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s. %s') % (int(round(100-partner_data.get('percentage'))), int(round(partner_data.get('percentage'))), T(partner_data.get('name')), T(partner_data.get('details')))  )  }}</p>
 
     {{else:}}
     <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the %s by displaying your chosen sponsor’s name on %s. Your donations will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.') % (A(T('OneZoom charity'),_href=URL('static','images/RegistrationCertificate.jpg', scheme=True, host=True), _target="_blank"), the_long_name))}}</p>
 
     {{pass}}
-    <p>{{=T('There can be only one sponsor for each leaf, so get your favourite creature before someone else does!')}}</p>
+    <p>{{=T('There can be only one sponsor for each leaf, so get your favourite creature before someone else does!')}} {{=T('Sponsorship is for a fixed period of %s years; after that, if you wish to renew your sponsorship, you will have the first refusal.') % (4,)}}</p>
 </div>
 <form action="?ott={{=OTT_ID}}" enctype="multipart/form-data" method="post" {{if request.vars.get('embed'):}}target="_blank" onsubmit="setTimeout(function() {location.replace('sponsor_replace_page.html?embed=true&ott={{=OTT_ID}}')}, 1000);" {{pass}}>
   <div>
@@ -33,7 +33,22 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
       <div><label for="user_more_info_input">{{=T('Extra text (optional): ')}}</label><p><input type="text" id="user_more_info_input" autocomplete="off" name = "user_more_info"  maxlength="30" size="30" onchange="drawPreview()" onkeyup="drawPreview()" placeholder = "{{=T('e.g. Edinburgh, UK')}}"
           value="{{if (request.vars['user_more_info']) is not None:}}{{=request.vars['user_more_info']}}{{pass}}"/>
         <em class = "error_text"> {{if (form.errors["user_more_info"]) is not None:}}{{=form.errors["user_more_info"]}}{{pass}} </em></p></div>
+
+      
+      
+     
+       {{if partner_data:}}
+       
+      <p class="singlerow extra_info">{{=XML(T('Extra text will only show when fully zoomed in; it can be used for your location, or to say who it’s from if you are sponsoring as a gift for another person (e.g. Happy Birthday from John Smith). The extra text will appear on our main tree at %s and %s tree at %s, but may not necessarily be shown on versions elsewhere.') % (A('OneZoom.org/life', _href="http://www.onezoom.org/life", _target="blank"), T(partner_data.get('name')), A('OneZoom.org/life/%s'% partner_data.get('partner_identifier'), _href="http://www.onezoom.org/life/%s"% partner_data.get('partner_identifier'), _target="blank"),))}}<p>
+       
+       </p>
+       
+       {{else:}}
       <p class="singlerow extra_info">{{=XML(T('Extra text will only show when fully zoomed in; it can be used for your location, or to say who it’s from if you are sponsoring as a gift for another person (e.g. Happy Birthday from John Smith). The extra text will appear on our main tree at %s, but may not necessarily be shown on versions elsewhere.') % (A('OneZoom.org/life', _href="http://www.onezoom.org/life", _target="blank"),))}}<p>
+       
+       {{pass}}
+       
+      
     </fieldset>
     <p>{{=T('We will check that the sponsorship text is appropriate, and contact you if there is a problem. This is not intended to be advertising so please do not include web links. Normally your text should appear on the tree within a week.')}}</p>
   </div>
@@ -92,7 +107,7 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
       <div><label for="user_paid_input">{{=T('Your donation amount (£%s or greater):') % (str(int(leaf_price)) if leaf_price.is_integer() else '{:f}'.format(leaf_price))}} </label><p><input type="number" step="0.01" id="user_paid_input" name = "user_paid"
           value="{{if (request.vars['user_paid']) is not None:}}{{=request.vars['user_paid']}}{{else:}}{{if(leaf_price.is_integer()):}}{{=str(int(leaf_price))}}{{else:}}{{='{:.2f}'.format(leaf_price)}}{{pass}}{{pass}}" /> 
         <em class = "error_text"> {{if (form.errors["user_paid"]) is not None:}}{{=form.errors["user_paid"]}}{{pass}} </em></p></div>
-      <p class="singlerow extra_info">{{=T('Leaves range from £%s to £%s depending on popularity. ') % (min_global_price, max_global_price)}}{{=T('Sponsorship is for a fixed period of %s years; after that, if you wish to renew your sponsorship, you will have the first refusal.') % (4,)}}</p>
+      <p class="singlerow extra_info">{{=T('Leaves range from £%s to £%s depending on popularity. ') % (min_global_price, max_global_price)}}</p>
       <div><label for="user_message_OZ_input">{{=T('Your message to us (optional)')}} </label><p><input type="text" autocomplete="off" id="user_message_OZ_input" name = "user_message_OZ"  size="40"
         value="{{if (request.vars['user_message_OZ']) is not None:}}{{=request.vars['user_message_OZ']}}{{pass}}"/> 
         <em class = "error_text"> {{if (form.errors["user_message_OZ"]) is not None:}}{{=form.errors["user_message_OZ"]}}{{pass}} </em></p></div>
