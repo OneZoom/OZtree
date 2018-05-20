@@ -3,6 +3,7 @@ import re
 import subprocess
 import requests
 from time import sleep
+#use testconfig from nose (get it using `pip3 install nose-testconfig`)
 from testconfig import config
 
 web2py_app_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
