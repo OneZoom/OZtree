@@ -97,7 +97,7 @@
 <li>Each tree on OneZoom, including the {{=A('main tree of life', _href=URL('default','life.html'))}}, has its own information about where the data has come from. Generally, data has been collated by OneZoom, but not originally produced by us.</li>
 </ol>
 
-<h4>Software origin an reuse</h4>
+<h4>Software origin and reuse</h4>
 
 <ol>
 <li>The original OneZoom software has been provided to the charity OneZoom under open source MIT licenses from James Rosindell, Imperial College London and Imperial Innovations.</li>
