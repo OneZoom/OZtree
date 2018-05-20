@@ -397,7 +397,10 @@ def validate_sponsor_leaf(form, leaf_price):
     if len(form.vars.user_sponsor_name or "") == 0:
         form.errors.user_sponsor_name = T("You must enter some sponsor text")
     elif len(form.vars.user_sponsor_name or "") > max_chars:
-        form.errors.user_sponsor_name = T("Text too long: there is only enough space for %s characters on a leaf") % (max_chars, )
+        form.errors.user_sponsor_name = T("Text too long: max %s characters") % (max_chars, )
+
+    if len(form.vars.user_more_info or "") > max_chars:
+        form.errors.user_more_info = T("Text too long: max %s characters") % (max_chars, )
     
     if form.vars.user_sponsor_kind not in ['by','for']:
         form.errors.user_sponsor_kind = T("Sponsorship can only be 'by' or 'for'")
