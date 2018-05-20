@@ -182,7 +182,7 @@ def sponsor_leaf():
     #we might come into this with an established partner set in request.vars (e.g. LinnSoc)
     partner = request.vars.get('partner')
     """
-    TO DO & CHECK
+    TO DO & CHECK - This allows specific parts of the tree to be associated with a partner
     if partner is None:
         #check through partner_taxa for leaves that might match this one
         partner = db((~db.partner_taxa.deactived) & 
