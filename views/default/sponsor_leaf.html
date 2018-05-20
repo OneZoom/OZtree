@@ -13,11 +13,11 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
     <p>{{=T('You can sponsor this leaf for yourself or as a unique gift for someone you know.')}}</p>
 
     {{if partner_data:}}
-    <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the %s and %s by displaying your chosen sponsor’s name on %s') % (A(T('OneZoom charity'),_href=URL('static','images/RegistrationCertificate.jpg', scheme=True, host=True), _target="_blank"), A(T(partner_data.get('name')), _href=partner_data.get('url'), _target="_blank"), the_long_name))}}.
+    <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the %s and %s by displaying your chosen sponsor’s name on %s') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), A(T(partner_data.get('name')), _href=partner_data.get('url'), _target="_blank"), the_long_name))}}.
        {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s. %s') % (int(round(100-partner_data.get('percentage'))), int(round(partner_data.get('percentage'))), T(partner_data.get('name')), T(partner_data.get('details')))  )  }}</p>
 
     {{else:}}
-    <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the %s by displaying your chosen sponsor’s name on %s. Your donations will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.') % (A(T('OneZoom charity'),_href=URL('static','images/RegistrationCertificate.jpg', scheme=True, host=True), _target="_blank"), the_long_name))}}</p>
+    <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the %s by displaying your chosen sponsor’s name on %s. Your donations will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), the_long_name))}}</p>
 
     {{pass}}
     <p>{{=T('There can be only one sponsor for each leaf, so get your favourite creature before someone else does!')}} {{=T('Sponsorship is for a fixed period of %s years; after that, if you wish to renew your sponsorship, you will have the first refusal.') % (4,)}}</p>
@@ -99,7 +99,7 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
       
         <p class="singlerow extra_info">{{=T('We can use this in correspondance, on our public list of donors, and the information is required if you agree to gift aid your donation (see below)')}}</p>
         
-      <div><label for="user_donor_show_input">{{=XML(T('Show your name on our public %s ?') % (A(T('list of donors'), _href=URL('default','donor_list.html', scheme=True, host=True), _target="blank"),))}}</label><p><input type="checkbox" autocomplete id="user_donor_show_input" name = "user_donor_show" checked/></p></div>
+      <div><label for="user_donor_show_input">{{=XML(T('Show your name on our public %s ?') % (A(T('list of donors'), _href='/donor_list', _target="blank"),))}}</label><p><input type="checkbox" autocomplete id="user_donor_show_input" name = "user_donor_show" checked/></p></div>
       <p class="singlerow extra_info">{{=T('This is in addition to your sponsored leaf on the tree.')}}</p>
       
       <div><label for="allow_contact_input">{{=T('Allow further contact?')}}</label><p><input type="checkbox" autocomplete id="allow_contact_input" name = "allow_contact" /></p></div>
@@ -115,7 +115,7 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
         value="{{if (request.vars['twitter_name']) is not None:}}{{=request.vars['twitter_name']}}{{pass}}"/>
         <em class = "error_text"> {{if (form.errors["twitter_name"]) is not None:}}{{=form.errors["twitter_name"]}}{{pass}} </em></p></div>
       <p class="singlerow extra_info">{{=T('If you enter your Twitter handle, we will tweet when your leaf goes live')}}</p>
-      <div class="singlerow">{{=XML(T('OneZoom is %s in the UK.') % (A('registered charity number 1163559', _href=URL('static','images/RegistrationCertificate.jpg', scheme=True, host=True), _target="_blank"),))}}</div>
+      <div class="singlerow">{{=XML(T('OneZoom is %s in the UK.') % (A('registered charity number 1163559', _href="//www.onezoom.org/static/images/RegistrationCertificate.jpg", _target="_blank"),))}}</div>
       <div class="singlerow">{{=T('If you are a UK tax payer please consider making a Gift Aid declaration which will increase the value of your donation by 25% at no cost to you')}}</div>
       <button type='button' onclick="document.getElementById('gift_aid').style.display='block'; document.getElementById('user_giftaid_input').checked = true;">{{=T('I am a UK tax payer and agree to Gift Aid')}}</button>
               <!-- these bits should open up automatically -->
@@ -152,7 +152,7 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
       <input type="hidden" name="partner" value="{{=partner_data.get('partner_identifier') or ''}}" />
       {{pass}}
     </fieldset>
-    <p class="submit_donate">{{=XML(T('Accept %s and <input id="submit_button" type="submit" value = "Donate"/> using PayPal') % (A(T('terms'),_href=URL('default','terms.html'),_target="_blank"), ))}}{{if request.vars.get('embed'):}} <span>{{=T('(opens in a new window)')}}</span>{{pass}}.</p>
+    <p class="submit_donate">{{=XML(T('Accept %s and <input id="submit_button" type="submit" value = "Donate"/> using PayPal') % (A(T('terms'),_href="/terms.html",_target="_blank"), ))}}{{if request.vars.get('embed'):}} <span>{{=T('(opens in a new window)')}}</span>{{pass}}.</p>
   </div>
 </form>
 <script>

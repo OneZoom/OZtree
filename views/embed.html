@@ -3,7 +3,8 @@
 <head>
   <link rel="stylesheet" href="{{=URL('static','css/OZ_bootstrap.css')}}" type="text/css" />
   <link rel="stylesheet" href="{{=URL('static','css/OZ_specific.css')}}" type="text/css" />
-  <link rel="shortcut icon" href="{{=URL('static', 'favicon.ico')}}" type="image/ico" />
+  <link rel="shortcut icon" href="{{=URL('static', 'favicon.ico')}}" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="{{=URL('static','favicon.png')}}">
   {{include 'web2py_ajax.html'}}
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
   <!-- fallback to local jQuery version e.g. if offline -->
@@ -31,6 +32,8 @@ $(document).ready(function() {
 # The degree of sandboxing is specified by the 'embed' parameter as follows:
 #1 no sandboxing: all links open as normal. Links that are internal (i.e. use the URL helper) 
 #  should pass on the embed status (this also avoids embedding the tree viewer itself) (normal display)
+#  We would probably like to stop URLs that open in a new tab (e.g. within an A(... _target="_blank") helper
+#  from also adding embed, but this is diffcult to do, so these should be hardcoded urls instead
 #2 minor "sandbox": all links open in a new tab (the "embed" need not be passed on to these links)
 #3 can only follow relative links without _target set (and cannot e.g. right click): embed status should be passed on (normal museum display)
 #4 cannot follow links at all (and cannot e.g. right click) 
@@ -38,7 +41,7 @@ if request.vars.embed:
 }}
 {{
   if request.vars.embed=='1':
-    #add embed status to internal links
+    #add embed status to internal links that have no _target set (if they have one set, they won't be embedded)
     web2py_URL = URL
     def URL(*args, **kwargs): return web2py_URL(*args, **dict(kwargs, vars=dict(kwargs.get('vars') or {}, embed=request.vars.embed)))
   elif request.vars.embed=='2':
@@ -79,8 +82,6 @@ pass
     <!-- http://dev.w3.org/html5/markup/meta.name.html -->
     <meta name="application-name" content="{{=request.application}}">
     <meta name="google-site-verification" content="">
-    <link rel="shortcut icon" href="{{=URL('static','favicon.ico')}}" type="image/x-icon">
-    <link rel="apple-touch-icon" href="{{=URL('static','favicon.png')}}">
     <!-- All JavaScript at the bottom, except for Modernizr which enables
          HTML5 elements & feature detects -->
     <script src="{{=URL('static','js/modernizr-2.8.3.min.js')}}"></script>
@@ -105,6 +106,6 @@ pass
         {{include}}
     </div>
     <!-- The javascript =============================== -->
-    <script type="text/javascript" src="{{=URL('static','site-specific/google-analytics.js')}}"></script>
+    <script type="text/javascript" src="/static/site-specific/google-analytics.js"></script>
   </body>
 </html>
