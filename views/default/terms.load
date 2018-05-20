@@ -115,7 +115,7 @@
 
 <li>The trademark OneZoom is registered in the UK and USA and is owned by Imperial Innovations. It is provided to the charity OneZoom under sub-license from James Rosindell.</li>
 <li>Images on this website are generally available under creative commons and public domain licenses with license details available from the copyright symbol next to each image in the main tree of life explorer.</li>
-<li>Quotes and user opinions are owned by the original author of the text who in each case has given permission for OneZoom to use the quote, or made the text publicly available.</li>
+<li>Quotes and user opinions are owned by the original author of the text who in each case has either given permission for OneZoom to use the quote, or made the text publicly available.</li>
 <img class="rgt_edge" src="{{=URL('static','images/leaves/Rpic1.png')}}" />
 <li>All other material on this site is owned by the OneZoom charity and its third party licensors.</li>
 
@@ -140,7 +140,7 @@
 <div class="row-fluid" style="order: {{=(2 if request.args and request.args[0]=='site' else 4)}};">
 <div class="col-md-12 intro">
 <h3 id = "useterms">Cookie policy</h3>
-<p>We use cookies. By using our website you must agree this.</p>
+<p>We use cookies. By using our website you must agree to this.</p>
 </div>
 <div class="col-md-6">
 <img class="lft_edge" src="{{=URL('static','images/leaves/Lpic1.png')}}" />
@@ -348,7 +348,7 @@ Links within this site to other websites are not covered by this Data Protection
 </div>
 <div class="col-md-6">
 <ul>
-<li>Access to our data via public key API is subject to restrictions and request to the API may be denied at peak times or if the service is abused.</li>
+<li>Access to our data via public key API is subject to restrictions and requests to the API may be denied at peak times or if the service is abused.</li>
 <li>Please download the complete dataset instead of using the API if you require the full set of popularity information.</li>
 <li>Access to our private key API is available on request and permits larger calls than our public key API.</li>
 <li>We collect data from private key uses of our API, this is handled in accordance with our Data Protection and Privacy Policy.</li>
