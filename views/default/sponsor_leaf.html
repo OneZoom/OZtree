@@ -26,8 +26,8 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
   <div>
     <h3>{{=T('Type the name of the person you want to appear on the leaf')}}</h3>
     <fieldset>
-      <div class="singlerow"><label>{{=T('Sponsored by')}} <input type="radio" value="by" onclick="drawPreview()" id = "sponsorBy" name = "user_sponsor_kind" checked /></label><label>{{=T('Sponsored as a gift for')}} <input type="radio"  value="for" id = "sponsorFor" name = "user_sponsor_kind" onclick="drawPreview()" /></label></div>
-      <div><label for="user_sponsor_name_input">{{=T('Sponsorship name (required): ')}}</label><p><input type="text" autocomplete="off" id="user_sponsor_name_input" name = "user_sponsor_name" maxlength="30" size="30" onchange="drawPreview()" onkeyup="drawPreview()" placeholder="{{=T('e.g. Jane Smith')}}"
+      <div class="singlerow"><label>{{=T('Sponsored by')}} <input type="radio" value="by" onclick="updateDonorPlaceholder();drawPreview()" id = "sponsorBy" name = "user_sponsor_kind" checked /></label><label>{{=T('Sponsored as a gift for')}} <input type="radio"  value="for" id = "sponsorFor" name = "user_sponsor_kind" onclick="updateDonorPlaceholder();drawPreview()" /></label></div>
+      <div><label for="user_sponsor_name_input">{{=T('Sponsorship name (required): ')}}</label><p><input type="text" autocomplete="off" id="user_sponsor_name_input" name = "user_sponsor_name" maxlength="30" size="30" onchange="updateDonorPlaceholder();drawPreview()" onkeyup="updateDonorPlaceholder();drawPreview()" placeholder="{{=T('e.g. Jane Smith')}}"
       value="{{if (request.vars['user_sponsor_name']) is not None:}}{{=request.vars['user_sponsor_name']}}{{pass}}" /> 
         <em class = "error_text" > {{if (form.errors["user_sponsor_name"]) is not None:}}{{=form.errors["user_sponsor_name"]}}{{pass}} </em></p></div>
       <div><label for="user_more_info_input">{{=T('Extra text (optional): ')}}</label><p><input type="text" id="user_more_info_input" autocomplete="off" name = "user_more_info"  maxlength="30" size="30" onchange="drawPreview()" onkeyup="drawPreview()" placeholder = "{{=T('e.g. Edinburgh, UK')}}"
@@ -75,7 +75,7 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
         <em class = "error_text"> {{if (form.errors["e_mail"]) is not None:}}{{=form.errors["e_mail"]}}{{pass}} </em></p></div>
       <p class="singlerow extra_info">{{=T('If we need to contact you about your donation or changes to your leaf, we will use the email entered here, otherwise we will use the email from your PayPal donation.')}}</p>
       
-      <div><label for="user_donor_name_input">{{=T('Your title and name (if different from the sponsorship name):')}}</label><p>
+      <div><label for="user_donor_name_input">{{=T('Your title and name:')}}</label><p>
         
         <select name="user_donor_title" autocomplete="honorific-prefix" id="user_donor_title_input"  value="{{if (request.vars['user_donor_title']) is not None:}}{{=request.vars['user_donor_title']}}{{pass}}">
             <option value="   ">   </option>
@@ -155,6 +155,17 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
     <p class="submit_donate">{{=XML(T('Accept %s and <input id="submit_button" type="submit" value = "Donate"/> using PayPal') % (A(T('terms'),_href="/terms.html",_target="_blank"), ))}}{{if request.vars.get('embed'):}} <span>{{=T('(opens in a new window)')}}</span>{{pass}}.</p>
   </div>
 </form>
+<script>
+function updateDonorPlaceholder() {
+    if ($("#sponsorBy").is(':checked')) {
+        $("#user_donor_name_input").attr("placeholder", document.getElementById('user_sponsor_name_input').value)
+    } else {
+        $("#user_donor_name_input").attr("placeholder", "")
+    }
+}
+updateDonorPlaceholder(); //do it now, in case we are refreshing
+</script>
+
 <script>
 
 /* define global variables */
@@ -441,6 +452,5 @@ setDataFromEoLpageID({{=EOL_ID}},
 {{else:}}
 imageInfoReady = true;
 {{pass}}
-
 
 </script>
