@@ -22,7 +22,7 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
     {{pass}}
     <p>{{=T('There can be only one sponsor for each leaf, so get your favourite creature before someone else does!')}} {{=T('Sponsorship is for a fixed period of %s years; after that, if you wish to renew your sponsorship, you will have the first refusal.') % (4,)}}</p>
 </div>
-<form action="?ott={{=OTT_ID}}" enctype="multipart/form-data" method="post" {{if request.vars.get('embed'):}}target="_blank" onsubmit="setTimeout(function() {location.replace('sponsor_replace_page.html?embed=true&ott={{=OTT_ID}}')}, 1000);" {{pass}}>
+<form action="?ott={{=OTT_ID}}" enctype="multipart/form-data" method="post" {{if request.vars.get('embed'):}}target="_blank" onsubmit="setTimeout(function() {location.replace('sponsor_replace_page.html?embed={{=request.vars.get('embed')}}&ott={{=OTT_ID}}')}, 1000);" {{pass}}>
   <div>
     <h3>{{=T('Type the name of the person you want to appear on the leaf')}}</h3>
     <fieldset>
