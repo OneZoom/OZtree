@@ -14,7 +14,7 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
 
     {{if partner_data:}}
     <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the %s and %s by displaying your chosen sponsor’s name on %s') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), A(T(partner_data.get('name')), _href=partner_data.get('url'), _target="_blank"), the_long_name))}}.
-       {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s. %s') % (int(round(100-partner_data.get('percentage'))), int(round(partner_data.get('percentage'))), T(partner_data.get('name')), T(partner_data.get('details')))  )  }}</p>
+       {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s. %s.') % (int(round(100-partner_data.get('percentage'))), int(round(partner_data.get('percentage'))), T(partner_data.get('name')), T(partner_data.get('details')))  )  }}</p>
 
     {{else:}}
     <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the %s by displaying your chosen sponsor’s name on %s. Your donations will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), the_long_name))}}</p>
@@ -36,21 +36,47 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
 
       
       
-     
+     <p class="singlerow extra_info">
        {{if partner_data:}}
        
-      <p class="singlerow extra_info">{{=XML(T('Extra text will only show when fully zoomed in; it can be used for your location, or to say who it’s from if you are sponsoring as a gift for another person (e.g. Happy Birthday from John Smith). The extra text will appear on our main tree at %s and %s tree at %s, but may not necessarily be shown on versions elsewhere.') % (A('OneZoom.org/life', _href="http://www.onezoom.org/life", _target="blank"), T(partner_data.get('name')), A('OneZoom.org/life/%s'% partner_data.get('partner_identifier'), _href="http://www.onezoom.org/life/%s"% partner_data.get('partner_identifier'), _target="blank"),))}}<p>
-       
-       </p>
+      {{=XML(T('Extra text will only show when fully zoomed in; it can be used for your location, or to say who it’s from if you are sponsoring as a gift for another person (e.g. Happy Birthday from John Smith). The extra text will appear on our main tree at %s and %s tree at %s, but may not necessarily be shown on versions elsewhere.') % (A('OneZoom.org/life', _href="http://www.onezoom.org/life", _target="blank"), T(partner_data.get('name')), A('OneZoom.org/life/%s'% partner_data.get('partner_identifier'), _href="http://www.onezoom.org/life/%s"% partner_data.get('partner_identifier'), _target="blank"),))}}
+    
        
        {{else:}}
-      <p class="singlerow extra_info">{{=XML(T('Extra text will only show when fully zoomed in; it can be used for your location, or to say who it’s from if you are sponsoring as a gift for another person (e.g. Happy Birthday from John Smith). The extra text will appear on our main tree at %s, but may not necessarily be shown on versions elsewhere.') % (A('OneZoom.org/life', _href="http://www.onezoom.org/life", _target="blank"),))}}<p>
+     {{=XML(T('Extra text will only show when fully zoomed in; it can be used for your location, or to say who it’s from if you are sponsoring as a gift for another person (e.g. Happy Birthday from John Smith). The extra text will appear on our main tree at %s, but may not necessarily be shown on versions elsewhere.') % (A('OneZoom.org/life', _href="http://www.onezoom.org/life", _target="blank"),))}}
        
        {{pass}}
        
-      
+    {{=T('We will check that the sponsorship text is appropriate, and contact you if there is a problem. This is not intended to be advertising so please do not include web links. Normally your text should appear on the tree within a week.')}}
+    
+    
+    </p>
+    
+    <div><label for="user_paid_input">{{=T('Your donation amount (£%s or greater):') % (str(int(leaf_price)) if leaf_price.is_integer() else '{:f}'.format(leaf_price))}} </label><p><input type="number" step="0.01" id="user_paid_input" name = "user_paid"
+        value="{{if (request.vars['user_paid']) is not None:}}{{=request.vars['user_paid']}}{{else:}}{{if(leaf_price.is_integer()):}}{{=str(int(leaf_price))}}{{else:}}{{='{:.2f}'.format(leaf_price)}}{{pass}}{{pass}}" />
+        <em class = "error_text"> {{if (form.errors["user_paid"]) is not None:}}{{=form.errors["user_paid"]}}{{pass}} </em></p></div>
+    <p class="singlerow extra_info">
+    {{=T('Leaves range from £%s to £%s depending on popularity. ') % (min_global_price, max_global_price)}}
+    
+    <!-- show alternative if leaf is possibly too expensive-->
+    {{if leaf_price>20:}}
+    
+    {{if partner_data:}}
+    <!-- pass down URL vars so future sponsorships are still for the same partner -->
+ {{=XML(T('If this leaf does not fit your budget consider our lists of %s and %s sorted by price to choose an alternative.') % (A(T('animals'), _href=URL('default','sponsor_node', vars=dict(id=759129,partner=request.vars['partner'],user_more_info=request.vars['user_more_info'],lang=request.vars['lang']))),A(T('plants'),_href=URL('default','sponsor_node', scheme=True, host=True, vars=dict(id=108637,partner=request.vars['partner'],user_more_info=request.vars['user_more_info'],lang=request.vars['lang'])))))}}</p>
+    
+    {{else:}}
+    <!-- no partner data to pass down but pass language -->
+    {{=XML(T('If this leaf does not fit your budget consider our lists of %s and %s sorted by price to choose an alternative.') % (A(T('animals'), _href=URL('default','sponsor_node', vars=dict(id=759129,lang=request.vars['lang']))),A(T('plants'),_href=URL('default','sponsor_node', scheme=True, host=True, vars=dict(id=108637,lang=request.vars['lang'])))))}}</p>
+    
+    {{pass}}
+    
+    {{pass}}
+    </p>
+    
     </fieldset>
-    <p>{{=T('We will check that the sponsorship text is appropriate, and contact you if there is a problem. This is not intended to be advertising so please do not include web links. Normally your text should appear on the tree within a week.')}}</p>
+
+    
   </div>
   <div class="container-fluid">
     <h3>{{=T('Preview of your sponsored leaf')}}</h3>
@@ -62,13 +88,14 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
       </div>
     </div>
   </div>
-  {{if 'embed' not in request.vars:}}
+  {{if 'embed' not in request.vars and not partner_data:}}
+  <!-- don't want possibility for these link outs if embedding or if there is a partner involved as they will not keep the user in the partner tree -->
   <div class="subleaf">
     <p>{{=XML(T('If you fancy something different, you can %s, or simply %s and see what you like.') % (A(T('search for other available species'), _href=URL('default','sponsor')),A(T('browse the tree of life'),_href=URL('default','life.html', scheme=True, host=True))))}}</p>
   </div>
   {{pass}}
   <div>
-    <h3>{{=T('A few more details')}}</h3>
+    <h3>{{=T('A few more details (optional)')}}</h3>
     <fieldset>
       <div><label for="e-mail_input">{{=T('Your e-mail (recommended):')}}</label><p><input type="text" autocomplete="email" id="e-mail_input" name = "e_mail" size="40"
         value="{{if (request.vars['e_mail']) is not None:}}{{=request.vars['e_mail']}}{{pass}}" /> 
@@ -104,10 +131,7 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
       
       <div><label for="allow_contact_input">{{=T('Allow further contact?')}}</label><p><input type="checkbox" autocomplete id="allow_contact_input" name = "allow_contact" /></p></div>
       <p class="singlerow extra_info">{{=XML(T('On rare occasions we may wish to inform you about new / major changes to OneZoom (for more frequent updates, you might also like to %s)') % (A(T('follow us on Twitter'), _href='https://twitter.com/OneZoomTree', _target="_blank"),))}}</p>
-      <div><label for="user_paid_input">{{=T('Your donation amount (£%s or greater):') % (str(int(leaf_price)) if leaf_price.is_integer() else '{:f}'.format(leaf_price))}} </label><p><input type="number" step="0.01" id="user_paid_input" name = "user_paid"
-          value="{{if (request.vars['user_paid']) is not None:}}{{=request.vars['user_paid']}}{{else:}}{{if(leaf_price.is_integer()):}}{{=str(int(leaf_price))}}{{else:}}{{='{:.2f}'.format(leaf_price)}}{{pass}}{{pass}}" /> 
-        <em class = "error_text"> {{if (form.errors["user_paid"]) is not None:}}{{=form.errors["user_paid"]}}{{pass}} </em></p></div>
-      <p class="singlerow extra_info">{{=T('Leaves range from £%s to £%s depending on popularity. ') % (min_global_price, max_global_price)}}</p>
+      
       <div><label for="user_message_OZ_input">{{=T('Your message to us (optional)')}} </label><p><input type="text" autocomplete="off" id="user_message_OZ_input" name = "user_message_OZ"  size="40"
         value="{{if (request.vars['user_message_OZ']) is not None:}}{{=request.vars['user_message_OZ']}}{{pass}}"/> 
         <em class = "error_text"> {{if (form.errors["user_message_OZ"]) is not None:}}{{=form.errors["user_message_OZ"]}}{{pass}} </em></p></div>
