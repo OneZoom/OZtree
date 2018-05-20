@@ -373,7 +373,7 @@ def sponsor_leaf():
                     user_updated_time=request.now,
                     sponsorship_duration_days=365*4+1,
                     partner_name=partner_data.get('partner_identifier'),
-                    partner_percentage=partner_data.get('partner_percentage'))
+                    partner_percentage=partner_data.get('percentage'))
                 # now need to do our own other checks
                 v = {'ott':OTT_ID_Varin}
                 if request.vars.get('embed'):
