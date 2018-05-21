@@ -154,7 +154,7 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
         <p>If you pay Income Tax at the higher or additional rate and want to receive the additional tax relief due to you, you must include all your Gift Aid donations on your Self-Assessment tax return or ask HM Revenue and Customs to adjust your tax code.</p>
         <p>Gift Aid is reclaimed by OneZoom and {{=T(partner_data.get('name'))}} from the tax you pay for the current tax year. We will use the name and address from your PayPal receipt for this purpose and will share this information with {{=A(T(partner_data.get('name')), _href=partner_data.get('url'),_target="_blank")}} for the purposes of Gift Aid - please make sure that information is up to date.</p>
 
-        <p> I agree to all the above statements: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" /></p>
+        <p> I agree to all the above statements: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" {{if request.vars.user_giftaid:}}checked{{pass}}/></p>
         {{else:}}
         <p>I want to Gift Aid this donation and any donations I make in the future or have made in the past 4 years to OneZoom</p>
         <p>I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of
@@ -165,7 +165,7 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
           
         <p> I agree: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" {{if request.vars.user_giftaid:}}checked{{pass}}/></p>
         
-        <p> Please note: we will need your name, tite and UK street address to process gift aid so please fill in these fields above and instruct PayPal to share your postal address when making your payment - thank you.</p>
+        <p> Please note: we will need your name, title and UK street address to process gift aid, so please fill in these fields above and instruct PayPal to share your postal address when making your payment - thank you.</p>
           {{pass}}
       </div>
       <input type="hidden" id="user_nondefault_image_input" name="user_nondefault_image" value="0" />
