@@ -511,13 +511,13 @@ function toggleAdvancedSearch(state) {
     }
     if (state) {
         $('#searchnav').addClass("advanced_mode");
+        UIkit.getComponent(UIkit.util.$('#advanced_search_button'), 'tooltip').title = $('#advanced_search_button').attr("data-advanced-title")
         $('#advanced_search_button')
-            .attr('title',OZstrings["AdvancedSearchOff"])
             .attr('uk-icon','icon: close');
     } else {
         $('#searchnav').removeClass("advanced_mode");
+        UIkit.getComponent(UIkit.util.$('#advanced_search_button'), 'tooltip').title = $('#advanced_search_button').attr("data-simple-title")
         $('#advanced_search_button')
-            .attr('title',OZstrings["AdvancedSearchOn"])
             .attr('uk-icon','icon: git-fork');
     }
 }
