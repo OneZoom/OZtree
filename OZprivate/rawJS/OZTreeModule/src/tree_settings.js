@@ -19,6 +19,7 @@ import LifeSignpostLayout from './projection/layout/life/signpost_layout';
 import LifeBranchLayout from './projection/layout/life/branch_layout';
 import LifeMidnode from './factory/life_midnode';
 
+import OtopNodeLayout from './projection/layout/otop/node_layout';
 import OtopLeafLayout from './projection/layout/otop/leaf_layout';
 import OtopSignpostLayout from './projection/layout/otop/signpost_layout';
 import OtopBranchLayout from './projection/layout/otop/branch_layout';
@@ -61,7 +62,7 @@ class TreeSettings {
                   polytomy: PolytomyBranchLayout},
           node:  {tree:     LifeNodeLayout,
                   AT:       ATNodeLayout,
-                  otop:     PolytomyNodeLayout,  // NB: No customisations yet.
+                  otop:     OtopNodeLayout,
                   polytomy: PolytomyNodeLayout},
           leaf:  {tree:     LifeLeafLayout,
                   AT:       ATLeafLayout,

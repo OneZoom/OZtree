@@ -3,9 +3,9 @@ import data_repo from '../factory/data_repo';
 let branch_color = 'rgb(255,255,255)';
 let bar_color = 'rgba(0,0,0,0)';
 let highlight_color = 'hsl(64, 100%, 83%)';
-let int_text_stroke_hover = 'rgba(255,255,255,0.5)';
-let int_text_fill_hover = 'rgb(0,0,0)';
-let int_text_fill = 'rgb(0,0,0)';
+let int_text_stroke_hover = 'rgb(96,96,96)';
+let int_text_fill_hover = 'rgb(255,255,255)';
+let int_text_fill = 'rgb(255,255,255)';
 let int_sponsor_fill_hover = 'rgb(255,255,255)';
 let int_sponsor_fill = 'rgb(227,200,115)';
 
@@ -156,7 +156,7 @@ const theme = {
     
   leaf: {
     bg: {
-      fill: location_color,
+      fill: '#666666',
     },
     
     'outline_hover': {
@@ -169,11 +169,11 @@ const theme = {
     },
     
     inside: {
-      fill: location_color,
+      fill: '#666666',
     },
     
     'inside_hover': {
-      fill: location_color,
+      fill: '#666666',
     },
     
     text: {
