@@ -80,7 +80,8 @@ const theme = {
       stroke: int_text_stroke_hover
     },
     'text': {
-      fill: int_text_fill
+      fill: int_text_fill,
+      stroke: '#000000'
     },
     
     
