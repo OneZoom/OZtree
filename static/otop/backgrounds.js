@@ -60,7 +60,7 @@ function particles(background_el, url) {
     window.setTimeout(function () {
         var start_rotate = parseInt(el.style.transform.match(/rotateZ\((\d+)/)[1], 10);
         start_rotate += 3*rand_int(10, 15);
-        el.style.opacity = 1;
+        el.style.opacity = 0.75;
         el.style.transform = 'perspective(2000px) rotateX(10deg) scale('+ rand_int(10,15)/10 +') rotateZ(' + start_rotate + 'deg)';
     }, 50);
 
