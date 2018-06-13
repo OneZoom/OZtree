@@ -44,8 +44,23 @@ class LeafLayout extends LeafLayoutBase {
   }
 
   human_subleaf(node, shapes, x, y, r, image_src, image_filename, rings) {
-      let imageObject = get_image(image_src, image_filename);
+      let s, imageObject = get_image(image_src, image_filename);
       imageObject = image_ready(imageObject) ? imageObject : null;
+
+      for (let i = 0; i < rings.length; i++) {
+          s = ArcShape.create();
+          s.x = x; s.y = y;
+          s.r = r + (0.1 * r) * (rings.length - i);
+          s.circle = true;
+          s.do_fill = true;
+          s.order = "fill_first";
+          s.fill.color = 'rgba(0,0,0,0.8)';
+          s.do_stroke = true;
+          s.stroke.line_width = (0.05 * r);
+          s.stroke.color = rings[i];
+          s.height = 0;
+          shapes.push(s);
+      }
 
       this.circle_cut_image(shapes, imageObject, x, y, r, color_theme.get_color("leaf.inside.fill",node), null, node);
   }
@@ -95,7 +110,7 @@ class LeafLayout extends LeafLayoutBase {
               sub_pos.y,
               this.get_fullleaf_r(node) / 5,
               node.pic_src, node.pic_filename,
-              []
+              ['rgba(255, 255, 255, 0.8)', 'rgba(192, 236, 210, 0.8)']
           );
       }
 
@@ -106,7 +121,7 @@ class LeafLayout extends LeafLayoutBase {
           this.get_leaf_y(node),
           this.get_fullleaf_r(node) / 3,
           node.pic_src, node.pic_filename,
-          []
+          ['rgba(31, 182, 246, 0.8)', 'rgba(192, 236, 210, 0.8)', 'rgba(255, 255, 255, 0.8)']
       );
   }
 
