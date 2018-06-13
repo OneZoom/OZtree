@@ -46,71 +46,68 @@ function tinted_image(image_href, tint, top, left, size) {
     return el;
 }
 
-function translate_tree(background_el, url, tint) {
-    var el = tinted_image(url, tint, rand_int(0, 20), rand_int(-50, 40), 90);
+function particles(background_el, url) {
+    var el = background_el.querySelector('.particles');
 
-    el.style.opacity = 0;
-    background_el.appendChild(el);
-
-    window.setTimeout(function () {
-        el.style.opacity = 1;
-        el.style.transform = 'translate3d(' +
-            rand_int(-20,20) + 'px,' +
-            rand_int(-20,20) + 'px,' +
-            rand_int(-20,20) + 'px) rotate3d(0, 1, 0, ' + rand_int(-20, 20) + 'deg)';
-    }, 50);
-
-    window.setTimeout(function () {
-        el.style.opacity = 0;
-    }, 10000);
-
-    window.setTimeout(function () {
-        background_el.removeChild(el);
-    }, 30000);
-}
-
-function show_particles(background_el, url) {
-    var start_rotate = rand_int(0, 360),
+    if (!el) {
         el = tinted_image(url, [255, 255, 255], rand_int(-15, -5), rand_int(-15, -5), 120);
-
-    el.style.opacity = 0;
-    el.style.transform = 'perspective(2000px) rotateX(10deg) rotateZ(' + start_rotate + 'deg)';
-    background_el.appendChild(el);
+        el.style.opacity = 0;
+        el.style.transform = 'perspective(2000px) rotateX(10deg) rotateZ(' + rand_int(0, 360) + 'deg)';
+        el.classList.add('particles');
+        background_el.appendChild(el);
+    }
 
     window.setTimeout(function () {
+        var start_rotate = parseInt(el.style.transform.match(/rotateZ\((\d+)/)[1], 10);
+        start_rotate += 3*rand_int(10, 15);
         el.style.opacity = 1;
-        el.style.transform = 'perspective(2000px) rotateX(10deg) rotateZ(' + (start_rotate + 3*rand_int(-5, 5)) + 'deg)';
+        el.style.transform = 'perspective(2000px) rotateX(10deg) scale('+ rand_int(10,15)/10 +') rotateZ(' + start_rotate + 'deg)';
     }, 50);
+
+    window.setTimeout(particles.bind(this, background_el, url), 25000);
+}
+
+function floating(background_el, url, initial) {
+    var css_class = 'floating_' + url.replace(/\W/g, '_'),
+        el; // = background_el.querySelector('.' + css_class);
+
+    if (!el) {
+        el = tinted_image(url, tints[rand_int(0, tints.length - 1)], 0, rand_int(0, 10), 80);
+        el.style.opacity = 0;
+        el.style.transform = 'translate(' + rand_int(-10, 10) + '%, ' + rand_int(initial ? 50 : 70, 80) + '%)';
+        el.classList.add('floating');
+        el.classList.add(css_class);
+        background_el.appendChild(el);
+    }
+
+    window.setTimeout(function () {
+        el.style.opacity = 0.6;
+        el.style.transform = 'rotate(' + rand_int(-45, 45) + 'deg) translate(' + rand_int(-20,100) + '%, -100%)';
+    }, 50);
+
+    window.setTimeout(floating.bind(this, background_el, url, false), 45000);
 
     window.setTimeout(function () {
         el.style.opacity = 0;
-    }, 10000);
+    }, 180000);
 
     window.setTimeout(function () {
         background_el.removeChild(el);
-    }, 30000);
+    }, 300000);
 }
 
-function animation_change(background_el, images) {
+function init_background(images) {
+    var i, background_el = document.createElement('DIV');
+
     function choose_image(t) {
         return images[t][rand_int(0, images[t].length - 1)];
     }
 
-    if (Math.random() < 0.3) {
-        translate_tree(background_el, choose_image('tree'), tints[rand_int(0, tints.length - 1)]);
-    }
-
-    if (Math.random() < 0.3) {
-        show_particles(background_el, choose_image('particle'));
-    }
-    
-    window.setTimeout(animation_change.bind(null, background_el, images), 3000);
-}
-
-function init_background(images) {
-    var background_el = document.createElement('DIV');
-
     background_el.className = 'background-layer';
     document.body.insertBefore(background_el, document.body.firstChild);
-    animation_change(background_el, images);
+
+    for (i = 0 ; i < images['tree'].length; i++) {
+        floating(background_el, images['tree'][i], true);
+    }
+    particles(background_el, choose_image('particle'));
 }
