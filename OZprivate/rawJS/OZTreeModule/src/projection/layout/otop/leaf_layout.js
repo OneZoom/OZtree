@@ -5,7 +5,6 @@ import config from '../../../global_config';
 import tree_state from '../../../tree_state';
 import {color_theme} from '../../../themes/color_theme';
 import {get_image, image_ready} from '../../../image_cache';
-import BezierShape from '../../shapes/bezier_shape';
 
 class LeafLayout extends LeafLayoutBase {
   /**
@@ -70,10 +69,10 @@ class LeafLayout extends LeafLayoutBase {
 
       if (i < (total / 2)) {
           offset = -(Math.PI/3); // Back 60deg
-          extra_dist = (i % 2 === 0 ? 1.3 : 1.8);
+          extra_dist = (i % 2 === 0 ? 1.0 : 1.7);
       } else {
           offset = per_item_angle; // Forward 60deg+1 item
-          extra_dist = (i % 2 === 0 ? 1.8 : 1.3);
+          extra_dist = (i % 2 === 0 ? 1.7 : 1.0);
       }
 
       return {
@@ -84,24 +83,10 @@ class LeafLayout extends LeafLayoutBase {
 
   /** Draw the special human leaf */
   human_leaf_shapes(node, shapes) {
-      let bezier_shape, sub_pos, subleaf_count = 14;
+      let sub_pos, subleaf_count = 14;
 
       for (let i = 0; i < subleaf_count; i++) {
           sub_pos = this.human_subleaf_pos(i, subleaf_count, this.get_leaf_x(node), this.get_leaf_y(node), this.get_fullleaf_r(node));
-
-          // Draw line connecting the subleaf
-          bezier_shape = BezierShape.create();
-          bezier_shape.sx = bezier_shape.c1x = this.get_leaf_x(node);
-          bezier_shape.sy = bezier_shape.c1y = this.get_leaf_y(node);
-          bezier_shape.ex = bezier_shape.c2x = sub_pos.x;
-          bezier_shape.ey = bezier_shape.c2y = sub_pos.y;
-          bezier_shape.do_stroke = true;
-          bezier_shape.stroke.line_width = 1;
-          bezier_shape.height = 0;
-          bezier_shape.stroke.color = color_theme.get_color('branch.stroke', node);
-          bezier_shape.stroke.line_cap = 'butt';
-          bezier_shape.shadow = { blur: 2 },
-          shapes.push(bezier_shape);
 
           // Draw the human
           this.human_subleaf(
