@@ -57,7 +57,7 @@ function floating(background_el, url, initial_spacing) {
             'scale(' + ((1 - initial_spacing) * 2 + 1) + ')',
         ].join(' ');
         el.style.transition = [
-            'transform ' + initial_spacing * 240 + 's linear',
+            'transform ' + initial_spacing * 200 + 's linear',
             'opacity 15s',
         ].join(',');
         el.classList.add('floating');
@@ -68,13 +68,13 @@ function floating(background_el, url, initial_spacing) {
     window.setTimeout(function () {
         el.style.opacity = 0.2;
         el.style.transform = [
-            'rotate(' + rand_int(-90, 90) + 'deg)',
             'translate(' + (start_horiz + rand_int(-20,20)) + '%, -100%)',
+            'rotate(' + rand_int(-90, 90) + 'deg)',
             'scale(1)',
         ].join(' ');
     }, 50);
 
-    window.setTimeout(floating.bind(this, background_el, url, 1), initial_spacing * 45000);
+    window.setTimeout(floating.bind(this, background_el, url, 1), initial_spacing * 60000);
 
     window.setTimeout(function () {
         el.style.opacity = 0;
