@@ -1,5 +1,3 @@
-import data_repo from '../factory/data_repo';
-
 let branch_color = 'rgb(255,255,255)';
 let bar_color = 'rgba(0,0,0,0)';
 let highlight_color = 'hsl(64, 100%, 83%)';
@@ -9,23 +7,34 @@ let int_text_fill = 'rgb(255,255,255)';
 let int_sponsor_fill_hover = 'rgb(255,255,255)';
 let int_sponsor_fill = 'rgb(227,200,115)';
 
+let node_colors = {
+  _default:'240, 60%, 60%',
+  5268475: '134, 60%, 60%',  // Plants
+  244265:  '24,  60%, 60%',  // Mammals
+  4947372: '180, 60%, 60%',  // Birds
+  1062253: '57,  60%, 60%',  // Insects
+  1012685: '57,   0%, 60%',  // Mushrooms
+  844192:  '355,  60%, 60%',  // Eubacteria
+};
 
-let location_color_scale = null;
 /**
  * Generate a colour based on the location of the node within the
  * raw_data tree
  */
 function location_color(node, alpha) {
-  if (!location_color_scale) {
-    location_color_scale = data_repo.raw_data.length * 2/360;
+  let color_node = node, color = null;
+
+  // Work backwards through tree, looking for a node with a color
+  while (!color) {
+    if (color_node) {
+      color = node_colors[color_node.ott];
+      color_node = color_node.upnode;
+    } else {
+      color = node_colors['_default'];
+    }
   }
-  return 'hsla(' + [
-    // Hue is center of node within raw_data, scaled to degrees
-    (node.end + node.start) / location_color_scale,
-    '60%',
-    '60%',
-    alpha === undefined ? 1 : alpha,
-  ].join(",") + ')';
+
+  return 'hsla(' + color + ',' + (alpha === undefined ? 1 : alpha) + ')';
 }
 
 
