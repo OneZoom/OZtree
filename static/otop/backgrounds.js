@@ -112,7 +112,7 @@ function haze(parent_el) {
     parent_el.appendChild(el);
 
     window.setTimeout(function () {
-        el.style.opacity = 0.3;
+        el.style.opacity = 0.2;
     }, 50);
 
     window.setTimeout(haze.bind(this, parent_el), 10000);
