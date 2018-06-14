@@ -33,6 +33,7 @@ function location_color(node, alpha) {
       color = node_colors['_default'];
     }
   }
+  window.last_location_color = color;  // Feed the current colour to background.js
 
   return 'hsla(' + color + ',' + (alpha === undefined ? 1 : alpha) + ')';
 }

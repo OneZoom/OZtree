@@ -85,8 +85,37 @@ function floating(background_el, url, initial_spacing) {
     }, 300000);
 }
 
+function haze(parent_el) {
+    var el = document.createElement('DIV'),
+        color = 'hsl(' + (window.last_location_color || '291, 44%, 12%') + ')';
+
+    el.style.width = "100%";
+    el.style.height = "100%";
+    el.style.background = 'radial-gradient(ellipse at ' + rand_int(10, 90) + '% ' + rand_int(10, 90) + '%, ' + color + ', transparent)';
+    el.style.opacity = !window.last_location_color ? 0.3 : 0;  // Initial haze should be there from start
+    el.style.transition = [
+        'opacity 15s ease-in-out',
+    ].join(',');
+    parent_el.appendChild(el);
+
+    window.setTimeout(function () {
+        el.style.opacity = 0.3;
+    }, 50);
+
+    window.setTimeout(haze.bind(this, parent_el), 10000);
+
+    window.setTimeout(function () {
+        el.style.opacity = 0;
+    }, 11000);
+
+    window.setTimeout(function () {
+        parent_el.removeChild(el);
+    }, 20000);
+}
+
 function init_background(images) {
-    var i, background_el = document.createElement('DIV');
+    var i, background_el = document.createElement('DIV'),
+        foreground_el = document.createElement('DIV');
 
     function choose_image(t) {
         return images[t][rand_int(0, images[t].length - 1)];
@@ -94,9 +123,12 @@ function init_background(images) {
 
     background_el.className = 'background-layer';
     document.body.insertBefore(background_el, document.body.firstChild);
+    foreground_el.className = 'background-layer';
+    document.body.insertBefore(foreground_el, document.body.querySelector('#UI'));
 
     for (i = 0 ; i < images['tree'].length; i++) {
         floating(background_el, images['tree'][i], i / images['tree'].length);
     }
     particles(background_el, choose_image('particle'));
+    haze(foreground_el);
 }

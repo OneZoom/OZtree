@@ -52,10 +52,12 @@ setup_params = {
 }}
 {{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
 <style>
-.background-layer {
+body {
   background: #120a15;
-  background: radial-gradient(ellipse at center, #28112c, #131214);
+}
+.background-layer {
   perspective: 800px;
+  pointer-events: none;
 }
 .background-layer > * {
   position: absolute;
