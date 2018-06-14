@@ -152,6 +152,17 @@ class LeafLayout extends LeafLayoutBase {
       color_theme.get_color("leaf.inside.fill",node),
       undefined,
       node);
+
+    // Apply a wash atop images
+    let s = ArcShape.create();
+    s.height = 5;
+    s.x = x;
+    s.y = y;
+    s.r = r * 0.975;
+    s.circle = true;
+    s.do_fill = true;
+    s.fill.color = color_theme.get_color("leaf.inside.fill", node, 0.3);
+    shapes.push(s);
   }
 }
 

@@ -170,7 +170,7 @@ const theme = {
     },
     
     inside: {
-      fill: '#666666',
+      fill: location_color,
     },
     
     'inside_hover': {
