@@ -55,6 +55,13 @@ setup_params = {
 body {
   background: #120a15;
 }
+body > canvas {
+  opacity: 1;
+  transition: opacity 7s ease-in;
+}
+body.loading > canvas {
+  opacity: 0;
+}
 .background-layer {
   perspective: 800px;
   pointer-events: none;
