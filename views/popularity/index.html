@@ -1,0 +1,32 @@
+{{response.title='OneZoom: Debug tools'}}
+{{extend 'layout.html'}}
+<div class="row-fluid">
+    <div class="col-md-12">    
+
+<h1>OneZoom popularity service</h1>
+<p>As part of OneZoom, we have developed methods to assign a <q>popularity</q> score to every species on the OneZoom tree of life
+(i.e. nearly all described species of life on Earth). This is done by using our mappings from
+ <a href="https://tree.opentreeoflife.org/about/taxonomy-version">Open Tree of Life taxonomy IDs</a>
+  to <a href="https://www.wikidata.org/wiki/Q43649390">wikidata Qids</a>. From the Qid, we can find the equivalent wiki<em>pedia</em> page for that 
+  taxon in any given language. Since the english language wikipedia is the most visited, we default to calculating popularity on the
+  basis of activity on <a href="http://en.wikipedia.org">en.wikipedia.org</a>. Not that this may give english-language specific weights to the 
+  popularity measures. Given the predominance of visits from the US, we might also expect north american taxa to be ranked particularly highly.
+  
+</p><p>The popularity value for a particular taxon is calculated as summary of the average number of monthly page visits over a 
+set period of time (truncated so as to remove spikes), combined with the size of the page. This <q>base popularity</q> is then 
+percolated up and down the tree, so that species gain some fraction of the popularity of their subspecies plus the popularity of their parent taxa.
+This means that all species that can be place on the tree should get some popularity measure.
+</p>
+
+<h2>Services available</h2>
+We implement the following services, which are all accessed via Open Tree Taxonomy identifier, rather than scientific name. All services require you to specify an
+API key (e.g. by appending <pre>key=MY_API_KEY</pre> to the URL: this allows us to keep track of the number of requests etc we get (no other information is stored). 
+{{if public_key is not None:}}
+If you have not been given an API key, you can use the <q>public</q> key <pre>key={{=public_key}}</pre>, which is restricted to {{=public_max_taxa_per_query}} taxa per request,
+and {{=public_max_returns_per_taxon}} results for each taxon requested.
+{{pass}}
+<dl>
+<dt>popularity/rank.json</dt>
+<dd>Return the rank of a particular taxon, given its Open Tree ID</dd>
+</div>
+</div>
