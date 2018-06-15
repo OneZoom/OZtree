@@ -34,6 +34,18 @@ h2 {
     z-index:2; /* overlay the canvas with the UI */
 }
 
+#UI #loading_spinner {
+  display: none;
+}
+body.loading #UI #loading_spinner {
+  display: block;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  /* NB: spinner is 90px wide, center it */
+  margin: -45px 0 0 -45px;
+}
+
 .uk-navbar-item {
     height:3rem;
     line-height:3rem; /* force vertical centering */

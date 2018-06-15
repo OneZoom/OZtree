@@ -42,6 +42,10 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     <a id="advanced_search_button" class="uk-icon-button" uk-tooltip="pos: left" uk-icon="icon: git-fork"></a>
 </div>
 
+<div id="loading_spinner">
+  <div uk-spinner="ratio: 3"></div>
+</div>
+
 <ul id="controlButtons" class="uk-iconnav uk-iconnav-vertical">
   <li id="locationButton"><a uk-icon="icon: compass"></a></li>
   <div uk-dropdown="pos: right-bottom; delay-hide: 1000; boundary: #controlButtons; boundary-align: true" id="locationDropdown">

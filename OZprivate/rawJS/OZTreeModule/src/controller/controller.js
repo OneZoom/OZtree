@@ -1,5 +1,6 @@
 /** @class Controller */
 import * as position_helper from '../position_helper';
+import config from '../global_config';
 import tree_state from '../tree_state';
 import install_controller_dom from './controller_dom';
 import install_controller_loc from './controller_loc';
@@ -76,7 +77,7 @@ class Controller {
     this.re_calc();
   }
   draw_loading() {
-    window.requestAnimationFrame(this.renderer.draw_loading);
+    config.ui.loadingMessage(true);
   }
   /**
    * Set finding_benchmark_remain to N. In the next N frame, using background 
@@ -117,7 +118,12 @@ class Controller {
         this.start_refresh_loop() // restart refresh loop
     }
     
-  start_refresh_loop() {
+  /**
+   * Start (or continue) refreshing the screen
+   *
+   * - continuing: For internal use, leave undefined
+   */
+  start_refresh_loop(continuing) {
     call_hook("before_draw");
       if ((this.widthres != this.canvas.clientWidth)||(this.heightres != this.canvas.clientHeight))
       {
@@ -133,7 +139,10 @@ class Controller {
       reset_global_button_action();
       this.renderer.refresh(this.root);
     call_hook("after_draw");  
-    this.refresh_timer = window.requestAnimationFrame(this.start_refresh_loop.bind(this));
+    if (!continuing) {
+      config.ui.loadingMessage(false);
+    }
+    this.refresh_timer = window.requestAnimationFrame(this.start_refresh_loop.bind(this, true));
   }
   stop_refresh_loop() {
     window.cancelAnimationFrame(this.refresh_timer);

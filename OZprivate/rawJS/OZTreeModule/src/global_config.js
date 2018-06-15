@@ -78,6 +78,9 @@ config.ui = {
   isOpenModals: function() {
     return false;
   },
+  loadingMessage: function (active) {
+    console.log(active ? "Page loading..." : "Finished loading.");
+  },
   badOTT: function(ott) {
     alert('You have passed in a bad name or number, so we have\n' +
       'simply taken you to the root of the tree');},
