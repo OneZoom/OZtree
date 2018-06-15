@@ -5,6 +5,7 @@ import config from '../../../global_config';
 import tree_state from '../../../tree_state';
 import {color_theme} from '../../../themes/color_theme';
 import {get_image, image_ready} from '../../../image_cache';
+import api_wrapper from '../../../api/api_wrapper';
 
 class LeafLayout extends LeafLayoutBase {
   /**
@@ -42,9 +43,59 @@ class LeafLayout extends LeafLayoutBase {
     );
   }
 
-  human_subleaf(node, shapes, x, y, r, image_src, image_filename, rings) {
-      let s, imageObject = get_image(image_src, image_filename);
+  /**
+   * Fetch data for human subleaf from UCAYA API
+   *
+   * Assumes the caller will keep polling until the data is available,
+   * the first call will trigger the fetch (and return null). Subsequent
+   * calls will also return null until data is available.
+   */
+  fetch_human_subleaf_data() {
+      if (this._human_subleaf_data) {
+          // Got data, return it
+          if (this._human_subleaf_data.data) {
+              return this._human_subleaf_data.data;
+          }
+          // Still fetching, wait
+          return null;
+      }
+
+      this._human_subleaf_data = {
+          data: null,
+      }
+      api_wrapper({
+          url: 'http://40.115.43.52/userprofiles/15d32f1e4f0f4fde8e9b2a75ff01dbc6/random',
+          method: 'GET',
+          success: function (data) {
+              this._human_subleaf_data.data = data;
+          }.bind(this),
+          error: function () {
+              this._human_subleaf_data = null;
+          }.bind(this),
+      });
+      return null;
+  }
+
+  /**
+   * Draw an individual human in the human leaf
+   *
+   * human_data should contain:
+   * - userProfile.picture: URL to image of human
+   * - wonChallenges: Array of challenges this human has completed.
+   */
+  human_subleaf(node, shapes, x, y, r, human_data) {
+      let s, rings, imageObject;
+
+      // Try and fetch the image
+      imageObject = get_image(
+          human_data.userProfile.picture,
+          human_data.userProfile.picture
+      );
       imageObject = image_ready(imageObject) ? imageObject : null;
+
+      rings = human_data.wonChallenges.map(function () {
+          return 'rgba(192, 236, 210, 0.8)';
+      })
 
       for (let i = 0; i < rings.length; i++) {
           s = ArcShape.create();
@@ -62,8 +113,23 @@ class LeafLayout extends LeafLayoutBase {
       }
 
       this.circle_cut_image(shapes, imageObject, x, y, r, color_theme.get_color("leaf.inside.fill",node), null, node);
+
+      // Apply a wash atop image
+      s = ArcShape.create();
+      s.height = 5;
+      s.x = x;
+      s.y = y;
+      s.r = r * 0.975;
+      s.circle = true;
+      s.do_fill = true;
+      s.fill.color = 'hsla(199, 100%, 50%, 0.3)';
+      shapes.push(s);
   }
 
+  /**
+   * Calculate the position of the (i)th sub-leaf around the
+   * human node, out of (total) human nodes.
+   */
   human_subleaf_pos(i, total, x, y, dist) {
       let offset, extra_dist, per_item_angle = (4*Math.PI/3) / total;
 
@@ -83,19 +149,28 @@ class LeafLayout extends LeafLayoutBase {
 
   /** Draw the special human leaf */
   human_leaf_shapes(node, shapes) {
-      let sub_pos, subleaf_count = 14;
+      let sub_pos, data = this.fetch_human_subleaf_data();
 
-      for (let i = 0; i < subleaf_count; i++) {
-          sub_pos = this.human_subleaf_pos(i, subleaf_count, this.get_leaf_x(node), this.get_leaf_y(node), this.get_fullleaf_r(node));
+      if (!data) {
+          return;
+      }
+
+      for (let i = 1; i < data.length; i++) {
+          sub_pos = this.human_subleaf_pos(
+              i - 0,
+              data.length - 1,
+              this.get_leaf_x(node),
+              this.get_leaf_y(node),
+              this.get_fullleaf_r(node)
+          );
 
           // Draw the human
           this.human_subleaf(
               node, shapes,
               sub_pos.x,
               sub_pos.y,
-              this.get_fullleaf_r(node) / 5,
-              node.pic_src, node.pic_filename,
-              ['rgba(255, 255, 255, 0.8)', 'rgba(192, 236, 210, 0.8)']
+              this.get_fullleaf_r(node) / (data[i].isVip ? 2 : 5),
+              data[i]
           );
       }
 
@@ -104,9 +179,8 @@ class LeafLayout extends LeafLayoutBase {
           node, shapes,
           this.get_leaf_x(node),
           this.get_leaf_y(node),
-          this.get_fullleaf_r(node) / 3,
-          node.pic_src, node.pic_filename,
-          ['rgba(31, 182, 246, 0.8)', 'rgba(192, 236, 210, 0.8)', 'rgba(255, 255, 255, 0.8)']
+          this.get_fullleaf_r(node) / 2,
+          data[0]
       );
   }
 

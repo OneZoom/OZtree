@@ -75,6 +75,16 @@ var tree_config= {
    midnode: 'polytomy',
 };
 var pagetitle_func=null;
+
+// Wrap around data_path_pics, passing through URLs when we have direct URLs from UCAYA
+server_urls._old_data_path_pics = server_urls.data_path_pics;
+server_urls.data_path_pics = function(src, src_id) {
+    if (src_id.indexOf('https://') === 0) {
+        return src_id;
+    }
+    return server_urls._old_data_path_pics.apply(server_urls, arguments);
+}
+
 document.addEventListener('DOMContentLoaded', init_background.bind(null, {
     tree: [
         '{{=URL("static","otop/otop-bkgd-tree-1.png")}}',
