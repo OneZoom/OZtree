@@ -51,6 +51,7 @@ setup_params = {
   }
 }}
 {{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
+<link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree-dark.css')}}" />
 <style>
 body {
   background: #120a15;
