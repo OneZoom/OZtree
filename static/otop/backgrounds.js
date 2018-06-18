@@ -66,6 +66,7 @@ function floating(background_el, url, initial_spacing) {
         el = image_div(url, 0, rand_int(0, 10), 50);
         el.style.opacity = 0;
         el.style.transform = [
+            'translateZ(0)',  // NB: Prod browser into using GPU
             'translate(' + start_horiz + '%, ' + rand_int(initial_spacing * 120, initial_spacing * 130) + '%)',
             'scale(' + ((1 - initial_spacing) * 2 + 1) + ')',
         ].join(' ');
@@ -81,6 +82,7 @@ function floating(background_el, url, initial_spacing) {
     window.setTimeout(function () {
         el.style.opacity = 0.2;
         el.style.transform = [
+            'translateZ(0)',  // NB: Prod browser into using GPU
             'translate(' + (start_horiz + rand_int(-20,20)) + '%, -100%)',
             'rotate(' + rand_int(-90, 90) + 'deg)',
             'scale(1)',
