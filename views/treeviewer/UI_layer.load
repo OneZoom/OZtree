@@ -66,6 +66,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
       <li><a href="#terms-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Terms of use')}}</a></li>
     </ul>
   </div>
+  {{if not request.vars.get('hide_control_settings', False):}}
   <li><a uk-tooltip="pos: right" title="{{=T('Settings')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: settings"></a></li>
   <form id="settingsDropdown" class="uk-navbar-dropdown" uk-dropdown="pos: right-bottom; mode: click;">
     <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
@@ -113,6 +114,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         </select></li>
     </ul>
   </form>
+  {{pass}}
 </ul>
 <div id="error-modal" class="uk-modal-container" uk-modal>
     <div class="uk-modal-dialog uk-modal-body">
