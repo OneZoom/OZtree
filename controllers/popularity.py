@@ -24,12 +24,12 @@ def index():
 def list():
     """
     Valid calls will return a JSON dict of 
-    {"data":[[...],[...]], "header": [...], "n_spp":X, "tot_spp":Y}, 
+    {"data":[[...],[...]], "header": [...], "n_taxa":X, "tot_spp":Y}, 
     where:
       "data" is a 2D array containing rows of information, one per taxon, with values in each row 
       corresponding to Open Tree Taxonomy identifier, scientific name
     (if requested), raw popularity, and popularity rank (only for species)
-      "n_spp" is the total number of species that would have been returned by the query if it hadn't been limited
+      "n_taxa" is the total number of taxa that would have been returned by the query if it hadn't been limited
       "tot_spp" is the total number of species that would have been returned by the query if it hadn't been limited
     
     Parameters:
@@ -78,7 +78,7 @@ def list():
     ret['tot_spp'] = db.executesql("SELECT leaf_rgt FROM ordered_nodes WHERE id = 1;")[0][0]
     if queryvar_is_true(request.vars.expand_taxa):
         #convert to a series of leaf constraints
-        n_spp = 0
+        n_taxa = 0
         expanded_intervals = {} #save the left=>right spans of any nodes, so we can work out how many tips should have been returned
         query = db.ordered_leaves.ott.belongs(otts)
         #get the leaf_ids of any leaves in the set of otts, so we can count the max number returned
@@ -100,7 +100,7 @@ def list():
         for lft, rgt in sorted(expanded_intervals.items()):
             while leaf_idx < len(leaf_ids): #check none of the existing leaves are included
                 if leaf_ids[leaf_idx] < lft:
-                    n_spp += 1
+                    n_taxa += 1
                 else:
                     break
                 leaf_idx += 1
@@ -111,10 +111,10 @@ def list():
                         leaf_idx += 1
                     else:
                         break
-                n_spp += rgt-lft+1
+                n_taxa += rgt-lft+1
                 prev_rgt = rgt
         
-        ret['n_spp']=n_spp + (len(leaf_ids)-leaf_idx)
+        ret['n_taxa']=n_taxa + (len(leaf_ids)-leaf_idx)
         if queryvar_is_true(request.vars.names):
             sql = db(query)._select(
                     db.ordered_leaves.ott,
@@ -149,7 +149,7 @@ def list():
         OL_SQL = "SELECT {OLcols} FROM ordered_leaves WHERE ott IN ({otts})"
         ON_SQL = "SELECT {ONcols} FROM ordered_nodes WHERE ott IN ({otts})"
         SQL = "SELECT (" + OL_SQL + ") + (" + ON_SQL + ") AS SumCount"
-        ret['n_spp'] = db.executesql(SQL.format(
+        ret['n_taxa'] = db.executesql(SQL.format(
             OLcols="COUNT(*)", 
             ONcols="COUNT(*)", 
             otts = ottstr))[0][0]
