@@ -199,6 +199,7 @@ class LeafLayout extends LeafLayoutBase {
            arc_shape.circle = false;
            arc_shape.start_angle = node.arca - Math.PI/2;
            arc_shape.end_angle = node.arca + Math.PI/2;
+           arc_shape.counter_wise = false;
            arc_shape.height = 2;
            arc_shape.do_fill = true;
            arc_shape.fill.color = color_theme.get_color('branch.stroke', node);
