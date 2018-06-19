@@ -49,11 +49,13 @@ def list():
     If no otts, or invalid otts are given, return {"error":XXX} and set HTTP return to 400
     """
     
-    #set the default view to JSON
+    #set the default view to JSON, if there is no file extension (override web2py default of .html)
     if "." not in request.env.path_info.split('/')[2]:
         request.extension = "json"
     response.view = request.controller + "/" + request.function + "." + request.extension
     
+    if request.vars.key is None:
+        raise(HTTP(400,"Please use an API key (use 0 for the public API key)"))
     max_otts, max_n = get_limits(request.vars.key)
     try:
         otts = set([int(x) for x in (request.vars.otts or "").split(",")])
@@ -132,12 +134,11 @@ def list():
                     db.ordered_leaves.popularity_rank,
                     limitby = (0, max_n),
                     orderby = orderby)
-        print(sql)
         ret['data'] = db.executesql(sql)
 
     else:
-        #this turns out to be a little more complicated in SQL terms, because for speed we probably want to sort ordered_nodes and ordered_leaves separately
-        #then UNION them together. This is easier to do in vanilla SQL
+        #this turns out to be a little more complicated in SQL terms, because for speed we probably want to sort 
+        #ordered_nodes and ordered_leaves separately then UNION them together. This is easier to do in vanilla SQL
         if queryvar_is_true(request.vars.names):
             extracol = ", name"
             ret['header']=["ott","popularity","popularity_rank","name"]
@@ -161,10 +162,10 @@ def list():
             OLcols="ott, popularity, popularity_rank" + extracol,
             ONcols="ott, popularity, NULL AS popularity_rank" + extracol,
             otts = ottstr))
-        print(db._lastsql)
     if queryvar_is_true(request.vars.db_seconds):
         ret['db_seconds'] = dbtime + db._lastsql[1]
-        
+    
+    record_usage(request.vars.key, len(otts), len(ret['data']))
     return ret
         
 #useful functions
@@ -176,8 +177,6 @@ def get_limits(API_key):
     """
     Return the max taxa allowed per query, and the max number of return values per taxon
     """
-    if API_key is None:
-        raise(HTTP(400,"Please use an API key (use 0 for the public API key)"))
     results = db(db.API_users.APIkey == API_key).select(db.API_users.ALL)
     if results:
         result = results.first()
@@ -187,7 +186,6 @@ def get_limits(API_key):
             raise(HTTP(400,"Sorry, the API key {} ({}) is no longer allowed".format(result.APIkey, result.API)))
     else: 
         raise(HTTP(400,"Sorry, the API key {} has not been recognised".format(API_key)))
-    return 20, 2
 
 
 def record_usage(API_key, API_name, n_taxa, n_returns):
