@@ -59,25 +59,67 @@ export default function (Controller) {
      * onezoom.controller.perform_flight_transition(782900, 713573, true)
      */
     Controller.prototype.perform_flight_transition = function(codeout_fly, codein_fly, into_node, finalize_func) {
-        // find current position
+        var p = Promise.resolve();
+
+        // Return flight path (common ancestor, then target)
+        function get_flight_path(node_start, node_end) {
+            var n, visited_nodes = {};
+
+            // Mark each node in heirarchy as visited
+            n = node_end;
+            while (n) {
+                visited_nodes[n.metacode] = true;
+                n = n.upnode;
+            }
+
+            // Find first matching node from the first item
+            n = node_start;
+            while (n) {
+                if (visited_nodes[n.metacode]) {
+                    // Return one up from common ancestor, and end at target node
+                    return [n, node_end];
+                }
+                n = n.upnode;
+            }
+            throw new Error("No common nodes for " + node_start + " and " + node_end);
+        }
+
+        // find current position if codeout_fly not given
         if (codeout_fly == null) {
             let location_array = this.get_my_location()[0][1]; //there should be a better way to do this, since get_my_location() only returns named nodes
             codeout_fly = location_array[location_array.length-1];
+        } else {
+            // Move to start location
+            p = p.then(function () {
+                return new Promise(function (resolve) {
+                    this.perform_leap_animation(codeout_fly);
+                    resolve();
+                }.bind(this));
+            }.bind(this));
         }
-        
-        let common_ancestor = this.get_common_ancestor(codeout_fly, codein_fly)
-        //should probably implement this using promises
-        let self = this
-        this.perform_flight_animation(common_ancestor, false,            //fly to MRCA
-            function() {self.perform_flight_animation(codein_fly, false, //fly to final loc
-                function() {
-                    if (into_node==true) {
-                        self.perform_flight_animation(codein_fly, true, finalize_func)
-                    } else {
-                        finalize_func()
-                    }
-                })
-            })
+
+        // Fly to each node in our path
+        get_flight_path(
+            this.develop_branch_to(codeout_fly),
+            this.develop_branch_to(codein_fly)
+        ).map(function (n, idx, arr) {
+            var accel_func = idx === 0 ? 'accel'
+                           : idx === arr.length - 1 ? 'decel'
+                           : null;
+
+            p = p.then(function () {
+                return new Promise(function (resolve) {
+                    position_helper.clear_target(this.root);
+                    position_helper.target_by_code(this.root, n.children.length > 0 ? -1 : 1, n.metacode);
+                    position_helper.perform_actual_fly(this, accel_func === 'final' ? into_node : false, resolve, accel_func);
+                }.bind(this));
+            }.bind(this));
+        }.bind(this));
+
+        // Finished!
+        p = p.then(finalize_func);
+
+        return p;
     }
   
   
