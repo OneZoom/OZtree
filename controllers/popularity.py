@@ -74,7 +74,7 @@ def list():
     else:
         raise HTTP(400,"Error: the `max` parameter must be between 1 and {}".format(max_n))
     
-    orderby = "popularity_rank" if request.vars.get("sort", "").lower() == "rank" else "popularity DESC"
+    orderby = "popularity_rank ASC, popularity DESC, ott ASC" if request.vars.get("sort", "").lower() == "rank" else "popularity DESC, ott"
     db_seconds = 0
     ret = dict(
         max_taxa_in = max_otts,
@@ -149,7 +149,7 @@ def list():
             extracol = ""
             ret['header']=["ott","popularity","popularity_rank"]
         order_limit = " ORDER BY " + orderby + " LIMIT {}".format(max_n)
-        ottstr = ",".join([str(i+0) for i in otts]) #these shpould have all been sanitized
+        ottstr = ",".join([str(i+0) for i in otts]) #these should have all been sanitized
         OL_SQL = "SELECT {OLcols} FROM ordered_leaves WHERE ott IN ({otts})"
         ON_SQL = "SELECT {ONcols} FROM ordered_nodes WHERE ott IN ({otts})"
         SQL = "SELECT (" + OL_SQL + ") + (" + ON_SQL + ") AS SumCount"

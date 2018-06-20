@@ -65,7 +65,7 @@ An API to get a list of taxa ranked by popularity, e.g. {{=link(URL('list', host
  <dt><code>max</code></dt><dd>An integer giving the maximum number of taxa to return. By default this is equivalent to the number of OTTs passed in: if <code>expand_taxa</code> is true, 
 you may wish to set this to a higher value. There is an upper limit on the maximum taxa, given by your API key.</dd>
  <dt><code>names</code><dt><dd>Set to <code>True</code> or <code>False</code> (can also use <code>0</code> or <code>1</code>): If <code>True</code>, return a scientific (<q>Latin</q>) name for each returned taxon, if one is available. Names are usually (but not necessarily) the same as the scientific name listed on the Open Tree of Life.</dd>
- <dt><code>sort</code><dt><dd>Set to <code>raw</code> or <code>rank</code>: If <code>raw</code> (the default), order the results by their raw popularity score. If <code>rank</code> order by species rank, with the .</dd>
+ <dt><code>sort</code><dt><dd>Set to <code>raw</code> or <code>rank</code>: If <code>raw</code> (the default), order the results by their raw popularity score (highest first), then OTT id. If <code>rank</code> order by species rank (lowest first) then by raw popularity score (highest first), and finally by OTT id. Higher level taxa are placed at the end</dd>
  </dl>
 </dd>
 <dt>Optional for developers / debugging</dt>
