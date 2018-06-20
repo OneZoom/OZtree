@@ -8,13 +8,15 @@ let int_sponsor_fill_hover = 'rgb(255,255,255)';
 let int_sponsor_fill = 'rgb(227,200,115)';
 
 let node_colors = {
-  _default:'240, 60%, 60%',
-  5268475: '134, 60%, 60%',  // Plants
-  244265:  '24,  60%, 60%',  // Mammals
-  4947372: '180, 60%, 60%',  // Birds
-  1062253: '57,  60%, 60%',  // Insects
-  1012685: '57,   0%, 60%',  // Mushrooms
-  844192:  '355,  60%, 60%',  // Eubacteria
+  _default:  '240, 30%, 60%',
+  land:      '24,  60%, 60%',
+  reptile:   '125, 30%, 30%',
+  birds:     '180, 60%, 60%',
+  sea:       '192, 30%, 30%',
+  plants:    '134, 60%, 60%',
+  insects:   '57,  60%, 60%',
+  mushrooms: '57,   0%, 60%',
+  bacteria:  '355, 60%, 60%',
 };
 
 /**
@@ -22,17 +24,7 @@ let node_colors = {
  * raw_data tree
  */
 function location_color(node, alpha) {
-  let color_node = node, color = null;
-
-  // Work backwards through tree, looking for a node with a color
-  while (!color) {
-    if (color_node) {
-      color = node_colors[color_node.ott];
-      color_node = color_node.upnode;
-    } else {
-      color = node_colors['_default'];
-    }
-  }
+  let color = node_colors[node.region] || node_colors._default;
   window.last_location_color = color;  // Feed the current colour to background.js
 
   return 'hsla(' + color + ',' + (alpha === undefined ? 1 : alpha) + ')';
