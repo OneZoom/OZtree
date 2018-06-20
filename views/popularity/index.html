@@ -1,7 +1,7 @@
 {{response.title='OneZoom: Debug tools'}}
 {{
-def link(a):
-    return A(a, _href=a)
+def link(a, **kwargs):
+    return A(a, _href=a, **kwargs)
 pass
 }}
 {{extend 'layout.html'}}
@@ -20,15 +20,15 @@ popularity measures. Given the predominance of visits from the US, we might also
 <p>The popularity value for a particular taxon is calculated as summary of the average number of monthly page visits over a 
 set period of time (truncated so as to remove spikes), combined with the size of the page. This <q>base popularity</q> is then 
 percolated up and down the tree, so that species gain some fraction of the popularity of their subspecies plus the popularity of their parent taxa.
-This means that all species that can be place on the tree should get some popularity measure.</p>
+This means that all species that can be placed on the tree should get some popularity measure. Additionally, species are ranked from 1 to </p>
 
-<p>Note that we do not distinguish subspecies, such as <i class="taxonomy">Canis lupus familiaris</i> (the domestic dog) on the OneZoom tree: 
+<p>Note that we do not normally distinguish subspecies, such as <i class="taxonomy">Canis lupus familiaris</i> (the domestic dog) on the OneZoom tree: 
 only the full species <i class="taxonomy">Canis lupus</i> (the grey wolf, including the domestic dog, dingo, indian wolf, etc.) will be
-displayed on the tree or returned using this API. There is an Open Tree identifier for <i class="taxonomy">Canis lupus familiaris</i>, but 
+displayed on the tree or returned using this API. Even if there is an Open Tree identifier for <i class="taxonomy">Canis lupus familiaris</i>, but 
 it will not be recognised if passed to this API. Additionally, OneZoom does not store higher level names for monospecific taxa, i.e.
 for a species like the tuatara, <i class="taxonomy">Sphenodon punctatus</i> the OTT for the species (35890) will be recognised, but searching for the genus 
 <i class="taxonomy">Sphenodon</i> (OTT 35886) will not return any results, nor will the higher level monospecific order Rhynchocephalia (OTT 35876).
-In a similar vein, where multiple taxonomic names describe the same set of species on the OneZoom tree, the <em>highest</em> distinguishing level is stored. 
+In a similar vein, where multiple taxonomic names describe the same set of species on the OneZoom tree, only the <em>highest</em> distinguishing level is used. 
 For example, lancelets are classified in OneZoom as Cephalochordata (OTT 176555): the lower level family Branchiostomidae (OTT 176551), 
 in which all living cephalochordates also fall, is not recognised in OneZoom or in this API</p>
 
@@ -42,7 +42,8 @@ If you have not been given an API key, you can use the <q>public</q> key (<code>
 and {{=public_max_returns_per_taxon}} results for each taxon requested.
 {{pass}}
 
-<h3>List taxa by popularity (<code>popularity/list</code>)</h3>
+<h3>URL: <code>popularity/list</code></h3>
+An API to get a list of taxa ranked by popularity, e.g. {{=link(URL('list', host=True, vars={"key":0, "otts":"770315"}))}} (see <a href="#examples">examples below</a> for more).
 <h4>Parameters</h4>
 <dl>
 <dt>Required</dt>
@@ -73,25 +74,25 @@ you may wish to set this to a higher value. There is an upper limit on the maxim
 In the absence of error, the returned JSON object contains the following properties:
 <dl>
 <dt><code>header</code><dt><dd>An array containing the names of each column in the "data" array (below). At a minimum the columns include &quot;ott&quot;, &quot;popularity&quot;, and &quot;popularity_rank&quot;. Depending on the parameters passed in, they may also include &quot;name&quot;</dd>
-<dt><code>data</code></dt><dd>A list of arrays, one per valid OTT returned. Each array in the list contains a set of values as described in the <code>header</code> property. The list of arrays is sorted according the to <code>sort</code> parameter</dd>
+<dt><code>data</code></dt><dd>A list of arrays, one per valid OTT returned. Each array in the list contains a set of values as described in the <code>header</code> property. The list of arrays is sorted according the to <code>sort</code> parameter. Taxa above the species level have no popularity rank</dd>
 <dt><code>tot_spp</code></dt><dd>The total number of species in the OneZoom popularity list. This gives the maximum possible value for &quot;popularity_rank&quot;. Quantiles for ranks can be gained by dividing the rank by this number (for example, </dd>
 <dt><code>n_taxa</code></dt><dd>The total number of taxa that this call would have listed, were it not limited to returning only a certain number</dd>
 <dt><code>max_taxa_in</code></dt><dd>The maximum number of OTTs this API key is allowed to send in the comma-separated list.</dd>
 <dt><code>max_taxa_out</code></dt><dd>The maximum number of taxa this API key is allowed to return.</dd>
-<dt><code>data</code></dt><dd>A list of arrays, one per valid OTT returned. Each array in the list contains a number of values whose is. The list of arrays is sorted according the to </dd>
 </dl>
 
-<h4>Examples</h4>
+<h4 id="examples">Examples</h4>
 <dl>
 <dt>The 10 most popular species of life, with names</dt>
 <dd>{{=link(URL('list', host=True, vars={"key":0, "otts":"93302", "expand_taxa":1, "max":10, "names":1}))}} (NB: OTT 93302 = <q>biota</q> = all life)</dd>
 <dt>The 15 most popular species of mammal, with names</dt>
 <dd>{{=link(URL('list', host=True, vars={"key":0, "otts":"93302", "expand_taxa":1, "max":15, "names":1}))}} (NB: OTT 244265 = Mammalia)</dd>
 <dt>The 50 most popular "reptiles" (turtles + crocodiles + lizards, snakes & tuatara, but not birds)</dt>
-<dd>{{=link(URL('list', host=True, vars={"key":0, "otts":"639666,195672,35881", "expand_taxa":1, "max":50}))}} (NB: OTT 639666 = Testudines, 195672 = Crocodylia, 35881 = <q>Mammalia</q>)</dd>
+<dd>{{=link(URL('list', host=True, vars={"key":0, "otts":"639666,195672,35881", "expand_taxa":1, "max":50}, url_encode=False))}} (NB: OTT 639666 = Testudines, 195672 = Crocodylia, 35881 = <q>Mammalia</q>)</dd>
 <dt>The 50 most popular "reptiles": turtles + crocodiles + lepidosaurs (lizards, snakes, tuatara), but not birds</dt>
-<dd>{{=link(URL('list', host=True, vars={"key":0, "otts":"639666,195672,35881", "expand_taxa":1, "max":50}))}} (NB: OTT 244265 = <q>Mammalia</q>)</dd>
+<dd>{{=link(URL('list', host=True, vars={"key":0, "otts":"639666,195672,35881", "expand_taxa":1, "max":50}, url_encode=False))}} (NB: OTT 244265 = <q>Mammalia</q>)</dd>
 </dl>
+<h4>Test this API</h4>
 <form action="{{=URL('list')}}" method="get" >
 <dl>
 <dt>key</dt><dd><input type="text" name="key" value="0" /></dd>
@@ -100,7 +101,7 @@ In the absence of error, the returned JSON object contains the following propert
 <dt>max</dt><dd><input type="text" name="max" /></dd>
 <dt>names</dt><dd><input type="radio" name="names" value="True">&nbsp;True<br><input type="radio" name="names" value="False" checked>&nbsp;False</dd>
 <dt>sort</dt><dd><input type="radio" name="sort" value="raw">&nbsp;raw<br><input type="radio" name="sort" value="rank" checked>&nbsp;rank</dd>
-<input type="submit" value="Try it">
+<input type="submit" value="Try it!">
 </dl>
 </form>
 
