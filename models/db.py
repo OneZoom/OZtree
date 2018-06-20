@@ -628,7 +628,7 @@ db.define_table('API_users',
 #a record of the amounts of API use, by user
 db.define_table('API_use',
     Field('APIkey', type = 'string',  unique=True, length=32), #which key was used
-    Field('API', type = 'string', length=100), #which API was used, e.g. popularity/
+    Field('API', type = 'string', length=100), #which API was used, e.g. popularity/list
     Field('start_date', type = 'datetime', notnull=True, requires=IS_DATETIME()), #when we started recording this data
     Field('end_date', type = 'datetime', requires=IS_DATETIME()), #when we stopped recording this data (if NULL, this is still recording)
     Field('n_calls', type = 'bigint', default=1), # number of times API called
