@@ -40,6 +40,7 @@ class Midnode {
     
     // precalculated parameterss for OneZoom graphics
     this._ott = null;
+    this._region = null;
     this.arca = 1.0;
     this.arcr = 1.0;
     this.arcx = 1.0;
@@ -100,6 +101,7 @@ class Midnode {
     this._picID_credit = null;
     this._picID_src = null;
     this._ott = null;
+    this._region = null;
     this._date = null;
     this._popularity = null;
     this.marked_areas.clear(); // clear all marked areas
@@ -421,6 +423,29 @@ class Midnode {
       this._ott = ott;
     }
     return ott;
+  }
+  /**
+    * Return a string identifying the area, or undefined if data is not loaded yet
+    * For example values, see data_repo.ott_region_map
+    */
+  get region() {
+    if (this._region) {
+        // Have a valid cached value, nothing to do
+    } else if (!this.detail_fetched) {
+        // No detail yet, so can't set region
+        this._region = undefined;
+    } else if (data_repo.ott_region_map[this.ott]) {
+        // This node is the start of a new region
+        this._region = data_repo.ott_region_map[this.ott];
+    } else if (!this.upnode) {
+        // Top node
+        this._region = 'default';
+    } else {
+        // Recurse up the tree as required, populating _region
+        // NB: If OTT isn't populated, this will just fill with undefined
+        this._region = this.upnode.region;
+    }
+    return this._region;
   }
   get popularity() {
     if (this._popularity !== null) return this._popularity;

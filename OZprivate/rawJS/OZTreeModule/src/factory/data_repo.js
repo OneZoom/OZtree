@@ -10,6 +10,19 @@ class DataRepo {
     this.id_ott_map = {};
     this.name_id_map = {};
     this.ott_name_map = {};
+    this.ott_region_map = {
+        229560: 'land',  // amniotes = mammals + reptiles + birds
+        244265: 'land',  // mammals
+        632179: 'land',  // arthropods
+        195672: 'reptile',  // Crocodylia
+        639666: 'reptile',  // Turtles
+        81461:  'birds',  // Birds
+        698424: 'sea',  // Cetacea
+        5268475: 'plants',
+        1062253: 'insects',
+        1012685: 'mushrooms',
+        844192:  'bacteria',
+    };
     this.image_source = "best_any";
     this.leaf_col_len = 15;
     this.node_col_len = 31;
