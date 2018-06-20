@@ -361,7 +361,7 @@ function perform_fly_b2(controller, into_node, finalize_func, accel_type) {
     
     clearTimeout(tree_state.fly_timer);
     tree_state.fly_timer = setTimeout(function () {
-      perform_actual_fly(controller, into_node, finalize_func, accel_type);
+      perform_actual_fly(controller, into_node, finalize_func, 'linear');
     },1000.0/flight_fps);
   } else if (!more_flying_needed && intro_step_num <num_intro_steps) {
     //don't need to reanchor - this is more normal, and is smoother
