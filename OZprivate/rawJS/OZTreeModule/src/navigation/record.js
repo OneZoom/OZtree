@@ -196,6 +196,10 @@ function get_params(options) {
       querystring.push("pop=" + encode_popup_action(popup_state[0]) + "_" + popup_state[1]);
     }  
   }
+  // Preserve all project_* parts of current URL
+  (window.location.search.match(/(?<=&|\?)project_[a-z]+=[^&]+/g) || []).map(function (part) {
+      querystring.push(part);
+  })
   querystring = querystring.join('&')
   if (querystring !== '') {
     querystring = "?" + querystring;

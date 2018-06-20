@@ -63,8 +63,11 @@ class LeafLayout extends LeafLayoutBase {
       this._human_subleaf_data = {
           data: null,
       }
+      // Extract username from querystring, or fall back to 0's
+      let user = window.location.search.match(/[&?]project_user=([^&]+)/);
+      user = user ? user[1] : '0'.repeat(32);
       api_wrapper({
-          url: 'http://40.115.43.52/userprofiles/15d32f1e4f0f4fde8e9b2a75ff01dbc6/random',
+          url: 'http://40.115.43.52/userprofiles/' + user + '/random',
           method: 'GET',
           success: function (data) {
               this._human_subleaf_data.data = data;
