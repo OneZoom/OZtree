@@ -22,7 +22,7 @@ def index():
 
     
 def list():
-    """
+    """Return popularity information for a list of Open Tree Taxonomy identifiers
     Valid calls will return a JSON dict of 
     {"data":[[...],[...]], "header": [...], "n_taxa":X, "tot_spp":Y}, 
     where:
@@ -37,9 +37,9 @@ def list():
         * key (an API key - use the "public API key" if you have none - see index.html)
         * otts (a comma-separated list of positive integer OTT ids)
     Optional:
-        * max (positive integer, (default = the number of taxa passed in): the maximum number of taxa to return)
         * expand_taxa (boolean (e.g. 0 or 1) should OTTs corresponding to taxa above the species level
             be "unpacked" into all ther descendant species (e.g. all mammal species)
+        * max (positive integer, (default = the number of taxa passed in): the maximum number of taxa to return)
         * names (boolean (e.g. 1 or 0 default) should scientific names be included in the row)
         * sort ("rank" or "raw" (default)). Note that if expand_taxa is false, the default sorting order may interleave 
             species and higher-level taxa, depending on their popularity values
@@ -76,8 +76,12 @@ def list():
     
     orderby = "popularity_rank" if request.vars.get("sort", "").lower() == "rank" else "popularity DESC"
     db_seconds = 0
-    ret = {}
-    ret['tot_spp'] = db.executesql("SELECT leaf_rgt FROM ordered_nodes WHERE id = 1;")[0][0]
+    ret = dict(
+        max_taxa_in = max_otts,
+        max_taxa_out = max_n,
+        tot_spp = db.executesql("SELECT leaf_rgt FROM ordered_nodes WHERE id = 1;")[0][0]
+    )
+    
     if queryvar_is_true(request.vars.expand_taxa):
         #convert to a series of leaf constraints
         n_taxa = 0
@@ -165,7 +169,7 @@ def list():
     if queryvar_is_true(request.vars.db_seconds):
         ret['db_seconds'] = dbtime + db._lastsql[1]
     
-    record_usage(request.vars.key, len(otts), len(ret['data']))
+    record_usage(request.vars.key, request.controller + "/" + request.function, len(otts), len(ret['data']))
     return ret
         
 #useful functions
@@ -193,10 +197,10 @@ def record_usage(API_key, API_name, n_taxa, n_returns):
     Record the API use. See https://stackoverflow.com/questions/49722812/web2py-update-or-insert-to-increment-a-counter
     """
     
-    if not update_count(API_key, n_taxa, n_returns):
+    if not update_count(API_key, API_name, n_taxa, n_returns):
         #could be a race condition causing 2 identical rows here, but if so, both will simply be updated
-        db.API_use.insert(APIkey=API_key, start_date = datetime.datetime.now(), end_data = None, n_calls=0, n_returns=0) 
-        update_count(API_key, n_taxa, n_returns)
+        db.API_use.insert(APIkey=API_key, API=API_name, start_date=datetime.datetime.now(), end_date=None, n_calls=0, n_taxa=0, n_returns=0) 
+        update_count(API_key, API_name, n_taxa, n_returns)
 
     
 def update_count(API_key, API_name, n_t, n_r):
@@ -205,5 +209,5 @@ def update_count(API_key, API_name, n_t, n_r):
     There may be multiple entries in API_use for a given API key, 
     but should only be one where the end_date is None
     """
-    return db((db.API_use.APIkey == API_key) & (db.end_date == None)).update(
+    return db((db.API_use.APIkey == API_key) & (db.API_use.API == API_name) & (db.API_use.end_date == None)).update(
         n_calls=db.API_use.n_calls + 1, n_taxa=db.API_use.n_taxa + n_t, n_returns=db.API_use.n_returns + n_r)
