@@ -193,10 +193,15 @@ export default function (Controller) {
     
     /**
      * Jump to OZid and record URL of the new location
+     * config.search_jump_mode controls how the movement is performed
      * @param src the OZid of the place we want to jump to
      */
     Controller.prototype.jump_to_OZid = function(OZid) {
-        this.perform_leap_animation(OZid);
+        if (config.search_jump_mode === 'flight') {
+            this.perform_flight_transition(null, OZid);
+        } else {
+            this.perform_leap_animation(OZid);
+        }
         record_url();
     }
     

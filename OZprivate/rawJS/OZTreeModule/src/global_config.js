@@ -30,6 +30,10 @@ config.generation_on_subbranch_during_fly = 7;
 /** @property {number}  generation_at_searched_node - generation to develop on the searched node if the searched node is an interior node.
  */
 config.generation_at_searched_node = 9;
+
+/** @property {string}  search_jump_mode - How to move to a new node: "flight" or "leap"
+ */
+config.search_jump_mode = "leap";
                    
 config.api = {
   /* These configure how API calls are made, and to where.
