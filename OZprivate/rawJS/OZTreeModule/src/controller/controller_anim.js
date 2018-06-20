@@ -98,7 +98,7 @@ export default function (Controller) {
             // Get current OTT from the URL, convert to code
             let loc = (window.location.pathname.indexOf("@") === -1) ? null : window.location.pathname.slice(window.location.pathname.indexOf("@"));
             let state = parse_query(loc, window.location.search, window.location.hash);
-            codeout_fly = data_repo.ott_id_map[state.ott];
+            codeout_fly = data_repo.ott_id_map[state.ott] || 1;
         } else {
             // Move to start location
             p = p.then(function () {
