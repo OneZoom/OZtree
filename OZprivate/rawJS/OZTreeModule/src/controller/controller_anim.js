@@ -1,4 +1,6 @@
 import tree_state from '../tree_state';
+import {parse_query} from '../navigation/utils';
+import data_repo from '../factory/data_repo';
 import * as position_helper from '../position_helper';
 
 /**
@@ -84,10 +86,11 @@ export default function (Controller) {
             throw new Error("No common nodes for " + node_start + " and " + node_end);
         }
 
-        // find current position if codeout_fly not given
         if (codeout_fly == null) {
-            let location_array = this.get_my_location()[0][1]; //there should be a better way to do this, since get_my_location() only returns named nodes
-            codeout_fly = location_array[location_array.length-1];
+            // Get current OTT from the URL, convert to code
+            let loc = (window.location.pathname.indexOf("@") === -1) ? null : window.location.pathname.slice(window.location.pathname.indexOf("@"));
+            let state = parse_query(loc, window.location.search, window.location.hash);
+            codeout_fly = data_repo.ott_id_map[state.ott];
         } else {
             // Move to start location
             p = p.then(function () {
