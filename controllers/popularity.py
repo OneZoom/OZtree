@@ -126,7 +126,7 @@ def list():
                     db.ordered_leaves.popularity,
                     db.ordered_leaves.popularity_rank,
                     db.ordered_leaves.name,
-                    limitby = (0, max_n),
+                    limitby = (0, n),
                     orderby = orderby)
             ret['header']=["ott","popularity","popularity_rank","name"]
         else:
@@ -135,7 +135,7 @@ def list():
                     db.ordered_leaves.ott,
                     db.ordered_leaves.popularity,
                     db.ordered_leaves.popularity_rank,
-                    limitby = (0, max_n),
+                    limitby = (0, n),
                     orderby = orderby)
         ret['data'] = db.executesql(sql)
 
@@ -148,7 +148,7 @@ def list():
         else:
             extracol = ""
             ret['header']=["ott","popularity","popularity_rank"]
-        order_limit = " ORDER BY " + orderby + " LIMIT {}".format(max_n)
+        order_limit = " ORDER BY " + orderby + " LIMIT {}".format(n)
         ottstr = ",".join([str(i+0) for i in otts]) #these should have all been sanitized
         OL_SQL = "SELECT {OLcols} FROM ordered_leaves WHERE ott IN ({otts})"
         ON_SQL = "SELECT {ONcols} FROM ordered_nodes WHERE ott IN ({otts})"
