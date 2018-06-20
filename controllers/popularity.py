@@ -100,7 +100,6 @@ def list():
                     expanded_intervals[row.leaf_lft] = max(expanded_intervals[row.leaf_lft], row.leaf_rgt)
                 except KeyError:
                     expanded_intervals[row.leaf_lft] = row.leaf_rgt
-        
         #count number of expands
         leaf_idx = prev_rgt = 0
         for lft, rgt in sorted(expanded_intervals.items()):
@@ -149,7 +148,7 @@ def list():
         else:
             extracol = ""
             ret['header']=["ott","popularity","popularity_rank"]
-        order_limit = " ORDER BY popularity DESC LIMIT {}".format(max_n)
+        order_limit = " ORDER BY " + orderby + " LIMIT {}".format(max_n)
         ottstr = ",".join([str(i+0) for i in otts]) #these shpould have all been sanitized
         OL_SQL = "SELECT {OLcols} FROM ordered_leaves WHERE ott IN ({otts})"
         ON_SQL = "SELECT {ONcols} FROM ordered_nodes WHERE ott IN ({otts})"

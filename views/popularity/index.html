@@ -20,7 +20,12 @@ popularity measures. Given the predominance of visits from the US, we might also
 <p>The popularity value for a particular taxon is calculated as summary of the average number of wikipedia monthly page visits over a 
 set period of time (truncated so as to remove spikes), combined with the size of the wikipedia page. This <q>base popularity</q> is then 
 percolated up and down the tree, so that species gain some fraction of the popularity of their subspecies plus the popularity of their parent taxa.
-This means that all species that can be placed on the tree should get some popularity measure. Additionally, species are ranked from 1 to </p>
+This means that all species that can be placed on the tree should get some raw popularity measure, although the meaning of this raw value is subject
+to change as the OneZoom tree topology changes, and as wikipedia visits and page size data change. For this reason, you are recommended only to 
+consider the <em>relative</em> popularity values. It is also not necessarily clear what it means to compare the popularity of taxa at different 
+levels of the taxonomic heirarchy. However, comparing species popularity values is reasonable, so to aid comparison, species 
+(but not higher-level taxa) are ranked from 1 to <i>n<sub>taxa</sub></i>, where <i>n<sub>taxa</sub></i> is the maximum number of species on the 
+OneZoom tree (the current value of <i>n<sub>taxa</sub></i> is also is returned by each API call).</p>
 
 <p>Note that we do not normally distinguish subspecies, such as <i class="taxonomy">Canis lupus familiaris</i> (the domestic dog) on the OneZoom tree: 
 only the full species <i class="taxonomy">Canis lupus</i> (the grey wolf, including the domestic dog, dingo, indian wolf, etc.) will be
@@ -30,7 +35,7 @@ for a species like the tuatara, <i class="taxonomy">Sphenodon punctatus</i> the 
 <i class="taxonomy">Sphenodon</i> (OTT 35886) will not return any results, nor will the higher level monospecific order Rhynchocephalia (OTT 35876).
 In a similar vein, where multiple taxonomic names describe the same set of species on the OneZoom tree, only the <em>highest</em> distinguishing level is used. 
 For example, lancelets are classified in OneZoom as Cephalochordata (OTT 176555): the lower level family Branchiostomidae (OTT 176551), 
-in which all living cephalochordates also fall, is not recognised in OneZoom or in this API</p>
+in which all living cephalochordates also fall, is not recognised in OneZoom or in this API.</p>
 
 
 <h2>Services available</h2>
@@ -60,7 +65,7 @@ An API to get a list of taxa ranked by popularity, e.g. {{=link(URL('list', host
  <dt><code>max</code></dt><dd>An integer giving the maximum number of taxa to return. By default this is equivalent to the number of OTTs passed in: if <code>expand_taxa</code> is true, 
 you may wish to set this to a higher value. There is an upper limit on the maximum taxa, given by your API key.</dd>
  <dt><code>names</code><dt><dd>Set to <code>True</code> or <code>False</code> (can also use <code>0</code> or <code>1</code>): If <code>True</code>, return a scientific (<q>Latin</q>) name for each returned taxon, if one is available. Names are usually (but not necessarily) the same as the scientific name listed on the Open Tree of Life.</dd>
- <dt><code>sort</code><dt><dd>Set to <code>raw</code> or <code>rank</code>: If <code>raw</code>, .</dd>
+ <dt><code>sort</code><dt><dd>Set to <code>raw</code> or <code>rank</code>: If <code>raw</code> (the default), order the results by their raw popularity score. If <code>rank</code> order by species rank, with the .</dd>
  </dl>
 </dd>
 <dt>Optional for developers / debugging</dt>
@@ -100,7 +105,7 @@ In the absence of error, the returned JSON object contains the following propert
 <dt>expand_taxa</dt><dd><input type="radio" name="expand_taxa" value="True">&nbsp;True<br><input type="radio" name="expand_taxa" value="False" checked>&nbsp;False</dd>
 <dt>max</dt><dd><input type="text" name="max" /></dd>
 <dt>names</dt><dd><input type="radio" name="names" value="True">&nbsp;True<br><input type="radio" name="names" value="False" checked>&nbsp;False</dd>
-<dt>sort</dt><dd><input type="radio" name="sort" value="raw">&nbsp;raw<br><input type="radio" name="sort" value="rank" checked>&nbsp;rank</dd>
+<dt>sort</dt><dd><input type="radio" name="sort" value="raw" checked>&nbsp;raw<br><input type="radio" name="sort" value="rank">&nbsp;rank</dd>
 <input type="submit" value="Try it!">
 </dl>
 </form>
