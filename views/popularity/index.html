@@ -17,14 +17,14 @@ taxon in any given language. Since the english language wikipedia is the most vi
 basis of activity on <a href="http://en.wikipedia.org">en.wikipedia.org</a>. Note that this may give english-language specific weights to the 
 popularity measures. Given the predominance of visits from the US, we might also expect north american taxa to be ranked particularly highly.</p>
 
-<p>The popularity value for a particular taxon is calculated as summary of the average number of monthly page visits over a 
-set period of time (truncated so as to remove spikes), combined with the size of the page. This <q>base popularity</q> is then 
+<p>The popularity value for a particular taxon is calculated as summary of the average number of wikipedia monthly page visits over a 
+set period of time (truncated so as to remove spikes), combined with the size of the wikipedia page. This <q>base popularity</q> is then 
 percolated up and down the tree, so that species gain some fraction of the popularity of their subspecies plus the popularity of their parent taxa.
 This means that all species that can be placed on the tree should get some popularity measure. Additionally, species are ranked from 1 to </p>
 
 <p>Note that we do not normally distinguish subspecies, such as <i class="taxonomy">Canis lupus familiaris</i> (the domestic dog) on the OneZoom tree: 
 only the full species <i class="taxonomy">Canis lupus</i> (the grey wolf, including the domestic dog, dingo, indian wolf, etc.) will be
-displayed on the tree or returned using this API. Even if there is an Open Tree identifier for <i class="taxonomy">Canis lupus familiaris</i>, but 
+displayed on the tree or returned using this API. Even although there <em>is</em> an Open Tree identifier for <i class="taxonomy">Canis lupus familiaris</i>,  
 it will not be recognised if passed to this API. Additionally, OneZoom does not store higher level names for monospecific taxa, i.e.
 for a species like the tuatara, <i class="taxonomy">Sphenodon punctatus</i> the OTT for the species (35890) will be recognised, but searching for the genus 
 <i class="taxonomy">Sphenodon</i> (OTT 35886) will not return any results, nor will the higher level monospecific order Rhynchocephalia (OTT 35876).
