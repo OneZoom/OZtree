@@ -76,8 +76,16 @@ export default function (Controller) {
 
             // Find first matching node from the first item
             n = node_start;
+            if (visited_nodes[n.metacode]) {
+                // We're just zooming in, don't bother with intermediate node
+                return [node_end];
+            }
             while (n) {
                 if (visited_nodes[n.metacode]) {
+                    if (node_end.metacode === n.metacode) {
+                        // Zooming out;
+                        return [node_end];
+                    }
                     // Return one up from common ancestor, and end at target node
                     return [n, node_end];
                 }
@@ -106,8 +114,8 @@ export default function (Controller) {
             this.develop_branch_to(codeout_fly),
             this.develop_branch_to(codein_fly)
         ).map(function (n, idx, arr) {
-            var accel_func = idx === 0 ? 'accel'
-                           : idx === arr.length - 1 ? 'decel'
+            var accel_func = idx === arr.length - 1 ? 'decel'
+                           : idx === 0 ? 'accel'
                            : null;
 
             p = p.then(function () {
