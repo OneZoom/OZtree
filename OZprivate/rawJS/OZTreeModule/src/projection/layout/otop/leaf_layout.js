@@ -93,8 +93,8 @@ class LeafLayout extends LeafLayoutBase {
       );
       imageObject = image_ready(imageObject) ? imageObject : null;
 
-      rings = human_data.wonChallenges.map(function () {
-          return 'rgba(192, 236, 210, 0.8)';
+      rings = human_data.wonChallenges.map(function (challenge) {
+          return challenge.color;
       })
 
       for (let i = 0; i < rings.length; i++) {
