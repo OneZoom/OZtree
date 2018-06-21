@@ -130,60 +130,68 @@ class LeafLayout extends LeafLayoutBase {
       shapes.push(s);
   }
 
-  /**
-   * Calculate the position of the (i)th sub-leaf around the
-   * human node, out of (total) human nodes.
-   */
-  human_subleaf_pos(i, total, x, y, dist) {
-      let offset, extra_dist, per_item_angle = (4*Math.PI/3) / total;
-
-      if (i < (total / 2)) {
-          offset = -(Math.PI/3); // Back 60deg
-          extra_dist = (i % 2 === 0 ? 1.0 : 1.7);
-      } else {
-          offset = per_item_angle; // Forward 60deg+1 item
-          extra_dist = (i % 2 === 0 ? 1.7 : 1.0);
-      }
-
-      return {
-          x: x + dist * Math.cos(offset + i * per_item_angle) * extra_dist,
-          y: y + dist * Math.sin(offset + i * per_item_angle) * extra_dist,
-      };
-  }
-
   /** Draw the special human leaf */
   human_leaf_shapes(node, shapes) {
-      let sub_pos, data = this.fetch_human_subleaf_data();
+      // Return either the first or second half of array
+      function array_half(arr, latter_half) {
+          var half_idx = Math.floor(arr.length / 2);
 
+          return arr.slice(latter_half ? half_idx : 0, latter_half ? arr.length: half_idx);
+      }
+
+      // Fetch the human leaf data
+      let data = this.fetch_human_subleaf_data();
       if (!data) {
           return;
       }
 
-      for (let i = 1; i < data.length; i++) {
-          sub_pos = this.human_subleaf_pos(
-              i - 0,
-              data.length - 1,
-              this.get_leaf_x(node),
-              this.get_leaf_y(node),
-              this.get_fullleaf_r(node)
-          );
+      // Draw the gradient background
+      let s = ArcShape.create();
+      s.x = this.get_leaf_x(node);
+      s.y = this.get_leaf_y(node);
+      s.r = this.get_fullleaf_r(node) * 1.8;
+      s.circle = true;
+      s.do_fill = true;
+      s.do_stroke = false;
+      s.fill.color = { from: 'rgba(0, 44, 100, 0.8)', start: this.get_fullleaf_r(node) * 0.5 };
+      s.height = 0;
+      shapes.push(s);
 
-          // Draw the human
-          this.human_subleaf(
-              node, shapes,
-              sub_pos.x,
-              sub_pos.y,
-              this.get_fullleaf_r(node) / (data[i].isVip ? 2 : 5),
-              data[i]
-          );
-      }
+      // Draw an inner & outer ring of humans
+      [0.81, 0.53].map(function (circle_ratio, i) {
+          let s = ArcShape.create();
+          s.x = this.get_leaf_x(node);
+          s.y = this.get_leaf_y(node);
+          s.r = this.get_fullleaf_r(node) * circle_ratio;
+          s.circle = true;
+          s.do_fill = false;
+          s.do_stroke = true;
+          s.stroke.line_width = (0.01 * s.r);
+          s.stroke.color = 'rgba(255,255,255,0.8)';
+          s.stroke.shadow = { blur: 10 };
+          s.height = 0;
+          shapes.push(s);
+
+          // Draw half of the related humans
+          let humans = array_half(data, i === 1);
+          for (let j = 1; j < humans.length; j++) {
+              this.human_subleaf(
+                  node, shapes,
+                  // NB: i/2 offsets the second ring of images so there's less overlap
+                  s.x + Math.cos((j + i / 2) * (Math.PI * 2 / (humans.length - 1))) * s.r,
+                  s.y + Math.sin((j + i / 2) * (Math.PI * 2 / (humans.length - 1))) * s.r,
+                  this.get_fullleaf_r(node) / (humans[j].isVip ? 7 : 10),
+                  humans[j]
+              );
+          }
+      }.bind(this));
 
       // Draw the main human image
       this.human_subleaf(
           node, shapes,
           this.get_leaf_x(node),
           this.get_leaf_y(node),
-          this.get_fullleaf_r(node) / 2,
+          this.get_fullleaf_r(node) * 0.15,
           data[0]
       );
   }

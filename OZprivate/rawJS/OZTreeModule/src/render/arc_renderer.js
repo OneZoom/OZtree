@@ -32,7 +32,18 @@ function follow_path(context, shape) {
 
 function fill(context, shape) {
   if (shape.do_fill) {
-    context.fillStyle = shape.fill.color;
+    if (shape.fill.color.from) {
+        // { from: (color at centre), start: (optional: inner radius of solid color), to: (optional: color at edge, or transparent) }
+        let gradient = context.createRadialGradient(
+            shape.x, shape.y, shape.fill.color.start || 0,
+            shape.x, shape.y, shape.r
+        );
+        gradient.addColorStop(0, shape.fill.color.from);
+        gradient.addColorStop(1, shape.fill.color.to || 'rgba(0,0,0,0)');
+        context.fillStyle = gradient;
+    } else {
+        context.fillStyle = shape.fill.color;
+    }
     context.fill();
   }
 }
