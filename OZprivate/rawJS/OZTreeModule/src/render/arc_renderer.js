@@ -39,9 +39,16 @@ function fill(context, shape) {
 
 function stroke(context, shape) {
   if (shape.do_stroke) {
+    if (shape.stroke.shadow) {
+      context.shadowBlur = shape.stroke.shadow.blur || 10;
+      context.shadowColor = shape.stroke.shadow.color || shape.stroke.color;
+    }
     context.lineWidth = shape.stroke.line_width;
     context.strokeStyle = shape.stroke.color;
     context.stroke();
+    if (shape.stroke.shadow) {
+      context.shadowBlur = 0;
+    }
   } 
 }
 

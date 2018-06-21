@@ -111,6 +111,7 @@ class LeafLayout extends LeafLayoutBase {
           s.do_stroke = true;
           s.stroke.line_width = (0.05 * r);
           s.stroke.color = rings[i];
+          s.stroke.shadow = { blur: 10 };
           s.height = 0;
           shapes.push(s);
       }
