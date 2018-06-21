@@ -170,22 +170,27 @@ export default function (Controller) {
         function get_flight_path(node_start, node_end) {
             var n, visited_nodes = {};
 
+            // Leaf and interior metacodes aren't unique, treat leaves as negative;
+            function to_id(n) {
+                return n.children.length > 0 ? n.metacode : -n.metacode;
+            }
+
             // Mark each node in heirarchy as visited
             n = node_end;
             while (n) {
-                visited_nodes[n.metacode] = true;
+                visited_nodes[to_id(n)] = true;
                 n = n.upnode;
             }
 
             // Find first matching node from the first item
             n = node_start;
-            if (visited_nodes[n.metacode]) {
+            if (visited_nodes[to_id(n)]) {
                 // We're just zooming in, don't bother with intermediate node
                 return [node_end];
             }
             while (n) {
-                if (visited_nodes[n.metacode]) {
-                    if (node_end.metacode === n.metacode) {
+                if (visited_nodes[to_id(n)]) {
+                    if (to_id(node_end) === to_id(n)) {
                         // Zooming out;
                         return [node_end];
                     }
