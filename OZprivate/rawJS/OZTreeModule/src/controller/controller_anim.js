@@ -212,11 +212,23 @@ export default function (Controller) {
             }.bind(this));
         }
 
-        // Fly to each node in our path
-        get_flight_path(
+        let flight_path = get_flight_path(
             this.develop_branch_to(codeout_fly),
             this.develop_branch_to(codein_fly)
-        ).map(function (n, idx, arr) {
+        );
+
+        flight_path.map(function (n) {
+            // Fetch node_detail for all targets
+            // NB: Ideally we'd parallelise this, but the interface doesn't allow it yet.
+            p = p.then(function () {
+                position_helper.clear_target(this.root);
+                position_helper.target_by_code(this.root, n.children.length > 0 ? -1 : 1, n.metacode);
+                return get_details_of_nodes_in_view_during_fly(this.root);
+            }.bind(this));
+        }.bind(this));
+
+        flight_path.map(function (n, idx, arr) {
+            // Fly to each node in our path
             var accel_func = idx === arr.length - 1 ? 'decel'
                            : idx === 0 ? 'accel'
                            : null;
