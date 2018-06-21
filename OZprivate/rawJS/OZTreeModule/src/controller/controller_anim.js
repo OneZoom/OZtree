@@ -57,6 +57,11 @@ function get_details_of_nodes_in_view_during_fly(root) {
     let fetched_nodes = 0;
     let total_nodes = nttoids.length;
     let index;
+    if (nttoids.length === 0 && lttoids.length === 0) {
+      // Nothing to do
+      resolve();
+      return;
+    }
     while (nttoids.length > 0 || lttoids.length > 0) {
       let temp_func = function() {
         //use function closure here to guarantee that temp_nodes_arr and temp_leaves_arr would not be replaced by next ajax call.
