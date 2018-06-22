@@ -7,6 +7,7 @@ body {
 body {
     background-color: white;
     height: 100vh; /* needed to stop control buttons disappearing on opening popup */
+    width: 100vw;
 }
 
 h2 {
@@ -14,9 +15,9 @@ h2 {
     font-size: 1.25rem;
 }
 
-#OneZoomCanvasID, .background-layer {
+#OneZoomCanvasID, .background-layer, #UI {
     z-index: 1;
-    position:absolute;
+    position: fixed;
     top: 0px;
     right: 0px;
     width: 100%;
@@ -30,8 +31,8 @@ h2 {
 }
 
 #UI {
-    position: relative;
     z-index:2; /* overlay the canvas with the UI */
+    height: 0; /* UI layer can't cover page, then we can't interact with canvas */
 }
 
 #UI #loading_spinner {
