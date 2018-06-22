@@ -65,7 +65,7 @@ class LeafLayout extends LeafLayoutBase {
           data: null,
       }
       // Extract username from querystring, or fall back to 0's
-      let user = window.location.search.match(/[&?]project_user=([^&]+)/);
+      let user = window.location.search.match(/[&?]ucaya_user=([^&]+)/);
       user = user ? user[1] : '0'.repeat(32);
       api_wrapper({
           url: 'http://40.115.43.52/userprofiles/' + user + '/random',
