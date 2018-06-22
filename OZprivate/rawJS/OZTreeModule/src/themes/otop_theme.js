@@ -24,9 +24,15 @@ let node_colors = {
  * raw_data tree
  */
 function location_color(node, alpha) {
-  let color = node_colors[node.region] || node_colors._default;
-  window.last_location_color = color;  // Feed the current colour to background.js
+  var color;
 
+  if (!node.region) {
+      // No detail loaded yet, return a translucent "loading" colour, don't update background
+      return 'hsla(240, 10%, 10%, 0.5)';
+  }
+
+  color = node_colors[node.region] || node_colors._default;
+  window.last_location_color = color;  // Feed the current colour to background.js
   return 'hsla(' + color + ',' + (alpha === undefined ? 1 : alpha) + ')';
 }
 
