@@ -354,7 +354,8 @@ function perform_fly_b2(controller, into_node, finalize_func, accel_type) {
   if (more_flying_needed) {
     //need to reanchor, this sometimes causes jerkiness
     //also we may not know how many steps we will need to take
-    pan_zoom(1/num_intro_steps, 1/num_intro_steps);
+    // NB: Approximate accel/decel by not panning at all, let the final non-reanchor step handle it
+    pan_zoom(accel_type === 'accel' || accel_type === 'decel'? 0 : 1/num_intro_steps, 1/num_intro_steps);
     tree_state.set_action("fly");
     controller.re_calc();
     controller.reanchor();
