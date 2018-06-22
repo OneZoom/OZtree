@@ -208,7 +208,7 @@ class LeafLayout extends LeafLayoutBase {
       s.circle = true;
       s.do_fill = true;
       s.do_stroke = false;
-      s.fill.color = { from: 'rgba(0, 44, 100, 0.4)', start: this.get_fullleaf_r(node) * 0.8 };
+      s.fill.color = { from: 'rgba(27, 92, 175, 0.5)', start: this.get_fullleaf_r(node) * 0.8 };
       s.height = 0;
       shapes.push(s);
 
