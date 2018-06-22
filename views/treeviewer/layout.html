@@ -155,18 +155,11 @@ var UI_callbacks = {
   closeAll: function() {
     {{if is_testing:}}console.log("OneZoom internal JS has been asked to hide all open modals & dropdowns");{{pass}}
     $('.uk-modal-container').each(function() {
-        UIkit.modal(this).hide(false); // Hide immediately, by default we wait in case mouse comes back
+        UIkit.modal(this).hide();
     });
     $('[uk-dropdown]').each(function() {
-        UIkit.dropdown(this).hide(false); // Hide immediately, by default we wait in case mouse comes back
+        UIkit.dropdown(this).hide();
     });
-  },
-
-  /**
-   * Are there any open dropdowns, etc?
-   */
-  isOpenModals: function () {
-    return document.querySelectorAll(".uk-open").length > 0;
   },
 
   /** Display / hide the loading spinner */

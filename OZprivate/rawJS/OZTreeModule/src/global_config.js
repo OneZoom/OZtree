@@ -81,9 +81,6 @@ config.ui = {
      canvas is clicked. They should be overridden when initializing the 
      OneZoom code */
   closeAll: function() {/* by default, do nothing */},
-  isOpenModals: function() {
-    return false;
-  },
   loadingMessage: function (active) {
     console.log(active ? "Page loading..." : "Finished loading.");
   },

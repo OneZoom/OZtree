@@ -35,15 +35,6 @@ class TouchInteractor {
   touch_move(event) {
     event.preventDefault();    
     event.stopPropagation();
-
-    if (this.controller.is_open_modals()) {
-      // There's something open, so we shouldn't be scrolling.
-      // This could happen under safari if scrolling the locationDropdown to
-      // the end. The touch_start should have closed any first before
-      // this happens ordinarily.
-      return;
-    }
-
     if(event.targetTouches.length >= 2) {// might need to fix this
       //finger positions [f1x, f1y],  [f2x, f2y]
       let f1x = get_touch_x(this, event.targetTouches[0]);
