@@ -519,14 +519,15 @@ ul#searchboxes {
 .popup-content.iframe-container {
     padding: 3px;
     display: flex;
-    overflow-y: hidden; /* Let the iframe do the scrolling */
+    overflow-y: auto; /* iframe should do the scrolling, but hidden causes iOS woe */
+    -webkit-overflow-scrolling: touch; /* see https://davidwalsh.name/scroll-iframes-ios */
 }
 
 .popup-content.iframe-container > iframe {
+    position: unset; /* Otherwise iOS doesn't scroll */
     flex: 1;
     min-width: 100%;
     max-width: 100%; /* Don't let content bump iframe width over 100% */
-    overflow-y: auto; /* Let the iframe do the scrolling */
 }
 
 .popup-content > footer {
