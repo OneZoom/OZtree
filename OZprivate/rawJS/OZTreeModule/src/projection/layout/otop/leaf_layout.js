@@ -1,5 +1,6 @@
 import LeafLayoutBase from '../leaf_layout_helper';
 import ArcShape from '../../shapes/arc_shape';
+import ImageShape from '../../shapes/image_shape';
 import {add_mr} from '../../move_restriction';
 import config from '../../../global_config';
 import tree_state from '../../../tree_state';
@@ -145,20 +146,33 @@ class LeafLayout extends LeafLayoutBase {
           return;
       }
 
-      // Draw the gradient background
-      let s = ArcShape.create();
-      s.x = this.get_leaf_x(node);
-      s.y = this.get_leaf_y(node);
-      s.r = this.get_fullleaf_r(node) * 1.8;
-      s.circle = true;
-      s.do_fill = true;
-      s.do_stroke = false;
-      s.fill.color = { from: 'rgba(0, 44, 100, 0.8)', start: this.get_fullleaf_r(node) * 0.5 };
-      s.height = 0;
-      shapes.push(s);
+      // Try and fetch the background image, draw it if available, and we are zoomed in enough.
+      let imageObject = get_image('otop:otop-human-leaf.png', 'otop:otop-human-leaf.png');
+      imageObject = image_ready(imageObject) ? imageObject : null;
+      if (this.get_fullleaf_r(node) > 100 && imageObject) {
+          let s = ImageShape.create();
+          s.img = imageObject;
+          s.w = s.h = this.get_fullleaf_r(node) * 2;
+          s.x = this.get_leaf_x(node) - (s.w / 2);
+          s.y = this.get_leaf_y(node) - (s.w / 2);
+          s.height = 0;
+          shapes.push(s);
+      } else {
+          // Approximate the image with a gradient background
+          let s = ArcShape.create();
+          s.x = this.get_leaf_x(node);
+          s.y = this.get_leaf_y(node);
+          s.r = this.get_fullleaf_r(node) * 1.5;
+          s.circle = true;
+          s.do_fill = true;
+          s.do_stroke = false;
+          s.fill.color = { from: '#87d9ff', start: this.get_fullleaf_r(node) * 0.2 };
+          s.height = 0;
+          shapes.push(s);
+      }
 
       // Draw an inner & outer ring of humans
-      [0.81, 0.53].map(function (circle_ratio, i) {
+      [0.81, 0.54].map(function (circle_ratio, i) {
           let s = ArcShape.create();
           s.x = this.get_leaf_x(node);
           s.y = this.get_leaf_y(node);
@@ -166,8 +180,8 @@ class LeafLayout extends LeafLayoutBase {
           s.circle = true;
           s.do_fill = false;
           s.do_stroke = true;
-          s.stroke.line_width = (0.01 * s.r);
-          s.stroke.color = 'rgba(255,255,255,0.8)';
+          s.stroke.line_width = (0.007 * s.r);
+          s.stroke.color = 'rgba(234,234,234,0.8)';
           s.stroke.shadow = { blur: 10 };
           s.height = 0;
           shapes.push(s);
@@ -185,6 +199,18 @@ class LeafLayout extends LeafLayoutBase {
               );
           }
       }.bind(this));
+
+      // Add a blue wash across the top
+      let s = ArcShape.create();
+      s.x = this.get_leaf_x(node);
+      s.y = this.get_leaf_y(node);
+      s.r = this.get_fullleaf_r(node) * 1.8;
+      s.circle = true;
+      s.do_fill = true;
+      s.do_stroke = false;
+      s.fill.color = { from: 'rgba(0, 44, 100, 0.4)', start: this.get_fullleaf_r(node) * 0.8 };
+      s.height = 0;
+      shapes.push(s);
 
       // Draw the main human image
       this.human_subleaf(

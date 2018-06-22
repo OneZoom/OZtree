@@ -93,6 +93,12 @@ server_urls.data_path_pics = function(src, src_id) {
     if (src_id.indexOf('https://') === 0) {
         return src_id;
     }
+    if (src_id.indexOf('http://') === 0) {
+        return src_id;
+    }
+    if (src_id.indexOf('otop:') === 0) {
+        return '{{=URL("static","otop")}}' + '/' + src_id.slice('otop:'.length);
+    }
     return server_urls._old_data_path_pics.apply(server_urls, arguments);
 }
 
