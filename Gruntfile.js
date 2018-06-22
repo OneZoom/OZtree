@@ -184,7 +184,7 @@ module.exports = function (grunt) {
   grunt.registerTask("partial-install", ["curl:get_minlife", "exec:partial_install"]);
   grunt.registerTask("partial-local-install", [
     "compile",
-    "exec:partial_local_install:minlife.html",
+    "exec:partial_local_install:life.html:minlife.html",
     "exec:partial_local_install:otop.html:minotop.html",
   ]);
   grunt.registerTask("precompile-docs", ["jsdoc2md", "exec:precompile_docs"]);
