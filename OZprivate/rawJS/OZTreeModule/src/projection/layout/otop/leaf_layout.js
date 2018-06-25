@@ -146,13 +146,25 @@ class LeafLayout extends LeafLayoutBase {
           return;
       }
 
+      // Add a blue wash underneath, to hide background lights
+      let s = ArcShape.create();
+      s.x = this.get_leaf_x(node);
+      s.y = this.get_leaf_y(node);
+      s.r = this.get_fullleaf_r(node) * 1.2;
+      s.circle = true;
+      s.do_fill = true;
+      s.do_stroke = false;
+      s.fill.color = { from: 'rgba(0, 15, 58, 0.8)', start: this.get_fullleaf_r(node) * 0.5 };
+      s.height = 0;
+      shapes.push(s);
+
       // Try and fetch the background image, draw it if available, and we are zoomed in enough.
       let imageObject = get_image('otop:otop-human-leaf.png', 'otop:otop-human-leaf.png');
       imageObject = image_ready(imageObject) ? imageObject : null;
       if (this.get_fullleaf_r(node) > 100 && imageObject) {
           let s = ImageShape.create();
           s.img = imageObject;
-          s.w = s.h = this.get_fullleaf_r(node) * 2;
+          s.w = s.h = this.get_fullleaf_r(node) * 1.63;
           s.x = this.get_leaf_x(node) - (s.w / 2);
           s.y = this.get_leaf_y(node) - (s.w / 2);
           s.height = 0;
@@ -201,14 +213,14 @@ class LeafLayout extends LeafLayoutBase {
       }.bind(this));
 
       // Add a blue wash across the top
-      let s = ArcShape.create();
+      s = ArcShape.create();
       s.x = this.get_leaf_x(node);
       s.y = this.get_leaf_y(node);
-      s.r = this.get_fullleaf_r(node) * 1.8;
+      s.r = this.get_fullleaf_r(node) * (window.otop_fg_r || 1.3);
       s.circle = true;
       s.do_fill = true;
       s.do_stroke = false;
-      s.fill.color = { from: 'rgba(27, 92, 175, 0.5)', start: this.get_fullleaf_r(node) * 0.8 };
+      s.fill.color = { from: 'rgba(27, 92, 175, 0.3)', start: this.get_fullleaf_r(node) * (window.otop_fg_start || 0.9) };
       s.height = 0;
       shapes.push(s);
 
