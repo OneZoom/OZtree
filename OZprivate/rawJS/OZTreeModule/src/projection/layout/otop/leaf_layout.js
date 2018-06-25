@@ -127,7 +127,7 @@ class LeafLayout extends LeafLayoutBase {
       s.r = r * 0.975;
       s.circle = true;
       s.do_fill = true;
-      s.fill.color = 'hsla(199, 100%, 50%, 0.3)';
+      s.fill.color = 'hsla(199, 100%, 50%, 0.5)';
       shapes.push(s);
   }
 
