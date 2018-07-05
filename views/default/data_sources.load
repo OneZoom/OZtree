@@ -3,7 +3,11 @@
 <h3>Images</h3>
 
 <p><img src="{{=thumbnail_url(2,26793885)}}" alt="" /></p>
-<p>Images of species on the tree have been harvested from the internet by the {{=A("Encyclopedia of Life", _href="http://eol.org/")}} project (EoL). We must thank EoL for their fantastic resource, and helpful responses to our various requests. We have only selected images that are in the public domain, or released under a {{=A("creative commons", _href="https://creativecommons.org")}} license that {{=A("allows reuse if the author is credited", _href="http://creativecommons.org/licenses/by/3.0/")}} (and sometimes {{=A("requires you to make any changes also available", _href="https://creativecommons.org/licenses/by-sa/4.0/")}}). To see the source for any image, zoom into the copyright symbol next to the picture. The symbol may also serve as a link to the source of the image. A small number of images have been directly sent to OneZoom and inserted in the tree by us as excpetions with the photographer still credited in the same manner as for any other image</p>
+<p>Images of species on the tree have been harvested from the internet by the {{=A("Encyclopedia of Life", _href="http://eol.org/")}} project (EoL). We must thank EoL for their fantastic resource, and helpful responses to our various requests. We have only selected images that are in the public domain, or released under a {{=A("creative commons", _href="https://creativecommons.org")}} license that {{=A("allows reuse if the author is credited", _href="http://creativecommons.org/licenses/by/3.0/")}} (and sometimes {{=A("requires you to make any changes also available", _href="https://creativecommons.org/licenses/by-sa/4.0/")}}). To see the source for any image, zoom into the copyright symbol next to the picture. The symbol may also serve as a link to the source of the image. Exceptionally, a small number of images have been directly sent to OneZoom: copyright information is similarly accessible via the copyright symbol, and the photographer should still credited in the same manner as for any other image</p>
+
+<h3>Common names</h3>
+
+<p>Common names on the tree have been harvested from the internet by the {{=A("Encyclopedia of Life", _href="http://eol.org/")}} project (EoL). To see the original source for a name, click on the species name in the OneZoom viewer, select the EoL tab, and from within that, click on the EoL <q>names</q> tab.</p>
 
 <h3>IUCN Red List status</h3>
 
