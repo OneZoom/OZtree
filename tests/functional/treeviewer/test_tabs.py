@@ -48,7 +48,8 @@ class TestTabs(FunctionalTest):
         
     def test_no_tabs(self):
         """Deliberately call the tab popup function with no tabs asked for"""
-    
+        pass
+        
     def test_all_tabs(self):
         """
         Test tabs within the expert treeviewer
@@ -60,38 +61,42 @@ class TestTabs(FunctionalTest):
         checked_tabs = {t['id']:False for t in requests.get(base_url + 'treeviewer/UI_layer.json', timeout=5).json()['tabs']}
         
         for identifier, tip_type in [('oak','leaf'), ('human','leaf'), ('mammal','node')]:
-            print(identifier + ":", flush=True, end="")
-            self.browser.get(base_url + 'life_expert.html/@={0}?pop={1}_{2}#x0,y0,w1'.format(
-                getattr(self, identifier + 'OTT'),
-                'ol' if tip_type=='leaf' else 'on',
-                getattr(self, identifier + 'OTT') if tip_type=='leaf' else getattr(self, identifier + 'ID')))
-            sleep(5) # 10 seconds should be enough to load and pop up a tab
-            for tab in self.browser.find_elements_by_css_selector('.external-tabs li:not([style*="display: none"])'):
-                self.browser.switch_to.default_content()
-                tabname = tab.get_attribute("id")
-                anchors = tab.find_elements_by_tag_name("a")
-                print(" " + tabname, flush=True, end="")
-                assert len(anchors)==1, "A single tabbed link should exist for `{}`".format(tabname)
-                anchors[0].click()
-                iframe_css = ".popup-container .{} iframe".format(tabname)
-                wait = WebDriverWait(self.browser, 10)
-                sleep(2) #not sure why we need a wait in here: perhaps for iframe to load properly?
-                wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, iframe_css)))
-                
-                #for each tab, we need a different check
-                if tabname in self.linkout_css_tests:
-                    wait = WebDriverWait(self.browser, 30)
-                    wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, self.linkout_css_tests[tabname])))
-                    
-                checked_tabs[tabname] = True
-                #now switch back and check the linkout
-                self.browser.switch_to.default_content()
-                form_css = ".popup-container .{} form".format(tabname)
-                forms = self.browser.find_elements_by_css_selector(form_css)
-                assert len(forms)==1, "A single linkout form should exist in `{}` for '{}'".format(form_css, tabname)
-                form_links = forms[0].find_elements_by_tag_name("a")
-                assert len(form_links)==1, "A single linkout button in the form should exist in `{}` for '{}'".format(form_css, tabname)
-                href = forms[0].get_attribute('action') or form_links[0].get_attribute('href')
-                assert href, "There should always be a link out from each iframe"
-            print(", ", flush=True, end="")
+            yield self.check_tab, identifier, tip_type, checked_tabs
         assert all(checked_tabs.values()), "All tab types should have been checked"
+    
+    def check_tab(self, identifier, tip_type, checked_tabs):
+        
+        print(identifier + ":", flush=True, end="")
+        self.browser.get(base_url + 'life_expert.html/@={0}?pop={1}_{2}#x0,y0,w1'.format(
+            getattr(self, identifier + 'OTT'),
+            'ol' if tip_type=='leaf' else 'on',
+            getattr(self, identifier + 'OTT') if tip_type=='leaf' else getattr(self, identifier + 'ID')))
+        sleep(5) # 10 seconds should be enough to load and pop up a tab
+        for tab in self.browser.find_elements_by_css_selector('.external-tabs li:not([style*="display: none"])'):
+            self.browser.switch_to.default_content()
+            tabname = tab.get_attribute("id")
+            anchors = tab.find_elements_by_tag_name("a")
+            print(" " + tabname, flush=True, end="")
+            assert len(anchors)==1, "A single tabbed link should exist for `{}`".format(tabname)
+            anchors[0].click()
+            iframe_css = ".popup-container .{} iframe".format(tabname)
+            wait = WebDriverWait(self.browser, 10)
+            sleep(2) #not sure why we need a wait in here: perhaps for iframe to load properly?
+            wait.until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, iframe_css)))
+            
+            #for each tab, we need a different check
+            if tabname in self.linkout_css_tests:
+                wait = WebDriverWait(self.browser, 30)
+                wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, self.linkout_css_tests[tabname])))
+                
+            checked_tabs[tabname] = True
+            #now switch back and check the linkout
+            self.browser.switch_to.default_content()
+            form_css = ".popup-container .{} form".format(tabname)
+            forms = self.browser.find_elements_by_css_selector(form_css)
+            assert len(forms)==1, "A single linkout form should exist in `{}` for '{}'".format(form_css, tabname)
+            form_links = forms[0].find_elements_by_tag_name("a")
+            assert len(form_links)==1, "A single linkout button in the form should exist in `{}` for '{}'".format(form_css, tabname)
+            href = forms[0].get_attribute('action') or form_links[0].get_attribute('href')
+            assert href, "There should always be a link out from each iframe"
+        print(" ", flush=True, end="")

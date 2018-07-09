@@ -11,7 +11,13 @@
     
  If you have installed the 'rednose' package (pip3 install rednose), you can get nicer output by e.g.
  
-    nosetests -vs ./ tests/functional --rednose
+    nosetests -vs ./tests/functional --rednose
+    
+ To carry out tests on a remote machine, you can specify a [url][server] and [url][port]
+ in a config file, which will not give the FunctionalTest class an is_local attribute
+ and hence will skip tests marked @attr('is_local'). E.g. for testing beta.onezoom.org, you can do
+ 
+    nosetests -vs ./tests/functional --rednose --tc-file beta_cfg.ini
  
 """
 
@@ -37,12 +43,13 @@ from selenium.webdriver.remote.remote_connection import LOGGER as selenium_logge
 if sys.version_info[0] < 3:
     raise Exception("Python 3 only")
 
-from ..util import get_db_connection, web2py_app_dir, web2py_server, base_url
+from ..util import get_db_connection, web2py_app_dir, Web2py_server, base_url
 
 date_format = "%Y-%m-%d %H:%M:%S.%f" #used when a web2py datetime on a webpage needs converting back to datetime format
 test_email = 'test@onezoom.org'
 
 class FunctionalTest(object):
+    is_local = Web2py_server.is_local()
 
     @classmethod
     def setUpClass(self):
@@ -59,35 +66,32 @@ class FunctionalTest(object):
         with open(db_py_loc, 'r') as db_py:
             assert striptext_in_file("is_testing=True", db_py), "To do any functional testing you must set is_testing=True in " + db_py_loc
         self.db = get_db_connection()
-        db_cursor = self.db['connection'].cursor()
-        sql = {k:"SELECT ott, id FROM ordered_{} WHERE name = {}".format(k, self.db['subs']) for k in ('leaves','nodes')}
+        
+        
         try:
-            db_cursor.execute(sql['leaves'], ("Homo sapiens",))
-            self.humanOTT = int(db_cursor.fetchone()[0])
-            self.db['connection'].commit() #need to commit here otherwise next select returns stale data
-            db_cursor.execute(sql['leaves'], ("Canis lupus",))
-            self.dogOTT = int(db_cursor.fetchone()[0])
-            self.db['connection'].commit() #need to commit here otherwise next select returns stale data
-            db_cursor.execute(sql['leaves'], ("Felis silvestris",))
-            self.catOTT = db_cursor.fetchone()[0]
-            self.db['connection'].commit() #need to commit here otherwise next select returns stale data
-            db_cursor.execute(sql['leaves'], ("Quercus robur",)) #get a plant with lot of data
-            self.oakOTT = db_cursor.fetchone()[0]
-            self.db['connection'].commit() #need to commit here otherwise next select returns stale data
-            db_cursor.execute(sql['nodes'], ("Mammalia",))
-            self.mammalOTT, self.mammalID = db_cursor.fetchone()
-            self.db['connection'].commit() #need to commit here otherwise next select returns stale data
-        except (ValueError, TypeError):
-            assert False, "Could not find human, dog, cat, oak, or mammal OTTs"
-            
-        db_cursor.close()
-
-        print("> starting web2py")
-        try:
-            self.web2py = web2py_server(self.appconfig_loc)
+            self.web2py = Web2py_server(self.appconfig_loc)
         except AttributeError:
-            self.web2py = web2py_server()
+            self.web2py = Web2py_server()
+            
+        try:
+            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Homo sapiens", leaves_only=1)).json()
+            self.humanID, self.humanOTT = resp["result"][0][0:2]
 
+            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Canis lupus", leaves_only=1)).json()
+            self.dogID, self.dogOTT = resp["result"][0][0:2]
+
+            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Felis silvestris", leaves_only=1)).json()
+            self.catID, self.catOTT = resp["result"][0][0:2]
+
+            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Quercus robur", leaves_only=1)).json()
+            self.oakID, self.oakOTT = resp["result"][0][0:2]
+            
+            resp = requests.get(base_url + "API/search_for_sciname.json", params=dict(query="Mammalia", nodes_only=1)).json()
+            self.mammalID, self.mammalOTT = resp["result"][0][0:2] #use the ID not the OTT for nodes
+        except (LookupError):
+            assert False, "Could not find human, dog, cat, oak, or mammal OTTs"
+        
+            
         logging.getLogger("requests").setLevel(logging.WARNING)
         logging.getLogger("urllib3").setLevel(logging.WARNING)
         selenium_logger.setLevel(logging.WARNING)
@@ -103,9 +107,8 @@ class FunctionalTest(object):
     def tearDownClass(self):
         #should test here that we don't have any console.log errors (although we might have logs).
         self.browser.quit()
-        print("> stopping web2py")
-        self.web2py.kill()
-
+        self.web2py.stop_server()
+        
     def setup(self):
         """
         By default, clear logs before each test

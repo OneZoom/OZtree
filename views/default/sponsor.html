@@ -12,13 +12,13 @@
         <ul class="short-sponsor-ideas">
             {{for key, info in pick.items():}}
             {{if not info.get("subtext"):}}
-            <li class="{{=str(key)}}"><a href="{{=URL(info['page'], vars=info.get('vars'))}}"><img src='{{=info["thumb_src"]}}' />{{=info["name"]}}</a>
+            <li class="{{=str(key)}}"><a href="{{=URL(info['page'], vars=info.get('vars'))}}"><img src='{{=info["thumb_url"]}}' />{{=info["name"]}}</a>
             {{pass}}{{pass}}
         </ul>
         <ul class="long-sponsor-ideas lined">
             {{for ottid, info in pick.items():}}
             {{if info.get("subtext"):}}
-            <li class="{{=str(ottid)}}"><a href="{{=URL(info['page'], vars=info.get('vars'))}}"><img src='{{=info["thumb_src"]}}' />{{=info["name"]}}</a>
+            <li class="{{=str(ottid)}}"><a href="{{=URL(info['page'], vars=info.get('vars'))}}"><img src='{{=info["thumb_url"]}}' />{{=info["name"]}}</a>
             <p class="subtext">{{=XML(info['subtext'])}}</p></li>
             {{pass}}{{pass}}
         </ul>

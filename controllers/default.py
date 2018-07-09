@@ -182,7 +182,7 @@ def sponsor_leaf():
     #we might come into this with an established partner set in request.vars (e.g. LinnSoc)
     partner = request.vars.get('partner')
     """
-    TO DO & CHECK
+    TO DO & CHECK - This allows specific parts of the tree to be associated with a partner
     if partner is None:
         #check through partner_taxa for leaves that might match this one
         partner = db((~db.partner_taxa.deactived) & 
@@ -354,17 +354,11 @@ def sponsor_leaf():
             leaf_price = 0.01*float(leaf_entry.price) #in the leaf table, price is in pence, not a float, to allow binning
             #can sponsor here, go through to the main sponsor_leaf page
             form = SQLFORM(db.reservations, reservation_entry, 
-                fields=['e_mail','allow_contact','twitter_name',
-                    'user_sponsor_kind','user_sponsor_name','user_more_info','user_donor_title','user_donor_name','user_donor_show','user_paid','user_message_OZ',
+                fields=['e_mail','allow_contact','twitter_name', 'user_sponsor_kind', 'user_sponsor_name', 'user_more_info', 
+                    'user_donor_title', 'user_donor_name', 'user_donor_show', 'user_paid', 'user_message_OZ',
                     'user_nondefault_image', 'user_preferred_image','user_giftaid'],
                 deletable = False)
-            form.custom.widget.user_sponsor_name["requires"] = IS_LENGTH(minsize=1,maxsize=30)
-            form.custom.widget.user_sponsor_kind["requires"] = IS_IN_SET(['by','for'])
-            form.custom.widget.user_paid["requires"] = IS_FLOAT_IN_RANGE(leaf_price, 99999, dot=".", 
-                error_message=XML("Please donate at least £{:.2f} to sponsor this leaf, or you could simply ".format(leaf_price)))
-            
-        
-            if form.process(session=None, formname='test').accepted:
+            if form.process(session=None, formname='test', onvalidation=lambda x: validate_sponsor_leaf(x, leaf_price)).accepted:
                 #response.flash = 'temp form accepted' # debug
                 reservation_query.update(
                     reserve_time=request.now,
@@ -373,7 +367,7 @@ def sponsor_leaf():
                     user_updated_time=request.now,
                     sponsorship_duration_days=365*4+1,
                     partner_name=partner_data.get('partner_identifier'),
-                    partner_percentage=partner_data.get('partner_percentage'))
+                    partner_percentage=partner_data.get('percentage'))
                 # now need to do our own other checks
                 v = {'ott':OTT_ID_Varin}
                 if request.vars.get('embed'):
@@ -393,7 +387,35 @@ def sponsor_leaf():
     else:
         #should never happen
         response.view = request.controller + "/spl_error." + request.extension
-        return dict()
+        return dict(OTT_ID = OTT_ID_Varin)
+
+def validate_sponsor_leaf(form, leaf_price):
+    """
+    Do all this as custom validation as some is quite intricate
+    """
+    max_chars = 30
+    if len(form.vars.user_sponsor_name or "") == 0:
+        form.errors.user_sponsor_name = T("You must enter some sponsor text")
+    elif len(form.vars.user_sponsor_name or "") > max_chars:
+        form.errors.user_sponsor_name = T("Text too long: max %s characters") % (max_chars, )
+
+    if len(form.vars.user_more_info or "") > max_chars:
+        form.errors.user_more_info = T("Text too long: max %s characters") % (max_chars, )
+    
+    if form.vars.user_sponsor_kind not in ['by','for']:
+        form.errors.user_sponsor_kind = T("Sponsorship can only be 'by' or 'for'")
+
+    try:
+        if float(form.vars.user_paid) < leaf_price:
+            form.errors.user_paid = T("Please donate at least £%s to sponsor this leaf, or you could simply choose another leaf") % ("{:.2f}".format(leaf_price), )
+    except:
+        form.errors.user_paid = T("Please enter a valid number")
+    
+    if form.vars.user_giftaid:
+        if not (form.vars.user_donor_title or "").strip():
+            form.errors.user_donor_title = T("We need your title to be able to claim gift aid")
+        if not form.vars.user_donor_name and form.vars.user_sponsor_kind != 'by':
+            form.errors.user_donor_name = T("We need your name to be able to claim gift aid")
 
 
 def sponsor_leaf_redirect():
@@ -545,48 +567,29 @@ def donor_list():
 
 def sponsor_picks() : #this is a private function
     """
-    Here we define a set of hand-picked nodes,listed in an (ordered) dictionary. If a node is
-    accessed via a numeric key, the key is an ott, and the node can be displayed using the 
+    Get the list of hand-picked nodes, from the sponsor_picks table. If a node has a
+    identifier which is a positive integer, this refers to an ott, and the node can be displayed using the 
     sponsor_node function. Otherwise it is a bespoke collection, displayed using sponsor_handpicks
     """
-    from collections import OrderedDict
-    pick=OrderedDict()
-    
-    pick[244265]={'name':'Mammals', 'thumb_src': thumbnail_url(src_flags["eol"], 27053125), 'vars':{'n':8}}
-        
-    pick[81461]={'name':'Birds', 'thumb_src':thumbnail_url(src_flags["eol"], 26823956), 'vars':{'n':8}}
-
-    pick[35888]={'name':'Lizards and snakes', 'thumb_src':thumbnail_url(src_flags["eol"], 26814956), 'vars':{'n':8}}
-
-    pick[773483]={'name':'Ray-finned fishes', 'thumb_src':thumbnail_url(src_flags["eol"], 5817441), 'vars':{'n':8}}
-
-    pick[7368]={'name':'Cephalopods', 'thumb_src':thumbnail_url(src_flags["eol"], 26819085), 'vars':{'n':12}}
-
-    pick[133665]={'name':'Dragonflies and Damselflies', 'thumb_src':thumbnail_url(src_flags["eol"], 16893200), 'vars':{'n':8}}
-
-    pick[965954]={'name':'Butterflies and moths', 'thumb_src':thumbnail_url(src_flags["eol"], 1997597), 'vars':{'n':12}}
-
-    pick[568878]={'name':'Orchids', 'thumb_src':thumbnail_url(src_flags["eol"], 5829089), 'vars':{'n':12}}
-
-    pick[208036]={'name':'Rose family (apples etc.)', 'thumb_src':thumbnail_url(src_flags["eol"], 26851969), 'vars':{'n':8}}
-
-    pick[584111]={'name':'Cactus family', 'thumb_src':thumbnail_url(src_flags["eol"], 5830878), 'vars':{'n':12}}
-    
-    pick['da']={'name':"David Attenborough's list", 'subtext':"These species are named after him, or were in Attenborough's Ark, or are among the Top 10 species he'd choose to save.", 'thumb_src':thumbnail_url(src_flags["eol"], 13144348), 'otts':
-        [3615204, 5846196, 3317844, 2981913, 5143980, 5146215, 566865, 1061679, 469465, 842080, 3600603, 459017, 644245, 313069, 74731, 164229]}
-    
-    pick['trail2016']={'name':"List for the Ancestor's Trail", 'subtext':'The <a href="http://www.ancestorstrail.org.uk">Ancestor&rsquo;s Trail</a> is partnering with us to promote sponsorship on the OneZoom tree of life: our list contains many species mentioned in the <a href="http://en.wikipedia.org/wiki/The_Ancestor%27s_Tale">Ancestor&rsquo;s Tale</a> (see <a href="sponsored?search_mesg=AT16&sum=true">those sponsored already</a>).', 'thumb_src':URL("static","images/AncestorsTrail.jpg"),  'vars':{'n':12, 'user_more_info':'Ancestor’s Trail', 'user_message_OZ':'AT16'}, 'otts':[10703, 78499, 164229, 175270, 199355, 292504, 306795, 342738, 392933, 412685, 453575, 473106, 510762, 511973, 516305, 542509, 558069, 558087, 589951, 616365, 637537, 659136, 677382, 680963, 709966, 721280, 739941, 746542, 781510, 781600, 796672, 799124, 801608, 801627, 801808, 813103, 840875, 887701, 896431, 904101, 905267, 962377, 986959, 995038, 1033356, 1048188, 1062222, 1091028, 3422746]}
 
     #save 'ott':123 in pick[xxx].vars
-    for key, val in pick.items():
-        if 'vars' not in val:
-            val['vars']={}
+    pick = {}
+    for row in db(db.sponsor_picks.display_order is not None).select(db.sponsor_picks.ALL, orderby=db.sponsor_picks.display_order):
+        
+        val = {v:row[v] for v in db.sponsor_picks.fields}
         try:
+            val['vars']=loads(row.vars)
+        except:
+            val['vars']={}
+        if not row.thumb_url:
+            val['thumb_url']=thumbnail_url(row.thumb_src,row.thumb_src_id)
+        if row.identifier.isdigit():
+            val['vars']['ott'] = row.identifier = int(row.identifier)
             val['page'] = 'sponsor_node'
-            val['vars']['ott'] = abs(key)
-        except TypeError:
+        else:
             val['page'] = 'sponsor_handpicks'
-            val['vars']['group_name'] = key
+            val['vars']['group_name'] = row.identifier
+        pick[row.identifier] = val
     return pick
     
 def sponsor():

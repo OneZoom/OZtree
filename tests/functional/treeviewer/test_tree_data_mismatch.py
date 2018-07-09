@@ -7,6 +7,7 @@ From https://github.com/OneZoom/OZtree/issues/62
 """
 import os.path
 from nose import tools
+from nose.plugins.skip import SkipTest
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -15,17 +16,19 @@ from selenium.webdriver.common.by import By
 from ...util import base_url, web2py_app_dir
 from ..functional_tests import FunctionalTest, make_temp_minlife_file, remove_temp_minlife_files
 
-
 class TestTreeDataMismatch(FunctionalTest):
     """
     Test whether we get an error page if there is a version mismatch 
     This requires a bit of database adjusting, but not too dangerously (we swap 2 numbers, then swap back)
+    It is only relevant if we are running a local version of the website
     """
     unused_version = 2 # set to a non-allowed (negative) tree version number
     old_version = 1234 #should look up files that exist with an old version number
 
     @classmethod
     def setUpClass(self):
+        if not self.is_local:
+            raise SkipTest("Mismatch test requires altering the DB so can only run locally")
         print("== Running {} ==".format(os.path.basename(__file__)))
         super().setUpClass() #will assign db etc
         self.temp_minlife = make_temp_minlife_file(self) #must do this before changing table IDs

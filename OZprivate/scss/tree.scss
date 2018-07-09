@@ -506,10 +506,13 @@ ul#searchboxes {
     padding: 3px;
     display: flex;
     -webkit-overflow-scrolling: touch; /* see https://davidwalsh.name/scroll-iframes-ios */
+    overflow-y: hidden; /* Let the iframe do the scrolling */
 }
 
 .popup-content.iframe-container > iframe {
     flex: 1;
+    min-width: 100%;
+    max-width: 100%; /* Don't let content bump iframe width over 100% */
 }
 
 .popup-content > footer {

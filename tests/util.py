@@ -1,12 +1,19 @@
 import os.path
 import re
 import subprocess
+import requests
+from time import sleep
+#use testconfig from nose (get it using `pip3 install nose-testconfig`)
+from testconfig import config
 
 web2py_app_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 appconfig_loc = os.path.join(web2py_app_dir, 'private', 'appconfig.ini')
-ip = "127.0.0.1"
-port = "8001"
-base_url="http://"+ip+":"+port+"/"
+ip = config.get("url", {}).get("server", "127.0.0.1")
+port = config.get("url", {}).get("port", "8001")
+base_url = "http://"+ip
+if port != '80':
+    base_url += (":"+port)
+base_url += "/"
 
 def get_db_connection():
     database_string = None
@@ -57,8 +64,32 @@ def appconfig_contains(start_of_line, section="general"):
                     return True
     return False
 
-def web2py_server(appconfig_file=None):
-    cmd = ['python2', os.path.join(web2py_app_dir, '..','..','web2py.py'), '-Q', '-i', ip, '-p', port, '-a', 'pass']
-    if appconfig_file is not None:
-        cmd += ['--args', appconfig_file]
-    return subprocess.Popen(cmd)
+class Web2py_server:
+    def __init__(self, appconfig_file=None):
+        self.pid = None
+        if self.is_local():
+            print("> starting web2py")
+            cmd = ['python2', os.path.join(web2py_app_dir, '..','..','web2py.py'), '-Q', '-i', ip, '-p', port, '-a', 'pass']
+            if appconfig_file is not None:
+                cmd += ['--args', appconfig_file]
+            self.pid = subprocess.Popen(cmd)
+            #wait until the server has started
+            for i in range(1000):
+                try:
+                    requests.get(base_url)
+                    break
+                except requests.exceptions.ConnectionError:
+                    sleep(0.1)
+                    
+    @classmethod
+    def is_local(cls):
+        return '127.0.0.1' in base_url
+
+    def stop_server(self):
+        if self.pid is not None:
+            print("> stopping web2py")
+            self.pid.kill()
+            self.pid = None
+
+    def __del__(self):
+        self.stop_server()

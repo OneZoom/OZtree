@@ -36,27 +36,47 @@ class TestLinksAndInfoboxes(FunctionalTest):
             #only get the ones with an id
             id = elem.get_attribute("id")
             if id:
-                self.browser.execute_script("UIkit.modal('#{}').show();".format(id))
-                bad_links = self.browser.find_elements_by_xpath(self.xpath_link_not_page_internal)
-                assert len(bad_links) == 0, \
-                    "Model {} has the following link in the museum display: {}".format(id, " ".join(["{}".format(x.get_attribute("href")) for x in bad_links]))
+                yield self.MD_nolinks, id
+            
+    def MD_nolinks(self, id):
+        print(id + ": ", flush=True, end="")
+        self.browser.execute_script("UIkit.modal('#{}').show();".format(id))
+        bad_links = self.browser.find_elements_by_xpath(self.xpath_link_not_page_internal)
+        assert len(bad_links) == 0, \
+            "Model {} has the following link in the museum display: {}".format(id, " ".join(["{}".format(x.get_attribute("href")) for x in bad_links]))
 
-    def best_tabbed_links(self):
+    def test_tabbed_links(self):
         """
         Links from standard modals should all create new tabs/windows
         """
-        #go tto human OTT which has a smaller set of background links
+        #go to human OTT which has a smaller set of background links
         self.browser.get(base_url + 'life/@={}?init=nozoom'.format(self.humanOTT))
         assert len(self.browser.window_handles) == 1, "Should start with a single window"
         main_oz_tab = self.browser.window_handles[0]
         #even in museum display we allow e.g. buttons with links as long as they are page-internal (start with #)
         #have to search by xpath as searching by css in selenium expands the href to include the hostname
+        yield self.tabbed_links, main_oz_tab, None
+                
+        for elem in self.browser.find_elements_by_css_selector("[uk-modal]"):
+            id = elem.get_attribute("id")
+            if id:
+                yield self.tabbed_links, main_oz_tab, id
+
+    def tabbed_links(self, main_oz_tab, id):
+        if id:
+            print(id + ": ", flush=True, end="")
+            self.browser.execute_script("UIkit.modal('#{}').show();".format(id))
+        else:
+            print("main page: ", flush=True, end="")
+
         for link in self.browser.find_elements_by_xpath(self.xpath_link_not_page_internal):
-            if link.get_attribute('id') != 'OZ-logo' and link.is_enabled(): #only visible links
+            if link.get_attribute('id') != 'OZ-logo' and link.is_enabled():
                 try:
                     html = link.get_attribute('outerHTML')
                     link.click()
-                    assert len(self.browser.window_handles) == 2, "Link '{}' () should open a new window".format(html)
+                    sleep(0.5)
+                    n_windows = len(self.browser.window_handles)
+                    assert n_windows == 2, "Link to {} should create new window/tab, but there are now {} windows".format(html, n_windows)
                     new_tab = [x for x in self.browser.window_handles if x != main_oz_tab][0]
                     self.browser.switch_to.window(new_tab)
                     self.browser.close()
@@ -66,31 +86,7 @@ class TestLinksAndInfoboxes(FunctionalTest):
                         pass
                     else:
                         raise WebDriverException("Error with {}: ".format(html) + str(e))
-                
-        xpath_link_not_page_internal = "//a[@href and not(starts-with(@href, '#'))]" #an anchor with an href that does not start with '#' 
-        for elem in self.browser.find_elements_by_css_selector("[uk-modal]"):
-            #only get the ones with an id
-            id = elem.get_attribute("id")
-            if id:
-                self.browser.execute_script("UIkit.modal('#{}').show();".format(id))
-                for links in self.browser.find_elements_by_xpath(self.xpath_link_not_page_internal):
-                    if link.get_attribute('id') != 'OZ-logo' and link.is_enabled():
-                        try:
-                            html = link.get_attribute('outerHTML')
-                            link.click()
-                            sleep(0.5)
-                            n_windows = len(self.browser.window_handles)
-                            assert n_windows == 2, "Link to {} should create new window/tab, but there are now {} windows".format(html, n_windows)
-                            new_tab = [x for x in self.browser.window_handles if x != main_oz_tab][0]
-                            self.browser.switch_to.window(new_tab)
-                            self.browser.close()
-                            assert len(self.browser.window_handles) == 1
-                        except WebDriverException as e:
-                            if any([allowed in str(e) for allowed in ('is not clickable', 'element not visible')]):
-                                pass
-                            else:
-                                raise WebDriverException("Error with {}: ".format(html) + str(e))
-                        self.browser.switch_to.window(main_oz_tab)
+                self.browser.switch_to.window(main_oz_tab)
 
 
     def test_logo_link(self):

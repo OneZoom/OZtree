@@ -1,17 +1,19 @@
 {{ #this is only masquerading as a python file: it is web2py { {included} } like a normal html file, and is intended to kill off links from e.g. museum displays
-web2py_A = None
-if request.vars.links=='none':
-    #remove hyperlink from *all* links created via the web2py A() helper, e.g. for the logos & in the LOADed modals
-    def A(*args, **kwargs):
-        return CAT(*args)
-    pass
+try:
+    web2py_A = web2py_A #if already included, skip
+except NameError:
+    web2py_A = None
+    if request.vars.links=='none':
+        #remove hyperlink from *all* links created via the web2py A() helper, e.g. for the logos & in the LOADed modals
+        def A(*args, **kwargs):
+            return CAT(*args)
+        pass
+    if request.vars.links=='newtab':
+        #make *all* links created via the web2py A() helper open in a new tab, e.g. from logos - this should override others
+        web2py_A = A
+        def A(*args, **kwargs):
+            return web2py_A(*args, **dict(kwargs, _target='_blank'))
+        pass
+    no_tab_A = web2py_A or A
 pass
-if request.vars.links=='newtab':
-    #make *all* links created via the web2py A() helper open in a new tab, e.g. from logos - this should override others
-    web2py_A = A
-    def A(*args, **kwargs):
-        return web2py_A(*args, **dict(kwargs, _target='_blank'))
-    pass
-pass
-no_tab_A = web2py_A or A
 }}
