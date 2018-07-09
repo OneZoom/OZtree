@@ -257,12 +257,13 @@ def SPONSOR_UPDATE():
                         tweet = 'Thank you @{} for sponsoring {} on OneZoom'.format(twittername_t, binomial_name_t)
                     
                 try:
-                    if int(myconf.take('twitter.autosent_tweet')):
-                        #twitter.update_status(status="New update to www.OneZoom.org: now with millions of species") #comment out
-                        twitter.update_status(status=tweet) #uncomment to make twitterbot live
-                    else:
-                        raise
+                    send_tweet = int(myconf.take('twitter.autosent_tweet'))
                 except:
+                    send_tweet = False
+                if send_tweet:
+                    #twitter.update_status(status="New update to www.OneZoom.org: now with millions of species") #comment out
+                    twitter.update_status(status=tweet) #uncomment to make twitterbot live
+                else:
                     response.flash = CAT((P(response.flash) if response.flash else ""), P('Twitterbot is in testing mode, but would otherwise have said"', EM(tweet), '". To turn twitterbot on, add "autosend_tweet = 1" to appconfig.ini'))
             except Exception as e:
                 response.flash = CAT((P(response.flash) if response.flash else ""), P("Could not send auto-tweet to @{}: {}".format(twittername_t, e)))
