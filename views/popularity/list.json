@@ -1,0 +1,11 @@
+{{
+try:
+    from json import dumps
+    response.write(dumps(response._vars, separators=(',',':')), escape=False)
+    # enable CORS
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = "POST, GET, OPTIONS"
+    response.headers['Content-Type'] = 'application/json'
+except:
+    raise HTTP(405,'no json')
+}}
