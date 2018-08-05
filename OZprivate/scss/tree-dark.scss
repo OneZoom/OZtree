@@ -1,0 +1,34 @@
+$color-ui-background: #343434;
+$color-ui-border: #acacad;
+$color-ui-foreground: #eee;
+
+#advanced_search_toggle .uk-icon-button,
+#searchnav .searchbox button,
+#searchnav .searchbox,
+#searchnav .search_dropdown,
+#searchnav .search_dropdown dd,
+#search-advanced #common_ancestor_button,
+#locationDropdown,
+#locationDropdown .location-list,
+#locationDropdown .toploc a,
+#locationDropdown li a,
+#controlButtons {
+  background: $color-ui-background;
+  border-color: $color-ui-border;
+  color: $color-ui-foreground;
+}
+#controlButtons>*>a {
+  color: $color-ui-foreground;
+}
+#controlButtons #resetButton a {
+  border-color: $color-ui-foreground;
+}
+#advanced_search_toggle .uk-icon-button {
+  border: 1px solid $color-ui-border;
+}
+#searchnav .searchbox input {
+  color: $color-ui-foreground;
+}
+.uk-navbar-item.advanced_mode {
+  background: #888;
+}

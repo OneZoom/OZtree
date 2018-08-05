@@ -147,6 +147,9 @@ def leaf_linkouts():
         #pass on the reservation code if possible
         sponsorship_urls.append({'form_reservation_code':request.vars.form_reservation_code})
     return_values = linkouts(is_leaf=True, ott=ott, sponsorship_urls=sponsorship_urls)
+
+    # OZLinks just links back to ourselves
+    return_values['data']['ozlinks'] = [URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='html', args=request.args, vars=request.vars)]
     return return_values
 
 def node_linkouts():
@@ -168,6 +171,9 @@ def node_linkouts():
         sponsorship_urls.append({'form_reservation_code':request.vars.form_reservation_code})
     return_values = linkouts(is_leaf=False, id=id, sponsorship_urls=sponsorship_urls)
     request.vars.update({'id':return_values['id']})
+
+    # OZLinks just links back to ourselves
+    return_values['data']['ozlinks'] = [URL('tree', 'node_linkouts', scheme=True, host=True, extension='html', args=request.args, vars=request.vars)]
     return return_values
 
 

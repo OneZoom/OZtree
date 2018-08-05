@@ -27,7 +27,7 @@ def index():
     here we should find a random selection of things with highly-rated photos which have not been sponsored, and pass them in.
     also check for the best rated photos for sponsorship, and pass those in.
     """
-    return dict()
+    return dict(n_species =  db(db.ordered_leaves).count(), n_images =  db(db.images_by_ott).count())
 
 def user():
     """
@@ -1319,6 +1319,10 @@ def linnean():
     """
     The Linnean Society version, with partner sponsorship
     """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+    return treeview_info()
+
+def otop():
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return treeview_info()
 

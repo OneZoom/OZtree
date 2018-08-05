@@ -129,7 +129,7 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
     </style>
   </noscript>
 </head>
-<body id = "wholebody" style="user-select:none; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select:none; -ms-user-select:none;" unselectable = "on">
+<body id = "wholebody" style="user-select:none; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select:none; -ms-user-select:none;" unselectable = "on" class="loading">
     <!-- main body of document - canvas, then rest of UI elements in a single div -->
   <canvas id="OneZoomCanvasID" tabindex="1">{{include 'treeviewer/life_text.load'}}</canvas>
   {{=LOAD("treeviewer",setup_params['UI_layer']['page'],vars=setup_params['UI_layer'].get("vars"), ajax=False, target="UI")}}
@@ -155,11 +155,16 @@ var UI_callbacks = {
   closeAll: function() {
     {{if is_testing:}}console.log("OneZoom internal JS has been asked to hide all open modals & dropdowns");{{pass}}
     $('.uk-modal-container').each(function() {
-        UIkit.modal(this).hide();
+        UIkit.modal(this).hide(false); // Hide immediately, by default we wait in case mouse comes back
     });
     $('[uk-dropdown]').each(function() {
-        UIkit.dropdown(this).hide();
+        UIkit.dropdown(this).hide(false); // Hide immediately, by default we wait in case mouse comes back
     });
+  },
+
+  /** Display / hide the loading spinner */
+  loadingMessage: function (active) {
+    document.body.classList.toggle('loading', active);
   },
 
   openCopyright: function(pic_src, pic_fn) {
@@ -659,6 +664,9 @@ function setupUI() {
      Used whenever the UI component is loaded (e.g. at start or on language change)
     */
 
+    /* Make sure we scroll the canvas, not the body behind it */
+    $(document.body).on("touchstart touchmove touchend", preventTouchZoom);
+
     /* make sure we can't zoom on UI items */
     $("#UI").on("touchstart touchmove touchend", preventTouchZoom);
     $("[uk-modal]").on("touchstart touchmove touchend", preventTouchZoom);
@@ -970,6 +978,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
         window.polytomy_cut_position_map_json_str, 
         window.cut_threshold,
         window.tree_date);
+    {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape=False)}}
     setupUI();
 })
 

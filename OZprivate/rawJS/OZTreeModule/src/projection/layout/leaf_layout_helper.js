@@ -702,20 +702,7 @@ class LeafLayoutBase {
     this.fullLeaf_sponsor(shapes, x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
     // this draws the sponsorship text.
     
-    if (imageObject) {
-      if (r > 90 && r * 0.035 > 6) {
-        let button_pos = (conservation_text.length > 0) ? (y+r*0.34) : (y+r*0.39); // find position for the copyright symbol
-        this.copyright(shapes,x+r*0.43,button_pos,r*0.035,
-          [node.pic_src, node.pic_filename, copyText],
-          color_theme.get_color("leaf.copyright.text.fill", node),
-          color_theme.get_color("leaf.copyright.stroke", node),
-          color_theme.get_color("leaf.copyright.fill", node),
-          color_theme.get_color("leaf.copyright.text_hover.fill", node),
-          color_theme.get_color("leaf.copyright_hover.stroke", node),
-          color_theme.get_color("leaf.copyright_hover.fill", node)
-        ); // draw copyright sympbol
-      }
-    }
+    // Draw leaf at either detail level 1, 2 or 3
     this.fullLeaf_detail1(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
     this.fullLeaf_detail2(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
     this.fullLeaf_detail3(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
@@ -781,6 +768,9 @@ class LeafLayoutBase {
   }
 
 
+  /**
+   * Render image/text for level 1
+   */
   fullLeaf_detail1(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
     if (r > 20 && r <= 50) {
       if (imageObject) {
@@ -803,8 +793,18 @@ class LeafLayoutBase {
     }
   }
 
+  /**
+   * Render image/text for level 2
+   */
   fullLeaf_detail2(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
     if (r > 50 && r <= 90) {
+      if (imageObject) {
+        this.rounded_image(shapes,imageObject, x, y+r*0.2,r*0.95,
+          color_theme.get_color("leaf.inside.fill",node),
+          undefined,
+          requiresCrop,cropMult,cropLeft,cropTop, node);
+      }
+
       let text_shape = TextShape.create();
       text_shape.height = 5;
       text_shape.min_text_size_extra = 3;
@@ -819,10 +819,6 @@ class LeafLayoutBase {
         text_shape.defpt = r * 0.15;
         text_shape.line = 2;
         shapes.push(text_shape);
-        this.rounded_image(shapes,imageObject, x, y+r*0.2,r*0.95,
-          color_theme.get_color("leaf.inside.fill",node),
-          undefined,
-          requiresCrop,cropMult,cropLeft,cropTop, node);
       } else {
         text_shape.text = commonText ? commonText : latinText;
         text_shape.font_style = commonText ? null : 'italic';
@@ -850,11 +846,32 @@ class LeafLayoutBase {
   }
 
   fullLeaf_detail3(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
+    this.fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop,node)
+    this.fullLeaf_detail3_imagecopyright(shapes,x,y,r,conservation_text,imageObject,copyText,node);
     this.fullLeaf_detail3_conservation(shapes,x,y,r,conservation_text,imageObject,node);
     this.fullLeaf_detail3_names(shapes,x,y,r,commonText,latinText,conservation_text,imageObject,node);
-    this.fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop,node)
   }
   
+  /**
+   * Add a copyright symbol to shapes if there is an image
+   */
+  fullLeaf_detail3_imagecopyright(shapes,x,y,r,conservation_text,imageObject,copyText,node) {
+    if (imageObject) {
+      if (r > 90 && r * 0.035 > 6) {
+        let button_pos = (conservation_text.length > 0) ? (y+r*0.34) : (y+r*0.39); // find position for the copyright symbol
+        this.copyright(shapes,x+r*0.43,button_pos,r*0.035,
+          [node.pic_src, node.pic_filename, copyText],
+          color_theme.get_color("leaf.copyright.text.fill", node),
+          color_theme.get_color("leaf.copyright.stroke", node),
+          color_theme.get_color("leaf.copyright.fill", node),
+          color_theme.get_color("leaf.copyright.text_hover.fill", node),
+          color_theme.get_color("leaf.copyright_hover.stroke", node),
+          color_theme.get_color("leaf.copyright_hover.fill", node)
+        ); // draw copyright sympbol
+      }
+    }
+  }
+
   fullLeaf_detail3_names(shapes,x,y,r,commonText,latinText,conservation_text,imageObject,node) {
     if (r > 90) {
       if (!this.hovered && this.liveAreaTest(x,y,r*0.88)) {
@@ -960,6 +977,9 @@ class LeafLayoutBase {
     }
   }
 
+  /**
+   * Add image to shapes if available
+   */
   fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop, node) {
     if (r > 90) {
       if (imageObject && (conservation_text.length > 0)) {
@@ -981,7 +1001,7 @@ class LeafLayoutBase {
   /*
   * this routine:
   *
-  * draws an image in a circle
+  * draws an image in a circle, used for nodes when viewed at a distance
   *
   * inputs:
   *
@@ -1091,6 +1111,9 @@ class LeafLayoutBase {
 
 
 
+  /**
+   * Draw an image with rounded corners, used as a centerpiece for full nodes
+   */
   rounded_image(shapes,imageObject,x,y,w,borderColor,highlightColor,requiresCrop,cropMult,cropLeft,cropTop,node) {
     if (imageObject) {
       let path_shape;

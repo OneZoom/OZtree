@@ -58,6 +58,10 @@ function drawreg2_target(node, x,y,r) {
   }
 }
 
+/**
+ * Update x_add / y_add / r_mult globals, either to node location if developed,
+ * or x2/y2/r2
+ */
 function get_xyr_target(node, x2,y2,r2,into_node) {
   let x = node.rvar ? node.xvar : x2;
   let y = node.rvar ? node.yvar : y2;
@@ -284,7 +288,18 @@ function perform_actual_leap(controller) {
   controller.re_calc();
 }
 
-function perform_actual_fly(controller, into_node, finalize_func) {
+/**
+ * Fly to targeted node
+ *
+ * Targeted node is set with target_by_code()
+ *
+ * @param {controller} controller OneZoom Controller object
+ * @param {boolean} into_node Set this to 'true' to end up zoomed so the interior node fills the screen, rather than
+ * the wider-angle viewpoint that to show the entire tree structure descended from that node.
+ * @param {func} finalize_func is optional, and gives a function to call at the end of the zoom
+ * @return {boolean} returns false if the distance to codein_fly is too short so there is no animation performed.
+ */
+function perform_actual_fly(controller, into_node, finalize_func, accel_type) {
   tree_state.flying = true;
   more_flying_needed = false;
   drawreg_target(controller.root, tree_state.xp, tree_state.yp, 220*tree_state.ws);
@@ -300,37 +315,69 @@ function perform_actual_fly(controller, into_node, finalize_func) {
   } else {
     length_intro = Math.abs(Math.log(r_mult))*global_anim_speed;      
     num_intro_steps = Math.max(Math.floor(length_intro),5);
-    perform_fly_b2(controller, into_node, finalize_func);
+    perform_fly_b2(controller, into_node, finalize_func, accel_type);
     return true;
   }
 }
 
 
 
-function perform_fly_b2(controller, into_node, finalize_func) {
+/**
+ * Perform flight set up in globals.
+ * @param {controller} controller OneZoom Controller object
+ * @param {boolean} into_node Set this to 'true' to end up zoomed so the interior node fills the screen, rather than
+ * the wider-angle viewpoint that to show the entire tree structure descended from that node.
+ * @param {func} finalize_func is optional, and gives a function to call at the end of the zoom
+ * @param {string} accel_type Acceleration curve to use for this flight
+ *    - 'accel': Accelerate away from node
+ *    - 'decel': Decellerate into node
+ *    - '': Linear
+ */
+function perform_fly_b2(controller, into_node, finalize_func, accel_type) {
+  function pan_proportion(step, total) {
+    var x = step / total,
+        out = (Math.sin((x+0.25) * Math.PI*2) + 1) / 2;
+
+    return accel_type === 'accel' ? (x > 0.5 ? out : 0)
+         : accel_type === 'decel' ? 1 - (x < 0.5 ? out : 0)
+         : x;
+  }
+  function zoom_proportion(step, total) {
+    var x = step / total,
+        out = (Math.sin((x+1.5) * Math.PI) + 1) / 2;
+
+    return accel_type === 'accel' ? out
+         : accel_type === 'decel' ? out
+         : x;
+  }
+
   if (more_flying_needed) {
     //need to reanchor, this sometimes causes jerkiness
     //also we may not know how many steps we will need to take
-    pan_zoom(1/num_intro_steps, 1/num_intro_steps);
+    // NB: Approximate accel/decel by not panning at all, let the final non-reanchor step handle it
+    pan_zoom(accel_type === 'accel' || accel_type === 'decel'? 0 : 1/num_intro_steps, 1/num_intro_steps);
     tree_state.set_action("fly");
     controller.re_calc();
     controller.reanchor();
     
     clearTimeout(tree_state.fly_timer);
     tree_state.fly_timer = setTimeout(function () {
-      perform_actual_fly(controller, into_node, finalize_func);
+      perform_actual_fly(controller, into_node, finalize_func, 'linear');
     },1000.0/flight_fps);
   } else if (!more_flying_needed && intro_step_num <num_intro_steps) {
     //don't need to reanchor - this is more normal, and is smoother
     intro_step_num++;
     intro_sec_step_num++;
-    pan_zoom(intro_sec_step_num/num_intro_steps, intro_sec_step_num/num_intro_steps);
+    pan_zoom(
+      pan_proportion(intro_sec_step_num, num_intro_steps),
+      zoom_proportion(intro_sec_step_num, num_intro_steps)
+    );
     tree_state.set_action("fly");
     controller.re_calc();
     
     clearTimeout(tree_state.fly_timer);
     tree_state.fly_timer = setTimeout(function () {
-      perform_fly_b2(controller, into_node, finalize_func);
+      perform_fly_b2(controller, into_node, finalize_func, accel_type);
     },1000.0/flight_fps);
   } else {
     clearTimeout(tree_state.fly_timer);
@@ -341,6 +388,11 @@ function perform_fly_b2(controller, into_node, finalize_func) {
   }
 }
 
+/**
+ * Pan/zoom canvas to a proportion of x_add/y_add/r_mult
+ * @param {float} prop_p Proportion of x_add/y_add to pan (0 - start, 1 - end)
+ * @param {float} prop_z Proportion of r_mult to zoom (0 - start, 1 - end)
+ */
 function pan_zoom(prop_p, prop_z) {
   if (r_mult >= 1) {
     auto_pan_zoom(prop_p, prop_z);

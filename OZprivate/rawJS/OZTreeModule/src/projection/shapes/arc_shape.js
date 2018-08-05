@@ -21,11 +21,15 @@ class ArcShape extends BaseShape {
   }
   release() {
     this.do_stroke = false;
+    this.stroke  = {
+      line_width : 1.0,
+      color: "rgb(255, 255, 255)"
+    };
     this.do_fill = false;
     this.order = null;
     this.circle = false;
   }
 }
-ArcShape.obj_pool = new ObjectPool(ArcShape, 4000);
+ArcShape.obj_pool = new ObjectPool(ArcShape, 8000);
 
 export default ArcShape;

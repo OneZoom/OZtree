@@ -30,6 +30,10 @@ config.generation_on_subbranch_during_fly = 7;
 /** @property {number}  generation_at_searched_node - generation to develop on the searched node if the searched node is an interior node.
  */
 config.generation_at_searched_node = 9;
+
+/** @property {string}  search_jump_mode - How to move to a new node: "flight" or "leap"
+ */
+config.search_jump_mode = "leap";
                    
 config.api = {
   /* These configure how API calls are made, and to where.
@@ -69,12 +73,17 @@ config.lang = ''; //two letter language code. If empty, try to use the browser d
 
 config.default_setting = ''; //a place to save the default settings string passed in via the URL (anything starting d_)
 
+config.custom_querystring_params = []; // If a project requires extra querystring params, set them here so they are preserved when URLs are modified
+
 config.ui = {
   /* These are functions where the OneZoom javascript code needs to interact
      with the user interface (e.g. to pop up a window when a link in the
      canvas is clicked. They should be overridden when initializing the 
      OneZoom code */
   closeAll: function() {/* by default, do nothing */},
+  loadingMessage: function (active) {
+    console.log(active ? "Page loading..." : "Finished loading.");
+  },
   badOTT: function(ott) {
     alert('You have passed in a bad name or number, so we have\n' +
       'simply taken you to the root of the tree');},

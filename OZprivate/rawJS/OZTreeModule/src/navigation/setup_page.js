@@ -4,7 +4,6 @@ import api_manager from '../api/api_manager';
 import get_controller from '../controller/controller';
 import tree_state from '../tree_state';
 import {global_button_action, click_on_button_cb} from '../button_manager';
-import {page_loading_anim} from './page_loading';
 import config from '../global_config';
 
 /**
@@ -80,7 +79,7 @@ function setup_page_by_loading(state) {
     if (state.xp !== undefined || (state.init && !['zoom','pzoom'].includes(state.init))) {
       jump_to_position(state, id);
     } else {
-      page_loading_anim(id, state.init);
+      controller.fly_to_node(id, state.init);
     }
   })
   .catch(function(error) {

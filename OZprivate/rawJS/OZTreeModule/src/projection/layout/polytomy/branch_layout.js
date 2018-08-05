@@ -1,32 +1,33 @@
 import BranchLayoutBase from '../branch_layout_helper';
-import PathShape from '../../shapes/path_shape';
-import LineToShape from '../../shapes/line_to_shape';
-import MoveToShape from '../../shapes/move_to_shape';
+import BezierShape from '../../shapes/bezier_shape';
 import {color_theme} from '../../../themes/color_theme';
 
 // make a new class for the special branch
 
 class PolytomyBranchLayout extends BranchLayoutBase {
-  get_shapes(node, shapes) {
-    let path_shape = PathShape.create();
-    path_shape.path_length = 2;
-    let move_to_shape = MoveToShape.create();
-    move_to_shape.x = node.xvar + node.rvar * node.sx;
-    move_to_shape.y = node.yvar + node.rvar * node.sy;
-    path_shape.path[0] = move_to_shape;
-    let line_to_shape = LineToShape.create();
-    line_to_shape.x = node.xvar + node.rvar * node.ex;
-    line_to_shape.y = node.yvar + node.rvar * node.ey;
-    path_shape.path[1] = line_to_shape;
-    path_shape.do_stroke = true;
-    // this line does fixed branch widths of size 1 
-    path_shape.stroke.line_width = 1.0;
-    // uncomment this line for scaling branch widths
-    // path_shape.stroke.line_width = node.branch_width * node.rvar;
-    path_shape.height = 0;
-    path_shape.stroke.color = color_theme.get_color('branch.stroke', node);
-    shapes.push(path_shape);
-  }  
+  node_line_width(node) {
+    // Lines should be at least 1px wide, otherwise you can't see them
+    return Math.max(super.node_line_width(node), 1);
+  }
+
+  /**
+   * Generate list of highlights for this node
+   * @param {Object} node The node in question
+   * @return {Array} A list of objects containing:
+   *  * strokeStyle: The stroke (i.e. colour) for this line
+   *  * widthProportion: The width proportion of the main line width
+   *  * dashSize: The size of dash to use, if the highlight is to be dashed
+   */
+  get_markings_list(node) {
+    let markings_list = super.get_markings_list(node);
+
+    // Lines are too thin, use dashes instead of nesting them inside
+    for (let i = 0; i < markings_list.length; i++) {
+      markings_list[i].widthProportion = 1;
+      markings_list[i].dashSize = 10;
+    }
+    return markings_list;
+  }
 }
 
 export default PolytomyBranchLayout; // default means you can use any name for the function when you import it.
