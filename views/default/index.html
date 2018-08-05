@@ -4,7 +4,7 @@
 
 <div class="col-sm-6" id = "left_column">
 <h2>Welcome to the OneZoom <a href="life/@Eukaryota">tree of life explorer</a></h2>
-<p class="main_text">An interactive map of the evolutionary relationships between over 2.1 million species of life on our planet. Each leaf on the tree represents a species and the branches show how they are connected through evolution. Discover your favourites, see which species are under threat, and wonder at over 110,000 images on a single page.</p>
+<p class="main_text">An interactive map of the evolutionary relationships between {{="{:,}".format(n_species)}} species of life on our planet. Each leaf on the tree represents a species and the branches show how they are connected through evolution. Discover your favourites, see which species are under threat, and wonder at {{="{:,}".format(n_images)}} images on a single page.</p>
 <a id="carousel_link" href="life.html/@Mammalia?init=zoom">
 <div class="carousel" >
    <!-- list the images inside 'cycler': use the 'title' attribute to determine which location in the tree to zoom to -->
