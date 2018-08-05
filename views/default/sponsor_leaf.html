@@ -141,11 +141,12 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
       <p class="singlerow extra_info">{{=T('If you enter your Twitter handle, we will tweet when your leaf goes live')}}</p>
       <div class="singlerow">{{=XML(T('OneZoom is %s in the UK.') % (A('registered charity number 1163559', _href="//www.onezoom.org/static/images/RegistrationCertificate.jpg", _target="_blank"),))}}</div>
       <div class="singlerow">{{=T('If you are a UK tax payer please consider making a Gift Aid declaration which will increase the value of your donation by 25% at no cost to you')}}</div>
+ 
       <button type='button' onclick="document.getElementById('gift_aid').style.display='block'; document.getElementById('user_giftaid_input').checked = true;">{{=T('Click if you are a UK tax payer and agree to Gift Aid')}}</button>
               <!-- these bits should open up automatically -->
       <div id = "gift_aid" {{if request.vars.user_giftaid:}}style="display:block"{{pass}}>
         <h3>{{=T('Gift Aid declaration')}}</h3>
-        <p>{{=T('Thank you for considering Gift Aid. All you have to do is confirm that you agree to the following statement:')}}</p>
+        <p>{{=T('Thank you for considering Gift Aid. Please share your street address by ticking the box when you make your donation through PayPal, this information is required for us to reclaim gift aid. Please also confirm that you agree to the below Gift Aid declaration.')}}</p>
         {{if partner_data.get('giftaid'):}}          
         <p>I want to Gift Aid this donation and any donations I make in the future or have made in the past 4 years to OneZoom and {{=T(partner_data.get('name'))}}</p>
         <p>I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of
@@ -165,8 +166,9 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
           
         <p> I agree: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" {{if request.vars.user_giftaid:}}checked{{pass}}/></p>
         
-        <p> Please note: we will need your name, title and UK street address to process gift aid, so please fill in these fields above and instruct PayPal to share your postal address when making your payment - thank you.</p>
           {{pass}}
+                <p> Please note: we will need your name, title and UK street address to process gift aid, so please fill in these fields above. Please also remember to instruct PayPal to share your postal address when making your payment - thank you.</p>
+          
       </div>
       <input type="hidden" id="user_nondefault_image_input" name="user_nondefault_image" value="0" />
       <input type="hidden" name="id" value="{{=id}}" />
