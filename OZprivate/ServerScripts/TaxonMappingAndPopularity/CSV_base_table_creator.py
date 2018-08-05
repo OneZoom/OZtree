@@ -351,20 +351,24 @@ def inherit_popularity(tree, verbosity=0):
         pop = popularity_function(node.ancestors_popsum, node.descendants_popsum, node.n_ancestors, node.n_descendants)
         if hasattr(node, 'data'):
             #the 'data' attribute should be set for all nodes present in the original tree
-            node.data['raw_popularity'] = node.pop_store
             node.data['popularity'] = pop
+            node.data['raw_popularity'] = node.pop_store
         else:
             #even if there is no data in the node, we need to set a popularity. 
             #This can happen for e.g. nodes from broken polytomies
-            node.data['raw_popularity'] = None
             node.data={'popularity':pop}
+            node.data['raw_popularity'] = None
 
 
 def create_leaf_popularity_rankings(tree, verbosity=0):
     """must be run once all invalid tips etc have been removed"""
     leaf_popularities = defaultdict(int)
     for node in tree.leaf_node_iter():
-        leaf_popularities[node.data['popularity']] += 1
+        try:
+            leaf_popularities[node.data['popularity']] += 1
+        except KeyError:
+            print(node)
+            raise
     cumsum = 1
     for k in sorted(leaf_popularities.keys(), reverse=True):
        add_next = leaf_popularities[k]
