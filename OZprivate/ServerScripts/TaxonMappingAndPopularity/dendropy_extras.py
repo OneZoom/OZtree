@@ -332,13 +332,13 @@ def write_brief_newick(self, out, polytomy_braces="()"):
         if self.edge and self.edge.length==0:
             out.write(polytomy_braces[1]) #added
             try:
-                out.write(str(self.data.ott))
+                out.write(str(self.data['ott']))
             except:
                 pass
         else:
             out.write(')')
             try:
-                out.write(str(self.data.ott))
+                out.write(str(self.data['ott']))
             except:
                 pass
 
