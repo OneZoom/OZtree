@@ -361,22 +361,27 @@ def inherit_popularity(tree, verbosity=0):
 
 
 def create_leaf_popularity_rankings(tree, verbosity=0):
-    """must be run once all invalid tips etc have been removed"""
+    """
+    Make a rank of all existing leaves by phylogenetic popularity
+    Must be run once all invalid tips etc have been removed.
+    If there are no popularities, set all ranks to None
+    """
     leaf_popularities = defaultdict(int)
     for node in tree.leaf_node_iter():
-        try:
-            leaf_popularities[node.data['popularity']] += 1
-        except KeyError:
-            print(node)
-            raise
+        leaf_popularities[node.data.get('popularity')] += 1
     cumsum = 1
-    for k in sorted(leaf_popularities.keys(), reverse=True):
-       add_next = leaf_popularities[k]
-       leaf_popularities[k] = cumsum
-       cumsum += add_next
-    for leaf in tree.leaf_node_iter():
-       leaf.data['popularity_rank'] = leaf_popularities[leaf.data['popularity']]
-
+    try:
+        for k in sorted(leaf_popularities.keys(), reverse=True):
+           add_next = leaf_popularities[k]
+           leaf_popularities[k] = cumsum
+           cumsum += add_next
+        for leaf in tree.leaf_node_iter():
+           leaf.data['popularity_rank'] = leaf_popularities[leaf.data['popularity']]
+    except TypeError:
+        #there are some Nones in the popularity
+        for leaf in tree.leaf_node_iter():
+           leaf.data['popularity_rank'] = None
+                   
 def write_popularity_tree(tree, outdir, filename, version, verbosity=0):
     Node.write_pop_newick = write_pop_newick
     with open(os.path.join(outdir, "{}_{}.nwk".format(filename, version)), 'w+') as popularity_newick:
@@ -423,6 +428,7 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, verbosity=0, sa
     Tree.write_preorder_ages = write_preorder_ages
     Tree.remove_unifurcations_keeping_higher_taxa = remove_unifurcations_keeping_higher_taxa
     Tree.write_preorder_to_csv = write_preorder_to_csv
+    
     Tree.create_leaf_popularity_rankings = create_leaf_popularity_rankings #not defined in dendropy_extras, but in this file
     Node.write_brief_newick = write_brief_newick
     
@@ -616,7 +622,7 @@ if __name__ == "__main__":
         # if p.pop_store:
         #   print("Ancestors: {} = {:.2f}".format(p.label, p.pop_store))
     
-    info("Writing out results to {}/xxx".format(args.output_location))
-    construct_wiki_info(OTT_ptrs)
-
-    output_simplified_tree(tree, args.OpenTreeTaxonomy, args.output_location, args.version, args.verbosity)
+        info("Writing out results to {}/xxx".format(args.output_location))
+        construct_wiki_info(OTT_ptrs)
+    
+        output_simplified_tree(tree, args.OpenTreeTaxonomy, args.output_location, args.version, args.verbosity, )
