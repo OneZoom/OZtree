@@ -433,10 +433,10 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, verbosity=0, sa
     a, n = tree.set_node_ages()
     info("-> set ages on {} nodes and leaves, and removed {} extinction props".format(a,n))
     
-    info("-> removing unifurctions")
+    info("-> removing unifurcations")
     deleted_nodes = len(tree.remove_unifurcations_keeping_higher_taxa())
     #see https://github.com/jeetsukumaran/DendroPy/issues/75
-    info(" (removed {} unifurctions)".format(deleted_nodes))
+    info(" (removed {} unifurcations)".format(deleted_nodes))
     
     #NB: we shouldn't need to (re)set popularity or ages, since deleting nodes 
     #does not affect these, and both have been calculated *after* new
