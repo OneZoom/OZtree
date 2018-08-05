@@ -375,7 +375,7 @@ def create_leaf_popularity_rankings(tree, verbosity=0):
            leaf_popularities[k] = cumsum
            cumsum += add_next
         for leaf in tree.leaf_node_iter():
-           leaf.data['popularity_rank'] = leaf_popularities[leaf.data['popularity']]
+           leaf.data['popularity_rank'] = leaf_popularities[leaf.data.get('popularity')]
     except TypeError:
         #there are some Nones in the popularity. We cannot set ranks.
         pass
