@@ -315,6 +315,12 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
         info("Increased IUCN coverage to {} taxa using wikidata".format(used))
 
 
+def add_data_attribute_to_nodes(tree):
+    for node in tree.preorder_node_iter():
+        if not hasattr(node, 'data'):
+            node.data={}
+
+
 def construct_wiki_info(OTT_ptrs):
     """
     Construct a wikidata Qid, and a wikipedia lang flag, for outputting to csv files
@@ -349,15 +355,8 @@ def inherit_popularity(tree, verbosity=0):
     #now apply the popularity function
     for node in tree.preorder_node_iter():
         pop = popularity_function(node.ancestors_popsum, node.descendants_popsum, node.n_ancestors, node.n_descendants)
-        if hasattr(node, 'data'):
-            #the 'data' attribute should be set for all nodes present in the original tree
-            node.data['popularity'] = pop
-            node.data['raw_popularity'] = node.pop_store
-        else:
-            #even if there is no data in the node, we need to set a popularity. 
-            #This can happen for e.g. nodes from broken polytomies
-            node.data={'popularity':pop}
-            node.data['raw_popularity'] = None
+        node.data['raw_popularity'] = node.pop_store
+        node.data['popularity'] = pop
 
 
 def create_leaf_popularity_rankings(tree, verbosity=0):
@@ -381,11 +380,13 @@ def create_leaf_popularity_rankings(tree, verbosity=0):
         #there are some Nones in the popularity
         for leaf in tree.leaf_node_iter():
            leaf.data['popularity_rank'] = None
-                   
+
+
 def write_popularity_tree(tree, outdir, filename, version, verbosity=0):
     Node.write_pop_newick = write_pop_newick
     with open(os.path.join(outdir, "{}_{}.nwk".format(filename, version)), 'w+') as popularity_newick:
         tree.seed_node.write_pop_newick(popularity_newick)
+
 
 def output_simplified_tree(tree, taxonomy_file, outdir, version, verbosity=0, save_sql=True):
     """ we should now have leaf entries attached to each node in the tree like
@@ -598,7 +599,9 @@ if __name__ == "__main__":
     n = sum(1 for i in tree.postorder_node_iter())
     random.seed(random_seed_addition) #so we get the same bifurcations each time
     tree.resolve_polytomies(rng=random)
+    add_data_attribute_to_nodes(tree)
     info(" {} extra nodes created".format(sum(1 for i in tree.postorder_node_iter()) - n))
+    
     
     if args.popularity_file is not None and args.wikipediaSQLDumpFile is not None and args.wikipedia_totals_bz2_pageviews:
         
@@ -622,7 +625,7 @@ if __name__ == "__main__":
         # if p.pop_store:
         #   print("Ancestors: {} = {:.2f}".format(p.label, p.pop_store))
     
-        info("Writing out results to {}/xxx".format(args.output_location))
-        construct_wiki_info(OTT_ptrs)
-    
-        output_simplified_tree(tree, args.OpenTreeTaxonomy, args.output_location, args.version, args.verbosity, )
+    info("Writing out results to {}/xxx".format(args.output_location))
+    construct_wiki_info(OTT_ptrs)
+
+    output_simplified_tree(tree, args.OpenTreeTaxonomy, args.output_location, args.version, args.verbosity, )
