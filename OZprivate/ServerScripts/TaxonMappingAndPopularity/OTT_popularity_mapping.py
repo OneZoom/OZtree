@@ -1,54 +1,55 @@
 #!/usr/bin/env python3
-"""
+'''
 Routines for mapping OpenTree Taxonomy identifiers to wikidata/pedia, and 
 then calculating popularity indices from them.
 
 Most of these routines can be called from other files: running this file as the main
-python script will save popularity measures to a csv file. If you want to output phylogenetic 
-popularity measures, based on ancestors and descendants in a tree, you must specify an 
---OpenTreeFile. Otherwise, the script will produce a csv output with basic popularity measures
-which can be run through calc_phylogenetic_popularity.py to output phylogenetic (ancestor / 
-descendant summmed) popularities separately. This allows quick recalculation of popularities 
-(NB: 'ancestor' popularities include the popularity of self)
+python script will save popularity measures to a csv file. If you want to output 
+phylogenetic popularity measures, based on ancestors and descendants in a tree, you must
+specify an --OpenTreeFile. Otherwise, the script will produce a csv output with basic 
+popularity measures which can be run through calc_phylogenetic_popularity.py to output
+phylogenetic (ancestor / descendant summmed) popularities separately. This allows quick
+popularity recalculation (NB: "ancestor" popularities include the popularity of self)
 
 The routines work by taking an OpenTree taxonomy file and map each line to wikidata Qid using source ids
 
-    each source id is stored in a object, e.g. {'id':NCBIid}, to which we add wiki info such as the qID
-    {'id':NCBIid, wd:{'Q':Qid}}
+    each source id is stored in a object, e.g. {"id":NCBIid}, to which we add wiki info such as the qID
+    {"id":NCBIid, wd:{"Q":Qid}}
     
     the object is pointed to from two sources, a source_data 2D array and an OTT_ids array, e.g.
     
-    source_ptrs['ncbi'][NCBIid] -> {'id':NCBIid} <- OTT_ptrs[OTTid]['sources']['ncbi']
-    source_ptrs['worms'][WORMSid] -> {'id':WORMSid} <- OTT_ptrs[OTTid]['sources']['worms']
+    source_ptrs["ncbi"][NCBIid] -> {"id":NCBIid} <- OTT_ptrs[OTTid]["sources"]["ncbi"]
+    source_ptrs["worms"][WORMSid] -> {"id":WORMSid} <- OTT_ptrs[OTTid]["sources"]["worms"]
     
     this allows us to add wiki info to the object
     which can then be seen from the OTT_ids reference, i.e.    
 
-    source_ptrs['ncbi'][NCBIid] -> {'id':NCBIid, 'wd':{'Q':Qid1, 'l':['en','fr'], 'iucn':IUCNid}} <- OTT_ptrs[OTTid]['sources']['ncbi']
-    source_ptrs['worms'][WORMSid] -> {'id':WORMSid, 'wd':{'Q':Qid2}} <- OTT_ptrs[OTTid]['sources']['worms']
+    source_ptrs["ncbi"][NCBIid] -> {"id":NCBIid, "wd":{"Q":Qid1, "l":["en","fr"], "iucn":IUCNid}} <- OTT_ptrs[OTTid]["sources"]["ncbi"]
+    source_ptrs["worms"][WORMSid] -> {"id":WORMSid, "wd":{"Q":Qid2}} <- OTT_ptrs[OTTid]["sources"]["worms"]
 
-    where 'l' gives the sitelinks into the different language wikipedias
+    where "l" gives the sitelinks into the different language wikipedias
 
     We also create a wikipedia_title array of pointers into the same dataset
     
-    enwikipedia_ptrs[enwiki_title] -> {'Q':Qid1}
+    enwikipedia_ptrs[enwiki_title] -> {"Q":Qid1}
     
     so that we can add e.g. page sizes & visits
 
 == Wikidata parsing ==
 
-Wikidata dump has one line per item or property, and there are millions of items ('type':'item') in the dump.
-We are only interested in taxon items (and possibly common names that point to taxon items)
+Wikidata dump has one line per item or property, and there are millions of items 
+("type":"item") in the dump. We are only interested in taxon items (and possibly common 
+names that point to taxon items)
 
 === Taxon items ===
 These must contain the strings Q16521, Q310890, Q23038290, or Q713623, since all taxon 
-items have property P31 ('instance of') set to taxon (Q16521) or a subclass of 'taxon': monotypic taxon (Q310890),
+items have property P31 ("instance of") set to taxon (Q16521) or a subclass of "taxon": monotypic taxon (Q310890),
 fossil taxon (Q23038290), clade (Q713623), or similar see 
 https://www.wikidata.org/wiki/Wikidata:WikiProject_Taxonomy/Tutorial#Basic_properties, and all the subclasses of
 taxon at http://bit.ly/2m1717d). These taxon items should be in the following format e.g. 
 ==== Example ====
 for Gorilla (Q36611) (simplified from the output via https://www.wikidata.org/wiki/Special:EntityData/Q737838.json
- or using `gzcat wikidata-20151005-all.json.gz | grep -A 200 '"id": "Q737838"'`, with linebreaks added) 
+ or using `gzcat wikidata-20151005-all.json.gz | grep -A 200 ""id": "Q737838""`, with linebreaks added) 
 
 {"type":"item","id":"Q36611","labels":{"pl":{"language":"pl","value":"goryl"},"en":{"language":"en","value":"Gorilla"}...},
   "claims":{
@@ -62,11 +63,11 @@ for Gorilla (Q36611) (simplified from the output via https://www.wikidata.org/wi
     "enwiki": {"badges":[],"site":"enwiki","title": "Gorilla"},...},...}
 
 === Common name items ===
-Common name items must contain the string Q502895, since all these have property P31 ('instance of') set to 
+Common name items must contain the string Q502895, since all these have property P31 ("instance of") set to 
 common name (Q502895) of (P642) [Taxon item]
 
 ==== Example ====
-for Snake (Q2102) which points to the taxon page 'Serpentes' (Q29540038)
+for Snake (Q2102) which points to the taxon page "Serpentes" (Q29540038)
 {"type": "item","id":"Q2102","labels":{ "en": { "language": "en", "value": "snake" }, "sv": { "language": "sv", "value": "Ormar" }},
   "claims":{"P31":[
     {"mainsnak":{
@@ -87,41 +88,42 @@ for Snake (Q2102) which points to the taxon page 'Serpentes' (Q29540038)
 
 === Issues ===
 
-A good example of problematic issues is Gazella/gazelle. The English word "gazelle" applies to a number of antelope species, not all of which are in the genus Gazella. The genus Gazella is present in WD at [[Q190858]], and the concept of a gazelle at [[Q29001815]]. The gazelle item is (correctly) stated as an instance of a common name of Gazella, Eudorcas, Nanger, and Antilopini. But there is no english wikipedia item for Gazella (the genus), only for gazelles (the vernacular).
+A good example of problematic issues is Gazella/gazelle. The English word "gazelle" 
+applies to a number of antelope species, not all of which are in the genus Gazella. 
+The genus Gazella is present in WD at [[Q190858]], and the concept of a gazelle at 
+[[Q29001815]]. The gazelle item is (correctly) stated as an instance of a common name of
+Gazella, Eudorcas, Nanger, and Antilopini. But there is no english wikipedia item for
+Gazella (the genus), only for gazelles (the vernacular).
 
 == Running the script ==
 
 You can run this script to produce a raw output file using something like
 
-ServerScripts/TaxonMappingAndPopularity/OTT_popularity_mapping.py \
-    data/OpenTree/ott/taxonomy.tsv \
-    data/Wiki/wd_JSON/*.bz2 \
-    data/Wiki/wp_SQL/*.gz \
-    data/Wiki/wp_pagecounts/*.bz2 \
-    -o data/output_files/raw_pop -v > ServerScripts/TaxonMappingAndPopularity/ottmap.log
+ServerScripts/TaxonMappingAndPopularity/OTT_popularity_mapping.py data/OpenTree/ott/taxonomy.tsv data/Wiki/wd_JSON/*.bz2 data/Wiki/wp_SQL/*.gz  data/Wiki/wp_pagecounts/*.bz2 -o data/output_files/raw_pop -v > ServerScripts/TaxonMappingAndPopularity/ottmap.log
     
-To get e.g. only the species in the current OpenTree, this raw_pop can be filtered by first collecting a list of the 
-OTT ids of interest, e.g.
+To get e.g. only the species in the current OpenTree, this raw_pop can be filtered by 
+first collecting a list of the OTT ids of interest, e.g.
 
 grep -o "\d\+" opentree7.0_tree/labelled_supertree/labelled_supertree.tre | sort | uniq > tree_taxa
 grep "|\s*species\s*|" ott/taxonomy.tsv | cut -f 1 | sort > ot_species
 comm -12 tree_taxa ot_species > tree_species
 grep ",\d" raw_pop | cut -f 1 -d, | sort > wiki_taxa
 
-#the number of wiki : total taxa
+== the number of wiki : total taxa
 wc -l raw_pop wiki_taxa # 1492679/3452152 = 43%
 
-#the number of wiki : total taxa for those only in tree_species
-perl -e 'open(F1, "<tree_taxa");open(F2, "<raw_pop"); %foo = map {$_ => 1} <F1>; while(<F2>) {print if(exists($foo{(split(/,/,$_,2))[0]."\n"}));};' > raw_species
+the number of wiki : total taxa for those only in tree_species
+perl -e "open(F1, q|<tree_taxa|);open(F2, q|<raw_pop|); %foo = map {$_ => 1} <F1>; while(<F2>) {print if(exists($foo{(split(/,/,$_,2))[0].q|\n|}));};" > raw_species
 grep ",\d" raw_species | cut -f 1 -d, | sort > wiki_species
 wc -l raw_species wiki_species # 1429835/2335500 = 43%
 
-##Note: a few organisms like Dog and Cat do not have the wikipedia pages linked from the taxon item, but 
-##from another more generic page. For example, Canis lupus familiaris (Q26972265) is not linked to 
-##the 'dog' wikipedia items. Instead, these are linked from Q144 (dog) which is an 
-##"instance of (P31) common name (Q502895) of (P642) Canis lupus familiaris (Q26972265)"
-##we can find these (very few) examples by the wikidata query at http://tinyurl.com/y7a95upp
-"""
+Note: a few organisms like Dog and Cat do not have the wikipedia pages linked from the taxon item, but 
+from another more generic page. For example, Canis lupus familiaris (Q26972265) is not linked to 
+the "dog" wikipedia items. Instead, these are linked from Q144 (dog) which is an 
+"instance of (P31) common name (Q502895) of (P642) Canis lupus familiaris (Q26972265)"
+we can find these (very few) examples by the wikidata query at http://tinyurl.com/y7a95upp
+
+'''
 
 import sys
 import csv
@@ -164,9 +166,8 @@ def create_from_taxonomy(OTTtaxonomy_file, sources, OTT_ptrs, verbosity=0, extra
     
     "extra_taxonomy_map" allows us to inject mappings that are missing from the OpenTree
     e.g.
-    
-    
     '''
+
     unused_sources = set()
     source_ptrs = {s:{} for s in sources}
     

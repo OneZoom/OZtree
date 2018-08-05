@@ -315,16 +315,11 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
         info("Increased IUCN coverage to {} taxa using wikidata".format(used))
 
 
-def add_data_attribute_to_nodes(tree):
-    for node in tree.preorder_node_iter():
-        if not hasattr(node, 'data'):
-            node.data={}
-
-
 def construct_wiki_info(OTT_ptrs):
     """
     Construct a wikidata Qid, and a wikipedia lang flag, for outputting to csv files
-    Languages are sorted roughly according to active users on https://en.wikipedia.org/wiki/List_of_Wikipedias
+    Languages are sorted roughly according to active users on 
+    https://en.wikipedia.org/wiki/List_of_Wikipedias
     """
     lang_flags = {lang:2**bit for lang, bit in wikiflags.items()}
     for OTTid, data in OTT_ptrs.items():
@@ -336,18 +331,30 @@ def construct_wiki_info(OTT_ptrs):
             data['wd']['wikipedia_lang_flag'] = tot
         except KeyError:
             pass
+
+def popularity_function(
+    sum_of_all_ancestor_popularities, 
+    sum_of_all_descendant_popularities, 
+    number_of_ancestors, 
+    number_of_descendants):
+    """
+    a) Dividing by number_of_ancestors+number_of_descendants would mean averaging 
+        popularity over all nodes, which would bias against taxa which have many
+        unvisited/unpopular children
+    b) Alternatively, dividing by a constant is equivalent to summing popularity over
+        all nodes, which biases towards taxa with many fine taxonomic divisions
+    We do something between the two by dividing by the log of the number of nodes.
+    """
+    if ((sum_of_all_ancestor_popularities is None) or 
+        (sum_of_all_descendant_popularities is None) or 
+        (number_of_ancestors is None) or 
+        (number_of_descendants is None)):
+        return None
+    else:
+        return ((sum_of_all_ancestor_popularities + sum_of_all_descendant_popularities)/
+            log(number_of_ancestors+ number_of_descendants))
     
 def inherit_popularity(tree, verbosity=0):
-    def popularity_function(sum_of_all_ancestor_popularities, sum_of_all_descendant_popularities, number_of_ancestors, number_of_descendants):
-        """
-        a) Dividing by number_of_ancestors+number_of_descendants would mean averaging pop over all nodes
-        b) Alternatively, dividing by a constant is equivalent to summing popularity over all nodes
-        We do something between the two by dividing by the log of the number of nodes.
-        """
-        if (sum_of_all_ancestor_popularities is None) or (sum_of_all_descendant_popularities is None) or (number_of_ancestors is None) or (number_of_descendants is None):
-            return None
-        else:
-            return((sum_of_all_ancestor_popularities + sum_of_all_descendant_popularities)/log(number_of_ancestors+ number_of_descendants)) 
             
     #NB: we must percolate popularities through the tree before deleting monotomies, since these often contain info
     #this should allocate popularities even for nodes that have been created by polytomy resolving.
@@ -358,6 +365,42 @@ def inherit_popularity(tree, verbosity=0):
         node.data['raw_popularity'] = node.pop_store
         node.data['popularity'] = pop
 
+
+def resolve_polytomies_add_popularity(tree, seed):
+    """
+    If there are polytomies in the tree, resolve them, but make sure that the newly 
+    created nodes get popularity values too. These can be recalculated from the
+    descendants and ancestors of the children
+    
+    """
+    prev_num_nodes = sum(1 for i in tree.postorder_node_iter())
+    random.seed(seed) #so we get the same bifurcations each time
+    tree.resolve_polytomies(rng=random)
+    info(" {} extra nodes created".format(
+        sum(1 for i in tree.postorder_node_iter()) - prev_num_nodes))
+    for node in tree.postorder_node_iter():
+        if not hasattr(node, 'data'):
+            #this is a new node - it should always have 2 children
+            try:
+                n = ancestor_pop_sum = descendant_pop_sum = n_ancestors_sum = n_descendants_sum = 0
+                for c in node.child_node_iter():
+                    n += 1
+                    ancestor_pop_sum += c.ancestors_popsum
+                    descendant_pop_sum += c.descendants_popsum
+                    n_ancestors_sum += c.n_ancestors
+                    n_descendants_sum += c.n_descendants
+                
+                node.data={
+                    'raw_popularity':0,
+                    'popularity':popularity_function(
+                        ancestor_pop_sum/n,
+                        descendant_pop_sum,
+                        n_ancestors_sum/n,
+                        n_descendants_sum)
+                    }
+            except TypeError:
+                #probably popularity == None for one of the children
+                pass
 
 def create_leaf_popularity_rankings(tree, verbosity=0):
     """
@@ -387,8 +430,9 @@ def write_popularity_tree(tree, outdir, filename, version, verbosity=0):
         tree.seed_node.write_pop_newick(popularity_newick)
 
 
-def output_simplified_tree(tree, taxonomy_file, outdir, version, verbosity=0, save_sql=True):
-    """ we should now have leaf entries attached to each node in the tree like
+def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity=0, save_sql=True):
+    """
+    We should now have leaf entries attached to each node in the tree like
     data = {
      'ott':,
      'wd': {'Q': 15478814, 'EoL': 1100788, 'l':['en','fr']}, 
@@ -430,6 +474,7 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, verbosity=0, sa
     Tree.write_preorder_to_csv = write_preorder_to_csv
     
     Tree.create_leaf_popularity_rankings = create_leaf_popularity_rankings #not defined in dendropy_extras, but in this file
+    Tree.resolve_polytomies_add_popularity = resolve_polytomies_add_popularity
     Node.write_brief_newick = write_brief_newick
     
     n = len(tree.prune_children_of_otts(get_OTT_species(taxonomy_file), verbosity=verbosity))
@@ -447,6 +492,11 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, verbosity=0, sa
     deleted_nodes = len(tree.remove_unifurcations_keeping_higher_taxa())
     #see https://github.com/jeetsukumaran/DendroPy/issues/75
     info(" (removed {} unifurcations)".format(deleted_nodes))
+    
+    
+    info("-> breaking polytomies at random with seed={}".format(seed))
+    tree.resolve_polytomies_add_popularity(seed)
+
     
     #NB: we shouldn't need to (re)set popularity or ages, since deleting nodes 
     #does not affect these, and both have been calculated *after* new
@@ -585,6 +635,7 @@ if __name__ == "__main__":
         wiki_title_ptrs = add_wikidata_info(source_ptrs, args.wikidataDumpFile, args.wikilang, args.verbosity)
         
         identify_best_wikidata(OTT_ptrs, sources, args.verbosity)
+        construct_wiki_info(OTT_ptrs)
         
         info("Supplementing ids (EOL/IPNI) with ones from wikidata")
         supplement_from_wikidata(OTT_ptrs, args.verbosity)
@@ -593,13 +644,6 @@ if __name__ == "__main__":
         
     info("Populating IUCN IDs using EOL csv file (or if absent, wikidata)")
     populate_iucn(OTT_ptrs, args.EOLidentifiers, args.verbosity)
-    
-    info("Breaking polytomies at random with seed={}".format(random_seed_addition))
-    n = sum(1 for i in tree.postorder_node_iter())
-    random.seed(random_seed_addition) #so we get the same bifurcations each time
-    tree.resolve_polytomies(rng=random)
-    add_data_attribute_to_nodes(tree)
-    info(" {} extra nodes created".format(sum(1 for i in tree.postorder_node_iter()) - n))
     
     
     if args.popularity_file is not None and args.wikipediaSQLDumpFile is not None and args.wikipedia_totals_bz2_pageviews:
@@ -625,6 +669,6 @@ if __name__ == "__main__":
         #   print("Ancestors: {} = {:.2f}".format(p.label, p.pop_store))
     
     info("Writing out results to {}/xxx".format(args.output_location))
-    construct_wiki_info(OTT_ptrs)
-
-    output_simplified_tree(tree, args.OpenTreeTaxonomy, args.output_location, args.version, args.verbosity, )
+    output_simplified_tree(
+        tree, args.OpenTreeTaxonomy, args.output_location, args.version, 
+        random_seed_addition, args.verbosity)
