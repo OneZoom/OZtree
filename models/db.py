@@ -194,6 +194,7 @@ db.define_table('ordered_leaves',
     Field('wikipedia_lang_flag', type='integer'), #which language wikipedia articles exist (enwiki=1, dewiki=2, eswiki=4, etc etc: listed in wikiflags in _OZglobals.py)
     Field('eol', type='integer'),
     Field('iucn', type='text'), #this could contain multiple bar-separated numbers (|), if we have a conflict. Conflicts are resolved in the IUCN table
+    Field('raw_popularity', type='double'),
     Field('popularity', type='double'),
     Field('popularity_rank', type='integer'),
     #the following 5 fields are sources listed by the OpenTree
@@ -223,6 +224,7 @@ db.define_table('ordered_nodes',
     Field('wikidata', type='integer'),
     Field('wikipedia_lang_flag', type='integer'), #
     Field('eol', type='integer'),
+    Field('raw_popularity', type='double'),
     Field('popularity', type='double'),
     Field('popularity_rank', type='integer'), #meaningless - can probably be removed
     #the following 5 fields are sources listed by the OpenTree
