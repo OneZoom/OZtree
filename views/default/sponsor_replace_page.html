@@ -13,7 +13,7 @@
 {{else:}}
 <h3>{{=T('Thank you for filling out the form to sponsor a leaf on OneZoom')}}</h3>
 <ul>
-    <li>{{=T('You should have been automatically redirected to complete your sponsorship: if you have done so, you can simply close this popup now to return and view the leaf you have sponsored. It should be marked as “awaiting confirmation” (you may need to reload the page to check this). We aim to approve your text within a few days, and will send you an email when it is live.')}}</li>
+    <li>{{=T('You should have been automatically redirected to complete your sponsorship: once done, your leaf will be marked as “awaiting confirmation”. We aim to approve your text within a few days, and will send you an email when it is live.')}}</li>
     <li>{{=XML(T('If for some reason you have not been able to complete your sponsorship, please <a href="mailto:mail@onezoom.org?subject=Leaf sponsorship">e-mail us</a> or try again after 6 minutes.'))}}</li>
     <li>{{=XML(T('If you want to change the details that will appear on the leaf of the tree you can do this at any time by <a href="mailto:mail@onezoom.org?subject=Please alter the details for my donation">e-mailing us</a> to request it.'))}}</li>
 </ul>
@@ -22,9 +22,8 @@
 
 {{pass}}
 
-<a href="index.html"> Continue to OneZoom main page</a>
-
 {{if request.vars.get('embed'):}}
+{{=T("You can simply close this popup now to return to the tree.")}}
 {{else:}}
-<p class="last"><a href="http://www.onezoom.org/life/@={{=data.OTT_ID}}">Back to the tree</a></p>
+<p class="last">{{=A(T("Back to the tree"), _href=URL('default','life') + "/@={}?init=jump".format(data.OTT_ID))}}</p>
 {{pass}}

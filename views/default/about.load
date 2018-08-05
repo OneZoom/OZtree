@@ -21,7 +21,7 @@ OneZoom is a charitable incorporated organisation (non-profit) registered under 
 
 <p><img src="/static/images/LinneanLogo_small.png" /></p>
 
-<p>OneZoom is delighted to be in collaboration with the {{=A("Linnean Society of London", _href="http://linnean.org/")}} since 2017.</p>
+<p>OneZoom is delighted to be in collaboration with the {{=A("Linnean Society of London", _href="https://linnean.org/")}} since 2017.</p>
 
 </div>
 

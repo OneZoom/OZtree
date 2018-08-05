@@ -136,3 +136,18 @@ When running OneZoom as a public server, you may wish to note:
 	 return 404;
 	}
 	```
+	
+* We run web2py using supervisord, so the following commands will restart web2py and the nginx web server
+
+    ```
+    sudo service supervisord restart #e.g. after editing /usr/local/etc/supervisord.conf
+    sudo service nginx restart #e.g. after editing /usr/local/etc/nginx/nginx.conf
+    ```
+    
+* We also run an https encrypted version of the site using certificates from letsencypt, which need to be renewed every 3 months e.g. by 
+
+    ```
+    sudo service nginx stop
+    sudo letsencrypt renew
+    sudo service nginx start
+    ```

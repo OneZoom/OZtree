@@ -56,7 +56,7 @@
 <h4>Sponsorship expiry and scientific updates</h4>
 
 <ol>
-<li>All sponsorship of leaves has an expiry date</li>
+<li>All sponsored leaves have an expiry date: four years after the date when the sponsorship first became visible.</li>
 <li>You will have the first refusal to continue your sponsorship of that leaf in future.</li>
 <li>If your sponsorship expires and we are unable to contact you your leaf will become available for sponsorship by others.</li>
 <li>The donation required for sponsorship renewal may not be the same as the amount donated for initial sponsorship and the terms and conditions for sponsorship might also be different upon renewal.</li>
@@ -97,7 +97,7 @@
 <li>Each tree on OneZoom, including the {{=A('main tree of life', _href=URL('default','life.html'))}}, has its own information about where the data has come from. Generally, data has been collated by OneZoom, but not originally produced by us.</li>
 </ol>
 
-<h4>Software origin an reuse</h4>
+<h4>Software origin and reuse</h4>
 
 <ol>
 <li>The original OneZoom software has been provided to the charity OneZoom under open source MIT licenses from James Rosindell, Imperial College London and Imperial Innovations.</li>
@@ -115,7 +115,7 @@
 
 <li>The trademark OneZoom is registered in the UK and USA and is owned by Imperial Innovations. It is provided to the charity OneZoom under sub-license from James Rosindell.</li>
 <li>Images on this website are generally available under creative commons and public domain licenses with license details available from the copyright symbol next to each image in the main tree of life explorer.</li>
-<li>Quotes and user opinions are owned by the original author of the text who in each case has given permission for OneZoom to use the quote, or made the text publicly available.</li>
+<li>Quotes and user opinions are owned by the original author of the text who in each case has either given permission for OneZoom to use the quote, or made the text publicly available.</li>
 <img class="rgt_edge" src="{{=URL('static','images/leaves/Rpic1.png')}}" />
 <li>All other material on this site is owned by the OneZoom charity and its third party licensors.</li>
 
@@ -140,14 +140,14 @@
 <div class="row-fluid" style="order: {{=(2 if request.args and request.args[0]=='site' else 4)}};">
 <div class="col-md-12 intro">
 <h3 id = "useterms">Cookie policy</h3>
-<p>We use cookies. By using our website you must agree this.</p>
+<p>We use cookies. By using our website you must agree to this.</p>
 </div>
 <div class="col-md-6">
 <img class="lft_edge" src="{{=URL('static','images/leaves/Lpic1.png')}}" />
 
 <p>Cookies are small files created when you visit a site and contain a unique, anonymous number. They are stored in the cookie directory of your hard drive and may not expire at the end of your session.</p>
 
-<p>Cookies can be used in numerous ways.  Our uses are as follows...</p>
+<h5>Cookies can be used in numerous ways.  Our uses are as follows</h5>
 
 <p>To store a session identifier so that if you visit the same page for a second time it can react differently to when you visit it the first time. This use of cookies is minimal and necessary for functionality of the site.</p>
 
@@ -155,7 +155,7 @@
 </div>
 <div class="col-md-6">
 
-<p>To operate Google Analytics which enables us to see usage statistics for our website, including which kind of devices are being used to browse our website. Our usage of Google Analytics anonymises your computer’s Internet Protocol address (IP address) and does not link with any other personal data of yours that we may have. Google store the information on usage of our website in accordance with their own privacy policy.</p>
+<p>To operate Google Analytics which enables us to see usage statistics for our website, including which kind of devices are being used to browse our website. Our usage of Google Analytics anonymises your computer’s Internet Protocol address (IP address, a technical standard which allows data to be transmitted between two devices) and does not link with any other personal data of yours that we may have. Google store the information on usage of our website in accordance with their own privacy policy.</p>
 
 <p>Most browsers allow you to refuse use of cookies if you wish.</p>
 
@@ -174,16 +174,16 @@ Links within this site to other websites are not covered by this Data Protection
 
 <h4>Personal data that we collect from you and where it’s collected from</h4>
 
-<p>Internet Protocol address and session information...</p>
+<h5>Internet Protocol address and session information</h5>
 
-<p>We log users’ Internet Protocol addresses (see definition below), which are automatically recognised by the webserver (see definition below), and session information such as the duration of the visit and the type of browser (see definition below) used.</p>
+<p>We log users’ Internet Protocol addresses (IP address, a technical standard which allows data to be transmitted between two devices), which are automatically recognised by the webserver (which delivers web pages to a computer, in response to requests from a browser), and session information such as the duration of the visit and the type of browser used.</p>
 
-<p>Any data that you send to us by e-mail...</p>
+<h5>Any data that you send to us by e-mail</h5>
 
 <p>Any personal information you choose to send us by e-mail will also be stored by us and handled under the terms of this privacy policy.</p>
 
 
-<p>Data entered by you into our sponsorship form that is required before the form can be submitted...</p>
+<h5>Data entered by you into our sponsorship form that is required before the form can be submitted</h5>
 
 <ul>
 <li>Your requested sponsorship text (this consists of the contents of ‘sponsorship text’ and ‘extra text’ as well as whether the sponsorship is ‘by’ you or ‘for’ someone else).</li>
@@ -192,7 +192,7 @@ Links within this site to other websites are not covered by this Data Protection
 <li>Whether you wish to be acknowledged on the donations page as well as on the tree (the default is to be acknowledged in both places).</li>
 </ul>
 
-<p>Data entered by you into our sponsorship form that is optional...</p>
+<h5>Data entered by you into our sponsorship form that is optional</h5>
 
 <ul>
 <li>The image you chose to associate with the sponsored leaf.</li>
@@ -204,7 +204,7 @@ Links within this site to other websites are not covered by this Data Protection
 <li>Any extra message you wrote to us in the sponsor leaf form.</li>
 </ul>
 
-<p>Data stored by us alongside your sponsorship when you submit the sponsorship form...</p>
+<h5>Data stored by us alongside your sponsorship when you submit the sponsorship form</h5>
 <ul>
 <li>The date and time the reservation was made.</li>
 <li>A random reference code allocated to you when you first visited the page - you will see this number as your ‘reservation code’ in correspondence.</li>
@@ -214,7 +214,7 @@ Links within this site to other websites are not covered by this Data Protection
 <li>The name of a OneZoom collaborator if you sponsored through them, and the proportion of the sponsorship money going to them.</li>
 </ul>
 
-<p>Data collected by us from PayPal if you proceed to make a donation for leaf sponsorship...</p>
+<h5>Data collected by us from PayPal if you proceed to make a donation for leaf sponsorship</h5>
 
 <ul>
 <li>A unique transaction code generated by PayPal.</li>
@@ -228,7 +228,7 @@ Links within this site to other websites are not covered by this Data Protection
 
 <p>Note that details of your bank accounts and bank cards used through PayPal are never revealed to OneZoom. Please refer to your user agreement with PayPal for further information.</p>
 
-<p>Data stored by us alongside your sponsorship data during the process of verifying your sponsorship and making it live...</p>
+<h5>Data stored by us alongside your sponsorship data during the process of verifying your sponsorship and making it live</h5>
 
 <ul>
 <li>The agreed sponsorship text (this would be different from your requested sponsorship text in cases where we discuss a change to the text with you).</li>
@@ -237,7 +237,7 @@ Links within this site to other websites are not covered by this Data Protection
 <li>Whether the sponsored leaf is active or not.</li>
 </ul>
 
-<p>Data stored by us from users of the OneZoom popularity index by private API key...</p>
+<h5>Data stored by us from users of the OneZoom popularity index by private API key</h5>
 <ul>
 <li>The number of calls made to the API using this API key.</li>
 <li>The number of taxa requested per API call (there may be multiple taxa per call).</li>
@@ -246,7 +246,7 @@ Links within this site to other websites are not covered by this Data Protection
 
 <h4>Where your personal data is stored</h4>
 
-<p>All personal data (except that sent by e-mail to us) is stored on our servers in London and their associated backups.</p>
+<p>All personal data (except that sent by e-mail to us) is stored on our webservers in London and their associated backups.</p>
 
 <p>All data sent to us by e-mail is stored by Google and duplicated on personal mail programs of trusted members of our team.</p>
 
@@ -257,11 +257,11 @@ Links within this site to other websites are not covered by this Data Protection
 
 <h4>How personal data is used and shared with others</h4>
 
-<p>If required by law...</p>
+<h5>If required by law</h5>
 
 <p>We may disclose some or all of the information collected from you if required to do so by law or other legally binding obligation.</p>
 
-<p>On sponsored leaves and our donor page...</p>
+<h5>On sponsored leaves and our donor page</h5>
 
 <ul>
 
@@ -275,7 +275,7 @@ Links within this site to other websites are not covered by this Data Protection
 
 </ul>
 
-<p>Twitter and e-mail...</p>
+<h5>Twitter and e-mail</h5>
 
 <ul>
 
@@ -287,17 +287,17 @@ Links within this site to other websites are not covered by this Data Protection
 
 </ul>
 
-<p>Gift aid...</p>
+<h5>Gift aid</h5>
 
 <p>If you agreed to gift aid, your full name, title and address will be used by us to reclaim tax on your donation from the UK government.</p>
 
 <p>Some sponsorships also include a donation to one of our partner organisations, which is highlighted clearly on the sponsorship form you filled in in.  In such cases, if you agree to gift aid and the collaborative organisation is based in the UK and qualifies to receive payments through gift aid, then we will share your full name, title and address with the collaborative organisation, who will only be entitled to use that information for the purposes of gift aid reclaim.</p>
 
-<p>Quotes and endorsements...</p>
+<h5>Quotes and endorsements</h5>
 
 <p>We keep a record of quotes and endorsements for OneZoom.  If you have e-mailed us text that we wish to use for this purpose we will write to request your permission separately. Quotes and endorsements once agreed become visible to the public and should be considered under a creative commons attribution license.</p>
 
-<p>Internet Protocol address and session information...</p>
+<h5>Internet Protocol address and session information</h5>
 
 <p>This information is only used for system administration of the website and to compile statistics which we use to review use of the website.</p>
 
@@ -309,7 +309,7 @@ Links within this site to other websites are not covered by this Data Protection
 
 <li>You can request corrections to any of your personal data held by us. We agree honour these requests, however, changes to your sponsorship text must still be deemed appropriate for public viewing according to our terms of leaf sponsorship.</li>
 
-<li>You can retract your Gift aid statement, or request corrections to the data associated with that.</li>
+<li>You can retract your gift aid statement, or request corrections to the data associated with that.</li>
 
 <li>You can request deletion of all your personal data, or any part of it. If you request deletion of your sponsorship data then your name will no longer appear on the tree as a sponsor, or on our donor page, and the leaf you sponsored will become available for sponsorship again.</li>
 
@@ -348,7 +348,7 @@ Links within this site to other websites are not covered by this Data Protection
 </div>
 <div class="col-md-6">
 <ul>
-<li>Access to our data via public key API is subject to restrictions and request to the API may be denied at peak times or if the service is abused.</li>
+<li>Access to our data via public key API is subject to restrictions and requests to the API may be denied at peak times or if the service is abused.</li>
 <li>Please download the complete dataset instead of using the API if you require the full set of popularity information.</li>
 <li>Access to our private key API is available on request and permits larger calls than our public key API.</li>
 <li>We collect data from private key uses of our API, this is handled in accordance with our Data Protection and Privacy Policy.</li>
@@ -358,28 +358,5 @@ Links within this site to other websites are not covered by this Data Protection
 </div>
 
 
-<div class="row-fluid" style="order: 6;">
-<div class="col-md-12 intro">
-<h3 id = "useterms">Definitions</h3>
 </div>
-<div class="col-md-6">
-
-<h4>A Browser</h4>
-
-<p>is a program used to search for and display web pages.</p>
-
-<h4>A Webserver</h4>
-
-<p>delivers web pages to a computer, in response to a request from a Browser.</p>
-
-</div>
-<div class="col-md-6">
-
-<h4>An Internet Protocol address (IP address)</h4>
-
-<p>is a technical standard which allows data to be transmitted between two devices.</p>
-
-</div>
-</div>
-
 </div>

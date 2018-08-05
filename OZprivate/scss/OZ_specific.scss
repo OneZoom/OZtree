@@ -9,6 +9,12 @@ body {
     margin-bottom: 60px;
 }
 
+body.embedded {
+    padding: 0;
+    margin: 0 0.3em;
+}
+
+
 header .jumbotron {
     background-color: transparent;
 }

@@ -521,6 +521,7 @@ ul#searchboxes {
     display: flex;
     overflow-y: auto; /* iframe should do the scrolling, but hidden causes iOS woe */
     -webkit-overflow-scrolling: touch; /* see https://davidwalsh.name/scroll-iframes-ios */
+    overflow-y: hidden; /* Let the iframe do the scrolling */
 }
 
 .popup-content.iframe-container > iframe {
