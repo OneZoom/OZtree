@@ -356,7 +356,7 @@ def inherit_popularity(tree, verbosity=0):
         else:
             #even if there is no data in the node, we need to set a popularity. 
             #This can happen for e.g. nodes from broken polytomies
-            node.data{'raw_popularity'] = None
+            node.data['raw_popularity'] = None
             node.data={'popularity':pop}
 
 
