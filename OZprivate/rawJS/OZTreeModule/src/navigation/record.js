@@ -196,6 +196,13 @@ function get_params(options) {
       querystring.push("pop=" + encode_popup_action(popup_state[0]) + "_" + popup_state[1]);
     }  
   }
+  // Preserve all custom parts of current querystring
+  (config.custom_querystring_params || []).map(function (part_name) {
+      var m = window.location.search.match(new RegExp('(^|&|\\?)' + part_name + '=[^&]+','g'));
+      (m || []).map(function (part) {
+          querystring.push(part.replace(/^[&?]/, ''));
+      });
+  });
   querystring = querystring.join('&')
   if (querystring !== '') {
     querystring = "?" + querystring;

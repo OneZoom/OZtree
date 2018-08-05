@@ -37,6 +37,12 @@ class PolytomyMidnode extends Midnode {
       return cuts;
     }
   }
+
+  // Override: If this node has more than 3 children, don't bother developing anything below it, whatever the callee says
+  develop_children(depths) {
+    super.develop_children(this.full_children_length > 3 ? 0 : depths);
+  }
+
 }
 
 function display_cut_substr(cuts) {

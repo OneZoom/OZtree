@@ -60,8 +60,11 @@ function get_shapes_of_node(node, shapes) {
   }
 }
 
-// this funciton controlls where the signposts are and ripples down the tree from root in its own right
-// visible_nodes and signpost_nodes are acutally used to put outputs to vectors
+
+/**
+ * Recurse from (node), populating the arrays (visible_nodes) & (signpost_nodes)
+ * with node objects that are visible and should have a signpost respectively.
+ */
 function get_visible_and_signpost_nodes(node, visible_nodes, signpost_nodes, under_signpost) {
   if (node.gvar) {
     visible_nodes.push(node);
@@ -69,8 +72,10 @@ function get_visible_and_signpost_nodes(node, visible_nodes, signpost_nodes, und
   }
   if (node.dvar && node.has_child) {
     if (!under_signpost) {
-      let is_signpost_node = config.projection.threshold_txt*35 < node.rvar * (node.hxmax - node.hxmin) && node.rvar <= config.projection.sign_thres;
-      is_signpost_node = is_signpost_node && node.draw_signpost_common && config.projection.draw_signpost;
+      let is_signpost_node = config.projection.draw_signpost
+          && node.draw_signpost_common
+          && node.rvar <= config.projection.sign_thres
+          && config.projection.threshold_txt*35 < node.rvar * (node.hxmax - node.hxmin);
       if (is_signpost_node) {
         under_signpost = true;
         node.under_signpost = under_signpost;

@@ -11,7 +11,7 @@ function re_calc(node, xp, yp, ws) {
 function drawreg(node, x, y, r) {
   //////////////////////////////////
   // dvar is true if this node (or a descendent node) needs to be drawn on the screen
-  // gavr is true if this node itself needs to be drawn on screen
+  // gvar is true if this node itself needs to be drawn on screen
   // graphref is a path to the referencing node
   //////////////////////////////////
   let child_graphref = false;
@@ -101,6 +101,7 @@ function get_dvar_by_children(node) {
   return dvar;
 }
 
+/** Does the given node and it's descendants fit on screen? */
 function node_descendants_in_screen(node) {
   if ((node.xvar + node.rvar * node.hxmax) < 0) return false;
   else if ((node.xvar + node.rvar * node.hxmin) > tree_state.widthres) return false;
@@ -109,6 +110,7 @@ function node_descendants_in_screen(node) {
   else return true;
 }
 
+/** Does the given node fit on screen? */
 function node_in_screen(node) {
   if ((node.xvar + node.rvar * node.gxmax) < 0) return false;
   else if ((node.xvar + node.rvar * node.gxmin) > tree_state.widthres) return false;

@@ -5,4 +5,5 @@
  **/
 export {default as natural} from './natural_theme';
 export {default as AT} from './at_theme';
+export {default as otop} from './otop_theme';
 export {default as popularity} from './popularity_theme';

@@ -265,14 +265,6 @@ function need_reanchor() {
   return (tree_state.ws > 100 || tree_state.ws < 0.01) && !tree_state.flying && !tree_state.mouse_hold && !tree_state.touch_hold;
 }
 
-function draw_loading() {
-  context.clearRect(0, 0, tree_state.widthres, tree_state.heightres);
-  context.fillStyle = 'rgb(0,0,0)';
-  context.font = (Math.min(tree_state.widthres,tree_state.heightres)/7.0).toString() +'px Helvetica';
-  context.textAlign = 'center';
-  context.fillText(OZstrings["Loading..."], tree_state.widthres/2, tree_state.heightres/2, tree_state.widthres/2);
-}
-
 function find_benchmark(root) {
   reanchor_and_dynamic_load_tree();
   let start = new Date().getTime();
@@ -285,4 +277,4 @@ function find_benchmark(root) {
   release_shapes(shapes);
 }
 
-export {refresh, draw_frame, add_controller, setup_canvas, draw_loading, find_benchmark, set_temp_context, unset_temp_context};
+export {refresh, draw_frame, add_controller, setup_canvas, find_benchmark, set_temp_context, unset_temp_context};

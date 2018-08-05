@@ -3,7 +3,6 @@
 ### but still allows us to place all the tree viewer code in a single directory
 
 from OZfunctions import lang_primary, language, __check_version
-from collections import OrderedDict
 
 def js_strings():
     """
@@ -19,24 +18,17 @@ def UI_layer():
     """
 
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    tabs= OrderedDict([
-      ('opentree',{'id':'opentree',   'name':T('OpenTree'),     'icon':URL('static','images/mini-opentree-logo.png')}),
-      ('wiki',{'id':'wiki',   'name':T('Wikipedia'),            'icon':URL('static','images/W.svg')}),
-      ('eol',{'id':'eol',     'name':T('Encyclopedia of Life'), 'icon':URL('static','images/EoL.png')}),
-      ('iucn',{'id':'iucn',   'name':T('Conservation'),         'icon':URL('static','images/IUCN_Red_List.svg')}),
-      ('ncbi',{'id':'ncbi',   'name':T('Genetics'),             'icon':URL('static','images/DNA_icon.svg')}),
-      #('powo',{'id':'powo',   'name':T('Kew')}),
-      ('ozspons',{'id':'ozspons','name':T('Sponsor'), 'icon':URL('static','images/sponsor.png')})])
-    default_tabs = ['wiki', 'eol', 'iucn', 'ncbi', 'ozspons']
+    tabs = current.OZglobals['tab_definitions']
+    tab_defaults = current.OZglobals['tab_defaults']
 
     if 'tabs' not in request.vars:
-        requested_tabs = [tabs[x] for x in default_tabs if x in tabs]
+        requested_tabs = [tabs[x] for x in tab_defaults if x in tabs]
     else:
         #if tabs specified, then whittle down to the specified tags, in the specified order
         if not isinstance(request.vars.tabs, list):
             request.vars.tabs = [request.vars.tabs]
         if 'default' in request.vars.tabs:
-            requested_tabs=[tabs[x] for x in default_tabs if x in tabs]
+            requested_tabs=[tabs[x] for x in tab_defaults if x in tabs]
         elif 'all' in request.vars.tabs:
             requested_tabs=tabs.values()
         else:

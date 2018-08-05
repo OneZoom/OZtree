@@ -1322,6 +1322,10 @@ def linnean():
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return treeview_info()
 
+def otop():
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+    return treeview_info()
+
 #def old_kew():
 #    """
 #    Like the standard, but show the tab for Plants of the World Online from Kew

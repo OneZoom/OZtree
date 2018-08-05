@@ -42,6 +42,10 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     <a id="advanced_search_button" data-advanced-title="{{=T('Turn off advanced search mode')}}" data-simple-title="{{=T('Advanced search (tracer) mode: click to turn on')}}" class="uk-icon-button" uk-tooltip="pos: left" uk-icon="icon: git-fork"></a>
 </div>
 
+<div id="loading_spinner">
+  <div uk-spinner="ratio: 3"></div>
+</div>
+
 <ul id="controlButtons" class="uk-iconnav uk-iconnav-vertical">
   <li id="locationButton"><a uk-icon="icon: compass"></a></li>
   <div uk-dropdown="pos: right-bottom; delay-hide: 1000; boundary: #controlButtons; boundary-align: true" id="locationDropdown">
@@ -62,6 +66,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
       <li><a href="#terms-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Terms of use')}}</a></li>
     </ul>
   </div>
+  {{if not request.vars.get('hide_control_settings', False):}}
   <li><a uk-tooltip="pos: right" title="{{=T('Settings')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: settings"></a></li>
   <form id="settingsDropdown" class="uk-navbar-dropdown" uk-dropdown="pos: right-bottom; mode: click;">
     <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
@@ -109,6 +114,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         </select></li>
     </ul>
   </form>
+  {{pass}}
 </ul>
 <div id="error-modal" class="uk-modal-container" uk-modal>
     <div class="uk-modal-dialog uk-modal-body">
@@ -166,7 +172,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     <div class="uk-modal-dialog">
         <button class="uk-modal-close-outside" type="button" uk-close></button>
         <div class="uk-modal-header">
-            <h2 class="uk-modal-title">{{=T('Image information')}}{{if request.vars.links!='none':}}<a target="_blank" class="uk-icon-button expand-tab" uk-tooltip="pos: left" title="{{=T('Open this in a new window')}}" uk-icon="icon: expand; ratio: 0.75"></a>{{pass}}</h2>
+            <h2 class="uk-modal-title">{{=T('Image information')}}{{if request.vars.links!='none':}}<a target="_blank" class="uk-icon-button expand-tab" uk-tooltip="pos: left" title="{{=T('Open this in a new window')}}" uk-icon="icon: expand; ratio: 0.75" style="{{if request.vars.get('no_external_links', False):}}display:none{{pass}}"></a>{{pass}}</h2>
         </div>
         <div class="uk-modal-body popup-content iframe-container">
           <p class="no-loading-info uk-position-center">{{=T('No image specified, sorry')}}</p>
@@ -189,7 +195,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
       <ul class="popup-container uk-switcher">
         {{for tab in tabs:}}
         <li class="{{=tab['id']}}" data-name="{{=tab['name']}}" data-src="" aria-controls="{{=tab['id']}}-panel">
-          <div class="uk-position-top-right expand-tab">
+          <div class="uk-position-top-right expand-tab" style="{{if request.vars.get('no_external_links', False):}}display:none{{pass}}">
 {{#the linkout buttons are forms, to allow post requests to pass on reservation codes
   if request.vars.links!='none':
 }}

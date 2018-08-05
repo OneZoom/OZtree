@@ -194,6 +194,7 @@ db.define_table('ordered_leaves',
     Field('wikipedia_lang_flag', type='integer'), #which language wikipedia articles exist (enwiki=1, dewiki=2, eswiki=4, etc etc: listed in wikiflags in _OZglobals.py)
     Field('eol', type='integer'),
     Field('iucn', type='text'), #this could contain multiple bar-separated numbers (|), if we have a conflict. Conflicts are resolved in the IUCN table
+    Field('raw_popularity', type='double'),
     Field('popularity', type='double'),
     Field('popularity_rank', type='integer'),
     #the following 5 fields are sources listed by the OpenTree
@@ -223,8 +224,9 @@ db.define_table('ordered_nodes',
     Field('wikidata', type='integer'),
     Field('wikipedia_lang_flag', type='integer'), #
     Field('eol', type='integer'),
+    Field('raw_popularity', type='double'),
     Field('popularity', type='double'),
-    Field('popularity_rank', type='integer'),
+    Field('popularity_rank', type='integer'), #meaningless - can probably be removed
     #the following 5 fields are sources listed by the OpenTree
     Field('ncbi', type='integer'),
     Field('ifung', type='integer'),
@@ -621,18 +623,19 @@ db.define_table('tourstops',
 db.define_table('API_users',
     Field('APIkey', type = 'string', length=32, unique=True, notnull=True),
     Field('API_user_name', type = 'text'), # who this API user is
-    Field('max_taxa_per_query', type='integer'), #set this to 0 to deactivate this API user
+    Field('max_taxa_per_query', type='integer'), #set this to NULL or 0 to deactivate this API user
     Field('max_returns_per_taxon', type='integer'),
     format = '%(APIkey)s', migrate=is_testing)
 
 #a record of the amounts of API use, by user
 db.define_table('API_use',
-    Field('APIkey', type = 'string', length=32), #which key was used
-    Field('API', type = 'string', length=100), #which API was used, e.g. popularity/
+    Field('APIkey', type = 'string',  unique=True, length=32), #which key was used
+    Field('API', type = 'string', length=100), #which API was used, e.g. popularity/list
     Field('start_date', type = 'datetime', notnull=True, requires=IS_DATETIME()), #when we started recording this data
-    Field('n_calls', type = 'bigint'), # number of times API called
-    Field('n_taxa', type = 'bigint'), # number of taxa requested (divide by n_calls to get av taxa per call)
-    Field('n_returns', type = 'bigint'), # number of taxa returned (divide by n_calls to get av taxa per call)
+    Field('end_date', type = 'datetime', requires=IS_DATETIME()), #when we stopped recording this data (if NULL, this is still recording)
+    Field('n_calls', type = 'bigint', default=1), # number of times API called
+    Field('n_taxa', type = 'bigint', default=0), # number of taxa requested (divide by n_calls to get av taxa per call)
+    Field('n_returns', type = 'bigint', default=0), # number of taxa returned (divide by n_calls to get av taxa per call)
     format = '%(APIkey)s_%(API)s', migrate=is_testing)
 
 # add extra indexes on OTT_ID etc in tables. Index name (ott_index) is arbitrary 
@@ -902,13 +905,15 @@ DROP            INDEX name_fulltext_index ON ordered_leaves;
 CREATE FULLTEXT INDEX name_fulltext_index ON ordered_leaves (name);
 
 DROP   INDEX key_index           ON API_users;
-CREATE INDEX key_index           ON API_users (APIkey)    USING HASH;
+CREATE INDEX key_index           ON API_users (APIkey)     USING HASH;
 
-DROP   INDEX key_index          ON API_use;
-CREATE INDEX key_index          ON API_use (APIkey)       USING HASH;
+DROP   INDEX key_index           ON API_use;
+CREATE INDEX key_index           ON API_use (APIkey)       USING HASH;
 
-DROP   INDEX API_index          ON API_use;
-CREATE INDEX API_index          ON API_use (API)       USING HASH;
+DROP   INDEX API_index           ON API_use;
+CREATE INDEX API_index           ON API_use (API)          USING HASH;
 
+DROP   INDEX date_index          ON API_use;
+CREATE INDEX date_index          ON API_use (end_date)     USING HASH;
 
 """

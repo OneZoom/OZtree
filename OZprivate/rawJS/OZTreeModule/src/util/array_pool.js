@@ -12,6 +12,13 @@ class ArrayPool {
       this._arr.length = this._length;
     }
   }
+  map(fn) {
+    let out = [];
+    for (let i=0; i<this._curr; i++) {
+      out.push(fn(this._arr[i], i, this));
+    }
+    return out;
+  }
   get length() {
     return this._curr;
   }

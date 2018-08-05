@@ -22,6 +22,7 @@ class BezierShape extends BaseShape {
       line_width : 1.0,
       color: "rgb(255, 255, 255)"
     };
+    this.markings_list = [];
   }
   release() {
     this.sx = NaN;
