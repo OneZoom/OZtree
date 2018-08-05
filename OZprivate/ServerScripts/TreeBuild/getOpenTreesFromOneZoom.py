@@ -18,7 +18,7 @@ starting at ott node 826261.
 
 foobar_ott123@ means create a node named foobar with ott 123, consisting of all descendants of 123 in the opentree.
 foobar_ott123~456-789-111@ means create a node named foobar with ott 123, using ott456 minus the descendant subtrees 789 and 111
-The tilde sign can be read an a equals (Dendropy doesn't like equals signs in taxon names)
+The tilde sign can be read as an equals (Dendropy doesn't like equals signs in taxon names)
 foobar_ott123~-789-111@ is shorthand for foobar_ott123~123-789-111@
 foobar_ott~456-789-111@ means create a node named foobar without any OTT number, using ott456 minus the descendant subtrees 789 and 111
 
