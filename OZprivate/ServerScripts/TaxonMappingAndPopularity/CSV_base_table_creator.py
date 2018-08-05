@@ -350,10 +350,13 @@ def inherit_popularity(tree, verbosity=0):
     for node in tree.preorder_node_iter():
         pop = popularity_function(node.ancestors_popsum, node.descendants_popsum, node.n_ancestors, node.n_descendants)
         if hasattr(node, 'data'):
+            #the 'data' attribute should be set for all nodes present in the original tree
+            node.data['raw_popularity'] = node.pop_store
             node.data['popularity'] = pop
         else:
             #even if there is no data in the node, we need to set a popularity. 
-            #This can happen if there is, for example
+            #This can happen for e.g. nodes from broken polytomies
+            node.data{'raw_popularity'] = None
             node.data={'popularity':pop}
 
 
