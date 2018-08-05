@@ -377,9 +377,8 @@ def create_leaf_popularity_rankings(tree, verbosity=0):
         for leaf in tree.leaf_node_iter():
            leaf.data['popularity_rank'] = leaf_popularities[leaf.data['popularity']]
     except TypeError:
-        #there are some Nones in the popularity
-        for leaf in tree.leaf_node_iter():
-           leaf.data['popularity_rank'] = None
+        #there are some Nones in the popularity. We cannot set ranks.
+        pass
 
 
 def write_popularity_tree(tree, outdir, filename, version, verbosity=0):
