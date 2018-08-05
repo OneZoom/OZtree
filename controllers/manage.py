@@ -257,7 +257,7 @@ def SPONSOR_UPDATE():
                         tweet = 'Thank you @{} for sponsoring {} on OneZoom'.format(twittername_t, binomial_name_t)
                     
                 try:
-                    send_tweet = int(myconf.take('twitter.autosent_tweet'))
+                    send_tweet = int(myconf.take('twitter.autosend_tweet'))
                 except:
                     send_tweet = False
                 if send_tweet:
