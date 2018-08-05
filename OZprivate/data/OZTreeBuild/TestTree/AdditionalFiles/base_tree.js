@@ -3,7 +3,7 @@
 
 //;# Base tree for chordates, assuming initial divergence at 550Mya.
 
-$tree = new Tree('BespokeTree/include_files/GreatApes.PHY');
+$tree = new Tree('BespokeTree/include_files/GreenPlantsRuhfel2014.PHY');
 
 //;# PHYLOGENIES PART FILLED BY OPEN TREE OF LIFE
 //;# Commands output from getOpenTreesFromOneZoom.py
