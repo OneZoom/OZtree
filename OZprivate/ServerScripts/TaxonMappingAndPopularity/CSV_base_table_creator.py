@@ -398,8 +398,8 @@ def resolve_polytomies_add_popularity(tree, seed):
                         n_ancestors_sum/n,
                         n_descendants_sum)
                     }
-            except TypeError:
-                #probably popularity == None for one of the children
+            except AttributeError:
+                #probably popularity values undefined for one of the children
                 pass
 
 def create_leaf_popularity_rankings(tree, verbosity=0):
