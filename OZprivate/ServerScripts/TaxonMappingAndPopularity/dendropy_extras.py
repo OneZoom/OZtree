@@ -188,7 +188,7 @@ def remove_unifurcations_keeping_higher_taxa(self, verbosity=0):
                 #finally by existing position
                 sorted_unary_nodes = sorted(
                     sequential_unary_nodes,
-                    key = lambda n: (n.data['raw_popularity'],bool(getattr(n,'label',""))))
+                    key = lambda n: (n.data.get('raw_popularity'),bool(getattr(n,'label',""))))
                 keep_node = sorted_unary_nodes[-1]
                 if verbosity > 1:
                     print("Unary nodes collapsed to last in this list: " + 
