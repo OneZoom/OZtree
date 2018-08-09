@@ -371,11 +371,11 @@ def write_brief_newick(self, out, polytomy_braces="()", write_otts=False):
         if self.edge and self.edge.length==0:
             out.write(polytomy_braces[1]) #added
             if write_otts and 'ott' in self.data:
-                out.write(str(self.data['ott'])
+                out.write(str(self.data['ott']))
         else:
             out.write(')')
             if write_otts and 'ott' in self.data:
-                out.write(str(self.data['ott'])
+                out.write(str(self.data['ott']))
 
 def write_pop_newick(self, out):
     """
