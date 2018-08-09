@@ -161,11 +161,6 @@ def is_on_unifurcation_path(node):
     return node.num_child_nodes()==1 or \
         (node.parent_node and node.parent_node.num_child_nodes() == 1)
 
-def split_into_unary_paths(node_sequence):
-    for nd in node_sequence:
-        if nd.parent_node != nd.
-            yield
-
 def remove_unifurcations_keeping_higher_taxa(self, verbosity=0):
     """
     Does a more sophisticated pass than the remove_unifurcations flag in Dendropy4:
