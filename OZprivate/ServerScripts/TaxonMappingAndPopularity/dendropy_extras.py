@@ -161,6 +161,11 @@ def is_on_unifurcation_path(node):
     return node.num_child_nodes()==1 or \
         (node.parent_node and node.parent_node.num_child_nodes() == 1)
 
+def split_into_unary_paths(node_sequence):
+    for nd in node_sequence:
+        if nd.parent_node != nd.
+            yield
+
 def remove_unifurcations_keeping_higher_taxa(self, verbosity=0):
     """
     Does a more sophisticated pass than the remove_unifurcations flag in Dendropy4:
@@ -170,34 +175,41 @@ def remove_unifurcations_keeping_higher_taxa(self, verbosity=0):
         raw popularity score should be kept. If there is a tie, any *named* nodes are 
         given priority, then the nodes highest in the tree.
     """
-    nd_iter = self.postorder_internal_node_iter(exclude_seed_node=True)
+    nd_iter = self.postorder_node_iter(exclude_seed_node=True)
     n_deleted = 0
     for k, g in itertools.groupby(nd_iter, is_on_unifurcation_path):
         #k should alternate between 0 (not on unifurcation path) and 1 
         if k:
-            #make a list of nodes
-            sequential_unary_nodes = list(g)
-            if sequential_unary_nodes[0].num_child_nodes() == 0:
-                #this ends in a tip, we can rely on the normal suppress_unifurcation
-                #behaviour (by default Dendropy keeps the lowest level taxa)
-                if verbosity > 1:
-                    print("Unary nodes ending in tip left so that first is used: " + 
-                        ", ".join([(x.label or "None") for x in g]))
-            else:
-                #sort so that best is last - by popularity then presence of label, 
-                #finally by existing position
-                sorted_unary_nodes = sorted(
-                    sequential_unary_nodes,
-                    key = lambda n: (n.data.get('raw_popularity'),bool(getattr(n,'label',""))))
-                keep_node = sorted_unary_nodes[-1]
-                if verbosity > 1:
-                    print("Unary nodes collapsed to last in this list: " + 
-                        ", ".join([(x.label or "None") for x in sorted_unary_nodes]))
-                for nd in sequential_unary_nodes:
-                    #these should still be in postorder
-                    if nd != keep_node:
-                        n_deleted += 1
-                        nd.edge.collapse(adjust_collapsed_head_children_edge_lengths=True)
+            # the group could consist of multiple unifurcation paths
+            # we need to separate them into groups themselves 
+            node_lists = [[next(g)]]
+            for next_node in g:
+                if next_node == node_lists[-1][-1].parent_node:
+                    node_lists[-1].append(next_node)
+                else:
+                    node_lists.append([next_node])
+            for sequential_unary_nodes in node_lists:
+                if sequential_unary_nodes[0].num_child_nodes() == 0:
+                    #this ends in a tip, we can rely on the normal suppress_unifurcation
+                    #behaviour (by default Dendropy keeps the lowest level taxa)
+                    if verbosity > 1:
+                        print("Unary nodes ending in tip left so that first is used: " + 
+                            ", ".join([(x.label or "<None>") for x in g]))
+                else:
+                    #sort so that best is last - by popularity then presence of label, 
+                    #finally by existing position
+                    sorted_unary_nodes = sorted(
+                        sequential_unary_nodes,
+                        key = lambda n: (n.data.get('raw_popularity'),bool(getattr(n,'label',""))))
+                    keep_node = sorted_unary_nodes[-1]
+                    if verbosity > 1:
+                        print("Unary nodes collapsed to last in this list: " + 
+                            ", ".join([(x.label or "None") for x in sorted_unary_nodes]))
+                    for nd in sequential_unary_nodes:
+                        #these should still be in postorder
+                        if nd != keep_node:
+                            n_deleted += 1
+                            nd.edge.collapse(adjust_collapsed_head_children_edge_lengths=True)
     n_deleted += len(self.suppress_unifurcations())
     return n_deleted
 
