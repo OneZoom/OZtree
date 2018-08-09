@@ -197,7 +197,7 @@ def remove_unifurcations_keeping_higher_taxa(self, verbosity=0):
                     #these should still be in postorder
                     if nd != keep_node:
                         n_deleted += 1
-                        nd.collapse(adjust_collapsed_head_children_edge_lengths=True)
+                        nd.edge.collapse(adjust_collapsed_head_children_edge_lengths=True)
     n_deleted += len(self.suppress_unifurcations())
     return n_deleted
 
