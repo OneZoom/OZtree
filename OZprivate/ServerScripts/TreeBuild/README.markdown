@@ -15,6 +15,8 @@ OZ_TREE=AllLife #a tree directory in data/OZTreeBuild
 
 In the instructions which follow, we assume that your tree version corresponds to that in the online OpenTree API. You can check this by running `curl -X POST https://api.opentreeoflife.org/v3/tree_of_life/about`, and also check that the taxonomy version in the API corresponds to that used in your tree, by running `curl -X POST https://api.opentreeoflife.org/v3/taxonomy/about`. If these do not match, the tree and taxonomy versions above, you may not fully map all the names in your tree in step 1 below.
 
+If you are have installed perl modules to a different location (e.g. as a local user), you may also need to set `export PERL5LIB=/path/to/my_perl_modules/lib/perl5`.
+
 
 # Preliminaries
 
@@ -86,7 +88,7 @@ If you already have your own newick tree with open tree ids on it already, and d
 
 	## create the base tree and table data
    
-5. (4-8 hours) This is the long step. On the basis of the `${OZ_TREE}_full_tree.phy` file, look for ID mappings between different datasets, calculate popularity measures via wikidata/pedia, refine the tree (remove subspecies, randomly break polytomies, remove unifurcations etc), and then create corresponding database tables together with `ordered_tree_XXXXX.nwk`, `ordered_tree_XXXXX.poly` (same file but with polytomies marked with curly braces), and `ordered_tree_XXXXX.date` files (where XXXXX is the version number, usually a timestamp). Since round braces, curly braces, and commas are banned from the `simplified_ottnames` file, we can create minimal topology files by simply removing everything except these characters from the `.nwk` and `.poly` files. If the tree has been ladderised, with polytomies an unifurcations removed, the commas are also redundant, and can be removed. This is done in the next step, which saves these highly shortened strings into .js data files. 
+5. (4-8 hours) This is the long step. On the basis of the `${OZ_TREE}_full_tree.phy` file, look for ID mappings between different datasets, calculate popularity measures via wikidata/pedia, refine the tree (remove subspecies, randomly break polytomies, remove unifurcations etc), and then create corresponding database tables together with `ordered_tree_XXXXX.nwk`, `ordered_tree_XXXXX.poly` (same file but with polytomies marked with curly braces), and `ordered_tree_XXXXX.date` files (where XXXXX is the version number, usually a timestamp). Since round braces, curly braces, and commas are banned from the `simplified_ottnames` file, we can create minimal topology files by simply removing everything except these characters from the `.nwk` and `.poly` files. If the tree has been ladderised, with polytomies and unifurcations removed, the commas are also redundant, and can be removed. This is done in the next step, which saves these highly shortened strings into .js data files. 
 
 	If you do not have comprehensive tree of a clade, it probably doesn't make sense to calculate popularity measures, and you can run this script with the `-p` flag (or omit the references to the `wp_` wikipedia files. Most of the time for this command is spent going throught the wikidata JSON dump, so if you want to save time and don't care about mapping to wikipedia items at all, you can omit the `wd_JSON` parameter too.
 	
