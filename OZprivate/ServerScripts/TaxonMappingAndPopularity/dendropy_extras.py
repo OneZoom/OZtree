@@ -189,7 +189,7 @@ def remove_unifurcations_keeping_higher_taxa(self, verbosity=0):
                     #behaviour (by default Dendropy keeps the lowest level taxa)
                     if verbosity > 1:
                         print("Unary nodes ending in tip left so that first is used: " + 
-                            ", ".join([(x.label or "<None>") for x in g]))
+                            ", ".join([(x.label or "<None>") for x in sequential_unary_nodes]))
                 else:
                     #sort so that best is last - by popularity then presence of label, 
                     #finally by existing position
