@@ -489,9 +489,9 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity
     info("-> set ages on {} nodes and leaves, and removed {} extinction props".format(a,n))
     
     info("-> removing unifurcations")
-    deleted_nodes = len(tree.remove_unifurcations_keeping_higher_taxa())
+    n_deleted_nodes = tree.remove_unifurcations_keeping_higher_taxa(verbosity=verbosity)
     #see https://github.com/jeetsukumaran/DendroPy/issues/75
-    info(" (removed {} unifurcations)".format(deleted_nodes))
+    info(" (removed {} unifurcations)".format(n_deleted_nodes))
     
     
     info("-> breaking polytomies at random with seed={}".format(seed))

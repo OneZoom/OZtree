@@ -7,6 +7,7 @@ These all assume that the tree has been loaded with suppress_leaf_node_taxa=True
 #
 # To be patched into the Tree object
 #
+import itertools
 
 def prune_children_of_otts(self, ott_species_list, verbosity=0):
     from warnings import warn
@@ -152,22 +153,60 @@ def set_real_parent_nodes(self):
             else:
                 ch.real_parent_node = node            
 
-def remove_unifurcations_keeping_higher_taxa(self):
+def is_on_unifurcation_path(node):
     """
-    Does a more sophisticated pass than the remove_unifurcations flag in dendropy4:
-    if this is a unifurcation ending in a leaf, the lowest level (i.e. species) is retained as the name of the leaf
-    if this is a series of unifurcations within the tree, the highest level is kept.
+    this is a node which is either a unifurcation or the first node in a path of 
+    successive unifurcations
     """
-    for nd in self.postorder_internal_node_iter(exclude_seed_node=True):
-        if nd.parent_node is not None and (nd.parent_node.num_child_nodes() == 1):
-            nd.edge.collapse(adjust_collapsed_head_children_edge_lengths = True)
-    return self.suppress_unifurcations() #by default Dendropy keeps the lowest level taxa 
+    return node.num_child_nodes()==1 or \
+        (node.parent_node and node.parent_node.num_child_nodes() == 1)
+
+def remove_unifurcations_keeping_higher_taxa(self, verbosity=0):
+    """
+    Does a more sophisticated pass than the remove_unifurcations flag in Dendropy4:
+    * If this is a unifurcation ending in a leaf, the lowest level (i.e. species) is 
+        retained as the name of the leaf
+    * If this is a series of unifurcations within the tree, the node with the highest 
+        raw popularity score should be kept. If there is a tie, any *named* nodes are 
+        given priority, then the nodes highest in the tree.
+    """
+    nd_iter = self.postorder_internal_node_iter(exclude_seed_node=True)
+    n_deleted = 0
+    for k, g in itertools.groupby(nd_iter, is_on_unifurcation_path):
+        #k should alternate between 0 (not on unifurcation path) and 1 
+        if k:
+            #make a list of nodes
+            sequential_unary_nodes = list(g)
+            if g[0].num_child_nodes() == 0:
+                #this ends in a tip, we can rely on the normal suppress_unifurcation
+                #behaviour (by default Dendropy keeps the lowest level taxa)
+                if verbosity > 1:
+                    print("Unary nodes ending in tip left so that first is used: " + 
+                        ", ".join([(x.label or "None") for x in g]))
+            else:
+                #sort so that best is last - by popularity then presence of label, 
+                #finally by existing position
+                sorted_unary_nodes = sorted(
+                    sequential_unary_nodes,
+                    lambda n: (n.data['raw_popularity'],bool(getattr(n,'label',""))))
+                keep_node = sorted_unary_nodes[-1]
+                if verbosity > 1:
+                    print("Unary nodes collapsed to last in this list: " + 
+                        ", ".join([(x.label or "None") for x in sorted_unary_nodes]))
+                for nd in sequential_unary_nodes:
+                    #these should still be in postorder
+                    if nd != keep_node:
+                        n_deleted += 1
+                        nd.collapse(adjust_collapsed_head_children_edge_lengths=True)
+    n_deleted += len(self.suppress_unifurcations())
+    return n_deleted
 
 def write_preorder_ages(self, node_dates_filehandle, leaf_dates_filehandle=None, format="tsv"):
     """
-    Write the dates to one or two files. If no second file is given, only write leaves if the format is 'json'.
-    The main file is for nodes: any absent dates should be treated as unknown. 
-    The leaves file should be tiny: most leaves should not have a date, and be treated as extant (0 Ma), unless they have an extinction_date set
+    Write the dates to one or two files. If no second file is given, only write leaves if
+    the format is 'json'. The main file is for nodes: any absent dates should be treated
+    as unknown. The leaves file should be tiny: most leaves should not have a date, and
+    be treated as extant (0 Ma), unless they have an extinction_date set.
     
     Format can equal 'json', 'csv', or 'tsv'
     """
@@ -308,7 +347,7 @@ def write_preorder_to_csv(self, leaf_file, extra_leaf_data_properties, node_file
 # To be patched into the Node object
 #
 
-def write_brief_newick(self, out, polytomy_braces="()"):
+def write_brief_newick(self, out, polytomy_braces="()", write_otts=False):
     """
     Copied from the default dendropy 4 function Node._write_newick
     The function requires a binary tree, and the tree should have been ladderized beforehand 
@@ -331,16 +370,12 @@ def write_brief_newick(self, out, polytomy_braces="()"):
             child.write_brief_newick(out, polytomy_braces)
         if self.edge and self.edge.length==0:
             out.write(polytomy_braces[1]) #added
-            try:
-                out.write(str(self.data['ott']))
-            except:
-                pass
+            if write_otts and 'ott' in self.data:
+                out.write(str(self.data['ott'])
         else:
             out.write(')')
-            try:
-                out.write(str(self.data['ott']))
-            except:
-                pass
+            if write_otts and 'ott' in self.data:
+                out.write(str(self.data['ott'])
 
 def write_pop_newick(self, out):
     """
