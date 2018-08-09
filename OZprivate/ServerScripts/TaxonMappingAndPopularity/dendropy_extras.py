@@ -177,7 +177,7 @@ def remove_unifurcations_keeping_higher_taxa(self, verbosity=0):
         if k:
             #make a list of nodes
             sequential_unary_nodes = list(g)
-            if g[0].num_child_nodes() == 0:
+            if sequential_unary_nodes[0].num_child_nodes() == 0:
                 #this ends in a tip, we can rely on the normal suppress_unifurcation
                 #behaviour (by default Dendropy keeps the lowest level taxa)
                 if verbosity > 1:
