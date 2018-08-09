@@ -170,7 +170,7 @@ def remove_unifurcations_keeping_higher_taxa(self, verbosity=0):
         raw popularity score should be kept. If there is a tie, any *named* nodes are 
         given priority, then the nodes highest in the tree.
     """
-    nd_iter = self.postorder_node_iter(exclude_seed_node=True)
+    nd_iter = self.postorder_node_iter()
     n_deleted = 0
     for k, g in itertools.groupby(nd_iter, is_on_unifurcation_path):
         #k should alternate between 0 (not on unifurcation path) and 1 
