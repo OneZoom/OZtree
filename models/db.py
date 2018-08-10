@@ -879,11 +879,14 @@ CREATE INDEX real_parent_index   ON ordered_nodes (real_parent)  USING HASH;
 DROP   INDEX real_parent_index   ON ordered_leaves;
 CREATE INDEX real_parent_index   ON ordered_leaves (real_parent) USING HASH;
 
+DROP   INDEX raw_pop_index       ON ordered_nodes;
+CREATE INDEX raw_pop_index       ON ordered_nodes (raw_popularity);
+
+DROP   INDEX raw_pop_index       ON ordered_leaves;
+CREATE INDEX raw_pop_index       ON ordered_leaves (raw_popularity);
+
 DROP   INDEX pop_index           ON ordered_nodes;
 CREATE INDEX pop_index           ON ordered_nodes (popularity);
-
-DROP   INDEX poprank_index       ON ordered_nodes;
-CREATE INDEX poprank_index       ON ordered_nodes (popularity_rank);
 
 DROP   INDEX pop_index           ON ordered_leaves;
 CREATE INDEX pop_index           ON ordered_leaves (popularity);
