@@ -226,7 +226,6 @@ db.define_table('ordered_nodes',
     Field('eol', type='integer'),
     Field('raw_popularity', type='double'),
     Field('popularity', type='double'),
-    Field('popularity_rank', type='integer'), #meaningless - can probably be removed
     #the following 5 fields are sources listed by the OpenTree
     Field('ncbi', type='integer'),
     Field('ifung', type='integer'),

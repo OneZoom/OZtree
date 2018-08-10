@@ -524,6 +524,7 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity
         leaf_extras['wikipedia_lang_flag']=['wd','wikipedia_lang_flag']
         leaf_extras['iucn']=['iucn']
         leaf_extras['eol']=['eol']
+        node_extras['raw_popularity']=['raw_popularity']
         leaf_extras['popularity']=['popularity']
         leaf_extras['popularity_rank']=['popularity_rank']
         leaf_extras['price']=None
@@ -540,8 +541,8 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity
         node_extras['wikidata']=['wd','Q']
         node_extras['wikipedia_lang_flag']=['wd','wikipedia_lang_flag']
         node_extras['eol']=['eol']
+        node_extras['raw_popularity']=['raw_popularity']
         node_extras['popularity']=['popularity']
-        node_extras['popularity_rank']=['popularity_rank']
         node_extras['ncbi']=['sources','ncbi','id']
         node_extras['ifung']=['sources','ifung','id']
         node_extras['worms']=['sources','worms','id']
