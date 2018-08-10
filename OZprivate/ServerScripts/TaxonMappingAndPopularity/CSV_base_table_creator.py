@@ -524,7 +524,7 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity
         leaf_extras['wikipedia_lang_flag']=['wd','wikipedia_lang_flag']
         leaf_extras['iucn']=['iucn']
         leaf_extras['eol']=['eol']
-        node_extras['raw_popularity']=['raw_popularity']
+        leaf_extras['raw_popularity']=['raw_popularity']
         leaf_extras['popularity']=['popularity']
         leaf_extras['popularity_rank']=['popularity_rank']
         leaf_extras['price']=None
