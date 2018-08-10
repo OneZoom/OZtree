@@ -27,11 +27,12 @@ def list():
     {"data":[[...],[...]], "header": [...], "n_taxa":X, "tot_spp":Y}, 
     where:
       "data" is a 2D array containing rows of information, one per taxon, with values in each row 
-      corresponding to Open Tree Taxonomy identifier, scientific name
-    (if requested), raw popularity, and popularity rank (only for species)
+      corresponding to Open Tree Taxonomy identifier, scientific name (if requested), 
+      raw popularity, and popularity rank (only for species)
+      "header" gives an integer column number for a given column header: for instance, the robust
+      way to obtain the Open Tree Taxonomy identifier for row 2 is data[2][header['ott']]
       "n_taxa" is the total number of taxa that would have been returned by the query if it hadn't been limited
       "tot_spp" is the total number of species that would have been returned by the query if it hadn't been limited
-    
     Parameters:
     Required:
         * key (an API key - use the "public API key" if you have none - see index.html)
@@ -128,9 +129,9 @@ def list():
                     db.ordered_leaves.name,
                     limitby = (0, n),
                     orderby = orderby)
-            ret['header']=["ott","popularity","popularity_rank","name"]
+            ret['header']={k:i for i,k in enumerate(["ott","popularity","popularity_rank","name"])}
         else:
-            ret['header']=["ott","popularity","popularity_rank"]
+            ret['header']={k:i for i,k in enumerate(["ott","popularity","popularity_rank"])}
             sql = db(query)._select(
                     db.ordered_leaves.ott,
                     db.ordered_leaves.popularity,
@@ -144,10 +145,10 @@ def list():
         #ordered_nodes and ordered_leaves separately then UNION them together. This is easier to do in vanilla SQL
         if queryvar_is_true(request.vars.names):
             extracol = ", name"
-            ret['header']=["ott","popularity","popularity_rank","name"]
+            ret['header']={k:i for i,k in enumerate(["ott","popularity","popularity_rank","name"])}
         else:
             extracol = ""
-            ret['header']=["ott","popularity","popularity_rank"]
+            ret['header']={k:i for i,k in enumerate(["ott","popularity","popularity_rank"])}
         order_limit = " ORDER BY " + orderby + " LIMIT {}".format(n)
         ottstr = ",".join([str(i+0) for i in otts]) #these should have all been sanitized
         OL_SQL = "SELECT {OLcols} FROM ordered_leaves WHERE ott IN ({otts})"
