@@ -672,14 +672,14 @@ if __name__ == "__main__":
             
             for t, tip in enumerate(n.leaf_iter()):
               print("Tip {} = {}: own_pop = {}, Qid = {}".format(
-                t, tip.label, getattr(tip,"pop_store",None), n.data['wd']['Q']))
+                t, tip.label, getattr(tip,"pop_store",None), t.data['wd']['Q']))
               if t > 100:
                 print("More tips exist, but have been omitted")
                 break
-            while(p.parent_node):
-             p = p.parent_node
-             if p.pop_store:
-               print("Ancestors: {} = {:.2f}".format(p.label, p.pop_store))
+            while(n.parent_node):
+             n = n.parent_node
+             if n.pop_store:
+               print("Ancestors: {} = {:.2f}".format(n.label, n.pop_store))
     
     info("Writing out results to {}/xxx".format(args.output_location))
     output_simplified_tree(
