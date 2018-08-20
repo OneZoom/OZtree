@@ -607,6 +607,8 @@ if __name__ == "__main__":
         help='A unique version number for the tree, to be saved in the DB tables & output files. Defaults to minutes since epoch (time()/60)')
     parser.add_argument('--extra_source_file', default=None, type=str, 
         help='An optional additional file to supplement the taxonomy.tsv file, providing additional mappings from OTTs to source ids (useful for overriding . The first line should be a header contining "uid" and "sourceinfo" column headers, as taxonomy.tsv. NB the OTT can be a number, or an ID of the form "mrcaott409215ott616649").')
+    parser.add_argument('--info_on_focal_labels', nargs='*', default=[], 
+        help='Output some extra information for these named taxa, for debuggin purposes')        
     parser.add_argument('--verbosity', '-v', action="count", default=0, 
         help='verbosity: output extra non-essential info')
 
@@ -662,12 +664,22 @@ if __name__ == "__main__":
         if args.popularity_file:
             write_popularity_tree(tree, args.output_location, args.popularity_file, args.version, args.verbosity)
         #NB to examine a taxon for popularity contributions here, you could try
-        #p = focal_taxon = tree.find_node_with_label("Canis lupus")
-        #print("own pop: {}, descendant pop sum:{}".format(p.pop_store, p.descendants_popsum))
-        #while(p.parent_node):
-        # p = p.parent_node
-        # if p.pop_store:
-        #   print("Ancestors: {} = {:.2f}".format(p.label, p.pop_store))
+        for focal_label in args.info_on_focal_labels:
+            focal_taxon = focal_label.replace("_", " ")
+            n = tree.find_node_with_label(focal_taxon)
+            print("{}: own pop = {} (Q{}) descendant pop sum = {}".format(
+                focal_taxon, n.pop_store, n.data['wd']['Q'], n.descendants_popsum))
+            
+            for t, tip in enumerate(n.leaf_iter()):
+              print("Tip {} = {}: own_pop = {}, Qid = {}".format(
+                t, tip.label, getattr(tip,"pop_store",None), n.data['wd']['Q']))
+              if t > 100:
+                print("More tips exist, but have been omitted")
+                break
+            while(p.parent_node):
+             p = p.parent_node
+             if p.pop_store:
+               print("Ancestors: {} = {:.2f}".format(p.label, p.pop_store))
     
     info("Writing out results to {}/xxx".format(args.output_location))
     output_simplified_tree(
