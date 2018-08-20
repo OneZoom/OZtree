@@ -261,7 +261,7 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
     If an EOLid_property_id, IUCN id, or IPNI id exists, save these too (NB: the IUCN id is present as Property:P627 of claim P141. It may also be overwritten by an ID subsequently extracted from the EOL identifiers list)
     
     Some taxa (especially common ones) have most sitelinks in a 'common name' item, e.g. cattle (Q830) contains most language sitelinks for the taxon items Q46889 (Bos primigenius indicus), Q20747320 (Bos primigenius taurus), Q20747334 (Bos taurus *+), Q20747712, Q20747726, etc. (* marks the name used in OneZoom, + for OpenTree). These 'common name' pages point to the taxon by having a property P31 ('instance of') set to 
-common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
+common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). To spot these, we look for wikidata items that are common names, and link to items that are taxa. If the taxon has no wikipedia link in the specified language, we should use the common name WD item instead.
 
     Additionally, taxa like Homo sapiens might have *two* wikipedia pages, https://en.wikipedia.org/wiki/Homo_sapiens and https://en.wikipedia.org/wiki/Human. I code around these by hand (yuck).
     
@@ -355,7 +355,8 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
                       if verbosity:
                         print(" Updating taxon {} ({}) with Qid and sitelinks from Q{}.".format(item['id'], taxon_name(item),  wikidata_cname_info[taxon_item['Q']]['Q']), file=sys.stderr)
                       if len(taxon_item['l']):
-                        print("WARNING. Taxon {} ({}) is being swapped for a common-name equivalent {}, losing sitelinks in the following languages: {}.".format(item['id'], taxon_name(item), wikidata_cname_info[taxon_item['Q']]['Q'], taxon_item['l']), file=sys.stderr)
+                        # print out a warning if we have actually lost some pages in other language wikipedias
+                        print("WARNING. Taxon {} ({}) is being swapped for a common-name equivalent Q{}, losing sitelinks in the following languages: {}.".format(item['id'], taxon_name(item), wikidata_cname_info[taxon_item['Q']]['Q'], taxon_item['l']), file=sys.stderr)
                       replaced[taxon_item['Q']]=wikidata_cname_info[taxon_item['Q']]['Q']
                       taxon_item.update(wikidata_cname_info[taxon_item['Q']])
                     
@@ -385,6 +386,7 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp).
                         if verbosity:
                           print(" Updating taxon {} with Qid and sitelinks from Q{} ({}).".format(common_name_taxon_Qid, item['id'], taxon_name(item)),  file=sys.stderr)
                         if len(wikidata_taxon_info[common_name_taxon_Qid]['l']):
+                          # print out a warning if we have actually lost some pages in other language wikipedias
                           print("WARNING. Taxon {} is being swapped for a common-name equivalent {} ({}), losing sitelinks in the following languages: {}.".format(common_name_taxon_Qid, item['id'], taxon_name(item), wikidata_taxon_info[common_name_taxon_Qid]['l']), file=sys.stderr)
                         replaced[common_name_taxon_Qid]=wikidata_cname_info[common_name_taxon_Qid]['Q']
                         wikidata_taxon_info[common_name_taxon_Qid].update(common_name_item)
