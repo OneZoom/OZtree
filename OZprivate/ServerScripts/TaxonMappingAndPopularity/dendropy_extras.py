@@ -388,7 +388,7 @@ def write_pop_newick(self, out):
     """
     Copied from the default dendropy 4 function Node._write_newick
     This returns the Node as a NEWICK statement but uses node.pop_store
-    instead of node.edge.length for the edge length values
+    instead of node.edge.length for the edge length values.
     """
     child_nodes = self.child_nodes()
     if child_nodes:
@@ -400,11 +400,20 @@ def write_pop_newick(self, out):
             child.write_pop_newick(out)
         out.write(')')
     
-    out.write(self._get_node_token(
+    label = self._get_node_token(
             suppress_leaf_node_labels=False,
             suppress_rooting=True,
-            unquoted_underscores = True))
-    sel = getattr(self, 'pop_store', None)
+            unquoted_underscores = True)
+    try:
+        ott = self.data['ott']
+        if label.endswith('\''):
+            out.write(label[:-1] + '_ott{}\''.format(ott))
+        else:
+            out.write(label + '_ott{}'.format(ott))
+    except (AttributeError, KeyError):
+        out.write(label)
+    
+
     if sel is not None:
         s = ""
         try:
