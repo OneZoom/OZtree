@@ -672,7 +672,7 @@ if __name__ == "__main__":
             
             for t, tip in enumerate(n.leaf_iter()):
               print("Tip {} = {}: own_pop = {}, Qid = {}".format(
-                t, tip.label, getattr(tip,"pop_store",None), t.data['wd']['Q']))
+                t, tip.label, getattr(tip,"pop_store",None), tip.data['wd']['Q']))
               if t > 100:
                 print("More tips exist, but have been omitted")
                 break
