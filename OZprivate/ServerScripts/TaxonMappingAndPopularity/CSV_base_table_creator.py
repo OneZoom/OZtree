@@ -672,6 +672,7 @@ if __name__ == "__main__":
             print("{}: own pop = {} (Q{}) descendant pop sum = {}".format(
                 focal_taxon, n.pop_store, n.data['wd']['Q'], n.descendants_popsum))
             
+            assert False, "Stopped to calculate popularities"
             for t, tip in enumerate(n.leaf_iter()):
               print("Tip {} = {}: own_pop = {}, Qid = {}".format(
                 t, tip.label, getattr(tip,"pop_store",None), tip.data['wd']['Q']))
