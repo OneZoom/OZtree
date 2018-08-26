@@ -320,6 +320,8 @@ def construct_wiki_info(OTT_ptrs):
     Construct a wikidata Qid, and a wikipedia lang flag, for outputting to csv files
     Languages are sorted roughly according to active users on 
     https://en.wikipedia.org/wiki/List_of_Wikipedias
+    
+    We need only do this for taxa with OTTs - others we cannot map
     """
     lang_flags = {lang:2**bit for lang, bit in wikiflags.items()}
     for OTTid, data in OTT_ptrs.items():
@@ -447,7 +449,7 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity
      'eol': 1100788
      'iucn':XXXXXXX}
     
-    ... or ...
+    ... or, if we have managed to calculate popularity ...
     
     data = {'wd': {'PGviews': [64, 47], 'pop': 285.14470010855894, 'Q': 4672161, 'EoL': 281897, 'PGsz': 1465}, 
      'pop_dscdt': 0, 
