@@ -14,7 +14,7 @@ popularity recalculation (NB: "ancestor" popularities include the popularity of 
 The routines work by taking an OpenTree taxonomy file and map each line to wikidata Qid using source ids
 
     each source id is stored in a object, e.g. {"id":NCBIid}, to which we add wiki info such as the qID
-    {"id":NCBIid, wd:{"Q":Qid}}
+    {"id":NCBIid, wd:{"final_wiki_item":{"Q":Qid}}}
     
     the object is pointed to from two sources, a source_data 2D array and an OTT_ids array, e.g.
     
@@ -317,12 +317,11 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). To
               # and a slot for the final item used. We need both slots because we may wish 
               # to use a final item obtained from common name matching, rather than directly 
               # through ID matching 
-              taxon_handle = dict()
               taxon_item = wikidata_makebaseinfo(item, wikilang)
-              taxon_handle(final_wiki_item=taxon_item, initial_wiki_item=taxon_item)
+              taxon_handle = dict(final_wiki_item=taxon_item, initial_wiki_item=taxon_item)
               Qid = taxon_item['Q']
-              #attach this taxon_item to the right place in source_ptrs.
-              if JSON_contains_known_dbID(item, taxon_item, source_ptrs, verbosity):
+              #attach this taxon *handle* to the right place in source_ptrs.
+              if JSON_contains_known_dbID(item, taxon_handle, source_ptrs, verbosity):
                 #we have matched against a known taxon
                 wikidata_taxon_info[Qid] = taxon_item
                 if EOLid_property_id:
@@ -446,7 +445,7 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). To
     return(wikilang_title_ptrs)
 
 
-def JSON_contains_known_dbID(json, wd_info, source_ptrs, verbosity=0):
+def JSON_contains_known_dbID(json, wd_handle, source_ptrs, verbosity=0):
     """
     If we match with any of the wikidata props (e.g. 'P685' for ncbi, etc etc) then link to the 
     wd_info object from the appropriate source_ptrs item, so that it doesn't get garbage collected
@@ -458,7 +457,7 @@ def JSON_contains_known_dbID(json, wd_info, source_ptrs, verbosity=0):
             try:
                 id = str(json['claims'][taxon_id_prop][0]['mainsnak']['datavalue']['value'])
                 try:
-                    source_ptrs[wikidata_db_props[taxon_id_prop]][id]['wd'] = wd_info
+                    source_ptrs[wikidata_db_props[taxon_id_prop]][id]['wd'] = wd_handle
                     used=True
                 except KeyError:
                     if verbosity>2:
@@ -680,7 +679,7 @@ def sum_popularity_over_tree(tree, OTT_ptrs=None, exclude=[], pop_store='pop', v
     'pop_store' is the name of the attribute in which to store the popularity. If you wish to create a tree
     with popularity on the branches, you can pass in pop_store='edge_length'
     
-    NB: if OTT_ptrs is given, then the popularity is stored in the object pointed to by OTT_ptrs[OTTid]['wd']['pop'], where
+    NB: if OTT_ptrs is given, then the popularity is stored in the object pointed to by OTT_ptrs[OTTid]['wd']['final_wiki_item']['pop'], where
     OTTid can be extracted from the node label in the tree. If OTT_ptrs is None, then the popularity is stored in the node object 
     itself, in Node.data['wd']['pop'].
     popularity summed up and down the tree depends on the OpenTree structure, and is stored in OTT_ptrs[OTTid]['pop_ancst'] 
@@ -708,7 +707,7 @@ def sum_popularity_over_tree(tree, OTT_ptrs=None, exclude=[], pop_store='pop', v
             node.pop_store=0
         else:
             try:
-                node.pop_store = float(OTT_ptrs[int(node.label.rsplit("_ott",1)[1])]['wd']['pop']) if OTT_ptrs else node.data['wd']['pop']
+                node.pop_store = float(OTT_ptrs[int(node.label.rsplit("_ott",1)[1])]['wd']['final_wiki_item']['pop']) if OTT_ptrs else node.data['wd']['final_wiki_item']['pop']
                 node.has_pop = True
             except (LookupError, AttributeError, ValueError):
                 node.pop_store=0
@@ -804,6 +803,14 @@ if __name__ == "__main__":
         to_print = [OTTid]
         if args.OpenTreeFile:
             to_print.extend([data.get('pop_ancst'), data.get('pop_dscdt'), data.get('n_ancst'), data.get('n_dscdt'), data.get('n_pop_ancst')])
-        if 'wd' in data:
-            to_print.extend([data['wd'].get('Q'), data['wd'].get('pop'), data['wd'].get('PGsz')] + [v for v in (data['wd'].get('PGviews') or [])])
+        if 'wd' in data and 'final_wiki_item' in data['wd']:
+            to_print.extend(
+              [
+                data['wd']['final_wiki_item'].get('Q'),
+                data['wd']['final_wiki_item'].get('pop'),
+                data['wd']['final_wiki_item'].get('PGsz')
+              ] + 
+              [
+                v for v in (data['wd']['final_wiki_item'].get('PGviews') or [])
+              ])
         nodewriter.writerow(to_print)

@@ -232,8 +232,10 @@ def identify_best_EoLdata(OTT_ptrs, sources, verbosity=0):
 
 def supplement_from_wikidata(OTT_ptrs, verbosity=0):
     """
-    If no OTT_ptrs[OTTid]['eol'] exists, but there is an OTT_ptrs[OTTid]['wd']['EoL'] then put this into OTT_ptrs[OTTid]['eol']
-    Similarly for IPNI (although this is currently unpopulated)
+    If no OTT_ptrs[OTTid]['eol'] exists, but there is an 
+        OTT_ptrs[OTTid]['wd']['initial_wiki_item']['EoL'] then put this into 
+        OTT_ptrs[OTTid]['eol']
+        Similarly for IPNI (although this is currently unpopulated)
     """
     EOLalready = EOLsupp = IPNIsupp = tot = 0
     for OTTid, data in OTT_ptrs.items():
@@ -243,7 +245,7 @@ def supplement_from_wikidata(OTT_ptrs, verbosity=0):
         tot += 1
         if data.get('eol') is None:
             try:
-                data['eol'] = int(data['wd']['EoL'])
+                data['eol'] = int(data['wd']['initial_wiki_item']['EoL'])
                 EOLsupp += 1
             except:
                 pass
@@ -251,7 +253,7 @@ def supplement_from_wikidata(OTT_ptrs, verbosity=0):
             EOLalready += 1
         if data.get('ipni') is None:
             try:
-                data['ipni'] = int(data['wd']['IPNI'])
+                data['ipni'] = int(data['wd']['initial_wiki_item']['IPNI'])
                 IPNIsupp += 1
             except:
                 pass
@@ -300,12 +302,12 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
     #now go through and double-check against IUCN stored on wikidata
     for OTTid, data in OTT_ptrs.items():
         try:
-            wd_iucn = str(data['wd']['iucn'])
+            wd_iucn = str(data['wd']['initial_wiki_item']['iucn'])
             if 'iucn' in data:
                 if wd_iucn != data['iucn']:
                     data['iucn'] = "|".join([data['iucn'], wd_iucn])
                     if verbosity:
-                        warn(" conflicting IUCN IDs for OTT {}: EoL = {} (via http://eol.org/pages/{}), wikidata = {} (via http://http://wikidata.org/wiki/Q{}).".format(OTTid, data['iucn'], data['eol'], wd_iucn, data['wd']['Q']));
+                        warn(" conflicting IUCN IDs for OTT {}: EoL = {} (via http://eol.org/pages/{}), wikidata = {} (via http://http://wikidata.org/wiki/Q{}).".format(OTTid, data['iucn'], data['eol'], wd_iucn, data['wd']['initial_wiki_item']['Q']));
             else:
                 data['iucn'] = wd_iucn
                 used += 1
@@ -328,9 +330,9 @@ def construct_wiki_info(OTT_ptrs):
         try:
             #if this field has a number in, it must have at least one lang
             tot = 0
-            for lang in data['wd']['l']:
+            for lang in data['wd']['final_wiki_item']['l']:
                 tot += (lang_flags.get(lang) or 0) #add together as bit fields                       
-            data['wd']['wikipedia_lang_flag'] = tot
+            data['wd']['final_wiki_item']['wikipedia_lang_flag'] = tot
         except KeyError:
             pass
 
@@ -437,12 +439,12 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity
     We should now have leaf entries attached to each node in the tree like
     data = {
      'ott':,
-     'wd': {'Q': 15478814, 'EoL': 1100788, 'l':['en','fr']}, 
+     'wd': {'final_wiki_item':{'Q': 15478814, 'EoL': 1100788, 'l':['en','fr']}}, 
      'pop_dscdt': 0,
      'pop_ancst': 220183.23395609166,
      'sources': {'ncbi': None,
                  'worms': None, 
-                 'gbif': {'wd': {'Q': 15478814, 'EoL': 1100788}, 'id': '2840414'}, 
+                 'gbif': {'wd': {'final_wiki_item':{'Q': 15478814, 'EoL': 1100788}}, 'id': '2840414'}, 
                  'if': None, 
                  'irmng': None},
      'popularity': 220183.23395609166,
@@ -451,12 +453,12 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity
     
     ... or, if we have managed to calculate popularity ...
     
-    data = {'wd': {'PGviews': [64, 47], 'pop': 285.14470010855894, 'Q': 4672161, 'EoL': 281897, 'PGsz': 1465}, 
+    data = {'wd': {'final_wiki_item':{'PGviews': [64, 47], 'pop': 285.14470010855894, 'Q': 4672161, 'EoL': 281897, 'PGsz': 1465}}, 
      'pop_dscdt': 0, 
      'pop_ancst': 392245.76075749274, 
-     'sources': {'ncbi': {'wd': {'PGviews': [64, 47], 'pop': 285.14470010855894, 'Q': 4672161, 'EoL': 281897, 'PGsz': 1465}, 'EoL': 281897, 'id': '691616'}, 
+     'sources': {'ncbi': {'wd': {'final_wiki_item':{'PGviews': [64, 47], 'pop': 285.14470010855894, 'Q': 4672161, 'EoL': 281897, 'PGsz': 1465}, 'EoL': 281897, 'id': '691616'}}, 
                  'worms': None, 
-                 'gbif': {'wd': {'PGviews': [64, 47], 'pop': 285.14470010855894, 'Q': 4672161, 'EoL': 281897, 'PGsz': 1465}, 'id': '1968205'}, 
+                 'gbif': {'wd': {'final_wiki_item':{'PGviews': [64, 47], 'pop': 285.14470010855894, 'Q': 4672161, 'EoL': 281897, 'PGsz': 1465}, 'id': '1968205'}}, 
                  'if': None, 
                  'irmng': {'EoL': 281897, 'id': '10290975'}}, 
      'eol': 281897}
@@ -522,8 +524,8 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity
         #these are the extra columns output to the leaf csv file
         leaf_extras=OrderedDict()
         leaf_extras['ott']=['ott']
-        leaf_extras['wikidata']=['wd','Q']
-        leaf_extras['wikipedia_lang_flag']=['wd','wikipedia_lang_flag']
+        leaf_extras['wikidata']=['wd','final_wiki_item','Q']
+        leaf_extras['wikipedia_lang_flag']=['wd','final_wiki_item','wikipedia_lang_flag']
         leaf_extras['iucn']=['iucn']
         leaf_extras['eol']=['eol']
         leaf_extras['raw_popularity']=['raw_popularity']
@@ -540,8 +542,8 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity
         #these are the extra columns output to the node csv file
         node_extras=OrderedDict()
         node_extras['ott']=['ott']
-        node_extras['wikidata']=['wd','Q']
-        node_extras['wikipedia_lang_flag']=['wd','wikipedia_lang_flag']
+        node_extras['wikidata']=['wd','final_wiki_item','Q']
+        node_extras['wikipedia_lang_flag']=['wd','final_wiki_item','wikipedia_lang_flag']
         node_extras['eol']=['eol']
         node_extras['raw_popularity']=['raw_popularity']
         node_extras['popularity']=['popularity']
@@ -670,12 +672,12 @@ if __name__ == "__main__":
             focal_taxon = focal_label.replace("_", " ")
             n = tree.find_node_with_label(focal_taxon)
             print("{}: own pop = {} (Q{}) descendant pop sum = {}".format(
-                focal_taxon, n.pop_store, n.data['wd']['Q'], n.descendants_popsum))
+                focal_taxon, n.pop_store, n.data['wd']['final_wiki_item']['Q'], n.descendants_popsum))
             
             assert False, "Stopped to calculate popularities"
             for t, tip in enumerate(n.leaf_iter()):
               print("Tip {} = {}: own_pop = {}, Qid = {}".format(
-                t, tip.label, getattr(tip,"pop_store",None), tip.data['wd']['Q']))
+                t, tip.label, getattr(tip,"pop_store",None), tip.data['wd']['final_wiki_item']['Q']))
               if t > 100:
                 print("More tips exist, but have been omitted")
                 break
