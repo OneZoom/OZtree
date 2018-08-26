@@ -641,7 +641,7 @@ if __name__ == "__main__":
         info("Adding wikidata info")
         wiki_title_ptrs = add_wikidata_info(source_ptrs, args.wikidataDumpFile, args.wikilang, args.verbosity)
         
-        identify_best_wikidata(OTT_ptrs, sources, args.verbosity)
+        identify_best_wikidata(OTT_ptrs, sources.keys(), args.verbosity)
         construct_wiki_info(OTT_ptrs)
         
         info("Supplementing ids (EOL/IPNI) with ones from wikidata")

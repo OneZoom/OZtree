@@ -487,17 +487,14 @@ def identify_best_wikidata(OTT_ptrs, order_to_trust, verbosity):
         except TypeError:
             pass
         allOTTs += 1
-        choose = {}
+        choose = defaultdict(dict)
         for rank, src in enumerate(order_to_trust):
-            if src in data['sources'] and data['sources'][src] is not None:
-                if 'wd' in data['sources'][src]:
-                    if 'Q' in data['sources'][src]['wd']:
-                        Q = data['sources'][src]['wd']['Q']
-                        obj = data['sources'][src]['wd']
-                        if Q not in choose:
-                            choose[Q] = {rank:obj}
-                        else: 
-                            choose[Q][rank]=obj
+          try:
+            taxon_handle = data['sources'][src]['wd']
+            Qid = taxon_item['final_wiki_item']['Q']
+            choose[Qid][rank]=taxon_handle
+          except (TypeError, KeyError):
+            pass
         if len(choose) == 0:
             data['wd'] = {} #for future referencing, it is helpful to have a blank array here
         else:
@@ -513,7 +510,7 @@ def identify_best_wikidata(OTT_ptrs, order_to_trust, verbosity):
             best = chosen[min(chosen)]
             data['wd'] = best
             if errstr:
-                print(" {}, chosen {}".format(errstr, best['Q']), file=sys.stderr)
+                print(" {}, chosen {}".format(errstr, best['final_wiki_item']['Q']), file=sys.stderr)
     if verbosity:
         print(" NB: of {} OpenTree taxa, {} ({:.2f}%) have wikidata entries. mem usage {:.1f} Mb".format(allOTTs, OTTs_with_wd, OTTs_with_wd/allOTTs * 100, memory_usage_resource()), file=sys.stderr)
 
