@@ -254,9 +254,17 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
     IUCNid_property_id=['P141','P627'], 
     IPNIid_property_id='P961'):
     """
-    Maps the name in taxonomy.tsv to the property ID in wikidata (e.g. 'ncbi' in OTT, P685 in wikidata. Note that wikidata does not have 'silva' and 'irmng' types)
-    Also save a list of wikipedia sitelinks, but only as comman-delimited presence/absence data, e.g. if there is an enwiki & frwiki entry, save sitelinks='en,fr'
-    However, if a wikilang is present, also store the wikipedia page title for this particular language. Note that this could be unicode, e.g. 'Günther's dwarf burrowing skink', 'Gölçük toothcarp', 'Galium × pomeranicum'. We replace underscores with spaces so that they matching against page size & page counts (views)
+    Returns a dictionary mapping page titles in the wikilang to data items. Note that 
+    titles could be unicode, e.g. 'Günther's dwarf burrowing skink', 'Gölçük toothcarp',
+    'Galium × pomeranicum'. We replace underscores with spaces so that they matching 
+    against page size & page counts (views).
+    
+    Thos function also adds to 
+    the source_ptrs array by mapping the name in taxonomy.tsv to the property ID in 
+    wikidata (e.g. 'ncbi' in OTT, P685 in wikidata. Note that wikidata does not have 
+    'silva' and 'irmng' types)
+    
+    If a wikilang is present, also store the wikipedia page title for this particular language. 
        
     If an EOLid_property_id, IUCN id, or IPNI id exists, save these too (NB: the IUCN id is present as Property:P627 of claim P141. It may also be overwritten by an ID subsequently extracted from the EOL identifiers list)
     
@@ -273,7 +281,7 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). To
     We also store the few common-name wikidata pages in a separate variable, wikidata_cname_info. Then, if the equivalent taxon exists, and it has no `wikilang`.wikipedia.org sitelink (or is a special case), we set 'Q' and 'l' to the new
 
     """
-    replaced = {}
+    tally_replaced = {}
     wikilang_title_ptrs = {}
     wikidata_taxon_info = {}
     wikidata_cname_info = {}
@@ -305,10 +313,18 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). To
           common_name = match_Qtypes['common name'] in instance_of
           if taxon or common_name:
             if taxon:
+              # make a new taxon item, and a handle to it which contains the original item
+              # and a slot for the final item used. We need both slots because we may wish 
+              # to use a final item obtained from common name matching, rather than directly 
+              # through ID matching 
+              taxon_handle = dict()
               taxon_item = wikidata_makebaseinfo(item, wikilang)
+              taxon_handle(final_wiki_item=taxon_item, initial_wiki_item=taxon_item)
+              Qid = taxon_item['Q']
+              #attach this taxon_item to the right place in source_ptrs.
               if JSON_contains_known_dbID(item, taxon_item, source_ptrs, verbosity):
                 #we have matched against a known taxon
-                wikidata_taxon_info[taxon_item['Q']] = taxon_item
+                wikidata_taxon_info[Qid] = taxon_item
                 if EOLid_property_id:
                   try:
                     eolid = wikidata_value(item['claims'][EOLid_property_id][0]['mainsnak'])
@@ -348,17 +364,24 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). To
                     print(" Cannot convert IPNI property {} to integer in {}.".format(eolid, taxon_name(item)), file=sys.stderr);
                   
                   #Check for common names 
-                  if taxon_item['Q'] in wikidata_cname_info:
+                  if Qid in wikidata_cname_info:
                     #we previously found a common name for this one
-                    if (wikilang in wikidata_cname_info[taxon_item['Q']]['l'] and wikilang not in taxon_item['l']) or taxon_item['Q'] in override_with_common_name:
-                      #only change if there is no sitelink in the pre-specified wikilang but there *is* one in the common_name item (or is an exception)
+                    if (wikilang in wikidata_cname_info[Qid]['l'] and wikilang not in taxon_item['l']) \
+                      or Qid in override_with_common_name:
+                      # Only change if there is no sitelink in the pre-specified wikilang 
+                      # but there *is* one in the common_name item (or is an exception)
                       if verbosity:
-                        print(" Updating taxon {} ({}) with Qid and sitelinks from Q{}.".format(item['id'], taxon_name(item),  wikidata_cname_info[taxon_item['Q']]['Q']), file=sys.stderr)
+                        print(" Updating taxon Q{} ({}) with Qid and sitelinks from Q{}.".format(
+                            Qid, taxon_name(item),  wikidata_cname_info[Qid]['Q']), file=sys.stderr)
                       if len(taxon_item['l']):
                         # print out a warning if we have actually lost some pages in other language wikipedias
-                        print("WARNING. Taxon {} ({}) is being swapped for a common-name equivalent Q{}, losing sitelinks in the following languages: {}.".format(item['id'], taxon_name(item), wikidata_cname_info[taxon_item['Q']]['Q'], taxon_item['l']), file=sys.stderr)
-                      replaced[taxon_item['Q']]=wikidata_cname_info[taxon_item['Q']]['Q']
-                      taxon_item.update(wikidata_cname_info[taxon_item['Q']])
+                        print("WARNING. Taxon Q{} ({}) is being swapped for a common-name equivalent Q{}, losing sitelinks in the following languages: {}.".format(
+                            Qid, taxon_name(item), wikidata_cname_info[Qid]['Q'], taxon_item['l']), file=sys.stderr)
+
+                      # switch the final wiki item used
+                      taxon_handle['final_wiki_item'] = wikidata_cname_info[Qid]
+                      #simply keep track for reporting purposes
+                      tally_replaced[Qid]=wikidata_cname_info[Qid]['Q']
                     
                   if wikilang in taxon_item['l']:
                     wikilang_title_ptrs[taxon_item['l'][wikilang]] = taxon_item
@@ -371,26 +394,29 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). To
                 continue
               for common_name_of in common_name_property["qualifiers"]["P642"]:
                 #e.g. https://www.wikidata.org/wiki/Q144
-                common_name_taxon_Qid = wikidata_value(common_name_of).get("numeric-id")
-                if common_name_taxon_Qid:
+                common_name_maps_to_Qid = wikidata_value(common_name_of).get("numeric-id")
+                if common_name_maps_to_Qid:
                   common_name_item = wikidata_makebaseinfo(item, wikilang)
-                  print(" Found a common name: {} ({}) is common name of Q{}, which could be a taxon item".format(item["id"], taxon_name(item), common_name_taxon_Qid), file=sys.stderr)
+                  print(" Found a common name: {} ({}) is common name of Q{}, which could be a taxon item".format(item["id"], taxon_name(item), common_name_maps_to_Qid), file=sys.stderr)
                   if wikilang in common_name_item['l']:
                     #we have e.g. sitelink = 'en.wiki' in this item
-                    wikidata_cname_info[common_name_taxon_Qid]=common_name_item
-                    
-                    if common_name_taxon_Qid in wikidata_taxon_info:
-                      #we have already stored taxon details in a previous pass, so we might want to change the the info
-                      if wikilang not in wikidata_taxon_info[common_name_taxon_Qid]['l'] or common_name_taxon_Qid in override_with_common_name:
+                    wikidata_cname_info[common_name_maps_to_Qid]=common_name_item
+                    Qid = common_name_item['Q']
+
+                    if common_name_maps_to_Qid in wikidata_taxon_info:
+                      #we have already stored taxon details in a previous pass, so we might want to change the info
+                      if wikilang not in wikidata_taxon_info[common_name_maps_to_Qid]['l'] or \
+                        common_name_maps_to_Qid in override_with_common_name:
                         #only change if there was not a previous sitelink in the pre-specified wikilang (or an exception)
                         if verbosity:
-                          print(" Updating taxon {} with Qid and sitelinks from Q{} ({}).".format(common_name_taxon_Qid, item['id'], taxon_name(item)),  file=sys.stderr)
-                        if len(wikidata_taxon_info[common_name_taxon_Qid]['l']):
+                          print(" Updating taxon {} with Qid and sitelinks from Q{} ({}).".format(common_name_maps_to_Qid, Qid, taxon_name(item)),  file=sys.stderr)
+                        if len(wikidata_taxon_info[common_name_maps_to_Qid]['l']):
                           # print out a warning if we have actually lost some pages in other language wikipedias
-                          print("WARNING. Taxon {} is being swapped for a common-name equivalent {} ({}), losing sitelinks in the following languages: {}.".format(common_name_taxon_Qid, item['id'], taxon_name(item), wikidata_taxon_info[common_name_taxon_Qid]['l']), file=sys.stderr)
-                        replaced[common_name_taxon_Qid]=wikidata_cname_info[common_name_taxon_Qid]['Q']
-                        wikidata_taxon_info[common_name_taxon_Qid].update(common_name_item)
-                        wikilang_title_ptrs[common_name_item['l'][wikilang]] = wikidata_taxon_info[common_name_taxon_Qid]
+                          print("WARNING. Taxon Q{} is being swapped for a common-name equivalent Q{} ({}), losing sitelinks in the following languages: {}.".format(common_name_maps_to_Qid, Qid, taxon_name(item), wikidata_taxon_info[common_name_maps_to_Qid]['l']), file=sys.stderr)
+                        taxon_handle = wikidata_taxon_info[common_name_maps_to_Qid]
+                        wikilang_title_ptrs[common_name_item['l'][wikilang]] = taxon_handle['final_wiki_item'] = common_name_item
+                        #simply keep track for reporting purposes
+                        tally_replaced[common_name_maps_to_Qid]=wikidata_cname_info[common_name_maps_to_Qid]['Q']
           elif 13406463 in instance_of:
             #this is a "Wikimedia list article" (Q13406463), which explains why a taxon Qid might be present 
             #(e.g. "List of Lepidoptera that feed on Solanum" which is a "list of" taxon)
@@ -409,10 +435,10 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). To
             if verbosity:
               print(" There might be a problem with wikidata item {} ({}), might be a taxon but cannot get taxon data from it".format(item['id'], taxon_name(item)), file=sys.stderr);
     cnames = defaultdict(set)
-    for k, v in replaced.items():
+    for k, v in tally_replaced.items():
       cnames[v].add(k)
     if verbosity:
-      print(" The following taxon Qids were swapped for common name Qids: {}".format(replaced), file=sys.stderr)
+      print(" The following taxon Qids were swapped for common name Qids: {}".format(tally_replaced), file=sys.stderr)
       duplicates = {k:v for k,v in cnames.items() if len(v) > 1}
       if len(duplicates):
         print("WARNING. The following common name wikdata items (listed by Qid) have been used for more than one taxon item: this may cause duplicate use of the same popularity measure. {}".format(duplicates), file=sys.stderr)
@@ -676,7 +702,7 @@ def sum_popularity_over_tree(tree, OTT_ptrs=None, exclude=[], pop_store='pop', v
     if verbosity:
         print(" Tree read for phylogenetic popularity calc: mem usage {:.1f} Mb".format(memory_usage_resource()), file=sys.stderr)
     
-    #put popularity as edge length
+    #put popularity into the pop_store attribute
     for node in tree.preorder_node_iter():
         if node.label in exclude:
             node.pop_store=0
