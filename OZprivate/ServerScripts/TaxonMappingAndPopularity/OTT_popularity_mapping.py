@@ -259,26 +259,42 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
     'Galium × pomeranicum'. We replace underscores with spaces so that they matching 
     against page size & page counts (views).
     
-    Thos function also adds to 
-    the source_ptrs array by mapping the name in taxonomy.tsv to the property ID in 
-    wikidata (e.g. 'ncbi' in OTT, P685 in wikidata. Note that wikidata does not have 
-    'silva' and 'irmng' types)
+    This function also adds to  the source_ptrs array by mapping the name in taxonomy.tsv
+    to the property ID in wikidata (e.g. 'ncbi' in OTT, P685 in wikidata. Note that 
+    wikidata does not have 'silva' and 'irmng' types)
     
     If a wikilang is present, also store the wikipedia page title for this particular language. 
        
-    If an EOLid_property_id, IUCN id, or IPNI id exists, save these too (NB: the IUCN id is present as Property:P627 of claim P141. It may also be overwritten by an ID subsequently extracted from the EOL identifiers list)
+    If an EOLid_property_id, IUCN id, or IPNI id exists, save these too (NB: the IUCN id
+    is present as Property:P627 of claim P141. It may also be overwritten by an ID
+    subsequently extracted from the EOL identifiers list)
     
-    Some taxa (especially common ones) have most sitelinks in a 'common name' item, e.g. cattle (Q830) contains most language sitelinks for the taxon items Q46889 (Bos primigenius indicus), Q20747320 (Bos primigenius taurus), Q20747334 (Bos taurus *+), Q20747712, Q20747726, etc. (* marks the name used in OneZoom, + for OpenTree). These 'common name' pages point to the taxon by having a property P31 ('instance of') set to 
-common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). To spot these, we look for wikidata items that are common names, and link to items that are taxa. If the taxon has no wikipedia link in the specified language, we should use the common name WD item instead.
+    Some taxa (especially common ones) have most sitelinks in a 'common name' item, e.g.
+    cattle (Q830) contains most language sitelinks for the taxon items 
+    Q46889 (Bos primigenius indicus), Q20747320 (Bos primigenius taurus), 
+    Q20747334 (Bos taurus *+), Q20747712, Q20747726, etc. (* marks the name used in OneZoom, + for OpenTree).
+    These 'common name' pages point to the taxon by having a property P31 ('instance of') set to 
+    common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). 
+    To spot these, we look for wikidata items that are common names, and link to items 
+    that are taxa. If the taxon has no wikipedia link in the specified language, we 
+    should use the common name WD item instead.
 
-    Additionally, taxa like Homo sapiens might have *two* wikipedia pages, https://en.wikipedia.org/wiki/Homo_sapiens and https://en.wikipedia.org/wiki/Human. I code around these by hand (yuck).
+    Additionally, taxa like Homo sapiens might have *two* wikipedia pages, 
+    https://en.wikipedia.org/wiki/Homo_sapiens and https://en.wikipedia.org/wiki/Human. 
+    I code around these by hand (yuck).
     
-    For each taxon line in the dump, we store the relevant information in a dict which contains the Qid and identifiers for EoL, IPNI, and IUCN, and an array of languages in the 'l' field e.g.
-    wikidata_taxon_info[Qid] = {'Q':Qid, 'l':['en','fr'], 'EoL':EoLid, 'IUCN': IUCNid, 'IPNI':IPNIid}
+    For each taxon line in the dump, we store the relevant information in a dict which
+    contains the Qid and identifiers for EoL, IPNI, and IUCN, and an array of languages
+    in the 'l' field e.g. wikidata_taxon_info[Qid] = {'Q':Qid, 'l':['en','fr'], 
+    'EoL':EoLid, 'IUCN': IUCNid, 'IPNI':IPNIid}
     
-    We map it to NCBI etc identifiers using the function JSON_contains_known_dbID(), and if the mapping is successful (i.e. we may be using this taxon), we store it in wikidata_taxon_info[Qid]
+    We map it to NCBI etc identifiers using the function JSON_contains_known_dbID(), and
+    if the mapping is successful (i.e. we may be using this taxon), we store it in
+    wikidata_taxon_info[Qid]
     
-    We also store the few common-name wikidata pages in a separate variable, wikidata_cname_info. Then, if the equivalent taxon exists, and it has no `wikilang`.wikipedia.org sitelink (or is a special case), we set 'Q' and 'l' to the new
+    We also store the few common-name wikidata pages in a separate variable,
+    wikidata_cname_info. Then, if the equivalent taxon exists, and it has no
+    `wikilang`.wikipedia.org sitelink (or is a special case), we set 'Q' and 'l' to the new
 
     """
     tally_replaced = {}
@@ -308,7 +324,6 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). To
           if 'claims' not in item or 'P31' not in item['claims']:
             continue
           instance_of = {int(wikidata_value(wd_json.get("mainsnak")).get("numeric-id")):wd_json for wd_json in item["claims"]["P31"]}
-          
           taxon = any([Q in instance_of for name,Q in match_Qtypes.items() if name != 'common name'])
           common_name = match_Qtypes['common name'] in instance_of
           if taxon or common_name:
@@ -361,7 +376,6 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). To
                     pass #no IPNI id
                   except ValueError:
                     print(" Cannot convert IPNI property {} to integer in {}.".format(eolid, taxon_name(item)), file=sys.stderr);
-                  
                   #Check for common names 
                   if Qid in wikidata_cname_info:
                     #we previously found a common name for this one
@@ -376,12 +390,10 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). To
                         # print out a warning if we have actually lost some pages in other language wikipedias
                         print("WARNING. Taxon Q{} ({}) is being swapped for a common-name equivalent Q{}, losing sitelinks in the following languages: {}.".format(
                             Qid, taxon_name(item), wikidata_cname_info[Qid]['Q'], taxon_item['l']), file=sys.stderr)
-
                       # switch the final wiki item used
                       taxon_handle['final_wiki_item'] = wikidata_cname_info[Qid]
                       #simply keep track for reporting purposes
                       tally_replaced[Qid]=wikidata_cname_info[Qid]['Q']
-                    
                   if wikilang in taxon_item['l']:
                     wikilang_title_ptrs[taxon_item['l'][wikilang]] = taxon_item
             if common_name:
@@ -401,6 +413,7 @@ common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). To
                     #we have e.g. sitelink = 'en.wiki' in this item
                     wikidata_cname_info[common_name_maps_to_Qid]=common_name_item
                     Qid = common_name_item['Q']
+                    wikilang_title_ptrs[common_name_item['l'][wikilang]] = common_name_item
 
                     if common_name_maps_to_Qid in wikidata_taxon_info:
                       #we have already stored taxon details in a previous pass, so we might want to change the info
@@ -644,11 +657,12 @@ def visits_for_titles(wiki_title_ptrs, wiki_visits_pagecounts_file, file_index, 
         print(" NB: of {} WikiData taxon entries, {} ({:.2f}%) have pageview data for {} in '{}'. mem usage {:.1f} Mb".format(len(wiki_title_ptrs), used, used/len(wiki_title_ptrs) * 100, wikicode, wiki_visits_pagecounts_file if isinstance(wiki_visits_pagecounts_file, str) else wiki_visits_pagecounts_file.name, memory_usage_resource()), file=sys.stderr)
 
 def calc_popularities_for_wikitaxa(wiki_items, popularity_function, verbosity=0, trim_highest=2):
-    ''' calculate popularities for wikidata entries, pase on page size & page views
+    ''' calculate popularities for wikidata entries, based on page size & page views
     you might want to trim the highest viewing figures, to avoid spikes. trimming 2 months will remove spikes 
     that crosses from the end of one month to the beginning of another
     
-    Currently, popularity_function is unused
+    Currently, popularity_function is unused, and a fixed function is injected 
+    (sqrt(page_size * trimmed_mean_page_views))
     '''
     from statistics import mean, StatisticsError
     used=0
