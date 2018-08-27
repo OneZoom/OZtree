@@ -491,7 +491,7 @@ def identify_best_wikidata(OTT_ptrs, order_to_trust, verbosity):
         for rank, src in enumerate(order_to_trust):
           try:
             taxon_handle = data['sources'][src]['wd']
-            Qid = taxon_item['final_wiki_item']['Q']
+            Qid = taxon_handle['final_wiki_item']['Q']
             choose[Qid][rank]=taxon_handle
           except (TypeError, KeyError):
             pass
