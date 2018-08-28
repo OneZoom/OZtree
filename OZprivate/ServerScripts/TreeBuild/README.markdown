@@ -116,7 +116,7 @@ If you already have your own newick tree with open tree ids on it already, and d
     
 7. If you are running the tree building scripts on a different computer to the one running the web server, you will need to push the `completetree_XXXXXX.js`, `completetree_XXXXXX.js.gz`, `cut_position_map_XXXXXX.js`, `cut_position_map_XXXXXX.js.gz`, `dates_XXXXXX.js`
 , `dates_XXXXXX.js.gz` files onto your server, e.g. by pushing to your local Github repo then pulling the latest github changes to the server.
-8. (15 mins) load the CSV tables into the DB. Either do so via a GUI utility, or copy them to a local directory on the machine running your SQL server (e.g. using `scp -C` for compression) and run a set of `LOAD DATA LOCAL INFILE` commands in mysql. If running mysql from the command line, requires you to start it with `mysql --local-infile`, e.g.:
+8. (15 mins) load the CSV tables into the DB, usng the SQL commands printed in step 5 (the ones that start simething like `TRUNCATE TABLE ordered_leaves; LOAD DATA LOCAL INFILE ...;` `TRUNCATE TABLE ordered_nodes; LOAD DATA LOCAL INFILE ...;`). Either do so via a GUI utility, or copy the `.csv.mySQL` files to a local directory on the machine running your SQL server (e.g. using `scp -C` for compression) and run your `LOAD DATA LOCAL INFILE` commands on the mysql command line (this may require you to start the command line utility using `mysql --local-infile`, e.g.:
 
    ```
    mysql --local-infile --host db.sundivenetworks.net --user onezoom --password --database onezoom_dev
@@ -133,12 +133,12 @@ If you already have your own newick tree with open tree ids on it already, and d
 10. (15 mins) create example pictures for each node by percolating up. This requires the most recent `images_by_ott` table, so either do this on the main server, or (if you are doing it locally) update your `images_by_ott` to the most recent server version.
 
 	```
-	OZprivate/ServerScripts/Utilities/picProcess.py
+	OZprivate/ServerScripts/Utilities/picProcess.py -v
 	```
 11. (5 mins) percolate the IUCN data up using 
 	
 	```
-	OZprivate/ServerScripts/Utilities/IUCNquery.py
+	OZprivate/ServerScripts/Utilities/IUCNquery.py -v
 	```
 	(note that this both updates the ICUN data in the DB and percolates up interior node info)
 12. (10 mins) If this is a site with sponsorship (only the main OZ site), set the pricing structure using SET_PRICES.html (accessible from the management pages).
