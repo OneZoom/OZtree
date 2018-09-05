@@ -923,56 +923,19 @@ class LeafLayoutBase {
         this.hovering = true;
         live_area_config.leaf_conservation_text.register_button_event(node);
       }
-      let text_shape;
-      if (imageObject) {
-        text_shape = TextShape.create();
-        this.fill_fullleaf_detail3(text_shape, node, r, x);
-        text_shape.text = conservation_text[0];
-        text_shape.y = y + r * 0.575;
-        text_shape.width = r;
-        text_shape.defpt = r * 0.07;
-        shapes.push(text_shape);
+      let text_y = imageObject ? [0.575, 0.665, 0.775] : [0.39, 0.515, 0.64];
+      let text_pt = imageObject ? 0.07 : 0.1;
 
-        text_shape = TextShape.create();
+      for (let i = 0; i < conservation_text.length; i++) {
+        let text_shape = TextShape.create();
         this.fill_fullleaf_detail3(text_shape, node, r, x);
-        text_shape.text = conservation_text[1];
-        text_shape.y = y + r * 0.665;
+        text_shape.text = conservation_text[i];
+        text_shape.y = y + r * text_y[i];
         text_shape.width = r;
-        text_shape.defpt = r * 0.07;
-        shapes.push(text_shape);
-        
-        text_shape = TextShape.create();
-        this.fill_fullleaf_detail3(text_shape, node, r, x);
-        text_shape.text = conservation_text[2];
-        text_shape.y = y + r * 0.755;
-        text_shape.width = r;
-        text_shape.defpt = r * 0.07;
-        shapes.push(text_shape);
-      } else {
-        text_shape = TextShape.create();
-        this.fill_fullleaf_detail3(text_shape, node, r, x);
-        text_shape.text = conservation_text[0];
-        text_shape.y = y + r * 0.39;
-        text_shape.width = r;
-        text_shape.defpt = r * 0.1;
-        shapes.push(text_shape);
-        
-        text_shape = TextShape.create();
-        this.fill_fullleaf_detail3(text_shape, node, r, x);
-        text_shape.text = conservation_text[1];
-        text_shape.y = y + r * 0.515;
-        text_shape.width = r;
-        text_shape.defpt = r * 0.1;
-        shapes.push(text_shape);
-        
-        text_shape = TextShape.create();
-        this.fill_fullleaf_detail3(text_shape, node, r, x);
-        text_shape.text = conservation_text[2];
-        text_shape.y = y + r * 0.64;
-        text_shape.width = r;
-        text_shape.defpt = r * 0.1;
+        text_shape.defpt = r * text_pt;
         shapes.push(text_shape);
       }
+
       this.hovering = false;
     }
   }
