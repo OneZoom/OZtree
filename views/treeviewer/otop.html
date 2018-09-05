@@ -3,6 +3,8 @@
 #UI_layer->tabs        A name or array of names of tabs to use (names are in OZglobals:tab_definitions and the linkouts() 
 #                       function in tree.py as key names in the url dict) or 'default' for the default set or 'all' for all. 
 #                       Tabs (if they exist) will be shown in this order when popping up linkouts to other pages.
+#UI_layer->custom_tabs A dict of tab definitions, like OZglobals.py. UI_callbacks.populateLinkouts will have to provide the
+#                       data to make it work
 #UI_layer->vars->links Can be 'none' for no links, 'newtab' for all links (except the OZ logo) in new tab, or 'default' (or unset) to leave.
 #UI_layer->vars->no_external_links
 #                      If true, hide any links to external pages (e.g. opening wikipedia pages in a new tab)
@@ -21,7 +23,10 @@ setup_params = {
   'UI_layer': {
     'page':'UI_layer.load', 
     'vars':{
-      'tabs':['wiki', 'ozlinks'],
+      'tabs':['otopchallenge', 'wiki', 'ozlinks'],
+      'custom_tabs': {
+          'otopchallenge': {'id':'otopchallenge','name':T('Challenge'), 'icon':URL('static','images/links.svg')},
+      },
       'links':'newtab',
       'no_external_links': True,
       'hide_control_settings': True,
@@ -136,4 +141,22 @@ document.addEventListener('DOMContentLoaded', init_background.bind(null, {
         '{{=URL("static","otop/otop-bkgd-particle-1.png")}}',
     ],
 }));
+
+document.addEventListener('DOMContentLoaded', function () {
+    var origPopulateLinkouts = window.UI_callbacks.populateLinkouts;
+
+    // Wrap the main definition of populateLinkouts, insert our challenges tab
+    window.UI_callbacks.populateLinkouts = function (responseJSON, initialSelected) {
+        var selected_node = {};
+
+        if (responseJSON.id) {
+            // TODO: The region is only available on a node once detail_fetched - this happens too early on page reload
+            selected_node = onezoom.controller.develop_branch_to(-responseJSON.id);  // NB: Assume this is a leaf node
+        }
+        if (selected_node.region) {
+            responseJSON.data.otopchallenge = ['https://api.onetreeoneplanet.org/onezoom-challenge-tabs/' + encodeURIComponent(selected_node.region)];
+        }
+        return origPopulateLinkouts(responseJSON, initialSelected);
+    };
+});
 </script>
