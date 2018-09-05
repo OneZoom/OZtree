@@ -68,7 +68,7 @@ class LeafLayout extends LeafLayoutBase {
       let user = window.location.search.match(/[&?]ucaya_user=([^&]+)/);
       user = user ? user[1] : '0'.repeat(32);
       api_wrapper({
-          url: 'http://40.115.43.52/userprofiles/' + user + '/random',
+          url: 'https://api.onetreeoneplanet.org/userprofiles/' + user + '/random',
           method: 'GET',
           success: function (data) {
               this._human_subleaf_data.data = data;
