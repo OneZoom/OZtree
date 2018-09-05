@@ -39,7 +39,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
   </div>
 </div>
 <div id="advanced_search_toggle" class="uk-navbar-item">
-    <a id="advanced_search_button" class="uk-icon-button" uk-tooltip="pos: left" uk-icon="icon: git-fork"></a>
+    <a id="advanced_search_button" data-advanced-title="{{=T('Turn off advanced search mode')}}" data-simple-title="{{=T('Advanced search (tracer) mode: click to turn on')}}" class="uk-icon-button" uk-tooltip="pos: left" uk-icon="icon: git-fork"></a>
 </div>
 
 <div id="loading_spinner">

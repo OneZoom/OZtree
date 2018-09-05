@@ -27,7 +27,7 @@ def index():
     here we should find a random selection of things with highly-rated photos which have not been sponsored, and pass them in.
     also check for the best rated photos for sponsorship, and pass those in.
     """
-    return dict()
+    return dict(n_species =  db(db.ordered_leaves).count(), n_images =  db(db.images_by_ott).count())
 
 def user():
     """
@@ -182,7 +182,7 @@ def sponsor_leaf():
     #we might come into this with an established partner set in request.vars (e.g. LinnSoc)
     partner = request.vars.get('partner')
     """
-    TO DO & CHECK
+    TO DO & CHECK - This allows specific parts of the tree to be associated with a partner
     if partner is None:
         #check through partner_taxa for leaves that might match this one
         partner = db((~db.partner_taxa.deactived) & 
@@ -354,17 +354,11 @@ def sponsor_leaf():
             leaf_price = 0.01*float(leaf_entry.price) #in the leaf table, price is in pence, not a float, to allow binning
             #can sponsor here, go through to the main sponsor_leaf page
             form = SQLFORM(db.reservations, reservation_entry, 
-                fields=['e_mail','allow_contact','twitter_name',
-                    'user_sponsor_kind','user_sponsor_name','user_more_info','user_donor_title','user_donor_name','user_donor_show','user_paid','user_message_OZ',
+                fields=['e_mail','allow_contact','twitter_name', 'user_sponsor_kind', 'user_sponsor_name', 'user_more_info', 
+                    'user_donor_title', 'user_donor_name', 'user_donor_show', 'user_paid', 'user_message_OZ',
                     'user_nondefault_image', 'user_preferred_image','user_giftaid'],
                 deletable = False)
-            form.custom.widget.user_sponsor_name["requires"] = IS_LENGTH(minsize=1,maxsize=30)
-            form.custom.widget.user_sponsor_kind["requires"] = IS_IN_SET(['by','for'])
-            form.custom.widget.user_paid["requires"] = IS_FLOAT_IN_RANGE(leaf_price, 99999, dot=".", 
-                error_message=XML("Please donate at least £{:.2f} to sponsor this leaf, or you could simply choose another leaf".format(leaf_price)))
-            
-        
-            if form.process(session=None, formname='test').accepted:
+            if form.process(session=None, formname='test', onvalidation=lambda x: validate_sponsor_leaf(x, leaf_price)).accepted:
                 #response.flash = 'temp form accepted' # debug
                 reservation_query.update(
                     reserve_time=request.now,
@@ -373,7 +367,7 @@ def sponsor_leaf():
                     user_updated_time=request.now,
                     sponsorship_duration_days=365*4+1,
                     partner_name=partner_data.get('partner_identifier'),
-                    partner_percentage=partner_data.get('partner_percentage'))
+                    partner_percentage=partner_data.get('percentage'))
                 # now need to do our own other checks
                 v = {'ott':OTT_ID_Varin}
                 if request.vars.get('embed'):
@@ -393,7 +387,35 @@ def sponsor_leaf():
     else:
         #should never happen
         response.view = request.controller + "/spl_error." + request.extension
-        return dict()
+        return dict(OTT_ID = OTT_ID_Varin)
+
+def validate_sponsor_leaf(form, leaf_price):
+    """
+    Do all this as custom validation as some is quite intricate
+    """
+    max_chars = 30
+    if len(form.vars.user_sponsor_name or "") == 0:
+        form.errors.user_sponsor_name = T("You must enter some sponsor text")
+    elif len(form.vars.user_sponsor_name or "") > max_chars:
+        form.errors.user_sponsor_name = T("Text too long: max %s characters") % (max_chars, )
+
+    if len(form.vars.user_more_info or "") > max_chars:
+        form.errors.user_more_info = T("Text too long: max %s characters") % (max_chars, )
+    
+    if form.vars.user_sponsor_kind not in ['by','for']:
+        form.errors.user_sponsor_kind = T("Sponsorship can only be 'by' or 'for'")
+
+    try:
+        if float(form.vars.user_paid) < leaf_price:
+            form.errors.user_paid = T("Please donate at least £%s to sponsor this leaf, or you could simply choose another leaf") % ("{:.2f}".format(leaf_price), )
+    except:
+        form.errors.user_paid = T("Please enter a valid number")
+    
+    if form.vars.user_giftaid:
+        if not (form.vars.user_donor_title or "").strip():
+            form.errors.user_donor_title = T("We need your title to be able to claim gift aid")
+        if not form.vars.user_donor_name and form.vars.user_sponsor_kind != 'by':
+            form.errors.user_donor_name = T("We need your name to be able to claim gift aid")
 
 
 def sponsor_leaf_redirect():
