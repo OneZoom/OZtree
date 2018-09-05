@@ -279,7 +279,7 @@ class LeafLayout extends LeafLayoutBase {
    * Cover the node with the image, don't just draw a small central node
    */
   fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop, node) {
-    this.circle_cut_image(shapes,imageObject, x,y,r,
+    this.circle_cut_image(shapes,imageObject, x,y,r - (r * 0.03),  // i.e. half the outlineThickness (which gets divided by 2 anyway)
       color_theme.get_color("leaf.inside.fill",node),
       undefined,
       node);
