@@ -36,6 +36,18 @@ function location_color(node, alpha) {
   return 'hsla(' + color + ',' + (alpha === undefined ? 1 : alpha) + ')';
 }
 
+/**
+ * Generate colour based on node and endanagered status
+ */
+function endangered_location_color(node, alpha) {
+  if (node.redlist === "CR") {
+    return 'hsla(0, 62%, 50%, ' + Math.max(alpha || 0, 0.6) + ')';
+  } else if (node.redlist === "EN") {
+    return 'hsla(21, 62%, 50%, ' + Math.max(alpha || 0, 0.5) + ')';
+  }
+  return location_color(node, alpha);
+}
+
 
 const theme = {
   branch: {
@@ -169,7 +181,7 @@ const theme = {
     },
     
     'outline_hover': {
-      fill: 'rgb(0,50,0)'
+      fill: 'rgb(0,0,0)'
     },
     
     outline: {
@@ -178,7 +190,7 @@ const theme = {
     },
     
     inside: {
-      fill: location_color,
+      fill: endangered_location_color,
     },
     
     'inside_hover': {
