@@ -103,6 +103,27 @@ server_urls.data_path_pics = function(src, src_id) {
     return server_urls._old_data_path_pics.apply(server_urls, arguments);
 }
 
+
+if (!window.WebViewBridge) {
+    // Not running within app, create a fake WebViewBridge object and send a 2-color PNG
+    WebViewBridge = {};
+    setTimeout(function () {
+        WebViewBridge.onMessage(JSON.stringify({
+            type: 'userPhoto',
+            data: 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAABAQMAAADO7O3JAAAABlBMVEUFAP//AACVNxpgAAAACklEQVQI12NoAAAAggCB3UNq9AAAAABJRU5ErkJggg==',
+        }));
+    }, 1000);
+}
+WebViewBridge.onMessage = function (rawMessage) {
+    var message = JSON.parse(rawMessage);
+
+    // Stash the userPhoto ready for use in otop/leaf_layout.js
+    if (message.type === "userPhoto") {
+        window.otop_profile_image = new Image();
+        window.otop_profile_image.src = 'data:image/png;base64,' + message.data;
+    }
+};
+
 document.addEventListener('DOMContentLoaded', init_background.bind(null, {
     tree: [
         '{{=URL("static","otop/otop-bkgd-tree-1.png")}}',

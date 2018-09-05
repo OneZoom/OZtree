@@ -90,12 +90,17 @@ class LeafLayout extends LeafLayoutBase {
   human_subleaf(node, shapes, x, y, r, human_data) {
       let s, rings, imageObject;
 
-      // Try and fetch the image
-      imageObject = get_image(
-          human_data.userProfile.picture,
-          human_data.userProfile.picture
-      );
-      imageObject = image_ready(imageObject) ? imageObject : null;
+      if (human_data.is_self && window.otop_profile_image) {
+          // The WebViewBridge gave us an image, use it
+          imageObject = window.otop_profile_image;
+      } else {
+          // Try and fetch the image
+          imageObject = get_image(
+              human_data.userProfile.picture,
+              human_data.userProfile.picture
+          );
+          imageObject = image_ready(imageObject) ? imageObject : null;
+      }
 
       rings = human_data.wonChallenges.map(function (challenge) {
           return challenge.color;
@@ -225,6 +230,7 @@ class LeafLayout extends LeafLayoutBase {
       shapes.push(s);
 
       // Draw the main human image
+      data[0].is_self = true;
       this.human_subleaf(
           node, shapes,
           this.get_leaf_x(node),
