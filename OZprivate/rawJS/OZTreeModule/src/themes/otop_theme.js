@@ -208,11 +208,11 @@ const theme = {
     },
     
     sponsor: {
-      fill: 'rgb(150,180,100)'
+      fill: int_text_fill,
     },
     
     'sponsor_hover': {
-      fill: 'rgb(255,255,255)'
+      fill: int_text_fill_hover,
     },
     
     'copyright_hover': {

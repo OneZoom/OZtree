@@ -8,14 +8,18 @@ import {color_theme} from '../../../themes/color_theme';
 import {get_image, image_ready} from '../../../image_cache';
 import api_wrapper from '../../../api/api_wrapper';
 
-class LeafLayout extends LeafLayoutBase {
-  /**
-   * This leaf is little bit bigger than in the life.html. Default value is leaf_radius * 0.9;
-   */
-  get_fullleaf_r(node) {
-     return this.get_leaf_radius(node);
-  }
+const l_consts = {
+    r_image: 0.935,
+    r_wash: 0.97,
+    r_circularbase: 0.97,
+    r_circularbaseoutline: 0.30,
+    r_human_wash: 1.3,
+    r_human_wash_start: 0.9,
+    r_sponsor_minsize: 200,
+}
+window.l_consts = l_consts;
 
+class LeafLayout extends LeafLayoutBase {
   /** Don't draw a leaf for homo sapiens, we do this later */
   fullLeaf(shapes, x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText) {
     if (latinText !== 'Homo sapiens') {
@@ -42,6 +46,31 @@ class LeafLayout extends LeafLayoutBase {
       node,
       shapes
     );
+  }
+
+  /** Decrease the overall / outline radius so our wash is visible */
+  circularLeafBase(x,y,r,angle,node,shapes) {
+    this.leafBaseLiveAreaTest(x,y,r,node);
+    this.circularOutlinedLeaf(x,y,r * l_consts.r_circularbase, r * l_consts.r_circularbaseoutline,node,shapes);
+    this.hovering = false;
+  }
+
+  /** We put the sponsor text on the opposite side to normal */
+  get_sponsor_text_direction(angle) {
+    // set to -1 if text is below
+    const TWO_PI = Math.PI*2.0;
+    if ((angle%TWO_PI)>Math.PI) {
+      return 1;
+    } else {
+      return -1;
+    }
+  }
+
+  /** Inrcrease the leaf radius before which we show the sponsor text */
+  fullLeaf_sponsor(shapes,x,y,r) {
+    if (r > l_consts.r_sponsor_minsize) {
+        super.fullLeaf_sponsor.apply(this, arguments);
+    }
   }
 
   /**
@@ -221,11 +250,11 @@ class LeafLayout extends LeafLayoutBase {
       s = ArcShape.create();
       s.x = this.get_leaf_x(node);
       s.y = this.get_leaf_y(node);
-      s.r = this.get_fullleaf_r(node) * (window.otop_fg_r || 1.3);
+      s.r = this.get_fullleaf_r(node) * l_consts.r_human_wash;
       s.circle = true;
       s.do_fill = true;
       s.do_stroke = false;
-      s.fill.color = { from: 'rgba(27, 92, 175, 0.3)', start: this.get_fullleaf_r(node) * (window.otop_fg_start || 0.9) };
+      s.fill.color = { from: 'rgba(27, 92, 175, 0.3)', start: this.get_fullleaf_r(node) * l_consts.r_human_wash_start };
       s.height = 0;
       shapes.push(s);
 
@@ -279,7 +308,7 @@ class LeafLayout extends LeafLayoutBase {
    * Cover the node with the image, don't just draw a small central node
    */
   fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop, node) {
-    this.circle_cut_image(shapes,imageObject, x,y,r - (r * 0.03),  // i.e. half the outlineThickness (which gets divided by 2 anyway)
+    this.circle_cut_image(shapes,imageObject, x,y,r * l_consts.r_image,
       color_theme.get_color("leaf.inside.fill",node),
       undefined,
       node);
@@ -289,7 +318,7 @@ class LeafLayout extends LeafLayoutBase {
     s.height = 5;
     s.x = x;
     s.y = y;
-    s.r = r * 0.975;
+    s.r = r * l_consts.r_wash;
     s.circle = true;
     s.do_fill = true;
     s.fill.color = color_theme.get_color("leaf.inside.fill", node, 0.3);
