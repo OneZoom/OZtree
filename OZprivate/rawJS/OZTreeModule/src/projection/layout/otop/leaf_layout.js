@@ -17,7 +17,6 @@ const l_consts = {
     r_human_wash_start: 0.9,
     r_sponsor_minsize: 200,
 }
-window.l_consts = l_consts;
 
 class LeafLayout extends LeafLayoutBase {
   /** Don't draw a leaf for homo sapiens, we do this later */
