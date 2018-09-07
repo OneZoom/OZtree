@@ -25,9 +25,11 @@ class SignpostLayoutBase {
       this.hovered = true;
       live_area_config.signpost.register_button_event(node);
     }
-    this.pic_image_shapes(node, shapes);
-    this.pic_outline_shapes(node, shapes);
-    this.name_shapes(node, shapes);
+    if (this.alpha > 0) {
+      this.pic_image_shapes(node, shapes);
+      this.pic_outline_shapes(node, shapes);
+      this.name_shapes(node, shapes);
+    }
     this.hovering = false;
        //*/
   }

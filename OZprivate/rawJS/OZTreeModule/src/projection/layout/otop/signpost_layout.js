@@ -4,6 +4,15 @@ import tree_state from '../../../tree_state';
 import {color_theme} from '../../../themes/color_theme';
 import ArcShape from '../../shapes/arc_shape';
 
+
+/* Return bounding rect in on-screen terms */
+function node_bounding_rect(n) {
+    return [
+      [n.xvar + (n.rvar * n.hxmin), n.yvar + (n.rvar * n.hymin)],
+      [n.xvar + (n.rvar * n.hxmax), n.yvar + (n.rvar * n.hymax)],
+    ];
+}
+
 class SignpostLayout extends SignpostLayoutBase {
   constructor() {
     super();
@@ -21,11 +30,29 @@ class SignpostLayout extends SignpostLayoutBase {
     this.centerx = node.xvar + node.rvar * node.arcx;
     this.centery = node.yvar + node.rvar * node.arcy;
 
-    // The signpost is as big as the bounding box
-    this.centerr = node.rvar * Math.max(node.hxmax - node.hxmin, node.hymax - node.hymin);
+    // The signpost should be at least as big the children's bounding box with the furthest edge
+    // NB: Not our bounding box, since that includes our parent
+    // NB: We don't enclose each children's bounding box, since that would be a huge over-estimate
+    let bounding_radius = 0;
+    if (node.rvar > tree_state.threshold) { // i.e. before projection/re_calc.js:drawreg2 stops bothering updating child node positions
+        for (let i = 0; i < Math.min(10, node.children.length); i++) { // We're not going to learn anything new after the first handful
+            let br = node_bounding_rect(node.children[i]);
 
-    // We fade in/out at the extremes of visibility, always have some transulcency
-    this.alpha = Math.min(0.6, Math.max(0, 0.8 -(Math.pow((node.rvar - 85)/95, 2))));
+            bounding_radius = Math.max(
+                Math.abs(this.centerx - br[0][0]),
+                Math.abs(this.centery - br[0][1]),
+                Math.abs(this.centerx - br[1][0]),
+                Math.abs(this.centery - br[1][1]),
+                bounding_radius);
+        }
+        bounding_radius = bounding_radius * 1.05;
+    } else {
+        bounding_radius = 5.25;
+    }
+    this.centerr = bounding_radius / (0.97 * 0.6); /* Cancel out factor in main helper */
+
+    // We fade in/out at the extremes of visibility
+    this.alpha = Math.min(0.6, Math.max(0, 1 - Math.abs(bounding_radius - 110) * 0.015));
   }
 
   /**
