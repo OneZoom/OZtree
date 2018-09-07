@@ -1,6 +1,7 @@
 import {get_interior_shapes, get_leaf_shapes, get_signpost_shapes, get_branch_shapes} from './layout/layout_manager';
 import config from '../global_config';
 import {ArrayPool} from '../util/index';
+import {reset_mr} from './move_restriction';
 
 let visible_nodes = new ArrayPool(1300);
 let signpost_nodes = new ArrayPool(100);
@@ -9,6 +10,7 @@ let signpost_nodes = new ArrayPool(100);
  * Sort all shapes by its height to make sure they will be overlapped by the right order.
  */
 function get_shapes(node, shapes) {
+  reset_mr();
   visible_nodes.reset();
   signpost_nodes.reset();
   get_visible_and_signpost_nodes(node, visible_nodes, signpost_nodes, false);

@@ -26,6 +26,18 @@ add_hook("window_size_change", function() {
 });
 
 
+/**
+  * Reset the window's move restrictions, e.g. on a fresh redraw cycle
+  */
+export function reset_mr() {
+  tree_state.ok_up = 0;
+  tree_state.ok_down = 0;
+  tree_state.ok_left = 0;
+  tree_state.ok_right = 0;
+  tree_state.ok_zoom = 0;
+  tree_state.ok_lim = 0;
+}
+
 export function add_mr(x,y,r) {
   // add information on another drawn circle to the movement restriction data
   // x, y, r are the centre coordinates and radius of the circle that could be drawn - with reference to the view itself

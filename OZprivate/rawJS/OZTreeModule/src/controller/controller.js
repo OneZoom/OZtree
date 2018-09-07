@@ -107,7 +107,6 @@ class Controller {
             this.renderer.set_temp_context(newcontext);
             // save old context if needed
         }
-        reset_mr();
         reset_global_button_action();
         this.renderer.draw_frame(this.root); // this forces a frame draw unlike refresh which was built for a different purpose.
         if (newcontext)
@@ -135,7 +134,6 @@ class Controller {
           this.renderer.setup_canvas(this.canvas);
           tree_state.setup_canvas(this.canvas);
       }
-      reset_mr();
       reset_global_button_action();
       this.renderer.refresh(this.root);
     call_hook("after_draw");  
@@ -181,15 +179,6 @@ install_controller_dom(Controller);
 install_controller_anim(Controller);
 install_controller_interactor(Controller);
 
-
-function reset_mr() {
-  tree_state.ok_up = 0;
-  tree_state.ok_down = 0;
-  tree_state.ok_left = 0;
-  tree_state.ok_right = 0;
-  tree_state.ok_zoom = 0;
-  tree_state.ok_lim = 0;
-}
 
 let controller;
 function get_controller() {
