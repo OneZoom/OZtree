@@ -43,10 +43,23 @@ function render(context, shape) {
 }
 
 function follow_path(context, shape) {
+  let path_functions = {
+      move: context.moveTo,
+      line: context.lineTo,
+      bezier: context.bezier,
+  }
+
   if (shape.sx) {   
     context.moveTo(shape.sx, shape.sy);
   }
-  context.bezierCurveTo(shape.c1x, shape.c1y, shape.c2x, shape.c2y, shape.ex, shape.ey);
+
+  for (let i = 0; i < shape.path_points.length; i++) {
+    path_functions[shape.path_points[i][0]].apply(context, shape.path_points[i].slice(1));
+  }
+
+  if (shape.ex) {
+    context.bezierCurveTo(shape.c1x, shape.c1y, shape.c2x, shape.c2y, shape.ex, shape.ey);
+  }
 }
 
 export {render, follow_path};

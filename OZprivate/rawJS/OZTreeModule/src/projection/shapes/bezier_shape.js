@@ -17,6 +17,7 @@ class BezierShape extends BaseShape {
     this.c2y = 1.0;
     this.ex = 1.0;
     this.ey = 1.0;
+    this.path_points = [];
     this.stroke  = {
       line_cap: 'round',
       line_width : 1.0,
@@ -28,6 +29,7 @@ class BezierShape extends BaseShape {
     this.sx = NaN;
     this.sy = NaN;
     this.do_stroke = false;
+    this.path_points = [];
   }
 }
 
