@@ -38,9 +38,10 @@ export function reset_mr() {
   tree_state.ok_lim = 0;
 }
 
-export function add_mr(x,y,r) {
+export function add_mr(x,y,r,max_r) {
   // add information on another drawn circle to the movement restriction data
   // x, y, r are the centre coordinates and radius of the circle that could be drawn - with reference to the view itself
+  // - max_r: the maximum size this object can be, in multiples of screen's longest edge
   
   // check that the circle is on screen at all
   // if ((((x+r)>0)&&((x-r)<(tree_state.widthres)))&&(((y+r)>0)&&((y-r)<(tree_state.heightres))))
@@ -51,8 +52,14 @@ export function add_mr(x,y,r) {
     tree_state.ok_left  = (tree_state.ok_left === 1) ? tree_state.ok_left : if_ok_left(x,y,r);
     tree_state.ok_right = (tree_state.ok_right=== 1) ? tree_state.ok_right: if_ok_right(x,y,r);
     tree_state.ok_zoom  = (tree_state.ok_zoom === 1) ? tree_state.ok_zoom : if_ok_zoom(x,y,r);
+
     // sort out tree_state.ok_lim which is simple.
-    if (r < maxradius) {
+    if (max_r) {
+        max_r = Math.max(tree_state.heightres, tree_state.widthres) * max_r;
+    } else {
+        max_r = maxradius;
+    }
+    if (true || r < max_r) {
       tree_state.ok_lim = 1;
     }
   }
