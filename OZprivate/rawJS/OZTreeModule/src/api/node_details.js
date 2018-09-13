@@ -3,6 +3,7 @@ import data_repo from '../factory/data_repo';
 import {get_factory} from '../factory/factory';
 import api_manager from './api_manager';
 import tree_state from '../tree_state';
+import get_controller from '../controller/controller';
 import config from '../global_config';
 
 class NodeDetailsAPI {
@@ -268,6 +269,7 @@ function node_detail_ajax_call_2(node_details_api, nodes_to_fetch, leaves_to_fet
         data_repo.update_metadata(res);
         update_nodes_details(nodes_arr);
         update_nodes_details(leaves_arr);
+        get_controller().trigger_refresh_loop();
       } catch(e) {
         console.error(e);
       } finally {

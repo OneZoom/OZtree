@@ -83,6 +83,7 @@ class MouseInteractor {
     tree_state.mouse_hold = true;
     var canvas = this.canvas
     this.cursor_animator = setTimeout(function(){canvas.style.cursor='move';}, 150);
+    this.controller.trigger_refresh_loop();
   }
   
   mouse_move(event) {
@@ -120,6 +121,7 @@ class MouseInteractor {
     }
     this.clicking = false;
     tree_state.mouse_hold = false;
+    this.controller.trigger_refresh_loop();
   }
 
   mouse_out(event) {
@@ -146,6 +148,7 @@ function set_mouse_position(interactor, event) {
   interactor.mouseY = event.clientY - interactor.canvas.offsetTop;
   tree_state.button_x = interactor.mouseX;
   tree_state.button_y = interactor.mouseY;
+  interactor.controller.trigger_refresh_loop();
 }
 
 /**

@@ -104,7 +104,7 @@ function setup(
       //Jump or fly to a place in the tree marked by the url when the page loads.
       setup_loading_page();
       controller.find_proper_initial_threshold();
-      controller.start_refresh_loop();
+      controller.trigger_refresh_loop();
       
       //listen to user mouse, touch, icon click, window resize and user navigation events.
       controller.bind_listener();

@@ -235,7 +235,7 @@ class TreeSettings {
           controller.draw_loading();
           setTimeout(function() {
             controller.rebuild_tree();
-            controller.start_refresh_loop();
+            controller.trigger_refresh_loop();
             resolve();
           }, 10);
         }
@@ -251,7 +251,7 @@ class TreeSettings {
             controller.draw_loading();
             setTimeout(function() {
               controller.rebuild_tree();
-              controller.start_refresh_loop();
+              controller.trigger_refresh_loop();
               resolve();
             }, 10);
           }

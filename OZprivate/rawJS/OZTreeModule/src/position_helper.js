@@ -286,6 +286,7 @@ function perform_actual_leap(controller) {
   deanchor(controller.root);
   move(controller.root, 40, tree_state.widthres-40, 65, tree_state.heightres-40);  
   controller.re_calc();
+  controller.trigger_refresh_loop();
 }
 
 /**
@@ -318,6 +319,7 @@ function perform_actual_fly(controller, into_node, finalize_func, accel_type) {
     perform_fly_b2(controller, into_node, finalize_func, accel_type);
     return true;
   }
+  controller.trigger_refresh_loop();
 }
 
 

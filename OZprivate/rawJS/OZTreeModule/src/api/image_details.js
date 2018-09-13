@@ -2,6 +2,7 @@ import data_repo from '../factory/data_repo';
 import {get_factory} from '../factory/factory';
 import api_wrapper from './api_wrapper';
 import tree_state from '../tree_state';
+import get_controller from '../controller/controller';
 import config from '../global_config';
 
 
@@ -67,6 +68,7 @@ function fetch_image_detail(root, image_api) {
               let metacode = picid_metacode_map[src_id];
               data_repo.update_image_metadata(metacode, rights, licence);
             }
+            get_controller().trigger_refresh_loop();
           }
         },
         error: function() {

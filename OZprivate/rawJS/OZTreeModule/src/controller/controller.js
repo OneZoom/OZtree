@@ -61,10 +61,6 @@ class Controller {
     this.renderer.setup_canvas(canvas);
     tree_state.setup_canvas(canvas);
   }
- // window_resize() {
-    //this.setup_canvas(this.canvas);
-    //this.re_calc();
-  //}
   update_form() {
     this.projection.pre_calc(this.root, true);
     this.projection.calc_horizon(this.root);
@@ -114,16 +110,19 @@ class Controller {
             this.renderer.unset_temp_context();
             // reload old context
         }
-        this.start_refresh_loop() // restart refresh loop
+        this.trigger_refresh_loop() // restart refresh loop
     }
     
   /**
-   * Start (or continue) refreshing the screen
-   *
-   * - continuing: For internal use, leave undefined
-   */
-  start_refresh_loop(continuing) {
-    call_hook("before_draw");
+    * Start / keep the refresh loop running
+    *
+    * Any events that will result in a change of view should call
+    * trigger_refresh_loop(), if no calls happen after 3 seconds
+    * then screen redraw will stop until the next trigger_refresh_loop()
+    */
+  trigger_refresh_loop() {
+    function refresh_loop() {
+      call_hook("before_draw");
       if ((this.widthres != this.canvas.clientWidth)||(this.heightres != this.canvas.clientHeight))
       {
           this.widthres = this.canvas.width = this.canvas.clientWidth;
@@ -136,15 +135,30 @@ class Controller {
       }
       reset_global_button_action();
       this.renderer.refresh(this.root);
-    call_hook("after_draw");  
-    if (!continuing) {
-      config.ui.loadingMessage(false);
+      call_hook("after_draw");
+
+      if (tree_state.flying || Date.now() < this._refresh_timeout) {
+        this.refresh_timer = window.requestAnimationFrame(refresh_loop.bind(this));
+      } else {
+        // No activity, idle out
+        this.refresh_timer = null;
+      }
     }
-    this.refresh_timer = window.requestAnimationFrame(this.start_refresh_loop.bind(this, true));
+
+    this._refresh_timeout = Date.now() + 3000;
+    if (!this.refresh_timer) {
+      config.ui.loadingMessage(false);
+      this.refresh_timer = window.requestAnimationFrame(refresh_loop.bind(this));
+    }
   }
+
+  /** Force the refresh loop to stop */
   stop_refresh_loop() {
+    this._refresh_timeout = 0;
     window.cancelAnimationFrame(this.refresh_timer);
+    this.refresh_timer = null;
   }
+
   re_calc() {
     this.projection.re_calc(this.root, tree_state.xp, tree_state.yp, tree_state.ws);
   }

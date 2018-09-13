@@ -39,6 +39,7 @@ export default function (Controller) {
       tree_state.xp = cx + (tree_state.xp - cx)/scale;
       tree_state.yp = cy + (tree_state.yp - cy)/scale;
       this.re_calc();
+      this.trigger_refresh_loop();
     }
   }
   
@@ -54,6 +55,7 @@ export default function (Controller) {
     tree_state.xp = cx + (tree_state.xp - cx)*scale;
     tree_state.yp = cy + (tree_state.yp - cy)*scale;
     this.re_calc();
+    this.trigger_refresh_loop();
   }
   
   Controller.prototype.pan = function(delta_x, delta_y, called_from_other_action) {
@@ -77,6 +79,7 @@ export default function (Controller) {
       tree_state.set_action("pan");
     }
     this.re_calc();
+    this.trigger_refresh_loop();
   }
   
   /**
