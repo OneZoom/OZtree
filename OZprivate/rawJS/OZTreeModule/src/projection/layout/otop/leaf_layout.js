@@ -1,5 +1,6 @@
 import LeafLayoutBase from '../leaf_layout_helper';
 import ArcShape from '../../shapes/arc_shape';
+import BezierShape from '../../shapes/bezier_shape';
 import ImageShape from '../../shapes/image_shape';
 import {add_mr} from '../../move_restriction';
 import config from '../../../global_config';
@@ -272,35 +273,55 @@ class LeafLayout extends LeafLayoutBase {
    * Fake branches should be rendered with a semi-circle, not a leaf
    */
   get_fake_leaf_shapes(node, shapes) {
-    if (node.richness_val > 1) {
-      if (node.rvar < tree_state.threshold && node.has_child) {
-        if (node.children.length > 2) {
-           // This "fake leaf" has more than 2 children, so render as a semi-circle
-           let arc_shape = ArcShape.create();
-           arc_shape.x = node.xvar + node.rvar * node.arcx;
-           arc_shape.y = node.yvar + node.rvar * node.arcy;
-           arc_shape.r = node.rvar * node.arcr * 10;
-           arc_shape.circle = false;
-           arc_shape.start_angle = node.arca - Math.PI/2;
-           arc_shape.end_angle = node.arca + Math.PI/2;
-           arc_shape.counter_wise = false;
-           arc_shape.height = 2;
-           arc_shape.do_fill = true;
-           arc_shape.fill.color = color_theme.get_color('branch.stroke', node);
-           shapes.push(arc_shape);
-
-        } else {
-          this.circularLeafBase(
-            node.xvar + node.rvar * node.nextx[0],
-            node.yvar + node.rvar * node.nexty[0],
-            node.rvar * config.projection.leafmult * 0.75 * config.projection.partc,
-            node.arca,
-            node,
-            shapes
-          );
-        }
+      if (!node.has_child || node.richness_val < 1) {
+          // We're only interested in nodes that would have children
+          return;
       }
-    }
+
+      let start_x = node.xvar + node.rvar * node.arcx,
+          start_y = node.yvar + node.rvar * node.arcy,
+          radius = node.rvar + node.arcr * (node.arcr*1.1*(1+node.nextr[0]) / node.nextr[0]);  // i.e. the child branch length, see polytomy_pre_calc.js
+
+      // We can move anywhere within our fake leaf, which can grow to 10x the screen (or enough to stop being fake)
+      add_mr(start_x, start_y, radius, 10);
+
+      if (node.children.length > 20 && node.rvar < (tree_state.threshold * 100)) {
+          // This fake leaf is pretty small, just draw a semi-circle
+          let arc_shape = ArcShape.create();
+          arc_shape.x = start_x;
+          arc_shape.y = start_y;
+          arc_shape.r = radius;
+          arc_shape.circle = false;
+          arc_shape.start_angle = node.arca - Math.PI/2;
+          arc_shape.end_angle = node.arca + Math.PI/2;
+          arc_shape.counter_wise = false;
+          arc_shape.height = 2;
+          arc_shape.do_fill = true;
+          arc_shape.fill.color = color_theme.get_color('branch.stroke', node);
+          shapes.push(arc_shape);
+      } else {
+          let s = BezierShape.create();
+          s.sx = s.sy = s.ex = s.ey = null;
+
+          // Draw a fan around the current node, approximating what the nodes would look like
+          let start_angle = node.arca - Math.PI/2;
+          let inc_angle = Math.PI / node.children.length;
+          for (let i = 0; i < node.children.length; i++) {
+            s.path_points.push(['move', start_x, start_y]);
+            s.path_points.push([
+              'line',
+              start_x + radius * Math.cos(start_angle + inc_angle * i),
+              start_y + radius * Math.sin(start_angle + inc_angle * i),
+            ]);
+          }
+
+          // Draw our fan like we would the branches
+          s.do_stroke = true;
+          s.stroke.line_width = 1;
+          s.height = 0;
+          s.stroke.color = color_theme.get_color('branch.stroke', node);
+          shapes.push(s);
+      }
   }
 
   /**
