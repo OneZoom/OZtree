@@ -43,8 +43,8 @@ def prune_non_species(self,
         """
         Recursive=true means remove tips (which may create more tips) and keep going until non left to prune
         Removes all terminal nodes whose name is '' or does not contain a space. Extinction props should be 
-        unlabelled nodes with a length, e.g.
-        ((:65)Tyrannosaurus_rex,Birds)
+        unlabelled nodes with a length, e.g. "((:65)Tyrannosaurus_rex,Birds)". For taxa that are known extinct
+        but have 
         """
         nodes_removed = {'no_space':[],'unlabelled':[],'bad_match':[]}
         done = False
@@ -80,9 +80,10 @@ def prune_non_species(self,
 
 def set_node_ages(self):
     """
-    Adds an attribute called 'age' to each node, with the value equal to
-    the sum of edge lengths from the node to the tips. Also adds the attribute
-    extinction_date to terminal nodes that have been propped to earlier in time than 0Ma
+    Adds an attribute called 'age' to each node. Leaves all have age = 0 (extinct species
+    have an 'extinction prop'). Internal nodes have an age value equal to the sum of edge
+    lengths from the node to the tips. Also adds the attribute extinction_date to
+    terminal nodes that have been propped to earlier in time than 0Ma
     
     By convention, null branch lengths are of unspecified length, whereas zero-length branches (e.g. injected by 
     resolving polytomies) are of a fixed length = 0. Fossil species are denoted by a terminal unnamed
@@ -132,10 +133,12 @@ def set_node_ages(self):
     removed = 0
     for leaf in self.leaf_node_iter():
         if (leaf.label is None) and leaf.edge.length > 0:
+            # this is an extinction prop - we need to set extinction_date
+            # 
             assert(leaf.parent_node.num_child_nodes()==1)
             leaf.parent_node.extinction_date = getattr(leaf.parent_node,'age',None)
             removed += 1
-            #this is an extinction prop - remove the prop
+            # remove the prop
             leaf.parent_node.clear_child_nodes()
     return tot_ages, removed
 

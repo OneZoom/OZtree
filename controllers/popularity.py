@@ -28,7 +28,7 @@ def list():
     where:
       "data" is a 2D array containing rows of information, one per taxon, with values in each row 
       corresponding to Open Tree Taxonomy identifier, scientific name (if requested), 
-      raw popularity, and popularity rank (only for species)
+      phylogenetic popularity, and popularity rank (only for species)
       "header" gives an integer column number for a given column header: for instance, the robust
       way to obtain the Open Tree Taxonomy identifier for row 2 is data[2][header['ott']]
       "n_taxa" is the total number of taxa that would have been returned by the query if it hadn't been limited
@@ -42,7 +42,7 @@ def list():
             be "unpacked" into all ther descendant species (e.g. all mammal species)
         * max (positive integer, (default = the number of taxa passed in): the maximum number of taxa to return)
         * names (boolean (e.g. 1 or 0 default) should scientific names be included in the row)
-        * sort ("rank" or "raw" (default)). Note that if expand_taxa is false, the default sorting order may interleave 
+        * sort ("rank" or "phylo" (default)). Note that if expand_taxa is false, the default sorting order may interleave 
             species and higher-level taxa, depending on their popularity values
         * db_seconds (boolean (e.g. 1 or 0 default) also return the number of seconds for the database to process this query
         
