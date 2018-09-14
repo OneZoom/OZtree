@@ -10,6 +10,13 @@ except ImportError:
     #This is a complex HACK!!!
     cache = type("", (), dict(ram=lambda self, name, func, **kw: func()))()
     current = type("", (), {})() #allow us to set e.g. current.OZglobals, so we don't bomb out later
+    def T(x):
+        """Don't translate when used as an independent app"""
+        return x
+    def URL(*args):
+        """Don't make urls when used as an independent app"""
+        return args
+        
     if sys.version_info[0] == 3:
         def unichr(x):
             return chr(x)

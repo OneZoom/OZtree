@@ -25,7 +25,7 @@ from selenium.common.exceptions import TimeoutException
 if sys.version_info[0] < 3:
     raise Exception("Python 3 only")
 
-from ..util import web2py_server, web2py_app_dir, ip, base_url
+from ..util import Web2py_server, web2py_app_dir, ip, base_url
 from .functional_tests import FunctionalTest
 
 

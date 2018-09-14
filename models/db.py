@@ -226,7 +226,6 @@ db.define_table('ordered_nodes',
     Field('eol', type='integer'),
     Field('raw_popularity', type='double'),
     Field('popularity', type='double'),
-    Field('popularity_rank', type='integer'), #meaningless - can probably be removed
     #the following 5 fields are sources listed by the OpenTree
     Field('ncbi', type='integer'),
     Field('ifung', type='integer'),
@@ -829,7 +828,6 @@ CREATE FULLTEXT INDEX ft_sponsor_name_index  ON reservations (user_sponsor_name)
 DROP            INDEX ft_sponsor_info_index  ON reservations;
 CREATE FULLTEXT INDEX ft_sponsor_info_index  ON reservations (user_more_info);
 
-
 DROP   INDEX ipni_index          ON PoWO;
 CREATE INDEX ipni_index          ON PoWO (ipni_int)         USING HASH;
 
@@ -838,6 +836,18 @@ CREATE INDEX string_index    ON search_log (search_string)   USING HASH;
 
 DROP   INDEX identifier_index    ON partners;
 CREATE INDEX identifier_index    ON partners (partner_identifier)   USING HASH;
+
+DROP   INDEX key_index           ON API_users;
+CREATE INDEX key_index           ON API_users (APIkey)     USING HASH;
+
+DROP   INDEX key_index           ON API_use;
+CREATE INDEX key_index           ON API_use (APIkey)       USING HASH;
+
+DROP   INDEX API_index           ON API_use;
+CREATE INDEX API_index           ON API_use (API)          USING HASH;
+
+DROP   INDEX date_index          ON API_use;
+CREATE INDEX date_index          ON API_use (end_date)     USING HASH;
 
 # The following are the indexes for ordered leaves & ordered nodes, useful to re-do after a new tree is imported 
 
@@ -880,11 +890,14 @@ CREATE INDEX real_parent_index   ON ordered_nodes (real_parent)  USING HASH;
 DROP   INDEX real_parent_index   ON ordered_leaves;
 CREATE INDEX real_parent_index   ON ordered_leaves (real_parent) USING HASH;
 
+DROP   INDEX raw_pop_index       ON ordered_nodes;
+CREATE INDEX raw_pop_index       ON ordered_nodes (raw_popularity);
+
+DROP   INDEX raw_pop_index       ON ordered_leaves;
+CREATE INDEX raw_pop_index       ON ordered_leaves (raw_popularity);
+
 DROP   INDEX pop_index           ON ordered_nodes;
 CREATE INDEX pop_index           ON ordered_nodes (popularity);
-
-DROP   INDEX poprank_index       ON ordered_nodes;
-CREATE INDEX poprank_index       ON ordered_nodes (popularity_rank);
 
 DROP   INDEX pop_index           ON ordered_leaves;
 CREATE INDEX pop_index           ON ordered_leaves (popularity);
@@ -903,17 +916,5 @@ CREATE FULLTEXT INDEX name_fulltext_index ON ordered_nodes (name);
 
 DROP            INDEX name_fulltext_index ON ordered_leaves;
 CREATE FULLTEXT INDEX name_fulltext_index ON ordered_leaves (name);
-
-DROP   INDEX key_index           ON API_users;
-CREATE INDEX key_index           ON API_users (APIkey)     USING HASH;
-
-DROP   INDEX key_index           ON API_use;
-CREATE INDEX key_index           ON API_use (APIkey)       USING HASH;
-
-DROP   INDEX API_index           ON API_use;
-CREATE INDEX API_index           ON API_use (API)          USING HASH;
-
-DROP   INDEX date_index          ON API_use;
-CREATE INDEX date_index          ON API_use (end_date)     USING HASH;
 
 """
