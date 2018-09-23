@@ -4,7 +4,7 @@ This README file contains instructions for installing a private copy of OneZoom,
 
 There are two ways in which you can install OneZoom on a personal computer: full installation and partial installation. 
 
-* *Partial installation* does not create a standalone OneZoom site, but simply creates a local web file containing the javascript tree viewer. Instead of your tree viewer getting information from your own computer, it must do so by contantly requesting data from the OneZoom website (via the OneZoom APIs). This restricts your OneZoom viewer in various ways:  you cannot make your own bespoke tree, you cannot change languages in the viewer, and you are dependent upon a permanent, fast internet connection. Also note that this installation method is also relatively untested, and there are unfixed problems with e.g. displaying lists of popular species. However, partial installation may be suitable for developers who simply want to re-program features of the tree viewer, such as colours, branch geometry, etc.
+* *Partial installation* does not create a standalone OneZoom site, but simply creates a local web file containing the javascript tree viewer. Instead of your tree viewer getting information from your own computer, it must do so by constantly requesting data from the OneZoom website (via the OneZoom APIs). This restricts your OneZoom viewer in various ways:  you cannot make your own bespoke tree, you cannot change languages in the viewer, and you are dependent upon a permanent, fast internet connection. Also note that this installation method is also relatively untested, and there are unfixed problems with e.g. displaying lists of popular species. However, partial installation may be suitable for developers who simply want to re-program features of the tree viewer, such as colours, branch geometry, etc.
 
 * *Full installation* creates an entire duplicate of the OneZoom website, which is built using the [web2py](http://web2py.com) framework. This creates a fully self-contained local system (apart from the picture files, which can be downloaded separately). This is the most reliable installation method, but requires you to install and run extra software packages, in particular [web2py](http://web2py.com) and a [MySQL](https://www.mysql.com) server. Since this can be quite complicated, the majority of this readme contains instructions for full installation.
 
@@ -312,7 +312,16 @@ If you wish to make sure your OneZoom data is up-to-date, there are a few steps 
 4. Recompile your own tree and database tables. Instructions for creating your own tree are in [OZprivate/ServerScripts/TreeBuild/README.markdown](OZprivate/ServerScripts/TreeBuild/README.markdown).
  
 # Customising OneZoom
+A few suggestions about ways to customize OneZoom
 
-By running alternative versions of `picProcess.py`
+### Easy customization posibilities
 
-By writing your own user interface
+* Change the colour schemes: the code in `rawJS/OZTreeModule/src/themes` gives examples of how to create new colour schemes for branches, leaves, etc of the tree. They can be gathered together into themes (including different leaf styles, default fractal views etc) by adding to the code in `rawJS/OZTreeModule/src/tree_settings.js`.
+
+### Harder customization possibilities
+
+* Customizing pictures: by running alternative versions of `picProcess.py`, you can choose different pictures to represent taxonomic groups. This is left as an exercise to the customiser.
+
+* Alternative UI layer: the current OneZoom viewer uses the UIkit framework to layer a user interface on top of the viewing canvas. The UI can send commands to the viewing canvas, and the canvas is instatiated with UI callbacks, so it is quite possible to write alternative user interfaces (e.g. using different UI toolkits)
+
+* Alternative projections: the code in `rawJS/OZTreeModule/src/projection` can be supplemented with alternative "projections" of the tree, such as treemaps, other fractal layouts, etc.
