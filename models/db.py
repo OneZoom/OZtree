@@ -445,8 +445,8 @@ db.define_table('reservations',
     # optional extra info about a person
     Field('user_nondefault_image', type = 'integer'),
     #has the user chosen a non-default image? 0 or 1. Should prob be boolean type instead.
-    Field('user_preferred_image', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(1,1e100))),
-    # an option for users to recommend an EOL ID as the best image. Should normally be filled
+    Field('user_preferred_image', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))),
+    # an option for users to recommend an EOL ID as the best image. Should normally be filled. Negative numbers are bespoke OneZoom images
     Field('user_updated_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),  
     # need to know when it was last updated to check for user updates         
     Field('user_paid', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
