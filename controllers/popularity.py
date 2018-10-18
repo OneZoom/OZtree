@@ -115,9 +115,9 @@ def list():
             sql_parts = []
         else:
             if queryvar_is_true("spread_taxa_evenly"):
-                sql_parts = ["{s} WHERE {q}".format(s=sql_select, q=str(db(query)))]
+                sql_parts = ["{s} WHERE {q}".format(s=sql_select, q=str(query))]
             else:
-                sql_parts = [str(db(query))]
+                sql_parts = [str(query)]
         if results:
             for row in results:
                 #if query:
@@ -158,6 +158,7 @@ def list():
             sql = "(" + ") UNION (".join(sql_parts) + ") ORDER BY {o}".format(o=orderby)
         else:
             sql = sql_template.format(q=("(" + ") OR (".join(sql_parts) + ")"), n=n, o=orderby)
+        print(sql)
         ret['data'] = db.executesql(sql)
 
     else:
