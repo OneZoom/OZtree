@@ -158,9 +158,7 @@ def list():
             sql = "(" + ") UNION (".join(sql_parts) + ") ORDER BY {o}".format(o=orderby)
         else:
             sql = sql_template.format(q=("(" + ") OR (".join(sql_parts) + ")"), n=n, o=orderby)
-        print(sql, len(expanded_intervals), len(leaf_ids), db._lastsql)
         ret['data'] = db.executesql(sql)
-        print(db._lastsql)
 
     else:
         #this turns out to be a little more complicated in SQL terms, because for speed we probably want to sort 
