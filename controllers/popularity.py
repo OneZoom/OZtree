@@ -38,9 +38,13 @@ def list():
         * key (an API key - use the "public API key" if you have none - see index.html)
         * otts (a comma-separated list of positive integer OTT ids)
     Optional:
-        * expand_taxa (boolean (e.g. 0 or 1) should OTTs corresponding to taxa above the species level
-            be "unpacked" into all ther descendant species (e.g. all mammal species)
         * max (positive integer, (default = the number of taxa passed in): the maximum number of taxa to return)
+        * expand_taxa (boolean (e.g. 0 or 1) should OTTs corresponding to taxa above the species level
+            be "unpacked" into all their descendant species, e.g. all mammal species)
+        * spread_taxa_evenly (boolean (e.g. 0 or 1) should we divide the max number of taxa to return so that each of 
+            the N taxa that are passed in are limited to floor(max/N) species (with the results being combined). 
+            Note that the combined list of taxa returned will therefore often be less than the "max" parameter.
+            This only really makes sense when expand_taxa is set to 1
         * names (boolean (e.g. 1 or 0 default) should scientific names be included in the row)
         * sort ("rank" or "raw" (default)). Note that if expand_taxa is false, the default sorting order may interleave 
             species and higher-level taxa, depending on their popularity values
@@ -57,9 +61,9 @@ def list():
     
     if request.vars.key is None:
         raise(HTTP(400,"Please use an API key (use 0 for the public API key)"))
-    max_otts, max_n = get_limits(request.vars.key)
+    max_otts, max_n = get_limits(request.vars.getlast("key", ""))
     try:
-        otts = set([int(x) for x in (request.vars.otts or "").split(",")])
+        otts = set([int(x) for x in request.vars.getlast("otts", "").split(",")])
     except ValueError:
         raise HTTP(400,"Error: set the `otts` parameter to one or more integer OTT ids separated by commas")
     if 0 < len(otts) <= max_otts:
@@ -67,15 +71,21 @@ def list():
     else:
         raise HTTP(400,"Error: you must pass in at least 1 and not more than {} OTT ids".format(max_otts))
     try:
-        n = int(request.vars.get('max') or len(otts))
+        n = int(request.vars.getlast('max') or len(otts))
     except ValueError:
         raise HTTP(400,"Error: set the `max` parameter to the maximum number of species returned per ott")
     if 0 < n <= max_n:         
         pass
     else:
         raise HTTP(400,"Error: the `max` parameter must be between 1 and {}".format(max_n))
+    if queryvar_is_true("spread_taxa_evenly"):
+        max_per_input_taxon = n//len(otts)
+        if max_per_input_taxon < 1:
+            raise HTTP(400,"Error: when spreading results evenly over input taxa, there must be equal or fewer"
+            "input taxa than the maximum number of returned values" 
+            "(you had {0} input taxa but a maximum of {1} return values, and {1}/{0} < 1)".format(len(otts), n))
     
-    orderby = "popularity_rank ASC, popularity DESC, ott ASC" if request.vars.get("sort", "").lower() == "rank" else "popularity DESC, ott"
+    orderby = "popularity_rank ASC, popularity DESC, ott ASC" if request.vars.getlast("sort", "").lower() == "rank" else "popularity DESC, ott"
     db_seconds = 0
     ret = dict(
         max_taxa_in = max_otts,
@@ -83,19 +93,42 @@ def list():
         tot_spp = db.executesql("SELECT leaf_rgt FROM ordered_nodes WHERE id = 1;")[0][0]
     )
     
-    if queryvar_is_true(request.vars.expand_taxa):
+    if queryvar_is_true("expand_taxa"):
         #convert to a series of leaf constraints
         n_taxa = 0
         expanded_intervals = {} #save the left=>right spans of any nodes, so we can work out how many tips should have been returned
         query = db.ordered_leaves.ott.belongs(otts)
+        colnames= ["ott","popularity","popularity_rank"]
+        if queryvar_is_true("names"):
+            colnames.append("name") 
+        ret['header']={k:i for i,k in enumerate(colnames)}
+        sql_select = "SELECT `" + "`,`".join(colnames) + "` FROM ordered_leaves"
+        sql_template = sql_select + " WHERE {q} ORDER BY {o} LIMIT {n} OFFSET 0"
+        #select_columns = [getattr(db.ordered_leaves, a) for a in colnames]
         #get the leaf_ids of any leaves in the set of otts, so we can count the max number returned
         leaf_ids = sorted([row.id for row in db(query).select(db.ordered_leaves.id)])
         results = db(db.ordered_nodes.ott.belongs(otts)).select(db.ordered_nodes.leaf_lft, db.ordered_nodes.leaf_rgt)
-        if queryvar_is_true(request.vars.db_seconds):
+        if queryvar_is_true("db_seconds"):
             db_seconds += db._lastsql[1]
+        if len(leaf_ids) == 0:
+            query = None
+            sql_parts = []
+        else:
+            if queryvar_is_true("spread_taxa_evenly"):
+                sql_parts = ["{s} WHERE {q}".format(s=sql_select, q=str(db(query)))]
+            else:
+                sql_parts = [str(db(query))]
         if results:
             for row in results:
-                query = query | ((db.ordered_leaves.id >= row.leaf_lft) & (db.ordered_leaves.id <= row.leaf_rgt))
+                #if query:
+                #    query = query | ((db.ordered_leaves.id >= row.leaf_lft) & (db.ordered_leaves.id <= row.leaf_rgt))
+                #else:
+                #    query = ((db.ordered_leaves.id >= row.leaf_lft) & (db.ordered_leaves.id <= row.leaf_rgt))
+                sql_where = "(ordered_leaves.id >= {:d}) AND (ordered_leaves.id <= {:d})".format(row.leaf_lft, row.leaf_rgt)
+                if queryvar_is_true("spread_taxa_evenly"):
+                    sql_parts.append(sql_template.format(q=sql_where, o=orderby, n=max_per_input_taxon))
+                else:
+                    sql_parts.append(sql_where)
                 #now count the number of results that we would return, if not expanded
                 try:
                     expanded_intervals[row.leaf_lft] = max(expanded_intervals[row.leaf_lft], row.leaf_rgt)
@@ -121,29 +154,18 @@ def list():
                 prev_rgt = rgt
         
         ret['n_taxa']=n_taxa + (len(leaf_ids)-leaf_idx)
-        if queryvar_is_true(request.vars.names):
-            sql = db(query)._select(
-                    db.ordered_leaves.ott,
-                    db.ordered_leaves.popularity,
-                    db.ordered_leaves.popularity_rank,
-                    db.ordered_leaves.name,
-                    limitby = (0, n),
-                    orderby = orderby)
-            ret['header']={k:i for i,k in enumerate(["ott","popularity","popularity_rank","name"])}
+        if queryvar_is_true("spread_taxa_evenly"):
+            sql = "(" + ") UNION (".join(sql_parts) + ") ORDER BY {o}".format(o=orderby)
         else:
-            ret['header']={k:i for i,k in enumerate(["ott","popularity","popularity_rank"])}
-            sql = db(query)._select(
-                    db.ordered_leaves.ott,
-                    db.ordered_leaves.popularity,
-                    db.ordered_leaves.popularity_rank,
-                    limitby = (0, n),
-                    orderby = orderby)
+            sql = sql_template.format(q=("(" + ") OR (".join(sql_parts) + ")"), n=n, o=orderby)
+        print(sql, len(expanded_intervals), len(leaf_ids), db._lastsql)
         ret['data'] = db.executesql(sql)
+        print(db._lastsql)
 
     else:
         #this turns out to be a little more complicated in SQL terms, because for speed we probably want to sort 
         #ordered_nodes and ordered_leaves separately then UNION them together. This is easier to do in vanilla SQL
-        if queryvar_is_true(request.vars.names):
+        if queryvar_is_true("names"):
             extracol = ", name"
             ret['header']={k:i for i,k in enumerate(["ott","popularity","popularity_rank","name"])}
         else:
@@ -158,7 +180,7 @@ def list():
             OLcols="COUNT(*)", 
             ONcols="COUNT(*)", 
             otts = ottstr))[0][0]
-        if queryvar_is_true(request.vars.db_seconds):
+        if queryvar_is_true("db_seconds"):
             db_seconds += db._lastsql[1]
 
         SQL = "SELECT * FROM (" + OL_SQL + order_limit + ") as L UNION ALL SELECT * FROM (" + ON_SQL + order_limit + ") as N " + order_limit
@@ -166,16 +188,16 @@ def list():
             OLcols="ott, popularity, popularity_rank" + extracol,
             ONcols="ott, popularity, NULL AS popularity_rank" + extracol,
             otts = ottstr))
-    if queryvar_is_true(request.vars.db_seconds):
-        ret['db_seconds'] = dbtime + db._lastsql[1]
+    if queryvar_is_true("db_seconds"):
+        ret['db_seconds'] = db_seconds + db._lastsql[1]
     
-    record_usage(request.vars.key, request.controller + "/" + request.function, len(otts), len(ret['data']))
+    record_usage(request.vars.getlast("key"), request.controller + "/" + request.function, len(otts), len(ret['data']))
     return ret
         
 #useful functions
 
 def queryvar_is_true(queryvar):
-    return queryvar and queryvar.lower() not in ("0", "false")
+    return request.vars.getlast(queryvar) and request.vars.getlast(queryvar).lower() not in ("0", "false")
         
 def get_limits(API_key):
     """
