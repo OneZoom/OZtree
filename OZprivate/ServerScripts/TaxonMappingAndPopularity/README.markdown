@@ -28,7 +28,7 @@ The `CSV_base_table_creator.py` script also uses routines defined in `OTT_popula
 
 __Overview__
 
-The script takes the following steps, as defined in the main() routine:
+The script takes the following steps, as defined in the `main()` routine at the end of the script:
 
 1. `get_tree_and_OTT_list()` - read the newick tree into a DendroPy tree structure, and create a large python dictionary `OTT_ptrs`, keyed by OTT, pointing to each OTT-labelled taxon in the tree. The taxon items pointed to by this dictionary are then augmented by additional identifiers in the steps below.
 
