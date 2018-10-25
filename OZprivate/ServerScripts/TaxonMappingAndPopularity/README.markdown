@@ -2,10 +2,10 @@ Python code contained in this directory allows mapping from OpenTree identifiers
 
 The main script is `CSV_base_table_creator.py`, which reads in a set of files, creates mappings, (optionally) analyses popularity, and outputs the mappings to a set of CSV files, which can be read in to an SQL database.
 
-At a minumum, the script requires
+At a minimum, the script requires
 
 1. a newick format phylogenetic tree containing names and Open Tree Taxonomy identifiers, or OTTs (taxon names should be of the form `Homo_sapiens_ott770315` where `770315` is the OTT).
-2. a taxonomy file creating mappings from these identifiers to IDs in other databases, such as NCBI or GBIF. 
+2. an Open Tree Taxonomy file, `taxonomy.tsv` creating mappings from these identifiers to IDs in other databases, such as NCBI or GBIF. 
 3. a file of Encyclopedia of Life identifiers (mapping e.g. GBIF ids to EoL page ids)
 4. a bzipped wikidata JSON dump
 
