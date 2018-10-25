@@ -591,18 +591,16 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity
                 "FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' " + 
                 "IGNORE 1 LINES ({}) SET id = NULL;").format(tab, sqlfile, tab, open(fn).readline().rstrip()))
 
-if __name__ == "__main__":
 
+def main():
     random_seed_addition = 1234
-
-
     parser = argparse.ArgumentParser(description='Convert a newick file with OpenTree labels into refined trees and CSV tables, while mapping Open Tree of Life Taxonomy IDs to other ids (including EoL & Wikidata)')
     parser.add_argument('Tree', type=argparse.FileType('r', encoding='UTF-8'), 
         help='The newick format tree to use')
     parser.add_argument('OpenTreeTaxonomy', type=argparse.FileType('r', encoding='UTF-8'), 
         help='The 325.6 MB Open Tree of Life taxonomy.tsv file, from http://files.opentreeoflife.org/ott/')
     parser.add_argument('EOLidentifiers', type=argparse.FileType('r', encoding='UTF-8'), 
-        help='The 450 MB EOL identifiers file, current beta version from https://github.com/EOL/tramea/issues/162')
+        help='The 450 MB EOL identifiers file, from https://opendata.eol.org/dataset/identifiers-csv-gz')
     parser.add_argument('wikidataDumpFile', nargs="?", type=argparse.FileType('rb'), 
         help='The >4GB wikidata JSON dump, from https://dumps.wikimedia.org/wikidatawiki/entities/ (latest-all.json.bz2) ')
     parser.add_argument('wikipediaSQLDumpFile', nargs="?", type=argparse.FileType('rb'), 
@@ -707,3 +705,7 @@ if __name__ == "__main__":
     output_simplified_tree(
         tree, args.OpenTreeTaxonomy, args.output_location, args.version, 
         random_seed_addition, args.verbosity)
+        
+
+if __name__ == "__main__":
+    main()
