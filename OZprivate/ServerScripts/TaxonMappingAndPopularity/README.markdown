@@ -1,0 +1,3 @@
+Code contained in this directory allows mapping from OpenTree identifiers to EoL, IUCN, and WikiData identifiers.
+
+The main script is `CSV_base_table_creator.py`, which takes (1) a newick format phylogenetic tree containing names and OTT identifiers and (2) a taxonomy file creating mappings from these identifiers to IDs in other databases, such as NCBI or GBIF. Both files can be downloaded from the Open Tree of Life (although in OneZoom we use a [bespoke Newick file](../TreeBuild/README.markdown) instead of the one provided by the OpenTree)
