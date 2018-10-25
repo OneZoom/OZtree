@@ -8,7 +8,7 @@ The instructions below are primarily intended for creating a full tree of all li
 We assume you are running in a bash shell, so that you can define the following settings before you create a tree, and use them in the scripts below as `${OT_VERSION}` and `${OZ_TREE}`
 
 ```
-OT_VERSION=9_1 #or whatever your OpenTree version is
+OT_VERSION=10_4 #or whatever your OpenTree version is
 OT_TAXONOMY_VERSION=3.0draft6 
 OZ_TREE=AllLife #a tree directory in data/OZTreeBuild
 ```
