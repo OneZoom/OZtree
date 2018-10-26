@@ -38,18 +38,18 @@ The script takes the following steps, as defined in the `main()` routine at the 
 
 	We then have to call `identify_best_EoLdata()` to resolve conflicts, if e.g. a taxon has an EoL id via both an ncbi identifier and a irmng identifier, and the EoL ids differ.
 
-4. `add_wikidata_info()` - parse through the wikidata dump, identifying wikidata items that are biological taxa, and locating matches against the taxon source IDs saved in step 2. The appropriate taxon item is augmented with a wikidata "Q" id and information about whether there are wikipedia pages ("sitelinks") in different languages for this taxon. We also temporarily create a dictionary pointing to the taxon items, keyed by the wikipedia page name in a specific language (by default, english) for later matching in the script. Note that this step is made more complex by the fact that some species on wikidata (e.g. dog) have two pages, one for the scientific concept ("Canis lupus familiaris"), and one for the popular concept ("Dog"), with the sitelinks often associated with the popular concept rather than the scientific item. There is some complex hacking to make sure that we keep track of this with only a single pass through the (large) wikidata dump file.
+4. `add_wikidata_info()` - parse through the wikidata dump, identifying wikidata items that are biological taxa, and locating matches against the taxon source IDs saved in step 2. The appropriate taxon item is augmented with a wikidata "Q" id and information about whether there are wikipedia pages ("sitelinks") in different languages for this taxon. We also temporarily create a dictionary pointing to the taxon items, keyed by the wikipedia page name in a specific language (by default, english) for later matching in the script. Note that this step is made more complex by the fact that some species on wikidata (e.g. dog) have two pages, one for the scientific concept ("_Canis lupus familiaris_"), and one for the popular concept ("Dog"), with the sitelinks often associated with the popular concept rather than the scientific item. There is some complex hacking to make sure that we keep track of this with only a single pass through the (large) wikidata dump file.
 
 	We then have the same problem as for EoL ids, where there may be multiple wikidata Q ids for a taxon, linked through different identifiers. We call the routine `identify_best_wikidata()` to pick the most appropriate.
 	
 	There is also an additional bonus, in that the wikidata items may provide another route to getting EoL ids, as a supplement to the EoL identifiers file. We include this extra information via the `supplement_from_wikidata()` routine.
 
-5. `populate_iucn()` we also attempt to use information in both the EoL identifiers file and the wikidata file to locate an IUCN id for each taxon, so we can link to conservation status.
+5. `populate_iucn()` - attempt to use information in both the EoL identifiers file and the wikidata file to locate an IUCN id for each taxon, so we can obtain conservation status for as many taxa as possible.
 
 6. [If we want to calculate popularity] 
 	* `add_pagesize_for_titles()` - use a wikipedia SQL dump to extract page sizes for each of the wikipedia titles in the dictionary created in step 4., and save this size into the taxon item.
 	* `add_pageviews_for_titles()` - use a set of wikipedia page visit statistics, over different months, to extract pageview stats for each of the wikipedia titles in the dictionary created in step 4., and also save these numbers into the taxon item.
 	* `calc_popularities_for_wikitaxa()` - use the page sizes and visit stats to calculate a raw popularity score for each taxon.
-	* `inherit_popularity()` percolate popularity stats through the tree, to create "phylogeneticlaly informaed popularity".
+	* `inherit_popularity()` - percolate popularity stats through the tree, to create "phylogeneticlaly informaed popularity".
 
-7. `output_simplified_tree()` parse the tree and the taxa (e.g. removing monotomies, adding popularity rankings, etc), then save the results to a csv file, and the final tree to a default location. The tree structure is also present in the CSV file in a ordered_set notation.
+7. `output_simplified_tree()` - parse the tree and the taxa (e.g. removing monotomies, adding popularity rankings, etc), then save the results to a CSV file, and the final tree to a default location. The tree structure is also present in the CSV file in a ordered_set notation.

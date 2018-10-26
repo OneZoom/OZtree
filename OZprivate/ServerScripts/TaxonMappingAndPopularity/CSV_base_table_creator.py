@@ -365,12 +365,12 @@ def popularity_function(
         return ((sum_of_all_ancestor_popularities + sum_of_all_descendant_popularities)/
             log(number_of_ancestors + number_of_descendants))
     
-def inherit_popularity(tree, verbosity=0):
+def inherit_popularity(tree, exclude=[], verbosity=0):
             
     #NB: we must percolate popularities through the tree before deleting monotomies, since these often contain info
     #this should allocate popularities even for nodes that have been created by polytomy resolving.
     OTT_popularity_mapping.sum_popularity_over_tree(
-        tree, exclude=args.exclude, verbosity=verbosity)
+        tree, exclude=exclude, verbosity=verbosity)
     #now apply the popularity function
     for node in tree.preorder_node_iter():
         pop = popularity_function(
@@ -678,7 +678,7 @@ def main():
         #Here we might want to multiply up some taxa, e.g. plants
         
         info("Percolating popularity through the tree")    
-        inherit_popularity(tree, args.verbosity)    
+        inherit_popularity(tree, args.exclude, args.verbosity)    
     
         if args.popularity_file:
             write_popularity_tree(
