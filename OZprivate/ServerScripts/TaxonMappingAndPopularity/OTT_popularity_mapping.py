@@ -328,7 +328,7 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
             continue
           instance_of = {int(wikidata_value(wd_json.get("mainsnak")).get("numeric-id")):wd_json for wd_json in item["claims"]["P31"]}
           taxon =       OrderedDict((name,Q) for name,Q in match_taxa.items() if Q in instance_of)
-          common_name = OrderedDict((name:Q for name,Q in match_common_names.items() if Q in instance_of)
+          common_name = OrderedDict((name,Q for name,Q in match_common_names.items() if Q in instance_of)
           if len(taxon) or len(common_name):
             if len(taxon):
               # make a new taxon item, and a handle to it which contains the original item
