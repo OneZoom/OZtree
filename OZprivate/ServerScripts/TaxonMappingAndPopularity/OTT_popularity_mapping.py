@@ -302,7 +302,6 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
     wikidata_taxon_info = {}
     wikidata_cname_info = {}
     override_with_common_name = [5] #for humans (Q5) use the sitelinks from the common name item, even though the taxon item exists
-    wikidata_db_props = {'P685':'ncbi','P846':'gbif','P850':'worms','P1391':'if'}
     #numbers to search for
     match_Qtypes = {'taxon':16521, 'monotypic taxon':310890, 'fossil taxon': 23038290, 'clade':713623, 'common name': 502895}
     initial_byte_match = re.compile('numeric-id":(?:{})\D'.format('|'.join([str(v) for v in match_Qtypes.values()])).encode()) 
