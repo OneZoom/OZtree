@@ -305,7 +305,7 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
     #numbers to search for
     match_Qtypes = {}
     match_taxa = OrderedDict(('taxon', 16521), ('monotypic taxon', 310890), ('fossil taxon', 23038290), ('clade',713623))
-    match_common_names = OrderedDict(('common name', 502895), ('group of organisms known by one particular common name', 55983715)}
+    match_common_names = OrderedDict(('common name', 502895), ('group of organisms known by one particular common name', 55983715))
     match_Qtypes.update(match_taxa)
     match_Qtypes.update(match_common_names)
     initial_byte_match = re.compile('numeric-id":(?:{})\D'.format('|'.join([str(v) for v in match_Qtypes.values()])).encode()) 
