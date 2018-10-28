@@ -411,7 +411,7 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
               if len(common_name_properties) == 0:
                 if not len(taxon) and verbosity > 1:
                   print(" Found a common name property without any qualifiers for {} ({}). The name may be poly/paraphyletic (e.g. 'slugs', 'coral', 'rabbit', 'whale') or a name corresponding to a clade with no official taxonomic name (e.g. the 2 spp of minke whales within a larger genus, or the 2 genera of peafowl), or something else (e.g. the 'mysterious bird of Bobairo')".format(item["id"], taxon_name(item)), file=sys.stderr)
-                  continue
+                continue
               else:
                 common_name_property = common_name_properties[0] #pick the first matching one
               for common_name_of in common_name_property["qualifiers"]["P642"]:
