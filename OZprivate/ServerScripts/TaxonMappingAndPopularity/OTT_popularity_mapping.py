@@ -303,12 +303,10 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
     wikidata_cname_info = {}
     override_with_common_name = [5] #for humans (Q5) use the sitelinks from the common name item, even though the taxon item exists
     #numbers to search for
-    match_Qtypes = {}
     match_taxa = OrderedDict((('taxon', 16521), ('monotypic taxon', 310890), ('fossil taxon', 23038290), ('clade',713623)))
     match_common_names = OrderedDict((('common name', 502895), ('group of organisms known by one particular common name', 55983715)))
-    match_Qtypes.update(match_taxa)
-    match_Qtypes.update(match_common_names)
-    initial_byte_match = re.compile('numeric-id":(?:{})\D'.format('|'.join([str(v) for v in match_Qtypes.values()])).encode()) 
+    regexp_match = '|'.join([str(v) for v in list(match_taxa.values()) + list(match_common_names.values())])
+    initial_byte_match = re.compile('numeric-id":(?:{})\D'.format(regexp_match).encode())
     filesize = os.path.getsize(wikidata_json_dump_file.name)
     with bz2.open(wikidata_json_dump_file, 'rb') as WDF: #open filehandle, to allow read as bytes (converted to UTF8 later)
       n_eol=n_iucn=n_ipni=0
@@ -402,24 +400,23 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
             if len(common_name):
               #This is a common name - it may have links to the correct wikipedia titles, but nothing else
               common_name_properties = []
-              for property_id in common_name.values():
+              for Q in common_name.values():
                 try:
-                  if "P642" in instance_of[property_id]["qualifiers"]:
-                    common_name_properties.append(instance_of[property_id])
+                  if "P642" in instance_of[Q]["qualifiers"]:
+                    common_name_properties.append(instance_of[Q])
                 except KeyError:
                   pass #this common name property is useless
               if len(common_name_properties) == 0:
                 if not len(taxon) and verbosity > 1:
                   print(" Found a common name property without any qualifiers for {} ({}). The name may be poly/paraphyletic (e.g. 'slugs', 'coral', 'rabbit', 'whale') or a name corresponding to a clade with no official taxonomic name (e.g. the 2 spp of minke whales within a larger genus, or the 2 genera of peafowl), or something else (e.g. the 'mysterious bird of Bobairo')".format(item["id"], taxon_name(item)), file=sys.stderr)
                 continue
-              else:
-                common_name_property = common_name_properties[0] #pick the first matching one
-              for common_name_of in common_name_property["qualifiers"]["P642"]:
+              for common_name_of in common_name_properties[0]["qualifiers"]["P642"]: #pick the first matching one
                 #e.g. https://www.wikidata.org/wiki/Q144
                 common_name_maps_to_Qid = wikidata_value(common_name_of).get("numeric-id")
                 if common_name_maps_to_Qid:
                   common_name_item = wikidata_makebaseinfo(item, wikilang)
-                  print(" Found a common name: {} ({}) is common name of Q{}, which could be a taxon item".format(item["id"], taxon_name(item), common_name_maps_to_Qid), file=sys.stderr)
+                  print(" Found a common name: {} ({}) is common name of Q{}, which could be a taxon item".format(
+                    item["id"], taxon_name(item), common_name_maps_to_Qid), file=sys.stderr)
                   if wikilang in common_name_item['l']:
                     #we have e.g. sitelink = 'en.wiki' in this item
                     wikidata_cname_info[common_name_maps_to_Qid]=common_name_item
