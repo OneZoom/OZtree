@@ -368,6 +368,9 @@ def sponsor_leaf():
                     sponsorship_duration_days=365*4+1,
                     partner_name=partner_data.get('partner_identifier'),
                     partner_percentage=partner_data.get('percentage'))
+                if form.vars.user_sponsor_kind == "by" and not form.vars.user_donor_name:
+                    reservation_query.update(
+                        user_donor_name = form.vars.user_sponsor_name)
                 # now need to do our own other checks
                 v = {'ott':OTT_ID_Varin}
                 if request.vars.get('embed'):
