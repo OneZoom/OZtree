@@ -127,8 +127,10 @@ def SPONSOR_VALIDATE():
     
     """
 
-    if len(request.args): page=int(request.args[0])
-    else: page=0
+    try:
+        page=int(request.args[0])
+    except:
+        page=0
     try:
         items_per_page=int(request.vars.n)
         if items_per_page<1:
