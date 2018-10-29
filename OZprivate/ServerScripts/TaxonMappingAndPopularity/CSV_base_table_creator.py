@@ -369,10 +369,24 @@ def inherit_popularity(tree, exclude=[], verbosity=0):
             
     #NB: we must percolate popularities through the tree before deleting monotomies, since these often contain info
     #this should allocate popularities even for nodes that have been created by polytomy resolving.
+    
+    # We should also check that there are not multuple uses of the same Qid (https://github.com/OneZoom/OZtree/issues/132)
+    
     OTT_popularity_mapping.sum_popularity_over_tree(
         tree, exclude=exclude, verbosity=verbosity)
     #now apply the popularity function
+    Qids = set()
     for node in tree.preorder_node_iter():
+        try:
+            Q = node.data['wd']['final_wiki_item']['Q']
+            if Q in Qids:
+                warn("duplicate wikidata Qids used (Q{})"
+                    "- this will cause popularity double-counting for OTT {}"
+                    .format(Q, node.data['ott']))
+            else:
+                Qids.add(Q)
+        except KeyError:
+            pass
         pop = popularity_function(
             node.ancestors_popsum,
             node.descendants_popsum,
@@ -675,7 +689,7 @@ def main():
         OTT_popularity_mapping.calc_popularities_for_wikitaxa(
             wiki_title_ptrs.values(), "", args.verbosity)
         
-        #Here we might want to multiply up some taxa, e.g. plants
+        #Here we might want to multiply up some taxa, e.g. plants, see https://github.com/OneZoom/OZtree/issues/130
         
         info("Percolating popularity through the tree")    
         inherit_popularity(tree, args.exclude, args.verbosity)    
