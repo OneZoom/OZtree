@@ -478,9 +478,9 @@ db.define_table('reservations',
     # matches 'user_sponsor_kind'
     Field('verified_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30)), widget=SQLFORM.widgets.text.widget), 
     # matches 'user_sponsor_name'
-    Field('verified_donor_title', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
+    Field('verified_donor_title', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30)), widget=SQLFORM.widgets.text.widget),
     # matches 'user_donor_title'
-    Field('verified_donor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
+    Field('verified_donor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30)), widget=SQLFORM.widgets.text.widget),
     # matches 'user_donor_name'
     Field('verified_more_info', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(maxsize=30)), widget=SQLFORM.widgets.text.widget), 
     # matches 'user_more_info'
