@@ -3,6 +3,7 @@ import tree_state from '../tree_state';
 import {parse_query} from '../navigation/utils';
 import data_repo from '../factory/data_repo';
 import * as position_helper from '../position_helper';
+import config from '../global_config';
 
 /**
  * This function would firstly collects nodes and leaves which are on or near the main branch in the fly animation.
