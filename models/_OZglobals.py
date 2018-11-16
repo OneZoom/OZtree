@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 #NB: this should be executed first (begins with _ and the web2py book says "Models in the same folder/subfolder are executed in alphabetical order.")
 import sys
+# Python 2 and 3, instead of python2 unichr:
+from builtins import chr
 
 try:
     from gluon import current
@@ -248,9 +250,9 @@ conversion_table = cache.ram('conversion_table',
 #this is a slow definition, so we cache it in RAM, and import unicodedata within the lambda
 unicode_punctuation_to_space_table = cache.ram('unicode_punctuation_to_space_table',
     lambda: {i:u' ' for i in xrange(sys.maxunicode) \
-        if __import__('unicodedata').category(unichr(i)).startswith('Z') \
-        or (__import__('unicodedata').category(unichr(i)).startswith('P') \
-        and unichr(i) not in [u"'",u"’",u"-",u".",u"×", u"#"])}, # allow e.g. ' in names
+        if __import__('unicodedata').category(chr(i)).startswith('Z') \
+        or (__import__('unicodedata').category(chr(i)).startswith('P') \
+        and chr(i) not in [u"'",u"’",u"-",u".",u"×", u"#"])}, # allow e.g. ' in names
     time_expire = None)
     
 logographic_transcriptions = cache.ram('logographic_transcriptions', 
