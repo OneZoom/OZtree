@@ -69,7 +69,7 @@ from dendropy import Node, Tree
 
 #local packages
 from dendropy_extras import write_pop_newick
-from OTT_popularity_mapping import memory_usage_resource
+import OTT_popularity_mapping
 # to get globals from ../../../models/_OZglobals.py
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir, "models")))
 from _OZglobals import wikiflags
@@ -178,7 +178,8 @@ def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mappin
     reader = csv.reader(identifiers_file, escapechar='\\')
     for EOLrow in reader:
         if (reader.line_num % 1000000 == 0):
-            info("-> {} rows read, {} used,  mem usage {:.1f} Mb".format(reader.line_num, used, memory_usage_resource()))
+            info("-> {} rows read, {} used,  mem usage {:.1f} Mb".format(
+                reader.line_num, used, OTT_popularity_mapping.memory_usage_resource()))
         provider = int(EOLrow[2])
         if provider in EOL2OTT:
             src = source_ptrs[EOL2OTT[provider]]
@@ -188,7 +189,8 @@ def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mappin
                 used += 1;
                 src[providerid]['EoL'] = EOLid
     if verbosity:
-        info(" Matched {} EoL entries in the EoL identifiers file. Mem usage {:.1f} Mb".format(used, memory_usage_resource()))
+        info(" Matched {} EoL entries in the EoL identifiers file. Mem usage {:.1f} Mb".format(
+            used, OTT_popularity_mapping.memory_usage_resource()))
 
 def identify_best_EoLdata(OTT_ptrs, sources, verbosity=0):
     '''
@@ -197,7 +199,8 @@ def identify_best_EoLdata(OTT_ptrs, sources, verbosity=0):
     to use. We take the one with the most sources supporting this entry: if there is a tie, we take the lowest, as recommended by JRice from EoL
     '''
     if verbosity:
-        info("Finding best EoL matches. mem usage {:.1f} Mb".format(memory_usage_resource()))
+        info("Finding best EoL matches. mem usage {:.1f} Mb".format(
+            OTT_popularity_mapping.memory_usage_resource()))
     validOTTs = OTTs_with_EOLmatch = dups = 0
     for OTTid, data in OTT_ptrs.items():
         if is_unnamed_OTT(OTTid):
@@ -228,7 +231,9 @@ def identify_best_EoLdata(OTT_ptrs, sources, verbosity=0):
             if errstr:
                 info(" {}, chosen {}".format(errstr, best))
     if verbosity:
-        info(" NB: of {} OpenTree taxa, {} ({:.2f}%) have EoL entries in the EoL identifiers file, and {} have multiple possible EOL ids. Mem usage {:.1f} Mb".format(validOTTs, OTTs_with_EOLmatch, OTTs_with_EOLmatch/validOTTs * 100, dups, memory_usage_resource()))
+        info(" NB: of {} OpenTree taxa, {} ({:.2f}%) have EoL entries in the EoL identifiers file, and {} have multiple possible EOL ids. Mem usage {:.1f} Mb".format(
+            validOTTs, OTTs_with_EOLmatch, OTTs_with_EOLmatch/validOTTs * 100, dups, 
+            OTT_popularity_mapping.memory_usage_resource()))
 
 def supplement_from_wikidata(OTT_ptrs, verbosity=0):
     """
@@ -285,7 +290,8 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
     reader = csv.reader(identifiers_file, escapechar='\\')
     for EOLrow in reader:
         if (reader.line_num % 1000000 == 0):
-            info("{} rows read, {} used,  mem usage {:.1f} Mb".format(reader.line_num, used, memory_usage_resource()))
+            info("{} rows read, {} used,  mem usage {:.1f} Mb".format(
+                reader.line_num, used, OTT_popularity_mapping.memory_usage_resource()))
         if int(EOLrow[2]) == iucn_num and EOLrow[1]: #there are lots of IUCN rows with no IUCN number, so check EOLrow[1]!= "" and != None
             try:
                 for ott in eol_mapping[int(EOLrow[3])]:
@@ -297,7 +303,8 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
                 warn(" Cannot convert IUCN ID {} to integer on line {} of {}.".format(EOLrow[1], reader.line_num, identifiers_file.name), file=sys.stderr);
 
     if verbosity:
-        info(" Matched {} IUCN entries in the EoL identifiers file. Mem usage {:.1f} Mb".format(used, memory_usage_resource()))
+        info(" Matched {} IUCN entries in the EoL identifiers file. Mem usage {:.1f} Mb".format(
+            used, OTT_popularity_mapping.memory_usage_resource()))
 
     #now go through and double-check against IUCN stored on wikidata
     for OTTid, data in OTT_ptrs.items():
@@ -356,16 +363,35 @@ def popularity_function(
         return None
     else:
         return ((sum_of_all_ancestor_popularities + sum_of_all_descendant_popularities)/
-            log(number_of_ancestors+ number_of_descendants))
+            log(number_of_ancestors + number_of_descendants))
     
-def inherit_popularity(tree, verbosity=0):
+def inherit_popularity(tree, exclude=[], verbosity=0):
             
     #NB: we must percolate popularities through the tree before deleting monotomies, since these often contain info
     #this should allocate popularities even for nodes that have been created by polytomy resolving.
-    sum_popularity_over_tree(tree, exclude=args.exclude, verbosity=verbosity)
+    
+    # We should also check that there are not multuple uses of the same Qid (https://github.com/OneZoom/OZtree/issues/132)
+    
+    OTT_popularity_mapping.sum_popularity_over_tree(
+        tree, exclude=exclude, verbosity=verbosity)
     #now apply the popularity function
+    Qids = set()
     for node in tree.preorder_node_iter():
-        pop = popularity_function(node.ancestors_popsum, node.descendants_popsum, node.n_ancestors, node.n_descendants)
+        try:
+            Q = node.data['wd']['final_wiki_item']['Q']
+            if Q in Qids:
+                warn("duplicate wikidata Qids used (Q{})"
+                    "- this will cause popularity double-counting for OTT {}"
+                    .format(Q, node.data['ott']))
+            else:
+                Qids.add(Q)
+        except KeyError:
+            pass
+        pop = popularity_function(
+            node.ancestors_popsum,
+            node.descendants_popsum,
+            node.n_ancestors,
+            node.n_descendants)
         node.data['raw_popularity'] = node.pop_store
         node.data['popularity'] = pop
 
@@ -579,20 +605,16 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity
                 "FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' " + 
                 "IGNORE 1 LINES ({}) SET id = NULL;").format(tab, sqlfile, tab, open(fn).readline().rstrip()))
 
-if __name__ == "__main__":
 
-    from OTT_popularity_mapping import *
-    
+def main():
     random_seed_addition = 1234
-
-
     parser = argparse.ArgumentParser(description='Convert a newick file with OpenTree labels into refined trees and CSV tables, while mapping Open Tree of Life Taxonomy IDs to other ids (including EoL & Wikidata)')
     parser.add_argument('Tree', type=argparse.FileType('r', encoding='UTF-8'), 
         help='The newick format tree to use')
     parser.add_argument('OpenTreeTaxonomy', type=argparse.FileType('r', encoding='UTF-8'), 
         help='The 325.6 MB Open Tree of Life taxonomy.tsv file, from http://files.opentreeoflife.org/ott/')
     parser.add_argument('EOLidentifiers', type=argparse.FileType('r', encoding='UTF-8'), 
-        help='The 450 MB EOL identifiers file, current beta version from https://github.com/EOL/tramea/issues/162')
+        help='The 450 MB EOL identifiers file, from https://opendata.eol.org/dataset/identifiers-csv-gz')
     parser.add_argument('wikidataDumpFile', nargs="?", type=argparse.FileType('rb'), 
         help='The >4GB wikidata JSON dump, from https://dumps.wikimedia.org/wikidatawiki/entities/ (latest-all.json.bz2) ')
     parser.add_argument('wikipediaSQLDumpFile', nargs="?", type=argparse.FileType('rb'), 
@@ -612,7 +634,7 @@ if __name__ == "__main__":
     parser.add_argument('--extra_source_file', default=None, type=str, 
         help='An optional additional file to supplement the taxonomy.tsv file, providing additional mappings from OTTs to source ids (useful for overriding . The first line should be a header contining "uid" and "sourceinfo" column headers, as taxonomy.tsv. NB the OTT can be a number, or an ID of the form "mrcaott409215ott616649").')
     parser.add_argument('--info_on_focal_labels', nargs='*', default=[], 
-        help='Output some extra information for these named taxa, for debuggin purposes')        
+        help='Output some extra information for these named taxa, for debugging purposes')        
     parser.add_argument('--verbosity', '-v', action="count", default=0, 
         help='verbosity: output extra non-essential info')
 
@@ -631,7 +653,8 @@ if __name__ == "__main__":
     tree, OTT_ptrs = get_tree_and_OTT_list(args.Tree, sources, args.verbosity)
     
     info("Adding source IDs")
-    source_ptrs = create_from_taxonomy(args.OpenTreeTaxonomy, sources, OTT_ptrs, args.verbosity, args.extra_source_file)
+    source_ptrs = OTT_popularity_mapping.create_from_taxonomy(
+        args.OpenTreeTaxonomy, sources, OTT_ptrs, args.verbosity, args.extra_source_file)
     
     info("Adding EOL IDs from EOL csv file")
     add_eol_IDs_from_EOL_table_dump(source_ptrs, args.EOLidentifiers, sources, args.verbosity)
@@ -639,9 +662,10 @@ if __name__ == "__main__":
     
     if args.wikidataDumpFile:
         info("Adding wikidata info")
-        wiki_title_ptrs = add_wikidata_info(source_ptrs, args.wikidataDumpFile, args.wikilang, args.verbosity)
+        wiki_title_ptrs = OTT_popularity_mapping.add_wikidata_info(
+            source_ptrs, args.wikidataDumpFile, args.wikilang, args.verbosity)
         
-        identify_best_wikidata(OTT_ptrs, sources.keys(), args.verbosity)
+        OTT_popularity_mapping.identify_best_wikidata(OTT_ptrs, sources.keys(), args.verbosity)
         construct_wiki_info(OTT_ptrs)
         
         info("Supplementing ids (EOL/IPNI) with ones from wikidata")
@@ -656,17 +680,23 @@ if __name__ == "__main__":
     if args.popularity_file is not None and args.wikipediaSQLDumpFile is not None and args.wikipedia_totals_bz2_pageviews:
         
         info("Adding popularity measures")    
-        add_pagesize_for_titles(wiki_title_ptrs, args.wikipediaSQLDumpFile, args.verbosity)
-        add_pageviews_for_titles(wiki_title_ptrs, args.wikipedia_totals_bz2_pageviews, args.wikilang, args.verbosity)
+        OTT_popularity_mapping.add_pagesize_for_titles(
+            wiki_title_ptrs, args.wikipediaSQLDumpFile, args.verbosity)
+        OTT_popularity_mapping.add_pageviews_for_titles(
+            wiki_title_ptrs, args.wikipedia_totals_bz2_pageviews, args.wikilang, args.verbosity)
         
         info("Calculating base popularity measures")    
-        calc_popularities_for_wikitaxa(wiki_title_ptrs.values(), "", args.verbosity)
+        OTT_popularity_mapping.calc_popularities_for_wikitaxa(
+            wiki_title_ptrs.values(), "", args.verbosity)
+        
+        #Here we might want to multiply up some taxa, e.g. plants, see https://github.com/OneZoom/OZtree/issues/130
         
         info("Percolating popularity through the tree")    
-        inherit_popularity(tree, args.verbosity)    
+        inherit_popularity(tree, args.exclude, args.verbosity)    
     
         if args.popularity_file:
-            write_popularity_tree(tree, args.output_location, args.popularity_file, args.version, args.verbosity)
+            write_popularity_tree(
+                tree, args.output_location, args.popularity_file, args.version, args.verbosity)
         #NB to examine a taxon for popularity contributions here, you could try
         for focal_label in args.info_on_focal_labels:
             focal_taxon = focal_label.replace("_", " ")
@@ -689,3 +719,7 @@ if __name__ == "__main__":
     output_simplified_tree(
         tree, args.OpenTreeTaxonomy, args.output_location, args.version, 
         random_seed_addition, args.verbosity)
+        
+
+if __name__ == "__main__":
+    main()

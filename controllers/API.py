@@ -674,7 +674,7 @@ def otts2vns():
             lang=lang)
         ret_otts['lang']=lang
         return ret_otts
-    except AttributeError, ValueError:
+    except (AttributeError, ValueError):
         return {'lang':lang}
     
 def update_visit_count():

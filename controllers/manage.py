@@ -127,8 +127,10 @@ def SPONSOR_VALIDATE():
     
     """
 
-    if len(request.args): page=int(request.args[0])
-    else: page=0
+    try:
+        page=int(request.args[0])
+    except:
+        page=0
     try:
         items_per_page=int(request.vars.n)
         if items_per_page<1:
@@ -170,6 +172,8 @@ def SPONSOR_UPDATE():
         'e_mail',
         'twitter_name',
         'user_sponsor_lang',
+        'user_donor_title',
+        'user_donor_name',
         'user_sponsor_kind',
         'user_sponsor_name',
         'user_more_info',
@@ -188,6 +192,8 @@ def SPONSOR_UPDATE():
     ]
     write_to_cols = [
         'verified_kind',
+        'verified_donor_title',
+        'verified_donor_name',
         'verified_name',
         'verified_more_info',
         'verified_preferred_image',
@@ -324,6 +330,12 @@ def SPONSOR_UPDATE():
             #this is what happens when the form is loaded at the start (not processed)
             ## variables rendered in a 'textarea' tag (DB fieldtype = text)
             ## variables rendered in an 'input' tag (DB fieldtype = integer, etc)
+            if row['verified_donor_title'] is None:
+                form.element(_name='verified_donor_title').append((read_only['user_donor_title'] or "").strip())
+                to_be_validated = True
+            if row['verified_donor_name'] is None:
+                form.element(_name='verified_donor_name').append((read_only['user_donor_name'] or "").strip())
+                to_be_validated = True
             if row['verified_name'] is None:
                 form.element(_name='verified_name').append((read_only['user_sponsor_name'] or "").strip())
                 to_be_validated = True

@@ -368,6 +368,9 @@ def sponsor_leaf():
                     sponsorship_duration_days=365*4+1,
                     partner_name=partner_data.get('partner_identifier'),
                     partner_percentage=partner_data.get('percentage'))
+                if form.vars.user_sponsor_kind == "by" and not form.vars.user_donor_name:
+                    reservation_query.update(
+                        user_donor_name = form.vars.user_sponsor_name)
                 # now need to do our own other checks
                 v = {'ott':OTT_ID_Varin}
                 if request.vars.get('embed'):
@@ -375,10 +378,10 @@ def sponsor_leaf():
                 redirect(URL("default", "paypal", vars=v))
         
             elif form.errors:
-               response.flash = 'please check the errors shown in red'
+                response.flash = 'please check the errors shown in red'
             else:
-               #the form should simply be shown
-               pass
+                #the form should simply be shown
+                pass
             return dict(form = form, id=reservation_entry.id, OTT_ID = OTT_ID_Varin, EOL_ID = EOL_ID, eol_src= src_flags['eol'], species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), the_long_name = the_long_name, leaf_price = leaf_price, form_reservation_code=form_reservation_code, percent_crop_expansion = percent_crop_expansion, default_image = default_image, partner_data = partner_data, EoL_API_key=EoL_API_key, max_global_price=max_global_price, min_global_price=min_global_price)
         except TypeError: #leaf_entry.price is None, treat as banned
             response.view = request.controller + "/spl_banned." + request.extension

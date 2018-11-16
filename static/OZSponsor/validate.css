@@ -11,9 +11,9 @@ div.table {display: table;}
 .table > div:nth-of-type(odd) {
     background: #e0e0e0;
 }
-.table >div>*>* {padding: 1.5em 0.3em 0 0.3em; vertical-align: top;}
+.table >div>*>* {padding: 0.5em 0.3em 0 0.3em; vertical-align: top;}
 .table .DB {font-weight: bold} /* items taken from the DB (user) in bold */
-.table div.ids {min-width: 7em}
+.table div.ids {min-width: 5em}
 .table div.image.API {border-right: 1px solid black; color: grey;}
 .table div.sponsorKind {width: 5em;}
 .table .speciesName {width: 18em;}
@@ -33,12 +33,12 @@ div.table {display: table;}
 .table .image {padding-top: 0.2em; vertical-align: middle; text-align:center}
 .table .sponsorType {text-align: right}
 .table .PayPal {font-size: small; color: grey;}
-.table .sponsorName textarea {  min-height:3em;}
-.table .sponsorMore textarea {  min-height:3em;}
-.table .sponsorName .PayPal::before { content: "PP: ("; }
-.table .sponsorName .PayPal::after { content: ")"; }
-.table .sponsorMore .PayPal::before { content: "PP: ("; }
-.table .sponsorMore .PayPal::after { content: ")"; }
+.table .sponsor textarea, .table .more textarea, .table .donor textarea {  min-height:3em;} /* to make sure we see extra lines */
+.table .donor {width: 12em}
+.table .donor .PayPal::before { content: "PP: ("; }
+.table .donor .PayPal::after { content: ")"; }
+.table .donor .donordetails textarea {width: 74%; display: inline-block}
+.table .donor .donordetails textarea:first-of-type {width: 25%;}
 .table .confirm {text-align:center;}
 .table .confirm input {background-color: green; background-image:none; font-weight:normal}
 .table .confirm p {display: inline-block; margin: 0}

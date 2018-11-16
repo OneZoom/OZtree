@@ -445,8 +445,8 @@ db.define_table('reservations',
     # optional extra info about a person
     Field('user_nondefault_image', type = 'integer'),
     #has the user chosen a non-default image? 0 or 1. Should prob be boolean type instead.
-    Field('user_preferred_image', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(1,1e100))),
-    # an option for users to recommend an EOL ID as the best image. Should normally be filled
+    Field('user_preferred_image', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))),
+    # an option for users to recommend an EOL ID as the best image. Should normally be filled. Negative numbers are bespoke OneZoom images
     Field('user_updated_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),  
     # need to know when it was last updated to check for user updates         
     Field('user_paid', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
@@ -478,9 +478,9 @@ db.define_table('reservations',
     # matches 'user_sponsor_kind'
     Field('verified_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30)), widget=SQLFORM.widgets.text.widget), 
     # matches 'user_sponsor_name'
-    Field('verified_donor_title', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
+    Field('verified_donor_title', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30)), widget=SQLFORM.widgets.text.widget),
     # matches 'user_donor_title'
-    Field('verified_donor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
+    Field('verified_donor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30)), widget=SQLFORM.widgets.text.widget),
     # matches 'user_donor_name'
     Field('verified_more_info', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(maxsize=30)), widget=SQLFORM.widgets.text.widget), 
     # matches 'user_more_info'
