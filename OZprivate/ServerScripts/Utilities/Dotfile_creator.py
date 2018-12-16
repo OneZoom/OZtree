@@ -90,7 +90,7 @@ def main():
     df = pd.read_sql("SELECT id, parent, real_parent, age, name, ott, ncbi from ordered_nodes "
         "UNION" " SELECT -id AS id, parent, real_parent, extinction_date AS age, name, ott, ncbi from ordered_leaves", db_connection)
     internal_nodes = pd.read_sql("SELECT id, real_parent, leaf_rgt, leaf_lft from ordered_nodes", db_connection)
-    iucn = pd.read_sql("select ordered_leaves.id as id, iucn.status_code as status_code from ordered_leaves left join iucn ON ordered_leaves.ott = iucn.ott order by ordered_leaves.id", db_connection)
+    iucn = pd.read_sql("select -ordered_leaves.id as id, iucn.status_code as status_code from ordered_leaves left join iucn ON ordered_leaves.ott = iucn.ott order by ordered_leaves.id", db_connection)
     print(" read")
     version = None
     #make a dataframe of booleans (is real_parent >= 0) indexed by ID
@@ -114,7 +114,7 @@ def main():
         for idx, row in df.iterrows():
             print(node_print(row.id), "" if np.isnan(row.age) else row.age, sep="\t", file=agefile)
             print(node_print(row.id), row['name'] or "", sep="\t", file=namefile)
-            print(node_print(row.id), row.ott or "", row.ncbi or "", sep="\t", file=idfile)
+            print(node_print(row.id), "" if np.isnan(row.ott) else int(row.ott), "" if np.isnan(row.ncbi) else int(row.ncbi), sep="\t", file=idfile)
         for idx, row in iucn.iterrows():
             print(node_print(row.id), row.status_code or "", sep="\t", file=iucnfile)
 if __name__ == "__main__":
