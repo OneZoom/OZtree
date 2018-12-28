@@ -132,6 +132,7 @@ import gzip
 import bz2
 import os.path
 import json
+import logging
 from collections import defaultdict, OrderedDict
 
 __author__ = "Yan Wong"
@@ -145,6 +146,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 For more information, please refer to <http://unlicense.org/>'''
 
+logger = logging.getLogger(__name__)
+logging.EXTREME_DEBUG = logging.DEBUG + 1
+logging.addLevelName(logging.EXTREME_DEBUG, "DEBUG++")
 
 def memory_usage_resource():
     import resource
@@ -156,7 +160,7 @@ def memory_usage_resource():
     mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / rusage_denom
     return mem
 
-def create_from_taxonomy(OTTtaxonomy_file, sources, OTT_ptrs, verbosity=0, extra_taxonomy_file=None):
+def create_from_taxonomy(OTTtaxonomy_file, sources, OTT_ptrs, extra_taxonomy_file=None):
     '''
     Creates object data and a source_ptrs array pointing to elements within it.
     Also fills out the OTT_ptrs array to point to the right place.
@@ -180,19 +184,24 @@ def create_from_taxonomy(OTTtaxonomy_file, sources, OTT_ptrs, verbosity=0, extra
         try:
             data_files.append(open(extra_taxonomy_file, "r"))
         except FileNotFoundError:
-            print(" Extra taxonomy file '{}' not found, so ignored".format(extra_taxonomy_file), file=sys.stderr)
+            logger.error(
+                " Extra taxonomy file '{}' not found, so ignored"
+                .format(extra_taxonomy_file))
         
     for f in data_files:
         reader = csv.DictReader(f, delimiter='\t')
         used = 0
         for OTTrow in reader:
-            if ((reader.line_num-2) % 1000000 == 0) and verbosity: #first 2 lines are header & blank in taxonomy.tsv
-                print("Reading taxonomy file {}: {} rows read, {} identifiers used,  mem usage {:.1f} Mb".format(f.name, reader.line_num-2, used, memory_usage_resource()), file=sys.stderr)
+            if ((reader.line_num-2) % 1000000 == 0): #first 2 lines are header & blank in taxonomy.tsv
+                logger.info(
+                    "Reading taxonomy file {}: {} rows read, {} identifiers used,  mem usage {:.1f} Mb"
+                    .format(f.name, reader.line_num-2, used, memory_usage_resource()))
             try:
                 OTTid = int(OTTrow['uid'])
             except ValueError:
                 OTTid = OTTrow['uid']
-                print(" Found an ott 'number' which is not an integer: {}".format(OTTid), file=sys.stderr)
+                logger.error(
+                    " Found an ott 'number' which is not an integer: {}".format(OTTid))
                 
             sourceinfo = silva_regexp.sub(silva_sub,OTTrow['sourceinfo'])
             ncbi = False
@@ -203,8 +212,9 @@ def create_from_taxonomy(OTTtaxonomy_file, sources, OTT_ptrs, verbosity=0, extra
                 elif (src=="ncbi_silva") and (not ncbi):
                     src = "ncbi" #only use the ncbi_via_silva id if no 'normal' ncbi already set
                 if src not in source_ptrs:
-                    if src not in unused_sources and verbosity:
-                        print(" New and unused source: {} (e.g. '{}')".format(src, str), file=sys.stderr)
+                    if src not in unused_sources:
+                        logger.info(
+                            " New and unused source: {} (e.g. '{}')".format(src, str))
                     unused_sources.update([src]);
                     continue;
                 used += 1;
@@ -249,7 +259,7 @@ def wikidata_makebaseinfo(json_item, wikilang=''):
         basic_item['l'][lang] = data["title"].replace(" ", "_") if lang==wikilang else 1
     return basic_item
 
-def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=0, 
+def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, 
     EOLid_property_id='P830', 
     IUCNid_property_id=['P141','P627'], 
     IPNIid_property_id='P961'):
@@ -311,13 +321,12 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
     with bz2.open(wikidata_json_dump_file, 'rb') as WDF: #open filehandle, to allow read as bytes (converted to UTF8 later)
       n_eol=n_iucn=n_ipni=0
       for line_num, line in enumerate(WDF):
-        if (line_num % 1000000 == 0) and verbosity:
-                print("Reading wikidata JSON dump: {}% done. "
+        if (line_num % 1000000 == 0):
+                logger.info("Reading wikidata JSON dump: {}% done. "
                   "{} entries read, {} taxon entries found, "
                   "{} with EoL ids, {} with IUCN ids, {} with IPNIs:  mem usage {:.1f} Mb"
                   .format(wikidata_json_dump_file.tell()*100.0 / filesize, 
-                    line_num, len(wikidata_taxon_info), n_eol, n_iucn, n_ipni, memory_usage_resource()),
-                  file=sys.stderr)
+                    line_num, len(wikidata_taxon_info), n_eol, n_iucn, n_ipni, memory_usage_resource()))
         #this file is in byte form, so must match byte strings
         if line.startswith(b'{"type":"item"') and initial_byte_match.search(line): #}'
           #done fast match, now check by parsing JSON (slower)
@@ -337,7 +346,7 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
               taxon_handle = dict(final_wiki_item=taxon_item, initial_wiki_item=taxon_item)
               Qid = taxon_item['Q']
               #attach this taxon *handle* to the right place in source_ptrs.
-              if JSON_contains_known_dbID(item, taxon_handle, source_ptrs, verbosity):
+              if JSON_contains_known_dbID(item, taxon_handle, source_ptrs):
                 #we have matched against a known taxon
                 wikidata_taxon_info[Qid] = taxon_item
                 if EOLid_property_id:
@@ -349,7 +358,9 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
                   except LookupError:
                     pass #no EOL id
                   except ValueError:
-                    print(" Cannot convert EoL property {} to integer in {}.".format(eolid, taxon_name(item)), file=sys.stderr);
+                    logger.error(
+                        " Cannot convert EoL property {} to integer in {}."
+                        .format(eolid, taxon_name(item)))
                 if IUCNid_property_id:
                   try:
                     #IUCN number is stored as a reference
@@ -365,7 +376,9 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
                   except LookupError:
                     pass #no IUCN property
                   except ValueError:
-                    print(" Cannot convert IUCN property {} to integer in {}.".format(iucnid, taxon_name(item)), file=sys.stderr);
+                    logger.error(
+                        " Cannot convert IUCN property {} to integer in {}."
+                        .format(iucnid, taxon_name(item)))
                 if IPNIid_property_id:
                   try:
                     ipni = wikidata_value(item['claims'][IPNIid_property_id][0]['mainsnak'])
@@ -376,7 +389,9 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
                   except LookupError:
                     pass #no IPNI id
                   except ValueError:
-                    print(" Cannot convert IPNI property {} to integer in {}.".format(eolid, taxon_name(item)), file=sys.stderr);
+                    logger.error(
+                        " Cannot convert IPNI property {} to integer in {}."
+                        .format(eolid, taxon_name(item)))
                   #Check for common names 
                   if Qid in wikidata_cname_info:
                     #we previously found a common name for this one
@@ -384,13 +399,14 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
                       or Qid in override_with_common_name:
                       # Only change if there is no sitelink in the pre-specified wikilang 
                       # but there *is* one in the common_name item (or is an exception)
-                      if verbosity:
-                        print(" Updating taxon Q{} ({}) with Qid and sitelinks from Q{}.".format(
-                            Qid, taxon_name(item),  wikidata_cname_info[Qid]['Q']), file=sys.stderr)
+                      logger.info(
+                        " Updating taxon Q{} ({}) with Qid and sitelinks from Q{}."
+                        .format(Qid, taxon_name(item),  wikidata_cname_info[Qid]['Q']))
                       if len(taxon_item['l']):
                         # print out a warning if we have actually lost some pages in other language wikipedias
-                        print("WARNING. Taxon Q{} ({}) is being swapped for a common-name equivalent Q{}, losing sitelinks in the following languages: {}.".format(
-                            Qid, taxon_name(item), wikidata_cname_info[Qid]['Q'], taxon_item['l']), file=sys.stderr)
+                        logger.warning(
+                            "Taxon Q{} ({}) is being swapped for a common-name equivalent Q{}, losing sitelinks in the following languages: {}."
+                            .format(Qid, taxon_name(item), wikidata_cname_info[Qid]['Q'], taxon_item['l']))
                       # switch the final wiki item used
                       taxon_handle['final_wiki_item'] = wikidata_cname_info[Qid]
                       #simply keep track for reporting purposes
@@ -407,16 +423,17 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
                 except KeyError:
                   pass #this common name property is useless
               if len(common_name_properties) == 0:
-                if not len(taxon) and verbosity > 1:
-                  print(" Found a common name property without any qualifiers for {} ({}). The name may be poly/paraphyletic (e.g. 'slugs', 'coral', 'rabbit', 'whale') or a name corresponding to a clade with no official taxonomic name (e.g. the 2 spp of minke whales within a larger genus, or the 2 genera of peafowl), or something else (e.g. the 'mysterious bird of Bobairo')".format(item["id"], taxon_name(item)), file=sys.stderr)
+                if not len(taxon):
+                  logger.debug(" Found a common name property without any qualifiers for {} ({}). The name may be poly/paraphyletic (e.g. 'slugs', 'coral', 'rabbit', 'whale') or a name corresponding to a clade with no official taxonomic name (e.g. the 2 spp of minke whales within a larger genus, or the 2 genera of peafowl), or something else (e.g. the 'mysterious bird of Bobairo')".format(item["id"], taxon_name(item)))
                 continue
               for common_name_of in common_name_properties[0]["qualifiers"]["P642"]: #pick the first matching one
                 #e.g. https://www.wikidata.org/wiki/Q144
                 common_name_maps_to_Qid = wikidata_value(common_name_of).get("numeric-id")
                 if common_name_maps_to_Qid:
                   common_name_item = wikidata_makebaseinfo(item, wikilang)
-                  print(" Found a common name: {} ({}) is common name of Q{}, which could be a taxon item".format(
-                    item["id"], taxon_name(item), common_name_maps_to_Qid), file=sys.stderr)
+                  logger.info(
+                    " Found a common name: {} ({}) is common name of Q{}, which could be a taxon item"
+                    .format(item["id"], taxon_name(item), common_name_maps_to_Qid))
                   if wikilang in common_name_item['l']:
                     #we have e.g. sitelink = 'en.wiki' in this item
                     wikidata_cname_info[common_name_maps_to_Qid]=common_name_item
@@ -428,11 +445,14 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
                       if wikilang not in wikidata_taxon_info[common_name_maps_to_Qid]['l'] or \
                         common_name_maps_to_Qid in override_with_common_name:
                         #only change if there was not a previous sitelink in the pre-specified wikilang (or an exception)
-                        if verbosity:
-                          print(" Updating taxon {} with Qid and sitelinks from Q{} ({}).".format(common_name_maps_to_Qid, Qid, taxon_name(item)),  file=sys.stderr)
+                        logger.info(
+                            " Updating taxon {} with Qid and sitelinks from Q{} ({})."
+                            .format(common_name_maps_to_Qid, Qid, taxon_name(item)))
                         if len(wikidata_taxon_info[common_name_maps_to_Qid]['l']):
                           # print out a warning if we have actually lost some pages in other language wikipedias
-                          print("WARNING. Taxon Q{} is being swapped for a common-name equivalent Q{} ({}), losing sitelinks in the following languages: {}.".format(common_name_maps_to_Qid, Qid, taxon_name(item), wikidata_taxon_info[common_name_maps_to_Qid]['l']), file=sys.stderr)
+                          logger.warning(
+                            " Taxon Q{} is being swapped for a common-name equivalent Q{} ({}), losing sitelinks in the following languages: {}."
+                            .format(common_name_maps_to_Qid, Qid, taxon_name(item), wikidata_taxon_info[common_name_maps_to_Qid]['l']))
                         taxon_handle = wikidata_taxon_info[common_name_maps_to_Qid]
                         wikilang_title_ptrs[common_name_item['l'][wikilang]] = taxon_handle['final_wiki_item'] = common_name_item
                         #simply keep track for reporting purposes
@@ -452,21 +472,23 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, verbosity=
             pass
           else:
             #possibly flag up problems here, in case there are taxa which are instances of more specific types, e.g. ichnotaxon, etc etc.
-            if verbosity:
-              print(" There might be a problem with wikidata item {} ({}), might be a taxon but cannot get taxon data from it".format(item['id'], taxon_name(item)), file=sys.stderr);
+            logger.info(
+                " There might be a problem with wikidata item {} ({}), might be a taxon but cannot get taxon data from it"
+                .format(item['id'], taxon_name(item)))
     cnames = defaultdict(set)
     for k, v in tally_replaced.items():
       cnames[v].add(k)
-    if verbosity:
-      print(" The following taxon Qids were swapped for common name Qids: {}".format(tally_replaced), file=sys.stderr)
+    logger.info(" The following taxon Qids were swapped for common name Qids: {}".format(tally_replaced))
       duplicates = {k:v for k,v in cnames.items() if len(v) > 1}
       if len(duplicates):
-        print("WARNING. The following common name wikidata items (listed by Qid) have been used for more than one taxon item: this may cause duplicate use of the same popularity measure. {}".format(duplicates), file=sys.stderr)
-      print(" NB: {} wikidata matches, of which {} have eol IDs, {} have IUCN ids, {} have IPNI, and {} ({:.2f}%) have titles that exist on the {} wikipedia. mem usage {:.1f} Mb".format(len(wikidata_taxon_info), n_eol,n_iucn, n_ipni, len(wikilang_title_ptrs), len(wikilang_title_ptrs)/len(wikidata_taxon_info) * 100, wikilang, memory_usage_resource()), file=sys.stderr)
+        logger.warning("The following common name wikidata items (listed by Qid) have been used for more than one taxon item: this may cause duplicate use of the same popularity measure. {}".format(duplicates))
+      logger.info(
+        " NB: {} wikidata matches, of which {} have eol IDs, {} have IUCN ids, {} have IPNI, and {} ({:.2f}%) have titles that exist on the {} wikipedia. mem usage {:.1f} Mb"
+        .format(len(wikidata_taxon_info), n_eol,n_iucn, n_ipni, len(wikilang_title_ptrs), len(wikilang_title_ptrs)/len(wikidata_taxon_info) * 100, wikilang, memory_usage_resource()))
     return(wikilang_title_ptrs)
 
 
-def JSON_contains_known_dbID(json, wd_handle, source_ptrs, verbosity=0):
+def JSON_contains_known_dbID(json, wd_handle, source_ptrs):
     """
     If we match with any of the wikidata props (e.g. 'P685' for ncbi, etc etc) then link to the 
     wd_info object from the appropriate source_ptrs item, so that it doesn't get garbage collected
@@ -481,15 +503,19 @@ def JSON_contains_known_dbID(json, wd_handle, source_ptrs, verbosity=0):
                     source_ptrs[wikidata_db_props[taxon_id_prop]][id]['wd'] = wd_handle
                     used=True
                 except KeyError:
-                    if verbosity>2:
-                        #very common for OTT to be missing ids that are present in wikidata, so only output if -vvv
-                        print(" NB: can't find item source_ptrs[{} ({})][{}] in OTTids for taxon {} ({})".format(wikidata_db_props[taxon_id_prop], taxon_id_prop, id, taxon_name(json), json['id']), file=sys.stderr);
+                    #very common for OTT to be missing ids that are present in wikidata, so only output if -vvv
+                    logger.log(logging.EXTREME_DEBUG, 
+                        " NB: can't find item source_ptrs[{} ({})][{}] in OTTids for taxon {} ({})"
+                        .format(wikidata_db_props[taxon_id_prop], taxon_id_prop, id, taxon_name(json), json['id']))
             except KeyError:
-                if verbosity>1:
-                    print(" Can't find an id value for source_ptrs[{} ({})] in OTTids for taxon {} ({})".format(wikidata_db_props[taxon_id_prop], taxon_id_prop, taxon_name(json), json['id']), file=sys.stderr);
+                logger.debug(
+                    " Can't find an id value for source_ptrs "
+                    "[{} ({})] in OTTids for taxon {} ({})".format(
+                        wikidata_db_props[taxon_id_prop], taxon_id_prop, 
+                        taxon_name(json), json['id']))
     return used
         
-def identify_best_wikidata(OTT_ptrs, order_to_trust, verbosity):
+def identify_best_wikidata(OTT_ptrs, order_to_trust):
     """
     Each OTT number may point to several wiki entries, one for the NCBI number, another for the WORMS number, etc etc.
     Hopefully these will point to the same entry, but they may not. If they are different we need to choose the best one
@@ -497,8 +523,8 @@ def identify_best_wikidata(OTT_ptrs, order_to_trust, verbosity):
     In the case of a tie, we pick the one associated with the lowest (nearest 0) order_to_trust value
     """
     
-    if verbosity:
-        print("Finding best wiki matches. mem usage {:.1f} Mb".format(memory_usage_resource()), file=sys.stderr)
+    logger.info(
+        "Finding best wiki matches. Mem use {:.1f} Mb".format(memory_usage_resource()))
     OTTs_with_wd = allOTTs = 0
     for OTTid, data in OTT_ptrs.items():
         try:
@@ -524,18 +550,17 @@ def identify_best_wikidata(OTT_ptrs, order_to_trust, verbosity):
             if len(choose) == 1:
                 chosen = choose.popitem()[1]
             else:
-                if verbosity > 1:
-                    errstr = "More than one wikidata ID {} for taxon OTT: {}".format(choose, OTTid)
+                errstr = "More than one wikidata ID {} for taxon OTT: {}".format(choose, OTTid)
                 max_refs = max([len(v) for v in choose.values()])
                 chosen = {rank:obj for v in choose.values() for rank,obj in v.items() if len(v) == max_refs}
             best = chosen[min(chosen)]
             data['wd'] = best
-            if errstr:
-                print(" {}, chosen {}".format(errstr, best['final_wiki_item']['Q']), file=sys.stderr)
-    if verbosity:
-        print(" NB: of {} OpenTree taxa, {} ({:.2f}%) have wikidata entries. mem usage {:.1f} Mb".format(allOTTs, OTTs_with_wd, OTTs_with_wd/allOTTs * 100, memory_usage_resource()), file=sys.stderr)
+            logger.debug(" {}, chosen {}".format(errstr, best['final_wiki_item']['Q']))
+    logger.info(
+        " NB: of {} OpenTree taxa, {} ({:.2f}%) have wikidata entries. Mem use {:.1f} Mb"
+        .format(allOTTs, OTTs_with_wd, OTTs_with_wd/allOTTs * 100, memory_usage_resource()))
 
-def add_pagesize_for_titles(wiki_title_ptrs, wikipedia_SQL_dump, verbosity):
+def add_pagesize_for_titles(wiki_title_ptrs, wikipedia_SQL_dump):
     """
     looks through the sql insertion file for page sizes. This file has extremely long lines with each csv entry
     brace-delimited within a line, e.g.
@@ -557,8 +582,10 @@ def add_pagesize_for_titles(wiki_title_ptrs, wikipedia_SQL_dump, verbosity):
         pagelen_file = csv.reader(file, quotechar='\'',doublequote=True)
         match_line = "INSERT INTO `page` VALUES"
         for fields in filter(lambda x: False if len(x)==0 else x[0].startswith(match_line), pagelen_file):
-            if (pagelen_file.line_num % 500 == 0) and verbosity:
-                print("Reading page details from SQL dump to find page sizes: {} lines ({} pages) read: mem usage {:.1f} Mb".format(pagelen_file.line_num,pagelen_file.line_num*1000, memory_usage_resource()), file=sys.stderr)
+            if (pagelen_file.line_num % 500 == 0):
+                logger.info(
+                    "Reading page details from SQL dump to find page sizes: {} lines ({} pages) read. Mem use {:.1f} Mb"
+                    .format(pagelen_file.line_num,pagelen_file.line_num*1000, memory_usage_resource()))
             field_num=0
             #the records are all on the same line, separated by '),(', so we need to count fields into the line.
             for f in fields:
@@ -578,11 +605,12 @@ def add_pagesize_for_titles(wiki_title_ptrs, wikipedia_SQL_dump, verbosity):
                     if title in wiki_title_ptrs:
                         wiki_title_ptrs[title]['PGsz'] = int(f)
                         used += 1
-    if verbosity:
-        print(" NB: of {} titles of taxa on the {} wikipedia, {} ({:.2f}%) have page size data. mem usage {:.1f} Mb".format(len(wiki_title_ptrs), wikipedia_SQL_dump if isinstance(wikipedia_SQL_dump, str) else wikipedia_SQL_dump.name, used, used/len(wiki_title_ptrs) * 100, memory_usage_resource()), file=sys.stderr)
+    logger.info(
+        " NB: of {} titles of taxa on the {} wikipedia, {} ({:.2f}%) have page size data. Mem use {:.1f} Mb"
+        .format(len(wiki_title_ptrs), wikipedia_SQL_dump if isinstance(wikipedia_SQL_dump, str) else wikipedia_SQL_dump.name, used, used/len(wiki_title_ptrs) * 100, memory_usage_resource()))
 
 
-def add_pageviews_for_titles(wiki_title_ptrs, array_of_opened_files, wikilang, verbosity, wiki_suffix="z"):
+def add_pageviews_for_titles(wiki_title_ptrs, array_of_opened_files, wikilang, wiki_suffix="z"):
     '''
     Append monthly page visits to the data objects pointed to by wiki_title_ptrs. 
     We expect several months of data, each corresponding to a file, so we append 
@@ -603,10 +631,10 @@ def add_pageviews_for_titles(wiki_title_ptrs, array_of_opened_files, wikilang, v
     for title, obj in wiki_title_ptrs.items():     #fill arrays with 0 to start with: missing data indicates no hits that month
         obj['PGviews'] = len(array_of_opened_files)*[0]
     for index, pageviews_file in enumerate(array_of_opened_files):
-        visits_for_titles(wiki_title_ptrs, pageviews_file, index, wikicode, verbosity)
+        visits_for_titles(wiki_title_ptrs, pageviews_file, index, wikicode)
 
 
-def visits_for_titles(wiki_title_ptrs, wiki_visits_pagecounts_file, file_index, wikicode, verbosity):
+def visits_for_titles(wiki_title_ptrs, wiki_visits_pagecounts_file, file_index, wikicode):
     '''
     Append page visits to the data objects. We expect several of these, so append each to an array, e.g.
     
@@ -635,8 +663,10 @@ def visits_for_titles(wiki_title_ptrs, wiki_visits_pagecounts_file, file_index, 
         try:
             problem_lines = [] #there are apparently some errors in the unicode dumps
             for n, line in enumerate(PAGECOUNTfile):
-                if (n % 10000000 == 0) and verbosity:
-                    print("Reading pagecount file of number of page views: {} entries read from file {} ({}): mem usage {} Mb".format(n, file_index, wiki_visits_pagecounts_file.name, memory_usage_resource()), file=sys.stderr)
+                if (n % 10000000 == 0):
+                    logger.info(
+                        "Reading pagecount file of number of page views: {} entries read from file {} ({}). Mem use {} Mb"
+                        .format(n, file_index, wiki_visits_pagecounts_file.name, memory_usage_resource()))
                 if line.startswith(match_project):
                     try:
                         info = line[start_char:].rstrip(b'\r\n\\rn').rsplit(b' ', 1)
@@ -648,23 +678,32 @@ def visits_for_titles(wiki_title_ptrs, wiki_visits_pagecounts_file, file_index, 
                     except KeyError:
                         pass #title not in wiki_title_ptrs - this is expected for most entries
                     except ValueError as e:
-                        if verbosity:
-                            print(e, file=sys.stderr)
-                            print(" Problem converting page view to an integer for {}".format(line), file=sys.stderr)
+                        logger.info(e)
+                        logger.info(
+                            " Problem converting page view to an integer for {}"
+                            .format(line))
         except EOFError as e:
             #this happens sometimes, dunno why
-            if verbosity:
-                print(" Problem with end of file: {}. Used {} entries (should be {}: {}%. Skipping to next".format(e.args[-1],used, len(wiki_title_ptrs), used/len(wiki_title_ptrs) * 100), file=sys.stderr)
+            logger.info(
+                " Problem with end of file: {}. Used {} entries (should be {}: {}%. Skipping to next"
+                .format(e.args[-1],used, len(wiki_title_ptrs), used/len(wiki_title_ptrs) * 100))
         if len(problem_lines):
-            if verbosity>0:
-                if verbosity<=2:
-                    print(" Problem decoding {} lines, but these will be ones with strange accents etc, so should mostly not be taxa.".format(len(problem_lines)), file=sys.stderr)
-                else:
-                    print(" Problem decoding certain lines: the following lines have been ignored:\n{}".format("  \n".join(problem_lines)), file=sys.stderr)
-    if verbosity:
-        print(" NB: of {} WikiData taxon entries, {} ({:.2f}%) have pageview data for {} in '{}'. mem usage {:.1f} Mb".format(len(wiki_title_ptrs), used, used/len(wiki_title_ptrs) * 100, wikicode, wiki_visits_pagecounts_file if isinstance(wiki_visits_pagecounts_file, str) else wiki_visits_pagecounts_file.name, memory_usage_resource()), file=sys.stderr)
+            if logger.get_effective_level() == logging.EXTREME_DEBUG:
+                logger.log(logging.EXTREME_DEBUG,
+                    " Problem decoding certain lines: the following lines have been ignored:\n{}"
+                    .format("  \n".join(problem_lines)))
+            else:
+                logger.info(
+                    " Problem decoding {} lines, but these will be ones with strange accents etc, so should mostly not be taxa."
+                    .format(len(problem_lines)))
+    logger.info(
+        " NB: of {} WikiData taxon entries, {} ({:.2f}%) have pageview data for {} in '{}'. mem usage {:.1f} Mb"
+        .format(
+            len(wiki_title_ptrs), used, used/len(wiki_title_ptrs) * 100, wikicode, 
+            getattr(wiki_visits_pagecounts_file, 'name', wiki_visits_pagecounts_file),
+            memory_usage_resource()))
 
-def calc_popularities_for_wikitaxa(wiki_items, popularity_function, verbosity=0, trim_highest=2):
+def calc_popularities_for_wikitaxa(wiki_items, popularity_function, trim_highest=2):
     ''' calculate popularities for wikidata entries, based on page size & page views
     you might want to trim the highest viewing figures, to avoid spikes. trimming 2 months will remove spikes 
     that crosses from the end of one month to the beginning of another
@@ -682,12 +721,13 @@ def calc_popularities_for_wikitaxa(wiki_items, popularity_function, verbosity=0,
             used += 1
         except (StatisticsError, ValueError, KeyError):   #perhaps data is absent, a number is NA or we are trying to take a mean of an empty list - if so, ignore
             pass
-    if verbosity:
-        print(" NB: of {} WikiData taxon entries, {} ({:.2f}%) have popularity measures. mem usage {:.1f} Mb".format(len(wiki_items), used, used/len(wiki_items) * 100, memory_usage_resource()), file=sys.stderr)
+    logger.info(
+        " NB: of {} WikiData taxon entries, {} ({:.2f}%) have popularity measures. mem usage {:.1f} Mb"
+        .format(len(wiki_items), used, used/len(wiki_items) * 100, memory_usage_resource()))
 
 
     
-def sum_popularity_over_tree(tree, OTT_ptrs=None, exclude=[], pop_store='pop', verbosity=0):
+def sum_popularity_over_tree(tree, OTT_ptrs=None, exclude=[], pop_store='pop'):
     """Add popularity indices for branch lengths based on a phylogenetic tree (and return the tree, or the number of root descendants).
     We might want to exclude some names from the popularity metric (e.g. exclude archosaurs, 
     to make sure birds don't gather popularity intended for dinosaurs). This is done by passing an
@@ -717,8 +757,9 @@ def sum_popularity_over_tree(tree, OTT_ptrs=None, exclude=[], pop_store='pop', v
     if not isinstance(tree, Tree):
         tree = Tree.get(file=tree, schema='newick', suppress_edge_lengths=True, preserve_underscores=True, suppress_leaf_node_taxa=True)
     
-    if verbosity:
-        print(" Tree read for phylogenetic popularity calc: mem usage {:.1f} Mb".format(memory_usage_resource()), file=sys.stderr)
+    logger.info(
+        " Tree read for phylogenetic popularity calc: mem usage {:.1f} Mb"
+        .format(memory_usage_resource()))
     
     #put popularity into the pop_store attribute
     for node in tree.preorder_node_iter():
@@ -765,7 +806,7 @@ def sum_popularity_over_tree(tree, OTT_ptrs=None, exclude=[], pop_store='pop', v
                 node.n_pop_ancestors = node._parent_node.n_pop_ancestors            
             if node.label and node.label =='Spermatophyta':
                 node.seedplant = True
-                print("Found plant root", file=sys.stderr)
+                logger.warning("Found plant root")
             else:
                 node.seedplant = node._parent_node.seedplant
     
@@ -800,18 +841,26 @@ if __name__ == "__main__":
     parser.add_argument('--verbosity', '-v', action="count", default=0, help='verbosity: output extra non-essential info: -v=normal. -vv also show entries with no wikipedia page -vvv also show entries with wikidata database IDs that are not present in OTT')
     
     args = parser.parse_args()
-        
+    if args.verbosity <= 0:
+        logging.basicConfig(level=logging.WARN) 
+    elif args.verbosity == 1:
+        logging.basicConfig(level=logging.INFO) 
+    elif args.verbosity == 2:
+        logging.basicConfig(level=logging.DEBUG) 
+    elif args.verbosity > 2:
+        logging.basicConfig(level=logging.EXTREME_DEBUG) #super-verbose output 
+
     sources = ['ncbi','if','worms','irmng','gbif'] #wikidata does not have irmng, but it is useful for other reasons, e.g. to get EoL ids
     OTT_ptrs = {} #this gets filled out
-    source_ptrs = create_from_taxonomy(args.OpenTreeTaxonomy, sources, OTT_ptrs, args.verbosity)
-    wiki_title_ptrs = add_wikidata_info(source_ptrs, args.wikidataDumpFile, args.wikilang, args.verbosity, None)
-    identify_best_wikidata(OTT_ptrs, sources, args.verbosity)
-    add_pagesize_for_titles(wiki_title_ptrs, args.wikipediaSQLDumpFile, args.verbosity)
-    add_pageviews_for_titles(wiki_title_ptrs, args.wikipedia_totals_bz2_pageviews, args.wikilang, args.verbosity)
-    calc_popularities_for_wikitaxa(wiki_title_ptrs.values(), "", args.verbosity)
+    source_ptrs = create_from_taxonomy(args.OpenTreeTaxonomy, sources, OTT_ptrs)
+    wiki_title_ptrs = add_wikidata_info(source_ptrs, args.wikidataDumpFile, args.wikilang, None)
+    identify_best_wikidata(OTT_ptrs, sources)
+    add_pagesize_for_titles(wiki_title_ptrs, args.wikipediaSQLDumpFile)
+    add_pageviews_for_titles(wiki_title_ptrs, args.wikipedia_totals_bz2_pageviews, args.wikilang)
+    calc_popularities_for_wikitaxa(wiki_title_ptrs.values(), "")
     
     if args.OpenTreeFile:
-        sum_popularity_over_tree(OTT_ptrs, args.OpenTreeFile, args.exclude, args.verbosity)
+        sum_popularity_over_tree(OTT_ptrs, args.OpenTreeFile, args.exclude)
         startrows = ["OTT_ID", "PopAncestors", "PopDescendants", "NumAncestors", "NumDescendants", "NumPopAncestors"]
     else:
         startrows = ["OTT_ID"]

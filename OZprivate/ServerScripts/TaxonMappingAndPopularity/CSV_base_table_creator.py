@@ -60,11 +60,13 @@ import argparse
 import inspect
 import random
 import os.path
+import logging
 from collections import OrderedDict, defaultdict
 from time import time
 from math import log
-from warnings import warn
+from warnings import warn #used 
 
+#non-standard python packages
 from dendropy import Node, Tree
 
 #local packages
@@ -87,13 +89,9 @@ For more information, please refer to <http://unlicense.org/>'''
 
 sql_subs_string = '' #  ? for sqlite, %s for mysql
 
-def info(*objs):
-  try:
-    if args.verbose<1:
-        return
-  except:
-    pass;
-  print(*objs, file=sys.stderr)
+logger = logging.getLogger(__name__)
+logging.EXTREME_DEBUG = logging.DEBUG + 1
+logging.addLevelName(logging.EXTREME_DEBUG, "DEBUG++")
 
 def is_unnamed_OTT(OTTid):
     """
@@ -114,7 +112,7 @@ def get_OTT_species(taxonomy_file):
             species_list.add(int(row['uid']))
     return(species_list)
     
-def get_tree_and_OTT_list(tree_filehandle, sources, verbosity=0):
+def get_tree_and_OTT_list(tree_filehandle, sources):
     """
     Takes a base tree and creates objects for each node and leaf, attaching them as 'data' dictionaries
     to each node in the DendroPy tree. Nodes and leaves with an OTT id also have pointers to their data 
@@ -133,7 +131,7 @@ def get_tree_and_OTT_list(tree_filehandle, sources, verbosity=0):
         tree = Tree.get_from_stream(tree_filehandle, schema="newick", preserve_underscores=True, suppress_leaf_node_taxa=True)
     except:
         sys.exit("Problem reading tree from " + treefile.name)
-    info("-> read tree from " + tree_filehandle.name)
+    logger.info("-> read tree from " + tree_filehandle.name)
     
     ott_node = re.compile(r"(.*) ott(\d+)(@\d*)?$") #matches the OTT number
     mrca_ott_node = re.compile(r"(.*) (mrcaott\d+ott\d+)(@\d*)?$") #matches a node with an "mrca" node number (no unique OTT)
@@ -168,17 +166,18 @@ def get_tree_and_OTT_list(tree_filehandle, sources, verbosity=0):
             if node.label[-1]==" ":
                 node.label = node.label[:-1] + "_"
 
-    info("-> extracted {} otts from among {} leaves and nodes".format(len(indexed_by_ott), i))
+    logger.info("-> extracted {} otts from among {} leaves and nodes".format(len(indexed_by_ott), i))
     return tree, indexed_by_ott
 
-def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mapping, verbosity=0):
+def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mapping):
     used=0
     EOL2OTT = {v:k for k,v in source_mapping.items()}
     identifiers_file.seek(0)
+    filesize = os.path.getsize(fileName)
     reader = csv.reader(identifiers_file, escapechar='\\')
     for EOLrow in reader:
         if (reader.line_num % 1000000 == 0):
-            info("-> {} rows read, {} used,  mem usage {:.1f} Mb".format(
+            logger.info("-> {} rows read, {} used,  mem usage {:.1f} Mb".format(
                 reader.line_num, used, OTT_popularity_mapping.memory_usage_resource()))
         provider = int(EOLrow[2])
         if provider in EOL2OTT:
@@ -188,18 +187,17 @@ def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mappin
             if providerid in src:
                 used += 1;
                 src[providerid]['EoL'] = EOLid
-    if verbosity:
-        info(" Matched {} EoL entries in the EoL identifiers file. Mem usage {:.1f} Mb".format(
-            used, OTT_popularity_mapping.memory_usage_resource()))
+    logging.debug(
+        " Matched {} EoL entries in the EoL identifiers file. Mem usage {:.1f} Mb"
+        .format(used, OTT_popularity_mapping.memory_usage_resource()))
 
-def identify_best_EoLdata(OTT_ptrs, sources, verbosity=0):
+def identify_best_EoLdata(OTT_ptrs, sources):
     '''
     Each OTT number may point to several EoL entries, one for the NCBI number, another for the WORMS number, etc etc.
     Hopefully these will be the same entry, but they may not be. If they are different we need to choose the best one
     to use. We take the one with the most sources supporting this entry: if there is a tie, we take the lowest, as recommended by JRice from EoL
     '''
-    if verbosity:
-        info("Finding best EoL matches. mem usage {:.1f} Mb".format(
+    logging.debug("Finding best EoL matches. mem usage {:.1f} Mb".format(
             OTT_popularity_mapping.memory_usage_resource()))
     validOTTs = OTTs_with_EOLmatch = dups = 0
     for OTTid, data in OTT_ptrs.items():
@@ -218,34 +216,33 @@ def identify_best_EoLdata(OTT_ptrs, sources, verbosity=0):
             data['eol'] = None
         else:
             OTTs_with_EOLmatch += 1
-            errstr = None
+            e_str = None
             if len(choose) > 1:
                 #weed out those EOLids with the least support.
-                if verbosity > 1:
-                    errstr = "More than one EoL ID {} for taxon OTT: {}".format(choose, OTTid)
+                e_str = "More than one EoL ID {} for taxon OTT: {}".format(choose, OTTid)
                 dups += 1
                 max_refs = max([len(choose[id]) for id in choose])
                 choose = [EOLid for EOLid in choose if len(choose[EOLid]) == max_refs]
             best = min(choose)
             data['eol'] = best
-            if errstr:
-                info(" {}, chosen {}".format(errstr, best))
-    if verbosity:
-        info(" NB: of {} OpenTree taxa, {} ({:.2f}%) have EoL entries in the EoL identifiers file, and {} have multiple possible EOL ids. Mem usage {:.1f} Mb".format(
+            logging.debug(" {}, chosen {}".format(e_str, best))
+    logging.debug(
+        " NB: of {} OpenTree taxa, {} ({:.2f}%) have EoL entries in the EoL identifiers "
+        "file, and {} have multiple possible EOL ids. Mem usage {:.1f} Mb".format(
             validOTTs, OTTs_with_EOLmatch, OTTs_with_EOLmatch/validOTTs * 100, dups, 
             OTT_popularity_mapping.memory_usage_resource()))
 
-def supplement_from_wikidata(OTT_ptrs, verbosity=0):
+def supplement_from_wikidata(OTT_ptrs):
     """
     If no OTT_ptrs[OTTid]['eol'] exists, but there is an 
         OTT_ptrs[OTTid]['wd']['initial_wiki_item']['EoL'] then put this into 
         OTT_ptrs[OTTid]['eol']
         Similarly for IPNI (although this is currently unpopulated)
     """
-    EOLalready = EOLsupp = IPNIsupp = tot = 0
+    EOLbase = EOLsupp = IPNIsupp = tot = 0
     for OTTid, data in OTT_ptrs.items():
         if is_unnamed_OTT(OTTid):
-            info(" unlabelled node (OTT: {}) when iterating through OTT_ptrs".format(OTTid))
+            logger.info(" unlabelled node (OTT: {}) when iterating through OTT_ptrs".format(OTTid))
             continue
         tot += 1
         if data.get('eol') is None:
@@ -255,23 +252,21 @@ def supplement_from_wikidata(OTT_ptrs, verbosity=0):
             except:
                 pass
         else:
-            EOLalready += 1
+            EOLbase += 1
         if data.get('ipni') is None:
             try:
                 data['ipni'] = int(data['wd']['initial_wiki_item']['IPNI'])
                 IPNIsupp += 1
             except:
                 pass
-    if verbosity:
-        info("Out of {} OTT taxa, {} ({:.2f}%) already have EOL ids from the EOL file. Supplementing these with {} EOL ids from wikidata gives a coverage of {:.1f} %.".format(
-            tot, 
-            EOLalready, 
-            EOLalready/tot * 100.0, 
-            EOLsupp, (EOLalready + EOLsupp)/tot * 100.0))
-        info("{} IPNI identifiers added via wikidata".format(IPNIsupp))
+    logging.debug(
+        "Out of {} OTT taxa, {} ({:.2f}%) already have EOL ids from the EOL file."
+        " Supplementing these with {} EOL ids from wikidata gives {:.1f}% coverage."
+        .format(tot, EOLbase, EOLbase/tot * 100.0, EOLsupp, (EOLbase+EOLsupp)/tot * 100))
+    logging.debug("{} IPNI identifiers added via wikidata".format(IPNIsupp))
 
 
-def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
+def populate_iucn(OTT_ptrs, identifiers_file):
     """
     Port the IUCN number from both EoL and Wikidata, and keep both if there is a conflict
     """
@@ -290,7 +285,7 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
     reader = csv.reader(identifiers_file, escapechar='\\')
     for EOLrow in reader:
         if (reader.line_num % 1000000 == 0):
-            info("{} rows read, {} used,  mem usage {:.1f} Mb".format(
+            logger.info("{} rows read, {} used,  mem usage {:.1f} Mb".format(
                 reader.line_num, used, OTT_popularity_mapping.memory_usage_resource()))
         if int(EOLrow[2]) == iucn_num and EOLrow[1]: #there are lots of IUCN rows with no IUCN number, so check EOLrow[1]!= "" and != None
             try:
@@ -302,9 +297,9 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
             except ValueError:
                 warn(" Cannot convert IUCN ID {} to integer on line {} of {}.".format(EOLrow[1], reader.line_num, identifiers_file.name), file=sys.stderr);
 
-    if verbosity:
-        info(" Matched {} IUCN entries in the EoL identifiers file. Mem usage {:.1f} Mb".format(
-            used, OTT_popularity_mapping.memory_usage_resource()))
+    logging.debug(
+        " Matched {} IUCN entries in the EoL identifiers file. Mem usage {:.1f} Mb"
+        .format(used, OTT_popularity_mapping.memory_usage_resource()))
 
     #now go through and double-check against IUCN stored on wikidata
     for OTTid, data in OTT_ptrs.items():
@@ -313,15 +308,16 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
             if 'iucn' in data:
                 if wd_iucn != data['iucn']:
                     data['iucn'] = "|".join([data['iucn'], wd_iucn])
-                    if verbosity:
-                        warn(" conflicting IUCN IDs for OTT {}: EoL = {} (via http://eol.org/pages/{}), wikidata = {} (via http://http://wikidata.org/wiki/Q{}).".format(OTTid, data['iucn'], data['eol'], wd_iucn, data['wd']['initial_wiki_item']['Q']));
+                    logging.debug(
+                        " conflicting IUCN IDs for OTT {}: EoL = {} (via http://eol.org/pages/{}), wikidata = {} (via http://http://wikidata.org/wiki/Q{})."
+                        .format(OTTid, data['iucn'], data['eol'], wd_iucn, 
+                            data['wd']['initial_wiki_item']['Q']))
             else:
                 data['iucn'] = wd_iucn
                 used += 1
         except:
             pass #we can't find a wd iucn. Oh well...
-    if verbosity:
-        info("Increased IUCN coverage to {} taxa using wikidata".format(used))
+    logging.debug("Increased IUCN coverage to {} taxa using wikidata".format(used))
 
 
 def construct_wiki_info(OTT_ptrs):
@@ -365,15 +361,14 @@ def popularity_function(
         return ((sum_of_all_ancestor_popularities + sum_of_all_descendant_popularities)/
             log(number_of_ancestors + number_of_descendants))
     
-def inherit_popularity(tree, exclude=[], verbosity=0):
+def inherit_popularity(tree, exclude=[]):
             
     #NB: we must percolate popularities through the tree before deleting monotomies, since these often contain info
     #this should allocate popularities even for nodes that have been created by polytomy resolving.
     
     # We should also check that there are not multuple uses of the same Qid (https://github.com/OneZoom/OZtree/issues/132)
     
-    OTT_popularity_mapping.sum_popularity_over_tree(
-        tree, exclude=exclude, verbosity=verbosity)
+    OTT_popularity_mapping.sum_popularity_over_tree(tree, exclude=exclude)
     #now apply the popularity function
     Qids = set()
     for node in tree.preorder_node_iter():
@@ -406,8 +401,8 @@ def resolve_polytomies_add_popularity(tree, seed):
     prev_num_nodes = sum(1 for i in tree.postorder_node_iter())
     random.seed(seed) #so we get the same bifurcations each time
     tree.resolve_polytomies(rng=random)
-    info(" {} extra nodes created".format(
-        sum(1 for i in tree.postorder_node_iter()) - prev_num_nodes))
+    logger.info(" {} extra nodes created"
+        .format(sum(1 for i in tree.postorder_node_iter()) - prev_num_nodes))
     for node in tree.postorder_node_iter():
         if not hasattr(node, 'data'):
             #this is a new node - it should always have 2 children
@@ -432,7 +427,7 @@ def resolve_polytomies_add_popularity(tree, seed):
                 #probably popularity values undefined for one of the children
                 pass
 
-def create_leaf_popularity_rankings(tree, verbosity=0):
+def create_leaf_popularity_rankings(tree):
     """
     Make a rank of all existing leaves by phylogenetic popularity
     Must be run once all invalid tips etc have been removed.
@@ -454,13 +449,13 @@ def create_leaf_popularity_rankings(tree, verbosity=0):
         pass
 
 
-def write_popularity_tree(tree, outdir, filename, version, verbosity=0):
+def write_popularity_tree(tree, outdir, filename, version):
     Node.write_pop_newick = write_pop_newick
     with open(os.path.join(outdir, "{}_{}.nwk".format(filename, version)), 'w+') as popularity_newick:
         tree.seed_node.write_pop_newick(popularity_newick)
 
 
-def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity=0, save_sql=True):
+def simplify_tree(tree, taxonomy_file, seed):
     """
     We should now have leaf entries attached to each node in the tree like
     data = {
@@ -491,9 +486,8 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity
      
     Removes non-species from tips, outputs simplified versions.
     """
-    from dendropy_extras import prune_children_of_otts, prune_non_species, set_node_ages, \
-        set_real_parent_nodes, write_preorder_ages, write_preorder_to_csv, write_brief_newick, \
-        remove_unifurcations_keeping_higher_taxa
+    from dendropy_extras import prune_children_of_otts, prune_non_species, \
+        set_node_ages, set_real_parent_nodes, remove_unifurcations_keeping_higher_taxa
     #monkey patch the existing dendropy objects
     Tree.prune_children_of_otts = prune_children_of_otts
     Tree.prune_non_species = prune_non_species
@@ -501,44 +495,53 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity
     Tree.set_real_parent_nodes = set_real_parent_nodes
     Tree.write_preorder_ages = write_preorder_ages
     Tree.remove_unifurcations_keeping_higher_taxa = remove_unifurcations_keeping_higher_taxa
-    Tree.write_preorder_to_csv = write_preorder_to_csv
     
     Tree.create_leaf_popularity_rankings = create_leaf_popularity_rankings #not defined in dendropy_extras, but in this file
     Tree.resolve_polytomies_add_popularity = resolve_polytomies_add_popularity
-    Node.write_brief_newick = write_brief_newick
     
-    n = len(tree.prune_children_of_otts(get_OTT_species(taxonomy_file), verbosity=verbosity))
-    info("-> removed all children of {} nodes (nodes labeled as 'species' in '{}')".format(n, taxonomy_file.name))
+    n = len(tree.prune_children_of_otts(get_OTT_species(taxonomy_file)))
+    logger.info(
+        "-> removed all children of {} nodes (nodes labeled as 'species' in '{}')"
+        .format(n, taxonomy_file.name))
     
     bad_sp =['cf.', 'aff.', 'subsp.', 'environmental sample'] #species names containing these (even initially) are discarded
     bad_sp += [' cv.', ' sp.'] #species names containing these within the name are discarded: 
-    n = {k:len(v) for k,v in tree.prune_non_species(bad_matches = bad_sp, verbosity=verbosity).items()}
-    info("-> removed {} blank leaves, {} with no space in the name, and {} containing {} (assumed bad tips)".format(n['unlabelled'],n['no_space'],n['bad_match'], bad_sp))
+    n = {k:len(v) for k,v in tree.prune_non_species(bad_matches = bad_sp).items()}
+    logger.info(
+        "-> removed {} blank leaves, {} with no space in the name, and {} containing {} "
+        "(assumed bad tips)".format(n['unlabelled'],n['no_space'],n['bad_match'], bad_sp))
     
     a, n = tree.set_node_ages()
-    info("-> set ages on {} nodes and leaves, and removed {} extinction props".format(a,n))
+    logger.info(
+        "-> set ages on {} nodes and leaves, and removed {} extinction props"
+        .format(a,n))
     
-    info("-> removing unifurcations")
-    n_deleted_nodes = tree.remove_unifurcations_keeping_higher_taxa(verbosity=verbosity)
+    logger.info("-> removing unifurcations")
+    n_deleted_nodes = tree.remove_unifurcations_keeping_higher_taxa()
     #see https://github.com/jeetsukumaran/DendroPy/issues/75
-    info(" (removed {} unifurcations)".format(n_deleted_nodes))
+    logger.info(" (removed {} unifurcations)".format(n_deleted_nodes))
     
     
-    info("-> breaking polytomies at random with seed={}".format(seed))
+    logger.info("-> breaking polytomies at random with seed={}".format(seed))
     tree.resolve_polytomies_add_popularity(seed)
 
     
     #NB: we shouldn't need to (re)set popularity or ages, since deleting nodes 
     #does not affect these, and both have been calculated *after* new
     #nodes were created by resolve_polytomies. 
-    info("-> setting real parents and ranking leaf popularity")
+    logger.info("-> setting real parents and ranking leaf popularity")
     tree.set_real_parent_nodes()
     tree.create_leaf_popularity_rankings()
     
-    info("-> ladderizing tree (groups with fewer leaves first)")
+    logger.info("-> ladderizing tree (groups with fewer leaves first)")
     tree.ladderize(ascending=True) #warning: ladderize ascending is needed for the short OZ newick-like form
-    
-    info("-> writing tree, dates, and csv to files")
+
+
+def output_treefiles(tree, outdir, version, save_sql=True):
+    from dendropy_extras import write_preorder_ages, write_preorder_to_csv, write_brief_newick
+    Node.write_brief_newick = write_brief_newick
+    Tree.write_preorder_to_csv = write_preorder_to_csv
+    logger.info("-> writing tree, dates, and csv to files")
     with open(os.path.join(outdir, "ordered_tree_{}.nwk".format(version)), 'w+') as condensed_newick, \
          open(os.path.join(outdir, "ordered_tree_{}.poly".format(version)), 'w+') as condensed_poly, \
          open(os.path.join(outdir, "ordered_dates_{}.js".format(version)), 'w+') as json_dates, \
@@ -594,7 +597,7 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity
         from shutil import copyfile
         from subprocess import call
         #make copies of the csv files that can be imported into mySQL (has \\N for null values)
-        info("-> saving copies of the files for reading into mySQL: read them in using:")
+        print("-> saving copies of the files for reading into mySQL: read them in using:")
         for tab in ['_leaves','_nodes']:
             fn = os.path.join(outdir, "ordered"+tab + "_{}".format(version) +".csv")
             sqlfile = fn+'.mySQL'
@@ -607,7 +610,7 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, verbosity
 
 
 def main():
-    random_seed_addition = 1234
+    r_seed = 1234
     parser = argparse.ArgumentParser(description='Convert a newick file with OpenTree labels into refined trees and CSV tables, while mapping Open Tree of Life Taxonomy IDs to other ids (including EoL & Wikidata)')
     parser.add_argument('Tree', type=argparse.FileType('r', encoding='UTF-8'), 
         help='The newick format tree to use')
@@ -622,7 +625,7 @@ def main():
     parser.add_argument('wikipedia_totals_bz2_pageviews', nargs='*', type=argparse.FileType('rb'),
         help='One or more bzipped "totals" pageview count files, from https://dumps.wikimedia.org/other/pagecounts-ez/merged/ (e.g. pagecounts-2016-01-views-ge-5-totals.bz2, or pagecounts*totals.bz2)')
     parser.add_argument('--popularity_file', '-p', nargs="?", const=None, default="",
-        help="Save popularity as branch lengths in a tree under this filename. If no filename given, skip the tedious process of calculating popularity altogether, for test purposes only")
+        help="Use or save popularity as branch lengths in a tree under this filename. If the 'popularity_file' switch is used but no filename provided, we skip the tedious process of calculating popularity altogether (useful for testing). If the 'popularity_file' switch is not used, we calculate popularity but don't save an intermediate file. If the ")
     parser.add_argument('--exclude', '-x', nargs='*', default=[], 
         help='(Optional) a number of taxa to exclude from calculation of phylogenetic popularities, such as Dinosauria_ott90215, Archosauria_ott335588')
     parser.add_argument('--output_location', '-o', default="output", 
@@ -639,6 +642,15 @@ def main():
         help='verbosity: output extra non-essential info')
 
     args = parser.parse_args()
+
+    if args.verbosity <= 0:
+        logging.basicConfig(level=logging.WARN) 
+    elif args.verbosity == 1:
+        logging.basicConfig(level=logging.INFO) 
+    elif args.verbosity == 2:
+        logging.basicConfig(level=logging.DEBUG) 
+    elif args.verbosity > 2:
+        logging.basicConfig(level=logging.EXTREME_DEBUG) #super-verbose output 
         
     #from http://eol.org/api/docs/provider_hierarchies
     #these need to be an ordered dict with the first being the preferred id used when getting a corresponding wikidata ID
@@ -649,54 +661,58 @@ def main():
     sources = int_sources.copy()
     sources.update(nonint_sources)
     
-    info("Creating tree structure")
-    tree, OTT_ptrs = get_tree_and_OTT_list(args.Tree, sources, args.verbosity)
+    logger.info("Creating tree structure")
+    tree, OTT_ptrs = get_tree_and_OTT_list(args.Tree, sources)
     
-    info("Adding source IDs")
+    logger.info("Adding source IDs")
     source_ptrs = OTT_popularity_mapping.create_from_taxonomy(
-        args.OpenTreeTaxonomy, sources, OTT_ptrs, args.verbosity, args.extra_source_file)
+        args.OpenTreeTaxonomy, sources, OTT_ptrs, args.extra_source_file)
     
-    info("Adding EOL IDs from EOL csv file")
-    add_eol_IDs_from_EOL_table_dump(source_ptrs, args.EOLidentifiers, sources, args.verbosity)
-    identify_best_EoLdata(OTT_ptrs, sources, args.verbosity)
+    logger.info("Adding EOL IDs from EOL csv file")
+    add_eol_IDs_from_EOL_table_dump(source_ptrs, args.EOLidentifiers, sources)
+    identify_best_EoLdata(OTT_ptrs, sources)
     
     if args.wikidataDumpFile:
-        info("Adding wikidata info")
+        logger.info("Adding wikidata info")
         wiki_title_ptrs = OTT_popularity_mapping.add_wikidata_info(
-            source_ptrs, args.wikidataDumpFile, args.wikilang, args.verbosity)
+            source_ptrs, args.wikidataDumpFile, args.wikilang)
         
-        OTT_popularity_mapping.identify_best_wikidata(OTT_ptrs, sources.keys(), args.verbosity)
+        OTT_popularity_mapping.identify_best_wikidata(OTT_ptrs, sources.keys())
         construct_wiki_info(OTT_ptrs)
         
-        info("Supplementing ids (EOL/IPNI) with ones from wikidata")
-        supplement_from_wikidata(OTT_ptrs, args.verbosity)
+        logger.info("Supplementing ids (EOL/IPNI) with ones from wikidata")
+        supplement_from_wikidata(OTT_ptrs)
     else:
-        info("No wikidataDumpFile given, so skipping wiki mapping")
+        logger.info("No wikidataDumpFile given, so skipping wiki mapping")
         
-    info("Populating IUCN IDs using EOL csv file (or if absent, wikidata)")
-    populate_iucn(OTT_ptrs, args.EOLidentifiers, args.verbosity)
+    logger.info("Populating IUCN IDs using EOL csv file (or if absent, wikidata)")
+    populate_iucn(OTT_ptrs, args.EOLidentifiers)
     
     
     if args.popularity_file is not None and args.wikipediaSQLDumpFile is not None and args.wikipedia_totals_bz2_pageviews:
         
-        info("Adding popularity measures")    
+        if args.popularity_file and os.path.isfile(args.popularity_file):
+            info
+        logger.info("Adding popularity measures")    
         OTT_popularity_mapping.add_pagesize_for_titles(
-            wiki_title_ptrs, args.wikipediaSQLDumpFile, args.verbosity)
+            wiki_title_ptrs, args.wikipediaSQLDumpFile)
         OTT_popularity_mapping.add_pageviews_for_titles(
-            wiki_title_ptrs, args.wikipedia_totals_bz2_pageviews, args.wikilang, args.verbosity)
+            wiki_title_ptrs, args.wikipedia_totals_bz2_pageviews, args.wikilang)
         
-        info("Calculating base popularity measures")    
-        OTT_popularity_mapping.calc_popularities_for_wikitaxa(
-            wiki_title_ptrs.values(), "", args.verbosity)
+        logger.info("Calculating base popularity measures")    
+        OTT_popularity_mapping.calc_popularities_for_wikitaxa(wiki_title_ptrs.values(), 
+            "Unused Popularity Function Here")
+        
+        #If we save the tree with branch lengths as popularities, we can recalculate the 
         
         #Here we might want to multiply up some taxa, e.g. plants, see https://github.com/OneZoom/OZtree/issues/130
         
         info("Percolating popularity through the tree")    
-        inherit_popularity(tree, args.exclude, args.verbosity)    
+        inherit_popularity(tree, args.exclude)    
     
         if args.popularity_file:
             write_popularity_tree(
-                tree, args.output_location, args.popularity_file, args.version, args.verbosity)
+                tree, args.output_location, args.popularity_file, args.version)
         #NB to examine a taxon for popularity contributions here, you could try
         for focal_label in args.info_on_focal_labels:
             focal_taxon = focal_label.replace("_", " ")
@@ -715,11 +731,9 @@ def main():
              if n.pop_store:
                print("Ancestors: {} = {:.2f}".format(n.label, n.pop_store))
     
-    info("Writing out results to {}/xxx".format(args.output_location))
-    output_simplified_tree(
-        tree, args.OpenTreeTaxonomy, args.output_location, args.version, 
-        random_seed_addition, args.verbosity)
-        
+    logger.info("Writing out results to {}/xxx".format(args.output_location))
+    simplify_tree(tree, args.OpenTreeTaxonomy, r_seed)
+    output_treefiles(tree, args.output_location, args.version)
 
 if __name__ == "__main__":
     main()
