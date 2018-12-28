@@ -173,7 +173,7 @@ def get_tree_and_OTT_list(tree_filehandle, sources):
         enumerate(tree.preorder_node_iter()),
         desc="Parsing node names",
         file=sys.stdout,
-        total=rough_n_nodes:
+        total=rough_n_nodes):
         node.data = {'parent':node.parent_node or None}
         if node.label:
             node.label = node.label.replace("_"," ")
