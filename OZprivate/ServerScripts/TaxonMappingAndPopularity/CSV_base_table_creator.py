@@ -67,7 +67,7 @@ from math import log
 
 #non-standard python packages
 from dendropy import Node, Tree
-import tqdm
+from tqdm import tqdm
 
 #local packages
 from dendropy_extras import write_pop_newick
@@ -146,8 +146,10 @@ def get_tree_and_OTT_list(tree_filehandle, sources):
     
     ott_node = re.compile(r"(.*) ott(\d+)(@\d*)?$") #matches the OTT number
     mrca_ott_node = re.compile(r"(.*) (mrcaott\d+ott\d+)(@\d*)?$") #matches a node with an "mrca" node number (no unique OTT)
-    for i, node in tqdm.tqdm(
-        enumerate(tree.preorder_node_iter()), total=rawgencount(tree_filehandle.name, b')')):
+    for i, node in tqdm(
+        enumerate(tree.preorder_node_iter()),
+        file=sys.stdout,
+        total=rawgencount(tree_filehandle.name, b')')):
         node.data = {'parent':node.parent_node or None}
         if node.label:
             node.label = node.label.replace("_"," ")
@@ -198,7 +200,7 @@ def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mappin
     EOL2OTT = {v:k for k,v in source_mapping.items()}
     identifiers_file.seek(0)
     reader = csv.reader(identifiers_file, escapechar='\\')
-    for EOLrow in tqdm.tqdm(reader, total=rawgencount(identifiers_file.name)):
+    for EOLrow in tqdm(reader, file=sys.stdout, total=rawgencount(identifiers_file.name)):
         if (reader.line_num % 1000000 == 0):
             logger.info("-> {} rows read, {} used,  mem usage {:.1f} Mb".format(
                 reader.line_num, used, OTT_popularity_mapping.memory_usage_resource()))
