@@ -64,7 +64,6 @@ import logging
 from collections import OrderedDict, defaultdict
 from time import time
 from math import log
-from warnings import warn #used 
 
 #non-standard python packages
 from dendropy import Node, Tree
@@ -142,7 +141,12 @@ def get_tree_and_OTT_list(tree_filehandle, sources):
             m = ott_node.search(node.label)
             if m is not None:
                 if m.group(3):
-                    warn("Node has an @ sign at the end ({}), meaning it has probably not been substituted by an OpenTree equivalent. You may want to provide an alternative subtree from this node downwards, as otherwise it will probably be deleted from the main tree.".format(node.label))
+                    logger.warning(
+                        "Node has an @ sign at the end ({}), meaning it has probably not"
+                        " been substituted by an OpenTree equivalent. You may want to"
+                        " provide an alternative subtree from this node downwards, as"
+                        " otherwise it will probably be deleted from the main tree."
+                        .format(node.label))
                 node.label = m.group(1)
                 node.data['ott'] = int(m.group(2))
                 indexed_by_ott[node.data['ott']] = node.data
@@ -151,13 +155,20 @@ def get_tree_and_OTT_list(tree_filehandle, sources):
                 m = mrca_ott_node.search(node.label)
                 if m is not None:
                     if m.group(3):
-                        warn("Node has an @ sign at the end ({}), meaning it has probably not been substituted by an OpenTree equivalent. You may want to provide an alternative subtree from this node downwards, as otherwise it will probably be deleted from the main tree.".format(node.label))
+                        logger.warning(
+                            "Node has an @ sign at the end ({}), meaning it has probably"
+                            " not been substituted by an OpenTree equivalent. You may"
+                            " want to provide an alternative subtree from this node"
+                            " downwards, as otherwise it will probably be deleted from the main tree."
+                            .format(node.label))
                     node.label = m.group(1)
                     #this is an 'mrca' node, so we want to save sources but *not* save the ott number in node.data
                     indexed_by_ott[m.group(2)] = node.data
                     node.data['sources']={k:None for k in sources}
                 elif node.is_leaf():
-                    warn("Leaf without an OTT id: '{}'. This will not be associated with any other data".format(node.label))
+                    logger.warning(
+                        "Leaf without an OTT id: '{}'. This will not be associated with any other data"
+                        .format(node.label))
             #finally, put underscores at the start or the end of the new label back
             #as these denote "fake" names that are hidden and only used for mapping
             #we could keep them as spaces, but leading/trailing underscores are easier to see by eye
@@ -187,7 +198,7 @@ def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mappin
             if providerid in src:
                 used += 1;
                 src[providerid]['EoL'] = EOLid
-    logging.debug(
+    logger.debug(
         " Matched {} EoL entries in the EoL identifiers file. Mem usage {:.1f} Mb"
         .format(used, OTT_popularity_mapping.memory_usage_resource()))
 
@@ -197,7 +208,7 @@ def identify_best_EoLdata(OTT_ptrs, sources):
     Hopefully these will be the same entry, but they may not be. If they are different we need to choose the best one
     to use. We take the one with the most sources supporting this entry: if there is a tie, we take the lowest, as recommended by JRice from EoL
     '''
-    logging.debug("Finding best EoL matches. mem usage {:.1f} Mb".format(
+    logger.debug("Finding best EoL matches. mem usage {:.1f} Mb".format(
             OTT_popularity_mapping.memory_usage_resource()))
     validOTTs = OTTs_with_EOLmatch = dups = 0
     for OTTid, data in OTT_ptrs.items():
@@ -225,8 +236,8 @@ def identify_best_EoLdata(OTT_ptrs, sources):
                 choose = [EOLid for EOLid in choose if len(choose[EOLid]) == max_refs]
             best = min(choose)
             data['eol'] = best
-            logging.debug(" {}, chosen {}".format(e_str, best))
-    logging.debug(
+            logger.debug(" {}, chosen {}".format(e_str, best))
+    logger.debug(
         " NB: of {} OpenTree taxa, {} ({:.2f}%) have EoL entries in the EoL identifiers "
         "file, and {} have multiple possible EOL ids. Mem usage {:.1f} Mb".format(
             validOTTs, OTTs_with_EOLmatch, OTTs_with_EOLmatch/validOTTs * 100, dups, 
@@ -259,11 +270,11 @@ def supplement_from_wikidata(OTT_ptrs):
                 IPNIsupp += 1
             except:
                 pass
-    logging.debug(
+    logger.debug(
         "Out of {} OTT taxa, {} ({:.2f}%) already have EOL ids from the EOL file."
         " Supplementing these with {} EOL ids from wikidata gives {:.1f}% coverage."
         .format(tot, EOLbase, EOLbase/tot * 100.0, EOLsupp, (EOLbase+EOLsupp)/tot * 100))
-    logging.debug("{} IPNI identifiers added via wikidata".format(IPNIsupp))
+    logger.info.debug("{} IPNI identifiers added via wikidata".format(IPNIsupp))
 
 
 def populate_iucn(OTT_ptrs, identifiers_file):
@@ -295,9 +306,11 @@ def populate_iucn(OTT_ptrs, identifiers_file):
             except LookupError:
                 pass #no equivalent eol id in eol_mapping
             except ValueError:
-                warn(" Cannot convert IUCN ID {} to integer on line {} of {}.".format(EOLrow[1], reader.line_num, identifiers_file.name), file=sys.stderr);
+                logger.warning(
+                    " Cannot convert IUCN ID {} to integer on line {} of {}."
+                    .format(EOLrow[1], reader.line_num, identifiers_file.name))
 
-    logging.debug(
+    logger.debug(
         " Matched {} IUCN entries in the EoL identifiers file. Mem usage {:.1f} Mb"
         .format(used, OTT_popularity_mapping.memory_usage_resource()))
 
@@ -308,7 +321,7 @@ def populate_iucn(OTT_ptrs, identifiers_file):
             if 'iucn' in data:
                 if wd_iucn != data['iucn']:
                     data['iucn'] = "|".join([data['iucn'], wd_iucn])
-                    logging.debug(
+                    logger.debug(
                         " conflicting IUCN IDs for OTT {}: EoL = {} (via http://eol.org/pages/{}), wikidata = {} (via http://http://wikidata.org/wiki/Q{})."
                         .format(OTTid, data['iucn'], data['eol'], wd_iucn, 
                             data['wd']['initial_wiki_item']['Q']))
@@ -317,7 +330,7 @@ def populate_iucn(OTT_ptrs, identifiers_file):
                 used += 1
         except:
             pass #we can't find a wd iucn. Oh well...
-    logging.debug("Increased IUCN coverage to {} taxa using wikidata".format(used))
+    logger.debug("Increased IUCN coverage to {} taxa using wikidata".format(used))
 
 
 def construct_wiki_info(OTT_ptrs):
@@ -375,7 +388,7 @@ def inherit_popularity(tree, exclude=[]):
         try:
             Q = node.data['wd']['final_wiki_item']['Q']
             if Q in Qids:
-                warn("duplicate wikidata Qids used (Q{})"
+                logger.warning("duplicate wikidata Qids used (Q{})"
                     "- this will cause popularity double-counting for OTT {}"
                     .format(Q, node.data['ott']))
             else:
