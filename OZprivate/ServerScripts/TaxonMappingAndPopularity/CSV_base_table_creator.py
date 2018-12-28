@@ -166,11 +166,14 @@ def get_tree_and_OTT_list(tree_filehandle, sources):
     
     ott_node = re.compile(r"(.*) ott(\d+)(@\d*)?$") #matches the OTT number
     mrca_ott_node = re.compile(r"(.*) (mrcaott\d+ott\d+)(@\d*)?$") #matches a node with an "mrca" node number (no unique OTT)
+    rough_n_nodes = rawgencount(tree_filehandle.name, b',') + \
+        rawgencount(tree_filehandle.name, b')') #rough number is close braces \
+        # (for internal nodes plus last leaf in clade) plus commas for remaining leaves
     for i, node in tqdm(
         enumerate(tree.preorder_node_iter()),
         desc="Parsing node names",
         file=sys.stdout,
-        total=rawgencount(tree_filehandle.name, b')')):
+        total=rough_n_nodes:
         node.data = {'parent':node.parent_node or None}
         if node.label:
             node.label = node.label.replace("_"," ")
