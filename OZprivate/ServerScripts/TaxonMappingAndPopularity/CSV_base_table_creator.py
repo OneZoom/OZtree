@@ -54,12 +54,13 @@ Populating IUCN IDs using EOL csv file (or if absent, wikidata)
 import sys
 import csv
 import re
+import io
 import gzip
 import json
 import argparse
 import inspect
 import random
-import os.path
+import os
 import logging
 from collections import OrderedDict, defaultdict
 from time import time
@@ -104,6 +105,21 @@ def rawgencount(filename, byte_to_count=b'\n'):
     f_gen = _make_gen(f.raw.read)
     return sum( buf.count(byte_to_count) for buf in f_gen )
 
+class ProgressFileWrapper(io.TextIOBase):
+    def __init__(self, file, callback):
+        self.file = file
+        self.callback = callback
+    def read(self, size=-1):
+        buf = self.file.read(size)
+        if buf:
+            self.callback(len(buf))
+        return buf
+    def readline(self, size=-1):
+        buf = self.file.readline(size)
+        if buf:
+            self.callback(len(buf))
+        return buf
+
 def is_unnamed_OTT(OTTid):
     """
     TO DO: I'm not sure when we use unnamed nodes with an OTT, so unsure if this is needed
@@ -139,7 +155,11 @@ def get_tree_and_OTT_list(tree_filehandle, sources):
     indexed_by_ott={}
     
     try:
-        tree = Tree.get_from_stream(tree_filehandle, schema="newick", preserve_underscores=True, suppress_leaf_node_taxa=True)
+        size = os.stat(tree_filehandle.fileno()).st_size
+        with tqdm(total=size, desc="Reading tree") as progress:
+            wrapper = ProgressFileWrapper(stream, progress.update)
+            tree = Tree.get_from_stream(tree_filehandle, schema="newick",
+                preserve_underscores=True, suppress_leaf_node_taxa=True)
     except:
         sys.exit("Problem reading tree from " + treefile.name)
     logger.info("-> read tree from " + tree_filehandle.name)
@@ -148,6 +168,7 @@ def get_tree_and_OTT_list(tree_filehandle, sources):
     mrca_ott_node = re.compile(r"(.*) (mrcaott\d+ott\d+)(@\d*)?$") #matches a node with an "mrca" node number (no unique OTT)
     for i, node in tqdm(
         enumerate(tree.preorder_node_iter()),
+        desc="Parsing node names",
         file=sys.stdout,
         total=rawgencount(tree_filehandle.name, b')')):
         node.data = {'parent':node.parent_node or None}
