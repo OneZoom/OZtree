@@ -8,9 +8,10 @@ These all assume that the tree has been loaded with suppress_leaf_node_taxa=True
 # To be patched into the Tree object
 #
 import itertools
+import logging
+logger = logging.getLogger(__name__)
 
-def prune_children_of_otts(self, ott_species_list, verbosity=0):
-    from warnings import warn
+def prune_children_of_otts(self, ott_species_list):
     to_trim = set()
     for nd in self.postorder_internal_node_iter():
         try:
@@ -24,7 +25,9 @@ def prune_children_of_otts(self, ott_species_list, verbosity=0):
                 #check for species within this group
                 for sub_nd in nd.postorder_internal_node_iter():
                     if sub_nd in to_trim:
-                        warn("Species {} is contained within another species {}: not trimming it".format(sub_nd.label, nd.label))
+                        logger.warning(
+                            "Species {} is contained within another species {}: not trimming it"
+                            .format(sub_nd.label, nd.label))
                         trim_me = False
                 if trim_me:
                     to_trim.add(nd)
@@ -38,8 +41,7 @@ def prune_children_of_otts(self, ott_species_list, verbosity=0):
 def prune_non_species(self,
             recursive=True,
             bad_matches = [], #any strings in here indicate non-species (e.g. ' cf.')
-            update_bipartitions=False,
-            verbosity=0):
+            update_bipartitions=False):
         """
         Recursive=true means remove tips (which may create more tips) and keep going until non left to prune
         Removes all terminal nodes whose name is '' or does not contain a space. Extinction props should be 
@@ -58,12 +60,14 @@ def prune_non_species(self,
                     else:
                         nodes_to_remove['no_space'].append(nd)
                 elif ' ' not in nd.label: #number of spaces is 0: a leaf, but probably not a species. Also catches label==''
-                    if verbosity:
-                        print("Removing '{}' since it does not seem to be a species (it does not contain a space)".format(nd.label))
+                    logger.info(
+                        "Removing '{}' since it does not seem to be a species (it does not contain a space)"
+                        .format(nd.label))
                     nodes_to_remove['unlabelled'].append(nd)
                 elif any(match in nd.label for match in bad_matches):
-                    if verbosity:
-                        print("Removing '{}' since it contains one of {}".format(nd.label, bad_matches))
+                    logger.info(
+                        "Removing '{}' since it contains one of {}"
+                        .format(nd.label, bad_matches))
                     nodes_to_remove['bad_match'].append(nd)
             for k, nodes in nodes_to_remove.items():
                 for nd in nodes:
@@ -94,7 +98,6 @@ def set_node_ages(self):
     #Percolate age up the tree (go from tips upwards, assuming all tips at 0Ma)
     #Where children disagree on the age of their parent, take the larger number
     tot_ages=0
-    from warnings import warn
     for node in self.postorder_node_iter():
         if node.is_leaf():
             node.age = 0
@@ -102,7 +105,7 @@ def set_node_ages(self):
             l = node.edge.length
             if getattr(node,'age',None) is not None and l is not None:
                 if l<0:
-                    warn("length <0 for {}".format(node.label))
+                    logger.warning("length <0 for {}".format(node.label))
                 l=0 if l<0 else l
                 if getattr(node.parent_node,'age', None) is None:
                     node.parent_node.age = node.age + l
@@ -111,14 +114,16 @@ def set_node_ages(self):
                     if node.parent_node.age < (node.age + l):
                         node.parent_node.age = node.age + l
                     if (abs(node.parent_node.age - (node.age + l)) >= 1):
-                        warn("Age of node '{}' (child of {}) is {} via one route, but has a child node '{}' of age {}, attached by a branch of length {}, which sums to {}.".format(
-                             node.parent_node.label,
-                             [n.label for n in node.ancestor_iter() if n.label][:3],
-                             node.parent_node.age,
-                             node.label,
-                             node.age,
-                             l,
-                             node.age+l))
+                        logger.warning(
+                            "Age of node '{}' (child of {}) is {} via one route, but has a child node '{}' of age {}, attached by a branch of length {}, which sums to {}."
+                            .format(
+                                 node.parent_node.label,
+                                 [n.label for n in node.ancestor_iter() if n.label][:3],
+                                 node.parent_node.age,
+                                 node.label,
+                                 node.age,
+                                 l,
+                                 node.age+l))
 
     #For newly fixed ages, now percolate them down the tree if we know the age of a deeper node
     for node in self.preorder_node_iter():
@@ -161,7 +166,7 @@ def is_on_unifurcation_path(node):
     return node.num_child_nodes()==1 or \
         (node.parent_node and node.parent_node.num_child_nodes() == 1)
 
-def remove_unifurcations_keeping_higher_taxa(self, verbosity=0):
+def remove_unifurcations_keeping_higher_taxa(self):
     """
     Does a more sophisticated pass than the remove_unifurcations flag in Dendropy4:
     * If this is a unifurcation ending in a leaf, the lowest level (i.e. species) is 
@@ -187,9 +192,9 @@ def remove_unifurcations_keeping_higher_taxa(self, verbosity=0):
                 if sequential_unary_nodes[0].num_child_nodes() == 0:
                     #this ends in a tip, we can rely on the normal suppress_unifurcation
                     #behaviour (by default Dendropy keeps the lowest level taxa)
-                    if verbosity > 1:
-                        print("Unary nodes ending in tip left so that first is used: " + 
-                            ", ".join([(x.label or "<None>") for x in sequential_unary_nodes]))
+                    logger.debug(
+                        "Unary nodes ending in tip left so that first is used: "
+                        ", ".join([(x.label or "<None>") for x in sequential_unary_nodes]))
                 else:
                     #sort so that best is last - by popularity then presence of label, 
                     #finally by existing position
@@ -197,9 +202,9 @@ def remove_unifurcations_keeping_higher_taxa(self, verbosity=0):
                         sequential_unary_nodes,
                         key = lambda n: (n.data.get('raw_popularity'),bool(getattr(n,'label',""))))
                     keep_node = sorted_unary_nodes[-1]
-                    if verbosity > 1:
-                        print("Unary nodes collapsed to last in this list: " + 
-                            ", ".join([(x.label or "None") for x in sorted_unary_nodes]))
+                    logger.debug(
+                        "Unary nodes collapsed to last in this list: " 
+                        ", ".join([(x.label or "None") for x in sorted_unary_nodes]))
                     for nd in sequential_unary_nodes:
                         #these should still be in postorder
                         if nd != keep_node:
@@ -435,7 +440,7 @@ if __name__ == "__main__":
     for i, nd in enumerate(t.preorder_node_iter()):
         nd.data={'preorder_index':i}
     t.set_node_ages()
-    #print(t.find_node_with_label("Primates").data)
+    #logger.warning(t.find_node_with_label("Primates").data)
     t.ladderize(ascending=True)
     with open('test_leaves.csv', 'w+') as l, open('test_nodes.csv', 'w+') as n:
         node_extras=OrderedDict()
