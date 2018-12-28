@@ -75,9 +75,6 @@ parser.add_argument('--verbosity', '-v', action="count", help='verbosity level f
 
 args = parser.parse_args()
 
-def warn(*objs):
-    print(*objs, file=sys.stderr)
-
 OTT_ptrs = create_structure_from_file(args.popularity_csvfile)
 calc_popularities_for_wikitaxa(OTT_ptrs, '', args.verbosity)
 tree = sum_popularity_over_tree(OTT_ptrs, args.intree, args.exclude, args.verbosity)
