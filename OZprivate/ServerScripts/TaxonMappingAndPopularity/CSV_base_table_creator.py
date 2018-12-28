@@ -157,8 +157,8 @@ def get_tree_and_OTT_list(tree_filehandle, sources):
     try:
         size = os.stat(tree_filehandle.fileno()).st_size
         with tqdm(desc="Reading tree", file=sys.stdout, total=size) as progress:
-            wrapper = ProgressFileWrapper(stream, progress.update)
-            tree = Tree.get_from_stream(tree_filehandle, schema="newick",
+            wrapper = ProgressFileWrapper(tree_filehandle, progress.update)
+            tree = Tree.get_from_stream(wrapper, schema="newick",
                 preserve_underscores=True, suppress_leaf_node_taxa=True)
     except:
         sys.exit("Problem reading tree from " + treefile.name)
