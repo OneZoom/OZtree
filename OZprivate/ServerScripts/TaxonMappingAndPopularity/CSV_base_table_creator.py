@@ -67,6 +67,7 @@ from math import log
 
 #non-standard python packages
 from dendropy import Node, Tree
+import tqdm
 
 #local packages
 from dendropy_extras import write_pop_newick
@@ -91,6 +92,17 @@ sql_subs_string = '' #  ? for sqlite, %s for mysql
 logger = logging.getLogger(__name__)
 logging.EXTREME_DEBUG = logging.DEBUG + 1
 logging.addLevelName(logging.EXTREME_DEBUG, "DEBUG++")
+
+def _make_gen(reader):
+    b = reader(1024 * 1024)
+    while b:
+        yield b
+        b = reader(1024*1024)
+
+def rawgencount(filename, byte_to_count=b'\n'):
+    f = open(filename, 'rb')
+    f_gen = _make_gen(f.raw.read)
+    return sum( buf.count(byte_to_count) for buf in f_gen )
 
 def is_unnamed_OTT(OTTid):
     """
@@ -134,7 +146,8 @@ def get_tree_and_OTT_list(tree_filehandle, sources):
     
     ott_node = re.compile(r"(.*) ott(\d+)(@\d*)?$") #matches the OTT number
     mrca_ott_node = re.compile(r"(.*) (mrcaott\d+ott\d+)(@\d*)?$") #matches a node with an "mrca" node number (no unique OTT)
-    for i, node in enumerate(tree.preorder_node_iter()):
+    for i, node in tqdm.tqdm(
+        enumerate(tree.preorder_node_iter()), total=rawgencount(tree_filehandle.name, b')')):
         node.data = {'parent':node.parent_node or None}
         if node.label:
             node.label = node.label.replace("_"," ")
@@ -184,9 +197,8 @@ def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mappin
     used=0
     EOL2OTT = {v:k for k,v in source_mapping.items()}
     identifiers_file.seek(0)
-    filesize = os.path.getsize(fileName)
     reader = csv.reader(identifiers_file, escapechar='\\')
-    for EOLrow in reader:
+    for EOLrow in tqdm.tqdm(reader, total=rawgencount(identifiers_file.name)):
         if (reader.line_num % 1000000 == 0):
             logger.info("-> {} rows read, {} used,  mem usage {:.1f} Mb".format(
                 reader.line_num, used, OTT_popularity_mapping.memory_usage_resource()))
