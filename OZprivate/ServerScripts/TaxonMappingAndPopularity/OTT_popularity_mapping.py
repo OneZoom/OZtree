@@ -479,12 +479,12 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang,
     for k, v in tally_replaced.items():
       cnames[v].add(k)
     logger.info(" The following taxon Qids were swapped for common name Qids: {}".format(tally_replaced))
-      duplicates = {k:v for k,v in cnames.items() if len(v) > 1}
-      if len(duplicates):
-        logger.warning("The following common name wikidata items (listed by Qid) have been used for more than one taxon item: this may cause duplicate use of the same popularity measure. {}".format(duplicates))
-      logger.info(
-        " NB: {} wikidata matches, of which {} have eol IDs, {} have IUCN ids, {} have IPNI, and {} ({:.2f}%) have titles that exist on the {} wikipedia. mem usage {:.1f} Mb"
-        .format(len(wikidata_taxon_info), n_eol,n_iucn, n_ipni, len(wikilang_title_ptrs), len(wikilang_title_ptrs)/len(wikidata_taxon_info) * 100, wikilang, memory_usage_resource()))
+    duplicates = {k:v for k,v in cnames.items() if len(v) > 1}
+    if len(duplicates):
+      logger.warning("The following common name wikidata items (listed by Qid) have been used for more than one taxon item: this may cause duplicate use of the same popularity measure. {}".format(duplicates))
+    logger.info(
+      " NB: {} wikidata matches, of which {} have eol IDs, {} have IUCN ids, {} have IPNI, and {} ({:.2f}%) have titles that exist on the {} wikipedia. mem usage {:.1f} Mb"
+      .format(len(wikidata_taxon_info), n_eol,n_iucn, n_ipni, len(wikilang_title_ptrs), len(wikilang_title_ptrs)/len(wikidata_taxon_info) * 100, wikilang, memory_usage_resource()))
     return(wikilang_title_ptrs)
 
 
