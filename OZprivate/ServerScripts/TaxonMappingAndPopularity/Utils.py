@@ -2,8 +2,9 @@
 '''
 Utility routines, e.g. for reading size of large files to produce progress monitors
 '''
-import io
+import sys
 import os
+import io
 import bz2
 import resource
 
