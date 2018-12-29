@@ -529,7 +529,7 @@ def JSON_contains_known_dbID(json, wd_handle, source_ptrs):
                         taxon_name(json), json['id']))
     return used
         
-def identify_best_wikidata(OTT_ptrs, order_to_trust):
+def identify_best_wikidata(OTT_ptrs, order_to_trust, progress_bar=False):
     """
     Each OTT number may point to several wiki entries, one for the NCBI number, another for the WORMS number, etc etc.
     Hopefully these will point to the same entry, but they may not. If they are different we need to choose the best one
@@ -541,7 +541,12 @@ def identify_best_wikidata(OTT_ptrs, order_to_trust):
         "Finding best wiki matches. Mem use {:.1f} Mb"
         .format(Utils.memory_usage_resource()))
     OTTs_with_wd = allOTTs = 0
-    for OTTid, data in OTT_ptrs.items():
+    for OTTid, data in tqdm(
+        OTT_ptrs.items(),
+        desc="Selecting wikidata ids",
+        total=len(OTT_ptrs),
+        file=sys.stdout,
+        disable=not progress_bar):
         try:
             if OTTid < 0:
                 print(" Skipping negative ott ({}) mapping wikidata for unlabelled node".format(OTTid))

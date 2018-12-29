@@ -71,6 +71,7 @@ from tqdm import tqdm
 
 #local packages
 import Utils
+import OTT_popularity_mapping
 from dendropy_extras import write_pop_newick
 # to get globals from ../../../models/_OZglobals.py
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir, "models")))
@@ -262,7 +263,7 @@ def identify_best_EoLdata(OTT_ptrs, sources):
             validOTTs, OTTs_with_EOLmatch, OTTs_with_EOLmatch/validOTTs * 100, dups, 
             Utils.memory_usage_resource()))
 
-def supplement_from_wikidata(OTT_ptrs):
+def supplement_from_wikidata(OTT_ptrs, progress_bar=False):
     """
     If no OTT_ptrs[OTTid]['eol'] exists, but there is an 
         OTT_ptrs[OTTid]['wd']['initial_wiki_item']['EoL'] then put this into 
@@ -270,7 +271,12 @@ def supplement_from_wikidata(OTT_ptrs):
         Similarly for IPNI (although this is currently unpopulated)
     """
     EOLbase = EOLsupp = IPNIsupp = tot = 0
-    for OTTid, data in OTT_ptrs.items():
+    for OTTid, data in tqdm(
+      OTT_ptrs.items(),
+      desc="Supplementing ids from wd",
+      total=len(OTT_ptrs),
+      file=sys.stdout,
+      disable=not progress_bar):
         if is_unnamed_OTT(OTTid):
             logger.info(" unlabelled node (OTT: {}) when iterating through OTT_ptrs".format(OTTid))
             continue
@@ -352,7 +358,7 @@ def populate_iucn(OTT_ptrs, identifiers_file):
     logger.debug("Increased IUCN coverage to {} taxa using wikidata".format(used))
 
 
-def construct_wiki_info(OTT_ptrs):
+def construct_wiki_info(OTT_ptrs, progress_bar=False):
     """
     Construct a wikidata Qid, and a wikipedia lang flag, for outputting to csv files
     Languages are sorted roughly according to active users on 
@@ -361,7 +367,12 @@ def construct_wiki_info(OTT_ptrs):
     We need only do this for taxa with OTTs - others we cannot map
     """
     lang_flags = {lang:2**bit for lang, bit in wikiflags.items()}
-    for OTTid, data in OTT_ptrs.items():
+    for OTTid, data in tqdm(
+      OTT_ptrs.items(),
+      desc="Constructing wikilang flags",
+      total=len(OTT_ptrs),
+      file=sys.stdout,
+      disable=not progress_bar):
         try:
             #if this field has a number in, it must have at least one lang
             tot = 0
@@ -709,10 +720,10 @@ def main():
     if args.wikidataDumpFile:
         logger.info("Adding wikidata info")
         wiki_title_ptrs = OTT_popularity_mapping.add_wikidata_info(
-            source_ptrs, args.wikidataDumpFile, args.wikilang)
+            source_ptrs, args.wikidataDumpFile, args.wikilang, args.progress)
         
-        OTT_popularity_mapping.identify_best_wikidata(OTT_ptrs, sources.keys())
-        construct_wiki_info(OTT_ptrs)
+        OTT_popularity_mapping.identify_best_wikidata(OTT_ptrs, sources.keys(), args.progress)
+        construct_wiki_info(OTT_ptrs, args.progress)
         
         logger.info("Supplementing ids (EOL/IPNI) with ones from wikidata")
         supplement_from_wikidata(OTT_ptrs)
