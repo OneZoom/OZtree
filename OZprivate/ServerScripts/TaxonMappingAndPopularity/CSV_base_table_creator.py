@@ -142,7 +142,7 @@ def get_tree_and_OTT_list(tree_filehandle, sources, progress_bar):
     
     ott_node = re.compile(r"(.*) ott(\d+)(@\d*)?$") #matches the OTT number
     mrca_ott_node = re.compile(r"(.*) (mrcaott\d+ott\d+)(@\d*)?$") #matches a node with an "mrca" node number (no unique OTT)
-    n_nodes = len(tree.bipartition_encoding)
+    n_nodes = sum(1 for _ in tree.preorder_node_iter()) # Annoyingly DendroPy doesn't store the number of nodes in a tree
     for i, node in tqdm(
       enumerate(tree.preorder_node_iter()),
       desc="Parsing node names",
