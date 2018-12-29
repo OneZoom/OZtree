@@ -187,7 +187,7 @@ def create_from_taxonomy(OTTtaxonomy_file, sources, OTT_ptrs,
       with tqdm(
         desc="Reading taxonomy {}".format(os.path.basename(f.name)),
         file=sys.stdout,
-        total=os.stat(identifiers_file.fileno()).st_size,
+        total=os.stat(f.fileno()).st_size,
         disable=not progress_bar) as progress:
           wrapper = Utils.ProgressFileWrapper(f, progress.update)
           reader = csv.DictReader(f, delimiter='\t')
