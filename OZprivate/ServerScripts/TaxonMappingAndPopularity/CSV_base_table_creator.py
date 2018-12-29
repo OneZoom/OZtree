@@ -89,6 +89,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 For more information, please refer to <http://unlicense.org/>'''
 
 sql_subs_string = '' #  ? for sqlite, %s for mysql
+pop_store = "raw_pop" # the attribute in which to store raw popularity values
 
 logger = logging.getLogger(__name__)
 logging.EXTREME_DEBUG = logging.DEBUG + 1
@@ -99,7 +100,6 @@ def is_unnamed_OTT(OTTid):
     TO DO: I'm not sure when we use unnamed nodes with an OTT, so unsure if this is needed
     """
     try:
-        
         return OTTid < 0
     except TypeError:
         return False
@@ -420,14 +420,14 @@ def popularity_function(
         return ((sum_of_all_ancestor_popularities + sum_of_all_descendant_popularities)/
             log(number_of_ancestors + number_of_descendants))
     
-def inherit_popularity(tree, exclude=[]):
+def inherit_popularity(tree):
             
     #NB: we must percolate popularities through the tree before deleting monotomies, since these often contain info
     #this should allocate popularities even for nodes that have been created by polytomy resolving.
     
     # We should also check that there are not multuple uses of the same Qid (https://github.com/OneZoom/OZtree/issues/132)
     
-    OTT_popularity_mapping.sum_popularity_over_tree(tree, exclude=exclude)
+    OTT_popularity_mapping.sum_popularity_over_tree(tree)
     #now apply the popularity function
     Qids = set()
     for node in tree.preorder_node_iter():
@@ -446,7 +446,7 @@ def inherit_popularity(tree, exclude=[]):
             node.descendants_popsum,
             node.n_ancestors,
             node.n_descendants)
-        node.data['raw_popularity'] = node.pop_store
+        node.data['raw_popularity'] = getattr(node, pop_store)
         node.data['popularity'] = pop
 
 
@@ -511,7 +511,7 @@ def create_leaf_popularity_rankings(tree):
 def write_popularity_tree(tree, outdir, filename, version):
     Node.write_pop_newick = write_pop_newick
     with open(os.path.join(outdir, "{}_{}.nwk".format(filename, version)), 'w+') as popularity_newick:
-        tree.seed_node.write_pop_newick(popularity_newick)
+        tree.seed_node.write_pop_newick(popularity_newick, pop_store)
 
 
 def simplify_tree(tree, taxonomy_file, seed):
@@ -751,46 +751,53 @@ def main():
     
     
     if args.popularity_file is not None and args.wikipediaSQLDumpFile is not None and args.wikipedia_totals_bz2_pageviews:
+        if args.popularity_file != "" and os.path.isfile(args.popularity_file):
+            # An existing popularity file was passed in. Use this for popularities (for experimenting with popularity algorithms)
+            pass
+        else:
+            logger.info("Getting popularity info")    
+            OTT_popularity_mapping.add_pagesize_for_titles(
+                wiki_title_ptrs, args.wikipediaSQLDumpFile)
+            OTT_popularity_mapping.add_pageviews_for_titles(
+                wiki_title_ptrs, args.wikipedia_totals_bz2_pageviews, args.wikilang)
+            
+            logger.info("Calculating base popularity measures")    
+            OTT_popularity_mapping.calc_popularities_for_wikitaxa(wiki_title_ptrs.values(), 
+                "Unused Popularity Function Here")
+            
+            OTT_popularity_mapping.add_popularities_to_tree(tree, pop_store, 
+                exclude=args.exclude)
+
+            # Saving the tree with branch lengths as raw popularities means we can 
+            # recalculate values easily. 
+            if args.popularity_file:
+                write_popularity_tree(
+                    tree, args.output_location, args.popularity_file, args.version)
+            #NB to examine a taxon for popularity contributions here, you could try
+            
+            #Here we might want to multiply up some taxa, e.g. plants, see https://github.com/OneZoom/OZtree/issues/130
+            
+            info("Percolating popularity through the tree")    
+            inherit_popularity(tree)    
         
-        if args.popularity_file and os.path.isfile(args.popularity_file):
-            info
-        logger.info("Adding popularity measures")    
-        OTT_popularity_mapping.add_pagesize_for_titles(
-            wiki_title_ptrs, args.wikipediaSQLDumpFile)
-        OTT_popularity_mapping.add_pageviews_for_titles(
-            wiki_title_ptrs, args.wikipedia_totals_bz2_pageviews, args.wikilang)
-        
-        logger.info("Calculating base popularity measures")    
-        OTT_popularity_mapping.calc_popularities_for_wikitaxa(wiki_title_ptrs.values(), 
-            "Unused Popularity Function Here")
-        
-        #If we save the tree with branch lengths as popularities, we can recalculate the 
-        
-        #Here we might want to multiply up some taxa, e.g. plants, see https://github.com/OneZoom/OZtree/issues/130
-        
-        info("Percolating popularity through the tree")    
-        inherit_popularity(tree, args.exclude)    
-    
-        if args.popularity_file:
-            write_popularity_tree(
-                tree, args.output_location, args.popularity_file, args.version)
-        #NB to examine a taxon for popularity contributions here, you could try
         for focal_label in args.info_on_focal_labels:
             focal_taxon = focal_label.replace("_", " ")
             n = tree.find_node_with_label(focal_taxon)
             print("{}: own pop = {} (Q{}) descendant pop sum = {}".format(
-                focal_taxon, n.pop_store, n.data['wd']['final_wiki_item']['Q'], n.descendants_popsum))
+                focal_taxon, getattr(n, pop_store), n.data['wd']['final_wiki_item']['Q'],
+                n.descendants_popsum))
             
             for t, tip in enumerate(n.leaf_iter()):
               print("Tip {} = {}: own_pop = {}, Qid = {}".format(
-                t, tip.label, getattr(tip,"pop_store",None), tip.data['wd']['final_wiki_item']['Q']))
+                t, tip.label, getattr(tip, pop_store, None), 
+                tip.data['wd']['final_wiki_item']['Q']))
               if t > 100:
                 print("More tips exist, but have been omitted")
                 break
             while(n.parent_node):
-             n = n.parent_node
-             if n.pop_store:
-               print("Ancestors: {} = {:.2f}".format(n.label, n.pop_store))
+              n = n.parent_node
+              if getattr(n, pop_store, None):
+                print("Ancestors: {} = {:.2f}".format(n.label, getattr(n, pop_store)))
     
     logger.info("Writing out results to {}/xxx".format(args.output_location))
     simplify_tree(tree, args.OpenTreeTaxonomy, r_seed)

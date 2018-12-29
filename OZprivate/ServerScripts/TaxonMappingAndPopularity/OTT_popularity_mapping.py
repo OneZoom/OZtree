@@ -190,7 +190,7 @@ def create_from_taxonomy(OTTtaxonomy_file, sources, OTT_ptrs,
         total=os.stat(f.fileno()).st_size,
         disable=not progress_bar) as progress:
           wrapper = Utils.ProgressFileWrapper(f, progress.update)
-          reader = csv.DictReader(f, delimiter='\t')
+          reader = csv.DictReader(wrapper, delimiter='\t')
           used = 0
           for OTTrow in reader:
             if ((reader.line_num-2) % 1000000 == 0): #first 2 lines are header & blank in taxonomy.tsv
@@ -580,7 +580,7 @@ def identify_best_wikidata(OTT_ptrs, order_to_trust, progress_bar=False):
         " NB: of {} OpenTree taxa, {} ({:.2f}%) have wikidata entries. Mem use {:.1f} Mb"
         .format(allOTTs, OTTs_with_wd, OTTs_with_wd/allOTTs * 100, Utils.memory_usage_resource()))
 
-def add_pagesize_for_titles(wiki_title_ptrs, wikipedia_SQL_dump):
+def add_pagesize_for_titles(wiki_title_ptrs, wikipedia_SQL_dump, progress_bar=False):
     """
     looks through the sql insertion file for page sizes. This file has extremely long lines with each csv entry
     brace-delimited within a line, e.g.
@@ -598,10 +598,19 @@ def add_pagesize_for_titles(wiki_title_ptrs, wikipedia_SQL_dump):
     page_table_namespace_column = 2
     page_table_title_column = 3
     page_table_pagelen_column = 12
-    with gzip.open(wikipedia_SQL_dump, 'rt', encoding='utf-8') as file: #use csv reader as it copes well e.g. with escaped SQL quotes in fields etc.
-        pagelen_file = csv.reader(file, quotechar='\'',doublequote=True)
-        match_line = "INSERT INTO `page` VALUES"
+    file = SimpleGZtextfile(wikipedia_SQL_dump, encoding='utf-8')
+    #use csv reader as it copes well e.g. with escaped SQL quotes in fields etc.
+    pagelen_file = csv.reader(file, quotechar='\'',doublequote=True)
+    match_line = "INSERT INTO `page` VALUES"
+    with tqdm(desc="Reading wikipedia page sizes",
+              file=sys.stdout,
+              total=file.size(),
+              disable=not progress_bar) as progress:
+        prev_pos=file.tell()
         for fields in filter(lambda x: False if len(x)==0 else x[0].startswith(match_line), pagelen_file):
+            pos=file.tell()
+            progress.update(pos-prev_pos)
+            prev_pos = pos
             if (pagelen_file.line_num % 500 == 0):
                 logger.info(
                     "Reading page details from SQL dump to find page sizes: {} lines ({} pages) read. Mem use {:.1f} Mb"
@@ -745,32 +754,20 @@ def calc_popularities_for_wikitaxa(wiki_items, popularity_function, trim_highest
         " NB: of {} WikiData taxon entries, {} ({:.2f}%) have popularity measures. mem usage {:.1f} Mb"
         .format(len(wiki_items), used, used/len(wiki_items) * 100, Utils.memory_usage_resource()))
 
-
-    
-def sum_popularity_over_tree(tree, OTT_ptrs=None, exclude=[], pop_store='pop'):
-    """Add popularity indices for branch lengths based on a phylogenetic tree (and return the tree, or the number of root descendants).
+def add_popularities_to_tree(tree, pop_store, OTT_ptrs=None, exclude=[]):
+    """
+    Add raw popularity measures onto a phylogenetic tree and return the tree.
     We might want to exclude some names from the popularity metric (e.g. exclude archosaurs, 
     to make sure birds don't gather popularity intended for dinosaurs). This is done by passing an
     array such as ['Dinosauria_ott90215', 'Archosauria_ott335588'] as the exclude argument.
     
     'tree' can be the name of a tree file or a dendropy tree object
     
-    'pop_store' is the name of the attribute in which to store the popularity. If you wish to create a tree
-    with popularity on the branches, you can pass in pop_store='edge_length'
-    
-    NB: if OTT_ptrs is given, then the popularity is stored in the object pointed to by OTT_ptrs[OTTid]['wd']['final_wiki_item']['pop'], where
-    OTTid can be extracted from the node label in the tree. If OTT_ptrs is None, then the popularity is stored in the node object 
-    itself, in Node.data['wd']['pop'].
-    popularity summed up and down the tree depends on the OpenTree structure, and is stored in OTT_ptrs[OTTid]['pop_ancst'] 
-    (popularity summed upwards for all ancestors of this node) and OTT_ptrs[OTTid]['pop_dscdt'] (popularity summed over all descendants).
-    To get a measure of the sum of both ancestor and descendant popularity, just add these together
-    
-    we also count up the *number* of edges above each node to the root and the number of those that have a popularity measure. These are stored in 
-    
-    OTT_ptrs[OTTid]['n_ancst'] and OTT_ptrs[OTTid]['n_pop_ancst']
-    
-    we also flag up the poor seed plants (Spermatophyta_ott1007992)- we could add a little to their pop value later
-    
+    'pop_store' is the name of the attribute in which to store the popularity.  
+
+    NB: if OTT_ptrs is given, then the popularity is taken from in the object pointed to by 
+        OTT_ptrs[OTTid]['wd']['final_wiki_item']['pop'], where OTTid can be extracted from the node label in the tree. 
+        If OTT_ptrs is None, then the popularity is stored in the node object itself, in Node.data['wd']['pop'].
     """
     from dendropy import Tree
     
@@ -784,15 +781,31 @@ def sum_popularity_over_tree(tree, OTT_ptrs=None, exclude=[], pop_store='pop'):
     #put popularity into the pop_store attribute
     for node in tree.preorder_node_iter():
         if node.label in exclude:
-            node.pop_store=0
+            pop = 0
         else:
             try:
-                node.pop_store = float(OTT_ptrs[int(node.label.rsplit("_ott",1)[1])]['wd']['final_wiki_item']['pop']) if OTT_ptrs else node.data['wd']['final_wiki_item']['pop']
-                node.has_pop = True
+                if OTT_ptrs:
+                    pop = float(OTT_ptrs[int(node.label.rsplit("_ott",1)[1])]['wd']['final_wiki_item']['pop'])
+                else:
+                    pop = float(node.data['wd']['final_wiki_item']['pop'])
             except (LookupError, AttributeError, ValueError):
-                node.pop_store=0
-                node.has_pop = False
+                pop = None
+        setattr(node, pop_store, pop)
+    return tree
     
+def sum_popularity_over_tree(tree, pop_store):
+    """    
+    popularity summed up and down the tree depends on the OpenTree structure, and is stored in OTT_ptrs[OTTid]['pop_ancst'] 
+    (popularity summed upwards for all ancestors of this node) and OTT_ptrs[OTTid]['pop_dscdt'] (popularity summed over all descendants).
+    To get a measure of the sum of both ancestor and descendant popularity, just add these together
+    
+    we also count up the *number* of edges above each node to the root and the number of those that have a popularity measure. These are stored in 
+    
+    OTT_ptrs[OTTid]['n_ancst'] and OTT_ptrs[OTTid]['n_pop_ancst']
+    
+    we also flag up the poor seed plants (Spermatophyta_ott1007992)- we could add a little to their pop value later
+    
+    """    
     #go up the tree from the tips, summing up the popularity indices beneath and adding the number of descendants
     for node in tree.postorder_node_iter():
         if node.is_leaf():
