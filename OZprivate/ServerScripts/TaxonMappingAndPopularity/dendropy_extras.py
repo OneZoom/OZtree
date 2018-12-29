@@ -389,6 +389,11 @@ def write_brief_newick(self, out, polytomy_braces="()", write_otts=False):
             if write_otts and 'ott' in self.data:
                 out.write(str(self.data['ott']))
 
+def newick_label(node):
+    return node._get_node_token(suppress_leaf_node_labels=False, suppress_rooting=True,
+        unquoted_underscores = True)
+
+
 def write_pop_newick(self, out, pop_store):
     """
     Copied from the default dendropy 4 function Node._write_newick
@@ -405,10 +410,8 @@ def write_pop_newick(self, out, pop_store):
             child.write_pop_newick(out)
         out.write(')')
     
-    label = self._get_node_token(
-            suppress_leaf_node_labels=False,
-            suppress_rooting=True,
-            unquoted_underscores = True)
+    label = newick_label(self)
+    
     try:
         ott = self.data['ott']
         if label.endswith('\''):
