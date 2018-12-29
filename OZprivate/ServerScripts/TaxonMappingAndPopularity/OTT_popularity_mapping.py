@@ -261,73 +261,77 @@ def wikidata_makebaseinfo(json_item, wikilang=''):
     return basic_item
 
 def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang,
-    progress_bar=False,
-    EOLid_property_id='P830', 
-    IUCNid_property_id=['P141','P627'], 
-    IPNIid_property_id='P961'):
-    """
-    Returns a dictionary mapping page titles in the wikilang to data items. Note that 
-    titles could be unicode, e.g. 'Günther's dwarf burrowing skink', 'Gölçük toothcarp',
-    'Galium × pomeranicum'. We replace underscores with spaces so that they matching 
-    against page size & page counts (views).
-    
-    This function also adds to  the source_ptrs array by mapping the name in taxonomy.tsv
-    to the property ID in wikidata (e.g. 'ncbi' in OTT, P685 in wikidata. Note that 
-    wikidata does not have 'silva' and 'irmng' types)
-    
-    If a wikilang is present, also store the wikipedia page title for this particular language. 
-       
-    If an EOLid_property_id, IUCN id, or IPNI id exists, save these too (NB: the IUCN id
-    is present as Property:P627 of claim P141. It may also be overwritten by an ID
-    subsequently extracted from the EOL identifiers list)
-    
-    Some taxa (especially common ones) have most sitelinks in a 'common name' item, e.g.
-    cattle (Q830) contains most language sitelinks for the taxon items 
-    Q46889 (Bos primigenius indicus), Q20747320 (Bos primigenius taurus), 
-    Q20747334 (Bos taurus *+), Q20747712, Q20747726, etc. (* marks the name used in OneZoom, + for OpenTree).
-    These 'common name' pages point to the taxon by having a property P31 ('instance of') set to 
-    common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). 
-    To spot these, we look for wikidata items that are common names, and link to items 
-    that are taxa. If the taxon has no wikipedia link in the specified language, we 
-    should use the common name WD item instead.
+  progress_bar=False,
+  EOLid_property_id='P830', 
+  IUCNid_property_id=['P141','P627'], 
+  IPNIid_property_id='P961'):
+  """
+  Returns a dictionary mapping page titles in the wikilang to data items. Note that 
+  titles could be unicode, e.g. 'Günther's dwarf burrowing skink', 'Gölçük toothcarp',
+  'Galium × pomeranicum'. We replace underscores with spaces so that they matching 
+  against page size & page counts (views).
+  
+  This function also adds to  the source_ptrs array by mapping the name in taxonomy.tsv
+  to the property ID in wikidata (e.g. 'ncbi' in OTT, P685 in wikidata. Note that 
+  wikidata does not have 'silva' and 'irmng' types)
+  
+  If a wikilang is present, also store the wikipedia page title for this particular language. 
+     
+  If an EOLid_property_id, IUCN id, or IPNI id exists, save these too (NB: the IUCN id
+  is present as Property:P627 of claim P141. It may also be overwritten by an ID
+  subsequently extracted from the EOL identifiers list)
+  
+  Some taxa (especially common ones) have most sitelinks in a 'common name' item, e.g.
+  cattle (Q830) contains most language sitelinks for the taxon items 
+  Q46889 (Bos primigenius indicus), Q20747320 (Bos primigenius taurus), 
+  Q20747334 (Bos taurus *+), Q20747712, Q20747726, etc. (* marks the name used in OneZoom, + for OpenTree).
+  These 'common name' pages point to the taxon by having a property P31 ('instance of') set to 
+  common name (Q502895) of (P642) (locate them at http://tinyurl.com/y7a95upp). 
+  To spot these, we look for wikidata items that are common names, and link to items 
+  that are taxa. If the taxon has no wikipedia link in the specified language, we 
+  should use the common name WD item instead.
 
-    Additionally, taxa like Homo sapiens might have *two* wikipedia pages, 
-    https://en.wikipedia.org/wiki/Homo_sapiens and https://en.wikipedia.org/wiki/Human. 
-    I code around these by hand (yuck).
-    
-    For each taxon line in the dump, we store the relevant information in a dict which
-    contains the Qid and identifiers for EoL, IPNI, and IUCN, and an array of languages
-    in the 'l' field e.g. wikidata_taxon_info[Qid] = {'Q':Qid, 'l':['en','fr'], 
-    'EoL':EoLid, 'IUCN': IUCNid, 'IPNI':IPNIid}
-    
-    We map it to NCBI etc identifiers using the function JSON_contains_known_dbID(), and
-    if the mapping is successful (i.e. we may be using this taxon), we store it in
-    wikidata_taxon_info[Qid]
-    
-    We also store the few common-name wikidata pages in a separate variable,
-    wikidata_cname_info. Then, if the equivalent taxon exists, and it has no
-    `wikilang`.wikipedia.org sitelink (or is a special case), we set 'Q' and 'l' to the new
+  Additionally, taxa like Homo sapiens might have *two* wikipedia pages, 
+  https://en.wikipedia.org/wiki/Homo_sapiens and https://en.wikipedia.org/wiki/Human. 
+  I code around these by hand (yuck).
+  
+  For each taxon line in the dump, we store the relevant information in a dict which
+  contains the Qid and identifiers for EoL, IPNI, and IUCN, and an array of languages
+  in the 'l' field e.g. wikidata_taxon_info[Qid] = {'Q':Qid, 'l':['en','fr'], 
+  'EoL':EoLid, 'IUCN': IUCNid, 'IPNI':IPNIid}
+  
+  We map it to NCBI etc identifiers using the function JSON_contains_known_dbID(), and
+  if the mapping is successful (i.e. we may be using this taxon), we store it in
+  wikidata_taxon_info[Qid]
+  
+  We also store the few common-name wikidata pages in a separate variable,
+  wikidata_cname_info. Then, if the equivalent taxon exists, and it has no
+  `wikilang`.wikipedia.org sitelink (or is a special case), we set 'Q' and 'l' to the new
 
-    """
-    tally_replaced = {}
-    wikilang_title_ptrs = {}
-    wikidata_taxon_info = {}
-    wikidata_cname_info = {}
-    override_with_common_name = [5] #for humans (Q5) use the sitelinks from the common name item, even though the taxon item exists
-    #numbers to search for
-    match_taxa = OrderedDict((('taxon', 16521), ('monotypic taxon', 310890), ('fossil taxon', 23038290), ('clade',713623)))
-    match_common_names = OrderedDict((('common name', 502895), ('group of organisms known by one particular common name', 55983715)))
-    regexp_match = '|'.join([str(v) for v in list(match_taxa.values()) + list(match_common_names.values())])
-    initial_byte_match = re.compile('numeric-id":(?:{})\D'.format(regexp_match).encode())
-    filesize = os.path.getsize(wikidata_json_dump_file.name)
-    with bz2.open(wikidata_json_dump_file, 'rb') as WDF: #open filehandle, to allow read as bytes (converted to UTF8 later)
-      n_eol=n_iucn=n_ipni=0
-      for line_num, line in tdqm(
-        enumerate(WDF)
-        desc="Reading wikidata dump",
-        file=sys.stdout,
-        total=os.stat(tree_filehandle.fileno()).st_size,
-        disable=not progress_bar):
+  """
+  tally_replaced = {}
+  wikilang_title_ptrs = {}
+  wikidata_taxon_info = {}
+  wikidata_cname_info = {}
+  override_with_common_name = [5] #for humans (Q5) use the sitelinks from the common name item, even though the taxon item exists
+  #numbers to search for
+  match_taxa = OrderedDict((('taxon', 16521), ('monotypic taxon', 310890), ('fossil taxon', 23038290), ('clade',713623)))
+  match_common_names = OrderedDict((('common name', 502895), ('group of organisms known by one particular common name', 55983715)))
+  regexp_match = '|'.join([str(v) for v in list(match_taxa.values()) + list(match_common_names.values())])
+  initial_byte_match = re.compile('numeric-id":(?:{})\D'.format(regexp_match).encode())
+  filesize = os.path.getsize(wikidata_json_dump_file.name)
+  WDF = SimpleBZ2File(wikidata_json_dump_file, 262144): #open filehandle, to allow read as bytes (converted to UTF8 later)
+  n_eol=n_iucn=n_ipni=0
+  with tdqm(
+    desc="Reading wikidata dump",
+    file=sys.stdout,
+    total=WDF.size(),
+    disable=not progress_bar) as progress:
+      prev_pos=WDF.tell()
+      for line_num, line in enumerate(WDF):
+        pos=WDF.tell()
+        progress.update(pos-prev_pos)
+        prev_pos = pos
         if (line_num % 1000000 == 0):
                 logger.info("Reading wikidata JSON dump: {}% done. "
                   "{} entries read, {} taxon entries found, "
