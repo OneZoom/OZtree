@@ -128,16 +128,17 @@ def get_tree_and_OTT_list(tree_filehandle, sources, progress_bar):
     indexed_by_ott={}
     
     try:
+        size = os.stat(tree_filehandle.fileno()).st_size
         with tqdm(
             desc="Reading tree",
             file=sys.stdout,
-            total=os.stat(tree_filehandle.fileno()).st_size,
+            total=size,
             disable=not progress_bar) as progress:
                 wrapper = Utils.ProgressFileWrapper(tree_filehandle, progress.update)
                 tree = Tree.get_from_stream(wrapper, schema="newick",
                     preserve_underscores=True, suppress_leaf_node_taxa=True)
-    except:
-        sys.exit("Problem reading tree from " + treefile.name)
+    except IOError:
+        sys.exit("Problem reading tree from " + tree_filehandle.name)
     logger.info("-> read tree from " + tree_filehandle.name)
     
     ott_node = re.compile(r"(.*) ott(\d+)(@\d*)?$") #matches the OTT number
