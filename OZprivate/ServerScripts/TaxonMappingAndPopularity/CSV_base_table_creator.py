@@ -72,7 +72,7 @@ from tqdm import tqdm
 #local packages
 import Utils
 import OTT_popularity_mapping
-from dendropy_extras import write_pop_newick
+import dendropy_extras
 # to get globals from ../../../models/_OZglobals.py
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir, "models")))
 from _OZglobals import wikiflags
@@ -514,10 +514,22 @@ def create_leaf_popularity_rankings(tree):
 
 
 def write_popularity_tree(tree, outdir, filename, version):
-    Node.write_pop_newick = write_pop_newick
+    Node.write_pop_newick = dendropy_extras.write_pop_newick
     with open(os.path.join(outdir, "{}_{}.nwk".format(filename, version)), 'w+') as popularity_newick:
         tree.seed_node.write_pop_newick(popularity_newick, pop_store)
 
+def add_popularities_from_tree(tree, tree_with_popularity_as_branch_lengths, pop_store):
+    """
+    Take an identical tree, as output by write_popularity_tree, and save the branch
+    lengths from that tree into the 'pop_store' attribute of the main tree
+    """
+    for node, pop_node in zip(
+        tree.preorder_node_iter(),
+        tree_with_popularity_as_branch_lengths.preorder_node_iter()):
+            assert dendropy_extras.newick_label(pop_node).startswith(
+                dendropy_extras.newick_label(node)) # the pop node has the OTT appended
+            setattr(node, pop_store, pop_node.edge_length)
+    return tree
 
 def simplify_tree(tree, taxonomy_file, seed):
     """
@@ -550,17 +562,15 @@ def simplify_tree(tree, taxonomy_file, seed):
      
     Removes non-species from tips, outputs simplified versions.
     """
-    from dendropy_extras import prune_children_of_otts, prune_non_species, \
-        set_node_ages, set_real_parent_nodes, remove_unifurcations_keeping_higher_taxa
-    #monkey patch the existing dendropy objects
-    Tree.prune_children_of_otts = prune_children_of_otts
-    Tree.prune_non_species = prune_non_species
-    Tree.set_node_ages = set_node_ages
-    Tree.set_real_parent_nodes = set_real_parent_nodes
-    Tree.write_preorder_ages = write_preorder_ages
-    Tree.remove_unifurcations_keeping_higher_taxa = remove_unifurcations_keeping_higher_taxa
+    # Monkey patch the existing dendropy objects from dendropy_extras
+    Tree.prune_children_of_otts = dendropy_extras.prune_children_of_otts
+    Tree.prune_non_species = dendropy_extras.prune_non_species
+    Tree.set_node_ages = dendropy_extras.set_node_ages
+    Tree.set_real_parent_nodes = dendropy_extras.set_real_parent_nodes
+    Tree.remove_unifurcations_keeping_higher_taxa = dendropy_extras.remove_unifurcations_keeping_higher_taxa
     
-    Tree.create_leaf_popularity_rankings = create_leaf_popularity_rankings #not defined in dendropy_extras, but in this file
+    # The following are not defined in dendropy_extras, but in this file
+    Tree.create_leaf_popularity_rankings = create_leaf_popularity_rankings
     Tree.resolve_polytomies_add_popularity = resolve_polytomies_add_popularity
     
     n = len(tree.prune_children_of_otts(get_OTT_species(taxonomy_file)))
@@ -582,7 +592,7 @@ def simplify_tree(tree, taxonomy_file, seed):
     
     logger.info("-> removing unifurcations")
     n_deleted_nodes = tree.remove_unifurcations_keeping_higher_taxa()
-    #see https://github.com/jeetsukumaran/DendroPy/issues/75
+    # see https://github.com/jeetsukumaran/DendroPy/issues/75
     logger.info(" (removed {} unifurcations)".format(n_deleted_nodes))
     
     
@@ -602,9 +612,9 @@ def simplify_tree(tree, taxonomy_file, seed):
 
 
 def output_treefiles(tree, outdir, version, save_sql=True):
-    from dendropy_extras import write_preorder_ages, write_preorder_to_csv, write_brief_newick
-    Node.write_brief_newick = write_brief_newick
-    Tree.write_preorder_to_csv = write_preorder_to_csv
+    Node.write_brief_newick = dendropy_extras.write_brief_newick
+    Tree.write_preorder_ages = dendropy_extras.write_preorder_ages
+    Tree.write_preorder_to_csv = dendropy_extras.write_preorder_to_csv
     logger.info("-> writing tree, dates, and csv to files")
     with open(os.path.join(outdir, "ordered_tree_{}.nwk".format(version)), 'w+') as condensed_newick, \
          open(os.path.join(outdir, "ordered_tree_{}.poly".format(version)), 'w+') as condensed_poly, \
@@ -758,7 +768,9 @@ def main():
     if args.popularity_file is not None and args.wikipediaSQLDumpFile is not None and args.wikipedia_totals_bz2_pageviews:
         if args.popularity_file != "" and os.path.isfile(args.popularity_file):
             # An existing popularity file was passed in. Use this for popularities (for experimenting with popularity algorithms)
-            pass
+            popularity_tree = Tree.get_from_path(args.popularity_file, schema="newick",
+                preserve_underscores=True, suppress_leaf_node_taxa=True)
+            tree = add_popularities_from_tree(tree, popularity_tree, pop_store)
         else:
             logger.info("Getting popularity info")    
             OTT_popularity_mapping.add_pagesize_for_titles(
@@ -770,7 +782,7 @@ def main():
             OTT_popularity_mapping.calc_popularities_for_wikitaxa(wiki_title_ptrs.values(), 
                 "Unused Popularity Function Here")
             
-            OTT_popularity_mapping.add_popularities_to_tree(tree, pop_store, 
+            tree = OTT_popularity_mapping.add_popularities_to_tree(tree, pop_store, 
                 exclude=args.exclude)
 
             # Saving the tree with branch lengths as raw popularities means we can 
@@ -778,12 +790,11 @@ def main():
             if args.popularity_file:
                 write_popularity_tree(
                     tree, args.output_location, args.popularity_file, args.version)
-            #NB to examine a taxon for popularity contributions here, you could try
-            
-            #Here we might want to multiply up some taxa, e.g. plants, see https://github.com/OneZoom/OZtree/issues/130
-            
-            info("Percolating popularity through the tree")    
-            inherit_popularity(tree)    
+
+        #NB to examine a taxon for popularity contributions here, you could try
+        #Here we might want to multiply up some taxa, e.g. plants, see https://github.com/OneZoom/OZtree/issues/130
+        info("Percolating popularity through the tree")    
+        inherit_popularity(tree)    
         
         for focal_label in args.info_on_focal_labels:
             focal_taxon = focal_label.replace("_", " ")
