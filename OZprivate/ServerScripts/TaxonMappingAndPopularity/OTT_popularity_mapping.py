@@ -320,8 +320,8 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang,
   regexp_match = '|'.join([str(v) for v in list(match_taxa.values()) + list(match_common_names.values())])
   initial_byte_match = re.compile('numeric-id":(?:{})\D'.format(regexp_match).encode())
   filesize = os.path.getsize(wikidata_json_dump_file.name)
-  WDF = SimpleBZ2File(wikidata_json_dump_file, 262144): #open filehandle, to allow read as bytes (converted to UTF8 later)
   n_eol=n_iucn=n_ipni=0
+  WDF = SimpleBZ2File(wikidata_json_dump_file, 262144) #open filehandle, to allow read as bytes (converted to UTF8 later)
   with tdqm(
     desc="Reading wikidata dump",
     file=sys.stdout,
