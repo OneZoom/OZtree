@@ -113,7 +113,7 @@ def get_OTT_species(taxonomy_file):
             species_list.add(int(row['uid']))
     return(species_list)
     
-def get_tree_and_OTT_list(tree_filehandle, sources, progress_bar):
+def get_tree_and_OTT_list(tree_filehandle, sources, progress_bar=False):
     """
     Takes a base tree and creates objects for each node and leaf, attaching them as 'data' dictionaries
     to each node in the DendroPy tree. Nodes and leaves with an OTT id also have pointers to their data 
@@ -195,7 +195,7 @@ def get_tree_and_OTT_list(tree_filehandle, sources, progress_bar):
     logger.info("-> extracted {} otts from among {} leaves and nodes".format(len(indexed_by_ott), i))
     return tree, indexed_by_ott
 
-def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mapping, progress_bar):
+def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mapping, progress_bar=False):
     used=0
     EOL2OTT = {v:k for k,v in source_mapping.items()}
     identifiers_file.seek(0)
@@ -222,7 +222,7 @@ def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mappin
             " Matched {} EoL entries in the EoL identifiers file. Mem usage {:.1f} Mb"
             .format(used, Utils.memory_usage_resource()))
 
-def identify_best_EoLdata(OTT_ptrs, sources):
+def identify_best_EoLdata(OTT_ptrs, sources, progress_bar=False):
     '''
     Each OTT number may point to several EoL entries, one for the NCBI number, another for the WORMS number, etc etc.
     Hopefully these will be the same entry, but they may not be. If they are different we need to choose the best one
@@ -231,7 +231,12 @@ def identify_best_EoLdata(OTT_ptrs, sources):
     logger.debug("Finding best EoL matches. mem usage {:.1f} Mb".format(
             Utils.memory_usage_resource()))
     validOTTs = OTTs_with_EOLmatch = dups = 0
-    for OTTid, data in OTT_ptrs.items():
+    for OTTid, data in tqdm(
+      OTT_ptrs.items(),
+      desc="Identifying best EoL id",
+      total=len(OTT_ptrs),
+      file=sys.stdout,
+      disable=not progress_bar):
         if is_unnamed_OTT(OTTid):
             continue
         validOTTs += 1
@@ -730,8 +735,8 @@ def main():
         args.OpenTreeTaxonomy, sources, OTT_ptrs, args.extra_source_file, args.progress)
     
     logger.info("Adding EOL IDs from EOL csv file")
-    add_eol_IDs_from_EOL_table_dump(source_ptrs, args.EOLidentifiers, sources)
-    identify_best_EoLdata(OTT_ptrs, sources)
+    add_eol_IDs_from_EOL_table_dump(source_ptrs, args.EOLidentifiers, sources, args.progress)
+    identify_best_EoLdata(OTT_ptrs, sources, args.progress)
     
     if args.wikidataDumpFile:
         logger.info("Adding wikidata info")
