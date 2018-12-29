@@ -777,9 +777,9 @@ def sum_popularity_over_tree(tree, OTT_ptrs=None, exclude=[], pop_store='pop'):
     if not isinstance(tree, Tree):
         tree = Tree.get(file=tree, schema='newick', suppress_edge_lengths=True, preserve_underscores=True, suppress_leaf_node_taxa=True)
     
-    logger.info(
-        " Tree read for phylogenetic popularity calc: mem usage {:.1f} Mb"
-        .format(Utils.memory_usage_resource()))
+        logger.info(
+            " Tree read for phylogenetic popularity calc: mem usage {:.1f} Mb"
+            .format(Utils.memory_usage_resource()))
     
     #put popularity into the pop_store attribute
     for node in tree.preorder_node_iter():
