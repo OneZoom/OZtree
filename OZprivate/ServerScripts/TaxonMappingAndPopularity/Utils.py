@@ -38,7 +38,7 @@ class SimpleBZ2File(object):
         self.rawinput = open(path,'rb')
         self.eof = False
         self.readsize = readsize
-        self.leftover = ''
+        self.leftover = b''
 
     def size(self):
         return os.stat(self.rawinput.fileno()).st_size
@@ -49,7 +49,7 @@ class SimpleBZ2File(object):
     def __iter__(self):
         while not self.eof:
             rawdata = self.rawinput.read(self.readsize)
-            if rawdata == '':
+            if rawdata == b'':
                 self.eof = True
             else:
                 data = self.decomp.decompress(rawdata)
@@ -57,10 +57,10 @@ class SimpleBZ2File(object):
                     continue #we need to supply more raw to decompress
                 newlines = list(data.splitlines(True))
                 yield self.leftover + newlines[0]
-                self.leftover = ''
+                self.leftover = b''
                 for l in newlines[1:-1]:
                     yield l
-                if newlines[-1].endswith('\n'):
+                if newlines[-1].endswith(b'\n'):
                     yield newlines[-1]
                 else:
                     self.leftover = newlines[-1]
