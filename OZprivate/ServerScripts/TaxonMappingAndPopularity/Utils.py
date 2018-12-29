@@ -2,6 +2,7 @@
 '''
 Utility routines, e.g. for reading size of large files to produce progress monitors
 '''
+import io
 import bz2
 import resource
 
@@ -60,6 +61,7 @@ class SimpleBZ2File(object):
             yield self.leftover
         self.rawinput.close()
 
+# see http://fa.bianp.net/blog/2013/different-ways-to-get-memory-consumption-or-lessons-learned-from-memory_profiler/
 def memory_usage_resource():
     rusage_denom = 1024.
     if sys.platform == 'darwin':

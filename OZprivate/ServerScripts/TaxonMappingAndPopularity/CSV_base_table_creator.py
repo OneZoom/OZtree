@@ -54,7 +54,6 @@ Populating IUCN IDs using EOL csv file (or if absent, wikidata)
 import sys
 import csv
 import re
-import io
 import gzip
 import json
 import argparse
