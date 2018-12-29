@@ -302,7 +302,7 @@ def supplement_from_wikidata(OTT_ptrs, progress_bar=False):
     logger.info.debug("{} IPNI identifiers added via wikidata".format(IPNIsupp))
 
 
-def populate_iucn(OTT_ptrs, identifiers_file):
+def populate_iucn(OTT_ptrs, identifiers_file, progress_bar=False):
     """
     Port the IUCN number from both EoL and Wikidata, and keep both if there is a conflict
     """
@@ -310,7 +310,12 @@ def populate_iucn(OTT_ptrs, identifiers_file):
     
     iucn_num = 622 #see https://github.com/EOL/tramea/issues/162
     eol_mapping = {} #to store eol=>iucn
-    for OTTid, data in OTT_ptrs.items():
+    for OTTid, data in tqdm(
+      OTT_ptrs.items(),
+      desc="Mapping EoL rows",
+      total=len(OTT_ptrs),
+      file=sys.stdout,
+      disable=not progress_bar):
          if 'eol' in data:
             if data['eol'] in eol_mapping:
                 eol_mapping[data['eol']].append(OTTid)
@@ -318,29 +323,40 @@ def populate_iucn(OTT_ptrs, identifiers_file):
                 eol_mapping[data['eol']] = [OTTid]
             
     identifiers_file.seek(0)
-    reader = csv.reader(identifiers_file, escapechar='\\')
-    for EOLrow in reader:
-        if (reader.line_num % 1000000 == 0):
-            logger.info("{} rows read, {} used,  mem usage {:.1f} Mb".format(
-                reader.line_num, used, Utils.memory_usage_resource()))
-        if int(EOLrow[2]) == iucn_num and EOLrow[1]: #there are lots of IUCN rows with no IUCN number, so check EOLrow[1]!= "" and != None
-            try:
-                for ott in eol_mapping[int(EOLrow[3])]:
-                    OTT_ptrs[ott]['iucn'] = str(EOLrow[1])
-                    used += 1
-            except LookupError:
-                pass #no equivalent eol id in eol_mapping
-            except ValueError:
-                logger.warning(
-                    " Cannot convert IUCN ID {} to integer on line {} of {}."
-                    .format(EOLrow[1], reader.line_num, identifiers_file.name))
+    with tqdm(
+      desc="Matching EoL IUCN ids",
+      file=sys.stdout,
+      total=os.stat(identifiers_file.fileno()).st_size,
+      disable=not progress_bar) as progress:
+        wrapper = Utils.ProgressFileWrapper(identifiers_file, progress.update)
+        reader = csv.reader(wrapper, escapechar='\\')
+        for EOLrow in reader:
+            if (reader.line_num % 1000000 == 0):
+                logger.info("{} rows read, {} used,  mem usage {:.1f} Mb".format(
+                    reader.line_num, used, Utils.memory_usage_resource()))
+            if int(EOLrow[2]) == iucn_num and EOLrow[1]: #there are lots of IUCN rows with no IUCN number, so check EOLrow[1]!= "" and != None
+                try:
+                    for ott in eol_mapping[int(EOLrow[3])]:
+                        OTT_ptrs[ott]['iucn'] = str(EOLrow[1])
+                        used += 1
+                except LookupError:
+                    pass #no equivalent eol id in eol_mapping
+                except ValueError:
+                    logger.warning(
+                        " Cannot convert IUCN ID {} to integer on line {} of {}."
+                        .format(EOLrow[1], reader.line_num, identifiers_file.name))
 
     logger.debug(
         " Matched {} IUCN entries in the EoL identifiers file. Mem usage {:.1f} Mb"
         .format(used, Utils.memory_usage_resource()))
 
     #now go through and double-check against IUCN stored on wikidata
-    for OTTid, data in OTT_ptrs.items():
+    for OTTid, data in tqdm(
+      OTT_ptrs.items(),
+      desc="Matching wikidata IUCN ids",
+      total=len(OTT_ptrs),
+      file=sys.stdout,
+      disable=not progress_bar):
         try:
             wd_iucn = str(data['wd']['initial_wiki_item']['iucn'])
             if 'iucn' in data:
@@ -726,12 +742,12 @@ def main():
         construct_wiki_info(OTT_ptrs, args.progress)
         
         logger.info("Supplementing ids (EOL/IPNI) with ones from wikidata")
-        supplement_from_wikidata(OTT_ptrs)
+        supplement_from_wikidata(OTT_ptrs, args.progress)
     else:
         logger.info("No wikidataDumpFile given, so skipping wiki mapping")
         
     logger.info("Populating IUCN IDs using EOL csv file (or if absent, wikidata)")
-    populate_iucn(OTT_ptrs, args.EOLidentifiers)
+    populate_iucn(OTT_ptrs, args.EOLidentifiers, args.progress)
     
     
     if args.popularity_file is not None and args.wikipediaSQLDumpFile is not None and args.wikipedia_totals_bz2_pageviews:
