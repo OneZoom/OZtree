@@ -6,6 +6,7 @@ import sys
 import os
 import io
 import bz2
+import gzip
 import resource
 
 # from https://stackoverflow.com/a/52213302/
@@ -27,6 +28,26 @@ class ProgressFileWrapper(io.TextIOBase):
         if buf:
             self.callback(len(buf))
         return buf
+
+class SimpleGZtextfile(object):
+    """
+    A gzip file reader where tell() gives the position in the uncompressed file
+    """
+    def __init__(self, filehandle, encoding):
+        self.rawinput = filehandle
+        self.uncompressed = io.TextIOWrapper(gzip.GzipFile(mode="rb", fileobj=self.rawinput), encoding=encoding)
+    
+    def size(self):
+        return os.stat(self.rawinput.fileno()).st_size
+    
+    def tell(self):
+        return self.rawinput.tell()
+    
+    def __iter__(self):
+        return self.uncompressed
+    
+    def __next__(self):
+        return next(self.uncompressed)
 
 
 # from https://stackoverflow.com/a/15616994/
