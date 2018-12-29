@@ -389,10 +389,10 @@ def write_brief_newick(self, out, polytomy_braces="()", write_otts=False):
             if write_otts and 'ott' in self.data:
                 out.write(str(self.data['ott']))
 
-def write_pop_newick(self, out):
+def write_pop_newick(self, out, pop_store):
     """
     Copied from the default dendropy 4 function Node._write_newick
-    This returns the Node as a NEWICK statement but uses node.pop_store
+    This returns the Node as a NEWICK statement but uses getattr(node,pop_store)
     instead of node.edge.length for the edge length values.
     """
     child_nodes = self.child_nodes()
@@ -418,16 +418,9 @@ def write_pop_newick(self, out):
     except (AttributeError, KeyError):
         out.write(label)
     
-
+    sel = getattr(self, pop_store)
     if sel is not None:
-        s = ""
-        try:
-            s = float(sel)
-            s = str(s)
-        except ValueError:
-            s = str(sel)
-        if s:
-            out.write(":%s" % s)
+        out.write(":%s" % str(float(sel)))
 
 if __name__ == "__main__":
     #test
