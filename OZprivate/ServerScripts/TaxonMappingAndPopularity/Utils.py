@@ -55,9 +55,9 @@ class SimpleBZ2File(object):
     """
     A bz2 file reader where tell() gives the position in the uncompressed file
     """
-    def __init__(self,path,readsize=1024):
+    def __init__(self, filehandle, readsize=1024):
         self.decomp = bz2.BZ2Decompressor()
-        self.rawinput = open(path,'rb')
+        self.rawinput = filehandle
         self.eof = False
         self.readsize = readsize
         self.leftover = b''
