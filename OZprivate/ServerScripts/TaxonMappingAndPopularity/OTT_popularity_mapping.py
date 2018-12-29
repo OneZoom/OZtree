@@ -135,6 +135,8 @@ import json
 import logging
 from collections import defaultdict, OrderedDict
 
+from tqdm import tqdm
+
 __author__ = "Yan Wong"
 __license__ = '''This is free and unencumbered software released into the public domain by the author, Yan Wong, for OneZoom CIO.
 
@@ -150,17 +152,10 @@ logger = logging.getLogger(__name__)
 logging.EXTREME_DEBUG = logging.DEBUG + 1
 logging.addLevelName(logging.EXTREME_DEBUG, "DEBUG++")
 
-def memory_usage_resource():
-    import resource
-    rusage_denom = 1024.
-    if sys.platform == 'darwin':
-        # ... it seems that in OSX the output is different units ...
-        # perhaps update to try psutils instead
-        rusage_denom = rusage_denom * rusage_denom
-    mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / rusage_denom
-    return mem
+import Utils
 
-def create_from_taxonomy(OTTtaxonomy_file, sources, OTT_ptrs, extra_taxonomy_file=None):
+def create_from_taxonomy(OTTtaxonomy_file, sources, OTT_ptrs,
+    extra_taxonomy_file=None, progress_bar=False):
     '''
     Creates object data and a source_ptrs array pointing to elements within it.
     Also fills out the OTT_ptrs array to point to the right place.
@@ -189,13 +184,19 @@ def create_from_taxonomy(OTTtaxonomy_file, sources, OTT_ptrs, extra_taxonomy_fil
                 .format(extra_taxonomy_file))
         
     for f in data_files:
-        reader = csv.DictReader(f, delimiter='\t')
-        used = 0
-        for OTTrow in reader:
+      with tqdm(
+        desc="Reading taxonomy {}".format(os.path.basename(f.name)),
+        file=sys.stdout,
+        total=os.stat(identifiers_file.fileno()).st_size,
+        disable=not progress_bar) as progress:
+          wrapper = Utils.ProgressFileWrapper(f, progress.update)
+          reader = csv.DictReader(f, delimiter='\t')
+          used = 0
+          for OTTrow in reader:
             if ((reader.line_num-2) % 1000000 == 0): #first 2 lines are header & blank in taxonomy.tsv
                 logger.info(
                     "Reading taxonomy file {}: {} rows read, {} identifiers used,  mem usage {:.1f} Mb"
-                    .format(f.name, reader.line_num-2, used, memory_usage_resource()))
+                    .format(f.name, reader.line_num-2, used, Utils.memory_usage_resource()))
             try:
                 OTTid = int(OTTrow['uid'])
             except ValueError:
@@ -259,7 +260,8 @@ def wikidata_makebaseinfo(json_item, wikilang=''):
         basic_item['l'][lang] = data["title"].replace(" ", "_") if lang==wikilang else 1
     return basic_item
 
-def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang, 
+def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang,
+    progress_bar=False,
     EOLid_property_id='P830', 
     IUCNid_property_id=['P141','P627'], 
     IPNIid_property_id='P961'):
@@ -320,13 +322,19 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang,
     filesize = os.path.getsize(wikidata_json_dump_file.name)
     with bz2.open(wikidata_json_dump_file, 'rb') as WDF: #open filehandle, to allow read as bytes (converted to UTF8 later)
       n_eol=n_iucn=n_ipni=0
-      for line_num, line in enumerate(WDF):
+      for line_num, line in tdqm(
+        enumerate(WDF)
+        desc="Reading wikidata dump",
+        file=sys.stdout,
+        total=os.stat(tree_filehandle.fileno()).st_size,
+        disable=not progress_bar):
         if (line_num % 1000000 == 0):
                 logger.info("Reading wikidata JSON dump: {}% done. "
                   "{} entries read, {} taxon entries found, "
                   "{} with EoL ids, {} with IUCN ids, {} with IPNIs:  mem usage {:.1f} Mb"
                   .format(wikidata_json_dump_file.tell()*100.0 / filesize, 
-                    line_num, len(wikidata_taxon_info), n_eol, n_iucn, n_ipni, memory_usage_resource()))
+                    line_num, len(wikidata_taxon_info), n_eol, n_iucn, n_ipni, 
+                    Utils.memory_usage_resource()))
         #this file is in byte form, so must match byte strings
         if line.startswith(b'{"type":"item"') and initial_byte_match.search(line): #}'
           #done fast match, now check by parsing JSON (slower)
@@ -484,7 +492,9 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang,
       logger.warning("The following common name wikidata items (listed by Qid) have been used for more than one taxon item: this may cause duplicate use of the same popularity measure. {}".format(duplicates))
     logger.info(
       " NB: {} wikidata matches, of which {} have eol IDs, {} have IUCN ids, {} have IPNI, and {} ({:.2f}%) have titles that exist on the {} wikipedia. mem usage {:.1f} Mb"
-      .format(len(wikidata_taxon_info), n_eol,n_iucn, n_ipni, len(wikilang_title_ptrs), len(wikilang_title_ptrs)/len(wikidata_taxon_info) * 100, wikilang, memory_usage_resource()))
+      .format(len(wikidata_taxon_info), n_eol,n_iucn, n_ipni, len(wikilang_title_ptrs), 
+        len(wikilang_title_ptrs)/len(wikidata_taxon_info) * 100, wikilang, 
+        Utils.memory_usage_resource()))
     return(wikilang_title_ptrs)
 
 
@@ -524,7 +534,8 @@ def identify_best_wikidata(OTT_ptrs, order_to_trust):
     """
     
     logger.info(
-        "Finding best wiki matches. Mem use {:.1f} Mb".format(memory_usage_resource()))
+        "Finding best wiki matches. Mem use {:.1f} Mb"
+        .format(Utils.memory_usage_resource()))
     OTTs_with_wd = allOTTs = 0
     for OTTid, data in OTT_ptrs.items():
         try:
@@ -558,7 +569,7 @@ def identify_best_wikidata(OTT_ptrs, order_to_trust):
             logger.debug(" {}, chosen {}".format(errstr, best['final_wiki_item']['Q']))
     logger.info(
         " NB: of {} OpenTree taxa, {} ({:.2f}%) have wikidata entries. Mem use {:.1f} Mb"
-        .format(allOTTs, OTTs_with_wd, OTTs_with_wd/allOTTs * 100, memory_usage_resource()))
+        .format(allOTTs, OTTs_with_wd, OTTs_with_wd/allOTTs * 100, Utils.memory_usage_resource()))
 
 def add_pagesize_for_titles(wiki_title_ptrs, wikipedia_SQL_dump):
     """
@@ -585,7 +596,7 @@ def add_pagesize_for_titles(wiki_title_ptrs, wikipedia_SQL_dump):
             if (pagelen_file.line_num % 500 == 0):
                 logger.info(
                     "Reading page details from SQL dump to find page sizes: {} lines ({} pages) read. Mem use {:.1f} Mb"
-                    .format(pagelen_file.line_num,pagelen_file.line_num*1000, memory_usage_resource()))
+                    .format(pagelen_file.line_num,pagelen_file.line_num*1000, Utils.memory_usage_resource()))
             field_num=0
             #the records are all on the same line, separated by '),(', so we need to count fields into the line.
             for f in fields:
@@ -607,7 +618,7 @@ def add_pagesize_for_titles(wiki_title_ptrs, wikipedia_SQL_dump):
                         used += 1
     logger.info(
         " NB: of {} titles of taxa on the {} wikipedia, {} ({:.2f}%) have page size data. Mem use {:.1f} Mb"
-        .format(len(wiki_title_ptrs), wikipedia_SQL_dump if isinstance(wikipedia_SQL_dump, str) else wikipedia_SQL_dump.name, used, used/len(wiki_title_ptrs) * 100, memory_usage_resource()))
+        .format(len(wiki_title_ptrs), wikipedia_SQL_dump if isinstance(wikipedia_SQL_dump, str) else wikipedia_SQL_dump.name, used, used/len(wiki_title_ptrs) * 100, Utils.memory_usage_resource()))
 
 
 def add_pageviews_for_titles(wiki_title_ptrs, array_of_opened_files, wikilang, wiki_suffix="z"):
@@ -666,7 +677,7 @@ def visits_for_titles(wiki_title_ptrs, wiki_visits_pagecounts_file, file_index, 
                 if (n % 10000000 == 0):
                     logger.info(
                         "Reading pagecount file of number of page views: {} entries read from file {} ({}). Mem use {} Mb"
-                        .format(n, file_index, wiki_visits_pagecounts_file.name, memory_usage_resource()))
+                        .format(n, file_index, wiki_visits_pagecounts_file.name, Utils.memory_usage_resource()))
                 if line.startswith(match_project):
                     try:
                         info = line[start_char:].rstrip(b'\r\n\\rn').rsplit(b' ', 1)
@@ -701,7 +712,7 @@ def visits_for_titles(wiki_title_ptrs, wiki_visits_pagecounts_file, file_index, 
         .format(
             len(wiki_title_ptrs), used, used/len(wiki_title_ptrs) * 100, wikicode, 
             getattr(wiki_visits_pagecounts_file, 'name', wiki_visits_pagecounts_file),
-            memory_usage_resource()))
+            Utils.memory_usage_resource()))
 
 def calc_popularities_for_wikitaxa(wiki_items, popularity_function, trim_highest=2):
     ''' calculate popularities for wikidata entries, based on page size & page views
@@ -723,7 +734,7 @@ def calc_popularities_for_wikitaxa(wiki_items, popularity_function, trim_highest
             pass
     logger.info(
         " NB: of {} WikiData taxon entries, {} ({:.2f}%) have popularity measures. mem usage {:.1f} Mb"
-        .format(len(wiki_items), used, used/len(wiki_items) * 100, memory_usage_resource()))
+        .format(len(wiki_items), used, used/len(wiki_items) * 100, Utils.memory_usage_resource()))
 
 
     
@@ -759,7 +770,7 @@ def sum_popularity_over_tree(tree, OTT_ptrs=None, exclude=[], pop_store='pop'):
     
     logger.info(
         " Tree read for phylogenetic popularity calc: mem usage {:.1f} Mb"
-        .format(memory_usage_resource()))
+        .format(Utils.memory_usage_resource()))
     
     #put popularity into the pop_store attribute
     for node in tree.preorder_node_iter():

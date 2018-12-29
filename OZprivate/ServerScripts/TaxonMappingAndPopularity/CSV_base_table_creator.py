@@ -71,8 +71,8 @@ from dendropy import Node, Tree
 from tqdm import tqdm
 
 #local packages
+import Utils
 from dendropy_extras import write_pop_newick
-import OTT_popularity_mapping
 # to get globals from ../../../models/_OZglobals.py
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir, "models")))
 from _OZglobals import wikiflags
@@ -94,32 +94,6 @@ logger = logging.getLogger(__name__)
 logging.EXTREME_DEBUG = logging.DEBUG + 1
 logging.addLevelName(logging.EXTREME_DEBUG, "DEBUG++")
 
-def _make_gen(reader):
-    b = reader(1024 * 1024)
-    while b:
-        yield b
-        b = reader(1024*1024)
-
-def rawgencount(filename, byte_to_count=b'\n'):
-    f = open(filename, 'rb')
-    f_gen = _make_gen(f.raw.read)
-    return sum( buf.count(byte_to_count) for buf in f_gen )
-
-class ProgressFileWrapper(io.TextIOBase):
-    def __init__(self, file, callback):
-        self.file = file
-        self.callback = callback
-    def read(self, size=-1):
-        buf = self.file.read(size)
-        if buf:
-            self.callback(len(buf))
-        return buf
-    def readline(self, size=-1):
-        buf = self.file.readline(size)
-        if buf:
-            self.callback(len(buf))
-        return buf
-
 def is_unnamed_OTT(OTTid):
     """
     TO DO: I'm not sure when we use unnamed nodes with an OTT, so unsure if this is needed
@@ -139,7 +113,7 @@ def get_OTT_species(taxonomy_file):
             species_list.add(int(row['uid']))
     return(species_list)
     
-def get_tree_and_OTT_list(tree_filehandle, sources):
+def get_tree_and_OTT_list(tree_filehandle, sources, progress_bar):
     """
     Takes a base tree and creates objects for each node and leaf, attaching them as 'data' dictionaries
     to each node in the DendroPy tree. Nodes and leaves with an OTT id also have pointers to their data 
@@ -155,25 +129,27 @@ def get_tree_and_OTT_list(tree_filehandle, sources):
     indexed_by_ott={}
     
     try:
-        size = os.stat(tree_filehandle.fileno()).st_size
-        with tqdm(desc="Reading tree", file=sys.stdout, total=size) as progress:
-            wrapper = ProgressFileWrapper(tree_filehandle, progress.update)
-            tree = Tree.get_from_stream(wrapper, schema="newick",
-                preserve_underscores=True, suppress_leaf_node_taxa=True)
+        with tqdm(
+            desc="Reading tree",
+            file=sys.stdout,
+            total=os.stat(tree_filehandle.fileno()).st_size,
+            disable=not progress_bar) as progress:
+                wrapper = Utils.ProgressFileWrapper(tree_filehandle, progress.update)
+                tree = Tree.get_from_stream(wrapper, schema="newick",
+                    preserve_underscores=True, suppress_leaf_node_taxa=True)
     except:
         sys.exit("Problem reading tree from " + treefile.name)
     logger.info("-> read tree from " + tree_filehandle.name)
     
     ott_node = re.compile(r"(.*) ott(\d+)(@\d*)?$") #matches the OTT number
     mrca_ott_node = re.compile(r"(.*) (mrcaott\d+ott\d+)(@\d*)?$") #matches a node with an "mrca" node number (no unique OTT)
-    rough_n_nodes = rawgencount(tree_filehandle.name, b',') + \
-        rawgencount(tree_filehandle.name, b')') #rough number is close braces \
-        # (for internal nodes plus last leaf in clade) plus commas for remaining leaves
+    n_nodes = len(tree.bipartition_encoding)
     for i, node in tqdm(
-        enumerate(tree.preorder_node_iter()),
-        desc="Parsing node names",
-        file=sys.stdout,
-        total=rough_n_nodes):
+      enumerate(tree.preorder_node_iter()),
+      desc="Parsing node names",
+      file=sys.stdout,
+      total=n_nodes,
+      disable=not progress_bar):
         node.data = {'parent':node.parent_node or None}
         if node.label:
             node.label = node.label.replace("_"," ")
@@ -219,26 +195,32 @@ def get_tree_and_OTT_list(tree_filehandle, sources):
     logger.info("-> extracted {} otts from among {} leaves and nodes".format(len(indexed_by_ott), i))
     return tree, indexed_by_ott
 
-def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mapping):
+def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mapping, progress_bar):
     used=0
     EOL2OTT = {v:k for k,v in source_mapping.items()}
     identifiers_file.seek(0)
-    reader = csv.reader(identifiers_file, escapechar='\\')
-    for EOLrow in tqdm(reader, file=sys.stdout, total=rawgencount(identifiers_file.name)):
-        if (reader.line_num % 1000000 == 0):
-            logger.info("-> {} rows read, {} used,  mem usage {:.1f} Mb".format(
-                reader.line_num, used, OTT_popularity_mapping.memory_usage_resource()))
-        provider = int(EOLrow[2])
-        if provider in EOL2OTT:
-            src = source_ptrs[EOL2OTT[provider]]
-            providerid = str(EOLrow[1])
-            EOLid = int(EOLrow[3])
-            if providerid in src:
-                used += 1;
-                src[providerid]['EoL'] = EOLid
-    logger.debug(
-        " Matched {} EoL entries in the EoL identifiers file. Mem usage {:.1f} Mb"
-        .format(used, OTT_popularity_mapping.memory_usage_resource()))
+    with tqdm(
+      desc="Matching EoL ids",
+      file=sys.stdout,
+      total=os.stat(identifiers_file.fileno()).st_size,
+      disable=not progress_bar) as progress:
+        wrapper = Utils.ProgressFileWrapper(identifiers_file, progress.update)
+        reader = csv.reader(wrapper, escapechar='\\')
+        for EOLrow in reader:
+            if (reader.line_num % 1000000 == 0):
+                logger.info("-> {} rows read, {} used,  mem usage {:.1f} Mb".format(
+                    reader.line_num, used, Utils.memory_usage_resource()))
+            provider = int(EOLrow[2])
+            if provider in EOL2OTT:
+                src = source_ptrs[EOL2OTT[provider]]
+                providerid = str(EOLrow[1])
+                EOLid = int(EOLrow[3])
+                if providerid in src:
+                    used += 1;
+                    src[providerid]['EoL'] = EOLid
+        logger.debug(
+            " Matched {} EoL entries in the EoL identifiers file. Mem usage {:.1f} Mb"
+            .format(used, Utils.memory_usage_resource()))
 
 def identify_best_EoLdata(OTT_ptrs, sources):
     '''
@@ -247,7 +229,7 @@ def identify_best_EoLdata(OTT_ptrs, sources):
     to use. We take the one with the most sources supporting this entry: if there is a tie, we take the lowest, as recommended by JRice from EoL
     '''
     logger.debug("Finding best EoL matches. mem usage {:.1f} Mb".format(
-            OTT_popularity_mapping.memory_usage_resource()))
+            Utils.memory_usage_resource()))
     validOTTs = OTTs_with_EOLmatch = dups = 0
     for OTTid, data in OTT_ptrs.items():
         if is_unnamed_OTT(OTTid):
@@ -279,7 +261,7 @@ def identify_best_EoLdata(OTT_ptrs, sources):
         " NB: of {} OpenTree taxa, {} ({:.2f}%) have EoL entries in the EoL identifiers "
         "file, and {} have multiple possible EOL ids. Mem usage {:.1f} Mb".format(
             validOTTs, OTTs_with_EOLmatch, OTTs_with_EOLmatch/validOTTs * 100, dups, 
-            OTT_popularity_mapping.memory_usage_resource()))
+            Utils.memory_usage_resource()))
 
 def supplement_from_wikidata(OTT_ptrs):
     """
@@ -335,7 +317,7 @@ def populate_iucn(OTT_ptrs, identifiers_file):
     for EOLrow in reader:
         if (reader.line_num % 1000000 == 0):
             logger.info("{} rows read, {} used,  mem usage {:.1f} Mb".format(
-                reader.line_num, used, OTT_popularity_mapping.memory_usage_resource()))
+                reader.line_num, used, Utils.memory_usage_resource()))
         if int(EOLrow[2]) == iucn_num and EOLrow[1]: #there are lots of IUCN rows with no IUCN number, so check EOLrow[1]!= "" and != None
             try:
                 for ott in eol_mapping[int(EOLrow[3])]:
@@ -350,7 +332,7 @@ def populate_iucn(OTT_ptrs, identifiers_file):
 
     logger.debug(
         " Matched {} IUCN entries in the EoL identifiers file. Mem usage {:.1f} Mb"
-        .format(used, OTT_popularity_mapping.memory_usage_resource()))
+        .format(used, Utils.memory_usage_resource()))
 
     #now go through and double-check against IUCN stored on wikidata
     for OTTid, data in OTT_ptrs.items():
@@ -689,7 +671,9 @@ def main():
         help='An optional additional file to supplement the taxonomy.tsv file, providing additional mappings from OTTs to source ids (useful for overriding . The first line should be a header contining "uid" and "sourceinfo" column headers, as taxonomy.tsv. NB the OTT can be a number, or an ID of the form "mrcaott409215ott616649").')
     parser.add_argument('--info_on_focal_labels', nargs='*', default=[], 
         help='Output some extra information for these named taxa, for debugging purposes')        
-    parser.add_argument('--verbosity', '-v', action="count", default=0, 
+    parser.add_argument('--progress', '-P', action="store_true",
+        help='As well as outputting info to stderr, also show a progress bar on stdout')
+    parser.add_argument('--verbosity', '-v', action="count", default=0,
         help='verbosity: output extra non-essential info')
 
     args = parser.parse_args()
@@ -713,11 +697,11 @@ def main():
     sources.update(nonint_sources)
     
     logger.info("Creating tree structure")
-    tree, OTT_ptrs = get_tree_and_OTT_list(args.Tree, sources)
+    tree, OTT_ptrs = get_tree_and_OTT_list(args.Tree, sources, args.progress)
     
     logger.info("Adding source IDs")
     source_ptrs = OTT_popularity_mapping.create_from_taxonomy(
-        args.OpenTreeTaxonomy, sources, OTT_ptrs, args.extra_source_file)
+        args.OpenTreeTaxonomy, sources, OTT_ptrs, args.extra_source_file, args.progress)
     
     logger.info("Adding EOL IDs from EOL csv file")
     add_eol_IDs_from_EOL_table_dump(source_ptrs, args.EOLidentifiers, sources)
