@@ -185,7 +185,7 @@ def create_from_taxonomy(OTTtaxonomy_file, sources, OTT_ptrs,
         
     for f in data_files:
       with tqdm(
-        desc="Reading taxonomy {}".format(os.path.basename(f.name)),
+        desc="Reading taxonomy ({})".format(os.path.basename(f.name)),
         file=sys.stdout,
         total=os.stat(f.fileno()).st_size,
         disable=not progress_bar) as progress:
@@ -321,12 +321,12 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang,
   initial_byte_match = re.compile('numeric-id":(?:{})\D'.format(regexp_match).encode())
   filesize = os.path.getsize(wikidata_json_dump_file.name)
   n_eol=n_iucn=n_ipni=0
-  WDF = SimpleBZ2File(wikidata_json_dump_file, 262144) #open filehandle, to allow read as bytes (converted to UTF8 later)
-  with tdqm(
-    desc="Reading wikidata dump",
-    file=sys.stdout,
-    total=WDF.size(),
-    disable=not progress_bar) as progress:
+  #open filehandle, to allow reading as bytes (converted to UTF8 later)
+  WDF = Utils.SimpleBZ2File(wikidata_json_dump_file, 262144)
+  with tdqm(desc="Reading wikidata dump",
+            file=sys.stdout,
+            total=WDF.size(),
+            disable=not progress_bar) as progress:
       prev_pos=WDF.tell()
       for line_num, line in enumerate(WDF):
         pos=WDF.tell()
@@ -688,10 +688,18 @@ def visits_for_titles(wiki_title_ptrs, wiki_visits_pagecounts_file, file_index, 
     match_project = (wikicode +' ').encode() 
     start_char = len(match_project)
     
-    with bz2.open(wiki_visits_pagecounts_file, 'rb') as PAGECOUNTfile:
+    PAGECOUNTfile = Utils.SimpleBZ2File(wiki_visits_pagecounts_file, 262144)
+    with tdqm(desc="Reading wikipedia page visits",
+              file=sys.stdout,
+              total=PAGECOUNTfile.size(),
+              disable=not progress_bar) as progress:
         try:
+            prev_pos=PAGECOUNTfile.tell()
             problem_lines = [] #there are apparently some errors in the unicode dumps
             for n, line in enumerate(PAGECOUNTfile):
+                pos=PAGECOUNTfile.tell()
+                progress.update(pos-prev_pos)
+                prev_pos = pos
                 if (n % 10000000 == 0):
                     logger.info(
                         "Reading pagecount file of number of page views: {} entries read from file {} ({}). Mem use {} Mb"
