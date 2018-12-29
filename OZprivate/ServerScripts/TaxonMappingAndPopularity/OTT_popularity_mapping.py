@@ -323,7 +323,7 @@ def add_wikidata_info(source_ptrs, wikidata_json_dump_file, wikilang,
   n_eol=n_iucn=n_ipni=0
   #open filehandle, to allow reading as bytes (converted to UTF8 later)
   WDF = Utils.SimpleBZ2File(wikidata_json_dump_file, 262144)
-  with tdqm(desc="Reading wikidata dump",
+  with tqdm(desc="Reading wikidata dump",
             file=sys.stdout,
             total=WDF.size(),
             disable=not progress_bar) as progress:
@@ -689,7 +689,7 @@ def visits_for_titles(wiki_title_ptrs, wiki_visits_pagecounts_file, file_index, 
     start_char = len(match_project)
     
     PAGECOUNTfile = Utils.SimpleBZ2File(wiki_visits_pagecounts_file, 262144)
-    with tdqm(desc="Reading wikipedia page visits",
+    with tqdm(desc="Reading wikipedia page visits",
               file=sys.stdout,
               total=PAGECOUNTfile.size(),
               disable=not progress_bar) as progress:
@@ -800,6 +800,7 @@ def add_popularities_to_tree(tree, pop_store, OTT_ptrs=None, exclude=[]):
                 pop = None
         setattr(node, pop_store, pop)
     return tree
+
     
 def sum_popularity_over_tree(tree, pop_store):
     """    
@@ -820,12 +821,12 @@ def sum_popularity_over_tree(tree, pop_store):
             node.descendants_popsum = 0
             node.n_descendants = 0
         try:
-            node._parent_node.n_descendants += (1+node.n_descendants)
-            node._parent_node.descendants_popsum += (node.pop_store + node.descendants_popsum)
+            node._parent_node.n_descendants += 1 + node.n_descendants
+            node._parent_node.descendants_popsum += (getattr(node, pop_store, None) or 0) + node.descendants_popsum
         except AttributeError: #could be the first time we have checked the parent
             try:
-                node._parent_node.n_descendants = (1 + node.n_descendants)
-                node._parent_node.descendants_popsum = (node.pop_store + node.descendants_popsum)
+                node._parent_node.n_descendants = 1 + node.n_descendants
+                node._parent_node.descendants_popsum = (getattr(node, pop_store, None) or 0) + node.descendants_popsum
             except AttributeError: #this could be the root, with node._parent_node = None
                 root_descendants=node.n_descendants
     
@@ -840,7 +841,7 @@ def sum_popularity_over_tree(tree, pop_store):
             node.ancestors_popsum = 0.0   
         else:
             node.n_ancestors = node._parent_node.n_ancestors + 1
-            node.ancestors_popsum = node._parent_node.ancestors_popsum + node.pop_store
+            node.ancestors_popsum = node._parent_node.ancestors_popsum + (getattr(node, pop_store, None) or 0)
             if getattr(node, 'has_pop', None):
                 node.n_pop_ancestors = node._parent_node.n_pop_ancestors + 1
             else:
@@ -855,7 +856,7 @@ def sum_popularity_over_tree(tree, pop_store):
     if OTT_ptrs:
         for node in tree.preorder_node_iter():
             try:
-                OTT_ptrs[int(node.label.rsplit("_ott",1)[1])]['pop_self'] = node.pop_store
+                OTT_ptrs[int(node.label.rsplit("_ott",1)[1])]['pop_self'] = getattr(node, pop_store, None)
                 OTT_ptrs[int(node.label.rsplit("_ott",1)[1])]['pop_ancst'] = node.ancestors_popsum #nb, this includes popularity of self
                 OTT_ptrs[int(node.label.rsplit("_ott",1)[1])]['pop_dscdt'] = node.descendants_popsum
                 OTT_ptrs[int(node.label.rsplit("_ott",1)[1])]['n_ancst'] = node.n_ancestors
@@ -864,7 +865,6 @@ def sum_popularity_over_tree(tree, pop_store):
                 OTT_ptrs[int(node.label.rsplit("_ott",1)[1])]['is_seed_plant'] = node.seedplant
             except (LookupError, AttributeError):
                 pass
-    return tree
 
 if __name__ == "__main__":
     import argparse
@@ -901,7 +901,8 @@ if __name__ == "__main__":
     calc_popularities_for_wikitaxa(wiki_title_ptrs.values(), "")
     
     if args.OpenTreeFile:
-        sum_popularity_over_tree(OTT_ptrs, args.OpenTreeFile, args.exclude)
+        tree = add_popularities_to_tree(args.OpenTreeFile, 'raw_pop', OTT_ptrs, args.exclude)
+        sum_popularity_over_tree(tree)
         startrows = ["OTT_ID", "PopAncestors", "PopDescendants", "NumAncestors", "NumDescendants", "NumPopAncestors"]
     else:
         startrows = ["OTT_ID"]
