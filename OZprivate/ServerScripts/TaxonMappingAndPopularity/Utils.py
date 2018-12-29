@@ -3,6 +3,7 @@
 Utility routines, e.g. for reading size of large files to produce progress monitors
 '''
 import io
+import os
 import bz2
 import resource
 
@@ -40,7 +41,7 @@ class SimpleBZ2File(object):
         self.leftover = ''
 
     def size(self):
-        return self.rawinput.fileno()).st_size
+        return os.stat(self.rawinput.fileno()).st_size
 
     def tell(self):
         return self.rawinput.tell()
