@@ -768,11 +768,12 @@ def main():
     if args.popularity_file is not None and args.wikipediaSQLDumpFile is not None and args.wikipedia_totals_bz2_pageviews:
         if args.popularity_file != "" and os.path.isfile(args.popularity_file):
             # An existing popularity file was passed in. Use this for popularities (for experimenting with popularity algorithms)
+            logger.info("Getting popularity info from {}".format(args.popularity_file))    
             popularity_tree = Tree.get_from_path(args.popularity_file, schema="newick",
                 preserve_underscores=True, suppress_leaf_node_taxa=True)
             tree = add_popularities_from_tree(tree, popularity_tree, pop_store)
         else:
-            logger.info("Getting popularity info")    
+            logger.info("Getting popularity info from wiki dumps")    
             OTT_popularity_mapping.add_pagesize_for_titles(
                 wiki_title_ptrs, args.wikipediaSQLDumpFile)
             OTT_popularity_mapping.add_pageviews_for_titles(
@@ -787,7 +788,7 @@ def main():
 
             # Saving the tree with branch lengths as raw popularities means we can 
             # recalculate values easily. 
-            if args.popularity_file:
+            if args.popularity_file != "":
                 write_popularity_tree(
                     tree, args.output_location, args.popularity_file, args.version)
 
