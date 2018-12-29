@@ -29,12 +29,18 @@ class ProgressFileWrapper(io.TextIOBase):
 
 # from https://stackoverflow.com/a/15616994/
 class SimpleBZ2File(object):
+    """
+    A bz2 file reader where tell() gives the position in the uncompressed file
+    """
     def __init__(self,path,readsize=1024):
         self.decomp = bz2.BZ2Decompressor()
         self.rawinput = open(path,'rb')
         self.eof = False
         self.readsize = readsize
         self.leftover = ''
+
+    def size(self):
+        return self.rawinput.fileno()).st_size
 
     def tell(self):
         return self.rawinput.tell()
