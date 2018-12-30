@@ -276,7 +276,8 @@ def write_preorder_ages(self, node_dates_filehandle, leaf_dates_filehandle=None,
     node_dates_filehandle.write(end[-1])
     node_dates_filehandle.flush()
 
-def write_preorder_to_csv(self, leaf_file, extra_leaf_data_properties, node_file, extra_node_data_properties, root_parent_id):
+def write_preorder_to_csv(self, leaf_file, extra_leaf_data_properties, node_file, 
+    extra_node_data_properties, root_parent_id, callback=None):
     """
     Write the leaf and node info for this tree to csv files.
     * for leaves, always write the parent, name, and extinction_data
@@ -353,7 +354,8 @@ def write_preorder_to_csv(self, leaf_file, extra_leaf_data_properties, node_file
                 except (KeyError, TypeError, AttributeError): #catch none existent key name, None, or no data attribute (e.g. for polytomies)
                     extra_node_output[colname] = None
             node_csv.writerow(base_output + list(extra_node_output.values()))
-
+        if callback is not None:
+            callback()
 
 #
 # To be patched into the Node object
