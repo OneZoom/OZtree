@@ -30,6 +30,7 @@ wikiflags = cache.ram('wikiflags',
     lambda: {lang:bit for (bit,lang) in enumerate(['en','de','es','fr','ja','ru','it','zh','pt','ar','pl','nl','fa','tr','sv','he','uk','id','vi','ko'])},
     time_expire = None)
 
+#OneZoom images tend to be from EoL, with the same data_object IDs
 src_flags = cache.ram('src_flags',
     lambda: {'onezoom':1, 'eol':2, 'wikidata':3, 'iucn':4, 'arkive':5, 'eol_old':6, 'onezoom_special':8},
     time_expire = None)
