@@ -727,7 +727,7 @@ def visits_for_titles(
                 " Problem with end of file: {}. Used {} entries (should be {}: {}%. Skipping to next"
                 .format(e.args[-1],used, len(wiki_title_ptrs), used/len(wiki_title_ptrs) * 100))
         if len(problem_lines):
-            if logger.get_effective_level() == logging.EXTREME_DEBUG:
+            if logger.getEffectiveLevel() == logging.EXTREME_DEBUG:
                 logger.log(logging.EXTREME_DEBUG,
                     " Problem decoding certain lines: the following lines have been ignored:\n{}"
                     .format("  \n".join(problem_lines)))
