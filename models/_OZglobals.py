@@ -19,12 +19,8 @@ except ImportError:
         """Don't make urls when used as an independent app"""
         return args
         
-    if sys.version_info[0] == 3:
-        def unichr(x):
-            return chr(x)
-        def xrange(x):
-            return range(x)
-
+if sys.version_info[0] == 2:
+    range = xrange
     
 percent_crop_expansion = 12.5 #max amount to expand crops by to fit in circle
 
@@ -249,7 +245,7 @@ conversion_table = cache.ram('conversion_table',
 #allow global subbing Separators & Punctuation with a normal space
 #this is a slow definition, so we cache it in RAM, and import unicodedata within the lambda
 unicode_punctuation_to_space_table = cache.ram('unicode_punctuation_to_space_table',
-    lambda: {i:u' ' for i in xrange(sys.maxunicode) \
+    lambda: {i:u' ' for i in range(sys.maxunicode) \
         if __import__('unicodedata').category(chr(i)).startswith('Z') \
         or (__import__('unicodedata').category(chr(i)).startswith('P') \
         and chr(i) not in [u"'",u"’",u"-",u".",u"×", u"#"])}, # allow e.g. ' in names
