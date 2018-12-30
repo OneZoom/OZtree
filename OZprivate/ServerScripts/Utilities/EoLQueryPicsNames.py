@@ -148,8 +148,6 @@ def lookup_and_save_bespoke_EoL_images(eol_dataobject_to_ott, sess, API_key, db_
                         assert os.path.sep not in last_3_chars
                         assert last_3_chars not in (os.curdir, os.pardir)
                         output_to = os.path.join(args.output_dir, str(src_flags['onezoom']), last_3_chars)
-                        print("Working dir: ", os.getcwd())
-                        print("Output to: ", output_to)
                         os.makedirs(output_to, exist_ok=True)
                         copyinfo = get_file_from_json_struct(image_info_json, output_to, args.thumbnail_size, 
                             add_percent = args.add_percent)
