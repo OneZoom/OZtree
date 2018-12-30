@@ -31,7 +31,7 @@ wikiflags = cache.ram('wikiflags',
     time_expire = None)
 
 src_flags = cache.ram('src_flags',
-    lambda: {'onezoom':1, 'eol':2, 'wikidata':3, 'iucn':4, 'arkive':5, 'onezoom_special':8},
+    lambda: {'onezoom':1, 'eol':2, 'wikidata':3, 'iucn':4, 'arkive':5, 'eol_old':6, 'onezoom_special':8},
     time_expire = None)
     
 inv_src_flags = cache.ram('inv_src_flags',
