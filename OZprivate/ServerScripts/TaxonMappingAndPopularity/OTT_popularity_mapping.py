@@ -598,7 +598,7 @@ def add_pagesize_for_titles(wiki_title_ptrs, wikipedia_SQL_dump, progress_bar=Fa
     page_table_namespace_column = 2
     page_table_title_column = 3
     page_table_pagelen_column = 12
-    file = SimpleGZtextfile(wikipedia_SQL_dump, encoding='utf-8')
+    file = Utils.SimpleGZtextfile(wikipedia_SQL_dump, encoding='utf-8')
     #use csv reader as it copes well e.g. with escaped SQL quotes in fields etc.
     pagelen_file = csv.reader(file, quotechar='\'',doublequote=True)
     match_line = "INSERT INTO `page` VALUES"
