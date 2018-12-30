@@ -639,7 +639,8 @@ def add_pagesize_for_titles(wiki_title_ptrs, wikipedia_SQL_dump, progress_bar=Fa
         .format(len(wiki_title_ptrs), wikipedia_SQL_dump if isinstance(wikipedia_SQL_dump, str) else wikipedia_SQL_dump.name, used, used/len(wiki_title_ptrs) * 100, Utils.memory_usage_resource()))
 
 
-def add_pageviews_for_titles(wiki_title_ptrs, array_of_opened_files, wikilang, wiki_suffix="z"):
+def add_pageviews_for_titles(wiki_title_ptrs, array_of_opened_files, wikilang,
+    progress_bar=False, wiki_suffix="z"):
     '''
     Append monthly page visits to the data objects pointed to by wiki_title_ptrs. 
     We expect several months of data, each corresponding to a file, so we append 
@@ -660,10 +661,11 @@ def add_pageviews_for_titles(wiki_title_ptrs, array_of_opened_files, wikilang, w
     for title, obj in wiki_title_ptrs.items():     #fill arrays with 0 to start with: missing data indicates no hits that month
         obj['PGviews'] = len(array_of_opened_files)*[0]
     for index, pageviews_file in enumerate(array_of_opened_files):
-        visits_for_titles(wiki_title_ptrs, pageviews_file, index, wikicode)
+        visits_for_titles(wiki_title_ptrs, pageviews_file, index, wikicode, progress_bar)
 
 
-def visits_for_titles(wiki_title_ptrs, wiki_visits_pagecounts_file, file_index, wikicode):
+def visits_for_titles(
+    wiki_title_ptrs, wiki_visits_pagecounts_file, file_index, wikicode, progress_bar=False):
     '''
     Append page visits to the data objects. We expect several of these, so append each to an array, e.g.
     
@@ -740,7 +742,8 @@ def visits_for_titles(wiki_title_ptrs, wiki_visits_pagecounts_file, file_index, 
             getattr(wiki_visits_pagecounts_file, 'name', wiki_visits_pagecounts_file),
             Utils.memory_usage_resource()))
 
-def calc_popularities_for_wikitaxa(wiki_items, popularity_function, trim_highest=2):
+def calc_popularities_for_wikitaxa(wiki_items, popularity_function,
+    progress_bar=False, trim_highest=2):
     ''' calculate popularities for wikidata entries, based on page size & page views
     you might want to trim the highest viewing figures, to avoid spikes. trimming 2 months will remove spikes 
     that crosses from the end of one month to the beginning of another
@@ -750,7 +753,8 @@ def calc_popularities_for_wikitaxa(wiki_items, popularity_function, trim_highest
     '''
     from statistics import mean, StatisticsError
     used=0
-    for data in wiki_items:
+    for data in tqdm(wiki_items, desc="Raw popularity calc", file=sys.stdout,
+        disable=not progress_bar):
         try:
             #trim off the 2 highest values, to avoid spikes
             trMeanViews = mean(sorted([x for x in data['PGviews'] if x is not None],  reverse=True)[trim_highest:])
@@ -762,7 +766,7 @@ def calc_popularities_for_wikitaxa(wiki_items, popularity_function, trim_highest
         " NB: of {} WikiData taxon entries, {} ({:.2f}%) have popularity measures. mem usage {:.1f} Mb"
         .format(len(wiki_items), used, used/len(wiki_items) * 100, Utils.memory_usage_resource()))
 
-def add_popularities_to_tree(tree, pop_store, OTT_ptrs=None, exclude=[]):
+def add_popularities_to_tree(tree, pop_store, OTT_ptrs=None, exclude=[], progress_bar=False):
     """
     Add raw popularity measures onto a phylogenetic tree and return the tree.
     We might want to exclude some names from the popularity metric (e.g. exclude archosaurs, 
