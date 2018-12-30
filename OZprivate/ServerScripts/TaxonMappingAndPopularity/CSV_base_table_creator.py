@@ -143,7 +143,7 @@ def get_tree_and_OTT_list(tree_filehandle, sources, progress_bar=False):
     
     ott_node = re.compile(r"(.*) ott(\d+)(@\d*)?$") #matches the OTT number
     mrca_ott_node = re.compile(r"(.*) (mrcaott\d+ott\d+)(@\d*)?$") #matches a node with an "mrca" node number (no unique OTT)
-    n_nodes = sum(1 for _ in tree.preorder_node_iter()) # Annoyingly DendroPy doesn't store the number of nodes in a tree
+    n_nodes = sum(1 for _ in tree.preorder_node_iter()) # Annoyingly DendroPy doesn't store # nodes
     for i, node in tqdm(
       enumerate(tree.preorder_node_iter()),
       desc="Parsing node names",
@@ -304,7 +304,7 @@ def supplement_from_wikidata(OTT_ptrs, progress_bar=False):
         "Out of {} OTT taxa, {} ({:.2f}%) already have EOL ids from the EOL file."
         " Supplementing these with {} EOL ids from wikidata gives {:.1f}% coverage."
         .format(tot, EOLbase, EOLbase/tot * 100.0, EOLsupp, (EOLbase+EOLsupp)/tot * 100))
-    logger.info.debug("{} IPNI identifiers added via wikidata".format(IPNIsupp))
+    logger.debug("{} IPNI identifiers added via wikidata".format(IPNIsupp))
 
 
 def populate_iucn(OTT_ptrs, identifiers_file, progress_bar=False):
@@ -531,7 +531,7 @@ def add_popularities_from_tree(tree, tree_with_popularity_as_branch_lengths, pop
             setattr(node, pop_store, pop_node.edge_length)
     return tree
 
-def simplify_tree(tree, taxonomy_file, seed):
+def simplify_tree(tree, taxonomy_file, seed, progress_bar=False):
     """
     We should now have leaf entries attached to each node in the tree like
     data = {
@@ -573,45 +573,63 @@ def simplify_tree(tree, taxonomy_file, seed):
     Tree.create_leaf_popularity_rankings = create_leaf_popularity_rankings
     Tree.resolve_polytomies_add_popularity = resolve_polytomies_add_popularity
     
-    n = len(tree.prune_children_of_otts(get_OTT_species(taxonomy_file)))
-    logger.info(
-        "-> removed all children of {} nodes (nodes labeled as 'species' in '{}')"
-        .format(n, taxonomy_file.name))
-    
-    bad_sp =['cf.', 'aff.', 'subsp.', 'environmental sample'] #species names containing these (even initially) are discarded
-    bad_sp += [' cv.', ' sp.'] #species names containing these within the name are discarded: 
-    n = {k:len(v) for k,v in tree.prune_non_species(bad_matches = bad_sp).items()}
-    logger.info(
-        "-> removed {} blank leaves, {} with no space in the name, and {} containing {} "
-        "(assumed bad tips)".format(n['unlabelled'],n['no_space'],n['bad_match'], bad_sp))
-    
-    a, n = tree.set_node_ages()
-    logger.info(
-        "-> set ages on {} nodes and leaves, and removed {} extinction props"
-        .format(a,n))
-    
-    logger.info("-> removing unifurcations")
-    n_deleted_nodes = tree.remove_unifurcations_keeping_higher_taxa()
-    # see https://github.com/jeetsukumaran/DendroPy/issues/75
-    logger.info(" (removed {} unifurcations)".format(n_deleted_nodes))
-    
-    
-    logger.info("-> breaking polytomies at random with seed={}".format(seed))
-    tree.resolve_polytomies_add_popularity(seed)
+    with tqdm(desc="Simplifying tree (pruning subspecies )", file=sys.stdout, total=9, disable=not progress_bar) as progress:
+        n = len(tree.prune_children_of_otts(get_OTT_species(taxonomy_file)))
+        logger.info(
+            "-> removed all children of {} nodes (nodes labeled as 'species' in '{}')"
+            .format(n, taxonomy_file.name))
 
+        progress.update()
+        progress.set_description("Simplifying tree (pruning bad species)")
+        bad_sp =['cf.', 'aff.', 'subsp.', 'environmental sample'] #species names containing these (even initially) are discarded
+        bad_sp += [' cv.', ' sp.'] #species names containing these within the name are discarded: 
+        n = {k:len(v) for k,v in tree.prune_non_species(bad_matches = bad_sp).items()}
+        logger.info(
+            "-> removed {} blank leaves, {} with no space in the name, and {} containing {} "
+            "(assumed bad tips)".format(n['unlabelled'],n['no_space'],n['bad_match'], bad_sp))
+
+        progress.update()
+        progress.set_description("Simplifying tree (inserting node ages)")
+        a, n = tree.set_node_ages()
+        logger.info(
+            "-> set ages on {} nodes and leaves, and removed {} extinction props"
+            .format(a,n))
+
+        progress.update()
+        progress.set_description("Simplifying tree (culling unary nodes)")
+        logger.info("-> removing unifurcations")
+        n_deleted_nodes = tree.remove_unifurcations_keeping_higher_taxa()
+        # see https://github.com/jeetsukumaran/DendroPy/issues/75
+        logger.info(" (removed {} unifurcations)".format(n_deleted_nodes))
+        
+        
+        progress.update()
+        progress.set_description("Simplifying tree (breaking polytomies)")
+        logger.info("-> breaking polytomies at random with seed={}".format(seed))
+        tree.resolve_polytomies_add_popularity(seed)
     
-    #NB: we shouldn't need to (re)set popularity or ages, since deleting nodes 
-    #does not affect these, and both have been calculated *after* new
-    #nodes were created by resolve_polytomies. 
-    logger.info("-> setting real parents and ranking leaf popularity")
-    tree.set_real_parent_nodes()
-    tree.create_leaf_popularity_rankings()
-    
-    logger.info("-> ladderizing tree (groups with fewer leaves first)")
-    tree.ladderize(ascending=True) #warning: ladderize ascending is needed for the short OZ newick-like form
+        
+        #NB: we shouldn't need to (re)set popularity or ages, since deleting nodes 
+        #does not affect these, and both have been calculated *after* new
+        #nodes were created by resolve_polytomies. 
+        progress.update()
+        progress.set_description("Simplifying tree (making real parents)")
+        logger.info("-> setting real parents and ranking leaf popularity")
+        tree.set_real_parent_nodes()
+
+        progress.update()
+        progress.set_description("Simplifying tree (ranking popularity )")
+        tree.create_leaf_popularity_rankings()
+        
+        progress.update()
+        progress.set_description("Simplifying tree (ladderize ascending)")
+        logger.info("-> ladderizing tree (groups with fewer leaves first)")
+        tree.ladderize(ascending=True) #warning: ladderize ascending is needed for the short OZ newick-like form
+
+        progress.update()
 
 
-def output_treefiles(tree, outdir, version, save_sql=True):
+def save_treefiles(tree, outdir, version, save_sql=True, progress_bar=False):
     Node.write_brief_newick = dendropy_extras.write_brief_newick
     Tree.write_preorder_ages = dendropy_extras.write_preorder_ages
     Tree.write_preorder_to_csv = dendropy_extras.write_preorder_to_csv
@@ -663,8 +681,13 @@ def output_treefiles(tree, outdir, version, save_sql=True):
         
         for iucn_type in ['NE','DD','LC','NT','VU','EN','CR','EW','EX']:
                 node_extras['iucn'+iucn_type]=None
-        
-        tree.write_preorder_to_csv(leaves, leaf_extras, nodes, node_extras, -version)
+
+        with tqdm(desc="Saving files",
+                  file=sys.stdout,
+                  total=sum(1 for _ in tree.preorder_node_iter()), # Annoyingly DendroPy doesn't store # nodes
+                  disable=not progress_bar) as progress:
+            tree.write_preorder_to_csv(leaves, leaf_extras, nodes, node_extras, -version,
+                callback=progress.update)
     
     #make a copy of the csv file that can be imported into mySQL (has \\N for null values)
     if save_sql:
@@ -765,60 +788,65 @@ def main():
     populate_iucn(OTT_ptrs, args.EOLidentifiers, args.progress)
     
     
-    if args.popularity_file is not None and args.wikipediaSQLDumpFile is not None and args.wikipedia_totals_bz2_pageviews:
+    if args.popularity_file is not None:
+        popularity_exists = False
         if args.popularity_file != "" and os.path.isfile(args.popularity_file):
             # An existing popularity file was passed in. Use this for popularities (for experimenting with popularity algorithms)
             logger.info("Getting popularity info from {}".format(args.popularity_file))    
             popularity_tree = Tree.get_from_path(args.popularity_file, schema="newick",
                 preserve_underscores=True, suppress_leaf_node_taxa=True)
             tree = add_popularities_from_tree(tree, popularity_tree, pop_store)
-        else:
+            popularity_exists = True
+        elif args.wikipediaSQLDumpFile is not None and args.wikipedia_totals_bz2_pageviews:
             logger.info("Getting popularity info from wiki dumps")    
             OTT_popularity_mapping.add_pagesize_for_titles(
-                wiki_title_ptrs, args.wikipediaSQLDumpFile)
+                wiki_title_ptrs, args.wikipediaSQLDumpFile, args.progress)
             OTT_popularity_mapping.add_pageviews_for_titles(
-                wiki_title_ptrs, args.wikipedia_totals_bz2_pageviews, args.wikilang)
+                wiki_title_ptrs, args.wikipedia_totals_bz2_pageviews, args.wikilang, 
+                args.progress)
             
-            logger.info("Calculating base popularity measures")    
-            OTT_popularity_mapping.calc_popularities_for_wikitaxa(wiki_title_ptrs.values(), 
-                "Unused Popularity Function Here")
+            logger.info("Calculating raw popularity measures")    
+            OTT_popularity_mapping.calc_popularities_for_wikitaxa(
+                wiki_title_ptrs.values(), "Unused Popularity Function Here", 
+                progress_bar=args.progress)
             
             tree = OTT_popularity_mapping.add_popularities_to_tree(tree, pop_store, 
                 exclude=args.exclude)
+            popularity_exists = True
 
             # Saving the tree with branch lengths as raw popularities means we can 
             # recalculate values easily. 
             if args.popularity_file != "":
                 write_popularity_tree(
                     tree, args.output_location, args.popularity_file, args.version)
-
-        #NB to examine a taxon for popularity contributions here, you could try
-        #Here we might want to multiply up some taxa, e.g. plants, see https://github.com/OneZoom/OZtree/issues/130
-        info("Percolating popularity through the tree")    
-        inherit_popularity(tree)    
-        
-        for focal_label in args.info_on_focal_labels:
-            focal_taxon = focal_label.replace("_", " ")
-            n = tree.find_node_with_label(focal_taxon)
-            print("{}: own pop = {} (Q{}) descendant pop sum = {}".format(
-                focal_taxon, getattr(n, pop_store), n.data['wd']['final_wiki_item']['Q'],
-                n.descendants_popsum))
+        if popularity_exists:
+            #NB to examine a taxon for popularity contributions here, you could try
+            #Here we might want to multiply up some taxa, e.g. plants, see https://github.com/OneZoom/OZtree/issues/130
+            info("Percolating popularity through the tree")    
+            inherit_popularity(tree)    
             
-            for t, tip in enumerate(n.leaf_iter()):
-              print("Tip {} = {}: own_pop = {}, Qid = {}".format(
-                t, tip.label, getattr(tip, pop_store, None), 
-                tip.data['wd']['final_wiki_item']['Q']))
-              if t > 100:
-                print("More tips exist, but have been omitted")
-                break
-            while(n.parent_node):
-              n = n.parent_node
-              if getattr(n, pop_store, None):
-                print("Ancestors: {} = {:.2f}".format(n.label, getattr(n, pop_store)))
+            for focal_label in args.info_on_focal_labels:
+                focal_taxon = focal_label.replace("_", " ")
+                n = tree.find_node_with_label(focal_taxon)
+                print("{}: own pop = {} (Q{}) descendant pop sum = {}".format(
+                    focal_taxon, getattr(n, pop_store), n.data['wd']['final_wiki_item']['Q'],
+                    n.descendants_popsum))
+                
+                for t, tip in enumerate(n.leaf_iter()):
+                  print("Tip {} = {}: own_pop = {}, Qid = {}".format(
+                    t, tip.label, getattr(tip, pop_store, None), 
+                    tip.data['wd']['final_wiki_item']['Q']))
+                  if t > 100:
+                    print("More tips exist, but have been omitted")
+                    break
+                while(n.parent_node):
+                  n = n.parent_node
+                  if getattr(n, pop_store, None):
+                    print("Ancestors: {} = {:.2f}".format(n.label, getattr(n, pop_store)))
     
     logger.info("Writing out results to {}/xxx".format(args.output_location))
-    simplify_tree(tree, args.OpenTreeTaxonomy, r_seed)
-    output_treefiles(tree, args.output_location, args.version)
+    simplify_tree(tree, args.OpenTreeTaxonomy, r_seed, progress_bar=args.progress)
+    save_treefiles(tree, args.output_location, args.version, progress_bar=args.progress)
 
 if __name__ == "__main__":
     main()
