@@ -811,7 +811,7 @@ def main():
                 progress_bar=args.progress)
             
             tree = OTT_popularity_mapping.add_popularities_to_tree(tree, pop_store, 
-                exclude=args.exclude)
+                exclude=args.exclude, progress_bar=args.progress)
             popularity_exists = True
 
             # Saving the tree with branch lengths as raw popularities means we can 
