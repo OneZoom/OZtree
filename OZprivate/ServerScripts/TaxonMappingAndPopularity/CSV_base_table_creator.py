@@ -700,7 +700,7 @@ def save_treefiles(tree, outdir, version, save_sql=True, progress_bar=False):
             sqlfile = fn+'.mySQL'
             copyfile(fn, sqlfile)
             call(['perl', '-pi', '-e', r's/,(?=(,|\n))/,\\N/g', sqlfile])
-            info(("sql> TRUNCATE TABLE ordered{}; " +
+            logger.info(("sql> TRUNCATE TABLE ordered{}; " +
                 "LOAD DATA LOCAL INFILE '{}' REPLACE INTO TABLE `ordered{}` " +
                 "FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' " + 
                 "IGNORE 1 LINES ({}) SET id = NULL;").format(tab, sqlfile, tab, open(fn).readline().rstrip()))
@@ -822,7 +822,7 @@ def main():
         if popularity_exists:
             #NB to examine a taxon for popularity contributions here, you could try
             #Here we might want to multiply up some taxa, e.g. plants, see https://github.com/OneZoom/OZtree/issues/130
-            info("Percolating popularity through the tree")    
+            logger.info("Percolating popularity through the tree")    
             inherit_popularity(tree)    
             
             for focal_label in args.info_on_focal_labels:
