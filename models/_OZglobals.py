@@ -24,16 +24,47 @@ if sys.version_info[0] == 2:
     
 percent_crop_expansion = 12.5 #max amount to expand crops by to fit in circle
 
-#some bitwise flags for use later
-#bitwise flags for existence of different language wikipedia articles - order must match those listed in construct_wiki_info in CSV_base_table_creator.py
+## Some bitwise flags for use later
+
+# bitwise flags for existence of different language wikipedia articles
+# this variable is also used in construct_wiki_info in CSV_base_table_creator.py
 wikiflags = cache.ram('wikiflags',
     lambda: {lang:bit for (bit,lang) in enumerate(['en','de','es','fr','ja','ru','it','zh','pt','ar','pl','nl','fa','tr','sv','he','uk','id','vi','ko'])},
     time_expire = None)
 
-#OneZoom images tend to be from EoL, with the same data_object IDs
+# Source flags are used to identify the source of images and vernacular names, and chose
+# which to show (lower numbers have priority). Images are saved in a folder named
+# using this number. We should try to keep these numbers <=99, so that they can form
+# part of a overall score (e.g. see score() in OZfunctions.py.
+# The 'bespoke' flag can be used for specific client websites, that wish to provide
+# their own images and/or names. This always takes priority, and if required, a URL 
+# for a picture can be given in appconfig.ini for e.g. copyright information, as is
+# done by default for eol images.
+# The onezoom_bespoke images have been given to us specifically by other authors,
+# and we have their permission to use them.
+# 'wiki' marks vernaculars from wikidata, or images from wikimedia commons.
+# EoL is considered the "base" dataset - others are only picked if they are improvements
+# upon this.
+# 'short_imprecise_name' is used only for vernacular names (not images) to mark a 
+# (potentially inaccurate) name that takes priority only for display. There is special
+# code to deal with this in OZfunctions.py
 src_flags = cache.ram('src_flags',
-    lambda: {'onezoom':1, 'eol':2, 'wikidata':3, 'iucn':4, 'arkive':5, 'eol_old':6, 'onezoom_special':8},
+    lambda: {'bespoke':1, 'onezoom_bespoke':2,
+        'onezoom_via_eol':3, 'iucn':4, 'arkive':5, 'wiki':20, 'eol': 30,
+        'short_imprecise_name':50, 'eol_old':99},
     time_expire = None)
+
+#UPDATE images_by_ott SET src=99 WHERE src=2
+#mkdir static/FinalOutputs/img/99
+
+
+# The images from EoL can be added to the eol_inspected and eol_updated tables,
+# and clicking on their copyright link can take you directly to the appropriate EoL
+# page. This isn't true
+eol_src_flags = cache.ram('eol_src_flags',
+    lambda: ['onezoom_via_eol', 'eol'],
+    time_expire = None)
+
     
 inv_src_flags = cache.ram('inv_src_flags',
     lambda: {src_flags[k]:k for k in src_flags},
@@ -43,8 +74,8 @@ inv_src_flags = cache.ram('inv_src_flags',
 #NB: if eol ID was inspected via copyright symbol, the user is going straight to the
 # data_object (image) page, and we can probably assume they won't be
 # altering the vernacular name, just cropping the image. If via the tab, then
-# they might be changing images or names. If via "name", then we can assume that
-# only the vernacular name has been inspected (e.g. an internal nodes)
+# they might be changing images or names. If via == "name", then we can assume that
+# only the vernacular name has been inspected (e.g. an internal node)
 eol_inspect_via_flags = cache.ram('eol_inspect_via_flags',
     lambda: {'EoL_tab':1, 'image':2, 'sponsor':3, 'name':4},
     time_expire = None)

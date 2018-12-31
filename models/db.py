@@ -43,10 +43,9 @@ else:
 ## thumbnail_url is a python function to return the url to get a thumbnail picture
 ## we also need to define a javascript equivalent for use on the client side
 try:
-    thumb_base_url = myconf.take('general.pics_dir')
+    thumb_base_url = myconf.take('images.url_base')
 except:
     thumb_base_url = URL('static','FinalOutputs/img', scheme=True, host=True, extension=False)+"/"
-#should probably move to base/src_id/src.jpg or even (better) base/src_id/src_last3digits/src.jpg (to set ~ 10 000 files per dir, not 100 000)
 def thumbnail_url(src, src_id, preferred_px=150, square=True):
     return "{}{}/{}/{}.jpg".format(thumb_base_url, src, str(src_id)[-3:],src_id)
 js_thumbnail_url = 'function(src, src_id, preferred_px, square) {{return "{}" + src + "/" + src_id.toString().slice(-3) + "/" + src_id + ".jpg";}}'.format(thumb_base_url)
@@ -285,8 +284,8 @@ db.define_table('vernacular_by_ott',
     #sql> update vernacular_by_ott set lang_primary=substring_index(lang_full,'-',1);
     Field('lang_full', type='string', notnull=True, length=20), #the longer 'lang' code for this name (e.g. 'en-gb, zh-hans, etc'), as lowecase. Should never be >20 chars.
     Field('preferred', type=boolean, notnull=True), #if there are several names for a lang, use this
-    Field('src', type = 'integer', notnull=True), # 1=OneZoom, 2=EoL, 8=onezoom_special (short name). Others could be reserved e.g. for iucn
-    Field('src_id', type = 'integer'), #the sourceid, e.g the EoL page id. 
+    Field('src', type = 'integer', notnull=True), # The source (eol, bespoke, etc)
+    Field('src_id', type = 'integer'), # The sourceid, e.g the EoL page id.
     #NB sourceid is mainly for traceability. For a proper matching of e.g. eol to OTT, see ordered_leaves
     Field('updated', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
     format = '%(ott)s_%(vernacular)s_%(lang)s')
@@ -544,13 +543,26 @@ db.define_table('search_log',
 # taxa in this table are stored until at least 1 minute after the taxon is visited, and then read by the EOL update 
 # script (EoLQueryPicsNames.py) to check for updates to the crop location, ratings, etc. Once checked, the taxon
 # is deleted from the table, so this should contain only those taxa that need checking. The EoLQueryPicsNames.py script
-# requires ott ids, and looks up the corresponding eol ids from the ordered_leaves and ordered_nodes tables.
-# However, there are some cases where we want to fill this array in advance, even through the entries may not exist
-# in the ordered_leaves / nodes table. In this case, we can provide an alternative eol ID in the eol column
+# can be given 
+#  i)   just a set of ott ids: in which case it looks up the corresponding eol ids from
+#        the ordered_leaves and ordered_nodes tables), 
+#  ii)  just a set of eol data object ids: in which case it updates the database rows for
+#        images (not names) where src is one of [src_flags[x] for x in eol_src_flags] and
+#        src_id corresponds to the eol id.
+#  iii) both ott and corresponding eol ids: in which case the images so gained are
+#        treated from the "onezoom_via_eol" src, rather than plain "eol" src, which
+#        should give them a priority (this is used when e.g. sponsors chose a non-default
+#        image for their species
+#
+#  used to download images and populate tables 
+#        in advance of a change to the OneZoom tree (when otts may not even exist in the
+#        ordered_leaves / nodes table).
 db.define_table('eol_inspected',
     Field('ott', type = 'integer'),
     Field('name', type='string', length=name_length_chars), #only used if no OTT
-    Field('eol', type = 'integer'), #usually null, unless we want a backup number in the case of no ott match in ordered_leaves/nodes
+    Field('eol', type = 'integer'),
+    #usually null, otherwise an eol data_object id (if via==eol_inspect_via_flags['image'])
+    # or an eol page id (otherwise).
     Field('via', type = 'integer', notnull=True),
     Field('inspected', type = 'datetime', notnull=True, requires=IS_DATETIME()),
     format = '%(ott)s_%(name)s', migrate=is_testing)

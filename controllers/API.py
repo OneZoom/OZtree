@@ -657,7 +657,7 @@ def get_ids_by_ott_array():
 def otts2vns():
     '''
     Used e.g. to fill out the popular species lists,
-    can call with request.vars.lang=XX and with oz_special=1
+    can call with request.vars.lang=XX and with prefer_short=1
     Will return nulls for unmatched otts if return_nulls=1
     Returns e.g. {"770315":"Human","872567":"Brown Bear", "lang":"en-gb"}
     '''
@@ -668,7 +668,7 @@ def otts2vns():
     try:
         ret_otts = get_common_names([int(x) for x in request.vars.otts.split(',')],
             return_nulls = True if request.vars.nulls else False,
-            prefer_oz_special_names=True if request.vars.oz_special else False,
+            prefer_short_name=True if request.vars.prefer_short else False,
             include_unpreferred = True if (request.vars.include_unpreferred or request.vars.all) else False,
             return_all = True if request.vars.all else False,
             lang=lang)
@@ -816,9 +816,10 @@ def select_leaves(query, page=None, limit=None, sortcol=""):
 #PRIVATE FUNCTIONS
 
 def make_unicode(input):
-    if type(input) != unicode:
-        input =  input.decode('utf-8')
-        return input
-    else:
-        return input
+    try:
+        if type(input) != unicode:
+            input =  input.decode('utf-8')
+    except NameError:
+        pass #for python3
+    return input
         
