@@ -409,7 +409,7 @@ def write_pop_newick(self, out, pop_store):
         for child in child_nodes:
             if child is not f_child:
                 out.write(',')
-            child.write_pop_newick(out)
+            child.write_pop_newick(out, pop_store)
         out.write(')')
     
     label = newick_label(self)
