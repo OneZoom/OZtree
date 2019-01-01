@@ -33,7 +33,9 @@ def COMMAND_CALL_TEST():
     import os
     try:
         #a simple test to see if we can call command-line apps (YES!)
-        ret_text=check_output(['applications/OneZoom/OZprivate/ServerScripts/Utilities/EoLQueryPicsNames.py', myconf.take('db.uri'), 'applications/OneZoom/static/FinalOutputs/pics', '-ott','435643', '435643', '-eol', '28696158', '27119898', '-v'],
+        ret_text=check_output([
+            'applications/OneZoom/OZprivate/ServerScripts/Utilities/EoLQueryPicsNames.py', '-o',
+            'applications/OneZoom/static/FinalOutputs/img', '-ott','435643', '435643', '-eol', '28696158', '27119898', '-v'],
         stderr=STDOUT,
         env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()})
     except CalledProcessError as e:
