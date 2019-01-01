@@ -95,8 +95,9 @@ def get_credit(json_dict, doID):
                     creators[agent['role']] = cname
             creators = [creators[a] for a in valid_creator_types if creators.get(a)]
             if len(creators) == 0:
-                logger.info("No creator not found in {}: {}".format(doID, json_agents))
-                rights = "Unknown"
+                print(json_dict)
+                logger.info("No creator found for {} (source {}): {}".format(
+                    doID, json_dict.get('source',None), json_agents))
             else:
                 rights = ", ".join(creators)
                 if len(creators) > 1:
@@ -243,7 +244,7 @@ def get_file_from_json_struct(data_obj_json_struct, output_dir, fn, thumbnail_si
         rating = convert_rating(d['dataRating']) #EXIF 'Rating' is 16bit unsigned, i.e. 0-65535. EoL ratings are 0-5 floating point, so for ease of mapping we multiply EOL ratings by 10,000 to get ratings from 0-50,000
         #call(['exiftool', '-q', '-codedcharacterset=utf8', '-IPTC:Contact='+'http://eol.org/data_objects/'+fn, '-IPTC:Credit='+r, '-IPTC:CopyrightNotice='+l, '-overwrite_original', '-m', image_orig])
         piexif.insert(piexif.dump({"0th":{piexif.ImageIFD.Copyright:copyright_str.encode("utf8"), piexif.ImageIFD.Rating:rating}, "Exif":{}}), image_intermediate)
-        logger.info("...\nDownloaded with rating {} and cropped into {}".format(rating, image_intermediate))
+        logger.info("Downloaded with rating {} and cropped into {}".format(rating, image_intermediate))
     except OSError as e: 
         logger.error("Cannot call 'convert' properly: {}\n Have you installed Imagemagick?".format(e))      
         return None
