@@ -806,7 +806,7 @@ def add_popularities_to_tree(tree, pop_store, OTT_ptrs=None, exclude=[], progres
     return tree
 
     
-def sum_popularity_over_tree(tree, pop_store):
+def sum_popularity_over_tree(tree, pop_store, OTT_ptrs=None):
     """    
     popularity summed up and down the tree depends on the OpenTree structure, and is stored in OTT_ptrs[OTTid]['pop_ancst'] 
     (popularity summed upwards for all ancestors of this node) and OTT_ptrs[OTTid]['pop_dscdt'] (popularity summed over all descendants).
