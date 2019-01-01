@@ -425,14 +425,14 @@ def popularity_function(
         return ((sum_of_all_ancestor_popularities + sum_of_all_descendant_popularities)/
             log(number_of_ancestors + number_of_descendants))
     
-def inherit_popularity(tree):
+def inherit_popularity(tree, pop_store):
             
     #NB: we must percolate popularities through the tree before deleting monotomies, since these often contain info
     #this should allocate popularities even for nodes that have been created by polytomy resolving.
     
     # We should also check that there are not multuple uses of the same Qid (https://github.com/OneZoom/OZtree/issues/132)
     
-    OTT_popularity_mapping.sum_popularity_over_tree(tree)
+    OTT_popularity_mapping.sum_popularity_over_tree(tree, pop_store)
     #now apply the popularity function
     Qids = set()
     for node in tree.preorder_node_iter():
@@ -513,7 +513,7 @@ def create_leaf_popularity_rankings(tree):
         pass
 
 
-def write_popularity_tree(tree, outdir, filename, version):
+def write_popularity_tree(tree, outdir, filename, version, pop_store):
     Node.write_pop_newick = dendropy_extras.write_pop_newick
     with open(os.path.join(outdir, "{}_{}.nwk".format(filename, version)), 'w+') as popularity_newick:
         tree.seed_node.write_pop_newick(popularity_newick, pop_store)
@@ -818,12 +818,12 @@ def main():
             # recalculate values easily. 
             if args.popularity_file != "":
                 write_popularity_tree(
-                    tree, args.output_location, args.popularity_file, args.version)
+                    tree, args.output_location, args.popularity_file, args.version, pop_store)
         if popularity_exists:
             #NB to examine a taxon for popularity contributions here, you could try
             #Here we might want to multiply up some taxa, e.g. plants, see https://github.com/OneZoom/OZtree/issues/130
             logger.info("Percolating popularity through the tree")    
-            inherit_popularity(tree)    
+            inherit_popularity(tree, pop_store)    
             
             for focal_label in args.info_on_focal_labels:
                 focal_taxon = focal_label.replace("_", " ")

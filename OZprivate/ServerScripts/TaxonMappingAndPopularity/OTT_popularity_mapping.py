@@ -906,7 +906,7 @@ if __name__ == "__main__":
     
     if args.OpenTreeFile:
         tree = add_popularities_to_tree(args.OpenTreeFile, 'raw_pop', OTT_ptrs, args.exclude)
-        sum_popularity_over_tree(tree)
+        sum_popularity_over_tree(tree, 'raw_pop')
         startrows = ["OTT_ID", "PopAncestors", "PopDescendants", "NumAncestors", "NumDescendants", "NumPopAncestors"]
     else:
         startrows = ["OTT_ID"]
