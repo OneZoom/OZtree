@@ -1,5 +1,6 @@
-/* These are all helper functions that access the EOL suite of APIs, e.g. the pages API at http://eol.org/api/docs/pages
-
+/* These are all helper functions that access the EOL suite of APIs, e.g. the pages API at https://eol.org/api/docs/pages
+(https is needed as the http calls go to a redirect that doesn't currently have
+"Access-Control-Allow-Origin: *" set, so CORS does not work on the http site)
 they assume the json response looks something like
 
 {
@@ -146,7 +147,7 @@ function setDataFromEoLdataObjectID(DOid, on_complete, EoL_key, timeout_ms, cros
         $.ajax({
             type: "GET",
             crossDomain: crossdomain,
-            url: "http://eol.org/api/data_objects/1.0/"+ DOid +".json",
+            url: "https://eol.org/api/data_objects/1.0/"+ DOid +".json",
             data: query_string,
             on_complete: on_complete,
             error: function(){
@@ -203,7 +204,7 @@ function setDataFromEoLpageID(EOLid, on_complete, EoL_key, n_images, timeout_ms)
         $.ajax({
             type: "GET",
             //crossDomain: true,
-            url: "http://eol.org/api/pages/1.0.json",
+            url: "https://eol.org/api/pages/1.0.json",
             data: query_string,
             EOLid: EOLid,
             on_complete: on_complete,
@@ -212,18 +213,20 @@ function setDataFromEoLpageID(EOLid, on_complete, EoL_key, n_images, timeout_ms)
                 this.on_complete(null,1)
             },
             success: function(data, textStatus) {
-                
-                if (data.identifier) {
+                d = data.taxonConcept
+                if (d.identifier) {
                     var imgs = []
-                    if (data.dataObjects.length) {
-                        imgs = data.dataObjects.filter(function(o) {return(o.dataObjectVersionID && o.eolMediaURL && o.eolMediaURL.endsWith("_orig.jpg"))})
+                    if (d.dataObjects.length) {
+                        console.log(d.dataObjects)
+                        imgs = d.dataObjects.filter(function(o) {return(o.dataObjectVersionID && o.eolThumbnailURL && o.eolThumbnailURL.endsWith(".98x68.jpg"))})
+                        console.log(imgs)
                         for (var i=0; i<imgs.length; i++) {
-                            imgs[i].url = imgs[i].eolMediaURL.replace(/_orig.jpg$/, "_580_360.jpg")
-                            imgs[i].url_squarecrop = imgs[i].eolMediaURL.replace(/_orig.jpg$/, "_130_130.jpg")
+                            imgs[i].url = imgs[i].eolThumbnailURL.replace(/_98x68.jpg$/, ".580_360.jpg")
+                            imgs[i].url_squarecrop = imgs[i].eolThumbnailURL.replace(/_98x68.jpg$/, ".130_130.jpg")
                         }
-                        data.imageObjects = imgs
+                        d.imageObjects = imgs
                     }
-                    this.on_complete(data, 0)
+                    this.on_complete(d, 0)
                 } else {
                     //no identifier in return value - this is probably an EoL error
                     this.on_complete(null,2)
@@ -293,7 +296,7 @@ function setDataFromEoLpageID_batch(EOLid_batch, on_complete, EoL_key, n_images,
             $.ajax({
                 type: "GET",
                 //crossDomain: true,
-                url: "http://eol.org/api/pages/1.0.json",
+                url: "https://eol.org/api/pages/1.0.json",
                 data: query_string,
                 EOLid_batch: EOLid_batch,
                 on_complete: on_complete,
@@ -307,7 +310,7 @@ function setDataFromEoLpageID_batch(EOLid_batch, on_complete, EoL_key, n_images,
                         //check e.g. in case EoL returns an error string, not an array
                         for(var eolID in APIjson) 
                             if (eolID in this.EOLid_batch) {
-                                var data = APIjson[eolID]
+                                var data = APIjson[eolID].taxonConcept
                                 var imgs = []
                                 if (data.dataObjects.length) {
                                     var imgs = data.dataObjects.filter(function(o) {return(o.dataObjectVersionID && o.eolMediaURL && o.eolMediaURL.endsWith("_orig.jpg"))})
