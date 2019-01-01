@@ -147,7 +147,7 @@ def lookup_and_save_bespoke_EoL_images(eol_dataobject_to_ott, sess, API_key, db_
                         last_3_chars = fn[-3:]
                         assert os.path.sep not in last_3_chars
                         assert last_3_chars not in (os.curdir, os.pardir)
-                        output_to = os.path.join(args.output_dir, str(src_flags['onezoom']), last_3_chars)
+                        output_to = os.path.join(args.output_dir, str(src_flags['onezoom_via_eol']), last_3_chars)
                         os.makedirs(output_to, exist_ok=True)
                         copyinfo = get_file_from_json_struct(image_info_json, output_to, args.thumbnail_size, 
                             add_percent = args.add_percent)
@@ -155,11 +155,11 @@ def lookup_and_save_bespoke_EoL_images(eol_dataobject_to_ott, sess, API_key, db_
                         #we have succeeded in downloading at least one new image, so we can proceed to delete the old stuff etc
                         if delete_old:
                             sql = "DELETE FROM {0} WHERE ott={1} AND src={1};".format(images_table, subs)
-                            dummy = db_cursor.execute(sql, (OTTid,src_flags['onezoom']))
+                            dummy = db_cursor.execute(sql, (OTTid,src_flags['onezoom_via_eol']))
                             delete_old=False
 
                         sql = "INSERT INTO {0} (ott, src, src_id, url, rating, rating_confidence, best_any, best_verified, best_pd, overall_best_any, overall_best_verified, overall_best_pd, rights, licence, updated) VALUES ({1}, {1}, {1}, {1}, {1}, {1}, {1}, {1}, {1}, {1}, {1}, {1}, {1}, {1}, {2});".format(images_table, subs, datetime_now)
-                        db_cursor.execute(sql, (OTTid, src_flags['onezoom'], eol_doID, 
+                        db_cursor.execute(sql, (OTTid, src_flags['onezoom_via_eol'], eol_doID, 
                                                 image_info['json'].get('eolMediaURL'), 
                                                 convert_rating(image_info['json']['dataRating']),
                                                 store_vote_ratings_in_bytes(image_info['json'].get('dataRatings')),
@@ -582,7 +582,7 @@ if __name__ == "__main__":
     parser.add_argument('--output_dir', '-o', default=None, help="The location to save the cropped pictures (e.g. 'FinalOutputs/img'). If not given, defaults to ../../../static/FinalOutputs/img (relative to the script location). Files will be saved under output_dir/{src_flag}/{3-digits}/fn.jpg")
     parser.add_argument('--UPDATE_FROM_RESERVATIONS', action="store_true", help='If given, update only the "OneZoom" pictures from the reservations table')
     parser.add_argument('--opentree_id', '-ott', type=int, nargs='+', default=[], help='If given, only check and download best names (and possibly best images) for these OpenTree ids')
-    parser.add_argument('--eol_image_id', '-eol', type=int, nargs='+', default=[], help='If given, only check on this eol image id, which should exist in the database as a "src_id" for any eol sources. and update the database should be the same number as the number of ott ids given. The script will check and download these specific images from their Encyclopedia of Life data object ids, labelling them as "onezoom" sources (src={}) rather than "eol" sources (src={})'.format(src_flags['onezoom'], src_flags['eol']))
+    parser.add_argument('--eol_image_id', '-eol', type=int, nargs='+', default=[], help='If given, only check on this eol image id, which should exist in the database as a "src_id" for any eol sources. and update the database should be the same number as the number of ott ids given. The script will check and download these specific images from their Encyclopedia of Life data object ids, labelling them as "onezoom_via_eol" sources (src={}) rather than "eol" sources (src={})'.format(src_flags['onezoom_via_eol'], src_flags['eol']))
     parser.add_argument('--read_vnames_pics', '-vnp', default=["ordered_leaves"], nargs='+', help='The names of the db tables containing a column "eol" which stores the eol IDs to check for pictures and vernacular names')
     parser.add_argument('--read_vnames_only', '-vno', default=["ordered_nodes"], nargs='+', help='The name of the db tables containing a column "eol" which stores the eol IDs to check for just vernacular names')
     parser.add_argument('--save_images_table', '-i', default="images_by_ott", help='The name of the db table in which to save image information')
