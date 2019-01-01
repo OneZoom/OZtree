@@ -427,7 +427,7 @@ function processAPI(image_objectsIn, common_namesIn , flagsIn)
         } else {
             //There are at least 2 images, so change the page layout to add image selection
             $('#leaf').after($('<div>', {id:"select_pictures"}).append('<fieldset><legend>{{=T("Choose your preferred picture")}}</legend><ul></ul></fieldset>'));
-            for(i=0; i<img_keys.length; i++)
+            for(i=0; i<Math.min(img_keys.length, 9); i++)
             {
                 var key = img_keys[i].key
                 //Add a list of potential images to pick
