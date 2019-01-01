@@ -283,6 +283,7 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
     for req_focus, get_result in req.items():
         try:
             for EOLid, data in get_result.json().items():
+                logging.debug("Result for {}, EoL ID {}".format(req_focus, EOLid))
                 EOLid = int(EOLid)
                 if 'identifier' not in data:
                     #this is probably "unavailable page id"
@@ -309,14 +310,12 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
                                     continue
                                 sql = "INSERT INTO {0} (ott, vernacular, lang_primary, lang_full, preferred, src, src_id, updated) VALUES ({1}, {1}, {1}, {1}, {1}, {1},{1}, {2});".format(names_table, subs, datetime_now)
                                 db_cursor.execute(sql, (OTTid, vernacular[:name_length_chars], lang_primary, nm['language'].lower(), 1 if nm.get('eol_preferred') else 0, src_flags['eol'],EOLid))
+                                logging.debug("Inserted vernacular ({}) for {}".format(vernacular, data['scientificName']))
                             except:
                                 logger.warning("problem inserting vernacular name for EOL {} (ott {})".format(EOLid, OTTid))
                         db_connection.commit()
                     if images_table:
-                        if 'dataObjects' not in data:
-                            logger.warning("API failure - the api is not returning data objects for OTT {}, so we are skipping image checking for this ott".format(OTTid))
-                            image_ranking_tables[OTTid] = None
-                        elif len(image_ranking_tables[OTTid]) == 0:
+                        if len(image_ranking_tables[OTTid]) == 0:
                             #create the ranking table:
                             # For each OTT, we want a table which contains the (up to) 3 new images specified by the API,
                             # as well as the existing image entries for this OTT in our own database.
@@ -348,7 +347,7 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
                         if image_ranking_tables[OTTid] is not None:
                             image_ranking_table = image_ranking_tables[OTTid]
                             #just use the first object from each API call (if there is one)
-                            if len(data['dataObjects']):
+                            if 'dataObjects' in data and len(data['dataObjects']):
                                 d=data['dataObjects'][0]
                                 image_id = d['dataObjectVersionID']
                                 #we store ratings as integers from 10000-50000, which always makes them higher than existing
@@ -452,7 +451,7 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
                     datetime_now)
                 db_cursor.execute(sql, [ott, src_flags['eol'], image_id, 
                                         image_info['data_object'].get('eolMediaURL'), 
-                                        convert_rating(image_info['data_object']),
+                                        convert_rating(image_info['data_object']['dataRating']),
                                         store_vote_ratings_in_bytes(image_info['data_object'].get('dataRatings'))] +
                                        list(best_cols.values()) + 
                                        [image_info['copyinfo'][0], 
@@ -612,10 +611,6 @@ if __name__ == "__main__":
     elif args.verbosity > 2:
         logging.basicConfig(level=logging.EXTREME_DEBUG) #super-verbose output 
     
-    #needed to avoid bombing out when LANG=C
-    sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
-    sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
-
     if args.database is None or args.EOL_API_key is None:
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), default_appconfig_file)) as conf:
             conf_type=None
@@ -685,11 +680,11 @@ if __name__ == "__main__":
         db_curs.close()
         lookup_and_save_bespoke_EoL_images(eol_DOid_to_ott, s, args.EOL_API_key, db_connection, args.save_images_table, loop_seconds=args.loop_seconds)
         
-    elif args.bespoke_eol_image:
-        if len(args.bespoke_eol_image) != len(args.opentree_id):
-            logger.error("If you are hand-chosing an image for onezoom, you have to give the same total number of ott ids as eol data object ids, but you have given totals of {} and {} respectively".format(len(args.opentree_id), len(args.bespoke_eol_image)))
+    elif args.eol_image_id:
+        if len(args.eol_image_id) != len(args.opentree_id):
+            logger.error("If you are hand-chosing an image for onezoom, you have to give the same total number of ott ids as eol data object ids, but you have given totals of {} and {} respectively".format(len(args.opentree_id), len(args.eol_image_id)))
             sys.exit()
-        eol_DOid_to_ott = {int(args.bespoke_eol_image[i]):int(args.opentree_id[i]) for i in range(len(args.opentree_id))}
+        eol_DOid_to_ott = {int(args.eol_image_id[i]):int(args.opentree_id[i]) for i in range(len(args.opentree_id))}
         lookup_and_save_bespoke_EoL_images(eol_DOid_to_ott, s, args.EOL_API_key, db_connection, args.save_images_table, loop_seconds=args.loop_seconds)
         #don't bother saving the update time - this might not even have an eol page id anyway (we only need a doID)
     else:
