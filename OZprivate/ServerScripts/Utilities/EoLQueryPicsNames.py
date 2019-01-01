@@ -33,7 +33,7 @@ from requests.adapters import HTTPAdapter
 from itertools import islice
 
 ## Local packages
-from getEOL_crops import get_credit, get_file_from_json_struct, convert_rating
+from getEOL_crops import subdir_name, get_credit, get_file_from_json_struct, convert_rating
 # to get globals from ../../../models/_OZglobals.py
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir, "models")))
 from _OZglobals import src_flags, eol_inspect_via_flags, image_status_labels
@@ -143,14 +143,10 @@ def lookup_and_save_bespoke_EoL_images(eol_dataobject_to_ott, sess, API_key, db_
                 if image_info['best_any'] or image_info['best_verified'] or image_info['best_pd']:
                     try:
                         image_info_json = image_info['json']
-                        fn = str(image_info_json.get('dataObjectVersionID'))
-                        last_3_chars = fn[-3:]
-                        assert os.path.sep not in last_3_chars
-                        assert last_3_chars not in (os.curdir, os.pardir)
-                        output_to = os.path.join(args.output_dir, str(src_flags['onezoom_via_eol']), last_3_chars)
-                        os.makedirs(output_to, exist_ok=True)
-                        copyinfo = get_file_from_json_struct(image_info_json, output_to, args.thumbnail_size, 
-                            add_percent = args.add_percent)
+                        output_dir = os.path.join(args.output_dir, 
+                            str(src_flags['onezoom_via_eol']), subdir_name(eol_doID))
+                        copyinfo = get_file_from_json_struct(image_info_json, output_dir, eol_doID,
+                            thumbnail_size=args.thumbnail_size, add_percent = args.add_percent)
                         assert copyinfo is not None
                         #we have succeeded in downloading at least one new image, so we can proceed to delete the old stuff etc
                         if delete_old:
@@ -407,7 +403,11 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
                             try:
                                 image_info = image_information[best_image_id]
                                 logger.info("= Getting data object {} for ott {} (eol page {}) ({}) =".format(best_image_id, ott, image_info['page_id'], image_info['sci_name']))
-                                image_info['copyinfo'] = get_file_from_json_struct(image_info['data_object'], args.output_dir, args.thumbnail_size, args.add_percent)
+                                best_image_id
+                                output_dir = os.path.join(args.output_dir, str(src_flags['eol']), subdir_name(best_image_id))
+                                image_info['copyinfo'] = get_file_from_json_struct(
+                                    image_info['data_object'], output_dir, best_image_id,
+                                    args.thumbnail_size, args.add_percent)
                                 if image_info['copyinfo'] is not None:
                                     #Got it!
                                     got_img[image_label] = best_image_id

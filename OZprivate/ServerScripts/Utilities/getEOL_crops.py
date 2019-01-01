@@ -3,11 +3,11 @@
 """
 This script takes a list of EoL data object IDs and queries the EoL API to get a filename and (potentially) a crop location, then downloads the full image file from EoL, crops it according to the crop positions, plus a certain percentage (if specified), and saves the jpg under the data object name, with copyright string and rating attached via EXIF tags. It requires the python package piexif (easy_install piexif OR pip install piexif) and the 'mogrify' command from the imagemagick suite (http://www.imagemagick.org/script/index.php)
 
-ServerScripts/Utilities/getEOL_crops.py --DOid 30100518 --output_dir ../static/FinalOutputs/pics -v
+ServerScripts/Utilities/getEOL_crops.py --DOid 7370441 --output_dir ../static/FinalOutputs/img/3 -v
 
 To download all EoL data objects from a csv metadata file, where the EOL data object ID is in the (default) 5th column of the csv file try e.g.
 
-ServerScripts/Utilities/getEOL_crops.py --file data/Metadata/EOL_leaf_common_names_and_picIDs.csv --csvfield 5 --output_dir ../static/FinalOutputs/pics -v
+ServerScripts/Utilities/getEOL_crops.py --file data/Metadata/EOL_leaf_common_names_and_picIDs.csv --csvfield 5 --output_dir ../static/FinalOutputs/img/3 -v
 
 Note that you might want to force overwriting old files with the -w option, if you think any have changed.
 
@@ -42,6 +42,16 @@ def convert_rating(rating):
     if rating == "":
         rating = 2.5
     return int(round(float(rating) * 10000))
+
+def subdir_name(doID):
+    """
+    Make a valid subdirectory name in which to save images, based on the last 3 chars of
+    the data object ID
+    """
+    subdir = str(doID)[-3:]
+    assert os.path.sep not in subdir
+    assert subdir not in (os.curdir, os.pardir)
+    return subdir
 
 def trimname(name):
     import html
@@ -120,16 +130,18 @@ def form_licence_from_url(url, doID):
 def get_file_from_doID(doID, sess, output_dir, thumbnail_size, EOL_API_key, add_percent=12.5, force_overwrite=True):
     """
     Get a file using an EoL data object ID, querying the api to get url and crop coords.
+    output_fn will have .jpg appended. Directories are created as necessary
     """
     import requests
     image_final = os.path.join(output_dir, str(doID) + '.jpg')
     if os.path.isfile(image_final) and not force_overwrite:
         logger.info("File {} already exists, ignoring.".format(image_final))
         return
-    url = "http://eol.org/api/data_objects/1.0/" + str(doID) + ".json"
+    url = "http://eol.org/api/data_objects/1.0/{}.json".format(doID)
     logger.debug("Querying API for data object {} @ {}.".format(doID, url))
     try:
-        r = sess.get(url,params={'cache_ttl':100, 'key':EOL_API_key}, timeout=10)
+        r = sess.get(url, timeout=10,
+            params={'cache_ttl':100, 'key':EOL_API_key, 'taxonomy':'false'})
     except requests.exceptions.Timeout:
         logger.warning('Socket timed out - URL {}'.format(url))
         return
@@ -137,16 +149,24 @@ def get_file_from_doID(doID, sess, output_dir, thumbnail_size, EOL_API_key, add_
         logger.warning('Data not retrieved because {}\nURL: {}'.format(error, url))
         return
 
-    EOLdata=r.json()
+    EOLdata=r.json()['taxon']
     if len(EOLdata["dataObjects"]) > 0:
         if (len(EOLdata["dataObjects"]) > 1):
             logger.error("Something's odd: more than one data object was returned")
-        get_file_from_json_struct(EOLdata["dataObjects"][0], output_dir, thumbnail_size, add_percent)
+        else:
+            dobj = EOLdata["dataObjects"][0]
+            if "dataObjectVersionID" not in dobj:
+                logger.error("Something's odd: no dataObjectVersionID in the data obj")
+            elif str(dobj["dataObjectVersionID"]) != str(doID):
+                logger.error("Something's odd: the returned data object ID is different"
+                " from the requested one ({} vs {})".format(doID, dobj["dataObjectVersionID"]))        
+            else:
+                get_file_from_json_struct(dobj, output_dir, doID, thumbnail_size, add_percent)
 
-def get_file_from_json_struct(data_obj_json_struct, output_dir, thumbnail_size, add_percent=12.5, fn=None):
+def get_file_from_json_struct(data_obj_json_struct, output_dir, fn, thumbnail_size, add_percent=12.5):
     """
     Get and crop a file using data present in an EoL json response, which includes object ID, crop info, etc
-    Return the rights & license, or None if something failed
+    Return the rights & license, or None if something failed.  Directories are created as necessary
     """
     #NB: image_cols = ['dataObjectVersionID','eolMediaURL','vettedStatus','dataRating','crop_x', 'crop_y', 'crop_width']
     #note that crop_width is in percent ****
@@ -159,17 +179,17 @@ def get_file_from_json_struct(data_obj_json_struct, output_dir, thumbnail_size, 
 
     CONVERT = shutil.which('convert') #needed in windows, to get the correct 'convert' command
     d=data_obj_json_struct
-    if 'eolMediaURL' not in d or 'dataObjectVersionID' not in d:
-        logger.error("Both 'eolMediaURL' and 'dataObjectVersionID' must be present in data object {}.".format(d))
+    fn = str(fn)
+    os.makedirs(output_dir, exist_ok=True)
+
+    if 'eolMediaURL' not in d:
+        logger.error("'eolMediaURL' must be present in data object {}.".format(d))
         return None
     try:
-        if fn is None:
-            fn = str(d['dataObjectVersionID'])
-        print(output_dir, fn)
-        image_orig = os.path.join(output_dir, fn + '_orig.jpg')
-        print(image_orig)
-        image_intermediate = os.path.join(output_dir, fn + '_tmp.jpg')
-        image_final = os.path.join(output_dir, fn + '.jpg')
+        output_fn = os.path.join(output_dir, fn)
+        image_orig = output_fn + '_orig.jpg'
+        image_intermediate = output_fn + '_tmp.jpg'
+        image_final = output_fn + '.jpg'
         logger.info("Downloading {} to {}.".format(d['eolMediaURL'], image_orig))
         try:
             urllib.request.urlretrieve(d['eolMediaURL'], image_orig)
@@ -195,13 +215,13 @@ def get_file_from_json_struct(data_obj_json_struct, output_dir, thumbnail_size, 
                 left = str(int(round(float(d['crop_x']))))
                 size = str(int(round(float(d['crop_width']))))
                 if add_percent>0:
-                    logger.debug("Cannot expand crop for data object {} by {}%: image is against the edge.".format(d['dataObjectVersionID'], add_percent))
+                    logger.debug("Cannot expand crop for data object {} by {}%: image is against the edge.".format(fn, add_percent))
             else:
                 if min_crop_fraction > add_percent/100.0:
                     min_crop_fraction = add_percent/100.0
                 else:
                     if add_percent>0:
-                        logger.debug("NOTICE: Cannot expand crop for data object {} by {}%: borders are not large enough, so using {}%.".format(d['dataObjectVersionID'], add_percent, min_crop_fraction*100))
+                        logger.debug("NOTICE: Cannot expand crop for data object {} by {}%: borders are not large enough, so using {}%.".format(fn, add_percent, min_crop_fraction*100))
                 min_crop_pixels = min_crop_fraction * initial_thumb_px
                 top = str(int(round(float(d['crop_y']) - min_crop_pixels)))
                 left = str(int(round(float(d['crop_x']) - min_crop_pixels)))
@@ -218,10 +238,10 @@ def get_file_from_json_struct(data_obj_json_struct, output_dir, thumbnail_size, 
                    ]
             logger.debug("Default crop: {}.".format(" ".join(cmd)))
         call(cmd)
-        r, l = get_credit(d, d['dataObjectVersionID'])
+        r, l = get_credit(d, fn)
         copyright_str = ' / '.join([r, l])
         rating = convert_rating(d['dataRating']) #EXIF 'Rating' is 16bit unsigned, i.e. 0-65535. EoL ratings are 0-5 floating point, so for ease of mapping we multiply EOL ratings by 10,000 to get ratings from 0-50,000
-        #call(['exiftool', '-q', '-codedcharacterset=utf8', '-IPTC:Contact='+'http://eol.org/data_objects/'+d['dataObjectVersionID'], '-IPTC:Credit='+r, '-IPTC:CopyrightNotice='+l, '-overwrite_original', '-m', image_orig])
+        #call(['exiftool', '-q', '-codedcharacterset=utf8', '-IPTC:Contact='+'http://eol.org/data_objects/'+fn, '-IPTC:Credit='+r, '-IPTC:CopyrightNotice='+l, '-overwrite_original', '-m', image_orig])
         piexif.insert(piexif.dump({"0th":{piexif.ImageIFD.Copyright:copyright_str.encode("utf8"), piexif.ImageIFD.Rating:rating}, "Exif":{}}), image_intermediate)
         logger.info("...\nDownloaded with rating {} and cropped into {}".format(rating, image_intermediate))
     except OSError as e: 
@@ -264,9 +284,10 @@ if __name__ == "__main__":
     parser.add_argument('--start_after', type=int, help='An EOL data_object id: processing will skip until this id is encountered. This allows us to pick up from an aborted run')
     parser.add_argument('--csvfield',  type=int, default=1, help='Treat the file as a csv file, and pick this field from each row')
     parser.add_argument('--DOid',  type=int, nargs='*', help='An EOL data object ID')
-    parser.add_argument('--output_dir', '-o', default='./', action=writeable_dir, help='width in pixels of thumbnail produced')
+    parser.add_argument('--output_dir', '-o', default='./', action=writeable_dir, help='Base dir to which to write images')
+    parser.add_argument('--omit_suffix_dir', '-s', action="store_true", help='To avoid folders containing hundreds of thousands of files, we normally put images within a subdirectory, labelled with the last 3 characters of the filename. Giving this flag will stop this behaviour')
     parser.add_argument('--add_percent', '-a', default=12.5, type=float, help='extra percentage each side to expand the crop, if possible, useful e.g. if a circular crop is required, to try and avoid trimming corners off')
-    parser.add_argument('--thumbnail_size', '-s', type=int, choices=range(0, 1000), default=150, help='maximum width in pixels of thumbnail produced')
+    parser.add_argument('--thumbnail_size', '-t', type=int, choices=range(0, 1000), default=150, help='maximum width in pixels of thumbnail produced')
     #parser.add_argument('--force_size', '-z', action="store_true", help="force the thumbnail to be the maximum size (don't allow smaller thumbnails for small pictures)")
     parser.add_argument('--force_overwrite', '-f', action="store_true", help='download and crop even if the image file already exists')
     parser.add_argument('--retries', '-r', type=int, default=5, help='number of times to retry getting the image')
@@ -302,10 +323,14 @@ if __name__ == "__main__":
                     status_forcelist=[ 500, 502, 503, 504 ])
     s.mount('http://', HTTPAdapter(max_retries=retries))
                 
-                        
+    if args.omit_suffix_dir: 
+        save_dir = lambda DOid: args.output_dir
+    else:
+        save_dir = lambda DOid: os.path.join(args.output_dir, subdir_name(DOid))
+    
     if args.DOid:
-        for DOid in args.DOid:
-            get_file_from_doID(DOid, s, args.output_dir, args.thumbnail_size, args.EOL_API_key,
+        for d in args.DOid:
+            get_file_from_doID(d, s, save_dir(d), args.thumbnail_size, args.EOL_API_key,
                                args.add_percent, args.force_overwrite)
     if args.file:
         with args.file as f:
@@ -314,8 +339,8 @@ if __name__ == "__main__":
                 if len(line) > args.csvfield-1:
                     try:
                         if (args.start_after is None):
-                            DOid=str(int(line[args.csvfield-1]))
-                            get_file_from_doID(DOid, s, args.output_dir, args.thumbnail_size, args.EOL_API_key, 
+                            d=str(int(line[args.csvfield-1]))
+                            get_file_from_doID(d, s, save_dir(d), args.thumbnail_size, args.EOL_API_key, 
                                                args.add_percent, args.force_overwrite)
                         else:
                             try:
