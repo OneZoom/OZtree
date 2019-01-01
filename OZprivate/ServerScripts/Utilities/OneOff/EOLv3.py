@@ -8,7 +8,11 @@ import sys
 import os
 import logging
 
-top_level = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../..")
+top_level = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.pardir, os.path.pardir, os.path.pardir, os.path.pardir)
+
+sys.path.append(os.path.abspath(os.path.join(top_level, "models")))
+from _OZglobals import src_flags, eol_inspect_via_flags, image_status_labels
+
 default_appconfig_file = default_appconfig_file = "private/appconfig.ini"
 parser = argparse.ArgumentParser(description='Transfer to new EoL V3')
 
@@ -56,16 +60,17 @@ elif args.database.startswith("mysql://"): #mysql://<mysql_user>:<mysql_password
 
 
 db_curs = db_connection.cursor()
-#db_curs.execute("UPDATE images_by_ott SET src=99 WHERE src=2")
+#db_curs.execute("UPDATE images_by_ott SET src={} WHERE src=2".format(src_flags['eol_old']))
+db_connection.commit()
 db_curs.close()
 
 pic_path = os.path.join(top_level, "static/FinalOutputs/pics")
-img_path = os.path.join(top_level, "static/FinalOutputs/img/99")
+img_path = os.path.join(top_level, "static/FinalOutputs/img/{}".format(src_flags['eol_old']))
 #os.mkdir(img_path)
 
-db_curs = db_connection.cursor()
+"""db_curs = db_connection.cursor()
 batch_size = 200
-db_curs.execute("SELECT src_id FROM images_by_ott WHERE src=99")
+db_curs.execute("SELECT src_id FROM images_by_ott WHERE src={}".format(src_flags['eol_old']))
 while True:
     #get the rows in batches
     rows = db_curs.fetchmany(batch_size)
@@ -79,4 +84,30 @@ while True:
         if os.path.isfile(f):
             os.rename(f, os.path.join(subdir, src_id+".jpg"))
 db_curs.close()
+"""
+
+db_curs = db_connection.cursor()
+sql = "UPDATE images_by_ott SET src={}, src_id=-src_id WHERE src=1 AND src_id < 0".format(src_flags['onezoom_bespoke'])
+db_curs.execute(sql)
+db_connection.commit()
+db_curs.close()
+
+img_path = os.path.join(top_level, "static/FinalOutputs/img/{}".format(src_flags['onezoom_bespoke']))
+db_curs = db_connection.cursor()
+batch_size = 200
+db_curs.execute("SELECT src_id FROM images_by_ott WHERE src={}".format(src_flags['onezoom_bespoke']))
+while True:
+    #get the rows in batches
+    rows = db_curs.fetchmany(batch_size)
+    if not rows:
+        break
+    for row in rows:
+        src_id = str(row[0])
+        subdir = os.path.join(img_path, src_id[-3:])
+        os.makedirs(subdir, exist_ok=True)
+        f = os.path.join(pic_path, '-' + src_id+".jpg")
+        if os.path.isfile(f):
+            os.rename(f, os.path.join(subdir, src_id+".jpg"))
+db_curs.close()
+
 
