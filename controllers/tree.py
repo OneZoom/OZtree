@@ -56,11 +56,10 @@ def pic_info():
     
     param =  inv_src_flags[src] + "_jumpout_url"
     try:
-        url = myconf.take('images.' + param)
+        url = myconf.take('images.' + param).format(src=src, src_id=src_id)
     except:
         url = None
     if url is not None and (embed is not None and embed < 3):
-        print(url.format(src=src, src_id=src_id))
         redirect(url.format(src=src, src_id=src_id))
     else:
         if src == src_flags['eol_old']:
