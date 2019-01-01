@@ -22,7 +22,7 @@ function showframe(doID) {
     <ol>
         {{for i,image in enumerate(images):}}
         {{if i==items_per_page: break}}
-        <li {{='class="pd"' if image['images_by_ott']['licence'].endswith('\u009C') else ''}} style="display: inline-block; position: relative"><div style="position: absolute; font-size:0.7em">{{=image['images_by_ott']['rating']}}</div><img style="border-radius: 50%;" src="{{=URL('static','FinalOutputs/pics')}}/{{=image['images_by_ott']['src_id']}}.jpg?{{=time}}" title="{{=image['images_by_ott']['rights']}}
+        <li {{='class="pd"' if image['images_by_ott']['licence'].endswith('\u009C') else ''}} style="display: inline-block; position: relative"><div style="position: absolute; font-size:0.7em">{{=image['images_by_ott']['rating']}}</div><img style="border-radius: 50%;" src="{{=URL('static','FinalOutputs/img/{}/{}'.format(image['images_by_ott']['src'], str(image['images_by_ott']['src_id'])[-3:]))}}/{{=image['images_by_ott']['src_id']}}.jpg?{{=time}}" title="{{=image['images_by_ott']['rights']}}
 {{=image['images_by_ott']['licence']}}" onclick="showframe({{=image['images_by_ott']['src_id']}})" /></li>
         {{pass}}
     </ol>
