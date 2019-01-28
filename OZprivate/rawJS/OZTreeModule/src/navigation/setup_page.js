@@ -99,7 +99,7 @@ function setup_page_by_loading(state) {
 
 function setup_page_by_navigation(state) {
   let controller = get_controller();
-  if (state.vis_type) controller.set_view_type(state.vis_type);
+  if (state.vis_type) controller.change_view_type(state.vis_type);
   if (state.title) document.title = unescape(state.title);
   controller.close_all();
   //if (tour.tour_name) {
@@ -132,6 +132,7 @@ function jump_to_position(state, codeIn) {
   tree_state.ws = parseFloat(state.ws || 1);
   controller.develop_and_reanchor_to(codeIn);
   controller.re_calc();
+  controller.trigger_refresh_loop();
   
   //open popup dialog if exists.
   if (state.tap_action && state.tap_ott) {
