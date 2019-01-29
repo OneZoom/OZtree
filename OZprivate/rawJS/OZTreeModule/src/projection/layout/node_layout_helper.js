@@ -283,7 +283,7 @@ class NodeLayoutBase {
   }
 
   high_res_text_shapes(node, shapes) {
-    if ((node.cname || node.latin_name) && !this.hovered && this.is_mouse_over_high_res_text(node)) {
+    if ((node.cname || node.latin_name) && !this.hovered && this.is_mouse_over_high_res_inner_circle(node)) {
       this.hovered = true;
       this.hovering = true;
       live_area_config.interior_high_res_text.register_button_event(node);
@@ -682,24 +682,6 @@ class NodeLayoutBase {
     } else {
       return false;
     }
-  }
-
-  is_mouse_over_high_res_text(node) {
-    let mouse_over = false;
-    let nodey = node.yvar + node.rvar * node.arcy;
-    let noder = node.rvar * node.arcr * (1 - config.projection.partl2/2.0);
-    if (this.is_mouse_over_high_res_inner_circle(node)) {
-      if (node.latin_name || node.cname) {
-        if ((tree_state.button_y > (nodey + noder * 0.55)) || (tree_state.button_y < (nodey - noder * 0.35))) {
-          mouse_over = true;
-        }
-      } else {
-        if ((tree_state.button_y > (nodey + noder * 0.4)) || (tree_state.button_y < (nodey - noder * 0.5))) {
-          mouse_over = true;
-        }
-      }
-    }
-    return mouse_over;
   }
 
   dist_to_node_center(node, mx, my) {
