@@ -25,7 +25,7 @@ class NodeLayout extends NodeLayoutBase
 
     /** Low-res text, but clickable unlike normal */
     low_res_shapes(node, shapes) {
-        if ((node.cname || node.latin_name) && !this.hovered && this.is_mouse_over_high_res_text(node)) {
+        if ((node.cname || node.latin_name) && !this.hovered && this.is_mouse_over_high_res_inner_circle(node)) {
           this.hovered = true;
           this.hovering = true;
           live_area_config.interior_high_res_text.register_button_event(node);
