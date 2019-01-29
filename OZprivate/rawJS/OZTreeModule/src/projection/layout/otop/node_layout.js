@@ -37,8 +37,9 @@ class NodeLayout extends NodeLayoutBase
     /** Offset text slightly, limit overall size */
     fill_low_res_text_style(text_shape, node) {
         super.fill_low_res_text_style(text_shape, node);
-        text_shape.y = node.yvar + node.rvar * node.arcy + (this.theight * 0.1);
         text_shape.defpt = Math.min(10, this.theight2 * 0.33);
+        // NB: Move node text down by roughly a line from center
+        text_shape.y = node.yvar + node.rvar * node.arcy + (text_shape.defpt + 2);
         text_shape.do_stroke = true;
         text_shape.stroke.color = color_theme.get_color('interior.text.stroke', node);
         text_shape.stroke.line_width = 0.5;
