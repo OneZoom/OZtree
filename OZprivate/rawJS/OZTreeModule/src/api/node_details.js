@@ -111,51 +111,31 @@ function fetch_node_detail(node_details_api) {
 }
 
 /**
- * Collect nodes that are on the main branch and within 3 generations from main branch.
+ * Collect nodes that need detail, or are 3 generations from a node that needs detail
  *
- * Kai: can't remember why but there could exist nodes whose metadata has been fetched but its 
- * detail_fetched has not been set. Hence, before push a node into the result array, check
- * whether it has metadata or not and update it accordingly. 
- * Comment out this code since I want to 
- * force to refetch data by setting detail_fetched to false.
+ * @param node starting node
+ * @param nodes_need_detail Array to put results in
+ * @param force_fetch Recursion variable, do not set.
  */
-function collect_nodes_need_details(node, nodes_need_detail) {
-  if (node.dvar && !node.detail_fetched) {
-    let subbranch_nodes = get_subbranch_nodes(node, 3);
-    for (let i=0; i<subbranch_nodes.length; i++) {
-      let temp_node = subbranch_nodes[i];
-      nodes_need_detail.push(temp_node);
-      // if (data_repo.has_meta(temp_node)) {
-      //   temp_node.update_attribute();
-      // } else {
-      //   nodes_need_detail.push(temp_node);  
-      // }
-    }
+function collect_nodes_need_details(node, nodes_need_detail, force_fetch) {
+  if (!node.dvar) {
+    return;
   }
-  
-  if (node.dvar) {
-    let length = node.children.length;
-    for (let i=0; i<length; i++) {
-      let child = node.children[i];
-      collect_nodes_need_details(child, nodes_need_detail);
-    }
-  }
-  return nodes_need_detail;
-}
 
-/**
- * Get nodes that are descending from 'node' and within 'depth' generations range.
- */
-function get_subbranch_nodes(node, depth) {
-  let res = [node];
-  if (depth > 0) {
-    let length = node.children.length;
-    for (let i=0; i<length; i++) {
-      let child = node.children[i];
-      res = res.concat(get_subbranch_nodes(child, depth-1));
-    }
+  if (!node.detail_fetched || force_fetch > 0) {
+    // Either this node has no detail, or one of it's recent parents doesn't
+    nodes_need_detail.push(node);
   }
-  return res;
+
+  for (let i=0; i < node.children.length; i++) {
+    // If this node needs detail, get all details for nodes 3 levels below us
+    // NB: I don't think this is actually required, and probably masked previous bugs
+    collect_nodes_need_details(
+      node.children[i],
+      nodes_need_detail,
+      node.detail_fetched ? force_fetch - 1 : 3
+    );
+  }
 }
 
 /**
