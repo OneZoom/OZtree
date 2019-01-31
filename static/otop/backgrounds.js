@@ -101,31 +101,41 @@ function floating(background_el, url, initial_spacing) {
 }
 
 function haze(parent_el) {
-    var el = document.createElement('DIV'),
+    var el,
         color = 'hsl(' + (window.last_location_color || '291, 44%, 12%') + ')';
 
-    el.style.width = "100%";
-    el.style.height = "100%";
-    el.style.background = 'radial-gradient(ellipse at ' + rand_int(10, 90) + '% ' + rand_int(10, 90) + '%, ' + color + ', transparent)';
-    el.style.opacity = !window.last_location_color ? 0.3 : 0;  // Initial haze should be there from start
-    el.style.transition = [
-        'opacity 15s ease-in-out',
-    ].join(',');
-    parent_el.appendChild(el);
+    if (parent_el.childElementCount === 0 || parent_el.lastChild.getAttribute('data-color') !== color) {
+        el = document.createElement('DIV');
 
-    window.setTimeout(function () {
-        el.style.opacity = 0.2;
-    }, 50);
-
-    window.setTimeout(haze.bind(this, parent_el), 10000);
-
-    window.setTimeout(function () {
+        el.setAttribute('data-color', color);
+        el.style.width = "100%";
+        el.style.height = "100%";
+        el.style.background = 'radial-gradient(ellipse at ' + rand_int(10, 90) + '% ' + rand_int(10, 90) + '%, ' + color + ', transparent)';
         el.style.opacity = 0;
-    }, 11000);
+        el.style.transition = [
+            'opacity 5s ease-in-out',
+        ].join(',');
+        parent_el.appendChild(el);
 
-    window.setTimeout(function () {
-        parent_el.removeChild(el);
-    }, 20000);
+        window.setTimeout(function () {
+            var i,
+                reversed_nodes = Array.prototype.slice.call(parent_el.childNodes).reverse();
+
+            for (i = 0; i < reversed_nodes.length; i++) {
+                if (i === 0) {
+                    // Display newest node
+                    reversed_nodes[i].style.opacity = 0.2;
+                } else if (i === 1) {
+                    // Hide second-newest node
+                    reversed_nodes[i].style.opacity = 0;
+                } else {
+                    // Anything else gets removed
+                    parent_el.removeChild(reversed_nodes[i]);
+                }
+            }
+        }, 100);
+    }
+    window.setTimeout(haze.bind(this, parent_el), 5000);
 }
 
 function init_background(images) {
