@@ -66,6 +66,14 @@ class LeafLayout extends LeafLayoutBase {
     }
   }
 
+  get_sponsor_text(node) {
+    if (!node.sponsor_name) {
+      // If not already sponsored, don't show anything
+      return [" ", "", 1];
+    }
+    return super.get_sponsor_text.call(this, node);
+  }
+
   /** Inrcrease the leaf radius before which we show the sponsor text */
   fullLeaf_sponsor(shapes,x,y,r) {
     if (r > l_consts.r_sponsor_minsize) {
