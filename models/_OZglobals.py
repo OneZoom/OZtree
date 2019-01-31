@@ -274,6 +274,7 @@ tab_definitions = cache.ram('tab_definitions',
       ('iucn',{'id':'iucn',   'name':T('Conservation'),         'icon':URL('static','images/IUCN_Red_List.svg')}),
       ('ncbi',{'id':'ncbi',   'name':T('Genetics'),             'icon':URL('static','images/DNA_icon.svg')}),
       #('powo',{'id':'powo',   'name':T('Kew')}),
+      ('ozpicinfo',{'id':'ozpicinfo','name':T('Image information'), 'icon':URL('static','images/copyright.svg')}),
       ('ozlinks',{'id':'ozlinks','name':T('External Links'), 'icon':URL('static','images/links.svg')}),
       ('ozspons',{'id':'ozspons','name':T('Sponsor'), 'icon':URL('static','images/sponsor.png')})]),
     time_expire = None)

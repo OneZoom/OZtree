@@ -72,7 +72,7 @@ live_area_config.leaf_sponsor_text = {
 live_area_config.leaf_high_res_text = {
   register_button_event: function(node) {
     global_button_action.action = "ow_leaf";
-    global_button_action.data = node.ott;
+    global_button_action.data = node;
   }
 }
 

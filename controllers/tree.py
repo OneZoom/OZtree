@@ -148,6 +148,12 @@ def leaf_linkouts():
         sponsorship_urls.append({'form_reservation_code':request.vars.form_reservation_code})
     return_values = linkouts(is_leaf=True, ott=ott, sponsorship_urls=sponsorship_urls)
 
+    if len(request.args) > 2:
+        return_values['data']['ozpicinfo'] = [URL('tree','pic_info', scheme=True, host=True, extension=False, args=[
+            request.args[1],  # Picsrc
+            request.args[2],  # Picfn
+        ], vars=request.vars)]
+
     # OZLinks just links back to ourselves
     return_values['data']['ozlinks'] = [URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='html', args=request.args, vars=request.vars)]
     return return_values
