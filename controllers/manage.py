@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from OZfunctions import *
 
-def pic_path ():
+def pic_path (src, src_id):
     """
     Where to save pics, and where to check if a local version of a picture exists
     must be a function called with request.folder defined
     """
-    return os.path.join(request.folder,'static','FinalOutputs','pics')
+    return os.path.join(
+        request.folder,'static','FinalOutputs','img', str(src), str(src_id)[-3:])
 
 @auth.requires_membership(role='manager')
 def index():
@@ -267,7 +268,6 @@ def SPONSOR_UPDATE():
                 except:
                     send_tweet = False
                 if send_tweet:
-                    #twitter.update_status(status="New update to www.OneZoom.org: now with millions of species") #comment out
                     twitter.update_status(status=tweet) #uncomment to make twitterbot live
                 else:
                     response.flash = CAT((P(response.flash) if response.flash else ""), P('Twitterbot is in testing mode, but would otherwise have said"', EM(tweet), '". To turn twitterbot on, add "autosend_tweet = 1" to appconfig.ini'))
@@ -276,51 +276,57 @@ def SPONSOR_UPDATE():
         
         form.element(_type='submit').update(_style='background-color: #999999; background-image:none; font-size: 1.6em;')
         form.element(_type='submit').update(_value='↻')
-        ##Only extra thing to do is to download new images: just redo the 
-        try:
-            import re
-            from subprocess import Popen, PIPE, STDOUT
-            
-            ret_text = ""
-            ott = db.reservations[row_id].get('OTT_ID')
-            db_conn_string = myconf.take('db.uri')
-            m = re.match(r'([^:]*:[^:]+)(:?)([^@]*)(.*)', db_conn_string)
-            db_conn_string = (m.group(1) or '') + m.group(2) + m.group(4)
-            password = m.group(3) or ''
-            EoLQueryPicsNames = [os.path.join(request.folder,'OZprivate','ServerScripts','Utilities','EoLQueryPicsNames.py'),
-                                 '--database', db_conn_string,
-                                 '--output_dir', pic_path(), 
-                                 '--add_percent', str(percent_crop_expansion),
-                                 '-v', '--script', '--opentree_id', str(int(ott))]
-            if db.reservations[row_id].user_nondefault_image or request.vars.admin_changed_image:
-                #this is a specific user-chosen image: we will save it as a "OneZoom" image
-                DOid = db.reservations[row_id].get('verified_preferred_image')
-                if DOid:
-                    #get the DB / pw string from appconfig.ini, and extract the password
-                    #only save an explicit OneZoom image (by passing in the dataObject ID) if the user  
-                    # (or admin, if overridden) has selected something different from the EoL default
-                    image_getter_connection = Popen(EoLQueryPicsNames + ['--bespoke_eol_image', str(int(DOid))], 
-                                                    stdout=PIPE, stdin=PIPE, stderr=STDOUT, 
-                                                    env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()})
-                    #pass in the password via stdin, so it doesn't get shown in the processes
-                    ret_text += image_getter_connection.communicate(input='{0}\n'.format(password))[0]
-            #Always update the default EoL image (and common name) using EoLQueryPicsNames.py. 
-            # Don't pass in the DOid - the script should get that automagically
-            image_getter_connection = Popen(EoLQueryPicsNames, 
-                                            stdout=PIPE, stdin=PIPE, stderr=STDOUT, 
-                                            env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()})
-            #pass in the password via stdin, so it doesn't get shown in the processes
-            ret_text += image_getter_connection.communicate(input='{0}\n'.format(password))[0]
-            if ret_text:
-                form.element(_type='submit').update(_title=ret_text)
-                
-        except:
-            raise
+        
+        img_src = db.reservations[row_id].verified_preferred_image_src
+        if img_src in [src_flags['onezoom_via_eol'], src_flags['eol']] or request.vars.admin_changed_image:
+            # We have asked for an image from EoL- use EoLQueryPicsNames to download
+            # it and simultanously add it to the database (perhaps as a bespoke image)
             try:
-                response.flash = "could not download image ({}). Try running \n{}".format(ret_text, " ".join(EoLQueryPicsNames))
+                import re
+                from subprocess import Popen, PIPE, STDOUT
+                
+                ret_text = ""
+                ott = db.reservations[row_id].get('OTT_ID')
+                # Since the EoLQueryPicsNames script runs as the web user, it should not have
+                # direct access to the appconfig.ini file, with username and password,
+                # so we pass it a password string
+                db_conn_string = myconf.take('db.uri')
+                m = re.match(r'([^:]*:[^:]+)(:?)([^@]*)(.*)', db_conn_string)
+                db_conn_string = (m.group(1) or '') + m.group(2) + m.group(4)
+                password = m.group(3) or ''
+                EoLQueryPicsNames = [os.path.join(request.folder,'OZprivate','ServerScripts','Utilities','EoLQueryPicsNames.py'),
+                                     '--add_percent', str(percent_crop_expansion),
+                                     '-v', '--opentree_id', str(int(ott))]
+                if img_src == src_flags['onezoom_via_eol'] or request.vars.admin_changed_image:
+                    #this is a specific user-chosen image: we will save it as a "onezoom_via_eol" image
+                    DOid = db.reservations[row_id].verified_preferred_image
+                    if DOid:
+                        #get the DB / pw string from appconfig.ini, and extract the password
+                        #only save an explicit OneZoom image (by passing in the dataObject ID) if the user  
+                        # (or admin, if overridden) has selected something different from the EoL default
+                        image_getter_connection = Popen(EoLQueryPicsNames + ['--eol_image_id', str(int(DOid))], 
+                                                        stdout=PIPE, stderr=STDOUT,
+                                                        stdin=PIPE, 
+                                                        env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()})
+                        #pass in the password via stdin, so it doesn't get shown in the processes
+                        ret_text += image_getter_connection.communicate(input='{0}\n'.format(password))[0]
+                #Always update the default EoL image (and common name) using EoLQueryPicsNames.py. 
+                # Don't pass in the DOid - the script should get that automagically
+                image_getter_connection = Popen(EoLQueryPicsNames, 
+                                                stdout=PIPE, stderr=STDOUT,
+                                                stdin=PIPE,
+                                                env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()})
+                #pass in the password via stdin, so it doesn't get shown in the processes
+                ret_text += image_getter_connection.communicate(input='{0}\n'.format(password))[0]
+                if ret_text:
+                    form.element(_type='submit').update(_title=ret_text)
+                    
             except:
-                response.flash = "could not download image. Sorry."
-
+                raise
+                try:
+                    response.flash = "could not download image ({}). Try running \n{}".format(ret_text, " ".join(EoLQueryPicsNames))
+                except:
+                    response.flash = "could not download image. Sorry."
     else:
         if form.errors:
             for elem in form.elements():
@@ -404,6 +410,7 @@ def LIST_IMAGES():
         elif request.vars.get('select_image_type') == 'best_pd':
             query = query & (db.images_by_ott.best_pd)
         rows = db(query).select(
+                           db.images_by_ott.src,
                            db.images_by_ott.src_id,
                            db.images_by_ott.ott,
                            db.images_by_ott.rating,
@@ -452,12 +459,16 @@ def SHOW_EMAILS():
         #we can't use the paypal emails etc because we haven't been paid!
         if s.e_mail:
             details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.user_sponsor_name, s.e_mail, sponsor_for=s.user_sponsor_kind=='for', email_type='no_payment')
+            if s.user_preferred_image:
+                details['local_pic'] = os.path.isfile(
+                    os.path.join(
+                        pic_path(src_flags['onezoom_via_eol'], s.user_preferred_image),
+                        str(s.user_preferred_image)+'.jpg'))
             details.update({
                'ott' : str(s.OTT_ID),
                'name': s.name,
                'cname':cnames.get(s.OTT_ID),
                'doID': str(s.user_preferred_image),
-               'local_pic': os.path.isfile(os.path.join(pic_path(), str(s.user_preferred_image)+'.jpg')) if s.user_preferred_image else None,
                'rowflag':None if s.admin_comment else 'no_admin',
                'mesg': s.user_message_OZ})
             try:
@@ -484,12 +495,16 @@ def SHOW_EMAILS():
     cnames = get_common_names(otts)
     for s in sponsors:
         details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.user_sponsor_name, s.e_mail or s.PP_e_mail, s.PP_first_name, s.PP_second_name, sponsor_for= (s.user_sponsor_kind=='for'), email_type='to_verify')
+        if s.user_preferred_image:
+            details['local_pic'] = os.path.isfile(
+                os.path.join(
+                    pic_path(src_flags['onezoom_via_eol'], s.user_preferred_image),
+                    str(s.user_preferred_image)+'.jpg'))
         details.update({
             'ott' : str(s.OTT_ID),
             'name': s.name,
             'cname':cnames.get(s.OTT_ID),
             'doID': str(s.user_preferred_image),
-            'local_pic': os.path.isfile(os.path.join(pic_path(), str(s.user_preferred_image)+'.jpg')) if s.user_preferred_image else None,
             'mesg': s.user_message_OZ})
         try:
             email_list[details['type']].append(details)
@@ -514,12 +529,16 @@ def SHOW_EMAILS():
     cnames = get_common_names(otts)
     for s in sponsors:
         details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.verified_name, s.e_mail or s.PP_e_mail, s.PP_first_name, s.PP_second_name, sponsor_for= s.verified_kind=='for', email_type='live')
+        if s.user_preferred_image:
+            details['local_pic'] = os.path.isfile(
+                os.path.join(
+                    pic_path(src_flags['onezoom_via_eol'], s.verified_preferred_image),
+                    str(s.verified_preferred_image)+'.jpg'))
         details.update({
             'ott' : str(s.OTT_ID),
             'name': s.name,
             'cname': cnames.get(s.OTT_ID),
             'doID': str(s.verified_preferred_image),
-            'local_pic': os.path.isfile(os.path.join(pic_path(), str(s.verified_preferred_image)+'.jpg')) if s.verified_preferred_image else None,
             'mesg': s.user_message_OZ})
         try:
             email_list[details['type'] + " " + s.verified_time.strftime("%A %e %b, %Y")].append(details)
