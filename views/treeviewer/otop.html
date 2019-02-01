@@ -146,14 +146,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Wrap the main definition of populateLinkouts, insert our challenges tab
     window.UI_callbacks.populateLinkouts = function (responseJSON, initialSelected) {
-        var selected_node = {};
+        var selected_node = {}, region_challenge_map = {
+            default: 'takeaction',
+            land: 'zerowaste',
+            reptile: 'nobottledwater',
+            birds: 'nature',
+            sea: 'ethicalfashion',
+            plants: 'plantnative',
+            insects: 'ecofriendlyproducts',
+            mushrooms: 'transportation',
+            bacteria: 'zerowaste',
+        };
 
         if (responseJSON.id) {
             // TODO: The region is only available on a node once detail_fetched - this happens too early on page reload
             selected_node = onezoom.controller.develop_branch_to(-responseJSON.id);  // NB: Assume this is a leaf node
         }
         if (selected_node.region) {
-            responseJSON.data.otopchallenge = ['https://api.onetreeoneplanet.org/onezoom-challenge-tabs/' + encodeURIComponent(selected_node.region)];
+            responseJSON.data.otopchallenge = ['/OZtree/static/otop/challenge.html?' + encodeURIComponent(region_challenge_map[selected_node.region] || region_challenge_map["default"])];
         }
         return origPopulateLinkouts(responseJSON, initialSelected);
     };
