@@ -444,8 +444,14 @@ db.define_table('reservations',
     # optional extra info about a person
     Field('user_nondefault_image', type = 'integer'),
     #has the user chosen a non-default image? 0 or 1. Should prob be boolean type instead.
-    Field('user_preferred_image', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))),
-    # an option for users to recommend an EOL ID as the best image. Should normally be filled. Negative numbers are bespoke OneZoom images
+    Field('user_preferred_image', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))), #old, to be deleted
+    Field('user_preferred_image_src', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(0,1000))),
+    Field('user_preferred_image_src_id', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))),
+    # an option for users to recommend an EOL ID as the best image. Should normally be filled: if 
+    # user_nondefault_image is true, this will set the user_preferred_image_src to 
+    # src_flags['onezoom_via_eol'], on the assumption that this is a nicer image than the
+    # default OneZoom one. Otherwise the user_preferred_image_src should be set to the
+    # src value passed in when viewing the sponsor page
     Field('user_updated_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),  
     # need to know when it was last updated to check for user updates         
     Field('user_paid', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
@@ -483,10 +489,13 @@ db.define_table('reservations',
     # matches 'user_donor_name'
     Field('verified_more_info', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(maxsize=30)), widget=SQLFORM.widgets.text.widget), 
     # matches 'user_more_info'
-    Field('verified_preferred_image', type='integer', requires = IS_EMPTY_OR(IS_INT_IN_RANGE(1,1e100))),
-    # matches 'user_preferred_image', or may be modified by hand by an admin. 
-    # Can only be null if there was no image (not even an already-downloaded OneZoom one) 
-    # when the user sponsored. If the user picked a non default image, then this 
+    Field('verified_preferred_image', type='integer', requires = IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))), #old, to be deleted
+    Field('verified_preferred_image_src', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(0,1000))),
+    Field('verified_preferred_image_src_id', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))),
+    # match 'user_preferred_image_src', and 'user_preferred_image_src_id' or may be 
+    # modified by hand by an admin. Can only be null if there was no image 
+    # (not even an already-downloaded OneZoom one) when the user sponsored. 
+    # If the user picked a non default image, then this 
     # field is still filled out, but user_nondefault_image should be 1.
     Field('verified_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
     # if verified_time = NULL then details haven't been verified

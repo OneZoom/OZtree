@@ -1,5 +1,25 @@
 #!/usr/bin/env python3
-'''Label all unnamed nodes with an underscore + number.
+'''
+One off script to change to the new way of labelling images - WARNING - this makes
+permanent DB changes and can only be run once (it is left here for reference). Please
+read this initial documentation carefully
+
+You are advised to run this piece by piece in an interactive terminal, on the development
+server.
+
+Instead of pics/12345.jpg, the new format uses
+
+img/src/345/12345.jpg
+
+where src is a number from src_flags, as defined in _OZglobals.py
+
+For a server installation, yout might also want to change images.onezoom.org to point to
+the correct dir (img, not pics), e.g. by altering nginx.conf
+
+You will also need to make sure that the reservations table is the most recent one.
+After running this, you may wish to remove the columns user_preferred_image and 
+verified_preferred_image from the database (they are then redundent)
+
 '''
 
 import argparse
@@ -52,23 +72,35 @@ elif args.database.startswith("mysql://"): #mysql://<mysql_user>:<mysql_password
             pw = getpass("Enter the sql database password: ")
     else:
         pw = match.group(2)
-    db_connection = pymysql.connect(user=match.group(1), passwd=pw, host=match.group(3), db=match.group(4), port=3306, charset='utf8mb4')
+    db_connection = pymysql.connect(
+        user=match.group(1), passwd=pw, host=match.group(3), 
+        db=match.group(4), port=3306, charset='utf8mb4')
     datetime_now = "NOW()"
     diff_minutes=lambda a,b: 'TIMESTAMPDIFF(MINUTE,{},{})'.format(a,b)
     subs="%s"
 
 
+pic_path = os.path.join(top_level, "static/FinalOutputs/pics")
+img_path = os.path.join(top_level, "static/FinalOutputs/img/{}".format(src_flags['eol_old']))
+os.makedirs(img_path, exist_ok=True)
 
+
+assert eol_old in src_flags, "You need to use a new branch of the repo"
+
+#change the old src=2 to the new src=eol_old
 db_curs = db_connection.cursor()
-#db_curs.execute("UPDATE images_by_ott SET src={} WHERE src=2".format(src_flags['eol_old']))
+#transfer all old src ids to new
+db_curs.execute("UPDATE reservations SET user_preferred_image_src_id=user_preferred_image, user_preferred_image_src={} WHERE user_preferred_image >= 0".format(src_flags['eol_old']))
+db_curs.execute("UPDATE reservations SET user_preferred_image_src_id=-user_preferred_image, user_preferred_image_src={} WHERE user_nondefault_image > 0 AND user_preferred_image < 0".format(src_flags['onezoom_bespoke']))
+db_curs.execute("UPDATE reservations SET verified_preferred_image_src_id=verified_preferred_image, verified_preferred_image_src={} WHERE verified_preferred_image >= 0".format(src_flags['eol_old']))
+db_curs.execute("UPDATE reservations SET verified_preferred_image_src_id=-verified_preferred_image, verified_preferred_image_src={} WHERE verified_nondefault_image > 0 AND verified_preferred_image < 0".format(src_flags['onezoom_bespoke']))
+db_connection.commit()
+
+db_curs.execute("UPDATE images_by_ott SET src={} WHERE src=2".format(src_flags['eol_old']))
 db_connection.commit()
 db_curs.close()
 
-pic_path = os.path.join(top_level, "static/FinalOutputs/pics")
-img_path = os.path.join(top_level, "static/FinalOutputs/img/{}".format(src_flags['eol_old']))
-#os.mkdir(img_path)
-
-"""db_curs = db_connection.cursor()
+db_curs = db_connection.cursor()
 batch_size = 200
 db_curs.execute("SELECT src_id FROM images_by_ott WHERE src={}".format(src_flags['eol_old']))
 while True:
@@ -82,9 +114,9 @@ while True:
         os.makedirs(subdir, exist_ok=True)
         f = os.path.join(pic_path, src_id+".jpg")
         if os.path.isfile(f):
-            os.rename(f, os.path.join(subdir, src_id+".jpg"))
+            os.copyfile(f, os.path.join(subdir, src_id+".jpg"))
 db_curs.close()
-"""
+
 
 db_curs = db_connection.cursor()
 sql = "UPDATE images_by_ott SET src={}, src_id=-src_id WHERE src=1 AND src_id < 0".format(src_flags['onezoom_bespoke'])
