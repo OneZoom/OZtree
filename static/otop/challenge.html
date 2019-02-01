@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/OZ_bootstrap.css" />
+    <link rel="stylesheet" href="challenge.css" />
+
+    <title></title>
+  </head>
+  <body>
+    <div class="bkgd top"></div>
+    <div class="bkgd bottom"></div>
+    <div>
+      <h1>Now you can take a challenge and change the world!</h1>
+
+      <a href="javascript:">
+        <img src="" />
+        <span></span>
+      </a>
+    </div>
+    <script>
+var challenges = {
+        'nobottledwater': {challenge: 'No bottled water', id: '19f2dacbe6544bb4a4cf01689a948d65', color: '#00b1ff'},
+        'reducemeat': {challenge: 'Reduce meat consumption', id: '719f07b7789b4a5489150167c73cb879', color: '#ff7300'},
+        'avoidpalmoil': {challenge: 'Avoid unsustainable Palm oil', id: '9c34f9366f9748b19c3401689ab27242', color: '#ffcf00'},
+        'plantnative': {challenge: 'Plant native plants', id: '9a66fee1c2284c518d1c01689a720ef8', color: '#19d832'},
+        'inseason': {challenge: 'Eat in-season vegetables', id: '44106628bc644ad085530167c1c4165c', color: '#ff8d00'},
+        'zerowaste': {challenge: 'Aim for zero waste', id: '2d15e521294c4ebbbbb50167bd2d3932', color: '#7400ff'},
+        'reduceenergy': {challenge: 'Reduce energy waste', id: '99e4726ba5cd4fb7b70001689aa69846', color: '#ffcf00'},
+        'transportation': {challenge: 'Reduce your transportation impact', id: 'ccaf96cb617c45778ffa01689b3caa0a', color: '#ffcf00'},
+        'reducewater': {challenge: 'Reduce your water consumption', id: '4eeb61317b62468ab3de01689ac1993d', color: '#00b1ff'},
+        'nature': {challenge: 'Connect with nature', id: '521e97f4bff14b3ab5f001689aba9ecf', color: '#00dc00'},
+        'reducefoodwaste': {challenge: 'Reduce food waste', id: '5c41449c0d134ab89e6b01689b370db7', color: '#7400ff'},
+        'takeaction': {challenge: 'Take action', id: '9e5613fa310045979ba601689b422dfd', color: '#25d546'},
+        'ethicalfashion': {challenge: 'Go for ethical fashion', id: '82afa177b1fe4e3a921201689b333830', color: '#7400ff'},
+        'sustainableseafood': {challenge: 'Eat only sustainable seafood', id: '86a38bfe88b94a46ac4e01689b49b724', color: '#00b1ff'},
+        'ecofriendlyproducts': {challenge: 'Eco friendly products', id: 'MISSING', color: '#7400ff'},
+    }, challenge,
+    challenge_name = window.location.search.replace(/\?/, '');
+
+if (!challenges[challenge_name]) {
+    window.alert('Unknown challenge ' + challenge_name);
+    throw new Error(challenge_name);
+}
+challenge = challenges[challenge_name];
+window.document.title = 'Challenge: ' + challenge.challenge;
+window.document.querySelector('a').setAttribute('href', 'onetreeoneplanet://challenge/' + challenge.id);
+window.document.querySelector('img').setAttribute('src', 'challenge-' + challenge_name + '.svg');
+window.document.querySelector('span').innerText = challenge.challenge;
+window.document.querySelector('.bkgd.top').style.backgroundImage = "radial-gradient(80vw, " + challenge.color + ", transparent)";
+window.document.querySelector('.bkgd.bottom').style.backgroundImage = "radial-gradient(80vw, " + challenge.color + ", transparent)";
+    </script>
+  </body>
+</html>
