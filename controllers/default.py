@@ -534,8 +534,8 @@ def sponsored():
     for r in curr_rows:
         if r.user_nondefault_image != 0:
             user_images[r.OTT_ID] = db(
-                (db.images_by_ott.src_id=r.verified_preferred_image_src_id) &
-                (db.images_by_ott.src=r.verified_preferred_image_src)
+                (db.images_by_ott.src_id==r.verified_preferred_image_src_id) &
+                (db.images_by_ott.src==r.verified_preferred_image_src)
                 ).select(
                     db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
                     db.images_by_ott.rights, db.images_by_ott.licence,
