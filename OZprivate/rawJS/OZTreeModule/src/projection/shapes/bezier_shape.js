@@ -24,12 +24,15 @@ class BezierShape extends BaseShape {
       color: "rgb(255, 255, 255)"
     };
     this.markings_list = [];
+    this.shadow = false;
   }
   release() {
     this.sx = NaN;
     this.sy = NaN;
     this.do_stroke = false;
     this.path_points = [];
+    this.markings_list = [];
+    this.shadow = false;
   }
 }
 

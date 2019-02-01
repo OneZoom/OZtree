@@ -21,8 +21,7 @@ class ObjectPool {
         this.create_new_obj(i, i-prev_size);
       }
     }
-    let first_available = this.available_obj.shift();
-    return this.arr[first_available];
+    return this.arr[this.available_obj.pop()];
   }
   create_new_obj(index_in_arr, available_index) {
     this.arr[index_in_arr] = new this.ClassType();

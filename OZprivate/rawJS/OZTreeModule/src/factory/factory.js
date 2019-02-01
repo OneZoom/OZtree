@@ -133,18 +133,24 @@ function _develop_branch_off_mainbranch(node, depth) {
  * @param {Array} developed_nodes_arr
  */
 function _create_undeveloped_nodes(node, developed_nodes_arr) {
-	let node_developed = false;
-	if (node.gvar && node.is_interior_node && !node.has_child) {
-    node.develop_children(2);
-		node_developed = true;
-    developed_nodes_arr.push(node);
-	}
-	if (!node_developed && node.dvar) {
-    let length = node.children.length;
-    for (let i=0; i<length; i++) {
-      _create_undeveloped_nodes(node.children[i], developed_nodes_arr);  
+    let node_developed = false;
+
+    if (developed_nodes_arr.length > 1000) {
+        // Already got enough nodes to be getting on with, any more is likely
+        // to impact render speed
+        return;
     }
-	}
+    if (node.gvar && node.is_interior_node && !node.has_child) {
+        node.develop_children(2);
+        node_developed = true;
+        developed_nodes_arr.push(node);
+    }
+    if (!node_developed && node.dvar) {
+        let length = node.children.length;
+        for (let i=0; i<length; i++) {
+            _create_undeveloped_nodes(node.children[i], developed_nodes_arr);
+        }
+    }
 }
 
 let factory;

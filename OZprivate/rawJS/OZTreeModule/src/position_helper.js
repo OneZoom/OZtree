@@ -319,7 +319,6 @@ function perform_actual_fly(controller, into_node, finalize_func, accel_type) {
     perform_fly_b2(controller, into_node, finalize_func, accel_type);
     return true;
   }
-  controller.trigger_refresh_loop();
 }
 
 
@@ -361,6 +360,7 @@ function perform_fly_b2(controller, into_node, finalize_func, accel_type) {
     tree_state.set_action("fly");
     controller.re_calc();
     controller.reanchor();
+    controller.trigger_refresh_loop();
     
     clearTimeout(tree_state.fly_timer);
     tree_state.fly_timer = setTimeout(function () {
@@ -376,6 +376,7 @@ function perform_fly_b2(controller, into_node, finalize_func, accel_type) {
     );
     tree_state.set_action("fly");
     controller.re_calc();
+    controller.trigger_refresh_loop();
     
     clearTimeout(tree_state.fly_timer);
     tree_state.fly_timer = setTimeout(function () {
