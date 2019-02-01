@@ -118,7 +118,8 @@ def sponsor_leaf():
             user_sponsor_kind
             user_sponsor_name
             user_more_info
-            user_preferred_image
+            user_preferred_image_src
+            user_preferred_image_src_id
             user_updated_time
             user_paid
             user_message_OZ
@@ -280,7 +281,7 @@ def sponsor_leaf():
                         status = "unverified waiting for payment"
                     else:
                         # we've waited too long and can zap the personal data previously in the table then set available
-                        reservation_query.update(user_id=None, e_mail=None, twitter_name=None, allow_contact=None, user_sponsor_kind=None, user_sponsor_name=None, user_more_info=None, user_nondefault_image=None, user_preferred_image=None, user_updated_time=None, user_paid=None, user_message_OZ=None, user_giftaid=None, user_registration_id=None, PP_transaction_code=None, PP_e_mail=None, PP_first_name=None, PP_second_name=None, PP_town=None, PP_country=None, PP_house_and_street=None, PP_postcode=None, verified_kind=None, verified_name=None, verified_more_info=None, verified_preferred_image=None, verified_time=None, verified_paid=None, verified_url=None, live_time=None, admin_comment=None, sponsorship_duration_days=None, asking_price=None, deactivated=None, sale_time=None, partner_name=None, partner_percentage=None)
+                        reservation_query.update(user_id=None, e_mail=None, twitter_name=None, allow_contact=None, user_sponsor_kind=None, user_sponsor_name=None, user_more_info=None, user_nondefault_image=None, user_preferred_image_src=None, user_preferred_image_src_id=None, user_updated_time=None, user_paid=None, user_message_OZ=None, user_giftaid=None, user_registration_id=None, PP_transaction_code=None, PP_e_mail=None, PP_first_name=None, PP_second_name=None, PP_town=None, PP_country=None, PP_house_and_street=None, PP_postcode=None, verified_kind=None, verified_name=None, verified_more_info=None, verified_preferred_image_src=None, verified_preferred_image_src_id=None, verified_time=None, verified_paid=None, verified_url=None, live_time=None, admin_comment=None, sponsorship_duration_days=None, asking_price=None, deactivated=None, sale_time=None, partner_name=None, partner_percentage=None)
                         #note that this e.g. clears deactivated taxa, etc etc.
                         status = "available"
             else:
@@ -318,8 +319,13 @@ def sponsor_leaf():
     default_image = db((db.images_by_ott.ott == OTT_ID_Varin) & (db.images_by_ott.overall_best_any == True)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence).first()
     #also look at the nondefault images if present
     if reservation_entry.user_nondefault_image:
-        doID = reservation_entry.verified_preferred_image
-        user_image = db(db.images_by_ott.src_id == doID).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.rights, db.images_by_ott.licence).first()
+        src_id = reservation_entry.verified_preferred_image_src_id
+        src = reservation_entry.verified_preferred_image_src
+        user_image = db(
+            (db.images_by_ott.src_id == src_id) & (db.images_by_ott.src == src)
+            ).select(
+                db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, 
+                db.images_by_ott.rights, db.images_by_ott.licence).first()
     else:
         user_image=None
 
@@ -356,7 +362,7 @@ def sponsor_leaf():
             form = SQLFORM(db.reservations, reservation_entry, 
                 fields=['e_mail','allow_contact','twitter_name', 'user_sponsor_kind', 'user_sponsor_name', 'user_more_info', 
                     'user_donor_title', 'user_donor_name', 'user_donor_show', 'user_paid', 'user_message_OZ',
-                    'user_nondefault_image', 'user_preferred_image','user_giftaid'],
+                    'user_nondefault_image', 'user_preferred_image_src', 'user_preferred_image_src_id','user_giftaid'],
                 deletable = False)
             if form.process(session=None, formname='test', onvalidation=lambda x: validate_sponsor_leaf(x, leaf_price)).accepted:
                 #response.flash = 'temp form accepted' # debug
@@ -507,14 +513,15 @@ def sponsored():
         sum = db.reservations.user_paid.sum()
         tot = db(query).select(sum).first()[sum]
     rows = db(query).select(
-                           db.reservations.OTT_ID,
-                           db.reservations.name,
-                           db.reservations.user_nondefault_image,
-                           db.reservations.verified_kind,
-                           db.reservations.verified_name,
-                           db.reservations.verified_more_info,
-                           db.reservations.verified_preferred_image,
-                           orderby=~db.reservations.verified_time|db.reservations.reserve_time);
+        db.reservations.OTT_ID,
+        db.reservations.name,
+        db.reservations.user_nondefault_image,
+        db.reservations.verified_kind,
+        db.reservations.verified_name,
+        db.reservations.verified_more_info,
+        db.reservations.verified_preferred_image_src,
+        db.reservations.verified_preferred_image_src_id,
+        orderby=~db.reservations.verified_time|db.reservations.reserve_time);
 
     curr_rows = rows[(page*items_per_page):(1+(page+1)*items_per_page)]
     pds=set()
@@ -522,9 +529,17 @@ def sponsored():
     html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).iteritems()}
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
     default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(sci_names.keys()) & (db.images_by_ott.best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
-    #also look at the nondefault images if present
-    doIDs = [r.verified_preferred_image for r in curr_rows if r.user_nondefault_image != 0]
-    user_images = {r.ott:r for r in db(db.images_by_ott.src_id.belongs(doIDs)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
+    #also look at the nondefault images if present - 
+    user_images = {}
+    for r in curr_rows:
+        if r.user_nondefault_image != 0:
+            user_images[r.OTT_ID] = db(
+                (db.images_by_ott.src_id=r.verified_preferred_image_src_id) &
+                (db.images_by_ott.src=r.verified_preferred_image_src)
+                ).select(
+                    db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
+                    db.images_by_ott.rights, db.images_by_ott.licence,
+                    orderby=~db.images_by_ott.src).first()
     if (request.vars.highlight_pd):
         pds.add(None) #ones without a src_id are public doman
         pds |= set([l['src_id'] for k,l in default_images.items() if unicode(l['licence'], 'utf8').endswith(u'\u009C')]) #all pd pics should end with \u009C on the licence
