@@ -60,7 +60,7 @@ src_flags = cache.ram('src_flags',
 
 # The images from EoL can be added to the eol_inspected and eol_updated tables,
 # and clicking on their copyright link can take you directly to the appropriate EoL
-# page. This isn't true
+# page. This isn't true of other images (or of the eol_old images either)
 eol_src_flags = cache.ram('eol_src_flags',
     lambda: ['onezoom_via_eol', 'eol'],
     time_expire = None)
