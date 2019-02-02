@@ -26,6 +26,7 @@ import argparse
 import re
 import sys
 import os
+import shutil
 import logging
 
 top_level = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.pardir, os.path.pardir, os.path.pardir, os.path.pardir)
@@ -33,33 +34,35 @@ top_level = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.par
 sys.path.append(os.path.abspath(os.path.join(top_level, "models")))
 from _OZglobals import src_flags, eol_inspect_via_flags, image_status_labels
 
-default_appconfig_file = default_appconfig_file = "private/appconfig.ini"
+default_appconfig_file = "private/appconfig.ini"
 parser = argparse.ArgumentParser(description='Transfer to new EoL V3')
+parser.add_argument('--database', '-db', default=None, help='name of the db containing eol ids, in the same format as in web2py, e.g. sqlite://../databases/storage.sqlite or mysql://<mysql_user>:<mysql_password>@localhost/<mysql_database>. If not given, the script looks for the variable db.uri in the file {} (relative to the script location)'.format(default_appconfig_file))
+parser.add_argument('--EOL_API_key', '-k', default=None, help='your EoL API key. If not given, the script looks for the variable api.eol_api_key in the file {} (relative to the script location)'.format(default_appconfig_file))
 
 args = parser.parse_args()
 
-with open(os.path.join(top_level, default_appconfig_file)) as conf:
-    conf_type=None
-    for line in conf:
-    #look for [db] line, followed by uri
-        m = re.match(r'\[([^]]+)\]', line)
-        if m:
-            conf_type = m.group(1)
-        if conf_type == 'db':
-            m = re.match('uri\s*=\s*(\S+)', line)
+if args.database is None:
+    with open(os.path.join(top_level, default_appconfig_file)) as conf:
+        conf_type=None
+        for line in conf:
+        #look for [db] line, followed by uri
+            m = re.match(r'\[([^]]+)\]', line)
             if m:
-                args.database = m.group(1)
-        elif conf_type == 'api':
-            m = re.match('eol_api_key\s*=\s*(\S+)', line)
-            if m:
-                args.EOL_API_key = m.group(1)
-            
+                conf_type = m.group(1)
+            if conf_type == 'db':
+                m = re.match('uri\s*=\s*(\S+)', line)
+                if m:
+                    args.database = m.group(1)
+            elif conf_type == 'api':
+                m = re.match('eol_api_key\s*=\s*(\S+)', line)
+                if m:
+                    args.EOL_API_key = m.group(1)
+
 if args.database.startswith("sqlite://"):
     from sqlite3 import dbapi2 as sqlite
     db_connection = sqlite.connect(os.path.relpath(args.database[len("sqlite://"):], args.treedir))
     datetime_now = "datetime('now')";
     subs="?"
-    
 elif args.database.startswith("mysql://"): #mysql://<mysql_user>:<mysql_password>@localhost/<mysql_database>
     import pymysql
     match = re.match(r'mysql://([^:]+):([^@]*)@([^/]+)/([^?]*)', args.database.strip())
@@ -85,20 +88,23 @@ img_path = os.path.join(top_level, "static/FinalOutputs/img/{}".format(src_flags
 os.makedirs(img_path, exist_ok=True)
 
 
-assert eol_old in src_flags, "You need to use a new branch of the repo"
+assert 'eol_old' in src_flags, "You need to use a new branch of the repo"
 
 #change the old src=2 to the new src=eol_old
-db_curs = db_connection.cursor()
-#transfer all old src ids to new
-db_curs.execute("UPDATE reservations SET user_preferred_image_src_id=user_preferred_image, user_preferred_image_src={} WHERE user_preferred_image >= 0".format(src_flags['eol_old']))
-db_curs.execute("UPDATE reservations SET user_preferred_image_src_id=-user_preferred_image, user_preferred_image_src={} WHERE user_nondefault_image > 0 AND user_preferred_image < 0".format(src_flags['onezoom_bespoke']))
-db_curs.execute("UPDATE reservations SET verified_preferred_image_src_id=verified_preferred_image, verified_preferred_image_src={} WHERE verified_preferred_image >= 0".format(src_flags['eol_old']))
-db_curs.execute("UPDATE reservations SET verified_preferred_image_src_id=-verified_preferred_image, verified_preferred_image_src={} WHERE user_nondefault_image > 0 AND verified_preferred_image < 0".format(src_flags['onezoom_bespoke']))
-db_connection.commit()
-
-db_curs.execute("UPDATE images_by_ott SET src={} WHERE src=2".format(src_flags['eol_old']))
-db_connection.commit()
-db_curs.close()
+try:
+    db_curs = db_connection.cursor()
+    #transfer all old src ids to new
+    db_curs.execute("UPDATE reservations SET user_preferred_image_src_id=user_preferred_image, user_preferred_image_src={} WHERE user_preferred_image >= 0".format(src_flags['eol_old']))
+    db_curs.execute("UPDATE reservations SET user_preferred_image_src_id=-user_preferred_image, user_preferred_image_src={} WHERE user_nondefault_image > 0 AND user_preferred_image < 0".format(src_flags['onezoom_bespoke']))
+    db_curs.execute("UPDATE reservations SET verified_preferred_image_src_id=verified_preferred_image, verified_preferred_image_src={} WHERE verified_preferred_image >= 0".format(src_flags['eol_old']))
+    db_curs.execute("UPDATE reservations SET verified_preferred_image_src_id=-verified_preferred_image, verified_preferred_image_src={} WHERE user_nondefault_image > 0 AND verified_preferred_image < 0".format(src_flags['onezoom_bespoke']))
+    db_connection.commit()
+    
+    db_curs.execute("UPDATE images_by_ott SET src={} WHERE src=2".format(src_flags['eol_old']))
+    db_connection.commit()
+    db_curs.close()
+except:
+    raise
 
 db_curs = db_connection.cursor()
 batch_size = 200
@@ -114,7 +120,8 @@ while True:
         os.makedirs(subdir, exist_ok=True)
         f = os.path.join(pic_path, src_id+".jpg")
         if os.path.isfile(f):
-            os.copyfile(f, os.path.join(subdir, src_id+".jpg"))
+            shutil.copyfile(f, os.path.join(subdir, src_id+".jpg"))
+
 db_curs.close()
 
 
