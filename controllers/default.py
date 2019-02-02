@@ -512,7 +512,8 @@ def sponsored():
     if (request.vars.sum):
         sum = db.reservations.user_paid.sum()
         tot = db(query).select(sum).first()[sum]
-    rows = db(query).select(
+    limitby=(page*items_per_page,(page+1)*items_per_page+1)
+    curr_rows = db(query).select(
         db.reservations.OTT_ID,
         db.reservations.name,
         db.reservations.user_nondefault_image,
@@ -521,12 +522,13 @@ def sponsored():
         db.reservations.verified_more_info,
         db.reservations.verified_preferred_image_src,
         db.reservations.verified_preferred_image_src_id,
-        orderby=~db.reservations.verified_time|db.reservations.reserve_time);
+        orderby=~db.reservations.verified_time|db.reservations.reserve_time,
+        limitby=limitby
+        )
 
-    curr_rows = rows[(page*items_per_page):(1+(page+1)*items_per_page)]
     pds=set()
     sci_names = {r.OTT_ID:r.name for r in curr_rows}
-    html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).iteritems()}
+    html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).items()}
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
     default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(sci_names.keys()) & (db.images_by_ott.best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
     #also look at the nondefault images if present - 
@@ -554,10 +556,11 @@ def donor_list():
     items_per_page=20
     grouped_imgs = "GROUP_CONCAT(if(`user_nondefault_image`,`verified_preferred_image`,NULL))"
     grouped_otts = "GROUP_CONCAT(`OTT_ID`)"
-    sum_paid = "SUM(`user_paid`)"
+    sum_paid = "COALESCE(SUM(`user_paid`),0)"
     n_leaves = "COUNT(1)"
     groupby = "IFNULL(verified_donor_name,id)"
-    rows = db(db.reservations.verified_time != None).select(
+    limitby=(page*items_per_page,(page+1)*items_per_page+1)
+    curr_rows = db(db.reservations.verified_time != None).select(
               grouped_imgs,
               grouped_otts, 
               sum_paid,
@@ -569,10 +572,10 @@ def donor_list():
               db.reservations.verified_kind,
               db.reservations.verified_name,
               db.reservations.verified_more_info,
-              groupby=groupby, orderby= sum_paid + " DESC, verified_time, reserve_time")
-    curr_rows = rows[(page*items_per_page):(1+(page+1)*items_per_page)]
+              groupby=groupby, orderby= sum_paid + " DESC, verified_time, reserve_time",
+              limitby=limitby)
     sci_names = {int(r[grouped_otts]):r.reservations.name for r in curr_rows if r[n_leaves]==1} #only get sci names etc for unary sponsors
-    html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).iteritems()}
+    html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).items()}
     otts = [int(ott) for r in curr_rows for ott in r[grouped_otts].split(",") if r[grouped_otts]]
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
     default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(otts) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
@@ -716,7 +719,7 @@ def sponsor_node_price():
                 sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows_with_images})
 
         #now construct the vernacular names
-        html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(otts, return_nulls=True).iteritems()}
+        html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(otts, return_nulls=True).items()}
         return dict(otts=otts, image_urls=image_urls, html_names = html_names, attributions=image_attributions, price_pence = price_pence)
         
     except:
@@ -811,7 +814,7 @@ def sponsor_handpicks():
         #Now find the vernacular names for all these species
         all_otts = [ott for price in otts for ott in otts[price]]
         if all_otts:
-            html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(all_otts, return_nulls=True).iteritems()}
+            html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(all_otts, return_nulls=True).items()}
             rows = db(db.reservations.OTT_ID.belongs(all_otts) & (db.reservations.verified_time != None)).select(db.reservations.OTT_ID, db.reservations.verified_kind, db.reservations.verified_name)
             reserved = {r.OTT_ID:[r.verified_kind, r.verified_name] for r in rows}
                     
@@ -838,8 +841,8 @@ def list_sponsorable_children():
         species = db(query).select(db.ordered_leaves.ott, 
                                    db.ordered_leaves.name,
                                    db.ordered_leaves.price,
-                                   limitby= limitby, 
-                                   orderby= db.ordered_leaves.name)
+                                   limitby=limitby, 
+                                   orderby=db.ordered_leaves.name)
         return(dict(species=species,page=page,items_per_page=items_per_page, error=""))
 
     except:
