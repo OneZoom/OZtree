@@ -93,7 +93,7 @@ db_curs = db_connection.cursor()
 db_curs.execute("UPDATE reservations SET user_preferred_image_src_id=user_preferred_image, user_preferred_image_src={} WHERE user_preferred_image >= 0".format(src_flags['eol_old']))
 db_curs.execute("UPDATE reservations SET user_preferred_image_src_id=-user_preferred_image, user_preferred_image_src={} WHERE user_nondefault_image > 0 AND user_preferred_image < 0".format(src_flags['onezoom_bespoke']))
 db_curs.execute("UPDATE reservations SET verified_preferred_image_src_id=verified_preferred_image, verified_preferred_image_src={} WHERE verified_preferred_image >= 0".format(src_flags['eol_old']))
-db_curs.execute("UPDATE reservations SET verified_preferred_image_src_id=-verified_preferred_image, verified_preferred_image_src={} WHERE verified_nondefault_image > 0 AND verified_preferred_image < 0".format(src_flags['onezoom_bespoke']))
+db_curs.execute("UPDATE reservations SET verified_preferred_image_src_id=-verified_preferred_image, verified_preferred_image_src={} WHERE user_nondefault_image > 0 AND verified_preferred_image < 0".format(src_flags['onezoom_bespoke']))
 db_connection.commit()
 
 db_curs.execute("UPDATE images_by_ott SET src={} WHERE src=2".format(src_flags['eol_old']))
