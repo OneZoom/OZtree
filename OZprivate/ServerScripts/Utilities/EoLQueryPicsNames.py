@@ -117,13 +117,10 @@ def lookup_and_save_bespoke_EoL_images(eol_dataobject_to_ott, sess, API_key, db_
                 response = sess.get(url,params=pages_params, timeout=10)
                 logger.log(logging.EXTREME_DEBUG, "Getting {}".format(response.url))
                 if response:
-                    print(response.json())
                     data = response.json().get('taxon', {})
-                    
                     if data.get('dataObjects'):
                         #this is where we do most of the hard work figuring out which images to use & flag up
                         d=data['dataObjects'][0]
-                        print(d['dataRating'])
                         images_for_eol[eol_doID]={'best_{}'.format(s):0 for s in image_status_labels}
                         images_for_eol[eol_doID]['json']=d
                         images_for_eol[eol_doID]['any']=convert_rating(d['dataRating'])
@@ -131,7 +128,6 @@ def lookup_and_save_bespoke_EoL_images(eol_dataobject_to_ott, sess, API_key, db_
                             images_for_eol[eol_doID]['verified']=convert_rating(d['dataRating'])
                         if get_credit(d, eol_doID)[1].endswith('\u009C'):
                             images_for_eol[eol_doID]['pd']=convert_rating(d['dataRating'])
-            print(images_for_eol, image_status_labels)
 
             for best_column in image_status_labels:
                 valid_imgs = [i for i in images_for_eol.values() if best_column in i]

@@ -95,7 +95,6 @@ def get_credit(json_dict, doID):
                     creators[agent['role']] = cname
             creators = [creators[a] for a in valid_creator_types if creators.get(a)]
             if len(creators) == 0:
-                print(json_dict)
                 logger.info("No creator found for {} (source {}): {}".format(
                     doID, json_dict.get('source',None), json_agents))
             else:
