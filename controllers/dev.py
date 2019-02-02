@@ -75,7 +75,7 @@ def OBJGRAPH_DELTAS():
         #cobbled together from https://github.com/mgedmin/objgraph/blob/master/objgraph.py (show_growth())
         stats = objgraph.typestats(shortnames=False)
         deltas = {}
-        for name, count in stats.iteritems():
+        for name, count in stats.items():
             old_count = peak_stats.get(name, 0)
             if count > old_count:
                 deltas[name] = count - old_count
