@@ -146,7 +146,32 @@ while True:
         os.makedirs(subdir, exist_ok=True)
         f = os.path.join(pic_path, '-' + src_id+".jpg")
         if os.path.isfile(f):
-            os.rename(f, os.path.join(subdir, src_id+".jpg"))
+            shutil.copyfile(f, os.path.join(subdir, src_id+".jpg"))
+
 db_curs.close()
 
 
+db_curs = db_connection.cursor()
+sql = "UPDATE images_by_ott SET src={} WHERE src=1 AND src_id >= 0".format(src_flags['onezoom_via_eol'])
+db_curs.execute(sql)
+db_connection.commit()
+db_curs.close()
+
+img_path = os.path.join(top_level, "static/FinalOutputs/img/{}".format(src_flags['onezoom_via_eol']))
+db_curs = db_connection.cursor()
+batch_size = 200
+db_curs.execute("SELECT src_id FROM images_by_ott WHERE src={}".format(src_flags['onezoom_via_eol']))
+while True:
+    #get the rows in batches
+    rows = db_curs.fetchmany(batch_size)
+    if not rows:
+        break
+    for row in rows:
+        src_id = str(row[0])
+        subdir = os.path.join(img_path, src_id[-3:])
+        os.makedirs(subdir, exist_ok=True)
+        f = os.path.join(pic_path, src_id+".jpg")
+        if os.path.isfile(f):
+            shutil.copyfile(f, os.path.join(subdir, src_id+".jpg"))
+
+db_curs.close()
