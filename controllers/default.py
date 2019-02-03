@@ -505,7 +505,7 @@ def sponsored():
     tot=None
     query = (db.reservations.verified_time != None) & ((db.reservations.deactivated == None) | (db.reservations.deactivated == ""))
     if (request.vars.omit_nopics):
-        query = query & (db.reservations.verified_preferred_image != None)
+        query = query & (db.reservations.verified_preferred_image_src != None)
     if (request.vars.getfirst('search_mesg')):
         sanitized = "".join([ch for ch in request.vars.getfirst('search_mesg') if ch.isalnum()])
         query = query & (db.reservations.user_message_OZ.contains(sanitized))
@@ -554,14 +554,16 @@ def donor_list():
     if len(request.args): page=int(request.args[0])
     else: page=0
     items_per_page=20
-    grouped_imgs = "GROUP_CONCAT(if(`user_nondefault_image`,`verified_preferred_image`,NULL))"
+    grouped_img_src = "GROUP_CONCAT(if(`user_nondefault_image`,`verified_preferred_image_src`,NULL))"
+    grouped_img_src_id = "GROUP_CONCAT(if(`user_nondefault_image`,`verified_preferred_image_src_id`,NULL))"
     grouped_otts = "GROUP_CONCAT(`OTT_ID`)"
     sum_paid = "COALESCE(SUM(`user_paid`),0)"
     n_leaves = "COUNT(1)"
     groupby = "IFNULL(verified_donor_name,id)"
     limitby=(page*items_per_page,(page+1)*items_per_page+1)
     curr_rows = db(db.reservations.verified_time != None).select(
-              grouped_imgs,
+              grouped_img_src,
+              grouped_img_src_id,
               grouped_otts, 
               sum_paid,
               n_leaves,
@@ -580,8 +582,16 @@ def donor_list():
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
     default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(otts) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
     #also look at the nondefault images if present
-    doIDs = [int(img) for r in curr_rows for img in (r[grouped_imgs] or '').split(",") if img]
-    user_images = {r.ott:r for r in db(db.images_by_ott.src_id.belongs(doIDs)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
+    user_images = {}
+    for r in curr_rows:
+        for img_src, img_src_id in zip(
+            (r[grouped_img_src] or '').split(","), (r[grouped_img_src_id] or '').split(",")):
+            if img_src is not None and img_src_id is not None:
+                row = db((db.images_by_ott.src == img_src) & (db.images_by_ott.src_id == img_src_id)).select(
+                    db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, 
+                    db.images_by_ott.rights, db.images_by_ott.licence).first()
+                if row:
+                    user_images[row.ott] = row
     return dict(rows=curr_rows, n_col_name=n_leaves, otts_col_name=grouped_otts, paid_col_name=sum_paid, page=page, items_per_page=items_per_page, vars=request.vars, html_names=html_names, user_images=user_images, default_images=default_images)
 
 
