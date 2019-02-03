@@ -201,9 +201,9 @@ db_curs.close()
 # look for any pictures referred to statically 
 img_path = os.path.join(top_level, "static/FinalOutputs/img/{}".format(src_flags['eol_old']))
 s = subprocess.check_output(
-    ['grep', '-r', 'thumbnail_url', os.path.join(top_level, 'views')],
-    universal_newlines=True)
-for line in s.split():
+    ['grep', '-r', 'thumbnail_url', os.path.join(top_level, 'views')])
+
+for line in s.decode("utf8").split():
     for m in re.finditer(r'thumbnail_url\(([^,]*),([^)]*)\)', line):
         if m.group(1).isdigit():
             logging.warning("Hard coded src in {}".format(line))
