@@ -20,6 +20,21 @@ You will also need to make sure that the reservations table is the most recent o
 After running this, you may wish to remove the columns user_preferred_image and 
 verified_preferred_image from the database (they are then redundent)
 
+== Replacing 'onezoom_via_eol' images ==
+
+Images listed as src_flags['onezoom_via_eol'] will be old eol IDs. They need to be located
+e.g. by using the following SQL command:
+
+select images_by_ott.ott, images_by_ott.src, images_by_ott.src_id, ordered_leaves.eol 
+from images_by_ott left join ordered_leaves on images_by_ott.ott = ordered_leaves.ott 
+where images_by_ott.src = 3;
+
+then appropriate equivalents from eol can be found using ordered_leaves.eol (e.g. if 
+ordered_leaves.ott==999 with ordered_leaves.eol==12345 then visit
+https://eol.org/pages/12345/media?license_group_id=5 and pick a photo, then get its media
+ID (e.g. https://eol.org/media/6789) and do
+
+./OZprivate/ServerScripts/Utilities/EoLQueryPicsNames.py -ott 999 -eol 6789
 '''
 
 import argparse
@@ -28,8 +43,11 @@ import sys
 import os
 import shutil
 import logging
+import subprocess
 
-top_level = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.pardir, os.path.pardir, os.path.pardir, os.path.pardir)
+top_level = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), 
+    os.path.pardir, os.path.pardir, os.path.pardir, os.path.pardir)
 
 sys.path.append(os.path.abspath(os.path.join(top_level, "models")))
 from _OZglobals import src_flags, eol_inspect_via_flags, image_status_labels
@@ -152,7 +170,10 @@ db_curs.close()
 
 
 db_curs = db_connection.cursor()
-sql = "UPDATE images_by_ott SET src={} WHERE src=1 AND src_id >= 0".format(src_flags['onezoom_via_eol'])
+# the user-identified images need to be flagged up as old ones - we use negative numbers
+# to do this for the time being. We can then replace them as detailed in 
+# == Replacing 'onezoom_via_eol' images == in the description at the top of this file
+sql = "UPDATE images_by_ott SET src={}, src_id=-src_id WHERE src=1 AND src_id >= 0".format(src_flags['onezoom_via_eol'])
 db_curs.execute(sql)
 db_connection.commit()
 db_curs.close()
@@ -167,7 +188,7 @@ while True:
     if not rows:
         break
     for row in rows:
-        src_id = str(row[0])
+        src_id = str(-row[0])
         subdir = os.path.join(img_path, src_id[-3:])
         os.makedirs(subdir, exist_ok=True)
         f = os.path.join(pic_path, src_id+".jpg")
@@ -175,3 +196,34 @@ while True:
             shutil.copyfile(f, os.path.join(subdir, src_id+".jpg"))
 
 db_curs.close()
+
+
+# look for any pictures referred to statically 
+img_path = os.path.join(top_level, "static/FinalOutputs/img/{}".format(src_flags['eol_old']))
+s = subprocess.check_output(
+    ['grep', '-r', 'thumbnail_url', os.path.join(top_level, 'views')],
+    universal_newlines=True)
+for line in s.split():
+    for m in re.finditer(r'thumbnail_url\(([^,]*),([^)]*)\)', line):
+        if m.group(1).isdigit():
+            logging.warning("Hard coded src in {}".format(line))
+        else:
+            if m.group(1).startswith("src_flags"):
+                if m.group(1).startswith("src_flags['eol_old']"):
+                    # this is a possible hard-coded image
+                    if m.group(2).isdigit():
+                        src_id = m.group(2)
+                        subdir = os.path.join(img_path, src_id[-3:])
+                        os.makedirs(subdir, exist_ok=True)
+                        f = os.path.join(pic_path, src_id+".jpg")
+                        new_file = os.path.join(subdir, src_id+".jpg")
+                        if not os.path.isfile(new_file):
+                            if os.path.isfile(f):
+                                shutil.copyfile(f, new_file)
+                            else:
+                                logging.warning("File {} does not exist".format(f))
+                                logging.warning("(Line was {})".format(line))
+                    else:
+                        logging.warning("Non-digit src_id in {}".format(line))
+                else:
+                    logging.warning("Non eol_old image (may need hand-moving) in {}".format(line))
