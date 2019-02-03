@@ -1,14 +1,6 @@
 # -*- coding: utf-8 -*-
 from OZfunctions import *
 
-def pic_path (src, src_id):
-    """
-    Where to save pics, and where to check if a local version of a picture exists
-    must be a function called with request.folder defined
-    """
-    return os.path.join(
-        request.folder,'static','FinalOutputs','img', str(src), str(src_id)[-3:])
-
 @auth.requires_membership(role='manager')
 def index():
     '''this is a page to give quick links to all the management routines'''
@@ -87,7 +79,6 @@ def SHOW_SPONSOR_SUMS():
     cols = dict(donor_name = "`verified_donor_name`",
                 e_mail = "`e_mail`",
                 pp_name = "CONCAT_WS(' ',`PP_first_name`, `PP_second_name`)",
-                #grouped_imgs = "GROUP_CONCAT(if(`user_nondefault_image`,`verified_preferred_image`,NULL))",
                 grouped_otts = "GROUP_CONCAT(`OTT_ID`)",
                 sum_paid = "SUM(`user_paid`)",
                 count = db.reservations.id.count()
@@ -99,7 +90,6 @@ def SHOW_SPONSOR_SUMS():
         cols['donor_name'], 
         cols['e_mail'], 
         cols['pp_name'], 
-        #cols['grouped_imgs'], 
         cols['grouped_otts'], 
         cols['sum_paid'],
         cols['count'],
@@ -110,7 +100,7 @@ def SHOW_SPONSOR_SUMS():
 @auth.requires_membership(role='manager')
 def SPONSOR_VALIDATE():
     """
-    Ahow sponsorship details, by default shows only non-validated ones, unless ?show=all or ?show=validated
+    Show sponsorship details, by default shows only non-validated ones, unless ?show=all or ?show=validated
     
     the way we know something is fully sponsored is if PP transaction code is filled out - nb. this could be with us typing 'yet to be paid' in which case verified paid can be NULL so should not be used as a test of whether something is available or not
     
@@ -147,7 +137,9 @@ def SPONSOR_VALIDATE():
                 (db.reservations.verified_kind != None) |
                 (db.reservations.verified_name != None) |
                 (db.reservations.verified_more_info != None) |
-                (db.reservations.verified_preferred_image != None)))
+                (db.reservations.verified_preferred_image_src != None) |
+                (db.reservations.verified_preferred_image_src_id != None) |
+                ))
     elif request.vars.show == 'all':
         query = (db.reservations.PP_transaction_code != None)
     elif request.vars.show and request.vars.show.isdigit():
@@ -158,7 +150,8 @@ def SPONSOR_VALIDATE():
                  (db.reservations.verified_kind == None) &
                  (db.reservations.verified_name == None) &
                  (db.reservations.verified_more_info == None) &
-                 (db.reservations.verified_preferred_image == None))
+                 (db.reservations.verified_preferred_image_src == None) &
+                 (db.reservations.verified_preferred_image_src_id == None))
 
     rows = db(query).select(db.reservations.id,limitby=limitby, orderby=~db.reservations.user_updated_time) #NB can't order by sale time as it is from paypal, and not in a standard datatime format
     return dict(rows=[r.id for r in rows], page=page, vars=request.vars, items_per_page=items_per_page)
@@ -299,7 +292,7 @@ def SPONSOR_UPDATE():
                                      '-v', '--opentree_id', str(int(ott))]
                 if img_src == src_flags['onezoom_via_eol'] or request.vars.admin_changed_image:
                     #this is a specific user-chosen image: we will save it as a "onezoom_via_eol" image
-                    DOid = db.reservations[row_id].verified_preferred_image
+                    DOid = db.reservations[row_id].verified_preferred_image_src_id
                     if DOid:
                         #get the DB / pw string from appconfig.ini, and extract the password
                         #only save an explicit OneZoom image (by passing in the dataObject ID) if the user  
@@ -350,9 +343,10 @@ def SPONSOR_UPDATE():
                 to_be_validated = True
             
             ## variables rendered in an 'input' tag (DB fieldtype = integer, etc) 
-            if row['verified_preferred_image'] is None:
-                form.element(_name='verified_preferred_image').update(_value=read_only['user_preferred_image'])
-                # this may not need to be verified: some taxa have no image => no user_preferred_image => no verified_preferred_image
+            if row['verified_preferred_image_src'] is None and row['verified_preferred_image_src_id'] is None:
+                form.element(_name='verified_preferred_image_src').update(_value=read_only['user_preferred_image_src'])
+                form.element(_name='verified_preferred_image_src_id').update(_value=read_only['user_preferred_image_src_id'])
+                # this may not need to be verified: some taxa have no image => no user_preferred_image_src_id => no verified_preferred_image_src_id
             if row['verified_kind'] is None:
                 form.element(_name='verified_kind').element('option[value={}]'.format(read_only['user_sponsor_kind'] or 'by')).update(_selected='selected')    
                 to_be_validated = True
@@ -459,16 +453,17 @@ def SHOW_EMAILS():
         #we can't use the paypal emails etc because we haven't been paid!
         if s.e_mail:
             details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.user_sponsor_name, s.e_mail, sponsor_for=s.user_sponsor_kind=='for', email_type='no_payment')
-            if s.user_preferred_image:
+            if s.user_preferred_image_src and s.user_preferred_image_src_id:
                 details['local_pic'] = os.path.isfile(
                     os.path.join(
-                        pic_path(src_flags['onezoom_via_eol'], s.user_preferred_image),
-                        str(s.user_preferred_image)+'.jpg'))
+                        pic_path(s.user_preferred_image_src, s.user_preferred_image_src_id),
+                        str(s.user_preferred_image_src_id)+'.jpg'))
             details.update({
                'ott' : str(s.OTT_ID),
                'name': s.name,
                'cname':cnames.get(s.OTT_ID),
-               'doID': str(s.user_preferred_image),
+               'img_src': str(s.user_preferred_image_src),
+               'img_src_id': str(s.user_preferred_image_src_id),
                'rowflag':None if s.admin_comment else 'no_admin',
                'mesg': s.user_message_OZ})
             try:
@@ -495,16 +490,17 @@ def SHOW_EMAILS():
     cnames = get_common_names(otts)
     for s in sponsors:
         details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.user_sponsor_name, s.e_mail or s.PP_e_mail, s.PP_first_name, s.PP_second_name, sponsor_for= (s.user_sponsor_kind=='for'), email_type='to_verify')
-        if s.user_preferred_image:
+        if s.user_preferred_image_src and s.user_preferred_image_src_id:
             details['local_pic'] = os.path.isfile(
                 os.path.join(
-                    pic_path(src_flags['onezoom_via_eol'], s.user_preferred_image),
-                    str(s.user_preferred_image)+'.jpg'))
+                    pic_path(s.user_preferred_image_src, s.user_preferred_image_src_id),
+                    str(s.user_preferred_image_src_id)+'.jpg'))
         details.update({
             'ott' : str(s.OTT_ID),
             'name': s.name,
             'cname':cnames.get(s.OTT_ID),
-            'doID': str(s.user_preferred_image),
+            'img_src': str(s.user_preferred_image_src),
+            'img_src_id': str(s.user_preferred_image_src_id),
             'mesg': s.user_message_OZ})
         try:
             email_list[details['type']].append(details)
@@ -529,16 +525,19 @@ def SHOW_EMAILS():
     cnames = get_common_names(otts)
     for s in sponsors:
         details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.verified_name, s.e_mail or s.PP_e_mail, s.PP_first_name, s.PP_second_name, sponsor_for= s.verified_kind=='for', email_type='live')
-        if s.user_preferred_image:
+        if s.verified_preferred_image_src and s.verified_preferred_image_src_id:
+            # do we have a local picture: can't use thumbnail_url() as it might refer to
+            # a remote location (e.g. image.onezoom.org)
             details['local_pic'] = os.path.isfile(
                 os.path.join(
-                    pic_path(src_flags['onezoom_via_eol'], s.verified_preferred_image),
-                    str(s.verified_preferred_image)+'.jpg'))
+                    pic_path(s.verified_preferred_image_src, s.verified_preferred_image_src_id),
+                    str(s.verified_preferred_image_src_id)+'.jpg'))
         details.update({
             'ott' : str(s.OTT_ID),
             'name': s.name,
             'cname': cnames.get(s.OTT_ID),
-            'doID': str(s.verified_preferred_image),
+               'img_src': str(s.user_preferred_image_src),
+               'img_src_id': str(s.user_preferred_image_src_id),
             'mesg': s.user_message_OZ})
         try:
             email_list[details['type'] + " " + s.verified_time.strftime("%A %e %b, %Y")].append(details)
