@@ -44,8 +44,12 @@ else:
 ## we also need to define a javascript equivalent for use on the client side
 try:
     thumb_base_url = myconf.take('images.url_base')
+    local_pic_path = None
 except:
     thumb_base_url = URL('static','FinalOutputs/img', scheme=True, host=True, extension=False)+"/"
+    local_pic_path = lambda src, src_id: os.path.join(
+        request.folder,'static','FinalOutputs','img', str(src), str(src_id)[-3:])
+
 def thumbnail_url(src, src_id, preferred_px=150, square=True):
     return "{}{}/{}/{}.jpg".format(thumb_base_url, src, str(src_id)[-3:],src_id)
 js_thumbnail_url = 'function(src, src_id, preferred_px, square) {{return "{}" + src + "/" + src_id.toString().slice(-3) + "/" + src_id + ".jpg";}}'.format(thumb_base_url)
@@ -67,8 +71,8 @@ if DALstring.startswith('mysql://'):
         pool_size=myconf.take('db.pool_size', cast=int), 
         check_reserved=['all'], 
         migrate=doMigration,
+        #fake_migrate_all=True, # uncomment to fix migration issues assuming correct DB fields exist
         lazy_tables= not is_testing)
-        ## ,fake_migrate_all=True) on the end can fix migration issues.
     ## allow mysql tinyint
     from gluon.dal import SQLCustomType
     boolean = SQLCustomType(
@@ -447,11 +451,13 @@ db.define_table('reservations',
     Field('user_preferred_image', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))), #old, to be deleted
     Field('user_preferred_image_src', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(0,1000))),
     Field('user_preferred_image_src_id', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))),
-    # an option for users to recommend an EOL ID as the best image. Should normally be filled: if 
-    # user_nondefault_image is true, this will set the user_preferred_image_src to 
-    # src_flags['onezoom_via_eol'], on the assumption that this is a nicer image than the
-    # default OneZoom one. Otherwise the user_preferred_image_src should be set to the
-    # src value passed in when viewing the sponsor page
+    # an option for users to recommend an EOL ID as the best image. Should normally be filled
+    # for a sponsored image, even if the sponsor hasn't chosen a different image. If they
+    # do choose a non default image, user_nondefault_image is set to true, and the
+    # user_preferred_image_src should be set to src_flags['onezoom_via_eol'], 
+    # on the assumption that this is a nicer image than the
+    # default OneZoom one. Otherwise the user_preferred_image_src and src_id values 
+    # should be set to the src and src_id values passed in when viewing the sponsor page
     Field('user_updated_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),  
     # need to know when it was last updated to check for user updates         
     Field('user_paid', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
@@ -546,7 +552,7 @@ db.define_table('visit_count',
 db.define_table('search_log',
     Field('search_string', type='string', notnull=True, unique=True, length=name_length_chars), #this should be utf8mb4
     Field('search_count', type = 'integer', notnull=True),
-    format = '%(search_string)s', migrate=1)
+    format = '%(search_string)s', migrate=is_testing)
 
 # This table buffers recently 'visited' EoL taxa (visited through the window popup or via the copyright link)
 # taxa in this table are stored until at least 1 minute after the taxon is visited, and then read by the EOL update 
