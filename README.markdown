@@ -165,12 +165,14 @@ separator =
 url        = https://www.sandbox.paypal.com
 
 [general]
-; * pics_dir: get thumbnail images from this source. If not
+
+[images]
+; * url_base: get thumbnail images from this source. If not
 ;    defined, will default to the local version, but that
 ;    means you will need to download >100,000 thumbnail images
-;    onto your machine. If you want to use the images on the 
+;    onto your machine. If you want to use the images on the
 ;    OneZoom server, set this to `//images.onezoom.org/`
-pics_dir = //images.onezoom.org/
+url_base = //images.onezoom.org/
 
 [sponsorship]
 ; * allow. Should we allow the sponsorship page to be
