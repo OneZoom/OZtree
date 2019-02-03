@@ -23,7 +23,7 @@ export default function (taxon_json, taxon_callback, header_callback, data_repo)
       api_manager.otts2vns({
         data: {
           otts: otts,
-          oz_special: 1, //return the 'onezoom_special' (short) names first
+          prefer_short: 1, //return bespoke short names first (could be more inaccurate)
           include_unpreferred: 1
         },
         success: function(xhr) {

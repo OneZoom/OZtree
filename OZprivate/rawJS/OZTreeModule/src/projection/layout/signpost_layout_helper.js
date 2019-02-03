@@ -51,6 +51,10 @@ class SignpostLayoutBase {
       ratio12 = 0.0;
       ratio12r = 0.0;
     }
+    if (tree_settings.vis === "polytomy") {
+      ratio12 = 1.0;
+      ratio12r = 0.0;
+    }
     
     let centerpointx2 = node.xvar + node.rvar * (node.hxmax + node.hxmin) / 2;
     let centerpointy2 = node.yvar + node.rvar * (node.hymax + node.hymin) / 2;

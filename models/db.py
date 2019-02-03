@@ -43,13 +43,16 @@ else:
 ## thumbnail_url is a python function to return the url to get a thumbnail picture
 ## we also need to define a javascript equivalent for use on the client side
 try:
-    thumb_base_url = myconf.take('general.pics_dir')
+    thumb_base_url = myconf.take('images.url_base')
+    local_pic_path = None
 except:
-    thumb_base_url = URL('static','FinalOutputs/pics', scheme=True, host=True, extension=False)+"/"
-#should probably move to base/src_id/src.jpg or even (better) base/src_id/src_lastdigit/src.jpg (to set ~ 10 000 files per dir, not 100 000)
+    thumb_base_url = URL('static','FinalOutputs/img', scheme=True, host=True, extension=False)+"/"
+    local_pic_path = lambda src, src_id: os.path.join(
+        request.folder,'static','FinalOutputs','img', str(src), str(src_id)[-3:])
+
 def thumbnail_url(src, src_id, preferred_px=150, square=True):
-    return "{}{}.jpg".format(thumb_base_url, src_id)
-js_thumbnail_url = 'function(src, src_id, preferred_px, square) {{return "{}" + src_id + ".jpg";}}'.format(thumb_base_url)
+    return "{}{}/{}/{}.jpg".format(thumb_base_url, src, str(src_id)[-3:],src_id)
+js_thumbnail_url = 'function(src, src_id, preferred_px, square) {{return "{}" + src + "/" + src_id.toString().slice(-3) + "/" + src_id + ".jpg";}}'.format(thumb_base_url)
 
 name_length_chars = 190 ##max length for a species name is 190 chars (allows indexing. NB: max OTT name is 108 chars)
 
@@ -68,8 +71,8 @@ if DALstring.startswith('mysql://'):
         pool_size=myconf.take('db.pool_size', cast=int), 
         check_reserved=['all'], 
         migrate=doMigration,
+        #fake_migrate_all=True, # uncomment to fix migration issues assuming correct DB fields exist
         lazy_tables= not is_testing)
-        ## ,fake_migrate_all=True) on the end can fix migration issues.
     ## allow mysql tinyint
     from gluon.dal import SQLCustomType
     boolean = SQLCustomType(
@@ -285,8 +288,8 @@ db.define_table('vernacular_by_ott',
     #sql> update vernacular_by_ott set lang_primary=substring_index(lang_full,'-',1);
     Field('lang_full', type='string', notnull=True, length=20), #the longer 'lang' code for this name (e.g. 'en-gb, zh-hans, etc'), as lowecase. Should never be >20 chars.
     Field('preferred', type=boolean, notnull=True), #if there are several names for a lang, use this
-    Field('src', type = 'integer', notnull=True), # 1=OneZoom, 2=EoL, 8=onezoom_special (short name). Others could be reserved e.g. for iucn
-    Field('src_id', type = 'integer'), #the sourceid, e.g the EoL page id. 
+    Field('src', type = 'integer', notnull=True), # The source (eol, bespoke, etc)
+    Field('src_id', type = 'integer'), # The sourceid, e.g the EoL page id.
     #NB sourceid is mainly for traceability. For a proper matching of e.g. eol to OTT, see ordered_leaves
     Field('updated', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
     format = '%(ott)s_%(vernacular)s_%(lang)s')
@@ -445,8 +448,16 @@ db.define_table('reservations',
     # optional extra info about a person
     Field('user_nondefault_image', type = 'integer'),
     #has the user chosen a non-default image? 0 or 1. Should prob be boolean type instead.
-    Field('user_preferred_image', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))),
-    # an option for users to recommend an EOL ID as the best image. Should normally be filled. Negative numbers are bespoke OneZoom images
+    Field('user_preferred_image', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))), #old, to be deleted
+    Field('user_preferred_image_src', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(0,1000))),
+    Field('user_preferred_image_src_id', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))),
+    # an option for users to recommend an EOL ID as the best image. Should normally be filled
+    # for a sponsored image, even if the sponsor hasn't chosen a different image. If they
+    # do choose a non default image, user_nondefault_image is set to true, and the
+    # user_preferred_image_src should be set to src_flags['onezoom_via_eol'], 
+    # on the assumption that this is a nicer image than the
+    # default OneZoom one. Otherwise the user_preferred_image_src and src_id values 
+    # should be set to the src and src_id values passed in when viewing the sponsor page
     Field('user_updated_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),  
     # need to know when it was last updated to check for user updates         
     Field('user_paid', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
@@ -484,10 +495,13 @@ db.define_table('reservations',
     # matches 'user_donor_name'
     Field('verified_more_info', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(maxsize=30)), widget=SQLFORM.widgets.text.widget), 
     # matches 'user_more_info'
-    Field('verified_preferred_image', type='integer', requires = IS_EMPTY_OR(IS_INT_IN_RANGE(1,1e100))),
-    # matches 'user_preferred_image', or may be modified by hand by an admin. 
-    # Can only be null if there was no image (not even an already-downloaded OneZoom one) 
-    # when the user sponsored. If the user picked a non default image, then this 
+    Field('verified_preferred_image', type='integer', requires = IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))), #old, to be deleted
+    Field('verified_preferred_image_src', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(0,1000))),
+    Field('verified_preferred_image_src_id', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))),
+    # match 'user_preferred_image_src', and 'user_preferred_image_src_id' or may be 
+    # modified by hand by an admin. Can only be null if there was no image 
+    # (not even an already-downloaded OneZoom one) when the user sponsored. 
+    # If the user picked a non default image, then this 
     # field is still filled out, but user_nondefault_image should be 1.
     Field('verified_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
     # if verified_time = NULL then details haven't been verified
@@ -538,19 +552,32 @@ db.define_table('visit_count',
 db.define_table('search_log',
     Field('search_string', type='string', notnull=True, unique=True, length=name_length_chars), #this should be utf8mb4
     Field('search_count', type = 'integer', notnull=True),
-    format = '%(search_string)s', migrate=1)
+    format = '%(search_string)s', migrate=is_testing)
 
 # This table buffers recently 'visited' EoL taxa (visited through the window popup or via the copyright link)
 # taxa in this table are stored until at least 1 minute after the taxon is visited, and then read by the EOL update 
 # script (EoLQueryPicsNames.py) to check for updates to the crop location, ratings, etc. Once checked, the taxon
 # is deleted from the table, so this should contain only those taxa that need checking. The EoLQueryPicsNames.py script
-# requires ott ids, and looks up the corresponding eol ids from the ordered_leaves and ordered_nodes tables.
-# However, there are some cases where we want to fill this array in advance, even through the entries may not exist
-# in the ordered_leaves / nodes table. In this case, we can provide an alternative eol ID in the eol column
+# can be given 
+#  i)   just a set of ott ids: in which case it looks up the corresponding eol ids from
+#        the ordered_leaves and ordered_nodes tables), 
+#  ii)  just a set of eol data object ids: in which case it updates the database rows for
+#        images (not names) where src is one of [src_flags[x] for x in eol_src_flags] and
+#        src_id corresponds to the eol id.
+#  iii) both ott and corresponding eol ids: in which case the images so gained are
+#        treated from the "onezoom_via_eol" src, rather than plain "eol" src, which
+#        should give them a priority (this is used when e.g. sponsors chose a non-default
+#        image for their species
+#
+#  used to download images and populate tables 
+#        in advance of a change to the OneZoom tree (when otts may not even exist in the
+#        ordered_leaves / nodes table).
 db.define_table('eol_inspected',
     Field('ott', type = 'integer'),
     Field('name', type='string', length=name_length_chars), #only used if no OTT
-    Field('eol', type = 'integer'), #usually null, unless we want a backup number in the case of no ott match in ordered_leaves/nodes
+    Field('eol', type = 'integer'),
+    #usually null, otherwise an eol data_object id (if via==eol_inspect_via_flags['image'])
+    # or an eol page id (otherwise).
     Field('via', type = 'integer', notnull=True),
     Field('inspected', type = 'datetime', notnull=True, requires=IS_DATETIME()),
     format = '%(ott)s_%(name)s', migrate=is_testing)

@@ -175,8 +175,8 @@ class Controller {
       let node = developed_nodes[i];
       this.projection.pre_calc(node);
       this.projection.calc_horizon(node);
-      this.projection.update_parent_horizon(node);
     }
+    this.projection.update_parent_horizon(developed_nodes);
     return developed_nodes && developed_nodes.length > 0;
   }
   get root() {

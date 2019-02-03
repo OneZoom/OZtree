@@ -66,6 +66,14 @@ class LeafLayout extends LeafLayoutBase {
     }
   }
 
+  get_sponsor_text(node) {
+    if (!node.sponsor_name) {
+      // If not already sponsored, don't show anything
+      return [" ", "", 1];
+    }
+    return super.get_sponsor_text.call(this, node);
+  }
+
   /** Inrcrease the leaf radius before which we show the sponsor text */
   fullLeaf_sponsor(shapes,x,y,r) {
     if (r > l_consts.r_sponsor_minsize) {
@@ -97,7 +105,7 @@ class LeafLayout extends LeafLayoutBase {
       let user = window.location.search.match(/[&?]ucaya_user=([^&]+)/);
       user = user ? user[1] : '0'.repeat(32);
       api_wrapper({
-          url: 'https://api.onetreeoneplanet.org/userprofiles/' + user + '/random',
+          url: 'https://onetreeoneplanet.azurewebsites.net/userprofiles/' + user + '/random',
           method: 'GET',
           success: function (data) {
               this._human_subleaf_data.data = data;

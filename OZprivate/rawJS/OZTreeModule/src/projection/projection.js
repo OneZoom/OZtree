@@ -11,8 +11,8 @@ class Projection {
   calc_horizon(node) {
     _calc_horizon(node);
   }
-  update_parent_horizon(node) {
-    _update_parent_horizon(node);
+  update_parent_horizon(nodes) {
+    _update_parent_horizon(nodes);
   }
   re_calc(node, xp, yp, ws) {
     _re_calc(node, xp, yp, ws);

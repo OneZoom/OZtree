@@ -36,7 +36,7 @@ function parse_location(state, loc) {
     and continues until the end or a '#' is reached
  *   The string may contain the following parts, joined by '&'
  *    -- 'pop=' + prefix_Number (where prefix is ol (open leaf), osl (open sponsor_leaf), oil (open iucn leaf) and  
- *    -- 'vis_type=' + (one of 'spiral', 'fern', 'natural', 'balanced')
+ *    -- 'vis=' + (one of 'spiral', 'fern', 'natural', 'balanced')
  *    -- 'init='     + (one of 'jump', 'zoom', 'pzoom') 
  *    -- 'lang='     + (a language code, e.g. 'en', 'fr', etc.) 
  *   Example:  ?part1&part2&part3.

@@ -19,10 +19,11 @@ import codecs
 sys.stdout = codecs.getwriter('utf8')(sys.stdout.buffer)
 sys.stderr = codecs.getwriter('utf8')(sys.stderr.buffer)
 
-if __name__ == "__main__":
+# to get globals from ../../../models/_OZglobals.py
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir, "models")))
+from _OZglobals import src_flags
 
-    src_flags = {'onezoom':1, 'eol':2, 'wikidata':3, 'iucn':4, 'arkive':5}
-    
+if __name__ == "__main__":
     
     import argparse
     parser = argparse.ArgumentParser(description='Upload vernacular names into the database from a set of csv files')
