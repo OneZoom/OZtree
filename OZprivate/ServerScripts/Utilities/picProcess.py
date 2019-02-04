@@ -154,7 +154,7 @@ randomVar = 100
 info("    ")
 info("Joining the leaves and images tables")
 sql="""
-    SELECT {leaf_table}.parent, {image_table}.id, {image_table}.ott, {image_table}.rating , {image_table}.best_any , {image_table}.best_verified , {image_table}.best_pd , {image_table}.src_id , {image_table}.src , {image_table}.rating_confidence
+    SELECT {leaf_table}.parent, {image_table}.id, {image_table}.ott, {image_table}.rating , {image_table}.overall_best_any , {image_table}.overall_best_verified , {image_table}.overall_best_pd , {image_table}.src_id , {image_table}.src , {image_table}.rating_confidence
     FROM {image_table}
     INNER JOIN {leaf_table}
     ON {image_table}.ott={leaf_table}.ott;
@@ -172,7 +172,7 @@ for row in Images_OTT_data:
 # PRODUCE THE TRANSFORMED IMAGE RATINGS (AS THE DATABASE DATA IS IMMUTABLE)
 info("Transforming the image ratings")
 # we assume based on the above structure that the head will read as follows
-# ['parent', 'id', 'ott', 'rating', 'best_any', 'best_verified', 'best_pd', 'src_id', 'src' , 'rating_confidence' ]
+# ['parent', 'id', 'ott', 'rating', 'overall_best_any', 'overall_best_verified', 'overall_best_pd', 'src_id', 'src' , 'rating_confidence' ]
 Images_OTT_data_T = [None for _ in range(len(Images_OTT_data))]
 for row in range(len(Images_OTT_data)):
     
@@ -258,19 +258,18 @@ for row in OTT_node_data:
 """
 
 # ['id', 'parent', 'ott', 'leaf_lft', 'leaf_rgt'] - nodes
-# ['parent', 'id', 'ott', 'rating', 'best_any', 'best_verified', 'best_pd', 'src_id', 'src'] - images
+# ['parent', 'id', 'ott', 'rating', 'overall_best_any', 'overall_best_verified', 'overall_best_pd', 'src_id', 'src'] - images
 
 
 
 # BUILD A FUNCTION TO RIPPLE FROM UP FROM LEAVES TO FIRST NODES
 # takes as an input "any" "verified" or "pd" and also the src column (a number)
 # it will OVERWRITE any rippled up pictures it finds for the same OTTID
-def ripple_leaf(type_in,src_in):
+def ripple_leaf(type_in):
     info("rippling up from leaves to first nodes for {}".format(type_in))
-    index_in = Images_OTT_head.index("best_{}".format(type_in))
+    index_in = Images_OTT_head.index("overall_best_{}".format(type_in))
     for row in range(len(Images_OTT_data_T)):
-        # function loops over all images in Images_OTT_data_T
-        if (Images_OTT_data_T[row][Images_OTT_head.index("src")] == src_in):
+            # function loops over all images in Images_OTT_data_T
             if (Images_OTT_data_T[row][index_in] == 1) or (Images_OTT_data_T[row][index_in] == "T"):
                 # that are valid images for the settings we've got
                 # go to the index of the leaf that matches the OTTID
@@ -501,8 +500,7 @@ info("Making python structure for rippled up data")
 node_images = [[None for _ in range(8)] for _ in range(len(OTT_node_data))]
 tot_OK_images = [0 for _ in range(len(OTT_node_data)+1)]
 # add 1 because we're indexing from 1 in node data based on the parent of the other database table
-ripple_leaf("any",2)
-ripple_leaf("any",1)
+ripple_leaf("any")
 ripple_node()
 save_data(["rep1","rep2","rep3","rep4","rep5","rep6","rep7","rep8"])
 
@@ -513,8 +511,7 @@ info("Making python structure for rippled up data")
 node_images = [[None for _ in range(8)] for _ in range(len(OTT_node_data))]
 tot_OK_images = [0 for _ in range(len(OTT_node_data)+1)]
 # add 1 because we're indexing from 1 in node data based on the parent of the other database table
-ripple_leaf("verified",2)
-ripple_leaf("verified",1)
+ripple_leaf("verified")
 ripple_node()
 save_data(["rtr1","rtr2","rtr3","rtr4","rtr5","rtr6","rtr7","rtr8"])
 
@@ -525,8 +522,7 @@ info("Making python structure for rippled up data")
 node_images = [[None for _ in range(8)] for _ in range(len(OTT_node_data))]
 tot_OK_images = [0 for _ in range(len(OTT_node_data)+1)]
 # add 1 because we're indexing from 1 in node data based on the parent of the other database table
-ripple_leaf("pd",2)
-ripple_leaf("pd",1)
+ripple_leaf("pd")
 ripple_node()
 save_data(["rpd1","rpd2","rpd3","rpd4","rpd5","rpd6","rpd7","rpd8"])
 
