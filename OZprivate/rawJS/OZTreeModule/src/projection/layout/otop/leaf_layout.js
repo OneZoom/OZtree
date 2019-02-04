@@ -312,8 +312,8 @@ class LeafLayout extends LeafLayoutBase {
           s.sx = s.sy = s.ex = s.ey = null;
 
           // Draw a fan around the current node, approximating what the nodes would look like
-          let start_angle = node.arca - Math.PI/2;
           let inc_angle = Math.PI / node.full_children_length;
+          let start_angle = node.arca - Math.PI/2 + (inc_angle / 2);
           for (let i = 0; i < node.full_children_length; i++) {
             s.path_points.push(['move', start_x, start_y]);
             s.path_points.push([
