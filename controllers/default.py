@@ -155,10 +155,12 @@ def sponsor_leaf():
     else:
         try:
             spons = myconf.take('sponsorship.allow_sponsorship')
-            if spons in ['1', 'all']:
+            if spons.lower() in ['1', 'all']:
                 allow_sponsorship = True
+            elif spons.lower() in ['0', 'none']:
+                allow_sponsorship = False
             # If anything other than '1' or 'all', treat this as a role, e.g. "manager"
-            elif auth.has_membership(role=spons)
+            elif auth.has_membership(role=spons):
                 allow_sponsorship = True
         except:
             pass
