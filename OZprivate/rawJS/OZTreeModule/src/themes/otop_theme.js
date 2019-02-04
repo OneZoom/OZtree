@@ -24,11 +24,12 @@ let node_colors = {
  * raw_data tree
  */
 function location_color(node, alpha) {
-  var color;
+  var color, uplimit = 20;
 
-  if (!node.region) {
-      // No detail loaded yet, return a translucent "loading" colour, don't update background
-      return 'hsla(240, 10%, 10%, 0.5)';
+  while (!node.region && node.upnode && uplimit > 0) {
+      // We don't have a colour, but maybe the parent does. It'll probably be right
+      node = node.upnode;
+      uplimit--;
   }
 
   color = node_colors[node.region] || node_colors._default;
