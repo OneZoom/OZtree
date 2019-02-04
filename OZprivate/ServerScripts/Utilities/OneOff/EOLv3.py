@@ -188,12 +188,12 @@ while True:
     if not rows:
         break
     for row in rows:
-        src_id = str(-row[0])
-        subdir = os.path.join(img_path, src_id[-3:])
+        src_id = row[0]
+        subdir = os.path.join(img_path, str(src_id)[-3:])
         os.makedirs(subdir, exist_ok=True)
-        f = os.path.join(pic_path, src_id+".jpg")
+        f = os.path.join(pic_path, str(abs(src_id))+".jpg")
         if os.path.isfile(f):
-            shutil.copyfile(f, os.path.join(subdir, src_id+".jpg"))
+            shutil.copyfile(f, os.path.join(subdir, str(src_id)+".jpg"))
 
 db_curs.close()
 
@@ -204,7 +204,7 @@ s = subprocess.check_output(
     ['grep', '-r', 'thumbnail_url', os.path.join(top_level, 'views')])
 
 for line in s.decode("utf8").split():
-    for m in re.finditer(r'thumbnail_url\(([^,]*),([^)]*)\)', line):
+    for m in re.finditer(r'thumbnail_url\(\s*([^,]*)\s*,\s*([^)\s]*)\s*\)', line):
         if m.group(1).isdigit():
             logging.warning("Hard coded src in {}".format(line))
         else:
