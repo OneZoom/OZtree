@@ -227,3 +227,15 @@ for line in s.decode("utf8").split():
                         logging.warning("Non-digit src_id in {}".format(line))
                 else:
                     logging.warning("Non eol_old image (may need hand-moving) in {}".format(line))
+
+#now do the same for vernacular names
+db_curs = db_connection.cursor()
+sql = "UPDATE vernacular_by_ott SET src={} WHERE src=8".format(src_flags['short_imprecise_name'])
+sql = "UPDATE vernacular_by_ott SET src={} WHERE src=2".format(src_flags['eol'])
+sql = "UPDATE vernacular_by_ott SET src={} WHERE src=1".format(src_flags['onezoom_bespoke'])
+sql = "UPDATE vernacular_by_name SET src={} WHERE src=8".format(src_flags['short_imprecise_name'])
+sql = "UPDATE vernacular_by_name SET src={} WHERE src=2".format(src_flags['eol'])
+sql = "UPDATE vernacular_by_name SET src={} WHERE src=1".format(src_flags['onezoom_bespoke'])
+db_curs.execute(sql)
+db_connection.commit()
+db_curs.close()
