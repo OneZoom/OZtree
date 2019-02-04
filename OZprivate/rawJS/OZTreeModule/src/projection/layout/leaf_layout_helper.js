@@ -25,7 +25,7 @@ class LeafLayoutBase {
 
   get_fake_leaf_shapes(node, shapes) {
     if (node.richness_val > 1) {
-      if (node.rvar < tree_state.threshold && node.has_child) {
+      if (node.rvar < tree_state.threshold && node.full_children_length > 0) {
         this.fullLeafBase(
           node.xvar + node.rvar * node.nextx[0],
           node.yvar + node.rvar * node.nexty[0],
@@ -39,7 +39,7 @@ class LeafLayoutBase {
   }
 
   get_tip_leaf_shapes(node, shapes) {
-    if(node.richness_val <= 1 || !node.has_child) {
+    if(node.richness_val <= 1 || node.full_children_length === 0) {
       if (node.richness_val > 1) {
         this.circle_leaf_shapes(node, shapes);
       } else {

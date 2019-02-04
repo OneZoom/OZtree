@@ -37,19 +37,19 @@ class PolytomyLeafLayoutBase extends LeafLayoutBase {
    * Fake branches should be rendered with a semi-circle, not a leaf
    */
   get_fake_leaf_shapes(node, shapes) {
-      if (!node.has_child || node.richness_val < 1) {
+      if (node.full_children_length === 0 || node.richness_val < 1) {
           // We're only interested in nodes that would have children
           return;
       }
 
       let start_x = node.xvar + node.rvar * node.arcx,
           start_y = node.yvar + node.rvar * node.arcy,
-          radius = node.rvar + node.arcr * (node.arcr*1.1*(1+node.nextr[0]) / node.nextr[0]);  // i.e. the child branch length, see polytomy_pre_calc.js
+          radius = node.rvar + node.arcr * 0.9;
 
       // We can move anywhere within our fake leaf, which can grow to 10x the screen (or enough to stop being fake)
       add_mr(start_x, start_y, radius, 10);
 
-      if (node.children.length > 20 && node.rvar < (tree_state.threshold * 100)) {
+      if (node.full_children_length > 20 && node.rvar < (tree_state.threshold * 100)) {
           // This fake leaf is pretty small, just draw a semi-circle
           let arc_shape = ArcShape.create();
           arc_shape.x = start_x;
@@ -69,8 +69,8 @@ class PolytomyLeafLayoutBase extends LeafLayoutBase {
 
           // Draw a fan around the current node, approximating what the nodes would look like
           let start_angle = node.arca - Math.PI/2;
-          let inc_angle = Math.PI / node.children.length;
-          for (let i = 0; i < node.children.length; i++) {
+          let inc_angle = Math.PI / node.full_children_length;
+          for (let i = 0; i < node.full_children_length; i++) {
             s.path_points.push(['move', start_x, start_y]);
             s.path_points.push([
               'line',
