@@ -146,12 +146,24 @@ def sponsor_leaf():
         form_reservation_code = __make_user_code()
     # initialise status flag (it will get updated if all is OK)
     status = ""
-    # sometimes (e.g. museum display on main OZ site) we shut off sponsoring without using appconfig
-    # which we do by passing a url param
-    try:
-        allow_sponsorship = myconf.take('sponsorship.allow_sponsorship') in ['true', '1', 't', 'y', 'yes', 'True'] and not request.vars.no_sponsoring
-    except:
-        allow_sponsorship = False
+    # default to not allowing sponsorships, unless actively turned on in appconfig.ini
+    # even if turned on, sometimes (e.g. museum display on main OZ site) we shut off 
+    # sponsoring anyway by passing a url param.
+    allow_sponsorship = False
+    if request.vars.no_sponsoring:
+        pass
+    else:
+        try:
+            spons = myconf.take('sponsorship.allow_sponsorship')
+            if spons.lower() in ['1', 'all']:
+                allow_sponsorship = True
+            elif spons.lower() in ['0', 'none']:
+                allow_sponsorship = False
+            # If anything other than '1' or 'all', treat this as a role, e.g. "manager"
+            elif auth.has_membership(role=spons):
+                allow_sponsorship = True
+        except:
+            pass
     # initialise other variables that will be parsed on to the page
     EOL_ID = -1
     species_name = common_name = the_name = None
