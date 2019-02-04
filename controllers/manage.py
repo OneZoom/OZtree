@@ -138,7 +138,7 @@ def SPONSOR_VALIDATE():
                 (db.reservations.verified_name != None) |
                 (db.reservations.verified_more_info != None) |
                 (db.reservations.verified_preferred_image_src != None) |
-                (db.reservations.verified_preferred_image_src_id != None) |
+                (db.reservations.verified_preferred_image_src_id != None)
                 ))
     elif request.vars.show == 'all':
         query = (db.reservations.PP_transaction_code != None)
