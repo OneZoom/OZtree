@@ -160,17 +160,6 @@ class LeafLayout extends LeafLayoutBase {
       }
 
       this.circle_cut_image(shapes, imageObject, x, y, r, color_theme.get_color("leaf.inside.fill",node), null, node);
-
-      // Apply a wash atop image
-      s = ArcShape.create();
-      s.height = 5;
-      s.x = x;
-      s.y = y;
-      s.r = r * 0.975;
-      s.circle = true;
-      s.do_fill = true;
-      s.fill.color = 'hsla(199, 100%, 50%, 0.5)';
-      shapes.push(s);
   }
 
   /** Draw the special human leaf */
