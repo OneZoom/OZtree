@@ -32,7 +32,11 @@ function location_color(node, alpha) {
       uplimit--;
   }
 
-  color = node_colors[node.region] || node_colors._default;
+  if (node.latin_name === 'Homo sapiens') {
+    color = '224, 100%, 11%';
+  } else {
+    color = node_colors[node.region] || node_colors._default;
+  }
   window.last_location_color = color;  // Feed the current colour to background.js
   return 'hsla(' + color + ',' + (alpha === undefined ? 1 : alpha) + ')';
 }
