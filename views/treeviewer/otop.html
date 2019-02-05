@@ -107,25 +107,16 @@ server_urls.data_path_pics = function(src, src_id) {
 }
 
 
-if (!window.WebViewBridge) {
-    // Not running within app, create a fake WebViewBridge object and send a 2-color PNG
-    WebViewBridge = {};
-    setTimeout(function () {
-        WebViewBridge.onMessage(JSON.stringify({
-            type: 'userPhoto',
-            data: 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAABAQMAAADO7O3JAAAABlBMVEUFAP//AACVNxpgAAAACklEQVQI12NoAAAAggCB3UNq9AAAAABJRU5ErkJggg==',
-        }));
-    }, 1000);
-}
-WebViewBridge.onMessage = function (rawMessage) {
-    var message = JSON.parse(rawMessage);
+// Listen for OTOP app sending the current user's photo (which may not match the API photo)
+document.addEventListener('message', function (rawMessage) {
+    var message = JSON.parse(rawMessage.data);
 
     // Stash the userPhoto ready for use in otop/leaf_layout.js
     if (message.type === "userPhoto") {
         window.otop_profile_image = new Image();
         window.otop_profile_image.src = 'data:image/png;base64,' + message.data;
     }
-};
+});
 
 document.addEventListener('DOMContentLoaded', init_background.bind(null, {
     tree: [
