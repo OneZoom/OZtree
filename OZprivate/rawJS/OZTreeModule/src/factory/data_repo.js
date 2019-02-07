@@ -11,17 +11,79 @@ class DataRepo {
     this.name_id_map = {};
     this.ott_name_map = {};
     this.ott_region_map = {
-        229560: 'land',  // amniotes = mammals + reptiles + birds
-        244265: 'land',  // mammals
-        632179: 'land',  // arthropods
-        195672: 'reptile',  // Crocodylia
-        639666: 'reptile',  // Turtles
-        81461:  'birds',  // Birds
-        698424: 'sea',  // Cetacea
-        5268475: 'plants',
-        1062253: 'insects',
-        1012685: 'mushrooms',
-        844192:  'bacteria',
+        1: 'nature_10', // lowest priority
+        834747: 'food_2', // second lowest priority
+        165177: 'nature_4', // second lowest priority
+        835545: 'food_2', // start of group with mid priority
+        850143: 'food_2',
+        908005: 'food_14',
+        793901: 'food_14',
+        1130610: 'food_14',
+        795156: 'water_1',
+        2: 'energy_7',
+        509173: 'waste_11',
+        759130: 'waste_13',
+        1000401: 'nature_10',
+        1104916: 'nature_10',
+        782205: 'food_14',
+        849826: 'nature_12',
+        766725: 'energy_8',
+        189378: 'energy_3',
+        570365: 'water_1',
+        839790: 'energy_7',
+        790579: 'waste_13',
+        835089: 'nature_12',
+        834753: 'nature_12',
+        834748: 'nature_12',
+        194158: 'food_5',
+        447648: 'food_5',
+        300878: 'food_5',
+        339607: 'food_5',
+        344563: 'food_5', // end of group with mid priority
+        823607: 'water_1', // start of group with highest priority
+        756460: 'food_2',
+        657335: 'food_2',
+        232561: 'food_2',
+        5241609: 'food_2',
+        5288798: 'food_2',
+        5394023: 'food_2',
+        388046: 'food_2',
+        998862: 'food_2',
+        908867: 'food_2',
+        349722: 'food_2',
+        220049: 'food_2',
+        1082507: 'food_2',
+        495807: 'food_2',
+        5394211: 'food_2',
+        155084: 'food_2',
+        604424: 'food_2',
+        285621: 'food_2',
+        442191: 'food_2',
+        1071958: 'food_2',
+        908858: 'food_2',
+        5394177: 'food_2',
+        5288806: 'food_2',
+        5394154: 'food_2',
+        913935: 'energy_3',
+        1872144: 'nature_4',
+        191370: 'food_5',
+        753726: 'waste_6',
+        15537: 'energy_7',
+        850078: 'energy_8',
+        52983: 'water_9',
+        53841: 'water_9',
+        53858: 'water_9',
+        5575009: 'water_9',
+        185059: 'nature_10',
+        973262: 'waste_11',
+        972742: 'waste_11',
+        781725: 'waste_11',
+        894503: 'waste_11',
+        860081: 'waste_11',
+        827299: 'nature_12',
+        850056: 'waste_13',
+        835570: 'food_14',
+        303: 'nature_15', // end of group with highest priority
     };
     this.image_source = "best_any";
     this.leaf_col_len = 15;
