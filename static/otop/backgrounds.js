@@ -132,7 +132,7 @@ function haze(parent_el) {
             for (i = 0; i < reversed_nodes.length; i++) {
                 if (i === 0) {
                     // Display newest node
-                    reversed_nodes[i].style.opacity = 0.2;
+                    reversed_nodes[i].style.opacity = 0.5;
                 } else if (i === 1) {
                     // Hide second-newest node
                     reversed_nodes[i].style.opacity = 0;
