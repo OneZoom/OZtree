@@ -38,6 +38,7 @@ function particles(background_el, url) {
             'rotateX(10deg)',
             'rotateZ(' + rand_int(0, 360) + 'deg)',
         ].join(' ');
+        el.style.WebkitTransform = el.style.transform;
         el.style.transition = [
             'transform 30s ease-out',
             'opacity 15s',
@@ -56,6 +57,7 @@ function particles(background_el, url) {
             'scale('+ rand_int(10,15)/10 +')',
             'rotateZ(' + start_rotate + 'deg)',
         ].join(' ');
+        el.style.WebkitTransform = el.style.transform;
     }, 50);
 
     window.setTimeout(particles.bind(this, background_el, url), 25000);
@@ -74,6 +76,7 @@ function floating(background_el, urls, start_horiz, initial_spacing) {
             'translate(' + start_horiz + '%, ' + rand_int(initial_spacing * 120, initial_spacing * 130) + '%)',
             'scale(' + ((1 - initial_spacing) * 2 + 1) + ')',
         ].join(' ');
+        el.style.WebkitTransform = el.style.transform;
         el.style.transition = [
             'transform ' + initial_spacing * 200 + 's linear',
             'opacity 15s',
@@ -91,6 +94,7 @@ function floating(background_el, urls, start_horiz, initial_spacing) {
             'rotate(' + rand_int(-90, 90) + 'deg)',
             'scale(1)',
         ].join(' ');
+        el.style.WebkitTransform = el.style.transform;
     }, 50);
 
     window.setTimeout(floating.bind(this, background_el, urls, start_horiz, 1), initial_spacing * 120000);
