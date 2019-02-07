@@ -139,24 +139,35 @@ class LeafLayout extends LeafLayoutBase {
           imageObject = image_ready(imageObject) ? imageObject : null;
       }
 
-      rings = human_data.wonChallenges.map(function (challenge) {
-          return challenge.color;
-      })
+      rings = {};
+      human_data.wonChallenges.map(function (challenge) {
+          if (rings[challenge.id]) {
+              rings[challenge.id].level++;
+          } else {
+              rings[challenge.id] = {
+                  color: challenge.color,
+                  level: 1,
+              };
+          }
+      });
+      rings = Object.values(rings);
 
+      let total_width = 1;
       for (let i = 0; i < rings.length; i++) {
           s = ArcShape.create();
           s.x = x; s.y = y;
-          s.r = r + (0.1 * r) * (rings.length - i);
+          s.r = r + 0.05 * r * (total_width + rings[i].level / 2);
           s.circle = true;
           s.do_fill = true;
           s.order = "fill_first";
           s.fill.color = 'rgba(0,0,0,0.8)';
           s.do_stroke = true;
-          s.stroke.line_width = (0.05 * r);
-          s.stroke.color = rings[i];
+          s.stroke.line_width = rings[i].level * 0.05 * r;
+          s.stroke.color = rings[i].color;
           s.stroke.shadow = { blur: 10 };
           s.height = 0;
           shapes.push(s);
+          total_width = total_width + (rings[i].level) + 1;
       }
 
       this.circle_cut_image(shapes, imageObject, x, y, r, color_theme.get_color("leaf.inside.fill",node), null, node);
