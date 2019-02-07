@@ -203,7 +203,7 @@ class LeafLayout extends LeafLayoutBase {
       // Try and fetch the background image, draw it if available, and we are zoomed in enough.
       let imageObject = get_image('otop:otop-human-leaf.png', 'otop:otop-human-leaf.png');
       imageObject = image_ready(imageObject) ? imageObject : null;
-      if (this.get_fullleaf_r(node) > 100 && imageObject) {
+      if (this.get_fullleaf_r(node) > 30 && imageObject) {
           let s = ImageShape.create();
           s.img = imageObject;
           s.w = s.h = this.get_fullleaf_r(node) * 1.63;
@@ -220,7 +220,7 @@ class LeafLayout extends LeafLayoutBase {
           s.circle = true;
           s.do_fill = true;
           s.do_stroke = false;
-          s.fill.color = { from: '#87d9ff', start: this.get_fullleaf_r(node) * 0.2 };
+          s.fill.color = { from: '#103a96', start: this.get_fullleaf_r(node) * 0.2 };
           s.height = 0;
           shapes.push(s);
       }
