@@ -109,7 +109,7 @@ function floating(background_el, urls, start_horiz, initial_spacing) {
 
 function haze(parent_el) {
     var el,
-        color = window.last_location_color || 'hsl(291, 44%, 12%)';
+        color = window.last_location_color || '#34ca00';
 
     if (parent_el.childElementCount === 0 || parent_el.lastChild.getAttribute('data-color') !== color) {
         el = document.createElement('DIV');
@@ -140,7 +140,7 @@ function haze(parent_el) {
                     parent_el.removeChild(reversed_nodes[i]);
                 }
             }
-        }, 100);
+        }, 50);
     }
     window.setTimeout(haze.bind(this, parent_el), 5000);
 }
