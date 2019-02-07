@@ -7,16 +7,24 @@ let int_text_fill = 'rgb(255,255,255)';
 let int_sponsor_fill_hover = 'rgb(255,255,255)';
 let int_sponsor_fill = 'rgb(227,200,115)';
 
-let node_colors = {
-  _default:  '240, 30%, 60%',
-  land:      '24,  60%, 60%',
-  reptile:   '125, 30%, 30%',
-  birds:     '180, 60%, 60%',
-  sea:       '192, 30%, 30%',
-  plants:    '134, 60%, 60%',
-  insects:   '57,  60%, 60%',
-  mushrooms: '57,   0%, 60%',
-  bacteria:  '355, 60%, 60%',
+let challenge_colours = {
+  water:  { circle: '211.3, 33%, 57.8%', haze: '#007aff' },
+  energy: { circle: '49.3, 20.5%, 57.1%', haze: '#ffd100' },
+  nature: { circle: '104, 20.7%, 57.5%', haze: '#34ca00' },
+  waste:  { circle: '264.8, 18.5%, 48.6%', haze: '#7200ff' },
+  food:   { circle: '10.2, 29.6%, 61%', haze: '#ff5943' },
+}
+
+let node_challenge = {
+  _default:  'nature',  // So that the top colour isn't so violent
+  land:      'nature',
+  reptile:   'food',
+  birds:     'nature',
+  sea:       'water',
+  plants:    'nature',
+  insects:   'waste',
+  mushrooms: 'waste',
+  bacteria:  'waste',
 };
 
 /**
@@ -24,7 +32,7 @@ let node_colors = {
  * raw_data tree
  */
 function location_color(node, alpha) {
-  var color, uplimit = 20;
+  var challenge, color, uplimit = 20;
 
   while (!node.region && node.upnode && uplimit > 0) {
       // We don't have a colour, but maybe the parent does. It'll probably be right
@@ -33,11 +41,13 @@ function location_color(node, alpha) {
   }
 
   if (node.latin_name === 'Homo sapiens') {
-    color = '224, 100%, 11%';
+    window.last_location_color = "hsl(224, 100%, 11%)";
   } else {
-    color = node_colors[node.region] || node_colors._default;
+    challenge = node_challenge[node.region] || node_challenge._default;
+    color = challenge_colours[challenge].circle;
+    // Feed the current colour to background.js
+    window.last_location_color = challenge_colours[challenge].haze;
   }
-  window.last_location_color = color;  // Feed the current colour to background.js
   return 'hsla(' + color + ',' + (alpha === undefined ? 1 : alpha) + ')';
 }
 
@@ -46,9 +56,9 @@ function location_color(node, alpha) {
  */
 function endangered_location_color(node, alpha) {
   if (node.redlist === "CR") {
-    return 'hsla(0, 62%, 50%, ' + Math.max(alpha || 0, 0.6) + ')';
+    return 'hsla(0.6, 46.1%, 40%, ' + Math.max(alpha || 0, 0.6) + ')';
   } else if (node.redlist === "EN") {
-    return 'hsla(21, 62%, 50%, ' + Math.max(alpha || 0, 0.5) + ')';
+    return 'hsla(15.7, 55.8%, 44.3%, ' + Math.max(alpha || 0, 0.5) + ')';
   }
   return location_color(node, alpha);
 }

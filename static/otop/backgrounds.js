@@ -97,20 +97,20 @@ function floating(background_el, urls, start_horiz, initial_spacing) {
         el.style.WebkitTransform = el.style.transform;
     }, 50);
 
-    window.setTimeout(floating.bind(this, background_el, urls, start_horiz, 1), initial_spacing * 120000);
+    window.setTimeout(floating.bind(this, background_el, urls, start_horiz, 1), initial_spacing * 120000 * 2);
 
     window.setTimeout(function () {
         el.style.opacity = 0;
-    }, initial_spacing * 180000);
+    }, initial_spacing * 180000 * 2);
 
     window.setTimeout(function () {
         background_el.removeChild(el);
-    }, 300000);
+    }, 300000 * 2);
 }
 
 function haze(parent_el) {
     var el,
-        color = 'hsl(' + (window.last_location_color || '291, 44%, 12%') + ')';
+        color = window.last_location_color || 'hsl(291, 44%, 12%)';
 
     if (parent_el.childElementCount === 0 || parent_el.lastChild.getAttribute('data-color') !== color) {
         el = document.createElement('DIV');
@@ -132,7 +132,7 @@ function haze(parent_el) {
             for (i = 0; i < reversed_nodes.length; i++) {
                 if (i === 0) {
                     // Display newest node
-                    reversed_nodes[i].style.opacity = 0.5;
+                    reversed_nodes[i].style.opacity = 0.25;
                 } else if (i === 1) {
                     // Hide second-newest node
                     reversed_nodes[i].style.opacity = 0;
