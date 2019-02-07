@@ -139,16 +139,11 @@ class LeafLayout extends LeafLayoutBase {
           imageObject = image_ready(imageObject) ? imageObject : null;
       }
 
-      rings = {};
-      human_data.wonChallenges.map(function (challenge) {
-          if (rings[challenge.id]) {
-              rings[challenge.id].level++;
-          } else {
-              rings[challenge.id] = {
-                  color: challenge.color,
-                  level: 1,
-              };
-          }
+      rings = human_data.wonChallenges.map(function (challenge) {
+          return {
+              level: challenge.maxLevel,
+              color: challenge.color,
+          };
       });
       rings = Object.values(rings);
 
