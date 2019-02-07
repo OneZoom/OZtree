@@ -38,9 +38,9 @@ class PolytomyMidnode extends Midnode {
     }
   }
 
-  // Override: If this node has more than 3 children, don't bother developing anything below it, whatever the callee says
+  // Override: For every 5 children, decrease depth to search by an extra point
   develop_children(depth, apart_from) {
-    super.develop_children(this.full_children_length > 50 ? 0 : depth, apart_from);
+    super.develop_children(Math.max(0, depth - Math.floor(this.full_children_length / 5) ), apart_from);
   }
 
 }
