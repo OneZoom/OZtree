@@ -69,16 +69,16 @@ function floating(background_el, urls, start_horiz, initial_spacing) {
         el;
 
     if (!el) {
-        el = image_div(url, 0, start_horiz > 0 ? rand_int(0, 40) : rand_int(-10, 20), 80);
+        el = image_div(url, 0, start_horiz > 0 ? rand_int(0, 40) : rand_int(-10, 20), rand_int(40, 70));
         el.style.opacity = 0;
         el.style.transform = [
             'translateZ(0)',  // NB: Prod browser into using GPU
             'translate(' + start_horiz + '%, ' + rand_int(initial_spacing * 120, initial_spacing * 130) + '%)',
-            'scale(' + ((1 - initial_spacing) * 2 + 1) + ')',
         ].join(' ');
         el.style.WebkitTransform = el.style.transform;
         el.style.transition = [
-            'transform ' + initial_spacing * 200 + 's linear',
+            'transform ' + initial_spacing * 400 + 's linear',
+            '-webkit-transform ' + initial_spacing * 400 + 's linear',
             'opacity 15s',
         ].join(',');
         el.classList.add('floating');
@@ -87,12 +87,11 @@ function floating(background_el, urls, start_horiz, initial_spacing) {
     }
 
     window.setTimeout(function () {
-        el.style.opacity = 0.2;
+        el.style.opacity = 0.3;
         el.style.transform = [
             'translateZ(0)',  // NB: Prod browser into using GPU
             'translate(' + (start_horiz + rand_int(-20,20)) + '%, -100%)',
             'rotate(' + rand_int(-90, 90) + 'deg)',
-            'scale(1)',
         ].join(' ');
         el.style.WebkitTransform = el.style.transform;
     }, 50);
@@ -101,11 +100,11 @@ function floating(background_el, urls, start_horiz, initial_spacing) {
 
     window.setTimeout(function () {
         el.style.opacity = 0;
-    }, initial_spacing * 180000 * 2);
+    }, initial_spacing * 360000);
 
     window.setTimeout(function () {
         background_el.removeChild(el);
-    }, 300000 * 2);
+    }, 600000);
 }
 
 function haze(parent_el) {
