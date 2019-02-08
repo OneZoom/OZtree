@@ -85,15 +85,16 @@ class TreeState {
   }
   set_action(action) {
     this.action = action;
-    this.action_timestamp = new Date().getTime();
+    // After 400ms, any action should be cleared (unless something updates it with a new action)
+    if (this.action_timeout) {
+        window.clearTimeout(this.action_timeout);
+        this.action_timeout = null;
+    }
+    if (this.action) {
+        this.action_timeout = window.setTimeout(this.set_action.bind(this, null), 400);
+    }
   }
   is_idle() {
-    if (this.action) {
-      let now = new Date().getTime();
-      if ((now - this.action_timestamp) > 400) {
-        this.action = null;
-      }
-    }
     return this.action === null;
   }
   is_dragging() {
