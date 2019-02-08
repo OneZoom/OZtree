@@ -115,6 +115,7 @@ function floating(background_el, urls, start_horiz, initial_spacing) {
             '-webkit-transform ' + initial_spacing * 400 + 's linear',
             'opacity 15s',
         ].join(',');
+        el.style.WebkitTransition = el.style.transition;
         el.classList.add('floating');
         el.classList.add(css_class);
         background_el.appendChild(el);
