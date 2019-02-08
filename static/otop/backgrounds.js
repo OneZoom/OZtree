@@ -61,8 +61,8 @@ function particle_trigger(background_el, action, trail_num) {
             el.style.opacity = i === 0 ? 1 : 0.2 * (particle_els.length - i);
             el.style.transform = [
                 'scale(1.3)',
-                'translateX(' + (0 + (i-1) * (action.indexOf('left') > -1 ? 3 : action.indexOf('right') > -1 ? -3 : 0)) + 'px)',
-                'translateY(' + (0 + (i-1) * (action.indexOf('up') > -1 ? 3 : action.indexOf('down') > -1 ? -3 : 0)) + 'px)',
+                'translateX(' + (0 + (i-1) * (action.indexOf('left') > -1 ? 9 : action.indexOf('right') > -1 ? -9 : 0)) + 'px)',
+                'translateY(' + (0 + (i-1) * (action.indexOf('up') > -1 ? 9 : action.indexOf('down') > -1 ? -9 : 0)) + 'px)',
             ].join(' ');
             el.style.WebkitTransform = el.style.transform;
         }
