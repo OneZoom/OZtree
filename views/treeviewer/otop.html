@@ -80,6 +80,58 @@ body.loading > canvas {
 .background-layer > * {
   position: absolute;
 }
+@-webkit-keyframes spin {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+    from {transform:rotate(0deg);}
+    to {transform:rotate(360deg);}
+}
+.background-layer .particles {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    opacity: 0;
+    transform: scale(1.3);
+    -webkit-transform: scale(1.3);
+    transition: opacity 0.5s linear, transform 0.5s ease-in;
+    -webkit-transition: opacity 0.5s linear, -webkit-transform 0.5s ease-in;
+}
+.background-layer .particles .particles-inner {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100vmax;
+    height: 100vmax;
+    transform: perspective(2000px) rotateX(10deg);
+    -webkit-transform: perspective(2000px) rotateX(10deg);
+
+    background: url({{=URL("static","otop/otop-bkgd-particles.png")}});
+    background-size: cover;
+}
+.background-layer .particles .particles-inner {
+    animation-name: spin;
+    animation-duration: 480000ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+.background-layer .particles.paused .particles-inner {
+    -webkit-animation-play-state: paused;
+    -moz-animation-play-state: paused;
+    -o-animation-play-state: paused;
+    animation-play-state: paused;
+    animation-delay: 0s !important;
+}
+.background-layer .particles + .particles .particles-inner {
+    animation-delay: 1s;
+}
+.background-layer .particles + .particles + .particles .particles-inner {
+    animation-delay: 2s;
+}
+
 </style>
 <script src="{{=URL('static','otop/backgrounds.js')}}"></script>
 <script type="text/javascript">
@@ -128,9 +180,6 @@ document.addEventListener('DOMContentLoaded', init_background.bind(null, {
         '{{=URL("static","otop/otop-bkgd-tree-3.png")}}',
         '{{=URL("static","otop/otop-bkgd-tree-4.png")}}',
         '{{=URL("static","otop/otop-bkgd-tree-5.png")}}',
-    ],
-    particle: [
-        '{{=URL("static","otop/otop-bkgd-particle-1.png")}}',
     ],
 }));
 

@@ -26,41 +26,75 @@ function image_div(image_href, top, left, size) {
     return el;
 }
 
-function particles(background_el, url) {
-    var el = background_el.querySelector('.particles');
+function particle_trigger(background_el, action, trail_num) {
+    var i, el, particle_els = background_el.querySelectorAll('.particles');
 
-    if (!el) {
-        el = image_div(url, -20, -20, 120);
-        el.style.backgroundSize = 'cover';
-        el.style.opacity = 0;
-        el.style.transform = [
-            'perspective(2000px)',
-            'rotateX(10deg)',
-            'rotateZ(' + rand_int(0, 360) + 'deg)',
-        ].join(' ');
-        el.style.WebkitTransform = el.style.transform;
-        el.style.transition = [
-            'transform 30s ease-out',
-            'opacity 15s',
-        ].join(',');
-        el.classList.add('particles');
-        background_el.appendChild(el);
+    for (i = 0; i < particle_els.length; i++) {
+        el = particle_els[i];
+
+        el.classList.toggle('paused', action === 'fly-out' || action === 'fly-in' || action === 'zoomout' || action === 'zoomin');
+        if (!action) {
+            el.style.opacity = i === 0 ? 1 : 0;
+            el.style.transform = [
+                'scale(1.3)',
+                'translateX(0)',
+                'translateY(0)',
+            ].join(' ');
+            el.style.WebkitTransform = el.style.transform;
+        } else if (action === "zoomout" || action === "fly-out") {
+            el.style.opacity = i === 0 ? 1 : 0.2 * (particle_els.length - i);
+            el.style.transform = [
+                'scale(' + (1.3 - (i * 0.05)) + ')',
+                'translateX(0)',
+                'translateY(0)',
+            ].join(' ');
+            el.style.WebkitTransform = el.style.transform;
+        } else if (action === "zoomin" || action === "fly-in") {
+            el.style.opacity = i === 0 ? 1 : 0.2 * (particle_els.length - i);
+            el.style.transform = [
+                'scale(' + (1.3 + (i * 0.05)) + ')',
+                'translateX(0)',
+                'translateY(0)',
+            ].join(' ');
+            el.style.WebkitTransform = el.style.transform;
+        } else if (action.indexOf("pan-") === 0) {
+            el.style.opacity = i === 0 ? 1 : 0.2 * (particle_els.length - i);
+            el.style.transform = [
+                'scale(1.3)',
+                'translateX(' + (0 + (i-1) * (action.indexOf('left') > -1 ? 3 : action.indexOf('right') > -1 ? -3 : 0)) + 'px)',
+                'translateY(' + (0 + (i-1) * (action.indexOf('up') > -1 ? 3 : action.indexOf('down') > -1 ? -3 : 0)) + 'px)',
+            ].join(' ');
+            el.style.WebkitTransform = el.style.transform;
+        }
     }
+}
+
+function particles(background_el) {
+    var particle_els;
+
+    background_el.innerHTML = '<div class="particles"><div class="particles-inner"></div></div>' +
+                              '<div class="particles"><div class="particles-inner"></div></div>' +
+                              '<div class="particles"><div class="particles-inner"></div></div>';
+    particle_els = background_el.querySelectorAll('.particles');
 
     window.setTimeout(function () {
-        var start_rotate = parseInt(el.style.transform.match(/rotateZ\((\d+)/)[1], 10);
-        start_rotate += 3*rand_int(10, 15);
-        el.style.opacity = 0.6;
-        el.style.transform = [
-            'perspective(2000px)',
-            'rotateX(10deg)',
-            'scale('+ rand_int(10,15)/10 +')',
-            'rotateZ(' + start_rotate + 'deg)',
-        ].join(' ');
-        el.style.WebkitTransform = el.style.transform;
-    }, 50);
+        var i;
 
-    window.setTimeout(particles.bind(this, background_el, url), 25000);
+        for (i = 0; i < particle_els.length; i++) {
+            particle_els[i].style.transform = 'scale(1.3)';
+            particle_els[i].style.WebkitTransform = particle_els[i].style.transform;
+            particle_els[i].style.opacity = i === 0 ? 1 : 0;
+        }
+    }, 1000);
+
+    // Poll until we can attach our hook
+    window.setTimeout(function set_action_hook() {
+      if (window.onezoom) {
+          window.onezoom.add_hook('set_action', particle_trigger.bind(this, background_el));
+      } else {
+          window.setTimeout(set_action_hook, 100);
+      }
+    }, 100);
 }
 
 function floating(background_el, urls, start_horiz, initial_spacing) {
@@ -146,17 +180,16 @@ function haze(parent_el) {
 }
 
 function init_background(images) {
-    var i, background_el = document.createElement('DIV'),
-        foreground_el = document.createElement('DIV');
+    function layer(sibling_el) {
+        var el = document.createElement('DIV');
 
-    background_el.className = 'background-layer';
-    document.body.insertBefore(background_el, document.body.firstChild);
-    foreground_el.className = 'background-layer';
-    document.body.insertBefore(foreground_el, document.body.querySelector('#UI'));
+        el.className = 'background-layer';
+        document.body.insertBefore(el, sibling_el);
+        return el;
+    }
 
-    floating(background_el, images['tree'], -20, 0 / 2);
-    floating(background_el, images['tree'], 20, 1 / 2);
-
-    particles(background_el, choose(images['particle']));
-    haze(foreground_el);
+    floating(layer(document.body.firstChild), images['tree'], -20, 0 / 2);
+    floating(layer(document.body.firstChild), images['tree'], 20, 1 / 2);
+    particles(layer(document.body.firstChild));
+    haze(layer(document.body.querySelector('#UI')));
 }
