@@ -14,11 +14,11 @@ function add_hook(key, handler) {
 function remove_hook(key) {
   hook[key] = [];
 }
-function call_hook(key) {
+function call_hook(key, arg) {
   const handlers = hook[key];
   if (handlers) {
     for (let i=0; i<handlers.length; i++) {
-      handlers[i].call();
+      handlers[i].call(this, arg);
     }
   }
 }

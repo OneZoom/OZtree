@@ -84,7 +84,11 @@ class TreeState {
     }
   }
   set_action(action) {
+    if (this.action !== action) {
+        call_hook('set_action', action);
+    }
     this.action = action;
+
     // After 400ms, any action should be cleared (unless something updates it with a new action)
     if (this.action_timeout) {
         window.clearTimeout(this.action_timeout);
