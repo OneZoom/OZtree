@@ -15,17 +15,12 @@ let challenge_colours = {
   food:   { circle: '10.2, 29.6%, 61%', haze: '#ff5943' },
 }
 
-let node_challenge = {
-  _default:  'nature',  // So that the top colour isn't so violent
-  land:      'nature',
-  reptile:   'food',
-  birds:     'nature',
-  sea:       'water',
-  plants:    'nature',
-  insects:   'waste',
-  mushrooms: 'waste',
-  bacteria:  'waste',
-};
+function region_to_challenge_theme(r) {
+    if (!r || r === 'default' || r.indexOf("_") === -1) {
+        return "nature";  // So that the top colour isn't so violent
+    }
+    return r.split("_")[0];
+}
 
 /**
  * Generate a colour based on the location of the node within the
@@ -43,7 +38,7 @@ function location_color(node, alpha) {
   if (node.latin_name === 'Homo sapiens') {
     window.last_location_color = "hsl(224, 100%, 11%)";
   } else {
-    challenge = node_challenge[node.region] || node_challenge._default;
+    challenge = region_to_challenge_theme(node.region);
     color = challenge_colours[challenge].circle;
     // Feed the current colour to background.js
     window.last_location_color = challenge_colours[challenge].haze;
