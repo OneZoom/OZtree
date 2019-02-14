@@ -26,7 +26,7 @@ function image_div(image_href, top, left, size) {
     return el;
 }
 
-function particle_trigger(background_el, action, trail_num) {
+function particle_trigger(background_el, action) {
     var i, el, particle_els = background_el.querySelectorAll('.particles');
 
     for (i = 0; i < particle_els.length; i++) {
