@@ -65,15 +65,6 @@ function particle_trigger(background_el, action) {
             ].join(' ');
             el.style.WebkitTransform = el.style.transform;
         }
-
-        if (action === 'fly-out' || action === 'fly-in') {
-            el.classList.add('paused');
-        } else {
-            // Start up again, once opacity has faded out
-            window.setTimeout(function (el2) {
-                el2.classList.remove('paused');
-            }, 300, el);
-        }
     }
 }
 
