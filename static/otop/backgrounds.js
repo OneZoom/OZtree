@@ -32,7 +32,6 @@ function particle_trigger(background_el, action) {
     for (i = 0; i < particle_els.length; i++) {
         el = particle_els[i];
 
-        el.classList.toggle('paused', action === 'fly-out' || action === 'fly-in' || action === 'zoomout' || action === 'zoomin');
         if (!action) {
             el.style.opacity = i === 0 ? 1 : 0;
             el.style.transform = [
@@ -65,6 +64,15 @@ function particle_trigger(background_el, action) {
                 'translateY(' + (0 + (i-1) * (action.indexOf('up') > -1 ? 5 : action.indexOf('down') > -1 ? -5 : 0)) + 'px)',
             ].join(' ');
             el.style.WebkitTransform = el.style.transform;
+        }
+
+        if (action === 'fly-out' || action === 'fly-in') {
+            el.classList.add('paused');
+        } else {
+            // Start up again, once opacity has faded out
+            window.setTimeout(function (el2) {
+                el2.classList.remove('paused');
+            }, 300, el);
         }
     }
 }
