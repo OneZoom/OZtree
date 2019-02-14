@@ -44,7 +44,7 @@ class PolytomyLeafLayoutBase extends LeafLayoutBase {
 
       let start_x = node.xvar + node.rvar * node.arcx,
           start_y = node.yvar + node.rvar * node.arcy,
-          radius = node.rvar + node.arcr * 0.9;
+          radius = node.rvar;
 
       // We can move anywhere within our fake leaf, which can grow to 10x the screen (or enough to stop being fake)
       add_mr(start_x, start_y, radius, 10);
@@ -63,29 +63,43 @@ class PolytomyLeafLayoutBase extends LeafLayoutBase {
           arc_shape.do_fill = true;
           arc_shape.fill.color = color_theme.get_color('branch.stroke', node);
           shapes.push(arc_shape);
-      } else {
-          let s = BezierShape.create();
-          s.sx = s.sy = s.ex = s.ey = null;
-
-          // Draw a fan around the current node, approximating what the nodes would look like
-          let start_angle = node.arca - Math.PI/2;
-          let inc_angle = Math.PI / node.full_children_length;
-          for (let i = 0; i < node.full_children_length; i++) {
-            s.path_points.push(['move', start_x, start_y]);
-            s.path_points.push([
-              'line',
-              start_x + radius * Math.cos(start_angle + inc_angle * i),
-              start_y + radius * Math.sin(start_angle + inc_angle * i),
-            ]);
-          }
-
-          // Draw our fan like we would the branches
-          s.do_stroke = true;
-          s.stroke.line_width = 1;
-          s.height = 0;
-          s.stroke.color = color_theme.get_color('branch.stroke', node);
-          shapes.push(s);
+          return;
       }
+
+      // Use the children's position to draw a single fan object
+      let s = BezierShape.create();
+      s.sx = s.sy = s.ex = s.ey = null;
+
+      if (node.children.length > 0) {
+        // We have children, but got forced not to render them. Draw a fan around all the children
+        for (let i = 0; i < node.children.length; i++) {
+          s.path_points.push(['move', start_x, start_y]);
+          s.path_points.push([
+            'line',
+            start_x + node.rvar * node.nextr[i] * node.children[i].bezex,
+            start_y + node.rvar * node.nextr[i] * node.children[i].bezey,
+          ]);
+        }
+      } else {
+        // Undeveloped child nodes, guess what the fan would look like
+        let inc_angle = Math.PI / node.full_children_length;
+        let start_angle = node.arca - Math.PI/2 + (inc_angle / 2);
+        for (let i = 0; i < node.full_children_length; i++) {
+          s.path_points.push(['move', start_x, start_y]);
+          s.path_points.push([
+            'line',
+            start_x + radius * Math.cos(start_angle + inc_angle * i),
+            start_y + radius * Math.sin(start_angle + inc_angle * i),
+          ]);
+        }
+      }
+
+      // Draw our fan like we would the branches
+      s.do_stroke = true;
+      s.stroke.line_width = 1;
+      s.height = 0;
+      s.stroke.color = color_theme.get_color('branch.stroke', node);
+      shapes.push(s);
   }
 }
 
