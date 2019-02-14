@@ -93,7 +93,7 @@ function _pre_calc(node, angle) {
       node.children[i].bezey = node.children[i].bezc2y =  Math.sin(child_angle) * (distance)/newscale;
 
       node.children[i].bezsx = node.children[i].bezc1x =  0; // same position as the node itself.
-      node.children[i].bezsy = node.children[i].bezc1y =  0; // this is where it connects to the child.
+      node.children[i].bezsy = node.children[i].bezc1y =  0; // this is where it connects to the parent.
       node.children[i].bezr = node.bezr;
       _pre_calc(node.children[i], child_angle);
     }
