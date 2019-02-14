@@ -385,6 +385,7 @@ function perform_fly_b2(controller, into_node, finalize_func, accel_type) {
   } else {
     clearTimeout(tree_state.fly_timer);
     tree_state.flying = false;
+    tree_state.set_action(null);
     if (typeof finalize_func === "function") {
         finalize_func()
     }
