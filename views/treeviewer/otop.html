@@ -176,15 +176,22 @@ document.addEventListener('DOMContentLoaded', function () {
     // Wrap the main definition of populateLinkouts, insert our challenges tab
     window.UI_callbacks.populateLinkouts = function (responseJSON, initialSelected) {
         var selected_node = {}, region_challenge_map = {
-            default: 'takeaction',
-            land: 'zerowaste',
-            reptile: 'nobottledwater',
-            birds: 'nature',
-            sea: 'ethicalfashion',
-            plants: 'plantnative',
-            insects: 'ecofriendlyproducts',
-            mushrooms: 'transportation',
-            bacteria: 'zerowaste',
+            "default": 'takeaction',
+            'water_1': 'nobottledwater',
+            'food_2': 'reducemeat',
+            'energy_3': 'avoidpalmoil',
+            'nature_4': 'plantnative',
+            'food_5': 'inseason',
+            'waste_6': 'zerowaste',
+            'energy_7': 'reduceenergy',
+            'energy_8': 'transportation',
+            'water_9': 'reducewater',
+            'nature_10': 'nature',
+            'waste_11': 'reducefoodwaste',
+            'nature_12': 'takeaction',
+            'waste_13': 'ethicalfashion',
+            'food_14': 'sustainableseafood',
+            'nature_15': 'ecofriendlyproducts',
         };
 
         if (responseJSON.id) {
