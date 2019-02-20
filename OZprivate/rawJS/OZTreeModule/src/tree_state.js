@@ -102,7 +102,7 @@ class TreeState {
     return this.action === null;
   }
   is_dragging() {
-    return (this.action || '').indexOf("pan") === 0 && (this.mouse_hold || this.touch_hold);
+    return this.action && (this.action.indexOf("pan-") === 0) && (this.mouse_hold || this.touch_hold);
   }
   print_pos() {
     console.log("(xp, yp, ws) -> (" + this.xp.toFixed(0) + ", " + this.yp.toFixed(0) + ", " + this.ws.toFixed(4) + ")");

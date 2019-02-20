@@ -21,11 +21,12 @@ export default function (Controller) {
   }
   
   Controller.prototype.pan_and_zoom = function(dx, dy, cx, cy, scale) {
-    tree_state.set_action("pan_and_zoom");
     this.pan(dx, dy, true);
     if (scale > 1) {
+      tree_state.set_action("zoomin");
       this.zoomin(cx, cy, 1/scale, true);  
     } else {
+      tree_state.set_action("zoomout");
       this.zoomout(cx, cy, scale, true);
     }    
   }
