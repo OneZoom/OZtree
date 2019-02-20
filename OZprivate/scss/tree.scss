@@ -63,6 +63,7 @@ body.loading #UI #loading_spinner {
 }
 .logo {
     float: left;
+    min-height: 20px; /* Override uk-navbar's min-height */
 }
 .logo a {
     opacity: 0.55;
