@@ -657,13 +657,6 @@ iframe {
 
 /* On miniscule screens, shrink the search box further, and wrap the CA button */    
 @media screen and (max-width: 380px) {
-    #search-advanced #common_ancestor_button {
-        line-height: 1rem;
-        width: 9rem;
-    }
-    #search-advanced #common_ancestor_button span {
-        margin-top: 0.45rem;
-    }
     #searchnav .searchbox, #searchnav .search_dropdown {
         width: 10rem;
     }
