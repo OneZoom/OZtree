@@ -26,6 +26,22 @@ function image_div(image_href, top, left, size) {
     return el;
 }
 
+function set_transform(el, values) {
+    el.style.transform = values.join(' ');
+    el.style.WebkitTransform = values.join(' ');
+}
+
+function set_transition(el, values) {
+    el.style.WebkitTransition = values.map(function (v) {
+        if (v.indexOf('transform') === 0) {
+            return '-webkit-' + v;
+        } else {
+            return v;
+        }
+    }).join(',');
+    el.style.transition = values.join(',');
+}
+
 function particle_trigger(background_el, action) {
     var i, el, particle_els = background_el.querySelectorAll('.particles');
 
@@ -34,36 +50,32 @@ function particle_trigger(background_el, action) {
 
         if (!action) {
             el.style.opacity = i === 0 ? 1 : 0;
-            el.style.transform = [
+            set_transform(el, [
                 'scale(1.3)',
                 'translateX(0)',
                 'translateY(0)',
-            ].join(' ');
-            el.style.WebkitTransform = el.style.transform;
+            ]);
         } else if (action === "zoomout" || action === "fly-out") {
             el.style.opacity = i === 0 ? 1 : 0.2 * (particle_els.length - i);
-            el.style.transform = [
+            set_transform(el, [
                 'scale(' + (1.3 - (i * 0.05)) + ')',
                 'translateX(0)',
                 'translateY(0)',
-            ].join(' ');
-            el.style.WebkitTransform = el.style.transform;
+            ]);
         } else if (action === "zoomin" || action === "fly-in") {
             el.style.opacity = i === 0 ? 1 : 0.2 * (particle_els.length - i);
-            el.style.transform = [
+            set_transform(el, [
                 'scale(' + (1.3 + (i * 0.05)) + ')',
                 'translateX(0)',
                 'translateY(0)',
-            ].join(' ');
-            el.style.WebkitTransform = el.style.transform;
+            ]);
         } else if (action.indexOf("pan-") === 0) {
             el.style.opacity = i === 0 ? 1 : 0.2 * (particle_els.length - i);
-            el.style.transform = [
+            set_transform(el, [
                 'scale(1.3)',
                 'translateX(' + (0 + (i-1) * (action.indexOf('left') > -1 ? 5 : action.indexOf('right') > -1 ? -5 : 0)) + 'px)',
                 'translateY(' + (0 + (i-1) * (action.indexOf('up') > -1 ? 5 : action.indexOf('down') > -1 ? -5 : 0)) + 'px)',
-            ].join(' ');
-            el.style.WebkitTransform = el.style.transform;
+            ]);
         }
     }
 }
@@ -80,8 +92,9 @@ function particles(background_el) {
         var i;
 
         for (i = 0; i < particle_els.length; i++) {
-            particle_els[i].style.transform = 'scale(1.3)';
-            particle_els[i].style.WebkitTransform = particle_els[i].style.transform;
+            set_transform(particle_els[i], [
+                'scale(1.3)',
+            ]);
             particle_els[i].style.opacity = i === 0 ? 1 : 0;
         }
     }, 1000);
@@ -104,17 +117,14 @@ function floating(background_el, urls, start_horiz, initial_spacing) {
     if (!el) {
         el = image_div(url, 0, start_horiz > 0 ? rand_int(0, 40) : rand_int(-10, 20), rand_int(40, 70));
         el.style.opacity = 0;
-        el.style.transform = [
+        set_transform(el, [
             'translateZ(0)',  // NB: Prod browser into using GPU
             'translate(' + start_horiz + '%, ' + rand_int(initial_spacing * 120, initial_spacing * 130) + '%)',
-        ].join(' ');
-        el.style.WebkitTransform = el.style.transform;
-        el.style.transition = [
+        ]);
+        set_transition(el, [
             'transform ' + initial_spacing * 400 + 's linear',
-            '-webkit-transform ' + initial_spacing * 400 + 's linear',
             'opacity 15s',
-        ].join(',');
-        el.style.WebkitTransition = el.style.transition;
+        ]);
         el.classList.add('floating');
         el.classList.add(css_class);
         background_el.appendChild(el);
@@ -122,12 +132,11 @@ function floating(background_el, urls, start_horiz, initial_spacing) {
 
     window.setTimeout(function () {
         el.style.opacity = 0.3;
-        el.style.transform = [
+        set_transform(el, [
             'translateZ(0)',  // NB: Prod browser into using GPU
             'translate(' + (start_horiz + rand_int(-20,20)) + '%, -100%)',
             'rotate(' + rand_int(-90, 90) + 'deg)',
-        ].join(' ');
-        el.style.WebkitTransform = el.style.transform;
+        ]);
     }, 50);
 
     window.setTimeout(floating.bind(this, background_el, urls, start_horiz, 1), initial_spacing * 120000 * 2);
