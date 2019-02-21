@@ -189,12 +189,19 @@ function haze(parent_el) {
 }
 
 function init_background(images) {
+    var m;
+
     function layer(sibling_el) {
         var el = document.createElement('DIV');
 
         el.className = 'background-layer';
         document.body.insertBefore(el, sibling_el);
         return el;
+    }
+
+    m = window.location.search.match(new RegExp(/(?:^|&|\?)otop_background=off(?:&|$)/));
+    if (m) {
+        return;
     }
 
     floating(layer(document.body.firstChild), images['tree'], -20, 0 / 2);
