@@ -20,10 +20,15 @@ const l_consts = {
 }
 
 class LeafLayout extends LeafLayoutBase {
-  /** Don't draw a leaf for homo sapiens, we do this later */
-  fullLeaf(shapes, x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText) {
-    if (latinText !== 'Homo sapiens') {
-        super.fullLeaf.apply(this, arguments);
+  /** The human leaf gets a custom leaf, everything else falls through */
+  get_tip_leaf_shapes(node, shapes) {
+    if (node.latin_name === 'Homo sapiens') {
+      if (node.richness_val <= 1) {
+        add_mr(this.get_leaf_x(node), this.get_leaf_y(node), this.get_fullleaf_r(node));
+        this.human_leaf_shapes(node, shapes);
+      }
+    } else {
+      super.get_tip_leaf_shapes.apply(this, arguments);
     }
   }
 
@@ -32,11 +37,6 @@ class LeafLayout extends LeafLayoutBase {
    */
   full_leaf_shapes(node, shapes) {
     add_mr(this.get_leaf_x(node), this.get_leaf_y(node), this.get_fullleaf_r(node));
-
-    if (node.latin_name === 'Homo sapiens') {
-        this.human_leaf_shapes(node, shapes);
-        return;
-    }
 
     this.circularLeafBase(
       node.xvar + node.rvar * node.arcx,
