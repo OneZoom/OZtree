@@ -654,7 +654,7 @@ iframe {
 }
 
 /* On miniscule screens, only display search box on click, and wrap the CA button */
-@media screen and (max-width: 380px) {
+@media screen and (max-width: 490px) {
     #searchnav #search-basic .searchbox input {
         width: calc(100vw - 3rem);
     }
