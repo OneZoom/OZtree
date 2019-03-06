@@ -1,6 +1,6 @@
 import api_manager from '../api/api_manager';
 import tree_state from '../tree_state';
-import {parse_query} from '../navigation/utils';
+import {get_largest_visible_node} from '../navigation/utils';
 import data_repo from '../factory/data_repo';
 import * as position_helper from '../position_helper';
 import config from '../global_config';
@@ -223,10 +223,10 @@ export default function (Controller) {
         }
 
         if (codeout_fly == null) {
-            // Get current OTT from the URL, convert to code
-            let loc = (window.location.pathname.indexOf("@") === -1) ? null : window.location.pathname.slice(window.location.pathname.indexOf("@"));
-            let state = parse_query(loc, window.location.search, window.location.hash);
-            codeout_fly = data_repo.ott_id_map[state.ott] || 1;
+            // Find largest visible node, use this as our starting point
+            codeout_fly = get_largest_visible_node(this.root, function(node) { return node.ott; }) || this.root;
+            // NB: This is opposite to the below.
+            codeout_fly = (codeout_fly.full_children_length > 0 ? 1 : -1) * codeout_fly.metacode;
         } else {
             // Move to start location
             p = p.then(function () {
@@ -247,7 +247,7 @@ export default function (Controller) {
             // NB: Ideally we'd parallelise this, but the interface doesn't allow it yet.
             p = p.then(function () {
                 position_helper.clear_target(this.root);
-                position_helper.target_by_code(this.root, n.children.length > 0 ? -1 : 1, n.metacode);
+                position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
                 return get_details_of_nodes_in_view_during_fly(this.root);
             }.bind(this));
         }.bind(this));
@@ -261,7 +261,7 @@ export default function (Controller) {
             p = p.then(function () {
                 return new Promise(function (resolve) {
                     position_helper.clear_target(this.root);
-                    position_helper.target_by_code(this.root, n.children.length > 0 ? -1 : 1, n.metacode);
+                    position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
                     position_helper.perform_actual_fly(this, accel_func === 'final' ? into_node : false, resolve, accel_func);
                 }.bind(this));
             }.bind(this));
