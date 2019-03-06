@@ -11,36 +11,39 @@ class DataRepo {
     this.name_id_map = {};
     this.ott_name_map = {};
     this.ott_region_map = {
-        1: 'nature_10', // lowest priority
-        834747: 'food_2', // second lowest priority
-        165177: 'nature_4', // second lowest priority
-        835545: 'food_2', // start of group with mid priority
-        850143: 'food_2',
-        908005: 'food_14',
-        793901: 'food_14',
-        1130610: 'food_14',
-        795156: 'water_1',
-        2: 'energy_7',
-        509173: 'waste_11',
-        759130: 'waste_13',
-        1000401: 'nature_10',
-        1104916: 'nature_10',
-        782205: 'food_14',
-        849826: 'nature_12',
-        766725: 'energy_8',
-        189378: 'energy_3',
-        570365: 'water_1',
-        839790: 'energy_7',
-        790579: 'waste_13',
-        835089: 'nature_12',
-        834753: 'nature_12',
-        834748: 'nature_12',
-        194158: 'food_5',
-        447648: 'food_5',
-        300878: 'food_5',
-        339607: 'food_5',
-        344563: 'food_5', // end of group with mid priority
-        823607: 'water_1', // start of group with highest priority
+        93302: 'nature_10',  // All life(was 1)
+        244265: 'food_2',  // Mammals(was 834747)
+        99252: 'nature_4',  // Flowering plants(was 165177)
+
+        622916: 'food_2',  // Cloven-hoofed ungulates(was 835545)
+        5839486: 'food_2',  // Fowl(was 850143)
+        802117: 'food_14',  // Molluscs(was 908005)
+        278108: 'food_14',  // Cartilaginous Fishes(was 793901)
+        169205: 'food_14',  // Crabs, lobsters, and shrimps(was 1130610)
+        773483: 'water_1',  // Ray-finned Fishes(was 795156)
+        844192: 'energy_7',  // Bacteria(was 2)
+        5246132: 'waste_11',  // Nucletmycea(was 509173)
+        67819: 'waste_13',  // Sponges(was 759130)
+        1041457: 'nature_10',  // Spiders, mites, scorpions, and relatives(was 1000401)
+        177526: 'nature_10',  // Myriapods(was 1104916)
+        // TODO: No direct OTT for 782205: 'food_14' Starfish and more
+        639666: 'nature_12',  // Turtles(was 849826)
+        641033: 'energy_8',  // Jellyfish, corals, and more(was 766725)
+        891126: 'energy_3',  // Oil palms(was 189378)
+        // TODO: No direct OTT for 570365: 'water_1' null
+        35881: 'energy_7',  // Lepidosaurs(was 839790)
+        125649: 'waste_13',  // Tunicates(was 790579)
+        226176: 'nature_12',  // Elephants(was 835089)
+        16033: 'nature_12',  // Marsupials(was 834753)
+        962396: 'nature_12',  // Monotremes(was 834748)
+        921871: 'food_5',  // Grasses(was 194158)
+        1020645: 'food_5',  // Nightshades(was 447648)
+        309288: 'food_5',  // Cabbage(was 300878)
+        1006267: 'food_5',  // Gourds, melons, squash, & cucumbers(was 339607)
+        658513: 'food_5',  // Fig trees(was 344563)
+
+        /* TODO: None seem to match
+        823607: 'water_1',
         756460: 'food_2',
         657335: 'food_2',
         232561: 'food_2',
@@ -83,7 +86,8 @@ class DataRepo {
         827299: 'nature_12',
         850056: 'waste_13',
         835570: 'food_14',
-        303: 'nature_15', // end of group with highest priority
+        303: 'nature_15',
+        */
     };
     this.image_source = "best_any";
     this.leaf_col_len = 15;
