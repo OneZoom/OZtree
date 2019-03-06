@@ -20,7 +20,6 @@ def index():
     else:
         return dict(public_key = None)
 
-    
 def list():
     """Return popularity information for a list of Open Tree Taxonomy identifiers
     Valid calls will return a JSON dict of 
