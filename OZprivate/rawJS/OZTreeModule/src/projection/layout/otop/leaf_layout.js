@@ -4,6 +4,7 @@ import BezierShape from '../../shapes/bezier_shape';
 import ImageShape from '../../shapes/image_shape';
 import {add_mr} from '../../move_restriction';
 import config from '../../../global_config';
+import data_repo from '../../../factory/data_repo';
 import tree_state from '../../../tree_state';
 import {color_theme} from '../../../themes/color_theme';
 import {get_image, image_ready} from '../../../image_cache';
@@ -22,7 +23,7 @@ const l_consts = {
 class LeafLayout extends LeafLayoutBase {
   /** The human leaf gets a custom leaf, everything else falls through */
   get_tip_leaf_shapes(node, shapes) {
-    if (node.latin_name === 'Homo sapiens') {
+    if (node.metacode === Math.abs(data_repo.ott_id_map[770315])) {  // Homo sapiens (NB: We don't explicitly populate the map, since if it's not populated it's not visible anyway)
       if (node.richness_val <= 1) {
         add_mr(this.get_leaf_x(node), this.get_leaf_y(node), this.get_fullleaf_r(node));
         this.human_leaf_shapes(node, shapes);
