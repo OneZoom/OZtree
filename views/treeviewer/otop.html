@@ -122,6 +122,56 @@ body.loading > canvas {
     -webkit-animation-iteration-count: infinite;
     -webkit-animation-timing-function: linear;
 }
+#tutorial-slideshow h3,
+#tutorial-slideshow {
+    font-family: "Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 22px;
+}
+#tutorial-slideshow p {
+    line-height: 1.2;
+}
+#tutorial-slideshow .uk-modal-dialog h3,
+#tutorial-slideshow .uk-modal-dialog {
+    color: #FFF !important;
+}
+#tutorial-slideshow .uk-modal-dialog .big-text {
+    text-align: center;
+    padding: 0 9%;
+    font-size: 24px;
+}
+#tutorial-slideshow .slideshow-item {
+  display: table;
+  position: absolute;
+  top: 40px;
+  right: 20%;
+  bottom: 40px;
+  left: 20%;
+  width: 60%;
+  height: calc(100% - 80px);
+}
+#tutorial-slideshow .slideshow-item > * {
+  display: table-row;
+  height: 0;
+}
+#tutorial-slideshow .slideshow-item > *:first-child > * {
+  padding: 0 10px;
+}
+#tutorial-slideshow .slideshow-item > * + * {
+  display: table-row;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-size: contain;
+}
+@media screen and (max-width: 490px) {
+  #tutorial-slideshow,
+  #tutorial-slideshow .big-text,
+  #tutorial-slideshow h3 {
+    font-size: 18px !important;
+  }
+}
 
 </style>
 <script src="{{=URL('static','otop/backgrounds.js')}}"></script>
@@ -208,4 +258,94 @@ document.addEventListener('DOMContentLoaded', function () {
         return origPopulateLinkouts(responseJSON, initialSelected);
     };
 });
+</script>
+
+<script type="text/html" id="tutorial-slideshow-html">
+  <div id="tutorial-slideshow" class="uk-flex-top" uk-modal>
+    <div class="uk-modal-dialog uk-margin-auto-vertical">
+      <button class="uk-modal-close-default" type="button" uk-close></button>
+      <div uk-slideshow="autoplay: true; autoplay-interval: 5000; finite: true" class="uk-slidenav-position">
+          <ul class="uk-slideshow-items" uk-height-viewport="offset-bottom: 10">
+              <li>
+                <div class="slideshow-item">
+                  <div>
+                  <p class="big-text">This tree of life represents more than 2 million living species, you can freely navigate in it.</p>
+                  </div>
+                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-0.jpg')}})">&nbsp;</div>
+                </div>
+              </li>
+              <li>
+                <div class="slideshow-item">
+                  <div>
+                  <h3>Searching</h3>
+                  <p>Type a species here to fly to it. Select one of the suggestions that appear.</p>
+                  </div>
+                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-1.jpg')}})">&nbsp;</div>
+                </div>
+              </li>
+              <li>
+                <div class="slideshow-item">
+                  <div>
+                  <h3>Navigating</h3>
+                  <p>Pan and zoom to explore the tree of life</p>
+                  </div>
+                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-2.jpg')}})">&nbsp;</div>
+                </div>
+              </li>
+              <li>
+                <div class="slideshow-item">
+                  <div>
+                  <h3>Get more info</h3>
+                  <p>Click on the name of an individual species to see more information like the corresponding challenge and the wikipedia page...</p>
+                  </div>
+                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-3.jpg')}})">&nbsp;</div>
+                </div>
+              </li>
+              <li class="close-on-display">
+                <div class="slideshow-item">
+                </div>
+              </li>
+          </ul>
+          <a class="uk-slidenav-large uk-position-center-left uk-hidden-hover" href="#" uk-slidenav-previous uk-slideshow-item="previous"></a>
+          <a class="uk-slidenav-large uk-position-center-right uk-hidden-hover" href="#" uk-slidenav-next uk-slideshow-item="next"></a>
+          <div class="uk-position-bottom-center uk-position-small">
+              <ul class="uk-dotnav">
+                  <li uk-slideshow-item="0"><a href="#">Item 1</a></li>
+                  <li uk-slideshow-item="1"><a href="#">Item 2</a></li>
+                  <li uk-slideshow-item="2"><a href="#">Item 3</a></li>
+                  <li uk-slideshow-item="3"><a href="#">Item 4</a></li>
+              </ul>
+          </div>
+      </div>
+    </div>
+  </div>
+</script>
+<script>
+      $(document).ready(function() {
+          var tutorial_slideshow;
+
+          // Copy HTML to page body (we don't have a template slot to add it server-side)
+          tutorial_slideshow = document.createElement('DIV');
+          tutorial_slideshow.innerHTML = document.getElementById('tutorial-slideshow-html').innerText;
+          tutorial_slideshow = tutorial_slideshow.firstElementChild;
+
+          document.body.appendChild(tutorial_slideshow);
+          UIkit.modal(tutorial_slideshow).show();
+          tutorial_slideshow.addEventListener('itemshown', function (e) {
+              if (e.target.classList.contains('close-on-display')) {
+                  UIkit.modal(tutorial_slideshow).hide();
+              }
+          });
+
+          window.setTimeout(function () {
+              onezoom.search_manager.full_search('Homo Sapiens', function (latin_name, cname, res) {
+                  if (res.length < 1) {
+                      throw new Error("Could not find Homo Sapiens node");
+                  }
+                  tutorial_slideshow.addEventListener('hidden', function (e) {
+                      onezoom.controller.perform_flight_transition(null, res[0][2]);
+                  });
+              }, search_delay=0);
+          }, 100);
+      });
 </script>
