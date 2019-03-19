@@ -8,6 +8,7 @@ OZprivate/ServerScripts/TaxonMappingAndPopularity/testlist
 OZprivate/data/YanTree/generate_tree.lock
 OZprivate/data/YanTree/generate_tree.out
 static/FinalOutputs/pics/*
+static/FinalOutputs/img/*
 OZprivate/rawJS/OZTreeModule/dist/*
 OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown
 node_modules

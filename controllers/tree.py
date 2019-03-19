@@ -208,7 +208,7 @@ def eol_page_ID():
                                ott=OTTid,
                                via=eol_inspect_via_flags['EoL_tab'],
                                inspected=datetime.datetime.now())
-    redirect("http://eol.org/pages/{}".format(EOLid))
+    redirect("//eol.org/pages/{}".format(EOLid))
 
 def eol_dataobject_ID():
     """
@@ -278,10 +278,12 @@ def powo_url(IPNIid):
     """
     try:
         IPNIs = IPNIid.split("-")
+        #powo only has an http site
         return(["http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[0]), int(IPNIs[1]))])
     except AttributeError:
         try:
             IPNIs = str(int(IPNIid))
+            #powo only has an http site
             return(["http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[:-1]), int(IPNIs[-1:]))])
         except:
             raise          
@@ -301,7 +303,7 @@ def eol_url(EOLid, OTTid):
     so we can check if images or common names may have been updated.
     """
     try:
-        return([URL('tree','eol_page_ID', args=[int(EOLid), int(OTTid)], scheme=True, host=True), "http://eol.org/pages/{}".format(int(EOLid))])
+        return([URL('tree','eol_page_ID', args=[int(EOLid), int(OTTid)], scheme=True, host=True), "//eol.org/pages/{}".format(int(EOLid))])
     except:
         raise HTTP(400,"No valid EOL id provided")
 
