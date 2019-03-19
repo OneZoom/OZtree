@@ -11,83 +11,91 @@ class DataRepo {
     this.name_id_map = {};
     this.ott_name_map = {};
     this.ott_region_map = {
-        93302: 'nature_10',  // All life(was 1)
-        244265: 'food_2',  // Mammals(was 834747)
-        99252: 'nature_4',  // Flowering plants(was 165177)
+        
+        // lowest priority
+        93302: 'nature_10',  // All life (was 1)
+        
+        
+        // second lowest priority
+        244265: 'food_2',  // Mammals (was 834747)
+        99252: 'nature_4',  // Flowering plants (was 165177)
 
-        622916: 'food_2',  // Cloven-hoofed ungulates(was 835545)
-        5839486: 'food_2',  // Fowl(was 850143)
-        802117: 'food_14',  // Molluscs(was 908005)
-        278108: 'food_14',  // Cartilaginous Fishes(was 793901)
-        169205: 'food_14',  // Crabs, lobsters, and shrimps(was 1130610)
-        773483: 'water_1',  // Ray-finned Fishes(was 795156)
-        844192: 'energy_7',  // Bacteria(was 2)
-        5246132: 'waste_11',  // Nucletmycea(was 509173)
-        67819: 'waste_13',  // Sponges(was 759130)
-        1041457: 'nature_10',  // Spiders, mites, scorpions, and relatives(was 1000401)
-        177526: 'nature_10',  // Myriapods(was 1104916)
-        // TODO: No direct OTT for 782205: 'food_14' Starfish and more
-        639666: 'nature_12',  // Turtles(was 849826)
-        641033: 'energy_8',  // Jellyfish, corals, and more(was 766725)
-        891126: 'energy_3',  // Oil palms(was 189378)
-        // TODO: No direct OTT for 570365: 'water_1' null
-        35881: 'energy_7',  // Lepidosaurs(was 839790)
-        125649: 'waste_13',  // Tunicates(was 790579)
-        226176: 'nature_12',  // Elephants(was 835089)
-        16033: 'nature_12',  // Marsupials(was 834753)
-        962396: 'nature_12',  // Monotremes(was 834748)
-        921871: 'food_5',  // Grasses(was 194158)
-        1020645: 'food_5',  // Nightshades(was 447648)
-        309288: 'food_5',  // Cabbage(was 300878)
-        1006267: 'food_5',  // Gourds, melons, squash, & cucumbers(was 339607)
-        658513: 'food_5',  // Fig trees(was 344563)
 
-        /* TODO: None seem to match
-        823607: 'water_1',
-        756460: 'food_2',
-        657335: 'food_2',
-        232561: 'food_2',
-        5241609: 'food_2',
-        5288798: 'food_2',
-        5394023: 'food_2',
-        388046: 'food_2',
-        998862: 'food_2',
-        908867: 'food_2',
-        349722: 'food_2',
-        220049: 'food_2',
-        1082507: 'food_2',
-        495807: 'food_2',
-        5394211: 'food_2',
-        155084: 'food_2',
-        604424: 'food_2',
-        285621: 'food_2',
-        442191: 'food_2',
-        1071958: 'food_2',
-        908858: 'food_2',
-        5394177: 'food_2',
-        5288806: 'food_2',
-        5394154: 'food_2',
-        913935: 'energy_3',
-        1872144: 'nature_4',
-        191370: 'food_5',
-        753726: 'waste_6',
-        15537: 'energy_7',
-        850078: 'energy_8',
-        52983: 'water_9',
-        53841: 'water_9',
-        53858: 'water_9',
-        5575009: 'water_9',
-        185059: 'nature_10',
-        973262: 'waste_11',
-        972742: 'waste_11',
-        781725: 'waste_11',
-        894503: 'waste_11',
-        860081: 'waste_11',
-        827299: 'nature_12',
-        850056: 'waste_13',
-        835570: 'food_14',
-        303: 'nature_15',
-        */
+        
+        // medium priority
+        622916: 'food_2',  // Cloven-hoofed ungulates (was 835545) - note whales are overridden on higher priority
+        5839486: 'food_2',  // Fowl (was 850143)
+        802117: 'food_14',  // Molluscs (was 908005)
+        278108: 'food_14',  // Cartilaginous Fishes (was 793901)
+        169205: 'food_14',  // Crabs, lobsters, and shrimps (was 1130610)
+        773483: 'water_1',  // Ray-finned Fishes (was 795156)
+        844192: 'energy_7',  // Bacteria (was 2)
+        5246132: 'waste_11',  // Nucletmycea - Fungi (was 509173)
+        67819: 'waste_13',  // Sponges (was 759130)
+        1041457: 'nature_10',  // Spiders, mites, scorpions, and relatives (was 1000401)
+        177526: 'nature_10',  // Myriapods  Millipedes / centipedes etc. (was 1104916)
+        451020: 'food_14', // Echinodermata - starfish, urchins etc. (was 782205)
+        639666: 'nature_12',  // Turtles (was 849826)
+        1084488: 'energy_8',  // corals, sea anemones (was 766725)
+        891126: 'energy_3',  // Oil palms (was 189378)
+        570365: 'water_1', // Trichoplax (was 570365)
+        35881: 'energy_7',  // Lepidosaurs (was 839790)
+        125649: 'waste_13',  // Tunicates (was 790579)
+        226176: 'nature_12',  // Elephants (was 835089)
+        16033: 'nature_12',  // Marsupials (was 834753)
+        962396: 'nature_12',  // Monotremes (was 834748)
+        921871: 'food_5',  // Grasses (was 194158)
+        1020645: 'food_5',  // Nightshades (was 447648)
+        309288: 'food_5',  // Cabbage (was 300878)
+        1006267: 'food_5',  // Gourds, melons, squash, & cucumbers (was 339607)
+        658513: 'food_5',  // Fig trees (was 344563)
+        
+        // highest priorty
+        5557278: 'water_1', // cichlids - Cichliformes
+        756460: 'food_2', // Ecoli 1
+        657335: 'food_2', // Ecoli 2
+        232561: 'food_2', // Ecoli 3
+        5241609: 'food_2', // Ecoli 4
+        5288798: 'food_2', // Ecoli 5
+        5394023: 'food_2', // Ecoli 6
+        388046: 'food_2', // Ecoli 7
+        998862: 'food_2', // Ecoli 8
+        908867: 'food_2', // Ecoli 9
+        349722: 'food_2', // Ecoli 10
+        220049: 'food_2', // Ecoli 11
+        1082507: 'food_2', // Ecoli 12
+        495807: 'food_2', // Ecoli 13
+        5394211: 'food_2', // Ecoli 14
+        155084: 'food_2', // Ecoli 15
+        604424: 'food_2', // Ecoli 16
+        285621: 'food_2', // Ecoli 17
+        442191: 'food_2', // Ecoli 18
+        1071958: 'food_2', // Ecoli 19
+        908858: 'food_2', // Ecoli 20
+        5394177: 'food_2', // Ecoli 21
+        5288806: 'food_2', // Ecoli 22
+        5394154: 'food_2', // Ecoli 23
+        913935: 'energy_3', // primates
+        965954: 'nature_4', // lepidoptera (butterflies and moths)
+        207473: 'food_5', // Bannana family
+        753726: 'waste_6', // Ants bees and wasps
+        196997: 'energy_7', // Cyanobacteria
+        81461: 'energy_8', // Birds
+        635958: 'water_9', // Archaea 1
+        5877687: 'water_9', // Archaea 2
+        5878036: 'water_9', // Archaea 3
+        5575009: 'water_9', // Archaea 4
+        76108: 'nature_10', // Trillium family (contains paris japonica)
+        395057: 'waste_11', // Roundworms
+        189836: 'waste_11', // Hairworms
+        4146088: 'waste_11', // Xenacoelomorpha - acomorph worms and strange worms
+        941620: 'waste_11', // Annelids (segmented worms, incl. earthworms
+        570366: 'waste_11', // arrow worms
+        544595: 'nature_12', // Amphibians
+        195672: 'waste_13', // Crocodilians
+        698424: 'food_14', // Cetacea (contains whales, dolphins etc)
+        4790637: 'nature_15' // Candidatus Carsonella (contains carsonella ruddii)
+            
     };
     this.image_source = "best_any";
     this.leaf_col_len = 15;
