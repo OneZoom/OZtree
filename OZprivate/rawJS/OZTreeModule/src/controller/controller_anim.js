@@ -282,26 +282,42 @@ export default function (Controller) {
    * -- { xp: .., yp: .., ws: ..}
    * Pzoom would be reset to zoom if the targeted node is too close to the root. Since pzoom would zoom a fixed length,
    * pzoom from a close node would result the tree being zoomed from a very small view.
+   *
+   * Return a promise for when the animation is finished
    */
   Controller.prototype.fly_to_node = function (OZIDin, init) {
+    var n;
+
     if (!init) init = "pzoom";
 
     this.reset();
     if (init.xp !== undefined) {
       this.perform_leap_to_position(OZIDin, init);
-    } else if (init == "zoom") {
-      this.perform_flight_animation(OZIDin);
-    } else if (init == "pzoom") {
+      return Promise.resolve();
+    }
+
+    if (init == "zoom") {
+      return this.perform_flight_transition(this.root.metacode, OZIDin);
+    }
+
+    if (init == "pzoom") {
       // Jump to node
       this.perform_leap_animation(OZIDin);
       // Zoom out marginally
       // TODO: This will refuse to go back further than a given point, but that's much futher back than before
       this.zoomout(tree_state.widthres/2, tree_state.heightres/2, 0.1, true);
       // Fly back in again
-      this.perform_flight_animation(OZIDin);
-    } else {  // init == "jump"
-      this.perform_leap_animation(OZIDin); // TODO: Not going to correct place?
+      return this.perform_flight_transition(null, OZIDin);
     }
+
+    // init == "jump"
+    // NB: perform_leap_animation won't fetch details, we do it ourselves
+    position_helper.clear_target(this.root);
+    n = this.develop_branch_to(OZIDin);
+    position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
+    return get_details_of_nodes_in_view_during_fly(this.root).then(function () {
+        this.perform_leap_animation(OZIDin, init);
+    }.bind(this));
   };
   
   /**
