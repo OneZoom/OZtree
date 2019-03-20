@@ -23,7 +23,7 @@ let challenge_colours = {
   'waste_11': { circle: '264.8, 18.5%, 48.6%', haze: '#7200ff' },
   'nature_12': { circle: '104, 20.7%, 57.5%', haze: '#34ca00' },
   'waste_13': { circle: '264.8, 18.5%, 48.6%', haze: '#7200ff' },
-  'food_14': { circle: '10.2, 29.6%, 61%', haze: '#ff5943' },
+  'food_14': { circle: '211.3, 33%, 57.8%', haze: '#007aff' },  // "Sustainable seafood", so use water colours
   'nature_15': { circle: '104, 20.7%, 57.5%', haze: '#34ca00' },
 }
 
