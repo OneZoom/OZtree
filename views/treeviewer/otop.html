@@ -121,6 +121,11 @@ body.loading > canvas {
     -webkit-animation-iteration-count: infinite;
     -webkit-animation-timing-function: linear;
 }
+
+/* Turn on single info button */
+#controlButtons #singleInfoButton { display: list-item; }
+#controlButtons #multipleInfoButton { display: none; }
+
 #tutorial-slideshow h3,
 #tutorial-slideshow {
     font-family: "Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
@@ -321,29 +326,44 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 <script>
       $(document).ready(function() {
-          var tutorial_slideshow;
+          var tutorial_slideshow, homo_sapiens_metacode;
 
           // Copy HTML to page body (we don't have a template slot to add it server-side)
           tutorial_slideshow = document.createElement('DIV');
           tutorial_slideshow.innerHTML = document.getElementById('tutorial-slideshow-html').innerText;
           tutorial_slideshow = tutorial_slideshow.firstElementChild;
-
-          document.body.appendChild(tutorial_slideshow);
-          UIkit.modal(tutorial_slideshow).show();
           tutorial_slideshow.addEventListener('itemshown', function (e) {
               if (e.target.classList.contains('close-on-display')) {
                   UIkit.modal(tutorial_slideshow).hide();
               }
           });
+          tutorial_slideshow.addEventListener('hidden', function (e) {
+              var slideshow = UIkit.slideshow(tutorial_slideshow.querySelector('.uk-slideshow'));
 
+              if (homo_sapiens_metacode) {
+                  onezoom.controller.perform_flight_transition(null, homo_sapiens_metacode);
+              }
+
+              // Reset slideshow, disable flight / animation for subsequent displays
+              homo_sapiens_metacode = null;
+              slideshow.stopAutoplay();
+              slideshow.show(0);
+          });
+          document.body.appendChild(tutorial_slideshow);
+
+          // singleInfoButton should show our slideshow, not the default
+          document.getElementById('singleInfoButton').querySelector('a').href = "#tutorial-slideshow";
+
+          // Show on startup
+          UIkit.modal(tutorial_slideshow).show();
+
+          // Find Homo-sapiens ready for hiding
           window.setTimeout(function () {
               onezoom.search_manager.full_search('Homo Sapiens', function (latin_name, cname, res) {
                   if (res.length < 1) {
                       throw new Error("Could not find Homo Sapiens node");
                   }
-                  tutorial_slideshow.addEventListener('hidden', function (e) {
-                      onezoom.controller.perform_flight_transition(null, res[0][2]);
-                  });
+                  homo_sapiens_metacode = res[0][2];
               }, search_delay=0);
           }, 100);
       });
