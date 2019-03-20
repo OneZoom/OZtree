@@ -146,6 +146,13 @@ body.loading > canvas {
     padding: 0 9%;
     font-size: 24px;
 }
+#tutorial-slideshow .uk-modal-dialog a img {
+    opacity: 0.8;
+}
+#tutorial-slideshow .uk-modal-dialog a:hover img,
+#tutorial-slideshow .uk-modal-dialog a:active img {
+    opacity: 1;
+}
 #tutorial-slideshow .slideshow-item {
   display: table;
   position: absolute;
@@ -275,6 +282,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="slideshow-item">
                   <div>
                   <p class="big-text">This tree of life represents more than 2 million living species, you can freely navigate in it.</p>
+                  <p style="text-align: center">Tree of life explorer provided by</p>
+                  <p style="text-align: center"><a href="http://www.onezoom.org/" target="_blank"><img src="{{=URL('static','images/OZ_logo5_grey3.png')}}" title="OneZoom" style="height: 2rem; padding-right: 20px" /></a></p>
                   </div>
                   <div style="background-image: url({{=URL('static','otop/otop-tutorial-0.jpg')}})">&nbsp;</div>
                 </div>
