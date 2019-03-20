@@ -8,18 +8,23 @@ let int_sponsor_fill_hover = 'rgb(255,255,255)';
 let int_sponsor_fill = 'rgb(227,200,115)';
 
 let challenge_colours = {
-  water:  { circle: '211.3, 33%, 57.8%', haze: '#007aff' },
-  energy: { circle: '49.3, 20.5%, 57.1%', haze: '#ffd100' },
-  nature: { circle: '104, 20.7%, 57.5%', haze: '#34ca00' },
-  waste:  { circle: '264.8, 18.5%, 48.6%', haze: '#7200ff' },
-  food:   { circle: '10.2, 29.6%, 61%', haze: '#ff5943' },
-}
-
-function region_to_challenge_theme(r) {
-    if (!r || r === 'default' || r.indexOf("_") === -1) {
-        return "nature";  // So that the top colour isn't so violent
-    }
-    return r.split("_")[0];
+  'homo sapiens': { circle: '0, 0%, 19%', haze: '#000F38' },
+  "default": { circle: '104, 20.7%, 57.5%', haze: '#34ca00' },
+  'water_1': { circle: '211.3, 33%, 57.8%', haze: '#007aff' },
+  'food_2': { circle: '10.2, 29.6%, 61%', haze: '#ff5943' },
+  'energy_3': { circle: '49.3, 20.5%, 57.1%', haze: '#ffd100' },
+  'nature_4': { circle: '104, 20.7%, 57.5%', haze: '#34ca00' },
+  'food_5': { circle: '10.2, 29.6%, 61%', haze: '#ff5943' },
+  'waste_6': { circle: '264.8, 18.5%, 48.6%', haze: '#7200ff' },
+  'energy_7': { circle: '49.3, 20.5%, 57.1%', haze: '#ffd100' },
+  'energy_8': { circle: '49.3, 20.5%, 57.1%', haze: '#ffd100' },
+  'water_9': { circle: '211.3, 33%, 57.8%', haze: '#007aff' },
+  'nature_10': { circle: '104, 20.7%, 57.5%', haze: '#34ca00' },
+  'waste_11': { circle: '264.8, 18.5%, 48.6%', haze: '#7200ff' },
+  'nature_12': { circle: '104, 20.7%, 57.5%', haze: '#34ca00' },
+  'waste_13': { circle: '264.8, 18.5%, 48.6%', haze: '#7200ff' },
+  'food_14': { circle: '10.2, 29.6%, 61%', haze: '#ff5943' },
+  'nature_15': { circle: '104, 20.7%, 57.5%', haze: '#34ca00' },
 }
 
 /**
@@ -27,7 +32,7 @@ function region_to_challenge_theme(r) {
  * raw_data tree
  */
 function location_color(node, alpha) {
-  var challenge, color, uplimit = 20;
+  var colors, uplimit = 20;
 
   while (!node.region && node.upnode && uplimit > 0) {
       // We don't have a colour, but maybe the parent does. It'll probably be right
@@ -35,15 +40,16 @@ function location_color(node, alpha) {
       uplimit--;
   }
 
+  // Choose color for this node
   if (node.latin_name === 'Homo sapiens') {
-    window.last_location_color = "hsl(224, 100%, 11%)";
+    colors = challenge_colours['homo sapiens'];
   } else {
-    challenge = region_to_challenge_theme(node.region);
-    color = challenge_colours[challenge].circle;
-    // Feed the current colour to background.js
-    window.last_location_color = challenge_colours[challenge].haze;
+    colors = challenge_colours[node.region] || challenge_colours['default'];
   }
-  return 'hsla(' + color + ',' + (alpha === undefined ? 1 : alpha) + ')';
+
+  // Feed the current colour to background.js
+  window.last_location_color = colors.haze;
+  return 'hsla(' + colors.circle + ',' + (alpha === undefined ? 1 : alpha) + ')';
 }
 
 /**
