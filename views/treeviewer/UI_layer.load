@@ -86,6 +86,9 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <input class="uk-radio" type="radio" name="treeshape" value="fern"> {{=T('Fern')}}</label></li>
       <li><label>
         <input class="uk-radio" type="radio" name="treeshape" value="balanced"> {{=T('Balanced')}}</label></li>
+      <li><label>
+        <input class="uk-radio" type="radio" name="treeshape" value="polytomy"> {{=T('Polytomy')}}</label></li>
+
       <!-- <li class="uk-nav-header">{{=T('Colours indicate')}}</li>
       <li><label uk-tooltip="pos: right" title="{{=T('Colours like a botanical tree, leaf colour shows extinction risk')}}">
         <input class="uk-radio" type="radio" name="colourtype" value="natural"> Natural</label></li>
