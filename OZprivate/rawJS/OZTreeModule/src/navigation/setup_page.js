@@ -17,7 +17,7 @@ function popupstate(event) {
     state = parse_query(loc, window.location.search, window.location.hash);
   }
   if (state) {
-    setup_page_by_navigation(state);  
+    setup_page_by_state(state);
   }
 }
 
@@ -27,7 +27,7 @@ function popupstate(event) {
 function setup_loading_page() {
   let loc = (window.location.pathname.indexOf("@") === -1) ? null : window.location.pathname.slice(window.location.pathname.indexOf("@"));
   let state = parse_query(loc, window.location.search, window.location.hash);
-  setup_page_by_loading(state);
+  setup_page_by_state(state);
 }
 
 /**
@@ -68,21 +68,27 @@ function get_id_by_state(state) {
   return promise;
 }
 
-function setup_page_by_loading(state) {
+function setup_page_by_state(state) {
   let controller = get_controller();
   if (state.vis_type) controller.change_view_type(state.vis_type);
-  config.lang = state.lang || '';
+  if (!config.lang) config.lang = state.lang || '';
   if (state.title) document.title = unescape(state.title);
-  get_id_by_state(state)
-  .then(function(id) {
+
+  controller.close_all();
+
+  get_id_by_state(state).then(function(id) {
     tree_state.url_parsed = true;
-    if (state.xp !== undefined || (state.init && !['zoom','pzoom'].includes(state.init))) {
-      jump_to_position(state, id);
+    return controller.fly_to_node(id, state.xp !== undefined ? state : state.init);
+  }).then(function() {
+    //open popup dialog if exists.
+    if (state.tap_action && state.tap_ott) {
+      global_button_action.action = state.tap_action;
+      global_button_action.data = parseInt(state.tap_ott);
+      click_on_button_cb(controller);
     } else {
-      controller.fly_to_node(id, state.init);
+      controller.close_all();
     }
-  })
-  .catch(function(error) {
+  }).catch(function(error) {
     tree_state.url_parsed = true;
     //TODO: separate out promise reject and error handling.
     controller.reset();
@@ -93,55 +99,8 @@ function setup_page_by_loading(state) {
             config.ui.badOTT(state.ott);
         }
     }
+    throw error;
   });
-}
-
-
-function setup_page_by_navigation(state) {
-  let controller = get_controller();
-  if (state.vis_type) controller.change_view_type(state.vis_type);
-  if (state.title) document.title = unescape(state.title);
-  controller.close_all();
-  //if (tour.tour_name) {
-    //get the tour information by using an ajax call on 
-  //  alert('Sorry, tours are not yet implemented')
-  //}
-  
-  get_id_by_state(state)
-  .then(function(id) {
-    tree_state.url_parsed = true;
-    if (state.xp  !== undefined || (state.init && !['zoom','pzoom'].includes(state.init))) {
-      //jump if we have a hash position defined or if init exists and is not 'zoom' or 'pzoom'
-      jump_to_position(state, id);
-    } else {
-      controller.perform_leap_animation(id);
-    }
-  })
-  .catch(function() {
-    controller.reset();
-  })
-}
-
-function jump_to_position(state, codeIn) {
-  let controller = get_controller();
-  //jump to position pinpoint by reanchored node(codeIn) and position(state.xp, state.yp, state.ws)
-  //TO DO - James says this needs to work even if the screen size etc has changed
-  //we might not have x,y,w defined if e.g. init=jump
-  tree_state.xp = parseInt(state.xp || 0);
-  tree_state.yp = parseInt(state.yp || 0);
-  tree_state.ws = parseFloat(state.ws || 1);
-  controller.develop_and_reanchor_to(codeIn);
-  controller.re_calc();
-  controller.trigger_refresh_loop();
-  
-  //open popup dialog if exists.
-  if (state.tap_action && state.tap_ott) {
-    global_button_action.action = state.tap_action;
-    global_button_action.data = parseInt(state.tap_ott);
-    click_on_button_cb(controller);
-  } else {
-    controller.close_all();
-  }
 }
 
 

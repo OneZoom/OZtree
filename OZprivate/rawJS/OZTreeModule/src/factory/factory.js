@@ -57,16 +57,20 @@ class Factory {
  */
 function _dl_codein_fly(to_leaf, to_index, node) {
   let develop_child_index = null;
-  let range = null; //Debug only variable.
   let subbranch_depth = config.generation_on_subbranch_during_fly;
+
+  // Are we already there? If so develop and return
   if (to_leaf === 1 && node.is_leaf && node.metacode == to_index) {
     return node;
   } else if (to_leaf === -1 && node.is_interior_node && node.metacode == to_index) {
-    _develop_branch_off_mainbranch(node, config.generation_at_searched_node);
+    node.develop_children(config.generation_at_searched_node);
     return node;
   } else if (node.is_leaf) {
     return "not found";
-  } else if (to_leaf === 1) {
+  }
+
+  // Try and find the next hop towards to_index
+  if (to_leaf === 1) {
     //all_children_length is the length of children regardless they are developed or not.
     for (let index=0; index<node.full_children_length; index++) {
       if (node.child_leaf_meta_start[index] <= to_index && node.child_leaf_meta_end[index] >= to_index) {
@@ -82,49 +86,15 @@ function _dl_codein_fly(to_leaf, to_index, node) {
       }
     }
   }
-  _develop_branch(develop_child_index, node, subbranch_depth);
-  return _dl_codein_fly(to_leaf, to_index, node.children[develop_child_index]);
-}
 
-/**
- * Develop next generation of the node. If the child is on main branch, then do not develop further. Otherwise, develop 'subbranch_depth' length of generations on that child.
- * @param {boolean} index_of_child_on_main_branch tells which child is on main branch
- * @param {Midnode} node 
- * @param {integer} subbranch_depth how many generations to develop on subbranch.
- */
-function _develop_branch(index_of_child_on_main_branch, node, subbranch_depth) {
-  if (node.is_leaf) return;
-  if (!node.has_child) {
-    let child_branch_depth = new Array(node.full_children_length).fill(subbranch_depth);
-    child_branch_depth[index_of_child_on_main_branch] = 0;
-    node.develop_children(child_branch_depth);
+  if (develop_child_index !== null) {
+    // Found the next child in the tree, develop everything around it and recurse in
+    node.develop_children(subbranch_depth, develop_child_index);
+    return _dl_codein_fly(to_leaf, to_index, node.children[develop_child_index]);
   } else {
-    let length = node.children.length;
-    for (let i=0; i<length; i++) {
-      if (i !== index_of_child_on_main_branch) {
-        _develop_branch_off_mainbranch(node.children[i], subbranch_depth-1);
-      }
-    }
+    throw Error("Couldn't find node " + to_index + " within " + node.metacode);
   }
 }
-
-/**
- * Develop at least 'depth' generations from node.
- * @param {Midnode} node
- * @param {integer} depth
- */
-function _develop_branch_off_mainbranch(node, depth) {
-  if (node.is_leaf) return;
-  if (depth > 0 && node.has_child) {
-    let length = node.children.length;
-    for (let i=0; i<length; i++) {
-      _develop_branch_off_mainbranch(node.children[i], depth-1);  
-    }
-  } else if (depth > 0 && node.is_interior_node) {
-    node.develop_children(depth);
-  }
-}
-
 
 /**
  * Starting from node, search its descendants to find nodes which are visible and not fully developed. Develop descendants of those nodes and 

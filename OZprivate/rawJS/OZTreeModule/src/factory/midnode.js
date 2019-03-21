@@ -140,11 +140,24 @@ class Midnode {
     }
   }
   
-  develop_children(depths) {
+  /**
+   * Develop children of this node recursively, down to (depths) below next child
+   *
+   * @param apart_from Don't develop the children off this index
+   */
+  develop_children(default_depth, apart_from) {
     for (let i=0; i<this.full_children_length; i++) {
-      let depth = Array.isArray(depths) ? depths[i] : depths;
-      this.children[i] = this.constructor.create();
-      this.children[i].init(this.child_start_pos[i], this.child_end_pos[i], this.child_node_meta_start[i], this.child_leaf_meta_start[i], this, depth);
+      let depth = i === apart_from ? 0 : default_depth;
+
+      if (this.children[i]) {
+        // This child already exists, give it the chance to develop it's own children
+        if (default_depth > 1) {
+          this.children[i].develop_children(default_depth - 1);
+        }
+      } else {
+        this.children[i] = this.constructor.create();
+        this.children[i].init(this.child_start_pos[i], this.child_end_pos[i], this.child_node_meta_start[i], this.child_leaf_meta_start[i], this, depth);
+      }
     }
   }
   

@@ -21,11 +21,12 @@ export default function (Controller) {
   }
   
   Controller.prototype.pan_and_zoom = function(dx, dy, cx, cy, scale) {
-    tree_state.set_action("pan_and_zoom");
     this.pan(dx, dy, true);
     if (scale > 1) {
+      tree_state.set_action("zoomin");
       this.zoomin(cx, cy, 1/scale, true);  
     } else {
+      tree_state.set_action("zoomout");
       this.zoomout(cx, cy, scale, true);
     }    
   }
@@ -59,24 +60,24 @@ export default function (Controller) {
   }
   
   Controller.prototype.pan = function(delta_x, delta_y, called_from_other_action) {
-    let moved = false;
+    let dir = '';
     if (delta_x > 0 && tree_state.ok_right === 1) {
       tree_state.xp += delta_x;    
-      moved = true;
+      dir += 'left';
     } else if (delta_x <= 0 && tree_state.ok_left === 1) {
       tree_state.xp += delta_x;    
-      moved = true;
+      dir += 'right';
     }
     
     if (delta_y > 0 && tree_state.ok_down === 1) {
       tree_state.yp += delta_y;    
-      moved = true;
+      dir += 'up';
     }  else if (delta_y <= 0 && tree_state.ok_up === 1) {
       tree_state.yp += delta_y;
-      moved = true;
+      dir += 'down';
     }   
-    if (moved && !called_from_other_action) {
-      tree_state.set_action("pan");
+    if (dir && !called_from_other_action) {
+      tree_state.set_action("pan-" + dir);
     }
     this.re_calc();
     this.trigger_refresh_loop();

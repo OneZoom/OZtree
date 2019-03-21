@@ -23,6 +23,7 @@ setup_params = {
   'UI_layer': {
     'page':'UI_layer.load', 
     'vars':{
+      'no_oz_logo': True,
       'tabs':['otopchallenge', 'wiki', 'ozspons', 'ozlinks'],
       'custom_tabs': {
           'otopchallenge': {'id':'otopchallenge','name':T('Challenge'), 'icon':URL('static','otop/challenge.svg')},
@@ -33,7 +34,7 @@ setup_params = {
     }
   },
   'popups': {
-    'vars':{'embed':3, 'form_reservation_code': form_reservation_code} },
+    'vars':{'embed':3, 'no_sponsoring':1} }, #don't need to keep track of reservation_code
   'partner':page_info.get('partner'),
   'locations_json':('[' 
       '"Popular places",' 
@@ -52,8 +53,9 @@ setup_params = {
     ),
   'pre_ui_setup': [
     'onezoom.config.search_jump_mode = "flight"',
-    'onezoom.config.custom_querystring_params = ["ucaya_user"]',
-    'onezoom.config.generation_on_subbranch_during_fly = 2',
+    'onezoom.config.generation_on_subbranch_during_fly = 9',
+    'onezoom.config.generation_at_searched_node = 20',
+    'onezoom.config.custom_querystring_params = ["ucaya_user", "otop_background"]',
     'onezoom.config.projection.sign_thres = 170'
     ]
   }
@@ -78,6 +80,111 @@ body.loading > canvas {
 .background-layer > * {
   position: absolute;
 }
+@-webkit-keyframes spin {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+    from {transform:rotate(0deg);}
+    to {transform:rotate(360deg);}
+}
+.background-layer .particles {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    opacity: 0;
+    transform: scale(1.3);
+    -webkit-transform: scale(1.3);
+    transition: opacity 0.5s linear, transform 1s ease-in;
+    -webkit-transition: opacity 0.5s linear, -webkit-transform 1s ease-in;
+}
+.background-layer .particles .particles-inner {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100vmax;
+    height: 100vmax;
+    transform: perspective(2000px) rotateX(10deg);
+    -webkit-transform: perspective(2000px) rotateX(10deg);
+
+    background: url({{=URL("static","otop/otop-bkgd-particles.png")}});
+    background-size: cover;
+}
+.background-layer .particles .particles-inner {
+    animation-name: spin;
+    animation-duration: 480000ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    -webkit-animation-name: spin;
+    -webkit-animation-duration: 480000ms;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
+}
+
+/* Turn on single info button */
+#controlButtons #singleInfoButton { display: list-item; }
+#controlButtons #multipleInfoButton { display: none; }
+
+#tutorial-slideshow h3,
+#tutorial-slideshow {
+    font-family: "Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 22px;
+}
+#tutorial-slideshow p {
+    line-height: 1.2;
+}
+#tutorial-slideshow .uk-modal-dialog h3,
+#tutorial-slideshow .uk-modal-dialog {
+    color: #FFF !important;
+}
+#tutorial-slideshow .uk-modal-dialog .big-text {
+    text-align: center;
+    padding: 0 9%;
+    font-size: 24px;
+}
+#tutorial-slideshow .uk-modal-dialog a img {
+    opacity: 0.8;
+}
+#tutorial-slideshow .uk-modal-dialog a:hover img,
+#tutorial-slideshow .uk-modal-dialog a:active img {
+    opacity: 1;
+}
+#tutorial-slideshow .slideshow-item {
+  display: table;
+  position: absolute;
+  top: 40px;
+  right: 20%;
+  bottom: 40px;
+  left: 20%;
+  width: 60%;
+  height: calc(100% - 80px);
+}
+#tutorial-slideshow .slideshow-item > * {
+  display: table-row;
+  height: 0;
+}
+#tutorial-slideshow .slideshow-item > *:first-child > * {
+  padding: 0 10px;
+}
+#tutorial-slideshow .slideshow-item > * + * {
+  display: table-row;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-size: contain;
+}
+@media screen and (max-width: 490px) {
+  #tutorial-slideshow,
+  #tutorial-slideshow .big-text,
+  #tutorial-slideshow h3 {
+    font-size: 18px !important;
+  }
+}
+
 </style>
 <script src="{{=URL('static','otop/backgrounds.js')}}"></script>
 <script type="text/javascript">
@@ -108,25 +215,16 @@ server_urls.data_path_pics = function(src, src_id) {
 }
 
 
-if (!window.WebViewBridge) {
-    // Not running within app, create a fake WebViewBridge object and send a 2-color PNG
-    WebViewBridge = {};
-    setTimeout(function () {
-        WebViewBridge.onMessage(JSON.stringify({
-            type: 'userPhoto',
-            data: 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAABAQMAAADO7O3JAAAABlBMVEUFAP//AACVNxpgAAAACklEQVQI12NoAAAAggCB3UNq9AAAAABJRU5ErkJggg==',
-        }));
-    }, 1000);
-}
-WebViewBridge.onMessage = function (rawMessage) {
-    var message = JSON.parse(rawMessage);
+// Listen for OTOP app sending the current user's photo (which may not match the API photo)
+document.addEventListener('message', function (rawMessage) {
+    var message = JSON.parse(rawMessage.data);
 
     // Stash the userPhoto ready for use in otop/leaf_layout.js
     if (message.type === "userPhoto") {
         window.otop_profile_image = new Image();
         window.otop_profile_image.src = 'data:image/png;base64,' + message.data;
     }
-};
+});
 
 document.addEventListener('DOMContentLoaded', init_background.bind(null, {
     tree: [
@@ -136,9 +234,6 @@ document.addEventListener('DOMContentLoaded', init_background.bind(null, {
         '{{=URL("static","otop/otop-bkgd-tree-4.png")}}',
         '{{=URL("static","otop/otop-bkgd-tree-5.png")}}',
     ],
-    particle: [
-        '{{=URL("static","otop/otop-bkgd-particle-1.png")}}',
-    ],
 }));
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -147,15 +242,22 @@ document.addEventListener('DOMContentLoaded', function () {
     // Wrap the main definition of populateLinkouts, insert our challenges tab
     window.UI_callbacks.populateLinkouts = function (responseJSON, initialSelected) {
         var selected_node = {}, region_challenge_map = {
-            default: 'takeaction',
-            land: 'zerowaste',
-            reptile: 'nobottledwater',
-            birds: 'nature',
-            sea: 'ethicalfashion',
-            plants: 'plantnative',
-            insects: 'ecofriendlyproducts',
-            mushrooms: 'transportation',
-            bacteria: 'zerowaste',
+            "default": 'takeaction',
+            'water_1': 'nobottledwater',
+            'food_2': 'reducemeat',
+            'energy_3': 'avoidpalmoil',
+            'nature_4': 'plantnative',
+            'food_5': 'inseason',
+            'waste_6': 'zerowaste',
+            'energy_7': 'reduceenergy',
+            'energy_8': 'transportation',
+            'water_9': 'reducewater',
+            'nature_10': 'nature',
+            'waste_11': 'reducefoodwaste',
+            'nature_12': 'takeaction',
+            'waste_13': 'ethicalfashion',
+            'food_14': 'sustainableseafood',
+            'nature_15': 'ecofriendlyproducts',
         };
 
         if (responseJSON.id) {
@@ -168,4 +270,111 @@ document.addEventListener('DOMContentLoaded', function () {
         return origPopulateLinkouts(responseJSON, initialSelected);
     };
 });
+</script>
+
+<script type="text/html" id="tutorial-slideshow-html">
+  <div id="tutorial-slideshow" class="uk-flex-top" uk-modal>
+    <div class="uk-modal-dialog uk-margin-auto-vertical">
+      <button class="uk-modal-close-default" type="button" uk-close></button>
+      <div uk-slideshow="autoplay: true; autoplay-interval: 5000; finite: true" class="uk-slidenav-position">
+          <ul class="uk-slideshow-items" uk-height-viewport="offset-bottom: 10">
+              <li>
+                <div class="slideshow-item">
+                  <div>
+                  <p class="big-text">This tree of life represents more than 2 million living species, you can freely navigate in it.</p>
+                  <p style="text-align: center">Tree of life explorer provided by</p>
+                  <p style="text-align: center"><a href="http://www.onezoom.org/" target="_blank"><img src="{{=URL('static','images/OZ_logo5_grey3.png')}}" title="OneZoom" style="height: 2rem; padding-right: 20px" /></a></p>
+                  </div>
+                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-0.jpg')}})">&nbsp;</div>
+                </div>
+              </li>
+              <li>
+                <div class="slideshow-item">
+                  <div>
+                  <h3>Searching</h3>
+                  <p>Type a species here to fly to it. Select one of the suggestions that appear.</p>
+                  </div>
+                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-1.jpg')}})">&nbsp;</div>
+                </div>
+              </li>
+              <li>
+                <div class="slideshow-item">
+                  <div>
+                  <h3>Navigating</h3>
+                  <p>Pan and zoom to explore the tree of life</p>
+                  </div>
+                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-2.jpg')}})">&nbsp;</div>
+                </div>
+              </li>
+              <li>
+                <div class="slideshow-item">
+                  <div>
+                  <h3>Get more info</h3>
+                  <p>Click on the name of an individual species to see more information like the corresponding challenge and the wikipedia page...</p>
+                  </div>
+                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-3.jpg')}})">&nbsp;</div>
+                </div>
+              </li>
+              <li class="close-on-display">
+                <div class="slideshow-item">
+                </div>
+              </li>
+          </ul>
+          <a class="uk-slidenav-large uk-position-center-left uk-hidden-hover" href="#" uk-slidenav-previous uk-slideshow-item="previous"></a>
+          <a class="uk-slidenav-large uk-position-center-right uk-hidden-hover" href="#" uk-slidenav-next uk-slideshow-item="next"></a>
+          <div class="uk-position-bottom-center uk-position-small">
+              <ul class="uk-dotnav">
+                  <li uk-slideshow-item="0"><a href="#">Item 1</a></li>
+                  <li uk-slideshow-item="1"><a href="#">Item 2</a></li>
+                  <li uk-slideshow-item="2"><a href="#">Item 3</a></li>
+                  <li uk-slideshow-item="3"><a href="#">Item 4</a></li>
+              </ul>
+          </div>
+      </div>
+    </div>
+  </div>
+</script>
+<script>
+      $(document).ready(function() {
+          var tutorial_slideshow, homo_sapiens_metacode;
+
+          // Copy HTML to page body (we don't have a template slot to add it server-side)
+          tutorial_slideshow = document.createElement('DIV');
+          tutorial_slideshow.innerHTML = document.getElementById('tutorial-slideshow-html').innerText;
+          tutorial_slideshow = tutorial_slideshow.firstElementChild;
+          tutorial_slideshow.addEventListener('itemshown', function (e) {
+              if (e.target.classList.contains('close-on-display')) {
+                  UIkit.modal(tutorial_slideshow).hide();
+              }
+          });
+          tutorial_slideshow.addEventListener('hidden', function (e) {
+              var slideshow = UIkit.slideshow(tutorial_slideshow.querySelector('.uk-slideshow'));
+
+              if (homo_sapiens_metacode) {
+                  onezoom.controller.perform_flight_transition(null, homo_sapiens_metacode);
+              }
+
+              // Reset slideshow, disable flight / animation for subsequent displays
+              homo_sapiens_metacode = null;
+              slideshow.stopAutoplay();
+              slideshow.show(0);
+          });
+          document.body.appendChild(tutorial_slideshow);
+
+          // singleInfoButton should show our slideshow, not the default
+          document.getElementById('singleInfoButton').querySelector('a').href = "#tutorial-slideshow";
+
+          // Show on startup
+          UIkit.modal(tutorial_slideshow).show();
+
+          // Find Homo-sapiens ready for hiding
+          window.setTimeout(function () {
+              onezoom.search_manager.full_search('Homo Sapiens', function (latin_name, cname, res) {
+                  if (res.length < 1) {
+                      throw new Error("Could not find Homo Sapiens node");
+                  }
+                  homo_sapiens_metacode = res[0][2];
+              }, search_delay=0);
+          }, 100);
+      });
 </script>

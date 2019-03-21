@@ -28,6 +28,13 @@ class PolytomyBranchLayout extends BranchLayoutBase {
     }
     return markings_list;
   }
+
+  /**
+   * Don't bother covering branch joins
+   */
+  draw_interior_circle(node, shapes) {
+    return;
+  }
 }
 
 export default PolytomyBranchLayout; // default means you can use any name for the function when you import it.

@@ -1,6 +1,6 @@
 import api_manager from '../api/api_manager';
 import tree_state from '../tree_state';
-import {parse_query} from '../navigation/utils';
+import {get_largest_visible_node} from '../navigation/utils';
 import data_repo from '../factory/data_repo';
 import * as position_helper from '../position_helper';
 import config from '../global_config';
@@ -121,6 +121,25 @@ export default function (Controller) {
     this.develop_branch_to(codein_fly);
     position_helper.perform_actual_leap(this);
   }
+
+  /**
+   * Leap directly to a new position
+   *
+   * @param {object} new_pos {xp: .., yp: .., ws: ..}
+   * @param {integer} codein_fly
+   * codein_fly < 0, leaf(metacode == -codein_fly),
+   * codein_fly > 0, interior_node(metacode == codein_fly)
+   */
+  Controller.prototype.perform_leap_to_position = function(codein_fly, new_pos) {
+      //jump to position pinpoint by reanchored node(codeIn) and position(state.xp, state.yp, state.ws)
+      //TO DO - James says this needs to work even if the screen size etc has changed
+      tree_state.xp = new_pos.xp;
+      tree_state.yp = new_pos.yp;
+      tree_state.ws = new_pos.ws;
+      this.develop_and_reanchor_to(codein_fly);
+      this.re_calc();
+      this.trigger_refresh_loop();
+  };
   
   /**
    * zooms you to a specified place in the tree from your current position
@@ -204,10 +223,10 @@ export default function (Controller) {
         }
 
         if (codeout_fly == null) {
-            // Get current OTT from the URL, convert to code
-            let loc = (window.location.pathname.indexOf("@") === -1) ? null : window.location.pathname.slice(window.location.pathname.indexOf("@"));
-            let state = parse_query(loc, window.location.search, window.location.hash);
-            codeout_fly = data_repo.ott_id_map[state.ott] || 1;
+            // Find largest visible node, use this as our starting point
+            codeout_fly = get_largest_visible_node(this.root, function(node) { return node.ott; }) || this.root;
+            // NB: This is opposite to the below.
+            codeout_fly = (codeout_fly.full_children_length > 0 ? 1 : -1) * codeout_fly.metacode;
         } else {
             // Move to start location
             p = p.then(function () {
@@ -228,7 +247,7 @@ export default function (Controller) {
             // NB: Ideally we'd parallelise this, but the interface doesn't allow it yet.
             p = p.then(function () {
                 position_helper.clear_target(this.root);
-                position_helper.target_by_code(this.root, n.children.length > 0 ? -1 : 1, n.metacode);
+                position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
                 return get_details_of_nodes_in_view_during_fly(this.root);
             }.bind(this));
         }.bind(this));
@@ -242,7 +261,7 @@ export default function (Controller) {
             p = p.then(function () {
                 return new Promise(function (resolve) {
                     position_helper.clear_target(this.root);
-                    position_helper.target_by_code(this.root, n.children.length > 0 ? -1 : 1, n.metacode);
+                    position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
                     position_helper.perform_actual_fly(this, accel_func === 'final' ? into_node : false, resolve, accel_func);
                 }.bind(this));
             }.bind(this));
@@ -260,59 +279,44 @@ export default function (Controller) {
    * -- zoom
    * -- pzoom
    * -- jump (or any other string, since this is the last branch)
+   * -- { xp: .., yp: .., ws: ..}
    * Pzoom would be reset to zoom if the targeted node is too close to the root. Since pzoom would zoom a fixed length,
    * pzoom from a close node would result the tree being zoomed from a very small view.
+   *
+   * Return a promise for when the animation is finished
    */
   Controller.prototype.fly_to_node = function (OZIDin, init) {
-    /**
-     * @return {boolean} return true if the node is bigger than config.minimum_ratio_for_zoom compared with root.
-     */
-    function is_node_near_root(node) {
-      let ratio = 1;
-      while (node.upnode) {
-        let node_found = false;
-        let length = node.upnode.children.length;
-        for (let i=0; i<length; i++) {
-          let child = node.upnode.children[i];
-          if (child === node) {
-            node_found = true;
-            ratio *= node.upnode.nextr[i];
-          }
-        }
-        if (!node_found) throw "can't find node.";
-        if (ratio < config.minimum_ratio_for_zoom) {
-          return false;
-        }
-        node = node.upnode;
-      }
-      return true;
+    var n;
+
+    if (!init) init = "pzoom";
+
+    this.reset();
+    if (init.xp !== undefined) {
+      this.perform_leap_to_position(OZIDin, init);
+      return Promise.resolve();
     }
 
-    let node = this.develop_branch_to(OZIDin);
-    get_details_of_nodes_in_view_during_fly(this.root).then(function() {
-      if (!init) init = "pzoom";
-      if (init === "pzoom" && is_node_near_root(node)) init = "zoom";
-      if (init == "zoom") {
-        this.reset();
-        position_helper.setxyr3r(this.root, 40, tree_state.widthres-40, 40, tree_state.heightres-40);
-        position_helper.perform_actual_fly(this);
-      } else if (init == "pzoom") {
-        this.reset();
-        position_helper.setxyr3r(this.root, 40, tree_state.widthres-40, 40, tree_state.heightres-40);
-        position_helper.deanchor(this.root);
-        position_helper.move(this.root, 40, tree_state.widthres-40, 40, tree_state.heightres-40);
-        let zfact = 1;
-        let wsover = Math.pow(10, zfact);
-        tree_state.ws = tree_state.ws / wsover;
-        tree_state.xp = tree_state.widthres/2 + (tree_state.xp - tree_state.widthres/2) / wsover;
-        tree_state.yp = tree_state.heightres/2 + (tree_state.yp - tree_state.heightres/2) / wsover;
-        position_helper.perform_actual_fly(this);
-      } else {
-        this.reset();
-        position_helper.setxyr3r(this.root, 40, tree_state.widthres-40, 40, tree_state.heightres-40);
-        position_helper.deanchor(this.root);
-        position_helper.move(this.root, 40, tree_state.widthres-40, 40, tree_state.heightres-40);
-      }
+    if (init == "zoom") {
+      return this.perform_flight_transition(this.root.metacode, OZIDin);
+    }
+
+    if (init == "pzoom") {
+      // Jump to node
+      this.perform_leap_animation(OZIDin);
+      // Zoom out marginally
+      // TODO: This will refuse to go back further than a given point, but that's much futher back than before
+      this.zoomout(tree_state.widthres/2, tree_state.heightres/2, 0.1, true);
+      // Fly back in again
+      return this.perform_flight_transition(null, OZIDin);
+    }
+
+    // init == "jump"
+    // NB: perform_leap_animation won't fetch details, we do it ourselves
+    position_helper.clear_target(this.root);
+    n = this.develop_branch_to(OZIDin);
+    position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
+    return get_details_of_nodes_in_view_during_fly(this.root).then(function () {
+        this.perform_leap_animation(OZIDin, init);
     }.bind(this));
   };
   

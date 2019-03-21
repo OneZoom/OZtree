@@ -4,6 +4,7 @@ import BezierShape from '../../shapes/bezier_shape';
 import ImageShape from '../../shapes/image_shape';
 import {add_mr} from '../../move_restriction';
 import config from '../../../global_config';
+import data_repo from '../../../factory/data_repo';
 import tree_state from '../../../tree_state';
 import {color_theme} from '../../../themes/color_theme';
 import {get_image, image_ready} from '../../../image_cache';
@@ -20,10 +21,15 @@ const l_consts = {
 }
 
 class LeafLayout extends LeafLayoutBase {
-  /** Don't draw a leaf for homo sapiens, we do this later */
-  fullLeaf(shapes, x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText) {
-    if (latinText !== 'Homo sapiens') {
-        super.fullLeaf.apply(this, arguments);
+  /** The human leaf gets a custom leaf, everything else falls through */
+  get_tip_leaf_shapes(node, shapes) {
+    if (node.metacode === Math.abs(data_repo.ott_id_map[770315])) {  // Homo sapiens (NB: We don't explicitly populate the map, since if it's not populated it's not visible anyway)
+      if (node.richness_val <= 1) {
+        add_mr(this.get_leaf_x(node), this.get_leaf_y(node), this.get_fullleaf_r(node));
+        this.human_leaf_shapes(node, shapes);
+      }
+    } else {
+      super.get_tip_leaf_shapes.apply(this, arguments);
     }
   }
 
@@ -32,11 +38,6 @@ class LeafLayout extends LeafLayoutBase {
    */
   full_leaf_shapes(node, shapes) {
     add_mr(this.get_leaf_x(node), this.get_leaf_y(node), this.get_fullleaf_r(node));
-
-    if (node.latin_name === 'Homo sapiens') {
-        this.human_leaf_shapes(node, shapes);
-        return;
-    }
 
     this.circularLeafBase(
       node.xvar + node.rvar * node.arcx,
@@ -140,37 +141,32 @@ class LeafLayout extends LeafLayoutBase {
       }
 
       rings = human_data.wonChallenges.map(function (challenge) {
-          return challenge.color;
-      })
+          return {
+              level: challenge.maxLevel,
+              color: challenge.color,
+          };
+      });
+      rings = Object.values(rings);
 
+      let total_width = 1;
       for (let i = 0; i < rings.length; i++) {
           s = ArcShape.create();
           s.x = x; s.y = y;
-          s.r = r + (0.1 * r) * (rings.length - i);
+          s.r = r + 0.03 * r * (total_width + rings[i].level / 2);
           s.circle = true;
           s.do_fill = true;
           s.order = "fill_first";
           s.fill.color = 'rgba(0,0,0,0.8)';
           s.do_stroke = true;
-          s.stroke.line_width = (0.05 * r);
-          s.stroke.color = rings[i];
+          s.stroke.line_width = rings[i].level * 0.03 * r;
+          s.stroke.color = rings[i].color;
           s.stroke.shadow = { blur: 10 };
           s.height = 0;
           shapes.push(s);
+          total_width = total_width + (rings[i].level);
       }
 
       this.circle_cut_image(shapes, imageObject, x, y, r, color_theme.get_color("leaf.inside.fill",node), null, node);
-
-      // Apply a wash atop image
-      s = ArcShape.create();
-      s.height = 5;
-      s.x = x;
-      s.y = y;
-      s.r = r * 0.975;
-      s.circle = true;
-      s.do_fill = true;
-      s.fill.color = 'hsla(199, 100%, 50%, 0.5)';
-      shapes.push(s);
   }
 
   /** Draw the special human leaf */
@@ -203,7 +199,7 @@ class LeafLayout extends LeafLayoutBase {
       // Try and fetch the background image, draw it if available, and we are zoomed in enough.
       let imageObject = get_image('otop:otop-human-leaf.png', 'otop:otop-human-leaf.png');
       imageObject = image_ready(imageObject) ? imageObject : null;
-      if (this.get_fullleaf_r(node) > 100 && imageObject) {
+      if (this.get_fullleaf_r(node) > 30 && imageObject) {
           let s = ImageShape.create();
           s.img = imageObject;
           s.w = s.h = this.get_fullleaf_r(node) * 1.63;
@@ -220,7 +216,7 @@ class LeafLayout extends LeafLayoutBase {
           s.circle = true;
           s.do_fill = true;
           s.do_stroke = false;
-          s.fill.color = { from: '#87d9ff', start: this.get_fullleaf_r(node) * 0.2 };
+          s.fill.color = { from: '#103a96', start: this.get_fullleaf_r(node) * 0.2 };
           s.height = 0;
           shapes.push(s);
       }
@@ -281,19 +277,19 @@ class LeafLayout extends LeafLayoutBase {
    * Fake branches should be rendered with a semi-circle, not a leaf
    */
   get_fake_leaf_shapes(node, shapes) {
-      if (!node.has_child || node.richness_val < 1) {
+      if (node.full_children_length === 0 || node.richness_val < 1) {
           // We're only interested in nodes that would have children
           return;
       }
 
       let start_x = node.xvar + node.rvar * node.arcx,
           start_y = node.yvar + node.rvar * node.arcy,
-          radius = node.rvar + node.arcr * (node.arcr*1.1*(1+node.nextr[0]) / node.nextr[0]);  // i.e. the child branch length, see polytomy_pre_calc.js
+          radius = node.rvar;
 
       // We can move anywhere within our fake leaf, which can grow to 10x the screen (or enough to stop being fake)
       add_mr(start_x, start_y, radius, 10);
 
-      if (node.children.length > 20 && node.rvar < (tree_state.threshold * 100)) {
+      if (node.full_children_length > 20 && node.rvar < (tree_state.threshold * 100)) {
           // This fake leaf is pretty small, just draw a semi-circle
           let arc_shape = ArcShape.create();
           arc_shape.x = start_x;
@@ -307,29 +303,43 @@ class LeafLayout extends LeafLayoutBase {
           arc_shape.do_fill = true;
           arc_shape.fill.color = color_theme.get_color('branch.stroke', node);
           shapes.push(arc_shape);
-      } else {
-          let s = BezierShape.create();
-          s.sx = s.sy = s.ex = s.ey = null;
-
-          // Draw a fan around the current node, approximating what the nodes would look like
-          let start_angle = node.arca - Math.PI/2;
-          let inc_angle = Math.PI / node.children.length;
-          for (let i = 0; i < node.children.length; i++) {
-            s.path_points.push(['move', start_x, start_y]);
-            s.path_points.push([
-              'line',
-              start_x + radius * Math.cos(start_angle + inc_angle * i),
-              start_y + radius * Math.sin(start_angle + inc_angle * i),
-            ]);
-          }
-
-          // Draw our fan like we would the branches
-          s.do_stroke = true;
-          s.stroke.line_width = 1;
-          s.height = 0;
-          s.stroke.color = color_theme.get_color('branch.stroke', node);
-          shapes.push(s);
+          return;
       }
+
+      // Use the children's position to draw a single fan object
+      let s = BezierShape.create();
+      s.sx = s.sy = s.ex = s.ey = null;
+
+      if (node.children.length > 0) {
+        // We have children, but got forced not to render them. Draw a fan around all the children
+        for (let i = 0; i < node.children.length; i++) {
+          s.path_points.push(['move', start_x, start_y]);
+          s.path_points.push([
+            'line',
+            start_x + node.rvar * node.nextr[i] * node.children[i].bezex,
+            start_y + node.rvar * node.nextr[i] * node.children[i].bezey,
+          ]);
+        }
+      } else {
+        // Undeveloped child nodes, guess what the fan would look like
+        let inc_angle = Math.PI / node.full_children_length;
+        let start_angle = node.arca - Math.PI/2 + (inc_angle / 2);
+        for (let i = 0; i < node.full_children_length; i++) {
+          s.path_points.push(['move', start_x, start_y]);
+          s.path_points.push([
+            'line',
+            start_x + radius * Math.cos(start_angle + inc_angle * i),
+            start_y + radius * Math.sin(start_angle + inc_angle * i),
+          ]);
+        }
+      }
+
+      // Draw our fan like we would the branches
+      s.do_stroke = true;
+      s.stroke.line_width = 1;
+      s.height = 0;
+      s.stroke.color = color_theme.get_color('branch.stroke', node);
+      shapes.push(s);
   }
 
   /**

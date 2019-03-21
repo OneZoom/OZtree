@@ -63,6 +63,7 @@ body.loading #UI #loading_spinner {
 }
 .logo {
     float: left;
+    min-height: 20px; /* Override uk-navbar's min-height */
 }
 .logo a {
     opacity: 0.55;
@@ -101,7 +102,7 @@ body.loading #UI #loading_spinner {
 
 
 #searchnav .searchbox {
-    width: 18rem;
+    width: auto;
     background-color: white;
     border: 1px solid #DDD;
     border-radius: 5px;
@@ -112,7 +113,7 @@ body.loading #UI #loading_spinner {
 }
 
 #searchnav .search_dropdown {
-    width: 18rem;
+    width: 100%;
     border: 1px solid #eee;
     max-height: calc(100vh - 4rem);
     overflow-y: auto;
@@ -128,7 +129,7 @@ body.loading #UI #loading_spinner {
 
 #searchnav .searchbox input {
     box-sizing: border-box;
-    width: calc(100% - 2rem);
+    width: 16rem;
     border: 0;
     height: 2.5rem;
     border-left: 1px solid #DDD;
@@ -136,7 +137,6 @@ body.loading #UI #loading_spinner {
 }
 
 #searchnav #search-advanced .searchinput, #searchnav #search-advanced .searchresult {
-    width: calc(100% - 2rem);
     border-right: 1px solid #DDD;
 }
 
@@ -186,7 +186,7 @@ body.loading #UI #loading_spinner {
 }
 
 #searchnav #search-basic .searchinput {
-    width: 100%;
+    white-space: nowrap;
 }
 
 #searchboxes {
@@ -636,8 +636,7 @@ iframe {
 
 /* On tiny screens, shrink the search box */    
 @media screen and (max-width: 440px) {
-    
-    #searchnav .searchbox, #searchnav .search_dropdown {
+    #searchnav .searchbox input {
         width: 14rem;
     }
     #external-modal .external-content .external-tabs::before {
@@ -654,17 +653,16 @@ iframe {
     }    
 }
 
-/* On miniscule screens, shrink the search box further, and wrap the CA button */    
-@media screen and (max-width: 380px) {
-    #search-advanced #common_ancestor_button {
-        line-height: 1rem;
-        width: 9rem;
+/* On miniscule screens, only display search box on click, and wrap the CA button */
+@media screen and (max-width: 490px) {
+    #searchnav #search-basic .searchbox input {
+        width: calc(100vw - 3rem);
     }
-    #search-advanced #common_ancestor_button span {
-        margin-top: 0.45rem;
-    }
-    #searchnav .searchbox, #searchnav .search_dropdown {
-        width: 10rem;
+    #searchnav #search-basic .searchinput:not(.uk-open) .uk-search-input:not(:focus) {
+        /* Hide simple search box until it's selected */
+        padding: 0;
+        width: 0;
+        border-left: none;
     }
     #external-modal .external-content .external-tabs::before {
         left: 0px;

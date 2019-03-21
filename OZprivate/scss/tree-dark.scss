@@ -32,3 +32,16 @@ $color-ui-foreground: #eee;
 .uk-navbar-item.advanced_mode {
   background: #888;
 }
+.uk-modal-dialog {
+  background: black;
+  color: #c5c5c5;
+  box-shadow: 0 0 2px 1px black;
+}
+.uk-modal-dialog h1, .uk-modal-dialog .uk-h1,
+.uk-modal-dialog h2, .uk-modal-dialog .uk-h2,
+.uk-modal-dialog h3, .uk-modal-dialog .uk-h3,
+.uk-modal-dialog h4, .uk-modal-dialog .uk-h4,
+.uk-modal-dialog h5, .uk-modal-dialog .uk-h5,
+.uk-modal-dialog h6, .uk-modal-dialog .uk-h6 {
+  color: #c5c5c5;
+}

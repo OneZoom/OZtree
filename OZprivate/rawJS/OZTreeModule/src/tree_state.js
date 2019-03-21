@@ -84,20 +84,25 @@ class TreeState {
     }
   }
   set_action(action) {
+    if (this.action !== action) {
+        call_hook('set_action', action);
+    }
     this.action = action;
-    this.action_timestamp = new Date().getTime();
+
+    // After 400ms, any action should be cleared (unless something updates it with a new action)
+    if (this.action_timeout) {
+        window.clearTimeout(this.action_timeout);
+        this.action_timeout = null;
+    }
+    if (this.action) {
+        this.action_timeout = window.setTimeout(this.set_action.bind(this, null), 400);
+    }
   }
   is_idle() {
-    if (this.action) {
-      let now = new Date().getTime();
-      if ((now - this.action_timestamp) > 400) {
-        this.action = null;
-      }
-    }
     return this.action === null;
   }
   is_dragging() {
-    return this.action === "pan" && (this.mouse_hold || this.touch_hold);
+    return this.action && (this.action.indexOf("pan-") === 0) && (this.mouse_hold || this.touch_hold);
   }
   print_pos() {
     console.log("(xp, yp, ws) -> (" + this.xp.toFixed(0) + ", " + this.yp.toFixed(0) + ", " + this.ws.toFixed(4) + ")");

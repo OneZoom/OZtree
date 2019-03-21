@@ -357,7 +357,7 @@ function perform_fly_b2(controller, into_node, finalize_func, accel_type) {
     //also we may not know how many steps we will need to take
     // NB: Approximate accel/decel by not panning at all, let the final non-reanchor step handle it
     pan_zoom(accel_type === 'accel' || accel_type === 'decel'? 0 : 1/num_intro_steps, 1/num_intro_steps);
-    tree_state.set_action("fly");
+    tree_state.set_action(r_mult > 1 ? "fly-in" : "fly-out");
     controller.re_calc();
     controller.reanchor();
     controller.trigger_refresh_loop();
@@ -374,7 +374,7 @@ function perform_fly_b2(controller, into_node, finalize_func, accel_type) {
       pan_proportion(intro_sec_step_num, num_intro_steps),
       zoom_proportion(intro_sec_step_num, num_intro_steps)
     );
-    tree_state.set_action("fly");
+    tree_state.set_action(r_mult > 1 ? "fly-in" : "fly-out");
     controller.re_calc();
     controller.trigger_refresh_loop();
     
@@ -385,6 +385,7 @@ function perform_fly_b2(controller, into_node, finalize_func, accel_type) {
   } else {
     clearTimeout(tree_state.fly_timer);
     tree_state.flying = false;
+    tree_state.set_action(null);
     if (typeof finalize_func === "function") {
         finalize_func()
     }

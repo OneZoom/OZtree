@@ -82,7 +82,7 @@ function get_visible_and_signpost_nodes(node, visible_nodes, signpost_nodes, und
       }  
     }
     
-    if (node.children.length > 3 && node.children.length * 2 > node.rvar) {
+    if (node.children.length > 3 && node.children.length * 0.8 > node.rvar) {
       // This node is massively wide and we're zoomed out, so ignore the children and force a fake leaf
       node.force_fake = true;
       if (!node.gvar) {
