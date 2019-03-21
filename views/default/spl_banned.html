@@ -3,4 +3,4 @@
 {{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
     <h3>{{=T('Unavailable for online sponsorship')}}</h3>
     <p>{{=T('You cannot sponsor this particular leaf using the online form but you may still be able to get it.')}}</p>
-    <p>{{=XML(T('Please %s if you would like to discuss sponsorship of this leaf, %s.') % (A(T('contact OneZoom'), _href="mailto:mail@onezoom.org"), A(T('or make another choice'), _href=URL('default','sponsor.html'))))}}</p>
+    <p>{{=XML(T('Please %s if you would like to discuss sponsorship of this leaf, %s.') % (A(T('contact OneZoom'), _href="mailto:mail@onezoom.org"), A(T('or make another choice'), _href=URL('default','sponsor.html'), _target="_blank")))}}</p>

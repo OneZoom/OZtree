@@ -3,4 +3,4 @@
 {{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
     <h3>{{=T('Reserved pending admin check')}}</h3>
     <p>{{=T("We are sorry, this leaf has been sponsored and is awaiting admin check before it's made public.")}}</p>
-    <p>{{=XML(T('Don’t worry we’ve still got %s.') %(A(T('lots of great leaves available for sponsorship'), _href=URL('default','sponsor.html')),))}}</p>
+    <p>{{=XML(T('Don’t worry we’ve still got %s.') %(A(T('lots of great leaves available for sponsorship'), _href=URL('default','sponsor.html'), _target="_blank"),))}}</p>
