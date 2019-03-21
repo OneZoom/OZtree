@@ -378,7 +378,7 @@ def sponsor_leaf():
                     'user_donor_title', 'user_donor_name', 'user_donor_show', 'user_paid', 'user_message_OZ',
                     'user_nondefault_image', 'user_preferred_image_src', 'user_preferred_image_src_id','user_giftaid'],
                 deletable = False)
-            if form.process(session=None, formname='test', onvalidation=lambda x: validate_sponsor_leaf(x, leaf_price)).accepted:
+            if form.process(session=None, formname='main_sponsor_form', onvalidation=lambda x: validate_sponsor_leaf(x, leaf_price)).accepted:
                 #response.flash = 'temp form accepted' # debug
                 reservation_query.update(
                     reserve_time=request.now,
