@@ -348,8 +348,10 @@ def sponsor_leaf():
         response.view = request.controller + "/spl_sponsored." + request.extension
         return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), long_name = long_name, default_image = default_image, user_image=user_image, verified_kind=reservation_entry.verified_kind, verified_name=reservation_entry.verified_name, verified_more_info=reservation_entry.verified_more_info)
     elif not allow_sponsorship:
-        if 
-        response.view = request.controller + "/spl_elsewhere." + request.extension
+        if status.startswith("available") and not isbanned:
+            response.view = request.controller + "/spl_elsewhere." + request.extension
+        else:
+            response.view = request.controller + "/spl_elsewhere_not." + request.extension
         return dict(species_name = species_name, the_long_name = the_long_name, ott=OTT_ID_Varin)
     elif status.startswith("unverified"):
         if status == "unverified waiting for payment":
