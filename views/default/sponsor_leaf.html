@@ -2,9 +2,11 @@
 # This is the main sponsorship page. It should be provided with a default image (if one exists)
 # but will also use the EoL API to increase the number of displayed images to up to 9.
 # 
-# When the user chooses either the default OZ image or (if not present), the first EoL image
-# then the "user_nondefault_image" column should be NULL or 0, but the "user_preferred_image_src_id"
-# can be set to the appropriate chosen value (e.g. EoL if the default image is an EoL image, etc)
+# The default OZ image is available as default_image.src/default_img.src_id. If not present,
+# the default is the first EoL image returned from the API. If the user chooses the default,
+# then the "user_nondefault_image" column should be NULL or 0, but the "user_preferred_image_src"
+# + "user_preferred_image_src_id" can be set to the appropriate chosen value (e.g.
+# src_flags['eol'] + eol_media_id if the default image is an EoL image, etc)
 }}
 {{
 response.title='OneZoom: Sponsor a leaf on the tree'
@@ -181,7 +183,7 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
       <input type="hidden" id="user_nondefault_image_input" name="user_nondefault_image" value="0" />
       <input type="hidden" name="id" value="{{=id}}" />
       <input type="hidden" name="form_reservation_code" value="{{=form_reservation_code}}" />
-      <input type="hidden" name="_formname" value="test" />
+      <input type="hidden" name="_formname" value="main_sponsor_form" />
       {{if partner_data:}}
       <input type="hidden" name="partner" value="{{=partner_data.get('partner_identifier') or ''}}" />
       {{pass}}
@@ -216,17 +218,19 @@ var heightRes = 500;
 
 var workingEOL = true; // is the API OK?
 var imageInfoReady = false; // is the image information (and common name) ready to be shown?
-var image_objects = Object.create(null); //to store the image_objects (like a dict)
-{{try:}}
-// initialise list of images & info with default image. 
-//This is keyed by {src}_{src_id}, but with src=eol_src for OneZoom specific images
-{{=XML('var which_img = "{}_{}"'.format(int(default_image.src) if default_image.src > eol_src else int(eol_src),int(default_image.src_id)))}};
-image_objects[which_img] = {"dataObjectVersionID":{{=default_image.src_id}},
-                            "url":"{{=thumbnail_url(default_image.src,default_image.src_id)}}",
-                            "default":1,
-                            "dataRating":10}; //highest data rating, so this gets put first
-{{except:}}
-var which_img = null; //which of the image objects in image_objects is to be rendered
+var image_objects = [];
+{{if default_image.src is None or default_image.src_id is None:}}
+var selected_img = null; //which of the image objects in image_objects is to be rendered
+{{else:}}
+// initialise list of images & info with default image
+var selected_img = 0;
+image_objects[0] = {
+    "src":"{{=int(default_image.src)}}"
+    "src_id":"{{=int(default_image.src_id)}}"
+    "url":"{{=thumbnail_url(default_image.src,default_image.src_id)}}",
+    "default":1,
+    "already_default_on_onezoom":1,
+    "dataRating":10}; //highest possible data rating, so this gets put first
 {{pass}}
 var leafImageFile = null; // image file (if null and image_objects exists then image is not loaded yet)
 var leaftext = [null,null];
@@ -276,7 +280,7 @@ if (newcanvas) {
 
 // this draws a preview of the leaf
 // it gathers information from the form for sponsorship information
-// it requires the global information on workingEOL, imageReady, image_objects, which_img, and leafImageFile to be set.
+// it requires the global information on workingEOL, imageReady, image_objects, selected_img, and leafImageFile to be set.
 function drawPreview()
 {
     // define sponsorship variables
@@ -354,16 +358,21 @@ function drawPreview()
     fullLeafBase(leafContext,widthRes/2.28,heightRes/2,widthRes/2.3,5.6,2,leafCol)
     // draw the leaf details
     
-    if (image_objects[which_img])
+    if (image_objects[selected_img])
     {
-        var cfout = crop_frac(image_objects[which_img],{{=percent_crop_expansion}});
-
-
-            fullLeaf(leafContext,widthRes/2.28,heightRes/2,widthRes/2.3,5.6,2,hasText,null,sponsorText,extraText,{{=XML(js_common_name or '')}},{{=XML(js_species_name)}},leaftext[0],leaftext[1],null,leafImageFile,null,leafCol,true, cfout[0]  , cfout[1] ,  cfout[2] )
+        var cfout = crop_frac(image_objects[selected_img],{{=percent_crop_expansion}});
+        fullLeaf(
+            leafContext, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, hasText, null,
+            sponsorText, extraText, {{=XML(js_common_name or '')}}, {{=XML(js_species_name)}},
+            leaftext[0], leaftext[1], null, leafImageFile, null, leafCol,
+            true, cfout[0], cfout[1], cfout[2])
     }
     else
     {
-        fullLeaf(leafContext,widthRes/2.28,heightRes/2,widthRes/2.3,5.6,2,hasText,null,sponsorText,extraText,{{=XML(js_common_name or '')}},{{=XML(js_species_name)}},leaftext[0],leaftext[1],null,leafImageFile,null,leafCol)
+        fullLeaf(
+            leafContext, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, hasText, null,
+            sponsorText, extraText, {{=XML(js_common_name or '')}}, {{=XML(js_species_name)}},
+            leaftext[0], leaftext[1], null, leafImageFile, null, leafCol)
     }
 }
 
@@ -386,16 +395,30 @@ function processAPI(image_objectsIn, common_namesIn , flagsIn)
     /* process data and redraw */
 
     //add the image objects returned by the api call as properties on image_objects
-    //potentially none could be returned by the API, but we might have one already in image_objects
+    //potentially none could be returned by the API, but we might have one already in
+    //image_objects. If there is nothing in 
     for (var i = 0; i<image_objectsIn.length; i++) {
         if (image_objectsIn[i].dataObjectVersionID) {
-            var key = "{{=eol_src}}_" + image_objectsIn[i].dataObjectVersionID.toString();
-            if (!(key in image_objects)) {
-                image_objects[key] = image_objectsIn[i];
+            var src_id = image_objectsIn[i].dataObjectVersionID.toString();
+            var is_default = 0;
+            if (length(image_objects)) {
+                if (image_objects[0].already_default_on_onezoom) {
+                    eol_srcs = [{{=XML(','.join(['"{}"'.format(src_flags[s]) for s in eol_src_flags]))}}];
+                    if ((image_objects[0].src_id == src_id) && (eol_srcs.indexOf(image_objects[0].src) > -1)) {
+                    // This is already the default image, we can ignore this one
+                        continue;
+                image_objectsIn[i].src = "{{=int(src_flags['onezoom_via_eol'])}}"
+            } else {
+                // no existing image_objects. Set this as the default
+                is_default = 1;
+                image_objectsIn[i].src = "{{=int(src_flags['eol'])}}"
             }
-            if (!(which_img)) {
+            image_objectsIn[i].src_id
+            image_objects.push = ;
+            }
+            if (!(selected_img)) {
                 /* no default has been set: pick the first one */
-                which_img = key;
+                selected_img = key;
                 image_objects[key].default=1
             }
         }
@@ -422,15 +445,15 @@ function processAPI(image_objectsIn, common_namesIn , flagsIn)
         leafImageFile.onload = function()
         {
              drawPreview();
-             $('#licenceText a').attr('href','{{=URL("tree","pic_info", args=[src_flags["eol"],"...PICFN..."])}}/'.replace("...PICFN...", image_objects[which_img].dataObjectVersionID))
+             $('#licenceText a').attr('href','{{=URL("tree","pic_info", args=[src_flags["eol"],"...PICFN..."])}}/'.replace("...PICFN...", image_objects[selected_img].dataObjectVersionID))
             $('#licenceText').show();
         }
-        leafImageFile.src = (image_objects[which_img].url);
+        leafImageFile.src = (image_objects[selected_img].url);
     
         if (img_keys.length == 1) {
             //Only 1 image - can't choose, so store the image ID so that it can be passed on in the form
             $('#leaf').after('<input type="hidden" name="user_preferred_image" value="' +
-                             image_objects[which_img].dataObjectVersionID + 
+                             image_objects[selected_img].dataObjectVersionID + 
                              '" />');
         } else {
             //There are at least 2 images, so change the page layout to add image selection
@@ -455,8 +478,8 @@ function processAPI(image_objectsIn, common_namesIn , flagsIn)
                                   value:   image_objects[key].dataObjectVersionID,
                                   name:    'user_preferred_image',
                                   id:      'r'+key,
-                                  checked: ((key==which_img)?'checked':null),
-                                  onclick: 'which_img = "' + key + '";' +
+                                  checked: ((key==selected_img)?'checked':null),
+                                  onclick: 'selected_img = "' + key + '";' +
                                     'document.getElementById("user_nondefault_image_input").value = ' + ((!(image_objects[key].default))?"1":"0") + ';' +
                                     'leafImageFile.src = "' + image_objects[key].url + '";' + 
                                     'drawPreview();'}), 
@@ -478,11 +501,17 @@ if (document.getElementById("leafCanvas")) {
 }
 
 {{if (EOL_ID):}}
-setDataFromEoLpageID({{=EOL_ID}}, 
-    function(taxon_objects, flags) {
-    //could have taxon_objects.imageObjects == null here
-        processAPI(((taxon_objects && taxon_objects.imageObjects) || []), ((taxon_objects && taxon_objects.vernacularNames) || []), flags)
-    }, "{{=EoL_API_key}}", 9);
+function on_complete_callback(taxon_objects, flags) {
+    //function to execute on return of the EoL API
+    //could have taxon_objects.imageObjects == null if there are no images returned
+    processAPI(
+        ((taxon_objects && taxon_objects.imageObjects) || []),
+        ((taxon_objects && taxon_objects.vernacularNames) || []),
+        flags)
+};
+// We always require 9 images, even if we have one already, in case one of the 9 returned
+// is identical to the OneZoom default
+setDataFromEoLpageID({{=EOL_ID}}, on_complete_callback, "{{=EoL_API_key}}", 9);
 {{else:}}
 imageInfoReady = true;
 {{pass}}
