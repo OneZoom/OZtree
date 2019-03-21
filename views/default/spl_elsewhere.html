@@ -13,7 +13,7 @@ response.title='OneZoom: '+T('sponsor a species')
 
 <p>{{=T('There can only be one sponsor per leaf so get your favourite species before someone else does.')}}</p>
 
-<p><a href="{{=URL('default', 'sponsor_leaf', vars=dict(ott=request.vars.get('ott')))}}" target="_blank">{{=XML(T('Sponsor %s on OneZoom') % (the_long_name or T("this leaf"),))}}</a></p>
+<p><a href="{{=URL('default', 'sponsor_leaf', vars=dict(ott=request.vars.get('ott')), host='www.onezoom.org')}}" target="_blank">{{=XML(T('Sponsor %s on OneZoom') % (the_long_name or T("this leaf"),))}}</a></p>
 
-<p><a href="{{=URL('default', 'sponsor')}}" target="_blank">{{=T('Find another leaf to sponsor on OneZoom')}}</a></p>
+<p><a href="{{=URL('default', 'sponsor', host='www.onezoom.org')}}" target="_blank">{{=T('Find another leaf to sponsor on OneZoom')}}</a></p>
 
