@@ -54,10 +54,6 @@ src_flags = cache.ram('src_flags',
         'short_imprecise_name':50, 'eol_old':99},
     time_expire = None)
 
-#UPDATE images_by_ott SET src=99 WHERE src=2
-#mkdir static/FinalOutputs/img/99
-
-
 # The images from EoL can be added to the eol_inspected and eol_updated tables,
 # and clicking on their copyright link can take you directly to the appropriate EoL
 # page. This isn't true of other images (or of the eol_old images either)
