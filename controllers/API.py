@@ -215,42 +215,52 @@ def search_node():
 
 def search_init():
     """
-    This is called at the very start of loading a tree view page. It finds
-    request.vars one of:
-    -- Number: ott
+    This is called at the very start of loading a tree view page. It looks in
+    request.vars to return the OneZoom id of taxa corresponding to:
+    -- Number: ott 
     -- String: name
-    return node or leaf id given ott number or scientific name
+    return a list of leaf (negative) or node ids given ott number or scientific name
     
-    The logic here isn't quite right: if we have multiple OTT hits, we should choose the one
-    with the 'nearest' name. At the moment we choose only based on name (with no OTT considerations)
+    The ott number is given priority. If this matches a single leaf, this is the only id
+    returned. If it matches a single node, this is the only one returned.
     
+    If multiple leaves/nodes match, and names are given, it tries to find a leaf or node
+    matching both name and ott. If none match both, it just returns all possible hits
+    (or an empty error if no hits at all).
     """
     session.forget(response)
     try:
         ott = int(request.vars.get('ott'))
+        ids = set()
         query = db.ordered_leaves.ott == ott
-        leaf_hit = db(query).select(db.ordered_leaves.id)
-        if len(leaf_hit) == 1:
-            return {"id": -leaf_hit[0].id}
+        ids.update([-r.id for r in db(query).select(db.ordered_leaves.id)])
+        # Always return the leaf if there is a single hit
+        if len(ids) == 1:
+            return {"ids": list(ids)}
         
         query = db.ordered_nodes.ott == ott
-        node_hit = db(query).select(db.ordered_nodes.id)
-        if len(node_hit) == 1:
-            return {"id": node_hit[0].id}
-            
-        raise  #if not found ott, go to except branch.
-    except:         
-        if request.vars.name is not None and len(request.vars.name) > 0:
-            tidy_latin = request.vars.name.replace("_", " ")
-            query = db.ordered_leaves.name == tidy_latin
-            leaf_hits = db(query).select(db.ordered_leaves.id).first()
-            if leaf_hits:
-                return {"id": -leaf_hits.id}
-            
-            query = db.ordered_nodes.name == request.vars.name
-            node_hits = db(query).select(db.ordered_nodes.id).first()
-            if node_hits:
-                return {"id": node_hits.id}
+        ids.update([r.id for r in db(query).select(db.ordered_nodes.id)])
+        # If a single node, don't worry about the name
+        if len(ids) == 1:
+            return {"ids": list(ids)}
+    except TypeError, ValueError:
+        pass  # Some problem converting ott to int, try on name
+    try:
+        tidy_latin = request.vars.name.replace("_", " ")
+        query = db.ordered_leaves.name == tidy_latin
+        name_ids = set([r.id for r in db(query).select(db.ordered_leaves.id)])
+        query = db.ordered_nodes.name == request.vars.name
+        name_ids.update([r.id for r in db(query).select(db.ordered_nodes.id)])
+    
+        # If we already had some ids, use names to refine
+        if len(ids & name_ids):
+            ids &= name_ids
+        elif len(ids | name_ids):
+            ids |= name_ids
+    except:
+        pass #could be a problem with getting a name
+    if ids:
+        return {"id": sorted(ids)}
     return {"empty": request.vars.ott}
 
 def search_for_sciname():
