@@ -1213,7 +1213,7 @@ def text_tree(location_string):
     info = {}
     for row in base_rows:
         if row.real_parent != 0:
-            data = db(db.ordered_nodes.id == abs(row.real_parent)).select(db.ordered_nodes.ott, db.ordered_nodes.name).first()
+            data = db(db.ordered_nodes.id == abs(row.real_parent)).select(db.ordered_nodes.ALL).first()
             if data:
                 info[row.real_parent] = data
         #find the rows that have this as a parent

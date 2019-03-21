@@ -50,8 +50,8 @@ function get_id_by_state(state) {
       let params = {
         data: data,
         success: function(res) {
-          if (res.id) {
-            resolve(res.id);
+          if (res.ids && res.ids.length) {
+            resolve(res.ids[0]);
           } else {
             reject();
           }
