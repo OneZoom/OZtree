@@ -260,7 +260,7 @@ def search_init():
     except:
         pass #could be a problem with getting a name
     if ids:
-        return {"id": sorted(ids)}
+        return {"ids": sorted(ids)}
     return {"empty": request.vars.ott}
 
 def search_for_sciname():
