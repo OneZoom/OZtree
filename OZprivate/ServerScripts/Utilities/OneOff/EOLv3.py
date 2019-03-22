@@ -227,6 +227,31 @@ for line in s.decode("utf8").split():
                         logging.warning("Non-digit src_id in {}".format(line))
                 else:
                     logging.warning("Non eol_old image (may need hand-moving) in {}".format(line))
+# Also the sponsor_picks images need moving
+db_curs = db_connection.cursor()
+sql = "UPDATE sponsor_picks SET thumb_src={} WHERE thumb_src=2".format(src_flags['eol_old'])
+db_curs.execute(sql)
+db_connection.commit()
+db_curs.close()
+img_path = os.path.join(top_level, "static/FinalOutputs/img/{}".format(src_flags['eol_old']))
+db_curs = db_connection.cursor()
+batch_size = 200
+db_curs.execute("SELECT thumb_src_id FROM sponsor_picks WHERE thumb_src={}".format(src_flags['eol_old']))
+while True:
+    #get the rows in batches
+    rows = db_curs.fetchmany(batch_size)
+    if not rows:
+        break
+    for row in rows:
+        src_id = row[0]
+        subdir = os.path.join(img_path, str(src_id)[-3:])
+        os.makedirs(subdir, exist_ok=True)
+        f = os.path.join(pic_path, str(abs(src_id))+".jpg")
+        if os.path.isfile(f):
+            shutil.copyfile(f, os.path.join(subdir, str(src_id)+".jpg"))
+
+db_curs.close()
+
 
 #now do the same for vernacular names
 db_curs = db_connection.cursor()
