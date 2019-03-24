@@ -104,7 +104,9 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
         <p id="licenceText"><a target = "_blank">{{=T('More information about this image')}}</a></p>
         <p class="extra_info">{{=T('*The final leaf may be facing in any direction on the tree, it may also change based on scientific advances.')}}</p>
       </div>
-    </div>
+      <input type="hidden" id="user_preferred_image_src_input" name='user_preferred_image_src' value='{{=default_image.get("src","") if default_image else ""}}' />
+      <input type="hidden" id="user_preferred_image_src_id_input" name='user_preferred_image_src_id' value='{{=default_image.get("src_id","") if default_image else ""}}' />
+      </div>
   </div>
   {{if 'embed' not in request.vars and not partner_data:}}
   <!-- don't want possibility for these link outs if embedding or if there is a partner involved as they will not keep the user in the partner tree -->
@@ -448,15 +450,9 @@ function initImages() {
 
         // Set up an image choice array, if appropriate
         if (image_objects.length == 1) {
-            // Only 1 image: can't choose, so store image src + src_id to pass on in the form
-            $('#leaf').after(
-                $('<input/>', {type:  'hidden',
-                               name:  'user_preferred_image_src',
-                               value: image_objects[0].src}),
-                $('<input/>', {type: 'hidden',
-                               name: 'user_preferred_image_src_id',
-                               value: image_objects[0].src_id})
-            );
+            // Only 1 image: can't choose, so store image src_id to pass on in the form
+            document.getElementById('user_preferred_image_src_input').value = image_objects[0].src;
+            document.getElementById('user_preferred_image_src_id_input').value = image_objects[0].src_id;
         } else {
             //There are at least 2 images, so change the page layout to add image selection
             $('#leaf').after($('<div>', {id:"select_pictures"}).append('<fieldset><legend>{{=T("Choose your preferred picture")}}</legend><ul></ul></fieldset>'));
@@ -477,14 +473,15 @@ function initImages() {
                                href: picInfoURL(image_objects[i]),
                                target: "_blank"}),
                     $('<input/>', {id: 'r'+i,
-                                   type: 'radio', 
-                                   name: 'user_preferred_image',
-                                   value: image_objects[i].dataObjectVersionID,
+                                   type: 'radio',
                                    checked: ((i==selected_img)?'checked':null),
-                                   onclick: 'selected_img = "' + i + '";' +
-                                        'document.getElementById("user_nondefault_image_input").value = ' + ((i==0)?"0":"1") + ';' +
-                                        'leafImageFile.src = "' + image_objects[i].url + '";' + 
-                                        'drawPreview();'}), 
+                                   onclick: 
+   'selected_img = "'+i+'";'+
+   'document.getElementById("user_preferred_image_src_input").value = '+image_objects[i].src+';'+
+   'document.getElementById("user_preferred_image_src_id_input").value = '+image_objects[i].src_id+';'+
+   'document.getElementById("user_nondefault_image_input").value = '+((i==0)?"0":"1")+';'+
+   'leafImageFile.src = "'+image_objects[i].url+'";'+ 
+   'drawPreview();'}), 
                     $('<label>', {for: 'r'+i,
                                   class: 'radio',
                                   style: 'width:'+img_size_px+'px;height:'+img_size_px+'px;'+bg_css})
