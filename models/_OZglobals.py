@@ -36,12 +36,15 @@ wikiflags = cache.ram('wikiflags',
 # which to show (lower numbers have priority). Images are saved in a folder named
 # using this number. We should try to keep these numbers <=99, so that they can form
 # part of a overall score (e.g. see score() in OZfunctions.py.
-# The 'bespoke' flag can be used for specific client websites, that wish to provide
+# The 'bespoke' category can be used for specific client websites, that wish to provide
 # their own images and/or names. This always takes priority, and if required, a URL 
 # for a picture can be given in appconfig.ini for e.g. copyright information, as is
 # done by default for eol images.
 # The onezoom_bespoke images have been given to us specifically by other authors,
 # and we have their permission to use them.
+# 'onezoom_via_eol' images are those that we (or sponsors) have specifically chosen
+# from the available EoL images, as an alternative to the default, so we use them
+# in preference over anything else, except bespoke images.
 # 'wiki' marks vernaculars from wikidata, or images from wikimedia commons.
 # EoL is considered the "base" dataset - others are only picked if they are improvements
 # upon this.
