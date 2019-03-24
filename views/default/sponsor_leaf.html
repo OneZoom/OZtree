@@ -229,7 +229,7 @@ image_objects.push({
     "src":"{{=int(default_image.src)}}",
     "src_id":"{{=int(default_image.src_id)}}",
     "url":"{{=thumbnail_url(default_image.src,default_image.src_id)}}",
-    "default":1); //highest possible data rating, so this gets put first
+    "default":1}); //highest possible data rating, so this gets put first
 var selected_img = image_objects.length - 1;
 {{pass}}
 var leafImageFile = null; // image file (if null and image_objects exists then image is not loaded yet)
