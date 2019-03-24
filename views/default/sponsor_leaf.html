@@ -405,7 +405,7 @@ function callbackAPIcomplete(data, flagsIn)
                     return true;
                 }
             });
-        for (var i = 0; (i<APIimgs.length) && image_objects.length <= max_n_thumbnails; i++) {
+        for (var i = 0; (i<APIimgs.length) && image_objects.length < max_n_thumbnails; i++) {
             var APIimg = APIimgs[i];
             if (APIimg.dataObjectVersionID) {
                 var is_default = (image_objects.length == 0);
@@ -426,9 +426,9 @@ function callbackAPIcomplete(data, flagsIn)
 
 function picInfoURL(img) {
     /* return a url giving info about the image */
-    '{{=URL("tree","pic_info", args=["...PIC_SRC...","...PIC_SRC_ID..."])}}/'
+    return '{{=URL("tree","pic_info", args=["...PIC_SRC...","...PIC_SRC_ID..."])}}/'
         .replace("...PIC_SRC...", img.src)
-        .replace("...PIC_SRC_ID...", img.src_id)
+        .replace("...PIC_SRC_ID...", img.src_id);
 }
 
 function initImages() {
@@ -466,7 +466,7 @@ function initImages() {
             for (i=0; i<image_objects.length; i++) {
                 //Add a list of potential images to pick
                 var img_size_px = 100;
-                var bg_css = "background-image: url('"+ image_objects[key].url +"')";
+                var bg_css = "background-image: url('"+ image_objects[i].url +"')";
                 if (image_objects[i].height && image_objects[i].width && image_objects[i].crop_width) {
                     crop_vals = crop_frac(image_objects[i], {{=percent_crop_expansion}})
                     bg_css = bg_css + ';background-size:' + crop_vals[0]* img_size_px + 'px;'
@@ -477,18 +477,18 @@ function initImages() {
                 }
                 var html = $('<li>').append([
                     $('<a/>', {html: "<span class='linkout-button'>⧉</span>",
-                               href: picInfoURL(image_objects[selected_img]),
+                               href: picInfoURL(image_objects[i]),
                                target: "_blank"}),
-                    $('<input/>', {id: 'r'+key,
+                    $('<input/>', {id: 'r'+i,
                                    type: 'radio', 
                                    name: 'user_preferred_image',
-                                   value: image_objects[key].dataObjectVersionID,
+                                   value: image_objects[i].dataObjectVersionID,
                                    checked: ((i==selected_img)?'checked':null),
                                    onclick: 'selected_img = "' + i + '";' +
                                         'document.getElementById("user_nondefault_image_input").value = ' + ((i==0)?"0":"1") + ';' +
                                         'leafImageFile.src = "' + image_objects[i].url + '";' + 
                                         'drawPreview();'}), 
-                    $('<label>', {for: 'r'+key,
+                    $('<label>', {for: 'r'+i,
                                   class: 'radio',
                                   style: 'width:'+img_size_px+'px;height:'+img_size_px+'px;'+bg_css})
                     ]);
