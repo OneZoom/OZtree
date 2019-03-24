@@ -393,7 +393,7 @@ function callbackAPIcomplete(data, flagsIn)
     leaftext = [null,null];
     /* process data and redraw */
 
-    if (data && data.hasOwnProperty(imageObjects)) {
+    if (data && data.hasOwnProperty("imageObjects")) {
         // Filter out if it is a duplicate of the existing image_objects[0]
         APIimgs = data.imageObjects.filter(
             function(o) {
