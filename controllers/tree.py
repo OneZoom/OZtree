@@ -59,7 +59,7 @@ def pic_info():
         url = myconf.take('images.' + param).format(src=src, src_id=src_id)
     except:
         url = None
-    if url is not None and (embed is not None and embed < 3):
+    if url is not None and (embed is None or embed < 3):
         redirect(url.format(src=src, src_id=src_id))
     else:
         if src == src_flags['eol_old']:
