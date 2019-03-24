@@ -227,8 +227,7 @@ image_objects.push({
     "src":"{{=int(default_image.src)}}",
     "src_id":"{{=int(default_image.src_id)}}",
     "url":"{{=thumbnail_url(default_image.src,default_image.src_id)}}",
-    "default":1,
-    "dataRating":10}); //highest possible data rating, so this gets put first
+    "default":1); //highest possible data rating, so this gets put first
 var selected_img = image_objects.length - 1;
 {{pass}}
 var leafImageFile = null; // image file (if null and image_objects exists then image is not loaded yet)
@@ -392,7 +391,7 @@ function callbackAPIcomplete(data, flagsIn)
     leaftext = [null,null];
     /* process data and redraw */
 
-    if (data) {
+    if (data && data.hasOwnProperty(imageObjects)) {
         // Filter out if it is a duplicate of the existing image_objects[0]
         APIimgs = data.imageObjects.filter(
             function(o) {
@@ -414,8 +413,7 @@ function callbackAPIcomplete(data, flagsIn)
                     "src": is_default?{{=src_flags['eol']}}:{{=src_flags['onezoom_via_eol']}},
                     "src_id": APIimg.dataObjectVersionID.toString(),
                     "url": APIimg.url, /* this is inserted by setDataFromEoLpageID */
-                    "default": is_default?1:0,
-                    "dataRating": APIimg.dataRating
+                    "default": is_default?1:0
                 });
             }
         }
