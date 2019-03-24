@@ -8,6 +8,7 @@ NB: http_accept_language is {{=request.env.http_accept_language}}
 <ul>
 <li><a href="{{=URL('DOCS')}}">Documentation for the modularised tree code</a></li>
 <li><a href="{{=URL('TEST_LINKS')}}">Help for making zooming movies</a></li>
+<li><a href="{{=URL('TEST_EOL_API')}}">Test the EoL API</a></li>
 {{if mammal_id:}}
 <li><a href="{{=URL('API','node_details.json', vars={'node_ids':mammal_id})}}">A test API request for mammals</a> (ott = {{=mammal_ott}}, id = {{=mammal_id}})</li>
 {{pass}}

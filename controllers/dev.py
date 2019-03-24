@@ -28,6 +28,14 @@ def TEST_POST():
     return dict()
 
 @auth.requires_membership(role='manager')
+def TEST_EOL_API():
+    try:
+        EoL_API_key=myconf.take('api.eol_api_key')
+    except:
+        EoL_API_key=""
+    return dict(EoL_API_key=EoL_API_key)
+
+@auth.requires_membership(role='manager')
 def COMMAND_CALL_TEST():
     from subprocess import check_output, STDOUT, CalledProcessError
     import os
@@ -89,7 +97,7 @@ def OBJGRAPH_DELTAS():
 
 @auth.requires_membership(role='manager')
 def TEST_LINKS():
-    labels={770315:'humans', 589951:'medium Galapagos ground finch', 6523:'Galapagos land iguana'}
+    labels={770315:'humans', 589951:'medium Galapagos ground finch', 6523:'Galapagos land iguana', 343294: 'seven spot ladybird'}
     leaf_ids = {row.ott:row.id for row in db(db.ordered_leaves.ott.belongs(labels.keys())).select(db.ordered_leaves.id,db.ordered_leaves.ott)}
     return dict(labels=labels, ids=leaf_ids)
     

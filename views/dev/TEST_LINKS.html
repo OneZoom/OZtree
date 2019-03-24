@@ -24,7 +24,11 @@ Note that after capturing the screen to video using quicktime, you will probably
 
 <ul>
 {{for ott,text in labels.items():}}
-<li><a href="{{=URL('default','AT',args=['@={}'.format(ott)],vars={'init':'zoom', 'zspeed':3}, url_encode=False)}}">Zoom to {{=text}}: leaf {{=ids[ott]}}</a></li>
+{{if ott in ids:}}
+<li><a href="{{=URL('default','life',args=['@={}'.format(ott)],vars={'init':'zoom', 'zspeed':3}, url_encode=False)}}">Zoom to {{=text}}: leaf {{=ids[ott]}}</a></li>
+{{else:}}
+<li>Leaf <q>{{=text}}</q> missing from tree</li>
+{{pass}}
 {{pass}}
 </ul>
 </div>
