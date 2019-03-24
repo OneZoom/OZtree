@@ -224,8 +224,8 @@ function setDataFromEoLpageID(EOLid, on_complete, EoL_key, n_images, include_nam
             success: function(data, textStatus) {
                 d = data.taxonConcept
                 if (d.identifier) {
-                    var imgs = []
-                    if (d.dataObjects.length) {
+                    var imgs = [];
+                    if (d.hasOwnProperty('dataObjects') && d.dataObjects.length) {
                         imgs = d.dataObjects.filter(function(o) {return(o.dataObjectVersionID && o.eolThumbnailURL && o.eolThumbnailURL.endsWith(".98x68.jpg"))})
                         for (var i=0; i<imgs.length; i++) {
                             imgs[i].url = imgs[i].eolThumbnailURL.replace(/.98x68.jpg$/, ".580x360.jpg")

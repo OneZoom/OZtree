@@ -233,8 +233,8 @@ var selected_img = null; //which of the image objects in image_objects is to be 
 {{else:}}
 // initialise list of images & info with default image
 image_objects.push({
-    "src":"{{=int(default_image.src)}}"
-    "src_id":"{{=int(default_image.src_id)}}"
+    "src":"{{=int(default_image.src)}}",
+    "src_id":"{{=int(default_image.src_id)}}",
     "url":"{{=thumbnail_url(default_image.src,default_image.src_id)}}",
     "default":1,
     "dataRating":10}); //highest possible data rating, so this gets put first
