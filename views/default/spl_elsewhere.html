@@ -12,8 +12,13 @@ response.title='OneZoom: '+T('sponsor a species')
 <p>{{=T('Sponsoring a leaf on the tree of life helps support OneZoom and, as a thank you, your name (or the name of a nominated friend) will appear on this leaf of the tree, both here and elsewhere.')}}</p>
 
 <p>{{=T('There can only be one sponsor per leaf so get your favourite species before someone else does.')}}</p>
+{{
+    url_minus_scheme = "www.onezoom.org/sponsor_leaf?ott={}".format(ott)
+    #NB the links here should be hardcoded (not using the URL() helper)
+    # so that they do not get the embed information included
+    # but they should use the A() helper so that they are turned off on MDs
+}}
+<p>{{=(XML(T('To sponsor %s go to the main OneZoom website at %s') % (the_long_name or T("this leaf"), A(url_minus_scheme, _href="//"+url_minus_scheme, _target="_blank", _style="text-decoration: underline;"))))}}</p>
 
-<p><a href="{{=URL('default', 'sponsor_leaf', vars=dict(ott=ott)), host='www.onezoom.org')}}" target="_blank">{{=XML(T('Sponsor %s on OneZoom') % (the_long_name or T("this leaf"),))}}</a></p>
-
-<p><a href="{{=URL('default', 'sponsor', host='www.onezoom.org')}}" target="_blank">{{=T('Find another leaf to sponsor on OneZoom')}}</a></p>
+<p>{{=XML(T('You can also find other leaves to sponsor on OneZoom at %s') % (A("www.onezoom.org/sponsor", _href="//www.onezoom.org/sponsor", target="_blank", _style="text-decoration: underline;"),))}}</p>
 

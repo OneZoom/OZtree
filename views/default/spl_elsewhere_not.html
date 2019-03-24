@@ -13,7 +13,7 @@ response.title='OneZoom: '+T('sponsor a species')
 
 <p>{{=T('There can only be one sponsor per leaf so get your favourite species before someone else does.')}}</p>
 
-<p>{{=T('This leaf is not available for sponsorship, but many others are...')}}</p>
+<p>{{=T('This leaf is not currently available for sponsorship, but many others are...')}}</p>
 
-<p><a href="{{=URL('default', 'sponsor', host='www.onezoom.org')}}" target="_blank">{{=T('Find another leaf to sponsor on OneZoom')}}</a></p>
-
+{{#NB the links here should be hardcoded to jump out to the (external) main OZ website}}
+<p>{{=XML(T('Find another leaf to sponsor on OneZoom at %s') % (A("www.onezoom.org/sponsor", _href="//www.onezoom.org/sponsor", target="_blank", _style="text-decoration: underline;"),))}}</a></p>
