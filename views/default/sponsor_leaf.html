@@ -199,7 +199,9 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
     <p class="submit_donate">{{=XML(T('Accept %s and <input id="submit_button" type="submit" value = "Donate"/> using PayPal') % (A(T('terms'),_href="/terms.html",_target="_blank"), ))}}{{if request.vars.get('embed'):}} <span>{{=T('(opens in a new window)')}}</span>{{pass}}.</p>
   </div>
 </form>
+
 <script>
+
 function updateDonorPlaceholder() {
     if ($("#sponsorBy").is(':checked')) {
         $("#user_donor_name_input").attr("placeholder", document.getElementById('user_sponsor_name_input').value)
@@ -208,9 +210,6 @@ function updateDonorPlaceholder() {
     }
 }
 updateDonorPlaceholder(); //do it now, in case we are refreshing
-</script>
-
-<script>
 
 /* define global variables */
 
@@ -226,23 +225,20 @@ var heightRes = 500;
 
 var max_n_thumbnails = 9;
 
-var workingEOL = true; // is the API OK?
-var imageInfoReady = false; // is the image information ready to be shown?
-//treat all srcs and src_ids at strings, for consistency
-var EoL_srcs = [{{=",".join(["'{}'".format(src_flags[x]) for x in eol_src_flags])}}];
+// Treat all srcs and src_ids at strings, for consistency
+var EoL_srcs = [{{=XML(",".join(["'{}'".format(src_flags[x]) for x in eol_src_flags]))}}];
 var image_objects = [];
-{{if default_image.src is None or default_image.src_id is None:}}
+{{if default_image is None or default_image.src is None or default_image.src_id is None:}}
 var selected_img = null; //which of the image objects in image_objects is to be rendered
 {{else:}}
 // initialise list of images & info with default image
-var selected_img = 0;
-image_objects[0] = {
+image_objects.push({
     "src":"{{=int(default_image.src)}}"
     "src_id":"{{=int(default_image.src_id)}}"
     "url":"{{=thumbnail_url(default_image.src,default_image.src_id)}}",
     "default":1,
-    "already_default_on_onezoom":1,
-    "dataRating":10}; //highest possible data rating, so this gets put first
+    "dataRating":10}); //highest possible data rating, so this gets put first
+var selected_img = image_objects.length - 1;
 {{pass}}
 var leafImageFile = null; // image file (if null and image_objects exists then image is not loaded yet)
 var leaftext = [null,null];
@@ -279,20 +275,9 @@ var leafCol = {
     "copyrightInsideHighlight" : 'rgb(0,0,0)'
 }
 
-
-// initialise the canvas
-newcanvas = document.getElementById("leafCanvas");
-if (newcanvas) {
-    leafContext = newcanvas.getContext('2d');
-    newcanvas.width = widthRes;
-    newcanvas.height = heightRes;
-    leafContext.textBaseline = 'middle';
-}
-
-
 // this draws a preview of the leaf
 // it gathers information from the form for sponsorship information
-// it requires the global information on workingEOL, imageReady, image_objects, selected_img, and leafImageFile to be set.
+// it requires the global information on image_objects, selected_img, and leafImageFile to be set.
 function drawPreview()
 {
     // define sponsorship variables
@@ -372,6 +357,7 @@ function drawPreview()
     
     if (image_objects[selected_img])
     {
+        
         var cfout = crop_frac(image_objects[selected_img],{{=percent_crop_expansion}});
         fullLeaf(
             leafContext, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, hasText, null,
@@ -404,9 +390,7 @@ function callbackAPIcomplete(data, flagsIn)
     */
     imageInfoReady = true;
     leafImageFile = null;
-    imageReady = null;
     leaftext = [null,null];
-    workingEOL = true;
     /* process data and redraw */
 
     if (data) {
@@ -424,99 +408,112 @@ function callbackAPIcomplete(data, flagsIn)
         for (var i = 0; (i<APIimgs.length) && image_objects.length <= max_n_thumbnails; i++) {
             var APIimg = APIimgs[i];
             if (APIimg.dataObjectVersionID) {
-                var is_default = (image_objects.length == 0)
+                var is_default = (image_objects.length == 0);
                 image_objects.push({
                    /* If no default set, the default eol image is marked as a "plain" eol img, 
                       not via OZ, as this will be the selected image anyway */
-                    "src" = is_default?{{=src_flags['eol']}}:{{=src_flags['onezoom_via_eol']}},
+                    "src": is_default?{{=src_flags['eol']}}:{{=src_flags['onezoom_via_eol']}},
                     "src_id": APIimg.dataObjectVersionID.toString(),
-                    "url":APIimg.url, /* this is inserted by setDataFromEoLpageID */
-                    "default":is_default?1:0,
-                    "dataRating":APIimg.dataRating
+                    "url": APIimg.url, /* this is inserted by setDataFromEoLpageID */
+                    "default": is_default?1:0,
+                    "dataRating": APIimg.dataRating
                 });
             }
         }
+    }
+    initImages();
+}
+
+function picInfoURL(img) {
+    /* return a url giving info about the image */
+    '{{=URL("tree","pic_info", args=["...PIC_SRC...","...PIC_SRC_ID..."])}}/'
+        .replace("...PIC_SRC...", img.src)
+        .replace("...PIC_SRC_ID...", img.src_id)
+}
+
+function initImages() {
+    /* Sets the image file handle, with a listener. Every time leafImageFile.src is
+     *  reset, the onload listener should fire */
+    if (image_objects.length == 0) {
+        //No image selection shown
+        drawPreview();
+
+    } else {
+        leafImageFile = new Image();
+        leafImageFile.onload = function() {
+            drawPreview();
+            $('#licenceText a').attr('href', picInfoURL(image_objects[selected_img]));
+            $('#licenceText').show();
+        }
         
-        if (image_objects.length == 0) {
-            // there will not be an image
-            leafImageFile = null;
-            if ((flagsIn == 1)||(flagsIn == 2))
-            {
-                workingEOL = false;
-                {{from gluon.serializers import json}}
-                leaftext = OZstrings['EOLimage_problem'].split("\n");
-                drawPreview();
-            }
+        // force load the selected image
+        leafImageFile.src = (image_objects[selected_img].url);
+
+        // Set up an image choice array, if appropriate
+        if (image_objects.length == 1) {
+            // Only 1 image: can't choose, so store image src + src_id to pass on in the form
+            $('#leaf').after(
+                $('<input/>', {type:  'hidden',
+                               name:  'user_preferred_image_src',
+                               value: image_objects[0].src}),
+                $('<input/>', {type: 'hidden',
+                               name: 'user_preferred_image_src_id',
+                               value: image_objects[0].src_id})
+            );
         } else {
-            leafImageFile = new Image();
-            leafImageFile.onload = function()
-            {
-                 drawPreview();
-                 $('#licenceText a').attr('href','{{=URL("tree","pic_info", args=["...PIC_SRC...","...PIC_SRC_ID..."])}}/'.replace("...PIC_SRC...", image_objects[selected_img].src).replace("...PIC_SRC_ID...", image_objects[selected_img].src_id))
-                $('#licenceText').show();
-            }
-            leafImageFile.src = (image_objects[selected_img].url);
-        
-            if (image_objects.length == 1) {
-                //Only 1 image - can't choose, so store the image ID so that it can be passed on in the form
-                $('#leaf').after('<input type="hidden" name="user_preferred_image_src" value="' +
-                                 image_objects[selected_img].src + 
-                                 '" />' +
-                                 '<input type="hidden" name="user_preferred_image_src_id" value="' +
-                                 image_objects[selected_img].src_id + 
-                                 '" />');
-            } else {
-                //There are at least 2 images, so change the page layout to add image selection
-                $('#leaf').after($('<div>', {id:"select_pictures"}).append('<fieldset><legend>{{=T("Choose your preferred picture")}}</legend><ul></ul></fieldset>'));
-                for(i=0; i<Math.min(img_keys.length, 9); i++)
-                {
-                    var key = img_keys[i].key
-                    //Add a list of potential images to pick
-                    var img_size_px = 100;
-                    var bg_css = "background-image: url('"+ image_objects[key].url +"')";
-                    if (image_objects[key].height && image_objects[key].width && image_objects[key].crop_width) {
-                        crop_vals = crop_frac(image_objects[key], {{=percent_crop_expansion}})
-                        bg_css = bg_css + ';background-size:' + crop_vals[0]* img_size_px + 'px;'
-                        bg_css = bg_css + ';background-position:' + (crop_vals[1]* img_size_px)+'px ' + (crop_vals[2]*img_size_px)+'px'
-                    } else {
-                        bg_css = bg_css + ';background-size: cover'
-                        bg_css = bg_css + ';background-position:left top'
-                    }
-                    var html = $('<li>').append([
-                        '{{=A(SPAN("⧉",_class="linkout-button"),_target="_blank",_href=URL("tree","pic_info", args=[src_flags["eol"],"...PICFN..."]))}}'.replace("...PICFN...", image_objects[key].dataObjectVersionID),
-                        $('<input/>',{type:    'radio', 
-                                      value:   image_objects[key].dataObjectVersionID,
-                                      name:    'user_preferred_image',
-                                      id:      'r'+key,
-                                      checked: ((key==selected_img)?'checked':null),
-                                      onclick: 'selected_img = "' + key + '";' +
-                                        'document.getElementById("user_nondefault_image_input").value = ' + ((!(image_objects[key].default))?"1":"0") + ';' +
-                                        'leafImageFile.src = "' + image_objects[key].url + '";' + 
-                                        'drawPreview();'}), 
-                        $('<label>', {class:   'radio',
-                                      for:     'r'+key,
-                                      style:'width:'+img_size_px+'px;height:'+img_size_px+'px;'+bg_css})
-                        ]);
-                     $('#select_pictures ul').append(html);
+            //There are at least 2 images, so change the page layout to add image selection
+            $('#leaf').after($('<div>', {id:"select_pictures"}).append('<fieldset><legend>{{=T("Choose your preferred picture")}}</legend><ul></ul></fieldset>'));
+            for (i=0; i<image_objects.length; i++) {
+                //Add a list of potential images to pick
+                var img_size_px = 100;
+                var bg_css = "background-image: url('"+ image_objects[key].url +"')";
+                if (image_objects[i].height && image_objects[i].width && image_objects[i].crop_width) {
+                    crop_vals = crop_frac(image_objects[i], {{=percent_crop_expansion}})
+                    bg_css = bg_css + ';background-size:' + crop_vals[0]* img_size_px + 'px;'
+                    bg_css = bg_css + ';background-position:' + (crop_vals[1]* img_size_px)+'px ' + (crop_vals[2]*img_size_px)+'px'
+                } else {
+                    bg_css = bg_css + ';background-size: cover'
+                    bg_css = bg_css + ';background-position:center'
                 }
+                var html = $('<li>').append([
+                    $('<a/>', {html: "<span class='linkout-button'>⧉</span>",
+                               href: picInfoURL(image_objects[selected_img]),
+                               target: "_blank"}),
+                    $('<input/>', {id: 'r'+key,
+                                   type: 'radio', 
+                                   name: 'user_preferred_image',
+                                   value: image_objects[key].dataObjectVersionID,
+                                   checked: ((i==selected_img)?'checked':null),
+                                   onclick: 'selected_img = "' + i + '";' +
+                                        'document.getElementById("user_nondefault_image_input").value = ' + ((i==0)?"0":"1") + ';' +
+                                        'leafImageFile.src = "' + image_objects[i].url + '";' + 
+                                        'drawPreview();'}), 
+                    $('<label>', {for: 'r'+key,
+                                  class: 'radio',
+                                  style: 'width:'+img_size_px+'px;height:'+img_size_px+'px;'+bg_css})
+                    ]);
+                $('#select_pictures ul').append(html);
             }
         }
     }
-    // redraw
-    drawPreview();
 }
 
+$( document ).ready(function() {
+    newcanvas = document.getElementById("leafCanvas");
+    leafContext = newcanvas.getContext('2d');
+    newcanvas.width = widthRes;
+    newcanvas.height = heightRes;
+    leafContext.textBaseline = 'middle';
 
-if (document.getElementById("leafCanvas")) {
-        drawPreview();
-}
-
-{{if (EOL_ID) and default_image.get('src', src_flags['onezoom_via_eol']) >= src_flags['onezoom_via_eol']:}}
-// We always require n images, even if we have one already, in case one of the n returned
-// is identical to the OneZoom default
-setDataFromEoLpageID({{=EOL_ID}}, callbackAPIcomplete, "{{=EoL_API_key}}", max_n_thumbnails, false);
+{{if (EOL_ID) and (default_image is None or (default_image.get('src', src_flags['onezoom_via_eol']) >= src_flags['onezoom_via_eol'])):}}
+    /* Query the EoL API for images. We always require n images, even if we have one 
+     * already, in case one of the n returned images is identical to the OneZoom default
+     */
+    setDataFromEoLpageID({{=EOL_ID}}, callbackAPIcomplete, "{{=EoL_API_key}}", max_n_thumbnails, false);
+    //initImages() is called from callbackAPIcomplete()
 {{else:}}
-imageInfoReady = true;
+    initImages();
 {{pass}}
+});
 
 </script>
