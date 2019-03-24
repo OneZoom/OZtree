@@ -202,15 +202,6 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
 
 <script>
 
-function updateDonorPlaceholder() {
-    if ($("#sponsorBy").is(':checked')) {
-        $("#user_donor_name_input").attr("placeholder", document.getElementById('user_sponsor_name_input').value)
-    } else {
-        $("#user_donor_name_input").attr("placeholder", "")
-    }
-}
-updateDonorPlaceholder(); //do it now, in case we are refreshing
-
 /* define global variables */
 
 var mintextsize = 3; // the smallest size text you want to have displayed
@@ -273,6 +264,14 @@ var leafCol = {
     "copyrightInside" : 'rgb(70,135,30)',
     "copyrightTextHighlight" : 'rgb(255,255,255)',
     "copyrightInsideHighlight" : 'rgb(0,0,0)'
+}
+
+function updateDonorPlaceholder() {
+    if ($("#sponsorBy").is(':checked')) {
+        $("#user_donor_name_input").attr("placeholder", document.getElementById('user_sponsor_name_input').value)
+    } else {
+        $("#user_donor_name_input").attr("placeholder", "")
+    }
 }
 
 // this draws a preview of the leaf
@@ -499,6 +498,7 @@ function initImages() {
 }
 
 $( document ).ready(function() {
+    updateDonorPlaceholder(); //do it now, in case we are refreshing
     newcanvas = document.getElementById("leafCanvas");
     leafContext = newcanvas.getContext('2d');
     newcanvas.width = widthRes;
