@@ -134,11 +134,6 @@ function setDataFromEoLdataObjectID(DOid, on_complete, EoL_key, timeout_ms, cros
     4 - negative-number passed in
     5 - no data object for that number
     */
-    if (crossdomain) {
-        crossdomain = true
-    } else {
-        crossdomain = false
-    }
     if (isNaN(parseInt(DOid))) {
         on_complete(null,3)
     } else if (parseInt(DOid) <= 0) {
@@ -147,7 +142,6 @@ function setDataFromEoLdataObjectID(DOid, on_complete, EoL_key, timeout_ms, cros
         var query_string = "taxonomy=false&cache_ttl=&language=en&key=" + EoL_key;
         $.ajax({
             type: "GET",
-            crossDomain: crossdomain,
             url: "https://eol.org/api/data_objects/1.0/"+ DOid +".json",
             data: query_string,
             on_complete: on_complete,
@@ -156,9 +150,10 @@ function setDataFromEoLdataObjectID(DOid, on_complete, EoL_key, timeout_ms, cros
                 this.on_complete(null,1)
             },
             success: function(data, textStatus) {
-                if (data.dataObjects) {
-                    if ((data.dataObjects.length) && (data.dataObjects[0].eolMediaURL)){
-                        var to_return = data.dataObjects[0]
+                if (data.taxon.dataObjects) {
+                    var d = data.taxon.dataObjects;
+                    if ((d.length) && (d[0].eolThumbnailURL)){
+                        var to_return = d[0]
                         to_return.url = to_return.eolThumbnailURL.replace(/.98x68.jpg$/, ".580x360.jpg")
                         to_return.url_squarecrop = to_return.eolThumbnailURL.replace(/.98x68.jpg$/, ".130x130.jpg")
                         this.on_complete(to_return, 0)
