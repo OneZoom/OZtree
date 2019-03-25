@@ -21,14 +21,15 @@
         --><a target="_blank"><img class="EOLimg" src="{{=URL('static','images/transparent.gif')}}" style="background-image: url('{{=URL('static','images/Waiting.jpg')}}'); background-size: 100% 100%; background-repeat: no-repeat;" /></a></div>
 
         <div class="image DB"><!--
-            We hide the verified image ID doID in a 'hidden' div, used to update the database when the form is submitted
-        --><div id="vimgform{{=vars['id']}}" hidden>{{=form.custom.widget.verified_preferred_image}}</div><!--
+            We hide the verified image src and id in a 'hidden' div, used to update the database when the form is submitted
+        --><div id="vimgform{{=vars['id']}}" hidden>{{=form.custom.widget.verified_preferred_image_src}}{{=form.custom.widget.verified_preferred_image_src_id}}</div><!--
             The intention for this 'change image' button is to provide a dropdown of various image options
             but we can just hack a text entry dialog for the moment. If it is clicked, and a new doID entered
             we should set admin_chosen_image = 1 in the cgi parameters
         --><button type="button" class="changeimage"
             onclick="var doID = prompt('Quick hack: enter an EOL data object ID','');
                      if (doID) {
+                        $('#form_{{=vars['id']}} .image.DB .warning').remove();
                         $('#form_{{=vars['id']}} .admin_may_change').attr('name','admin_changed_image');
                         $('#form_{{=vars['id']}} .image.DB img').attr('class','highlighted');
                         setDataFromEoLdataObjectID(doID,
@@ -48,9 +49,7 @@
                                         set_img('{{=URL('static','images/noImage.png')}}', '#form_{{=vars['id']}} .image.DB') 
                                         break;
                                     case 4:
-                                        /* negative number: bespoke image */
-                                        set_img_from_bespoke_val(doID, '#form_{{=vars['id']}} .image.DB') 
-                                        break;
+                                        /* negative number: used to be a bespoke image, now an error */
                                     case 5:
                                         set_img('{{=URL('static','images/EOLproblem.png')}}', '#form_{{=vars['id']}} .image.DB') 
                                         break;
@@ -61,10 +60,12 @@
                     ">&boxbox;</button><!--
         The EoL data object API can only be called one object at a time: we might as well 
         find the url now for the bespoke image, as we know the user-chosen doID from the DB
-        --><a href="http://eol.org/data_objects/{{=vars['user_preferred_image']}}" target="_blank"><img id="vimg{{=vars['id']}}" {{if vars['user_nondefault_image']:}}class="highlighted"{{pass}} src="{{=URL('static','images/transparent.gif')}}" style="background-image: url('{{=URL('static','images/Waiting.jpg')}}'); background-size: 100% 100%; background-repeat: no-repeat;" 
-            onload= "
-                     this.onload = null; /* cancel future onloads: only need to do this at the start */
-                     setDataFromEoLdataObjectID(document.getElementById('vimgform{{=vars['id']}}').children[0].getAttribute('value'),
+        --><a href="" target="_blank"><img id="vimg{{=vars['id']}}" {{if vars['user_nondefault_image']:}}class="highlighted"{{pass}} src="{{=URL('static','images/transparent.gif')}}" style="background-image: url('{{=URL('static','images/Waiting.jpg')}}'); background-size: 100% 100%; background-repeat: no-repeat;" 
+            onload= "this.onload = null; /* cancel future onloads: only need to do this at the start */
+{{if vars['user_preferred_image_src'] in eol_src_flags:}}
+{{# need to get the image from EoL }}
+                     setDataFromEoLdataObjectID( /* this could be one from our own DB */
+                        document.getElementById('vimgform{{=vars['id']}}').children[0].getAttribute('value'),
                                                 function(data_obj, err) {
 /* NB: error flags are: 1: timeout, 2: bad EOL API response, 3: non number passed in, 4: negative number passed in, 5: no data object */
                                         switch (err) {
@@ -90,7 +91,18 @@ set_img_from_bespoke_val(document.getElementById('vimgform{{=vars['id']}}').chil
                                         }
                                 }, '{{=EoL_API_key}}',
                                 20000, true) //set large timeout and crossdomain
-                    "/></a><!--
+{{else:}}
+{{# we already have the image in our db, so just show it}}
+                    var src_url = '{{=thumbnail_url(vars['user_preferred_image_src'], vars['user_preferred_image_src_id'])}}';
+                    var link_url = '{{=URL('tree','pic_info', args=[vars['user_preferred_image_src'],vars['user_preferred_image_src_id']], extension=False)}}';
+    {{if vars['user_preferred_image_src']==src_flags['eol_old']:}}
+    {{#override the link url so we can easily chose a new photo}}
+                    link_url = 'http://eol.org/pages/{{=vars['EOL_ID']}}/media';
+                    $('#form_{{=vars['id']}} .image.DB').prepend($('<p>', {class: 'warning', html:'WARNING<br />Old EoL img', title:'This image may be replaced by the auto-update script at any time. You are recommended to replace it with an equivalent image id from the new EoL media page (click on the image)', style:'color:red;'}));
+    {{pass}}
+                    set_img(src_url, '#form_{{=vars['id']}} .image.DB', link_url);
+{{pass}}
+                    " /></a><!--
         The close button
         --><button type="button" class="noimage"
             onclick="$('#form_{{=vars['id']}} .admin_may_change').attr('name','admin_changed_image'); $('#form_{{=vars['id']}} .image.DB img').attr('class',''); set_img('{{=URL('static','images/Unselected.jpg')}}', '#form_{{=vars['id']}} .image.DB')">&times;</button></div><input type="hidden" class="admin_may_change" value="1" title="allows us to check if a bespoke image has been set by admin" />
@@ -151,32 +163,22 @@ set_img_from_bespoke_val(document.getElementById('vimgform{{=vars['id']}}').chil
                 set_img("{{=URL('static','images/EOLproblem.png')}}", fm + ' .image.API')
             }
         }
-        
-        
-        function set_img_from_bespoke_val(value, class_spec) {
-            $(class_spec + ' input').val(value) //set the hidden field
-            url = thumb_func(2, value);
-            $(class_spec + ' img').css("background-image","url('"+ url + "')");
-            $(class_spec + ' img').css("backgroundSize", 'cover');
-            $(class_spec + ' img').css("backgroundPosition", 'left top');
-            $(class_spec + ' a').attr('href',url);
-        }
-        
-        function set_img(path, class_spec) {
+
+        function set_img(path, class_spec, href) {
             $(class_spec + ' input').val(''); //set the hidden field
             $(class_spec + ' img').css("background-image","url('"+path+"')");
             $(class_spec + ' img').css("backgroundSize", 'cover');
             $(class_spec + ' img').css("backgroundPosition", 'left top');
-            $(class_spec + ' a').attr('href','');
+            $(class_spec + ' a').attr('href',href || '');
         }
-        
+
         function set_img_from_data_obj(img, class_spec) {
             /* img should be an object: adjust the variables contained in the jquery 'class_spec' */
             var doID = img.dataObjectVersionID;
             var url =  img.url;
             if (doID && url) {
                 $(class_spec + ' input').val(doID) //set the hidden field
-                $(class_spec + ' a').attr('href','http://eol.org/data_objects/' + doID) 
+                $(class_spec + ' a').attr('href','http://eol.org/media/' + doID) 
                 $(class_spec + ' img').css("background-image","url('"+ url +"')") //set the img src
                 if (img.height && img.width && img.crop_width) {
                     crop_vals = crop_frac(img, {{=vars['percent_crop_expansion']}})
@@ -185,7 +187,7 @@ set_img_from_bespoke_val(document.getElementById('vimgform{{=vars['id']}}').chil
                     $(class_spec + ' img').css("backgroundPosition", (crop_vals[1]*res_px)+"px " + (crop_vals[2]*res_px)+"px")
                 } else {
                     $(class_spec + ' img').css("backgroundSize", 'cover')
-                    $(class_spec + ' img').css("backgroundPosition", 'left top')
+                    $(class_spec + ' img').css("backgroundPosition", 'center')
                 }
             } else {
                 $(class_spec + ' img').css("background-image","url('{{=URL('static','images/noImage.png')}}')")
