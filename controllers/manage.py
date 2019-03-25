@@ -305,16 +305,19 @@ def SPONSOR_UPDATE():
                                                         env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()})
                         #pass in the password via stdin, so it doesn't get shown in the processes
                         ret_text += image_getter_connection.communicate(input='{0}\n'.format(password))[0]
-                #Always update the default EoL image (and common name) using EoLQueryPicsNames.py, 
+                #Always update the default EoL image (and common name) using EoLQueryPicsNames.py,
+                # unless (for the time being) this is an eol_old image, in which case leave it
+                # (this is a hack until EoL V3 images are nicer than eolV2)
                 # Don't pass in the DOid - the script should get that automagically
-                image_getter_connection = Popen(EoLQueryPicsNames, 
-                                                stdout=PIPE, stderr=STDOUT,
-                                                stdin=PIPE,
-                                                env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()})
-                #pass in the password via stdin, so it doesn't get shown in the processes
-                ret_text += image_getter_connection.communicate(input='{0}\n'.format(password))[0]
-                if ret_text:
-                    form.element(_type='submit').update(_title=ret_text)
+                if img_src != src_flags['eol_old']:
+                    image_getter_connection = Popen(EoLQueryPicsNames, 
+                                                    stdout=PIPE, stderr=STDOUT,
+                                                    stdin=PIPE,
+                                                    env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()})
+                    #pass in the password via stdin, so it doesn't get shown in the processes
+                    ret_text += image_getter_connection.communicate(input='{0}\n'.format(password))[0]
+                    if ret_text:
+                        form.element(_type='submit').update(_title=ret_text)
                     
             except:
                 raise
