@@ -586,6 +586,7 @@ if __name__ == "__main__":
     parser.add_argument('--eol_inspected_table', '-e', default="eol_inspected", help='The name of the db table containing ott ids for eol taxa that have been inspected recently (so may need updating)')
     parser.add_argument('--verbosity', '-v', action="count", default=None, help='verbosity: output extra non-essential info')
     parser.add_argument('--add_percent', '-a', default=12.5, type=float, help='extra percentage each side to expand the crop, if possible, useful e.g. if a circular crop is required, to try and avoid trimming corners off')
+    #parser.add_argument('--crop', '-c', default=None, help='How to position the crop (if specified, overrides the default crop position from EoL). This can be specified as "center", "top", "bottom", "left", "right", or in terms of the percent size as a proportion of the "+X%+Y%xW%"')
     parser.add_argument('--thumbnail_size', '-s', type=int, choices=range(1, 8001), default=150, help='maximum width in pixels of thumbnail produced')
     #parser.add_argument('--force_size', '-z', action="store_true", help="force the thumbnail to be the maximum size (don't allow smaller thumbnails for small pictures)")
     parser.add_argument('--retries', '-r', type=int, default=5, help='number of times to retry getting the image')

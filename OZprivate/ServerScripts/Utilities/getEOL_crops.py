@@ -233,7 +233,7 @@ def get_file_from_json_struct(data_obj_json_struct, output_dir, fn, thumbnail_si
             logger.debug("Custom crop: {}.".format(" ".join(cmd)))
         except KeyError:
             #hasn't got crop info: use default
-            cmd = [CONVERT, image_orig, '-gravity', 'NorthWest', 
+            cmd = [CONVERT, image_orig, '-gravity', 'Center', 
                    '-resize', str(thumbnail_size)+'x'+str(thumbnail_size)+'^', "-extent", str(thumbnail_size)+'x'+str(thumbnail_size), image_intermediate
                    ]
             logger.debug("Default crop: {}.".format(" ".join(cmd)))
