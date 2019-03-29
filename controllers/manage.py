@@ -213,8 +213,14 @@ def SPONSOR_UPDATE():
     to_be_validated = False
     ret_text=None
     if form.process(onsuccess=None).accepted:
-        #update the validated_time here, and hack round the fact that verified_more_info is set to NULL if it is passed in as a blank
-        db.reservations[row_id]=dict(verified_time=request.now, verified_more_info=request.vars.get('verified_more_info'))
+        #update the validated_time here, and hack round the fact that various fields are set to NULL if passed in as a blank
+        db.reservations[row_id]=dict(
+            verified_time=request.now,
+            verified_more_info=request.vars.get('verified_more_info'),
+            verified_donor_title=request.vars.get('verified_donor_title'),
+            verified_donor_name=request.vars.get('verified_donor_name'),
+        
+        )
         
         #grab important information
         twittername_t = read_only['twitter_name']
@@ -347,14 +353,6 @@ def SPONSOR_UPDATE():
                 form.element(_name='verified_more_info').append((read_only['user_more_info'] or "").strip())
                 to_be_validated = True
             
-            ## variables rendered in an 'input' tag (DB fieldtype = integer, etc) 
-            if row['verified_preferred_image_src'] is None and row['verified_preferred_image_src_id'] is None:
-                form.element(_name='verified_preferred_image_src').update(
-                    _value=read_only['user_preferred_image_src'])
-                form.element(_name='verified_preferred_image_src_id').update(
-                    _value=read_only['user_preferred_image_src_id'])
-                # this may not need to be verified: some taxa have no image therefore
-                # no user_preferred_image_src_id => no verified_preferred_image_src_id
             if row['verified_kind'] is None:
                 form.element(_name='verified_kind').element('option[value={}]'.format(read_only['user_sponsor_kind'] or 'by')).update(_selected='selected')    
                 to_be_validated = True
@@ -367,7 +365,14 @@ def SPONSOR_UPDATE():
     except:
         EoL_API_key=""
         response.flash="You should really set an eol_api_key in your appconfig.ini file"
-    return dict(form=form, vars=read_only, to_be_validated=to_be_validated, EoL_API_key=EoL_API_key)
+    return dict(
+        form=form, 
+        vars=read_only, 
+        img_already_on_oz= (to_be_validated==False or row['user_nondefault_image']==None),
+        to_be_validated=to_be_validated,
+        img_src = (row['user_preferred_image_src'] if to_be_validated else row['verified_preferred_image_src']),
+        img_src_id = (row['user_preferred_image_src_id'] if to_be_validated else row['verified_preferred_image_src_id']),
+        EoL_API_key=EoL_API_key)
 
 
 @auth.requires_membership(role='manager')

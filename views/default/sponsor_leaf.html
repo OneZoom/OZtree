@@ -190,7 +190,7 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
                 <p> Please note: we will need your name, title and UK street address to process gift aid, so please fill in these fields above. Please also remember to instruct PayPal to share your postal address when making your payment - thank you.</p>
           
       </div>
-      <input type="hidden" id="user_nondefault_image_input" name="user_nondefault_image" value="0" />
+      <input type="hidden" id="user_nondefault_image_input" name="user_nondefault_image" value="" />
       <input type="hidden" name="id" value="{{=id}}" />
       <input type="hidden" name="form_reservation_code" value="{{=form_reservation_code}}" />
       <input type="hidden" name="_formname" value="main_sponsor_form" />
@@ -229,6 +229,7 @@ image_objects.push({
     "src":"{{=int(default_image.src)}}",
     "src_id":"{{=int(default_image.src_id)}}",
     "url":"{{=thumbnail_url(default_image.src,default_image.src_id)}}",
+    "already_downloaded":1,
     "default":1}); //highest possible data rating, so this gets put first
 var selected_img = image_objects.length - 1;
 {{pass}}
@@ -453,6 +454,7 @@ function initImages() {
             // Only 1 image: can't choose, so store image src_id to pass on in the form
             document.getElementById('user_preferred_image_src_input').value = image_objects[0].src;
             document.getElementById('user_preferred_image_src_id_input').value = image_objects[0].src_id;
+            document.getElementById('user_nondefault_image').value = image_objects[0].already_downloaded?"":"0";
         } else {
             //There are at least 2 images, so change the page layout to add image selection
             $('#leaf').after($('<div>', {id:"select_pictures"}).append('<fieldset><legend>{{=T("Choose your preferred picture")}}</legend><ul></ul></fieldset>'));
@@ -480,7 +482,7 @@ function initImages() {
    'selected_img = "'+i+'";'+
    'document.getElementById("user_preferred_image_src_input").value = '+image_objects[i].src+';'+
    'document.getElementById("user_preferred_image_src_id_input").value = '+image_objects[i].src_id+';'+
-   'document.getElementById("user_nondefault_image_input").value = '+((i==0)?"0":"1")+';'+
+   'document.getElementById("user_nondefault_image_input").value = '+((i==0)?(image_objects[0].already_downloaded?"":"0"):"1")+';'+
    'leafImageFile.src = "'+image_objects[i].url+'";'+ 
    'drawPreview();'}), 
                     $('<label>', {for: 'r'+i,

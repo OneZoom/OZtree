@@ -447,7 +447,9 @@ db.define_table('reservations',
     Field('user_more_info', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(maxsize=30))), 
     # optional extra info about a person
     Field('user_nondefault_image', type = 'integer'),
-    #has the user chosen a non-default image? 0 or 1. Should prob be boolean type instead.
+    #has the user chosen a non-default image? None if no img or the already downloaded OZ
+    # image was chosen, 0 if there was no OZ image but the default EoL image was chosen, 
+    # or 1 if another image was chosen by the sponsor. Should prob be boolean type instead.
     Field('user_preferred_image', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))), #old, to be deleted
     Field('user_preferred_image_src', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(0,1000))),
     Field('user_preferred_image_src_id', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))),
