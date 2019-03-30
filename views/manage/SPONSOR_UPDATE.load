@@ -11,10 +11,10 @@
             so we just put a 'waiting' picture up until then. It is easier to use background images, so we use a transparent gif
             and put a background image behind it.
         --><button type="button" class="changeimage"
-            onclick="setDataFromEoLpageID({{=vars['EOL_ID']}},
-                                         function(taxon_obj, err) {
-                                            set_EOL_name_and_image_in_form({{=vars['id']}}, taxon_obj)
-                                         }, '{{=EoL_API_key}}');
+            onclick="setDataFromEoLpageID(
+                {{='null' if not vars['EOL_ID'] else vars['EOL_ID']}},
+                function(taxon_obj, err) {init_EOL_name_and_image({{=vars['id']}}, taxon_obj);},
+                {{=XML('null' if not EoL_API_key else ("'" + str(EoL_API_key) + "'"))}});
                     ">↻</button><!--
         --><a target="_blank"><img class="EOLimg" src="{{=URL('static','images/transparent.gif')}}" style="background-image: url('{{=URL('static','images/Waiting.jpg')}}'); background-size: 100% 100%; background-repeat: no-repeat;" /></a></div>
 
@@ -31,9 +31,16 @@
                         $('#form_{{=vars['id']}} .admin_may_change').attr('name','admin_changed_image');
                         $('#form_{{=vars['id']}} .image.DB img').attr('class','highlighted');
                         
-                        setDataFromEoLdataObjectID(doID,
+                        setDataFromEoLdataObjectID(
+                            doID,
                             function(data_obj, err) {
-/* NB: error flags are: 1: timeout, 2: bad EOL API response, 3: non number passed in, 4: negative number passed in, 5: no data object */
+                                /* NB: error flags are: 
+                                 *  1: timeout
+                                 *  2: bad EOL API response
+                                 *  3: non number passed in
+                                 *  4: negative number passed in
+                                 *  5: no data object 
+                                 */
                                 var target = '#form_{{=vars['id']}} .image.DB';
                                 switch (err) {
                                     case 0:
@@ -56,7 +63,8 @@
                                         set_img('{{=URL('static','images/EOLproblem.png')}}', target) 
                                         break;
                                 }
-                            }, '{{=EoL_API_key}}', 
+                            }, 
+                            {{=XML('null' if not EoL_API_key else ("'" + str(EoL_API_key) + "'"))}}, 
                             20000, true); //set large timeout and crossdomain
                         }
                     ">&boxbox;</button><!--
@@ -156,7 +164,9 @@
             }
         }
 
-        function init_user_image(target, eol_id, img_src, img_src_id, has_oz_img, is_eol_img, is_nondefault) {
+        function init_user_image(
+            target, eol_id, img_src, img_src_id, has_oz_img, 
+            is_eol_img, is_nondefault, EoL_API_key) {
             if (img_src === null || img_src_id == null) {
                 set_img('{{=URL('static','images/Unselected.jpg')}}', target);
             } else if (has_oz_img) {
@@ -206,7 +216,7 @@
                         set_img("{{=URL('static','images/EOLproblem.png')}}", target);
                         break;
                    };
-               }, '{{=EoL_API_key}}', 20000, true); //set large timeout and crossdomain
+               }, EoL_API_key, 20000, true); //set large timeout and crossdomain
             } else {
                alert("Error: src=" + img_src + ", src_id=" + img_src_id);
             }
@@ -219,21 +229,22 @@
             " a taxon has changed (EoL wrongly sets the API return value to `error`" + 
             "rather than `missing`)"
             init_user_image(
-                '#form_{{=vars['id']}} .image.DB',                  //target
-                {{=vars['EOL_ID']}},                                //eol id
-                {{='null' if img_src is None else img_src}},        //img_src
-                {{='null' if img_src_id is None else img_src_id}},  //img_src_id
-                {{=1 if img_already_on_oz else 0}},                 //has_oz_img
+                '#form_{{=vars['id']}} .image.DB',                      //target
+                {{='null' if not vars['EOL_ID'] else vars['EOL_ID']}},  //eol id
+                {{='null' if img_src is None else img_src}},            //img_src
+                {{='null' if img_src_id is None else img_src_id}},      //img_src_id
+                {{=1 if img_already_on_oz else 0}},                     //has_oz_img
                 {{=1 if inv_src_flags.get(img_src,None) in eol_src_flag_names else 0}}, // is_eol_img
-                {{=1 if vars['user_nondefault_image'] else 0}});
+                {{=1 if vars['user_nondefault_image'] else 0}},
+                {{=XML('null' if not EoL_API_key else ("'" + str(EoL_API_key) + "'"))}});
 
 {{if ('EOL_ID' in vars) and (vars['EOL_ID'] is not None):}}
 
             setDataFromEoLpageID(
-                {{=vars['EOL_ID']}},
+                {{='null' if not vars['EOL_ID'] else vars['EOL_ID']}},
                 function(taxon_obj, err) {
                     init_EOL_name_and_image({{=vars['id']}}, taxon_obj);
-                }, '{{=EoL_API_key}}');
+                }, {{=XML('null' if not EoL_API_key else ("'" + str(EoL_API_key) + "'"))}});
 
 {{else:}}
 
