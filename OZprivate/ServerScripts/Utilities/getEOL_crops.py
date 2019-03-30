@@ -180,8 +180,8 @@ def get_file_from_json_struct(data_obj_json_struct, output_dir, fn, thumbnail_si
     CONVERT = shutil.which('convert') #needed in windows, to get the correct 'convert' command
     d=data_obj_json_struct
     fn = str(fn)
+    os.umask(0o002) #set group write so that the normal login has same rights as the web server 
     os.makedirs(output_dir, exist_ok=True)
-
     if 'eolMediaURL' not in d:
         logger.error("'eolMediaURL' must be present in data object {}.".format(d))
         return None
