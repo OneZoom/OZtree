@@ -293,16 +293,17 @@ def SPONSOR_UPDATE():
                 # so we pass it a password string
                 db_conn_string = myconf.take('db.uri')
                 m = re.match(r'([^:]*:[^:]+)(:?)([^@]*)(.*)', db_conn_string)
+                #get the DB / pw string from appconfig.ini, and extract the password
                 db_conn_string = (m.group(1) or '') + m.group(2) + m.group(4)
                 password = m.group(3) or ''
                 EoLQueryPicsNames = [os.path.join(request.folder,'OZprivate','ServerScripts','Utilities','EoLQueryPicsNames.py'),
+                                     '--database', db_conn_string,
                                      '--add_percent', str(percent_crop_expansion),
                                      '-v', '--opentree_id', str(int(ott))]
                 if img_src == src_flags['onezoom_via_eol'] or request.vars.admin_changed_image:
                     #this is a specific user-chosen image: we will save it as a "onezoom_via_eol" image
                     DOid = db.reservations[row_id].verified_preferred_image_src_id
                     if DOid:
-                        #get the DB / pw string from appconfig.ini, and extract the password
                         #only save an explicit OneZoom image (by passing in the dataObject ID) if the user  
                         # (or admin, if overridden) has selected something different from the EoL default
                         image_getter_connection = Popen(EoLQueryPicsNames + ['--eol_image_id', str(int(DOid))], 
@@ -367,9 +368,13 @@ def SPONSOR_UPDATE():
         response.flash="You should really set an eol_api_key in your appconfig.ini file"
     return dict(
         form=form, 
-        vars=read_only, 
-        img_already_on_oz= (to_be_validated==False or row['user_nondefault_image']==None),
+        vars=read_only,
+        # do we need to query the EoL API for the displayed image?
+        img_already_on_oz= ((to_be_validated==False) or (read_only['user_nondefault_image']==None)),
         to_be_validated=to_be_validated,
+        # Pass in the image used - either the user-chosen one
+        # if we have yet to validate (so we can check it is OK), or the
+        # one we validated.
         img_src = (row['user_preferred_image_src'] if to_be_validated else row['verified_preferred_image_src']),
         img_src_id = (row['user_preferred_image_src_id'] if to_be_validated else row['verified_preferred_image_src_id']),
         EoL_API_key=EoL_API_key)
