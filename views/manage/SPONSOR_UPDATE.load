@@ -130,7 +130,7 @@
         {{elif (vars['user_paid'] == vars['asking_price']):}}
         = OK
         {{elif (vars['user_paid'] > vars['asking_price']):}}
-        <b style="color: green;">+ {{=(vars['user_paid'] - vars['asking_price'])}}</b><br />
+        <b style="color: green;">+ {{=round(vars['user_paid'] - vars['asking_price'], 2)}}</b><br />
         {{else:}}
         <b style="color: red; font-size: 200%">!!{{=(vars['user_paid'] - vars['asking_price'])}}</b><br />
         {{pass}}
