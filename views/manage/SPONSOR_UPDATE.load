@@ -78,7 +78,7 @@
                       $('#form_{{=vars['id']}} .image.DB').prepend($('<p>', {class: 'warning', html:'WARNING<br />Old EoL img', title:'This image may be replaced by the auto-update script at any time. You are recommended to replace it with an equivalent image id from the new EoL media page (click on the image)', style:'color:red;'}));
     {{pass}}
                       set_img(src_url, target, link_url, {{=img_src}}, {{=img_src_id}});
-{{elif img_src in eol_src_flags:}}
+{{elif inv_src_flags[img_src] in eol_src_flags:}}
 {{# should always be the case if we get here. Now need to get the image from EoL }}
                       setDataFromEoLdataObjectID(
                         {{=img_src_id}},
