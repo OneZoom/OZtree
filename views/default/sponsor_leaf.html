@@ -219,7 +219,7 @@ var heightRes = 500;
 var max_n_thumbnails = 9;
 
 // Treat all srcs and src_ids at strings, for consistency
-var EoL_srcs = [{{=XML(",".join(["'{}'".format(src_flags[x]) for x in eol_src_flags]))}}];
+var EoL_srcs = [{{=XML(",".join(["'{}'".format(src_flags[n]) for n in eol_src_flag_names]))}}];
 var image_objects = [];
 {{if default_image is None or default_image.src is None or default_image.src_id is None:}}
 var selected_img = null; //which of the image objects in image_objects is to be rendered

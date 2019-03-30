@@ -357,8 +357,13 @@ def SPONSOR_UPDATE():
             if row['verified_kind'] is None:
                 form.element(_name='verified_kind').element('option[value={}]'.format(read_only['user_sponsor_kind'] or 'by')).update(_selected='selected')    
                 to_be_validated = True
-    if to_be_validated==False:
-        #this is a simple update
+    if to_be_validated:
+        (img_src, img_src_id) = (
+            row['user_preferred_image_src'], row['user_preferred_image_src_id'])
+    else:
+        #this is a simple update - show the already-validated image
+        (img_src, img_src_id) = (
+            row['verified_preferred_image_src'], row['verified_preferred_image_src_id'])
         form.element(_type='submit').update(_style='background-color: #999999; background-image:none; font-size: 1.6em;')
         form.element(_type='submit').update(_value='↻')
     try:
@@ -366,18 +371,20 @@ def SPONSOR_UPDATE():
     except:
         EoL_API_key=""
         response.flash="You should really set an eol_api_key in your appconfig.ini file"
+
     return dict(
         form=form, 
         vars=read_only,
-        # do we need to query the EoL API for the displayed image?
-        img_already_on_oz= ((to_be_validated==False) or (read_only['user_nondefault_image']==None)),
+        img_src=img_src,
+        img_src_id=img_src_id,
         to_be_validated=to_be_validated,
-        # Pass in the image used - either the user-chosen one
-        # if we have yet to validate (so we can check it is OK), or the
-        # one we validated.
-        img_src = (row['user_preferred_image_src'] if to_be_validated else row['verified_preferred_image_src']),
-        img_src_id = (row['user_preferred_image_src_id'] if to_be_validated else row['verified_preferred_image_src_id']),
-        EoL_API_key=EoL_API_key)
+        EoL_API_key=EoL_API_key,
+        # do we need to query the EoL API for the displayed image?
+        img_already_on_oz=(
+            (to_be_validated==False) or
+            (read_only['user_nondefault_image']==None) or
+            (inv_src_flags.get(img_src,None) not in eol_src_flag_names))
+        )
 
 
 @auth.requires_membership(role='manager')

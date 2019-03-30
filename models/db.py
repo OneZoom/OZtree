@@ -52,7 +52,7 @@ except:
 
 def thumbnail_url(src, src_id, preferred_px=150, square=True):
     return "{}{}/{}/{}.jpg".format(thumb_base_url, src, str(src_id)[-3:],src_id)
-js_thumbnail_url = 'function(src, src_id, preferred_px, square) {{return "{}" + src + "/" + src_id.toString().slice(-3) + "/" + src_id + ".jpg";}}'.format(thumb_base_url)
+js_thumbnail_url = 'function(src, src_id, preferred_px, square) {return "%s" + src + "/" + src_id.toString().slice(-3) + "/" + src_id + ".jpg";}' % (thumb_base_url, )
 
 name_length_chars = 190 ##max length for a species name is 190 chars (allows indexing. NB: max OTT name is 108 chars)
 
@@ -564,7 +564,7 @@ db.define_table('search_log',
 #  i)   just a set of ott ids: in which case it looks up the corresponding eol ids from
 #        the ordered_leaves and ordered_nodes tables), 
 #  ii)  just a set of eol data object ids: in which case it updates the database rows for
-#        images (not names) where src is one of [src_flags[x] for x in eol_src_flags] and
+#        images (not names) where src is one of [src_flags[n] for n in eol_src_flag_names] and
 #        src_id corresponds to the eol id.
 #  iii) both ott and corresponding eol ids: in which case the images so gained are
 #        treated from the "onezoom_via_eol" src, rather than plain "eol" src, which
