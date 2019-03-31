@@ -65,3 +65,8 @@ a:active, a:hover {
   width: 200vw;
   height: 180vh;
 }
+
+.main {
+  position: absolute;
+  width: 100%;
+}
