@@ -1386,6 +1386,10 @@ def otop():
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return treeview_info()
 
+def otop_MD():
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+    return treeview_info(has_text_tree=False)
+
 #def old_kew():
 #    """
 #    Like the standard, but show the tab for Plants of the World Online from Kew
