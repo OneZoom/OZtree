@@ -404,7 +404,6 @@ def sponsor_leaf():
                 id=reservation_entry.id,
                 OTT_ID=OTT_ID_Varin,
                 EOL_ID=leaf_entry.get('eol', -1),
-                eol_src=src_flags['eol'],
                 species_name=species_name,
                 js_species_name=dumps(species_name),
                 common_name=common_name,
