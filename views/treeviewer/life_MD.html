@@ -40,6 +40,8 @@ setup_params = {
 <!-- could include bespoke css file here -->
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree_MD.css')}}" />
 <script type="text/javascript">
+/* disable right click */
+document.oncontextmenu = function() {return false;}
 /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
 var tree_config = null;
 var pagetitle_func = function(nm) {return (nm)?"OneZoom Museum Display: "+ nm:"OneZoom Tree of Life Museum Display"};
