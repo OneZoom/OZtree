@@ -13,7 +13,7 @@
 <li><details>
     <summary>{{=summary}} &mdash; ({{=len(data)}} sponsors)</summary>
     <table>
-    <tr><th></th><th>Click each to email</th><th>Click each to view on tree</th><th><details><summary>Pictures used</summary><p>Run this from within OZprivate to download these images<blockquote>echo '{{=XML("<br />".join([s["doID"] for s in data if s]))}}' | ServerScripts/Utilities/getEOL_crops.py --file - --output_dir ../static/FinalOutputs/pics -v -f</blockquote></p></details></th></tr>
+    <tr><th></th><th>Click each to email</th><th>Click each to view on tree</th><th><details><summary>Pictures used</summary><p>Run this from within OZprivate to download these images<blockquote>echo '{{=XML("<br />".join([s["doID"] for s in data if s]))}}' | ServerScripts/Utilities/getEOL_crops.py --file - --output_dir ../static/FinalOutputs/img/{{=src_flags['onezoom_via_eol']}} -v -f</blockquote></p></details></th></tr>
     {{for s in data:}}<tr{{if s.get('rowflag'):}} class="{{=s['rowflag']}}"{{pass}}>
     <td><input type="checkbox" /></td>
     <td><a href="mailto:{{=s['email']}}?subject={{=quote(s['mail_subject'])}}&body={{=quote(s['mail_body'])}}">{{=s['email']}}</a></td>
@@ -36,11 +36,14 @@
     {{=",".join([row.get('e_mail') or row.get('PP_e_mail') for row in contactable_emails])}}
 </details>
 <details>
-<summary>Command to get all user-selected pictures</summary>
+<summary>Command to get all onezoom_via_eol pictures</summary>
     echo '
-    {{=XML("<br />".join(all_images))}}
-    ' |  ServerScripts/Utilities/getEOL_crops.py --file - --output_dir ../static/FinalOutputs/pics -v -f
-</details>
+    {{=XML("<br />".join(onezoom_via_eol_images))}}
+    ' |  ServerScripts/Utilities/getEOL_crops.py --file - --output_dir ../static/FinalOutputs/img/{{=src_flags['onezoom_via_eol']}} -v -f
 
+    echo '
+    {{=XML("<br />".join(eol_images))}}
+    ' |  ServerScripts/Utilities/getEOL_crops.py --file - --output_dir ../static/FinalOutputs/img/{{=src_flags['eol']}} -v -f
+</details>
 </div></div>
 </div>

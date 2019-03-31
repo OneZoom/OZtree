@@ -6,9 +6,6 @@
   <link rel="shortcut icon" href="{{=URL('static', 'favicon.ico')}}" type="image/x-icon" />
   <link rel="apple-touch-icon" href="{{=URL('static','favicon.png')}}">
   {{include 'web2py_ajax.html'}}
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-  <!-- fallback to local jQuery version e.g. if offline -->
-  <script>window.jQuery || document.write('<script src="{{=URL("static", "js/jquery.min.js")}}"><\/script>')</script>
     <script>
 /* When a page is embedded, we assume it is in the tree viewer, and thus needs pinch zoom functionality
  * removing, otherwise the viewer itself will be pinch zoomed. A better way would be to pass this
@@ -58,10 +55,10 @@ if request.vars.embed:
       def URL(*args, **kwargs): return web2py_URL(*args, **dict(kwargs, vars=dict(kwargs.get('vars') or {}, embed=request.vars.embed)))
       #remove external A href links
       web2py_A = A
-      def A(*args, **kwargs): return web2py_A(*args, **kwargs) if '_target' not in kwargs and ('_href' not in kwargs or kwargs['_href'].startswith(".") or (kwargs['_href'].startswith("/") and not kwargs['_href'].startswith("//"))) else CAT(*args)
+      def A(*args, **kwargs): return web2py_A(*args, **kwargs) if '_target' not in kwargs and ('_href' not in kwargs or kwargs['_href'].startswith(".") or (kwargs['_href'].startswith("/") and not kwargs['_href'].startswith("//"))) else SPAN(*args, **kwargs)
     elif request.vars.embed=='4':
       #remove hyperlink from *all* links created via the web2py A() helper
-      def A(*args, **kwargs): return CAT(*args)
+      def A(*args, **kwargs): return SPAN(*args, **kwargs)
     pass
   pass
 pass

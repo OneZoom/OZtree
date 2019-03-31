@@ -7,33 +7,61 @@ let int_text_fill = 'rgb(255,255,255)';
 let int_sponsor_fill_hover = 'rgb(255,255,255)';
 let int_sponsor_fill = 'rgb(227,200,115)';
 
-let node_colors = {
-  _default:  '240, 30%, 60%',
-  land:      '24,  60%, 60%',
-  reptile:   '125, 30%, 30%',
-  birds:     '180, 60%, 60%',
-  sea:       '192, 30%, 30%',
-  plants:    '134, 60%, 60%',
-  insects:   '57,  60%, 60%',
-  mushrooms: '57,   0%, 60%',
-  bacteria:  '355, 60%, 60%',
-};
+let challenge_colours = {
+  'homo sapiens': { circle: '0, 0%, 19%', haze: '#000F38' },
+  "default": { circle: '104, 20.7%, 57.5%', haze: '#34ca00' },
+  'water_1': { circle: '211.3, 33%, 57.8%', haze: '#007aff' },
+  'food_2': { circle: '10.2, 29.6%, 61%', haze: '#ff5943' },
+  'energy_3': { circle: '49.3, 20.5%, 57.1%', haze: '#ffd100' },
+  'nature_4': { circle: '104, 20.7%, 57.5%', haze: '#34ca00' },
+  'food_5': { circle: '10.2, 29.6%, 61%', haze: '#ff5943' },
+  'waste_6': { circle: '264.8, 18.5%, 48.6%', haze: '#7200ff' },
+  'energy_7': { circle: '49.3, 20.5%, 57.1%', haze: '#ffd100' },
+  'energy_8': { circle: '49.3, 20.5%, 57.1%', haze: '#ffd100' },
+  'water_9': { circle: '211.3, 33%, 57.8%', haze: '#007aff' },
+  'nature_10': { circle: '104, 20.7%, 57.5%', haze: '#34ca00' },
+  'waste_11': { circle: '264.8, 18.5%, 48.6%', haze: '#7200ff' },
+  'nature_12': { circle: '104, 20.7%, 57.5%', haze: '#34ca00' },
+  'waste_13': { circle: '264.8, 18.5%, 48.6%', haze: '#7200ff' },
+  'food_14': { circle: '211.3, 33%, 57.8%', haze: '#007aff' },  // "Sustainable seafood", so use water colours
+  'nature_15': { circle: '104, 20.7%, 57.5%', haze: '#34ca00' },
+}
 
 /**
  * Generate a colour based on the location of the node within the
  * raw_data tree
  */
 function location_color(node, alpha) {
-  var color;
+  var colors, uplimit = 20;
 
-  if (!node.region) {
-      // No detail loaded yet, return a translucent "loading" colour, don't update background
-      return 'hsla(240, 10%, 10%, 0.5)';
+  while (!node.region && node.upnode && uplimit > 0) {
+      // We don't have a colour, but maybe the parent does. It'll probably be right
+      node = node.upnode;
+      uplimit--;
   }
 
-  color = node_colors[node.region] || node_colors._default;
-  window.last_location_color = color;  // Feed the current colour to background.js
-  return 'hsla(' + color + ',' + (alpha === undefined ? 1 : alpha) + ')';
+  // Choose color for this node
+  if (node.latin_name === 'Homo sapiens') {
+    colors = challenge_colours['homo sapiens'];
+  } else {
+    colors = challenge_colours[node.region] || challenge_colours['default'];
+  }
+
+  // Feed the current colour to background.js
+  window.last_location_color = colors.haze;
+  return 'hsla(' + colors.circle + ',' + (alpha === undefined ? 1 : alpha) + ')';
+}
+
+/**
+ * Generate colour based on node and endanagered status
+ */
+function endangered_location_color(node, alpha) {
+  if (node.redlist === "CR") {
+    return 'hsla(0.6, 46.1%, 40%, ' + Math.max(alpha || 0, 0.6) + ')';
+  } else if (node.redlist === "EN") {
+    return 'hsla(15.7, 55.8%, 44.3%, ' + Math.max(alpha || 0, 0.5) + ')';
+  }
+  return location_color(node, alpha);
 }
 
 
@@ -169,7 +197,7 @@ const theme = {
     },
     
     'outline_hover': {
-      fill: 'rgb(0,50,0)'
+      fill: 'rgb(0,0,0)'
     },
     
     outline: {
@@ -178,7 +206,7 @@ const theme = {
     },
     
     inside: {
-      fill: location_color,
+      fill: endangered_location_color,
     },
     
     'inside_hover': {
@@ -196,11 +224,11 @@ const theme = {
     },
     
     sponsor: {
-      fill: 'rgb(150,180,100)'
+      fill: int_text_fill,
     },
     
     'sponsor_hover': {
-      fill: 'rgb(255,255,255)'
+      fill: int_text_fill_hover,
     },
     
     'copyright_hover': {

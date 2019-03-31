@@ -215,42 +215,52 @@ def search_node():
 
 def search_init():
     """
-    This is called at the very start of loading a tree view page. It finds
-    request.vars one of:
-    -- Number: ott
+    This is called at the very start of loading a tree view page. It looks in
+    request.vars to return the OneZoom id of taxa corresponding to:
+    -- Number: ott 
     -- String: name
-    return node or leaf id given ott number or scientific name
+    return a list of leaf (negative) or node ids given ott number or scientific name
     
-    The logic here isn't quite right: if we have multiple OTT hits, we should choose the one
-    with the 'nearest' name. At the moment we choose only based on name (with no OTT considerations)
+    The ott number is given priority. If this matches a single leaf, this is the only id
+    returned. If it matches a single node, this is the only one returned.
     
+    If multiple leaves/nodes match, and names are given, it tries to find a leaf or node
+    matching both name and ott. If none match both, it just returns all possible hits
+    (or an empty error if no hits at all).
     """
     session.forget(response)
+    ids = set()
     try:
         ott = int(request.vars.get('ott'))
         query = db.ordered_leaves.ott == ott
-        leaf_hit = db(query).select(db.ordered_leaves.id)
-        if len(leaf_hit) == 1:
-            return {"id": -leaf_hit[0].id}
+        ids.update([-r.id for r in db(query).select(db.ordered_leaves.id)])
+        # Always return the leaf if there is a single hit
+        if len(ids) == 1:
+            return {"ids": list(ids)}
         
         query = db.ordered_nodes.ott == ott
-        node_hit = db(query).select(db.ordered_nodes.id)
-        if len(node_hit) == 1:
-            return {"id": node_hit[0].id}
-            
-        raise  #if not found ott, go to except branch.
-    except:         
-        if request.vars.name is not None and len(request.vars.name) > 0:
-            tidy_latin = request.vars.name.replace("_", " ")
-            query = db.ordered_leaves.name == tidy_latin
-            leaf_hits = db(query).select(db.ordered_leaves.id).first()
-            if leaf_hits:
-                return {"id": -leaf_hits.id}
-            
-            query = db.ordered_nodes.name == request.vars.name
-            node_hits = db(query).select(db.ordered_nodes.id).first()
-            if node_hits:
-                return {"id": node_hits.id}
+        ids.update([r.id for r in db(query).select(db.ordered_nodes.id)])
+        # If a single node, don't worry about the name
+        if len(ids) == 1:
+            return {"ids": list(ids)}
+    except TypeError, ValueError:
+        pass  # Some problem converting ott to int, try on name
+    try:
+        tidy_latin = request.vars.name.replace("_", " ")
+        query = db.ordered_leaves.name == tidy_latin
+        name_ids = set([r.id for r in db(query).select(db.ordered_leaves.id)])
+        query = db.ordered_nodes.name == request.vars.name
+        name_ids.update([r.id for r in db(query).select(db.ordered_nodes.id)])
+    
+        # If we already had some ids, use names to refine
+        if len(ids & name_ids):
+            ids &= name_ids
+        elif len(ids | name_ids):
+            ids |= name_ids
+    except:
+        pass #could be a problem with getting a name
+    if ids:
+        return {"ids": sorted(ids)}
     return {"empty": request.vars.ott}
 
 def search_for_sciname():
@@ -550,88 +560,97 @@ def search_for_sponsor():
         
 def search_sponsor(searchFor, searchType, language, order_by_recent=None, limit=None, start=0, defaultImages=False):
     from OZfunctions import get_common_names
-    try:
-        lang_primary = language.split(',')[0].split("-")[0].lower()
-        searchFor = [s for s in searchFor.replace("%","").replace("_", " ").split() if s]
-        if len(searchFor) == 0 or all(len(s)==1 for s in searchFor): #disallow single letter searching
-            return {}
-        verified_name = db.reservations.verified_name
-        verified_more_info = db.reservations.verified_more_info
-        colnames = ['OTT_ID', 'name', 'verified_name', 'verified_more_info', 'verified_kind', 'verified_url', 'verified_preferred_image']
-        alt_txt = {"verified_name":T("This leaf has been sponsored", language=language),
-                   "verified_more_info":T("text awaiting confirmation", language=language),
-                   "verified_kind": "",
-                   "verified_preferred_image": None,
-                   "verified_url": None}
-        alt_colnames = [(("'"+alt_txt[c]+"'" if alt_txt[c] else "NULL") + " AS " + c) if c in alt_txt else c for c in colnames]     
-        colname_map = {nm:index for index,nm in enumerate(colnames)}
-        search_query = {'verif':"", 'unverif':""}
-        search_terms = []
-        
-        if searchType != "all":
-            search_query['verif'] = "verified_kind = " + db.placeholder
-            search_query['unverif'] = "user_sponsor_kind = " + db.placeholder
-            search_terms.append(searchType)
+    if searchFor:
+        try:
+            lang_primary = language.split(',')[0].split("-")[0].lower()
+            searchFor = [s for s in searchFor.replace("%","").replace("_", " ").split() if s]
+            if len(searchFor) == 0 or all(len(s)==1 for s in searchFor): # disallow single letter searching
+                return {}
+            verified_name = db.reservations.verified_name
+            verified_more_info = db.reservations.verified_more_info
+            colnames = [
+                'OTT_ID', 'name', 'verified_name', 'verified_more_info', 'verified_kind',
+                'verified_url', 'verified_preferred_image_src', 'verified_preferred_image_src_id']
+            alt_txt = {"verified_name":T("This leaf has been sponsored", language=language),
+                       "verified_more_info":T("text awaiting confirmation", language=language),
+                       "verified_kind": "",
+                       "verified_preferred_image_src": None,
+                       "verified_preferred_image_src_id": None,
+                       "verified_url": None}
+            alt_colnames = [(("'"+alt_txt[c]+"'" if alt_txt[c] else "NULL") + " AS " + c) if c in alt_txt else c for c in colnames]     
+            colname_map = {nm:index for index,nm in enumerate(colnames)}
+            search_query = {'verif':"", 'unverif':""}
+            search_terms = []
             
-        for word in ["%"+w+"%" for w in searchFor if w]:
-            if search_terms:
-                search_query['verif'] += " AND "
-                search_query['unverif'] += " AND "
-            search_query['verif'] += "(verified_name like " + db.placeholder + " or verified_more_info like " + db.placeholder + ")"
-            search_query['unverif'] += "(user_sponsor_name like " + db.placeholder + " or user_more_info like " + db.placeholder + ")"
-            search_terms.extend([word, word])
-
-        #The logic here is complex. We might wish to allow people to search either for their entered text if not yet verified, 
-        #or their verified text once it appears. If the former, we should put up the holding text in alt_txt. We detect this by
-        #looking at verified_time (for verified text) or user_sponsor_kind (for unverified text)
-        #We also need to not return expired or otherwise deactivated leaves
+            if searchType != "all":
+                search_query['verif'] = "verified_kind = " + db.placeholder
+                search_query['unverif'] = "user_sponsor_kind = " + db.placeholder
+                search_terms.append(searchType)
                 
-        #The verified ones
-        query = "SELECT * FROM (SELECT " + ",".join(colnames) + " FROM reservations"
-        query += " WHERE verified_time IS NOT NULL AND (deactivated IS NULL OR deactivated = '')"
-        query += " AND (DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE())"
-        query += " AND " + search_query['verif']
-        if order_by_recent:
-            query += ' ORDER BY verified_time DESC'
-        query += ") AS t1"
-        
-        query += " UNION ALL "
-
-        query += "SELECT * FROM (SELECT " + ",".join(alt_colnames) + " FROM reservations"
-        query += " WHERE verified_time IS NULL AND user_sponsor_kind IS NOT NULL AND user_sponsor_kind != ''"
-        query += " AND (deactivated IS NULL OR deactivated = '')"
-        query += " AND " + search_query['unverif']
-        if order_by_recent:
-            query += ' ORDER BY user_updated_time DESC'
-        query += ") AS t2"
-
-        if limit:
-            query += ' LIMIT ' + str(int(limit))
-            if start:
-                query += ' OFFSET ' + str(int(start))
-              
-        reservations = db.executesql(query, search_terms + search_terms)
-        
-        reservationsOttArray = []
-        for row in reservations:
-            reservationsOttArray.append(row[colname_map['OTT_ID']])
-        
-        query = db.ordered_leaves.ott.belongs(reservationsOttArray)
-        leaves = db(query).select(db.ordered_leaves.id, db.ordered_leaves.ott)
+            for word in ["%"+w+"%" for w in searchFor if w]:
+                if search_terms:
+                    search_query['verif'] += " AND "
+                    search_query['unverif'] += " AND "
+                search_query['verif'] += ("(verified_name like " + db.placeholder + 
+                    " or verified_more_info like " + db.placeholder + ")")
+                search_query['unverif'] += ("(user_sponsor_name like " + db.placeholder +
+                    " or user_more_info like " + db.placeholder + ")")
+                search_terms.extend([word, word])
     
-        language=request.vars.lang or request.env.http_accept_language or 'en'
-        common_names = get_common_names(reservationsOttArray, lang=language)
+            # The logic here is complex. We might wish to allow people to search either 
+            # for their entered text if not yet verified, or their verified text once it
+            # appears. If the former, we should put up the holding text in alt_txt.
+            # We detect this by looking at verified_time (for verified text) or 
+            # user_sponsor_kind (for unverified text).
+            # We also need to not return expired or otherwise deactivated leaves
+                    
+            #The verified ones
+            query = "SELECT * FROM (SELECT " + ",".join(colnames) + " FROM reservations"
+            query += " WHERE verified_time IS NOT NULL AND (deactivated IS NULL OR deactivated = '')"
+            query += " AND (DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE())"
+            query += " AND " + search_query['verif']
+            if order_by_recent:
+                query += ' ORDER BY verified_time DESC'
+            query += ") AS t1"
+            
+            query += " UNION ALL "
+    
+            query += "SELECT * FROM (SELECT " + ",".join(alt_colnames) + " FROM reservations"
+            query += " WHERE verified_time IS NULL AND user_sponsor_kind IS NOT NULL AND user_sponsor_kind != ''"
+            query += " AND (deactivated IS NULL OR deactivated = '')"
+            query += " AND " + search_query['unverif']
+            if order_by_recent:
+                query += ' ORDER BY user_updated_time DESC'
+            query += ") AS t2"
+    
+            if limit:
+                query += ' LIMIT ' + str(int(limit))
+                if start:
+                    query += ' OFFSET ' + str(int(start))
+                  
+            reservations = db.executesql(query, search_terms + search_terms)
+            
+            reservationsOttArray = []
+            for row in reservations:
+                reservationsOttArray.append(row[colname_map['OTT_ID']])
+            
+            query = db.ordered_leaves.ott.belongs(reservationsOttArray)
+            leaves = db(query).select(db.ordered_leaves.id, db.ordered_leaves.ott)
         
-        if defaultImages:
-            return {"common_names": common_names, "lang":language, "reservations": reservations,  "leaves": leaves, "headers": colname_map, "default_images":{row.ott:[row.src, row.src_id] for row in db(db.images_by_ott.ott.belongs(reservationsOttArray) & (db.images_by_ott.best_any == True)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, orderby=~db.images_by_ott.src)} }
-        else:
-            return {"common_names": common_names, "lang":language, "reservations": reservations,  "leaves": leaves, "headers": colname_map}
-        
-    except:
-        if is_testing:
-            raise
-        else:
-            return {}
+            language=request.vars.lang or request.env.http_accept_language or 'en'
+            common_names = get_common_names(reservationsOttArray, lang=language)
+            
+            if defaultImages:
+                return {"common_names": common_names, "lang":language, "reservations": reservations,  "leaves": leaves, "headers": colname_map, "default_images":{row.ott:[row.src, row.src_id] for row in db(db.images_by_ott.ott.belongs(reservationsOttArray) & (db.images_by_ott.best_any == True)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, orderby=~db.images_by_ott.src)} }
+            else:
+                return {
+                    "common_names": common_names, "lang": language, 
+                    "reservations": reservations, "leaves": leaves, "headers": colname_map}
+            
+        except:
+            if is_testing:
+                raise
+    return {}
 
 def get_ids_by_ott_array():
     """
@@ -657,7 +676,7 @@ def get_ids_by_ott_array():
 def otts2vns():
     '''
     Used e.g. to fill out the popular species lists,
-    can call with request.vars.lang=XX and with oz_special=1
+    can call with request.vars.lang=XX and with prefer_short=1
     Will return nulls for unmatched otts if return_nulls=1
     Returns e.g. {"770315":"Human","872567":"Brown Bear", "lang":"en-gb"}
     '''
@@ -668,13 +687,13 @@ def otts2vns():
     try:
         ret_otts = get_common_names([int(x) for x in request.vars.otts.split(',')],
             return_nulls = True if request.vars.nulls else False,
-            prefer_oz_special_names=True if request.vars.oz_special else False,
+            prefer_short_name=True if request.vars.prefer_short else False,
             include_unpreferred = True if (request.vars.include_unpreferred or request.vars.all) else False,
             return_all = True if request.vars.all else False,
             lang=lang)
         ret_otts['lang']=lang
         return ret_otts
-    except AttributeError, ValueError:
+    except (AttributeError, ValueError):
         return {'lang':lang}
     
 def update_visit_count():
@@ -816,9 +835,10 @@ def select_leaves(query, page=None, limit=None, sortcol=""):
 #PRIVATE FUNCTIONS
 
 def make_unicode(input):
-    if type(input) != unicode:
-        input =  input.decode('utf-8')
-        return input
-    else:
-        return input
+    try:
+        if input and type(input) != unicode:
+            input =  input.decode('utf-8')
+    except NameError:
+        pass #for python3
+    return input
         

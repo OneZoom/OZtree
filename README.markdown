@@ -4,7 +4,7 @@ This README file contains instructions for installing a private copy of OneZoom,
 
 There are two ways in which you can install OneZoom on a personal computer: full installation and partial installation. 
 
-* *Partial installation* does not create a standalone OneZoom site, but simply creates a local web file containing the javascript tree viewer. Instead of your tree viewer getting information from your own computer, it must do so by contantly requesting data from the OneZoom website (via the OneZoom APIs). This restricts your OneZoom viewer in various ways:  you cannot make your own bespoke tree, you cannot change languages in the viewer, and you are dependent upon a permanent, fast internet connection. Also note that this installation method is also relatively untested, and there are unfixed problems with e.g. displaying lists of popular species. However, partial installation may be suitable for developers who simply want to re-program features of the tree viewer, such as colours, branch geometry, etc.
+* *Partial installation* does not create a standalone OneZoom site, but simply creates a local web file containing the javascript tree viewer. Instead of your tree viewer getting information from your own computer, it must do so by constantly requesting data from the OneZoom website (via the OneZoom APIs). This restricts your OneZoom viewer in various ways:  you cannot make your own bespoke tree, you cannot change languages in the viewer, and you are dependent upon a permanent, fast internet connection. Also note that this installation method is also relatively untested, and there are unfixed problems with e.g. displaying lists of popular species. However, partial installation may be suitable for developers who simply want to re-program features of the tree viewer, such as colours, branch geometry, etc.
 
 * *Full installation* creates an entire duplicate of the OneZoom website, which is built using the [web2py](http://web2py.com) framework. This creates a fully self-contained local system (apart from the picture files, which can be downloaded separately). This is the most reliable installation method, but requires you to install and run extra software packages, in particular [web2py](http://web2py.com) and a [MySQL](https://www.mysql.com) server. Since this can be quite complicated, the majority of this readme contains instructions for full installation.
 
@@ -61,17 +61,19 @@ Before anything else, get the OZtree app from [github](https://github.com/OneZoo
 ### For a full installation (recommended):
 	
 1. Install a source code version of [web2py](http://www.web2py.com), placing your [OZtree repository](https://github.com/OneZoom/OZtree) within the web2py `applications` directory.
-2. Compile the client-side explorer code using `grunt compile` (or `grunt build` if in production mode) - see *"[Building the OneZoom tree viewer](#building-the-onezoom-tree-viewer)"*.
+2. Compile the client-side explorer code by running `npm install` from within the OZtree folder you have just moved, then run `grunt compile` (or `grunt build` if in production mode) - see *"[Building the OneZoom tree viewer](#building-the-onezoom-tree-viewer)"*.
 3. [Install](http://dev.mysql.com/downloads/mysql/) & start MySQL, then create a new database (see *"[Setting up the database backend](#setting-up-the-database-backend)"*)
 4. Create a appconfig.ini file in `OZtree/private`, with `migrate=1` and which references this database with the appropriate username and password. We also recommend copying the `routes.py` file from `OZtree/_MOVE_CONTENTS_TO_WEB2PY_DIR` to the top level of your web2py installation - see *"[Web2py installation](#web2py-installation)"*
 5. Fire up a temporary web2py server and visit the main page to create the (empty) database tables - see *"[Starting and shutting down web2py](#starting-and-shutting-down-web2py)"*
 6. Load up data into the tables: first create a user and assign it a 'manager' role in the `auth_` tables using the web2py database admin pages, then load the other tables using data from the original OneZoom site (e.g. sent to you via file transfer) - see *"[Filling the database](#filling-the-database)"*.
-7. Optimise your installation: (a) create indexes on the tables by copying and pasting the text at the end of the `OZtree/models/db.py` file into a mysql client (b) set `is_testing = False` in `models/db.py` and `migrate=0` in appconfig.ini.
+7. Optimise your installation:
+	* create indexes on the tables by copying and pasting the text at the end of the `OZtree/models/db.py` file into a mysql client
+	* set `is_testing = False` in `models/db.py` and `migrate=0` in appconfig.ini.
 
 
 ## Downloading the OZtree app
 
-Download a copy of the OZtree application from GitHub at [https://github.com/OneZoom/OZtree](https://github.com/OneZoom/OZtree), either as a zip file (not recommended), or probably better (easier to update), by cloning the repository (e.g. if you have [GitHub Desktop](https://desktop.github.com) installed, click "Open in Desktop" from the [OZtree repo](https://github.com/OneZoom/OZtree). Make sure the git folder is called "OZtree" (this is the default when you clone the repo, but not if you download it as a zip file).
+Download a copy of the OZtree application from GitHub at [https://github.com/OneZoom/OZtree](https://github.com/OneZoom/OZtree), either as a zip file (not recommended), or probably better (easier to update), by cloning the repository (e.g. using `git clone https://github.com/OneZoom/OZtree` or if you have [GitHub Desktop](https://desktop.github.com) installed, click "Open in Desktop" from the [OZtree repo](https://github.com/OneZoom/OZtree)). Make sure the git folder is called "OZtree" (this is the default when you clone the repo, but not if you download it as a zip file).
 
 For full installation, you will also need to download the source code version of web2py, either via git (https://github.com/web2py/web2py/) or simply from the download link at http://www.web2py.com/. You can then place the OZtree directory into the `applications` directory of the web2py folder.
 
@@ -163,12 +165,14 @@ separator =
 url        = https://www.sandbox.paypal.com
 
 [general]
-; * pics_dir: get thumbnail images from this source. If not
+
+[images]
+; * url_base: get thumbnail images from this source. If not
 ;    defined, will default to the local version, but that
 ;    means you will need to download >100,000 thumbnail images
-;    onto your machine. If you want to use the images on the 
+;    onto your machine. If you want to use the images on the
 ;    OneZoom server, set this to `//images.onezoom.org/`
-pics_dir = //images.onezoom.org/
+url_base = //images.onezoom.org/
 
 [sponsorship]
 ; * allow. Should we allow the sponsorship page to be
@@ -310,7 +314,16 @@ If you wish to make sure your OneZoom data is up-to-date, there are a few steps 
 4. Recompile your own tree and database tables. Instructions for creating your own tree are in [OZprivate/ServerScripts/TreeBuild/README.markdown](OZprivate/ServerScripts/TreeBuild/README.markdown).
  
 # Customising OneZoom
+A few suggestions about ways to customize OneZoom
 
-By running alternative versions of `picProcess.py`
+### Easy customization posibilities
 
-By writing your own user interface
+* Change the colour schemes: the code in `rawJS/OZTreeModule/src/themes` gives examples of how to create new colour schemes for branches, leaves, etc of the tree. They can be gathered together into themes (including different leaf styles, default fractal views etc) by adding to the code in `rawJS/OZTreeModule/src/tree_settings.js`.
+
+### Harder customization possibilities
+
+* Customizing pictures: by running alternative versions of `picProcess.py`, you can choose different pictures to represent taxonomic groups. This is left as an exercise to the customiser.
+
+* Alternative UI layer: the current OneZoom viewer uses the UIkit framework to layer a user interface on top of the viewing canvas. The UI can send commands to the viewing canvas, and the canvas is instatiated with UI callbacks, so it is quite possible to write alternative user interfaces (e.g. using different UI toolkits)
+
+* Alternative projections: the code in `rawJS/OZTreeModule/src/projection` can be supplemented with alternative "projections" of the tree, such as treemaps, other fractal layouts, etc.

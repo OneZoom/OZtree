@@ -1,16 +1,10 @@
 # -*- coding: utf-8 -*-
 from OZfunctions import *
 
-def pic_path ():
-    """
-    Where to save pics, and where to check if a local version of a picture exists
-    must be a function called with request.folder defined
-    """
-    return os.path.join(request.folder,'static','FinalOutputs','pics')
-
 @auth.requires_membership(role='manager')
 def index():
     '''this is a page to give quick links to all the management routines'''
+    https_redirect()
     return dict()
 
 @auth.requires(lambda: auth.has_membership('manager') or auth.has_membership('translator'))
@@ -83,10 +77,10 @@ def edit_language():
 def SHOW_SPONSOR_SUMS():
     '''list the sponsors by amount
     '''
+    https_redirect()
     cols = dict(donor_name = "`verified_donor_name`",
                 e_mail = "`e_mail`",
                 pp_name = "CONCAT_WS(' ',`PP_first_name`, `PP_second_name`)",
-                #grouped_imgs = "GROUP_CONCAT(if(`user_nondefault_image`,`verified_preferred_image`,NULL))",
                 grouped_otts = "GROUP_CONCAT(`OTT_ID`)",
                 sum_paid = "SUM(`user_paid`)",
                 count = db.reservations.id.count()
@@ -98,7 +92,6 @@ def SHOW_SPONSOR_SUMS():
         cols['donor_name'], 
         cols['e_mail'], 
         cols['pp_name'], 
-        #cols['grouped_imgs'], 
         cols['grouped_otts'], 
         cols['sum_paid'],
         cols['count'],
@@ -109,7 +102,7 @@ def SHOW_SPONSOR_SUMS():
 @auth.requires_membership(role='manager')
 def SPONSOR_VALIDATE():
     """
-    Ahow sponsorship details, by default shows only non-validated ones, unless ?show=all or ?show=validated
+    Show sponsorship details, by default shows only non-validated ones, unless ?show=all or ?show=validated
     
     the way we know something is fully sponsored is if PP transaction code is filled out - nb. this could be with us typing 'yet to be paid' in which case verified paid can be NULL so should not be used as a test of whether something is available or not
     
@@ -126,9 +119,11 @@ def SPONSOR_VALIDATE():
     admin comment
     
     """
-
-    if len(request.args): page=int(request.args[0])
-    else: page=0
+    https_redirect()
+    try:
+        page=int(request.args[0])
+    except:
+        page=0
     try:
         items_per_page=int(request.vars.n)
         if items_per_page<1:
@@ -144,7 +139,9 @@ def SPONSOR_VALIDATE():
                 (db.reservations.verified_kind != None) |
                 (db.reservations.verified_name != None) |
                 (db.reservations.verified_more_info != None) |
-                (db.reservations.verified_preferred_image != None)))
+                (db.reservations.verified_preferred_image_src != None) |
+                (db.reservations.verified_preferred_image_src_id != None)
+                ))
     elif request.vars.show == 'all':
         query = (db.reservations.PP_transaction_code != None)
     elif request.vars.show and request.vars.show.isdigit():
@@ -155,7 +152,8 @@ def SPONSOR_VALIDATE():
                  (db.reservations.verified_kind == None) &
                  (db.reservations.verified_name == None) &
                  (db.reservations.verified_more_info == None) &
-                 (db.reservations.verified_preferred_image == None))
+                 (db.reservations.verified_preferred_image_src == None) &
+                 (db.reservations.verified_preferred_image_src_id == None))
 
     rows = db(query).select(db.reservations.id,limitby=limitby, orderby=~db.reservations.user_updated_time) #NB can't order by sale time as it is from paypal, and not in a standard datatime format
     return dict(rows=[r.id for r in rows], page=page, vars=request.vars, items_per_page=items_per_page)
@@ -163,6 +161,7 @@ def SPONSOR_VALIDATE():
 @auth.requires_membership(role='manager')
 def SPONSOR_UPDATE():
     #needs to be called with single row id
+    https_redirect()
     read_only_cols = [
         'id',
         'OTT_ID',
@@ -170,11 +169,14 @@ def SPONSOR_UPDATE():
         'e_mail',
         'twitter_name',
         'user_sponsor_lang',
+        'user_donor_title',
+        'user_donor_name',
         'user_sponsor_kind',
         'user_sponsor_name',
         'user_more_info',
         'user_nondefault_image',
-        'user_preferred_image',
+        'user_preferred_image_src',
+        'user_preferred_image_src_id',
         'user_message_OZ',
         'user_paid',
         'PP_first_name',
@@ -188,9 +190,12 @@ def SPONSOR_UPDATE():
     ]
     write_to_cols = [
         'verified_kind',
+        'verified_donor_title',
+        'verified_donor_name',
         'verified_name',
         'verified_more_info',
-        'verified_preferred_image',
+        'verified_preferred_image_src',
+        'verified_preferred_image_src_id',
         'admin_comment',
         'deactivated'
     ]
@@ -211,8 +216,14 @@ def SPONSOR_UPDATE():
     to_be_validated = False
     ret_text=None
     if form.process(onsuccess=None).accepted:
-        #update the validated_time here, and hack round the fact that verified_more_info is set to NULL if it is passed in as a blank
-        db.reservations[row_id]=dict(verified_time=request.now, verified_more_info=request.vars.get('verified_more_info'))
+        #update the validated_time here, and hack round the fact that various fields are set to NULL if passed in as a blank
+        db.reservations[row_id]=dict(
+            verified_time=request.now,
+            verified_more_info=request.vars.get('verified_more_info'),
+            verified_donor_title=request.vars.get('verified_donor_title'),
+            verified_donor_name=request.vars.get('verified_donor_name'),
+        
+        )
         
         #grab important information
         twittername_t = read_only['twitter_name']
@@ -261,7 +272,6 @@ def SPONSOR_UPDATE():
                 except:
                     send_tweet = False
                 if send_tweet:
-                    #twitter.update_status(status="New update to www.OneZoom.org: now with millions of species") #comment out
                     twitter.update_status(status=tweet) #uncomment to make twitterbot live
                 else:
                     response.flash = CAT((P(response.flash) if response.flash else ""), P('Twitterbot is in testing mode, but would otherwise have said"', EM(tweet), '". To turn twitterbot on, add "autosend_tweet = 1" to appconfig.ini'))
@@ -270,51 +280,61 @@ def SPONSOR_UPDATE():
         
         form.element(_type='submit').update(_style='background-color: #999999; background-image:none; font-size: 1.6em;')
         form.element(_type='submit').update(_value='↻')
-        ##Only extra thing to do is to download new images: just redo the 
-        try:
-            import re
-            from subprocess import Popen, PIPE, STDOUT
-            
-            ret_text = ""
-            ott = db.reservations[row_id].get('OTT_ID')
-            db_conn_string = myconf.take('db.uri')
-            m = re.match(r'([^:]*:[^:]+)(:?)([^@]*)(.*)', db_conn_string)
-            db_conn_string = (m.group(1) or '') + m.group(2) + m.group(4)
-            password = m.group(3) or ''
-            EoLQueryPicsNames = [os.path.join(request.folder,'OZprivate','ServerScripts','Utilities','EoLQueryPicsNames.py'),
-                                 '--database', db_conn_string,
-                                 '--output_dir', pic_path(), 
-                                 '--add_percent', str(percent_crop_expansion),
-                                 '-v', '--script', '--opentree_id', str(int(ott))]
-            if db.reservations[row_id].user_nondefault_image or request.vars.admin_changed_image:
-                #this is a specific user-chosen image: we will save it as a "OneZoom" image
-                DOid = db.reservations[row_id].get('verified_preferred_image')
-                if DOid:
-                    #get the DB / pw string from appconfig.ini, and extract the password
-                    #only save an explicit OneZoom image (by passing in the dataObject ID) if the user  
-                    # (or admin, if overridden) has selected something different from the EoL default
-                    image_getter_connection = Popen(EoLQueryPicsNames + ['--bespoke_eol_image', str(int(DOid))], 
-                                                    stdout=PIPE, stdin=PIPE, stderr=STDOUT, 
+        
+        img_src = db.reservations[row_id].verified_preferred_image_src
+        if img_src in [src_flags['onezoom_via_eol'], src_flags['eol']] or request.vars.admin_changed_image:
+            # We have asked for an image from EoL- use EoLQueryPicsNames to download
+            # it and simultanously add it to the database (perhaps as a bespoke image)
+            try:
+                import re
+                from subprocess import Popen, PIPE, STDOUT
+                
+                ret_text = ""
+                ott = db.reservations[row_id].get('OTT_ID')
+                # Since the EoLQueryPicsNames script runs as the web user, it should not have
+                # direct access to the appconfig.ini file, with username and password,
+                # so we pass it a password string
+                db_conn_string = myconf.take('db.uri')
+                m = re.match(r'([^:]*:[^:]+)(:?)([^@]*)(.*)', db_conn_string)
+                #get the DB / pw string from appconfig.ini, and extract the password
+                db_conn_string = (m.group(1) or '') + m.group(2) + m.group(4)
+                password = m.group(3) or ''
+                EoLQueryPicsNames = [os.path.join(request.folder,'OZprivate','ServerScripts','Utilities','EoLQueryPicsNames.py'),
+                                     '--database', db_conn_string,
+                                     '--add_percent', str(percent_crop_expansion),
+                                     '-v', '--opentree_id', str(int(ott))]
+                if img_src == src_flags['onezoom_via_eol'] or request.vars.admin_changed_image:
+                    #this is a specific user-chosen image: we will save it as a "onezoom_via_eol" image
+                    DOid = db.reservations[row_id].verified_preferred_image_src_id
+                    if DOid:
+                        #only save an explicit OneZoom image (by passing in the dataObject ID) if the user  
+                        # (or admin, if overridden) has selected something different from the EoL default
+                        image_getter_connection = Popen(EoLQueryPicsNames + ['--eol_image_id', str(int(DOid))], 
+                                                        stdout=PIPE, stderr=STDOUT,
+                                                        stdin=PIPE, 
+                                                        env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()})
+                        #pass in the password via stdin, so it doesn't get shown in the processes
+                        ret_text += image_getter_connection.communicate(input='{0}\n'.format(password))[0]
+                #Always update the default EoL image (and common name) using EoLQueryPicsNames.py,
+                # unless (for the time being) this is an eol_old image, in which case leave it
+                # (this is a hack until EoL V3 images are nicer than eolV2)
+                # Don't pass in the DOid - the script should get that automagically
+                if img_src != src_flags['eol_old']:
+                    image_getter_connection = Popen(EoLQueryPicsNames, 
+                                                    stdout=PIPE, stderr=STDOUT,
+                                                    stdin=PIPE,
                                                     env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()})
                     #pass in the password via stdin, so it doesn't get shown in the processes
                     ret_text += image_getter_connection.communicate(input='{0}\n'.format(password))[0]
-            #Always update the default EoL image (and common name) using EoLQueryPicsNames.py. 
-            # Don't pass in the DOid - the script should get that automagically
-            image_getter_connection = Popen(EoLQueryPicsNames, 
-                                            stdout=PIPE, stdin=PIPE, stderr=STDOUT, 
-                                            env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()})
-            #pass in the password via stdin, so it doesn't get shown in the processes
-            ret_text += image_getter_connection.communicate(input='{0}\n'.format(password))[0]
-            if ret_text:
-                form.element(_type='submit').update(_title=ret_text)
-                
-        except:
-            raise
-            try:
-                response.flash = "could not download image ({}). Try running \n{}".format(ret_text, " ".join(EoLQueryPicsNames))
+                    if ret_text:
+                        form.element(_type='submit').update(_title=ret_text)
+                    
             except:
-                response.flash = "could not download image. Sorry."
-
+                raise
+                try:
+                    response.flash = "could not download image ({}). Try running \n{}".format(ret_text, " ".join(EoLQueryPicsNames))
+                except:
+                    response.flash = "could not download image. Sorry."
     else:
         if form.errors:
             for elem in form.elements():
@@ -324,6 +344,12 @@ def SPONSOR_UPDATE():
             #this is what happens when the form is loaded at the start (not processed)
             ## variables rendered in a 'textarea' tag (DB fieldtype = text)
             ## variables rendered in an 'input' tag (DB fieldtype = integer, etc)
+            if row['verified_donor_title'] is None:
+                form.element(_name='verified_donor_title').append((read_only['user_donor_title'] or "").strip())
+                to_be_validated = True
+            if row['verified_donor_name'] is None:
+                form.element(_name='verified_donor_name').append((read_only['user_donor_name'] or "").strip())
+                to_be_validated = True
             if row['verified_name'] is None:
                 form.element(_name='verified_name').append((read_only['user_sponsor_name'] or "").strip())
                 to_be_validated = True
@@ -331,15 +357,16 @@ def SPONSOR_UPDATE():
                 form.element(_name='verified_more_info').append((read_only['user_more_info'] or "").strip())
                 to_be_validated = True
             
-            ## variables rendered in an 'input' tag (DB fieldtype = integer, etc) 
-            if row['verified_preferred_image'] is None:
-                form.element(_name='verified_preferred_image').update(_value=read_only['user_preferred_image'])
-                # this may not need to be verified: some taxa have no image => no user_preferred_image => no verified_preferred_image
             if row['verified_kind'] is None:
                 form.element(_name='verified_kind').element('option[value={}]'.format(read_only['user_sponsor_kind'] or 'by')).update(_selected='selected')    
                 to_be_validated = True
-    if to_be_validated==False:
-        #this is a simple update
+    if to_be_validated:
+        (img_src, img_src_id) = (
+            row['user_preferred_image_src'], row['user_preferred_image_src_id'])
+    else:
+        #this is a simple update - show the already-validated image
+        (img_src, img_src_id) = (
+            row['verified_preferred_image_src'], row['verified_preferred_image_src_id'])
         form.element(_type='submit').update(_style='background-color: #999999; background-image:none; font-size: 1.6em;')
         form.element(_type='submit').update(_value='↻')
     try:
@@ -347,13 +374,27 @@ def SPONSOR_UPDATE():
     except:
         EoL_API_key=""
         response.flash="You should really set an eol_api_key in your appconfig.ini file"
-    return dict(form=form, vars=read_only, to_be_validated=to_be_validated, EoL_API_key=EoL_API_key)
+
+    return dict(
+        form=form, 
+        vars=read_only,
+        img_src=img_src,
+        img_src_id=img_src_id,
+        to_be_validated=to_be_validated,
+        EoL_API_key=EoL_API_key,
+        # do we need to query the EoL API for the displayed image?
+        img_already_on_oz=(
+            (to_be_validated==False) or
+            (read_only['user_nondefault_image']==None) or
+            (inv_src_flags.get(img_src,None) not in eol_src_flag_names))
+        )
 
 
 @auth.requires_membership(role='manager')
 def LIST_IMAGES():
     """this mines the database for all images and shows them ranked by popularity
     """
+    https_redirect()
     from time import time #to apppend to href, so that caching does not happen
     from collections import OrderedDict
  
@@ -392,6 +433,7 @@ def LIST_IMAGES():
         elif request.vars.get('select_image_type') == 'best_pd':
             query = query & (db.images_by_ott.best_pd)
         rows = db(query).select(
+                           db.images_by_ott.src,
                            db.images_by_ott.src_id,
                            db.images_by_ott.ott,
                            db.images_by_ott.rating,
@@ -408,11 +450,13 @@ def LIST_IMAGES():
 @auth.requires_membership(role='manager')
 def SHOW_EMAILS():
     """
-    find each set of sponsorship batches, ordered by verification date (to the nearest day) and list out the emails we can use, to paste into an email
+    Find each set of sponsorship batches, ordered by verification date (to the nearest day) 
+    and list out the emails we can use, to paste into an email
     """
     from collections import OrderedDict
     import re
     import os.path
+    https_redirect()
     email_list = OrderedDict()
     
     #first find the sponsors that haven't gone through for some reason.
@@ -425,7 +469,8 @@ def SHOW_EMAILS():
                    (db.reservations.user_more_info != None)) &
                   ((db.reservations.PP_transaction_code == None) |
                    (db.reservations.verified_paid == None))).select(db.reservations.e_mail, 
-                                                             db.reservations.user_preferred_image,
+                                                             db.reservations.user_preferred_image_src,
+                                                             db.reservations.user_preferred_image_src_id,
                                                              db.reservations.name,
                                                              db.reservations.user_sponsor_kind,
                                                              db.reservations.user_sponsor_name,
@@ -440,12 +485,17 @@ def SHOW_EMAILS():
         #we can't use the paypal emails etc because we haven't been paid!
         if s.e_mail:
             details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.user_sponsor_name, s.e_mail, sponsor_for=s.user_sponsor_kind=='for', email_type='no_payment')
+            if s.user_preferred_image_src and s.user_preferred_image_src_id:
+                details['local_pic'] = os.path.isfile(
+                    os.path.join(
+                        local_pic_path(s.user_preferred_image_src, s.user_preferred_image_src_id),
+                        str(s.user_preferred_image_src_id)+'.jpg'))
             details.update({
                'ott' : str(s.OTT_ID),
                'name': s.name,
                'cname':cnames.get(s.OTT_ID),
-               'doID': str(s.user_preferred_image),
-               'local_pic': os.path.isfile(os.path.join(pic_path(), str(s.user_preferred_image)+'.jpg')) if s.user_preferred_image else None,
+               'img_src': str(s.user_preferred_image_src),
+               'img_src_id': str(s.user_preferred_image_src_id),
                'rowflag':None if s.admin_comment else 'no_admin',
                'mesg': s.user_message_OZ})
             try:
@@ -453,13 +503,14 @@ def SHOW_EMAILS():
             except:
                 email_list[details['type']]=[details]
             
-    all_images = []
+    imgs = []
     #now look for sponsors that haven't been verified yet
     sponsors = db((db.reservations.verified_paid != None) & #they have paid through paypal
                    (db.reservations.verified_paid != '')   & 
                    (db.reservations.verified_time == None)).select(db.reservations.e_mail, 
                                                              db.reservations.PP_e_mail,
-                                                             db.reservations.user_preferred_image,
+                                                             db.reservations.user_preferred_image_src,
+                                                             db.reservations.user_preferred_image_src_id,
                                                              db.reservations.user_sponsor_name,
                                                              db.reservations.user_sponsor_kind,
                                                              db.reservations.name,
@@ -472,24 +523,30 @@ def SHOW_EMAILS():
     cnames = get_common_names(otts)
     for s in sponsors:
         details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.user_sponsor_name, s.e_mail or s.PP_e_mail, s.PP_first_name, s.PP_second_name, sponsor_for= (s.user_sponsor_kind=='for'), email_type='to_verify')
+        if s.user_preferred_image_src and s.user_preferred_image_src_id:
+            details['local_pic'] = os.path.isfile(
+                os.path.join(
+                    local_pic_path(s.user_preferred_image_src, s.user_preferred_image_src_id),
+                    str(s.user_preferred_image_src_id)+'.jpg'))
         details.update({
             'ott' : str(s.OTT_ID),
             'name': s.name,
             'cname':cnames.get(s.OTT_ID),
-            'doID': str(s.user_preferred_image),
-            'local_pic': os.path.isfile(os.path.join(pic_path(), str(s.user_preferred_image)+'.jpg')) if s.user_preferred_image else None,
+            'img_src': str(s.user_preferred_image_src),
+            'img_src_id': str(s.user_preferred_image_src_id),
             'mesg': s.user_message_OZ})
         try:
             email_list[details['type']].append(details)
         except:
             email_list[details['type']]=[details]
-        all_images.append(str(s.user_preferred_image))
+        imgs.append([s.user_preferred_image_src, s.user_preferred_image_src_id])
 
     #now go through each verified_time, by day
     sponsors = db(db.reservations.verified_time != None).select(db.reservations.e_mail, 
                                                                 db.reservations.PP_e_mail,
                                                                 db.reservations.verified_time,
-                                                                db.reservations.verified_preferred_image,
+                                                                db.reservations.verified_preferred_image_src,
+                                                                db.reservations.verified_preferred_image_src_id,
                                                                 db.reservations.verified_name,
                                                                 db.reservations.verified_kind,
                                                                 db.reservations.name,
@@ -502,30 +559,39 @@ def SHOW_EMAILS():
     cnames = get_common_names(otts)
     for s in sponsors:
         details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.verified_name, s.e_mail or s.PP_e_mail, s.PP_first_name, s.PP_second_name, sponsor_for= s.verified_kind=='for', email_type='live')
+        if s.verified_preferred_image_src and s.verified_preferred_image_src_id:
+            # do we have a local picture: can't use thumbnail_url() as it might refer to
+            # a remote location (e.g. image.onezoom.org)
+            details['local_pic'] = os.path.isfile(
+                os.path.join(
+                    local_pic_path(s.verified_preferred_image_src, s.verified_preferred_image_src_id),
+                    str(s.verified_preferred_image_src_id)+'.jpg'))
         details.update({
             'ott' : str(s.OTT_ID),
             'name': s.name,
             'cname': cnames.get(s.OTT_ID),
-            'doID': str(s.verified_preferred_image),
-            'local_pic': os.path.isfile(os.path.join(pic_path(), str(s.verified_preferred_image)+'.jpg')) if s.verified_preferred_image else None,
+               'img_src': str(s.user_preferred_image_src),
+               'img_src_id': str(s.user_preferred_image_src_id),
             'mesg': s.user_message_OZ})
         try:
             email_list[details['type'] + " " + s.verified_time.strftime("%A %e %b, %Y")].append(details)
         except:
             email_list[details['type'] + " " + s.verified_time.strftime("%A %e %b, %Y")]=[details]
 
-        all_images.append(str(s.verified_preferred_image))
+        imgs.append(s.verified_preferred_image_src, s.verified_preferred_image_src_id)
     
-    all_images= [i for i in all_images if i.isdigit()] #kill off negative ids (not EoL images)
-    
+    onezoom_via_eol_images= [i[1] for i in imgs if i[0]==src_flags['onezoom_via_eol']]
+    eol_images = [i[1] for i in imgs if i[0]==src_flags['eol']]
     contactable_emails = db((db.reservations.allow_contact == True)       &
                             (db.reservations.PP_transaction_code != None) & #requires transaction gone through
                             (db.reservations.verified_kind != None)       & #requires verified
                             ((db.reservations.e_mail != None) | (db.reservations.PP_e_mail != None)) #need an email
-                            ).select(db.reservations.e_mail, db.reservations.PP_e_mail)
-
-    
-    return(dict(email_list = email_list, all_images=all_images, contactable_emails= contactable_emails))
+                           ).select(db.reservations.e_mail, db.reservations.PP_e_mail)
+    return(dict(
+        email_list = email_list, 
+        onezoom_via_eol_images=onezoom_via_eol_images,
+        eol_images=eol_images,
+        contactable_emails=contactable_emails))
 
 """ these are admin tools for database import """
 
@@ -537,6 +603,7 @@ def SET_PRICES():
     b) some specifically high-ranked taxa (I suggest all the icons on the home page should be boosted to e.g. 75 pounds)
     
     """
+    https_redirect()
     prices = [500,1000,2000,4000,7500,15000]
 
     bespoke_prices = [ #these are in order highest to lowest
@@ -651,6 +718,7 @@ def GENERATE_TREE():
     run the tree generation script - this takes ages, so use a lockfile
     in OneZoom/OZprivate/data/YanTree/generate_tree.lock
     """
+    https_redirect()
     import subprocess
     import os
     import time
@@ -678,6 +746,7 @@ def REIMPORT_TREE_TABLES():
     !!!!currently this doesn't work
     """
     raise
+    https_redirect()
     
     import os
     from shutil import copyfile

@@ -18,7 +18,8 @@ def UI_layer():
     """
 
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    tabs = current.OZglobals['tab_definitions']
+    tabs = dict(current.OZglobals['tab_definitions'])
+    tabs.update(request.vars.get('custom_tabs', {}))
     tab_defaults = current.OZglobals['tab_defaults']
 
     if 'tabs' not in request.vars:

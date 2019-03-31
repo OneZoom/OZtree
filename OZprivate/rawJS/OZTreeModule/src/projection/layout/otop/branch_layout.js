@@ -24,8 +24,16 @@ class BranchLayout extends BranchLayoutBase {
     bezier_shape.height = 0;
     bezier_shape.stroke.color = color_theme.get_color('branch.stroke', node);
 
-    // Blur dependent on what the line width would have been
-    bezier_shape.shadow = { blur: Math.max(2, Math.min(10, node.rvar * 0.02)) };
+    if (!node.upnode) {
+        // Root of all life, make branch disappear off the edge of the screen
+        bezier_shape.sy = bezier_shape.sy * 100;
+        bezier_shape.shadow = { blur: 2 };
+    } else if (node.upnode.children.length < 100) {
+        // This isn't part of a high-branching node, we can blur it without overloading GPU.
+        // Blur dependent on what the line width would have been
+        bezier_shape.shadow = { blur: Math.max(2, Math.min(10, node.rvar * 0.02)) };
+    }
+
     bezier_shape.stroke.line_cap = 'butt';
 
     shapes.push(bezier_shape);

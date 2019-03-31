@@ -5,5 +5,5 @@
 <ul>{{for k,d in data.items():}}
   {{if k.startswith('oz'): continue}}
   {{if d is None or len(d) == 0: continue}}
-  <li><a href="{{=d[1] if len(d) > 1 else d[0]}}">{{=current.OZglobals['tab_definitions'][k]['name'] if k in current.OZglobals['tab_definitions'] else k}}</a></li>
+  <li>{{=A(current.OZglobals['tab_definitions'][k]['name'] if k in current.OZglobals['tab_definitions'] else k, _href=(d[1] if len(d) > 1 else d[0]))}}</li>
 {{pass}}</ul>

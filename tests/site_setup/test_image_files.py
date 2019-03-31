@@ -3,6 +3,7 @@
 import sys
 import os.path
 import tempfile
+from collections import namedtuple
 from nose import SkipTest
 
 
@@ -10,6 +11,13 @@ if sys.version_info[0] < 3:
     raise Exception("Python 3 only")
 
 from ..util import get_db_connection, appconfig_contains, web2py_app_dir
+# Create request.folder for use below
+request_obj = namedtuple('request_obj', 'folder')
+request = request_obj(folder=web2py_app_dir)
+
+#copied from db.py
+local_pic_path = lambda src, src_id: os.path.join(
+        request.folder,'static','FinalOutputs','img', str(src), str(src_id)[-3:])
 
 class TestImageFiles(object):
     @classmethod
@@ -26,23 +34,23 @@ class TestImageFiles(object):
         Will output the otts and numbers in line batches to a temporary file, so they can be re-harvested
         """
         reporting_batch_size = 100
-        if appconfig_contains("pics_dir=", "general"):
+        if appconfig_contains("url_base=", "images"):
             raise SkipTest("This OneZoom instance is not using local image thumbnails")
         else:
             tmpfiles = []
             db_cursor = self.db['connection'].cursor()
-            sql = "SELECT src_id, ott from `{}` where (src=1 or src=2) group by src_id, ott".format('images_by_ott')
+            sql = "SELECT src, src_id, ott from `{}`".format('images_by_ott')
             db_cursor.execute(sql)
             otts=set()
             fns=set()
             for row in db_cursor:
                 #should correct this from line 48/49 of db.py
-                if not os.path.isfile(os.path.join(web2py_app_dir, 'static','FinalOutputs','pics', str(row[0])+".jpg")):
+                if not os.path.isfile(os.path.join(local_pic_path(row[0], row[1]), str(row[1])+".jpg")):
                     if not tmpfiles:
                         tmpfiles.append(tempfile.NamedTemporaryFile(mode="w+t", delete=False))
                         tmpfiles.append(tempfile.NamedTemporaryFile(mode="w+t", delete=False))
-                    fns.add(str(int(row[0])))
-                    otts.add(str(int(row[1])))
+                    fns.add("{}/{}".format(row[0], row[1]))
+                    otts.add(str(int(row[2])))
                     if (len(fns) == reporting_batch_size):
                         print(".", flush=True)
                         print(" ".join(fns), file=tmpfiles[0])

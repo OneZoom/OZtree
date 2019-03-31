@@ -2,8 +2,9 @@
 # this file is released under public domain and you can use without limitations
 import re
 import urllib
+from json import dumps
 
-from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code, raise_incorrect_url
+from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code, raise_incorrect_url, https_redirect
 
 """ Some settings for sponsorship"""
 try:
@@ -47,6 +48,7 @@ def user():
     """
 
     #from http://www.web2pyslices.com/slice/show/1642/login-with-username-and-email - allow username OR email (to allow 'guest' account
+    https_redirect()
     if 'login' in request.args:
         db.auth_user.username.label = T("Username or Email")
         auth.settings.login_userfield = 'username'
@@ -118,45 +120,54 @@ def sponsor_leaf():
             user_sponsor_kind
             user_sponsor_name
             user_more_info
-            user_preferred_image
+            user_preferred_image_src
+            user_preferred_image_src_id
             user_updated_time
             user_paid
             user_message_OZ
 
-        This function DOES NOT need up update the sponsor or verified info tables because these are handled separately. Additionally, e-mail, address and name as well as receipt should be captured from Paypal """
+        This function DOES NOT need to update the sponsor or verified info tables because these are handled separately. Additionally, e-mail, address and name as well as receipt should be captured from Paypal """
+    # initialise status flag (it will get updated if all is OK)
+    status = ""
 
     try:
         maint = int(myconf.take('sponsorship.maintenance_mins'))
     except:
         maint = 0
     if maint:
-        response.view = request.controller + "/spl_maintenance." + request.extension
-        return dict(mins=str(maint))
+        status = "maintenance"
 
     max_price = db.prices.price.max()
     max_global_price = db().select(max_price).first()[max_price] / 100
     min_price = db.prices.price.min()
     min_global_price = db().select(min_price).first()[min_price] / 100
     
-    from json import dumps
     if (request.vars.get('form_reservation_code')):
         form_reservation_code = request.vars.form_reservation_code
     else:
         form_reservation_code = __make_user_code()
-    # initialise status flag (it will get updated if all is OK)
-    status = ""
-    # sometimes (e.g. museum display on main OZ site) we shut off sponsoring without using appconfig
-    # which we do by passing a url param
-    try:
-        allow_sponsorship = myconf.take('sponsorship.allow_sponsorship') in ['true', '1', 't', 'y', 'yes', 'True'] and not request.vars.no_sponsoring
-    except:
-        allow_sponsorship = False
-    # initialise other variables that will be parsed on to the page
-    EOL_ID = -1
-    species_name = common_name = the_name = None
+    # default to not allowing sponsorships, unless actively turned on in appconfig.ini
+    # even if turned on, sometimes (e.g. museum display on main OZ site) we shut off 
+    # sponsoring anyway by passing a url param.
+    allow_sponsorship = False
+    if request.vars.no_sponsoring:
+        pass
+    else:
+        try:
+            spons = myconf.take('sponsorship.allow_sponsorship')
+            if spons.lower() in ['1', 'all']:
+                allow_sponsorship = True
+            elif spons.lower() in ['0', 'none']:
+                allow_sponsorship = False
+            # If anything other than '1' or 'all', treat this as a role, e.g. "manager"
+            elif auth.has_membership(role=spons):
+                allow_sponsorship = True
+        except:
+            pass
+    # initialise other variables that will be passed on to the page
+    species_name = common_name = the_long_name = None
     release_time = 0 #when this will become free, in seconds
    
-    # todo this function should probably handle asking_price and set it from ordered_leaves
     try:
         EoL_API_key=myconf.take('api.eol_api_key')
     except:
@@ -176,159 +187,167 @@ def sponsor_leaf():
     if ((not leaf_entry) or              #invalid if not in ordered_leaves
         (leaf_entry.ott is None) or      #invalid if no OTT ID
         (' ' not in leaf_entry.name)):   #invalid if not a species name (e.g. no space/underscore)
-        response.view = request.controller + "/spl_invalid." + request.extension
-        return dict(OTT_ID = OTT_ID_Varin, species_name = leaf_entry.get('name'))
+        status = "invalid" # will override maintenance
     
-    #we might come into this with an established partner set in request.vars (e.g. LinnSoc)
-    partner = request.vars.get('partner')
-    """
-    TO DO & CHECK - This allows specific parts of the tree to be associated with a partner
-    if partner is None:
-        #check through partner_taxa for leaves that might match this one
-        partner = db((~db.partner_taxa.deactived) & 
-                     (db.partner_taxa.is_leaf == True) &
-                     (db.partner_taxa.ott == OTT_ID_Varin)
-                    ).select(db.partner_taxa.partner_identifier).first()
-    if partner is None:
-        #pull out potential partner *nodes* that we might need to check
-        #also check if this leaf lies within any of the node ranges
-        partner = db((~db.partner_taxa.deactived) & 
-                     (db.partner_taxa.is_leaf == False) &
-                     (OTT_ID_Varin >= db.ordered_nodes.leaf_lft) &
-                     (OTT_ID_Varin <= db.ordered_nodes.leaf_rgt) &
-                     (db.ordered_nodes.ott == db.partner.ott).first()
-                    ).select(db.partner_taxa.partner_identifier) #this should include a join with ordered_nodes to get the ranges, and a select
-    """
-    try:
+    if status == "": #still need to figure out status, but should be able to get data
+        #we might come into this with an established partner set in request.vars (e.g. LinnSoc)
+        partner = request.vars.get('partner')
+        """
+        TO DO & CHECK - This allows specific parts of the tree to be associated with a partner
         if partner is None:
-            raise AttributeError
-        partner_data = db(db.partners.partner_identifier == partner).select(db.partners.ALL).first().as_dict() #this could be null
-    except AttributeError:
-        partner_data = {}
-        
-    # this is a real ID (may be banned) but can get the data
-    EOL_ID = leaf_entry.eol
-
-    # find out if the leaf is banned
-    # now search in db for ottid in banned
-    isbanned = db(db.banned.ott == OTT_ID_Varin).count()
-    # this will be >=1 if banned and 0 if not banned
-    # we need to update the reserved table here so find the id (regardless of banned / maintenance status)
-    reservation_query = db(db.reservations.OTT_ID == OTT_ID_Varin)
-    reservation_entry = reservation_query.select().first()
-    if reservation_entry is None:
-        # there is no row in the database for this case so add one
-        if (isbanned != 0):
-            # update with full viewing data but no reservation as banned
-            db.reservations.insert(
-                OTT_ID = OTT_ID_Varin,
-                name=leaf_entry.name,
-                last_view=request.now,
-                num_views=1
-            )
-            # this line does not insert any leger id because no transaction has taken place yet
-            # that entry in the db is allowed to be blank
-        elif not allow_sponsorship:
-            # update but don't reserve
-            db.reservations.insert(
-                OTT_ID = OTT_ID_Varin,
-                name=leaf_entry.name,
-                last_view=request.now,
-                num_views=1)
-        else:
-            status = "available"
-            # update with full reservation
-            db.reservations.insert(
-                OTT_ID = OTT_ID_Varin,
-                name=leaf_entry.name,
-                last_view=request.now,
-                num_views=1,
-                reserve_time=request.now,
-                user_registration_id =form_reservation_code)
-            # this line does not insert any leger id because no transaction has taken place yet
-            # that entry in the db is allowed to be blank
-    else:
-        # there is already a row in the database so update
-        reservation_query.update(last_view=request.now, num_views=reservation_entry.num_views+1)
-
-        # this may be available (because valid) but could be sponsored, unverified, reserved or available still 
-        # easiest cases to rule out are relating sponsored and unverified cases. In either case they would appear in the leger
-        ledger_user_name = reservation_entry.user_sponsor_name
-        ledger_PP_transaction_code = reservation_entry.PP_transaction_code
-        ledger_verified_time = reservation_entry.verified_time
-        # the way we know something is fully sponsored is if PP transaction code is filled out  
-        #nb. this could be with us typing "yet to be paid" in which case verified_paid can be NULL 
-        # so "verified paid " should not be used as a test of whether something is available or not
-        # For forked sites, we do not pass PP transaction code (confidential), so we have to check first if 
-        # verified.
-        # Need to have another option here if verified_time is too long ago - we should move this to the expired_reservations table and clear it.
-        if (ledger_verified_time):
-            status = "sponsored"
-        elif allow_sponsorship and not isbanned:
-            if (ledger_user_name):
-            # something has been filled in
-                if (ledger_PP_transaction_code):
-                    #we have a code (or have reserved this taxon)
-                    status = "unverified"
-                else:
-                    # unverified and unpaid - test time
-                    startTime = reservation_entry.reserve_time
-                    endTime = request.now
-                    timesince = ((endTime-startTime).total_seconds())
-                    # now we check if the time is too great
-                    if (timesince < (unpaid_time_limit)):
-                        status = "unverified waiting for payment"
-                    else:
-                        # we've waited too long and can zap the personal data previously in the table then set available
-                        reservation_query.update(user_id=None, e_mail=None, twitter_name=None, allow_contact=None, user_sponsor_kind=None, user_sponsor_name=None, user_more_info=None, user_nondefault_image=None, user_preferred_image=None, user_updated_time=None, user_paid=None, user_message_OZ=None, user_giftaid=None, user_registration_id=None, PP_transaction_code=None, PP_e_mail=None, PP_first_name=None, PP_second_name=None, PP_town=None, PP_country=None, PP_house_and_street=None, PP_postcode=None, verified_kind=None, verified_name=None, verified_more_info=None, verified_preferred_image=None, verified_time=None, verified_paid=None, verified_url=None, live_time=None, admin_comment=None, sponsorship_duration_days=None, asking_price=None, deactivated=None, sale_time=None, partner_name=None, partner_percentage=None)
-                        #note that this e.g. clears deactivated taxa, etc etc.
-                        status = "available"
+            #check through partner_taxa for leaves that might match this one
+            partner = db((~db.partner_taxa.deactived) & 
+                         (db.partner_taxa.is_leaf == True) &
+                         (db.partner_taxa.ott == OTT_ID_Varin)
+                        ).select(db.partner_taxa.partner_identifier).first()
+        if partner is None:
+            #pull out potential partner *nodes* that we might need to check
+            #also check if this leaf lies within any of the node ranges
+            partner = db((~db.partner_taxa.deactived) & 
+                         (db.partner_taxa.is_leaf == False) &
+                         (OTT_ID_Varin >= db.ordered_nodes.leaf_lft) &
+                         (OTT_ID_Varin <= db.ordered_nodes.leaf_rgt) &
+                         (db.ordered_nodes.ott == db.partner.ott).first()
+                        ).select(db.partner_taxa.partner_identifier) #this should include a join with ordered_nodes to get the ranges, and a select
+        """
+        try:
+            if partner is None:
+                raise AttributeError
+            partner_data = db(db.partners.partner_identifier == partner).select(db.partners.ALL).first().as_dict() #this could be null
+        except AttributeError:
+            partner_data = {}
+            
+        # find out if the leaf is banned
+        if db(db.banned.ott == OTT_ID_Varin).count() >= 1:
+            status = "banned"
+        # we need to update the reservations table regardless of banned status)
+        reservation_query = db(db.reservations.OTT_ID == OTT_ID_Varin)
+        reservation_entry = reservation_query.select().first()
+        if reservation_entry is None:
+            # there is no row in the database for this case so add one
+            if (status == ""):
+                status = "available"
+            if status == "available" and allow_sponsorship:
+                db.reservations.insert(
+                    OTT_ID = OTT_ID_Varin,
+                    name=leaf_entry.name,
+                    last_view=request.now,
+                    num_views=1,
+                    reserve_time=request.now,
+                    user_registration_id =form_reservation_code)
             else:
-                # the page has no user name entered but is also not valid or banned - it could only be reserved or available
-                # first thing is to determine time difference since reserved
-                startTime = reservation_entry.reserve_time   
-                endTime = request.now
-                if (startTime == None):
-                    status = "available"
-                    # reserve the leaf because there is no reservetime on record
-                    reservation_query.update(reserve_time=request.now, user_registration_id=form_reservation_code)
-                else:
-                    # we need to compare times to figure out if there is a time difference
-                    timesince = ((endTime-startTime).total_seconds())
-                    if (timesince < (reservation_time_limit)):
-                        release_time = reservation_time_limit - timesince
-                        # we may be reserved if it wasn't us
-                        if(form_reservation_code == reservation_entry.user_registration_id):
-                            # it was the same user anyway so reset timer
-                            status = "available only to user"
-                            reservation_query.update(reserve_time=request.now)
-                        else:
-                            status = "reserved"
+                # update with full viewing data but no reservation, even if e.g. banned
+                db.reservations.insert(
+                    OTT_ID = OTT_ID_Varin,
+                    name=leaf_entry.name,
+                    last_view=request.now,
+                    num_views=1)
+        else:
+            # there is already a row in the database so update
+            reservation_query.update(last_view=request.now, num_views=reservation_entry.num_views+1)
+    
+            # this may be available (because valid) but could be sponsored, unverified, reserved or available still 
+            # easiest cases to rule out are relating sponsored and unverified cases. In either case they would appear in the leger
+            ledger_user_name = reservation_entry.user_sponsor_name
+            ledger_PP_transaction_code = reservation_entry.PP_transaction_code
+            ledger_verified_time = reservation_entry.verified_time
+            # the way we know something is fully sponsored is if PP transaction code is filled out  
+            #nb. this could be with us typing "yet to be paid" in which case verified_paid can be NULL 
+            # so "verified paid " should not be used as a test of whether something is available or not
+            # For forked sites, we do not pass PP transaction code (confidential), so we have to check first if 
+            # verified.
+            # Need to have another option here if verified_time is too long ago - we should move this to the expired_reservations table and clear it.
+            if (ledger_verified_time):
+                status = "sponsored"
+            elif status != "banned":
+                if (ledger_user_name):
+                # something has been filled in
+                    if (ledger_PP_transaction_code):
+                        #we have a code (or have reserved this taxon)
+                        status = "unverified"
                     else:
-                        # it's available still
+                        # unverified and unpaid - test time
+                        startTime = reservation_entry.reserve_time
+                        endTime = request.now
+                        timesince = ((endTime-startTime).total_seconds())
+                        # now we check if the time is too great
+                        if (timesince < (unpaid_time_limit)):
+                            status = "unverified waiting for payment"
+                        else:
+                            # we've waited too long and can zap the personal data previously in the table then set available
+                            reservation_query.update(user_id=None, e_mail=None, twitter_name=None, allow_contact=None, user_sponsor_kind=None, user_sponsor_name=None, user_more_info=None, user_nondefault_image=None, user_preferred_image_src=None, user_preferred_image_src_id=None, user_updated_time=None, user_paid=None, user_message_OZ=None, user_giftaid=None, user_registration_id=None, PP_transaction_code=None, PP_e_mail=None, PP_first_name=None, PP_second_name=None, PP_town=None, PP_country=None, PP_house_and_street=None, PP_postcode=None, verified_kind=None, verified_name=None, verified_more_info=None, verified_preferred_image_src=None, verified_preferred_image_src_id=None, verified_time=None, verified_paid=None, verified_url=None, live_time=None, admin_comment=None, sponsorship_duration_days=None, asking_price=None, deactivated=None, sale_time=None, partner_name=None, partner_percentage=None)
+                            # Note that this e.g. clears deactivated taxa, etc etc. Even 
+                            # if status == available, allow_sponsorship can be False
+                            # status is then used to decide the text to show the user
+                            status = "available"
+                else:
+                    # The page has no user name entered & is also valid (not banned etc)
+                    # it could only be reserved or available
+                    # First thing is to determine time difference since reserved
+                    startTime = reservation_entry.reserve_time   
+                    endTime = request.now
+                    if (startTime == None):
                         status = "available"
                         # reserve the leaf because there is no reservetime on record
-                        reservation_query.update(reserve_time = request.now, user_registration_id = form_reservation_code)
-    #re-do the query since we might have added the row ID now
-    reservation_entry = reservation_query.select().first()
-    if reservation_entry is None:
-        raise HTTP(400,"Error: row is not defined. Please try reloading the page")
+                        reservation_query.update(reserve_time=request.now, user_registration_id=form_reservation_code)
+                    else:
+                        # we need to compare times to figure out if there is a time difference
+                        timesince = ((endTime-startTime).total_seconds())
+                        if (timesince < (reservation_time_limit)):
+                            release_time = reservation_time_limit - timesince
+                            # we may be reserved if it wasn't us
+                            if(form_reservation_code == reservation_entry.user_registration_id):
+                                # it was the same user anyway so reset timer
+                                status = "available only to user"
+                                reservation_query.update(reserve_time=request.now)
+                            else:
+                                status = "reserved"
+                        else:
+                            # it's available still
+                            status = "available"
+                            # reserve the leaf because there is no reservetime on record
+                            reservation_query.update(reserve_time = request.now, user_registration_id = form_reservation_code)
+        #re-do the query since we might have added the row ID now
+        reservation_entry = reservation_query.select().first()
+        if reservation_entry is None:
+            raise HTTP(400,"Error: row is not defined. Please try reloading the page")
+    
+        #get the best picture for this ott, if there is one.
+        default_image = db((db.images_by_ott.ott == OTT_ID_Varin) & (db.images_by_ott.overall_best_any == True)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence).first()
+        #also look at the nondefault images if present
+        if reservation_entry.user_nondefault_image:
+            src_id = reservation_entry.verified_preferred_image_src_id
+            src = reservation_entry.verified_preferred_image_src
+            user_image = db(
+                (db.images_by_ott.src_id == src_id) & (db.images_by_ott.src == src)
+                ).select(
+                    db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, 
+                    db.images_by_ott.rights, db.images_by_ott.licence).first()
+        else:
+            user_image=None
 
-    #get the best picture for this ott, if there is one.
-    default_image = db((db.images_by_ott.ott == OTT_ID_Varin) & (db.images_by_ott.overall_best_any == True)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence).first()
-    #also look at the nondefault images if present
-    if reservation_entry.user_nondefault_image:
-        doID = reservation_entry.verified_preferred_image
-        user_image = db(db.images_by_ott.src_id == doID).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.rights, db.images_by_ott.licence).first()
-    else:
-        user_image=None
-
-    #once we have got this far (not invalid or error), we can show certain pages
+    #once we have got this far, we can show certain pages
     #even in maintenance mode or where allow_sponsorship is not True, e.g. if
     #a leaf is already sponsored, or is banned from sponsorship
-    if status == "sponsored":
+    if status == "maintenance":
+        response.view = request.controller + "/spl_maintenance." + request.extension
+        return dict(mins=str(maint))
+
+    elif status == "sponsored":
         response.view = request.controller + "/spl_sponsored." + request.extension
         return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), long_name = long_name, default_image = default_image, user_image=user_image, verified_kind=reservation_entry.verified_kind, verified_name=reservation_entry.verified_name, verified_more_info=reservation_entry.verified_more_info)
+
+    elif not allow_sponsorship:
+        if status.startswith("available"):
+            response.view = request.controller + "/spl_elsewhere." + request.extension
+        else:
+            response.view = request.controller + "/spl_elsewhere_not." + request.extension
+        return dict(species_name = species_name, the_long_name = the_long_name, ott=OTT_ID_Varin)
+
+    elif status == "invalid":
+        response.view = request.controller + "/spl_invalid." + request.extension
+        return dict(OTT_ID = OTT_ID_Varin, species_name = species_name)
+
     elif status.startswith("unverified"):
         if status == "unverified waiting for payment":
             response.view = request.controller + "/spl_waitpay." + request.extension    
@@ -336,13 +355,11 @@ def sponsor_leaf():
         else:
             response.view = request.controller + "/spl_unverified." + request.extension
             return dict(species_name = species_name)
-    elif isbanned:
+
+    elif status == "banned":
         response.view = request.controller + "/spl_banned." + request.extension
         return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), long_name = long_name, default_image = default_image, user_image=user_image)
-    elif not allow_sponsorship:
-        response.view = request.controller + "/spl_elsewhere." + request.extension
-        return dict(species_name = species_name, the_long_name = the_long_name)
-        
+
     elif status == "reserved":
         response.view = request.controller + "/spl_reserved." + request.extension
         return dict(species_name = species_name, the_long_name = the_long_name, release_time = release_time)
@@ -356,9 +373,9 @@ def sponsor_leaf():
             form = SQLFORM(db.reservations, reservation_entry, 
                 fields=['e_mail','allow_contact','twitter_name', 'user_sponsor_kind', 'user_sponsor_name', 'user_more_info', 
                     'user_donor_title', 'user_donor_name', 'user_donor_show', 'user_paid', 'user_message_OZ',
-                    'user_nondefault_image', 'user_preferred_image','user_giftaid'],
+                    'user_nondefault_image', 'user_preferred_image_src', 'user_preferred_image_src_id','user_giftaid'],
                 deletable = False)
-            if form.process(session=None, formname='test', onvalidation=lambda x: validate_sponsor_leaf(x, leaf_price)).accepted:
+            if form.process(session=None, formname='main_sponsor_form', onvalidation=lambda x: validate_sponsor_leaf(x, leaf_price)).accepted:
                 #response.flash = 'temp form accepted' # debug
                 reservation_query.update(
                     reserve_time=request.now,
@@ -368,6 +385,9 @@ def sponsor_leaf():
                     sponsorship_duration_days=365*4+1,
                     partner_name=partner_data.get('partner_identifier'),
                     partner_percentage=partner_data.get('percentage'))
+                if form.vars.user_sponsor_kind == "by" and not form.vars.user_donor_name:
+                    reservation_query.update(
+                        user_donor_name = form.vars.user_sponsor_name)
                 # now need to do our own other checks
                 v = {'ott':OTT_ID_Varin}
                 if request.vars.get('embed'):
@@ -375,11 +395,29 @@ def sponsor_leaf():
                 redirect(URL("default", "paypal", vars=v))
         
             elif form.errors:
-               response.flash = 'please check the errors shown in red'
+                response.flash = 'please check the errors shown in red'
             else:
-               #the form should simply be shown
-               pass
-            return dict(form = form, id=reservation_entry.id, OTT_ID = OTT_ID_Varin, EOL_ID = EOL_ID, eol_src= src_flags['eol'], species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), the_long_name = the_long_name, leaf_price = leaf_price, form_reservation_code=form_reservation_code, percent_crop_expansion = percent_crop_expansion, default_image = default_image, partner_data = partner_data, EoL_API_key=EoL_API_key, max_global_price=max_global_price, min_global_price=min_global_price)
+                #the form should simply be shown
+                pass
+            return dict(
+                form=form,
+                id=reservation_entry.id,
+                OTT_ID=OTT_ID_Varin,
+                EOL_ID=leaf_entry.get('eol', -1),
+                eol_src=src_flags['eol'],
+                species_name=species_name,
+                js_species_name=dumps(species_name),
+                common_name=common_name,
+                js_common_name=dumps(common_name.capitalize() if common_name else None),
+                the_long_name=the_long_name,
+                leaf_price=leaf_price,
+                form_reservation_code=form_reservation_code,
+                percent_crop_expansion=percent_crop_expansion,
+                default_image=default_image,
+                partner_data=partner_data,
+                EoL_API_key=EoL_API_key,
+                max_global_price=max_global_price,
+                min_global_price=min_global_price)
         except TypeError: #leaf_entry.price is None, treat as banned
             response.view = request.controller + "/spl_banned." + request.extension
             return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), long_name = long_name, default_image = default_image, user_image=user_image)
@@ -496,32 +534,43 @@ def sponsored():
     tot=None
     query = (db.reservations.verified_time != None) & ((db.reservations.deactivated == None) | (db.reservations.deactivated == ""))
     if (request.vars.omit_nopics):
-        query = query & (db.reservations.verified_preferred_image != None)
+        query = query & (db.reservations.verified_preferred_image_src != None)
     if (request.vars.getfirst('search_mesg')):
         sanitized = "".join([ch for ch in request.vars.getfirst('search_mesg') if ch.isalnum()])
         query = query & (db.reservations.user_message_OZ.contains(sanitized))
     if (request.vars.sum):
         sum = db.reservations.user_paid.sum()
         tot = db(query).select(sum).first()[sum]
-    rows = db(query).select(
-                           db.reservations.OTT_ID,
-                           db.reservations.name,
-                           db.reservations.user_nondefault_image,
-                           db.reservations.verified_kind,
-                           db.reservations.verified_name,
-                           db.reservations.verified_more_info,
-                           db.reservations.verified_preferred_image,
-                           orderby=~db.reservations.verified_time|db.reservations.reserve_time);
+    limitby=(page*items_per_page,(page+1)*items_per_page+1)
+    curr_rows = db(query).select(
+        db.reservations.OTT_ID,
+        db.reservations.name,
+        db.reservations.user_nondefault_image,
+        db.reservations.verified_kind,
+        db.reservations.verified_name,
+        db.reservations.verified_more_info,
+        db.reservations.verified_preferred_image_src,
+        db.reservations.verified_preferred_image_src_id,
+        orderby=~db.reservations.verified_time|db.reservations.reserve_time,
+        limitby=limitby
+        )
 
-    curr_rows = rows[(page*items_per_page):(1+(page+1)*items_per_page)]
     pds=set()
     sci_names = {r.OTT_ID:r.name for r in curr_rows}
-    html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).iteritems()}
+    html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).items()}
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
     default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(sci_names.keys()) & (db.images_by_ott.best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
-    #also look at the nondefault images if present
-    doIDs = [r.verified_preferred_image for r in curr_rows if r.user_nondefault_image != 0]
-    user_images = {r.ott:r for r in db(db.images_by_ott.src_id.belongs(doIDs)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
+    #also look at the nondefault images if present - 
+    user_images = {}
+    for r in curr_rows:
+        if r.user_nondefault_image != 0:
+            user_images[r.OTT_ID] = db(
+                (db.images_by_ott.src_id==r.verified_preferred_image_src_id) &
+                (db.images_by_ott.src==r.verified_preferred_image_src)
+                ).select(
+                    db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
+                    db.images_by_ott.rights, db.images_by_ott.licence,
+                    orderby=~db.images_by_ott.src).first()
     if (request.vars.highlight_pd):
         pds.add(None) #ones without a src_id are public doman
         pds |= set([l['src_id'] for k,l in default_images.items() if unicode(l['licence'], 'utf8').endswith(u'\u009C')]) #all pd pics should end with \u009C on the licence
@@ -534,13 +583,16 @@ def donor_list():
     if len(request.args): page=int(request.args[0])
     else: page=0
     items_per_page=20
-    grouped_imgs = "GROUP_CONCAT(if(`user_nondefault_image`,`verified_preferred_image`,NULL))"
+    grouped_img_src = "GROUP_CONCAT(if(`user_nondefault_image`,`verified_preferred_image_src`,NULL))"
+    grouped_img_src_id = "GROUP_CONCAT(if(`user_nondefault_image`,`verified_preferred_image_src_id`,NULL))"
     grouped_otts = "GROUP_CONCAT(`OTT_ID`)"
-    sum_paid = "SUM(`user_paid`)"
+    sum_paid = "COALESCE(SUM(`user_paid`),0)"
     n_leaves = "COUNT(1)"
     groupby = "IFNULL(verified_donor_name,id)"
-    rows = db(db.reservations.verified_time != None).select(
-              grouped_imgs,
+    limitby=(page*items_per_page,(page+1)*items_per_page+1)
+    curr_rows = db(db.reservations.verified_time != None).select(
+              grouped_img_src,
+              grouped_img_src_id,
               grouped_otts, 
               sum_paid,
               n_leaves,
@@ -551,16 +603,24 @@ def donor_list():
               db.reservations.verified_kind,
               db.reservations.verified_name,
               db.reservations.verified_more_info,
-              groupby=groupby, orderby= sum_paid + " DESC, verified_time, reserve_time")
-    curr_rows = rows[(page*items_per_page):(1+(page+1)*items_per_page)]
+              groupby=groupby, orderby= sum_paid + " DESC, verified_time, reserve_time",
+              limitby=limitby)
     sci_names = {int(r[grouped_otts]):r.reservations.name for r in curr_rows if r[n_leaves]==1} #only get sci names etc for unary sponsors
-    html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).iteritems()}
+    html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).items()}
     otts = [int(ott) for r in curr_rows for ott in r[grouped_otts].split(",") if r[grouped_otts]]
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
     default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(otts) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
     #also look at the nondefault images if present
-    doIDs = [int(img) for r in curr_rows for img in (r[grouped_imgs] or '').split(",") if img]
-    user_images = {r.ott:r for r in db(db.images_by_ott.src_id.belongs(doIDs)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
+    user_images = {}
+    for r in curr_rows:
+        for img_src, img_src_id in zip(
+            (r[grouped_img_src] or '').split(","), (r[grouped_img_src_id] or '').split(",")):
+            if img_src is not None and img_src_id is not None:
+                row = db((db.images_by_ott.src == img_src) & (db.images_by_ott.src_id == img_src_id)).select(
+                    db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, 
+                    db.images_by_ott.rights, db.images_by_ott.licence).first()
+                if row:
+                    user_images[row.ott] = row
     return dict(rows=curr_rows, n_col_name=n_leaves, otts_col_name=grouped_otts, paid_col_name=sum_paid, page=page, items_per_page=items_per_page, vars=request.vars, html_names=html_names, user_images=user_images, default_images=default_images)
 
 
@@ -698,7 +758,7 @@ def sponsor_node_price():
                 sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows_with_images})
 
         #now construct the vernacular names
-        html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(otts, return_nulls=True).iteritems()}
+        html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(otts, return_nulls=True).items()}
         return dict(otts=otts, image_urls=image_urls, html_names = html_names, attributions=image_attributions, price_pence = price_pence)
         
     except:
@@ -793,7 +853,7 @@ def sponsor_handpicks():
         #Now find the vernacular names for all these species
         all_otts = [ott for price in otts for ott in otts[price]]
         if all_otts:
-            html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(all_otts, return_nulls=True).iteritems()}
+            html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(all_otts, return_nulls=True).items()}
             rows = db(db.reservations.OTT_ID.belongs(all_otts) & (db.reservations.verified_time != None)).select(db.reservations.OTT_ID, db.reservations.verified_kind, db.reservations.verified_name)
             reserved = {r.OTT_ID:[r.verified_kind, r.verified_name] for r in rows}
                     
@@ -820,8 +880,8 @@ def list_sponsorable_children():
         species = db(query).select(db.ordered_leaves.ott, 
                                    db.ordered_leaves.name,
                                    db.ordered_leaves.price,
-                                   limitby= limitby, 
-                                   orderby= db.ordered_leaves.name)
+                                   limitby=limitby, 
+                                   orderby=db.ordered_leaves.name)
         return(dict(species=species,page=page,items_per_page=items_per_page, error=""))
 
     except:
@@ -1170,7 +1230,7 @@ def text_tree(location_string):
     info = {}
     for row in base_rows:
         if row.real_parent != 0:
-            data = db(db.ordered_nodes.id == abs(row.real_parent)).select(db.ordered_nodes.ott, db.ordered_nodes.name).first()
+            data = db(db.ordered_nodes.id == abs(row.real_parent)).select(db.ordered_nodes.ALL).first()
             if data:
                 info[row.real_parent] = data
         #find the rows that have this as a parent

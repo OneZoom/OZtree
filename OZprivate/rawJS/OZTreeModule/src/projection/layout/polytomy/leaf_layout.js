@@ -33,29 +33,73 @@ class PolytomyLeafLayoutBase extends LeafLayoutBase {
         this.hovering = false;
     }
 
-  // Fake branches should be rendered with a semi-circle, not a leaf
+  /**
+   * Fake branches should be rendered with a semi-circle, not a leaf
+   */
   get_fake_leaf_shapes(node, shapes) {
-    if (node.richness_val > 1) {
-      if (node.rvar < tree_state.threshold && node.has_child) {
-        if (node.children.length > 2) {
-           // This "fake leaf" has more than 2 children, so render as a semi-circle
-           let arc_shape = ArcShape.create();
-           arc_shape.x = node.xvar + node.rvar * node.arcx;
-           arc_shape.y = node.yvar + node.rvar * node.arcy;
-           arc_shape.r = node.rvar * node.arcr * 10;
-           arc_shape.circle = false;
-           arc_shape.start_angle = node.arca - Math.PI/2;
-           arc_shape.end_angle = node.arca + Math.PI/2;
-           arc_shape.height = 2;
-           arc_shape.do_fill = true;
-           arc_shape.fill.color = color_theme.get_color('branch.stroke', node);
-           shapes.push(arc_shape);
+      if (node.full_children_length === 0 || node.richness_val < 1) {
+          // We're only interested in nodes that would have children
+          return;
+      }
 
-        } else {
-            super.get_fake_leaf_shapes(node, shapes);
+      let start_x = node.xvar + node.rvar * node.arcx,
+          start_y = node.yvar + node.rvar * node.arcy,
+          radius = node.rvar;
+
+      // We can move anywhere within our fake leaf, which can grow to 10x the screen (or enough to stop being fake)
+      add_mr(start_x, start_y, radius, 10);
+
+      if (node.full_children_length > 20 && node.rvar < (tree_state.threshold * 100)) {
+          // This fake leaf is pretty small, just draw a semi-circle
+          let arc_shape = ArcShape.create();
+          arc_shape.x = start_x;
+          arc_shape.y = start_y;
+          arc_shape.r = radius;
+          arc_shape.circle = false;
+          arc_shape.start_angle = node.arca - Math.PI/2;
+          arc_shape.end_angle = node.arca + Math.PI/2;
+          arc_shape.counter_wise = false;
+          arc_shape.height = 2;
+          arc_shape.do_fill = true;
+          arc_shape.fill.color = color_theme.get_color('branch.stroke', node);
+          shapes.push(arc_shape);
+          return;
+      }
+
+      // Use the children's position to draw a single fan object
+      let s = BezierShape.create();
+      s.sx = s.sy = s.ex = s.ey = null;
+
+      if (node.children.length > 0) {
+        // We have children, but got forced not to render them. Draw a fan around all the children
+        for (let i = 0; i < node.children.length; i++) {
+          s.path_points.push(['move', start_x, start_y]);
+          s.path_points.push([
+            'line',
+            start_x + node.rvar * node.nextr[i] * node.children[i].bezex,
+            start_y + node.rvar * node.nextr[i] * node.children[i].bezey,
+          ]);
+        }
+      } else {
+        // Undeveloped child nodes, guess what the fan would look like
+        let inc_angle = Math.PI / node.full_children_length;
+        let start_angle = node.arca - Math.PI/2 + (inc_angle / 2);
+        for (let i = 0; i < node.full_children_length; i++) {
+          s.path_points.push(['move', start_x, start_y]);
+          s.path_points.push([
+            'line',
+            start_x + radius * Math.cos(start_angle + inc_angle * i),
+            start_y + radius * Math.sin(start_angle + inc_angle * i),
+          ]);
         }
       }
-    }
+
+      // Draw our fan like we would the branches
+      s.do_stroke = true;
+      s.stroke.line_width = 1;
+      s.height = 0;
+      s.stroke.color = color_theme.get_color('branch.stroke', node);
+      shapes.push(s);
   }
 }
 

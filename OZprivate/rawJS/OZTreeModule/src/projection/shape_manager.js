@@ -1,6 +1,7 @@
 import {get_interior_shapes, get_leaf_shapes, get_signpost_shapes, get_branch_shapes} from './layout/layout_manager';
 import config from '../global_config';
 import {ArrayPool} from '../util/index';
+import {reset_mr} from './move_restriction';
 
 let visible_nodes = new ArrayPool(1300);
 let signpost_nodes = new ArrayPool(100);
@@ -9,6 +10,7 @@ let signpost_nodes = new ArrayPool(100);
  * Sort all shapes by its height to make sure they will be overlapped by the right order.
  */
 function get_shapes(node, shapes) {
+  reset_mr();
   visible_nodes.reset();
   signpost_nodes.reset();
   get_visible_and_signpost_nodes(node, visible_nodes, signpost_nodes, false);
@@ -45,19 +47,16 @@ function height_comparator(a, b) {
  */
 function get_shapes_of_node(node, shapes) {
   get_branch_shapes(node, shapes);
-  let one_child_visible = false;
-  let length = node.children.length;
-  for (let i=0; i<length; i++) {
-    if (node.children[i].gvar) {
-      one_child_visible = true;
-      break;
+
+  if (!node.force_fake) {
+    for (let i=0; i<node.children.length; i++) {
+      if (node.children[i].gvar) {
+        get_interior_shapes(node, shapes);
+        return;
+      }
     }
   }
-  if (node.gvar && node.has_child && one_child_visible) {
-    get_interior_shapes(node, shapes);
-  } else {
-    get_leaf_shapes(node, shapes);
-  }
+  get_leaf_shapes(node, shapes);
 }
 
 
@@ -83,9 +82,18 @@ function get_visible_and_signpost_nodes(node, visible_nodes, signpost_nodes, und
       }  
     }
     
-    let length = node.children.length;
-    for (let i=0; i<length; i++) {
-      get_visible_and_signpost_nodes(node.children[i], visible_nodes, signpost_nodes, under_signpost);
+    if (node.children.length > 3 && node.children.length * 0.8 > node.rvar) {
+      // This node is massively wide and we're zoomed out, so ignore the children and force a fake leaf
+      node.force_fake = true;
+      if (!node.gvar) {
+        // We're pretending to be our desendants, so remain visible regardless of us being on-screen
+        visible_nodes.push(node);
+      }
+    } else {
+      node.force_fake = false;
+      for (let i=0; i<node.children.length; i++) {
+        get_visible_and_signpost_nodes(node.children[i], visible_nodes, signpost_nodes, under_signpost);
+      }
     }
   }
 }

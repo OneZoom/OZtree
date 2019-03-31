@@ -35,7 +35,7 @@ or with OTTs
 Within the 'trochozoa, Nesnidal, 2013 (http://www.biomedcentral.com/1471-2148/13/253/) and later authors find molecular support for an old morphological grouping, the lophophorates, including bryozoans (=ectoprocta) + phoronids + brachiopods, as
 ((Bryozoa,Phoronida),Brachiopoda)Lophophorata
 
-Note that draftversion6.tre disputedly nests Phoronids (Phoroniformea_ott612209) within Brachiopoda (doi:  10.1098/rspb.2000.0991), so we need to exclude it and add it on elsewhere.
+Note that draftversion6.tre disputedly nests Phoronids (Phoroniformea_ott612209) within Brachiopoda (doi:10.1098/rspb.2000.0991), so we need to exclude it and add it on elsewhere.
 
 
 Kocot (2016) suggest that polyzoa (bryozoa + entoprocta+cycliophora) could possibly be nested within the lophophorates, as sister to the Phoronids. I suspect this isn't the case, but in the absence of any other sensible placement, I place them there:
@@ -49,9 +49,9 @@ That leads to a 'trochozoa' tree like
 
 (((Nemertea,(((Bryozoa,(Entoprocta,Cycliophora))Polyzoa,Phoronida),Brachiopoda)Lophophorata),Annelida),Mollusca)Trochozoa
 
-or with OTTs
+or with OTTs (and correcting for the misplaced genus Drilus (ott6358744) and Latidae fish genera (ott6362442, ott6362460, ott6362444) in the moluscs (https://github.com/OpenTreeOfLife/feedback/issues/426, https://github.com/OpenTreeOfLife/feedback/issues/418)
 
-(((Nemertea_ott445195,(((Bryozoa_ott442934,(Entoprocta_ott362916,Cycliophora_ott41147)Polyzoa),Phoronidae_ott612209),Brachiopoda_ott826261~-612209)Lophophorata),Annelida_ott941620),Mollusca_ott802117)Trochozoa
+(((Nemertea_ott445195,(((Bryozoa_ott442934,(Entoprocta_ott362916,Cycliophora_ott41147)Polyzoa),Phoronidae_ott612209),Brachiopoda_ott826261~-612209)Lophophorata),Annelida_ott941620),Mollusca_ott802117-6358744-6362442-6362460-6362444)Trochozoa
 
 There is an additional issue that in OpenTree v7, Annelids are 'missing' (nonmonophyletic), because some 
 authorities place Myzostomida outside the annelids. 
@@ -64,7 +64,7 @@ The Chaetognaths are placed as a outgroup to all other pro
 (((((((Nemertea,(((Bryozoa,(Entoprocta,Cycliophora)Polyzoa),Phoronida),Brachiopoda)Lophophorata),Annelida),Mollusca)Trochozoa,(Gastrotricha,Platyhelminthes)),(((Rotifera,Acanthocephala)Syndermata,Micrognathozoa),Gnathostomulida)Gnathifera)Spiralia,((((Onychophora,Arthropoda),Tardigrada),(Nematoda,Nematomorpha)),Scalidophora)Ecdysozoa),Chaetognatha)Protostomia
 
 
-OpenTree v6 has a slighly improved phylogenetic structure for pancrustacea (including insects), so we simply take this from the OpenTree.
+OpenTree v6 onwards has a slighly improved phylogenetic structure for pancrustacea (including insects), so we simply take this from the OpenTree.
 
 from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Animals]
-(((((((Nemertea_ott445195@30,(((Bryozoa_ott442934@20,(Entoprocta_ott362916@,Cycliophora_ott41147@))Polyzoa,Phoronida_ott612209@),Brachiopoda_ott826261~-612209@20)Lophophorata),ANNELIDA@),Mollusca_ott802117@36)Trochozoa,(Gastrotricha_ott29723@20,Platyhelminthes_ott555379@24)),(((Rotifera_ott471706@,Acanthocephala_ott49622@)Syndermata,Micrognathozoa_ott435981@),Gnathostomulida_ott242963@)Gnathifera)Spiralia,((((Onychophora_ott1072433@20,Arthropoda_ott632179-5853691@38),Tardigrada_ott111438~-2943021@32),(Nematoda_ott395057@22,Nematomorpha_ott189836@22)),Scalidophora_ott434620@)Ecdysozoa),Chaetognatha_ott570366@22)Protostomia;
+(((((((Nemertea_ott445195@30,(((Bryozoa_ott442934@20,(Entoprocta_ott362916@,Cycliophora_ott41147@))Polyzoa,Phoronida_ott612209@),Brachiopoda_ott826261~-612209@20)Lophophorata),ANNELIDA@),Mollusca_ott802117~-6358744-6362442-6362460-6362444@36)Trochozoa,(Gastrotricha_ott29723@20,Platyhelminthes_ott555379@24)),(((Rotifera_ott471706@,Acanthocephala_ott49622@)Syndermata,Micrognathozoa_ott435981@),Gnathostomulida_ott242963@)Gnathifera)Spiralia,((((Onychophora_ott1072433@20,Arthropoda_ott632179~-5853691@38),Tardigrada_ott111438~-2943021@32),(Nematoda_ott395057@22,Nematomorpha_ott189836@22)),Scalidophora_ott434620@)Ecdysozoa),Chaetognatha_ott570366@22)Protostomia;

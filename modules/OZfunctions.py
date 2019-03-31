@@ -74,9 +74,9 @@ def child_leaf_query(colname, search_for):
 
 
 def score(lang_full_search, lang_primary_search, lang_full_target, preferred_status, 
-    src_flag_target, prefer_oz_specialname=False, max_src_flag=max(current.OZglobals['inv_src_flags'])):
-    if prefer_oz_specialname:
-        score = max_src_flag - src_flag_target % current.OZglobals['src_flags']['onezoom_special']
+    src_flag_target, prefer_short_name=False, max_src_flag=max(current.OZglobals['inv_src_flags'])):
+    if prefer_short_name:
+        score = max_src_flag - (0 if src_flag_target==current.OZglobals['src_flags']['short_imprecise_name'] else src_flag_target)
     else:
         score = max_src_flag - src_flag_target
     if (lang_full_target == lang_full_search):
@@ -93,6 +93,8 @@ def nice_species_name(scientific=None, common=None, the=False, html=False, leaf=
     If leaf=True, add a 'species' tag to the scientific name
     If break_line == 1, put a line break after common (if it exists)
     If break_line == 2, put a line break after sciname, (even if common exists)
+    
+    TODO - needs internationalization
     """
     from gluon.html import CAT, I, SPAN, BR
     db = current.db
@@ -133,7 +135,7 @@ def nice_species_name(scientific=None, common=None, the=False, html=False, leaf=
                 return common + species_nicename
 
 def get_common_names(identifiers, return_nulls=False, OTT=True, lang=None,
-    prefer_oz_special_names=False, include_unpreferred=False, return_all=False):
+    prefer_short_name=False, include_unpreferred=False, return_all=False):
     """
     Given a set of identifiers (by default, OTTs, but otherwise names), get one best vernacular for each id. 
     'best' is defined as the vernacular that has preferred == True, and which has the best language match.
@@ -145,9 +147,8 @@ def get_common_names(identifiers, return_nulls=False, OTT=True, lang=None,
     2) Intermediate: the vernacular is tagged as generic (e.g. browser language = en-gb, vernacular tagged as en)
     3) Least preferred: only matches on primary lang (e.g. browser language = en-gb, vernacular tagged as en-us)
    
-    If there are multiple equally good matches, we should prefer names in ascending src order, e.g. src=1 (onezoom)
-    then src=2 (eol) then src=8 (onezoom_special), unless prefer_oz_special_names is set, when we take src=8 
-    (oz special) - we do this by ordering by src % 8
+    If there are multiple equally good matches, we should prefer names in ascending src order, e.g. src=1 (bespoke)
+    then src=2 (onezoom_bespoke), ..., unless prefer_short_name is set, when we put short_imprecise_name first
     """
     db = current.db
     request = current.request
@@ -176,12 +177,12 @@ def get_common_names(identifiers, return_nulls=False, OTT=True, lang=None,
             except:
                 vernaculars[r[col]] = [r]
         #sort arrays for each value in vernaculars
-        #return {i: ([[r.vernacular, score(lang_full, lang_primary, r.lang_full, r.preferred, r.src, prefer_oz_special_names)] for r in v] if v else None) for i,v in vernaculars.items()}
-        return {i: ([r.vernacular for r in sorted(v, key=lambda r: score(lang_full, lang_primary, r.lang_full, r.preferred, r.src, prefer_oz_special_names), reverse=True)] if v else None) for i,v in vernaculars.items()}
+        #return {i: ([[r.vernacular, score(lang_full, lang_primary, r.lang_full, r.preferred, r.src, prefer_short_name)] for r in v] if v else None) for i,v in vernaculars.items()}
+        return {i: ([r.vernacular for r in sorted(v, key=lambda r: score(lang_full, lang_primary, r.lang_full, r.preferred, r.src, prefer_short_name), reverse=True)] if v else None) for i,v in vernaculars.items()}
         
     else:
         for r in rows:
-            rscore = score(lang_full, lang_primary, r.lang_full, r.preferred, r.src, prefer_oz_special_names)
+            rscore = score(lang_full, lang_primary, r.lang_full, r.preferred, r.src, prefer_short_name)
             #find max while looping
             try:
                 if vernaculars[r[col]][1] < rscore:
@@ -274,3 +275,8 @@ def __make_user_code():
     we will want to check here that the random number generated does not exist in the auth_user table
     """
     return '{:x}'.format(random.getrandbits(42))    
+
+def https_redirect() :
+    request = current.request
+    if not request.is_local and not request.is_https:
+        redirect(URL(scheme='https', args=request.args, vars=request.vars))

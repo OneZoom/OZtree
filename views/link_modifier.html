@@ -1,4 +1,8 @@
-{{ #this is only masquerading as a python file: it is web2py { {included} } like a normal html file, and is intended to kill off links from e.g. museum displays
+{{
+# This is only masquerading as a python file: it is web2py { {included} } like a normal 
+# html file, and is intended to kill off links from e.g. museum displays. 
+# This file is only used for UI elements included (but not iframes) in the viewer.
+# Similar functionality is duplicated in embed.html for iframed ("embedded") pages
 try:
     web2py_A = web2py_A #if already included, skip
 except NameError:
@@ -6,7 +10,8 @@ except NameError:
     if request.vars.links=='none':
         #remove hyperlink from *all* links created via the web2py A() helper, e.g. for the logos & in the LOADed modals
         def A(*args, **kwargs):
-            return CAT(*args)
+            #use SPAN rather than CAT so that e.g. _style attributes are kept
+            return SPAN(*args, **kwargs)
         pass
     if request.vars.links=='newtab':
         #make *all* links created via the web2py A() helper open in a new tab, e.g. from logos - this should override others

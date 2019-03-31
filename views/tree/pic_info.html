@@ -7,7 +7,7 @@
     <ul>
       {{if image.rights:}}<li>{{=image.rights}}</li>{{pass}}
       <li>{{=T('Copyright licence:')}} {{=image.licence}}</li>
-      <li>{{=T('Provenance:')}} {{if image.url is None:}}{{=XML(T('No information available. Please <a href="mailto:mail@onezoom.org">contact us</a> if you require more information.'))}}{{elif url_override is not None or image.url.startswith('http') or image.url.startswith('//'):}}{{=A(image.url, _class="provenance-url", _href= url_override or image.url)}}{{else:}}{{=image.url}}{{pass}}</li>
+      <li>{{=T('Provenance:')}} {{if not image.url:}}{{=XML(T('No information available. Please %s if you require more information.') % A(T("contact us"), _href="mailto:mail@onezoom.org"))}}{{elif url_override is not None or image.url.startswith('http') or image.url.startswith('//'):}}{{=A(image.url, _class="provenance-url", _href=url_override or image.url)}}{{else:}}{{=image.url}}{{pass}}</li>
     <ul>
   </dd>
 </dl>

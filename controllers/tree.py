@@ -44,24 +44,42 @@ def pic_info():
     """
     This is the URL that we use to display copyright information about an image, where we pass in the image ID and image source ID.
     Within the tree viewer, this is always loaded into an iframe, but the embed status determines which iframe to load.
-    When embed >= 3 we want to always use our own image info page, but for embed <3 we could potentially use e.g. an EoL page if one exists.
+    When embed >= 3 we want to always use our own image info page, but for embed <3 we could potentially use
+    an alternative. When called from a jump out link, this will have redirect=1 set
     """
     try:
         src = int(request.args[0])  
-        src_id = int(request.args[1]) # for src = 1 or 2, this is an EoL data object ID
+        src_id = int(request.args[1])
         embed = int(request.vars.embed) if 'embed' in request.vars else None
     except:
         raise HTTP(400,"No valid ids or embed parameter provided")
     
-    src_is_eol_DOid = (src==src_flags['eol']) or ((src==src_flags['onezoom']) and (src_id>=0))
-    if src_is_eol_DOid and ((embed is not None and embed < 3) or request.vars.redirect):
-        eol_dataobject_ID()
+    param =  inv_src_flags[src] + "_jumpout_url"
+    try:
+        url = myconf.take('images.' + param).format(src=src, src_id=src_id)
+    except:
+        url = None
+        
+    #slight hack here, because we use negative onezoom_via_eol ids to mark eol_old imgs
+    if (src == src_flags['onezoom_via_eol']) and (src_id < 0):
+        url = URL('tree','eol_old_dataobject_ID', vars=request.vars, scheme=True, host=True)
+
     else:
-        #we do not want to jump or we do but this is not an EoL image, so return a stand-in page
-        row = db((db.images_by_ott.src_id == src_id) & (db.images_by_ott.src == src)).select(db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.url, db.images_by_ott.rights, db.images_by_ott.licence).first()
-        if row is None:
-            row = db((db.images_by_name.src_id == src_id) & (db.images_by_name.src == src)).select(db.images_by_name.src, db.images_by_name.src_id, db.images_by_name.url, db.images_by_name.rights, db.images_by_name.licence).first()
-        return dict(image=row, url_override=URL('tree','eol_dataobject_ID',args=[src,src_id], scheme=True, host=True) if src_is_eol_DOid else None)
+        if url is not None and (embed is None or embed < 3):
+            redirect(url.format(src=src, src_id=src_id))
+    
+    #override old eol URLs that don't work any more
+    if src == src_flags['eol_old']:
+        url = URL('tree','eol_old_dataobject_ID', vars=request.vars, scheme=True, host=True)
+    # Use the default OneZoom image page
+    row = db((db.images_by_ott.src_id == src_id) & (db.images_by_ott.src == src)).select(db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.url, db.images_by_ott.rights, db.images_by_ott.licence).first()
+    if row is None:
+        # could be an image by name
+        row = db((db.images_by_name.src_id == src_id) & (db.images_by_name.src == src)).select(db.images_by_name.src, db.images_by_name.src_id, db.images_by_name.url, db.images_by_name.rights, db.images_by_name.licence).first()
+    if row:
+        return dict(image=row, url_override=url)
+    else:
+        raise HTTP(400,"No such image")
 
 def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
     """
@@ -180,11 +198,29 @@ def node_linkouts():
 # OneZoom pages that redirect to other sites. These are used to register site visits so we can
 # e.g. update the image or common names tables when they are visited (and potentially corrected)
 
+def eol_page_ID():
+    """
+    Log the eol page visited, and redirect there.
+    EoL has no https site currently
+    """
+    import datetime
+    try:
+        EOLid = int(request.args[0])
+        OTTid = int(request.args[1])
+    except:
+        raise HTTP(400,"No valid id provided")
+    
+    #we have inspected this EoL page - log it so we know to check EoL for changes   
+    db.eol_inspected.update_or_insert(db.eol_inspected.ott == OTTid,
+                               ott=OTTid,
+                               via=eol_inspect_via_flags['EoL_tab'],
+                               inspected=datetime.datetime.now())
+    redirect("//eol.org/pages/{}".format(EOLid))
+
 def eol_dataobject_ID():
     """
     Called when jumping out from an image. Provide the DOid (src_id) as the first arg.
     Log the eol data object visited, and redirect there.
-    EoL has no https site currently
     """
     try:
         src = int(request.args[0]) # for src = 1 or 2, this is an EoL data object ID
@@ -206,27 +242,13 @@ def eol_dataobject_ID():
                                    name=row.name,
                                    via=eol_inspect_via_flags['image'],
                                    inspected=datetime.datetime.now())
-    redirect("http://eol.org/data_objects/{}".format(src_id))
+    redirect("//eol.org/media/{}".format(src_id))
         
-def eol_page_ID():
+def eol_old_dataobject_ID():
     """
-    Log the eol page visited, and redirect there.
-    EoL has no https site currently
+    For old versions of eol images: the media urls are no longer valid.
     """
-    import datetime
-    try:
-        EOLid = int(request.args[0])
-        OTTid = int(request.args[1])
-    except:
-        raise HTTP(400,"No valid id provided")
-    
-    #we have inspected this EoL page - log it so we know to check EoL for changes   
-    db.eol_inspected.update_or_insert(db.eol_inspected.ott == OTTid,
-                               ott=OTTid,
-                               via=eol_inspect_via_flags['EoL_tab'],
-                               inspected=datetime.datetime.now())
-    redirect("http://eol.org/pages/{}".format(EOLid))
-
+    return {}  
 
 # LINKOUT FUNCTIONS: these all return urls used in the popups to embed other resources
 # They should all return an array with at least one element (the url used for iframes). If
@@ -263,10 +285,12 @@ def powo_url(IPNIid):
     """
     try:
         IPNIs = IPNIid.split("-")
+        #powo only has an http site
         return(["http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[0]), int(IPNIs[1]))])
     except AttributeError:
         try:
             IPNIs = str(int(IPNIid))
+            #powo only has an http site
             return(["http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[:-1]), int(IPNIs[-1:]))])
         except:
             raise          
@@ -286,7 +310,7 @@ def eol_url(EOLid, OTTid):
     so we can check if images or common names may have been updated.
     """
     try:
-        return([URL('tree','eol_page_ID', args=[int(EOLid), int(OTTid)], scheme=True, host=True), "http://eol.org/pages/{}".format(int(EOLid))])
+        return([URL('tree','eol_page_ID', args=[int(EOLid), int(OTTid)], scheme=True, host=True), "//eol.org/pages/{}".format(int(EOLid))])
     except:
         raise HTTP(400,"No valid EOL id provided")
 

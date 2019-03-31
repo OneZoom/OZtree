@@ -1,5 +1,6 @@
-/* These are all helper functions that access the EOL suite of APIs, e.g. the pages API at http://eol.org/api/docs/pages
-
+/* These are all helper functions that access the EOL suite of APIs, e.g. the pages API at https://eol.org/api/docs/pages
+(https is needed as the http calls go to a redirect that doesn't currently have
+"Access-Control-Allow-Origin: *" set, so CORS does not work on the http site)
 they assume the json response looks something like
 
 {
@@ -65,8 +66,9 @@ function pxFloat(str) {
 
 // add_percent = 12.5%
 function crop_frac(eol_API_data, add_percent) {
-    /* returns [bg-size, bg-pos-left, bg-pos-top] as fractions which need to be multiplied by thumbnail size */
-    // to top left part of the image.
+    /* Returns [bg-size, bg-pos-left, bg-pos-top] as fractions which need to be 
+        multiplied by thumbnail size to set the css background position
+     */
     add_percent=parseFloat(add_percent)
     var top;
     var left;
@@ -132,11 +134,6 @@ function setDataFromEoLdataObjectID(DOid, on_complete, EoL_key, timeout_ms, cros
     4 - negative-number passed in
     5 - no data object for that number
     */
-    if (crossdomain) {
-        crossdomain = true
-    } else {
-        crossdomain = false
-    }
     if (isNaN(parseInt(DOid))) {
         on_complete(null,3)
     } else if (parseInt(DOid) <= 0) {
@@ -145,8 +142,7 @@ function setDataFromEoLdataObjectID(DOid, on_complete, EoL_key, timeout_ms, cros
         var query_string = "taxonomy=false&cache_ttl=&language=en&key=" + EoL_key;
         $.ajax({
             type: "GET",
-            crossDomain: crossdomain,
-            url: "http://eol.org/api/data_objects/1.0/"+ DOid +".json",
+            url: "https://eol.org/api/data_objects/1.0/"+ DOid +".json",
             data: query_string,
             on_complete: on_complete,
             error: function(){
@@ -154,11 +150,12 @@ function setDataFromEoLdataObjectID(DOid, on_complete, EoL_key, timeout_ms, cros
                 this.on_complete(null,1)
             },
             success: function(data, textStatus) {
-                if (data.dataObjects) {
-                    if ((data.dataObjects.length) && (data.dataObjects[0].eolMediaURL)){
-                        var to_return = data.dataObjects[0]
-                        to_return.url = to_return.eolMediaURL.replace(/_orig.jpg$/, "_580_360.jpg")
-                        to_return.url_squarecrop = to_return.eolMediaURL.replace(/_orig.jpg$/, "_130_130.jpg")
+                if (data.taxon.dataObjects) {
+                    var d = data.taxon.dataObjects;
+                    if ((d.length) && (d[0].eolThumbnailURL)){
+                        var to_return = d[0]
+                        to_return.url = to_return.eolThumbnailURL.replace(/.98x68.jpg$/, ".580x360.jpg")
+                        to_return.url_squarecrop = to_return.eolThumbnailURL.replace(/.98x68.jpg$/, ".130x130.jpg")
                         this.on_complete(to_return, 0)
                     } else {
                         this.on_complete(null, 5)
@@ -173,37 +170,45 @@ function setDataFromEoLdataObjectID(DOid, on_complete, EoL_key, timeout_ms, cros
     }
 }
 
-function setDataFromEoLpageID(EOLid, on_complete, EoL_key, n_images, timeout_ms) {
-    /* This takes in an EOL page ID: queries the EoL API, and calls the on_complete function with a taxon object from EoL, which contains .imageObjects (a filtered version of dataObjects), .vernacularNames, etc. 
-    the 'vernacular names' array of common names from EoL, and a 'flags' field which tells us if e.g. the API call has failed. 
+function setDataFromEoLpageID(EOLid, on_complete, EoL_key, n_images, include_names, timeout_ms) {
+    /*  This takes in an EOL page ID: queries the EoL API, and calls the on_complete
+        function, passing it 2 parameters. The first parameter passed to on_complete is
+        a taxon object containing the attributes .imageObjects (a filtered version of 
+        dataObjects) and (if include_names is true) .vernacularNames. The second parameter
+        is a 'flags' field which tells us if e.g. the API call has failed.
+        
+        The 'on_complete' function will usually be something that modifies the current 
+        page to add images, etc, e.g. 
     
-    Then in the 'on_complete' function you do something that modifies the page, adds images, etc, e.g. 
+        setDataFromEoLpageID(
+            1234,
+            function(taxon_obj, error_flag) {
+                set_page_images(taxon_obj.dataObjects, taxon_obj.vernacularNames, error_flag, my_param1, my_param2)})
     
-    setDataFromEoLpageID(1234, function(taxon_obj, error_flag) {set_page_images(taxon_obj.dataObjects, taxon_obj.vernacularNames, error_flag, my_param1, my_param2)})
+        The function can be called within web2py with page-specific values injected, e.g.
     
-    and those can be called within web2py with page-specific values injected, e.g.
+        setDataFromEoLpageID(
+            {{=EOL_ID}},
+            function(t, error_flag) {
+                set_page_images(t.imageObjects, t.vernacularNames, err, {{=css_target}}, 12.5)})
     
-    setDataFromEoLpageID({{=EOL_ID}}, function(t, error_flag) {set_page_images(t.imageObjects, t.vernacularNames, err, {{=css_target}}, 12.5)})
+        within the oncomplete function you may also find it useful to call 
+        get_EOL_common_name(cnames) to get e.g. the english common name.
     
-    within the oncomplete function you may find it useful to call get_EOL_common_name(cnames) to get e.g. the english common name.
-    
-    this actually does 2 requests, so as to get both trusted and unverified images, and rank them according to image quality
-    
-    error flags are:
-    0 - no error
-    1 - timeout no response from the EoL API
-    2 - bad response from the EOL API
-    3 - bad data passed in
-    */   
+        error flags are:
+        0 - no error
+        1 - timeout no response from the EoL API
+        2 - bad response from the EOL API
+        3 - bad data passed in
+    */
     n_images = n_images || 1;
     if (isNaN(parseInt(EOLid)) || isNaN(parseInt(n_images))) {
         on_complete(null,3)
     } else {
-        var query_string = "batch=false&id=" + parseInt(EOLid) + "&images_per_page=" + n_images + "&images_page=1&videos_per_page=0&videos_page=0&sounds_per_page=0&sounds_page=0&maps_per_page=0&maps_page=0&texts_per_page=0&texts_page=0&iucn=true&subjects=overview&licenses=pd%7Ccc-by%7Ccc-by-sa&details=true&common_names=true&synonyms=false&references=false&taxonomy=false&vetted=2&cache_ttl=&language=en&key=" + EoL_key;
+        var query_string = "batch=false&id=" + parseInt(EOLid) + "&images_per_page=" + n_images + "&images_page=1&videos_per_page=0&videos_page=0&sounds_per_page=0&sounds_page=0&maps_per_page=0&maps_page=0&texts_per_page=0&texts_page=0&iucn=true&subjects=overview&licenses=pd%7Ccc-by%7Ccc-by-sa&details=true&synonyms=false&references=false&taxonomy=false&vetted=2&cache_ttl=&language=en&common_names=" + (include_names?'true':'false') + "&key=" + EoL_key;
         $.ajax({
             type: "GET",
-            //crossDomain: true,
-            url: "http://eol.org/api/pages/1.0.json",
+            url: "https://eol.org/api/pages/1.0.json", //always use https, as the http site fails
             data: query_string,
             EOLid: EOLid,
             on_complete: on_complete,
@@ -212,18 +217,18 @@ function setDataFromEoLpageID(EOLid, on_complete, EoL_key, n_images, timeout_ms)
                 this.on_complete(null,1)
             },
             success: function(data, textStatus) {
-                
-                if (data.identifier) {
-                    var imgs = []
-                    if (data.dataObjects.length) {
-                        imgs = data.dataObjects.filter(function(o) {return(o.dataObjectVersionID && o.eolMediaURL && o.eolMediaURL.endsWith("_orig.jpg"))})
+                d = data.taxonConcept
+                if (d.identifier) {
+                    var imgs = [];
+                    if (d.hasOwnProperty('dataObjects') && d.dataObjects.length) {
+                        imgs = d.dataObjects.filter(function(o) {return(o.dataObjectVersionID && o.eolThumbnailURL && o.eolThumbnailURL.endsWith(".98x68.jpg"))})
                         for (var i=0; i<imgs.length; i++) {
-                            imgs[i].url = imgs[i].eolMediaURL.replace(/_orig.jpg$/, "_580_360.jpg")
-                            imgs[i].url_squarecrop = imgs[i].eolMediaURL.replace(/_orig.jpg$/, "_130_130.jpg")
+                            imgs[i].url = imgs[i].eolThumbnailURL.replace(/.98x68.jpg$/, ".580x360.jpg")
+                            imgs[i].url_squarecrop = imgs[i].eolThumbnailURL.replace(/.98x68.jpg$/, ".130x130.jpg")
                         }
-                        data.imageObjects = imgs
                     }
-                    this.on_complete(data, 0)
+                    d.imageObjects = imgs
+                    this.on_complete(d, 0)
                 } else {
                     //no identifier in return value - this is probably an EoL error
                     this.on_complete(null,2)
@@ -293,7 +298,7 @@ function setDataFromEoLpageID_batch(EOLid_batch, on_complete, EoL_key, n_images,
             $.ajax({
                 type: "GET",
                 //crossDomain: true,
-                url: "http://eol.org/api/pages/1.0.json",
+                url: "https://eol.org/api/pages/1.0.json",
                 data: query_string,
                 EOLid_batch: EOLid_batch,
                 on_complete: on_complete,
@@ -307,7 +312,7 @@ function setDataFromEoLpageID_batch(EOLid_batch, on_complete, EoL_key, n_images,
                         //check e.g. in case EoL returns an error string, not an array
                         for(var eolID in APIjson) 
                             if (eolID in this.EOLid_batch) {
-                                var data = APIjson[eolID]
+                                var data = APIjson[eolID].taxonConcept
                                 var imgs = []
                                 if (data.dataObjects.length) {
                                     var imgs = data.dataObjects.filter(function(o) {return(o.dataObjectVersionID && o.eolMediaURL && o.eolMediaURL.endsWith("_orig.jpg"))})
@@ -315,8 +320,8 @@ function setDataFromEoLpageID_batch(EOLid_batch, on_complete, EoL_key, n_images,
                                         error_code=0
                                     }
                                     for (var j=0; j<imgs.length; j++) {
-                                        imgs[j].url = imgs[j].eolMediaURL.replace(/_orig.jpg$/, "_580_360.jpg")
-                                        imgs[j].url_squarecrop = imgs[j].eolMediaURL.replace(/_orig.jpg$/, "_130_130.jpg")
+                                        imgs[j].url = imgs[j].eolThumbnailURL.replace(/.98x68.jpg$/, ".580x360.jpg")
+                                        imgs[j].url_squarecrop = imgs[j].eolThumbnailURL.replace(/.98x68.jpg$/, ".580x360.jpg")
                                     }
                                 }
                                 this.EOLid_batch[eolID].imageObjects = imgs

@@ -13,7 +13,7 @@
 
 <h3>OneZoom Organisation</h3>
 
-OneZoom is a charitable incorporated organisation (non-profit) registered under {{=A('number 1163559',_href="static/images/RegistrationCertificate.jpg")}} in the UK. Our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. In pursuit of these aims, our current focus is on developing this visualization of the tree of life. Our registered address is OneZoom, Office 7, 35-37 Ludgate Hill, London, EC4M 7JN, UK - note that our street address will be changed at the end of 2018 so please do check back online before using it.</p>
+OneZoom is a charitable incorporated organisation (non-profit) registered under {{=A('number 1163559',_href="static/images/RegistrationCertificate.jpg")}} in the UK. Our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. In pursuit of these aims, our current focus is on developing this visualization of the tree of life. Our registered address is OneZoom, Office 7, 35-37 Ludgate Hill, London, EC4M 7JN, UK.</p>
 
 <p>The OneZoom project has a long {{=A("history of development",_href=URL("default","milestones.html"))}} dating back to the first version of OneZoom that was conceived in 2011 and released under an open source license in 2012. The OneZoom codebase is now improved and maintained by the OneZoom charitable organisation since the charity's formation in 2015.</p>
 
@@ -22,6 +22,10 @@ OneZoom is a charitable incorporated organisation (non-profit) registered under 
 <p><img src="/static/images/LinneanLogo_small.png" /></p>
 
 <p>OneZoom is delighted to be in collaboration with the {{=A("Linnean Society of London", _href="https://linnean.org/")}} since 2017.</p>
+
+<p><img src="/static/otop/One_Tree_Logo_Horizontal_Black.png" style="width:290px;"/></p>
+
+<p>OneZoom is delighted to be a partner of the {{=A("One Tree, One Planet", _href="http://www.onetreeoneplanet.org")}} project since 2017.</p>
 
 </div>
 
@@ -35,9 +39,23 @@ OneZoom is a charitable incorporated organisation (non-profit) registered under 
 
 <p>There is only one sponsor permitted for each species (leaf) of the tree, sponsorship lasts for 4 years and include the first refusal on renewal. More popular species require larger donations for sponsorship. You can sponsor by selecting leaves on the tree explorer, or if you are viewing at a public venue where this feature may be disabled, you can sponsor from the onezoom.org website. You can search the tree by the names of sponsors as well as by species names in case you want to locate a particular sponsored leaf of the tree.</p>
 
-<h3>Data sources summary</h3>
+<h3>References</h3>
 
-<p>The data used to construct the main tree on this site is from a {{=A("hand-crafted mix of sources", _href="/data_sources.html")}}, but relies heavily on the {{=A('Open Tree of Life', _href="http://www.opentreeoflife.org")}} project, to whom we are extremely grateful. Images of species on the tree have been harvested from the internet by the {{=A("Encyclopedia of Life", _href="http://eol.org/")}} project (EoL). We must thank EoL for their fantastic resource, and helpful responses to our various requests. For further information on any image, zoom into the copyright symbol next to the picture, the symbol may also serve as a link to the source of the image. In the current version, red leaves of the tree correspond to species that are threatened with extinction according to the {{=A("IUCN Red List",_href="http://www.iucnredlist.org", _target="_blank")}} of threatened species.</p>
+<p>The data used to construct the main tree on this site is from a {{=A("hand-crafted mix of sources", _href="/data_sources.html")}}, but relies heavily on the {{=A('Open Tree of Life', _href="http://www.opentreeoflife.org")}} project, to whom we are extremely grateful.</p>
+
+<p>Images of species on the tree have been harvested from the internet by the {{=A("Encyclopedia of Life", _href="http://eol.org/")}} project (EoL). We must thank EoL for their fantastic resource, and helpful responses to our various requests. For further information on any image, zoom into the copyright symbol next to the picture, the symbol may also serve as a link to the source of the image.</p>
+
+<p>In the current version, red leaves of the tree correspond to species that are threatened with extinction according to the {{=A("IUCN Red List",_href="http://www.iucnredlist.org", _target="_blank")}} of threatened species.</p>
+
+<p>The OneZoom tree of life explorer was originally built from {{=A("OneZoom: A Fractal Explorer for the Tree of Life. PLoS Biol 10(10): e1001406.(2012)",_href="https://doi.org/10.1371/journal.pbio.1001406", _target="_blank")}} by James Rosindell and Luke Harmon.</p>
+
+<p>See also "Biodiversity, the Tree of Life, and Science Communication" by James Rosindell, Yan Wong in Phylogenetic Diversity (2018) eds. Rosa A. Scherson and Daniel P Faith</p>
+
+<p>The fractal layout for our ‘polytomy’ tree view, also used by the One Tree One Planet Project, is similar to and draws some inspiration from {{=A("Lifemap: Exploring the Entire Tree of Life PLoS Biol 14(12): e2001624 (2016)",_href="https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.2001624", _target="_blank")}} by Damien M de Vienne.</p>
+
+
+
+
 
 </div>
 
@@ -46,11 +64,17 @@ OneZoom is a charitable incorporated organisation (non-profit) registered under 
 
 <h3>People and credits</h3>
 
-<p>All versions of the OneZoom software from 2.0 through to the current version 3.2 were developed jointly by Dr. James Rosindell, who primarily worked on visualisation and Dr. Yan Wong, who primarily worked on synthesising the tree data. Yan is a coauthor with Professor Richard Dawkins on <i>The Ancestor’s Tale</i>: a history of life, which has made extensive use of the OneZoom visualisations. The research done for the book has in turn contributed to the dataset used by the OneZoom software.</p>
+<p> Please see our {{=A("Team page ", _href=URL("default","team.html"))}} team page for a full list of current and past OneZoom team members</p>
+
 <p><img class="rgt_edge" src="/static/images/leaves/Rpic1.png" /></p>
-<p>James originally devised the OneZoom concept in 2011, he initially worked on the project only during his spare time, taking advice from Luke Harmon in particular. After that, James further developed OneZoom as part of his research program at {{=A("Imperial College London", _href="http://www3.imperial.ac.uk", _target="_blank")}}, which was funded by a research fellowship from the {{A("Natural Environment Research Council", _href="http://www.nerc.ac.uk", _target="_blank")}} (NERC). The first version 1.0 of the software and an associated academic paper authored by James and Luke was published in 2012. All ongoing OneZoom activities have been managed by the independent OneZoom charity since its formation in 2015.</p>
+
+<p> We thank Jamie Lentin for his huge input into the OneZoom codebase and especially for development of version 3.3 to support the One Tree One Planet Project.</p>
 
 <p> We thank Kai Zhong for his huge input into the OneZoom codebase and especially for code refactoring and the addition of dynamic caching to enable the complete tree of life to be displayed.</p>
+
+<p> We thank the entire One Tree One Planet project team for their support in developing OneZoom further to make it suitable to use as part of One Tree One Planet: Naziha Mestaoui, Douglas Soltis, Pamela Soltis, Robert Guralnick and Matt Gitzendanner</p>
+
+<p> We thank the {{=A("Linnean Society of London", _href="https://linnean.org/")}} for their support as a collaborator, for hosting OneZoom at numerous events, and for promoting the {{=A("Linnean Society Tree", _href=URL('linnean'))}} on OneZoom.</p>
 
 <p> We thank Jonathan Sutton for his significant contribution to the OneZoom codebase during his 2016 summer placement.</p>
 
@@ -124,6 +148,9 @@ Oliver Worsfold,
 Amy Zanne
 </p>
 
+<p>All versions of the OneZoom software from 2.0 through to 3.2 were developed jointly by Dr. James Rosindell, who primarily worked on visualisation and Dr. Yan Wong, who primarily worked on synthesising the tree data. Yan is a coauthor with Professor Richard Dawkins on <i>The Ancestor’s Tale</i>: a history of life, which has made extensive use of the OneZoom visualisations. The research done for the book has in turn contributed to the dataset used by the OneZoom software.</p>
+
+<p>James originally devised the OneZoom concept in 2011, he initially worked on the project only during his spare time, taking advice from Luke Harmon in particular. After that, James further developed OneZoom as part of his research program at {{=A("Imperial College London", _href="http://www3.imperial.ac.uk", _target="_blank")}}, which was funded by a research fellowship from the {{A("Natural Environment Research Council", _href="http://www.nerc.ac.uk", _target="_blank")}} (NERC). The first version 1.0 of the software and an associated academic paper authored by James and Luke was published in 2012. All ongoing OneZoom activities have been managed by the independent OneZoom charity since its formation in 2015.</p>
 
 </div>
 </div>

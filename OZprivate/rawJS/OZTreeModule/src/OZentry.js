@@ -8,6 +8,7 @@ import search_manager from './api/search_manager';
 import process_taxon_list from './api/process_taxon_list';
 import {init as garbage_collection_start} from './factory/garbage_collection';
 import {spec_num_full, number_convert, view_richness} from './factory/utils'
+import {add_hook} from './util/index';
 import {setup_loading_page} from './navigation/setup_page';
 import config from './global_config';
 import tree_state from './tree_state';
@@ -104,7 +105,7 @@ function setup(
       //Jump or fly to a place in the tree marked by the url when the page loads.
       setup_loading_page();
       controller.find_proper_initial_threshold();
-      controller.start_refresh_loop();
+      controller.trigger_refresh_loop();
       
       //listen to user mouse, touch, icon click, window resize and user navigation events.
       controller.bind_listener();
@@ -146,6 +147,8 @@ function setup(
   return_value.utils.number_convert = number_convert;
   return_value.utils.view_richness = view_richness;
   return_value.utils.process_taxon_list = process_taxon_list;
+
+  return_value.add_hook = add_hook;
 
   return return_value;
 }

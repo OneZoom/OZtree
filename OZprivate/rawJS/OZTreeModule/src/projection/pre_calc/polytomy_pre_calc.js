@@ -48,84 +48,56 @@ function _pre_calc(node, angle) {
   let new_angle_base = node.arca - Math.PI/2;
   if (node.has_child) {
     let total = 0;
-    let sqr_total = 0;
       
     let child_order_map = []
-      
     for (let i=0; i<node.children.length; i++) {
       child_order_map.push([i,node.children[i].richness_val]);
-    }
-    let looping = true;
-    while (looping) // order the child map
-    {
-        looping = false;
-        for (let i=1; i<child_order_map.length; i++) {
-            if (child_order_map[i-1][1]>child_order_map[i][1])
-            {
-                let tempswap = child_order_map[i-1];
-                child_order_map[i-1] = child_order_map[i];
-                child_order_map[i] = tempswap;
-                looping = true;
-            }
-        }
-    }
-      
-        // we're not staggering the children in two rows
-        for (let i=0; i<node.children.length; i++) {
-            // CHANGE THIS TO CHANGE RELATIVE IMPORTANCE OF BRANCHES
-            // clade_richness is defined using get clade_richness in polytomy_midnode.js
-            // within the 'factory' dir
-            
-            // one of these lines will most likely not be used but I'll leave them in for now
-            //total += Math.sqrt(node.children[i].richness_val);
-            total += Math.log(node.children[i].richness_val+1)
-        }
-        for (let j=0; j<node.children.length; j++) {
-            
-            let i = child_order_map[j][0];
-            
-            let ratio = Math.log(node.children[i].richness_val+1) / total;
-            //let ratio = Math.sqrt(node.children[i].richness_val) / total;
 
+      // we're not staggering the children in two rows
+      // CHANGE THIS TO CHANGE RELATIVE IMPORTANCE OF BRANCHES
+      // clade_richness is defined using get clade_richness in polytomy_midnode.js
+      // within the 'factory' dir
+
+      // one of these lines will most likely not be used but I'll leave them in for now
+      //total += Math.sqrt(node.children[i].richness_val);
+      total += Math.log(node.children[i].richness_val+1)
+    }
+    child_order_map = child_order_map.sort(function (a, b) { return a[1] - b[1]; });
+
+    for (let j=0; j<node.children.length; j++) {
+      let i = child_order_map[j][0];
+      let ratio = Math.log(node.children[i].richness_val+1) / total;
+      //let ratio = Math.sqrt(node.children[i].richness_val) / total;
+      let angle_assigned = ratio * Math.PI;
+      let child_angle = new_angle_base + angle_assigned/2
+
+      new_angle_base += angle_assigned;
+      node.nextx[i] = node.bezex; // position in x to pass to child i
+      node.nexty[i] = node.bezey; // position in y to pass to child i
+
+      let tana = Math.tan(angle_assigned/2);
+      let newscale = (tana)/(1+tana);
+      let distance = 1-newscale;
+      let target = node.arcr*1.1*(1+newscale); // we want the distance to be at least this much so that nodes don't overlap
+      if (distance < (target)) {
+        distance = target;
+      }
+
+      node.nextr[i] = newscale; // scale to pass to child node i
             
-            let angle_assigned = ratio * Math.PI;
-            let child_angle = new_angle_base + angle_assigned/2
-            new_angle_base += angle_assigned;
-            
-            node.nextx[i] = node.bezex; // position in x to pass to child i
-            node.nexty[i] = node.bezey; // position in y to pass to child i
-            
-            // my edited lines
-            let tana = Math.tan(angle_assigned/2);
-            let newscale = (tana)/(1+tana);
-            let distance = 1-newscale;
-            let target = node.arcr*1.1*(1+newscale); // we want the distance to be at least this much so that nodes don't overlap
-            if (distance < (target))
-            {
-                distance = target;
-            }
-            
-            node.nextr[i] = newscale; // scale to pass to child node i
-            
-            // bezex and bezey are the start and end positions of the line belonging to the child.
-            // their position starts at position of the parent
-            // it's all as a multiple of the ratio.
-            
-            node.children[i].bezex = node.children[i].bezc2x = Math.cos(child_angle) * (distance)/newscale;
-            node.children[i].bezey = node.children[i].bezc2y =  Math.sin(child_angle) * (distance)/newscale;
-            
-            
-            node.children[i].bezsx = node.children[i].bezc1x =  0; // same position as the node itself.
-            node.children[i].bezsy = node.children[i].bezc1y =  0; // this is where it connects to the child.
-            node.children[i].bezr = node.bezr;
-            
-            _pre_calc(node.children[i], child_angle);
-        }
-      
-    
-  }
-  else
-  {
+      // bezex and bezey are the start and end positions of the line belonging to the child.
+      // their position starts at position of the parent
+      // it's all as a multiple of the ratio.
+
+      node.children[i].bezex = node.children[i].bezc2x = Math.cos(child_angle) * (distance)/newscale;
+      node.children[i].bezey = node.children[i].bezc2y =  Math.sin(child_angle) * (distance)/newscale;
+
+      node.children[i].bezsx = node.children[i].bezc1x =  0; // same position as the node itself.
+      node.children[i].bezsy = node.children[i].bezc1y =  0; // this is where it connects to the parent.
+      node.children[i].bezr = node.bezr;
+      _pre_calc(node.children[i], child_angle);
+    }
+  } else {
       node.arcr = 0.75;
   }
 }

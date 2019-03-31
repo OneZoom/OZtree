@@ -22,19 +22,23 @@ separator =
 url        = https://www.sandbox.paypal.com
 
 [general]
-; * pics_dir: get thumbnail images from this source. If not
+;log_search_strings = 1
+
+[images]
+; * url_base: get thumbnail images from this source. If not
 ;    defined, will default to the local version, but that
 ;    means you will need to download >100,000 thumbnail images
-;    onto your machine. If you want to use the images on the 
+;    onto your machine. If you want to use the images on the
 ;    OneZoom server, set this to `//images.onezoom.org/`
-pics_dir = //images.onezoom.org/
-;log_search_strings = 1
+url_base = //images.onezoom.org/
 
 [sponsorship]
 ; * allow. Should we allow the sponsorship page to be
-;    shown on this machine? Usually not allowed, except on the
+;    shown on this machine (0 or 1)? Usually not allowed, except on the
 ;    main OneZoom site (on museum displays people will not want
-;    to enter paypal etc details).
+;    to enter paypal etc details). If set to anything other than 0/1 or all/none
+;    this is assumed to be a "role", such as manager, and only
+;    people logged in with the role can sponsor (for testing purposes)
 ; * maintenance_mins: to enable maintenance mode (e.g. when 
 ;    switching beta and production to enable a new website version)
 ;    set to the number of minutes you expect the site to be down

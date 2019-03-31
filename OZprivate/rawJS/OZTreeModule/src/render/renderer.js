@@ -58,8 +58,9 @@ function refresh(root) {
   reanchor_and_dynamic_load_tree();
   let start = new Date().getTime();
   let shapes = [];
-  controller.projection.get_shapes(root, shapes);
+
   if (need_refresh()) {
+    controller.projection.get_shapes(root, shapes);
     if (is_on_mobile && tree_state.is_dragging()) {
       refresh_by_image(shapes);
     } else {
@@ -68,8 +69,8 @@ function refresh(root) {
       adjust_threshold(end-start);
       record_view_position();
     }
+    release_shapes(shapes);
   }
-  release_shapes(shapes);
 }
 
 

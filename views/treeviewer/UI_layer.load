@@ -1,8 +1,8 @@
 {{include 'link_modifier.html'}}
 <!-- This contains all the overlay on top of the OneZoom canvas. It can be reloaded in different languages -->
 
-<div class="logo uk-navbar-item">{{#The logo *never* opens a new tab (but it can be removed)}}{{=no_tab_A(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('default','index', extension=False), _id="OZ-logo")}}</div>
-{{if request.vars.partner_logo:}}<div class="logo uk-navbar-item">{{if request.vars.partner_url:}}{{=A(IMG(_src=request.vars.partner_logo), _href=request.vars.partner_url)}}{{else:}}IMG(_src=request.vars.partner_logo){{pass}}</div>{{pass}}
+{{if not request.vars.no_oz_logo:}}<div class="logo uk-navbar-item">{{#The logo *never* opens a new tab (but it can be removed)}}{{=no_tab_A(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('default','index', extension=False), _id="OZ-logo")}}</div>{{pass}}
+{{if request.vars.partner_logo:}}<div class="logo uk-navbar-item">{{if request.vars.partner_url:}}{{=A(IMG(_src=request.vars.partner_logo), _href=request.vars.partner_url)}}{{else:}}{{=SPAN(IMG(_src=request.vars.partner_logo))}}{{pass}}</div>{{pass}}
 <div class="uk-navbar-item" id="searchnav">
   <div id="search-basic">
     <div class="searchbox uk-search uk-search-default" id="search_form_basic">
@@ -86,6 +86,9 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <input class="uk-radio" type="radio" name="treeshape" value="fern"> {{=T('Fern')}}</label></li>
       <li><label>
         <input class="uk-radio" type="radio" name="treeshape" value="balanced"> {{=T('Balanced')}}</label></li>
+      <li><label>
+        <input class="uk-radio" type="radio" name="treeshape" value="polytomy"> {{=T('Polytomy')}}</label></li>
+
       <!-- <li class="uk-nav-header">{{=T('Colours indicate')}}</li>
       <li><label uk-tooltip="pos: right" title="{{=T('Colours like a botanical tree, leaf colour shows extinction risk')}}">
         <input class="uk-radio" type="radio" name="colourtype" value="natural"> Natural</label></li>
