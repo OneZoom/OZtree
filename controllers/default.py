@@ -48,6 +48,7 @@ def user():
     """
 
     #from http://www.web2pyslices.com/slice/show/1642/login-with-username-and-email - allow username OR email (to allow 'guest' account
+    https_redirect()
     if 'login' in request.args:
         db.auth_user.username.label = T("Username or Email")
         auth.settings.login_userfield = 'username'

@@ -275,3 +275,7 @@ def __make_user_code():
     we will want to check here that the random number generated does not exist in the auth_user table
     """
     return '{:x}'.format(random.getrandbits(42))    
+
+def https_redirect() :
+    if not request.is_local and not request.is_https:
+        redirect(URL(scheme='https', args=request.args, vars=request.vars))
