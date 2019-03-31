@@ -229,9 +229,9 @@ def search_init():
     (or an empty error if no hits at all).
     """
     session.forget(response)
+    ids = set()
     try:
         ott = int(request.vars.get('ott'))
-        ids = set()
         query = db.ordered_leaves.ott == ott
         ids.update([-r.id for r in db(query).select(db.ordered_leaves.id)])
         # Always return the leaf if there is a single hit

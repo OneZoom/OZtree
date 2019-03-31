@@ -103,7 +103,7 @@ def lookup_and_save_bespoke_EoL_images(eol_dataobject_to_ott, sess, API_key, db_
                     logger.info("Waiting {} seconds so that next query occurs at least {} seconds later".format(wait, loop_seconds))
                     time.sleep(wait)
                 loop_starttime = time.time()
-                url = "http://eol.org/api/data_objects/1.0/{}.json".format(eol_doID); #see http://eol.org/api/docs/pages
+                url = "https://eol.org/api/data_objects/1.0/{}.json".format(eol_doID); #see http://eol.org/api/docs/pages
                 cache_ttl_hack = cache_ttl_hack + 1 if cache_ttl_hack<50000 else 1000
                 pages_params = {
                     'key'            : API_key,
@@ -213,7 +213,7 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
     logger.info("== Loop {} ({}) ==> list of eol_pageID: ottIDs to check for {} are {}".format(loop_num, time.asctime(time.localtime(loop_starttime)), "names" if images_table is None else "images & names", eol_page_to_ott))
     EOLids = list(eol_page_to_ott.keys())
     OTTids = [int(eol_page_to_ott[k]) for k in EOLids]
-    url = "http://eol.org/api/pages/1.0.json" #see http://eol.org/api/docs/pages
+    url = "https://eol.org/api/pages/1.0.json" #see http://eol.org/api/docs/pages
     cache_ttl_hack = cache_ttl_hack + 1 if cache_ttl_hack<50000 else 1000
     pages_params = {
         'batch'          : 'true',
@@ -586,6 +586,7 @@ if __name__ == "__main__":
     parser.add_argument('--eol_inspected_table', '-e', default="eol_inspected", help='The name of the db table containing ott ids for eol taxa that have been inspected recently (so may need updating)')
     parser.add_argument('--verbosity', '-v', action="count", default=None, help='verbosity: output extra non-essential info')
     parser.add_argument('--add_percent', '-a', default=12.5, type=float, help='extra percentage each side to expand the crop, if possible, useful e.g. if a circular crop is required, to try and avoid trimming corners off')
+    #parser.add_argument('--crop', '-c', default=None, help='How to position the crop (if specified, overrides the default crop position from EoL). This can be specified as "center", "top", "bottom", "left", "right", or in terms of the percent size as a proportion of the "+X%+Y%xW%"')
     parser.add_argument('--thumbnail_size', '-s', type=int, choices=range(1, 8001), default=150, help='maximum width in pixels of thumbnail produced')
     #parser.add_argument('--force_size', '-z', action="store_true", help="force the thumbnail to be the maximum size (don't allow smaller thumbnails for small pictures)")
     parser.add_argument('--retries', '-r', type=int, default=5, help='number of times to retry getting the image')
@@ -640,7 +641,7 @@ if __name__ == "__main__":
     retries = Retry(total=args.retries,
                     backoff_factor=1,
                     status_forcelist=[ 500, 502, 503, 504 ])
-    s.mount('http://', HTTPAdapter(max_retries=retries))
+    s.mount('https://', HTTPAdapter(max_retries=retries))
     
     if args.database.startswith("sqlite://"):
         from sqlite3 import dbapi2 as sqlite

@@ -49,7 +49,7 @@ def pic_info():
     """
     try:
         src = int(request.args[0])  
-        src_id = int(request.args[1]) # for src = 1 or 2, this is an EoL data object ID
+        src_id = int(request.args[1])
         embed = int(request.vars.embed) if 'embed' in request.vars else None
     except:
         raise HTTP(400,"No valid ids or embed parameter provided")
@@ -59,20 +59,27 @@ def pic_info():
         url = myconf.take('images.' + param).format(src=src, src_id=src_id)
     except:
         url = None
-    if url is not None and (embed is not None and embed < 3):
-        redirect(url.format(src=src, src_id=src_id))
+        
+    #slight hack here, because we use negative onezoom_via_eol ids to mark eol_old imgs
+    if (src == src_flags['onezoom_via_eol']) and (src_id < 0):
+        url = URL('tree','eol_old_dataobject_ID', vars=request.vars, scheme=True, host=True)
+
     else:
-        if src == src_flags['eol_old']:
-            url = URL('tree','eol_old_dataobject_ID', vars=request.vars, scheme=True, host=True)
-        # Use the default OneZoom image page
-        row = db((db.images_by_ott.src_id == src_id) & (db.images_by_ott.src == src)).select(db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.url, db.images_by_ott.rights, db.images_by_ott.licence).first()
-        if row is None:
-            # could be an image by name
-            row = db((db.images_by_name.src_id == src_id) & (db.images_by_name.src == src)).select(db.images_by_name.src, db.images_by_name.src_id, db.images_by_name.url, db.images_by_name.rights, db.images_by_name.licence).first()
-        if row:
-            return dict(image=row, url_override=url)
-        else:
-            raise HTTP(400,"No such image")
+        if url is not None and (embed is None or embed < 3):
+            redirect(url.format(src=src, src_id=src_id))
+    
+    #override old eol URLs that don't work any more
+    if src == src_flags['eol_old']:
+        url = URL('tree','eol_old_dataobject_ID', vars=request.vars, scheme=True, host=True)
+    # Use the default OneZoom image page
+    row = db((db.images_by_ott.src_id == src_id) & (db.images_by_ott.src == src)).select(db.images_by_ott.src, db.images_by_ott.src_id, db.images_by_ott.url, db.images_by_ott.rights, db.images_by_ott.licence).first()
+    if row is None:
+        # could be an image by name
+        row = db((db.images_by_name.src_id == src_id) & (db.images_by_name.src == src)).select(db.images_by_name.src, db.images_by_name.src_id, db.images_by_name.url, db.images_by_name.rights, db.images_by_name.licence).first()
+    if row:
+        return dict(image=row, url_override=url)
+    else:
+        raise HTTP(400,"No such image")
 
 def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
     """

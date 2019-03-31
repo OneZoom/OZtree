@@ -93,6 +93,8 @@ def nice_species_name(scientific=None, common=None, the=False, html=False, leaf=
     If leaf=True, add a 'species' tag to the scientific name
     If break_line == 1, put a line break after common (if it exists)
     If break_line == 2, put a line break after sciname, (even if common exists)
+    
+    TODO - needs internationalization
     """
     from gluon.html import CAT, I, SPAN, BR
     db = current.db
@@ -273,3 +275,8 @@ def __make_user_code():
     we will want to check here that the random number generated does not exist in the auth_user table
     """
     return '{:x}'.format(random.getrandbits(42))    
+
+def https_redirect() :
+    request = current.request
+    if not request.is_local and not request.is_https:
+        redirect(URL(scheme='https', args=request.args, vars=request.vars))

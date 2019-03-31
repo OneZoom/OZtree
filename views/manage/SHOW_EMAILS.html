@@ -36,11 +36,14 @@
     {{=",".join([row.get('e_mail') or row.get('PP_e_mail') for row in contactable_emails])}}
 </details>
 <details>
-<summary>Command to get all user-selected pictures</summary>
+<summary>Command to get all onezoom_via_eol pictures</summary>
     echo '
-    {{=XML("<br />".join(all_images))}}
+    {{=XML("<br />".join(onezoom_via_eol_images))}}
     ' |  ServerScripts/Utilities/getEOL_crops.py --file - --output_dir ../static/FinalOutputs/img/{{=src_flags['onezoom_via_eol']}} -v -f
-</details>
 
+    echo '
+    {{=XML("<br />".join(eol_images))}}
+    ' |  ServerScripts/Utilities/getEOL_crops.py --file - --output_dir ../static/FinalOutputs/img/{{=src_flags['eol']}} -v -f
+</details>
 </div></div>
 </div>

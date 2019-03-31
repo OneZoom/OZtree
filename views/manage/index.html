@@ -6,6 +6,7 @@
 
 <h1>Management pages</h1>
 <p>The following management pages exist. These should all be decorated with <code><pre>@auth.requires_membership(role='XXXX')</pre></code> in controllers/manage.py, where XXXX is a role such as <q>manager</q>. By OZ convention, pages which require <q>manager</q> access (the highest level of access) are named using CAPS.</p>
+<p>The URL of the current management index page (this page) is <a href="{{=URL(host=True)}}">{{=URL(host=True)}}</a>, in case you need a link.</p>
 
 <h3>Pages for translators</h3>
 <dl>
@@ -26,8 +27,6 @@
     <dd>Many thousands of images, so this is paged. Images are listed in quality order: public domain images have a green border. Use <a href="{{=URL('LIST_IMAGES?pdonly')}}"> this link to just show the PD ones</a>.</dd>
 <dt><a href="sponsored.html?highlight_pd=1">Show sponsored images, highlighting public domain ones in green</a></dt>
     <dd>This page is also available to users, but the highlight PD function is not made easily accessible</dd>
-<dt><a href="{{=URL('debug','TEST_POST')}}">Fake a paypal post to a test page</a></dt>
-    <dd>This is purely for testing</dd>
 <hr />
 <dt><a href="{{=URL('SET_PRICES')}}">Set prices for all taxa</a></dt>
     <dd>The takes the pre-calculated popularity measures and bands them into price bands</dd>
@@ -39,9 +38,11 @@
 
 <dt><a href="{{=URL('REIMPORT_TREE_TABLES')}}" onClick="return(confirm('Are you sure you want to clear all the data and re-import') && confirm('Are you REALLY sure???!!!'))">REIMPORT ORDERED_LEAVES & NODES, etc</a></dt>
     <dd class="warning">WARNING: this takes a long time to create MYSQL format csv files for import, deletes the contents of the existing database tables leaves_in_unsponsored_tree, ordered_leaves, and ordered_nodes, and may not update them properly!. Use sparingly</dd>
-<hr />
-<dt><a href="{{=URL()}}">This page</a></dt>
-    <dd>In case you need a link</dd>
+<h3><a href="/dev">Pages for testing</a></h3>
+<dt><a href="{{=URL('dev','TEST_EOL_API')}}">Test the EoL API</a></dt>
+    <dd>To test the code used for leaf sponsorship (e.g. in static/OZSponsor/EOLqueries.js)</dd>
+<dt><a href="{{=URL('dev','TEST_POST')}}">Fake a paypal post to a test page</a></dt>
+    <dd>This is purely for testing</dd>
 
 <h3>Pages for admins</h3>
 <dl>

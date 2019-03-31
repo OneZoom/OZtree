@@ -1,10 +1,8 @@
 {{=form.custom.begin}}
 {{from cgi import escape}}        
-        <div class="ids">{{=A("➩ OZ link", _href=URL('life@='+str(vars['OTT_ID']), vars={"init":"jump"}))}}<ol><li class="DB"><br />{{=A(vars['OTT_ID'], _href="https://tree.opentreeoflife.org/opentree/argus/ottol@{}".format(vars['OTT_ID']), _target='_blank')}}</a></li><li class="API"><br />{{=A(vars['EOL_ID'], _href="http://eol.org/pages/{}".format(vars['EOL_ID']), _target='_blank') if vars['EOL_ID'] else '<none>'}}</li></ol></div>
+        <div class="ids">{{=A("➩ OZ link", _href=URL('default','life/@='+str(vars['OTT_ID']), vars={"init":"jump"}, url_encode=False, extension=False), _target="_blank")}}<ol><li class="DB"><br />{{=A(vars['OTT_ID'], _href="https://tree.opentreeoflife.org/opentree/argus/ottol@{}".format(vars['OTT_ID']), _target='_blank')}}</a></li><li class="API"><br />{{=A(vars['EOL_ID'], _href="http://eol.org/pages/{}".format(vars['EOL_ID']), _target='_blank') if vars['EOL_ID'] else '<none>'}}</li></ol></div>
         
         <div class="speciesName"><ol><li class="DB"><br />{{=vars['html_name'] or '<none>'}}</li><li class="API sci"><img src="{{=URL('static','images/ajax-loader.gif')}}" title="Waiting for scientific name from API..." alt="Waiting for scientific name from API..." /></li><li class="API common"><a class="vernacularName" href="http://eol.org/pages/{{=vars['EOL_ID']}}/names/common_names" target="_blank"></a></li></ol></div>
-        
-        
         
         <div class="image API"><!--
             We hide the EOL image ID doID in a 'hidden' div, used to update the database when the form is submitted
@@ -13,84 +11,66 @@
             so we just put a 'waiting' picture up until then. It is easier to use background images, so we use a transparent gif
             and put a background image behind it.
         --><button type="button" class="changeimage"
-            onclick="setDataFromEoLpageID({{=vars['EOL_ID']}},
-                                         function(taxon_obj, err) {
-                                            set_EOL_name_and_image_in_form({{=vars['id']}}, taxon_obj)
-                                         }, '{{=EoL_API_key}}');
+            onclick="setDataFromEoLpageID(
+                {{='null' if not vars['EOL_ID'] else vars['EOL_ID']}},
+                function(taxon_obj, err) {init_EOL_name_and_image({{=vars['id']}}, taxon_obj);},
+                {{=XML('null' if not EoL_API_key else ("'" + str(EoL_API_key) + "'"))}});
                     ">↻</button><!--
         --><a target="_blank"><img class="EOLimg" src="{{=URL('static','images/transparent.gif')}}" style="background-image: url('{{=URL('static','images/Waiting.jpg')}}'); background-size: 100% 100%; background-repeat: no-repeat;" /></a></div>
 
         <div class="image DB"><!--
-            We hide the verified image ID doID in a 'hidden' div, used to update the database when the form is submitted
-        --><div id="vimgform{{=vars['id']}}" hidden>{{=form.custom.widget.verified_preferred_image}}</div><!--
+            We hide the verified image src and id in a 'hidden' div, used to update the database when the form is submitted
+        --><div id="vimgform{{=vars['id']}}" hidden>{{=form.custom.widget.verified_preferred_image_src}}{{=form.custom.widget.verified_preferred_image_src_id}}</div><!--
             The intention for this 'change image' button is to provide a dropdown of various image options
             but we can just hack a text entry dialog for the moment. If it is clicked, and a new doID entered
             we should set admin_chosen_image = 1 in the cgi parameters
         --><button type="button" class="changeimage"
             onclick="var doID = prompt('Quick hack: enter an EOL data object ID','');
                      if (doID) {
+                        $('#form_{{=vars['id']}} .image.DB .warning').remove();
                         $('#form_{{=vars['id']}} .admin_may_change').attr('name','admin_changed_image');
                         $('#form_{{=vars['id']}} .image.DB img').attr('class','highlighted');
-                        setDataFromEoLdataObjectID(doID,
+                        
+                        setDataFromEoLdataObjectID(
+                            doID,
                             function(data_obj, err) {
-/* NB: error flags are: 1: timeout, 2: bad EOL API response, 3: non number passed in, 4: negative number passed in, 5: no data object */
+                                /* NB: error flags are: 
+                                 *  1: timeout
+                                 *  2: bad EOL API response
+                                 *  3: non number passed in
+                                 *  4: negative number passed in
+                                 *  5: no data object 
+                                 */
+                                var target = '#form_{{=vars['id']}} .image.DB';
                                 switch (err) {
                                     case 0:
-                                        set_img_from_data_obj(data_obj, '#form_{{=vars['id']}} .image.DB')
+                                        set_img_from_data_obj(data_obj, target, {{=src_flags['onezoom_via_eol']}});
                                         break;
                                     case 1:
-                                        set_img('{{=URL('static','images/EOLdown.jpg')}}', '#form_{{=vars['id']}} .image.DB') 
+                                        set_img('{{=URL('static','images/EOLdown.jpg')}}', target) 
                                         break;
                                     case 2:
-                                        set_img('{{=URL('static','images/EOLproblem.png')}}', '#form_{{=vars['id']}} .image.DB') 
+                                        set_img('{{=URL('static','images/EOLproblem.png')}}', target) 
                                         break;
                                     case 3:
-                                        set_img('{{=URL('static','images/noImage.png')}}', '#form_{{=vars['id']}} .image.DB') 
+                                        set_img('{{=URL('static','images/noImage.png')}}', target) 
                                         break;
                                     case 4:
-                                        /* negative number: bespoke image */
-                                        set_img_from_bespoke_val(doID, '#form_{{=vars['id']}} .image.DB') 
+                                        /* negative number: used to be a bespoke image, now an error */
+                                        set_img('{{=URL('static','images/noImage.png')}}', target) 
                                         break;
                                     case 5:
-                                        set_img('{{=URL('static','images/EOLproblem.png')}}', '#form_{{=vars['id']}} .image.DB') 
+                                        set_img('{{=URL('static','images/EOLproblem.png')}}', target) 
                                         break;
                                 }
-                            }, '{{=EoL_API_key}}', 
+                            }, 
+                            {{=XML('null' if not EoL_API_key else ("'" + str(EoL_API_key) + "'"))}}, 
                             20000, true); //set large timeout and crossdomain
                         }
                     ">&boxbox;</button><!--
         The EoL data object API can only be called one object at a time: we might as well 
         find the url now for the bespoke image, as we know the user-chosen doID from the DB
-        --><a href="http://eol.org/data_objects/{{=vars['user_preferred_image']}}" target="_blank"><img id="vimg{{=vars['id']}}" {{if vars['user_nondefault_image']:}}class="highlighted"{{pass}} src="{{=URL('static','images/transparent.gif')}}" style="background-image: url('{{=URL('static','images/Waiting.jpg')}}'); background-size: 100% 100%; background-repeat: no-repeat;" 
-            onload= "
-                     this.onload = null; /* cancel future onloads: only need to do this at the start */
-                     setDataFromEoLdataObjectID(document.getElementById('vimgform{{=vars['id']}}').children[0].getAttribute('value'),
-                                                function(data_obj, err) {
-/* NB: error flags are: 1: timeout, 2: bad EOL API response, 3: non number passed in, 4: negative number passed in, 5: no data object */
-                                        switch (err) {
-                                            case 0:
-                                                set_img_from_data_obj(data_obj, '#form_{{=vars['id']}} .image.DB');
-                                                break;
-                                            case 1:
-                                                set_img('{{=URL('static','images/EOLdown.jpg')}}', '#form_{{=vars['id']}} .image.DB');
-                                                break;
-                                            case 2:
-                                                set_img('{{=URL('static','images/EOLproblem.png')}}', '#form_{{=vars['id']}} .image.DB');
-                                                break;
-                                            case 3:
-                                                set_img('{{=URL('static','images/noImage.png')}}', '#form_{{=vars['id']}} .image.DB');
-                                                break;
-                                            case 4:
-                                                /* negative number: bespoke image */
-set_img_from_bespoke_val(document.getElementById('vimgform{{=vars['id']}}').children[0].getAttribute('value'), '#form_{{=vars['id']}} .image.DB');
-                                                break;
-                                            case 5:
-                                                set_img('{{=URL('static','images/EOLproblem.png')}}', '#form_{{=vars['id']}} .image.DB');
-                                                break;
-                                        }
-                                }, '{{=EoL_API_key}}',
-                                20000, true) //set large timeout and crossdomain
-                    "/></a><!--
+        --><a href="" target="_blank"><img id="vimg{{=vars['id']}}" {{if vars['user_nondefault_image']:}}class="highlighted"{{pass}} src="{{=URL('static','images/transparent.gif')}}" style="background-image: url('{{=URL('static','images/Waiting.jpg')}}'); background-size: 100% 100%; background-repeat: no-repeat;" /></a><!--
         The close button
         --><button type="button" class="noimage"
             onclick="$('#form_{{=vars['id']}} .admin_may_change').attr('name','admin_changed_image'); $('#form_{{=vars['id']}} .image.DB img').attr('class',''); set_img('{{=URL('static','images/Unselected.jpg')}}', '#form_{{=vars['id']}} .image.DB')">&times;</button></div><input type="hidden" class="admin_may_change" value="1" title="allows us to check if a bespoke image has been set by admin" />
@@ -107,7 +87,7 @@ set_img_from_bespoke_val(document.getElementById('vimgform{{=vars['id']}}').chil
         {{elif (vars['user_paid'] == vars['asking_price']):}}
         = OK
         {{elif (vars['user_paid'] > vars['asking_price']):}}
-        <b style="color: green;">+ {{=(vars['user_paid'] - vars['asking_price'])}}</b><br />
+        <b style="color: green;">+ {{=round(vars['user_paid'] - vars['asking_price'], 2)}}</b><br />
         {{else:}}
         <b style="color: red; font-size: 200%">!!{{=(vars['user_paid'] - vars['asking_price'])}}</b><br />
         {{pass}}
@@ -126,7 +106,7 @@ set_img_from_bespoke_val(document.getElementById('vimgform{{=vars['id']}}').chil
         <script>
         thumb_func = {{=XML(js_thumbnail_url)}}
         
-        function set_EOL_name_and_image_in_form(row_id, taxon_obj) {
+        function init_EOL_name_and_image(row_id, taxon_obj) {
             var fm = '#form_'+ row_id
             if (taxon_obj) {
                 if (taxon_obj.scientificName) {
@@ -151,32 +131,24 @@ set_img_from_bespoke_val(document.getElementById('vimgform{{=vars['id']}}').chil
                 set_img("{{=URL('static','images/EOLproblem.png')}}", fm + ' .image.API')
             }
         }
-        
-        
-        function set_img_from_bespoke_val(value, class_spec) {
-            $(class_spec + ' input').val(value) //set the hidden field
-            url = thumb_func(2, value);
-            $(class_spec + ' img').css("background-image","url('"+ url + "')");
-            $(class_spec + ' img').css("backgroundSize", 'cover');
-            $(class_spec + ' img').css("backgroundPosition", 'left top');
-            $(class_spec + ' a').attr('href',url);
-        }
-        
-        function set_img(path, class_spec) {
-            $(class_spec + ' input').val(''); //set the hidden field
+
+        function set_img(path, class_spec, href, src, src_id) {
+            $(class_spec + ' [name="verified_preferred_image_src"]').val(src || ''); //set the hidden fields
+            $(class_spec + ' [name="verified_preferred_image_src_id"]').val(src_id || ''); 
             $(class_spec + ' img').css("background-image","url('"+path+"')");
             $(class_spec + ' img').css("backgroundSize", 'cover');
             $(class_spec + ' img').css("backgroundPosition", 'left top');
-            $(class_spec + ' a').attr('href','');
+            $(class_spec + ' a').attr('href',href || '');
         }
-        
-        function set_img_from_data_obj(img, class_spec) {
+
+        function set_img_from_data_obj(img, class_spec, src) {
             /* img should be an object: adjust the variables contained in the jquery 'class_spec' */
             var doID = img.dataObjectVersionID;
             var url =  img.url;
             if (doID && url) {
-                $(class_spec + ' input').val(doID) //set the hidden field
-                $(class_spec + ' a').attr('href','http://eol.org/data_objects/' + doID) 
+                $(class_spec + ' [name="verified_preferred_image_src"]').val(src); //set the hidden fields
+                $(class_spec + ' [name="verified_preferred_image_src_id"]').val(doID);
+                $(class_spec + ' a').attr('href','http://eol.org/media/' + doID) 
                 $(class_spec + ' img').css("background-image","url('"+ url +"')") //set the img src
                 if (img.height && img.width && img.crop_width) {
                     crop_vals = crop_frac(img, {{=vars['percent_crop_expansion']}})
@@ -185,21 +157,100 @@ set_img_from_bespoke_val(document.getElementById('vimgform{{=vars['id']}}').chil
                     $(class_spec + ' img').css("backgroundPosition", (crop_vals[1]*res_px)+"px " + (crop_vals[2]*res_px)+"px")
                 } else {
                     $(class_spec + ' img').css("backgroundSize", 'cover')
-                    $(class_spec + ' img').css("backgroundPosition", 'left top')
+                    $(class_spec + ' img').css("backgroundPosition", 'center')
                 }
             } else {
                 $(class_spec + ' img').css("background-image","url('{{=URL('static','images/noImage.png')}}')")
             }
         }
+
+        function init_user_image(
+            target, eol_id, img_src, img_src_id, has_oz_img, 
+            is_eol_img, is_nondefault, EoL_API_key) {
+            if (img_src === null || img_src_id == null) {
+                set_img('{{=URL('static','images/Unselected.jpg')}}', target);
+            } else if (has_oz_img) {
+                var src_url = thumb_func(img_src, img_src_id);
+                var link_url = '{{=URL("tree","pic_info", args=["...IMG_SRC...","...IMG_SRC_ID..."], extension=False)}}'
+                    .replace('...IMG_SRC...', img_src).replace('...IMG_SRC_ID...', img_src_id);
+                if (img_src=={{=src_flags['eol_old']}}) {
+                    /* override the link url so we can easily chose a new photo */
+                    link_url = 'http://eol.org/pages/' + eol_id + '/media';
+                    $(target).prepend($('<p>', {
+                        class: 'warning',
+                        style:'color:red;',
+                        html:'WARNING<br />Old EoL img',
+                        title:'This image may be replaced by the auto-update script at any time. You are recommended to replace it with an equivalent image id from the new EoL media page (click on the image)'}));
+                }
+                set_img(src_url, target, link_url, img_src, img_src_id);
+            } else if (is_eol_img) {
+                /* Get the image from EoL API */
+                setDataFromEoLdataObjectID(
+                    img_src_id,
+                    function(data_obj, err) {
+                        /* NB: error flags are: 
+                         *  1: timeout
+                         *  2: bad EOL API response
+                         *  3: non number passed in
+                         *  4: negative number passed in
+                         *  5: no data object */
+                        switch (err) {
+                          case 0:
+                            set_img_from_data_obj(data_obj, target,
+                                is_nondefault?{{=src_flags['onezoom_via_eol']}}:{{=src_flags['eol']}});
+                        break;
+                      case 1:
+                        set_img('{{=URL('static','images/EOLdown.jpg')}}', target);
+                        break;
+                      case 2:
+                        set_img("{{=URL('static','images/EOLproblem.png')}}", target);
+                        break;
+                      case 3:
+                        set_img("{{=URL('static','images/noImage.png')}}", target);
+                        break;
+                      case 4:
+                        /* negative number: bespoke image - should never happen */
+                        set_img("{{=URL('static','images/noImage.png')}}", target);
+                        break;
+                      case 5:
+                        set_img("{{=URL('static','images/EOLproblem.png')}}", target);
+                        break;
+                   };
+               }, EoL_API_key, 20000, true); //set large timeout and crossdomain
+            } else {
+               alert("Error: src=" + img_src + ", src_id=" + img_src_id);
+            }
+        };
         
-        {{if ('EOL_ID' in vars) and (vars['EOL_ID'] is not None):}}
-            $( document ).ready(setDataFromEoLpageID({{=vars['EOL_ID']}},
-                                                     function(taxon_obj, err) {
-                                                              set_EOL_name_and_image_in_form({{=vars['id']}}, taxon_obj)
-                                                     }, '{{=EoL_API_key}}'));
-        {{else:}}
-            $( document ).ready(set_EOL_name_and_image_in_form({{=vars['id']}}, null));
-        {{pass}}
+        
+        $( document ).ready(function() {
+            ajax_error_500 = "There was an ajax error. On this page it may mean that" +
+            " the EoL ajax request has been turned down, perhaps because the EoL id for" + 
+            " a taxon has changed (EoL wrongly sets the API return value to `error`" + 
+            "rather than `missing`)"
+            init_user_image(
+                '#form_{{=vars['id']}} .image.DB',                      //target
+                {{='null' if not vars['EOL_ID'] else vars['EOL_ID']}},  //eol id
+                {{='null' if img_src is None else img_src}},            //img_src
+                {{='null' if img_src_id is None else img_src_id}},      //img_src_id
+                {{=1 if img_already_on_oz else 0}},                     //has_oz_img
+                {{=1 if inv_src_flags.get(img_src,None) in eol_src_flag_names else 0}}, // is_eol_img
+                {{=1 if vars['user_nondefault_image'] else 0}},
+                {{=XML('null' if not EoL_API_key else ("'" + str(EoL_API_key) + "'"))}});
+
+{{if ('EOL_ID' in vars) and (vars['EOL_ID'] is not None):}}
+
+            setDataFromEoLpageID(
+                {{='null' if not vars['EOL_ID'] else vars['EOL_ID']}},
+                function(taxon_obj, err) {
+                    init_EOL_name_and_image({{=vars['id']}}, taxon_obj);
+                }, {{=XML('null' if not EoL_API_key else ("'" + str(EoL_API_key) + "'"))}});
+
+{{else:}}
+
+            init_EOL_name_and_image({{=vars['id']}}, null);
+{{pass}}
+        });
         </script>
         </div>
 {{=form.custom.end}}

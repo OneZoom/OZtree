@@ -5,20 +5,15 @@ response.title='OneZoom: '+T('sponsor a species')
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
 
-<h3>{{=XML(T('Sponsor %s and support OneZoom') % (the_long_name or T("a leaf"),))}}</h3>
+<h3>{{=XML(T('Sponsor a leaf and support OneZoom'))}}</h3>
 
 <p>{{=T('This tree of life explorer is made available by OneZoom, a UK charity (non-profit organisation). The aim of OneZoom is to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.')}}</p>
 
 <p>{{=T('Sponsoring a leaf on the tree of life helps support OneZoom and, as a thank you, your name (or the name of a nominated friend) will appear on this leaf of the tree, both here and elsewhere.')}}</p>
 
 <p>{{=T('There can only be one sponsor per leaf so get your favourite species before someone else does.')}}</p>
-{{
-    url_minus_scheme = "www.onezoom.org/sponsor_leaf?ott={}".format(ott)
-    #NB the links here should be hardcoded (not using the URL() helper)
-    # so that they do not get the embed information included
-    # but they should use the A() helper so that they are turned off on MDs
-}}
-<p>{{=(XML(T('To sponsor %s go to the main OneZoom website at %s') % (the_long_name or T("this leaf"), A(url_minus_scheme, _href="//"+url_minus_scheme, _target="_blank", _style="text-decoration: underline;"))))}}</p>
 
-<p>{{=XML(T('You can also find other leaves to sponsor on OneZoom at %s') % (A("www.onezoom.org/sponsor", _href="//www.onezoom.org/sponsor", target="_blank", _style="text-decoration: underline;"),))}}</p>
+<p>{{=T('This leaf is not currently available for sponsorship, but many others are...')}}</p>
 
+{{#NB the links here should be hardcoded to jump out to the (external) main OZ website}}
+<p>{{=XML(T('Find another leaf to sponsor on OneZoom at %s') % (A("www.onezoom.org/sponsor", _href="//www.onezoom.org/sponsor", target="_blank", _style="text-decoration: underline;"),))}}</a></p>

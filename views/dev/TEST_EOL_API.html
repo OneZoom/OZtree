@@ -1,0 +1,48 @@
+{{response.title='OneZoom Management: Test EoL API'}}
+{{response.files.append(URL('static', 'OZSponsor/EOLqueries.js'))}}
+{{extend 'layout.html'}}
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="col-md-12">
+
+<script>
+var result;
+function on_complete_callback(taxon_object, flags) {
+    result=taxon_object;
+    for (var i = 0; i<taxon_object.imageObjects.length; i++) {
+        $('#imgs').append('<img src="' + taxon_object.imageObjects[i].url_squarecrop + '" />')
+    };
+    $('#text_results').text(JSON.stringify(taxon_object));
+}
+
+function run_API_call() {
+    $('#text_results').text("");
+    $('#imgs').text("");
+    setDataFromEoLpageID(
+        $('#EoL_ID').val(),
+        on_complete_callback,
+        $('#EoL_APIKEY').val(),
+        9,
+        $('#include_names').is(':checked'));
+}
+
+</script>
+<table style="border-spacing: 0.2em;border-collapse: separate;">
+<tr><td>EoL ID</td><td><input id="EoL_ID" type="text" value="127643" /></td><td>(e.g. 1 for animals, or 127643 for the white-handed gibbon)</td></tr>
+<tr><td>EoL API Key</td><td><input id="EoL_APIKEY" type="text" value="{{=EoL_API_key}}" /></td></tr>
+<tr><td>include_names</td><td><input id="include_names" type="checkbox" /></td></tr>
+</table>
+<button onclick="run_API_call()">Check API</button>
+
+<button onclick="alert($('#EoL_ID').val())">Alert</button>
+
+<fieldset style="border: 1px black solid; margin-top: 1em">
+    <legend style="width: auto; border:0; margin-left:1em">Images</legend>
+    <div id="imgs" style="padding: 0.5em;"></div>
+</fieldset>
+
+<fieldset style="border: 1px black solid; margin-top: 1em">
+    <legend style="width: auto; border:0; margin-left:1em">Results</legend>
+    <div id="text_results" style="padding: 0.5em;"></div>
+</fieldset>
+</div></div></div>
