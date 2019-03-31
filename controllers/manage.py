@@ -4,6 +4,8 @@ from OZfunctions import *
 @auth.requires_membership(role='manager')
 def index():
     '''this is a page to give quick links to all the management routines'''
+    if not request.is_local and not request.is_https:
+        redirect(URL(scheme='https', args=request.args, vars=request.vars))
     return dict()
 
 @auth.requires(lambda: auth.has_membership('manager') or auth.has_membership('translator'))
