@@ -4,8 +4,7 @@ from OZfunctions import *
 @auth.requires_membership(role='manager')
 def index():
     '''this is a page to give quick links to all the management routines'''
-    if not request.is_local and not request.is_https:
-        redirect(URL(scheme='https', args=request.args, vars=request.vars))
+    https_redirect()
     return dict()
 
 @auth.requires(lambda: auth.has_membership('manager') or auth.has_membership('translator'))
@@ -78,6 +77,7 @@ def edit_language():
 def SHOW_SPONSOR_SUMS():
     '''list the sponsors by amount
     '''
+    https_redirect()
     cols = dict(donor_name = "`verified_donor_name`",
                 e_mail = "`e_mail`",
                 pp_name = "CONCAT_WS(' ',`PP_first_name`, `PP_second_name`)",
@@ -119,7 +119,7 @@ def SPONSOR_VALIDATE():
     admin comment
     
     """
-
+    https_redirect()
     try:
         page=int(request.args[0])
     except:
@@ -161,6 +161,7 @@ def SPONSOR_VALIDATE():
 @auth.requires_membership(role='manager')
 def SPONSOR_UPDATE():
     #needs to be called with single row id
+    https_redirect()
     read_only_cols = [
         'id',
         'OTT_ID',
@@ -393,6 +394,7 @@ def SPONSOR_UPDATE():
 def LIST_IMAGES():
     """this mines the database for all images and shows them ranked by popularity
     """
+    https_redirect()
     from time import time #to apppend to href, so that caching does not happen
     from collections import OrderedDict
  
@@ -454,6 +456,7 @@ def SHOW_EMAILS():
     from collections import OrderedDict
     import re
     import os.path
+    https_redirect()
     email_list = OrderedDict()
     
     #first find the sponsors that haven't gone through for some reason.
@@ -600,6 +603,7 @@ def SET_PRICES():
     b) some specifically high-ranked taxa (I suggest all the icons on the home page should be boosted to e.g. 75 pounds)
     
     """
+    https_redirect()
     prices = [500,1000,2000,4000,7500,15000]
 
     bespoke_prices = [ #these are in order highest to lowest
@@ -714,6 +718,7 @@ def GENERATE_TREE():
     run the tree generation script - this takes ages, so use a lockfile
     in OneZoom/OZprivate/data/YanTree/generate_tree.lock
     """
+    https_redirect()
     import subprocess
     import os
     import time
@@ -741,6 +746,7 @@ def REIMPORT_TREE_TABLES():
     !!!!currently this doesn't work
     """
     raise
+    https_redirect()
     
     import os
     from shutil import copyfile
@@ -825,3 +831,9 @@ def emails(ott, species_name, common_name, sponsor_name, email, PP_first_name=No
                 'email':email,
                 'mail_subject':'Your OneZoom sponsorship of '+ species_name +' has gone live',
                 'mail_body':'Dear {username},\r\n\r\nThank you so much for your donation to OneZoom.  This will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. \r\n\r\nWe are very pleased to be able to tell you that your sponsored leaf, {the_species}, has now appeared on the tree decorated with your sponsorship details. \r\n\r\nIt’s now there for all to see at \r\n\r\nhttp://www.onezoom.org/life/@={ott}\r\n\r\nor, if you’d like to fly through the tree to your sponsored leaf try \r\n\r\nhttp://www.onezoom.org/life/@={ott}?init=zoom\r\n\r\nThere’s also the more obvious link\r\n\r\nonezoom.org/life/@{species_name_with_underscores}\r\n\r\nbut this may be less stable (for example sometimes two very different creatures on the tree share the same scientific name, so you may end up going to the wrong place).\r\n\r\nPlease consider sharing the link with your friends and family!\r\n\r\nWe welcome your feedback and are always keen to find ways to make OneZoom better.\r\n\r\nThank you again for your donation, we hope you enjoy exploring our tree of life. \r\n\r\nThe OneZoom Team (UK charity number 1163559)'.format(username=username, ott=ott, species_name_with_underscores =species_name.replace(" ","_"), the_species=nice_species_name(species_name, common_name, the=True), for_name = for_name)})
+
+# this is a private function
+
+def https_redirect() :
+    if not request.is_local and not request.is_https:
+        redirect(URL(scheme='https', args=request.args, vars=request.vars))
