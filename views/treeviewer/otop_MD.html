@@ -201,7 +201,7 @@ var tree_config= {
    'layout.sign': 'otop',
    midnode: 'polytomy',
 };
-var pagetitle_func=null;
+var pagetitle_func=function(nm) {return (nm)?"One Tree One Planet museum display: "+ nm:"One Tree One Planet museum display"};
 
 // Wrap around data_path_pics, passing through URLs when we have direct URLs from UCAYA
 server_urls._old_data_path_pics = server_urls.data_path_pics;
