@@ -189,6 +189,9 @@ body.loading > canvas {
 </style>
 <script src="{{=URL('static','otop/backgrounds.js')}}"></script>
 <script type="text/javascript">
+/* disable right click */
+document.oncontextmenu = function() {return false;}
+
 var tree_config= {
    cols: 'otop',
    vis: 'polytomy',
