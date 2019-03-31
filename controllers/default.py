@@ -4,7 +4,7 @@ import re
 import urllib
 from json import dumps
 
-from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code, raise_incorrect_url
+from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code, raise_incorrect_url, https_redirect
 
 """ Some settings for sponsorship"""
 try:
