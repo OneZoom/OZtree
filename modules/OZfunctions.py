@@ -277,5 +277,6 @@ def __make_user_code():
     return '{:x}'.format(random.getrandbits(42))    
 
 def https_redirect() :
+    request = current.request
     if not request.is_local and not request.is_https:
         redirect(URL(scheme='https', args=request.args, vars=request.vars))
