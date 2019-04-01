@@ -276,7 +276,11 @@ def __make_user_code():
     """
     return '{:x}'.format(random.getrandbits(42))    
 
-def https_redirect() :
-    request = current.request
-    if not request.is_local and not request.is_https:
-        redirect(URL(scheme='https', args=request.args, vars=request.vars))
+def require_https_if_nonlocal() :
+    def wrapper(func):
+        request=current.request
+        if request.function == func.__name__ and not request.is_https and not request.is_local:
+            return request.requires_https()
+        else:
+            return func
+    return wrapper

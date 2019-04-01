@@ -4,7 +4,7 @@ import re
 import urllib
 from json import dumps
 
-from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code, raise_incorrect_url, https_redirect
+from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal
 
 """ Some settings for sponsorship"""
 try:
@@ -30,6 +30,7 @@ def index():
     """
     return dict(n_species =  db(db.ordered_leaves).count(), n_images =  db(db.images_by_ott).count())
 
+@require_https_if_nonlocal()
 def user():
     """
     exposes:
@@ -48,7 +49,6 @@ def user():
     """
 
     #from http://www.web2pyslices.com/slice/show/1642/login-with-username-and-email - allow username OR email (to allow 'guest' account
-    https_redirect()
     if 'login' in request.args:
         db.auth_user.username.label = T("Username or Email")
         auth.settings.login_userfield = 'username'
