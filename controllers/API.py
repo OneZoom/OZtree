@@ -168,7 +168,7 @@ def image_details():
     session.forget(response)
     response.headers["Access-Control-Allow-Origin"] = '*'
     try:
-        all_cols = ['src', 'src_id', 'rights','licence']
+        all_cols = ['rights','licence']
         col_names = {nm:index for index,nm in enumerate(all_cols)}
         queries = []
         image_details = {}
@@ -181,11 +181,11 @@ def image_details():
                     raise #ban commas at start, and before other commas, ban minus signs and commas at end, 
                 #if we get here, ids should only contain numbers (negative or positive) with commas between
                 image_details[int(v)]={int(id):None for id in ids.split(",")}
-                q = "(SELECT " + ",".join(all_cols) + " FROM {} WHERE src = {} AND src_id IN({}))"
+                q = "(SELECT " + ",".join(['src', 'src_id'] + all_cols) + " FROM {} WHERE src = {} AND src_id IN({}))"
                 queries.append(q.format('images_by_ott',v, ids))
                 queries.append(q.format('images_by_name',v, ids))
         for row in db.executesql(" UNION ALL ".join(queries)):
-            image_details[row[0]][row[1]]=row[2:4]
+            image_details[row[0]][row[1]]=row[2:]
         return {'headers':col_names, 'image_details': image_details}
     except: #e.g. if bad data has been passed in
         return {'errors':['Bad data passed in']}
