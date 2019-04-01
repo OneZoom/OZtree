@@ -162,8 +162,8 @@ def node_details():
 
 def image_details():
     """
-    e.g. image_details.json?2=25677433,27724652&1=31925837,-1
-    where 1 and 2 are src names
+    e.g. image_details.json?2=25677433,27724652&1=31925837,1
+    where 1 and 2 are values from src_flags
     """
     session.forget(response)
     response.headers["Access-Control-Allow-Origin"] = '*'
@@ -171,6 +171,7 @@ def image_details():
         all_cols = ['src', 'src_id', 'rights','licence']
         col_names = {nm:index for index,nm in enumerate(all_cols)}
         queries = []
+        image_details = {}
         for v in request.vars:
             if v.isdigit() and int(v) in inv_src_flags:
                 ids = request.vars[v]
@@ -179,13 +180,15 @@ def image_details():
                 if re.search("^,|[-,]$|,,|-[-,]|\d-", ids):
                     raise #ban commas at start, and before other commas, ban minus signs and commas at end, 
                 #if we get here, ids should only contain numbers (negative or positive) with commas between
+                image_details[int(v)]={int(id):None for id in ids.split(",")}
                 q = "(SELECT " + ",".join(all_cols) + " FROM {} WHERE src = {} AND src_id IN({}))"
                 queries.append(q.format('images_by_ott',v, ids))
                 queries.append(q.format('images_by_name',v, ids))
-        return {'headers':col_names, 'image_details': db.executesql(" UNION ALL ".join(queries)) if queries else []}
+        for row in db.executesql(" UNION ALL ".join(queries)):
+            image_details[row[0]][row[1]]=row[2:4]
+        return {'headers':col_names, 'image_details': image_details}
     except: #e.g. if bad data has been passed in
-        res = {}
-    return res
+        return {'errors':['Bad data passed in']}
 
 #Search
 def search_node():
