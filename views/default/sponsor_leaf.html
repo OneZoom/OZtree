@@ -147,7 +147,7 @@ response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
         <p class="singlerow extra_info">{{=T('We can use this in correspondance, on our public list of donors, and the information is required if you agree to gift aid your donation (see below)')}}</p>
         
       <div><label for="user_donor_show_input">{{=XML(T('We would love to be able to thank you by name:  if this box is ticked we’ll add your name to our public %s.') % (A(T('list of donors'), _href='/donor_list', _target="blank"),))}}</label><p><input type="checkbox" autocomplete id="user_donor_show_input" name = "user_donor_show"/></p></div>
-      <p class="singlerow extra_info">{{=T('This is in addition to your sponsored leaf on the tree; we’ll only use the name above (and of course, we’ll never reveal your email).')}}</p>
+      <p class="singlerow extra_info">{{=T('This is in addition to your sponsored leaf on the tree; we’ll only use the name above (and of course, we’ll never show your email).')}}</p>
       
       <div><label for="allow_contact_input">{{=T('Allow further contact?')}}</label><p><input type="checkbox" autocomplete id="allow_contact_input" name = "allow_contact" /></p></div>
       <p class="singlerow extra_info">{{=XML(T('On rare occasions we may wish to inform you about new / major changes to OneZoom (for more frequent updates, you might also like to %s)') % (A(T('follow us on Twitter'), _href='https://twitter.com/OneZoomTree', _target="_blank"),))}}</p>
