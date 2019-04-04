@@ -147,6 +147,11 @@ class LeafLayout extends LeafLayoutBase {
           };
       });
       rings = Object.values(rings);
+      rings.sort(function (a, b) {
+          if(a.color < b.color) { return -1; }
+          if(a.color > b.color) { return 1; }
+          return 0;
+      });
 
       let total_width = 1;
       for (let i = 0; i < rings.length; i++) {
