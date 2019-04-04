@@ -11,14 +11,9 @@ import config from '../global_config';
  * State can be fetched either by event.state or parsing url.
  */
 function popupstate(event) {
-  let state = event.state;
-  if (!state) { //state == null - we have followed a hash link.
-    let loc = (window.location.pathname.indexOf("@") === -1) ? null : window.location.pathname.slice(window.location.pathname.indexOf("@"));
-    state = parse_query(loc, window.location.search, window.location.hash);
-  }
-  if (state) {
-    setup_page_by_state(state);
-  }
+  let loc = (window.location.pathname.indexOf("@") === -1) ? null : window.location.pathname.slice(window.location.pathname.indexOf("@"));
+  let state = parse_query(loc, window.location.search, window.location.hash);
+  setup_page_by_state(state);
 }
 
 /**
