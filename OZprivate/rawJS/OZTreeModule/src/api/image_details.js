@@ -18,22 +18,16 @@ class ImageDetailsAPI {
 }
 
 function prepare_image_api_data(image_data) {
-  let src_id_with_src_1 = [];
-  let src_id_with_src_2 = [];
-  
-  let length = image_data.length;
-  for (let i=0; i<length; i++) {
-    if (image_data[i].src === "1") {
-      src_id_with_src_1.push(image_data[i].src_id);
-    } else {
-      src_id_with_src_2.push(image_data[i].src_id);
-    }
+  var i, data = {};
+
+  for (i = 0; i < image_data.length; i++) {
+      if (!data.hasOwnProperty(image_data[i].src)) {
+          data[image_data[i].src] = "" + image_data[i].src_id;
+      } else {
+          data[image_data[i].src] = "," + image_data[i].src_id;
+      }
   }
-  
-  let data = {};
-  if (src_id_with_src_1.length > 0) data["1"] = src_id_with_src_1.join(",");
-  if (src_id_with_src_2.length > 0) data["2"] = src_id_with_src_2.join(","); 
-  
+
   return data;
 }
 
