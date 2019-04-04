@@ -154,17 +154,26 @@ class LeafLayout extends LeafLayoutBase {
           s.x = x; s.y = y;
           s.r = r + 0.03 * r * (total_width + rings[i].level / 2);
           s.circle = true;
-          s.do_fill = true;
-          s.order = "fill_first";
-          s.fill.color = 'rgba(0,0,0,0.8)';
+          s.do_fill = false;
           s.do_stroke = true;
           s.stroke.line_width = rings[i].level * 0.03 * r;
           s.stroke.color = rings[i].color;
           s.stroke.shadow = { blur: 10 };
-          s.height = 0;
+          s.height = 1;
           shapes.push(s);
-          total_width = total_width + (rings[i].level);
+          total_width = total_width + (rings[i].level) + 0.5;
       }
+
+      // Fill behind the circles
+      s = ArcShape.create();
+      s.x = x; s.y = y;
+      s.r = r + 0.03 * r * (total_width);
+      s.circle = true;
+      s.do_fill = true;
+      s.do_stroke = false;
+      s.fill.color = 'rgba(0,0,0,0.8)';
+      s.height = 0;
+      shapes.push(s);
 
       this.circle_cut_image(shapes, imageObject, x, y, r, color_theme.get_color("leaf.inside.fill",node), null, node);
   }
