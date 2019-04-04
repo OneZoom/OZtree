@@ -4,7 +4,7 @@ import re
 import urllib
 from json import dumps
 
-from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code, raise_incorrect_url, https_redirect
+from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal
 
 """ Some settings for sponsorship"""
 try:
@@ -30,6 +30,7 @@ def index():
     """
     return dict(n_species =  db(db.ordered_leaves).count(), n_images =  db(db.images_by_ott).count())
 
+@require_https_if_nonlocal()
 def user():
     """
     exposes:
@@ -48,7 +49,6 @@ def user():
     """
 
     #from http://www.web2pyslices.com/slice/show/1642/login-with-username-and-email - allow username OR email (to allow 'guest' account
-    https_redirect()
     if 'login' in request.args:
         db.auth_user.username.label = T("Username or Email")
         auth.settings.login_userfield = 'username'
@@ -404,7 +404,6 @@ def sponsor_leaf():
                 id=reservation_entry.id,
                 OTT_ID=OTT_ID_Varin,
                 EOL_ID=leaf_entry.get('eol', -1),
-                eol_src=src_flags['eol'],
                 species_name=species_name,
                 js_species_name=dumps(species_name),
                 common_name=common_name,
@@ -700,7 +699,7 @@ def sponsor_node_price():
                 join = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
                 limitby = (start, start+n+1), #add an extra on so we can see if there are any more
                 orderby = "images_by_ott.rating DESC")
-            image_urls = {species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows_with_images if (species.images_by_ott.src == src_flags['onezoom']) or (species.images_by_ott.src == src_flags['eol'])}
+            image_urls = {species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows_with_images}
             image_attributions = {species.ordered_leaves.ott:(' / '.join([t for t in [species.images_by_ott.rights, species.images_by_ott.licence] if t])) for species in rows_with_images}
             otts = [species.ordered_leaves.ott for species in rows_with_images]
             sci_names = {species.ordered_leaves.ott:species.ordered_leaves.name for species in rows_with_images}
@@ -752,7 +751,7 @@ def sponsor_node_price():
                     join = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
                     limitby=(start, start+extra_needed), 
                     orderby = "images_by_ott.rating ASC")
-                image_urls = {species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows_with_images if (species.images_by_ott.src == src_flags['onezoom']) or (species.images_by_ott.src == src_flags['eol'])}
+                image_urls = {species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows_with_images}
                 image_attributions = {species.ordered_leaves.ott:(' / '.join([t for t in [species.images_by_ott.rights, species.images_by_ott.licence] if t])) for species in rows_with_images}
                 otts.extend([species.ordered_leaves.ott for species in rows_with_images])
                 sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows_with_images})
@@ -847,7 +846,7 @@ def sponsor_handpicks():
                                left = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
                                orderby = orderby)
             otts[price_pounds] = [r.ordered_leaves.ott for r in rows]
-            image_urls.update({species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows if (species.images_by_ott.src == src_flags['onezoom']) or (species.images_by_ott.src == src_flags['eol'])})
+            image_urls.update({species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows})
             sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows})
 
         #Now find the vernacular names for all these species
@@ -1385,6 +1384,10 @@ def linnean():
 def otop():
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return treeview_info()
+
+def otop_MD():
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+    return treeview_info(has_text_tree=False)
 
 #def old_kew():
 #    """

@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 from OZfunctions import *
 
+@require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def index():
     '''this is a page to give quick links to all the management routines'''
-    https_redirect()
+    request.is_local or request.requires_https() #require https unless local
     return dict()
 
 @auth.requires(lambda: auth.has_membership('manager') or auth.has_membership('translator'))
@@ -73,11 +74,11 @@ def edit_language():
                 redirect(URL(r=request, args=request.args))
             return dict(filename=filename, form=form)
 
+@require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def SHOW_SPONSOR_SUMS():
     '''list the sponsors by amount
     '''
-    https_redirect()
     cols = dict(donor_name = "`verified_donor_name`",
                 e_mail = "`e_mail`",
                 pp_name = "CONCAT_WS(' ',`PP_first_name`, `PP_second_name`)",
@@ -98,7 +99,7 @@ def SHOW_SPONSOR_SUMS():
         groupby=groupby, orderby= cols['sum_paid'] + " DESC")
     return dict(rows = rows, cols=cols)
 
-
+@require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def SPONSOR_VALIDATE():
     """
@@ -119,7 +120,6 @@ def SPONSOR_VALIDATE():
     admin comment
     
     """
-    https_redirect()
     try:
         page=int(request.args[0])
     except:
@@ -158,10 +158,10 @@ def SPONSOR_VALIDATE():
     rows = db(query).select(db.reservations.id,limitby=limitby, orderby=~db.reservations.user_updated_time) #NB can't order by sale time as it is from paypal, and not in a standard datatime format
     return dict(rows=[r.id for r in rows], page=page, vars=request.vars, items_per_page=items_per_page)
 
+@require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def SPONSOR_UPDATE():
     #needs to be called with single row id
-    https_redirect()
     read_only_cols = [
         'id',
         'OTT_ID',
@@ -390,11 +390,11 @@ def SPONSOR_UPDATE():
         )
 
 
+@require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def LIST_IMAGES():
     """this mines the database for all images and shows them ranked by popularity
     """
-    https_redirect()
     from time import time #to apppend to href, so that caching does not happen
     from collections import OrderedDict
  
@@ -447,6 +447,7 @@ def LIST_IMAGES():
         images[src_name] = rows[(page*items_per_page):(1+(page+1)*items_per_page)]
     return dict(pics=images, time=time(), form=form, page=page, items_per_page=items_per_page, vars=request.vars)
 
+@require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def SHOW_EMAILS():
     """
@@ -456,7 +457,6 @@ def SHOW_EMAILS():
     from collections import OrderedDict
     import re
     import os.path
-    https_redirect()
     email_list = OrderedDict()
     
     #first find the sponsors that haven't gone through for some reason.
@@ -595,6 +595,7 @@ def SHOW_EMAILS():
 
 """ these are admin tools for database import """
 
+@require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def SET_PRICES():
     """This sets cutoff prices in the sql database
@@ -603,7 +604,6 @@ def SET_PRICES():
     b) some specifically high-ranked taxa (I suggest all the icons on the home page should be boosted to e.g. 75 pounds)
     
     """
-    https_redirect()
     prices = [500,1000,2000,4000,7500,15000]
 
     bespoke_prices = [ #these are in order highest to lowest
@@ -712,13 +712,13 @@ def SET_PRICES():
 example_spp=sorted(example_spp, key=lambda tup: tup[1]), previous_prices = db().select(db.prices.ALL))
 
 
+@require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def GENERATE_TREE():
     """
     run the tree generation script - this takes ages, so use a lockfile
     in OneZoom/OZprivate/data/YanTree/generate_tree.lock
     """
-    https_redirect()
     import subprocess
     import os
     import time
@@ -740,13 +740,13 @@ def GENERATE_TREE():
             proc = subprocess.Popen(cmd, cwd= working_dir, stdout=outfile, stderr=subprocess.STDOUT)
         return(dict(script_fired=True, lockfile = full_lockfile, logfile = full_logfile, time = time.ctime()))
 
+@require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def REIMPORT_TREE_TABLES():
     """
     !!!!currently this doesn't work
     """
     raise
-    https_redirect()
     
     import os
     from shutil import copyfile
@@ -800,6 +800,7 @@ def REIMPORT_TREE_TABLES():
     
     return dict(leaffile = leaffile, nodefile = nodefile, unsponsoredleaffile=unsponsoredleaffile, status=status, sql_cmds=[sql_cmd1, sql_cmd2, sql_cmd3], ret_text=ret_text)
 
+@require_https_if_nonlocal()
 def emails(ott, species_name, common_name, sponsor_name, email, PP_first_name=None, PP_second_name=None, sponsor_for=False, email_type='live'):
     """
     The email texts that we might want to send out

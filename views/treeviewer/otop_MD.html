@@ -24,57 +24,58 @@ setup_params = {
     'page':'UI_layer.load', 
     'vars':{
       'no_oz_logo': True,
-      'tabs':['otopchallenge', 'wiki', 'ozspons', 'ozlinks'],
+      'tabs':['otopchallenge', 'wiki', 'ozspons'],
       'custom_tabs': {
           'otopchallenge': {'id':'otopchallenge','name':T('Challenge'), 'icon':URL('static','otop/challenge.svg')},
       },
-      'links':'newtab',
+      'links':'none',
       'no_external_links': True,
       'hide_control_settings': True,
     }
   },
   'popups': {
-    'vars':{'embed':2, 'no_sponsoring':1} }, #don't need to keep track of reservation_code
+    'vars':{'embed':3, 'no_sponsoring':1} }, #don't need to keep track of reservation_code
   'partner':page_info.get('partner'),
   'locations_json':('[' 
-      '"Challenge species",'
-      '{"OTT":5557278},'  #Cichlid
-      '{"OTT":756460},'  #Escherichia coli
-      '{"OTT":913935},'  #Chimpanzees
-      '{"OTT":965954},'  #Butterfly
-      '{"OTT":207473},'  #Banana
-      '{"OTT":753726},'  #Ants
-      '{"OTT":225495},'  #Cyanobacteria
-      '{"OTT":81461},'  #Birds
-      '{"OTT":635958},'  #Archaea
-      '{"OTT":35942},'  #Paris japonica
-      '{"OTT":395048},'  #Caenorhabditis elegans
-      '{"OTT":4133413},'  #Golden toad
-      '{"OTT":195672},'  #Alligator
-      '{"OTT":698424},'  #Whale
-      '{"OTT":4790644},'  #Carsonella ruddii
-      '"Popular places",'
-      '{"OTT":770315},'  #Human - should get looked up automatically: this also allows the correct language to be used
-      '{"OTT":991547},'  #Frogs and toads
-      '{"OTT":801601},'  #Vertebrates
-      '{"OTT":1062253},' #Insects
-      '{"OTT":691846},'  #Animals
-      '{"OTT":361838},'  #Green plants
-      '{"OTT":10218},'   #Seed plants
-      '{"OTT":1012685, "en":"Mushrooms"},' #the default OZ english name is bad for menus here, so we replace it
-      '{"OTT":304358}'   #Complex life (eukaryotes)
-      ']'
+'"Challenge species",'
+'{"OTT":5557278},'  #Cichlid
+'{"OTT":756460},'  #Escherichia coli
+'{"OTT":913935},'  #Chimpanzees
+'{"OTT":965954},'  #Butterfly
+'{"OTT":207473},'  #Banana
+'{"OTT":753726},'  #Ants
+'{"OTT":225495},'  #Cyanobacteria
+'{"OTT":81461},'  #Birds
+'{"OTT":635958},'  #Archaea
+'{"OTT":35942},'  #Paris japonica
+'{"OTT":395048},'  #Caenorhabditis elegans
+'{"OTT":4133413},'  #Golden toad
+'{"OTT":195672},'  #Alligator
+'{"OTT":698424},'  #Whale
+'{"OTT":4790644},'  #Carsonella ruddii
+'"Popular places",'
+'{"OTT":770315},'  #Human - should get looked up automatically: this also allows the correct language to be used
+'{"OTT":991547},'  #Frogs and toads
+'{"OTT":801601},'  #Vertebrates
+'{"OTT":1062253},' #Insects
+'{"OTT":691846},'  #Animals
+'{"OTT":361838},'  #Green plants
+'{"OTT":10218},'   #Seed plants
+'{"OTT":1012685, "en":"Mushrooms"},' #the default OZ english name is bad for menus here, so we replace it
+'{"OTT":304358}'   #Complex life (eukaryotes)
+']'
     ),
   'pre_ui_setup': [
     'onezoom.config.search_jump_mode = "flight"',
     'onezoom.config.generation_on_subbranch_during_fly = 9',
     'onezoom.config.generation_at_searched_node = 20',
-    'onezoom.config.custom_querystring_params = ["ucaya_user", "otop_background", "otop_init_slideshow"]',
-    'onezoom.config.projection.sign_thres = screen.width <= 640 ? 100 : 170'
+    'onezoom.config.custom_querystring_params = ["ucaya_user", "otop_background"]',
+    'onezoom.config.projection.sign_thres = 170'
     ]
   }
 }}
 {{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
+<link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree_MD.css')}}" />
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree-dark.css')}}" />
 <style>
 body {
@@ -151,10 +152,6 @@ body.loading > canvas {
 #tutorial-slideshow p {
     line-height: 1.2;
 }
-#tutorial-slideshow .uk-modal-dialog .uk-close {
-    right: auto;
-    left: 10px;
-}
 #tutorial-slideshow .uk-modal-dialog h3,
 #tutorial-slideshow .uk-modal-dialog {
     color: #FFF !important;
@@ -175,10 +172,10 @@ body.loading > canvas {
   display: table;
   position: absolute;
   top: 40px;
-  right: 10%;
+  right: 20%;
   bottom: 40px;
-  left: 10%;
-  width: 80%;
+  left: 20%;
+  width: 60%;
   height: calc(100% - 80px);
 }
 #tutorial-slideshow .slideshow-item > * {
@@ -188,7 +185,7 @@ body.loading > canvas {
 #tutorial-slideshow .slideshow-item > *:first-child > * {
   padding: 0 10px;
 }
-#tutorial-slideshow .slideshow-item > .main-image {
+#tutorial-slideshow .slideshow-item > * + * {
   display: table-row;
   height: 100%;
   background-repeat: no-repeat;
@@ -206,6 +203,9 @@ body.loading > canvas {
 </style>
 <script src="{{=URL('static','otop/backgrounds.js')}}"></script>
 <script type="text/javascript">
+/* disable right click */
+document.oncontextmenu = function() {return false;}
+
 var tree_config= {
    cols: 'otop',
    vis: 'polytomy',
@@ -215,7 +215,7 @@ var tree_config= {
    'layout.sign': 'otop',
    midnode: 'polytomy',
 };
-var pagetitle_func=null;
+var pagetitle_func=function(nm) {return (nm)?"One Tree One Planet museum display: "+ nm:"One Tree One Planet museum display"};
 
 // Wrap around data_path_pics, passing through URLs when we have direct URLs from UCAYA
 server_urls._old_data_path_pics = server_urls.data_path_pics;
@@ -299,15 +299,11 @@ document.addEventListener('DOMContentLoaded', function () {
               <li>
                 <div class="slideshow-item">
                   <div>
-                    <p class="big-text">This tree of life represents more than 2 million living species, you can freely explore it.</p>
+                  <p class="big-text">This tree of life represents more than 2 million living species, you can freely navigate in it.</p>
+                  <p style="text-align: center">Tree of life explorer provided by</p>
+                  <p style="text-align: center"><a href="http://www.onezoom.org/" target="_blank"><img src="{{=URL('static','images/OZ_logo5_grey3.png')}}" title="OneZoom" style="height: 2rem; padding-right: 20px" /></a></p>
                   </div>
-                  <div class="main-image" style="background-image: url({{=URL('static','otop/otop-tutorial-0.jpg')}})">&nbsp;</div>
-                  <div>
-                    <p style="text-align: center; font-size: small">
-                      Tree of life explorer provided by
-                      <a href="http://www.onezoom.org/" target="_blank"><img src="{{=URL('static','images/OZ_logo5_grey3_small_inv.png')}}" title="OneZoom" style="height: 2em; width: 6.24em" /></a>
-                    </p>
-                  </div>
+                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-0.jpg')}})">&nbsp;</div>
                 </div>
               </li>
               <li>
@@ -316,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function () {
                   <h3>Searching</h3>
                   <p>Type a species here to fly to it. Select one of the suggestions that appear.</p>
                   </div>
-                  <div class="main-image" style="background-image: url({{=URL('static','otop/otop-tutorial-1.jpg')}})">&nbsp;</div>
+                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-1.jpg')}})">&nbsp;</div>
                 </div>
               </li>
               <li>
@@ -325,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function () {
                   <h3>Navigating</h3>
                   <p>Pan and zoom to explore the tree of life</p>
                   </div>
-                  <div class="main-image" style="background-image: url({{=URL('static','otop/otop-tutorial-2.jpg')}})">&nbsp;</div>
+                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-2.jpg')}})">&nbsp;</div>
                 </div>
               </li>
               <li>
@@ -334,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function () {
                   <h3>Get more info</h3>
                   <p>Click on the name of an individual species to see more information like the corresponding challenge and the wikipedia page...</p>
                   </div>
-                  <div class="main-image" style="background-image: url({{=URL('static','otop/otop-tutorial-3.jpg')}})">&nbsp;</div>
+                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-3.jpg')}})">&nbsp;</div>
                 </div>
               </li>
               <li class="close-on-display">
@@ -358,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 <script>
       $(document).ready(function() {
-          var m, tutorial_slideshow, homo_sapiens_metacode;
+          var tutorial_slideshow, homo_sapiens_metacode;
 
           // Copy HTML to page body (we don't have a template slot to add it server-side)
           tutorial_slideshow = document.createElement('DIV');
@@ -385,11 +381,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
           // singleInfoButton should show our slideshow, not the default
           document.getElementById('singleInfoButton').querySelector('a').href = "#tutorial-slideshow";
-
-          m = window.location.search.match(new RegExp(/(?:^|&|\?)otop_init_slideshow=off(?:&|$)/));
-          if (m) {
-              return;
-          }
 
           // Show on startup
           UIkit.modal(tutorial_slideshow).show();
