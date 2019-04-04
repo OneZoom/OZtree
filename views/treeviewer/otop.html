@@ -55,7 +55,7 @@ setup_params = {
     'onezoom.config.search_jump_mode = "flight"',
     'onezoom.config.generation_on_subbranch_during_fly = 9',
     'onezoom.config.generation_at_searched_node = 20',
-    'onezoom.config.custom_querystring_params = ["ucaya_user", "otop_background"]',
+    'onezoom.config.custom_querystring_params = ["ucaya_user", "otop_background", "otop_init_slideshow"]',
     'onezoom.config.projection.sign_thres = 170'
     ]
   }
@@ -340,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 <script>
       $(document).ready(function() {
-          var tutorial_slideshow, homo_sapiens_metacode;
+          var m, tutorial_slideshow, homo_sapiens_metacode;
 
           // Copy HTML to page body (we don't have a template slot to add it server-side)
           tutorial_slideshow = document.createElement('DIV');
@@ -367,6 +367,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
           // singleInfoButton should show our slideshow, not the default
           document.getElementById('singleInfoButton').querySelector('a').href = "#tutorial-slideshow";
+
+          m = window.location.search.match(new RegExp(/(?:^|&|\?)otop_init_slideshow=off(?:&|$)/));
+          if (m) {
+              return;
+          }
 
           // Show on startup
           UIkit.modal(tutorial_slideshow).show();
