@@ -50,14 +50,4 @@ function update_parent_horizon(nodes) {
   update_parent_horizon(Object.values(next_nodes));
 }
 
-function update_parent_horizon_inner(node, taint) {
-  if (node && node.taint_update_parent_horizon !== taint) {
-    // Parent hasn't been touched, so touch it.
-    if (current_calculator.recalc_node_horizon(node)) {
-      update_parent_horizon(node.upnode, taint);
-    }
-    node.taint_update_parent_horizon = taint;
-  }
-}
-
 export {calc_horizon, update_parent_horizon, set_horizon_calculator};
