@@ -54,13 +54,13 @@ function fetch_image_detail(root, image_api) {
         data: form_data,
         success: function(res) {
           if (res.image_details) {
-            for (let i=0; i<res.image_details.length; i++) {
-              let src_id = res.image_details[i][res.headers["src_id"]];
-              let rights = res.image_details[i][res.headers["rights"]];
-              let licence = res.image_details[i][res.headers["licence"]];
-              
-              let metacode = picid_metacode_map[src_id];
-              data_repo.update_image_metadata(metacode, rights, licence);
+            for (let src_id of Object.keys(res.image_details)) {
+                for (let picid of Object.keys(res.image_details[src_id])) {
+                    data_repo.update_image_metadata(
+                        picid_metacode_map[picid],
+                        res.image_details[src_id][picid][res.headers["rights"]],
+                        res.image_details[src_id][picid][res.headers["licence"]]);
+                }
             }
             get_controller().trigger_refresh_loop();
           }
