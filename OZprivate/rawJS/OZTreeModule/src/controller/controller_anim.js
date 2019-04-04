@@ -184,7 +184,10 @@ export default function (Controller) {
      * onezoom.controller.perform_flight_transition(782900, 713573, true)
      */
     Controller.prototype.perform_flight_transition = function(codeout_fly, codein_fly, into_node, finalize_func) {
-        var p = Promise.resolve();
+        var p = new Promise(function (resolve) {
+            document.body.classList.add('loading');
+            window.setTimeout(resolve, 200);
+        }.bind(this));
 
         // Return flight path (common ancestor, then target)
         function get_flight_path(node_start, node_end) {
@@ -237,38 +240,58 @@ export default function (Controller) {
             }.bind(this));
         }
 
-        let flight_path = get_flight_path(
-            this.develop_branch_to(codeout_fly),
-            this.develop_branch_to(codein_fly)
-        );
-
-        flight_path.map(function (n) {
-            // Fetch node_detail for all targets
-            // NB: Ideally we'd parallelise this, but the interface doesn't allow it yet.
-            p = p.then(function () {
-                position_helper.clear_target(this.root);
-                position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
-                return get_details_of_nodes_in_view_during_fly(this.root);
-            }.bind(this));
+        p = p.then(function () {
+            var flight_path = get_flight_path(
+                this.develop_branch_to(codeout_fly),
+                this.develop_branch_to(codein_fly)
+            );
+            document.body.classList.remove('loading');
+            return flight_path;
         }.bind(this));
 
-        flight_path.map(function (n, idx, arr) {
-            // Fly to each node in our path
-            var accel_func = idx === arr.length - 1 ? 'decel'
-                           : idx === 0 ? 'accel'
-                           : null;
+        p = p.then(function (flight_path) {
+            var flight_p = Promise.resolve();
 
-            p = p.then(function () {
-                return new Promise(function (resolve) {
+            flight_path.map(function (n) {
+                // Fetch node_detail for all targets
+                // NB: Ideally we'd parallelise this, but the interface doesn't allow it yet.
+                flight_p = flight_p.then(function () {
                     position_helper.clear_target(this.root);
                     position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
-                    position_helper.perform_actual_fly(this, accel_func === 'final' ? into_node : false, resolve, accel_func);
+                    return get_details_of_nodes_in_view_during_fly(this.root);
                 }.bind(this));
             }.bind(this));
+
+            return flight_p.then(function () { return flight_path; });
+        }.bind(this));
+
+        p = p.then(function (flight_path) {
+            var flight_p = Promise.resolve();
+
+            flight_path.map(function (n, idx, arr) {
+                // Fly to each node in our path
+                var accel_func = idx === arr.length - 1 ? 'decel'
+                               : idx === 0 ? 'accel'
+                               : null;
+
+                flight_p = flight_p.then(function () {
+                    return new Promise(function (resolve) {
+                        position_helper.clear_target(this.root);
+                        position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
+                        position_helper.perform_actual_fly(this, accel_func === 'final' ? into_node : false, resolve, accel_func);
+                    }.bind(this));
+                }.bind(this));
+            }.bind(this));
+
+            return flight_p.then(function () { return flight_path; });
         }.bind(this));
 
         // Finished!
         p = p.then(finalize_func);
+        p = p.catch(function (e) {
+            document.body.classList.remove('loading');
+            throw e;
+        })
 
         return p;
     };
