@@ -152,22 +152,22 @@ class LeafLayout extends LeafLayoutBase {
       for (let i = 0; i < rings.length; i++) {
           s = ArcShape.create();
           s.x = x; s.y = y;
-          s.r = r + 0.03 * r * (total_width + rings[i].level / 2);
+          s.r = r + 0.015 * r * (total_width + rings[i].level / 2);
           s.circle = true;
           s.do_fill = false;
           s.do_stroke = true;
-          s.stroke.line_width = rings[i].level * 0.03 * r;
+          s.stroke.line_width = rings[i].level * 0.015 * r;
           s.stroke.color = rings[i].color;
           s.stroke.shadow = { blur: 10 };
           s.height = 1;
           shapes.push(s);
-          total_width = total_width + (rings[i].level) + 0.5;
+          total_width = total_width + (rings[i].level) + 0.1;
       }
 
       // Fill behind the circles
       s = ArcShape.create();
       s.x = x; s.y = y;
-      s.r = r + 0.03 * r * (total_width);
+      s.r = r + 0.015 * r * (total_width);
       s.circle = true;
       s.do_fill = true;
       s.do_stroke = false;
