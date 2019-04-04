@@ -170,7 +170,7 @@ body.loading > canvas {
 #tutorial-slideshow .slideshow-item > *:first-child > * {
   padding: 0 10px;
 }
-#tutorial-slideshow .slideshow-item > * + * {
+#tutorial-slideshow .slideshow-item > .main-image {
   display: table-row;
   height: 100%;
   background-repeat: no-repeat;
@@ -281,11 +281,15 @@ document.addEventListener('DOMContentLoaded', function () {
               <li>
                 <div class="slideshow-item">
                   <div>
-                  <p class="big-text">This tree of life represents more than 2 million living species, you can freely explore it.</p>
-                  <p style="text-align: center">Tree of life explorer provided by</p>
-                  <p style="text-align: center"><a href="http://www.onezoom.org/" target="_blank"><img src="{{=URL('static','images/OZ_logo5_grey3_small_inv.png')}}" title="OneZoom" style="height: 2rem; padding-right: 20px" /></a></p>
+                    <p class="big-text">This tree of life represents more than 2 million living species, you can freely explore it.</p>
                   </div>
-                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-0.jpg')}})">&nbsp;</div>
+                  <div class="main-image" style="background-image: url({{=URL('static','otop/otop-tutorial-0.jpg')}})">&nbsp;</div>
+                  <div>
+                    <p style="text-align: center; font-size: small">
+                      Tree of life explorer provided by
+                      <a href="http://www.onezoom.org/" target="_blank"><img src="{{=URL('static','images/OZ_logo5_grey3_small_inv.png')}}" title="OneZoom" style="height: 2em; width: 6.24em" /></a>
+                    </p>
+                  </div>
                 </div>
               </li>
               <li>
@@ -294,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function () {
                   <h3>Searching</h3>
                   <p>Type a species here to fly to it. Select one of the suggestions that appear.</p>
                   </div>
-                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-1.jpg')}})">&nbsp;</div>
+                  <div class="main-image" style="background-image: url({{=URL('static','otop/otop-tutorial-1.jpg')}})">&nbsp;</div>
                 </div>
               </li>
               <li>
@@ -303,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function () {
                   <h3>Navigating</h3>
                   <p>Pan and zoom to explore the tree of life</p>
                   </div>
-                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-2.jpg')}})">&nbsp;</div>
+                  <div class="main-image" style="background-image: url({{=URL('static','otop/otop-tutorial-2.jpg')}})">&nbsp;</div>
                 </div>
               </li>
               <li>
@@ -312,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function () {
                   <h3>Get more info</h3>
                   <p>Click on the name of an individual species to see more information like the corresponding challenge and the wikipedia page...</p>
                   </div>
-                  <div style="background-image: url({{=URL('static','otop/otop-tutorial-3.jpg')}})">&nbsp;</div>
+                  <div class="main-image" style="background-image: url({{=URL('static','otop/otop-tutorial-3.jpg')}})">&nbsp;</div>
                 </div>
               </li>
               <li class="close-on-display">
