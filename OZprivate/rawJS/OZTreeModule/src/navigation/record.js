@@ -43,7 +43,7 @@ function record_url(options, force) {
   } else if (window.location.protocol != "file:") {
     let state = get_current_state(node_with_ott, title, options); 
     let url = loc + querystring + hash;
-    window.history.pushState(state, title, window.location.origin + pathname_exclude_append() + "/" + url);
+    window.history.pushState(null, title, window.location.origin + pathname_exclude_append() + "/" + url);
     document.title = unescape(title);
   }
 }
