@@ -2,6 +2,7 @@ import {get_interior_shapes, get_leaf_shapes, get_signpost_shapes, get_branch_sh
 import config from '../global_config';
 import {ArrayPool} from '../util/index';
 import {reset_mr} from './move_restriction';
+import BezierShape from './shapes/bezier_shape';
 
 let visible_nodes = new ArrayPool(1300);
 let signpost_nodes = new ArrayPool(100);
@@ -17,6 +18,7 @@ function get_shapes(node, shapes) {
   let length = visible_nodes.length;
   for (let i=length-1; i>=0; i--) {
     get_shapes_of_node(visible_nodes.get(i), shapes);
+    //draw_bounding_box(visible_nodes.get(i), shapes);
   }
   length = signpost_nodes.length;
   for (let i=0; i<length; i++) {
@@ -25,6 +27,27 @@ function get_shapes(node, shapes) {
   //Sort shapes in a height ascending order so that lower height shapes would be drawn first.
   //try to draw shapes with same fill color first to avoid context switch.
   shapes.sort(height_comparator);
+}
+
+/**
+ * Debug helper: Draw all bounding boxes.
+ *
+ * Enable in get_shapes() to use
+ */
+function draw_bounding_box(node, shapes) {
+  var s = BezierShape.create();
+  s.sx = s.sy = s.ex = s.ey = null;
+  s.path_points.push(['move', node.xvar + node.rvar * node.hxmin, node.yvar + node.rvar * node.hymin]);
+  s.path_points.push(['line', node.xvar + node.rvar * node.hxmin, node.yvar + node.rvar * node.hymax]);
+  s.path_points.push(['line', node.xvar + node.rvar * node.hxmax, node.yvar + node.rvar * node.hymax]);
+  s.path_points.push(['line', node.xvar + node.rvar * node.hxmax, node.yvar + node.rvar * node.hymin]);
+  s.path_points.push(['line', node.xvar + node.rvar * node.hxmin, node.yvar + node.rvar * node.hymin]);
+  s.do_stroke = true;
+  s.stroke.line_width = 1;
+  s.height = 0;
+  s.stroke.color = 'hsl(' + Math.sin(node.metacode) * 360 + ', 100%, 50%)';
+
+  shapes.push(s);
 }
 
 function height_comparator(a, b) {

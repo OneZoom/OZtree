@@ -1,3 +1,4 @@
+import config from '../../../global_config';
 import SignpostLayoutBase from '../signpost_layout_helper';
 import tree_settings from '../../../tree_settings';
 import tree_state from '../../../tree_state';
@@ -52,7 +53,7 @@ class SignpostLayout extends SignpostLayoutBase {
     this.centerr = bounding_radius / (0.97 * 0.6); /* Cancel out factor in main helper */
 
     // We fade in/out at the extremes of visibility
-    this.alpha = Math.min(0.6, Math.max(0, 1 - Math.abs(bounding_radius - 110) * 0.015));
+    this.alpha = Math.min(0.6, Math.max(0, 1 - Math.abs(bounding_radius - (config.projection.sign_thres - 60)) * 0.015));
   }
 
   /**

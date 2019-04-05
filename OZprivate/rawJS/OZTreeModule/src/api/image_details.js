@@ -18,22 +18,16 @@ class ImageDetailsAPI {
 }
 
 function prepare_image_api_data(image_data) {
-  let src_id_with_src_1 = [];
-  let src_id_with_src_2 = [];
-  
-  let length = image_data.length;
-  for (let i=0; i<length; i++) {
-    if (image_data[i].src === "1") {
-      src_id_with_src_1.push(image_data[i].src_id);
-    } else {
-      src_id_with_src_2.push(image_data[i].src_id);
-    }
+  var i, data = {};
+
+  for (i = 0; i < image_data.length; i++) {
+      if (!data.hasOwnProperty(image_data[i].src)) {
+          data[image_data[i].src] = "" + image_data[i].src_id;
+      } else {
+          data[image_data[i].src] = "," + image_data[i].src_id;
+      }
   }
-  
-  let data = {};
-  if (src_id_with_src_1.length > 0) data["1"] = src_id_with_src_1.join(",");
-  if (src_id_with_src_2.length > 0) data["2"] = src_id_with_src_2.join(","); 
-  
+
   return data;
 }
 
@@ -60,13 +54,13 @@ function fetch_image_detail(root, image_api) {
         data: form_data,
         success: function(res) {
           if (res.image_details) {
-            for (let i=0; i<res.image_details.length; i++) {
-              let src_id = res.image_details[i][res.headers["src_id"]];
-              let rights = res.image_details[i][res.headers["rights"]];
-              let licence = res.image_details[i][res.headers["licence"]];
-              
-              let metacode = picid_metacode_map[src_id];
-              data_repo.update_image_metadata(metacode, rights, licence);
+            for (let src_id of Object.keys(res.image_details)) {
+                for (let picid of Object.keys(res.image_details[src_id])) {
+                    data_repo.update_image_metadata(
+                        picid_metacode_map[picid],
+                        res.image_details[src_id][picid][res.headers["rights"]],
+                        res.image_details[src_id][picid][res.headers["licence"]]);
+                }
             }
             get_controller().trigger_refresh_loop();
           }
