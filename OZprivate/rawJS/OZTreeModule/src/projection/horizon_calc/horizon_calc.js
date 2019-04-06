@@ -26,6 +26,9 @@ function calc_horizon(node) {
 /**
  * Run current_calculator.recalc_node_horizon for given array of nodes and
  * any parents of these nodes until nothing changes in update.
+ *
+ * You can see this happening by starting at @Mammalia and zooming to Swamp Wallaby
+ * If successful, then there will not be a bounding box across the Wallaby.
  */
 function update_parent_horizon(nodes) {
   var next_nodes = {}, i;
@@ -37,9 +40,9 @@ function update_parent_horizon(nodes) {
 
   // Recalc horizon for all nodes, collect parents of items that changed
   for (i = 0; i < nodes.length; i++) {
-    if (current_calculator.recalc_node_horizon(nodes[i]) && nodes.upnode) {
+    if (nodes[i].upnode && current_calculator.recalc_node_horizon(nodes[i].upnode)) {
       // This node changed in re-calc, so do the parent too.
-      next_nodes[nodes.upnode.metacode] = nodes.upnode;
+      next_nodes[nodes[i].upnode.metacode] = nodes[i].upnode;
     }
   }
 
