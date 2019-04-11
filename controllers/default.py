@@ -1383,7 +1383,7 @@ def linnean():
 
 def otop():
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return treeview_info()
+    return treeview_info(has_text_tree=False)
 
 def otop_MD():
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
