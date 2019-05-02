@@ -15,7 +15,7 @@ pass
 to <a href="https://www.wikidata.org/wiki/Q43649390">wikidata Qids</a>. From the Qid, we can find the equivalent wiki<em>pedia</em> page for that 
 taxon in any given language. Since the english language wikipedia is the most visited, we default to calculating popularity on the
 basis of activity on <a href="http://en.wikipedia.org">en.wikipedia.org</a>. Note that this may give english-language specific weights to the 
-popularity measures. Given the predominance of visits from the US, we might also expect north american taxa to be ranked particularly highly.</p>
+popularity measures. Given the predominance of visits from the US, we might also expect north American taxa to be ranked particularly highly.</p>
 
 <p>The popularity value for a particular taxon is calculated as summary of the average number of wikipedia monthly page visits over a 
 set period of time (truncated so as to remove spikes), combined with the size of the wikipedia page. This <q>base popularity</q> is then 
@@ -23,12 +23,12 @@ percolated up and down the tree, so that species gain some fraction of the popul
 This means that all species that can be placed on the tree should get some raw popularity measure, although the meaning of this raw value is subject
 to change as the OneZoom tree topology changes, and as wikipedia visits and page size data change. For this reason, you are recommended only to 
 consider the <em>relative</em> popularity values. It is also not necessarily clear what it means to compare the popularity of taxa at different 
-levels of the taxonomic heirarchy. However, comparing species popularity values is reasonable, so to aid comparison, species 
+levels of the taxonomic hierarchy. However, comparing species popularity values is reasonable, so to aid comparison, species 
 (but not higher-level taxa) are ranked from 1 to <i>n<sub>taxa</sub></i>, where <i>n<sub>taxa</sub></i> is the maximum number of species on the 
 OneZoom tree (the current value of <i>n<sub>taxa</sub></i> is also is returned by each API call).</p>
 
 <p>Note that we do not normally distinguish subspecies, such as <i class="taxonomy">Canis lupus familiaris</i> (the domestic dog) on the OneZoom tree: 
-only the full species, <i class="taxonomy">Canis lupus</i> (the grey wolf, including the domestic dog, dingo, indian wolf, etc.), will be
+only the full species, <i class="taxonomy">Canis lupus</i> (the grey wolf, including the domestic dog, dingo, Indian wolf, etc.), will be
 displayed on the tree or returned using this API. Even although there <em>is</em> an Open Tree identifier for <i class="taxonomy">Canis lupus familiaris</i>,  
 it will not be recognised if passed to this API. Additionally, OneZoom does not store higher level names for monospecific taxa, i.e.
 for a species like the tuatara, <i class="taxonomy">Sphenodon punctatus</i>, the OTT for the species (35890) will be recognised, but searching for the genus 
@@ -66,7 +66,7 @@ you may wish to set this to a higher value. There is an upper limit on the maxim
  <dt><code>expand_taxa</code><dt><dd>Set to <code>True</code> or <code>False</code> (can also use <code>0</code> or <code>1</code>): If <code>True</code>, include all species which are descendants of the given OTTs (i.e. higher level taxa are "expanded" into their constituent species, and the returned taxa are all at the species level). You can mix OTTs for species and higher taxa in a single call: only higher taxa will be expanded. If the parameter is <code>False</code> or not given, do not expand taxa and simply return data on the OTTs that have been passed in (note that higher level taxa will not contain popularity_rank information, which is only valid for species)</dd>
  <dt><code>spread_taxa_evenly</code><dt><dd>Set to <code>True</code> or <code>False</code> (can also use <code>0</code> or <code>1</code>): If <code>True</code>, divide the maximum number of taxa to return (e.g. as given by the <code>max</code> parameter) so that each of the N taxa that are passed in are limited to the top (max÷N) most popular species. Results are then combined and re-sorted, meaning that the final list of taxa returned may well contain fewer species than <code>max</code>. This only really makes sense when <code>expand_taxa</code> is set to 1.</dd>
  <dt><code>names</code><dt><dd>Set to <code>True</code> or <code>False</code> (can also use <code>0</code> or <code>1</code>): If <code>True</code>, return a scientific (<q>Latin</q>) name for each returned taxon, if one is available. Names are usually (but not necessarily) the same as the scientific name listed on the Open Tree of Life.</dd>
- <dt><code>sort</code><dt><dd>Set to <code>raw</code> or <code>rank</code>: If <code>raw</code> (the default), order the results by their raw popularity score (highest first), then OTT id. If <code>rank</code> order by species rank (lowest first, with higher leval taxa at start) then by raw popularity score (highest first), and finally by OTT id.</dd>
+ <dt><code>sort</code><dt><dd>Set to <code>raw</code> or <code>rank</code>: If <code>raw</code> (the default), order the results by their raw popularity score (highest first), then OTT id. If <code>rank</code> order by species rank (lowest first, with higher level taxa at start) then by raw popularity score (highest first), and finally by OTT id.</dd>
  </dl>
 </dd>
 <dt>Optional for developers / debugging</dt>
@@ -76,7 +76,7 @@ you may wish to set this to a higher value. There is an upper limit on the maxim
  </dl>
 </dd>
 </dl>
-Non-monophyletic groups, like "reptiles", can be queried by combining the OTTs for all their constituent parts into a single call (see examples below). However, this cannot be then combined in turn with the <code>spread_taxa_evenly</code> parameter, to find the most popular groups of different sets of species. So for example, to find the 5 most popular reptiles and 5 most populart plants, you must make 2 separate API calls, one with all the identifiers defining the reptile clade, and another with the identifier for the plant clade.
+Non-monophyletic groups, like "reptiles", can be queried by combining the OTTs for all their constituent parts into a single call (see examples below). However, this cannot be then combined in turn with the <code>spread_taxa_evenly</code> parameter, to find the most popular groups of different sets of species. So for example, to find the 5 most popular reptiles and 5 most popular plants, you must make 2 separate API calls, one with all the identifiers defining the reptile clade, and another with the identifier for the plant clade.
 <h4>Return values</h4>
 In the absence of error, the returned JSON object contains the following properties:
 <dl>
