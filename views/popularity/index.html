@@ -9,7 +9,8 @@ pass
     <div class="col-md-12">    
 
 <h1>OneZoom popularity service</h1>
-<p>As part of OneZoom, we have developed methods to assign a <q>popularity</q> score to every species on the OneZoom tree of life
+<p>As part of OneZoom, we have developed methods to assign a phylogenetically informed
+<q>popularity</q> score to every species on the <a href="http://www.onezoom.org">OneZoom tree of life</a>
 (i.e. nearly all described species of life on Earth). This is done by using our mappings from
  <a href="https://tree.opentreeoflife.org/about/taxonomy-version">Open Tree of Life taxonomy IDs</a>
 to <a href="https://www.wikidata.org/wiki/Q43649390">wikidata Qids</a>. From the Qid, we can find the equivalent wiki<em>pedia</em> page for that 
@@ -17,12 +18,13 @@ taxon in any given language. Since the english language wikipedia is the most vi
 basis of activity on <a href="http://en.wikipedia.org">en.wikipedia.org</a>. Note that this may give english-language specific weights to the 
 popularity measures. Given the predominance of visits from the US, we might also expect north American taxa to be ranked particularly highly.</p>
 
-<p>The popularity value for a particular taxon is calculated as summary of the average number of wikipedia monthly page visits over a 
-set period of time (truncated so as to remove spikes), combined with the size of the wikipedia page. This <q>base popularity</q> is then 
-percolated up and down the tree, so that species gain some fraction of the popularity of their subspecies plus the popularity of their parent taxa.
-This means that all species that can be placed on the tree should get some raw popularity measure, although the meaning of this raw value is subject
+<p>The popularity value for a particular taxon involves calculating a summary of the average number of wikipedia monthly page visits over a 
+set period of time (truncated so as to remove spikes), combined with the size of the wikipedia page. This base or <q>raw</q> popularity is then 
+percolated up and down the tree, so that species gain some fraction of the popularity of their subspecies plus the popularity of their parent taxa. We call this the <em>phylogenetic popularity</em>, or simply <q>popularity</q> for short.
+Using the evolutionary tree, or phylogeny, means that popularity should be less influenced by the level of knowledge of a taxon (for example, if few people visit a page for a particular beetle species, but instead consult a higher-level in the taxonomic hierarchy). It also means that all species that can be placed on the tree should get <em>some</em> popularity measure, even if they do not have a wikipedia page.</p>
+<p>A major issue with any such popularity statistic is that the value is subject
 to change as the OneZoom tree topology changes, and as wikipedia visits and page size data change. For this reason, you are recommended only to 
-consider the <em>relative</em> popularity values. It is also not necessarily clear what it means to compare the popularity of taxa at different 
+consider the <em>relative</em> popularity values - i.e. the ranked order. It is also not necessarily clear what it means to compare the popularity of taxa at different 
 levels of the taxonomic hierarchy. However, comparing species popularity values is reasonable, so to aid comparison, species 
 (but not higher-level taxa) are ranked from 1 to <i>n<sub>taxa</sub></i>, where <i>n<sub>taxa</sub></i> is the maximum number of species on the 
 OneZoom tree (the current value of <i>n<sub>taxa</sub></i> is also is returned by each API call).</p>
@@ -39,7 +41,7 @@ in which all living cephalochordates also fall, is not recognised in OneZoom or 
 
 
 <h2>Services available</h2>
-Popularity services are accessed via URLs theat return JSON data for any set of Open Tree Taxonomy identifiers that are passed in (you cannot pass in scientific names).
+Popularity services are accessed via URLs that return JSON data for any set of passed-in Open Tree Taxonomy identifiers (you cannot pass in scientific names).
 All services require you to specify an API key (e.g. by appending <code>key=MY_API_KEY</code> to the URL) this allows us to keep track 
 of the volume of requests we get from different private users: no other information is stored. 
 {{if public_key is not None:}}
@@ -62,17 +64,21 @@ An API to get a list of taxa ranked by popularity, e.g. {{=link(URL('list', host
 <dd>
  <dl>
  <dt><code>max</code></dt><dd>An integer giving the maximum number of taxa to return. By default this is equivalent to the number of OTTs passed in: if <code>expand_taxa</code> is true, 
-you may wish to set this to a higher value. There is an upper limit on the maximum taxa, given by your API key.</dd>
+you may wish to set this to a higher value. There is an upper limit on the maximum number of taxa you can ask for, which is determined by your API key.</dd>
  <dt><code>expand_taxa</code><dt><dd>Set to <code>True</code> or <code>False</code> (can also use <code>0</code> or <code>1</code>): If <code>True</code>, include all species which are descendants of the given OTTs (i.e. higher level taxa are "expanded" into their constituent species, and the returned taxa are all at the species level). You can mix OTTs for species and higher taxa in a single call: only higher taxa will be expanded. If the parameter is <code>False</code> or not given, do not expand taxa and simply return data on the OTTs that have been passed in (note that higher level taxa will not contain popularity_rank information, which is only valid for species)</dd>
  <dt><code>spread_taxa_evenly</code><dt><dd>Set to <code>True</code> or <code>False</code> (can also use <code>0</code> or <code>1</code>): If <code>True</code>, divide the maximum number of taxa to return (e.g. as given by the <code>max</code> parameter) so that each of the N taxa that are passed in are limited to the top (max÷N) most popular species. Results are then combined and re-sorted, meaning that the final list of taxa returned may well contain fewer species than <code>max</code>. This only really makes sense when <code>expand_taxa</code> is set to 1.</dd>
  <dt><code>names</code><dt><dd>Set to <code>True</code> or <code>False</code> (can also use <code>0</code> or <code>1</code>): If <code>True</code>, return a scientific (<q>Latin</q>) name for each returned taxon, if one is available. Names are usually (but not necessarily) the same as the scientific name listed on the Open Tree of Life.</dd>
- <dt><code>sort</code><dt><dd>Set to <code>raw</code> or <code>rank</code>: If <code>raw</code> (the default), order the results by their raw popularity score (highest first), then OTT id. If <code>rank</code> order by species rank (lowest first, with higher level taxa at start) then by raw popularity score (highest first), and finally by OTT id.</dd>
+ <dt><code>include_raw</code><dt><dd>Set to <code>True</code> or <code>False</code> (can also use <code>0</code> or <code>1</code>): If <code>True</code>, also return the <q>raw</q> (non-phylogenetically informed) score for each taxon.</dd>
+ <dt><code>sort</code><dt><dd>If this is set to <code>rank</code> or <code>raw</code> then
+ do not order species by phylogenetic popularity score then OTT id (as is the default), but 
+ instead use an alternative order. If <code>raw</code>, then use the raw (non-phylogenetic) score, which
+ may be zero or absent for some taxa such as these with no wikipedia page (the raw score is also returned, in the same way as it is whe setting <code>include_raw=True</code>). If <code>rank</code>, then order by species rank (lowest first, with higher level taxa at start) then by plain popularity score (highest first), and finally by OTT id. Since only species (not higher taxa) have a rank, this necessarily puts all species first.</dd>
  </dl>
 </dd>
 <dt>Optional for developers / debugging</dt>
 <dd>
  <dl>
-  <dt><code>db_seconds</code><dt><dd>Set to <code>True</code> or <code>False</code> (can also use <code>0</code> or <code>1</code>): If <code>True</code>, return a <code>db_seconds</code> property giving the number of seconds taken to make the underlying database calls. Default to <code>False</code></dd>
+  <dt><code>db_seconds</code><dt><dd>Set to <code>True</code> or <code>False</code> (can also use <code>0</code> or <code>1</code>): If <code>True</code>, return a <code>db_seconds</code> property giving the number of seconds taken to make the underlying database calls. Default to <code>False</code>.</dd>
  </dl>
 </dd>
 </dl>
@@ -107,7 +113,8 @@ In the absence of error, the returned JSON object contains the following propert
 <dt>expand_taxa</dt><dd><input type="radio" name="expand_taxa" value="True">&nbsp;True<br><input type="radio" name="expand_taxa" value="False" checked>&nbsp;False</dd>
 <dt>max</dt><dd><input type="text" name="max" /></dd>
 <dt>names</dt><dd><input type="radio" name="names" value="True">&nbsp;True<br><input type="radio" name="names" value="False" checked>&nbsp;False</dd>
-<dt>sort</dt><dd><input type="radio" name="sort" value="raw" checked>&nbsp;raw<br><input type="radio" name="sort" value="rank">&nbsp;rank</dd>
+<dt>include_raw</dt><dd><input type="radio" name="include_raw" value="True">&nbsp;True<br><input type="radio" name="include_raw" value="False" checked>&nbsp;False</dd>
+<dt>sort</dt><dd><input type="radio" name="sort" value="standard" checked>&nbsp;standard<br><input type="radio" name="sort" value="raw">&nbsp;raw<br><input type="radio" name="sort" value="rank">&nbsp;rank</dd>
 <input type="submit" value="Try it!">
 </dl>
 </form>
