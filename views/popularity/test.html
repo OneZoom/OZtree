@@ -8,66 +8,12 @@ pass
 <div class="row-fluid">
     <div class="col-md-12">    
 
-<h1>OneZoom popularity service, test page</h1>
-
-<h4>Test this API</h4>
-<form action="{{=URL('test')}}" method="get" >
-<dl>
-<dt>ott</dt><dd>
-{{if request.vars.ott:}}
-<input type="text" name="ott" value="{{=request.vars.ott}}" /></dd>
-{{else:}}
-<input type="text" name="ott" value="247341" /> (Grey wolf/domestic dog, <i class="taxonomy">Canis lupus</i>)</dd>
-{{pass}}
-</dl>
-<input type="submit" value="Try it!">
-</form>
-
-{{if error:}}
-<h2>{{=error}}</h2>
-{{pass}}
-
-{{if taxa != False:}}
-{{if taxa:}}
-<table style="border-spacing: 10px; border-collapse: separate">
-{{headers = sorted(headers_index, key=lambda key: headers_index[key])}}
-<tr>
-{{for h in headers:}}<th>{{=h}}</th>{{pass}}
-<th>enwiki name</th>
-<th>enwiki page size</th>
-<th>enwiki mean monthly visits (mmv)</th>
-<th>enwiki trimmed mmv</th>
-<th>enwiki raw_pop</th>
-</tr>
-{{for i, row in enumerate(taxa):}}
-<tr style="{{='background-color: yellow' if i==0 else ''}}" id="row{{=i}}">
-{{for h in headers:}}
-{{if h=='wikidata':}}
-<td><a href="http://www.wikidata.org/wiki/Q{{=row[headers_index[h]]}}">{{=row[headers_index[h]]}}</a></td>
-{{else:}}
-<td>{{=row[headers_index[h]]}}</td>
-{{pass}}
-{{pass}}
-<td class="enwiki-name"></td>
-<td class="enwiki-size"></td>
-<td class="enwiki-mmv"></td>
-<td class="enwiki-trmmv"></td>
-<td class="enwiki-rawpop"></td>
-</tr>
-{{pass}}
-</table>
-{{else:}}
-No matching ott
-{{pass}}
-{{pass}}
-
-<p>This uses something like
-<a href="https://www.wikidata.org/w/api.php?action=wbgetentities&format=xml&props=sitelinks&ids={{="|".join(["Q{}".format(t[headers_index['wikidata']]) for t in taxa])}}&sitefilter=enwiki">this query</a> to get wikipedia page names from wikidata Q ids. It then uses something like 
-<a href="https://en.wikipedia.org/w/api.php?action=query&format=json&titles=Albert%20Einstein&prop=revisions&rvprop=size">this query</a> to get page <em>sizes</em> from the wikipedia names, and <a href="https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/all-agents/Barack_Obama/monthly/2016010100/2016123100">this</a> to get monthly site visits 
-(see <a href="https://wikitech.wikimedia.org/wiki/Analytics/AQS/Pageviews#Monthly_counts">docs</a>).
-</p>
-<p id="info" style="border: 1px solid red"></p>
 <script>
+
+function zero_based_calval(month_or_day) {
+    return ((month_or_day) < 10 ? '0' + (month_or_day) : '' + (month_or_day));
+}
+
 function wikipedia_names(Qids_to_DOMids) {
     var data = {
         'action':'wbgetentities',
@@ -138,7 +84,7 @@ function wikititles_to_pop(titles_to_DOMids) {
                         pagesizes[title_mapping[page.title]]=page.revisions[0].size;
                         $('#'+ title_mapping[page.title] + " .enwiki-size").text(
                             page.revisions[0].size);
-                    wikititle_to_visits(page.title, title_mapping[page.title]);
+                    wikititle_to_visits(page.title, title_mapping[page.title], page.revisions[0].size);
                     }
                 });
             };
@@ -148,13 +94,20 @@ function wikititles_to_pop(titles_to_DOMids) {
     return true;
 };
 
-function wikititle_to_visits(title, DOMid) {
+function wikititle_to_visits(title, DOMid, pagesize) {
+    var startDate = new Date($('#start').val());
+    var endDate = new Date($('#end').val());
+    //make the endDate on the last day of the month
+    endDate = new Date(endDate.getFullYear(), endDate.getMonth()+1, 0);
     $.ajax({
         //requires https
         url: "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/all-agents/" +
-            title + "/monthly/2016010100/2016123100",
+            title + "/monthly/" + 
+            startDate.getFullYear() + zero_based_calval(startDate.getMonth()+1) + zero_based_calval(startDate.getDate()) + '00' +
+            "/" +
+            endDate.getFullYear() + zero_based_calval(endDate.getMonth()+1) + zero_based_calval(endDate.getDate()) + '00',
         dataType: 'json',
-        title: title,
+        pagesize: pagesize,
         headers: {
         'Api-User-Agent': 'OneZoom popularity service client'
         },
@@ -163,24 +116,96 @@ function wikititle_to_visits(title, DOMid) {
             $('#info').text("Error with wikimedia query to " + this.url + " (possibly a timeout)");
         },
         success: function(data, textStatus) {
-            console.log(data)
             if (data.items) {
-                month_size = [];
+                monthly_hits = [];
                 for (var i=0; i<data.items.length; i++) {
-                    month_size.push(data.items[i].views);
+                    monthly_hits.push(data.items[i].views);
                 }
-                size_sum = month_size.reduce(function(a, b) { return a + b; });
-                $('#'+ DOMids + " .enwiki-mmv").text(
-                    size_sum/month_size.length);
+                monthly_hits.sort();
+                trimmed_monthly_hits = monthly_hits.slice(0,-2)
+                mean_hits = monthly_hits.reduce(function(a, b) { return a + b; })/monthly_hits.length;
+                mean_tr_hits = trimmed_monthly_hits.reduce(function(a, b) { return a + b; })/trimmed_monthly_hits.length;
+                $('#'+ DOMid + " .enwiki-mmv").text(mean_hits);
+                $('#'+ DOMid + " .enwiki-trmmv").text(mean_tr_hits);
+                $('#'+ DOMid + " .enwiki-rawpop").text(Math.sqrt(mean_tr_hits * this.pagesize));
             };
         },
         timeout: 10000 //default to 10 seconds timout
     });
     return true;
 };
-
-
 </script>
-<button onclick="wikipedia_names({ {{=XML(",".join(["'Q{}':'row{}'".format(t[headers_index["wikidata"]], i) for i, t in enumerate(taxa)]))}} })">Get current wiki data</button>
+
+<h1>OneZoom popularity service, test page</h1>
+
+<h4>Test this API</h4>
+<form action="{{=URL('test')}}" method="get" >
+<label for="ott">ott</label>
+{{if request.vars.ott:}}
+<input type="text" name="ott" id="ott" value="{{=request.vars.ott}}" /></dd>
+{{else:}}
+<input type="text" name="ott" id="ott" value="247341" /> (Grey wolf/domestic dog, <i class="taxonomy">Canis lupus</i>)</dd>
+{{pass}}
+<input type="submit" value="Try it!">
+</form>
+{{if error:}}
+<h2>{{=error}}</h2>
+{{pass}}
+<br />
+{{if taxa != False:}}
+<button onclick="$('table .optional').toggle();">Hide/Show <span class="optional">optional</span> columns</button>
+<button onclick="wikipedia_names({ {{=XML(",".join(["'Q{}':'row{}'".format(t[headers_index["wikidata"]], i) for i, t in enumerate(taxa)]))}} })">Fill current wiki data</button> for page visits between the start of <input type="month" id="start" name="start"
+       min="2015-07" value=""> and end of <input type="month" id="end" name="end"
+       min="2015-07" value="">
+{{if taxa:}}
+<table style="border-spacing: 10px; border-collapse: separate">
+{{headers = sorted(headers_index, key=lambda key: headers_index[key])}}
+<tr>
+{{for h in headers:}}<th class="{{='optional' if h=='name' else ''}}">{{=h}}</th>{{pass}}
+<th class="optional">enwiki name</th>
+<th class="optional">enwiki page size</th>
+<th class="optional">enwiki mean monthly visits (mmv)</th>
+<th class="optional">enwiki trimmed mmv</th>
+<th>current raw_pop</th>
+</tr>
+{{for i, row in enumerate(taxa):}}
+<tr style="{{='background-color: yellow' if i==0 else ''}}" id="row{{=i}}">
+{{for h in headers:}}
+{{if h=='wikidata':}}
+<td><a href="http://www.wikidata.org/wiki/Q{{=row[headers_index[h]]}}">{{=row[headers_index[h]]}}</a></td>
+{{elif h=='name':}}
+<td class="optional">{{=row[headers_index[h]]}}</td>
+{{else:}}
+<td>{{=row[headers_index[h]]}}</td>
+{{pass}}
+{{pass}}
+<td class="optional enwiki-name"></td>
+<td class="optional enwiki-size"></td>
+<td class="optional enwiki-mmv"></td>
+<td class="optional enwiki-trmmv"></td>
+<td class="enwiki-rawpop"></td>
+</tr>
+{{pass}}
+</table>
+{{else:}}
+No matching ott
+{{pass}}
+
+<p>This uses something like
+<a href="https://www.wikidata.org/w/api.php?action=wbgetentities&format=xml&props=sitelinks&ids={{="|".join(["Q{}".format(t[headers_index['wikidata']]) for t in taxa])}}&sitefilter=enwiki">this query</a> to get wikipedia page names from wikidata Q ids. It then uses something like 
+<a href="https://en.wikipedia.org/w/api.php?action=query&format=json&titles=Albert%20Einstein&prop=revisions&rvprop=size">this query</a> to get page <em>sizes</em> from the wikipedia names, and <a href="https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/all-agents/Barack_Obama/monthly/2016010100/2016123100">this</a> to get monthly site visits 
+(see <a href="https://wikitech.wikimedia.org/wiki/Analytics/AQS/Pageviews#Monthly_counts">docs</a>).
+</p>
+<p id="info" style="border: 1px solid red"></p>
+
+{{pass}}
 </div>
 </div>
+
+<script>
+$('.optional').css('color', '#007700');
+var x = new Date();
+x.setDate(0);
+$('#start').val("" + (x.getFullYear()-2) + "-" + zero_based_calval(x.getMonth()+1));
+$('#end').val("" + x.getFullYear() + "-" + zero_based_calval(x.getMonth()+1));
+</script>
