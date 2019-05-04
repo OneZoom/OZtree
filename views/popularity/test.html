@@ -1,0 +1,186 @@
+{{response.title='OneZoom: Popularity service testing page'}}
+{{
+def link(a, **kwargs):
+    return A(a, _href=a, **kwargs)
+pass
+}}
+{{extend 'layout.html'}}
+<div class="row-fluid">
+    <div class="col-md-12">    
+
+<h1>OneZoom popularity service, test page</h1>
+
+<h4>Test this API</h4>
+<form action="{{=URL('test')}}" method="get" >
+<dl>
+<dt>ott</dt><dd>
+{{if request.vars.ott:}}
+<input type="text" name="ott" value="{{=request.vars.ott}}" /></dd>
+{{else:}}
+<input type="text" name="ott" value="247341" /> (Grey wolf/domestic dog, <i class="taxonomy">Canis lupus</i>)</dd>
+{{pass}}
+</dl>
+<input type="submit" value="Try it!">
+</form>
+
+{{if error:}}
+<h2>{{=error}}</h2>
+{{pass}}
+
+{{if taxa != False:}}
+{{if taxa:}}
+<table style="border-spacing: 10px; border-collapse: separate">
+{{headers = sorted(headers_index, key=lambda key: headers_index[key])}}
+<tr>
+{{for h in headers:}}<th>{{=h}}</th>{{pass}}
+<th>enwiki name</th>
+<th>enwiki page size</th>
+<th>enwiki mean monthly visits (mmv)</th>
+<th>enwiki trimmed mmv</th>
+<th>enwiki raw_pop</th>
+</tr>
+{{for i, row in enumerate(taxa):}}
+<tr style="{{='background-color: yellow' if i==0 else ''}}" id="row{{=i}}">
+{{for h in headers:}}
+{{if h=='wikidata':}}
+<td><a href="http://www.wikidata.org/wiki/Q{{=row[headers_index[h]]}}">{{=row[headers_index[h]]}}</a></td>
+{{else:}}
+<td>{{=row[headers_index[h]]}}</td>
+{{pass}}
+{{pass}}
+<td class="enwiki-name"></td>
+<td class="enwiki-size"></td>
+<td class="enwiki-mmv"></td>
+<td class="enwiki-trmmv"></td>
+<td class="enwiki-rawpop"></td>
+</tr>
+{{pass}}
+</table>
+{{else:}}
+No matching ott
+{{pass}}
+{{pass}}
+
+<p>This uses something like
+<a href="https://www.wikidata.org/w/api.php?action=wbgetentities&format=xml&props=sitelinks&ids={{="|".join(["Q{}".format(t[headers_index['wikidata']]) for t in taxa])}}&sitefilter=enwiki">this query</a> to get wikipedia page names from wikidata Q ids. It then uses something like 
+<a href="https://en.wikipedia.org/w/api.php?action=query&format=json&titles=Albert%20Einstein&prop=revisions&rvprop=size">this query</a> to get page <em>sizes</em> from the wikipedia names, and <a href="https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/all-agents/Barack_Obama/monthly/2016010100/2016123100">this</a> to get monthly site visits 
+(see <a href="https://wikitech.wikimedia.org/wiki/Analytics/AQS/Pageviews#Monthly_counts">docs</a>).
+</p>
+<p id="info" style="border: 1px solid red"></p>
+<script>
+function wikipedia_names(Qids_to_DOMids) {
+    var data = {
+        'action':'wbgetentities',
+        'format':'json',
+        'props':'sitelinks',
+        'ids': Object.keys(Qids_to_DOMids).join("|"),
+        'sitefilter':'enwiki'};
+    
+    $.ajax({
+        type: "POST",
+        url: "//www.wikidata.org/w/api.php",
+        data: data,
+        Q_mapping: Qids_to_DOMids,
+        dataType: 'jsonp',
+        error: function(){
+            // will fire when timeout is reached
+            $('#info').text("Error with wikidata query to " + this.url + " (possibly a timeout)");
+        },
+        success: function(data, textStatus) {
+            pagetitles = {};
+            if (data.entities) {
+                $('#info').empty();
+                var Q_mapping = this.Q_mapping;
+                Object.keys(data.entities).forEach(function(key) {
+                    var links = data.entities[key].sitelinks;
+                    if (links.hasOwnProperty('enwiki')) {
+                        pagetitles[links.enwiki.title]=Q_mapping[data.entities[key].id];
+                        $('#'+ Q_mapping[data.entities[key].id] + " .enwiki-name").html(
+                            $("<a/>", {
+                                href:"//en.wikipedia.org/wiki/" + links.enwiki.title,
+                                text:links.enwiki.title}));
+                    }
+                });
+                wikititles_to_pop(pagetitles);
+            };
+        },
+        timeout: 10000 //default to 10 seconds timout
+    });
+    return true;
+};
+
+function wikititles_to_pop(titles_to_DOMids) {
+    var data = {
+        'action':'query',
+        'format':'json',
+        'prop':'revisions',
+        'rvprop':'size',
+        'titles': Object.keys(titles_to_DOMids).join("|")
+        };
+    $.ajax({
+        type: "POST",
+        url: "//en.wikipedia.org/w/api.php",
+        data: data,
+        title_mapping: titles_to_DOMids,
+        dataType: 'jsonp',
+        error: function(){
+            // will fire when timeout is reached
+            $('#info').text("Error with wikipedia query to " + this.url + " (possibly a timeout)");
+        },
+        success: function(data, textStatus) {
+            pagesizes = {};
+            if (data.query && data.query.pages) {
+                $('#info').empty();
+                var title_mapping = this.title_mapping;
+                Object.keys(data.query.pages).forEach(function(key) {
+                    var page = data.query.pages[key];
+                    if (page.revisions && page.revisions[0] && page.revisions[0].size) {
+                        pagesizes[title_mapping[page.title]]=page.revisions[0].size;
+                        $('#'+ title_mapping[page.title] + " .enwiki-size").text(
+                            page.revisions[0].size);
+                    wikititle_to_visits(page.title, title_mapping[page.title]);
+                    }
+                });
+            };
+        },
+        timeout: 10000 //default to 10 seconds timout
+    });
+    return true;
+};
+
+function wikititle_to_visits(title, DOMid) {
+    $.ajax({
+        //requires https
+        url: "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/all-agents/" +
+            title + "/monthly/2016010100/2016123100",
+        dataType: 'json',
+        title: title,
+        headers: {
+        'Api-User-Agent': 'OneZoom popularity service client'
+        },
+        error: function(){
+            // will fire when timeout is reached
+            $('#info').text("Error with wikimedia query to " + this.url + " (possibly a timeout)");
+        },
+        success: function(data, textStatus) {
+            console.log(data)
+            if (data.items) {
+                month_size = [];
+                for (var i=0; i<data.items.length; i++) {
+                    month_size.push(data.items[i].views);
+                }
+                size_sum = month_size.reduce(function(a, b) { return a + b; });
+                $('#'+ DOMids + " .enwiki-mmv").text(
+                    size_sum/month_size.length);
+            };
+        },
+        timeout: 10000 //default to 10 seconds timout
+    });
+    return true;
+};
+
+
+</script>
+<button onclick="wikipedia_names({ {{=XML(",".join(["'Q{}':'row{}'".format(t[headers_index["wikidata"]], i) for i, t in enumerate(taxa)]))}} })">Get current wiki data</button>
+</div>
+</div>
