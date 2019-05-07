@@ -65,34 +65,43 @@ def test():
     DELIMITER ;
 
     """
-    if request.vars.ott:
-        try:
-            headers = ['ott','wikidata', 'popularity', 'raw_popularity', 'name']
-            headers_index = {h:i for i,h in enumerate(headers)}
-            ott = int(request.vars.ott)
-            taxon = db.executesql("SELECT {} FROM ordered_leaves WHERE ott = {}".format(
-                ",".join(headers + ['real_parent']), db.placeholder), ott)
-            if len(taxon)==0:
-                taxon = db.executesql("SELECT {} FROM ordered_nodes WHERE ott = {}".format(
-                    ",".join(headers + ['real_parent']), db.placeholder), ott)
-            
-            if len(taxon):
-                taxon_parent = taxon[0][len(headers)]
-                print(taxon_parent)
-                parents = db.executesql("CALL GetParents({}, '{}', '{}')".format(
-                    taxon_parent, ",".join(headers), 'wikidata is not NULL'))
-                return {
-                    'error':'' if len(taxon)==1 else 'Caution: the ott {} matched against {} taxa'.format(ott, len(taxon)), 
-                    'taxa': [taxon[0]] + [p for p in parents], 'headers_index':headers_index
-                    }
-            return {'error':'', 'taxa': [], 'headers_index':headers_index}
-        except ValueError:
-            return {'error':"Something's not right: you need to provide an integer ott", 'taxa':[]}
-        except:
-            raise
-            return {'error':"Something's not right - have you defined the `GetParents()` stored procedure in your database?", 'taxa':[]}
+    if request.vars.key:
+        API_user = db(db.API_users.APIkey == request.vars.key).select(db.API_users.API_user_name).first()
     else:
-        return {'error':'', 'taxa':False}
+        API_user = None
+        
+    if auth.is_logged_in() or API_user and API_user.API_user_name is not 'public':
+        if request.vars.ott:
+            try:
+                headers = ['ott', 'name', 'wikidata', 'popularity', 'raw_popularity']
+                headers_index = {h:i for i,h in enumerate(headers)}
+                ott = int(request.vars.ott)
+                taxon = db.executesql("SELECT {} FROM ordered_leaves WHERE ott = {}".format(
+                    ",".join(headers + ['real_parent']), db.placeholder), ott)
+                if len(taxon)==0:
+                    taxon = db.executesql("SELECT {} FROM ordered_nodes WHERE ott = {}".format(
+                        ",".join(headers + ['real_parent']), db.placeholder), ott)
+                
+                if len(taxon):
+                    taxon_parent = taxon[0][len(headers)]
+                    parents = db.executesql("CALL GetParents({}, '{}', '{}')".format(
+                        taxon_parent, ",".join(headers), 'wikidata is not NULL'))
+                    return {
+                        'error':'' if len(taxon)==1 else 'Caution: the ott {} matched against {} taxa'.format(ott, len(taxon)), 
+                        'taxa': [taxon[0]] + [p for p in parents], 'headers_index':headers_index
+                        }
+                return {'error':'', 'taxa': [], 'headers_index':headers_index}
+            except ValueError:
+                return {'error':"Something's not right: you need to provide an integer ott", 'taxa':[]}
+            except:
+                raise
+                return {'error':"Something's not right - have you defined the `GetParents()` stored procedure in your database?", 'taxa':[]}
+        else:
+            return {'error':'', 'taxa':False}
+    else:
+        response.view = request.controller + "/needs_authentication." + request.extension
+        return {}
+
 
 def list():
     """Return popularity information for a list of Open Tree Taxonomy identifiers

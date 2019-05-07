@@ -1,0 +1,16 @@
+{{response.title='OneZoom: Popularity service authentication requirement'}}
+<div class="row-fluid">
+    <div class="col-md-12">    
+
+<h1>Authentication required</h1>
+<p>To use this functionality, you must provide a valid, non-public API key below (obtainable by emailing OneZoom)
+or be logged in as a valid OneZoom user.</p>
+{{if request.vars.key:}}
+<p style="color:red"><em>Non-valid API key:</em> {{=request.vars.key}}</p>
+{{pass}}
+<form method='get'>
+<label for="APIkey">API key<input type="text" id="APIkey" name='key'></input>
+<input type="submit"></input>
+</form>
+</div>
+</div>
