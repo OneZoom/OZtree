@@ -157,7 +157,6 @@ function wikititle_to_visits(title, DOMid, pagesize) {
 {{pass}}
 <br />
 {{if taxa != False:}}
-<button onclick="$('table .optional').toggle();">Hide/Show <span class="optional">optional</span> columns</button>
 <button onclick="wikipedia_names({ {{=XML(",".join(["'Q{}':'row{}'".format(t[headers_index["wikidata"]], i) for i, t in enumerate(taxa)]))}} })">Fill current wiki data</button> for page visits between the start of <input type="month" id="start" name="start"
        min="2015-07" value=""> and end of <input type="month" id="end" name="end"
        min="2015-07" value="">
@@ -166,7 +165,8 @@ function wikititle_to_visits(title, DOMid, pagesize) {
 {{headers = sorted(headers_index, key=lambda key: headers_index[key])}}
 <tr>
 {{for h in headers:}}<th rowspan='2'>{{=h}}</th>{{pass}}
-<th colspan="5" style="text-align: center">enwiki</th>
+<th colspan="5" style="text-align: center">enwiki (<input type="checkbox" checked="checked" onclick="if (this.checked) { $('.optional').show();} else {$('.optional').hide();}"><span class="optional_colour">optional</span></input>
+)</th>
 </tr>
 <tr>
 <th class="optional">name</th>
@@ -208,7 +208,7 @@ No matching ott
 </div>
 
 <script>
-$('.optional').css('color', '#007700');
+$('.optional, .optional_colour').css('color', '#007700');
 var x = new Date();
 x.setDate(0);
 $('#start').val("" + (x.getFullYear()-2) + "-" + zero_based_calval(x.getMonth()+1));
