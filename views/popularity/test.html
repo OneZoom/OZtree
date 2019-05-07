@@ -139,7 +139,7 @@ function wikititle_to_visits(title, DOMid, pagesize) {
 <h1>OneZoom popularity service, test page</h1>
 
 <h4>Test the values from the OneZoom API</h4>
-<p>This compares existing values from the <a href="/popularity/">OneZoom popularity API</a> </p>
+<p>This compares existing values from the <a href="/popularity/">OneZoom popularity API</a> with values obtained by directly querying the wiki APIs. These direct queries will return more recent estimates of the raw popularity, both for the target taxon and parents which have wikidata entries. These parent raw popularities are a major contributor to the final (phylogenetic) popularity of a species (the other contributor, the <em>descendants</em> of a target taxon, are not calculated here as they can be very large for higher-level taxa: however, they should be relatively small for species, which should only have a few subspecies underneath them).</p>
 <form action="{{=URL('test')}}" method="get" >
 {{if request.vars.key:}}
 <input type="hidden" name='key' value="{{=request.vars.key}}">
