@@ -530,7 +530,7 @@ db.define_table('reservations',
     format = '%(OTT_ID)s_%(name)s'),            
 
 #a duplicate of the reservations table to store old reservations. This table need never be sent to 3rd parties
-db.define_table('expired_reservations', 
+db.define_table('expired_reservations',
     Field('OTT_ID', type = 'integer', unique=False, requires=IS_NOT_EMPTY()), 
     *[f.clone() for f in db.reservations if f.name != 'OTT_ID' and f.name!='id'],
     format = '%(OTT_ID)s_%(name)s', migrate=is_testing)
@@ -640,13 +640,22 @@ db.define_table('tourorders',
     Field('stop_id', type='integer', notnull=True), #the id in the tourstops table corresponding to this tour
     format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
 
-
 db.define_table('tourstops',
     Field('ott', type='integer', notnull=True), #the ott of this taxon
     Field('description', type = 'text'), #text to show at this stop
     Field('video', type = 'string', length=20), #the youtube video number, if there is a video
     format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
-    
+
+# Somewhere to simply store the html for news items
+db.define_table('news',
+    Field('news_type', type = 'string', length=20), # e.g. 'milestone', 'event', 
+    Field('news_date', type = 'datetime', notnull=True, requires=IS_DATETIME()), #the date of the news
+    Field('html_description', type='text'), # a description of the event
+    Field('text_summary', type='text'), # a description of the event. If absent, use the first sentence of the html_description
+    Field('text_date', type = 'text'), # in case we want a bespoke text for the date, e.g. July 30th-31st 2016
+    format = '%(date)s_%(type)s', migrate=is_testing)
+
+
 #a list of API users, added by hand
 db.define_table('API_users',
     Field('APIkey', type = 'string', length=32, unique=True, notnull=True),

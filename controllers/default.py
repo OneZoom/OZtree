@@ -4,7 +4,7 @@ import re
 import urllib
 from json import dumps
 
-from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal
+from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, extract_summary
 
 """ Some settings for sponsorship"""
 try:
@@ -1018,7 +1018,8 @@ def team():
     return dict()
 
 def milestones():
-    return dict()
+    news = db().select(db.news.ALL, orderby =~ db.news.news_date)
+    return dict(news = news)
 
 def terms():
     return dict()
@@ -1425,7 +1426,7 @@ def gnathostomata():
 
 def list_controllers():
     """
-    In testing mod only, list all controllers
+    In testing mode only, list all controllers
     Code taken from from applications/admin/controllers/default.py
     """
     from gluon.compileapp import find_exposed_functions
