@@ -370,7 +370,7 @@ def inherit_popularity(tree, exclude=[], verbosity=0):
     #NB: we must percolate popularities through the tree before deleting monotomies, since these often contain info
     #this should allocate popularities even for nodes that have been created by polytomy resolving.
     
-    # We should also check that there are not multuple uses of the same Qid (https://github.com/OneZoom/OZtree/issues/132)
+    # We should also check that there are not multiple uses of the same Qid (https://github.com/OneZoom/OZtree/issues/132)
     
     OTT_popularity_mapping.sum_popularity_over_tree(
         tree, exclude=exclude, verbosity=verbosity)

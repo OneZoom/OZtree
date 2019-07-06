@@ -20,6 +20,89 @@ def index():
     else:
         return dict(public_key = None)
 
+def test():
+    """
+    Pass in an OTT and get a list of the popularity ratings of the parents plus 
+    a wikidata identifiers, so that we can query the current valuse using the wiki APIs
+    
+    Uses a stored procedure in the DB like this:
+    
+    DELIMITER $$
+    DROP PROCEDURE IF EXISTS GetParents $$
+    CREATE PROCEDURE GetParents (GivenID INT, ColumnsReturned TEXT, WhereCondition TEXT)
+    /* This gets all the parents with wikidata IDs up to the root for a ordered_node ID */
+    BEGIN
+        DECLARE rv TEXT;
+        DECLARE cm CHAR(1);
+        DECLARE ch INT;
+        DECLARE loop_max INT;
+    
+        SET rv = '';
+        SET cm = '';
+        SET ch = GivenID;
+        SET loop_max = 5000; /* to avoid infinite loops - shouldn't have >5000 real parents in a tree */
+        WHILE ch <> 0  AND loop_max > 0 DO
+        	set loop_max = loop_max-1;
+            SELECT IFNULL(real_parent,0) INTO ch FROM
+            (SELECT real_parent, name FROM ordered_nodes WHERE id = ABS(ch)) A;
+            IF ch <> 0 THEN
+                SET rv = CONCAT(rv,cm,ch);
+                SET cm = ',';
+            END IF;
+        END WHILE;
+        SET @s = CONCAT('SELECT ', ColumnsReturned, ' FROM ordered_nodes');
+        IF WhereCondition = '' THEN
+            SET @s = CONCAT(@s, ' WHERE id IN (',rv,')');
+        ELSE
+            SET @s = CONCAT(@s, ' WHERE id IN (',rv,') AND (', WhereCondition, ')');
+        END IF;
+        SET @s = CONCAT(@s, ' ORDER BY id DESC');
+        PREPARE stmt1 FROM @s;
+        EXECUTE stmt1;
+    	DEALLOCATE PREPARE stmt1;
+        
+    END $$
+    DELIMITER ;
+
+    """
+    if request.vars.key:
+        API_user = db(db.API_users.APIkey == request.vars.key).select(db.API_users.API_user_name).first()
+    else:
+        API_user = None
+        
+    if auth.is_logged_in() or API_user and API_user.API_user_name is not 'public':
+        if request.vars.ott:
+            try:
+                headers = ['ott', 'name', 'wikidata', 'popularity', 'raw_popularity']
+                headers_index = {h:i for i,h in enumerate(headers)}
+                ott = int(request.vars.ott)
+                taxon = db.executesql("SELECT {} FROM ordered_leaves WHERE ott = {}".format(
+                    ",".join(headers + ['real_parent']), db.placeholder), ott)
+                if len(taxon)==0:
+                    taxon = db.executesql("SELECT {} FROM ordered_nodes WHERE ott = {}".format(
+                        ",".join(headers + ['real_parent']), db.placeholder), ott)
+                
+                if len(taxon):
+                    taxon_parent = taxon[0][len(headers)]
+                    parents = db.executesql("CALL GetParents({}, '{}', '{}')".format(
+                        taxon_parent, ",".join(headers), 'wikidata is not NULL'))
+                    return {
+                        'error':'' if len(taxon)==1 else 'Caution: the ott {} matched against {} taxa'.format(ott, len(taxon)), 
+                        'taxa': [taxon[0]] + [p for p in parents], 'headers_index':headers_index
+                        }
+                return {'error':'', 'taxa': [], 'headers_index':headers_index}
+            except ValueError:
+                return {'error':"Something's not right: you need to provide an integer ott", 'taxa':[]}
+            except:
+                raise
+                return {'error':"Something's not right - have you defined the `GetParents()` stored procedure in your database?", 'taxa':[]}
+        else:
+            return {'error':'', 'taxa':False}
+    else:
+        response.view = request.controller + "/needs_authentication." + request.extension
+        return {}
+
+
 def list():
     """Return popularity information for a list of Open Tree Taxonomy identifiers
     Valid calls will return a JSON dict of 
@@ -27,7 +110,7 @@ def list():
     where:
       "data" is a 2D array containing rows of information, one per taxon, with values in each row 
       corresponding to Open Tree Taxonomy identifier, scientific name (if requested), 
-      raw popularity, and popularity rank (only for species)
+      popularity, and popularity rank (only for species)
       "header" gives an integer column number for a given column header: for instance, the robust
       way to obtain the Open Tree Taxonomy identifier for row 2 is data[2][header['ott']]
       "n_taxa" is the total number of taxa that would have been returned by the query if it hadn't been limited
@@ -45,7 +128,7 @@ def list():
             Note that the combined list of taxa returned will therefore often be less than the "max" parameter.
             This only really makes sense when expand_taxa is set to 1
         * names (boolean (e.g. 1 or 0 default) should scientific names be included in the row)
-        * sort ("rank" or "raw" (default)). Note that if expand_taxa is false, the default sorting order may interleave 
+        * sort ("rank" or "true" (default)). Note that if expand_taxa is false, the default sorting order may interleave 
             species and higher-level taxa, depending on their popularity values
         * db_seconds (boolean (e.g. 1 or 0 default) also return the number of seconds for the database to process this query
         
@@ -83,10 +166,26 @@ def list():
             raise HTTP(400,"Error: when spreading results evenly over input taxa, there must be equal or fewer"
             "input taxa than the maximum number of returned values" 
             "(you had {0} input taxa but a maximum of {1} return values, and {1}/{0} < 1)".format(len(otts), n))
-    
-    orderby = "popularity_rank ASC, popularity DESC, ott ASC" if request.vars.getlast("sort", "").lower() == "rank" else "popularity DESC, ott"
+
+    sort = request.vars.getlast("sort", "").lower()
+    if sort == "rank":
+        orderby = "popularity_rank ASC, popularity DESC, ott ASC"
+    elif sort == "raw":
+        orderby = "raw_popularity DESC, popularity DESC, ott ASC"
+    else:
+        orderby = "popularity DESC, ott"
+
+    colnames= ["ott","popularity","popularity_rank"]
+    if queryvar_is_true("include_raw") or orderby.startswith("raw_popularity"):
+        colnames.append("raw_popularity") 
+    if queryvar_is_true("names"):
+        colnames.append("name") 
+
+
     db_seconds = 0
+
     ret = dict(
+        header = {k:i for i,k in enumerate(colnames)},
         max_taxa_in = max_otts,
         max_taxa_out = max_n,
         tot_spp = db.executesql("SELECT leaf_rgt FROM ordered_nodes WHERE id = 1;")[0][0]
@@ -97,10 +196,6 @@ def list():
         n_taxa = 0
         expanded_intervals = {} #save the left=>right spans of any nodes, so we can work out how many tips should have been returned
         query = db.ordered_leaves.ott.belongs(otts)
-        colnames= ["ott","popularity","popularity_rank"]
-        if queryvar_is_true("names"):
-            colnames.append("name") 
-        ret['header']={k:i for i,k in enumerate(colnames)}
         sql_select = "SELECT `" + "`,`".join(colnames) + "` FROM ordered_leaves"
         sql_template = sql_select + " WHERE {q} ORDER BY {o} LIMIT {n} OFFSET 0"
         #select_columns = [getattr(db.ordered_leaves, a) for a in colnames]
@@ -157,7 +252,6 @@ def list():
             sql = "(" + ") UNION (".join(sql_parts) + ") ORDER BY {o}".format(o=orderby)
         else:
             sql = sql_template.format(q=("(" + ") OR (".join(sql_parts) + ")"), n=n, o=orderby)
-        print(sql)
         ret['data'] = db.executesql(sql)
 
     else:
@@ -183,8 +277,8 @@ def list():
 
         SQL = "SELECT * FROM (" + OL_SQL + order_limit + ") as L UNION ALL SELECT * FROM (" + ON_SQL + order_limit + ") as N " + order_limit
         ret['data'] = db.executesql(SQL.format(
-            OLcols="ott, popularity, popularity_rank" + extracol,
-            ONcols="ott, popularity, NULL AS popularity_rank" + extracol,
+            OLcols=", ".join(['`' + n + '`' for n in colnames]),
+            ONcols=", ".join([('`' + n + '`' if n!='popularity_rank' else 'NULL AS `popularity_rank`') for n in colnames]),
             otts = ottstr))
     if queryvar_is_true("db_seconds"):
         ret['db_seconds'] = db_seconds + db._lastsql[1]

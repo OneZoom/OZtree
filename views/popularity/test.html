@@ -1,0 +1,216 @@
+{{response.title='OneZoom: Popularity service testing page'}}
+{{
+def link(a, **kwargs):
+    return A(a, _href=a, **kwargs)
+pass
+}}
+{{extend 'layout.html'}}
+<div class="row-fluid">
+    <div class="col-md-12">    
+
+<script>
+
+function zero_based_calval(month_or_day) {
+    return ((month_or_day) < 10 ? '0' + (month_or_day) : '' + (month_or_day));
+}
+
+function wikipedia_names(Qids_to_DOMids) {
+    var data = {
+        'action':'wbgetentities',
+        'format':'json',
+        'props':'sitelinks',
+        'ids': Object.keys(Qids_to_DOMids).join("|"),
+        'sitefilter':'enwiki'};
+    
+    $.ajax({
+        type: "POST",
+        url: "//www.wikidata.org/w/api.php",
+        data: data,
+        Q_mapping: Qids_to_DOMids,
+        dataType: 'jsonp',
+        error: function(){
+            // will fire when timeout is reached
+            $('#info').text("Error with wikidata query to " + this.url + " (possibly a timeout)");
+        },
+        success: function(data, textStatus) {
+            pagetitles = {};
+            if (data.entities) {
+                $('#info').empty();
+                var Q_mapping = this.Q_mapping;
+                Object.keys(data.entities).forEach(function(key) {
+                    var links = data.entities[key].sitelinks;
+                    if (links.hasOwnProperty('enwiki')) {
+                        pagetitles[links.enwiki.title]=Q_mapping[data.entities[key].id];
+                        $('#'+ Q_mapping[data.entities[key].id] + " .enwiki-name").html(
+                            $("<a/>", {
+                                href:"//en.wikipedia.org/wiki/" + links.enwiki.title,
+                                text:links.enwiki.title}));
+                    }
+                });
+                wikititles_to_pop(pagetitles);
+            };
+        },
+        timeout: 10000 //default to 10 seconds timout
+    });
+    return true;
+};
+
+function wikititles_to_pop(titles_to_DOMids) {
+    var data = {
+        'action':'query',
+        'format':'json',
+        'prop':'revisions',
+        'rvprop':'size',
+        'titles': Object.keys(titles_to_DOMids).join("|")
+        };
+    $.ajax({
+        type: "POST",
+        url: "//en.wikipedia.org/w/api.php",
+        data: data,
+        title_mapping: titles_to_DOMids,
+        dataType: 'jsonp',
+        error: function(){
+            // will fire when timeout is reached
+            $('#info').text("Error with wikipedia query to " + this.url + " (possibly a timeout)");
+        },
+        success: function(data, textStatus) {
+            pagesizes = {};
+            if (data.query && data.query.pages) {
+                $('#info').empty();
+                var title_mapping = this.title_mapping;
+                Object.keys(data.query.pages).forEach(function(key) {
+                    var page = data.query.pages[key];
+                    if (page.revisions && page.revisions[0] && page.revisions[0].size) {
+                        pagesizes[title_mapping[page.title]]=page.revisions[0].size;
+                        $('#'+ title_mapping[page.title] + " .enwiki-size").text(
+                            page.revisions[0].size);
+                    wikititle_to_visits(page.title, title_mapping[page.title], page.revisions[0].size);
+                    }
+                });
+            };
+        },
+        timeout: 10000 //default to 10 seconds timout
+    });
+    return true;
+};
+
+function wikititle_to_visits(title, DOMid, pagesize) {
+    var startDate = new Date($('#start').val());
+    var endDate = new Date($('#end').val());
+    //make the endDate on the last day of the month
+    endDate = new Date(endDate.getFullYear(), endDate.getMonth()+1, 0);
+    $.ajax({
+        //requires https
+        url: "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/all-agents/" +
+            title + "/monthly/" + 
+            startDate.getFullYear() + zero_based_calval(startDate.getMonth()+1) + zero_based_calval(startDate.getDate()) + '00' +
+            "/" +
+            endDate.getFullYear() + zero_based_calval(endDate.getMonth()+1) + zero_based_calval(endDate.getDate()) + '00',
+        dataType: 'json',
+        pagesize: pagesize,
+        headers: {
+        'Api-User-Agent': 'OneZoom popularity service client'
+        },
+        error: function(){
+            // will fire when timeout is reached
+            $('#info').text("Error with wikimedia query to " + this.url + " (possibly a timeout)");
+        },
+        success: function(data, textStatus) {
+            if (data.items) {
+                monthly_hits = [];
+                for (var i=0; i<data.items.length; i++) {
+                    monthly_hits.push(data.items[i].views);
+                }
+                monthly_hits.sort();
+                trimmed_monthly_hits = monthly_hits.slice(0,-2)
+                mean_hits = monthly_hits.reduce(function(a, b) { return a + b; })/monthly_hits.length;
+                mean_tr_hits = trimmed_monthly_hits.reduce(function(a, b) { return a + b; })/trimmed_monthly_hits.length;
+                $('#'+ DOMid + " .enwiki-mmv").html('<details><summary>' + mean_hits + '</summary>Mean of ' + monthly_hits.join(" ") + '</details>');
+                $('#'+ DOMid + " .enwiki-trmmv").html('<details><summary>' + mean_tr_hits + '</summary>Mean of ' + trimmed_monthly_hits.join(" ") + '</details>');
+                $('#'+ DOMid + " .enwiki-rawpop").text(Math.sqrt(mean_tr_hits * this.pagesize));
+            };
+        },
+        timeout: 10000 //default to 10 seconds timout
+    });
+    return true;
+};
+</script>
+
+<h1>OneZoom popularity service, test page</h1>
+
+<h4>Test the values from the OneZoom API</h4>
+<p>This compares existing values from the <a href="/popularity/">OneZoom popularity API</a> with values obtained by directly querying the wiki APIs. These direct queries will return more recent estimates of the raw popularity, both for the target taxon and parents which have wikidata entries. These parent raw popularities are a major contributor to the final (phylogenetic) popularity of a species (the other contributor, the <em>descendants</em> of a target taxon, are not calculated here as they can be very large for higher-level taxa: however, they should be relatively small for species, which should only have a few subspecies underneath them).</p>
+<form action="{{=URL('test')}}" method="get" >
+{{if request.vars.key:}}
+<input type="hidden" name='key' value="{{=request.vars.key}}">
+{{pass}}
+<label for="ott">ott</label>
+{{if request.vars.ott:}}
+<input type="text" name="ott" id="ott" value="{{=request.vars.ott}}" /></dd>
+{{else:}}
+<input type="text" name="ott" id="ott" value="247341" /> (Grey wolf/domestic dog, <i class="taxonomy">Canis lupus</i>)</dd>
+{{pass}}
+<input type="submit" value="Try it!">
+</form>
+{{if error:}}
+<h2>{{=error}}</h2>
+{{pass}}
+<br />
+{{if taxa != False:}}
+<button onclick="wikipedia_names({ {{=XML(",".join(["'Q{}':'row{}'".format(t[headers_index["wikidata"]], i) for i, t in enumerate(taxa)]))}} })">Fill current wiki data</button> for page visits between the start of <input type="month" id="start" name="start"
+       min="2015-07" value=""> and end of <input type="month" id="end" name="end"
+       min="2015-07" value="">
+{{if taxa:}}
+<table style="border-spacing: 10px; border-collapse: separate">
+{{headers = sorted(headers_index, key=lambda key: headers_index[key])}}
+<tr>
+{{for h in headers:}}<th rowspan='2'>{{=h}}</th>{{pass}}
+<th colspan="5" style="text-align: center">enwiki (<input type="checkbox" checked="checked" onclick="if (this.checked) { $('.optional').show();} else {$('.optional').hide();}"><span class="optional_colour">optional</span></input>
+)</th>
+</tr>
+<tr>
+<th class="optional">name</th>
+<th class="optional">page size</th>
+<th class="optional">mean monthly <br />visits (mmv)</th>
+<th class="optional">trimmed mmv</th>
+<th>current raw_pop</th>
+</tr>
+{{for i, row in enumerate(taxa):}}
+<tr style="{{='background-color: yellow' if i==0 else ''}}" id="row{{=i}}">
+{{for h in headers:}}
+{{if h=='wikidata':}}
+<td><a href="http://www.wikidata.org/wiki/Q{{=row[headers_index[h]]}}">{{=row[headers_index[h]]}}</a></td>
+{{else:}}
+<td>{{=row[headers_index[h]]}}</td>
+{{pass}}
+{{pass}}
+<td class="optional enwiki-name"></td>
+<td class="optional enwiki-size"></td>
+<td class="optional enwiki-mmv"></td>
+<td class="optional enwiki-trmmv"></td>
+<td class="enwiki-rawpop"></td>
+</tr>
+{{pass}}
+</table>
+{{else:}}
+No matching ott
+{{pass}}
+
+<p>This uses something like
+<a href="https://www.wikidata.org/w/api.php?action=wbgetentities&format=xml&props=sitelinks&ids={{="|".join(["Q{}".format(t[headers_index['wikidata']]) for t in taxa])}}&sitefilter=enwiki">this query</a> to get wikipedia page names from wikidata Q ids. It then uses something like 
+<a href="https://en.wikipedia.org/w/api.php?action=query&format=json&titles=Albert%20Einstein&prop=revisions&rvprop=size">this query</a> to get page <em>sizes</em> from the wikipedia names, and <a href="https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/all-agents/Barack_Obama/monthly/2016010100/2016123100">this</a> to get monthly site visits 
+(see <a href="https://wikitech.wikimedia.org/wiki/Analytics/AQS/Pageviews#Monthly_counts">docs</a>). The trimmed mean removes the two highest monthly site numbers.
+</p>
+<p id="info" style="border: 1px solid red"></p>
+
+{{pass}}
+</div>
+</div>
+
+<script>
+$('.optional, .optional_colour').css('color', '#007700');
+var x = new Date();
+x.setDate(0);
+$('#start').val("" + (x.getFullYear()-2) + "-" + zero_based_calval(x.getMonth()+1));
+$('#end').val("" + x.getFullYear() + "-" + zero_based_calval(x.getMonth()+1));
+</script>
