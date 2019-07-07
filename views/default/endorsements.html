@@ -1,12 +1,5 @@
 {{response.title='OneZoom: Endorsements'}}
 {{extend 'layout.html'}}
-        <!--<div class="row-fluid">
-            <div class="col-md-12">
-                <h1 class="full-title">OneZoom Impacts</h1>
-             
-            </div>
-        </div>
-         -->
 <div class="container-fluid">
     <div class="row-fluid">
         <div class="col-md-12">
@@ -30,8 +23,11 @@
     {{pass}}
                 </li>
     {{if category == "Professionals":}}
-                <a href="http://www.plosbiology.org/article/browseIssue.action?issue=info%3Adoi%2F10.1371%2Fissue.pbio.v10.i10" target = "_blank" class="thumbnail"><img src="{{=URL('static','images/gallery/PLoS_cover_small.jpeg')}}" alt=""></a>
-                <p>OneZoom as the cover image for PLoS Biology (2012)</p>
+    {{ #Add a pretty picture in to break up the monotony}}
+                <figure>
+                    <a href="http://www.plosbiology.org/article/browseIssue.action?issue=info%3Adoi%2F10.1371%2Fissue.pbio.v10.i10" target = "_blank" class="thumbnail"><img src="{{=URL('static','images/gallery/PLoS_cover_small.jpeg')}}" alt=""></a>
+                    <figcaption>OneZoom as the cover image for PLoS Biology (2012)</figcaption>
+                </figure>
     {{pass}}
 {{pass}}
             </ul>
