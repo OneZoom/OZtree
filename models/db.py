@@ -511,19 +511,32 @@ db.define_table('reservations',
     # has then amount paid been matched to paypal e-mail
     Field('verified_url', type = 'text'),  
     # url for those that agree to have one            
-    Field('live_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
-    # the time when we emailed/tweeted them (left as 'live_time' for historical reasons)
-                                
+    Field('sponsorship_text_level', type = 'integer'),
+    # How generally acceptable is the text (3 = completely standard & acceptable) - NULL=not reviewed
+    Field('tweeted_re_sponsorship', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
+    # the time when we emailed them
+    Field('emailed_re_sponsorship', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
+    # the time when we emailed them
+    Field('emailed_re_renewal_initial', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
+    # the first time when we emailed about renewals
+    Field('emailed_re_renewal_final', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
+    # the final time when we emailed about renewals
+    Field('restrict_all_contact', type = boolean),
+    # Can we contact them about renewals etc, or only about the most urgent stuff
     Field('admin_comment', type = 'text'),            
     # comments for any purpose edited by us  
     Field('sponsorship_duration_days',type = 'integer'),
-    # the expiry date in days beyond sale time            
+    # the length in days gained by the donation            
+    Field('sponsorship_expires_after_days',type = 'integer'),
+    # the expiry date in days beyond verified time            
     Field('asking_price', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
     # price in pounds - good idea to hang on to this for accounting purposes and verification the numbers add up later
     Field('partner_percentage', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
     # percentage of this donation that is diverted to a OZ partner like Linn Soc (after paypal fees are deducted) 
     Field('partner_name', type = 'string', length=40),
     # a standardised name for the partner (or multiple partners if it comes to that - would then assume equal split between partners)
+    Field('partner_paid_on', type = 'datetime', requires = IS_EMPTY_OR(IS_DATETIME())),
+    Field('giftaid_claimed_on', type = 'datetime', requires = IS_EMPTY_OR(IS_DATETIME())),
     Field('deactivated', type = 'text'),
     # true if this row in the reservations table has been deliberately deactivated for any reason other than expiry e.g. complaint / species disappears etc.
                        
@@ -532,12 +545,15 @@ db.define_table('reservations',
 #a duplicate of the reservations table to store old reservations. This table need never be sent to 3rd parties
 db.define_table('expired_reservations',
     Field('OTT_ID', type = 'integer', unique=False, requires=IS_NOT_EMPTY()), 
+    Field('was_renewed', type = boolean), 
     *[f.clone() for f in db.reservations if f.name != 'OTT_ID' and f.name!='id'],
     format = '%(OTT_ID)s_%(name)s', migrate=is_testing)
 
 # this table defines the current pricing cutoff points
 db.define_table('prices',
     Field('price', type = 'integer', unique=True, requires=IS_NOT_EMPTY()),
+    Field('perpetuity_price', type = 'integer', requires=IS_NOT_EMPTY()),
+    # Map the "normal" 4 year price to the in-perpetuity price
     Field('current_cutoff', type = 'double'),
     Field('n_leaves', type = 'integer'),
     format = '%(price)s_%(n_leaves)s')
