@@ -1,324 +1,59 @@
-{{response.title='OneZoom: Milestones'}}
+{{response.title='OneZoom: Timeline'}}
 {{extend 'layout.html'}}
 <div class="container-fluid">
   <div class="row-fluid">
     <div class="col-md-12">
-      <header><h1>OneZoom Project Milestones</h1>
+      <header><h1>OneZoom Project Timeline</h1>
       <p>Please consider following us on <a href="http://twitter.com/OneZoomTree" target="_blank">Twitter</a> and <a href="http://www.facebook.com/OneZoomTree" target="_blank">Facebook</a> for updates on our progress.</p></header>
     </div>
   </div>
   <div class="row-fluid">
     <div class="col-md-12">
-      <h3>Milestones 2016 - 2019</h3>
+      <h3>Events, milestones, and news: 2016 - 2019</h3>
       <ul class="columns">
-          
 {{for row in news:}}
-{{if row.news_date < request.now:}}
+{{if row.news_date < request.now and row.news_date.year >= 2016:}}
           <li>
           <h4><time datetime="{{=row.news_date}}">{{if row.text_date:}}{{=row.text_date}}{{else:}}{{=row.news_date.strftime("%d %B %Y").lstrip('0')}}{{pass}}</time></h4>
           {{=XML(row.html_description)}}
           </li>
 {{pass}}
 {{pass}}
-          <li>
-              <h4>January 2017</h4>
-              OneZoom received a certificate of commendation from the UK National Co-ordinating Centre for Public Engagement after having been long-listed for their 2016 Engage Awards. The judges described OneZoom as "An ambitious and complex project, which has been tackled well, producing a useful and impactful resource."
-          
-          </li>
-          
-          
-          <li>
-              <h4>October 14th 2016</h4>
-              
-              New updates to the OneZoom software went live today. We now have improved pages that allow you to browse and sponsor a species of your choice from any particular group, such as <a href="{{=URL('sponsor_node?n=8&ott=244265')}}">Mammals</a>, or any common ancestor in the tree. We've made some other behind the scenes improvements too. OneZoom now relies less on third party web services and includes fail-safes that ensure better data accuracy.
-          </li>
-          
-
-          
-          <li>
-              <h4>October 2nd 2016</h4>
-              
-              <a href = "{{=URL('static','images/gallery/EcoFunPalace.jpg')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/EcoFunPalace_small.jpg')}}" alt=""></a>
-              <p> OneZoom at the <a href="https://www.linnean.org/meetings-and-events/events/st-jamess-piccadilly-eco-fun-palace" target="_blank">Eco Fun Palace, London</a> with James Rosindell. Displayed in association with the <a href="https://www.linnean.org" target="_blank">Linnean Society</a>.</p>
-          </li>
-          
-          
-        <li>
-        <h4>September 15th 2016</h4>
-        <p>A huge upgrade to OneZoom is now live enabling it to <a href="http://www.onezoom.org/life.html" target="_blank">display the complete tree of life with 1.8 million species</a> (everything except extinct species, and eubacteria).</p>
-        
-        <a href = "{{=URL('static','images/gallery/insects_screenshot.png')}}"  target = "_blank" class="thumbnail">
-          <img src= "{{=URL('static','images/gallery/insects_screenshot_small.png')}}" alt="">
-            </a>
-        
-        <h4>New features of OneZoom version 3.0</h4>
-        <ul>
-          <li>It's the (almost) complete tree of life on one page</li>
-          <li>The tree contains a hundred thousand images and half a million common names in <a href="{{=URL('sponsor')}}">150 languages</a></li>
-          <li>Search the whole tree for scientific and common names</li>
-          <li>Find most recent common ancestors between pairs of species</li>
-          <li>The back button now works within the tree, and tracks the history of where you have visited</li>
-          <li>Copy and paste the contents of your address bar to share that view of the tree</li>
-        </ul>
-        <p>As with version 2.0, the tree and its contents are continually updated with the recent scientific information.</p>
-        <p>A really big thank you to everyone who <a href="{{=URL('sponsored')}}">sponsored a leaf of the tree</a>, your donations made this possible. There are loads of great leaves on the tree <a href="{{=URL('sponsor')}}">still available to sponsor</a>, please consider helping us make OneZoom even better.</p>
-         <p><a href="{{=URL('static','images/press/OneZoom_press_release_15sept2016.pdf')}}">Read the press release</a></p>
-      </li>
-<li>
-        <h4>August 31st 2016</h4>
-      
-        <a href = "{{=URL('static','images/gallery/science_museum_lates.jpg')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/science_museum_lates_small.jpg')}}" alt=""></a>
-      <p> OneZoom on display at <a href="http://www.sciencemuseum.org.uk/visitmuseum/plan_your_visit/lates" target="_blank">Science Museum Lates</a>. Jonathan Sutton is in the foreground on the left. Image credit: Barry Macdonald – Science Museum</p>
-      </li>
-      <li>
-      <h4>August 22nd 2016</h4>
-      Jonathan Sutton joins the OneZoom team as a software developer intern for a 6 week summer project.
-      </li>
-<li>
-      <h4>July 30th-31st 2016</h4>
-      <a OneZoom was featured at <a href="http://ancestorstrail.org.uk" target="_blank">The Ancestor's Trail</a>, UK 2016. The OneZoom charity was supported by the trail this year and the science presentations included a talk given by Yan Wong and James Rosindell.
-      </li>
-<li>
-      <h4>June 10th-11th 2016</h4>
-      <p>OneZoom was at the Cheltenham Science Festival in the Discover Zone. We were also featured as part of the Ancestor's Tale presentation by <a href = "https://richarddawkins.net">Richard Dawkins</a> and <a href = "http://yanwong.me">Yan Wong</a>.</p>
-      </li>
-<li>
-      <h4>April 28th 2016</h4>
-      <p>Release of a massively upgraded OneZoom, the biggest step forward by far since the original release of the software in 2012.</p>
-      <a href = "{{=URL('static','images/gallery/screen2.jpg')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/screen2_small.jpg')}}" alt=""></a>
-      <h4>New features of OneZoom version 2.0</h4>
-      <ul>
-        <li> Now with more life than ever: the tree spans the whole of life (except for some bacteria).</li>
-        <li> Includes images throught the tree and an improved visual design.</li>
-        <li> Includes a new user interface, easier to use and with mobile support.</li>
-        <li> You can now sponsor a leaf on the tree and your chosen name will appear on that leaf of the tree.</li>
-        <li> Semi-automated systems are now in place for keeping all this information up to date.</li>
-      </ul>
-      <p>The release of OneZoom version 2.0 coincides with the date of publication of the <i>The Ancestor's Tale</i> second edition by Richard Dawkins and Yan Wong. This seminal book on evolution uses graphics from OneZoom on the cover, and throughout.</p>
-      <a href = "{{=URL('static','images/gallery/AT_cover.png')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/AT_cover_small.png')}}" alt=""></a>
-      <p><a href="{{=URL('static','images/press/OneZoom_press_release_28april2016.pdf')}}">Read the press release</a></p>
-      </li>
       </ul>
     </div>
   </div>
   <div class="row-fluid">
     <div class="col-md-12">
-      <h3>Milestones 2014-2015</h3>
+      <h3>2014 - 2015</h3>
       <ul class="columns">
+{{for row in news:}}
+{{if 2014 <= row.news_date.year <= 2015:}}
           <li>
-              <h4>September 14th 2015</h4>
-              <p>OneZoom is now a <a href="{{=URL('static','images/RegistrationCertificate.jpg')}}">registered charity</a> in the UK, our registration number is 1163559. Our formal objective is <q>To advance the education of the public in the subjects of evolution, biodiversity and conservation of the variety of life on earth.</q></p><p>The founding trustees of the charity are James Rosindell, Luke Harmon and Yan Wong.</p>
+          <h4><time datetime="{{=row.news_date}}">{{if row.text_date:}}{{=row.text_date}}{{else:}}{{=row.news_date.strftime("%d %B %Y").lstrip('0')}}{{pass}}</time></h4>
+          {{=XML(row.html_description)}}
           </li>
-          <li>
-              <h4>September 11th 2015</h4>
-              <p>A OneZoom based musem display features as part of the just opened <a href="http://australianmuseum.net.au/landing/wild-planet/">Wild Planet </a>  exhibition at The Australian Museum in Sydney.</p>
-              <a href = "{{=URL('static','images/gallery/sydney_kiosk.jpg')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/sydney_kiosk_small.jpg')}}" alt=""></a>
-          </li>
-          <li>
-              <h4>August 20th 2015</h4>
-              <p><a href="https://www.youtube.com/watch?v=Vh-RbFZCMBE">Public presentation</a> about plant evolution by James Rosindell at <a href="http://ancestorstrail.org.uk" target="_blank">The Ancestor's Trail</a>, UK 2015 http://ancestorstrail.org.uk features OneZoom throughout.</p>
-          </li>
-          <li>
-              <h4>August 2015</h4>
-              <p><a href="http://www.wyomingbiodiversity.org" target="_blank">The University of Wyoming Biodiversity Institute </a> now features two OneZoom displays in its public exhibition area, one showing tetrapods and the other showing plants.</p>
-          </li>
-          <li>
-              <h4>June 6th 2015</h4>
-              <p>OneZoom was at the Cheltenham Science Festival yesterday. As part of the Tree of Life presentation by <a href="http://www.alice-roberts.co.uk">Alice Roberts</a>, mammalian expert Anjali Goswami and plant expert Jeremy Pritchard. Then later in the Times talk corner on a large touch screen for visitors to explore.</p>
-              <a href = "{{=URL('static','images/gallery/cheltenham2015.jpg')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/cheltenham2015_small.jpg')}}" alt=""></a>
-          </li>
-          <li>
-              <h4>May 14th 2015</h4>
-              <p>A version of OneZoom for genealogy is launched today at <a href="http://www.zoompast.org" target="_blank">ZoomPast.org</a>. This is a new and unique way to visualize and share genealogies in the same way as you can explore the tree of life with OneZoom. You can explore example genealogies of famous and fictional characters including Darwin, British Royalty and various US presidents, or build your own genealogy and share it with family and friends.</p>
-              <a href = "{{=URL('static','images/gallery/ZoomPast_2.png')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/ZoomPast_2_small.png')}}" alt=""></a>
-          </li>
-          <li>
-              <h4>May 14th 2015</h4>
-              <p>OneZoom is featured on the BBC world service as part of the Science in Action program <a href="http://www.bbc.co.uk/programmes/p02qtx6x#auto" target="_blank">listen now</a> (The OneZoom part in 19 minutes into the show but it's all interesting - the title says 'gene expression changes with the seasons').</p>
-          </li>
-          <li>
-              <h4>May 8th-10th 2015</h4>
-              <p>OneZoom is at the Imperial Festival in London. Our stand featured a live Axolotl, carnivorous plants, a grain of wheat for every described species on the planet, and OneZoom on a large touch screen.</p>
-              <a href = "{{=URL('static','images/gallery/Imperial_festival.JPG')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/Imperial_festival_small.JPG')}}" alt=""></a>
-          </li>
-          <li>
-              <h4>Feb 22nd 2015</h4>
-              The OneZoom concept has led to another application: you can now build your own family tree and explore the family trees of famous people in a OneZoom inspired way at <a href="http://www.zoompast.org" target="_blank">ZoomPast.org</a> - currently in beta testing.
-          </li>
-          <li>
-              <h4>January 5th 2015</h4>
-              New work published today by James Rosindell and Laura Nunes from the OneZoom team, together with Sam Turvey from the Zoological Society of London ranks bird species in priority order for conservation based on their evolutinoary distinctiveness and the economic costs of protecting them. See a OneZoom visualisation of the results <a href="{{=URL('ADEPD_birds_nunes_etal_2015.htm')}}" target="_blank">here</a>. The brown colored branches link to 206 threatened species that were evaluated, which are coloured in red. Zoom into any leaf to see where that species ranks and why. Read the press release and article  <a href="http://www3.imperial.ac.uk/newsandeventspggrp/imperialcollege/newssummary/news_5-1-2015-13-5-2" target="_blank">here</a>.
-          </li>
-      <li>
-      <h4>October 21st-22nd 2014</h4>
-      <p>Professor <a href="http://www.math.canterbury.ac.nz/~m.steel/" target="_blank">Mike Steel</a> uses OneZoom in three public presentations in New Zealand at Nelson, Wakatipu college in Queenstown and Wanaka.</p>
-      </li>
-<li>
-      <h4>October 18th 2014</h4>
-      Professor <a href="https://www.ucl.ac.uk/cber/mace" target="_blank"> Georgina Mace </a> uses OneZoom in her public presentation at the Serpentine Gallery in London for <a href="http://www.serpentinegalleries.org/exhibitions-events/extinction-marathon" target="_blank"> Extinction Marathon: Visions of the Future </a>
-      </li>
-<li>
-      <h4>October 16th 2014</h4>
-      Today is our second birthday, over the last two years we have:
-      <ul>
-        <li>Received 600,000 page views from over 200,000 unique users in 196 countries.</li>
-        <li>Formed a major part of 4 long-term and permanent public outreach exhibitions at musuems, libraries and other venues.</li>
-        <li>Released a free Android app.</li>
-        <li>Appeared at 4 science festivals.</li>
-        <li>Been shown in 5 public outreach presentations.</li>
-        <li>Appeared in at least 77 instances of media coverage.</li>
-        <li>Been used in at least 10 other software projects.</li>
-        <li>Built an embed function so you easily have OneZoom as a feature in your own website.</li>
-      </ul>
-      We're not slowing down and have several ambitious plans for our third year, watch this space.
-      </li>
-<li>
-      <h4>September 25th 2014</h4>
-      <p>Our free Android app is out today - available for download from the <a href="https://play.google.com/store/apps/details?id=com.onezoom&hl=en_GB" target="_blank"> Google Play store </a>. Simply <a href="https://play.google.com/store/apps/details?id=com.onezoom&hl=en_GB" target="_blank">search for &ldquo;OneZoom&rdquo; in the store</a>. Now at last you can experience the main features of OneZoom from your mobile device.</p>
-      <a href = "{{=URL('static','images/gallery/OneZoom_app.png')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/OneZoom_app_small.png')}}" alt=""></a>
-      </li>
-<li>
-      <h4>August 29th 2014</h4>
-      <p>OneZoom is at the <a href="http://ancestorstrail.org.uk" target="_blank">Ancestor's Trail</a> and is used by Dr. Yan Wong in his evening presentation on the Tree of Life.</p>
-      <a href = "{{=URL('static','images/gallery/Wong_AT_2014.jpeg')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/Wong_AT_2014_small.jpeg')}}" alt=""></a>
-      </li>
-<li>
-      <h4>June 3rd 2014</h4>
-      <p>OneZoom is at the <a href="http://www.cheltenhamfestivals.com/science" target="_blank">Cheltenham Science Festival</a> as part of the <a href="http://www.bl.uk" target="_blank"> British Library</a>'s Beautiful Science exhibition until 8th June.</p>
-      </li>
-<li>
-      <h4>April 10th 2014</h4>
-      <p>Just released: a <a href="{{=URL('EDGE_birds.html?profile=EDGE')}}"> OneZoom visualisation</a> of conservation rankings for all the world's bird species. The rankings prioritise species that are both <a href="http://www.edgeofexistence.org" target="_blank">Evolutionarily Distinct and Globally Endangered (EDGE)</a>. This visualisation was brought to you in collaboration with the ZSL EDGE project and the authors of Jetz et al., Global Distribution and Conservation of Evolutionary Distinctness in Birds, Current Biology (2014).</p>
-      </li>
-<li>
-      <h4>March 15th 2014</h4>
-      OneZoom features at the Science Festival "WowHow" at the <a href="http://www.oum.ox.ac.uk/index.htm" target="_blank">Oxford University Musuem of Natural History</a>.
-      </li>
-<li>
-      <h4>February 20th 2014</h4>
-      <p>OneZoom is at the <a href="http://www.bl.uk" target="_blank"> British Library</a> as part of their amazing Beautiful Science exhibition. You'll see OneZoom on a pair of multi-touch displays with embedded images and sounds alongside a first edition copy of Darwin's <i>On the Origin of Species</i> and many more amazing examples of data visualisation. The exhibition is open until 26th May 2014.</p>
-      </li>
-<li>
-      <h4>January 24th 2014</h4>
-      <p>OneZoom featured as a learning tool in a glass classroom demonstration  as part of Intel Education at <a href="http://www.bettshow.com/">Bett 2014</a>. The teacher running the demonstration was Michael Hanson, vice principle of the Scotts Valley High School in California, USA. In a meeting aftewards he said of OneZoom that <q>In my opinion, it's the best visualisation of evolution that's out there for the lay person</q>.</p>
-        </li>
+{{pass}}
+{{pass}}
       </ul>
     </div>
-  </div><!--/row-->
-
-  
-  
+  </div>
   <div class="row-fluid">
     <div class="col-md-12">
-      <h3>Milestones 2012-2013</h3>
-      <ul class="columns last">
-        <li>
-      <h4>December 22th 2013</h4>
-      <p>A <a href="{{=URL('plants.html')}}">new tree</a> with over 31,000 species of seed plant is now available on OneZoom. We worked with the authors of the new tree data to release this at the same time as their research unveiling the tree was published in Nature (See Zanne et al. Nature. doi:10.1038/nature12872. - 2013). The colouring of this tree indicates whether each plant is wood, herbaceous or variable.</p>
-      </li>
-<li>
-      <h4>December 12th 2013</h4>
-      <p>Major updates to OneZoom website including a refactored and improved software core and the new <a href="{{=URL('embed.html')}}">embed and link tool</a>.</p>
-      </li>
-<li>
-      <h4>October 16th 2013</h4>
-      <p>OneZoom is one year old today, in the last year almost 130,000 people have visited OneZoom from 182 different countries and we've done a lot to improve and expand our content. We have even more planned for the next year - watch this space.</p>
-      </li>
-<li>
-      <h4>October 13th 2013</h4>
-      <p>Independent reseach conducted by academics at Harvard University and Massachusetts Institute of Technology ranked OneZoom as the fourth most memorable visualisation image out of those tested. The researchers conducted an extensive study of over 2000 visualisations, they conclude that "quantifying memorability is a general metric of the utility of information, an essential step towards determining how to design effective visualizations". The publication titled <a href="http://scholar.google.co.uk/scholar?hl=en&q=What+Makes+a+Visualization+Memorable%3F&btnG&as_sdt=1%2C5&as_sdtp" target="_blank">"What Makes a Visualization Memorable?"</a> was published by the IEEE Computer Society.</p>
-      </li>
-<li>
-      <h4>October 7th 2013</h4>
-      <p>Kai Zhong joins the OneZoom team as a full time software developer.</p>
-      </li>
-<li>
-      <h4>September 27th 2013</h4>
-      <p>OneZoom attended the Science Uncovered at the Natural History Musuem in London for three days where OneZoom creator James Rosindell, and science broadcaster Yan Wong were demonstrating the tree of life to members of the public. This is the fourth public outreach display of OneZoom.</p>
-      <a href = "{{=URL('static','images/gallery/One_Zoom_Science_Uncovered.jpg')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/One_Zoom_Science_Uncovered_small.jpg')}}" alt=""></a>
-      </li>
-<li>
-      <h4>May 2nd 2013</h4>
-      <p>OneZoom was at the <a href="http://www3.imperial.ac.uk/festival" target="_blank">Imperial Festival</a> for three days where OneZoom creator James Rosindell, and Imperial College masters student Laura Nunes were showing the tree of life to members of the public. This is the third public outreach display of OneZoom already and we've got a lot more planned - watch this space!</p>
-      </li>
-<li>
-      <h4>April 19th 2013</h4>
-      <p>An <a href="http://www.unimuseum.uni-tuebingen.de/schoenes-wissen.html" target="_blank">exhibition about science and aesthetics</a> opens at the Museum of the University of Tuebingen in Germany. Open until the 1st of September this year, the exhibition features our OneZoom open source software as a key interacitve with the tree of Mammals, Amphibians, Birds and Reptiles combined (Tetrapods).</p>
-      </li>
-<li>
-      <h4>April 4th 2013</h4>
-      <p>We now have a plant tree for you to explore in OneZoom! At this moment it's in Latin only, but we plan to include common names and additional information later. Many thanks to <a href="http://www.flmnh.ufl.edu/soltislab/Soltis_site/Home.html" target="_blank">distinguished Professor Doug Soltis </a> for providing the tree data for this work. <a href="{{=URL('plants_Soltis2.html')}}">Explore the plant tree now</a>.</p>
-      </li>
-<li>
-      <h4>March 20th-22nd 2013</h4>
-      <p>OneZoom attended the Biology Vizulalisation Conference <a href="http://vizbi.org" target="_blank">VIZBI 2013</a>. OneZoom appeared as a central theme in the <a href="http://vizbi.org/2013/img/Conference_Poster.pdf" target="_blank">conference promotional material</a> and won the prize for best poster - decided by popular vote. <a href="http://vizbi.org/Posters/2013/D03" target="_blank"> See the poster on the VIZBI Website</a> which was accompanied by an interactive display of OneZoom at the conference.</p>
-      <a href = "{{=URL('static','images/gallery/VIZBI_poster.jpg')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/VIZBI_poster.jpg')}}" alt=""></a>
-      </li>
-<li>
-      <h4>March 18th 2013</h4>
-      <p><a href="http://www.sfu.ca" target="_blank">Simon Fraser University</a> get the worlds first permanent installation of a OneZoom display <a href="http://www.sfu.ca/pamr/media-releases/2013/world-first-viewing-life-in-onezoom.html" target="_blank">(press release)</a>. <a href="{{=URL('tetrapods_SFU.html')}}">Explore an online version now </a> - SFU staff are highlighted showing which species they work on, you can search for both species and researchers by name too. The online version is not the same as the display version but it contains the same information. We hope this is the first of many OneZoom installations and that the software contines to develop for these uses. If you want a display for your university please <a href="mailto:mail@onezoom.org">contact us</a>.</p>
-      </li>
-<li>
-      <h4>March 9th 2013</h4>
-      <p>The <a href="{{=URL('tetrapods.html')}}">complete tree of tetrapods</a> is now available on OneZoom. That's over 22,000 species of amphibian, reptile, mammal and bird covering all well known species and approximately 70% of the total number of described tetrapods. We're still going to continue to improve and extend this tree and we also plan to add fishes to make it a complete tree of all vertebrates.</p>
-      <p>
-        <a class="btn" href="{{=URL('tetrapods.html')}}">Explore the tree of tetrapod life now</a>
-      </p>
-      </li>
-<li>
-      <h4>March 4th 2013</h4>
-      <p>OneZoom presented by Rosindell at the <a href="http://www.naturalis.nl/en/" target="_blank" >Naturalis Biodiversity Centre</a> annual conference as the after dinner plenary speaker.</p>
-      </li>
-<li>
-      <h4>January 9th 2013</h4>
-      <p>OneZoom is now on <a href="https://github.com/jrosindell/OneZoom" target="_blank" >Github</a> </p>
-      </li>
-<li>
-      <h4>December 22nd 2012</h4>
-      <p>OneZoom adds the <a href="{{=URL('birds.html')}}">bird tree</a> with nearly 10,000 species of bird. Thanks to Walter Jetz, Gavin Thomas, Jeff Joy, Klaas Hartmann and Arne Mooers for producing the tree in their recent publication <a href="http://www.nature.com/nature/journal/v491/n7424/full/nature11631.html" target="_blank"> The global diversity of birds in space and time </a> and for using our software to show the tree on their own website <a href="http://www.birdtree.org" target="_blank">birdtree.org</a>. Thanks also to Laura Nunes, masters student at Imperial College, for all her voluntary work preparing the bird tree for use at <a href="http://www.onezoom.org" target="_blank">OneZoom.org</a>.
-      </p>
-      <p><a class="btn" href="{{=URL('birds.html')}}">Explore the tree of bird life now</a></p>
-      </li>
-<li>
-      <h4>December 18th 2012</h4>
-      <p>OneZoom presented at the <a href="http://www.britishecologicalsociety.org" target="_blank"> British Ecological Society</a> annual meeting 2012.</p>
-      </li>
-<li>
-      <h4>November 16th 2012</h4>
-      <p>OneZoom is one month old. To celebrate we've got the tree of amphibians for you with over 5000 species to explore. The next addition to OneZoom that we expect is the tree of birds with nearly 10,000 species.</p>
-      <a href = "{{=URL('static','images/gallery/Amphibian_cover.jpg')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/Amphibian_cover_small.jpg')}}" alt=""></a>
-      <p><a class="btn" href="{{=URL('amphibians.html')}}">Explore the tree of amphibian life now</a></p>
-      </li>
-<li>
-      <h4>October 29th 2012</h4>
-      <p>Website updated: new videos and screenshots, an improved news page format and extra details on how to embed and reuse OneZoom.</p>
-      </li>
-<li>
-      <h4>October 19th 2012</h4>
-      <p>New feature: OneZoom updated for easier use based on your feedback, thankyou everyone!  Now you can scroll, click or use the icons to zoom in. We're still working on more improvements.</p>
-      </li>
-<li>
-      <h4>October 17th 2012</h4>
-      <p>After 24 hours online OneZoom got 13,900 unique visitors and 36,400 page views. Thank you so much everyone!</p>
-      </li>
-<li>
-      <h4>October 16th 2012</h4>
-      <p>The <a href="http://www.plosbiology.org/article/info:doi/10.1371/journal.pbio.1001406" target="_blank">OneZoom manuscript</a> is published in <a href="http://www.plosbiology.org" target="_blank">PLoS Biology</a>, the first in the journal's new "Cool Tools" series. The OneZoom website and software go live.</p>
-      <p><a class="btn" href="{{=URL('mammals.html')}}">Explore the tree of mammal life now</a></p>
-      </li>
-<li>
-    <h4>July 12th 2012</h4>
-    <p>The <a href="https://www.youtube.com/watch?v=gxp-1IE9zfs" target="_blank">First public preview</a> of OneZoom is shown as part of a presentation by James Rosindell at   <a href="http://www.evolutionmeetings.org" target="_blank">Evolution 2012</a></p>
-</li>
-    </ul>
-  </div><!--/row-->
-</div><!--/.fluid-container-->
-  
-  
-  
+      <h3>2012 - 2013</h3>
+      <ul class="columns">
+{{for row in news:}}
+{{if 2012 <= row.news_date.year <= 2013:}}
+          <li>
+          <h4><time datetime="{{=row.news_date}}">{{if row.text_date:}}{{=row.text_date}}{{else:}}{{=row.news_date.strftime("%d %B %Y").lstrip('0')}}{{pass}}</time></h4>
+          {{=XML(row.html_description)}}
+          </li>
+{{pass}}
+{{pass}}
+      </ul>
+    </div>
+  </div>
   <div class="row-fluid">
       <div class="col-md-12">
-          <hr>
           <h3>OneZoom Project Foundation in 2011</h3>
           
           <div class="col-md-4">
