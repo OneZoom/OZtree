@@ -648,13 +648,22 @@ db.define_table('tourstops',
 
 # Somewhere to simply store the html for news items
 db.define_table('news',
-    Field('news_type', type = 'string', length=20), # e.g. 'milestone', 'event', 
+    Field('category', type = 'string', length=20), # e.g. 'milestone', 'event', 
     Field('news_date', type = 'datetime', notnull=True, requires=IS_DATETIME()), #the date of the news
     Field('html_description', type='text'), # a description of the event
     Field('text_summary', type='text'), # a description of the event. If absent, use the first sentence of the html_description
     Field('text_date', type = 'text'), # in case we want a bespoke text for the date, e.g. July 30th-31st 2016
     format = '%(date)s_%(type)s', migrate=is_testing)
 
+# Somewhere to simply store the endorsement quotes
+db.define_table('quotes',
+    Field('category', type = 'string', length=30), # e.g. 'Scientists', 'Educators', 
+    Field('html_quote', type='text'), # The endorsement quote (may also contain html)
+    Field('quality', type='double'), # A measure of how usable the quote is, e.g. well known person, good quote
+    Field('person', type = 'string',  length=50), #the plain text person's name
+    Field('person_url', type = 'string',  length=100), # a web url for this person
+    Field('html_affiliation', type = 'string',  length=100), # E.g. University of Oxford
+    format = '%(person)s_%(category)s', migrate=is_testing)
 
 #a list of API users, added by hand
 db.define_table('API_users',
