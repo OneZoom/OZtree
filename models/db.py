@@ -513,6 +513,8 @@ db.define_table('reservations',
     # url for those that agree to have one            
     Field('sponsorship_text_level', type = 'integer'),
     # How generally acceptable is the text (3 = completely standard & acceptable) - NULL=not reviewed
+    Field('live_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
+    # Temporarily reinstate live_time until we transfer the data into emailed_re_sponsorship column, then we can delete it
     Field('tweeted_re_sponsorship', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
     # the time when we emailed them
     Field('emailed_re_sponsorship', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
