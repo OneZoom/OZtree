@@ -104,7 +104,6 @@ def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
     urls = {} #for a list of the keys the UI expect to be returned (e.g. wiki, eol, ozspons) see UI_layer() in treeviewer.py
     name = None
     errors = []
-
     try:
         core_table = "ordered_leaves" if is_leaf else "ordered_nodes"
         if id is not None:
@@ -123,11 +122,12 @@ def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
             ott =  row[core_table].ott
             name = row[core_table].name
             try:
-                first_lang = (request.env.http_accept_language or 'en').split(',')[0]
+                lang = request.vars.lang or request.env.http_accept_language or 'en'
+                first_lang = lang.split(',')[0]
                 lang_primary = first_lang.split("-")[0]
             except:
                 lang_primary ='en'
-            wikilang = request.vars.wikilang or lang_primary
+            wikilang = lang_primary if lang_primary in wikiflags else 'en'
             if row[core_table].ott:
                 urls['opentree'] = opentree_url(row[core_table].ott)
             if row[core_table].wikidata:
