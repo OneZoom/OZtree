@@ -365,7 +365,7 @@
 'Take an svg screenshot': 'Take an svg screenshot',
 'Team': 'Equipe',
 'Temporarily reserved': 'Temporairement réservé',
-'Terms and conditions': 'Terms and conditions',
+'Terms and conditions': 'Termes et conditions',
 'Terms of use': "Conditions d'utilisation",
 'Thank you for considering Gift Aid. All you have to do is confirm that you agree to the following statement:': 'Merci de votre  Gift Aid. All you have to do is confirm that you agree to the following statement:',
 'Thank you for filling out the form to sponsor a leaf on OneZoom': "Merci d'avoir rempli le formulaire pour sponsoriser une feuille sur l'arbre OneZoom",

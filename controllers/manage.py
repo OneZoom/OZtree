@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from OZfunctions import *
+import warnings
 
 @require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
@@ -66,8 +67,13 @@ def edit_language():
                 strs = dict()
                 for key in keys:
                     name = md5_hash(key)
-                    if form.vars[name] == chr(127):
-                        continue
+                    with warnings.catch_warnings(record=True) as w:
+                        try:
+                            if form.vars[name] == chr(127):
+                                continue
+                        except UnicodeWarning:
+                            if form.vars[name] == oldchr(127):
+                                continue
                     strs[key] = form.vars[name]
                 write_dict(filename, strs)
                 session.flash = T('file saved on %(time)s', dict(time=time.ctime()))
