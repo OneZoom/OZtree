@@ -98,20 +98,20 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <input class="uk-radio" type="radio" name="colourtype" value="popularity"> {{=T('Popularity')}}</label></li> -->
       <li class="uk-nav-header treeswitch">{{=T('Tree## partner')}}</li>
       <li class="treeswitch"><select id="treepage" class="uk-select uk-form-small">
-        <option value="life">Original OneZoom</option>
-        <option value="AT">Ancestor’s Tale</option>
+        <option value="life">{{=T('Original OneZoom')}}</option>
+        <option value="AT">{{=T('Ancestor’s Tale')}}</option>
         <!--<option value="linnean">Linnean Society</option>
-        <option value="kew">Kew</option> -->
+        option value="kew">Kew</option> -->
         </select></li>
       <li class="uk-nav-header langswitch">{{=T("Language")}}</li>
       <li class="langswitch"><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1] if browser_language else None,)}}">
         <option value="">{{=T('Browser default')}}</option>
-        <optgroup label="Translated">
+        <optgroup label="{{=T('Translated')}}">
           <option value="en">English</option>
           <option value="fr">Français</option>
           <option value="sv">Svenska</option>
         </optgroup>
-        <optgroup label="Not yet translated">
+        <optgroup label="{{=T('Not yet translated')}}">
           <option value="zh">中文</option>
         </optgroup>
         </select></li>
@@ -192,7 +192,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
       <ul uk-tab class="external-tabs">
         <!--A list of all the available tabs-->
         {{for tab in tabs:}}
-        <li id="{{=tab['id']}}"><a href="#">{{if 'icon' in tab:}}<img src="{{=tab['icon']}}" title="{{=tab['name']}}" class="uk-hidden@s" />{{pass}}<span class="uk-visible@s">{{=tab['name']}}</span></a></li>
+        <li id="{{=tab['id']}}"><a href="#">{{if 'icon' in tab:}}<img src="{{=tab['icon']}}" title="{{=T(tab['name'], lazy=False)}}" class="uk-hidden@s" />{{pass}}<span class="uk-visible@s">{{=T(tab['name'], lazy=False)}}</span></a></li>
         {{pass}}
       </ul>
       <ul class="popup-container uk-switcher">
@@ -202,10 +202,10 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
 {{#the linkout buttons are forms, to allow post requests to pass on reservation codes
   if request.vars.links!='none':
 }}
-            <form class="no_disable" target="_blank" method="post" onsubmit="return true"><a class="uk-icon-button" uk-tooltip="pos: left" title="{{=T('Open this %s tab in a new window') % (tab['name'],)}}" uk-icon="icon: expand; ratio: 0.75" target="_blank"></a></form>
+            <form class="no_disable" target="_blank" method="post" onsubmit="return true"><a class="uk-icon-button" uk-tooltip="pos: left" title="{{=T('Open this %s tab in a new window') % (T(tab['name'], lazy=False),)}}" uk-icon="icon: expand; ratio: 0.75" target="_blank"></a></form>
 {{pass}}
           </div>
-          <p class="iframe-loading-info uk-position-center">{{=T('Waiting for %s page to load') % (tab['name'])}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
+          <p class="iframe-loading-info uk-position-center">{{=T('Waiting for %s page to load') % (T(tab['name'], lazy=False))}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
         </li>
         {{pass}}
       </ul>

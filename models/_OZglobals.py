@@ -295,14 +295,14 @@ logographic_transcriptions = cache.ram('logographic_transcriptions',
 # id / name / icon of all tabs
 tab_definitions = cache.ram('tab_definitions',
     lambda: __import__('collections').OrderedDict([
-      ('opentree',{'id':'opentree',   'name':T('OpenTree'),     'icon':URL('static','images/mini-opentree-logo.png')}),
-      ('wiki',{'id':'wiki',   'name':T('Wikipedia'),            'icon':URL('static','images/W.svg')}),
-      ('eol',{'id':'eol',     'name':T('Encyclopedia of Life'), 'icon':URL('static','images/EoL.png')}),
-      ('iucn',{'id':'iucn',   'name':T('Conservation'),         'icon':URL('static','images/IUCN_Red_List.svg')}),
-      ('ncbi',{'id':'ncbi',   'name':T('Genetics'),             'icon':URL('static','images/DNA_icon.svg')}),
+      ('opentree',{'id':'opentree',   'name':'OpenTree',     'icon':URL('static','images/mini-opentree-logo.png')}),
+      ('wiki',{'id':'wiki',   'name':'Wikipedia',            'icon':URL('static','images/W.svg')}),
+      ('eol',{'id':'eol',     'name':'Encyclopedia of Life', 'icon':URL('static','images/EoL.png')}),
+      ('iucn',{'id':'iucn',   'name':'Conservation',         'icon':URL('static','images/IUCN_Red_List.svg')}),
+      ('ncbi',{'id':'ncbi',   'name':'Genetics',             'icon':URL('static','images/DNA_icon.svg')}),
       #('powo',{'id':'powo',   'name':T('Kew')}),
-      ('ozlinks',{'id':'ozlinks','name':T('External Links'), 'icon':URL('static','images/links.svg')}),
-      ('ozspons',{'id':'ozspons','name':T('Sponsor'), 'icon':URL('static','images/sponsor.png')})]),
+      ('ozlinks',{'id':'ozlinks','name':'External Links', 'icon':URL('static','images/links.svg')}),
+      ('ozspons',{'id':'ozspons','name':'Sponsor', 'icon':URL('static','images/sponsor.png')})]),
     time_expire = None)
 
 
