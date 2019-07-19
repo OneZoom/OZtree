@@ -25,140 +25,19 @@ def node_details():
     This is the main API call, and should be optimized to within an inch of its life. Some ideas:
     1) Move it to another process (not web2py). E.g. Falcon. See http://klen.github.io/py-frameworks-bench/
     2) Put some of the load on the SQL server, but adding SQL joins rather than making 7 queries (but mysql does not support full outer joins, which we would need)
-    3) split the call into 'detailed' and 'non detailed' versions, where the 'detailed' version is only called when e.g. image licence / 
+    3) Do not return info about the leaf taxa in the representative image array, as we
+        probably end up returning these many times over and over again. Instead, we could
+        return the leaf IDs, and get the client to work out if we need to add them to the
+        next API call.
     """
     session.forget(response)
     response.headers["Access-Control-Allow-Origin"] = '*'
     try:
-        leafIndices = request.vars.leaf_ids or "" 
-        nodeIndices = request.vars.node_ids or ""
-        if re.search("[^\d,]", leafIndices) or re.search("[^\d,]", nodeIndices):
-            raise #list of ids must only consist of digits and commas, otherwise this is a malicious API call
-        if re.search("^,|,$|,,", leafIndices) or re.search("^,|,$|,,", nodeIndices):
-            raise #ban sequential commas, or commas at beginning or end - don't do a 'split' as we are going to pass this string straight to SQL for speed
-        imageSource = str(request.vars.get('image_source') or "")
-        if imageSource != "best_verified" and imageSource != "best_pd":
-            imageSource = "best_any" #sanitize - only allowed 3 settings
-
-        language = request.vars.lang or request.env.http_accept_language or 'en'
-        first_lang = language.split(',')[0]
-        lang_primary = first_lang.split("-")[0]
-        nodeOtts = set()
-        nodeNames = set()
-        leafOtts = set()
-        leafNames = set()
-    
-    
-        #Get nodes first and collect OTTs for looking up vernaculars. These contain leaf otts in the representative pictures
-        base_ncols = ["id","ott","popularity","age","name","iucnNE","iucnDD","iucnLC","iucnNT","iucnVU","iucnEN","iucnCR","iucnEW","iucnEX"]
-        pic_ncols = ["{pic}1","{pic}2","{pic}3","{pic}4","{pic}5","{pic}6","{pic}7","{pic}8"]
-        pic_col_name = {"best_any":"rep", "best_verified":"rtr","best_pd":"rpd"}[imageSource]
-        all_ncols = base_ncols+pic_ncols
-        node_cols = {nm:index for index,nm in enumerate(all_ncols)} 
-        if nodeIndices:
-            query1 = "SELECT " + ",".join(all_ncols) + " FROM ordered_nodes WHERE id IN ({user_input})"
-            sql = query1.format(pic=pic_col_name, user_input=nodeIndices) #must take extreme care here that user_input has been sanitized
-            ordered_nodes_query_res = db.executesql(sql)
-            for row in ordered_nodes_query_res:
-                if row[node_cols['ott']]:
-                    nodeOtts.add(str(row[node_cols['ott']]))
-                elif row[node_cols['name']]: #use name rather than ott if ott does not exist
-                    nodeNames.add(row[node_cols['name']])
-
-                for i in range(len(base_ncols), len(base_ncols)+len(pic_ncols)):
-                    if row[i]:
-                        leafOtts.add(str(row[i]))
-        else:
-            ordered_nodes_query_res = []
-        #Get leaves next, and add their otts to the leaf pool, for looking up vernaculars and images
-        all_lcols = ["id","ott","popularity","name","extinction_date","price"]
-        leaf_cols = {nm:index for index,nm in enumerate(all_lcols)} 
-        conditions = []
-        if leafIndices:
-            conditions.append("id IN ({user_input})".format(user_input=leafIndices)) #must take extreme care here that user_input has been sanitized
-        if len(leafOtts):
-            conditions.append("ott IN ({otts_from_pics})".format(otts_from_pics=",".join(leafOtts)))
-        if len(conditions):
-            query2 = "SELECT " + ",".join(all_lcols) + " FROM ordered_leaves"
-            query2 += " WHERE " + " OR ".join(conditions)
-            sql = query2
-            ordered_leaves_query_res = db.executesql(sql)
-            for row in ordered_leaves_query_res:
-                if row[leaf_cols['ott']]:
-                    leafOtts.add(str(row[leaf_cols['ott']]))
-                elif row[leaf_cols['name']]:
-                    leafNames.add(row[leaf_cols['name']])
-        else:
-            ordered_leaves_query_res = []
-        
-        #find vernaculars (could be from leaves or nodes)
-        #the logic for finding *which* vernaculars to use is in javascript
-        #e.g. we probably want to return all 'en-XXX' values, even if the language is en-GB
-        #then choose en-GB, en (plain) and en-OTHER in that order
-        if len(nodeOtts) + len(leafOtts):
-            query3 = "SELECT ott,vernacular FROM vernacular_by_ott WHERE ott IN ({otts})"
-            query3 += " AND lang_primary={}".format(db.placeholder)
-            query3 += " AND preferred=TRUE ORDER BY src"
-            sql = query3.format(otts=",".join(nodeOtts | leafOtts))
-            vernacular_name_query_res = db.executesql(sql, (lang_primary,))
-        else:
-            vernacular_name_query_res = []
-        if len(nodeNames) + len(leafNames):
-            names = nodeNames | leafNames
-            query4 = "SELECT name,vernacular FROM vernacular_by_name WHERE lang_primary={}".format(db.placeholder)
-            query4 += " AND name IN (" + ','.join([db.placeholder]*len(names)) + ")"
-            query4 += " AND preferred=TRUE"
-            sql = query4
-            vernacular_name_query_res2 = db.executesql(sql, [lang_primary]+list(names))
-        else:
-            vernacular_name_query_res2 = []
-        
-        #find pictures, iucn, and reservation details (only from leaves)
-        images_by_ott_query_res = iucn_query_res = reservations_res = {} #don't bother getting images for nodes without otts
-        all_pcols = ["ott", "src_id", "src", "rating"]
-        all_rcols = ["OTT_ID", "verified_kind", "verified_name", "verified_more_info", "verified_url"]
-        alt_rtxt = {"verified_name":"'leaf_sponsored'",
-                     "verified_more_info":"''",
-                     "verified_url":"NULL"}
-        pic_cols = {nm:index for index,nm in enumerate(all_pcols)} 
-        res_cols = {nm:index for index,nm in enumerate(all_rcols)} 
-        if len(leafOtts):
-            ott_ids = ",".join(leafOtts) #must be sure there that these are all integers
-            query5 = "SELECT " + ",".join(all_pcols) + " FROM images_by_ott WHERE ott in ({otts})"
-            query5 += " AND " + imageSource + " = TRUE"
-            sql = query5.format(otts=ott_ids)
-            # a bit of python hacking here, so that the best src is returned - annoyingly hard to do in SQL
-            images_by_ott_query_res = db.executesql(sql)
-            query6 = "SELECT ott,status_code FROM iucn WHERE ott in ({otts})"
-            sql = query6.format(otts=ott_ids)
-            iucn_query_res = db.executesql(sql)
-            query7 = "SELECT "
-            #a very complicated query here, use alternative text if this is not an active node (waiting verification or expired)
-            query7 += ",".join(["IF(active,{0},{1}) as {0}".format(nm, alt_rtxt[nm]) if nm in alt_rtxt else nm for nm in all_rcols])
-            query7 += " FROM (SELECT " + ",".join(all_rcols) + ",(DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE()) AS active FROM reservations"
-            query7 += " WHERE OTT_ID in ({otts}) AND verified_time IS NOT NULL AND (deactivated IS NULL OR deactivated = '')"
-            query7 += ") AS t"
-            sql = query7.format(otts=ott_ids)
-            reservations_res = db.executesql(sql)
-            
-        if nodeIndices or leafIndices:
-            res = {"nodes": ordered_nodes_query_res or [], "leaves": ordered_leaves_query_res or [], "lang":language,
-                "vernacular_by_ott": vernacular_name_query_res or [], "vernacular_by_name":vernacular_name_query_res2 or [],   
-               "leafIucn": iucn_query_res or [], "leafPic": images_by_ott_query_res or [], "reservations": reservations_res or []}
-        else:
-            #we didn't pass any ids in, so we simply output a list of the column names for the various arrays. The client can thus make a blank call
-            #at the start of a session, and get the column names for later use. We don't need e.g. vernacular or IUCN col names, as these simply map ott or names to a string, as [ott, string]
-            #it's only the leaves, nodes, pics, and reservations that have more complex details needed.
-            #we also pass out the same values as a call with no IDs, to avoid js errors if accidentally no ids are passed in
-            res = {"colnames_nodes": node_cols, "colnames_leaves": leaf_cols, 
-                   "colnames_images": pic_cols, "colnames_reservations": res_cols,
-                   "nodes": [], "leaves": [], "lang":language,
-                   "vernacular_by_ott": [], "vernacular_by_name": [],   
-                   "leafIucn": [], "leafPic": [], "reservations":[]
-                  }
-    except: #e.g. if bad data has been passed in
-        res = {}
-    return res
+        return nodes_info_from_string(
+            request.vars.leaf_ids or "", request.vars.node_ids or "")
+    except:  # E.g. if bad data has been passed in
+        raise
+        return {}
 
 def image_details():
     """
@@ -844,4 +723,183 @@ def make_unicode(input):
     except NameError:
         pass #for python3
     return input
-        
+
+
+def nodes_info_from_array(
+        leafIDs_array, nodeIDs_array,
+        include_pics=True,
+        include_iucn=True,
+        include_sponsorship=True):
+    leafIDs_string = ",".join([str(int(l)) for l in leafIDs_array])
+    nodeIDs_string = ",".join([str(int(n)) for n in nodeIDs_array])
+    return nodes_info_from_str(leafIDs_string, nodeIDs_string, include_sponsorship,
+        check_malicious = False)  # No need to check if badly formed: we have made them
+
+def nodes_info_from_string(
+        leafIDs_string, nodeIDs_string,
+        include_pics=True,
+        include_iucn=True,
+        include_sponsorship=True,
+        check_malicious=True):
+    """
+    
+    """
+    if check_malicious:
+        # For speed, we pass leafIDs_string and nodeIDs_string as comma-separated strings
+        # straight to SQL, so we should check they don't contain malicious SQL commands
+        if re.search("[^\d,]", leafIDs_string) or re.search("[^\d,]", nodeIDs_string):
+            #list of ids must only consist of digits and commas
+            raise ValueError 
+        if re.search("^,|,$|,,", leafIDs_string) or re.search("^,|,$|,,", nodeIDs_string):
+            #ban sequential commas, or commas at beginning or end
+            raise ValueError
+    imageSource = str(request.vars.get('image_source') or "")
+    if imageSource != "best_verified" and imageSource != "best_pd":
+        imageSource = "best_any" #sanitize - only allowed 3 settings
+
+    language = request.vars.lang or request.env.http_accept_language or 'en'
+    first_lang = language.split(',')[0]
+    lang_primary = first_lang.split("-")[0]
+    nodeOtts = set()
+    nodeNames = set()
+    leafOtts = set()
+    leafNames = set()
+    
+    
+    #Get nodes first and collect OTTs for looking up vernaculars. These contain leaf otts in the representative pictures
+    base_ncols = ["id","ott","popularity","age","name","iucnNE","iucnDD","iucnLC","iucnNT","iucnVU","iucnEN","iucnCR","iucnEW","iucnEX"]
+    pic_ncols = ["{pic}1","{pic}2","{pic}3","{pic}4","{pic}5","{pic}6","{pic}7","{pic}8"]
+    pic_col_name = {"best_any":"rep", "best_verified":"rtr","best_pd":"rpd"}[imageSource]
+    all_ncols = base_ncols + pic_ncols
+    node_cols = {nm:index for index, nm in enumerate(all_ncols)} 
+    if nodeIDs_string:
+        query1 = "SELECT " + ",".join(all_ncols) + " FROM ordered_nodes WHERE id IN ({user_input})"
+        # Must take extreme care here that user_input has been sanitized in the following
+        sql = query1.format(pic=pic_col_name, user_input=nodeIDs_string)
+        ordered_nodes_query_res = db.executesql(sql)
+        for row in ordered_nodes_query_res:
+            if row[node_cols['ott']]:
+                nodeOtts.add(str(row[node_cols['ott']]))
+            elif row[node_cols['name']]: #use name rather than ott if ott does not exist
+                nodeNames.add(row[node_cols['name']])
+
+            for i in range(len(base_ncols), len(base_ncols)+len(pic_ncols)):
+                if row[i]:
+                    leafOtts.add(str(row[i]))
+    else:
+        ordered_nodes_query_res = []
+    #Get leaves next, and add their otts to the leaf pool, for looking up vernaculars and images
+    all_lcols = ["id","ott","popularity","name","extinction_date","price"]
+    leaf_cols = {nm:index for index,nm in enumerate(all_lcols)} 
+    conditions = []
+    if leafIDs_string:
+        #  must take extreme care here that user_input has been sanitized
+        conditions.append("id IN ({user_input})".format(user_input=leafIDs_string)) 
+    if len(leafOtts):
+        conditions.append("ott IN ({otts_from_pics})".format(otts_from_pics=",".join(leafOtts)))
+    if len(conditions):
+        query2 = "SELECT " + ",".join(all_lcols) + " FROM ordered_leaves"
+        query2 += " WHERE " + " OR ".join(conditions)
+        sql = query2
+        ordered_leaves_query_res = db.executesql(sql)
+        for row in ordered_leaves_query_res:
+            if row[leaf_cols['ott']]:
+                leafOtts.add(str(row[leaf_cols['ott']]))
+            elif row[leaf_cols['name']]:
+                leafNames.add(row[leaf_cols['name']])
+    else:
+        ordered_leaves_query_res = []
+    
+    #find vernaculars (could be from leaves or nodes)
+    #the logic for finding *which* vernaculars to use is in javascript
+    #e.g. we probably want to return all 'en-XXX' values, even if the language is en-GB
+    #then choose en-GB, en (plain) and en-OTHER in that order
+    if len(nodeOtts) + len(leafOtts):
+        query3 = "SELECT ott,vernacular FROM vernacular_by_ott WHERE ott IN ({otts})"
+        query3 += " AND lang_primary={}".format(db.placeholder)
+        query3 += " AND preferred=TRUE ORDER BY src"
+        sql = query3.format(otts=",".join(nodeOtts | leafOtts))
+        vernacular_name_query_res = db.executesql(sql, (lang_primary,))
+    else:
+        vernacular_name_query_res = []
+    if len(nodeNames) + len(leafNames):
+        names = nodeNames | leafNames
+        query4 = "SELECT name,vernacular FROM vernacular_by_name WHERE lang_primary={}".format(db.placeholder)
+        query4 += " AND name IN (" + ','.join([db.placeholder]*len(names)) + ")"
+        query4 += " AND preferred=TRUE"
+        sql = query4
+        vernacular_name_query_res2 = db.executesql(sql, [lang_primary]+list(names))
+    else:
+        vernacular_name_query_res2 = []
+    
+    #find pictures, iucn, and reservation details (only from leaves)
+    images_by_ott_query_res = iucn_query_res = reservations_res = None #don't bother getting images for nodes without otts
+    all_pcols = ["ott", "src_id", "src", "rating"]
+    all_rcols = ["OTT_ID", "verified_kind", "verified_name", "verified_more_info", "verified_url"]
+    alt_rtxt = {"verified_name":"'leaf_sponsored'",
+                 "verified_more_info":"''",
+                 "verified_url":"NULL"}
+    pic_cols = {nm:index for index,nm in enumerate(all_pcols)} 
+    res_cols = {nm:index for index,nm in enumerate(all_rcols)} 
+    if len(leafOtts):
+        ott_ids = ",".join(leafOtts) #must be sure there that these are all integers
+        if include_pics:
+            query5 = "SELECT " + ",".join(all_pcols)
+            query5 += " FROM images_by_ott WHERE ott in ({otts})"
+            query5 += " AND " + "overall_" + imageSource + " = TRUE"
+            sql = query5.format(otts=ott_ids)
+            # a bit of python hacking here, so that the best src is returned - annoyingly hard to do in SQL
+            images_by_ott_query_res = db.executesql(sql)
+        if include_iucn:
+            query6 = "SELECT ott,status_code FROM iucn WHERE ott in ({otts})"
+            sql = query6.format(otts=ott_ids)
+            iucn_query_res = db.executesql(sql)
+        if include_sponsorship:
+            query7 = "SELECT "
+            # A very complicated query here, use alternative text if this is not an active
+            # node (waiting verification or expired)
+            query7 += ",".join(
+                ["IF(active,{0},{1}) as {0}".format(nm, alt_rtxt[nm]) 
+                    if nm in alt_rtxt else nm for nm in all_rcols])
+            query7 += (
+                " FROM (SELECT "
+                + ",".join(all_rcols)
+                + ",(DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE()) AS active FROM reservations"
+                + " WHERE OTT_ID in ({otts})"
+                +  " AND verified_time IS NOT NULL"
+                +  " AND (deactivated IS NULL OR deactivated = '')"
+                + ") AS t")
+            sql = query7.format(otts=ott_ids)
+            reservations_res = db.executesql(sql)
+            
+    if leafIDs_string or nodeIDs_string:
+        return dict(
+            nodes=ordered_nodes_query_res or [],
+            leaves=ordered_leaves_query_res or [],
+            lang=language,
+            vernacular_by_ott=vernacular_name_query_res or [],
+            vernacular_by_name=vernacular_name_query_res2 or [], 
+            leafIucn=iucn_query_res or [],
+            leafPic=images_by_ott_query_res or [],
+            reservations=reservations_res or [])
+    else:
+        # We didn't pass any ids in, so we simply output a list of the column names for 
+        # the various arrays. The client can thus make a blank call at the start of a
+        # session, and get the column names for later use. We don't need e.g. vernacular
+        # or IUCN col names, as these simply map ott or names to a string, as [ott, string]
+        # It's only the leaves, nodes, pics, and reservations that have more complex details needed.
+        # we also pass out the same values as a call with no IDs, to avoid js errors if accidentally no ids are passed in
+        return dict(
+            colnames_nodes=node_cols,
+            colnames_leaves=leaf_cols, 
+            colnames_images=pic_cols,
+            colnames_reservations=res_cols,
+            nodes=[],
+            leaves=[],
+            lang=language,
+            vernacular_by_ott=[],
+            vernacular_by_name=[],   
+            leafIucn=[],
+            leafPic=[],
+            reservations=[])
+    
