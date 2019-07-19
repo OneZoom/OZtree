@@ -36,7 +36,6 @@ def node_details():
         return nodes_info_from_string(
             request.vars.leaf_ids or "", request.vars.node_ids or "")
     except:  # E.g. if bad data has been passed in
-        raise
         return {}
 
 def image_details():
@@ -723,7 +722,6 @@ def make_unicode(input):
     except NameError:
         pass #for python3
     return input
-
 
 def nodes_info_from_array(
         leafIDs_array, nodeIDs_array,
