@@ -1,0 +1,28 @@
+/* UIkit-skin scss override file for OneZoom treasure hunt. Author: Yan Wong for OneZoom CIO. License: MIT */
+
+#searchnav, #advanced_search_toggle {display: none;} /* Turn off search */
+.langswitch {display: none;} /* Turn off language switching, as we can't change lang in the list */
+
+
+#treasure_list {
+    position: absolute;
+    z-index: 200;
+    background-color: white;
+    right: 2em;
+    top: 1em;
+    border: 2px solid red;
+    h3 {
+        text-align: center;
+        font-size: 1.2em;
+        margin-bottom: 0px
+    };
+    ul {
+        margin: 0.5em;
+        margin-top: 0;
+        padding-left: 0;
+        list-style-type: none;
+        li {
+            /* Make first letter of line uppercase */
+            }
+        };
+}

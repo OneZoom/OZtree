@@ -1,0 +1,16 @@
+{{response.title='OneZoom: Museum display'}}
+{{extend 'layout.html'}}
+<div class="row-fluid">
+ <div class="col-md-12">    
+  <h1>OneZoom museum display</h1>
+  Some setup variables here:
+  <form action="{{=URL('default', 'life_MD')}}" method="get">
+  <ul>
+   <li>Colours, etc.</li>
+   <li>Screensaver after <input type="text" name="screensave" width="4" /> minutes</li>
+   <li>Allow tutorial</li>
+  <input type="submit" />
+  </ul>
+  </form>
+ </div>
+</div>

@@ -113,6 +113,120 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
       OZ_leaf_json_url_func: function(ott, lang) {return("{{=XML(URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json', args=['...OTT...'], vars=dict((setup_params.get('popups') or {}).get('vars') or {}, lang='...LANG...')))}}".replace('...OTT...', (ott || '').toString() || "").replace('...LANG...', lang || ''))},
       OZ_node_json_url_func: function(id, lang) {return("{{=XML(URL('tree', 'node_linkouts', scheme=True, host=True, extension='json', args=['...ID...'], vars=dict((setup_params.get('popups') or {}).get('vars') or {}, lang='...LANG...')))}}".replace('...ID...', id.toString() || "").replace('...LANG...', lang || ''))},
     };
+
+    var UI_callbacks = {};
+
+    UI_callbacks.badOTT = function(ott) { 
+      /* used within setup_page.js when the page tries to load a bad location */
+      $("#error-modal a.OpenTreeSearchOnTree").attr("href","https://tree.opentreeoflife.org/opentree/argus/ottol@" +  ott.toString());
+      $("#error-modal a.OpenTreeSearchInTaxonomy").attr("href","https://tree.opentreeoflife.org/taxonomy/browse?id=" + ott.toString());
+      onezoom.controller.button_reset();
+      UIkit.modal('#error-modal').show();
+    };
+    
+    UI_callbacks.closeAll = function() {
+      {{if is_testing:}}console.log("OneZoom internal JS has been asked to hide all open modals & dropdowns");{{pass}}
+      $('.uk-modal-container').each(function() {
+          UIkit.modal(this).hide(false); // Hide immediately, by default we wait in case mouse comes back
+      });
+      $('[uk-dropdown]').each(function() {
+          UIkit.dropdown(this).hide(false); // Hide immediately, by default we wait in case mouse comes back
+      });
+    };
+    
+    /** Display / hide the loading spinner */
+    UI_callbacks.loadingMessage = function (active) {
+      document.body.classList.toggle('loading', active);
+    };
+    
+    UI_callbacks.openCopyright = function(pic_src, pic_fn) {
+      var load_url = "{{=XML(URL('tree', 'pic_info', scheme=True, host=True, extension='html', args=['...PICSRC...', '...PICFN...'], vars=(setup_params.get('popups') or {}).get('vars')))}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
+      var link_url = "{{=URL('tree','pic_info', scheme=True, host=True, extension=False, args=['...PICSRC...', '...PICFN...'], vars={'redirect':1})}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
+      $("#imageinfo-modal .popup-content .iframe-loading-info").show();
+      $("#imageinfo-modal .popup-content .no-loading-info").hide();
+      //Always load into a new iframe
+      var ifrm = document.createElement("iframe");
+      ifrm.setAttribute('src', load_url);
+      ifrm.addEventListener('load', function() {
+        {{if is_testing:}}console.log("Hiding image iframe loading info");{{pass}}
+        $(".iframe-loading-info", $(this).parent().parent()).hide()
+      }, false);
+      ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
+      $("#imageinfo-modal .popup-content").append(ifrm);
+      $("#imageinfo-modal .uk-modal-header a").attr('href', link_url);
+      UIkit.modal('#imageinfo-modal').show();
+      return [load_url, link_url]
+    };
+    
+    /* called as soon as a request to open a linkouts window is made */
+    UI_callbacks.openLinkouts = function() {
+      {{if is_testing:}}console.log("OneZoom internal JS has been asked to open tabs");{{pass}}
+      $('#external-modal .no-tab-data').hide();
+      $('#external-modal .external-content').hide();
+      $('#external-modal .tab-loading-info').show();
+      UIkit.modal('#external-modal').show();
+      {{if is_testing:}}console.log("Hidden content and showing loading animation");{{pass}}
+    };
+    
+    /* called when the API returns with details about contents of the linkouts window */
+    UI_callbacks.populateLinkouts = function(responseJSON, initialSelected) {
+      {{if is_testing:}}console.log("populating linkout tabs with API data from", responseJSON);{{pass}}
+      if (initialSelected) {
+          initialSelected = $('#external-modal .external-tabs li').index($("#"+ initialSelected))
+      } else {
+          initialSelected = 0
+      }
+      var select_tab_index=null;
+      var url_dict = responseJSON.data;
+      var n_tabs = 0;
+      // make sure the id names correspond to the names returned by the api
+      $("#external-modal .external-tabs li").each(function(index) {
+        var tab = $(this);
+        var linkout_name = tab.attr('id'); //'wiki', 'eol', etc. Visited in order specified in html file
+        if (linkout_name) {
+          if (url_dict.hasOwnProperty(linkout_name) && url_dict[linkout_name].length) {
+            var url_arr = url_dict[linkout_name] //contains the list of urls for this tab
+            n_tabs += 1;
+            tab.show(); //show the tab at the top (but not necessarily the content yet)
+            if (select_tab_index == null) select_tab_index = index; //start selecting earliest non-hidden tab
+            if (index == initialSelected) select_tab_index = index; //override if initialSelected is not hidden
+            var specific_popup = $("#external-modal .popup-container ." + linkout_name);
+            //set the data-src attribute to the url. When the tab is shown, it will get src from there
+            specific_popup.attr("data-src", url_arr[0]);
+            {{if is_testing:}}console.log("set data-src for '" + linkout_name + "' to " + url_arr[0]);{{pass}}
+            //define the linkout (some hackery here to allow the same element to act as a plain link or a 'post' submission)
+            $(".expand-tab form input[type=hidden]", specific_popup).remove()
+            switch (url_arr.length) {
+                case 1: //only a single URL for the iframe and the linkout - use that for both
+                  $(".expand-tab form", specific_popup).removeAttr("action");
+                  $(".expand-tab form a", specific_popup).attr("href", url_arr[0]).removeAttr("onclick");
+                  break;
+                case 2: //second value in the response gives a different URL for the linkout
+                  $(".expand-tab form", specific_popup).removeAttr("action");
+                  $(".expand-tab form a", specific_popup).attr("href", url_arr[1]).removeAttr("onclick");
+                  break;
+                case 3: //third value in the response gives a set of key:value params to add as POST variables
+                  $(".expand-tab form", specific_popup).attr("action", url_arr[1]);
+                  $.each(url_arr[2], function(key, data) {
+                      $(".expand-tab form", specific_popup).append($('<input>').attr({'type':'hidden','name':key,'value':data}));
+                  });
+                  $(".expand-tab form a", specific_popup).attr("onclick", "$(this).parent().submit();return false").removeAttr("href");
+              }
+          } else {
+            {{if is_testing:}}console.log("Hiding tab for '" + linkout_name + "' which is not present for this taxon");{{pass}}
+            tab.hide(); //hide irrelevant tabs (those not returned by the API)
+          }
+        }
+      });
+      if (n_tabs == 0) {
+        {{if is_testing:}}console.log("The API did not return any linkout URLs that match those expected in the UI");{{pass}}
+        $('#external-modal .no-tab-data').show()
+      }
+      UIkit.tab('#external-modal .external-tabs').show(select_tab_index);
+      load_tab($("#external-modal .popup-container li").eq(select_tab_index));
+      $('#external-modal .tab-loading-info').hide();
+      $('#external-modal .external-content').show();
+    };
   </script>
 {{include}}
 <script>
@@ -136,123 +250,9 @@ var onezoom = null; //will be filled out on document ready
 var locations_json = '{{=XML(setup_params.get("locations_json") or "[]")}}';
 
 /* UI functions that allow javascript in the main viewer to interact with the UI.
-    Names for each function are hard-coded into the OneZoom viewer (in config.ui within global_config.js)
-these refer to items in the viewer_UI file */
+    Names for each function are hard-coded into the OneZoom viewer  in config.ui within 
+    global_config.js. These refer to items in the viewer_UI file */
 
-
-var UI_callbacks = {
-  
-  badOTT: function(ott) { /* used within setup_page.js when the page tries to load a bad location */
-    $("#error-modal a.OpenTreeSearchOnTree").attr("href","https://tree.opentreeoflife.org/opentree/argus/ottol@" +  ott.toString());
-    $("#error-modal a.OpenTreeSearchInTaxonomy").attr("href","https://tree.opentreeoflife.org/taxonomy/browse?id=" + ott.toString());
-    onezoom.controller.button_reset();
-    UIkit.modal('#error-modal').show();
-  },
-
-  closeAll: function() {
-    {{if is_testing:}}console.log("OneZoom internal JS has been asked to hide all open modals & dropdowns");{{pass}}
-    $('.uk-modal-container').each(function() {
-        UIkit.modal(this).hide(false); // Hide immediately, by default we wait in case mouse comes back
-    });
-    $('[uk-dropdown]').each(function() {
-        UIkit.dropdown(this).hide(false); // Hide immediately, by default we wait in case mouse comes back
-    });
-  },
-
-  /** Display / hide the loading spinner */
-  loadingMessage: function (active) {
-    document.body.classList.toggle('loading', active);
-  },
-
-  openCopyright: function(pic_src, pic_fn) {
-    var load_url = "{{=XML(URL('tree', 'pic_info', scheme=True, host=True, extension='html', args=['...PICSRC...', '...PICFN...'], vars=(setup_params.get('popups') or {}).get('vars')))}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
-    var link_url = "{{=URL('tree','pic_info', scheme=True, host=True, extension=False, args=['...PICSRC...', '...PICFN...'], vars={'redirect':1})}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
-    $("#imageinfo-modal .popup-content .iframe-loading-info").show();
-    $("#imageinfo-modal .popup-content .no-loading-info").hide();
-    //Always load into a new iframe
-    var ifrm = document.createElement("iframe");
-    ifrm.setAttribute('src', load_url);
-    ifrm.addEventListener('load', function() {
-      {{if is_testing:}}console.log("Hiding image iframe loading info");{{pass}}
-      $(".iframe-loading-info", $(this).parent().parent()).hide()
-    }, false);
-    ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
-    $("#imageinfo-modal .popup-content").append(ifrm);
-    $("#imageinfo-modal .uk-modal-header a").attr('href', link_url);
-    UIkit.modal('#imageinfo-modal').show();
-    return [load_url, link_url]
-  },
-
-  /* called as soon as a request to open a linkouts window is made */
-  openLinkouts: function() {
-    {{if is_testing:}}console.log("OneZoom internal JS has been asked to open tabs");{{pass}}
-    $('#external-modal .no-tab-data').hide();
-    $('#external-modal .external-content').hide();
-    $('#external-modal .tab-loading-info').show();
-    UIkit.modal('#external-modal').show();
-    {{if is_testing:}}console.log("Hidden content and showing loading animation");{{pass}}
-  },
-
-  /* called when the API returns with details about contents of the linkouts window */
-  populateLinkouts: function(responseJSON, initialSelected) {
-    {{if is_testing:}}console.log("populating linkout tabs with API data from", responseJSON);{{pass}}
-    if (initialSelected) {
-        initialSelected = $('#external-modal .external-tabs li').index($("#"+ initialSelected))
-    } else {
-        initialSelected = 0
-    }
-    var select_tab_index=null;
-    var url_dict = responseJSON.data;
-    var n_tabs = 0;
-    // make sure the id names correspond to the names returned by the api
-    $("#external-modal .external-tabs li").each(function(index) {
-      var tab = $(this);
-      var linkout_name = tab.attr('id'); //'wiki', 'eol', etc. Visited in order specified in html file
-      if (linkout_name) {
-        if (url_dict.hasOwnProperty(linkout_name) && url_dict[linkout_name].length) {
-          var url_arr = url_dict[linkout_name] //contains the list of urls for this tab
-          n_tabs += 1;
-          tab.show(); //show the tab at the top (but not necessarily the content yet)
-          if (select_tab_index == null) select_tab_index = index; //start selecting earliest non-hidden tab
-          if (index == initialSelected) select_tab_index = index; //override if initialSelected is not hidden
-          var specific_popup = $("#external-modal .popup-container ." + linkout_name);
-          //set the data-src attribute to the url. When the tab is shown, it will get src from there
-          specific_popup.attr("data-src", url_arr[0]);
-          {{if is_testing:}}console.log("set data-src for '" + linkout_name + "' to " + url_arr[0]);{{pass}}
-          //define the linkout (some hackery here to allow the same element to act as a plain link or a 'post' submission)
-          $(".expand-tab form input[type=hidden]", specific_popup).remove()
-          switch (url_arr.length) {
-              case 1: //only a single URL for the iframe and the linkout - use that for both
-                $(".expand-tab form", specific_popup).removeAttr("action");
-                $(".expand-tab form a", specific_popup).attr("href", url_arr[0]).removeAttr("onclick");
-                break;
-              case 2: //second value in the response gives a different URL for the linkout
-                $(".expand-tab form", specific_popup).removeAttr("action");
-                $(".expand-tab form a", specific_popup).attr("href", url_arr[1]).removeAttr("onclick");
-                break;
-              case 3: //third value in the response gives a set of key:value params to add as POST variables
-                $(".expand-tab form", specific_popup).attr("action", url_arr[1]);
-                $.each(url_arr[2], function(key, data) {
-                    $(".expand-tab form", specific_popup).append($('<input>').attr({'type':'hidden','name':key,'value':data}));
-                });
-                $(".expand-tab form a", specific_popup).attr("onclick", "$(this).parent().submit();return false").removeAttr("href");
-            }
-        } else {
-          {{if is_testing:}}console.log("Hiding tab for '" + linkout_name + "' which is not present for this taxon");{{pass}}
-          tab.hide(); //hide irrelevant tabs (those not returned by the API)
-        }
-      }
-    });
-    if (n_tabs == 0) {
-      {{if is_testing:}}console.log("The API did not return any linkout URLs that match those expected in the UI");{{pass}}
-      $('#external-modal .no-tab-data').show()
-    }
-    UIkit.tab('#external-modal .external-tabs').show(select_tab_index);
-    load_tab($("#external-modal .popup-container li").eq(select_tab_index));
-    $('#external-modal .tab-loading-info').hide();
-    $('#external-modal .external-content').show();
-  }
-};
 
 function closeAndLeap(event, OZIDin, original_searchbox) {
     //TODO: add hit in search count.

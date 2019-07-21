@@ -51,19 +51,19 @@ export function click_on_button_cb(controller) {
       return;
     }
     if (global_button_action.action =="ow_leaf") {
-      config.ui.openLinkouts();
+      config.ui.openLinkouts(global_button_action.data, 'ott');
       callAjax(config.api.OZ_leaf_json_url_func(global_button_action.data, config.lang), config.ui.populateLinkouts);
     } else if (global_button_action.action =="ow_iucn_leaf") {
-      config.ui.openLinkouts();
+      config.ui.openLinkouts(global_button_action.data, 'ott');
       callAjax(config.api.OZ_leaf_json_url_func(global_button_action.data, config.lang), config.ui.populateLinkouts, 'iucn');
     } else if (global_button_action.action =="ow_sponsor_leaf") {
-      config.ui.openLinkouts();
+      config.ui.openLinkouts(global_button_action.data, 'ott');
       callAjax(config.api.OZ_leaf_json_url_func(global_button_action.data, config.lang), config.ui.populateLinkouts, 'ozspons');
     } else if (global_button_action.action =="ow_node") {
-      config.ui.openLinkouts();
+      config.ui.openLinkouts(global_button_action.data, 'OZid'); /* most internal nodes don't have an OTT, so node actions pass in the OneZoom ID */
       callAjax(config.api.OZ_node_json_url_func(global_button_action.data, config.lang), config.ui.populateLinkouts);
-    } else if (global_button_action.action =="ow_sponsor_node"){
-      config.ui.openLinkouts();
+    } else if (global_button_action.action =="ow_sponsor_node") {
+      config.ui.openLinkouts(global_button_action.data, 'OZid'); /* most internal nodes don't have an OTT, so node actions pass in the OneZoom ID */
       callAjax(config.api.OZ_node_json_url_func(global_button_action.data, config.lang), config.ui.populateLinkouts, 'ozspons');
     }
   }

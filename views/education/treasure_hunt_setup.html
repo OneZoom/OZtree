@@ -1,0 +1,19 @@
+{{response.title='OneZoom: Treasure hunt'}}
+{{extend 'layout.html'}}
+<div class="row-fluid">
+ <div class="col-md-12">    
+  <h1>OneZoom treasure hunt</h1>
+  Enter some OTT numbers:
+  <form action="{{=URL('default', 'life_treasure')}}" method="get">
+  <ul>
+   <li>Taxon 1: <input type="text" name="treasure_taxa" width="4" value="93302" /></li>
+   <li>Taxon 2: <input type="text" name="treasure_taxa" width="4" value="770315" /></li>
+   <li>Taxon 3: <input type="text" name="treasure_taxa" width="4" value="649205" /></li>
+   <li>Taxon 4: <input type="text" name="treasure_taxa" width="4" value="773491"  /></li>
+   <li>Taxon 5: <input type="text" name="treasure_taxa" width="4" value="1062253"  /></li>
+  <input type="submit" value="Go!" />
+  <p>After you have clicked <q>Go</q>, collect each species or group by clicking on their name in the tree viewer</p>
+  </ul>
+  </form>
+ </div>
+</div>
