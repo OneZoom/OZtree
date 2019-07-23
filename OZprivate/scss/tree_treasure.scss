@@ -3,6 +3,29 @@
 #searchnav, #advanced_search_toggle {display: none;} /* Turn off search */
 .treeswitch, .langswitch {display: none;} /* Turn off language switching, as we can't change lang in the list */
 
+#treasure_list label input {
+  visibility: hidden;/* <-- Hide the default checkbox. The rest is to hide and allow tabbing, which display:none prevents */
+  display: block;
+  height: 0;
+  width: 0;
+  position: absolute;
+  overflow: hidden;
+}
+
+#treasure_list ul label > span:first-of-type {/* <-- Style the artificial checkbox */
+  border: 1px solid grey;
+  display: inline-block;
+  margin-bottom: 2px;
+}
+#treasure_list ul label span span {/* <-- Style the artificial checkbox */
+  visibility: hidden;
+}
+#treasure_list ul label span span:after {/* <-- Style the artificial checkbox */
+  content: "🏆";
+}
+#treasure_list ul [type=checkbox]:checked + span span {/* <-- Style its checked state */
+  visibility: visible;  
+}
 
 #treasure_list {
     position: absolute;

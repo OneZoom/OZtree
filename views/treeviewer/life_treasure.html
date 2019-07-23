@@ -50,7 +50,7 @@ setup_params = {
 <h3>Checklist</h3>
 <ul>
 {{for ott, id in treasure_id_by_ott.items():}}
-<li><input class="treasure_check ott{{=ott}} OZid{{=id}}" type="checkbox" disabled="diabled"> {{=XML(formatted_name_by_ott[ott])}}</li>
+<li><label><input class="treasure_check ott{{=ott}} OZid{{=id}}" type="checkbox" disabled="disabled" /><span><span></span></span> {{=XML(formatted_name_by_ott[ott])}}</label></li>
 {{pass}}
 </ul>
 </div>
@@ -85,6 +85,8 @@ UI_callbacks.openLinkouts = function(id, IDtype) {
         OLD_openLinkouts();
     }
 };
+
+
 
 var pagetitle_func = function(nm) {return (nm)?"OneZoom Treasure Hunt: "+ nm:"OneZoom Treasure Hunt game"};
 </script>
