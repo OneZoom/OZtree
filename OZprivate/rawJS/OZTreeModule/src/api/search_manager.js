@@ -282,7 +282,9 @@ class SearchManager {
     let id = record[cols["id"]];
     let extra_vernaculars = record[cols["extra_vernaculars"]];
     let id_decider = is_leaf? -1:1;
-    let tidy_latin = latinName ? latinName.split("_").join(" ") : null; // ready for printing in UI
+    // ready latin name for printing in UI. 
+    // "latin names" starting or ending with underscore are "fake" in OneZoom
+    let tidy_latin = (latinName && (!latinName.startsWith("_")) && (!latinName.endsWith("_"))) ? latinName.split("_").join(" ") : null; 
     let tidy_common = vernacular ? capitalizeFirstLetter(vernacular) : null; // ready for printing in UI
     
     //populate some global hash tables

@@ -311,8 +311,9 @@ def search_by_name(searchFor, language, order_by_popularity=False, limit=None, s
                     otts.add(row[1])
                 elif row[2]:
                     names.add(row[2])
-        
         #now find the vernacular names for these, so we can  save them in 'vernaculars' and 'extra_vernaculars'
+        ott_to_vern = {}
+        name_to_vern = {}
         if len(otts):
             #save the match status in the query return, so we can use it later.
             if len(longWords)>0:
@@ -324,7 +325,6 @@ def search_by_name(searchFor, language, order_by_popularity=False, limit=None, s
                 query = ("select ott,vernacular,preferred,mtch from (select ott, vernacular, preferred, src, " + mtch + " from vernacular_by_ott where lang_primary={} and ott in ({})) t where mtch order by preferred DESC,src")
                 query = query.format(db.placeholder, db.placeholder, ",".join([db.placeholder]*len(otts)))
                 temp = db.executesql(query, [originalSearchFor+'%%'] + [lang_primary] + list(otts))                
-            ott_to_vern = {}
 
             for row in temp:
                 if row[0] not in ott_to_vern: #nothing saved yet
@@ -342,7 +342,6 @@ def search_by_name(searchFor, language, order_by_popularity=False, limit=None, s
         if len(names):
             #same again, but match on name
             query = "select name,vernacular,preferred,mtch from (select name, vernacular, preferred, src, if(match(vernacular) against({} in boolean mode), TRUE, FALSE) as mtch from vernacular_by_name where lang_primary={} and name in ({})) t where (mtch or preferred) order by preferred DESC,src".format(db.placeholder,db.placeholder,",".join([db.placeholder]*len(names)))
-            name_to_vern = {}
             for row in db.executesql(query, [searchForCommon] + [lang_primary] + list(names)):
                 if row[0] not in name_to_vern: #nothing saved yet
                     if row[2]: #this is a preferred match, and is the first preferred encountered, so is the standard vernacular
