@@ -21,7 +21,7 @@
   visibility: hidden;
 }
 #treasure_list ul label span span:after {/* <-- Style the artificial checkbox */
-  content: "🏆";
+  content: "\1F3C6";
 }
 #treasure_list ul [type=checkbox]:checked + span span {/* <-- Style its checked state */
   visibility: visible;  
