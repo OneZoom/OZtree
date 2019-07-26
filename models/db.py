@@ -916,6 +916,12 @@ CREATE INDEX date_index          ON API_use (end_date)     USING HASH;
 
 # The following are the indexes for ordered leaves & ordered nodes, useful to re-do after a new tree is imported 
 
+DROP   INDEX lft_index           ON ordered_nodes;
+CREATE INDEX lft_index           ON ordered_nodes (leaf_lft);
+
+DROP   INDEX rgt_index           ON ordered_nodes;
+CREATE INDEX rgt_index           ON ordered_nodes (leaf_rgt);
+
 DROP   INDEX price_index         ON ordered_leaves;
 CREATE INDEX price_index         ON ordered_leaves (price);
 
