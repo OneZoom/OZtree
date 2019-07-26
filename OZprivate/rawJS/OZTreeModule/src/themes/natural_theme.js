@@ -22,6 +22,13 @@ let iucnDD = green1;
 let iucnNE = green1;
 let iucnDefault = green1;
 
+function is_fossil(leaf) {
+    // fossils have extinction_Ma > 0 (if known) or true
+    // extant (or recently extinct) leaves should all have extinction_Ma===null
+    // we use == not === to also treat undefined (data not yet filled out) as not fossil
+    return (leaf.extinction_Ma == null)?false:true;
+}
+
 function outline_highlight(node) {
   if (node.richness_val > 1) {
     return 'rgb(0,0,0)';
@@ -33,25 +40,29 @@ function outline_highlight(node) {
 function leafcolor2b(node) {
   switch(node.redlist) {
     case "EX":
-    return ('rgb(50,50,50)');
+      return ('rgb(50,50,50)');
     case "EW":
-    return ('rgb(50,50,50)');
+      return ('rgb(50,50,50)');
     case "CR":
-    return ('rgb(80,00,00)');
+      return ('rgb(80,00,00)');
     case "EN":
-    return ('rgb(80,00,00)');
+      return ('rgb(80,00,00)');
     case "VU":
-    return ('rgb(80,00,00)');
+      return ('rgb(80,00,00)');
     case "NT":
-    return ('rgb(20,80,00)');
+      return ('rgb(20,80,00)');
     case "LC":
-    return ('rgb(20,80,00)');
+      return ('rgb(20,80,00)');
     case "DD":
-    return ('rgb(20,80,00)');
+      return ('rgb(20,80,00)');
     case "NE":
-    return ('rgb(20,80,00)');
+      return ('rgb(20,80,00)');
     default:
-    return ('rgb(20,80,00)');
+      if (is_fossil(node)) {
+        return ('rgb(50,50,50)');
+      } else {
+        return ('rgb(20,80,00)');
+      }
   }
 }
 
@@ -69,42 +80,47 @@ function get_redlist_color(node) {
   switch(node.redlist) {
     case "EX":
     //return ('rgb(150,175,215)'); // new blue
-    return iucnEX;
+      return iucnEX;
     case "EW":
     //return ('rgb(150,175,215)'); // new blue
-    return iucnEW;
+      return iucnEW;
     //return ('rgb(80,80,80)');
     case "CR":
-    return iucnCR;
+      return iucnCR;
     //////////return (red1);
     //'rgb(215,175,150)' = dinah pink
     case "EN":
     //return ('rgb(225,185,130)');
     //return ('rgb(210,170,145)');
-    return iucnEN;
+      return iucnEN;
     //////////return (red1);
     
     case "VU":
-    return iucnVU;
+      return iucnVU;
     //return (red1);
     //return ('rgb(210,170,145)');
     //return ('rgb(220,220,220)');
     case "NT":
-    return iucnNT;
+      return iucnNT;
     //return ('rgb(170,195,96)');
     //return ('rgb(180,208,90)');
     //return ('rgb(200,220,180)');
     //return ('rgb(190,200,80)');
     case "LC":
-    return iucnLC;
+      return iucnLC;
     case "DD":
-    return iucnDD;
+      return iucnDD;
     //return ('rgb(60,50,135)');
     case "NE":
-    return iucnNE;
+      return iucnNE;
     //return ('rgb(0,0,190)');
     default:
-    return iucnDefault;
+      if (is_fossil(node)) {
+        return iucnEX;
+      } else {
+        // extant leaves should all have age==null or age==0
+        return iucnDefault;
+      }
   }
 }
 
@@ -146,7 +162,11 @@ function get_redlist_color2(node) {
     return green2;
     //return ('rgb(0,0,190)');
     default:
-    return green2;
+      if (is_fossil(node)) {
+        return ('rgb(110,110,110)');
+      } else {
+        return green2;
+      }
   }    
 }
 

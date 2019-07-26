@@ -58,15 +58,26 @@ export function gpmapper(datein, full) {
 }
 
 
-export function ageAsText(Ma) {
-  //return e.g. 100 thousand years ago
+export function ageAsText(Ma, leaf) {
+  //return e.g. "100 thousand years ago", or a similar string
+  let subs_strs = leaf?OZstrings['leaf_date']:OZstrings['node_date'];
   if (Ma >10) {
-    return OZstrings['Mya'].replace(/\{(\w+)\}/g, function (m, c) {return({'mya':(Math.round(Ma*10)/10.0).toString()}[c])});
+    return subs_strs['Mya'].replace(
+        /\{(\w+)\}/g,
+        function (m, c) {return({'mya':(Math.round(Ma*10)/10.0).toString()}[c])});
   } else {
-    if (Ma >1) {
-      return OZstrings['Mya'].replace(/\{(\w+)\}/g, function (m, c) {return({'mya':(Math.round(Ma*100)/100.0).toString()}[c])});
+    if (Ma > 1) {
+      return subs_strs['Mya'].replace(
+        /\{(\w+)\}/g,
+        function (m, c) {return({'mya':(Math.round(Ma*100)/100.0).toString()}[c])});
+    } else if (Ma > 0.001) {
+      return subs_strs['tya'].replace(
+        /\{(\w+)\}/g,
+        function (m, c) {return({'tya':(Math.round(Ma*10000)/10.0).toString()}[c])});
     } else {
-      return OZstrings['tya'].replace(/\{(\w+)\}/g, function (m, c) {return({'tya':(Math.round(Ma*10000)/10.0).toString()}[c])});
+      return subs_strs['ya'].replace(
+        /\{(\w+)\}/g,
+        function (m, c) {return({'ya':(Math.round(Ma*1000000)).toString()}[c])});
     }
   }
 }

@@ -22,8 +22,17 @@ OZstrings = {
         },
     'sp': T("species## singular"),
     'spp': T("species## plural"),
-    'Mya': T("{mya} million years ago"),
-    'tya': T("{tya} thousand years ago"),
+    'Fossil species':T("Fossil species"),
+    'leaf_date':{
+        'Mya':T("This fossil species\nwent extinct {mya}\nmillion years ago"),
+        'tya':T("This fossil species\nwent extinct {tya}\nthousand years ago"),
+        'ya':T("This fossil species\nwent extinct {ya}\nyears ago")
+    },
+    'node_date':{
+        'Mya': T("{mya} million years ago"),
+        'tya': T("{tya} thousand years ago"),
+        'ya': T("{ya} years ago")
+    },
     'sciname': T("Scientific name: "),
     'sponsor_text':{
         'node':{
