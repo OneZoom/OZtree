@@ -51,7 +51,7 @@ class LeafLayoutBase {
 
   tip_leaf_text_image_shapes(node, shapes) {
     /* because the horizon which decides what parts should be drawn is for a whole node,
-    the area covered can get large because it incldes a bezier curve and circle
+    the area covered can get large because it includes a bezier curve and circle
     this is a problem as it can result in large leaves being drawn that are off the screen resulting in efficiency losses
     the easiest way to fix this is test again if a leaf is on screen or not before drawing.
     */
