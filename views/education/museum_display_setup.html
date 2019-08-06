@@ -1,16 +1,192 @@
 {{response.title='OneZoom: Museum display'}}
 {{extend 'layout.html'}}
-<div class="row-fluid">
- <div class="col-md-12">    
-  <h1>OneZoom museum display</h1>
-  Some setup variables here:
-  <form action="{{=URL('default', 'life_MD')}}" method="get">
-  <ul>
-   <li>Colours, etc.</li>
-   <li>Screensaver after <input type="text" name="screensave" width="4" /> minutes</li>
-   <li>Allow tutorial</li>
-  <input type="submit" />
-  </ul>
-  </form>
- </div>
+<div id="meseum-container">
+  <div class="col-md-12">
+    <h1>OneZoom museum display</h1>
+
+    <div class="form-group">
+      <label class="left-label">View Type</label>
+      <div class="right-input">
+        <select class="view-type" style="width:100%;">
+          <option value="spiral">Spiral</option>
+          <option value="natural">Natural</option>
+          <option value="fern">Fern</option>
+          <option value="balanced">Balanced</option>
+          <option value="polytomoty">Polytomoty</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="left-label">Image Source</label>
+      <div class="right-input">
+        <select class="image-source" style="width:100%;">
+          <option value="best_any">Any</option>
+          <option
+            value="best_verified"
+            title="Only show images that have been verified by a taxonomist. For any image, click or zoom on the © symbol for details"
+            >Verified</option
+          >
+          <option value="best_pd">Public Domain</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="left-label">Language</label>
+      <div class="right-input">
+        <select
+          class="language"
+          style="width:100%;"
+          title="Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated."
+        >
+          <optgroup label="Translated">
+            <option value="en">English</option>
+            <option value="fr">Français</option>
+            <option value="sv">Svenska</option>
+          </optgroup>
+          <optgroup label="Not yet translated">
+            <option value="zh">中文</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="left-label">Animation Preference</label>
+      <div class="right-input">
+        <select class="anim-setting" style="width:100%;">
+          <option value="jump">Jump</option>
+          <option value="fly">Fly</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="left-label left-label-input">Home Ott Id</label>
+      <div class="right-input ott-id">
+        <input type="text" class="form-control" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="left-label left-label-input">Screensaver Wait Time</label>
+      <div class="right-input input-group screensaver">
+        <input
+          oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+          type="text"
+          class="form-control"
+          value="600"
+          aria-describedby="screensaver-addon"
+        />
+        <span class="input-group-addon" id="screensaver-addon">seconds</span>
+      </div>
+    </div>
+    <div style="height: 30px"></div>
+    <div class="form-group">
+      <label class="left-label left-label-input">Generated URL</label>
+      <div class="right-input url-result">
+        <input type="text" class="form-control" readonly />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="left-label"> </label>
+      <div class="right-input button-group">
+        <button id="copy">Copy</button>
+        <button id="open-in-new-tab">Open in a new tab</button>
+      </div>
+    </div>
+  </div>
 </div>
+
+<style>
+  #meseum-container .left-label {
+    float: left;
+    width: 170px;
+    text-align: right;
+  }
+  #meseum-container .left-label-input {
+    height: 34px;
+    line-height: 34px;
+  }
+
+  #meseum-container .right-input {
+    float: left;
+    width: 300px;
+    margin-left: 25px;
+  }
+  #meseum-container .right-input.url-result {
+    width: 800px;
+  }
+  #meseum-container .right-input.url-result input {
+    background-color: #eee;
+  }
+  #meseum-container .right-input.button-group {
+    padding-top: 10px;
+  }
+
+  #meseum-container .form-group {
+    margin-bottom: 10px;
+  }
+  #meseum-container .form-group:after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+</style>
+
+<script>
+  //anoymous function so that it won't pollute global namespace
+  ;(function() {
+    function setURL() {
+      const HOST = window.location.host
+      const PROTOCAL = window.location.protocol
+      const view_type = $('#meseum-container .view-type')
+        .find('option:selected')
+        .val()
+      const image_source = $('#meseum-container .image-source')
+        .find('option:selected')
+        .val()
+      const language = $('#meseum-container .language')
+        .find('option:selected')
+        .val()
+      const anim_setting = $('#meseum-container .anim-setting')
+        .find('option:selected')
+        .val()
+      const ott_id = $('#meseum-container .ott-id input').val()
+      const screensaver_timer = $('#meseum-container .screensaver input').val()
+
+      let query = `view=${view_type}&img=${image_source}&lang=${language}&anim=${anim_setting}`
+      if (ott_id) {
+        query = query + `&ott=${ott_id}`
+      }
+      if (screensaver_timer) {
+        query = query + `&ssaver=${screensaver_timer}`
+      }
+      $('#meseum-container .url-result input').val(
+        PROTOCAL + '//' + HOST + '/?' + query,
+      )
+    }
+
+    //Listen select and text input change
+    $('#meseum-container select').change(function() {
+      setURL()
+    })
+
+    $(
+      '#meseum-container .screensaver input, #meseum-container .ott-id input',
+    ).change(function() {
+      setURL()
+    })
+
+    //Initial setup
+    setURL()
+  })()
+
+  $('#meseum-container #copy').click(function() {
+    var input = $('#meseum-container .url-result input')
+    input.select()
+    document.execCommand('copy')
+    input.blur()
+  })
+
+  $('#meseum-container #open-in-new-tab').click(function() {
+    var url = $('#meseum-container .url-result input').val()
+    window.open(url, null)
+  })
+</script>
