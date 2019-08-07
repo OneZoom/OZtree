@@ -142,13 +142,6 @@ function get_params(options) {
     } //else could be undefined if we since changed components of the colours
   }
 
-  if (!tree_settings.is_default_anim()) {
-    let anim_string = tree_settings.anim
-    if (anim_string) {
-      querystring.push("anim=" + encodeURIComponent(anim_string));
-    }
-  }
-
   if (config.lang) {
     querystring.push("lang=" + encodeURIComponent(config.lang));
   }
@@ -164,7 +157,7 @@ function get_params(options) {
     }
   }
   // Preserve all custom parts of current querystring
-  (config.custom_querystring_params || []).map(function (part_name) {
+  (config.custom_querystring_params || []).concat(['ott', 'anim', 'ssaver']).map(function (part_name) {
     var m = window.location.search.match(new RegExp('(^|&|\\?)' + part_name + '=[^&]+', 'g'));
     (m || []).map(function (part) {
       querystring.push(part.replace(/^[&?]/, ''));

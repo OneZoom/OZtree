@@ -38,7 +38,12 @@ export default function (Controller) {
    * @memberof Controller
    */
   Controller.prototype.button_reset = function () {
-    this.reset();
+    const ozId = data_repo.ott_id_map[config.home_ott_id]
+    if (ozId) {
+      this.perform_leap_animation(ozId);
+    } else {
+      this.reset();
+    }
   }
 
   /**

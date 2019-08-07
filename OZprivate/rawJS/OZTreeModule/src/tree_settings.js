@@ -93,10 +93,6 @@ class TreeSettings {
         fern: 'fern',
         natural: 'natural',
         polytomy: 'polytomy'
-      },
-      anim: {
-        fly: 'fly',
-        jump: 'jump'
       }
     }
 
@@ -110,7 +106,6 @@ class TreeSettings {
       },
       midnode: LifeMidnode,
       vis: this.options.vis.spiral,
-      anim: this.options.anim.fly
     }
   }
 
@@ -132,23 +127,6 @@ class TreeSettings {
         setPath(this.default, path, val); //assume the object specified in the user-passed in settings is fine
       }
     }
-  }
-
-  get anim() {
-    for (let k of Object.keys(this.options.anim)) {
-      if (this.options.anim[k] == this.current.anim) {
-        return k;
-      }
-    }
-    return undefined;
-  }
-
-  set anim(value) {
-    this.current.anim = value;
-  }
-
-  is_default_anim() {
-    return this.current.anim === this.default.anim;
   }
 
   get vis() {

@@ -132,18 +132,6 @@ function parse_querystring(state, querystring) {
       //if the user wants a specific language: not the one given by the browser
       let image_source = querystring[i].substring(querystring[i].indexOf("=") + 1);
       state.image_source = image_source;
-    } else if (/^anim=/.test(querystring[i])) {
-      //if the user wants a specific language: not the one given by the browser
-      let animation_preference = querystring[i].substring(querystring[i].indexOf("=") + 1);
-      state.animation_preference = animation_preference;
-    } else if (/^ott=/.test(querystring[i])) {
-      //if the user wants a specific language: not the one given by the browser
-      let home_ott = querystring[i].substring(querystring[i].indexOf("=") + 1);
-      state.home_ott = home_ott;
-    } else if (/^ssaver=/.test(querystring[i])) {
-      //if the user wants a specific language: not the one given by the browser
-      let screensaver_wait_time = querystring[i].substring(querystring[i].indexOf("=") + 1);
-      state.screensaver_wait_time = screensaver_wait_time;
     }
   }
 }

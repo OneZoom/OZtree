@@ -249,6 +249,17 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
 var onezoom = null; //will be filled out on document ready
 var locations_json = '{{=XML(setup_params.get("locations_json") or "[]")}}';
 
+/* Helper function to parse search parameters in URL */
+function getParameterByName(name) {
+    var url = window.location.href;
+    name = name.replace(/[\[\]]/g, '\\$&');
+    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
 /* UI functions that allow javascript in the main viewer to interact with the UI.
     Names for each function are hard-coded into the OneZoom viewer  in config.ui within 
     global_config.js. These refer to items in the viewer_UI file */
@@ -408,8 +419,7 @@ function setup_location_list(target, taxon_list_json, click_callback_id_name) {
                 );
             }
         },
-        function(header) {target.append($('<dt>').text(OZstrings.hasOwnProperty(header)?OZstrings[header]:header))},
-        onezoom.data_repo);
+        function(header) {target.append($('<dt>').text(OZstrings.hasOwnProperty(header)?OZstrings[header]:header))});
 }
 
 var previous_location_codes;
@@ -963,6 +973,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
     this allows us to access e.g. onezoom.controller, onezoom.config, etc (defined in OZentry.js)
      **/
     {{if is_testing:}}console.log("Starting OneZoom viewer");{{pass}}
+    
     onezoom = OZentry.default(
         window.server_urls, 
         window.UI_callbacks, 
@@ -975,6 +986,17 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
         window.polytomy_cut_position_map_json_str, 
         window.cut_threshold,
         window.tree_date);
+        
+    var search_jump_mode = getParameterByName('anim')
+    var home_ott_id = getParameterByName('ott')
+
+    if (search_jump_mode) {
+        onezoom.config.search_jump_mode = search_jump_mode
+    }
+    if (home_ott_id) {
+        onezoom.config.home_ott_id = home_ott_id
+    }
+
     {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape=False)}}
     setupUI();
 })
