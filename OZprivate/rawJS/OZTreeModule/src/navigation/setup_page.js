@@ -72,7 +72,9 @@ function setup_page_by_state(state) {
 
   controller.close_all();
 
+  console.log(state)
   get_id_by_state(state).then(function (id) {
+    console.log(state, id)
     tree_state.url_parsed = true;
     return controller.fly_to_node(id, state.xp !== undefined ? state : state.init);
   }).then(function () {
@@ -88,7 +90,11 @@ function setup_page_by_state(state) {
     tree_state.url_parsed = true;
     //TODO: separate out promise reject and error handling.
     controller.reset();
-    if (state.ott) {
+    const ozId = data_repo.ott_id_map[config.home_ott_id]
+    console.log(config.home_ott_id, ozId)
+    if (ozId) {
+      controller.perform_leap_animation(ozId)
+    } else if (state.ott) {
       if (typeof config.ui.badOTT !== 'function') {
         alert('Developer error: you need to define a UI function named badOTT that takes a bad OTT and pings up an error page')
       } else {
