@@ -1,9 +1,9 @@
-import {parse_query} from './utils';
+import { parse_query } from './utils';
 import data_repo from '../factory/data_repo';
 import api_manager from '../api/api_manager';
 import get_controller from '../controller/controller';
 import tree_state from '../tree_state';
-import {global_button_action, click_on_button_cb} from '../button_manager';
+import { global_button_action, click_on_button_cb } from '../button_manager';
 import config from '../global_config';
 
 /**
@@ -33,7 +33,7 @@ function setup_loading_page() {
  * @return {Promise} return a promise which would turn to resolve if the metacode is found, otherwise turn to reject.
  */
 function get_id_by_state(state) {
-  let promise = new Promise(function(resolve, reject) {
+  let promise = new Promise(function (resolve, reject) {
     if (!state) reject();
     else if (state.node_id) resolve(state.node_id);
     else if (state.ott && data_repo.ott_id_map[state.ott]) resolve(data_repo.ott_id_map[state.ott]);
@@ -44,14 +44,14 @@ function get_id_by_state(state) {
       if (state.latin_name) data.name = state.latin_name;
       let params = {
         data: data,
-        success: function(res) {
+        success: function (res) {
           if (res.ids && res.ids.length) {
             resolve(res.ids[0]);
           } else {
             reject();
           }
         },
-        error: function(res) {
+        error: function (res) {
           reject();
         }
       };
@@ -65,16 +65,17 @@ function get_id_by_state(state) {
 
 function setup_page_by_state(state) {
   let controller = get_controller();
-  if (state.vis_type) controller.change_view_type(state.vis_type);
-  if (!config.lang) config.lang = state.lang || '';
+  if (state.vis_type) controller.change_view_type(state.vis_type, true);
+  if (state.image_source) controller.set_image_source(state.image_source, true)
+  if (state.lang) controller.set_language(state.lang, true)
   if (state.title) document.title = unescape(state.title);
 
   controller.close_all();
 
-  get_id_by_state(state).then(function(id) {
+  get_id_by_state(state).then(function (id) {
     tree_state.url_parsed = true;
     return controller.fly_to_node(id, state.xp !== undefined ? state : state.init);
-  }).then(function() {
+  }).then(function () {
     //open popup dialog if exists.
     if (state.tap_action && state.tap_ott) {
       global_button_action.action = state.tap_action;
@@ -83,21 +84,21 @@ function setup_page_by_state(state) {
     } else {
       controller.close_all();
     }
-  }).catch(function(error) {
+  }).catch(function (error) {
     tree_state.url_parsed = true;
     //TODO: separate out promise reject and error handling.
     controller.reset();
     if (state.ott) {
-        if (typeof config.ui.badOTT !== 'function') {
-            alert('Developer error: you need to define a UI function named badOTT that takes a bad OTT and pings up an error page')
-        } else {
-            config.ui.badOTT(state.ott);
-        }
+      if (typeof config.ui.badOTT !== 'function') {
+        alert('Developer error: you need to define a UI function named badOTT that takes a bad OTT and pings up an error page')
+      } else {
+        config.ui.badOTT(state.ott);
+      }
     }
     throw error;
   });
 }
 
 
-export {popupstate, setup_loading_page};
+export { popupstate, setup_loading_page };
 

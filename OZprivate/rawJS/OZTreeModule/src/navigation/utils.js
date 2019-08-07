@@ -15,12 +15,12 @@ function get_largest_visible_node(node, condition) {
     if (!node.gvar) {
       return 0;
     } else {
-      let sx = node.xvar+(node.rvar*node.hxmin);
-      let ex = node.xvar+(node.rvar*node.hxmax);
-      let sy = node.yvar+(node.rvar*node.hymin);
-      let ey = node.yvar+(node.rvar*node.hymax);
-      let width_r = Math.max((Math.min(ex, tree_state.widthres) - Math.max(sx, 0))/(ex-sx), 0);
-      let height_r = Math.max((Math.min(ey, tree_state.heightres) - Math.max(sy, 0))/(ey-sy), 0);
+      let sx = node.xvar + (node.rvar * node.hxmin);
+      let ex = node.xvar + (node.rvar * node.hxmax);
+      let sy = node.yvar + (node.rvar * node.hymin);
+      let ey = node.yvar + (node.rvar * node.hymax);
+      let width_r = Math.max((Math.min(ex, tree_state.widthres) - Math.max(sx, 0)) / (ex - sx), 0);
+      let height_r = Math.max((Math.min(ey, tree_state.heightres) - Math.max(sy, 0)) / (ey - sy), 0);
       return node.rvar * width_r * height_r;
     }
   }
@@ -31,29 +31,29 @@ function get_largest_visible_node(node, condition) {
     //otherwise try to find node with ott in its children
     if (node.has_child) {
       let satisfied_children = [];
-      satisfied_children = node.children.map(function(child) {
+      satisfied_children = node.children.map(function (child) {
         return get_largest_visible_node(child, condition);
       });
       let largest_area = -1, largest_node = null;
       let length = satisfied_children.length;
-      for (let i=0; i<length; i++) {
+      for (let i = 0; i < length; i++) {
         let child = satisfied_children[i];
         if (child) {
           let area = get_area_in_screen(child);
           if (area > largest_area) {
             largest_area = area;
             largest_node = child;
-          }  
+          }
         }
       }
-      
+
       if (largest_node !== null) {
         return largest_node;
       } else if (!isNaN(node.xvar) && condition_satisfy) {
         return node;
       }
     }
-  }  
+  }
   return null;
 }
 
@@ -78,12 +78,12 @@ function parse_location(state, loc) {
   let parts = loc.split("=");
   if (parts.length === 1) {
     if (isNaN(parseInt(parts[0]))) {
-      state.latin_name = parts[0];  
+      state.latin_name = parts[0];
     } else {
       state.node_id = parseInt(parts[0]);
-    }    
+    }
   } else if (parts[0].length > 0) {
-    state.latin_name = parts[0];  
+    state.latin_name = parts[0];
   }
   if (parts.length > 1 && !isNaN(parseInt(parts[1]))) state.ott = parseInt(parts[1]);
 }
@@ -101,33 +101,49 @@ function parse_location(state, loc) {
  *   Example:  ?part1&part2&part3.
  */
 function parse_querystring(state, querystring) {
-  if ((typeof querystring  !== 'string') || !querystring.startsWith('?')) return;
+  if ((typeof querystring !== 'string') || !querystring.startsWith('?')) return;
   querystring = querystring.substring(1).split("&"); //knock off initial '?'
-  for (let i=0; i<querystring.length; i++) {
+  for (let i = 0; i < querystring.length; i++) {
     if (/^pop=/.test(querystring[i])) {
-      let tap_params = querystring[i].substring(querystring[i].indexOf("=")+1).split("_");
+      let tap_params = querystring[i].substring(querystring[i].indexOf("=") + 1).split("_");
       let tap_ott, tap_action;
-      if (tap_params.length == 2) {        
+      if (tap_params.length == 2) {
         //new params. pop=ol_id
         tap_ott = tap_params[1];
-        tap_action = decode_popup_action(tap_params[0]);  
+        tap_action = decode_popup_action(tap_params[0]);
       } else {
         //old params. pop=id
         tap_ott = tap_params[0];
         tap_action = "ow_leaf";
       }
       state.tap_action = tap_action;
-      state.tap_ott = parseInt(tap_ott);      
+      state.tap_ott = parseInt(tap_ott);
     } else if (/^vis=/.test(querystring[i])) {
-      let vis_type = querystring[i].substring(querystring[i].indexOf("=")+1);
+      let vis_type = querystring[i].substring(querystring[i].indexOf("=") + 1);
       state.vis_type = vis_type;
     } else if (/^init=/.test(querystring[i])) {
-      let init = querystring[i].substring(querystring[i].indexOf("=")+1);
+      let init = querystring[i].substring(querystring[i].indexOf("=") + 1);
       state.init = init;
     } else if (/^lang=/.test(querystring[i])) {
       //if the user wants a specific language: not the one given by the browser
-      let lang = querystring[i].substring(querystring[i].indexOf("=")+1);
+      let lang = querystring[i].substring(querystring[i].indexOf("=") + 1);
       state.lang = lang;
+    } else if (/^img=/.test(querystring[i])) {
+      //if the user wants a specific language: not the one given by the browser
+      let image_source = querystring[i].substring(querystring[i].indexOf("=") + 1);
+      state.image_source = image_source;
+    } else if (/^anim=/.test(querystring[i])) {
+      //if the user wants a specific language: not the one given by the browser
+      let animation_preference = querystring[i].substring(querystring[i].indexOf("=") + 1);
+      state.animation_preference = animation_preference;
+    } else if (/^ott=/.test(querystring[i])) {
+      //if the user wants a specific language: not the one given by the browser
+      let home_ott = querystring[i].substring(querystring[i].indexOf("=") + 1);
+      state.home_ott = home_ott;
+    } else if (/^ssaver=/.test(querystring[i])) {
+      //if the user wants a specific language: not the one given by the browser
+      let screensaver_wait_time = querystring[i].substring(querystring[i].indexOf("=") + 1);
+      state.screensaver_wait_time = screensaver_wait_time;
     }
   }
 }
@@ -148,20 +164,20 @@ function parse_hash(state, hash) {
   if (!hash || hash.length === 0) return;
   hash = hash.substring(1);    //remove '#'
   if (hash.indexOf("ott") === 0) {
-      let ott = parseInt(hash.substring(3));
-      if (!isNaN(ott)) state.ott = ott;
+    let ott = parseInt(hash.substring(3));
+    if (!isNaN(ott)) state.ott = ott;
   } else {
     let parts = hash.split(",");
     if (parts.length === 3 && hash.indexOf("x") !== -1 && hash.indexOf(",y") !== -1 && hash.indexOf(",w") !== -1) {
-      for (let i=0; i<parts.length; i++) {
+      for (let i = 0; i < parts.length; i++) {
         if (parts[i].match(/x/)) {
-          state.xp = parseInt(parts[i].substring(parts[i].indexOf("x")+1));
+          state.xp = parseInt(parts[i].substring(parts[i].indexOf("x") + 1));
         } else if (parts[i].match(/y/)) {
-          state.yp = parseInt(parts[i].substring(parts[i].indexOf("y")+1));
+          state.yp = parseInt(parts[i].substring(parts[i].indexOf("y") + 1));
         } else if (parts[i].match(/w/)) {
-          state.ws = parseFloat(parts[i].substring(parts[i].indexOf("w")+1));
-        } 
-      }    
+          state.ws = parseFloat(parts[i].substring(parts[i].indexOf("w") + 1));
+        }
+      }
     } else {
       state.latin_name = hash;
     }
@@ -169,13 +185,13 @@ function parse_hash(state, hash) {
 }
 
 function encode_popup_action(popup_action) {
-  if (popup_action =="ow_leaf") {
+  if (popup_action == "ow_leaf") {
     return 'ol';
-  } else if (popup_action =="ow_node") {
+  } else if (popup_action == "ow_node") {
     return 'on';
-  } else if (popup_action =="ow_sponsor_leaf") {
+  } else if (popup_action == "ow_sponsor_leaf") {
     return 'osl';
-  } else if (popup_action =="ow_sponsor_node"){
+  } else if (popup_action == "ow_sponsor_node") {
     return 'osn'
   } else if (popup_action == "ow_iucn_leaf") {
     return 'oil';
@@ -185,13 +201,13 @@ function encode_popup_action(popup_action) {
 }
 
 function decode_popup_action(popup_action) {
-  if (popup_action =="ol") {
+  if (popup_action == "ol") {
     return 'ow_leaf';
-  } else if (popup_action =="on") {
+  } else if (popup_action == "on") {
     return 'ow_node';
-  } else if (popup_action =="osl") {
+  } else if (popup_action == "osl") {
     return 'ow_sponsor_leaf';
-  } else if (popup_action =="osn"){
+  } else if (popup_action == "osn") {
     return 'ow_sponsor_node'
   } else if (popup_action == 'oil') {
     return 'ow_iucn_leaf';
@@ -200,4 +216,4 @@ function decode_popup_action(popup_action) {
   }
 }
 
-export {get_largest_visible_node, parse_query, encode_popup_action, decode_popup_action};
+export { get_largest_visible_node, parse_query, encode_popup_action, decode_popup_action };
