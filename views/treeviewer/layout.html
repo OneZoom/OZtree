@@ -995,6 +995,11 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
     }
     if (home_ott_id) {
         onezoom.config.home_ott_id = home_ott_id
+        onezoom.utils.process_taxon_list(`[{"OTT":${home_ott_id}}]`, function(){
+            onezoom.run()
+        }, function() {})
+    } else {
+        onezoom.run()
     }
 
     {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape=False)}}

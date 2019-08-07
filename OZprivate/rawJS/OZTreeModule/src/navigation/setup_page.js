@@ -88,7 +88,10 @@ function setup_page_by_state(state) {
     tree_state.url_parsed = true;
     //TODO: separate out promise reject and error handling.
     controller.reset();
-    if (state.ott) {
+    const ozId = data_repo.ott_id_map[config.home_ott_id]
+    if (ozId) {
+      controller.perform_leap_animation(ozId)
+    } else if (state.ott) {
       if (typeof config.ui.badOTT !== 'function') {
         alert('Developer error: you need to define a UI function named badOTT that takes a bad OTT and pings up an error page')
       } else {

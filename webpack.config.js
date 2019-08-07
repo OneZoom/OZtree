@@ -8,7 +8,7 @@ var config = {
   },
   output: {
     filename: '[name].js',
-    path: './OZprivate/rawJS/OZTreeModule/dist/',
+    path: './static/OZTreeModule/dist',
     library: 'OZentry'
   },
   externals: {
@@ -17,7 +17,7 @@ var config = {
   module: {
     loaders: [
       {
-        test: /\.js/, 
+        test: /\.js/,
         exclude: /(node_modules|bower_components)/,
         loader: 'babel-loader?presets[]=es2015'
       }
