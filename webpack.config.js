@@ -8,7 +8,7 @@ var config = {
   },
   output: {
     filename: '[name].js',
-    path: './static/OZTreeModule/dist',
+    path: './OZprivate/rawJS/OZTreeModule/dist/',
     library: 'OZentry'
   },
   externals: {

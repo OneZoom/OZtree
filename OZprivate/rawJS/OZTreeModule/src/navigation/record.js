@@ -146,8 +146,16 @@ function get_params(options) {
     querystring.push("lang=" + encodeURIComponent(config.lang));
   }
 
-  if (data_repo.image_source !== 'best_any') {
+  if (data_repo.image_source) {
     querystring.push("img=" + encodeURIComponent(data_repo.image_source))
+  }
+
+  if (config.search_jump_mode) {
+    querystring.push("anim=" + encodeURIComponent(config.search_jump_mode))
+  }
+
+  if (config.home_ott_id) {
+    querystring.push('ott=' + encodeURIComponent(config.home_ott_id))
   }
 
   if (options.record_popup) {
@@ -157,7 +165,7 @@ function get_params(options) {
     }
   }
   // Preserve all custom parts of current querystring
-  (config.custom_querystring_params || []).concat(['ott', 'anim', 'ssaver']).map(function (part_name) {
+  (config.custom_querystring_params || []).concat(['ssaver']).map(function (part_name) {
     var m = window.location.search.match(new RegExp('(^|&|\\?)' + part_name + '=[^&]+', 'g'));
     (m || []).map(function (part) {
       querystring.push(part.replace(/^[&?]/, ''));

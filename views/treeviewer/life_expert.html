@@ -34,39 +34,51 @@ setup_params = {
       '{"OTT":99252},'   #Flowering plants
       '{"OTT":1012685, "en":"Mushrooms"},' #the default OZ english name is bad for menus here, so we replace it
       '{"OTT":304358}'   #Complex life (eukaryotes)
-      ']')
+      ']'),
+    'pre_ui_setup': [
+        'onezoom.config.search_jump_mode = "jump"'
+    ]
   }
 }}
 
 {{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
 
 <style>
-#controlButtons #screenshotButton   {display:block;}
-#controlButtons #screenshotButton a {border-top: 1px solid #DDD}
-#controlButtons #infoButton a       {border: 0}
+    #controlButtons #screenshotButton {
+        display: block;
+    }
+
+    #controlButtons #screenshotButton a {
+        border-top: 1px solid #DDD
+    }
+
+    #controlButtons #infoButton a {
+        border: 0
+    }
 </style>
 <script src="{{=URL('static','js/canvas2svg.js')}}"></script>
 <script type="text/javascript">
-/* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
-var tree_config=null;
-var pagetitle_func = null;
+    /* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
+    var tree_config = null;
+    var pagetitle_func = null;
 
-function make_screenshot(lnk) {
-    try {
-        context = new C2S({
-            width:document.getElementById("OneZoomCanvasID").width,
-            height:document.getElementById("OneZoomCanvasID").height, 
-            embedImages : true});
-        onezoom.controller.draw_single_frame(context);
-        var svg_content = context.getSerializedSvg(true);
-        /* Change MIME type to trick the browser to download the file instead of displaying it */
-        lnk.setAttribute('download', 'OneZoomScreenshot.svg');
-        lnk.href = 'data:application-x/force-download;charset=utf-8,' + encodeURIComponent(svg_content);
-        return true;
-    } catch(err) {
-        alert("You can't save pictures with embedded images unless you enable '-allow-file-access-from-files' in chrome, or equivalent in other browsers.")
-        lnk.removeAttribute("href");
-        return false;
-    }
-};
+    function make_screenshot(lnk) {
+        try {
+            context = new C2S({
+                width: document.getElementById("OneZoomCanvasID").width,
+                height: document.getElementById("OneZoomCanvasID").height,
+                embedImages: true
+            });
+            onezoom.controller.draw_single_frame(context);
+            var svg_content = context.getSerializedSvg(true);
+            /* Change MIME type to trick the browser to download the file instead of displaying it */
+            lnk.setAttribute('download', 'OneZoomScreenshot.svg');
+            lnk.href = 'data:application-x/force-download;charset=utf-8,' + encodeURIComponent(svg_content);
+            return true;
+        } catch (err) {
+            alert("You can't save pictures with embedded images unless you enable '-allow-file-access-from-files' in chrome, or equivalent in other browsers.")
+            lnk.removeAttribute("href");
+            return false;
+        }
+    };
 </script>

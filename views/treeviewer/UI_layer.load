@@ -115,6 +115,20 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
           <option value="zh">中文</option>
         </optgroup>
         </select></li>
+        <li class="uk-nav-header animswitch">{{=T("SEARCH MODE")}}</li>
+        <li class="animswitch">
+          <li>
+            <label>
+              <input class="uk-radio" type="radio" name="searchmode" value="flight"> {{=T('Fly')}}
+            </label>
+          </li>
+          <li>
+            <label>
+              <input class="uk-radio" type="radio" name="searchmode" value="jump"> {{=T('Jump')}}
+            </label>
+          </li>
+        </li>
+        </li>
     </ul>
   </form>
   {{pass}}

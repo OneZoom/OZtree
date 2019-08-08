@@ -90,7 +90,7 @@ function setup_page_by_state(state) {
     controller.reset();
     const ozId = data_repo.ott_id_map[config.home_ott_id]
     if (ozId) {
-      controller.perform_leap_animation(ozId)
+      controller.fly_to_node(ozId)
     } else if (state.ott) {
       if (typeof config.ui.badOTT !== 'function') {
         alert('Developer error: you need to define a UI function named badOTT that takes a bad OTT and pings up an error page')

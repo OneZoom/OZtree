@@ -157,6 +157,22 @@ export default function (Controller) {
       }
     }
   }
+
+  Controller.prototype.set_search_jump_mode = function (search_jump_mode, init = false) {
+    if (config.search_jump_mode !== search_jump_mode) {
+      config.search_jump_mode = search_jump_mode;
+      if (!init) {
+        record_url({
+          replaceURL: true
+        }, true)
+      }
+    }
+  }
+
+  Controller.prototype.get_search_jump_mode = function () {
+    return config.search_jump_mode || 'flight'
+  }
+
   Controller.prototype.get_image_source = function () {
     return (data_repo.image_source)
   }
