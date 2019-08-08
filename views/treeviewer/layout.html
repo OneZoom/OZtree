@@ -678,12 +678,10 @@ function setupUI() {
     $("#UI").on("touchstart touchmove touchend", preventTouchZoom);
     $("[uk-modal]").on("touchstart touchmove touchend", preventTouchZoom);
 
-    $('#upButton')
+    $('#outButton')
         .click(function(){onezoom.controller.button_zoom_up()});
     $('#inButton')
         .click(function(){onezoom.controller.button_zoom_in()});
-    $('#outButton')
-        .click(function(){onezoom.controller.button_zoom_out()});
     $('#resetButton')
         .click(function(){onezoom.controller.button_reset()});
 

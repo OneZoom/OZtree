@@ -334,12 +334,6 @@ ul#searchboxes {
   text-align: center;
  
 }
-#controlButtons #upButton a {
-    padding: 0.25rem 0.1rem;
-}
-#controlButtons #upButton a svg polyline {
-    stroke-width: 0.8; /* The up chevron is magnified to fill sideways, so make the line narrower */
-}
 
 #controlButtons [uk-dropdown] {
     /* make sure dropdowns always fit in the viewport, but don't cover header (or possibly get lost under Safari URL bar) */
