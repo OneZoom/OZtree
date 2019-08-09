@@ -243,6 +243,7 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
 <body id = "wholebody" style="user-select:none; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select:none; -ms-user-select:none;" unselectable = "on" class="loading">
     <!-- main body of document - canvas, then rest of UI elements in a single div -->
   <canvas id="OneZoomCanvasID" tabindex="1">{{include 'treeviewer/life_text.load'}}</canvas>
+  <div id="tour_wrapper"></div>
   {{=LOAD("treeviewer",setup_params['UI_layer']['page'],vars=setup_params['UI_layer'].get("vars"), ajax=False, target="UI")}}
   <script type="text/javascript">
 /* define most of the JS after the main page has loaded */
@@ -999,6 +1000,68 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
     } else {
         onezoom.run()
     }
+
+    onezoom.tour.setup_setting({
+        "dom_id": {
+            /**
+             * All the following values are default values.
+             */
+            "wrapper_id": "tour_wrapper",
+            "next_id": "tour_next",
+            "prev_id": "tour_prev",
+            "exit_id": "tour_exit"
+        },
+        "tour_stop_shared": {
+            "template": "static/tour/tour_template.html",
+            "template_style": "static/tour/tour_template.css",
+            "dom_update": {
+                "title": "OneZoom Tutorial Example",
+                "tour_prev": "prev",
+                "tour_next": "next"
+            },
+            "style_update": {
+                "window_text": "class-name"
+            }
+        },
+        "tour_stop": [
+            {
+                "ott": "991547",
+                "dom_update": {
+                    "window_text": "Slide 1"
+                },
+                //default to null, means waiting for next button to go to next stop
+                "wait": 3000,
+                //used if this stop is entered by pressing previous stop
+                "wait_after_prev": null
+            },
+            {
+                "ott": "991547",
+                "ott_end_id": "81461",
+                "dom_update": {
+                    "window_text": "Slide 2 with style change"
+                },
+                "style_update": {
+                    "window_text": "gray_background"
+                },
+                //transition default wait time is 0
+                "wait": 0
+            },
+            {
+                "ott": "81461",
+                "dom_update": {
+                    "window_text": "Slide 3"
+                }
+            },
+            {
+                "ott": "81461",
+                "ott_end_id": "1062253",
+                "dom_update": {
+                    "window_text": "Slide 4"
+                },
+                "wait": null
+            },
+        ]
+    })
 
     {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape=False)}}
     setupUI();

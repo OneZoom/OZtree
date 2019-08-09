@@ -14,6 +14,7 @@ import config from './global_config';
 import tree_state from './tree_state';
 import data_repo from './factory/data_repo';
 import tree_settings from './tree_settings';
+import Tour from './tour/Tour'
 /**
  * Creates the main object that is exported to the browser. 
  * @todo This should possibly be separated so that 
@@ -95,18 +96,19 @@ function setup(
   return_value.search_manager = search_manager;
   // TO DO - use data_repo passed in to the entry function, so we don't need to include it in the initial JS
   return_value.search_manager.add_data_repo(return_value.data_repo);
-  return_value.tours = {};
-  //next function should be spun off into a tours.js module
-  return_value.tours.page = function (tourname, next_stop_number, success_func) {
-    let params = {
-      data: { tourname: tourname, stopnum: next_stop_number },
-      success: success_func,
-      error: function (res) {
-        reject();
-      }
-    };
-    api_manager.tour_detail(params);
-  }
+  // return_value.tours = {};
+  // //next function should be spun off into a tours.js module
+  // return_value.tours.page = function (tourname, next_stop_number, success_func) {
+  //   let params = {
+  //     data: { tourname: tourname, stopnum: next_stop_number },
+  //     success: success_func,
+  //     error: function (res) {
+  //       reject();
+  //     }
+  //   };
+  //   api_manager.tour_detail(params);
+  // }
+  return_value.tour = new Tour(return_value)
   return_value.utils = {};
   return_value.utils.spec_num_full = spec_num_full;
   return_value.utils.number_convert = number_convert;
