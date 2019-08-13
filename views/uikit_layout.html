@@ -27,10 +27,8 @@
     <script src="{{=URL('static','uikit-3/js/uikit-icons.min.js')}}"></script>
     <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/content.css')}}" />
     {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
+    {{include '../static/OZTreeModule/dist/OZ_script.html'}}
     <script>var OZstrings={{include 'treeviewer/js_strings.json'}}</script>
-    <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common.js')}}"></script>
-    <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry.js')}}"></script>
-    <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/search_ui.js')}}"></script>
   </head>
   <body class="standalone">
     <!--[if lt IE 8]><p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p><![endif]-->

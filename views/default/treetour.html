@@ -2,47 +2,34 @@
 <html>
 
 <head>
-    <meta NAME="description" CONTENT="OneZoom Tree of Life Explorer" />
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <script src="{{=URL("static", "js/jquery.min.js")}}"><\/script>
-            < script type = "text/javascript" src = "{{=URL('static', 'OZTreeModule/dist/common.js')}}" ></script>
-    <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry.js')}}"></script>
-    <style>
-        body>div:nth-child(1) {
-            text-align: center;
-            background-color: grey;
-            padding: 1em;
-        }
+  <meta NAME="description" CONTENT="OneZoom Tree of Life Explorer" />
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <script src="{{=URL("static", "js/jquery.min.js")}}"><\/script>
 
-        body>div>div {
-            display: inline-block;
-            background-color: white;
-            border: 1px solid black;
-            border-radius: 0.5rem;
-        }
-
-        body>div:nth-child(2)>a:nth-child(1) {
-            float: left;
-        }
-
-        body>div:nth-child(2)>a:nth-child(2) {
-            float: right;
-        }
-
-        a {
-            color: grey
-        }
-
-        /* All anchors */
-        a:link,
-        a:visited {
-            color: black
-        }
-
-        /* Override */
-    </style>
+  {{include '../static/OZTreeModule/dist/OZ_script.html'}}
+  <style>
+    body > div:nth-child(1) {
+        text-align: center; 
+        background-color: grey;
+        padding: 1em;
+    }
+    body > div > div {
+        display: inline-block; 
+        background-color: white;
+        border: 1px solid black;
+        border-radius: 0.5rem;
+    }
+    body > div:nth-child(2) > a:nth-child(1) {
+        float: left;
+    }
+    body > div:nth-child(2) > a:nth-child(2) {
+        float: right;
+    }
+    a {color: grey} /* All anchors */
+    a:link, a:visited {color: black} /* Override */
+  </style>
 </head>
 
 <body>

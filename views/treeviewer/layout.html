@@ -33,15 +33,12 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree.css')}}" />
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/OZ_shared.css')}}" />
   {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
-  <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common.js')}}"></script>
-  <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry.js')}}"></script>
-  <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/search_ui.js')}}"></script>
+  {{include '../static/OZTreeModule/dist/OZ_script.html'}}
 
-  <!-- treeviewer constnats -->
+  <!-- treeviewer constants -->
   {{include 'treeviewer/dynamic_scripts.html' }}
   {{include 'treeviewer/server_urls.html' }}
   <script>var OZstrings={{include 'treeviewer/js_strings.json'}}</script>
-
   <script type="text/javascript">
     //include a few default funcs & params early on, so they can be used / overridden in the file which includes this layout
     var globals = {} /* A place to store global variables that are set in the file which includes this one */

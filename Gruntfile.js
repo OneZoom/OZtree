@@ -197,5 +197,5 @@ module.exports = function (grunt) {
   ]);
   grunt.registerTask("precompile-docs", ["jsdoc2md", "exec:precompile_docs"]);
   grunt.registerTask("build", ["clean:build", "precompile-python", "precompile-js", "copy:old_js", "compass", "uglify", "compress", "precompile-docs"]);
-  grunt.registerTask("compile", ["clean:compile", "precompile-js_dev", "copy:old_js", "compass" , "compress", "copy:to_live", "precompile-docs"]);
+  grunt.registerTask("compile", ["clean:compile", "precompile-js", "copy:old_js", "compass", "compress", "copy:to_live", "precompile-docs"]);
 };
