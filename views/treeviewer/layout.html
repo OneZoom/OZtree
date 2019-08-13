@@ -32,8 +32,8 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
   <script src="{{=URL('static','uikit-3/js/uikit-icons.min.js')}}"></script>
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree.css')}}" />
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/OZ_shared.css')}}" />
-  <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common.js')}}"></script>
-  <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry.js')}}"></script>
+  {{include '../static/OZTreeModule/dist/OZ_script.html'}}
+
 {{if str(page_info.get('try_local_treefiles_version')).isdigit():}}
   <!-- Load local versions of the files first. If the return value from the API/version call does not match, variables in here will simply be replaced -->
   <script type="text/javascript" src="{{=URL("static", "FinalOutputs/data/completetree_{}.js".format(page_info["try_local_treefiles_version"]))}}"></script>
