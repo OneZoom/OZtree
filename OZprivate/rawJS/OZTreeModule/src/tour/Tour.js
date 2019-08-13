@@ -29,19 +29,24 @@ class Tour {
 
   /**
    * Activate next tour stop
+   * If current stop a transitional stop, then goto the end of current stop,
+   * otherwise go to next stop
    */
   goto_next() {
-    if (this.curr_stop()) {
-      this.curr_stop().exit()
-    }
-
-    if (this.curr_step === this.tour_stop_array.length - 1) {
-      this.exit()
+    if (this.curr_stop() && this.curr_stop().is_transition_stop() && this.curr_stop().is_playing) {
+      this.curr_stop().goto_end()
     } else {
-      this.curr_step++
-      this.curr_stop().play('forward')
-      this.set_ui_content()
-      this.set_control_btns()
+      if (this.curr_stop()) {
+        this.curr_stop().exit()
+      }
+
+      if (this.curr_step === this.tour_stop_array.length - 1) {
+        this.exit()
+      } else {
+        this.curr_step++
+        this.curr_stop().play('forward')
+        this.set_ui_content()
+      }
     }
   }
 
@@ -64,7 +69,6 @@ class Tour {
 
     this.curr_stop().play('backward')
     this.set_ui_content()
-    this.set_control_btns()
   }
 
   /**
@@ -115,6 +119,19 @@ class Tour {
   }
 
   /**
+   * Fetch images in tour in advance
+   */
+  prefetch_image(tour_stop) {
+    const dom_update = tour_stop.setting.dom_update || {}
+    const container = tour_stop.container
+    for (let key in dom_update) {
+      if (typeof dom_update[key] === 'object' && dom_update[key].hasOwnProperty('src')) {
+        container.find(`#${key}`).attr('src', dom_update[key].src)
+      }
+    }
+  }
+
+  /**
    * Load template into $(#wrapper_id).
    * Then set tour_stop.container = $(temp_div)
    */
@@ -146,6 +163,7 @@ class Tour {
         $(temp_div).hide()
         tour_stop.container = $(temp_div)
         this.bind_template_ui_event(tour_stop)
+        this.prefetch_image(tour_stop)
       })
 
       /**
@@ -201,31 +219,6 @@ class Tour {
   }
 
   /**
-   * Hide or Show next, previous button
-   */
-  set_control_btns() {
-    this.curr_stop()
-      .container.find(`#${this.prev_id}`)
-      .show()
-    this.curr_stop()
-      .container.find(`#${this.next_id}`)
-      .show()
-
-    if (this.curr_step <= 0) {
-      //hide prev button
-      this.curr_stop()
-        .container.find(`#${this.prev_id}`)
-        .hide()
-    }
-    if (this.curr_step >= this.tour_stop_array.length - 1) {
-      //hide next button
-      this.curr_stop()
-        .container.find(`#${this.next_id}`)
-        .hide()
-    }
-  }
-
-  /**
    * Set UI Content
    */
   set_ui_content() {
@@ -238,7 +231,40 @@ class Tour {
           `Expected to set dom content with id: ${key}, but dom is not found`
         )
       } else {
-        selectedDom.html(dom_update[key])
+        /**
+         * Set as pure text
+         */
+        if (typeof dom_update[key] === 'string') {
+          selectedDom.html(dom_update[key])
+        } else if (typeof dom_update[key] === 'object') {
+          /**
+           * Set as pure text
+           */
+          if (dom_update[key].hasOwnProperty('text')) {
+            selectedDom.html(dom_update[key].text)
+          }
+
+          /**
+           * toggle show or hide
+           */
+          if (dom_update[key].visible === false || dom_update[key].visible === "false") {
+            selectedDom.hide()
+          } else {
+            selectedDom.show()
+          }
+
+          /**
+           * Set image src
+           */
+          if (dom_update[key].hasOwnProperty('src')) {
+            selectedDom.attr('src', dom_update[key].src)
+          }
+        } else if (typeof dom_update[key] === 'function') {
+          /**
+           * Set by pure function
+           */
+          dom_update[key](selectedDom)
+        }
       }
     }
 

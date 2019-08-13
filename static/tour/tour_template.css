@@ -25,10 +25,16 @@
   padding: 0 30px;
 }
 
+#tour_wrapper #img {
+  display: block;
+  width: 250px;
+  height: 300px;
+}
+
 #tour_wrapper #window_text {
-  min-height: 150px;
-  min-width: 200px;
+  width: 250px;
   padding-left: 10px;
+  margin-bottom: 10px;
 }
 
 #tour_wrapper #window_text.gray_background {

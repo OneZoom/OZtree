@@ -1016,8 +1016,12 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             "template_style": "static/tour/tour_template.css",
             "dom_update": {
                 "title": "OneZoom Tutorial Example",
-                "tour_prev": "prev",
-                "tour_next": "next"
+                "tour_prev": {
+                    "text": "prev"
+                },
+                "tour_next": {
+                    "text": "next"
+                }
             },
             "style_update": {
                 "window_text": "class-name"
@@ -1027,7 +1031,13 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             {
                 "ott": "991547",
                 "dom_update": {
-                    "window_text": "Slide 1"
+                    "window_text": "Slide 1",
+                    "tour_prev": {
+                        visible: false
+                    },
+                    "img": {
+                        src: "http://images.onezoom.org/99/098/31338098.jpg"
+                    }
                 },
                 //default to null, means waiting for next button to go to next stop
                 "wait": 3000,
@@ -1038,7 +1048,10 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
                 "ott": "991547",
                 "ott_end_id": "81461",
                 "dom_update": {
-                    "window_text": "Slide 2 with style change"
+                    "window_text": "Slide 2 with style change",
+                    "img": {
+                        src: "http://images.onezoom.org/99/727/26848727.jpg"
+                    }
                 },
                 "style_update": {
                     "window_text": "gray_background"
@@ -1049,19 +1062,135 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             {
                 "ott": "81461",
                 "dom_update": {
-                    "window_text": "Slide 3"
+                    "window_text": "Slide 3",
+                    "img": {
+                        visible: false
+                    }
                 }
             },
             {
                 "ott": "81461",
+                "ott_end_id": "99252",
+                "dom_update": {
+                    "window_text": "Slide 4, click next button should goto end of this stop",
+                    "img": {
+                        visible: false
+                    }
+                },
+                "wait": 3000
+            },
+            {
+                "ott": "99252",
                 "ott_end_id": "1062253",
                 "dom_update": {
-                    "window_text": "Slide 4"
+                    "window_text": "Slide 5",
+                    "tour_next": {
+                        visible: false
+                    },
+                    "img": {
+                        visible: false
+                    },
+                    "tour_exit": ($this) => {
+                        //Custom function example
+                        // $this.html("exit_cb_test")
+                    }
                 },
                 "wait": null
             },
         ]
     })
+
+    onezoom.screen_saver.setup_setting({
+        "dom_id": {
+            /**
+             * All the following values are default values.
+             */
+            "wrapper_id": "tour_wrapper",
+            "next_id": "tour_next",
+            "prev_id": "tour_prev",
+            "exit_id": "tour_exit"
+        },
+        "tour_stop_shared": {
+            "template": "static/tour/tour_template.html",
+            "template_style": "static/tour/tour_template.css",
+            "dom_update": {
+                "title": "OneZoom ScreenSaver",
+                "tour_prev": {
+                   "visible": false
+                },
+                "tour_next": {
+                    "visible": false
+                }
+            },
+            "style_update": {
+                "window_text": "class-name"
+            }
+        },
+        "tour_stop": [
+            {
+                "ott": "991547",
+                "dom_update": {
+                    "window_text": "Slide 1",
+                    "img": {
+                        src: "http://images.onezoom.org/99/098/31338098.jpg"
+                    }
+                },
+                "wait": 3000
+            },
+            {
+                "ott": "991547",
+                "ott_end_id": "81461",
+                "dom_update": {
+                    "window_text": "Slide 2 with style change",
+                    "img": {
+                        src: "http://images.onezoom.org/99/727/26848727.jpg"
+                    }
+                },
+                "style_update": {
+                    "window_text": "gray_background"
+                },
+                //transition default wait time is 0
+                "wait": 0
+            },
+            {
+                "ott": "81461",
+                "dom_update": {
+                    "window_text": "Slide 3",
+                    "img": {
+                        visible: false
+                    }
+                },
+                "wait": 3000
+            },
+            {
+                "ott": "81461",
+                "ott_end_id": "99252",
+                "dom_update": {
+                    "window_text": "Slide 4",
+                    "img": {
+                        visible: false
+                    }
+                },
+                "wait": 1000
+            },
+            {
+                "ott": "99252",
+                "ott_end_id": "1062253",
+                "dom_update": {
+                    "window_text": "Slide 5",
+                    "tour_next": {
+                        visible: false
+                    },
+                    "img": {
+                        visible: false
+                    }
+                },
+                "wait": 1500
+            },
+        ]
+    })
+
+    
 
     {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape=False)}}
     setupUI();

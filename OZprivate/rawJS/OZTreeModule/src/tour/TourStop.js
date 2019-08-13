@@ -25,8 +25,34 @@ class TourStop {
    * Exit current stop
    */
   exit() {
-    this.stopped = true
+    this.is_playing = false
     this.container.hide()
+  }
+
+  /**
+   * Called when user press next during a tour animation
+   */
+  goto_end() {
+    if (!this.is_transition_stop()) {
+      throw new Error('Goto end is only valid in transition stop.')
+    } else {
+      this.is_playing = false
+
+      this.onezoom.controller.perform_leap_animation(
+        this.get_OZId(this.setting.ott_end_id)
+      )
+
+      /**
+       * If has wait_time, then execute next after wait_time,
+       * otherwise wait for user click next/prev
+       */
+      const wait_time = this.get_wait_time('forward')
+      if (typeof wait_time === 'number' && wait_time >= 0) {
+        setTimeout(() => {
+          this.tour.goto_next()
+        }, wait_time)
+      }
+    }
   }
 
   /**
@@ -36,7 +62,6 @@ class TourStop {
    * If wait time is not present, then listen to UI event for next action
    */
   play(direction) {
-    this.stopped = false
     this.container.show()
     /**
      * Set button, window, title, style
@@ -47,6 +72,7 @@ class TourStop {
      */
     let promise = null
     if (this.is_transition_stop()) {
+      this.is_playing = true
       this.onezoom.controller.perform_leap_animation(
         this.get_OZId(this.setting.ott)
       )
@@ -55,18 +81,11 @@ class TourStop {
         this.get_OZId(this.setting.ott_end_id)
       )
     } else {
+      this.is_playing = false
       this.onezoom.controller.perform_leap_animation(
         this.get_OZId(this.setting.ott)
       )
       promise = Promise.resolve(null)
-    }
-
-    /**
-     * If current stop has already stopped, then do not excute goto_next.
-     * It happends when user click prev or next button while flying
-     */
-    if (this.stopped) {
-      return
     }
 
     /**
