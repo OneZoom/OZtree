@@ -5,6 +5,7 @@ class Tour {
     this.onezoom = onezoom
     this.curr_step = 0
     this.tour_stop_array = []
+    this.started = false
   }
 
   /**
@@ -12,6 +13,7 @@ class Tour {
    */
   start() {
     this.exit()
+    this.started = true
     this.curr_step = -1
     this.goto_next()
   }
@@ -24,6 +26,7 @@ class Tour {
       this.curr_stop().exit()
     }
     //hide tour
+    this.started = false
     this.curr_step = -1
   }
 
@@ -33,6 +36,9 @@ class Tour {
    * otherwise go to next stop
    */
   goto_next() {
+    if (!this.started) {
+      return
+    }
     if (this.curr_stop() && this.curr_stop().is_transition_stop() && this.curr_stop().is_playing) {
       this.curr_stop().goto_end()
     } else {
