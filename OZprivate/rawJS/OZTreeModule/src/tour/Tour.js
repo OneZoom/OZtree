@@ -1,4 +1,5 @@
 import TourStop from './TourStop'
+import tree_state from '../tree_state';
 
 class Tour {
   constructor(onezoom) {
@@ -6,6 +7,38 @@ class Tour {
     this.curr_step = 0
     this.tour_stop_array = []
     this.started = false
+    this.auto_activate_timer = null
+  }
+
+  /**
+   * Create tour stops based on setting
+   * Create several tour stop dom dialog(popup) based on template
+   */
+  setup_setting(tour_setting) {
+    this.setting = tour_setting
+    this.tour_stop_array = []
+    this.curr_step = 0
+
+    tour_setting.dom_id = tour_setting.dom_id || {}
+    this.wrapper_id = tour_setting.dom_id.wrapper_id || 'tour_wrapper'
+    this.next_id = tour_setting.dom_id.next_id || 'tour_next'
+    this.prev_id = tour_setting.dom_id.prev_id || 'tour_prev'
+    this.exit_id = tour_setting.dom_id.exit_id || 'tour_exit'
+
+    let shared_setting = tour_setting['tour_stop_shared'] || {}
+
+    /**
+     * Merge shared settings with stop setting in tour stop
+     */
+    tour_setting['tour_stop'].forEach(tour_stop_setting => {
+      let merged_setting = {}
+      $.extend(true, merged_setting, shared_setting, tour_stop_setting)
+      this.tour_stop_array.push(new TourStop(this, merged_setting))
+    })
+
+    this.load_template()
+    this.load_ott_id_conversion_map()
+    this.set_auto_start()
   }
 
   /**
@@ -16,6 +49,8 @@ class Tour {
     this.started = true
     this.curr_step = -1
     this.goto_next()
+    //disable automatically start tour once it's started
+    clearTimeout(this.auto_activate_timer)
   }
 
   /**
@@ -28,6 +63,8 @@ class Tour {
     //hide tour
     this.started = false
     this.curr_step = -1
+    //set automatically start tour once it's exited
+    this.set_auto_start()
   }
 
   /**
@@ -78,34 +115,58 @@ class Tour {
   }
 
   /**
-   * Create tour stops based on setting
-   * Create several tour stop dom dialog(popup) based on template
+   * Automatically start tour if auto_activate_after is a number.
+   * Start after 'auto_activate_after' length of inactivity
    */
-  setup_setting(tour_setting) {
-    this.setting = tour_setting
-    this.tour_stop_array = []
-    this.curr_step = 0
+  set_auto_start() {
+    const get_inactive_duration = () => {
+      const now = new Date()
+      const last_active_at = tree_state.last_active_at
+      if (last_active_at === null) {
+        return 0
+      } else {
+        return now - last_active_at
+      }
+    }
 
-    tour_setting.dom_id = tour_setting.dom_id || {}
-    this.wrapper_id = tour_setting.dom_id.wrapper_id || 'tour_wrapper'
-    this.next_id = tour_setting.dom_id.next_id || 'tour_next'
-    this.prev_id = tour_setting.dom_id.prev_id || 'tour_prev'
-    this.exit_id = tour_setting.dom_id.exit_id || 'tour_exit'
-
-    let shared_setting = tour_setting['tour_stop_shared'] || {}
+    const is_condition_pass = () => {
+      let condition_pass = true
+      if (typeof this.setting.auto_activate.condition === 'function') {
+        //user could use condition to conditionally auto start tour
+        condition_pass = this.setting.auto_activate.condition()
+      }
+      return condition_pass
+    }
 
     /**
-     * Merge shared settings with stop setting in tour stop
+     * If auto_activate_after is a number
      */
-    tour_setting['tour_stop'].forEach(tour_stop_setting => {
-      let merged_setting = {}
-      $.extend(true, merged_setting, shared_setting, tour_stop_setting)
-      this.tour_stop_array.push(new TourStop(this, merged_setting))
-    })
+    if (typeof this.setting.auto_activate === 'object' && this.setting.auto_activate !== null) {
+      const auto_activate_after = parseInt(this.setting.auto_activate.inactive_duration)
 
-    this.load_template()
-    this.load_ott_id_conversion_map()
+      /**
+       * Time left before start the tour
+       * If condition test failed, then reset wait time to full length.
+       */
+      const wait_for = is_condition_pass() ? auto_activate_after - get_inactive_duration() : auto_activate_after
+
+      this.auto_activate_timer = setTimeout(() => {
+        if (get_inactive_duration() >= auto_activate_after && is_condition_pass()) {
+          /**
+           * If the tree is inactive for at least 'auto_activate_after' ms, then start the tour
+           */
+          this.start()
+        } else {
+          /**
+           * Otherwise, reset auto start
+           */
+          this.set_auto_start()
+        }
+      }, wait_for)
+    }
   }
+
+
 
   /**
    * Bind previous, next, exit button event

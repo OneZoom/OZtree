@@ -1007,16 +1007,24 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             "dom_id": {
                 /**
                  * All the following values are default values.
+                 * Specify which element to bind the next tour stop, previous tour stop and exit tour event.
                  */
                 "wrapper_id": "tour_wrapper",
                 "next_id": "tour_next",
                 "prev_id": "tour_prev",
                 "exit_id": "tour_exit"
             },
+            /**
+             * Tour stop shared is the shared properties of all tour stop
+             * Each tour stop could overwrite the properties independently
+             */
             "tour_stop_shared": {
                 "template": "static/tour/tour_template.html",
                 "template_style": "static/tour/tour_template.css",
                 "dom_update": {
+                    /**
+                     * Replace content of $('#title'), $('#tour_prev'), $('#tour_next')
+                     */
                     "title": "OneZoom Tutorial Example",
                     "tour_prev": {
                         "text": "prev"
@@ -1026,6 +1034,9 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
                     }
                 },
                 "style_update": {
+                    /**
+                     * Set class name of $('#window_text') to be 'class-name'
+                     */
                     "window_text": "class-name"
                 }
             },
@@ -1035,9 +1046,15 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
                     "dom_update": {
                         "window_text": "Slide 1",
                         "tour_prev": {
+                            /**
+                             * Previous button should be hidden in first stop
+                             */
                             visible: false
                         },
                         "img": {
+                            /**
+                             * Set image source
+                             */
                             src: "http://images.onezoom.org/99/098/31338098.jpg"
                         }
                     },
@@ -1093,8 +1110,9 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
                             visible: false
                         },
                         "tour_exit": ($this) => {
-                            //Custom function example
-                            // $this.html("exit_cb_test")
+                           /**
+                            * You can also manipulate the selected element via function
+                            */
                         }
                     },
                     "wait": null
@@ -1103,6 +1121,16 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
         })
 
         onezoom.screen_saver.setup_setting({
+            /**
+             * Automatically start tour after XXX seconds inactivity.
+             * Tour would only be activated when condition test passed or if condition test is not given.
+             */
+            "auto_activate": {
+                inactive_duration: 120000, //2 minutes
+                condition: () => {
+                    return !$('#external-modal').is(':visible') && !$('#info-modal').is(':visible')
+                }
+            },
             "dom_id": {
                 /**
                  * All the following values are default values.

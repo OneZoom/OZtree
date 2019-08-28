@@ -27,10 +27,14 @@ class TreeState {
     this.fly_timer = null;
     this.handler = {};
     this.url_parsed = false;
+    this.last_active_at = new Date();
     let self = this;
     setTimeout(function() {
       self.url_parsed = true;
     }, 5000);
+    document.onmousemove = (ev) => {
+      this.last_active_at = new Date()
+    }
   }
   setup_canvas(canvas) {
     this._canvas = canvas;
