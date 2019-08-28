@@ -1126,10 +1126,18 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
              * Tour would only be activated when condition test passed or if condition test is not given.
              */
             "auto_activate": {
-                inactive_duration: 120000, //2 minutes
+                inactive_duration: 1200000, //20 minutes
                 condition: () => {
                     return !$('#external-modal').is(':visible') && !$('#info-modal').is(':visible')
                 }
+            },
+            "interaction": {
+                /**
+                 * block: disable interaction
+                 * exit: interaction would cause tour exit
+                 * no_effect: interaction would not have any effect. This is default.
+                 */
+                effect: "exit"
             },
             "dom_id": {
                 /**

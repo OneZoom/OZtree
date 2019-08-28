@@ -1,5 +1,8 @@
 import TourStop from './TourStop'
 import tree_state from '../tree_state';
+import { add_hook } from '../util';
+
+const Interaction_Action_Arr = ['mouse_down', 'mouse_up', 'mouse_move', 'mouse_dblclick', 'mouse_wheel', 'touch_start', 'touch_move', 'touch_end']
 
 class Tour {
   constructor(onezoom) {
@@ -36,6 +39,17 @@ class Tour {
       this.tour_stop_array.push(new TourStop(this, merged_setting))
     })
 
+    /**
+     * Exit tour after interaction if setting.interaction.effect equals 'exit'
+     */
+    if (this.setting.interaction && this.setting.interaction.effect === 'exit') {
+      Interaction_Action_Arr.forEach(action_name => {
+        add_hook(action_name, () => {
+            this.exit()
+        })
+      })
+    }
+
     this.load_template()
     this.load_ott_id_conversion_map()
     this.set_auto_start()
@@ -51,6 +65,11 @@ class Tour {
     this.goto_next()
     //disable automatically start tour once it's started
     clearTimeout(this.auto_activate_timer)
+
+    //disable interaction if interaction.effect equals to 'block'
+    if (this.setting.interaction && this.setting.interaction.effect === 'block') {
+      tree_state.disable_interaction = true
+    }
   }
 
   /**
@@ -65,6 +84,7 @@ class Tour {
     this.curr_step = -1
     //set automatically start tour once it's exited
     this.set_auto_start()
+    tree_state.disable_interaction = false
   }
 
   /**
