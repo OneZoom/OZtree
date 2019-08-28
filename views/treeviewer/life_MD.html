@@ -15,7 +15,12 @@
 setup_params = {
   'UI_layer': {
     'page':'UI_layer.load', 
-    'vars':{'tabs':['wiki', 'ozspons'], 'links':'none'} },   
+    'vars':{
+      'tabs':['wiki', 'ozspons'], 
+      'links':'none',
+      'hide_control_settings': True,
+    } 
+  },   
   'popups':{
     'vars':{'embed':3, 'no_sponsoring':1}, #don't need to keep track of reservation_code
   },
