@@ -118,53 +118,60 @@ function setup(
 
   return_value.add_hook = add_hook;
 
-  /**
-   * Leave the user to decide when to start the application
-   * The reason for creating this function is sometimes user might want to set variables in onezoom
-   * before the application actually runs.
-   * For example, it might need to fetch ozId of the given ott id from URL so that in the first frame,
-   * it shows the node in the URL.
-   */
-  return_value.run = () => {
-    //setTimeout so that draw loading would be displayed before build tree starts.
-    setTimeout(function () {
-      //start fetching metadata for the tree, using global variables that have been defined in files like 
-      //10000 is cut threshold for cut_position_map_json_str
-      //TODO: It shouldn't be hard coded.
-      // the cut map file should eventually contain the information of what it's for. cut_map_json is a 
-      // stringified json object which maps node position in rawData to its cut position of its children in rawData
+  //setTimeout so that draw loading would be displayed before build tree starts.
+  setTimeout(function () {
+    //start fetching metadata for the tree, using global variables that have been defined in files like 
+    //10000 is cut threshold for cut_position_map_json_str
+    //TODO: It shouldn't be hard coded.
+    // the cut map file should eventually contain the information of what it's for. cut_map_json is a 
+    // stringified json object which maps node position in rawData to its cut position of its children in rawData
 
-      //10000 should be replaced with the threshold used to generate cut_position_map.js. If the string of a node in ]
-      //rawData is shorter than cut_threshold, then there is no need to find its cut position and add it in cut_map_json.
-      let cut_threshold = window.cut_threshold || 10000;
-      let tree_date = window.tree_date || "{}";
+    //10000 should be replaced with the threshold used to generate cut_position_map.js. If the string of a node in ]
+    //rawData is shorter than cut_threshold, then there is no need to find its cut position and add it in cut_map_json.
+    let cut_threshold = window.cut_threshold || 10000;
+    let tree_date = window.tree_date || "{}";
 
 
-      let data_obj = {
-        raw_data: condensed_newick,
-        cut_map: JSON.parse(dichotomy_cut_position_map_json_string || "{}"),
-        poly_cut_map: JSON.parse(polytomy_cut_position_map_json_string || "{}"),
-        metadata: metadata,
-        cut_threshold: cut_thresholds || 10000,
-        tree_date: tree_dates || "{}"
-      }
+    let data_obj = {
+      raw_data: condensed_newick,
+      cut_map: JSON.parse(dichotomy_cut_position_map_json_string || "{}"),
+      poly_cut_map: JSON.parse(polytomy_cut_position_map_json_string || "{}"),
+      metadata: metadata,
+      cut_threshold: cut_thresholds || 10000,
+      tree_date: tree_dates || "{}"
+    }
 
-      let controller = return_value.controller
+    let controller = return_value.controller
 
-      controller.build_tree(data_obj);
-      //Jump or fly to a place in the tree marked by the url when the page loads.
-      setup_loading_page();
-      controller.find_proper_initial_threshold();
-      controller.trigger_refresh_loop();
+    controller.build_tree(data_obj);
+    //Jump or fly to a place in the tree marked by the url when the page loads.
+    setup_loading_page();
+    controller.find_proper_initial_threshold();
+    controller.trigger_refresh_loop();
 
-      //listen to user mouse, touch, icon click, window resize and user navigation events.
-      controller.bind_listener();
-      //start garbage collection of tree to keep the size of the tree in memory reasonable
-      garbage_collection_start();
-    }, 50);
-  }
+    //listen to user mouse, touch, icon click, window resize and user navigation events.
+    controller.bind_listener();
+    //start garbage collection of tree to keep the size of the tree in memory reasonable
+    garbage_collection_start();
+  }, 50);
 
   return return_value;
 }
 
+/**
+ * Call this function would return an object containing API helpers
+ * User could use this object to call API helpers without create OneZoom instance.
+ * 
+ * @param {Object} server_urls - A named key:value dict of urls that the api manager etc needs to fire
+ *     off AJAX requests. See global_config.js for the list of necessary names
+ */
+function api_utils_setup(server_urls) {
+  api_manager.set_urls(server_urls)
+  return {
+    search_manager: search_manager,
+    process_taxon_list: process_taxon_list
+  }
+}
+
 export default setup;
+export { api_utils_setup }

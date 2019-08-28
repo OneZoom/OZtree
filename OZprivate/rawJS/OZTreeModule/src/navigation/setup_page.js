@@ -100,7 +100,7 @@ function setup_page_by_state(state) {
         config.ui.badOTT(state.ott);
       }
     }
-    throw error;
+    // throw error;
   });
 }
 
