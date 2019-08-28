@@ -136,7 +136,7 @@ function parse_querystring(state, querystring) {
       //if the user wants a specific language: not the one given by the browser
       let search_jump_mode = querystring[i].substring(querystring[i].indexOf("=") + 1);
       state.search_jump_mode = search_jump_mode;
-    } else if (/^ott=/.test(querystring[i])) {
+    } else if (/^ottdef=/.test(querystring[i])) {
       //if the user wants a specific language: not the one given by the browser
       let home_ott_id = querystring[i].substring(querystring[i].indexOf("=") + 1);
       state.home_ott_id = home_ott_id;

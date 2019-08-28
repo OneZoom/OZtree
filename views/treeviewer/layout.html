@@ -992,7 +992,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
      * If ott is in the URL, then before loading the app, getting the ozId from the ott id is needed, so that
      * the tree can centered on a specific node after loading.
      */
-    var home_ott_id = getParameterByName('ott')
+    var home_ott_id = getParameterByName('ottdef')
     if (home_ott_id) {
         onezoom.utils.process_taxon_list(`[{"OTT":${home_ott_id}}]`, function(){
             onezoom.run()
