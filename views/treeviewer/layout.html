@@ -1135,9 +1135,12 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
                 /**
                  * block: disable interaction
                  * exit: interaction would cause tour exit
+                 * exit_after_confirmation: interaction would cause tour exit, but user need to confirm first
                  * no_effect: interaction would not have any effect. This is default.
                  */
-                effect: "exit"
+                effect: "exit_after_confirmation",
+                confirm_template: 'static/tour/exit_confirm.html',
+                confirm_template_style: 'static/tour/exit_confirm.css',
             },
             "dom_id": {
                 /**
@@ -1146,7 +1149,9 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
                 "wrapper_id": "tour_wrapper",
                 "next_id": "tour_next",
                 "prev_id": "tour_prev",
-                "exit_id": "tour_exit"
+                "exit_id": "tour_exit",
+                "exit_confirm_id": "exit_confirm",
+                "exit_cancel_id": "exit_cancel"
             },
             "tour_stop_shared": {
                 "template": "static/tour/tour_template.html",

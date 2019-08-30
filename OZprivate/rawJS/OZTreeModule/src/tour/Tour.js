@@ -2,7 +2,7 @@ import TourStop from './TourStop'
 import tree_state from '../tree_state';
 import { add_hook } from '../util';
 
-const Interaction_Action_Arr = ['mouse_down', 'mouse_up', 'mouse_move', 'mouse_dblclick', 'mouse_wheel', 'touch_start', 'touch_move', 'touch_end']
+const Interaction_Action_Arr = ['mouse_down', 'mouse_wheel', 'touch_start', 'touch_move', 'touch_end']
 
 class Tour {
   constructor(onezoom) {
@@ -27,6 +27,8 @@ class Tour {
     this.next_id = tour_setting.dom_id.next_id || 'tour_next'
     this.prev_id = tour_setting.dom_id.prev_id || 'tour_prev'
     this.exit_id = tour_setting.dom_id.exit_id || 'tour_exit'
+    this.exit_confirm_id = tour_setting.dom_id.exit_confirm_id || 'exit_confirm'
+    this.exit_cancel_id = tour_setting.dom_id.exit_cancel_id || 'exit_cancel'
 
     let shared_setting = tour_setting['tour_stop_shared'] || {}
 
@@ -42,10 +44,23 @@ class Tour {
     /**
      * Exit tour after interaction if setting.interaction.effect equals 'exit'
      */
-    if (this.setting.interaction && this.setting.interaction.effect === 'exit') {
+    if (this.setting.interaction && 
+      (
+        this.setting.interaction.effect === 'exit' || 
+        this.setting.interaction.effect === 'exit_after_confirmation'
+      )) {
       Interaction_Action_Arr.forEach(action_name => {
         add_hook(action_name, () => {
-            this.exit()
+          if (this.started) {
+            /**
+             * Only call exit if tour is running
+             */
+            if (this.setting.interaction.effect === 'exit') {
+              this.exit()
+            } else if (this.exit_confirm_popup) {
+              this.exit_confirm_popup.show()
+            }
+          }
         })
       })
     }
@@ -206,6 +221,19 @@ class Tour {
   }
 
   /**
+   * Bind exit or hide exit confirm events on the buttons of exit confirm popup
+   */
+  bind_exit_confirm_event() {
+    this.exit_confirm_popup.find(`#${this.exit_confirm_id}`).click(() => {
+      this.exit()
+      this.exit_confirm_popup.hide()
+    })
+    this.exit_confirm_popup.find(`#${this.exit_cancel_id}`).click(() => {
+      this.exit_confirm_popup.hide()
+    })
+  }
+
+  /**
    * Fetch images in tour in advance
    */
   prefetch_image(tour_stop) {
@@ -232,6 +260,8 @@ class Tour {
         }, but none exist`
       )
     }
+
+    this.load_exit_confirm_popup()
 
     this.tour_stop_array.forEach(tour_stop => {
       /**
@@ -276,6 +306,45 @@ class Tour {
         )
       }
     })
+  }
+
+
+  /**
+    * Append exit confirmation popup into tour wrapper
+    */
+  load_exit_confirm_popup() {
+    if (this.setting.interaction && this.setting.interaction.effect === 'exit_after_confirmation') {
+      if (!this.setting.interaction.hasOwnProperty('confirm_template')) {
+        console.error('You choose to popup confirmation popup when user interacts, but no popup template is provided')
+      } else {
+        const template_url = location.protocol +
+          '//' +
+          location.host +
+          '/' +
+          this.setting.interaction.confirm_template
+
+        const temp_div = document.createElement('div')
+        $(temp_div).load(`${template_url} .container`, () => {
+          $(`#${this.wrapper_id}`).append($(temp_div))
+          $(temp_div).hide()
+          this.exit_confirm_popup = $(temp_div)
+          this.bind_exit_confirm_event()
+        })
+
+        const style_url =
+          location.protocol +
+          '//' +
+          location.host +
+          '/' +
+          this.setting.interaction.confirm_template_style
+        $('head').append(
+          $('<link rel="stylesheet" type="text/css" />').attr(
+            'href',
+            style_url
+          )
+        )
+      }
+    }
   }
 
   /**

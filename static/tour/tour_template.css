@@ -5,7 +5,7 @@
   z-index: 100;
 }
 
-#tour_wrapper .container {
+#tour_wrapper .tour_container {
   border: 1px solid #cccccc;
   width: fit-content;
   background: white;
