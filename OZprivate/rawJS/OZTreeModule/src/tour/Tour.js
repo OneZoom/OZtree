@@ -58,6 +58,7 @@ class Tour {
             if (this.setting.interaction.effect === 'exit') {
               this.exit()
             } else if (this.exit_confirm_popup) {
+              this.pause()
               this.exit_confirm_popup.show()
             }
           }
@@ -81,9 +82,34 @@ class Tour {
     //disable automatically start tour once it's started
     clearTimeout(this.auto_activate_timer)
 
-    //disable interaction if interaction.effect equals to 'block'
-    if (this.setting.interaction && this.setting.interaction.effect === 'block') {
+    /**
+     * disable interaction if interaction.effect equals to 
+     * 'block', 'exit', or 'exit_after_confirmation'
+     */
+    if (this.setting.interaction && (
+      this.setting.interaction.effect === 'block' || 
+      this.setting.interaction.effect === 'exit' ||
+      this.setting.interaction.effect === 'exit_after_confirmation'
+      )) {
       tree_state.disable_interaction = true
+    }
+  }
+
+  /**
+   * Pause tour
+   */
+  pause() {
+    if (this.curr_stop()) {
+      this.curr_stop().pause()
+    }
+  }
+
+  /**
+   * Continue paused tour stop
+   */
+  continue() {
+    if (this.curr_stop()) {
+      this.curr_stop().continue()
     }
   }
 
@@ -111,7 +137,7 @@ class Tour {
     if (!this.started) {
       return
     }
-    if (this.curr_stop() && this.curr_stop().is_transition_stop() && this.curr_stop().is_playing) {
+    if (this.curr_stop() && this.curr_stop().is_transition_stop() && this.curr_stop().state === 'TOUR_STOP_FLYING') {
       this.curr_stop().goto_end()
     } else {
       if (this.curr_stop()) {
@@ -179,6 +205,9 @@ class Tour {
     if (typeof this.setting.auto_activate === 'object' && this.setting.auto_activate !== null) {
       const auto_activate_after = parseInt(this.setting.auto_activate.inactive_duration)
 
+      if (isNaN(auto_activate_after) || auto_activate_after === 0) {
+        return
+      }
       /**
        * Time left before start the tour
        * If condition test failed, then reset wait time to full length.
@@ -229,6 +258,7 @@ class Tour {
       this.exit_confirm_popup.hide()
     })
     this.exit_confirm_popup.find(`#${this.exit_cancel_id}`).click(() => {
+      this.continue()
       this.exit_confirm_popup.hide()
     })
   }

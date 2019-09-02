@@ -1,10 +1,20 @@
 import data_repo from '../factory/data_repo'
+import tree_state from '../tree_state'
+
+//Tour Stop States
+const TOUR_STOP_INIT = 'TOUR_STOP_INIT'
+const TOUR_STOP_END = 'TOUR_STOP_END'  //in the end of tour stop, waiting for X seconds or user press next to continue
+const TOUR_STOP_FLYING = 'TOUR_STOP_FLYING'
+const TOUR_STOP_EXIT = 'TOUR_STOP_EXIT'
 
 class TourStop {
   constructor(tour, setting) {
     this.tour = tour
     this.onezoom = this.tour.onezoom
     this.setting = setting
+    this.goto_next_timer = null
+    this.state = TOUR_STOP_INIT
+    this.direction = 'forward'
 
     //Container would be set when tour.setup_setting is called
     this.container = null
@@ -25,7 +35,8 @@ class TourStop {
    * Exit current stop
    */
   exit() {
-    this.is_playing = false
+    this.pause()
+    this.state = TOUR_STOP_EXIT
     this.container.hide()
   }
 
@@ -36,7 +47,7 @@ class TourStop {
     if (!this.is_transition_stop()) {
       throw new Error('Goto end is only valid in transition stop.')
     } else {
-      this.is_playing = false
+      this.state = TOUR_STOP_END
 
       this.onezoom.controller.perform_leap_animation(
         this.get_OZId(this.setting.ott_end_id)
@@ -46,12 +57,34 @@ class TourStop {
        * If has wait_time, then execute next after wait_time,
        * otherwise wait for user click next/prev
        */
-      const wait_time = this.get_wait_time('forward')
-      if (typeof wait_time === 'number' && wait_time >= 0) {
-        setTimeout(() => {
-          this.tour.goto_next()
-        }, wait_time)
-      }
+      this.direction = 'forward'
+      this.wait_and_goto_next()
+    }
+  }
+
+  /**
+   * 1. Pause fly animation
+   * 2. Reset timeout which when triggered would jump to next tour stop
+   */
+  pause() {
+    tree_state.flying = false
+    clearTimeout(this.goto_next_timer)
+  }
+
+  continue() {
+    if (this.state === TOUR_STOP_INIT) {
+      this.play('forward')
+    } else if (this.state === TOUR_STOP_FLYING) {
+      let promise = this.onezoom.controller.perform_flight_transition(
+        null,
+        this.get_OZId(this.setting.ott_end_id)
+      )
+      promise.then(() => {
+        this.state = TOUR_STOP_END
+        this.wait_and_goto_next()
+      })
+    } else if (this.state === TOUR_STOP_END) {
+      this.wait_and_goto_next()
     }
   }
 
@@ -62,6 +95,8 @@ class TourStop {
    * If wait time is not present, then listen to UI event for next action
    */
   play(direction) {
+    this.direction = direction
+    this.state = TOUR_STOP_INIT
     this.container.show()
     /**
      * Set button, window, title, style
@@ -72,7 +107,7 @@ class TourStop {
      */
     let promise = null
     if (this.is_transition_stop()) {
-      this.is_playing = true
+      this.state = TOUR_STOP_FLYING
       this.onezoom.controller.perform_leap_animation(
         this.get_OZId(this.setting.ott)
       )
@@ -81,40 +116,44 @@ class TourStop {
         this.get_OZId(this.setting.ott_end_id)
       )
     } else {
-      this.is_playing = false
       this.onezoom.controller.perform_leap_animation(
         this.get_OZId(this.setting.ott)
       )
-      promise = Promise.resolve(null)
+      promise = Promise.resolve(true)
     }
 
-    /**
-     * If has wait_time, then execute next after wait_time,
-     * otherwise wait for user click next/prev
-     */
-    const wait_time = this.get_wait_time(direction)
+    promise.then(() => {
+      this.state = TOUR_STOP_END
+      this.wait_and_goto_next()
+    })
+  }
+
+  /**
+   * If has wait_time, then execute next after wait_time,
+   * otherwise wait for user click next/prev
+   */
+  wait_and_goto_next() {
+    const wait_time = this.get_wait_time()
     if (typeof wait_time === 'number' && wait_time >= 0) {
-      promise.then(() => {
-        setTimeout(() => {
-          this.tour.goto_next()
-        }, wait_time)
-      })
+      this.goto_next_timer = setTimeout(() => {
+        this.tour.goto_next()
+      }, wait_time)
     }
   }
 
-  get_wait_time(direction) {
+  get_wait_time() {
     let forward_wait_time = this.is_transition_stop() ? 0 : null
 
     if (this.setting.hasOwnProperty('wait')) {
       forward_wait_time = this.setting.wait
     }
 
-    if (direction === 'forward') {
+    if (this.direction === 'forward') {
       return forward_wait_time
     }
 
     if (
-      direction === 'backward' &&
+      this.direction === 'backward' &&
       this.setting.hasOwnProperty('wait_after_prev')
     ) {
       return this.setting.wait_after_prev
