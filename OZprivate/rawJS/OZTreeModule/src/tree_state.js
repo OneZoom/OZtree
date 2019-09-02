@@ -24,7 +24,6 @@ class TreeState {
     this.recommond_threshold = config.threshold.default;
     this.action = null;
     this.canvas_repaint_recently = false;
-    this.fly_timer = null;
     this.handler = {};
     this.url_parsed = false;
     this.last_active_at = new Date();
@@ -54,7 +53,6 @@ class TreeState {
   set flying(val) {
     this._flying = val;
     if (val === false) {
-      clearTimeout(this.fly_timer);
       call_hook("flying_finish");
     }
   }
