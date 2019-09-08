@@ -352,19 +352,6 @@ ul#searchboxes {
     border-top: 1px solid #DDD;
 }
 
-#controlButtons #resetButton a {
-    /* put a ring around the reset chevron (no equivalent UIkit3 icon)*/
-    box-sizing: border-box;
-    padding: 0;
-    width: auto;
-    border: 1px solid #999;
-    border-radius: 20%; 
-    margin: 0.5rem auto;
-}
-#controlButtons #resetButton a:hover {
-    border: 1px solid #666;
-}
-
 /* hide any "expert-mode" buttons */
 #controlButtons #screenshotButton
 {

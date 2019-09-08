@@ -53,7 +53,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
   </div>
   <li id="inButton"    class="uk-visible@s"><a uk-tooltip="pos: right" title="{{=T('Zoom in')}}" uk-icon="icon: plus"></a></li>
   <li id="outButton"    class="uk-visible@s"><a uk-tooltip="pos: right" title="{{=T('Zoom out')}}" uk-icon="icon: minus"></a></li>
-  <li id="resetButton" class="uk-visible@s"><a uk-tooltip="pos: right" title="{{=T('Reset view')}}" uk-icon="icon: chevron-up;  ratio: 0.9"></a></li>
+  <li id="resetButton" class="uk-visible@s"><a uk-tooltip="pos: right" title="{{=T('Reset view')}}" uk-icon="icon: refresh"></a></li>
   <li id="screenshotButton"                ><a uk-tooltip="pos: right" title="{{=T('Take an svg screenshot')}}" onclick="make_screenshot(this);" uk-icon="icon: camera"></a></li>
   <li id="singleInfoButton"                ><a uk-tooltip="pos: right" title="{{=T('Information')}}" href="#info-modal" uk-toggle uk-icon="icon: info"></a></li>
   <li id="multipleInfoButton"              ><a uk-tooltip="pos: right" title="{{=T('Information')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: info"></a></li>
