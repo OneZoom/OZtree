@@ -696,6 +696,12 @@ function setupUI() {
         .click(function () {
             $('#controlButtons').addClass('button-hint-visible')
         })
+    
+    $('#controlButtons #howToUseButton')
+        .click(function () {
+            //activate tutorial
+            onezoom.tour.start()
+        })
 
 
     $('input[name="imgsource"]').change(function() {onezoom.controller.set_image_source(this.value)});

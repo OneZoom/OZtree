@@ -89,7 +89,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
   </li>
   <li id="howToUseButton">
     <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('How to use')}}" href="#howuse-modal" uk-toggle uk-icon="icon: question"></a>
+      <a uk-tooltip="pos: right" title="{{=T('How to use')}}" uk-icon="icon: question"></a>
     </div>
     <span class='button-explanation'>How to use</span>
   </li>
