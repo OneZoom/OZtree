@@ -989,6 +989,8 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
     
     var home_ott_id = getParameterByName('ottdef')
     var screen_saver_timer = parseInt(getParameterByName('ssaver'))
+    var button_expanded_cached = null
+
     if (home_ott_id) {
         /**
          * If ottdef is in the URL, then before loading the app, getting the ozId from the ott id is needed, so that
@@ -1017,6 +1019,16 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             window.tree_date);
 
         onezoom.tour.setup_setting({
+            "start_cb": () => {
+                //track whether the button is expanded when screen saver start
+                button_expanded_cached = $('#controlButtons').hasClass('button-hint-visible')
+                $('#controlButtons').removeClass('button-hint-visible')
+            },
+            "exit_cb": () => {
+                if (button_expanded_cached) {
+                    $('#controlButtons').addClass('button-hint-visible')
+                }
+            },
             "dom_id": {
                 /**
                  * All the following values are default values.
@@ -1146,6 +1158,16 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
                         return !$('#external-modal').is(':visible') &&
                             !$('#info-modal').is(':visible') &&
                             !$('#howuse-modal').is(':visible')
+                    }
+                },
+                "start_cb": () => {
+                    //track whether the button is expanded when screen saver start
+                    button_expanded_cached = $('#controlButtons').hasClass('button-hint-visible')
+                    $('#controlButtons').removeClass('button-hint-visible')
+                },
+                "exit_cb": () => {
+                    if (button_expanded_cached) {
+                        $('#controlButtons').addClass('button-hint-visible')
                     }
                 },
                 "interaction": {

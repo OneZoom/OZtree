@@ -25,6 +25,9 @@ class Tour {
     this.tour_stop_array = []
     this.curr_step = 0
 
+    this.start_cb = tour_setting.start_cb
+    this.exit_cb = tour_setting.exit_cb
+
     tour_setting.dom_id = tour_setting.dom_id || {}
     this.wrapper_id = tour_setting.dom_id.wrapper_id || 'tour_wrapper'
     this.next_id = tour_setting.dom_id.next_id || 'tour_next'
@@ -78,7 +81,7 @@ class Tour {
    * Start tour
    */
   start() {
-    this.exit()
+    this.exit(false)
 
     //Enable tour style
     $('#tour_style_' + this.tour_id).removeAttr('disabled')
@@ -100,6 +103,10 @@ class Tour {
       this.setting.interaction.effect === 'exit_after_confirmation'
     )) {
       tree_state.disable_interaction = true
+    }
+
+    if (typeof this.start_cb === 'function') {
+      this.start_cb()
     }
   }
 
@@ -124,7 +131,7 @@ class Tour {
   /**
    * Exit tour
    */
-  exit() {
+  exit(invoke_cb = true) {
     if (this.curr_stop()) {
       this.curr_stop().exit()
     }
@@ -139,6 +146,10 @@ class Tour {
     //set automatically start tour once it's exited
     this.set_auto_start()
     tree_state.disable_interaction = false
+
+    if (invoke_cb && typeof this.exit_cb === 'function') {
+      this.exit_cb()
+    }
   }
 
   /**
