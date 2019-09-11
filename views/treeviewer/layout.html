@@ -988,6 +988,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
     {{if is_testing:}}console.log("Starting OneZoom viewer");{{pass}}
     
     var home_ott_id = getParameterByName('ottdef')
+    var screen_saver_timer = parseInt(getParameterByName('ssaver'))
     if (home_ott_id) {
         /**
          * If ottdef is in the URL, then before loading the app, getting the ozId from the ott id is needed, so that
@@ -1132,120 +1133,123 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             ]
         })
 
-        onezoom.screen_saver.setup_setting({
-            /**
-             * Automatically start tour after XXX seconds inactivity.
-             * Tour would only be activated when condition test passed or if condition test is not given.
-             */
-            "auto_activate": {
-                inactive_duration: 1200000, //set a number to auto start after XXX ms
-                condition: () => {
-                    return !$('#external-modal').is(':visible') && 
-                        !$('#info-modal').is(':visible') && 
-                        !$('#howuse-modal').is(':visible')
-                }
-            },
-            "interaction": {
+        //Only setup screen saver if screen_saver_timer is defined
+        if (!isNaN(screen_saver_timer)) {
+            onezoom.screen_saver.setup_setting({
                 /**
-                 * block: disable interaction
-                 * exit: interaction would cause tour exit
-                 * exit_after_confirmation: interaction would cause tour exit, but user need to confirm first
-                 * no_effect: interaction would not have any effect. This is default.
+                 * Automatically start tour after XXX seconds inactivity.
+                 * Tour would only be activated when condition test passed or if condition test is not given.
                  */
-                effect: "exit_after_confirmation",
-                confirm_template: 'static/tour/exit_confirm.html',
-                confirm_template_style: 'static/tour/exit_confirm.css',
-            },
-            "dom_id": {
-                /**
-                 * All the following values are default values.
-                 */
-                "wrapper_id": "tour_wrapper",
-                "next_id": "tour_next",
-                "prev_id": "tour_prev",
-                "exit_id": "tour_exit",
-                "exit_confirm_id": "exit_confirm",
-                "exit_cancel_id": "exit_cancel"
-            },
-            "tour_stop_shared": {
-                "template": "static/tour/tour_template.html",
-                "template_style": "static/tour/tour_template.css",
-                "dom_update": {
-                    "title": "OneZoom ScreenSaver",
-                    "tour_prev": {
-                        "visible": false
-                    },
-                    "tour_next": {
-                        "visible": false
+                "auto_activate": {
+                    inactive_duration: screen_saver_timer * 1000, //set a number to auto start after XXX ms
+                    condition: () => {
+                        return !$('#external-modal').is(':visible') &&
+                            !$('#info-modal').is(':visible') &&
+                            !$('#howuse-modal').is(':visible')
                     }
                 },
-                "style_update": {
-                    "window_text": "class-name"
-                }
-            },
-            "tour_stop": [
-                {
-                    "ott": "991547",
-                    "dom_update": {
-                        "window_text": "Slide 1",
-                        "img": {
-                            src: "http://images.onezoom.org/99/098/31338098.jpg"
-                        }
-                    },
-                    "wait": 3000
+                "interaction": {
+                    /**
+                     * block: disable interaction
+                     * exit: interaction would cause tour exit
+                     * exit_after_confirmation: interaction would cause tour exit, but user need to confirm first
+                     * no_effect: interaction would not have any effect. This is default.
+                     */
+                    effect: "exit_after_confirmation",
+                    confirm_template: 'static/tour/exit_confirm.html',
+                    confirm_template_style: 'static/tour/exit_confirm.css',
                 },
-                {
-                    "ott": "991547",
-                    "ott_end_id": "81461",
+                "dom_id": {
+                    /**
+                     * All the following values are default values.
+                     */
+                    "wrapper_id": "tour_wrapper",
+                    "next_id": "tour_next",
+                    "prev_id": "tour_prev",
+                    "exit_id": "tour_exit",
+                    "exit_confirm_id": "exit_confirm",
+                    "exit_cancel_id": "exit_cancel"
+                },
+                "tour_stop_shared": {
+                    "template": "static/tour/tour_template.html",
+                    "template_style": "static/tour/tour_template.css",
                     "dom_update": {
-                        "window_text": "Slide 2 with style change",
-                        "img": {
-                            src: "http://images.onezoom.org/99/727/26848727.jpg"
+                        "title": "OneZoom ScreenSaver",
+                        "tour_prev": {
+                            "visible": false
+                        },
+                        "tour_next": {
+                            "visible": false
                         }
                     },
                     "style_update": {
-                        "window_text": "gray_background"
-                    },
-                    //transition default wait time is 0
-                    "wait": 0
+                        "window_text": "class-name"
+                    }
                 },
-                {
-                    "ott": "81461",
-                    "dom_update": {
-                        "window_text": "Slide 3",
-                        "img": {
-                            visible: false
-                        }
-                    },
-                    "wait": 3000
-                },
-                {
-                    "ott": "81461",
-                    "ott_end_id": "99252",
-                    "dom_update": {
-                        "window_text": "Slide 4",
-                        "img": {
-                            visible: false
-                        }
-                    },
-                    "wait": 1000
-                },
-                {
-                    "ott": "99252",
-                    "ott_end_id": "1062253",
-                    "dom_update": {
-                        "window_text": "Slide 5",
-                        "tour_next": {
-                            visible: false
+                "tour_stop": [
+                    {
+                        "ott": "991547",
+                        "dom_update": {
+                            "window_text": "Slide 1",
+                            "img": {
+                                src: "http://images.onezoom.org/99/098/31338098.jpg"
+                            }
                         },
-                        "img": {
-                            visible: false
-                        }
+                        "wait": 3000
                     },
-                    "wait": 1500
-                },
-            ]
-        })
+                    {
+                        "ott": "991547",
+                        "ott_end_id": "81461",
+                        "dom_update": {
+                            "window_text": "Slide 2 with style change",
+                            "img": {
+                                src: "http://images.onezoom.org/99/727/26848727.jpg"
+                            }
+                        },
+                        "style_update": {
+                            "window_text": "gray_background"
+                        },
+                        //transition default wait time is 0
+                        "wait": 0
+                    },
+                    {
+                        "ott": "81461",
+                        "dom_update": {
+                            "window_text": "Slide 3",
+                            "img": {
+                                visible: false
+                            }
+                        },
+                        "wait": 3000
+                    },
+                    {
+                        "ott": "81461",
+                        "ott_end_id": "99252",
+                        "dom_update": {
+                            "window_text": "Slide 4",
+                            "img": {
+                                visible: false
+                            }
+                        },
+                        "wait": 1000
+                    },
+                    {
+                        "ott": "99252",
+                        "ott_end_id": "1062253",
+                        "dom_update": {
+                            "window_text": "Slide 5",
+                            "tour_next": {
+                                visible: false
+                            },
+                            "img": {
+                                visible: false
+                            }
+                        },
+                        "wait": 1500
+                    },
+                ]
+            })
+        }
     
         {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape = False)}}
         setupUI();
