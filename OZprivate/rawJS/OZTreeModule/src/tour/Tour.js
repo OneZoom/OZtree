@@ -4,8 +4,11 @@ import { add_hook } from '../util';
 
 const Interaction_Action_Arr = ['mouse_down', 'mouse_wheel', 'touch_start', 'touch_move', 'touch_end']
 
+let tour_id = 1
+
 class Tour {
   constructor(onezoom) {
+    this.tour_id = tour_id++
     this.onezoom = onezoom
     this.curr_step = 0
     this.tour_stop_array = []
@@ -44,9 +47,9 @@ class Tour {
     /**
      * Exit tour after interaction if setting.interaction.effect equals 'exit'
      */
-    if (this.setting.interaction && 
+    if (this.setting.interaction &&
       (
-        this.setting.interaction.effect === 'exit' || 
+        this.setting.interaction.effect === 'exit' ||
         this.setting.interaction.effect === 'exit_after_confirmation'
       )) {
       Interaction_Action_Arr.forEach(action_name => {
@@ -76,6 +79,11 @@ class Tour {
    */
   start() {
     this.exit()
+
+    //Enable tour style
+    $('#tour_style_' + this.tour_id).removeAttr('disabled')
+    $('#tour_exit_confirm_style_' + this.tour_id).removeAttr('disabled')
+
     this.started = true
     this.curr_step = -1
     this.goto_next()
@@ -87,10 +95,10 @@ class Tour {
      * 'block', 'exit', or 'exit_after_confirmation'
      */
     if (this.setting.interaction && (
-      this.setting.interaction.effect === 'block' || 
+      this.setting.interaction.effect === 'block' ||
       this.setting.interaction.effect === 'exit' ||
       this.setting.interaction.effect === 'exit_after_confirmation'
-      )) {
+    )) {
       tree_state.disable_interaction = true
     }
   }
@@ -120,6 +128,11 @@ class Tour {
     if (this.curr_stop()) {
       this.curr_stop().exit()
     }
+
+    //disable tour style
+    $('#tour_style_' + this.tour_id).attr('disabled', 'disabled')
+    $('#tour_exit_confirm_style_' + this.tour_id).attr('disabled', 'disabled')
+
     //hide tour
     this.started = false
     this.curr_step = -1
@@ -329,7 +342,7 @@ class Tour {
           '/' +
           tour_stop.setting.template_style
         $('head').append(
-          $('<link rel="stylesheet" type="text/css" />').attr(
+          $('<link rel="stylesheet" type="text/css" disabled id=tour_style_' + this.tour_id + ' />').attr(
             'href',
             style_url
           )
@@ -368,7 +381,7 @@ class Tour {
           '/' +
           this.setting.interaction.confirm_template_style
         $('head').append(
-          $('<link rel="stylesheet" type="text/css" />').attr(
+          $('<link rel="stylesheet" type="text/css" disabled id=tour_exit_confirm_style_' + this.tour_id + ' />').attr(
             'href',
             style_url
           )
