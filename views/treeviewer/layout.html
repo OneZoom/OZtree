@@ -686,6 +686,18 @@ function setupUI() {
     $('#resetButton')
         .click(function(){onezoom.controller.button_reset()});
 
+    /* Control Button Hint Toggle */
+    $('#controlButtons #hideControlsButton')
+        .click(function() {
+            $('#controlButtons').removeClass('button-hint-visible')
+        })
+
+    $('#controlButtons #showControlsButton')
+        .click(function () {
+            $('#controlButtons').addClass('button-hint-visible')
+        })
+
+
     $('input[name="imgsource"]').change(function() {onezoom.controller.set_image_source(this.value)});
     $('input[name="treeshape"]').change(function() {onezoom.controller.change_view_type(this.value)});
     $('input[name="colourtype"]').change(function() {onezoom.controller.change_color_theme(this.value)});
@@ -1128,7 +1140,9 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             "auto_activate": {
                 inactive_duration: 1200000, //set a number to auto start after XXX ms
                 condition: () => {
-                    return !$('#external-modal').is(':visible') && !$('#info-modal').is(':visible')
+                    return !$('#external-modal').is(':visible') && 
+                        !$('#info-modal').is(':visible') && 
+                        !$('#howuse-modal').is(':visible')
                 }
             },
             "interaction": {

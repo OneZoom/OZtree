@@ -353,7 +353,10 @@ ul#searchboxes {
     display:none;
 }
 
-#controlButtons #multipleInfoButton a, #controlButtons #singleInfoButton a, #controlButtons #hideControlsButton a {
+#controlButtons #multipleInfoButton a, 
+#controlButtons #singleInfoButton a, 
+#controlButtons #hideControlsButton a, 
+#controlButtons #showControlsButton a{
     border-top: 1px solid #DDD;
 }
 
@@ -376,45 +379,15 @@ ul#searchboxes {
     display: none;
 }
 
-/* Control Button explanation styles. These is only used in life_MD.html */
+/* Hide text on the right of buttons*/
 #controlButtons .button-explanation {
-    position: absolute;
-    border-right: 1px solid #ddd;
-    //Right border of control buttons would be overwrite by the background color of button-explanation
-    border-left: 1px solid #ddd;
-    width: 140px;
-    height: 100%;
-    //TODO: line-height should be set dynamically as the parent's height is not fixed
-    line-height: 65px;
-    text-align: left;
-    padding-left: 20px;
-    font-weight: 100;
-    font-size: 0.8rem;
-    color: #888;
-    background-color: white;
+    display: none;
 }
 
-#controlButtons .button-explanation.top-border {
-    border-top: 1px solid #ddd;
-    border-top-right-radius: 5px;
+/* Hide hide/show control button and how to use button */
+#controlButtons #showControlsButton, #controlButtons #hideControlsButton, #controlButtons #howToUseButton {
+    display: none;
 }
-
-#controlButtons .button-explanation.bottom-border {
-    border-bottom: 1px solid #ddd;
-    border-bottom-right-radius: 5px;
-}
-
-#controlButtons .button-explanation.top-padding {
-    //Align the top border of button-explanation to the top border of control buttons
-    padding-top: 0.3em;
-    top: -0.3em;
-}
-
-#controlButtons .button-explanation.bottom-padding {
-    //Align the bottom border of button-explanation to the bottom border of control buttons
-    padding-bottom: 0.2em;
-}
-
 
 #locationDropdown {
     font-size: small;

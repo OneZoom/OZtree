@@ -12,10 +12,83 @@ html {font-size: 150%}
 #advanced_search_button svg, .searchbox .main-icon svg, #common_ancestor_button svg, #add_searchbox svg {width: 30px; height: 30px;}
 .searchbox .spinner svg, .remove-searchbox svg {width: 25px; height: 25px;}
 #settingsDropdown, #infoDropdown {width: 12em;}
+
+
+/* Control Button explanation styles. These is only used in life_MD.html */
+#controlButtons.button-hint-visible .button-explanation {
+    display: inline-block;
+}
+
 ul#controlButtons.button-hint-visible {
   /**
    * Remove border corner in life_MD page as it will connects with the border conner of button explanation text
    */
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
+}
+
+/*
+ * Kai: I don't know why when click on hide or show buttons, infoDropdown would popup automatically.
+ * In order to stop it from opening, set it hidden in here.
+ */
+ul#controlButtons #infoDropdown {
+  display: none !important;
+}
+
+ul#controlButtons #showControlsButton, ul#controlButtons #howToUseButton {
+  display: block;
+}
+
+ul#controlButtons.button-hint-visible #showControlsButton {
+    display: none;
+}
+
+ul#controlButtons.button-hint-visible #hideControlsButton {
+    display: block;
+}
+
+#controlButtons .button-explanation {
+    display: none;
+    position: absolute;
+    border-right: 1px solid #ddd;
+    //Right border of control buttons would be overwrite by the background color of button-explanation
+    border-left: 1px solid #ddd;
+    width: 140px;
+    height: 100%;
+    //TODO: line-height should be set dynamically as the parent's height is not fixed
+    line-height: 65px;
+    text-align: left;
+    padding-left: 20px;
+    font-weight: 100;
+    font-size: 0.8rem;
+    color: #888;
+    background-color: white;
+}
+
+#controlButtons .button-explanation.top-border {
+    border-top: 1px solid #ddd;
+}
+
+#controlButtons .button-explanation.bottom-border {
+    border-bottom: 1px solid #ddd;
+}
+
+#controlButtons .button-explanation.top-right-radius {
+    border-top-right-radius: 5px;
+}
+
+#controlButtons .button-explanation.bottom-right-radius {
+    border-bottom-right-radius: 5px;
+}
+
+
+#controlButtons .button-explanation.top-padding {
+    //Align the top border of button-explanation to the top border of control buttons
+    padding-top: 0.3em;
+    top: -0.3em;
+}
+
+#controlButtons .button-explanation.bottom-padding {
+    //Align the bottom border of button-explanation to the bottom border of control buttons
+    padding-bottom: 0.2em;
 }
