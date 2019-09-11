@@ -93,12 +93,6 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     </div>
     <span class='button-explanation'>How to use</span>
   </li>
-  <li id="multipleInfoButton">
-    <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('Information')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: info"></a>
-    </div>
-    <span class='button-explanation'>Information</span>
-  </li>
   <li id="hideControlsButton">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Hide Controls')}}" uk-icon="icon: triangle-left"></a>
@@ -109,6 +103,12 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Show Controls')}}" uk-icon="icon: triangle-right"></a>
     </div>
+  </li>
+  <li id="multipleInfoButton">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('Information')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: info"></a>
+    </div>
+    <span class='button-explanation'>Information</span>
   </li>
 
   <div id="infoDropdown" uk-dropdown="pos: right; mode: click;">
