@@ -108,17 +108,14 @@ class TourStop {
     let promise = null
     if (this.is_transition_stop()) {
       this.state = TOUR_STOP_FLYING
-      this.onezoom.controller.perform_leap_animation(
-        this.get_OZId(this.setting.ott)
-      )
+
+      this.conditional_perform_leap_to_ozId(this.setting.ott)
       promise = this.onezoom.controller.perform_flight_transition(
         null,
         this.get_OZId(this.setting.ott_end_id)
       )
     } else {
-      this.onezoom.controller.perform_leap_animation(
-        this.get_OZId(this.setting.ott)
-      )
+      this.conditional_perform_leap_to_ozId(this.setting.ott)
       promise = Promise.resolve(true)
     }
 
@@ -126,6 +123,22 @@ class TourStop {
       this.state = TOUR_STOP_END
       this.wait_and_goto_next()
     })
+  }
+
+  /*
+   * If current view is close to ott, skip leap
+   */
+  conditional_perform_leap_to_ozId(ott) {
+    const ozId = this.get_OZId(ott)
+    /**
+     * visible: boolean
+     * node_size: the size of node with ozId
+     * dist_to_screen_center: the distance from node center to screen center
+     */
+    const dist_info = this.onezoom.controller.distance_from_view_to_OZId(ozId)
+    if (!dist_info.visible || dist_info.node_size < 100 || dist_info.dist_to_screen_center > 350) {
+      this.onezoom.controller.perform_leap_animation(ozId)
+    }
   }
 
   /**
