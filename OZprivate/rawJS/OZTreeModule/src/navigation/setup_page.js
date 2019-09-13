@@ -74,9 +74,7 @@ function setup_page_by_state(state) {
 
   controller.close_all();
 
-  console.log(state)
   get_id_by_state(state).then(function (id) {
-    console.log(state, id)
     tree_state.url_parsed = true;
     return controller.fly_to_node(id, state.xp !== undefined ? state : state.init);
   }).then(function () {
