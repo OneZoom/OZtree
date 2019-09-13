@@ -1040,7 +1040,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
         } else {
             screensaver_config.auto_activate.inactive_duration = screensaver_timer * 1000;
         }
-        onezoom.screensaver.setup_setting(screensaver_config, 'screensaver');
+        onezoom.screensaver.setup_setting(window['screensaver_config'], 'screensaver');
     
         {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape = False)}}
         setupUI();
