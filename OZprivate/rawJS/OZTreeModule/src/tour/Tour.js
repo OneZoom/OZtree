@@ -14,14 +14,17 @@ class Tour {
     this.tour_stop_array = []
     this.started = false
     this.auto_activate_timer = null
+    this.name = null
   }
 
   /**
-   * Create tour stops based on setting
+   * Create tour stops based on setting. If setting is empty, the tour is inactive
    * Create several tour stop dom dialog(popup) based on template
    */
-  setup_setting(tour_setting) {
+  setup_setting(tour_setting, name) {
     this.setting = tour_setting
+    this.name = name
+    if (!this.setting) {return}
     this.tour_stop_array = []
     this.curr_step = 0
 
@@ -81,6 +84,7 @@ class Tour {
    * Start tour
    */
   start() {
+    if (!this.setting) {return}
     this.exit(false)
 
     //Enable tour style
