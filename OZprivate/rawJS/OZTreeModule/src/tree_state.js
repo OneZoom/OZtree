@@ -24,13 +24,17 @@ class TreeState {
     this.recommond_threshold = config.threshold.default;
     this.action = null;
     this.canvas_repaint_recently = false;
-    this.fly_timer = null;
     this.handler = {};
     this.url_parsed = false;
+    this.last_active_at = new Date();
+    this.disable_interaction = false;
     let self = this;
     setTimeout(function() {
       self.url_parsed = true;
     }, 5000);
+    document.onmousemove = (ev) => {
+      this.last_active_at = new Date()
+    }
   }
   setup_canvas(canvas) {
     this._canvas = canvas;
@@ -49,7 +53,6 @@ class TreeState {
   set flying(val) {
     this._flying = val;
     if (val === false) {
-      clearTimeout(this.fly_timer);
       call_hook("flying_finish");
     }
   }

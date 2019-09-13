@@ -2,6 +2,7 @@ import tree_state from '../tree_state';
 import {record_url_delayed} from '../navigation/record';
 import {global_button_action} from '../button_manager';
 import config from '../global_config';
+import { call_hook } from '../util';
 
 class MouseInteractor {
   constructor() {
@@ -36,6 +37,11 @@ class MouseInteractor {
   }
   
   mouse_dblclick(event) {
+    call_hook('mouse_dblclick')
+    if (tree_state.disable_interaction) {
+      return
+    }
+    
     tree_state.flying = false;
     set_mouse_position(this, event);
     tree_state.mouse_hold = false;
@@ -46,6 +52,11 @@ class MouseInteractor {
   }
   
   mouse_wheel(event) {
+    call_hook('mouse_wheel')
+    if (tree_state.disable_interaction) {
+      return
+    }
+
     tree_state.flying = false;
     event.preventDefault();
     event.stopPropagation();
@@ -77,6 +88,11 @@ class MouseInteractor {
   }
   
   mouse_down(event) {
+    call_hook('mouse_down')
+    if (tree_state.disable_interaction) {
+      return
+    }
+
     tree_state.flying = false;
     set_mouse_position(this, event);
     this.clicking = true;
@@ -87,6 +103,11 @@ class MouseInteractor {
   }
   
   mouse_move(event) {
+    call_hook('mouse_move')
+    if (tree_state.disable_interaction) {
+      return
+    }
+
     if (tree_state.mouse_hold) {
       let new_mouse_x = event.clientX - this.canvas.offsetLeft;
       let new_mouse_y = event.clientY - this.canvas.offsetTop;
@@ -105,6 +126,11 @@ class MouseInteractor {
   }
   
   mouse_up(event) {
+    call_hook('mouse_up')
+    if (tree_state.disable_interaction) {
+      return
+    }
+
     /**
      * It's important to call record_url_delayed before controller.click. 
      * Controller.click might record url immediately and if call record_url_delayed after controller.click, then

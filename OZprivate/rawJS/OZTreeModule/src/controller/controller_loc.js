@@ -10,34 +10,74 @@ export default function (Controller) {
   * Where Array is [NameArray, IdArray, bool, RichnessArray], and RichnessArray is 
   * 1 unit longer than NameArray & IdArray
   */
-  Controller.prototype.get_my_location = function() {
+  Controller.prototype.get_my_location = function () {
     return [get_location3(this.root), this.root];
   }
-    
-  Controller.prototype.get_my_location_code = function() {
+
+  Controller.prototype.get_my_location_code = function () {
     return [get_location_code(this.root)];
   }
+
+  Controller.prototype.distance_from_view_to_OZId = function (ozId) {
+    let to_leaf = ozId > 0 ? -1 : 1;
+    let to_index = ozId > 0 ? ozId : -ozId;
+
+    const node = get_node_by_OZId(this.root, to_leaf, to_index)
+    if (!node || node.gvar === false) {
+      return {
+        visible: false
+      }
+    } else {
+      return {
+        visible: true,
+        node_size: node.rvar,
+        dist_to_screen_center: Math.sqrt(
+          Math.pow(node.xvar - this.widthres / 2, 2),
+          Math.pow(node.yvar - this.heightres / 2, 2)
+        )
+      }
+    }
+  }
+}
+
+function get_node_by_OZId(node, to_leaf, to_index) {
+  if (to_leaf > 0 && node.is_leaf && (node.metacode == to_index)) {
+    return node
+  } else if (to_leaf <= 0 && node.is_interior_node && (node.metacode == to_index)) {
+    return node
+  } else if (node.dvar && node.has_child) {
+    for (let i = 0; i < node.children.length; i++) {
+      let res = get_node_by_OZId(node.children[i], to_leaf, to_index)
+
+      //find node in children
+      if (res) {
+        return res
+      }
+    }
+  }
+
+  return null
 }
 
 // this function will find our location properly for transitions on tours
 function get_location_code(node) {
-    /*
-    if(node.dvar) {
-        if(node.gvar && node.has_child) {
-            // stop
-            return node.metacode;
-        } else if (node.gvar && !node.has_child) {
-            return get_empty_loc(false);
-        } else if (!node.gvar && node.has_child) {
-            return concat_node_loc_with_loc(node, get_child_loc(node));
-        } else if(!node.gvar && !node.has_child) {
-            return get_empty_loc(false);
-        }
-    } else {
-        return null;
-    }
-     */
-    return null;
+  /*
+  if(node.dvar) {
+      if(node.gvar && node.has_child) {
+          // stop
+          return node.metacode;
+      } else if (node.gvar && !node.has_child) {
+          return get_empty_loc(false);
+      } else if (!node.gvar && node.has_child) {
+          return concat_node_loc_with_loc(node, get_child_loc(node));
+      } else if(!node.gvar && !node.has_child) {
+          return get_empty_loc(false);
+      }
+  } else {
+      return null;
+  }
+   */
+  return null;
 }
 
 /** 
@@ -54,15 +94,15 @@ function get_location_code(node) {
 * ]
 */
 function get_location3(node) {
-  if(node.dvar) {
-    if(node.gvar && node.has_child) {
+  if (node.dvar) {
+    if (node.gvar && node.has_child) {
       // stop 
       return concat_node_loc_with_loc(node, get_empty_loc(true));
     } else if (node.gvar && !node.has_child) {
       return get_empty_loc(false);
     } else if (!node.gvar && node.has_child) {
       return concat_node_loc_with_loc(node, get_child_loc(node));
-    } else if(!node.gvar && !node.has_child) {
+    } else if (!node.gvar && !node.has_child) {
       return get_empty_loc(false);
     }
   } else {
@@ -73,16 +113,16 @@ function get_location3(node) {
 
 function get_child_loc(node) {
   let children_locs = [];
-  
+
   let length = node.children.length;
-  for (let i=0; i<length; i++) {
+  for (let i = 0; i < length; i++) {
     let child = node.children[i];
     let child_loc = get_location3(child);
     if (child_loc[2] === true) {
       children_locs.push(child_loc);
     }
   }
-  
+
   if (children_locs.length === 0 || children_locs.length > 1) {
     return get_empty_loc(true);
   } else {

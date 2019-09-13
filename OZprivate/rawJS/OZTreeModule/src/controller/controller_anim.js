@@ -155,7 +155,7 @@ export default function (Controller) {
   Controller.prototype.perform_flight_animation = function(codein_fly, into_node, finalize_func) {
     tree_state.flying = false;
     this.develop_branch_to(codein_fly);
-    return position_helper.perform_actual_fly(this, into_node, finalize_func);
+    return position_helper.perform_actual_fly(this, into_node, 'linear', finalize_func);
   }
     
     
@@ -275,10 +275,10 @@ export default function (Controller) {
                                : null;
 
                 flight_p = flight_p.then(function () {
-                    return new Promise(function (resolve) {
+                    return new Promise(function (resolve, reject) {
                         position_helper.clear_target(this.root);
                         position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
-                        position_helper.perform_actual_fly(this, accel_func === 'final' ? into_node : false, resolve, accel_func);
+                        position_helper.perform_actual_fly(this, accel_func === 'final' ? into_node : false, accel_func, resolve, reject);
                     }.bind(this));
                 }.bind(this));
             }.bind(this));

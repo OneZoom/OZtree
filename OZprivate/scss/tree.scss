@@ -324,6 +324,7 @@ ul#searchboxes {
     margin:0;
     border-radius: 5px;
     text-align: center;
+    position: relative;
 }
     
 #controlButtons > li a
@@ -332,13 +333,11 @@ ul#searchboxes {
   padding:0.5rem 0.1rem;
   width: 2rem;
   text-align: center;
- 
 }
-#controlButtons #upButton a {
-    padding: 0.25rem 0.1rem;
-}
-#controlButtons #upButton a svg polyline {
-    stroke-width: 0.8; /* The up chevron is magnified to fill sideways, so make the line narrower */
+
+#controlButtons li .icon-container {
+    width: 100%;
+    display: inline-block;
 }
 
 #controlButtons [uk-dropdown] {
@@ -354,26 +353,26 @@ ul#searchboxes {
     display:none;
 }
 
-#controlButtons #multipleInfoButton a, #controlButtons #singleInfoButton a {
+#controlButtons #multipleInfoButton a, 
+#controlButtons #singleInfoButton a, 
+#controlButtons #hideControlsButton a, 
+#controlButtons #showControlsButton a{
     border-top: 1px solid #DDD;
-}
-
-#controlButtons #resetButton a {
-    /* put a ring around the reset chevron (no equivalent UIkit3 icon)*/
-    box-sizing: border-box;
-    padding: 0;
-    width: auto;
-    border: 1px solid #999;
-    border-radius: 20%; 
-    margin: 0.5rem auto;
-}
-#controlButtons #resetButton a:hover {
-    border: 1px solid #666;
 }
 
 /* hide any "expert-mode" buttons */
 #controlButtons #screenshotButton
 {
+    display: none;
+}
+
+/* Hide text on the right of buttons*/
+#controlButtons .button-explanation {
+    display: none;
+}
+
+/* Hide hide/show control button and how to use button */
+#controlButtons #showControlsButton, #controlButtons #hideControlsButton, #controlButtons #howToUseButton {
     display: none;
 }
 

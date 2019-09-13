@@ -31,9 +31,9 @@ config.generation_on_subbranch_during_fly = 7;
  */
 config.generation_at_searched_node = 9;
 
-/** @property {string}  search_jump_mode - How to move to a new node: "flight" or "leap"
+/** @property {string}  search_jump_mode - How to move to a new node: "flight" or "jump"
  */
-config.search_jump_mode = "leap";
+config.search_jump_mode = "flight";
 
 /** @property {number} home_ott_id - default focusing place when reset
  */

@@ -12,7 +12,7 @@
           <option value="natural">Natural</option>
           <option value="fern">Fern</option>
           <option value="balanced">Balanced</option>
-          <option value="polytomoty">Polytomoty</option>
+          <option value="polytomy">Polytomy</option>
         </select>
       </div>
     </div>
@@ -55,10 +55,10 @@
     </div>
     <div class="form-group">
       <label class="left-label left-label-input">Home Ott Id</label>
-      <div class="right-input ott-id" style="width:600px;">
+      <div class="right-input ottdef-id" style="width:600px;">
         <select style="width: 300px;">
+          <option value="1">All life</option>
           <option value="244265">Mammals</option>
-          <option value="770315">Human</option>
           <option value="81461">Birds</option>
           <option value="991547">Frogs and toads</option>
           <option value="801601">Vertebrates</option>
@@ -68,6 +68,7 @@
           <option value="99252">Flowering plants</option>
           <option value="1012685">Mushrooms</option>
           <option value="304358">Complex life</option>
+          <option value="" disabled>—————————————————</option>
           <option value="custom">Custom</option>
         </select>
         <input readonly type="text" class="form-control" style="width:280px;display:inline-block;" />
@@ -163,12 +164,12 @@
       const anim_setting = $('#museum-container .anim-setting')
         .find('option:selected')
         .val()
-      const ott_id = $('#museum-container .ott-id input').val()
+      const ottdef_id = $('#museum-container .ottdef-id input').val()
       const screensaver_timer = $('#museum-container .screensaver input').val()
 
       let query = `vis=${view_type}&img=${image_source}&lang=${language}&anim=${anim_setting}`
-      if (ott_id) {
-        query = query + `&ott=${ott_id}`
+      if (ottdef_id) {
+        query = query + `&ottdef=${ottdef_id}`
       }
       if (screensaver_timer) {
         query = query + `&ssaver=${screensaver_timer}`
@@ -179,19 +180,19 @@
     }
 
     /**
-     * When ott-id dropdown selection changes, do two things:
-     * 1. enable or disable ott-id input readonly property
-     * 2. change ott-id input value
+     * When ottdef-id dropdown selection changes, do two things:
+     * 1. enable or disable ottdef-id input readonly property
+     * 2. change ottdef-id input value
      */
     function setHomeOttId() {
-      const optionVal = $('#museum-container .ott-id select')
+      const optionVal = $('#museum-container .ottdef-id select')
         .find('option:selected')
         .val()
       if (optionVal === 'custom') {
-        $('#museum-container .ott-id input').attr('readonly', false)
+        $('#museum-container .ottdef-id input').attr('readonly', false)
       } else {
-        $('#museum-container .ott-id input').attr('readonly', true)
-        $('#museum-container .ott-id input').val(optionVal)
+        $('#museum-container .ottdef-id input').attr('readonly', true)
+        $('#museum-container .ottdef-id input').val(optionVal)
       }
     }
 
@@ -220,17 +221,17 @@
 
     //Bind text input change event
     $(
-      '#museum-container .screensaver input, #museum-container .ott-id input',
+      '#museum-container .screensaver input, #museum-container .ottdef-id input',
     ).change(function () {
       setURL()
     })
 
     /**
-     * When ott-id dropdown selection changes, do two things:
-     * 1. enable or disable ott-id input readonly property
-     * 2. change ott-id input value
+     * When ottdef-id dropdown selection changes, do two things:
+     * 1. enable or disable ottdef-id input readonly property
+     * 2. change ottdef-id input value
      */
-    $('#museum-container .ott-id select').change(function () {
+    $('#museum-container .ottdef-id select').change(function () {
       setHomeOttId()
       setURL()
     })

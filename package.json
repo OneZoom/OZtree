@@ -16,6 +16,7 @@
   "scripts": {
     "test": "npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/*.js",
     "precompile_js": "NODE_ENV='production' webpack --config webpack.config.js",
+    "precompile_js_dev:watch": "webpack --watch --config webpack.config.dev.js",
     "precompile_js_dev": "webpack --config webpack.config.js"
   },
   "repository": {
