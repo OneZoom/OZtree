@@ -1346,9 +1346,18 @@ def life():
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return treeview_info()
 
-def life_MD():
+def life_MDtouch():
     """
-    The museum display version, which is sandboxed (and has no underlying text tree with links hidden by JS)
+    The museum display version for touchscreens, which is sandboxed
+    (and has no underlying text tree with links hidden by JS)
+    """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+    return treeview_info(has_text_tree=False)
+
+def life_MDmouse():
+    """
+    The museum display version for mouse operated systems, which is sandboxed
+    (and has no underlying text tree with links hidden by JS)
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return treeview_info(has_text_tree=False)

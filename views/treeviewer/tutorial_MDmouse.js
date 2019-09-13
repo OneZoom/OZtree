@@ -95,7 +95,7 @@
                  "tour_exit": {"visible": true},
                  
                  "title": "{{=T('Zooming')}}",
-                 "window_text": "{{=T('Touch the screen with two fingers: spread them apart to zoom in, pinch together to zoom out.')}}",
+                 "window_text": "{{=T('You can use your mouse wheel or on-screen buttons to zoom in or out.')}}",
                  
                  },
                  "wait": 7000,
@@ -111,7 +111,7 @@
                  "tour_exit": {"visible": true},
                  
                  "title": "{{=T('Panning')}}",
-                 "window_text": "{{=T('You can move the map left, right up and down by moving a single finger on the screen.')}}",
+                 "window_text": "{{=T('You can move the map left, right up and down by clicking and dragging the mouse.')}}",
                           },
                           "wait": 7000,
                 },
