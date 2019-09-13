@@ -45,15 +45,11 @@ setup_params = {
 <!-- bespoke css file for museum display -->
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree_MD.css')}}" />
 <script type="text/javascript">
-  /* disable right click */
-  document.oncontextmenu = function () { return false; };
-  /* define a few js variables here, which are used in layout.html, in particular:
-    * pagetitle_func
-    * tree_config
-    * screensaver_config
-    * tutorial_config
-  */
+<!-- could define js variables (specifically: pagetitle_func, tree_config, screensaver_config, tutorial_config) here -->
   var pagetitle_func = function (nm) { return (nm) ? "OneZoom Museum Display: " + nm : "OneZoom Tree of Life Museum Display (touchscreen)" };
   var screensaver_config = {{include 'treeviewer/screensaver_MD.js'}};
   var tutorial_config = {{include 'treeviewer/tutorial_MDtouch.js'}};
+
+  /* disable right click */
+  document.oncontextmenu = function () { return false; };
 </script>

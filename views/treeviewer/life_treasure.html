@@ -44,7 +44,7 @@ setup_params = {
   }
 }}
 {{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
-<!-- bespoke css file for museum display -->
+<!-- bespoke css file for treasure hunt -->
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree_treasure.css')}}" />
 <div id="treasure_list">
 <h3>Checklist</h3>
@@ -55,9 +55,9 @@ setup_params = {
 </ul>
 </div>
 <script type="text/javascript">
-/* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
-var tree_config=null;
-var pagetitle_func=null;
+<!-- could define js variables (specifically: pagetitle_func, tree_config, screensaver_config, tutorial_config) here -->
+var pagetitle_func = function(nm) {return (nm)?"OneZoom Treasure Hunt: "+ nm:"OneZoom Treasure Hunt game"};
+
 OLD_openLinkouts = UI_callbacks.openLinkouts;
 found_one = function() {
     var left_to_find = $('#treasure_list .treasure_check').not(":checked").length
@@ -85,8 +85,4 @@ UI_callbacks.openLinkouts = function(id, IDtype) {
         OLD_openLinkouts();
     }
 };
-
-
-
-var pagetitle_func = function(nm) {return (nm)?"OneZoom Treasure Hunt: "+ nm:"OneZoom Treasure Hunt game"};
 </script>

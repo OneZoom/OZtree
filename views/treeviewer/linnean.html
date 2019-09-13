@@ -23,9 +23,4 @@ setup_params = {
 }}
 {{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
 <!-- could include bespoke css file here -->
-<script type="text/javascript">
-
-/* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
-var tree_config=null;
-var pagetitle_func = null;
-</script>
+<!-- could define js variables (specifically: pagetitle_func, tree_config, screensaver_config, tutorial_config) within <script> tags here -->
