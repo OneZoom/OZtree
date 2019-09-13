@@ -34,7 +34,7 @@ response.google_analytics_id = None
 # james todo manager only menu?
 
 response.menu = [
-                 (T('Explore'), False, None , [ #need to set url_encode=False to avoid web2py quoting the @ sign
+                 (T('For Everyone'), False, None , [ #need to set url_encode=False to avoid web2py quoting the @ sign
                                             (T('Explore all life'), False, URL('default', 'life', url_encode=False)),
                                             (T('Explore vascular plants'), False, URL('default','life', args=['@Tracheophyta=10210'], url_encode=False)),
                                             (T('Explore birds'), False , URL('default','life', args=['@Aves=81461'], url_encode=False)),
