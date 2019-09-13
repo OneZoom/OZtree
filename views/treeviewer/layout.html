@@ -1035,12 +1035,14 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
         onezoom.tour.setup_setting(window['tutorial_config'], 'tutorial')
 
         //Only setup screen saver if screensaver configured and screensaver_timer is defined
-        if (isNaN(screensaver_timer) && window['screensaver_config']) {
+        if (isNaN(screensaver_timer)) {
             screensaver_config = null; //Don't run the screensaver
         } else {
-            screensaver_config.auto_activate.inactive_duration = screensaver_timer * 1000;
+            if (window['screensaver_config']) {
+                screensaver_config.auto_activate.inactive_duration = screensaver_timer * 1000;
+            }
         }
-        onezoom.screensaver.setup_setting(window['screensaver_config'], 'screensaver');
+        onezoom.screensaver.setup_setting(screensaver_config, 'screensaver');
     
         {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape = False)}}
         setupUI();
