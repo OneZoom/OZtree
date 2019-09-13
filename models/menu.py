@@ -35,25 +35,34 @@ response.google_analytics_id = None
 
 response.menu = [
                  (T('Explore'), False, None , [ #need to set url_encode=False to avoid web2py quoting the @ sign
-                                            (T('All complex life'), False, URL('default', 'life', args=['@Eukaryota=304358'], url_encode=False)),
-                                            (T('Vascular plants'), False, URL('default','life', args=['@Tracheophyta=10210'], url_encode=False)),
-                                            (T('Birds'), False , URL('default','life', args=['@Aves=81461'], url_encode=False)),
-                                            (T('Amphibians'), False , URL('default','life', args=['@Amphibia=544595'], url_encode=False)),
-                                            (T('Mammals'), False , URL('default','life', args=['@Mammalia'], url_encode=False)),
-                                            (T('Apes'), False, URL('default','life', args=['@Hominoidea=38619'], url_encode=False))
+                                            (T('Explore all life'), False, URL('default', 'life', url_encode=False)),
+                                            (T('Explore vascular plants'), False, URL('default','life', args=['@Tracheophyta=10210'], url_encode=False)),
+                                            (T('Explore birds'), False , URL('default','life', args=['@Aves=81461'], url_encode=False)),
+                                            (T('Explore amphibians'), False , URL('default','life', args=['@Amphibia=544595'], url_encode=False)),
+                                            (T('Explore mammals'), False , URL('default','life', args=['@Mammalia'], url_encode=False)),
+                                            (T('Sponsor a leaf'), False, URL('default' , 'sponsor.html')),
                                             ]),
-                 (T('Sponsor'), False, URL('default' , 'sponsor.html')),
-                 (T('Installations'), False, URL('default' , 'installations.html')),
-                 (T('Endorsements'), False, URL('default' , 'endorsements.html')),
-                 (T('More'), False, None , [
-                                            (T('Milestones'), False , URL('default' , 'milestones.html') ),
-                                            (T('About OneZoom'), False, URL('default' , 'about.html')),
+                
+                 (T('For Education'), False, None , [
+                                                    (T('Installations'), False, URL('default' , 'installations.html')),
+                                                    (T('Display launcher'), False, URL('education' , 'museum_display_setup.html')),
+                                                     
+                                                   ]),
+                 
+                 (T('For Science'), False, None , [
                                             (T('Data sources'), False, URL('default' , 'data_sources.html')),
+                                            (T('Legacy trees'), False , URL('default' , 'tree_index.html')),
+                                            (T('Developer tools'), False , URL('default' , 'developer.html')),
+                                            (T('Popularity index'), False , URL('popularity' , 'index.html')),
+                                            ]),
+                 
+                 (T('About us'), False, None , [
+                                            (T('Milestones'), False , URL('default' , 'milestones.html') ),
+                                            (T('Endorsements'), False, URL('default' , 'endorsements.html')),
+                                            (T('About OneZoom'), False, URL('default' , 'about.html')),
                                             (T('Donors'), False , URL('default' , 'donor_list.html') ),
                                             (T('Team'), False, URL('default' , 'team.html')),
                                             (T('FAQ'), False, URL('default' , 'FAQ.html')),
-                                            (T('Legacy trees'), False , URL('default' , 'tree_index.html')),
-                                            (T('Developer tools'), False , URL('default' , 'developer.html')),
                                             ]),
                  ]
 
