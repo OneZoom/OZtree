@@ -272,7 +272,7 @@ function closeAndLeap(event, OZIDin, original_searchbox) {
             UI_callbacks.closeAll();
         }
     }
-    if (OZIDin) onezoom.controller.jump_to_OZid(OZIDin);
+    if (OZIDin) onezoom.controller.default_move_to(OZIDin);
 }
 
 
@@ -464,7 +464,7 @@ function update_location_menu(loc_root) {
                 {{if is_testing:}}console.log("Small screen width detected, so closing location box before jump");{{pass}}
                 $("#locationDropdown").hide();
               };
-              onezoom.controller.perform_flight_animation($(this).data('locationCode'));
+              onezoom.controller.fly_on_tree_to($(this).data('locationCode'));
             })
             .append(my_location_names[i] + "<br>(" + onezoom.utils.number_convert(my_location_richness[i]) + ")")
         )

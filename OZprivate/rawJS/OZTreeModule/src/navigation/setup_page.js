@@ -76,7 +76,7 @@ function setup_page_by_state(state) {
 
   get_id_by_state(state).then(function (id) {
     tree_state.url_parsed = true;
-    return controller.fly_to_node(id, state.xp !== undefined ? state : state.init);
+    return controller.init_move_to(id, state.xp !== undefined ? state : state.init);
   }).then(function () {
     //open popup dialog if exists.
     if (state.tap_action && state.tap_ott) {
@@ -92,7 +92,7 @@ function setup_page_by_state(state) {
     controller.reset();
     const ozId = data_repo.ott_id_map[config.home_ott_id]
     if (ozId) {
-      controller.fly_to_node(ozId)
+      controller.init_move_to(ozId)
     } else if (state.ott) {
       if (typeof config.ui.badOTT !== 'function') {
         alert('Developer error: you need to define a UI function named badOTT that takes a bad OTT and pings up an error page')

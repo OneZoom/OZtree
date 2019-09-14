@@ -193,7 +193,7 @@ class Tour {
         }
       }
       this.curr_step++
-      this.curr_stop().play('forward')
+      this.curr_stop().play('forward', '')
       this.set_ui_content()
     }
   }

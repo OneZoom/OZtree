@@ -14,14 +14,14 @@ export function reset_global_button_action() {
 
 export function click_on_button_cb(controller) {
   /* requires the global function open_linkouts to have been defined */
-  if (global_button_action.action =="jump") {
-    controller.perform_leap_animation(global_button_action.data);
+  if (global_button_action.action =="leap") {
+    controller.leap_to(global_button_action.data);
   } else if (global_button_action.action =="fly") {
-    controller.perform_flight_animation(global_button_action.data);
+    controller.fly_straight_to(global_button_action.data);
   } else if (global_button_action.action =="fly_node") {
-    controller.perform_flight_animation(global_button_action.data, true);
+    controller.fly_straight_to(global_button_action.data, true);
   } else if (global_button_action.action =="tap2zoom") {
-    controller.perform_flight_animation(global_button_action.data);
+    controller.fly_straight_to(global_button_action.data);
   } else if (global_button_action.action =="link") {
     if (typeof config.ui.openCopyright !== 'function') {
       alert("Developer error: you need to define a UI function named openCopyright");

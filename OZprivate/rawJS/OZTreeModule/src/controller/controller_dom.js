@@ -38,9 +38,9 @@ export default function (Controller) {
    * @memberof Controller
    */
   Controller.prototype.button_reset = function () {
-    const ozId = data_repo.ott_id_map[config.home_ott_id]
-    if (ozId) {
-      this.perform_leap_animation(ozId);
+    const dest_OZid = data_repo.ott_id_map[config.home_ott_id]
+    if (dest_OZid) {
+      this.leap_to(dest_OZid);
     } else {
       this.reset();
     }
@@ -55,7 +55,7 @@ export default function (Controller) {
     let uploc_vect = get_location2(this.root);
     if (uploc_vect && uploc_vect.length > 0) {
       while (uploc_vect.length > 0) {
-        if (!this.perform_flight_animation(uploc_vect[uploc_vect.length - 1])) {
+        if (!this.fly_straight_to(uploc_vect[uploc_vect.length - 1])) {
           // false is returned by the flight => it didn’t need to move anywhere to get to the destination
           uploc_vect.length -= 1;
         } else {
@@ -63,7 +63,7 @@ export default function (Controller) {
         }
       }
     } else {
-      this.perform_flight_animation(this.root.metacode);
+      this.fly_straight_to(this.root.metacode);
     }
   }
 

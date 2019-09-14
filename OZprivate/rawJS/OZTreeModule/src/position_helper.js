@@ -298,11 +298,14 @@ function perform_actual_leap(controller) {
  * @param {controller} controller OneZoom Controller object
  * @param {boolean} into_node Set this to 'true' to end up zoomed so the interior node fills the screen, rather than
  * the wider-angle viewpoint that to show the entire tree structure descended from that node.
+ * @param {func} speed is optional, and gives the relative speed compared to the globally set
+ *   animation speed (greater than 1 gives faster animations, less than one gives slower)
+ * @param {func} accel_type is optional, and gives the acceleration type ('accel', 'decel' or 'linear' (default)
  * @param {func} finalize_func is optional, and gives a function to call at the end of the zoom
  * @param {func} abrupt_func is optional, and gives a function to call when fly is abrupted
  * @return {boolean} returns false if the distance to codein_fly is too short so there is no animation performed.
  */
-function perform_actual_fly(controller, into_node, accel_type, finalize_func, abrupt_func) {
+function perform_actual_fly(controller, into_node, speed=1, accel_type="linear", finalize_func=null, abrupt_func=null) {
   tree_state.flying = true;
   more_flying_needed = false;
   drawreg_target(controller.root, tree_state.xp, tree_state.yp, 220*tree_state.ws);
@@ -316,9 +319,9 @@ function perform_actual_fly(controller, into_node, accel_type, finalize_func, ab
     // nothing to zoom to so better to do nothing and return false or it feels like a bug
     return false;
   } else {
-    length_intro = Math.abs(Math.log(r_mult))*global_anim_speed;      
+    length_intro = Math.abs(Math.log(r_mult))*global_anim_speed/speed;      
     num_intro_steps = Math.max(Math.floor(length_intro),5);
-    perform_fly_b2(controller, into_node, accel_type, finalize_func, abrupt_func);
+    perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
     return true;
   }
 }
@@ -330,14 +333,15 @@ function perform_actual_fly(controller, into_node, accel_type, finalize_func, ab
  * @param {controller} controller OneZoom Controller object
  * @param {boolean} into_node Set this to 'true' to end up zoomed so the interior node fills the screen, rather than
  * the wider-angle viewpoint that to show the entire tree structure descended from that node.
+ * @param {func} speed gives the relative speed compared to the globally set animation speed
  * @param {string} accel_type Acceleration curve to use for this flight
  *    - 'accel': Accelerate away from node
- *    - 'decel': Decellerate into node
- *    - '': Linear
+ *    - 'decel': Decelerate into node
+ *    - '' (or anything else): Linear
  * @param {func} finalize_func is optional, and gives a function to call at the end of the zoom
  * @param {func} abrupt_func is optional, and gives a function to call when fly is abrupted
  */
-function perform_fly_b2(controller, into_node, accel_type, finalize_func, abrupt_func) {
+function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func) {
   function pan_proportion(step, total) {
     var x = step / total,
         out = (Math.sin((x+0.25) * Math.PI*2) + 1) / 2;
@@ -368,7 +372,7 @@ function perform_fly_b2(controller, into_node, accel_type, finalize_func, abrupt
     clearTimeout(fly_timer);
     fly_timer = setTimeout(function () {
       if (tree_state.flying) {
-        perform_actual_fly(controller, into_node, 'linear', finalize_func, abrupt_func);
+        perform_actual_fly(controller, into_node, speed, 'linear', finalize_func, abrupt_func);
       } else if (typeof abrupt_func === 'function') {
         abrupt_func()
       }
@@ -388,7 +392,7 @@ function perform_fly_b2(controller, into_node, accel_type, finalize_func, abrupt
     clearTimeout(fly_timer);
     fly_timer = setTimeout(function () {
       if (tree_state.flying) {
-        perform_fly_b2(controller, into_node, accel_type, finalize_func, abrupt_func);
+        perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
       } else if (typeof abrupt_func === 'function') {
         abrupt_func()
       }

@@ -7,51 +7,7 @@ import {color_theme} from '../themes/color_theme';
 import config from '../global_config';
 
 export default function (Controller) {
-  
-    /**
-     * Combinees other functions to perform a flight animation from OZid1 to OZid2
-     * @wait1 how many milliseconds to wait after jumping to the start position before beginning the flight animation
-     * @OZid_1 the OneZoom id (not OTTid) for the first location of the flight
-     * @wait2 how many milliseconds to wait after the first flight section before starting the second flight animation
-     * @OZid_2 the OneZoom id (not OTTid) for the second location of the flight
-     */
-    Controller.prototype.transition_animation = function(wait1,OZid_1,wait2,OZid_2) {
-        // I'd like to enhance this further in future to be more of a generic 'tours' function.  For now this should deal with known use cases that are immediately required.
-        // for now try e.g. onezoom.controller.transition_animation(1000,-784479,1000,-786438) in the console.
-        // other reccomendations for recording such transitions:
-        // perform it once, then zoom around the area by hend to make sure it's all cached incuding hte images, then run the animation for recording.
-        // edit the parameters in the comments in position_helper.js for once off animation recordings.
-        let self = this;
-        self.jump_to_OZid(OZid_1);
-        // first jump to the inital location
-        let transition_timer = setTimeout(function()
-                                          {
-                                              // set timer for the next step
-                                              self.clear_all_marked_areas();
-                                              self.mark_area(OZid_1,'target1','rgba(0,0,0,0)')
-                                              self.mark_area(OZid_2,'target2','rgba(0,0,0,0)')
-                                              let common_ancestor = self.get_ancestor_of_marked();
-                                          
-                                          
-                                              self.perform_flight_animation(common_ancestor, false,            //fly to MRCA
-                                                                        function() {
-                                                                            
-                                                                            transition_timer = setTimeout(function()
-                                                                                                          {
-                                                                                                 
-                                                                                                              self.perform_flight_animation(OZid_2, false,null)
-                                                                                                          
-                                                                                                          
-                                                                                                          }, wait2);
-                                                                            
-                                                                        })
-                                          
-                                          
-                                          }, wait1);
-        
-    }
-    
-    
+      
   /**
    * Add marked area by OZid
    * @param OZid_to_mark is the OneZoom id of the node / leaf that should be marked
@@ -192,15 +148,15 @@ export default function (Controller) {
     }
     
     /**
-     * Jump to OZid and record URL of the new location
-     * config.search_jump_mode controls how the movement is performed
-     * @param src the OZid of the place we want to jump to
+     * A higher level function, which moves to the given OneZoom (*not* OTT) ID using
+     * whatever move method is defined as the default (in config.search_jump_mode).
+     * @param dest_OZid the OZid of the place we want to jump to
      */
-    Controller.prototype.jump_to_OZid = function(OZid) {
+    Controller.prototype.default_move_to = function(dest_OZid) {
         if (config.search_jump_mode === 'flight') {
-            this.perform_flight_transition(null, OZid);
+            this.fly_on_tree_to(null, dest_OZid);
         } else {
-            this.perform_leap_animation(OZid);
+            this.leap_to(dest_OZid);
         }
         record_url();
     }

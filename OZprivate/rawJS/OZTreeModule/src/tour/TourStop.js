@@ -23,7 +23,7 @@ class TourStop {
     }
   }
 
-  get_OZId(ott) {
+  get_OZid(ott) {
     if (data_repo.ott_id_map.hasOwnProperty(ott)) {
       return data_repo.ott_id_map[ott]
     } else {
@@ -41,7 +41,7 @@ class TourStop {
   }
 
   /**
-   * Called when user press next during a tour animation
+   * Called when user press next during a tour 
    */
   goto_end() {
     if (!this.is_transition_stop()) {
@@ -49,8 +49,8 @@ class TourStop {
     } else {
       this.state = TOUR_STOP_END
 
-      this.onezoom.controller.perform_leap_animation(
-        this.get_OZId(this.setting.ott_end_id)
+      this.onezoom.controller.perform_leap(
+        this.get_OZid(this.setting.ott_end_id)
       )
 
       /**
@@ -64,7 +64,7 @@ class TourStop {
 
   /**
    * 1. Pause fly animation
-   * 2. Reset timeout which when triggered would jump to next tour stop
+   * 2. Reset timeout which when triggered would leap to next tour stop
    */
   pause() {
     tree_state.flying = false
@@ -75,9 +75,9 @@ class TourStop {
     if (this.state === TOUR_STOP_INIT) {
       this.play('forward')
     } else if (this.state === TOUR_STOP_FLYING) {
-      let promise = this.onezoom.controller.perform_flight_transition(
+      let promise = this.onezoom.controller.fly_on_tree_to(
         null,
-        this.get_OZId(this.setting.ott_end_id)
+        this.get_OZid(this.setting.ott_end_id)
       )
       promise.then(() => {
         this.state = TOUR_STOP_END
@@ -90,7 +90,7 @@ class TourStop {
 
   /**
    * Play current tour stop
-   * If there is ott_end_id, then jump or fly to that node
+   * If there is ott_end_id, then leap or fly to that node
    * If wait time is present, then wait for a fixed amount of time start next slide
    * If wait time is not present, then listen to UI event for next action
    */
@@ -103,19 +103,19 @@ class TourStop {
      */
 
     /**
-     * Perform flight or jump
+     * Perform flight or leap
      */
     let promise = null
     if (this.is_transition_stop()) {
       this.state = TOUR_STOP_FLYING
 
-      this.conditional_perform_leap_to_ozId(this.setting.ott)
-      promise = this.onezoom.controller.perform_flight_transition(
+      this.conditional_leap_to_OTT(this.setting.ott)
+      promise = this.onezoom.controller.fly_on_tree_to(
         null,
-        this.get_OZId(this.setting.ott_end_id)
+        this.get_OZid(this.setting.ott_end_id)
       )
     } else {
-      this.conditional_perform_leap_to_ozId(this.setting.ott)
+      this.conditional_leap_to_OTT(this.setting.ott)
       promise = Promise.resolve(true)
     }
 
@@ -128,16 +128,16 @@ class TourStop {
   /*
    * If current view is close to ott, skip leap
    */
-  conditional_perform_leap_to_ozId(ott) {
-    const ozId = this.get_OZId(ott)
+  conditional_leap_to_OTT(ott) {
+    const dest_OZid = this.get_OZid(ott)
     /**
      * visible: boolean
      * node_size: the size of node with ozId
      * dist_to_screen_center: the distance from node center to screen center
      */
-    const dist_info = this.onezoom.controller.distance_from_view_to_OZId(ozId)
+    const dist_info = this.onezoom.controller.distance_from_view_to_OZId(dest_OZid)
     if (!dist_info.visible || dist_info.node_size < 100 || dist_info.dist_to_screen_center > 350) {
-      this.onezoom.controller.perform_leap_animation(ozId)
+      this.onezoom.controller.leap_to(dest_OZid)
     }
   }
 

@@ -108,10 +108,9 @@
             "ott_end_id": "855577",
             "update_class": {
                 // put this near the search box
-                "tour_container": {"style": {"top": "100px", "left": "auto", "right":"50px"}},
+                "tour_container": {"style": {"top": "90px", "left": "auto", "right":"25px"}},
                 "title": "{{=T('Search for something')}}",
-                "window_text": "<div style='float:right;margin:0 20px;padding:8px;border:2px solid grey;border-radius:50%'><svg width='40' height='40' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'><circle fill='none' stroke='#000' stroke-width='1.1' cx='9' cy='9' r='7'></circle><path fill='none' stroke='#000' stroke-width='1.1' d='M14,14 L18,18 L14,14 Z'></path></svg></div>{{=T('You can click on search to see some suggested popular places to visit or enter the name of something you specifically want to find in the tree of life.  There’s so much life out there you’ll be amazed what you can find.')}}",
-               // I'd quite like to show the search icon here really
+                "window_text": "<svg style='float:left;margin:0 10px; xmlns='http://www.w3.org/2000/svg' height='40' width='40' viewBox='0 0 20 20'><circle r='7' cy='9' cx='9' stroke-width='1.1' stroke='#999' fill='none'/><path d='M14 14l4 4-4-4z' stroke-width='1.1' stroke='#999' fill='none'/><path d='M7.318 10.553c-1.086-.583-.818-1.554.07-2.155 1.018-.84 2.642-1.463 3.328-2.409.285-.71-1.304-1.416-2.565-1.096-.605.003-1.078.702-1.636.317-.298-.308.239-.621.775-.718 1.517-.318 3.498-.243 4.602.45.86.62.622 1.477-.032 2.117-.989.981-2.936 1.645-3.494 2.746-.128.43.8.775 1.55.67.614.272-.343.576-.864.528-.614-.096-1.278-.19-1.739-.45zM10.471 12.9c.1.938-1.704 1.493-2.428.74-.784-.64-.091-1.952 1.082-1.834.703.03 1.393.511 1.342 1.093z'/></svg>{{=T('You can click in the search box above to see some suggested popular places to visit or enter the name of something you specifically want to find in the tree of life.  There’s so much life out there you’ll be amazed what you can find.')}}",
                },
        },
        {
@@ -125,17 +124,20 @@
            "ott": "855577",
            "update_class": {
                 "title": "{{=T('Are you lost?')}}",
-                "window_text": "{{=T('The compass icon will show where you are in the complete tree of life, select the named locations to zoom out and see more of the tree.  The reset icon will take you back to the start location, which should be familiar to you.')}}",
+                "tour_container": {"style": {"top": "auto", "left": "210px", "bottom":"180px"}},
+                "window_text": {
+                    "style":{"min-height":"220px"},
+                    "html":"<p><div style='float:left;margin:0 10px;border:1px solid grey;padding: 10px;border-radius: 5px;'><svg width='40' height='40' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg' data-svg='compass'><circle fill='none' stroke='#000' stroke-width='1.1' cx='9.5' cy='9.5' r='9'></circle><path d='m 9.5,3.5 -1.5,6 1.5,6 1.5,-6 z' fill='none' stroke='#000' stroke-linejoin='miter' stroke-miterlimit='8' transform='rotate(40 9.5 9.5)'></path><path d='m 9.5,3.5 -1.5,6 3,0 z' fill='#000' transform='rotate(40 9.5 9.5)'></path><path fill='none' stroke='#000' stroke-linecap='round' d='M 9.5,0.5 9.5,2'></path><path fill='none' stroke='#000' stroke-linecap='round' d='m 9.5,17 0,1.5'></path><path fill='none' stroke='#000' stroke-linecap='round' d='M 0.5,9.5 2,9.5'></path><path fill='none' stroke='#000' stroke-linecap='round' d='m 17,9.5 1.5,0'></path></svg></div>{{=T('The compass icon will show where you are in the complete tree of life. Select the named locations to zoom out and see more of the tree.')}}</p><p>{{=T('The reset icon will take you back to the start location,')}}<span style='float:left;margin:10px 10px;border:1px solid grey;padding: 10px;border-radius: 5px;'><svg width='40' height='40' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg' data-svg='refresh'><path fill='none' stroke='#000' stroke-width='1.1' d='M17.08,11.15 C17.09,11.31 17.1,11.47 17.1,11.64 C17.1,15.53 13.94,18.69 10.05,18.69 C6.16,18.68 3,15.53 3,11.63 C3,7.74 6.16,4.58 10.05,4.58 C10.9,4.58 11.71,4.73 12.46,5'></path><polyline fill='none' stroke='#000' points='9.9 2 12.79 4.89 9.79 7.9'></polyline></svg></span>{{=T('which should be familiar to you.')}}</p>"},
            },
            "wait": 15000
        },
        {
            "ott": "229562",
            "update_class": {
-                // put this near the search box
+                // put this near the common ancestor button
                 "tour_container": {"style": {"top": "10px", "left": "auto", "right":"530px"}},
                 "title": "{{=T('Find common ancestors')}}",
-                "window_text": "<div style='float:right;margin:0 20px;padding:8px;border:2px solid grey;border-radius:50%'><svg width='40' height='40' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'><circle fill='none' stroke='#000' stroke-width='1.2' cx='5.79' cy='2.79' r='1.79'></circle><circle fill='none' stroke='#000' stroke-width='1.2' cx='14.19' cy='2.79' r='1.79'></circle><ellipse fill='none' stroke='#000' stroke-width='1.2' cx='10.03' cy='16.79' rx='1.79' ry='1.79'></ellipse><path fill='none' stroke='#000' stroke-width='2' d='M5.79,4.57 L5.79,6.56 C5.79,9.19 10.03,10.22 10.03,13.31 C10.03,14.86 10.04,14.55 10.04,14.55 C10.04,14.37 10.04,14.86 10.04,13.31 C10.04,10.22 14.2,9.19 14.2,6.56 L14.2,4.57'></path></svg></div>{{=T('Next to the search button you can select the advanced search button. This will enable you to mark multiple places on the tree and find the most recent common ancestor of any set of species.<p>Have fun exploring!</p>')}}",
+                "window_text": "<div style='float:right;margin:0 20px;padding:8px;border:2px solid grey;border-radius:50%'><svg width='40' height='40' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'><circle fill='none' stroke='#000' stroke-width='1.2' cx='5.79' cy='2.79' r='1.79'></circle><circle fill='none' stroke='#000' stroke-width='1.2' cx='14.19' cy='2.79' r='1.79'></circle><ellipse fill='none' stroke='#000' stroke-width='1.2' cx='10.03' cy='16.79' rx='1.79' ry='1.79'></ellipse><path fill='none' stroke='#000' stroke-width='2' d='M5.79,4.57 L5.79,6.56 C5.79,9.19 10.03,10.22 10.03,13.31 C10.03,14.86 10.04,14.55 10.04,14.55 C10.04,14.37 10.04,14.86 10.04,13.31 C10.04,10.22 14.2,9.19 14.2,6.56 L14.2,4.57'></path></svg></div><p>{{=T('Next to the search button you can select the advanced search button. This will enable you to mark multiple places on the tree and find the most recent common ancestor of any set of species.')}}</p><p>{{=T('Have fun exploring!')}}</p>",
            },
        },
    ]
