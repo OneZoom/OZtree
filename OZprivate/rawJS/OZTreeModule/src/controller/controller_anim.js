@@ -209,7 +209,7 @@ export default function (Controller) {
             n = node_start;
             if (visited_nodes[to_id(n)]) {
                 // We're just zooming in, don't bother with intermediate node
-                return [node_end];
+                return [n,node_end];
             }
             while (n) {
                 if (visited_nodes[to_id(n)]) {
