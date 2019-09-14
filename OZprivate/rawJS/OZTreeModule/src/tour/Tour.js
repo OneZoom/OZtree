@@ -468,16 +468,24 @@ class Tour {
         )
       } else {
         /**
-         * Set as html
+         * Set as html (may want to disable this for publicly created tours)
          */
         if (typeof update_class[key] === 'string') {
           selectedDom.html(update_class[key])
         } else if (typeof update_class[key] === 'object') {
+
           /**
-           * Set as pure text
+           * Set as html, allowing other styles etc to be set too
+           */
+          if (update_class[key].hasOwnProperty('html')) {
+            selectedDom.html(update_class[key].html)
+          }
+
+          /**
+           * Set as escaped text
            */
           if (update_class[key].hasOwnProperty('text')) {
-            selectedDom.html(update_class[key].text)
+            selectedDom.text(update_class[key].text)
           }
 
           /**
@@ -488,7 +496,14 @@ class Tour {
           }
 
           /**
-           * Set image src
+           * add a class, e.g. to switch to another predefined class
+           */
+          if (update_class[key].hasOwnProperty('class')) {
+            selectedDom.addClass(update_class[key].class);
+          }
+
+          /**
+           * Set image src - warning: could be maliciously exploited
            */
           if (update_class[key].hasOwnProperty('src')) {
             selectedDom.attr('src', update_class[key].src)

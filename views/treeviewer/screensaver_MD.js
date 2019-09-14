@@ -12,7 +12,7 @@
         return !$('#external-modal').is(':visible') &&
             !$('#info-modal').is(':visible') &&
             !$('#howuse-modal').is(':visible')
-    }
+    },
     //do we go 1->2->3->1->2->3 or 1->2->3->2->1->2->3
     loop_back_forth: true
 },
@@ -59,16 +59,18 @@
                 "src": "http://images.onezoom.org/99/098/31338098.jpg"
             }
         },
-        "wait": 3000
+        "wait": 1000
     },
     {
         "ott": "991547",
         "ott_end_id": "81461",
         "update_class": {
-            "window_text": "Slide 2 with style change",
+            "window_text": {
+                "text": "Slide 2 with style change",
+                "class": "gray_background"},
             "img": {
                 "src": "http://images.onezoom.org/99/727/26848727.jpg"
-            "style": {"window_text": "gray_background"},
+            
             }
         },
         //transition default wait time is 0
@@ -82,7 +84,7 @@
                 "style": {"visibility": "hidden"}
             }
         },
-        "wait": 3000
+        "wait": 1000
     },
     {
         "ott": "81461",
@@ -107,7 +109,7 @@
                 "style": {"visibility": "hidden"}
             }
         },
-        "wait": 1500
+        "wait": 100
     },
 ]
 }
