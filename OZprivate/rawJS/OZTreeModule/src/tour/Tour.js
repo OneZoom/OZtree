@@ -190,11 +190,11 @@ class Tour {
             }
             this.exit(false)
             return
-        }      
-        this.curr_step++
-        this.curr_stop().play('forward')
-        this.set_ui_content()
+        }
       }
+      this.curr_step++
+      this.curr_stop().play('forward')
+      this.set_ui_content()
     }
   }
 
