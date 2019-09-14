@@ -51,64 +51,63 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     <div class='icon-container'>
       <a uk-icon="icon: compass"></a>
     </div>
-    <span class='button-explanation top-border top-right-radius top-padding'>Compass</span>
+    <div uk-dropdown="pos: right-bottom; delay-hide: 1000; boundary: #controlButtons; boundary-align: true" id="locationDropdown">
+        <ol class="location-list"></ol>
+    </div>
+    <span class='button-label top-border top-right-radius top-padding'>{{=T('Location')}}</span>
   </li>
-  <div uk-dropdown="pos: right-bottom; delay-hide: 1000; boundary: #controlButtons; boundary-align: true" id="locationDropdown">
-      <ol class="location-list"></ol>
-  </div>
-
   <li id="inButton"    class="uk-visible@s">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Zoom in')}}" uk-icon="icon: plus"></a>
     </div>
-    <span class='button-explanation top-border'>Zoom in</span>
+    <span class='button-label top-border'>{{=T('Zoom in')}}</span>
   </li>
   <li id="outButton"    class="uk-visible@s">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Zoom out')}}" uk-icon="icon: minus"></a>
     </div>
-    <span class='button-explanation'>Zoom out</span>
+    <span class='button-label'>{{=T('Zoom out')}}</span>
   </li>
   <li id="resetButton" class="uk-visible@s">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Reset view')}}" uk-icon="icon: refresh"></a>
     </div>
-    <span class='button-explanation'>Reset view</span>
+    <span class='button-label'>{{=T('Reset view')}}</span>
   </li>
   <li id="screenshotButton">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Take an svg screenshot')}}" onclick="make_screenshot(this);" uk-icon="icon: camera"></a>
     </div>
-    <span class='button-explanation'>Take screenshot</span>
+    <span class='button-label'>{{=T('Take an svg screenshot')}}</span>
   </li>
   <li id="singleInfoButton">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Information')}}" href="#info-modal" uk-toggle uk-icon="icon: info"></a>
     </div>
-    <span class='button-explanation top-border'>Information</span>
+    <span class='button-label top-border'>{{=T('Information')}}</span>
   </li>
   <li id="howToUseButton">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('How to use')}}" uk-icon="icon: question"></a>
     </div>
-    <span class='button-explanation'>How to use</span>
+    <span class='button-label'>{{=T('How to use')}}</span>
   </li>
   <li id="hideControlsButton">
     <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('Hide Controls')}}" uk-icon="icon: triangle-left"></a>
+      <a uk-tooltip="pos: right" title="{{=T('Hide panel')}}" uk-icon="icon: triangle-left"></a>
     </div>
-    <span class='button-explanation top-border bottom-border bottom-right-radius bottom-padding'>Hide controls</span>
+    <span class='button-label top-border bottom-border bottom-right-radius bottom-padding'>{{=T('Hide panel')}}</span>
   </li>
   <li id="showControlsButton">
     <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('Show Controls')}}" uk-icon="icon: triangle-right"></a>
+      <a uk-tooltip="pos: right" title="{{=T('Show panel')}}" uk-icon="icon: triangle-right"></a>
     </div>
   </li>
   <li id="multipleInfoButton">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Information')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: info"></a>
     </div>
-    <span class='button-explanation'>Information</span>
+    <span class='button-label'>Information</span>
   </li>
 
   <div id="infoDropdown" uk-dropdown="pos: right; mode: click;">
