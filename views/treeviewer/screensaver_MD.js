@@ -49,6 +49,7 @@
         "tour_next": {
             "style": {"visibility": "hidden"}
         }
+    }
 },
 "tour_stop": [
     {
@@ -67,10 +68,10 @@
         "update_class": {
             "window_text": {
                 "text": "Slide 2 with style change",
-                "class": "gray_background"},
+                "class": "gray_background"
+            },
             "img": {
                 "src": "http://images.onezoom.org/99/727/26848727.jpg"
-            
             }
         },
         //transition default wait time is 0
