@@ -21,15 +21,16 @@ class Tour {
    * Create tour stops based on setting. If setting is empty, the tour is inactive
    * Create several tour stop dom dialog(popups) based on template
    */
-  setup_setting(tour_setting, name) {
+  setup_setting(tour_setting, name, start_callback, end_callback, exit_callback) {
     this.setting = tour_setting
     this.name = name
     if (!this.setting) {return}
     this.tour_stop_array = []
     this.curr_step = 0
 
-    this.start_cb = tour_setting.start_cb
-    this.exit_cb = tour_setting.exit_cb
+    this.start_callback = start_callback
+    this.end_callback = end_callback
+    this.exit_callback = exit_callback  // if the tour is exited before the end is called
 
     tour_setting.dom_names = tour_setting.dom_names || {}
     this.wrapper_id = tour_setting.dom_names.wrapper_id || 'tour_wrapper'
@@ -109,8 +110,8 @@ class Tour {
       tree_state.disable_interaction = true
     }
 
-    if (typeof this.start_cb === 'function') {
-      this.start_cb()
+    if (typeof this.start_callback === 'function') {
+      this.start_callback()
     }
   }
 
@@ -135,7 +136,8 @@ class Tour {
   /**
    * Exit tour
    */
-  exit(invoke_cb = true) {
+  exit(invoke_callback = true) {
+    if (!this.setting) {return}
     if (this.curr_stop()) {
       this.curr_stop().exit()
     }
@@ -144,6 +146,8 @@ class Tour {
     $('#tour_style_' + this.tour_id).attr('disabled', 'disabled')
     $('#tour_exit_confirm_style_' + this.tour_id).attr('disabled', 'disabled')
 
+    //should have option to remove DOM objects here. See https://github.com/OneZoom/OZtree/issues/199
+
     //hide tour
     this.started = false
     this.curr_step = -1
@@ -151,14 +155,14 @@ class Tour {
     this.set_auto_start()
     tree_state.disable_interaction = false
 
-    if (invoke_cb && typeof this.exit_cb === 'function') {
-      this.exit_cb()
+    if (invoke_callback && typeof this.exit_callback === 'function') {
+      this.exit_callback()
     }
   }
 
   /**
    * Activate next tour stop
-   * If current stop a transitional stop, then goto the end of current stop,
+   * If current stop is a transitional stop, then goto the end of current stop,
    * otherwise go to next stop
    */
   goto_next() {
@@ -173,8 +177,20 @@ class Tour {
       }
 
       if (this.curr_step === this.tour_stop_array.length - 1) {
-        this.exit()
-      } else {
+        // end of tour, exit gracefully or loop if a screensaver
+        if (this.setting.screensaver) {
+            if (this.setting.screensaver.loop_back_forth) {
+                this.curr_step = -this.tour_stop_array.length
+            } else{
+                this.curr_step = -1
+            }
+        } else {
+            if (typeof this.end_callback === 'function') {
+                this.end_callback()
+            }
+            this.exit(false)
+            return
+        }      
         this.curr_step++
         this.curr_stop().play('forward')
         this.set_ui_content()
@@ -186,6 +202,9 @@ class Tour {
    * Go to previous tour stop
    */
   goto_prev() {
+    if (!this.started) {
+      return
+    }
     if (this.curr_stop()) {
       this.curr_stop().exit()
     }
@@ -208,6 +227,7 @@ class Tour {
    * Start after 'auto_activate_after' length of inactivity
    */
   set_auto_start() {
+    if (!this.setting) {return}
     const get_inactive_duration = () => {
       const now = new Date()
       const last_active_at = tree_state.last_active_at
@@ -220,9 +240,9 @@ class Tour {
 
     const is_condition_pass = () => {
       let condition_pass = true
-      if (typeof this.setting.auto_activate.condition === 'function') {
+      if (typeof this.setting.screensaver.condition === 'function') {
         //user could use condition to conditionally auto start tour
-        condition_pass = this.setting.auto_activate.condition()
+        condition_pass = this.setting.screensaver.condition()
       }
       return condition_pass
     }
@@ -230,8 +250,8 @@ class Tour {
     /**
      * If auto_activate_after is a number
      */
-    if (typeof this.setting.auto_activate === 'object' && this.setting.auto_activate !== null) {
-      const auto_activate_after = parseInt(this.setting.auto_activate.inactive_duration)
+    if (typeof this.setting.screensaver === 'object' && this.setting.screensaver !== null) {
+      const auto_activate_after = parseInt(this.setting.screensaver.inactive_duration)
 
       if (isNaN(auto_activate_after) || auto_activate_after === 0) {
         return
@@ -429,7 +449,8 @@ class Tour {
   }
 
   curr_stop() {
-    return this.tour_stop_array[this.curr_step]
+    // Converting negative numbers to positive allows back & forth looping
+    return this.tour_stop_array[Math.abs(this.curr_step)]
   }
 
   /**
