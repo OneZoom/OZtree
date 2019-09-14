@@ -14,44 +14,12 @@ html {font-size: 150%}
 #settingsDropdown, #infoDropdown {width: 12em;}
 
 
-/* Control Button explanation styles. These is only used in life_MD.html */
-#controlButtons.button-hint-visible .button-explanation {
+/* Only show button labels by default in life_MD.html */
+#controlButtons .button-label {
     display: inline-block;
-}
-
-ul#controlButtons.button-hint-visible {
-  /**
-   * Remove border corner in life_MD page as it will connect with the border conner of button explanation text
-   */
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
-/*
- * Kai: I don't know why when click on hide or show buttons, infoDropdown would popup automatically.
- * In order to stop it from opening, set it hidden in here.
- */
-ul#controlButtons #infoDropdown {
-  display: none !important;
-}
-
-ul#controlButtons #showControlsButton, ul#controlButtons #howToUseButton {
-  display: block;
-}
-
-ul#controlButtons.button-hint-visible #showControlsButton {
-    display: none;
-}
-
-ul#controlButtons.button-hint-visible #hideControlsButton {
-    display: block;
-}
-
-#controlButtons .button-explanation {
-    display: none;
     position: absolute;
     border-right: 1px solid #ddd;
-    //Right border of control buttons would be overwrite by the background color of button-explanation
+    //Right border of control buttons would be overwrite by the background color of button-label
     border-left: 1px solid #ddd;
     width: 140px;
     height: 100%;
@@ -65,30 +33,63 @@ ul#controlButtons.button-hint-visible #hideControlsButton {
     background-color: white;
 }
 
-#controlButtons .button-explanation.top-border {
+#controlButtons.button-label-hidden .button-label {
+    display: none;
+}
+
+ul#controlButtons {
+  /**
+   * Remove border corner in life_MD page as it will connect with the border corner of button label text
+   */
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/*
+ * Kai: I don't know why when click on hide or show buttons, infoDropdown would popup automatically.
+ * In order to stop it from opening, set it hidden in here.
+ */
+ul#controlButtons #infoDropdown {
+  display: none !important;
+}
+
+ul#controlButtons #hideControlsButton, ul#controlButtons #howToUseButton {
+  display: block;
+}
+
+ul#controlButtons.button-label-hidden #showControlsButton {
+    display: block;
+}
+
+ul#controlButtons.button-label-hidden #hideControlsButton {
+    display: none;
+}
+
+
+#controlButtons .button-label.top-border {
     border-top: 1px solid #ddd;
 }
 
-#controlButtons .button-explanation.bottom-border {
+#controlButtons .button-label.bottom-border {
     border-bottom: 1px solid #ddd;
 }
 
-#controlButtons .button-explanation.top-right-radius {
+#controlButtons .button-label.top-right-radius {
     border-top-right-radius: 5px;
 }
 
-#controlButtons .button-explanation.bottom-right-radius {
+#controlButtons .button-label.bottom-right-radius {
     border-bottom-right-radius: 5px;
 }
 
 
-#controlButtons .button-explanation.top-padding {
-    //Align the top border of button-explanation to the top border of control buttons
+#controlButtons .button-label.top-padding {
+    //Align the top border of button-label to the top border of control buttons
     padding-top: 0.3em;
     top: -0.3em;
 }
 
-#controlButtons .button-explanation.bottom-padding {
-    //Align the bottom border of button-explanation to the bottom border of control buttons
+#controlButtons .button-label.bottom-padding {
+    //Align the bottom border of button-label to the bottom border of control buttons
     padding-bottom: 0.2em;
 }

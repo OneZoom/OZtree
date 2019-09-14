@@ -1,14 +1,4 @@
 {
-  "start_cb": () => {
-    //track whether the button is expanded when screen saver starts
-    button_expanded_cached = $('#controlButtons').hasClass('button-hint-visible')
-    $('#controlButtons').removeClass('button-hint-visible')
-  },
-  "exit_cb": () => {
-    if (button_expanded_cached) {
-        $('#controlButtons').addClass('button-hint-visible')
-    }
-  },
   "dom_names": {
     /**
      * All the following values are default values.

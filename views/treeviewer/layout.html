@@ -258,17 +258,6 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
 var onezoom = null; //will be filled out on document ready
 var locations_json = '{{=XML(setup_params.get("locations_json") or "[]")}}';
 
-/* Helper function to parse search parameters in URL */
-function getParameterByName(name) {
-    var url = window.location.href;
-    name = name.replace(/[\[\]]/g, '\\$&');
-    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-        results = regex.exec(url);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, ' '));
-}
-
 /* UI functions that allow javascript in the main viewer to interact with the UI.
     Names for each function are hard-coded into the OneZoom viewer  in config.ui within 
     global_config.js. These refer to items in the viewer_UI file */
@@ -687,28 +676,27 @@ function setupUI() {
     $("#UI").on("touchstart touchmove touchend", preventTouchZoom);
     $("[uk-modal]").on("touchstart touchmove touchend", preventTouchZoom);
 
-    $('#outButton')
+    $('#outButton .icon-container')
         .click(function(){onezoom.controller.button_zoom_up()});
-    $('#inButton')
+    $('#inButton .icon-container')
         .click(function(){onezoom.controller.button_zoom_in()});
-    $('#resetButton')
+    $('#resetButton .icon-container')
         .click(function(){onezoom.controller.button_reset()});
 
     /* Control Button Hint Toggle */
-    $('#controlButtons #hideControlsButton')
+    $('#controlButtons #hideControlsButton .icon-container')
         .click(function() {
-            $('#controlButtons').removeClass('button-hint-visible')
+            $('#controlButtons').addClass('button-label-hidden')
         })
 
-    $('#controlButtons #showControlsButton')
+    $('#controlButtons #showControlsButton .icon-container')
         .click(function () {
-            $('#controlButtons').addClass('button-hint-visible')
+            $('#controlButtons').removeClass('button-label-hidden')
         })
     
-    $('#controlButtons #howToUseButton')
+    $('#controlButtons #howToUseButton .icon-container')
         .click(function () {
-            //activate tutorial
-            onezoom.tour.start()
+            onezoom.tour.start()  //activate tutorial
         })
 
 
@@ -994,6 +982,18 @@ function setupUI() {
     
 }
 
+/* Helper function to parse search parameters in URL 
+ * This should be removed after fixing https://github.com/OneZoom/OZtree/issues/202 */
+function getParameterByName(name) {
+    var url = window.location.href;
+    name = name.replace(/[\[\]]/g, '\\$&');
+    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
 $(document).ready(function() {    /* Mainly a place to attach JS event handlers */
     // Set up some global variables
     /** CREATE A ONEZOOM INSTANCE
@@ -1003,12 +1003,12 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
     
     var home_ott_id = getParameterByName('ottdef')
     var screensaver_timer = parseInt(getParameterByName('ssaver'))
-    var button_expanded_cached = null
 
     if (home_ott_id) {
         /**
          * If ottdef is in the URL, then before loading the app, getting the ozId from the ott id is needed, so that
-         * the tree can centered on a specific node after loading.
+         * the tree can centered on a specific node after loading. This should probably all be done within the onezoom 
+         * instance, see https://github.com/OneZoom/OZtree/issues/202
          */
         const api_utils = OZentry.api_utils_setup(window.server_urls)
         api_utils.process_taxon_list(`[{"OTT":${home_ott_id}}]`, function () {
@@ -1033,20 +1033,24 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             window.tree_date);
 
         onezoom.tour.setup_setting(window['tutorial_config'], 'tutorial')
-
+    
         //Only setup screen saver if screensaver configured and screensaver_timer is defined
+        // Only relevant to museum display: it would be good to move this to the MD-specific page
         if (isNaN(screensaver_timer)) {
             screensaver_config = null; //Don't run the screensaver
         } else {
             if (window['screensaver_config']) {
-                screensaver_config.auto_activate.inactive_duration = screensaver_timer * 1000;
+                /* this should be fed in to the screensaver setting rather than overridden
+                 *  here: this is just a temporary hack. See https://github.com/OneZoom/OZtree/issues/200
+                 */
+                screensaver_config.screensaver.inactive_duration = screensaver_timer * 1000;
             }
         }
-        
         onezoom.screensaver.setup_setting(
             screensaver_config,
             'screensaver',
             UI_callbacks.closeAll); // before the screensaver runs, close modals etc.
+
     
         {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape = False)}}
         setupUI();

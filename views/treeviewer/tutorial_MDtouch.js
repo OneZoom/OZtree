@@ -110,7 +110,7 @@
                 // put this near the search box
                 "tour_container": {"style": {"top": "100px", "left": "auto", "right":"50px"}},
                 "title": "{{=T('Search for something')}}",
-                "window_text": "{{=T('You can click on search to see some suggested popular places to visit or enter the name of something you specifically want to find in the tree of life.  There’s so much life out there you’ll be amazed what you can find.')}}",
+                "window_text": "<div style='float:right;margin:0 20px;padding:8px;border:2px solid grey;border-radius:50%'><svg width='40' height='40' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'><circle fill='none' stroke='#000' stroke-width='1.1' cx='9' cy='9' r='7'></circle><path fill='none' stroke='#000' stroke-width='1.1' d='M14,14 L18,18 L14,14 Z'></path></svg></div>{{=T('You can click on search to see some suggested popular places to visit or enter the name of something you specifically want to find in the tree of life.  There’s so much life out there you’ll be amazed what you can find.')}}",
                // I'd quite like to show the search icon here really
                },
        },
