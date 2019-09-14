@@ -9,14 +9,14 @@
   border: 1px solid #cccccc;
   width: fit-content;
   height: fit-content;
-  background: white;
+  background-color: #FFFFAA;
   padding-top: 5px;
   top: 10px;
   left: 200px;
   position: absolute;
 }
 
-#tour_wrapper #title {
+#tour_wrapper .title {
   border-bottom: 1px solid #cccccc;
   text-align: center;
   font-size: 24px;
@@ -24,42 +24,51 @@
   padding: 0 30px;
 }
 
-#tour_wrapper #img {
+#tour_wrapper .img {
   display: block;
   width: 250px;
   height: 300px;
 }
 
-#tour_wrapper #window_text {
-  width: 350px;
+#tour_wrapper .window_text {
+  width: 400px;
+  min-height: 100px;
   padding-left: 10px;
   margin-bottom: 10px;
   font-size: 18px;
 }
 
-#tour_wrapper #window_text.gray_background {
-  background-color: gray;
-}
-
 #tour_wrapper .footer {
   border-top: 1px solid #cccccc;
   padding: 7px 0;
+  display: flex;
+  justify-content: space-between;
 }
 
-#tour_wrapper .footer:after {
-  content: '';
-  display: block;
-  clear: both;
+#tour_wrapper .footer div {
+  flex: 1 0 0;
+}
+
+#tour_wrapper .footer div:nth-of-type(1) {
+   text-align: left
+}
+
+#tour_wrapper .footer div:nth-of-type(2) {
+  text-align: center;
+}
+
+#tour_wrapper .footer div:nth-of-type(3) {
+   text-align: right
 }
 
 #tour_wrapper .button {
-  float: left;
   border: 1px solid #cccccc;
-  padding: 2px;
-  font-size: 18px;
+  border-radius: 0.5em;
+  padding: 2px 0.5em;
+  font-size: 16px;
   text-align: center;
-  width: 35px;
   margin: 0 7px;
+  background-color: #ffffee;
 }
 
 #tour_wrapper .button:hover {
@@ -67,6 +76,3 @@
   background-color: #dddddd;
 }
 
-#tour_wrapper #tour_exit {
-  float: right;
-}

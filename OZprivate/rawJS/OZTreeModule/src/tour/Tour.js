@@ -19,7 +19,7 @@ class Tour {
 
   /**
    * Create tour stops based on setting. If setting is empty, the tour is inactive
-   * Create several tour stop dom dialog(popup) based on template
+   * Create several tour stop dom dialog(popups) based on template
    */
   setup_setting(tour_setting, name) {
     this.setting = tour_setting
@@ -31,13 +31,13 @@ class Tour {
     this.start_cb = tour_setting.start_cb
     this.exit_cb = tour_setting.exit_cb
 
-    tour_setting.dom_id = tour_setting.dom_id || {}
-    this.wrapper_id = tour_setting.dom_id.wrapper_id || 'tour_wrapper'
-    this.next_id = tour_setting.dom_id.next_id || 'tour_next'
-    this.prev_id = tour_setting.dom_id.prev_id || 'tour_prev'
-    this.exit_id = tour_setting.dom_id.exit_id || 'tour_exit'
-    this.exit_confirm_id = tour_setting.dom_id.exit_confirm_id || 'exit_confirm'
-    this.exit_cancel_id = tour_setting.dom_id.exit_cancel_id || 'exit_cancel'
+    tour_setting.dom_names = tour_setting.dom_names || {}
+    this.wrapper_id = tour_setting.dom_names.wrapper_id || 'tour_wrapper'
+    this.next_class = tour_setting.dom_names.next_class || 'tour_next'
+    this.prev_class = tour_setting.dom_names.prev_class || 'tour_prev'
+    this.exit_class = tour_setting.dom_names.exit_class || 'tour_exit'
+    this.exit_confirm_class = tour_setting.dom_names.exit_confirm_class || 'exit_confirm'
+    this.exit_cancel_class = tour_setting.dom_names.exit_cancel_class || 'exit_cancel'
 
     let shared_setting = tour_setting['tour_stop_shared'] || {}
 
@@ -140,7 +140,7 @@ class Tour {
       this.curr_stop().exit()
     }
 
-    //disable tour style
+    //disable tour stylesheet
     $('#tour_style_' + this.tour_id).attr('disabled', 'disabled')
     $('#tour_exit_confirm_style_' + this.tour_id).attr('disabled', 'disabled')
 
@@ -264,15 +264,15 @@ class Tour {
    * Bind previous, next, exit button event
    */
   bind_template_ui_event(tour_stop) {
-    tour_stop.container.find(`#${this.next_id}`).click(() => {
+    tour_stop.container.find(`.${this.next_class}`).click(() => {
       this.goto_next()
     })
 
-    tour_stop.container.find(`#${this.prev_id}`).click(() => {
+    tour_stop.container.find(`.${this.prev_class}`).click(() => {
       this.goto_prev()
     })
 
-    tour_stop.container.find(`#${this.exit_id}`).click(() => {
+    tour_stop.container.find(`.${this.exit_class}`).click(() => {
       this.exit()
     })
   }
@@ -281,11 +281,11 @@ class Tour {
    * Bind exit or hide exit confirm events on the buttons of exit confirm popup
    */
   bind_exit_confirm_event() {
-    this.exit_confirm_popup.find(`#${this.exit_confirm_id}`).click(() => {
+    this.exit_confirm_popup.find(`.${this.exit_confirm_class}`).click(() => {
       this.exit()
       this.exit_confirm_popup.hide()
     })
-    this.exit_confirm_popup.find(`#${this.exit_cancel_id}`).click(() => {
+    this.exit_confirm_popup.find(`.${this.exit_cancel_class}`).click(() => {
       this.continue()
       this.exit_confirm_popup.hide()
     })
@@ -295,11 +295,11 @@ class Tour {
    * Fetch images in tour in advance
    */
   prefetch_image(tour_stop) {
-    const dom_update = tour_stop.setting.dom_update || {}
+    const update_class = tour_stop.setting.update_class || {}
     const container = tour_stop.container
-    for (let key in dom_update) {
-      if (typeof dom_update[key] === 'object' && dom_update[key].hasOwnProperty('src')) {
-        container.find(`#${key}`).attr('src', dom_update[key].src)
+    for (let key in update_class) {
+      if (typeof update_class[key] === 'object' && update_class[key].hasOwnProperty('src')) {
+        container.find(`.${key}`).attr('src', update_class[key].src)
       }
     }
   }
@@ -315,7 +315,7 @@ class Tour {
       console.error(
         `Expected to have a tour container with id: ${
         this.wrapper_id
-        }, but none exist`
+        }, but none found`
       )
     }
 
@@ -325,7 +325,7 @@ class Tour {
       /**
        * Load template div
        */
-      const tempate_url =
+      const template_url =
         location.protocol +
         '//' +
         location.host +
@@ -333,10 +333,10 @@ class Tour {
         tour_stop.setting.template
 
       const temp_div = document.createElement('div')
-      $(temp_div).load(`${tempate_url} .container`, () => {
+      $(temp_div).load(`${template_url} .container`, () => {
         $(`#${this.wrapper_id}`).append($(temp_div))
         $(temp_div).hide()
-        tour_stop.container = $(temp_div)
+        tour_stop.container = $(temp_div) /* this is the way to access this specific stop */
         this.bind_template_ui_event(tour_stop)
         this.prefetch_image(tour_stop)
       })
@@ -437,60 +437,47 @@ class Tour {
    */
   set_ui_content() {
     const container = this.curr_stop().container
-    const dom_update = this.curr_stop().setting.dom_update || {}
-    for (let key in dom_update) {
-      const selectedDom = container.find(`#${key}`)
+    const update_class = this.curr_stop().setting.update_class || {}
+    for (let key in update_class) {
+      /* find match in children and also if this element matches */
+      const selectedDom = container.find(`.${key}`).add(container.filter(`.${key}`))
       if (selectedDom.length === 0) {
         console.error(
-          `Expected to set dom content with id: ${key}, but dom is not found`
+          `Expected to set dom content with class: ${key}, but dom is not found`
         )
       } else {
         /**
-         * Set as pure text
+         * Set as html
          */
-        if (typeof dom_update[key] === 'string') {
-          selectedDom.html(dom_update[key])
-        } else if (typeof dom_update[key] === 'object') {
+        if (typeof update_class[key] === 'string') {
+          selectedDom.html(update_class[key])
+        } else if (typeof update_class[key] === 'object') {
           /**
            * Set as pure text
            */
-          if (dom_update[key].hasOwnProperty('text')) {
-            selectedDom.html(dom_update[key].text)
+          if (update_class[key].hasOwnProperty('text')) {
+            selectedDom.html(update_class[key].text)
           }
 
           /**
-           * toggle show or hide
+           * set style, e.g. to toggle show or hide
            */
-          if (dom_update[key].visible === false || dom_update[key].visible === "false") {
-            selectedDom.hide()
-          } else {
-            selectedDom.show()
+          if (update_class[key].hasOwnProperty('style')) {
+            selectedDom.css(update_class[key].style);
           }
 
           /**
            * Set image src
            */
-          if (dom_update[key].hasOwnProperty('src')) {
-            selectedDom.attr('src', dom_update[key].src)
+          if (update_class[key].hasOwnProperty('src')) {
+            selectedDom.attr('src', update_class[key].src)
           }
-        } else if (typeof dom_update[key] === 'function') {
+        } else if (typeof update_class[key] === 'function') {
           /**
            * Set by pure function
            */
-          dom_update[key](selectedDom)
+          update_class[key](selectedDom)
         }
-      }
-    }
-
-    const style_update = this.curr_stop().setting.style_update || {}
-    for (let key in style_update) {
-      const selectedDom = container.find(`#${key}`)
-      if (selectedDom.length === 0) {
-        console.error(
-          `Expected to set dom style with id: ${key}, but dom is not found`
-        )
-      } else {
-        selectedDom.attr('class', style_update[key])
       }
     }
   }

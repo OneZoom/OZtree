@@ -15,7 +15,7 @@
   position: absolute;
 }
 
-#tour_wrapper #title {
+#tour_wrapper .title {
   border-bottom: 1px solid #cccccc;
   text-align: center;
   font-size: 20px;
@@ -23,19 +23,19 @@
   padding: 0 30px;
 }
 
-#tour_wrapper #img {
+#tour_wrapper .img {
   display: block;
   width: 250px;
   height: 300px;
 }
 
-#tour_wrapper #window_text {
+#tour_wrapper .window_text {
   width: 250px;
   padding-left: 10px;
   margin-bottom: 10px;
 }
 
-#tour_wrapper #window_text.gray_background {
+#tour_wrapper .window_text.gray_background {
   background-color: gray;
 }
 
@@ -65,6 +65,6 @@
   background-color: #dddddd;
 }
 
-#tour_wrapper #tour_exit {
+#tour_wrapper .tour_exit {
   float: right;
 }
