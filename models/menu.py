@@ -41,12 +41,13 @@ response.menu = [
                                             (T('Explore amphibians'), False , URL('default','life', args=['@Amphibia=544595'], url_encode=False)),
                                             (T('Explore mammals'), False , URL('default','life', args=['@Mammalia'], url_encode=False)),
                                             (T('Sponsor a leaf'), False, URL('default' , 'sponsor.html')),
+                                            (T('One Tree One Planet'), False, URL('default' , 'otop.html')),
                                             ]),
                 
                  (T('For Education'), False, None , [
                                                     (T('Installations'), False, URL('default' , 'installations.html')),
                                                     (T('Display launcher'), False, URL('education' , 'museum_display_setup.html')),
-                                                     
+                                                    (T('Screenshot tool'), False , URL('default' , 'life_expert.html')),
                                                    ]),
                  
                  (T('For Science'), False, None , [
