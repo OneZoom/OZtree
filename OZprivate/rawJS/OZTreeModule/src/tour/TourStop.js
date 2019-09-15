@@ -89,7 +89,7 @@ class TourStop {
   play(direction) {
     this.direction = direction
     this.state = TOURSTOP_INIT
-
+    console.log("playing tourstop: " + this.setting.update_class.title + direction)
     /**
      * Perform flight or leap
      */
