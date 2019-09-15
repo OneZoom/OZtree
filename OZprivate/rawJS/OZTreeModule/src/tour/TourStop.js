@@ -45,9 +45,9 @@ class TourStop {
    */
   skip_transition() {
     // leap (this should cancel any exiting flight)
+    this.state = TOURSTOP_END
     this.onezoom.controller.leap_to(this.get_OZid(this.setting.ott), this.setting.pos)
     this.tour.hide_other_stops(this.container)
-    this.state = TOURSTOP_END
     /**
      * If has wait_time, then execute next after wait_time,
      * otherwise wait for user click next/prev
