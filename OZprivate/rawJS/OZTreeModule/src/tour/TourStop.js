@@ -2,10 +2,10 @@ import data_repo from '../factory/data_repo'
 import tree_state from '../tree_state'
 
 //Tour Stop States
-const TOUR_STOP_INIT = 'TOUR_STOP_INIT'
-const TOUR_STOP_END = 'TOUR_STOP_END'  //in the end of tour stop, waiting for X seconds or user press next to continue
-const TOUR_STOP_FLYING = 'TOUR_STOP_FLYING'
-const TOUR_STOP_EXIT = 'TOUR_STOP_EXIT'
+const TOURSTOP_INIT = 'TOURSTOP_INIT'
+const TOURSTOP_END = 'TOURSTOP_END'  //at the end of tour stop, wait for X seconds or until user presses next to continue
+const TOURSTOP_IS_FLYING = 'TOURSTOP_IS_FLYING'
+const TOURSTOP_EXIT = 'TOURSTOP_EXIT'
 
 class TourStop {
   constructor(tour, setting) {
@@ -13,10 +13,10 @@ class TourStop {
     this.onezoom = this.tour.onezoom
     this.setting = setting
     this.goto_next_timer = null
-    this.state = TOUR_STOP_INIT
+    this.state = TOURSTOP_INIT
     this.direction = 'forward'
 
-    //Container would be set when tour.setup_setting is called
+    //Container is set when tour.setup_setting is called
     this.container = null
     if (!setting.hasOwnProperty('ott')) {
       throw new Error('Tour stop setting must contain ott id')
@@ -36,92 +36,105 @@ class TourStop {
    */
   exit() {
     this.pause()
-    this.state = TOUR_STOP_EXIT
+    this.state = TOURSTOP_EXIT
     this.container.hide()
   }
 
   /**
-   * Called when user press next during a tour 
+   * Called when user presses next during a transition 
    */
-  goto_end() {
-    if (!this.is_transition_stop()) {
-      throw new Error('Goto end is only valid in transition stop.')
-    } else {
-      this.state = TOUR_STOP_END
-
-      this.onezoom.controller.perform_leap(
-        this.get_OZid(this.setting.ott_end_id)
-      )
-
-      /**
-       * If has wait_time, then execute next after wait_time,
-       * otherwise wait for user click next/prev
-       */
-      this.direction = 'forward'
-      this.wait_and_goto_next()
-    }
+  skip_transition() {
+    // leap (this should cancel any exiting flight)
+    this.onezoom.controller.leap_to(this.get_OZid(this.setting.ott), this.setting.pos)
+    this.tour.hide_other_stops(this.container)
+    this.state = TOURSTOP_END
+    /**
+     * If has wait_time, then execute next after wait_time,
+     * otherwise wait for user click next/prev
+     */
+    this.direction = 'forward'
+    this.wait_and_goto_next()
   }
 
   /**
    * 1. Pause fly animation
-   * 2. Reset timeout which when triggered would leap to next tour stop
+   * 2. Reset timeout, which when triggered would otherwise leap to next tour stop
    */
   pause() {
     tree_state.flying = false
+    // We would like to get the time elapsed if we at waiting to move on from TOURSTOP_END
+    // but there is no obvious way to get it
     clearTimeout(this.goto_next_timer)
   }
 
   continue() {
-    if (this.state === TOUR_STOP_INIT) {
-      this.play('forward')
-    } else if (this.state === TOUR_STOP_FLYING) {
-      let promise = this.onezoom.controller.fly_on_tree_to(
-        null,
-        this.get_OZid(this.setting.ott_end_id)
-      )
-      promise.then(() => {
-        this.state = TOUR_STOP_END
-        this.wait_and_goto_next()
-      })
-    } else if (this.state === TOUR_STOP_END) {
+    if ((this.state === TOURSTOP_EXIT) || (this.state === TOURSTOP_END)) {
+      // Not in a transition, so jump back to the tourstop location (in case user has
+      // moved the tree) and continue
+      this.onezoom.controller.leap_to(this.get_OZid(this.setting.ott), this.setting.pos)
+      // We should really only have to wait for the remaining time at this stop, but
+      // that's tricky, so we wait again from the beginning.
       this.wait_and_goto_next()
+    } else {
+      this.play('forward')
     }
+
   }
 
   /**
-   * Play current tour stop
-   * If there is ott_end_id, then leap or fly to that node
-   * If wait time is present, then wait for a fixed amount of time start next slide
+   * Play current tour stop, including the transition into the stop
+   * If wait time is present, then wait for that time, then goto next stop
    * If wait time is not present, then listen to UI event for next action
    */
   play(direction) {
     this.direction = direction
-    this.state = TOUR_STOP_INIT
-    this.container.show()
-    /**
-     * Set button, window, title, style
-     */
+    this.state = TOURSTOP_INIT
 
     /**
      * Perform flight or leap
      */
     let promise = null
-    if (this.is_transition_stop()) {
-      this.state = TOUR_STOP_FLYING
-
-      this.conditional_leap_to_OTT(this.setting.ott)
-      promise = this.onezoom.controller.fly_on_tree_to(
-        null,
-        this.get_OZid(this.setting.ott_end_id)
-      )
+    if (this.setting.transition_in == 'leap' || this.direction == 'backward') {
+        // Leap. For the moment, wrap in a promise (until 
+        // https://github.com/OneZoom/OZtree/issues/203 is fixed)
+        let self = this // allow the tourstop to be accessed inside the promise 
+        promise = new Promise(function(resolve, reject) {
+            self.onezoom.controller.leap_to(self.get_OZid(self.setting.ott), self.setting.pos)
+            resolve() // Might instead need to add 200ms wait here
+        })
     } else {
-      this.conditional_leap_to_OTT(this.setting.ott)
-      promise = Promise.resolve(true)
+        // Flight
+        this.state = TOURSTOP_IS_FLYING
+        if (this.setting.fly_in_visibility == "force_hide") {
+            this.tour.hide_other_stops()
+        } else if (this.setting.fly_in_visibility == "show_self") {
+            this.tour.hide_other_stops(this.container)
+        }
+        if (this.setting.transition_in == 'fly_straight') {
+            // This is unusual. For the moment, wrap in a promise (until 
+            // https://github.com/OneZoom/OZtree/issues/203 is fixed)
+            let self = this // allow the tourstop to be accessed inside the promise 
+            promise = new Promise(function(resolve, reject) {
+                self.onezoom.controller.fly_straight_to(
+                    self.get_OZid(self.setting.ott),
+                    self.setting.pos == 'max',
+                    self.setting.fly_in_speed || 1,
+                    'linear',
+                    resolve)
+            })
+        } else {
+            // This is the norm
+            promise = this.onezoom.controller.fly_on_tree_to(
+                null,
+                this.get_OZid(this.setting.ott),
+                this.setting.pos == 'max',
+                this.setting.fly_in_speed || 1)
+        }
     }
-
     promise.then(() => {
-      this.state = TOUR_STOP_END
-      this.wait_and_goto_next()
+        this.tour.hide_other_stops(this.container)
+        this.state = TOURSTOP_END
+        this.wait_and_goto_next()
     })
   }
 
@@ -147,7 +160,8 @@ class TourStop {
    */
   wait_and_goto_next() {
     const wait_time = this.get_wait_time()
-    if (typeof wait_time === 'number' && wait_time >= 0) {
+    if (typeof wait_time === 'number') {
+      
       this.goto_next_timer = setTimeout(() => {
         this.tour.goto_next()
       }, wait_time)
@@ -155,28 +169,14 @@ class TourStop {
   }
 
   get_wait_time() {
-    let forward_wait_time = this.is_transition_stop() ? 0 : null
-
-    if (this.setting.hasOwnProperty('wait')) {
-      forward_wait_time = this.setting.wait
-    }
-
-    if (this.direction === 'forward') {
-      return forward_wait_time
-    }
-
     if (
       this.direction === 'backward' &&
       this.setting.hasOwnProperty('wait_after_prev')
     ) {
       return this.setting.wait_after_prev
     } else {
-      return forward_wait_time
+      return this.setting.wait //null means stay here until user interation
     }
-  }
-
-  is_transition_stop() {
-    return this.setting.hasOwnProperty('ott_end_id')
   }
 }
 

@@ -51,7 +51,7 @@
     },
     {
         "ott": "991547",
-        "ott_end_id": "81461",
+        "transition_in": "leap", //can be "fly" (default), "leap", or "fly_straight" (rare)
         "update_class": {
             "window_text": "Slide 2 with style change",
             "img": {
@@ -64,6 +64,7 @@
     },
     {
         "ott": "81461",
+        "speed": 2, //speed relative to the global default
         "update_class": {
             "window_text": "Slide 3",
             "img": {
@@ -74,7 +75,15 @@
     },
     {
         "ott": "81461",
-        "ott_end_id": "99252",
+        
+        /*  can be null, empty etc, "max", or an object {'xp': xp, 'yp': yp, 'ws': ws}
+         * containing numbers (floating point) giving the 
+         *  xp, yp, ws positions relative to the node.   
+         * "max" is only relevant for an internal node: it means to zoom in so that the
+         * node (but not its children) fills the screen. The 3 numbers setting is only 
+         * used for "transition":"leap".
+         */
+        "pos": "max",
         "update_class": {
             "window_text": "Slide 4",
             "img": {
@@ -85,7 +94,6 @@
     },
     {
         "ott": "99252",
-        "ott_end_id": "1062253",
         "update_class": {
             "window_text": "Slide 5",
             "tour_next": {

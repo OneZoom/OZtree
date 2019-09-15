@@ -230,7 +230,7 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
   </script>
 {{include}}
 <script>
-    var title_name = "{{=page_info.get('title_name')}}"
+    var title_name = "{{=page_info.get('title_name') or ""}}";
     if (window['pagetitle_func']) {
         document.title = pagetitle_func(title_name);
     } else {
@@ -696,7 +696,7 @@ function setupUI() {
     
     $('#controlButtons #howToUseButton .icon-container')
         .click(function () {
-            onezoom.tour.start()  //activate tutorial
+            onezoom.tutorial.start()  //activate tutorial
         })
 
 
@@ -1032,7 +1032,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             window.cut_threshold,
             window.tree_date);
 
-        onezoom.tour.setup_setting(window['tutorial_config'], 'tutorial')
+        onezoom.tutorial.setup_setting(window['tutorial_config'], 'tutorial')
     
         //Only setup screen saver if screensaver configured and screensaver_timer is defined
         // Only relevant to museum display: it would be good to move this to the MD-specific page

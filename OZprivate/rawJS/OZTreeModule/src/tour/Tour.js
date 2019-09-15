@@ -138,6 +138,7 @@ class Tour {
    */
   exit(invoke_callback = true) {
     if (!this.setting) {return}
+    this.hide_other_stops()
     if (this.curr_stop()) {
       this.curr_stop().exit()
     }
@@ -158,24 +159,20 @@ class Tour {
     if (invoke_callback && typeof this.exit_callback === 'function') {
       this.exit_callback()
     }
+    
   }
 
   /**
-   * Activate next tour stop
-   * If current stop is a transitional stop, then goto the end of current stop,
-   * otherwise go to next stop
+   * Activate next tour stop. If transition is running, go to end of the
+   * current transition, otherwise go to next stop.
    */
   goto_next() {
     if (!this.started) {
       return
     }
-    if (this.curr_stop() && this.curr_stop().is_transition_stop() && this.curr_stop().state === 'TOUR_STOP_FLYING') {
-      this.curr_stop().goto_end()
+    if (this.curr_stop() && this.curr_stop().state === 'TOURSTOP_IS_FLYING') {
+      this.curr_stop().skip_transition()
     } else {
-      if (this.curr_stop()) {
-        this.curr_stop().exit()
-      }
-
       if (this.curr_step === this.tour_stop_array.length - 1) {
         // end of tour, exit gracefully or loop if a screensaver
         if (this.setting.screensaver) {
@@ -185,6 +182,7 @@ class Tour {
                 this.curr_step = -1
             }
         } else {
+            // Exit tour
             if (typeof this.end_callback === 'function') {
                 this.end_callback()
             }
@@ -193,7 +191,7 @@ class Tour {
         }
       }
       this.curr_step++
-      this.curr_stop().play('forward', '')
+      this.curr_stop().play('forward')
       this.set_ui_content()
     }
   }
@@ -211,15 +209,24 @@ class Tour {
 
     if (this.curr_step > 0) {
       this.curr_step--
-
-      //find first non-transition stop
-      while (this.curr_step > 0 && this.curr_stop().is_transition_stop()) {
-        this.curr_step--
-      }
     }
 
     this.curr_stop().play('backward')
     this.set_ui_content()
+  }
+
+  /*
+   * Hide all the stops, but if one is given, and is hidden, show it
+   */
+  hide_other_stops(keep_shown = null) {
+    if (keep_shown) {
+        $(`#${this.wrapper_id}`).find(".tourstop").not(keep_shown).hide()
+        if (keep_shown.is(":hidden")) {
+            keep_shown.show()
+        }
+    } else {
+       $(`#${this.wrapper_id}`).find(".tourstop").hide()
+    }
   }
 
   /**
@@ -353,6 +360,7 @@ class Tour {
         tour_stop.setting.template
 
       const temp_div = document.createElement('div')
+      temp_div.className = "tourstop"
       $(temp_div).load(`${template_url} .container`, () => {
         $(`#${this.wrapper_id}`).append($(temp_div))
         $(temp_div).hide()
