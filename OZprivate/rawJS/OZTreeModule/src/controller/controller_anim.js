@@ -112,45 +112,38 @@ function get_details_of_nodes_in_view_during_fly(root) {
  */
 export default function (Controller) {
   /**
-   * Leap directly to a new OneZoom node id in the tree. This provides basic
-   * functionality. Normally 
+   * Leap directly to a new OneZoom node id in the tree. If a position is given, it
+   * should be of the form [xp, yp, ws] or {'xp': xp, 'yp': yp, 'ws': ws}
    *
    * @param {integer} dest_OZid The OneZoom node ID (*not* the OTT). Caution: these IDs
    *    are not permanent, but change every time the tree is updated. These are read as
    *        dest_OZid < 0 means a leaf (metacode == -dest_OZid),
    *        dest_OZid > 0 means an interior_node (metacode == dest_OZid)
+   * @param {object} position (optional) an object or array of the form [xp, yp, ws] or
+   *    {'xp': xp, 'yp': yp, 'ws': ws} where xp, yp, ws are numeric
    */   
-  Controller.prototype.leap_to = function(dest_OZid) {
+  Controller.prototype.leap_to = function(dest_OZid, position=null) {
     tree_state.flying = false;
-    this.develop_branch_to(dest_OZid);
-    position_helper.perform_actual_leap(this);
-  }
-
-  /**
-   * Leap directly to a new reanchored OneZoom node id + offset position in the tree
-   *
-   * @param {object} new_pos {xp: .., yp: .., ws: ..}
-   * @param {integer} dest_OZid The OneZoom node ID (not the OTT). Caution: these IDs are
-   *     not permanent, but change every time the tree is updated. These are read as
-   *        dest_OZid < 0 means a leaf (metacode == -dest_OZid),
-   *        dest_OZid > 0 means an interior_node (metacode == dest_OZid)
-   */
-  Controller.prototype.leap_to_position = function(dest_OZid, new_pos) {
-      //TO DO - James says this needs to work even if the screen size etc has changed
-      tree_state.xp = new_pos.xp;
-      tree_state.yp = new_pos.yp;
-      tree_state.ws = new_pos.ws;
+    if (position && (typeof(position) === 'object')) {
+      console.log(position)
+      tree_state.xp = position.xp || position[0] || 0
+      tree_state.yp = position.yp || position[1] || 0
+      tree_state.ws = position.ws || position[2] || 1
       this.develop_and_reanchor_to(dest_OZid);
       this.re_calc();
       this.trigger_refresh_loop();
-  };
+    } else {
+      this.develop_branch_to(dest_OZid);
+      position_helper.perform_actual_leap(this);
+    }
+  }
   
   /**
-   * Fly directly to a specified place in the tree from your current position. As this
-   * doesn't involve a change in direction, it may not not display the relationship
-   * between species around the current position and those at the target location
-   * (i.e. it may do a bad job for cousins). For this you probably want to use the
-   * fly_on_tree_to()
+   * Fly directly to a specified OneZoom node id in the tree from your current position.
+   * As this doesn't involve a change in direction, it may not not display the
+   * relationship between species around the current position and those at the target
+   * location (i.e. it may do a bad job for cousins). For this you probably want to use
+   * the function `fly_on_tree_to()`
    * @param {integer} dest_OZid The OneZoom node ID (not the OTT). Caution: these IDs are
    *     not permanent, but change every time the tree is updated. These are read as
    *        dest_OZid < 0 means a leaf (metacode == -dest_OZid),
@@ -337,8 +330,8 @@ export default function (Controller) {
     if (!init) init = "pzoom";
 
     this.reset();
-    if (init.xp !== undefined) {
-      this.leap_to_position(dest_OZid, init);
+    if (!isNaN(init.xp)) {
+      this.leap_to(dest_OZid, init);
       return Promise.resolve();
     }
 

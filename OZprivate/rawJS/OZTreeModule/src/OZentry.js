@@ -108,7 +108,7 @@ function setup(
   //   };
   //   api_manager.tour_detail(params);
   // }
-  return_value.tour = new Tour(return_value)
+  return_value.tutorial = new Tour(return_value)
   return_value.screensaver = new Tour(return_value)
   return_value.utils = {};
   return_value.utils.spec_num_full = spec_num_full;
