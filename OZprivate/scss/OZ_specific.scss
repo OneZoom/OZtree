@@ -30,6 +30,10 @@ input[type=checkbox], input[type=radio] {
     white-space: nowrap;
 }
 
+.svgover {
+    width: 100%;
+}
+
 // ===== Footer ====== //
 .footer {
   position: absolute;
@@ -252,8 +256,6 @@ ul.sponsor_list li {
     background-repeat: no-repeat; 
     background-position: .5em .5em; 
 }
-
-
 
 // ===== Sponsored, donor_list ====== //
 
