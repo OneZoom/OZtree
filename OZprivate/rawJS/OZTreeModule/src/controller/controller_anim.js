@@ -194,7 +194,7 @@ export default function (Controller) {
      * @param {string} accel_type The acceleration type, one of "linear", "accel", 
      *    "decel", or "parabolic" (the default, also used if null). CURRENTLY IGNORED.
      * @param {func} finalize_func The function to call at the end of the zoom (optional)
-     * @return {boolean} returns false if the distance to dest_OZid is too short so there is no animation performed.
+     * @return {promise} returns a promise
      *
      *
      * e.g. try in the console
