@@ -97,8 +97,9 @@ class TourStop {
     if (this.setting.transition_in == 'leap' || this.direction == 'backward') {
         // Leap. For the moment, wrap in a promise (until 
         // https://github.com/OneZoom/OZtree/issues/203 is fixed)
+        let self = this // allow the tourstop to be accessed inside the promise 
         promise = new Promise(function(resolve, reject) {
-            this.onezoom.controller.leap_to(this.get_OZid(this.setting.ott), this.setting.pos)
+            self.onezoom.controller.leap_to(self.get_OZid(self.setting.ott), self.setting.pos)
             resolve() // Might instead need to add 200ms wait here
         })
     } else {
