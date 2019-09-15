@@ -125,7 +125,6 @@ export default function (Controller) {
   Controller.prototype.leap_to = function(dest_OZid, position=null) {
     tree_state.flying = false;
     if (position && (typeof(position) === 'object')) {
-      console.log(position)
       tree_state.xp = position.xp || position[0] || 0
       tree_state.yp = position.yp || position[1] || 0
       tree_state.ws = position.ws || position[2] || 1
