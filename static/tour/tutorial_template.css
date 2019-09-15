@@ -13,6 +13,7 @@
   padding-top: 5px;
   top: 10px;
   left: 200px;
+  width: 460px;
   position: fixed;
 }
 
@@ -31,7 +32,6 @@
 }
 
 #tour_wrapper .window_text {
-  width: 400px;
   min-height: 130px;
   padding-left: 10px;
   margin-bottom: 10px;
