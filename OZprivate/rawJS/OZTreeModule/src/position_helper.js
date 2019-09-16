@@ -210,26 +210,25 @@ function deanchor(node) {
 }
 
 
-// to_index gives us the index of the leaf or node we need to zoom into
-// to_leaf tells us if that index refers to a leaf (1) or not (-1)
-// If midnode has stored_metacode, then it has not been fully developed yet. Otherwise it stores its metacode in node.metacode.
-function target_by_code(node, to_leaf , to_index) {
-  if (to_leaf > 0 && node.is_leaf && (node.metacode == to_index)) {
+// OZid gives us the OneZoom ID of the leaf or node we need to zoom into (
+// (negative for a leaf, positive for an internal node
+// If midnode has stored_metacode, then it has not been fully developed yet. 
+// Otherwise it stores its metacode in node.metacode.
+function target_by_code(node, OZid) {
+  let target_is_leaf = OZid < 0
+  if (target_is_leaf && node.is_leaf && (node.metacode == -OZid)) {
     node.targeted = true;
-    // print_target_node(node);
-  } else if (to_leaf <= 0 && node.is_interior_node && (node.metacode == to_index)) {
+  } else if ((!target_is_leaf) && node.is_interior_node && (node.metacode == OZid)) {
     node.targeted = true;
-    // print_target_node(node);
   } else if (node.has_child) {
     node.targeted = false;
     for (let i=0; i<node.children.length; i++) {
       let child = node.children[i];
-      node.targeted = node.targeted || target_by_code(child, to_leaf, to_index);
+      node.targeted = node.targeted || target_by_code(child, OZid);
     }
   } else {
     node.targeted = false;
   }
-  // send back information on whether or not this node is targeted
   return node.targeted;
 }
 
@@ -319,8 +318,8 @@ function perform_actual_fly(controller, into_node, speed=1, accel_type="linear",
     // nothing to zoom to so better to do nothing and return false or it feels like a bug
     return false;
   } else {
-    length_intro = Math.abs(Math.log(r_mult))*global_anim_speed/speed;      
-    num_intro_steps = Math.max(Math.floor(length_intro),5);
+    length_intro = Math.abs(Math.log(r_mult))*global_anim_speed;      
+    num_intro_steps = Math.max(Math.floor(length_intro),12)/speed;
     perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
     return true;
   }

@@ -207,7 +207,7 @@ export default function (Controller) {
 
             // Leaf and interior metacodes aren't unique, treat leaves as negative;
             function to_id(n) {
-                return n.children.length > 0 ? n.metacode : -n.metacode;
+                return n.is_leaf ? -n.metacode : n.metacode;
             }
 
             // Mark each node in heirarchy as visited
@@ -238,10 +238,9 @@ export default function (Controller) {
         }
 
         if (src_OZid == null) {
-            // Find largest visible node, use this as our starting point
-            src_OZid = get_largest_visible_node(this.root, function(node) { return node.ott; }) || this.root;
-            // NB: This is opposite to the below.
-            src_OZid = (src_OZid.full_children_length > 0 ? 1 : -1) * src_OZid.metacode;
+            // Find largest visible node: use this as our starting point
+            let top_node = get_largest_visible_node(this.root) || this.root;
+            src_OZid = (top_node.is_leaf? -1 : -1) * top_node.metacode;
         } else {
             // Move to start location
             p = p.then(function () {
@@ -269,7 +268,7 @@ export default function (Controller) {
                 // NB: Ideally we'd parallelise this, but the interface doesn't allow it yet.
                 flight_p = flight_p.then(function () {
                     position_helper.clear_target(this.root);
-                    position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
+                    position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
                     return get_details_of_nodes_in_view_during_fly(this.root);
                 }.bind(this));
             }.bind(this));
@@ -285,11 +284,10 @@ export default function (Controller) {
                 var accel_func = idx === arr.length - 1 ? 'decel'
                                : idx === 0 ? 'accel'
                                : null;
-
                 flight_p = flight_p.then(function () {
                     return new Promise(function (resolve, reject) {
                         position_helper.clear_target(this.root);
-                        position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
+                        position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
                         position_helper.perform_actual_fly(
                             this, (accel_func==='final')?into_node:false, speed, accel_func, resolve, reject);
                     }.bind(this));
@@ -352,7 +350,7 @@ export default function (Controller) {
     // NB: leap_to won't fetch details, we do it ourselves
     position_helper.clear_target(this.root);
     n = this.develop_branch_to(dest_OZid);
-    position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
+    position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
     return get_details_of_nodes_in_view_during_fly(this.root).then(function () {
         this.leap_to(dest_OZid, init);
     }.bind(this));
@@ -365,14 +363,12 @@ export default function (Controller) {
    *    OZid > 0, interior_node(metacode == OZid)
    */
   Controller.prototype.develop_branch_to = function(OZid) {
-    let to_leaf  = OZid > 0 ? -1 : 1;
-    let to_index = OZid > 0 ? OZid : -OZid;  
     let root = this.root;
-    let selected_node = this.factory.dynamic_loading_by_metacode(to_leaf, to_index);
+    let selected_node = this.factory.dynamic_loading_by_metacode(OZid);
     this.projection.pre_calc(root);
     this.projection.calc_horizon(root);
     position_helper.clear_target(root);
-    position_helper.target_by_code(root, to_leaf, to_index);
+    position_helper.target_by_code(root, OZid);
     return selected_node;
   }
   
@@ -441,10 +437,8 @@ export default function (Controller) {
    *    OZid > 0, interior_node(metacode == OZid)
    */
   Controller.prototype.develop_and_reanchor_to = function(OZid) {
-    let to_leaf  = OZid > 0 ? -1 : 1;
-    let to_index = OZid > 0 ? OZid : -OZid;  
     let root = this.root;
-    let anchor_node = this.factory.dynamic_loading_by_metacode(to_leaf, to_index);
+    let anchor_node = this.factory.dynamic_loading_by_metacode(OZid);
     this.projection.pre_calc(root, true)
     this.projection.calc_horizon(root);
     position_helper.deanchor(root);

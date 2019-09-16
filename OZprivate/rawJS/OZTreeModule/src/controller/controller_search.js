@@ -11,8 +11,10 @@ export default function (Controller) {
   /**
    * Add marked area by OZid
    * @param OZid_to_mark is the OneZoom id of the node / leaf that should be marked
-   * @param area_code is the code that we want to associate with this marked area, if nothing is enterd we identify the area with the ID as given by OZid_to_mark
-   * @param mark_color should give the color to use for marking. If null the system will select a new color from the theme color pallette
+   * @param area_code is the code that we want to associate with this marked area, if 
+   *    nothing is entered we identify the area with the ID as given by OZid_to_mark
+   * @param mark_color should give the color to use for marking. If null the system will
+   *    select a new color from the theme colour palette
    */
     Controller.prototype.mark_area = function(OZid_to_mark,area_code,mark_color) {
         if (! area_code)
@@ -190,15 +192,11 @@ export default function (Controller) {
      let ancestors = get_targeted_nodes(this.root, []);
      mark_route_to_search_res(ancestors);
      } else if (src != null && dest != null) {
-     let to_leaf  = src > 0 ? -1 : 1;
-     let to_index = src > 0 ? src : -src;
-     position_helper.target_by_code(this.root, to_leaf, to_index);
+     position_helper.target_by_code(this.root, src);
      let ancestorsOfNode1 = get_targeted_nodes(this.root, []);
      mark_route_to_search_res(ancestorsOfNode1, 'search_hit1');
      
-     to_leaf  = dest > 0 ? -1 : 1;
-     to_index = dest > 0 ? dest : -dest;
-     position_helper.target_by_code(this.root, to_leaf, to_index);
+     position_helper.target_by_code(this.root, dest);
      let ancestorsOfNode2 = get_targeted_nodes(this.root, []);
      mark_route_to_search_res(ancestorsOfNode2, 'search_hit2');
      }
@@ -217,7 +215,7 @@ export default function (Controller) {
      }
      
      position_helper.clear_target(this.root);
-     position_helper.target_by_code(this.root, -1, common_ancestor);
+     position_helper.target_by_code(this.root, common_ancestor);
      position_helper.perform_actual_leap(this);
      record_url();
      }

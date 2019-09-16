@@ -5,10 +5,12 @@ import tree_state from '../tree_state';
  * If part of the node is not on the screen and part of it is on, only the part that is on the screen counts.
  *
  * @param {Object} node Start point in search, probably controller.root
- * @param {Function} condition Function that should also return true
+ * @param {Function} condition Function taking a node as an argument, and returning true,
+ *  if the node would qualify as the sort that can be returned. If `null` find the
+ *  largest of all the nodes on the screen
  * @param Largest node that matches condition, or null if none found
  */
-function get_largest_visible_node(node, condition) {
+function get_largest_visible_node(node, condition=null) {
   let condition_satisfy = !condition || condition(node);
 
   function get_area_in_screen(node) {
