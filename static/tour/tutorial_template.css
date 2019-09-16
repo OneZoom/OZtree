@@ -2,7 +2,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 100;
+  z-index: 2000;
 }
 
 #tour_wrapper .tour_container {
@@ -15,6 +15,12 @@
   left: 200px;
   width: 460px;
   position: fixed;
+}
+
+#tour_wrapper .outsidebox {
+    position: fixed;
+    bottom: 0px;
+    right: 0px;
 }
 
 #tour_wrapper .title {
@@ -33,7 +39,7 @@
 
 #tour_wrapper .window_text {
   min-height: 130px;
-  padding-left: 10px;
+  padding: 0 1em;
   margin-bottom: 10px;
   font-size: 18px;
 }
