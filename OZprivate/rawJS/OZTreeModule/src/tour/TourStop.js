@@ -10,7 +10,7 @@ const TOURSTOP_EXIT = 'TOURSTOP_EXIT'
 class TourStop {
   constructor(tour, setting) {
     this.tour = tour
-    this.onezoom = this.tour.onezoom
+    this.controller = this.tour.onezoom.controller
     this.setting = setting
     this.goto_next_timer = null
     this.state = TOURSTOP_INIT
@@ -18,16 +18,22 @@ class TourStop {
 
     //Container is set when tour.setup_setting is called
     this.container = null
-    if (!setting.hasOwnProperty('ott')) {
-      throw new Error('Tour stop setting must contain ott id')
-    }
   }
 
-  get_OZid(ott) {
-    if (data_repo.ott_id_map.hasOwnProperty(ott)) {
-      return data_repo.ott_id_map[ott]
+  /**
+   * Find the OZid for this stop from this.setting.ott, or use the rough_initial_loc if
+   * ott is falsey
+   */
+  get OZid() {
+    if (this.setting.ott) {
+      if (data_repo.ott_id_map.hasOwnProperty(this.setting.ott)) {
+        return data_repo.ott_id_map[this.setting.ott]
+      } else {
+        console.error(`OTT to OZid map for ott: ${this.setting.ott} not fetched`)
+        return undefined
+      }
     } else {
-      console.error(`Ott to OZId conversion map for ott: ${ott} is not fetched`)
+      return this.tour.rough_initial_loc
     }
   }
 
@@ -40,20 +46,28 @@ class TourStop {
     this.container.hide()
   }
 
+  complete_tourstop() {
+    this.tour.hide_other_stops(this.container)
+    this.state = TOURSTOP_END
+    this.direction = 'forward'
+    if (typeof(this.setting.exec) === "function") {
+        // This can only happen when the settings are passed as a javascript object,
+        // not as JSON. This (deliberately) restricts scriptability to hard-coded
+        // functions, not anything stored in the tours database. It allows non-user
+        // tours like the tutorial to interact programmatically with the OneZoom viewer
+        this.setting.exec()
+    }
+    this.wait_and_goto_next()
+  }    
+
   /**
    * Called when user presses next during a transition 
    */
   skip_transition() {
     // leap (this should cancel any exiting flight)
-    this.state = TOURSTOP_END
-    this.onezoom.controller.leap_to(this.get_OZid(this.setting.ott), this.setting.pos)
+    this.controller.leap_to(this.OZid, this.setting.pos)
     this.tour.hide_other_stops(this.container)
-    /**
-     * If has wait_time, then execute next after wait_time,
-     * otherwise wait for user click next/prev
-     */
-    this.direction = 'forward'
-    this.wait_and_goto_next()
+    this.complete_tourstop()
   }
 
   /**
@@ -71,7 +85,7 @@ class TourStop {
     if ((this.state === TOURSTOP_EXIT) || (this.state === TOURSTOP_END)) {
       // Not in a transition, so jump back to the tourstop location (in case user has
       // moved the tree) and continue
-      this.onezoom.controller.leap_to(this.get_OZid(this.setting.ott), this.setting.pos)
+      this.controller.leap_to(this.OZid, this.setting.pos)
       // We should really only have to wait for the remaining time at this stop, but
       // that's tricky, so we wait again from the beginning.
       this.wait_and_goto_next()
@@ -89,7 +103,7 @@ class TourStop {
   play(direction) {
     this.direction = direction
     this.state = TOURSTOP_INIT
-    console.log("playing tourstop: " + this.setting.update_class.title + direction)
+    //console.log("playing tourstop: " + this.setting.update_class.title + direction)
     /**
      * Perform flight or leap
      */
@@ -97,10 +111,9 @@ class TourStop {
     if (this.setting.transition_in == 'leap' || this.direction == 'backward') {
         // Leap. For the moment, wrap in a promise (until 
         // https://github.com/OneZoom/OZtree/issues/203 is fixed)
-        let self = this // allow the tourstop to be accessed inside the promise 
-        promise = new Promise(function(resolve, reject) {
-            self.onezoom.controller.leap_to(self.get_OZid(self.setting.ott), self.setting.pos)
-            resolve() // Might instead need to add 200ms wait here
+        promise = new Promise(resolve => {
+            this.controller.leap_to(this.OZid, this.setting.pos)
+            resolve()
         })
     } else {
         // Flight
@@ -113,45 +126,25 @@ class TourStop {
         if (this.setting.transition_in == 'fly_straight') {
             // This is unusual. For the moment, wrap in a promise (until 
             // https://github.com/OneZoom/OZtree/issues/203 is fixed)
-            let self = this // allow the tourstop to be accessed inside the promise 
-            promise = new Promise(function(resolve, reject) {
-                self.onezoom.controller.fly_straight_to(
-                    self.get_OZid(self.setting.ott),
-                    self.setting.pos == 'max',
-                    self.setting.fly_in_speed || 1,
+            promise = new Promise(resolve => {
+                this.controller.fly_straight_to(
+                    this.OZid,
+                    this.setting.pos === 'max',
+                    this.setting.fly_in_speed || 1,
                     'linear',
                     resolve)
             })
         } else {
             // This is the norm
-            promise = this.onezoom.controller.fly_on_tree_to(
+            console.log(this.OZid, this.setting.pos === 'max')
+            promise = this.controller.fly_on_tree_to(
                 null,
-                this.get_OZid(this.setting.ott),
-                this.setting.pos == 'max',
+                this.OZid,
+                this.setting.pos === 'max',
                 this.setting.fly_in_speed || 1)
         }
     }
-    promise.then(() => {
-        this.tour.hide_other_stops(this.container)
-        this.state = TOURSTOP_END
-        this.wait_and_goto_next()
-    })
-  }
-
-  /*
-   * If current view is close to ott, skip leap
-   */
-  conditional_leap_to_OTT(ott) {
-    const dest_OZid = this.get_OZid(ott)
-    /**
-     * visible: boolean
-     * node_size: the size of node with ozId
-     * dist_to_screen_center: the distance from node center to screen center
-     */
-    const dist_info = this.onezoom.controller.distance_from_view_to_OZId(dest_OZid)
-    if (!dist_info.visible || dist_info.node_size < 100 || dist_info.dist_to_screen_center > 350) {
-      this.onezoom.controller.leap_to(dest_OZid)
-    }
+    promise.then(() => {this.complete_tourstop()})
   }
 
   /**

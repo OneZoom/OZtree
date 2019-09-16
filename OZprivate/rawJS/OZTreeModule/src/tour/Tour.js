@@ -93,6 +93,7 @@ class Tour {
     $('#tour_exit_confirm_style_' + this.tour_id).removeAttr('disabled')
 
     this.started = true
+    this.rough_initial_loc = this.onezoom.utils.largest_visible_node()
     this.curr_step = -1
     this.goto_next()
     //disable automatically start tour once it's started
@@ -449,9 +450,8 @@ class Tour {
   load_ott_id_conversion_map() {
     const ott_id_set = new Set()
     this.tour_stop_array.forEach(tour_stop => {
-      ott_id_set.add(tour_stop.setting.ott)
-      if (tour_stop.setting.hasOwnProperty('ott_end_id')) {
-        ott_id_set.add(tour_stop.setting.ott_end_id)
+      if (tour_stop.setting.ott && !isNaN(tour_stop.setting.ott)) {
+          ott_id_set.add(tour_stop.setting.ott)
       }
     })
     const ott_id_array = []

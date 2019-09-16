@@ -10,6 +10,7 @@ import { init as garbage_collection_start } from './factory/garbage_collection';
 import { spec_num_full, number_convert, view_richness } from './factory/utils'
 import { add_hook } from './util/index';
 import { setup_loading_page } from './navigation/setup_page';
+import { get_largest_visible_node } from './navigation/utils';
 import config from './global_config';
 import tree_state from './tree_state';
 import data_repo from './factory/data_repo';
@@ -115,7 +116,16 @@ function setup(
   return_value.utils.number_convert = number_convert;
   return_value.utils.view_richness = view_richness;
   return_value.utils.process_taxon_list = process_taxon_list;
-
+  if (return_value.controller) {
+      return_value.utils.largest_visible_node = () => {
+        let node = get_largest_visible_node(return_value.controller.root)
+        if (node.is_leaf) {
+            return -node.metacode
+        } else {
+            return node.metacode
+        }
+      }
+  }        
   return_value.add_hook = add_hook;
 
   //setTimeout so that draw loading would be displayed before build tree starts.
@@ -141,17 +151,16 @@ function setup(
       tree_date: tree_dates || "{}"
     }
 
-    let controller = return_value.controller
-
-    controller.build_tree(data_obj);
-    //Jump or fly to a place in the tree marked by the url when the page loads.
-    setup_loading_page();
-    controller.find_proper_initial_threshold();
-    controller.trigger_refresh_loop();
-
-    //listen to user mouse, touch, icon click, window resize and user navigation events.
-    controller.bind_listener();
-    //start garbage collection of tree to keep the size of the tree in memory reasonable
+    if (return_value.controller) {
+        return_value.controller.build_tree(data_obj);
+        //Jump or fly to a place in the tree marked by the url when the page loads.
+        setup_loading_page();
+        return_value.controller.find_proper_initial_threshold();
+        return_value.controller.trigger_refresh_loop();
+        //listen to user mouse, touch, icon click, window resize and user navigation events.
+        return_value.controller.bind_listener();
+        //start garbage collection of tree to keep the size of the tree in memory reasonable
+    }
     garbage_collection_start();
   }, 50);
 
