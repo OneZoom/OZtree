@@ -136,7 +136,6 @@ class TourStop {
             })
         } else {
             // This is the norm
-            console.log(this.OZid, this.setting.pos === 'max')
             promise = this.controller.fly_on_tree_to(
                 null,
                 this.OZid,

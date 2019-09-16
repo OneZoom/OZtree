@@ -120,29 +120,29 @@ class Tour {
    * Pause tour
    */
   pause() {
-    console.log("pausing")
+    //console.log("pausing")
     if (this.curr_stop()) {
       this.curr_stop().pause()
     }
-    console.log("paused")
+    //console.log("paused")
   }
 
   /**
    * Continue paused tour stop
    */
   continue() {
-    console.log("continuing")
+    //console.log("continuing")
     if (this.curr_stop()) {
       this.curr_stop().continue()
     }
-    console.log("continued")
+    //console.log("continued")
   }
 
   /**
    * Exit tour
    */
   exit(invoke_callback = true) {
-    console.log("exiting tour")
+    //console.log("exiting tour")
     if (!this.setting) {return}
     this.hide_other_stops()
     if (this.curr_stop()) {
@@ -165,7 +165,7 @@ class Tour {
     if (invoke_callback && typeof this.exit_callback === 'function') {
       this.exit_callback()
     }
-    console.log("exited tour")
+    //console.log("exited tour")
 
   }
 
@@ -174,13 +174,13 @@ class Tour {
    * current transition, otherwise go to next stop.
    */
   goto_next() {
-    console.log("goto_next called")
+    //console.log("goto_next called")
     if (!this.started) {
       return
     }
     if (this.curr_stop() && this.curr_stop().state === 'TOURSTOP_IS_FLYING') {
       this.curr_stop().skip_transition()
-      console.log("goto_next: transition_skipped")
+      //console.log("goto_next: transition_skipped")
     } else {
       if (this.curr_step === this.tour_stop_array.length - 1) {
         // end of tour, exit gracefully or loop if a screensaver
@@ -204,7 +204,7 @@ class Tour {
       this.curr_stop().play('forward')
       this.set_ui_content()
     }
-    console.log("goto_next done")
+    //console.log("goto_next done")
   }
 
   /**
