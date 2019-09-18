@@ -239,7 +239,7 @@ export default function (Controller) {
 
         if (src_OZid == null) {
             // Find largest visible node: use this as our starting point
-            let top_node = get_largest_visible_node(this.root) || this.root;
+            let top_node = get_largest_visible_node(this.root, function(node) { return node.ott; }) || this.root;
             src_OZid = (top_node.is_leaf? -1 : -1) * top_node.metacode;
         } else {
             // Move to start location

@@ -43,7 +43,7 @@
         "fly_in_speed":2, // Relative to the global animation_speed
         // Can be "show_self" "force_hide", otherwise (by default) previous stop is left unchanged during flight transition
         "fly_in_visibility": null,
-        "ott": 304358, //"ott": "93302", //Biota
+        "ott": "93302", //Biota
         "update_class": {
           "title": "{{=T('What is the tree of life?')}}{{if is_testing:}} - ALL LIFE{{pass}}",
           "window_text": "{{=T('The tree of life shows how all life on earth is related.  Each leaf represents a different species. The branches show how these many species evolved from common ancestors over billions of years.')}}",
