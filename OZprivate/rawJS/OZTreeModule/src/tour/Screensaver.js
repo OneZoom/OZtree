@@ -70,16 +70,6 @@ class Screensaver extends Tour {
       }
     }
 
-    // CURRENTLY UNUSED
-    const is_condition_pass = () => {
-      let condition_pass = true
-      if (typeof this.setting.screensaver.condition === 'function') {
-        //user could use condition to conditionally auto start tour
-        condition_pass = this.setting.screensaver.condition()
-      }
-      return condition_pass
-    }
-
     /**
      * inactive_duration should probably be obtained from the internal URL parser
      */
@@ -93,10 +83,10 @@ class Screensaver extends Tour {
        * Time left before start the tour
        * If condition test failed, then reset wait time to full length.
        */
-      const wait_for = is_condition_pass() ? auto_activate_after - get_inactive_duration() : auto_activate_after
+      const wait_for = auto_activate_after - get_inactive_duration()
       console.log("Wait for = " + wait_for + " (" + auto_activate_after + " - " + get_inactive_duration() + ")")
       this.auto_activate_timer = setTimeout(() => {
-        if (get_inactive_duration() >= auto_activate_after && is_condition_pass()) {
+        if (get_inactive_duration() >= auto_activate_after) {
           /**
            * If the tree is inactive for at least 'auto_activate_after' ms, then start the tour
            */
