@@ -52,18 +52,6 @@ setup_params = {
   globals.pagetitle_func = function (nm) {return ((nm) ? "OneZoom Museum Display: " + nm : "OneZoom Tree of Life Museum Display") + " (mouse-operated)" }
   globals.screensaver_config = {{include 'treeviewer/screensaver_MD.js'}}
   globals.tutorial_config = {{include 'treeviewer/tutorial_MDmouse.js'}}
-  globals.screensaver_config =         //Only setup screen saver if screensaver configured and screensaver_timer is defined
-        // Only relevant to museum display: it would be good to move this to the MD-specific page
-        if (isNaN(screensaver_timer)) {
-            screensaver_config = null; //Don't run the screensaver
-        } else {
-            if (window['screensaver_config']) {
-                /* this should be fed in to the screensaver setting rather than overridden
-                 *  here: this is just a temporary hack. See https://github.com/OneZoom/OZtree/issues/200
-                 */
-                screensaver_config.screensaver.inactive_duration = screensaver_timer * 1000;
-            }
-        }
 
   /* disable right click */
   document.oncontextmenu = function () { return false; };

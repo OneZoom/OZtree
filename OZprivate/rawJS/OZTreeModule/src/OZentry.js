@@ -16,6 +16,7 @@ import tree_state from './tree_state';
 import data_repo from './factory/data_repo';
 import tree_settings from './tree_settings';
 import Tour from './tour/Tour'
+import Screensaver from './tour/Screensaver'
 /**
  * Creates the main object that is exported to the browser. 
  * @todo This should possibly be separated so that 
@@ -110,7 +111,7 @@ function setup(
   //   api_manager.tour_detail(params);
   // }
   return_value.tutorial = new Tour(return_value)
-  return_value.screensaver = new Tour(return_value)
+  return_value.screensaver = new Screensaver(return_value)
   return_value.utils = {};
   return_value.utils.spec_num_full = spec_num_full;
   return_value.utils.number_convert = number_convert;

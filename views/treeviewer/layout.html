@@ -1031,12 +1031,12 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             window.tree_date);
 
         onezoom.add_hook('on_tree_loaded', () => {
-            onezoom.tutorial.setup_setting(window['tutorial_config'], 'tutorial')})
+            onezoom.tutorial.setup_setting(window.globals['tutorial_config'], 'tutorial')})
         onezoom.add_hook('on_tree_loaded', () => {
             onezoom.screensaver.setup_setting(
                 window.globals['screensaver_config'], 'screensaver',
                 UI_callbacks.closeAll, // before the screensaver runs, close modals etc.
-                null, null, "exit");
+                null, true, screensaver_timer);
         })
     
         {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape = False)}}

@@ -1,18 +1,4 @@
 /* DEFINE SOME SETTINGS TO BE PASSED TO THE SCREENSAVER */
-{
-"screensaver": {
-    /**
-     * This part of the setting should not normally be part of a tour config: we do not
-     * want any normal tours to start automatically. Variables here should either be
-     * set explicitly on the screensaver object, or
-     *  start tour after XXX seconds inactivity.
-     * Tour would only be activated when condition test passed or if condition test is not given.
-     */
-    //set a number to auto start after XXX ms (may be overridden)
-    inactive_duration: 10 * 1000,
-    //do we go 1->2->3->1->2->3 or 1->2->3->2->1->2->3
-    loop_back_forth: true
-},
 "general": {
     "dom_names": {
         /**
