@@ -35,7 +35,7 @@
         "container": {"style": {"display": "None"}}
     }
 },
-"tourstop": [
+"tourstops": [
     {
         "ott": "991547",
         "wait": 1000

@@ -238,7 +238,6 @@ class Tour {
   start() {
     if (!this.setting) {return}
     this.exit(false)
-    console.log("exiting at start")
     //Enable tour style
     $('#tour_style_' + this.tour_id).removeAttr('disabled')
     $('#tour_exit_confirm_style_' + this.tour_id).removeAttr('disabled')
@@ -249,7 +248,6 @@ class Tour {
     this.goto_next()
     //disable automatically start tour once it's started
     clearTimeout(this.auto_activate_timer)
-    console.log("clearing timeout at start")
 
     /**
      * disable interaction if interaction.effect equals to 
@@ -272,7 +270,6 @@ class Tour {
    * Pause tour
    */
   pause() {
-    //console.log("pausing")
     if (this.curr_stop()) {
       this.curr_stop().pause()
     }
