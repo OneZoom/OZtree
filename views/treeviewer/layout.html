@@ -93,12 +93,13 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
   </script>
 
   <script type="text/javascript">
-    //include a few default params early on, so they can be used / overridden in the file which includes this layout
-    var extra_title = "{{='/' + partner if partner else ''}}";
+    //include a few default funcs & params early on, so they can be used / overridden in the file which includes this layout
+    var globals = {} /* A place to store global variables that are set in the file which includes this one */
+    var extra_title = "{{='/' + partner if partner else ''}}"
     var OZstrings={{include 'treeviewer/js_strings.json'}}
     var server_urls = {
       /* These fill out the equivalently named variables in OneZoom global_config.
-         They need to be defined here to avoid hard-coding them into the OneZoom js code 
+         They need to be defined in this file to avoid hard-coding them into the OneZoom js code 
          They are coded with the full URL so that they can be used remotely (e.g. in a partial install) */
       data_path_pics: {{=XML(js_thumbnail_url)}},
       node_details_api: "{{try:}}{{=myconf.take('API.node')}}{{except:}}{{=URL('API','node_details.json', scheme=True, host=True)}}{{pass}}",
@@ -170,6 +171,7 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
     
     /* called when the API returns with details about contents of the linkouts window */
     UI_callbacks.populateLinkouts = function(responseJSON, initialSelected) {
+        console.log("populating linkout tabs with API data from", responseJSON);
       {{if is_testing:}}console.log("populating linkout tabs with API data from", responseJSON);{{pass}}
       if (initialSelected) {
           initialSelected = $('#external-modal .external-tabs li').index($("#"+ initialSelected))
@@ -227,6 +229,18 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
       $('#external-modal .tab-loading-info').hide();
       $('#external-modal .external-content').show();
     };
+
+    /* Helper function to parse search parameters in URL 
+     * This should be removed after fixing https://github.com/OneZoom/OZtree/issues/202 */
+    function getParameterByName(name) {
+        var url = window.location.href;
+        name = name.replace(/[\[\]]/g, '\\$&');
+        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
   </script>
 {{include}}
 <script>
@@ -630,19 +644,15 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
             //if (search_term.replace(/ /g,'').length > 1) { // we're never going to search for a single character
             
             onezoom.search_manager.full_search(
-                                               search_term,
-                                               function(original_string, actual_search, results) {
-                                               searchPopulate(searchbox, original_string, results, UI_reset_marked_via_event)
-                                               },
-                                               delay_ms,
-                                               function() {
-                                               {{if is_testing:}}console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search");{{pass}}
-                                               if(!($(".searchinput").hasClass('waiting_for_search_result')))
-                                               {
-                                               $(".searchinput", searchbox).addClass('waiting_for_search_result'); // switch flag for search to on
-                                               }
-                                               }
-                                               );
+                search_term,
+                function(original_string, actual_search, results) {
+                    searchPopulate(searchbox, original_string, results, UI_reset_marked_via_event)},
+                delay_ms,
+                function() {
+                    {{if is_testing:}}console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search");{{pass}}
+                    if(!($(".searchinput").hasClass('waiting_for_search_result'))) {
+                        $(".searchinput", searchbox).addClass('waiting_for_search_result'); // switch flag for search to on
+                    }});
             }
             }
         });
@@ -982,18 +992,6 @@ function setupUI() {
     
 }
 
-/* Helper function to parse search parameters in URL 
- * This should be removed after fixing https://github.com/OneZoom/OZtree/issues/202 */
-function getParameterByName(name) {
-    var url = window.location.href;
-    name = name.replace(/[\[\]]/g, '\\$&');
-    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-        results = regex.exec(url);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, ' '));
-}
-
 $(document).ready(function() {    /* Mainly a place to attach JS event handlers */
     // Set up some global variables
     /** CREATE A ONEZOOM INSTANCE
@@ -1032,25 +1030,14 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             window.cut_threshold,
             window.tree_date);
 
-        onezoom.tutorial.setup_setting(window['tutorial_config'], 'tutorial')
-    
-        //Only setup screen saver if screensaver configured and screensaver_timer is defined
-        // Only relevant to museum display: it would be good to move this to the MD-specific page
-        if (isNaN(screensaver_timer)) {
-            screensaver_config = null; //Don't run the screensaver
-        } else {
-            if (window['screensaver_config']) {
-                /* this should be fed in to the screensaver setting rather than overridden
-                 *  here: this is just a temporary hack. See https://github.com/OneZoom/OZtree/issues/200
-                 */
-                screensaver_config.screensaver.inactive_duration = screensaver_timer * 1000;
-            }
-        }
-        onezoom.screensaver.setup_setting(
-            screensaver_config,
-            'screensaver',
-            UI_callbacks.closeAll); // before the screensaver runs, close modals etc.
-
+        onezoom.add_hook('on_tree_loaded', () => {
+            onezoom.tutorial.setup_setting(window['tutorial_config'], 'tutorial')})
+        onezoom.add_hook('on_tree_loaded', () => {
+            onezoom.screensaver.setup_setting(
+                window.globals['screensaver_config'], 'screensaver',
+                UI_callbacks.closeAll, // before the screensaver runs, close modals etc.
+                null, null, "exit");
+        })
     
         {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape = False)}}
         setupUI();

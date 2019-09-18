@@ -1,116 +1,52 @@
 /* DEFINE SOME SETTINGS TO BE PASSED TO THE SCREENSAVER */
 {
-/**
- * Automatically start tour after XXX seconds inactivity.
- * Tour would only be activated when condition test passed or if condition test is not given.
- */
 "screensaver": {
+    /**
+     * This part of the setting should not normally be part of a tour config: we do not
+     * want any normal tours to start automatically. Variables here should either be
+     * set explicitly on the screensaver object, or
+     *  start tour after XXX seconds inactivity.
+     * Tour would only be activated when condition test passed or if condition test is not given.
+     */
     //set a number to auto start after XXX ms (may be overridden)
     inactive_duration: 10 * 1000,
-    //when to activate
-    condition: () => {
-        return !$('#external-modal').is(':visible') &&
-            !$('#info-modal').is(':visible') &&
-            !$('#howuse-modal').is(':visible')
-    },
     //do we go 1->2->3->1->2->3 or 1->2->3->2->1->2->3
     loop_back_forth: true
 },
-"interaction": {
-    /**
-     * block: disable interaction
-     * exit: interaction would cause tour exit
-     * exit_after_confirmation: interaction would cause tour exit, but user need to confirm first
-     * no_effect: interaction would not have any effect. This is default.
-     */
-    effect: "exit_after_confirmation",
-    confirm_template: 'static/tour/exit_confirm.html',
-    confirm_template_style: 'static/tour/exit_confirm.css',
+"general": {
+    "dom_names": {
+        /**
+         * All the following values are default values.
+         */
+        "wrapper_id": "tour_wrapper",
+        "next_class": "tour_next",
+        "prev_class": "tour_prev",
+        "exit_class": "tour_exit",
+        "exit_confirm_class": "exit_confirm",
+        "exit_cancel_class": "exit_cancel"
+    },
 },
-"dom_names": {
-    /**
-     * All the following values are default values.
-     */
-    "wrapper_id": "tour_wrapper",
-    "next_class": "tour_next",
-    "prev_class": "tour_prev",
-    "exit_class": "tour_exit",
-    "exit_confirm_class": "exit_confirm",
-    "exit_cancel_class": "exit_cancel"
-},
-"tour_stop_shared": {
-    "template": "static/tour/tutorial_template.html",
-    "template_style": "static/tour/tutorial_template.css",
+"tourstop_shared": {
+    "template": "static/tour/tour_template.html",
+    "template_style": "static/tour/tour_template.css",
     "update_class": {
         "title": "OneZoom Demo Tour",
-        "tour_prev": {
-            "style": {"visibility": "hidden"}
-        },
-        "tour_next": {
-            "style": {"visibility": "hidden"}
-        }
+        // Don't show any boxes
+        "container": {"style": {"display": "None"}}
     }
 },
-"tour_stop": [
+"tourstop": [
     {
         "ott": "991547",
-        "update_class": {
-            "window_text": "Slide 1",
-            "img": {
-                "src": "http://images.onezoom.org/99/098/31338098.jpg"
-            }
-        },
-        "wait": 1000
-    },
-    {
-        "ott": "991547",
-        "ott_end_id": "81461",
-        "update_class": {
-            "window_text": {
-                "text": "Slide 2 with style change",
-                "class": "gray_background"
-            },
-            "img": {
-                "src": "http://images.onezoom.org/99/727/26848727.jpg"
-            }
-        },
-        //transition default wait time is 0
-        "wait": 0
-    },
-    {
-        "ott": "81461",
-        "update_class": {
-            "window_text": "Slide 3",
-            "img": {
-                "style": {"visibility": "hidden"}
-            }
-        },
         "wait": 1000
     },
     {
         "ott": "81461",
-        "ott_end_id": "99252",
-        "update_class": {
-            "window_text": "Slide 4",
-            "img": {
-                "style": {"visibility": "hidden"}
-            }
-        },
         "wait": 1000
     },
     {
         "ott": "99252",
-        "ott_end_id": "1062253",
-        "update_class": {
-            "window_text": "Slide 5",
-            "tour_next": {
-                "style": {"visibility": "hidden"}
-            },
-            "img": {
-                "style": {"visibility": "hidden"}
-            }
-        },
-        "wait": 100
+        "wait": 1000
     },
 ]
 }
