@@ -47,12 +47,18 @@ class TourStop {
   }
 
   complete_tourstop() {
-    if (typeof(this.setting.exec) === "function") {
+    if (this.setting.exec) {
+        if (typeof(this.setting.exec) === "function") {
         // This can only happen when the settings are passed as a javascript object,
         // not as JSON. This (deliberately) restricts scriptability to hard-coded
         // functions, not anything stored in the tours database. It allows non-user
         // tours like the tutorial to interact programmatically with the OneZoom viewer
-        this.setting.exec(this)
+            this.setting.exec(this)
+        } else {
+            console.log(
+                "Cannot run whatever is defined in `exec`." +
+                " This may be because your settings are in JSON not javascript format")
+        }
     }
     // Show the tour stop *after* firing the function, in case we want the function do
     // do anything first (which could including showing the stop)
@@ -105,7 +111,7 @@ class TourStop {
   play(direction) {
     this.direction = direction
     this.state = TOURSTOP_INIT
-    //console.log("playing tourstop: " + this.setting.update_class.title + direction)
+    console.log("playing tourstop: " + this.setting.update_class.title + " - " + direction)
     /**
      * Perform flight or leap
      */
@@ -138,6 +144,7 @@ class TourStop {
             })
         } else {
             // This is the norm
+            console.log("Flying on tree to: " + this.OZid + " (" + this.setting.ott + ")")
             promise = this.controller.fly_on_tree_to(
                 null,
                 this.OZid,
@@ -155,7 +162,9 @@ class TourStop {
   wait_and_goto_next() {
     const wait_time = this.get_wait_time()
     if (typeof wait_time === 'number') {
+      //console.log("Setting timer for " + wait_time + "milliseconds")
       this.goto_next_timer = setTimeout(() => {
+        //console.log("Firing timer")
         this.tour.goto_next()
       }, wait_time)
     }
