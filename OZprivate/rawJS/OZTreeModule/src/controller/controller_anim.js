@@ -289,7 +289,7 @@ export default function (Controller) {
                         position_helper.clear_target(this.root);
                         position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
                         position_helper.perform_actual_fly(
-                            this, (accel_func==='decel')?into_node:false, speed, accel_func, resolve, reject);
+                          this, (accel_func === 'decel') ? into_node : false, speed, accel_func, resolve, () => reject(new Error('Fly is interrupted')));
                     }.bind(this));
                 }.bind(this));
             }.bind(this));

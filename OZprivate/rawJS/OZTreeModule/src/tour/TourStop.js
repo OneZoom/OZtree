@@ -152,7 +152,7 @@ class TourStop {
                 this.setting.fly_in_speed || 1)
         }
     }
-    promise.then(() => {this.complete_tourstop()})
+    promise.then(() => {this.complete_tourstop()}).catch(() => {})
   }
 
   /**
