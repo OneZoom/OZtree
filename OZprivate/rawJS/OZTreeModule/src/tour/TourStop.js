@@ -1,4 +1,3 @@
-import data_repo from '../factory/data_repo'
 import tree_state from '../tree_state'
 
 //Tour Stop States
@@ -11,6 +10,7 @@ class TourStop {
   constructor(tour, setting) {
     this.tour = tour
     this.controller = this.tour.onezoom.controller
+    this.data_repo = this.tour.onezoom.data_repo
     this.setting = setting
     this.goto_next_timer = null
     this.state = TOURSTOP_INIT
@@ -26,10 +26,10 @@ class TourStop {
    */
   get OZid() {
     if (this.setting.ott) {
-      if (data_repo.ott_id_map.hasOwnProperty(this.setting.ott)) {
-        return data_repo.ott_id_map[this.setting.ott]
+      if (this.data_repo.ott_id_map.hasOwnProperty(this.setting.ott)) {
+        return this.data_repo.ott_id_map[this.setting.ott]
       } else {
-        console.error(`OTT to OZid map for ott: ${this.setting.ott} not fetched`)
+        console.error('OTT to OZid map for ott: ' + this.setting.ott + ' not fetched')
         return undefined
       }
     } else {
@@ -43,20 +43,28 @@ class TourStop {
   exit() {
     this.pause()
     this.state = TOURSTOP_EXIT
-    this.container.hide()
+    if (this.container) this.container.hide()
   }
 
   complete_tourstop() {
-    this.tour.hide_other_stops(this.container)
-    this.state = TOURSTOP_END
-    this.direction = 'forward'
-    if (typeof(this.setting.exec) === "function") {
+    if (this.setting.exec) {
+        if (typeof(this.setting.exec) === "function") {
         // This can only happen when the settings are passed as a javascript object,
         // not as JSON. This (deliberately) restricts scriptability to hard-coded
         // functions, not anything stored in the tours database. It allows non-user
         // tours like the tutorial to interact programmatically with the OneZoom viewer
-        this.setting.exec()
+            this.setting.exec(this)
+        } else {
+            console.log(
+                "Cannot run whatever is defined in `exec`." +
+                " This may be because your settings are in JSON not javascript format")
+        }
     }
+    // Show the tour stop *after* firing the function, in case we want the function do
+    // do anything first (which could including showing the stop)
+    this.tour.hide_other_stops(this.container)
+    this.state = TOURSTOP_END
+    this.direction = 'forward'
     this.wait_and_goto_next()
   }    
 
@@ -103,7 +111,7 @@ class TourStop {
   play(direction) {
     this.direction = direction
     this.state = TOURSTOP_INIT
-    //console.log("playing tourstop: " + this.setting.update_class.title + direction)
+    console.log("playing tourstop: " + this.setting.update_class.title + " - " + direction)
     /**
      * Perform flight or leap
      */
@@ -136,6 +144,7 @@ class TourStop {
             })
         } else {
             // This is the norm
+            console.log("Flying on tree to: " + this.OZid + " (" + this.setting.ott + ")")
             promise = this.controller.fly_on_tree_to(
                 null,
                 this.OZid,
@@ -147,14 +156,15 @@ class TourStop {
   }
 
   /**
-   * If has wait_time, then execute next after wait_time,
+   * If has numeric wait_time, then execute next after wait_time,
    * otherwise wait for user click next/prev
    */
   wait_and_goto_next() {
     const wait_time = this.get_wait_time()
     if (typeof wait_time === 'number') {
-      
+      //console.log("Setting timer for " + wait_time + "milliseconds")
       this.goto_next_timer = setTimeout(() => {
+        //console.log("Firing timer")
         this.tour.goto_next()
       }, wait_time)
     }

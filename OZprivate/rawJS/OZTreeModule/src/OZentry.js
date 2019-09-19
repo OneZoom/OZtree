@@ -8,7 +8,7 @@ import search_manager from './api/search_manager';
 import process_taxon_list from './api/process_taxon_list';
 import { init as garbage_collection_start } from './factory/garbage_collection';
 import { spec_num_full, number_convert, view_richness } from './factory/utils'
-import { add_hook } from './util/index';
+import { add_hook, call_hook } from './util/index';
 import { setup_loading_page } from './navigation/setup_page';
 import { get_largest_visible_node } from './navigation/utils';
 import config from './global_config';
@@ -16,6 +16,7 @@ import tree_state from './tree_state';
 import data_repo from './factory/data_repo';
 import tree_settings from './tree_settings';
 import Tour from './tour/Tour'
+import Screensaver from './tour/Screensaver'
 /**
  * Creates the main object that is exported to the browser. 
  * @todo This should possibly be separated so that 
@@ -110,7 +111,7 @@ function setup(
   //   api_manager.tour_detail(params);
   // }
   return_value.tutorial = new Tour(return_value)
-  return_value.screensaver = new Tour(return_value)
+  return_value.screensaver = new Screensaver(return_value)
   return_value.utils = {};
   return_value.utils.spec_num_full = spec_num_full;
   return_value.utils.number_convert = number_convert;
@@ -152,16 +153,17 @@ function setup(
     }
 
     if (return_value.controller) {
-        return_value.controller.build_tree(data_obj);
+        return_value.controller.build_tree(data_obj)
         //Jump or fly to a place in the tree marked by the url when the page loads.
-        setup_loading_page();
-        return_value.controller.find_proper_initial_threshold();
-        return_value.controller.trigger_refresh_loop();
+        setup_loading_page()
+        call_hook("on_tree_loaded")
+        return_value.controller.find_proper_initial_threshold()
+        return_value.controller.trigger_refresh_loop()
         //listen to user mouse, touch, icon click, window resize and user navigation events.
-        return_value.controller.bind_listener();
+        return_value.controller.bind_listener()
         //start garbage collection of tree to keep the size of the tree in memory reasonable
     }
-    garbage_collection_start();
+    garbage_collection_start()
   }, 50);
 
   return return_value;

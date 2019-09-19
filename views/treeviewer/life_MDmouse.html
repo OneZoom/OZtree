@@ -1,17 +1,20 @@
-{{#Config settings that will change for different views, e.g. for AT, trail2016, etc. These are stored in the setup_params dictionary
-#UI_layer->page        The name of the UI layer view file
-#UI_layer->tabs        A name or array of names of tabs to use (names are in OZglobals:tab_definitions and the linkouts() 
-#                       function in tree.py as key names in the url dict) or 'default' for the default set or 'all' for all. 
-#                       Tabs (if they exist) will be shown in this order when popping up linkouts to other pages.
-#UI_layer->vars->links Can be 'none' for no links, 'newtab' for all links (except the OZ logo) in new tab, or 'default' (or unset) to leave.
-#popups->vars          Passed to pic_info.load, about.load, how.load, data_sources.load, and the 
-#                       internal linkouts urls. You will usually want to define 'embed':1 or 'embed':3. 
-#partner               (Optional): if it matches a partner_identifier in the partners table, we will automatically fill out 
-#                       the popups and UI_layer params to make an automatically created sponsorship site
-#locations_json        Partners can provide their own json string of locations to use, but if not is provided
-#                       or there is no partner, the json here is used. This is an array whose items are strings (headers) or 
-#                       dicts (each turned into a clickable items) with at least one key labelled 'OTT', and then any other optional 
-#                       names keyed by language, e.g. {'OTT':1012685, 'en':'Mushrooms'}.
+{{
+#Web2py config settings that will change for different views, e.g. for AT, trail2016, etc.
+#These are stored as python variables in the setup_params dictionary. They should not be
+#visible in the page source to a site user
+# UI_layer->page        The name of the UI layer view file
+# UI_layer->tabs        A name or array of names of tabs to use (names are in OZglobals:tab_definitions and the linkouts() 
+#                        function in tree.py as key names in the url dict) or 'default' for the default set or 'all' for all. 
+#                        Tabs (if they exist) will be shown in this order when popping up linkouts to other pages.
+# UI_layer->vars->links Can be 'none' for no links, 'newtab' for all links (except the OZ logo) in new tab, or 'default' (or unset) to leave.
+# popups->vars          Passed to pic_info.load, about.load, how.load, data_sources.load, and the 
+#                        internal linkouts urls. You will usually want to define 'embed':1 or 'embed':3. 
+# partner               (Optional): if it matches a partner_identifier in the partners table, we will automatically fill out 
+#                        the popups and UI_layer params to make an automatically created sponsorship site
+# locations_json        Partners can provide their own json string of locations to use, but if not is provided
+#                        or there is no partner, the json here is used. This is an array whose items are strings (headers) or 
+#                        dicts (each turned into a clickable items) with at least one key labelled 'OTT', and then any other optional 
+#                        names keyed by language, e.g. {'OTT':1012685, 'en':'Mushrooms'}.
 setup_params = {
   'UI_layer': {
     'page':'UI_layer.load', 
@@ -45,10 +48,11 @@ setup_params = {
 <!-- bespoke css file for museum display -->
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree_MD.css')}}" />
 <script type="text/javascript">
-<!-- could define js variables (specifically: pagetitle_func, tree_config, screensaver_config, tutorial_config) here -->
-  var pagetitle_func = function (nm) {return ((nm) ? "OneZoom Museum Display: " + nm : "OneZoom Tree of Life Museum Display") + " (mouse-operated)" };
-  var screensaver_config = {{include 'treeviewer/screensaver_MD.js'}};
-  var tutorial_config = {{include 'treeviewer/tutorial_MDmouse.js'}};
+<!-- can add to globals here, (specifically: pagetitle_func, tree_config, screensaver_config, tutorial_config) here -->
+  globals.pagetitle_func = function (nm) {return ((nm) ? "OneZoom Museum Display: " + nm : "OneZoom Tree of Life Museum Display") + " (mouse-operated)" }
+  globals.screensaver_config = {{include 'treeviewer/screensaver_MD.js'}}
+  globals.tutorial_config = {{include 'treeviewer/tutorial_MDmouse.js'}}
+
   /* disable right click */
   document.oncontextmenu = function () { return false; };
 </script>
