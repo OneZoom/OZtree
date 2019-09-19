@@ -27,6 +27,7 @@ class TreeState {
     this.handler = {};
     this.url_parsed = false;
     this.last_active_at = new Date();
+    this.last_render_at = new Date();
     this.disable_interaction = false;
     let self = this;
     setTimeout(function() {

@@ -63,11 +63,13 @@ class Screensaver extends Tour {
     const get_inactive_duration = () => {
       const now = new Date()
       const last_active_at = tree_state.last_active_at
-      if (last_active_at === null) {
-        return 0
-      } else {
-        return now - last_active_at
-      }
+      const last_render_at = tree_state.last_render_at
+
+      const duration_after_last_render = now - last_render_at
+      const duration_after_last_activate = now - last_active_at
+
+      //either mouse movement or render would be considered as activate the tree.
+      return Math.min(duration_after_last_activate, duration_after_last_render)
     }
 
     /**
@@ -83,10 +85,18 @@ class Screensaver extends Tour {
        * Time left before start the tour
        * If condition test failed, then reset wait time to full length.
        */
-      const wait_for = auto_activate_after - get_inactive_duration()
+
+      /**
+       * If the app is inactive for a long period, wait for would be less than 0
+       * To prevent setTimeout being activated frequently, 
+       * set a minimum waiting time to be 3 seconds when wait_for is less than 0
+       */
+      let wait_for = auto_activate_after - get_inactive_duration()
+      wait_for = wait_for < 0 ? 3000 : wait_for
+
       console.log("Wait for = " + wait_for + " (" + auto_activate_after + " - " + get_inactive_duration() + ")")
       this.auto_activate_timer = setTimeout(() => {
-        if (get_inactive_duration() >= auto_activate_after) {
+        if (get_inactive_duration() >= auto_activate_after && !this.started) {
           /**
            * If the tree is inactive for at least 'auto_activate_after' ms, then start the tour
            */
