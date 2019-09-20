@@ -126,6 +126,7 @@ class TourStop {
         })
     } else {
         // Flight
+        this.set_block_user_interaction_before_fly()
         this.state = TOURSTOP_IS_FLYING
         if (this.setting.fly_in_visibility == "force_hide") {
             this.tour.hide_other_stops()
@@ -153,7 +154,12 @@ class TourStop {
                 this.setting.fly_in_speed || 1)
         }
     }
-    promise.then(() => {this.complete_tourstop()}).catch(() => {})
+    promise
+      .then(() => {this.complete_tourstop()})
+      .catch(() => {})
+      .finally(() => {
+        this.recover_block_user_interaction_after_fly()
+      })
   }
 
   /**
@@ -179,6 +185,49 @@ class TourStop {
       return this.setting.wait_after_prev
     } else {
       return this.setting.wait //null means stay here until user interation
+    }
+  }
+
+  /**
+   * User interaction should be blocked during fly when:
+   * 1. tour.interaction equals 'null' or default
+   * 2. tour is in fly animation
+   * 3. force hide is true
+   * 
+   * This function should be called before fly animation
+   */
+  set_block_user_interaction_before_fly() {
+    console.log('set block before fly', this.tour.interaction, this.setting.fly_in_visibility)
+    const tour = this.tour
+    if (tour.interaction && 
+      (tour.interaction === 'block' || 
+      tour.interaction === 'exit' || 
+      tour.interaction === 'exit_after_confirmation')) {
+        //Do nothing
+    } else if (this.setting.fly_in_visibility === "force_hide") {
+      tree_state.disable_interaction = true
+    }
+  }
+
+  /**
+   * Recover user interaction after fly animation. Following it's the default values for different tour mode:
+   * null: non-block
+   * exit: block
+   * exit_after_confirmation: block
+   * block: block
+   * 
+   * This function should be called after fly animation
+   */
+  recover_block_user_interaction_after_fly() {
+    console.log('recover block')
+    const tour = this.tour
+    if (tour.interaction &&
+      (tour.interaction === 'block' ||
+        tour.interaction === 'exit' ||
+        tour.interaction === 'exit_after_confirmation')) {
+      //Do nothing
+    } else if (this.setting.fly_in_visibility === "force_hide") {
+      tree_state.disable_interaction = false
     }
   }
 }
