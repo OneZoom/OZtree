@@ -316,6 +316,9 @@ function perform_actual_fly(controller, into_node, speed=1, accel_type="linear",
   intro_sec_step_num = 0;
   if(((r_mult>0.9999)&&(r_mult<1.00001))&&(x_add*x_add<1)&&(y_add*y_add<1)) {
     // nothing to zoom to so better to do nothing and return false or it feels like a bug
+    if (typeof finalize_func === "function") {
+      finalize_func()
+    }
     return false;
   } else {
     length_intro = Math.abs(Math.log(r_mult))*global_anim_speed;      
