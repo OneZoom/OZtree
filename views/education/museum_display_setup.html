@@ -1,14 +1,17 @@
 {{response.title='OneZoom: Museum display launch'}}
 {{extend 'layout.html'}}
-<div id="museum-container">
-  <div class="col-md-12">
+<div class="row-fluid">
     <header>
-    <h1>OneZoom museum display launcher</h1>
-    <p>
-    If you are a museum or other educational institution you can have a OneZoom exhibit running for free in seconds. </p>
-    </header>
-    <ul class="columns">
-    <li>
+        <h1>OneZoom museum display launcher</h1>
+        <p>
+        If you are a museum or other educational institution you can have a OneZoom exhibit running for free in seconds. </p>
+     </header>
+</div>
+
+
+<div id = "top_matter" class="row-fluid">
+    
+    <div class="col-md-4">
    
     
     <h4>Setup</h4>
@@ -29,8 +32,8 @@
     <a href = "{{=URL('static','images/gallery/sydney_kiosk.jpg')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/sydney_kiosk_small.jpg')}}" alt=""></a>
     <p>A OneZoom based museum display at the Wild Planet exhibition at The Australian Museum in Sydney.</p>
     
-    </li>
-    <li>
+    </div>
+    <div class="col-md-4">
     
     <h4>Key features</h4>
     
@@ -66,8 +69,8 @@
     
     <p> You are free to use this page to include OneZoom in your exhibition without contacting us.  We do appreciate feedback and also it is helpful to know which venues are using OneZoom so please do <a href="mailto:mail@onezoom.org?Subject=Museum display feedback" target="_top">get in touch</a> and tell us about your plans if you can.  We may be able to make some improvements to the code based on your feedback.  We can also mention your exhibition on social media and list it on our {{=XML( (A(T('installations page'),_href="/installations.html",_target="_blank")))}}.</p>
     
-    </li>
-    <li>
+    </div>
+    <div class="col-md-4">
     <h4>Please note</h4>
     
     <p> We are a UK registered charity (non-profit) and our work is supported almost entirely by sponsorships from end users.  The names of sponsors may thus appear on leaves of the tree.  All text is checked by us before appearing. We do not permit walk up users to sponsor from public displays as it would require entering personal information.  Instead we provide basic information about how they could sponsor from their own device.
@@ -79,12 +82,15 @@
     
     <p>OneZoom at the Natural History Museum in London for Science Uncovered.</p>
 
-    </li>
-    </ul>
+    </div>
+    </div>
 
-    <h4>Display options</h4>
+    <div id="museum-container" class= "col-md-12" >
+        <hr>
+    <header>
+    <h1>Display options</h1>
     <p>You don't have to change any of these options unless you want to.  To implement a quick display leave everything on its default value.</p>
-
+    </header>
     
     
     
@@ -155,7 +161,7 @@
       <label class="left-label left-label-input">Home location</label>
       <div class="right-input otthome-id" style="width:600px;">
         <select style="width: 300px;">
-          <option value="93302">All life (default)</option>
+          <option value="">All life (default)</option>
           <option value="244265">Mammals</option>
           <option value="81461">Birds</option>
           <option value="991547">Frogs and toads</option>
@@ -288,7 +294,7 @@
       const screensaver_timer = $('#museum-container .screensaver input').val()
 
       let query = `vis=${view_type}&img=${image_source}&lang=${language}&anim=${anim_setting}`
-      if (otthome_id) {
+      if (otthome_id && otthome_id!= "") {
         query = query + `&otthome=${otthome_id}`
       }
       if (screensaver_timer) {
@@ -339,7 +345,7 @@
     })
      
      //Bind open in new tab event (top)
-     $('#museum-container #open-in-new-tab-top').click(function () {
+     $('#top_matter #open-in-new-tab-top').click(function () {
                                                    var url = $('#museum-container .url-result input').val()
                                                    window.open(url, null)
                                                    })
