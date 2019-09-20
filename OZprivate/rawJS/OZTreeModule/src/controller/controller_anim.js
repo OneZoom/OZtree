@@ -155,14 +155,17 @@ export default function (Controller) {
    * @param {string} accel_type The acceleration type, one of
    *    "linear" (default, also used if null), "accel", or "decel".
    * @param {func} finalize_func The function to call at the end of the zoom (optional)
-   * @return {boolean} returns false if the distance to dest_OZid is too short so there is no animation performed.
+   * @return {Promise} resolve when fly finishes. throws an exception when fly is interrupted
    */
   Controller.prototype.fly_straight_to = function(
-        dest_OZid, into_node, speed=1, accel_type='linear', finalize_func) {
+        dest_OZid, into_node, speed=1, accel_type='linear') {
     tree_state.flying = false;
     this.develop_branch_to(dest_OZid);
-    return position_helper.perform_actual_fly(
-        this, into_node, speed, accel_type || 'linear', finalize_func);
+
+    return new Promise((resolve, reject) => {
+      position_helper.perform_actual_fly(
+        this, into_node, speed, accel_type || 'linear', resolve, () => reject(new Error('Fly is interrupted')));
+    })
   }
     
     

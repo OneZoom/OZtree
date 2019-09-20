@@ -136,14 +136,11 @@ class TourStop {
         if (this.setting.transition_in == 'fly_straight') {
             // This is unusual. For the moment, wrap in a promise (until 
             // https://github.com/OneZoom/OZtree/issues/203 is fixed)
-            promise = new Promise(resolve => {
-                this.controller.fly_straight_to(
+            promise = this.controller.fly_straight_to(
                     this.OZid,
                     this.setting.pos === 'max',
                     this.setting.fly_in_speed || 1,
-                    'linear',
-                    resolve)
-            })
+                    'linear')
         } else {
             // This is the norm
             console.log("Flying on tree to: " + this.OZid + " (" + this.setting.ott + ")")
