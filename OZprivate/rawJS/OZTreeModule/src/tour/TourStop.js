@@ -44,7 +44,7 @@ class TourStop {
   exit() {
     this.pause()
     this.state = TOURSTOP_EXIT
-    if (this.container) this.container.hide()
+    // Don't need to hide this stop: it might carry on being shown during next transition
   }
 
   complete_tourstop() {
@@ -63,6 +63,7 @@ class TourStop {
     }
     // Show the tour stop *after* firing the function, in case we want the function do
     // do anything first (which could including showing the stop)
+    console.log("force hiding other stops during complete_tourstop")
     this.tour.hide_other_stops(this.container)
     this.state = TOURSTOP_END
     this.direction = 'forward'
@@ -75,6 +76,7 @@ class TourStop {
   skip_transition() {
     // leap (this should cancel any exiting flight)
     this.controller.leap_to(this.OZid, this.setting.pos)
+    console.log("force hiding other stops during skip")
     this.tour.hide_other_stops(this.container)
     this.complete_tourstop()
   }
@@ -116,43 +118,38 @@ class TourStop {
     /**
      * Perform flight or leap
      */
-    let promise = null
+    let promise = null; //Promise.resolve()
     if (this.setting.transition_in == 'leap' || this.direction == 'backward') {
-        // Leap. For the moment, wrap in a promise (until 
-        // https://github.com/OneZoom/OZtree/issues/203 is fixed)
         promise = this.controller.leap_to(this.OZid, this.setting.pos)
     } else {
         // Flight
-        this.set_block_user_interaction_before_fly()
+        let into_node = this.setting.pos === 'max'
+        let speed = this.setting.fly_in_speed || 1
         this.state = TOURSTOP_IS_FLYING
-        if (this.setting.fly_in_visibility == "force_hide") {
+        if (this.setting.fly_in_visibility === "force_hide") {
+            console.log("force hiding previous stop")
+            this.block_user_interaction_when_normally_allowed()
             this.tour.hide_other_stops()
-        } else if (this.setting.fly_in_visibility == "show_self") {
+        } else if (this.setting.fly_in_visibility === "show_self") {
+            console.log("force hiding other stops 1")
             this.tour.hide_other_stops(this.container)
         }
-        if (this.setting.transition_in == 'fly_straight') {
-            // This is unusual. For the moment, wrap in a promise (until 
-            // https://github.com/OneZoom/OZtree/issues/203 is fixed)
-            promise = this.controller.fly_straight_to(
-                    this.OZid,
-                    this.setting.pos === 'max',
-                    this.setting.fly_in_speed || 1,
-                    'linear')
+        if (this.setting.transition_in === 'fly_straight') {
+            // This is unusual.
+            promise =
+                this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
         } else {
             // This is the norm
             console.log("Flying on tree to: " + this.OZid + " (" + this.setting.ott + ")")
-            promise = this.controller.fly_on_tree_to(
-                null,
-                this.OZid,
-                this.setting.pos === 'max',
-                this.setting.fly_in_speed || 1)
+            promise =
+                this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
         }
     }
     promise
       .then(() => {this.complete_tourstop()})
       .catch(() => {})
       .finally(() => {
-        this.recover_block_user_interaction_after_fly()
+        this.restore_user_interaction_when_normally_allowed()
       })
   }
 
@@ -183,44 +180,35 @@ class TourStop {
   }
 
   /**
-   * User interaction should be blocked during fly when:
-   * 1. tour.interaction equals 'null' or default
-   * 2. tour is in fly animation
-   * 3. force hide is true
-   * 
-   * This function should be called before fly animation
+   * Block any user interaction in cases where it would normally be allowed: i.e. when
+   * tour.interaction equals 'null' or default. In other cases, user interaction during a
+   * tour is trapped and handled sen
    */
-  set_block_user_interaction_before_fly() {
-    console.log('set block before fly', this.tour.interaction, this.setting.fly_in_visibility)
+  block_user_interaction_when_normally_allowed() {
     const tour = this.tour
     if (tour.interaction && 
       (tour.interaction === 'block' || 
       tour.interaction === 'exit' || 
       tour.interaction === 'exit_after_confirmation')) {
         //Do nothing
-    } else if (this.setting.fly_in_visibility === "force_hide") {
+    } else {
+      console.log('set block user interation')
       tree_state.disable_interaction = true
     }
   }
 
   /**
-   * Recover user interaction after fly animation. Following it's the default values for different tour mode:
-   * null: non-block
-   * exit: block
-   * exit_after_confirmation: block
-   * block: block
-   * 
-   * This function should be called after fly animation
+   * Recover user interaction after block_user_interaction_when_normally_allowed()
    */
-  recover_block_user_interaction_after_fly() {
-    console.log('recover block')
+  restore_user_interaction_when_normally_allowed() {
     const tour = this.tour
     if (tour.interaction &&
       (tour.interaction === 'block' ||
         tour.interaction === 'exit' ||
         tour.interaction === 'exit_after_confirmation')) {
       //Do nothing
-    } else if (this.setting.fly_in_visibility === "force_hide") {
+    } else {
+      console.log('unset block user interation')
       tree_state.disable_interaction = false
     }
   }
