@@ -155,7 +155,7 @@ function get_params(options) {
   }
 
   if (config.home_ott_id) {
-    querystring.push('ottdef=' + encodeURIComponent(config.home_ott_id))
+    querystring.push('otthome=' + encodeURIComponent(config.home_ott_id))
   }
 
   if (options.record_popup) {

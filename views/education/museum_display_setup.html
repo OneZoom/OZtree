@@ -153,7 +153,7 @@
     
     <div class="form-group">
       <label class="left-label left-label-input">Home location</label>
-      <div class="right-input ottdef-id" style="width:600px;">
+      <div class="right-input otthome-id" style="width:600px;">
         <select style="width: 300px;">
           <option value="1">All life (default)</option>
           <option value="244265">Mammals</option>
@@ -284,12 +284,12 @@
       const anim_setting = $('#museum-container .anim-setting')
         .find('option:selected')
         .val()
-      const ottdef_id = $('#museum-container .ottdef-id input').val()
+      const otthome_id = $('#museum-container .otthome-id input').val()
       const screensaver_timer = $('#museum-container .screensaver input').val()
 
       let query = `vis=${view_type}&img=${image_source}&lang=${language}&anim=${anim_setting}`
-      if (ottdef_id) {
-        query = query + `&ottdef=${ottdef_id}`
+      if (otthome_id) {
+        query = query + `&otthome=${otthome_id}`
       }
       if (screensaver_timer) {
         query = query + `&ssaver=${screensaver_timer}`
@@ -304,19 +304,19 @@
     }
 
     /**
-     * When ottdef-id dropdown selection changes, do two things:
-     * 1. enable or disable ottdef-id input readonly property
-     * 2. change ottdef-id input value
+     * When otthome-id dropdown selection changes, do two things:
+     * 1. enable or disable otthome-id input readonly property
+     * 2. change otthome-id input value
      */
     function setHomeOttId() {
-      const optionVal = $('#museum-container .ottdef-id select')
+      const optionVal = $('#museum-container .otthome-id select')
         .find('option:selected')
         .val()
       if (optionVal === 'custom') {
-        $('#museum-container .ottdef-id input').attr('readonly', false)
+        $('#museum-container .otthome-id input').attr('readonly', false)
       } else {
-        $('#museum-container .ottdef-id input').attr('readonly', true)
-        $('#museum-container .ottdef-id input').val(optionVal)
+        $('#museum-container .otthome-id input').attr('readonly', true)
+        $('#museum-container .otthome-id input').val(optionVal)
       }
     }
 
@@ -357,17 +357,17 @@
 
     //Bind text input change event
     $(
-      '#museum-container .screensaver input, #museum-container .ottdef-id input',
+      '#museum-container .screensaver input, #museum-container .otthome-id input',
     ).change(function () {
       setURL()
     })
 
     /**
-     * When ottdef-id dropdown selection changes, do two things:
-     * 1. enable or disable ottdef-id input readonly property
-     * 2. change ottdef-id input value
+     * When otthome-id dropdown selection changes, do two things:
+     * 1. enable or disable otthome-id input readonly property
+     * 2. change otthome-id input value
      */
-    $('#museum-container .ottdef-id select').change(function () {
+    $('#museum-container .otthome-id select').change(function () {
       setHomeOttId()
       setURL()
     })

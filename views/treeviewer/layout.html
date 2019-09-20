@@ -1010,7 +1010,8 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             onezoom.screensaver.setup_setting(
                 window.globals['screensaver_config'], 'screensaver',
                 UI_callbacks.closeAll, // before the screensaver runs, close modals etc.
-                null, true);
+                null, // nothing on screensaver exit
+                true); // loop back and forth
         })
     
         {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape = False)}}
