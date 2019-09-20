@@ -33,34 +33,45 @@ function setup_loading_page() {
  * @return {Promise} return a promise which would turn to resolve if the metacode is found, otherwise turn to reject.
  */
 function get_id_by_state(state) {
-  let promise = new Promise(function (resolve, reject) {
-    if (!state) reject();
-    else if (state.node_id) resolve(state.node_id);
-    else if (state.ott && data_repo.ott_id_map[state.ott]) resolve(data_repo.ott_id_map[state.ott]);
-    else if (state.latin_name && data_repo.name_id_map[state.latin_name]) resolve(data_repo.name_id_map[state.latin_name]);
-    else if (state.ott || state.latin_name) {
-      let data = {};
-      if (state.ott) data.ott = state.ott;
-      if (state.latin_name) data.name = state.latin_name;
-      let params = {
-        data: data,
-        success: function (res) {
-          if (res.ids && res.ids.length) {
-            resolve(res.ids[0]);
-          } else {
-            reject();
+  if (!state) {
+    return Promise.reject(new Error('Expect to get state, but pass in undefined'));
+  } else if (state.node_id) {
+    return Promise.resolve(state.node_id);
+  } else if (state.ott && data_repo.ott_id_map[state.ott]) {
+    return Promise.resolve(data_repo.ott_id_map[state.ott]);
+  } else if (state.latin_name && data_repo.name_id_map[state.latin_name]) {
+    return Promise.resolve(data_repo.name_id_map[state.latin_name]);
+  } else if (state.ott || state.latin_name) {
+    return get_ott_to_id_by_api(state.ott, state.latin_name)
+  } else {
+    return Promise.reject(new Error('Neither ott or latin name is found in state'));
+  }
+}
+
+function get_ott_to_id_by_api(ott, latin_name) {
+  return new Promise(function(resolve, reject) {
+    let data = {}
+    if (ott) data.ott = ott
+    if (latin_name) data.name = latin_name
+    let params = {
+      data: data,
+      success: function (res) {
+        if (res.ids && res.ids.length) {
+          if (ott) {
+            data_repo.ott_id_map[ott] = res.ids[0]
+            data_repo.id_ott_map[res.ids[0]] = ott
           }
-        },
-        error: function (res) {
+          resolve(res.ids[0]);
+        } else {
           reject();
         }
-      };
-      api_manager.search_init(params);
-    } else {
-      reject();
-    }
-  });
-  return promise;
+      },
+      error: function (res) {
+        reject(res);
+      }
+    };
+    api_manager.search_init(params);
+  })
 }
 
 function setup_page_by_state(state) {
@@ -74,10 +85,15 @@ function setup_page_by_state(state) {
 
   controller.close_all();
 
-  get_id_by_state(state).then(function (id) {
+  let promise = state.home_ott_id ? get_ott_to_id_by_api(state.home_ott_id) : Promise.resolve()
+
+  promise
+  .then(() => {return get_id_by_state(state)})
+  .then(function (id) {
     tree_state.url_parsed = true;
     return controller.init_move_to(id, state.xp !== undefined ? state : state.init);
-  }).then(function () {
+  })
+  .then(function () {
     //open popup dialog if exists.
     if (state.tap_action && state.tap_ott) {
       global_button_action.action = state.tap_action;
@@ -86,7 +102,8 @@ function setup_page_by_state(state) {
     } else {
       controller.close_all();
     }
-  }).catch(function (error) {
+  })
+  .catch(function (error) {
     tree_state.url_parsed = true;
     //TODO: separate out promise reject and error handling.
     controller.reset();

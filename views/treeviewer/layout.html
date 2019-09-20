@@ -999,22 +999,9 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
      **/
     {{if is_testing:}}console.log("Starting OneZoom viewer");{{pass}}
     
-    var home_ott_id = getParameterByName('ottdef')
     var screensaver_timer = parseInt(getParameterByName('ssaver'))
 
-    if (home_ott_id) {
-        /**
-         * If ottdef is in the URL, then before loading the app, getting the ozId from the ott id is needed, so that
-         * the tree can centered on a specific node after loading. This should probably all be done within the onezoom 
-         * instance, see https://github.com/OneZoom/OZtree/issues/202
-         */
-        const api_utils = OZentry.api_utils_setup(window.server_urls)
-        api_utils.process_taxon_list(`[{"OTT":${home_ott_id}}]`, function () {
-            setup_onezoom()
-        }, function () { })
-    } else {
-        setup_onezoom()
-    }
+    setup_onezoom()
 
     function setup_onezoom() {  
         onezoom = OZentry.default(
