@@ -139,6 +139,13 @@ module.exports = function (grunt) {
             src: ['*.css'],
             dest: '<%=pkg.directories.css_dist%>',
             ext: '.css.gz'
+          },
+          {
+            expand: true,
+            cwd: '<%=pkg.directories.old_css_dest_and_dist%>',
+            src: ['*.css'],
+            dest: '<%=pkg.directories.old_css_dest_and_dist%>',
+            ext: '.css.gz'
           }
         ]
       }

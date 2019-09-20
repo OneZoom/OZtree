@@ -11,7 +11,8 @@
     "old_js_dist": "OZprivate/rawJS/OZTree/dist",
     "old_js_dest": "static/OZTree/dist",
     "css_src": "OZprivate/scss",
-    "css_dist": "static/css"
+    "css_dist": "static/css",
+    "old_css_dest_and_dist": "static/OZSponsor"
   },
   "scripts": {
     "test": "npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/*.js",
