@@ -134,6 +134,7 @@ class Controller {
           tree_state.setup_canvas(this.canvas);
       }
       reset_global_button_action();
+      tree_state.last_render_at = new Date();
       this.renderer.refresh(this.root);
       call_hook("after_draw");
 

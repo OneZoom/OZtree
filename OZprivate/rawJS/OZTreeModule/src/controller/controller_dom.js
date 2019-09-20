@@ -5,7 +5,7 @@ import tree_state from '../tree_state';
 import config from '../global_config';
 import tree_settings from '../tree_settings';
 import data_repo from '../factory/data_repo';
-import {record_url} from '../navigation/record';
+import { record_url } from '../navigation/record';
 
 /**
  * @class Controller
@@ -18,50 +18,55 @@ export default function (Controller) {
    * @memberof Controller
    * @param {number} [zoom_sensitivity=config.anim.zoom_sensitivity] - how much to zoom in
    */
-  Controller.prototype.button_zoom_in = function(zoom_sensitivity = config.anim.zoom_sensitivity) {
-    this.zoomin_anim(tree_state.widthres/2, tree_state.heightres/2, zoom_sensitivity, 4);
+  Controller.prototype.button_zoom_in = function (zoom_sensitivity = config.anim.zoom_sensitivity) {
+    this.zoomin_anim(tree_state.widthres / 2, tree_state.heightres / 2, zoom_sensitivity, 4);
   }
-  
+
   /**
    * Zoom out on the canvas, centered on the middle of the canvas. 
    * @method button_zoom_out
    * @memberof Controller
    * @param {number} [zoom_sensitivity=config.anim.zoom_sensitivity] - how much to zoom out
-   */  
-  Controller.prototype.button_zoom_out = function(zoom_sensitivity = config.anim.zoom_sensitivity) {
-    this.zoomout_anim(tree_state.widthres/2, tree_state.heightres/2, zoom_sensitivity, 4)
+   */
+  Controller.prototype.button_zoom_out = function (zoom_sensitivity = config.anim.zoom_sensitivity) {
+    this.zoomout_anim(tree_state.widthres / 2, tree_state.heightres / 2, zoom_sensitivity, 4)
   }
-  
+
   /**
    * Reset the canvas to the most zoomed-out view possible. 
    * @method button_reset
    * @memberof Controller
-   */  
-  Controller.prototype.button_reset = function() {
-    this.reset();
+   */
+  Controller.prototype.button_reset = function () {
+    const dest_OZid = data_repo.ott_id_map[config.home_ott_id]
+    if (dest_OZid) {
+      this.leap_to(dest_OZid);
+    } else {
+      this.reset();
+    }
   }
-  
+
   /**
    * Fly 1 ancestor back on the tree. If the position in space is already such that going to the last ancestor doesn’t actually require any kind of move at all, then go up one node higher again so that some kind of move at least is observed by the user.
    * @method button_zoom_up
    * @memberof Controller
    */
-  Controller.prototype.button_zoom_up = function() {
+  Controller.prototype.button_zoom_up = function () {
     let uploc_vect = get_location2(this.root);
     if (uploc_vect && uploc_vect.length > 0) {
       while (uploc_vect.length > 0) {
-        if (!this.perform_flight_animation(uploc_vect[uploc_vect.length-1])) {
+        if (!this.fly_straight_to(uploc_vect[uploc_vect.length - 1])) {
           // false is returned by the flight => it didn’t need to move anywhere to get to the destination
           uploc_vect.length -= 1;
         } else {
           break;
-        }  
+        }
       }
     } else {
-      this.perform_flight_animation(this.root.metacode);
+      this.fly_straight_to(this.root.metacode);
     }
   }
-  
+
   /**
    * Set the language used in the tree display. This should also change the 
    * language for results requested through the API.
@@ -70,10 +75,17 @@ export default function (Controller) {
    * @param {string} lang - the 2-letter ISO 639-1 language code (e.g. 'en', 'fr') 
    *   or the 2-letter code with a region appended (e.g. 'en-GB')
    */
-  Controller.prototype.set_language = function(lang) {
+  Controller.prototype.set_language = function (lang, init = false) {
     if (lang !== config.lang) {
-      tree_settings.change_language(lang, this, data_repo);
-      record_url();
+      try {
+        tree_settings.change_language(lang, this, data_repo);
+      } finally {
+        if (!init) {
+          record_url({
+            replaceURL: true
+          }, true);
+        }
+      }
     }
   }
   /**
@@ -81,8 +93,8 @@ export default function (Controller) {
    * @method get_language
    * @memberof Controller
    */
-  Controller.prototype.get_language = function() {
-    return(config.lang);
+  Controller.prototype.get_language = function () {
+    return (config.lang);
   }
 
 
@@ -92,35 +104,36 @@ export default function (Controller) {
    * @param {String} - One of the keys listed in tree_settings.options.vis
    * @memberof Controller
    */
-  Controller.prototype.change_view_type = function(vis) {
+  Controller.prototype.change_view_type = function (vis, init = false) {
     if (vis !== tree_settings.vis) {
       let prev = tree_settings.vis
       tree_settings.vis = vis;
-      let self=this
-      if (prev == "polytomy")
-      {
-          record_url();
-          document.location.reload()
+      let self = this
+      if (prev == "polytomy") {
+        record_url();
+        document.location.reload()
       } else {
-          tree_settings.rebuild_tree(vis, prev, this).then(function() {
-                self.update_form();
-                self.reset();
-                record_url();
-            });
-        }
+        tree_settings.rebuild_tree(vis, prev, this).then(function () {
+          self.update_form();
+          self.reset();
+          if (!init) {
+            record_url();
+          }
+        });
+      }
     }
   }
-  Controller.prototype.get_view_type = function() {
-    return(tree_settings.vis);
+  Controller.prototype.get_view_type = function () {
+    return (tree_settings.vis);
   }
-  
+
   /**
    * Change the colour theme
    * @method set_color_theme
    * @param {String} - One of the theme names listed as keys in tree_settings.options.cols
    * @memberof Controller
    */
-  Controller.prototype.change_color_theme = function(color_theme) {
+  Controller.prototype.change_color_theme = function (color_theme) {
     tree_settings.cols = color_theme;
   }
   /**
@@ -129,21 +142,42 @@ export default function (Controller) {
    * @method get_color_theme
    * @memberof Controller
    */
-  Controller.prototype.get_color_theme = function() {
-    return(tree_settings.cols);
+  Controller.prototype.get_color_theme = function () {
+    return (tree_settings.cols);
   }
-  
-  Controller.prototype.set_image_source = function(image_source) {
+
+  Controller.prototype.set_image_source = function (image_source, init = false) {
     if (data_repo.image_source !== image_source) {
       data_repo.image_source = image_source;
       clear_node_pics(this.root);
-    }    
+      if (!init) {
+        record_url({
+          replaceURL: true
+        }, true)
+      }
+    }
   }
-  Controller.prototype.get_image_source = function() {
-    return(data_repo.image_source)
+
+  Controller.prototype.set_search_jump_mode = function (search_jump_mode, init = false) {
+    if (config.search_jump_mode !== search_jump_mode) {
+      config.search_jump_mode = search_jump_mode;
+      if (!init) {
+        record_url({
+          replaceURL: true
+        }, true)
+      }
+    }
   }
-  
-  Controller.prototype.close_all = function() {
+
+  Controller.prototype.get_search_jump_mode = function () {
+    return config.search_jump_mode || 'flight'
+  }
+
+  Controller.prototype.get_image_source = function () {
+    return (data_repo.image_source)
+  }
+
+  Controller.prototype.close_all = function () {
     if (typeof config.ui.closeAll !== 'function') {
       //we should have defined it!
       throw new Error("Developer error: you need to define a UI function called closeAll which close all popups etc");
@@ -157,7 +191,7 @@ export default function (Controller) {
  * @private
  * location2 collects all nodes on the main branch until the node who has more than one children visible.
  */
-function get_location2(node) { 
+function get_location2(node) {
   if (node.gvar && node.has_child) return [node.metacode];
   if (node.dvar && node.has_child) {
     return [node.metacode].concat(get_child_loc(node));
@@ -173,16 +207,16 @@ function get_location2(node) {
  */
 function get_child_loc(node) {
   let childlocs = [];
-  
+
   let length = node.children.length;
-  for (let i=0; i<length; i++) {
+  for (let i = 0; i < length; i++) {
     let child = node.children[i];
     let child_loc = get_location2(child);
     if (child_loc.length > 0) {
       childlocs.push(child_loc);
     }
   }
-  
+
   if (childlocs.length === 0 || childlocs.length > 1) {
     return [];
   } else {
@@ -192,7 +226,7 @@ function get_child_loc(node) {
 
 function clear_node_pics(node) {
   node.clear_pics();
-  for (let i=0; i<node.children.length; i++) {
+  for (let i = 0; i < node.children.length; i++) {
     clear_node_pics(node.children[i]);
   }
 }

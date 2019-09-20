@@ -6,14 +6,17 @@ import get_controller from './controller/controller';
 import api_manager from './api/api_manager';
 import search_manager from './api/search_manager';
 import process_taxon_list from './api/process_taxon_list';
-import {init as garbage_collection_start} from './factory/garbage_collection';
-import {spec_num_full, number_convert, view_richness} from './factory/utils'
-import {add_hook} from './util/index';
-import {setup_loading_page} from './navigation/setup_page';
+import { init as garbage_collection_start } from './factory/garbage_collection';
+import { spec_num_full, number_convert, view_richness } from './factory/utils'
+import { add_hook, call_hook } from './util/index';
+import { setup_loading_page } from './navigation/setup_page';
+import { get_largest_visible_node } from './navigation/utils';
 import config from './global_config';
 import tree_state from './tree_state';
 import data_repo from './factory/data_repo';
 import tree_settings from './tree_settings';
+import Tour from './tour/Tour'
+import Screensaver from './tour/Screensaver'
 /**
  * Creates the main object that is exported to the browser. 
  * @todo This should possibly be separated so that 
@@ -44,17 +47,17 @@ functionality. At the moment, a single file is created, called OZentry.js
  * @return {Object} a OneZoom object which exposes OneZoom objects and functions to the user. In particular, .data_repo contains a DataRepo object, and .controller contains a Controller object.
  */
 function setup(
-    server_urls, 
-    UI_functions, 
-    pagetitle_function,
-    canvasID, 
-    default_viz_settings, 
-    condensed_newick, 
-    metadata,
-    dichotomy_cut_position_map_json_string, 
-    polytomy_cut_position_map_json_string,
-    cut_thresholds,
-    tree_dates) {
+  server_urls,
+  UI_functions,
+  pagetitle_function,
+  canvasID,
+  default_viz_settings,
+  condensed_newick,
+  metadata,
+  dichotomy_cut_position_map_json_string,
+  polytomy_cut_position_map_json_string,
+  cut_thresholds,
+  tree_dates) {
   // Set the server-specific URLs for API calls
   api_manager.set_urls(server_urls);
   // Set the URL for images
@@ -67,51 +70,16 @@ function setup(
       config.ui[name] = UI_functions[name];
     }
   }
-  
+
   let return_value = {};
   if (canvasID) {
     tree_settings.set_default(default_viz_settings); // implements the config for that tree.
-  
-    //start fetching metadata for the tree, using global variables that have been defined in files like 
-    //10000 is cut threshold for cut_position_map_json_str
-    //TODO: It shouldn't be hard coded.
-    // the cut map file should eventually contain the information of what it's for. cut_map_json is a 
-    // stringified json object which maps node position in rawData to its cut position of its children in rawData
 
-    //10000 should be replaced with the threshold used to generate cut_position_map.js. If the string of a node in ]
-    //rawData is shorter than cut_threshold, then there is no need to find its cut position and add it in cut_map_json.
-    let cut_threshold = window.cut_threshold || 10000;
-    let tree_date = window.tree_date || "{}";
-    
-    
-    let data_obj = {
-        raw_data: condensed_newick, 
-        cut_map: JSON.parse(dichotomy_cut_position_map_json_string || "{}"),
-        poly_cut_map: JSON.parse(polytomy_cut_position_map_json_string || "{}"), 
-        metadata:metadata, 
-        cut_threshold:cut_thresholds || 10000, 
-        tree_date:tree_dates || "{}"
-    }
-    
     api_manager.start(); // this is called on both the if and the else branch. Would be neater to put it right at the top: would that break anything?
-    
+
     let controller = get_controller();
     controller.setup_canvas(document.getElementById(canvasID));
     controller.draw_loading();
-    
-    //setTimeout so that draw loading would be displayed before build tree starts.
-    setTimeout(function() {
-      controller.build_tree(data_obj);
-      //Jump or fly to a place in the tree marked by the url when the page loads.
-      setup_loading_page();
-      controller.find_proper_initial_threshold();
-      controller.trigger_refresh_loop();
-      
-      //listen to user mouse, touch, icon click, window resize and user navigation events.
-      controller.bind_listener();
-      //start garbage collection of tree to keep the size of the tree in memory reasonable
-      garbage_collection_start();
-    }, 50);
 
     return_value.controller = controller;
     return_value.tree_settings = tree_settings;
@@ -125,32 +93,96 @@ function setup(
     return_value.tree_state = null;
     return_value.data_repo = null;
   }
-  
+
   return_value.config = config;
   return_value.search_manager = search_manager;
   // TO DO - use data_repo passed in to the entry function, so we don't need to include it in the initial JS
   return_value.search_manager.add_data_repo(return_value.data_repo);
-  return_value.tours = {};
-  //next function should be spun off into a tours.js module
-  return_value.tours.page = function(tourname, next_stop_number, success_func) {
-    let params = {
-        data: {tourname:tourname, stopnum:next_stop_number},
-        success: success_func,
-        error: function(res) {
-          reject();
-        }
-      };
-    api_manager.tour_detail(params);
-  }
+  // return_value.tours = {};
+  // //next function should be spun off into a tours.js module
+  // return_value.tours.page = function (tourname, next_stop_number, success_func) {
+  //   let params = {
+  //     data: { tourname: tourname, stopnum: next_stop_number },
+  //     success: success_func,
+  //     error: function (res) {
+  //       reject();
+  //     }
+  //   };
+  //   api_manager.tour_detail(params);
+  // }
+  return_value.tutorial = new Tour(return_value)
+  return_value.screensaver = new Screensaver(return_value)
   return_value.utils = {};
   return_value.utils.spec_num_full = spec_num_full;
   return_value.utils.number_convert = number_convert;
   return_value.utils.view_richness = view_richness;
   return_value.utils.process_taxon_list = process_taxon_list;
-
+  if (return_value.controller) {
+      return_value.utils.largest_visible_node = () => {
+        let node = get_largest_visible_node(return_value.controller.root)
+        if (node.is_leaf) {
+            return -node.metacode
+        } else {
+            return node.metacode
+        }
+      }
+  }        
   return_value.add_hook = add_hook;
+
+  //setTimeout so that draw loading would be displayed before build tree starts.
+  setTimeout(function () {
+    //start fetching metadata for the tree, using global variables that have been defined in files like 
+    //10000 is cut threshold for cut_position_map_json_str
+    //TODO: It shouldn't be hard coded.
+    // the cut map file should eventually contain the information of what it's for. cut_map_json is a 
+    // stringified json object which maps node position in rawData to its cut position of its children in rawData
+
+    //10000 should be replaced with the threshold used to generate cut_position_map.js. If the string of a node in ]
+    //rawData is shorter than cut_threshold, then there is no need to find its cut position and add it in cut_map_json.
+    let cut_threshold = window.cut_threshold || 10000;
+    let tree_date = window.tree_date || "{}";
+
+
+    let data_obj = {
+      raw_data: condensed_newick,
+      cut_map: JSON.parse(dichotomy_cut_position_map_json_string || "{}"),
+      poly_cut_map: JSON.parse(polytomy_cut_position_map_json_string || "{}"),
+      metadata: metadata,
+      cut_threshold: cut_thresholds || 10000,
+      tree_date: tree_dates || "{}"
+    }
+
+    if (return_value.controller) {
+        return_value.controller.build_tree(data_obj)
+        //Jump or fly to a place in the tree marked by the url when the page loads.
+        setup_loading_page()
+        call_hook("on_tree_loaded")
+        return_value.controller.find_proper_initial_threshold()
+        return_value.controller.trigger_refresh_loop()
+        //listen to user mouse, touch, icon click, window resize and user navigation events.
+        return_value.controller.bind_listener()
+        //start garbage collection of tree to keep the size of the tree in memory reasonable
+    }
+    garbage_collection_start()
+  }, 50);
 
   return return_value;
 }
 
+/**
+ * Call this function would return an object containing API helpers
+ * User could use this object to call API helpers without create OneZoom instance.
+ * 
+ * @param {Object} server_urls - A named key:value dict of urls that the api manager etc needs to fire
+ *     off AJAX requests. See global_config.js for the list of necessary names
+ */
+function api_utils_setup(server_urls) {
+  api_manager.set_urls(server_urls)
+  return {
+    search_manager: search_manager,
+    process_taxon_list: process_taxon_list
+  }
+}
+
 export default setup;
+export { api_utils_setup }

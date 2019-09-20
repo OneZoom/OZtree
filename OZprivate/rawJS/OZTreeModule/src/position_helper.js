@@ -14,6 +14,7 @@ let more_flying_needed = null;
 let flight_fps = 1000/60; // set this to 1000/500 for recording much slower flight animations that can then be sped up after the screen casting process is complete.
 let into_node;
 let pre_xp, pre_yp, pre_ws;
+let fly_timer = null
 
 function drawreg_target(node,x,y,r) {
   // we assume that only those for whom graphref is true will call this routine
@@ -209,26 +210,25 @@ function deanchor(node) {
 }
 
 
-// to_index gives us the index of the leaf or node we need to zoom into
-// to_leaf tells us if that index refers to a leaf (1) or not (-1)
-// If midnode has stored_metacode, then it has not been fully developed yet. Otherwise it stores its metacode in node.metacode.
-function target_by_code(node, to_leaf , to_index) {
-  if (to_leaf > 0 && node.is_leaf && (node.metacode == to_index)) {
+// OZid gives us the OneZoom ID of the leaf or node we need to zoom into (
+// (negative for a leaf, positive for an internal node
+// If midnode has stored_metacode, then it has not been fully developed yet. 
+// Otherwise it stores its metacode in node.metacode.
+function target_by_code(node, OZid) {
+  let target_is_leaf = OZid < 0
+  if (target_is_leaf && node.is_leaf && (node.metacode == -OZid)) {
     node.targeted = true;
-    // print_target_node(node);
-  } else if (to_leaf <= 0 && node.is_interior_node && (node.metacode == to_index)) {
+  } else if ((!target_is_leaf) && node.is_interior_node && (node.metacode == OZid)) {
     node.targeted = true;
-    // print_target_node(node);
   } else if (node.has_child) {
     node.targeted = false;
     for (let i=0; i<node.children.length; i++) {
       let child = node.children[i];
-      node.targeted = node.targeted || target_by_code(child, to_leaf, to_index);
+      node.targeted = node.targeted || target_by_code(child, OZid);
     }
   } else {
     node.targeted = false;
   }
-  // send back information on whether or not this node is targeted
   return node.targeted;
 }
 
@@ -297,10 +297,14 @@ function perform_actual_leap(controller) {
  * @param {controller} controller OneZoom Controller object
  * @param {boolean} into_node Set this to 'true' to end up zoomed so the interior node fills the screen, rather than
  * the wider-angle viewpoint that to show the entire tree structure descended from that node.
+ * @param {func} speed is optional, and gives the relative speed compared to the globally set
+ *   animation speed (greater than 1 gives faster animations, less than one gives slower)
+ * @param {func} accel_type is optional, and gives the acceleration type ('accel', 'decel' or 'linear' (default)
  * @param {func} finalize_func is optional, and gives a function to call at the end of the zoom
+ * @param {func} abrupt_func is optional, and gives a function to call when fly is abrupted
  * @return {boolean} returns false if the distance to codein_fly is too short so there is no animation performed.
  */
-function perform_actual_fly(controller, into_node, finalize_func, accel_type) {
+function perform_actual_fly(controller, into_node, speed=1, accel_type="linear", finalize_func=null, abrupt_func=null) {
   tree_state.flying = true;
   more_flying_needed = false;
   drawreg_target(controller.root, tree_state.xp, tree_state.yp, 220*tree_state.ws);
@@ -312,11 +316,14 @@ function perform_actual_fly(controller, into_node, finalize_func, accel_type) {
   intro_sec_step_num = 0;
   if(((r_mult>0.9999)&&(r_mult<1.00001))&&(x_add*x_add<1)&&(y_add*y_add<1)) {
     // nothing to zoom to so better to do nothing and return false or it feels like a bug
+    if (typeof finalize_func === "function") {
+      finalize_func()
+    }
     return false;
   } else {
     length_intro = Math.abs(Math.log(r_mult))*global_anim_speed;      
-    num_intro_steps = Math.max(Math.floor(length_intro),5);
-    perform_fly_b2(controller, into_node, finalize_func, accel_type);
+    num_intro_steps = Math.max(Math.floor(length_intro),12)/speed;
+    perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
     return true;
   }
 }
@@ -328,13 +335,15 @@ function perform_actual_fly(controller, into_node, finalize_func, accel_type) {
  * @param {controller} controller OneZoom Controller object
  * @param {boolean} into_node Set this to 'true' to end up zoomed so the interior node fills the screen, rather than
  * the wider-angle viewpoint that to show the entire tree structure descended from that node.
- * @param {func} finalize_func is optional, and gives a function to call at the end of the zoom
+ * @param {func} speed gives the relative speed compared to the globally set animation speed
  * @param {string} accel_type Acceleration curve to use for this flight
  *    - 'accel': Accelerate away from node
- *    - 'decel': Decellerate into node
- *    - '': Linear
+ *    - 'decel': Decelerate into node
+ *    - '' (or anything else): Linear
+ * @param {func} finalize_func is optional, and gives a function to call at the end of the zoom
+ * @param {func} abrupt_func is optional, and gives a function to call when fly is abrupted
  */
-function perform_fly_b2(controller, into_node, finalize_func, accel_type) {
+function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func) {
   function pan_proportion(step, total) {
     var x = step / total,
         out = (Math.sin((x+0.25) * Math.PI*2) + 1) / 2;
@@ -362,9 +371,13 @@ function perform_fly_b2(controller, into_node, finalize_func, accel_type) {
     controller.reanchor();
     controller.trigger_refresh_loop();
     
-    clearTimeout(tree_state.fly_timer);
-    tree_state.fly_timer = setTimeout(function () {
-      perform_actual_fly(controller, into_node, finalize_func, 'linear');
+    clearTimeout(fly_timer);
+    fly_timer = setTimeout(function () {
+      if (tree_state.flying) {
+        perform_actual_fly(controller, into_node, speed, 'linear', finalize_func, abrupt_func);
+      } else if (typeof abrupt_func === 'function') {
+        abrupt_func()
+      }
     },1000.0/flight_fps);
   } else if (!more_flying_needed && intro_step_num <num_intro_steps) {
     //don't need to reanchor - this is more normal, and is smoother
@@ -378,12 +391,16 @@ function perform_fly_b2(controller, into_node, finalize_func, accel_type) {
     controller.re_calc();
     controller.trigger_refresh_loop();
     
-    clearTimeout(tree_state.fly_timer);
-    tree_state.fly_timer = setTimeout(function () {
-      perform_fly_b2(controller, into_node, finalize_func, accel_type);
+    clearTimeout(fly_timer);
+    fly_timer = setTimeout(function () {
+      if (tree_state.flying) {
+        perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
+      } else if (typeof abrupt_func === 'function') {
+        abrupt_func()
+      }
     },1000.0/flight_fps);
   } else {
-    clearTimeout(tree_state.fly_timer);
+    clearTimeout(fly_timer);
     tree_state.flying = false;
     tree_state.set_action(null);
     if (typeof finalize_func === "function") {

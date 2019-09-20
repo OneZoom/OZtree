@@ -1,6 +1,6 @@
 /** @namespace config
  */
- let config = {};
+let config = {};
 
 /**
   * @property {object}  factory                - 
@@ -31,42 +31,46 @@ config.generation_on_subbranch_during_fly = 7;
  */
 config.generation_at_searched_node = 9;
 
-/** @property {string}  search_jump_mode - How to move to a new node: "flight" or "leap"
+/** @property {string}  search_jump_mode - How to move to a new node: "flight" or "jump"
  */
-config.search_jump_mode = "leap";
-                   
+config.search_jump_mode = "flight";
+
+/** @property {number} home_ott_id - default focusing place when reset
+ */
+config.home_ott_id = null
+
 config.api = {
   /* These configure how API calls are made, and to where.
      Those ending in _api are mostly null and will be set
      to the appropriate URL when the api manager is initialised */
-  
+
   node_details_api: null,
   node_details_node_num: 400,
   node_details_interval_when_idle: 1000,
   node_details_interval_when_busy: 200,
-  
+
   update_visit_count_api: null,
   update_visit_count_interval: 240000,  //update_visit_count_api every 4 mins
   update_visit_count_upload_num_threshold: 100,
-  
+
   search_api: null,
-  search_sponsor_api: null, 
+  search_sponsor_api: null,
   ott2id_arry_api: null,
   otts2vns_api: null,
-  
+
   search_init_api: null,
-  
+
   abort_request_threshold: 30000, //timeout for ajax call
   max_concurrent_request: 3,
-  
+
   image_details_api: null,
-    
+
   tourstop_page: null,
-  
+
   //The following are functions which take an OTT or a OneZoom id
   OZ_leaf_json_url_func: null,
   OZ_node_json_url_func: null,
-  
+
 }
 
 config.lang = ''; //two letter language code. If empty, try to use the browser default, which will need to be passed in by the server (not visible to js)
@@ -80,24 +84,26 @@ config.ui = {
      with the user interface (e.g. to pop up a window when a link in the
      canvas is clicked. They should be overridden when initializing the 
      OneZoom code */
-  closeAll: function() {/* by default, do nothing */},
+  closeAll: function () {/* by default, do nothing */ },
   loadingMessage: function (active) {
     console.log(active ? "Page loading..." : "Finished loading.");
   },
-  badOTT: function(ott) {
+  badOTT: function (ott) {
     alert('You have passed in a bad name or number, so we have\n' +
-      'simply taken you to the root of the tree');},
-  openCopyright: function(pic_src, pic_filename) {
+      'simply taken you to the root of the tree');
+  },
+  openCopyright: function (pic_src, pic_filename) {
     /* called when a copyright symbol is clicked on the onezoom canvas */
   },
-  openLinkouts: function() {/* called as soon as the linkouts button is clicked (i.e. before the AJAX request is returned). By default, do nothing */},
-  populateLinkouts: function() { /* called once the API result for linkouts is returned */
+  openLinkouts: function () {/* called as soon as the linkouts button is clicked (i.e. before the AJAX request is returned). By default, do nothing */ },
+  populateLinkouts: function () { /* called once the API result for linkouts is returned */
     alert('Something’s not quite right: OneZoom can’t fill in any linkouts.' +
       '\n(the populateLinkouts function in config.ui has not been set)' +
-      '\nPlease email mail@onezoom.org and let us know.');}
+      '\nPlease email mail@onezoom.org and let us know.');
+  }
 }
 
-config.title_func = function(taxonname) {return (taxonname)?"OneZoom: "+taxonname:"OneZoom Tree of Life Explorer"}
+config.title_func = function (taxonname) { return (taxonname) ? "OneZoom: " + taxonname : "OneZoom Tree of Life Explorer" }
 
 config.anim = {
   zoom_sensitivity: 0.84
@@ -123,11 +129,11 @@ config.projection = {
   partc: 0.4,
   Twidth: 1,
   Tsize: 1.1,
-  
+
   threshold_txt: 1.2,
   sign_thres: 70,
   draw_signpost: true,
-  
+
   leafmult: 3.2
 }
 
@@ -140,5 +146,5 @@ config.pic = {
   max_allowed_pic_map_size: 800,
   clear_image_cache_interval: 240000
 }
-                   
+
 export default config;

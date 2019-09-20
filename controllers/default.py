@@ -3,8 +3,13 @@
 import re
 import urllib
 from json import dumps
+from collections import OrderedDict
 
-from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, extract_summary
+from OZfunctions import (
+    nice_species_name, get_common_name, get_common_names, sponsorable_children_query,
+    language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal,
+    ids_from_otts_array, nodes_info_from_array, nodes_info_from_string, extract_summary)
+
 
 """ Some settings for sponsorship"""
 try:
@@ -820,7 +825,6 @@ def sponsor_handpicks():
         max_returned = int(request.vars.n)
     except:
         max_returned = 8
-    from collections import OrderedDict
     
     if db(query) > 0:
         prices_pence = sorted([r.price for r in db().select(db.prices.price)]) + [None]
@@ -1183,7 +1187,6 @@ def text_tree(location_string):
     # which has all the string up to the '?' or '#'
     #we have to use both the name and the ott number to get the list of species. 
     #NB: both name or ott could have multiple matches.
-    from collections import OrderedDict
 
     base_ott=base_name=''
     try:
@@ -1357,10 +1360,77 @@ def life():
 
 def life_MD():
     """
-    The museum display version, which is sandboxed (and has no underlying text tree with links hidden by JS)
+    Temporarily redirect for darwin & dinos exhibit
+    """
+    redirect(URL(
+        'default', 'life_MDtouch/@Vertebrata=801601?ssaver=600&otthome=801601',
+        url_encode=False))
+
+def life_MDtouch():
+    """
+    The museum display version for touchscreens, which is sandboxed
+    (and has no underlying text tree with links hidden by JS)
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return treeview_info(has_text_tree=False)
+
+def life_MDmouse():
+    """
+    The museum display version for mouse operated systems, which is sandboxed
+    (and has no underlying text tree with links hidden by JS)
+    """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+    return treeview_info(has_text_tree=False)
+
+def life_treasure():
+    """
+    The treasure hunt version, which is sandboxed (and has no underlying text tree with links hidden by JS)
+    """
+    otts = [int(ott) for ott in request.vars.getlist('treasure_taxa') if ott.isdigit()]
+    ids = ids_from_otts_array(otts)
+    id_by_ott = OrderedDict()
+    for ott in otts:
+        if ott in ids['leaves']:
+            id_by_ott[ott]=ids['leaves'][ott]
+        elif ott in ids['nodes']:
+            id_by_ott[ott]=ids['nodes'][ott]
+
+    mappings = nodes_info_from_string('','')
+    leaf_cols = mappings['colnames_leaves']
+    node_cols = mappings['colnames_nodes']
+    data = nodes_info_from_array(
+        ids['leaves'].values(),
+        ids['nodes'].values(),
+        include_names_in=request.vars.lang or request.env.http_accept_language or 'en',
+        include_sponsorship=False)
+    # organise data keyed by ott
+    formatted_name_by_ott = {}
+    vernacular_by_ott={k:v for k,v in data['vernacular_by_ott']}
+    for row in data['leaves']:
+        ott = row[leaf_cols['ott']]
+        if ott:
+            formatted_name_by_ott[ott] = nice_species_name(
+                scientific=row[leaf_cols['name']],
+                common=vernacular_by_ott.get(ott, None),
+                html=True,
+                leaf=True,
+                first_upper=True)
+    for row in data['nodes']:
+        ott = row[node_cols['ott']]
+        if ott:
+            formatted_name_by_ott[ott] = nice_species_name(
+                scientific=row[node_cols['name']],
+                common=vernacular_by_ott.get(ott, None),
+                html=True,
+                leaf=False,
+                first_upper=True)
+
+    
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+    return dict(
+        treasure_id_by_ott=id_by_ott,
+        formatted_name_by_ott=formatted_name_by_ott,
+        **treeview_info(has_text_tree=False))
 
 def life_expert():
     """

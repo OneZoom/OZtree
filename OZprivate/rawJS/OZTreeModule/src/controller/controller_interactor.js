@@ -98,7 +98,7 @@ export default function (Controller) {
     
     if (is_popup_state()) {
       record_url({record_popup: true});
-    } else if (global_button_action.action === "jump") {
+    } else if (global_button_action.action === "leap") {
       record_url();
     }
   }

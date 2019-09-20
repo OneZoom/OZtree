@@ -18,7 +18,7 @@
 
 transitions = {
     /* map the names in the database column 'transition' to functions in the onezoom controller */
-    'fly':'perform_flight_animation',
+    'fly':'fly_straight_to',
     'jump':'jump_to_node'
 }
 

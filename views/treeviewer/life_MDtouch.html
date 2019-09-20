@@ -15,7 +15,12 @@
 setup_params = {
   'UI_layer': {
     'page':'UI_layer.load', 
-    'vars':{'tabs':['wiki', 'ozspons'], 'links':'none'} },   
+    'vars':{
+      'tabs':['wiki', 'ozspons'], 
+      'links':'none',
+      'hide_control_settings': True,
+    } 
+  },   
   'popups':{
     'vars':{'embed':3, 'no_sponsoring':1}, #don't need to keep track of reservation_code
   },
@@ -37,12 +42,14 @@ setup_params = {
 }
 }}
 {{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
-<!-- could include bespoke css file here -->
+<!-- bespoke css file for museum display -->
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree_MD.css')}}" />
 <script type="text/javascript">
-/* disable right click */
-document.oncontextmenu = function() {return false;}
-/* MUST at a minimum define tree_config and pagetitle_func which configure the tree and page title (either could be null) */
-var tree_config = null;
-var pagetitle_func = function(nm) {return (nm)?"OneZoom Museum Display: "+ nm:"OneZoom Tree of Life Museum Display"};
+<!-- could define js variables (specifically: pagetitle_func, tree_config, screensaver_config, tutorial_config) here -->
+  globals.pagetitle_func = function (nm) { return ((nm) ? "OneZoom Museum Display: " + nm : "OneZoom Tree of Life Museum Display") + " (touchscreen)" };
+  globals.screensaver_config = {{include 'treeviewer/screensaver_MD.js'}};
+  globals.tutorial_config = {{include 'treeviewer/tutorial_MDtouch.js'}};
+
+  /* disable right click */
+  // document.oncontextmenu = function () { return false; };
 </script>
