@@ -29,7 +29,7 @@ response.files.append(URL('static','OZsponsor/background.css'))
                 <p> {{=XML(T('To sponsor %s later, make a note of your creature code') % (the_long_name or T("a leaf"),))}}</p>
                 
                 <h4>
-                    {{=T('Your creature code is')}} {{=ott}}
+                    {{=T('Your creature code is')}} <strong>{{=ott}}</strong>
                 </h4>
                 
                 <p>{{=T('There can only be one sponsor per leaf so get your favourite species before someone else does.')}}</p>
