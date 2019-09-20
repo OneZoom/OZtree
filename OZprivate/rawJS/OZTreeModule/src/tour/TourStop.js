@@ -15,6 +15,7 @@ class TourStop {
     this.goto_next_timer = null
     this.state = TOURSTOP_INIT
     this.direction = 'forward'
+    this.container_appended = false
 
     //Container is set when tour.setup_setting is called
     this.container = null

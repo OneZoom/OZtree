@@ -177,6 +177,11 @@ class Tour {
     this.end_callback = end_callback
     this.exit_callback = exit_callback
     this.interaction = interaction
+    /**
+     * If true, it will remove tour stop template from tour wrap when the tour is not active
+     */
+    this.dump_template_when_inactive = tour_setting.hasOwnProperty('dump_template_when_inactive') ? 
+      tour_setting.dump_template_when_inactive : false
 
     tour_setting.general = tour_setting.general || {}
     tour_setting.general.dom_names = tour_setting.general.dom_names || {}
@@ -238,6 +243,7 @@ class Tour {
   start() {
     if (!this.setting) {return}
     this.exit(false)
+    this.append_template_to_tourstop()
     //Enable tour style
     console.log("Enabling tour " + this.name + "styles")
     $('#tour_style_' + this.tour_id).removeAttr('disabled')
@@ -292,6 +298,9 @@ class Tour {
    */
   exit(invoke_callback = true) {
     console.log("exiting tour")
+    if (this.dump_template_when_inactive) {
+      this.dump_template()
+    }
     if (!this.setting) {return}
     this.hide_other_stops()
     if (this.curr_stop()) {
@@ -422,6 +431,29 @@ class Tour {
   }
 
   /**
+   * Dump tour stop html templates from dom tree, 
+   */
+  dump_template() {
+    this.tourstop_array.forEach(tourstop => {
+      tourstop.container.remove()
+      tourstop.container_appended = false
+    })
+  }
+
+  /**
+   * Opposite action to dump_template. This function would append tour stop templates into tour_wrapper
+   */
+  append_template_to_tourstop() {
+    this.tourstop_array.forEach(tourstop => {
+      if (!tourstop.container_appended) {
+        $('#' + this.wrapper_id).append(tourstop.container)
+        this.bind_template_ui_event(tourstop)
+        tourstop.container_appended = true
+      }
+    })
+  }
+
+  /**
    * Create a div for this tour in the $(#wrapper_id) div, then fill it with
    * templates
    * Then set tourstop.container = $(temp_div)
@@ -451,10 +483,15 @@ class Tour {
       const temp_div = document.createElement('div')
       temp_div.classList.add("tourstop", this.name)
       $(temp_div).load(template_url + " .container", () => {
-        $('#' +this.wrapper_id).append($(temp_div))
         $(temp_div).hide()
         tourstop.container = $(temp_div) /* this is the way to access this specific stop */
-        this.bind_template_ui_event(tourstop)
+
+        if (!this.dump_template_when_inactive) {
+          $('#' + this.wrapper_id).append($(temp_div))
+          tourstop.container_appended = true
+          this.bind_template_ui_event(tourstop)
+        }
+        
         this.prefetch_image(tourstop)
       })
 
