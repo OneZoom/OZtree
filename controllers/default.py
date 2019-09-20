@@ -1346,6 +1346,14 @@ def life():
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return treeview_info()
 
+def life_MD():
+    """
+    Temporarily redirect for darwin & dinos exhibit
+    """
+    redirect(URL(
+        'default', 'life_MDtouch/@Vertebrata=801601?ssaver=600&otthome=801601',
+        url_encode=False))
+
 def life_MDtouch():
     """
     The museum display version for touchscreens, which is sandboxed
