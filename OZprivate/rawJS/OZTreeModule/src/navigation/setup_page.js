@@ -5,6 +5,7 @@ import get_controller from '../controller/controller';
 import tree_state from '../tree_state';
 import { global_button_action, click_on_button_cb } from '../button_manager';
 import config from '../global_config';
+import tree_settings from '../tree_settings';
 
 /**
  * This function is fired when user navigates the history.
@@ -82,6 +83,7 @@ function setup_page_by_state(state) {
   if (state.search_jump_mode) controller.set_search_jump_mode(state.search_jump_mode)
   if (state.title) document.title = unescape(state.title);
   if (state.home_ott_id) config.home_ott_id = state.home_ott_id
+  if (state.screen_saver_inactive_duration) tree_settings.ssaver_inactive_duration_seconds = state.screen_saver_inactive_duration * 1000
 
   controller.close_all();
 

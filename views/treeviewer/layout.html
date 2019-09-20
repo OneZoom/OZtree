@@ -230,17 +230,6 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
       $('#external-modal .external-content').show();
     };
 
-    /* Helper function to parse search parameters in URL 
-     * This should be removed after fixing https://github.com/OneZoom/OZtree/issues/202 */
-    function getParameterByName(name) {
-        var url = window.location.href;
-        name = name.replace(/[\[\]]/g, '\\$&');
-        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-            results = regex.exec(url);
-        if (!results) return null;
-        if (!results[2]) return '';
-        return decodeURIComponent(results[2].replace(/\+/g, ' '));
-    }
   </script>
 {{include}}
 <script>
@@ -999,8 +988,6 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
      **/
     {{if is_testing:}}console.log("Starting OneZoom viewer");{{pass}}
     
-    var screensaver_timer = parseInt(getParameterByName('ssaver'))
-
     setup_onezoom()
 
     function setup_onezoom() {  
@@ -1023,7 +1010,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             onezoom.screensaver.setup_setting(
                 window.globals['screensaver_config'], 'screensaver',
                 UI_callbacks.closeAll, // before the screensaver runs, close modals etc.
-                null, true, screensaver_timer);
+                null, true);
         })
     
         {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape = False)}}

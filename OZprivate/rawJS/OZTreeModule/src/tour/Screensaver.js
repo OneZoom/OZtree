@@ -1,5 +1,6 @@
 import Tour from './Tour'
 import tree_state from '../tree_state';
+import tree_settings from '../tree_settings';
 
 class Screensaver extends Tour {
   /* A screesaver is identical to a Tour except that we force interaction = "exit"
@@ -10,11 +11,14 @@ class Screensaver extends Tour {
    
    * The "inactive_duration" param should be removed, see https://github.com/OneZoom/OZtree/issues/202
    */
-  setup_setting(tour_setting, name, start_callback, exit_callback, loop_back_forth, inactive_duration_seconds) {
+
+  get inactive_duration() {
+    return tree_settings.ssaver_inactive_duration_seconds
+  }
+
+  setup_setting(tour_setting, name, start_callback, exit_callback, loop_back_forth) {
     this.auto_activate_timer = null
     this.loop_back_forth = loop_back_forth
-    this.inactive_duration = inactive_duration_seconds * 1000 //REMOVE
-    console.log("inactive_duration set to " + this.inactive_duration)
     super.setup_setting(tour_setting, name, start_callback, null, exit_callback, "exit")
     this.set_auto_start()
   }
