@@ -120,9 +120,10 @@ class TourStop {
      */
     let promise = Promise.resolve()
     if (this.setting.transition_in == 'leap' || this.direction == 'backward') {
-        promise
-            .then(this.controller.leap_to(this.OZid, this.setting.pos))
-            .catch(() => {})
+      promise = this.controller.leap_to(this.OZid, this.setting.pos)
+        // promise
+        //     .then(this.controller.leap_to(this.OZid, this.setting.pos))
+        //     .catch(() => {})
     } else {
         // Flight
         let into_node = this.setting.pos === 'max'
@@ -138,15 +139,17 @@ class TourStop {
         }
         if (this.setting.transition_in === 'fly_straight') {
             // This is unusual.
-            promise
-              .then(this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear'))
-              .catch(() => {})
+          promise = this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
+            // promise
+            //   .then(this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear'))
+            //   .catch(() => {})
         } else {
             // This is the norm
             console.log("Flying on tree to: " + this.OZid + " (" + this.setting.ott + ")")
-            promise
-              .then(this.controller.fly_on_tree_to(null, this.OZid, into_node, speed))
-              .catch(() => {})
+          promise = this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
+            // promise
+            //   .then(this.controller.fly_on_tree_to(null, this.OZid, into_node, speed))
+            //   .catch(() => {})
         }
     }
     promise
