@@ -62,7 +62,12 @@ input[type=checkbox], input[type=radio] {
 // ===== General === //
 
 h1,h2,header {text-align: center}
-h3,h4,h5 {text-align: left}
+h3,h4,h5 {
+    text-align: left
+    strong {
+        color: black;
+    }
+}
 
 dt {margin-left: 1em}
 dd {margin-left: 2em}
