@@ -241,7 +241,13 @@ class Tour {
    * Start tour
    */
   start() {
-    if (!this.setting) {return}
+    if (!this.setting) {
+        if (this.name) {
+            alert("The tour " + this.name + " is disabled, as its settings are empty")
+        } else {
+            alert("You have tried to start a tour that has not yet been set up")
+        }
+    }
     this.exit(false)
     this.append_template_to_tourstop()
     //Enable tour style
