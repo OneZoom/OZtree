@@ -120,10 +120,7 @@ class TourStop {
     if (this.setting.transition_in == 'leap' || this.direction == 'backward') {
         // Leap. For the moment, wrap in a promise (until 
         // https://github.com/OneZoom/OZtree/issues/203 is fixed)
-        promise = new Promise(resolve => {
-            this.controller.leap_to(this.OZid, this.setting.pos)
-            resolve()
-        })
+        promise = this.controller.leap_to(this.OZid, this.setting.pos)
     } else {
         // Flight
         this.set_block_user_interaction_before_fly()

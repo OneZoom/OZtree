@@ -123,18 +123,21 @@ export default function (Controller) {
    *    {'xp': xp, 'yp': yp, 'ws': ws} where xp, yp, ws are numeric
    */   
   Controller.prototype.leap_to = function(dest_OZid, position=null) {
-    tree_state.flying = false;
-    if (position && (typeof(position) === 'object')) {
-      tree_state.xp = position.xp || position[0] || 0
-      tree_state.yp = position.yp || position[1] || 0
-      tree_state.ws = position.ws || position[2] || 1
-      this.develop_and_reanchor_to(dest_OZid);
-      this.re_calc();
-      this.trigger_refresh_loop();
-    } else {
-      this.develop_branch_to(dest_OZid);
-      position_helper.perform_actual_leap(this);
-    }
+    return new Promise((resolve) => {
+      tree_state.flying = false;
+      if (position && (typeof(position) === 'object')) {
+        tree_state.xp = position.xp || position[0] || 0
+        tree_state.yp = position.yp || position[1] || 0
+        tree_state.ws = position.ws || position[2] || 1
+        this.develop_and_reanchor_to(dest_OZid);
+        this.re_calc();
+        this.trigger_refresh_loop();
+      } else {
+        this.develop_branch_to(dest_OZid);
+        position_helper.perform_actual_leap(this);
+      }
+      resolve()
+    })
   }
   
   /**
@@ -247,10 +250,7 @@ export default function (Controller) {
         } else {
             // Move to start location
             p = p.then(function () {
-                return new Promise(function (resolve) {
-                    this.leap_to(src_OZid);
-                    resolve();
-                }.bind(this));
+              return this.leap_to(src_OZid)
             }.bind(this));
         }
 
@@ -331,8 +331,7 @@ export default function (Controller) {
 
     this.reset();
     if (!isNaN(init.xp)) {
-      this.leap_to(dest_OZid, init);
-      return Promise.resolve();
+      return this.leap_to(dest_OZid, init);
     }
 
     if (init == "zoom") {
@@ -341,12 +340,14 @@ export default function (Controller) {
 
     if (init == "pzoom") {
       // Leap to node
-      this.leap_to(dest_OZid);
-      // Zoom out marginally
-      // TODO: This will refuse to go back further than a given point, but that's much futher back than before
-      this.zoomout(tree_state.widthres/2, tree_state.heightres/2, 0.1, true);
-      // Fly back in again
-      return this.fly_on_tree_to(null, dest_OZid);
+      return this.leap_to(dest_OZid)
+        .then(() => {
+          // Zoom out marginally
+          // TODO: This will refuse to go back further than a given point, but that's much futher back than before
+          this.zoomout(tree_state.widthres / 2, tree_state.heightres / 2, 0.1, true);
+          // Fly back in again
+          return this.fly_on_tree_to(null, dest_OZid);
+        })
     }
 
     // init == "leap"
@@ -355,7 +356,7 @@ export default function (Controller) {
     n = this.develop_branch_to(dest_OZid);
     position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
     return get_details_of_nodes_in_view_during_fly(this.root).then(function () {
-        this.leap_to(dest_OZid, init);
+        return this.leap_to(dest_OZid, init);
     }.bind(this));
   };
   
