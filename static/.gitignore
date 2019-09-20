@@ -5,5 +5,6 @@ css/*
 !css/boostrap*
 !css/calendar*
 css/*.gz
+OZSponsor/*.gz
 #any user-created html files (e.g. minlife.html) can be ignored
 *.html
