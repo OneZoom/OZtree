@@ -43,9 +43,9 @@
         "fly_in_speed":2, // Relative to the global animation_speed
         // Can be "show_self" "force_hide", otherwise (by default) previous stop is left unchanged during flight transition
         "fly_in_visibility": null,
-        "ott": "93302", //Biota
+        "ott": 93302, //Biota
         "update_class": {
-          "title": "{{=T('What is the tree of life?')}}{{if is_testing:}} - ALL LIFE{{pass}}",
+          "title": "{{=T('What is the tree of life?')}}",
           "window_text": "{{=T('The tree of life shows how all life on earth is related.  Each leaf represents a different species. The branches show how these many species evolved from common ancestors over billions of years.')}}",
           "tour_prev": {
             "style": {"visibility": "hidden"} // Prev button invisible for first stop
@@ -57,19 +57,19 @@
         "wait_after_prev": null,
       },
       {
-        "ott": "770315", // humans
-        "fly_in_visibility": "force_show",
+        "ott": 770315, // humans
+        "fly_in_visibility": null,
         "update_class": {
-            "title": "{{=T('Exploring the tree')}}{{if is_testing:}} - HUMANS{{pass}}",
+            "title": "{{=T('Exploring the tree')}}",
             "window_text": {
-                "style":{"min-height":0},
+                "style":{"min-height":"10px"},
                 "text":"{{=T('You can explore this complete tree of life by zooming in and out like you would use an online map.')}}"},
             
         },
       "wait": 2500,
       },
       {
-        "ott": "351685",
+        "ott": 351685,
         "transition_in": "fly_straight",
         "fly_in_visibility": "show_self",
         "fly_in_speed": 0.3,
@@ -81,7 +81,7 @@
         "wait": 1000,
       },
       {
-        "ott": "913935",
+        "ott": 913935,
         "fly_in_speed": 0.4,
         "fly_in_visibility": "show_self",
         "update_class": {
@@ -116,7 +116,7 @@
             "wait": 20000
        },
        {
-            "ott": "237343",
+            "ott": "237343", // An unfamiliar location in the fishes
             "fly_in_visibility": "force_hide",
             "fly_in_speed": 0.2,
             "transition_in": "fly_straight",
@@ -134,31 +134,40 @@
             "wait": 40000
         },
         {
-            "ott": "229560",
-            "fly_in_visibility": "show_self",
+            "ott": 229560,
+            "fly_in_visibility": "force_hide",
             "pos":"max",
             "update_class": {
                 // put this near the common ancestor button
-                "tour_container": {"style": {"top": "10px", "left": "auto", "right":"530px"}},
+                "tour_container": {
+                    "style": {
+                        "bottom": "50%", "top": "auto", "left": "auto", "right": "70%"}},
                 "title": "{{=T('Detailed information on all life')}}",
                 "window_text": "{{=T('Click on the text on any named leaf or branch to get further information about that species or group of species. We use specially treated wikipedia pages to provide information on well over a million species, and tens of thousands of groups')}}",
+                "outsidebox": {
+                    "style": {"bottom": "60%", "left": "29%", "top": "20%", "right": "55%", "display": "block"},
+                    "html":"<svg xmlns='http://www.w3.org/2000/svg' width='372.571' height='154.772' viewBox='0 0 98.576 40.95'><defs><marker orient='auto' id='a' overflow='visible'><path d='M-10.69-4.437L1.328-.017-10.69 4.401c1.92-2.61 1.909-6.18 0-8.84z' fill='#da0000' fill-rule='evenodd' stroke='#da0000' stroke-width='.6875' stroke-linejoin='round'/></marker></defs><path d='M101.902 135.474c39.45-3.327 33.11-32.645 96.482-34.979' fill='none' stroke='#da0000' stroke-width='1.223' marker-end='url(#a)' transform='translate(-101.85 -95.133)'/></svg>"
+                },
             },
-            "wait": 8000,
-            // Special for the tutorial only: open up a window
+            "wait": 15000,
             "exec": function(tourstop) {
-                tourstop.tour.onezoom.config.ui.openLinkouts();
-                tourstop.tour.onezoom.config.ui.populateLinkouts(
-                    {"data":{
-                        "wiki": ["/tree/wikipedia_OZpage?Q=181537&embed=3&leaf=0&name=Amniota&wlang=en"]},
-                     "name": "Amniota",
-                     "ott": 229560,})
-               setTimeout(() => {window.onezoom.config.ui.closeAll()}, 7000)
+                // Special for the tutorial only: open up a window after a short pause, then close again
+                setTimeout(() => {
+                    $("#tour_wrapper .outsidebox").hide()
+                    tourstop.tour.onezoom.config.ui.openLinkouts();
+                    tourstop.tour.onezoom.config.ui.populateLinkouts(
+                        {"data":{
+                            "wiki": ["/tree/wikipedia_OZpage?Q=181537&embed=3&leaf=0&name=Amniota&wlang=en"]},
+                         "name": "Amniota",
+                         "ott": 229560,})
+                }, 6000)
+               setTimeout(() => {window.onezoom.config.ui.closeAll()}, 14000)
             }
         },
         {
             "ott": 691846,
             "update_class": {
-                // have a hidden stop that allows us to fire off a mark some areas
+                // have a hidden stop that allows us to fire off a marking function for some areas
                 "tour_container": {"style": {"display":"None"}},
             },
             "wait": 200,

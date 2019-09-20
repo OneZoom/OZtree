@@ -17,10 +17,10 @@
         "template": "static/tour/tour_template.html",
         "template_style": "static/tour/tour_template.css",
         "update_class": {
-            "title": "OneZoom Demo Tour",
             // Don't show any boxes
             "container": {"style": {"display": "None"}}
-        }
+        },
+        "fly_in_speed":0.1,
     },
     "tourstops": [
         {
