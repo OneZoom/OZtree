@@ -290,7 +290,10 @@ def sponsor_leaf():
                     if (startTime == None):
                         status = "available"
                         # reserve the leaf because there is no reservetime on record
-                        reservation_query.update(reserve_time=request.now, user_registration_id=form_reservation_code)
+                        if allow_sponsorship:
+                            reservation_query.update(
+                                reserve_time=request.now,
+                                user_registration_id=form_reservation_code)
                     else:
                         # we need to compare times to figure out if there is a time difference
                         timesince = ((endTime-startTime).total_seconds())
@@ -300,14 +303,18 @@ def sponsor_leaf():
                             if(form_reservation_code == reservation_entry.user_registration_id):
                                 # it was the same user anyway so reset timer
                                 status = "available only to user"
-                                reservation_query.update(reserve_time=request.now)
+                                if allow_sponsorship:
+                                    reservation_query.update(reserve_time=request.now)
                             else:
                                 status = "reserved"
                         else:
                             # it's available still
                             status = "available"
                             # reserve the leaf because there is no reservetime on record
-                            reservation_query.update(reserve_time = request.now, user_registration_id = form_reservation_code)
+                            if allow_sponsorship:
+                                reservation_query.update(
+                                    reserve_time = request.now,
+                                    user_registration_id = form_reservation_code)
         #re-do the query since we might have added the row ID now
         reservation_entry = reservation_query.select().first()
         if reservation_entry is None:
