@@ -72,7 +72,6 @@
         "ott": 351685,
         "transition_in": "fly_straight",
         "fly_in_visibility": "show_self",
-        "transition_in_wait": 500, //Amount of time to wait before starting transition_in (after showing/hiding)
         "fly_in_speed": 0.3,
         "update_class": {
             "title": "{{=T('Panning')}}",

@@ -120,31 +120,21 @@ class TourStop {
      */
     let promise = Promise.resolve()
     if (this.setting.transition_in == 'leap' || this.direction == 'backward') {
-      this.tour.hide_other_stops(this.container)
-      if (this.setting.transition_in_wait) {
-          // Add in a slight wait time before the transition
-          promise.then(() => new Promise(
-              resolve => setTimeout(resolve, this.setting.transition_in_wait)))
-      }
       promise
         .then(() => this.controller.leap_to(this.OZid, this.setting.pos))
         .catch(() => {})
     } else {
-        // Hide/show then flight to new node
+        // Flight
         let into_node = this.setting.pos === 'max'
         let speed = this.setting.fly_in_speed || 1
         this.state = TOURSTOP_IS_FLYING
         if (this.setting.fly_in_visibility === "force_hide") {
+            console.log("force hiding previous stop")
             this.block_user_interaction_when_normally_allowed()
             this.tour.hide_other_stops()
         } else if (this.setting.fly_in_visibility === "show_self") {
+            console.log("force hiding other stops 1")
             this.tour.hide_other_stops(this.container)
-        }
-        //
-        if (this.setting.transition_in_wait) {
-            // Add in a slight wait time before the transition
-            promise.then(() => new Promise(
-                resolve => setTimeout(resolve, this.setting.transition_in_wait)))
         }
         if (this.setting.transition_in === 'fly_straight') {
           // This is unusual.
