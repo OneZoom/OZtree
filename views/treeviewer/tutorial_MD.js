@@ -53,8 +53,6 @@
         },
         //default to null means "wait for next button to go to next stop"
         "wait": 3000,
-        //used if this stop is entered by pressing previous stop
-        "wait_after_prev": null,
       },
       {
         "ott": 770315, // humans
