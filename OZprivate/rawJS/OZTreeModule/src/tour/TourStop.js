@@ -70,6 +70,10 @@ class TourStop {
   }
 
   complete_tourstop() {
+    if (this.state === TOURSTOP_EXIT) {
+      return
+    }
+
     if (typeof this.setting.exec === "object") {
         if (typeof(this.setting.exec.on_stop) === "function") {
         /* This can only happen when the settings are passed as a javascript object,
@@ -97,11 +101,12 @@ class TourStop {
    * Called when user presses next during a transition 
    */
   skip_transition() {
+    tree_state.flying = false
     // leap (this should cancel any exiting flight)
     this.controller.leap_to(this.OZid, this.setting.pos)
     console.log("force hiding other stops during skip")
     this.tour.hide_other_stops(this.container)
-    this.complete_tourstop()
+    // this.complete_tourstop()
   }
 
   /**
@@ -183,12 +188,22 @@ class TourStop {
         if (this.setting.transition_in === 'fly_straight') {
           /* Fly-straight: this is an unusual thing to want to do */
           promise = promise
-            .then(() => this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear'))
+            .then(() => {
+              if (this.state === TOURSTOP_EXIT) {
+                return true
+              }
+              return this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
+            })
             .catch(() => {})
         } else {
           /* Fly normally */
           promise = promise
-            .then(() => this.controller.fly_on_tree_to(null, this.OZid, into_node, speed))
+            .then(() => {
+              if (this.state === TOURSTOP_EXIT) {
+                return true
+              }
+              return this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
+            })
             .catch(() => {})
         }
     }

@@ -183,6 +183,7 @@ class Tour {
    *    - null: interaction has no effect on the tour (default)
    */
   setup_setting(tour_setting, name, start_callback, end_callback, exit_callback, interaction) {
+    console.log(tour_setting)
     this.setting = tour_setting
     this.name = name || "tour_" + tour_id
     if (!this.setting) {return}
@@ -356,24 +357,30 @@ class Tour {
     if (!this.started) {
       return
     }
-    if (this.curr_stop() && this.curr_stop().state === 'TOURSTOP_IS_FLYING') {
+    
+  
+    //leap to the target position of current tour stop directly
+    //curr_stop equals array[Math.abs(curr_step)]. Therefore, it needs to test whether curr_step is non-negative
+    if (this.curr_step >= 0 && this.curr_stop()) {
       this.curr_stop().skip_transition()
       //console.log("goto_next: transition_skipped")
-    } else {
-        
-      if (this.curr_step === this.tourstop_array.length - 1) {
-        // end of tour, exit gracefully
-        if (typeof this.end_callback === 'function') {
-            this.end_callback()
-        }
-        this.exit(false)
-        return
-      }
-      this.curr_stop().exit()
-      this.curr_step++
-      this.curr_stop().play('forward')
-      this.set_ui_content()
     }
+    
+    if (this.curr_step === this.tourstop_array.length - 1) {
+      // end of tour, exit gracefully
+      if (typeof this.end_callback === 'function') {
+          this.end_callback()
+      }
+      this.exit(false)
+      return
+    }
+
+    if (this.curr_step >= 0 && this.curr_stop()) {
+      this.curr_stop().exit()
+    }
+    this.curr_step++
+    this.curr_stop().play('forward')
+    this.set_ui_content()
   }
 
   /**
