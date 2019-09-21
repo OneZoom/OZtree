@@ -72,7 +72,8 @@ class Tour {
                         */
                     },
                 },
-                "wait": 6000 /* Wait a bit longer here: 6 seconds */
+                "wait": 6000, /* Wait a bit longer here: 6 seconds */
+                "wait_after_prev": 0  /* used if this stop is entered by going back */
             },
             {
                 "ott": "991547",
