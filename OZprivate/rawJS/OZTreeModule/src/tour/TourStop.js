@@ -123,10 +123,10 @@ class TourStop {
       this.tour.hide_other_stops(this.container)
       if (this.setting.transition_in_wait) {
           // Add in a slight wait time before the transition
-          promise = promise.then(() => new Promise(
+          promise.then(() => new Promise(
               resolve => setTimeout(resolve, this.setting.transition_in_wait)))
       }
-      promise = promise
+      promise
         .then(() => this.controller.leap_to(this.OZid, this.setting.pos))
         .catch(() => {})
     } else {
@@ -143,18 +143,18 @@ class TourStop {
         //
         if (this.setting.transition_in_wait) {
             // Add in a slight wait time before the transition
-            promise = promise.then(() => new Promise(
+            promise.then(() => new Promise(
                 resolve => setTimeout(resolve, this.setting.transition_in_wait)))
         }
         if (this.setting.transition_in === 'fly_straight') {
           // This is unusual.
-          promise = promise
+          promise
             .then(() => this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear'))
             .catch(() => {})
         } else {
             // This is the norm
             console.log("Flying on tree to: " + this.OZid + " (" + this.setting.ott + ")")
-          promise = promise
+          promise
             .then(() => this.controller.fly_on_tree_to(null, this.OZid, into_node, speed))
             .catch(() => {})
         }
