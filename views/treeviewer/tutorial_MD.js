@@ -192,7 +192,11 @@
                 // put this near the common ancestor button
                 "tour_container": {"style": {"top": "10px", "left": "auto", "right":"530px"}},
                 "title": "{{=T('Find common ancestors')}}",
-                "window_text": "<div style='float:right;margin:0 20px;padding:8px;border:2px solid grey;border-radius:50%'><svg width='40' height='40' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'><circle fill='none' stroke='#000' stroke-width='1.2' cx='5.79' cy='2.79' r='1.79'></circle><circle fill='none' stroke='#000' stroke-width='1.2' cx='14.19' cy='2.79' r='1.79'></circle><ellipse fill='none' stroke='#000' stroke-width='1.2' cx='10.03' cy='16.79' rx='1.79' ry='1.79'></ellipse><path fill='none' stroke='#000' stroke-width='2' d='M5.79,4.57 L5.79,6.56 C5.79,9.19 10.03,10.22 10.03,13.31 C10.03,14.86 10.04,14.55 10.04,14.55 C10.04,14.37 10.04,14.86 10.04,13.31 C10.04,10.22 14.2,9.19 14.2,6.56 L14.2,4.57'></path></svg></div><p>{{=T('Next to the search button you can select the advanced search button. This will enable you to mark multiple places on the tree and find the most recent common ancestor of any set of species, such as animals and plants.')}}",
+                "window_text": "<div style='float:right;margin:0 20px;padding:8px;border:2px solid grey;border-radius:50%'><svg width='40' height='40' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'><circle fill='none' stroke='#000' stroke-width='1.2' cx='5.79' cy='2.79' r='1.79'></circle><circle fill='none' stroke='#000' stroke-width='1.2' cx='14.19' cy='2.79' r='1.79'></circle><ellipse fill='none' stroke='#000' stroke-width='1.2' cx='10.03' cy='16.79' rx='1.79' ry='1.79'></ellipse><path fill='none' stroke='#000' stroke-width='2' d='M5.79,4.57 L5.79,6.56 C5.79,9.19 10.03,10.22 10.03,13.31 C10.03,14.86 10.04,14.55 10.04,14.55 C10.04,14.37 10.04,14.86 10.04,13.31 C10.04,10.22 14.2,9.19 14.2,6.56 L14.2,4.57'></path></svg></div><p>{{=T('Next to the search button you can select the advanced search button. This will enable you to mark multiple places on the tree using different coloured lines. It also enables you to find the most recent common ancestor of any set of species, such as animals and plants.')}}",
+                "outsidebox": {
+                    "style":{"top": "40px", "height": "80px", "right": "500px", "width": "60px", "display": "block"},
+                    "html":"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44.766 33.871' height='128.016' width='169.194'><defs><marker id='a' orient='auto' overflow='visible'><path d='M-10.69-4.437L1.328-.017-10.69 4.401c1.92-2.61 1.909-6.18 0-8.84z' fill='#da0000' fill-rule='evenodd' stroke='#da0000' stroke-width='.6875' stroke-linejoin='round'/></marker></defs><path d='M155.575 132.45c26.598-.303 7.408-19.793 42.81-31.955' fill='none' stroke='#da0000' stroke-width='1.223' marker-end='url(#a)' transform='translate(-155.568 -99.19)'/></svg>"
+                }
             },
             "wait": 2000,
             "exec": {
@@ -212,8 +216,8 @@
                 "tour_container": {"style": {"top": "10px", "left": "auto", "right":"530px"}},
                 "title": {"style": {"display":"None"}},
                 "window_text": {
-                    "style":{"text-align":"center", "padding":"1em"},
-                    "html":"<p>We’re returning you to the rough location where you were before starting this tutorial.</p><h1>{{=T('Have fun exploring!')}}</h1>"},
+                    "style":{"text-align":"center", "padding":"0.5em"},
+                    "html":"<p>That’s the end of the tutorial. We’re returning you to the rough location where you were before starting.</p><h1>{{=T('Have fun exploring!')}}</h1>"},
                 "tour_next": {
                     "style": {"visibility": "hidden"} // Prev button invisible for last stop
                     },
