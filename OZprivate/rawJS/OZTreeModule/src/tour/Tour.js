@@ -95,7 +95,15 @@ class Tour {
                 "fly_in_speed": 2, /* speed relative to the global_anim_speed, as
                 * accessed via controller.set_anim_speed() & controller.get_anim_speed()
                 */
-                
+                "fly_in_visibility": "show_self", /* Should we show the tourstop on
+                arrival (default), during transition-in ("show_self"), or force no
+                tourstops to be shown during transition in ("force_hide"). If the default
+                then the previous stop is likely to carry on being shown during
+                transition, unless it has chosen to hide itself
+                */ 
+                "transition_in_wait": 1000, /* how long to wait (e.g. after showing self)
+                before entering into the transition, in milliseconds.
+                */
                 "update_class": {
                     "container": {"style": {"visibility": "hidden"}} /* hide everything
                     */
@@ -308,10 +316,10 @@ class Tour {
       this.dump_template()
     }
     if (!this.setting) {return}
-    this.hide_other_stops()
     if (this.curr_stop()) {
       this.curr_stop().exit()
     }
+    this.hide_other_stops()
 
     //disable tour stylesheet
     $('#tour_style_' + this.tour_id).attr('disabled', 'disabled')

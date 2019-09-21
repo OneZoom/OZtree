@@ -6,6 +6,14 @@ const TOURSTOP_END = 'TOURSTOP_END'  //at the end of tour stop, wait for X secon
 const TOURSTOP_IS_FLYING = 'TOURSTOP_IS_FLYING'
 const TOURSTOP_EXIT = 'TOURSTOP_EXIT'
 
+const delay = (delayTime) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve()
+    }, delayTime)
+  })
+}
+
 class TourStop {
   constructor(tour, setting) {
     this.tour = tour
@@ -114,36 +122,41 @@ class TourStop {
   play(direction) {
     this.direction = direction
     this.state = TOURSTOP_INIT
+    const transition_in_wait = this.setting.transition_in_wait
     console.log("playing tourstop: " + this.setting.update_class.title + " - " + direction)
     /**
      * Perform flight or leap
      */
     let promise = Promise.resolve()
     if (this.setting.transition_in == 'leap' || this.direction == 'backward') {
+      /* Leap */
+      if (typeof transition_in_wait === 'number') {
+        promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
+      }
       promise = promise
         .then(() => this.controller.leap_to(this.OZid, this.setting.pos))
         .catch(() => {})
     } else {
-        // Flight
+        /* Flight */
         let into_node = this.setting.pos === 'max'
         let speed = this.setting.fly_in_speed || 1
         this.state = TOURSTOP_IS_FLYING
         if (this.setting.fly_in_visibility === "force_hide") {
-            console.log("force hiding previous stop")
             this.block_user_interaction_when_normally_allowed()
             this.tour.hide_other_stops()
         } else if (this.setting.fly_in_visibility === "show_self") {
-            console.log("force hiding other stops 1")
             this.tour.hide_other_stops(this.container)
         }
+        if (typeof transition_in_wait === 'number') {
+          promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
+        }
         if (this.setting.transition_in === 'fly_straight') {
-            // This is unusual.
+          /* Fly-straight: this is an unusual thing to want to do */
           promise = promise
             .then(() => this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear'))
             .catch(() => {})
         } else {
-            // This is the norm
-            console.log("Flying on tree to: " + this.OZid + " (" + this.setting.ott + ")")
+          /* Fly normally */
           promise = promise
             .then(() => this.controller.fly_on_tree_to(null, this.OZid, into_node, speed))
             .catch(() => {})
