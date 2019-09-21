@@ -136,6 +136,13 @@ class Tour {
                     "tour_next": {
                         "style": {"visibility": "hidden"}
                     },
+                "exec": null /* Only for javascript objects: define properties "on_stop",
+                * "on_transition", or "on_exit" as functions to execute those functions
+                * as the first event when arriving at a stop or when starting the
+                * transition into a stop. The function is passed the tourstop object as
+                * the first parameter so that you can access the text, the tour and its
+                * controller.
+                */
                 },
             },
         ]
@@ -352,6 +359,7 @@ class Tour {
       this.curr_stop().skip_transition()
       //console.log("goto_next: transition_skipped")
     } else {
+        
       if (this.curr_step === this.tourstop_array.length - 1) {
         // end of tour, exit gracefully
         if (typeof this.end_callback === 'function') {

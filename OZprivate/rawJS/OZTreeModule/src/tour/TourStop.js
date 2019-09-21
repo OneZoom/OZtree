@@ -52,20 +52,35 @@ class TourStop {
   exit() {
     this.pause()
     this.state = TOURSTOP_EXIT
+    if (typeof this.setting.exec === "object") {
+        if (typeof(this.setting.exec.on_exit) === "function") {
+        /* This can only happen when the settings are passed as a javascript object,
+         * not as JSON. This (deliberately) restricts scriptability to hard-coded
+         * functions, not anything stored in the tours database. It allows non-user
+         * tours like the tutorial to interact programmatically with the OneZoom viewer
+         */
+            this.setting.exec.on_exit(this)
+        } else {
+            console.log(
+                "Cannot run whatever is defined in `exec.on_exit`." +
+                " This may be because your settings are in JSON not javascript format")
+        }
+    }
     // Don't need to hide this stop: it might carry on being shown during next transition
   }
 
   complete_tourstop() {
-    if (this.setting.exec) {
-        if (typeof(this.setting.exec) === "function") {
-        // This can only happen when the settings are passed as a javascript object,
-        // not as JSON. This (deliberately) restricts scriptability to hard-coded
-        // functions, not anything stored in the tours database. It allows non-user
-        // tours like the tutorial to interact programmatically with the OneZoom viewer
-            this.setting.exec(this)
+    if (typeof this.setting.exec === "object") {
+        if (typeof(this.setting.exec.on_stop) === "function") {
+        /* This can only happen when the settings are passed as a javascript object,
+         * not as JSON. This (deliberately) restricts scriptability to hard-coded
+         * functions, not anything stored in the tours database. It allows non-user
+         * tours like the tutorial to interact programmatically with the OneZoom viewer
+         */
+            this.setting.exec.on_stop(this)
         } else {
             console.log(
-                "Cannot run whatever is defined in `exec`." +
+                "Cannot run whatever is defined in `exec.on_stop`." +
                 " This may be because your settings are in JSON not javascript format")
         }
     }
@@ -127,6 +142,21 @@ class TourStop {
     /**
      * Perform flight or leap
      */
+    if (typeof this.setting.exec === "object") {
+        if (typeof this.setting.exec.on_transition === "function") {
+        /* This can only happen when the settings are passed as a javascript object,
+         * not as JSON. This (deliberately) restricts scriptability to hard-coded
+         * functions, not anything stored in the tours database. It allows non-user
+         * tours like the tutorial to interact programmatically with the OneZoom viewer
+         */
+            console.log("Executing a function prior to transition")
+            this.setting.exec.on_transition(this)
+        } else {
+            console.log(
+                "Cannot run whatever is defined in `exec.on_transition`." +
+                " This may be because your settings are in JSON not javascript format")
+        }
+    }
     let promise = Promise.resolve()
     if (this.setting.transition_in == 'leap' || this.direction == 'backward') {
       /* Leap */
