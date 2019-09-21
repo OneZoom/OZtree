@@ -165,7 +165,9 @@ class TourStop {
     let promise = Promise.resolve()
     if (this.setting.transition_in == 'leap' || this.direction == 'backward') {
       /* Leap */
-      if (typeof transition_in_wait === 'number') {
+      //If user press previous, it should not wait to leap.
+      //Otherwise user might feel that the app gets stuck
+      if (typeof transition_in_wait === 'number' && this.direction !== 'backward') {
         promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
       }
       promise = promise
@@ -182,9 +184,13 @@ class TourStop {
         } else if (this.setting.fly_in_visibility === "show_self") {
             this.tour.hide_other_stops(this.container)
         }
-        if (typeof transition_in_wait === 'number') {
+
+        //If user press previous, it should not wait to fly.
+        //Otherwise user might feel that the app gets stuck
+        if (typeof transition_in_wait === 'number' && this.direction !== 'backward') {
           promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
         }
+        
         if (this.setting.transition_in === 'fly_straight') {
           /* Fly-straight: this is an unusual thing to want to do */
           promise = promise
