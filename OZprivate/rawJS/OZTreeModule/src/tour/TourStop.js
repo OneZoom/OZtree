@@ -52,20 +52,7 @@ class TourStop {
   exit() {
     this.pause()
     this.state = TOURSTOP_EXIT
-    if (typeof this.setting.exec === "object") {
-        if (typeof(this.setting.exec.on_exit) === "function") {
-        /* This can only happen when the settings are passed as a javascript object,
-         * not as JSON. This (deliberately) restricts scriptability to hard-coded
-         * functions, not anything stored in the tours database. It allows non-user
-         * tours like the tutorial to interact programmatically with the OneZoom viewer
-         */
-            this.setting.exec.on_exit(this)
-        } else {
-            console.log(
-                "Cannot run whatever is defined in `exec.on_exit`." +
-                " This may be because your settings are in JSON not javascript format")
-        }
-    }
+    this.execute("on_exit")
     // Don't need to hide this stop: it might carry on being shown during next transition
   }
 
@@ -73,21 +60,7 @@ class TourStop {
     if (this.state === TOURSTOP_EXIT) {
       return
     }
-
-    if (typeof this.setting.exec === "object") {
-        if (typeof(this.setting.exec.on_stop) === "function") {
-        /* This can only happen when the settings are passed as a javascript object,
-         * not as JSON. This (deliberately) restricts scriptability to hard-coded
-         * functions, not anything stored in the tours database. It allows non-user
-         * tours like the tutorial to interact programmatically with the OneZoom viewer
-         */
-            this.setting.exec.on_stop(this)
-        } else {
-            console.log(
-                "Cannot run whatever is defined in `exec.on_stop`." +
-                " This may be because your settings are in JSON not javascript format")
-        }
-    }
+    this.execute("on_stop")
     // Show the tour stop *after* firing the function, in case we want the function do
     // do anything first (which could including showing the stop)
     console.log("force hiding other stops during complete_tourstop")
@@ -134,6 +107,30 @@ class TourStop {
 
   }
 
+  throw_error_if_already_exited() {
+      if (this.state === TOURSTOP_EXIT) {
+        throw new Error("Tourstop has already exited")
+      }
+  }
+
+  execute(exec_when) {
+    if (typeof this.setting.exec === "object") {
+      if (typeof this.setting.exec[exec_when] === "function") {
+      /* This can only happen when the settings are passed as a javascript object,
+       * not as JSON. This (deliberately) restricts scriptability to hard-coded
+       * functions, not anything stored in the tours database. It allows non-user
+       * tours like the tutorial to interact programmatically with the OneZoom viewer
+       */
+          console.log("Executing a function prior to transition")
+          this.setting.exec[exec_when](this)
+      } else {
+          console.log(
+              "Cannot run whatever is defined in `exec." + exec_when + "`" +
+              " This may be because your settings are in JSON not javascript format")
+      }
+    }
+  }
+
   /**
    * Play current tour stop, including the transition into the stop
    * If wait time is present, then wait for that time, then goto next stop
@@ -147,23 +144,9 @@ class TourStop {
     /**
      * Perform flight or leap
      */
-    if (typeof this.setting.exec === "object") {
-        if (typeof this.setting.exec.on_transition === "function") {
-        /* This can only happen when the settings are passed as a javascript object,
-         * not as JSON. This (deliberately) restricts scriptability to hard-coded
-         * functions, not anything stored in the tours database. It allows non-user
-         * tours like the tutorial to interact programmatically with the OneZoom viewer
-         */
-            console.log("Executing a function prior to transition")
-            this.setting.exec.on_transition(this)
-        } else {
-            console.log(
-                "Cannot run whatever is defined in `exec.on_transition`." +
-                " This may be because your settings are in JSON not javascript format")
-        }
-    }
+    this.execute("on_transition")
     let promise = Promise.resolve()
-    if (this.setting.transition_in == 'leap' || this.direction == 'backward') {
+    if (this.setting.transition_in === 'leap' || this.direction === 'backward') {
       /* Leap */
       //If user press previous, it should not wait to leap.
       //Otherwise user might feel that the app gets stuck
@@ -171,7 +154,10 @@ class TourStop {
         promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
       }
       promise = promise
-        .then(() => this.controller.leap_to(this.OZid, this.setting.pos))
+        .then(() => {
+            this.throw_error_if_already_exited()
+            return this.controller.leap_to(this.OZid, this.setting.pos)
+         })
         .catch(() => {})
     } else {
         /* Flight */
@@ -195,9 +181,7 @@ class TourStop {
           /* Fly-straight: this is an unusual thing to want to do */
           promise = promise
             .then(() => {
-              if (this.state === TOURSTOP_EXIT) {
-                return true
-              }
+              this.throw_error_if_already_exited()
               return this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
             })
             .catch(() => {})
@@ -205,9 +189,7 @@ class TourStop {
           /* Fly normally */
           promise = promise
             .then(() => {
-              if (this.state === TOURSTOP_EXIT) {
-                return true
-              }
+              this.throw_error_if_already_exited()
               return this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
             })
             .catch(() => {})
