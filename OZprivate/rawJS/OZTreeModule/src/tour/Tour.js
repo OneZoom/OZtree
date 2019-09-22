@@ -358,29 +358,23 @@ class Tour {
       return
     }
     
-  
-    //leap to the target position of current tour stop directly
-    //curr_stop equals array[Math.abs(curr_step)]. Therefore, it needs to test whether curr_step is non-negative
-    if (this.curr_step >= 0 && this.curr_stop()) {
+    if (this.curr_stop() && this.curr_stop().state === 'TOURSTOP_IS_FLYING') {  
       this.curr_stop().skip_transition()
-      //console.log("goto_next: transition_skipped")
-    }
-    
-    if (this.curr_step === this.tourstop_array.length - 1) {
-      // end of tour, exit gracefully
-      if (typeof this.end_callback === 'function') {
-          this.end_callback()
+      console.log("goto_next: transition_skipped")
+    } else {
+        
+      if (this.curr_step === this.tourstop_array.length - 1) {
+        // end of tour, exit gracefully
+        if (typeof this.end_callback === 'function') {
+            this.end_callback()
+        }
+        this.exit(false)
+        return
       }
-      this.exit(false)
-      return
-    }
-
-    if (this.curr_step >= 0 && this.curr_stop()) {
-      this.curr_stop().exit()
-    }
     this.curr_step++
     this.curr_stop().play('forward')
     this.set_ui_content()
+  }
   }
 
   /**
