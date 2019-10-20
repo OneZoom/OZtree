@@ -1,4 +1,3 @@
 uid	name	sourceinfo	notes
-mrcaott42ott55949	Myomorpha	ncbi:1963758	hack around bad OpenTree synonomy issue, see https://github.com/OpenTreeOfLife/feedback/issues/340
 4422029	Phortica polychaeta	gbif:1560621,irmng:	override irmng to hack around https://github.com/jrosindell/OneZoomComplete/issues/485
 1886863	Arytrura musculus	gbif:1777695,irmng:	override irmng to hack around https://github.com/jrosindell/OneZoomComplete/issues/485

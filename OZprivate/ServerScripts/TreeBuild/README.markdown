@@ -8,8 +8,8 @@ The instructions below are primarily intended for creating a full tree of all li
 We assume you are running in a bash shell, so that you can define the following settings before you create a tree, and use them in the scripts below as `${OT_VERSION}` and `${OZ_TREE}`
 
 ```
-OT_VERSION=10_4 #or whatever your OpenTree version is
-OT_TAXONOMY_VERSION=3.0draft6 
+OT_VERSION=11_4 #or whatever your OpenTree version is
+OT_TAXONOMY_VERSION=3.1draft2 
 OZ_TREE=AllLife #a tree directory in data/OZTreeBuild
 ```
 
@@ -21,7 +21,7 @@ If you are have installed perl modules to a different location (e.g. as a local 
 # Preliminaries
 
 
-First check that you have the required OpenTree, Wikimedia, and Encyclopedia of Life files, in particular `OZprivate/data/OpenTree/draftversion${OT_VERSION}.tre`, `OZprivate/data/OpenTree/ott/taxonomy.tsv`, `OZprivate/data/OpenTree/Wiki/wd_JSON`, `OZprivate/data/OpenTree/EOL/identifiers.csv` and for popularity calculations, `OZprivate/data/OpenTree/Wiki/wp_SQL` and `OZprivate/data/OpenTree/Wiki/wp_pagecounts`  (see [OZprivate/data/README.markdown](../../data/README.markdown) - in particular, to create the `.tre` file you may need to run 
+First check that you have the required OpenTree, Wikimedia, and Encyclopedia of Life files, in particular `OZprivate/data/OpenTree/draftversion${OT_VERSION}.tre`, `OZprivate/data/OpenTree/ott/taxonomy.tsv`, `OZprivate/data/OpenTree/Wiki/wd_JSON`, `OZprivate/data/OpenTree/EOL/provider_ids.csv` and for popularity calculations, `OZprivate/data/OpenTree/Wiki/wp_SQL` and `OZprivate/data/OpenTree/Wiki/wp_pagecounts`  (see [OZprivate/data/README.markdown](../../data/README.markdown) - in particular, to create the `.tre` file you may need to run 
 ```
 perl -pe 's/\)mrcaott\d+ott\d+/\)/g; s/[ _]+/_/g;' labelled_supertree_simplified_ottnames.tre > draftversion${OT_VERSION}.tre
 ```
@@ -96,7 +96,7 @@ If you already have your own newick tree with open tree ids on it already, and d
 	OZprivate/ServerScripts/TaxonMappingAndPopularity/CSV_base_table_creator.py \
 	OZprivate/data/OZTreeBuild/${OZ_TREE}/${OZ_TREE}_full_tree.phy \
 	OZprivate/data/OpenTree/ott/taxonomy.tsv \
-	OZprivate/data/EOL/identifiers.csv \
+	OZprivate/data/EOL/provider_ids.csv \
 	OZprivate/data/Wiki/wd_JSON/* \
 	OZprivate/data/Wiki/wp_SQL/* \
 	OZprivate/data/Wiki/wp_pagecounts/pagecount*.bz2 \

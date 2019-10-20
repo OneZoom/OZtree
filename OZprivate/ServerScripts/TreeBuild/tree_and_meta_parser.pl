@@ -1,4 +1,4 @@
-#!/usr/bin/perl -ws
+#!/usr/bin/perl -ws -I.
 use strict;
 use JSON;
 use utf8;
