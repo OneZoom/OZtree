@@ -175,16 +175,16 @@ def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mappin
     used=0
     EOL2OTT = {v:k for k,v in source_mapping.items()}
     identifiers_file.seek(0)
-    reader = csv.reader(identifiers_file, escapechar='\\')
+    reader = csv.DictReader(identifiers_file)
     for EOLrow in reader:
         if (reader.line_num % 1000000 == 0):
             info("-> {} rows read, {} used,  mem usage {:.1f} Mb".format(
                 reader.line_num, used, OTT_popularity_mapping.memory_usage_resource()))
-        provider = int(EOLrow[2])
+        provider = int(EOLrow['resource_id'])
         if provider in EOL2OTT:
             src = source_ptrs[EOL2OTT[provider]]
-            providerid = str(EOLrow[1])
-            EOLid = int(EOLrow[3])
+            providerid = str(EOLrow['resource_pk'])
+            EOLid = int(EOLrow['page_id'])
             if providerid in src:
                 used += 1;
                 src[providerid]['EoL'] = EOLid
@@ -643,7 +643,8 @@ def main():
     #from http://eol.org/api/docs/provider_hierarchies
     #these need to be an ordered dict with the first being the preferred id used when getting a corresponding wikidata ID
     #all the ids for these are integers >= 0
-    int_sources = OrderedDict((('ncbi', 1172), ('if', 596), ('worms', 123), ('irmng', 1347), ('gbif', 800)))
+    int_sources = OrderedDict((('ncbi', 676), ('if', 596), ('worms', 459), ('irmng', 1347), ('gbif', 800)))
+    int_sources = OrderedDict((('ncbi', 676), ('worms', 459))) # update when EoL has harvested index fungorum, IRMNG & GBIF
     #the ids for these sources may not be numbers (e.g. Silva has things like D11377/#1
     nonint_sources = OrderedDict()
     sources = int_sources.copy()
