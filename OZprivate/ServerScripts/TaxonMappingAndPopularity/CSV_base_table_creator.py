@@ -277,7 +277,7 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
     """
     used=0
     
-    iucn_num = 622 #see https://github.com/EOL/tramea/issues/162
+    iucn_num = 5 #see https://github.com/EOL/tramea/issues/162
     eol_mapping = {} #to store eol=>iucn
     for OTTid, data in OTT_ptrs.items():
          if 'eol' in data:
@@ -287,20 +287,21 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
                 eol_mapping[data['eol']] = [OTTid]
             
     identifiers_file.seek(0)
-    reader = csv.reader(identifiers_file, escapechar='\\')
+    reader = csv.DictReader(identifiers_file)
     for EOLrow in reader:
         if (reader.line_num % 1000000 == 0):
             info("{} rows read, {} used,  mem usage {:.1f} Mb".format(
                 reader.line_num, used, OTT_popularity_mapping.memory_usage_resource()))
-        if int(EOLrow[2]) == iucn_num and EOLrow[1]: #there are lots of IUCN rows with no IUCN number, so check EOLrow[1]!= "" and != None
+        if int(EOLrow['resource_id']) == iucn_num and EOLrow['resource_pk']: #there are lots of IUCN rows with no IUCN number, so check EOLrow[1]!= "" and != None
             try:
-                for ott in eol_mapping[int(EOLrow[3])]:
-                    OTT_ptrs[ott]['iucn'] = str(EOLrow[1])
+                for ott in eol_mapping[int(EOLrow['page_id'])]:
+                    OTT_ptrs[ott]['iucn'] = str(int(EOLrow['resource_pk']))
                     used += 1
             except LookupError:
                 pass #no equivalent eol id in eol_mapping
             except ValueError:
-                warn(" Cannot convert IUCN ID {} to integer on line {} of {}.".format(EOLrow[1], reader.line_num, identifiers_file.name), file=sys.stderr);
+                warn(" Cannot convert IUCN ID {} to integer on line {} of {}.".format(
+                    EOLrow['resource_pk'], reader.line_num, identifiers_file.name), file=sys.stderr);
 
     if verbosity:
         info(" Matched {} IUCN entries in the EoL identifiers file. Mem usage {:.1f} Mb".format(
@@ -309,7 +310,7 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
     #now go through and double-check against IUCN stored on wikidata
     for OTTid, data in OTT_ptrs.items():
         try:
-            wd_iucn = str(data['wd']['initial_wiki_item']['iucn'])
+            wd_iucn = str(int(data['wd']['initial_wiki_item']['iucn']))
             if 'iucn' in data:
                 if wd_iucn != data['iucn']:
                     data['iucn'] = "|".join([data['iucn'], wd_iucn])
@@ -318,6 +319,9 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
             else:
                 data['iucn'] = wd_iucn
                 used += 1
+        except ValueError:
+            warn(" Cannot convert wikidata IUCN ID {} to integer.".format(
+                data['wd']['initial_wiki_item']['iucn']), file=sys.stderr);
         except:
             pass #we can't find a wd iucn. Oh well...
     if verbosity:
