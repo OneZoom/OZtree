@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="/OZtree/static/js/jquery.min.js" type="text/javascript"></script>
+  <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common.js')}}"></script>
+  <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry.js')}}"></script>
+  <script type="text/javascript">
+    /* we load the data files dynamically because they:
+     *  (a) are large and
+     *  (b) depend on a version number collected via an ajax call 
+     */
+    var version_error = function(data) {
+      document.write('{{=CAT(H1(T("Sorry, there has been a OneZoom version error"), _id="version-error"), P("Please contact mail@onezoom.org quoting the following error:"))}}' + 
+        '<blockquote>' + data + '<blockquote>');
+    };
+    var dynamic_scripts_to_load = [
+        '{{=URL("static", "FinalOutputs/data/completetree_...VERSION....js", scheme=True, host=True)}}',
+        '{{=URL("static", "FinalOutputs/data/cut_position_map_...VERSION....js", scheme=True, host=True)}}',
+        '{{=URL("static", "FinalOutputs/data/dates_...VERSION....js", scheme=True, host=True)}}'
+    ];
+    $.each(dynamic_scripts_to_load, function() {$.holdReady(true);}); //hold the ready state from firing until all dynamic_scripts are loaded
+    $.ajax({
+      type:"GET", 
+      url: "{{=URL('API', 'version', scheme=True, host=True, extension='json')}}", 
+      success: function(data) {
+        if (parseInt(data.version)) {
+            $.each(dynamic_scripts_to_load, 
+              function(index, src_name) {
+                $.ajax({
+                  url: src_name.replace("...VERSION...", data.version),
+                  dataType: "script",
+                  cache: true, //these version scripts never change, so we can always cache them
+                  success: function() {
+                    $.holdReady(false);
+                    {{if is_testing:}}console.log("Loaded " + this.url);{{pass}}
+                  },
+                  error: function() {version_error("Could not get " + this.url);}
+                });
+              });
+        } else {
+            version_error(data.error);
+        }
+      },
+      error: function() {version_error("Could not get " + this.url);}
+    });
+  </script>
+
+  <script type="text/javascript">
+    var OZstrings={{include 'treeviewer/js_strings.json'}}
+    var server_urls = {
+      /* These fill out the equivalently named variables in OneZoom global_config.
+         They need to be defined in this file to avoid hard-coding them into the OneZoom js code 
+         They are coded with the full URL so that they can be used remotely (e.g. in a partial install) */
+      data_path_pics: {{=XML(js_thumbnail_url)}},
+      node_details_api: "{{try:}}{{=myconf.take('API.node')}}{{except:}}{{=URL('API','node_details.json', scheme=True, host=True)}}{{pass}}",
+      search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",
+      search_sponsor_api: "{{try:}}{{=myconf.take('API.search_sponsor')}}{{except:}}{{=URL('API','search_for_sponsor.json', scheme=True, host=True)}}{{pass}}",
+      search_init_api: "{{try:}}{{=myconf.take('API.search_init')}}{{except:}}{{=URL('API','search_init.json', scheme=True, host=True)}}{{pass}}",
+      ott2id_arry_api: "{{try:}}{{=myconf.take('API.ott2id_array')}}{{except:}}{{=URL('API', 'get_ids_by_ott_array.json', scheme=True, host=True)}}{{pass}}",
+      otts2vns_api: "{{try:}}{{=myconf.take('API.otts2vns')}}{{except:}}{{=URL('API','otts2vns.json', scheme=True, host=True)}}{{pass}}",
+      image_details_api: "{{try:}}{{=myconf.take('API.image')}}{{except:}}{{=URL('API', 'image_details.json', scheme=True, host=True)}}{{pass}}",
+      update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
+      OZ_leaf_json_url_func: function(ott, lang) {return(false)}, /* can't click on a leaf */
+      OZ_node_json_url_func: function(id, lang) {return(false)}, /* can't click on a node */
+    };
+  </script>
+  <style>
+  canvas {width: 600px; height: 600px; border: 1px solid black}
+  </style>
+{{include}}
+</head>
+<body>
+  <canvas id="OneZoomCanvasID" tabindex="1"></canvas>
+  <div id="tour_wrapper"></div><!-- only needed if we want the tour overlay-->
+  <script type="text/javascript">
+/* define most of the JS after the main page has loaded */
+var onezoom = null; //will be filled out on document ready
+
+function preventTouchZoom(event) {
+    if(event.touches.length > 1) {
+        event.preventDefault(); 
+        event.stopPropagation();
+    };
+}
+
+function setupUI() {
+    /*
+     Used whenever the UI component is loaded (e.g. at start or on language change)
+    */
+
+    /* Make sure we scroll the canvas, not the body behind it */
+    $(document.body).on("touchstart touchmove touchend", preventTouchZoom);    
+}
+
+$(document).ready(function() {    /* Mainly a place to attach JS event handlers */
+    // Set up some global variables
+    /** CREATE A ONEZOOM INSTANCE
+    this allows us to access e.g. onezoom.controller, onezoom.config, etc (defined in OZentry.js)
+     **/
+    
+    setup_onezoom()
+
+    function setup_onezoom() {  
+        onezoom = OZentry.default(
+            window.server_urls,
+            null, // No UI
+            null, // No window title function
+            'OneZoomCanvasID',
+            window['tree_config'],
+            window.rawData,
+            window.metadata,
+            window.cut_position_map_json_str,
+            window.polytomy_cut_position_map_json_str,
+            window.cut_threshold,
+            window.tree_date);
+
+        onezoom.add_hook('on_tree_loaded', () => {
+            /* Start stuff here, e.g. a screensaver which fires off immediately
+            onezoom.screensaver.setup_setting(
+                my_config_file, 'animation',
+                null, // before the animation runs.
+                null, // nothing on animation exit
+                true); // loop back and forth
+            */
+        })
+    
+        setupUI();
+    }
+})
+
+  </script>
+</body>
+</html>

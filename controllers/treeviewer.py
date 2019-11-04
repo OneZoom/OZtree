@@ -37,6 +37,12 @@ def UI_layer():
 
     return dict(browser_language=language(lang_primary(request)), tabs=requested_tabs)
 
+def minviewer():
+    """
+    An example of a minimal version of the tree viewer, with essentially no UI.
+    """
+    return dict()
+
 def minlife():
     """
     A minimum version for restricted installation that does not contain the text tree and disallows language / tree switching
