@@ -110,7 +110,6 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
       otts2vns_api: "{{try:}}{{=myconf.take('API.otts2vns')}}{{except:}}{{=URL('API','otts2vns.json', scheme=True, host=True)}}{{pass}}",
       image_details_api: "{{try:}}{{=myconf.take('API.image')}}{{except:}}{{=URL('API', 'image_details.json', scheme=True, host=True)}}{{pass}}",
       update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
-      tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
       OZ_leaf_json_url_func: function(ott, lang) {return("{{=XML(URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json', args=['...OTT...'], vars=dict((setup_params.get('popups') or {}).get('vars') or {}, lang='...LANG...')))}}".replace('...OTT...', (ott || '').toString() || "").replace('...LANG...', lang || ''))},
       OZ_node_json_url_func: function(id, lang) {return("{{=XML(URL('tree', 'node_linkouts', scheme=True, host=True, extension='json', args=['...ID...'], vars=dict((setup_params.get('popups') or {}).get('vars') or {}, lang='...LANG...')))}}".replace('...ID...', id.toString() || "").replace('...LANG...', lang || ''))},
     };

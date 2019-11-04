@@ -278,4 +278,3 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     </div>
   </div>
 </div>
-{{#=LOAD('default', 'tourstop.load', target="tourbox", ajax=False)}}
