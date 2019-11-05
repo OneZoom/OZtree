@@ -1,4 +1,4 @@
-{{if str(page_info.get('try_local_treefiles_version')).isdigit():}}
+{{if 'page_info' in vars() and str(page_info.get('try_local_treefiles_version')).isdigit():}}
   <!-- Load local versions of the files first. If the return value from the API/version call does not match, variables in here will simply be replaced -->
   <script type="text/javascript" src="{{=URL("static", "FinalOutputs/data/completetree_{}.js".format(page_info["try_local_treefiles_version"]))}}"></script>
   <script type="text/javascript" src="{{=URL("static", "FinalOutputs/data/cut_position_map_{}.js".format(page_info["try_local_treefiles_version"]))}}"></script>
@@ -24,7 +24,7 @@
       url: "{{=URL('API', 'version', scheme=True, host=True, extension='json')}}", 
       success: function(data) {
         if (parseInt(data.version)) {
-          {{if page_info.get('try_local_treefiles_version'):}}
+          {{if 'page_info' in vars() and page_info.get('try_local_treefiles_version'):}}
           if (data.version == "{{=page_info.get('try_local_treefiles_version')}}") {
             {{if is_testing:}}console.log("Local treefiles already loaded");{{pass}}
             $.each(dynamic_scripts_to_load, function() {$.holdReady(false);}); //once added to the head, these should force page to wait until all loaded before ready
