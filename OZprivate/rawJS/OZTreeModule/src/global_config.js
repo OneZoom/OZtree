@@ -147,4 +147,9 @@ config.pic = {
   clear_image_cache_interval: 240000
 }
 
+/** @property {boolean} disable_record_url - Don't update the page URL as the tree moves
+ */
+config.disable_record_url = false;
+
+
 export default config;

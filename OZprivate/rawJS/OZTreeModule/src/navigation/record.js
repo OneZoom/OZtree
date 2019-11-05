@@ -29,7 +29,14 @@ function record_url_delayed() {
  */
 function record_url(options, force) {
   let controller = get_controller();
+
   clearTimeout(timer);
+
+  if (config.disable_record_url) {
+    // In an embedded view, e.g. Don't modify the page URL
+    return;
+  }
+
   options = options || {};
   let node_with_ott = get_largest_visible_node_with_ott(controller.root);
   if (!node_with_ott) return;

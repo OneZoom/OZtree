@@ -71,6 +71,11 @@ function setup(
     }
   }
 
+  if (!document.body.classList.contains('tree-viewer')) {
+      // Don't record tree changes on embedded uses
+      config.disable_record_url = true;
+  }
+
   let return_value = {};
   if (canvasID) {
     tree_settings.set_default(default_viz_settings); // implements the config for that tree.
