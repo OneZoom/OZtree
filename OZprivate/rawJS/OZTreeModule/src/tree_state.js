@@ -33,8 +33,10 @@ class TreeState {
     setTimeout(function() {
       self.url_parsed = true;
     }, 5000);
-    document.onmousemove = (ev) => {
-      this.last_active_at = new Date()
+    if (global.document) {
+      document.onmousemove = (ev) => {
+        this.last_active_at = new Date()
+      }
     }
   }
   setup_canvas(canvas) {
