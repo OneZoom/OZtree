@@ -4,12 +4,13 @@ var config = {
   entry: {
     //at: './OZprivate/rawJS/OZTreeModule/src/at.js',
     OZentry: './OZprivate/rawJS/OZTreeModule/src/OZentry.js',
+    search_ui: './OZprivate/rawJS/OZTreeModule/src/search_ui.js',
     //polytomy: './OZprivate/rawJS/OZTreeModule/src/polytomy.js'
   },
   output: {
     filename: '[name].js',
     path: './OZprivate/rawJS/OZTreeModule/dist/',
-    library: 'OZentry'
+    library: '[name]',
   },
   externals: {
     'jquery': 'jQuery'

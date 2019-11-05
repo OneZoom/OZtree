@@ -80,6 +80,7 @@ module.exports = function (grunt) {
         files: {
           //also moves the files
           '<%=pkg.directories.js_dest%>/common.js': ['<%=pkg.directories.js_dist%>/common.js'],
+          '<%=pkg.directories.js_dest%>/search_ui.js': ['<%=pkg.directories.js_dist%>/search_ui.js'],
           '<%=pkg.directories.js_dest%>/OZentry.js': ['<%=pkg.directories.js_dist%>/OZentry.js'],
           //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
           //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
