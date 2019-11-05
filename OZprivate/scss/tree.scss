@@ -1,13 +1,7 @@
 /* UIkit-skin scss file for OneZoom. Author: Yan Wong for OneZoom CIO. License: MIT */
 
 body {
-  overflow:hidden; /* needed to force iframe scolling on safari */
-}
-
-body {
     background-color: white;
-    height: 100vh; /* needed to stop control buttons disappearing on opening popup */
-    width: 100vw;
 }
 
 h2 {
@@ -15,24 +9,30 @@ h2 {
     font-size: 1.25rem;
 }
 
-#OneZoomCanvasID, .background-layer, #UI {
-    z-index: 1;
-    position: fixed;
-    top: 0px;
-    right: 0px;
-    width: 100%;
-    height: 100%;
+body.tree-viewer {
+    height: 100vh; /* needed to stop control buttons disappearing on opening popup */
+    width: 100vw;
+    overflow:hidden; /* needed to force iframe scolling on safari */
+
+    #OneZoomCanvasID, .background-layer, #UI {
+        z-index: 1;
+        position: fixed;
+        top: 0px;
+        right: 0px;
+        width: 100%;
+        height: 100%;
+    }
+
+    #UI {
+        z-index:2; /* overlay the canvas with the UI */
+        height: 0; /* UI layer can't cover page, then we can't interact with canvas */
+    }
 }
 #OneZoomCanvasID {
     image-rendering: optimizeSpeed;
     image-rendering:-o-crisp-edges;
     image-rendering:-webkit-optimize-contrast;
     -ms-interpolation-mode: nearest-neighbor;
-}
-
-#UI {
-    z-index:2; /* overlay the canvas with the UI */
-    height: 0; /* UI layer can't cover page, then we can't interact with canvas */
 }
 
 #UI #loading_spinner {
