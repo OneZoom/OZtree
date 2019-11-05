@@ -11,6 +11,18 @@ def js_strings():
     """
     return dict()
 
+def dynamic_scripts():
+    """
+    Javascript to load any large data files in advance
+    """
+    return dict()
+
+def server_urls():
+    """
+    Javascript to define API urls
+    """
+    return dict()
+
 def UI_layer():
     """
     We require any UI to provide the main html code for the UI in a separate page, viewer_UI,
