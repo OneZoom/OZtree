@@ -184,5 +184,4 @@ function api_utils_setup(server_urls) {
   }
 }
 
-export default setup;
-export { api_utils_setup }
+export {setup as default, api_utils_setup};
