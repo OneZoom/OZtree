@@ -8,14 +8,31 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
     // think the status of the spinner should be used as this test i.e. the spinner starts going when an 
     // API call is actually made and stops going only when an API call is received 
 
+    function add_link(html, record) {
+        var url;
+
+        if (global.document && window.location.pathname.indexOf("@") > -1) {
+            // On a tree page, so mangle current link
+            url = window.location.pathname.replace(/\@[^/]+=[0-9]+/, record.pinpoint) + window.location.search;
+        } else {
+            // Generate new URL from scratch
+            url = "/life/" + record.pinpoint;
+        }
+
+        if (record.pinpoint) {
+            return '<a href="' + url + '">' + html + '</a>';
+        }
+        return html;
+    }
+
     function compile_names(record) {
         var is_leaf = record[2] < 0;
         if (record[0] && record[1]) {
-            return "<p>" + record[0] + "</p>" + "(" + (is_leaf?"<i>"+record[1]+"</i>":record[1]) + ")";
+            return "<p>" + add_link(record[0], record) + "</p>" + "(" + (is_leaf?"<i>"+record[1]+"</i>":record[1]) + ")";
         } else if (record[0]) {
-            return "<p>" + record[0] + "</p>";
+            return "<p>" + add_link(record[0], record) + "</p>";
         } else if (record[1]) {
-            return (is_leaf?"<p><i>"+record[1]+"</i></p>":"<p>"+record[1]+"</p>");
+            return (is_leaf?"<p>" + add_link("<i>"+record[1]+"</i>", record) + "</p>":"<p>"+record[1]+"</p>");
         }
     }
 

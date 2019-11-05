@@ -298,13 +298,16 @@ class SearchManager {
     let row = [tidy_common, tidy_latin, id * id_decider];
     let score_result = overall_search_score(toSearchFor, latinName, lang, vernacular, extra_vernaculars);
     if (score_result.length < 2) {
-        return row.concat(score_result)
+        row = row.concat(score_result)
     } else {
         //the second item retuend by the score function is a index into the extra_vernaculars
         //array, if the match was only to an extra vernacular
         let extra = OZstrings["Also called:"] + " " + extra_vernaculars[score_result[1]]
-        return row.concat([score_result[0], {info_type: "Extra Vernacular", text: extra}])
+        row = row.concat([score_result[0], {info_type: "Extra Vernacular", text: extra}])
     }
+    // NB: See src/navigation/record.js:get_pinpoint() for how these are formed
+    row.pinpoint = '@' + tidy_latin.replace(/ /g, '_') + '=' + ott;
+    return row;
   }
 }
 

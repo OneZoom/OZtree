@@ -733,7 +733,10 @@ function setupUI() {
              onezoom.search_manager.full_search(
                                                 search_term,
                                                 function(original_string, actual_search, results) {
-                                                search_ui.searchPopulate(searchbox, original_string, results, function(event, OZid) {closeAndLeap(event, OZid, $('#search-basic'))})
+                                                search_ui.searchPopulate(searchbox, original_string, results, function(event, OZid) {
+                                                    event.preventDefault();  // Don't follow links
+                                                    closeAndLeap(event, OZid, $('#search-basic'));
+                                                })
                                                 },
                                                 delay_ms,
                                                 function() {
