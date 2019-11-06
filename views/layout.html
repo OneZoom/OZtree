@@ -23,8 +23,10 @@
     {{if response.canonical:}}<link rel="canonical" href="{{=response.canonical}}">{{pass}}
     <!-- include stylesheets -->
     <link rel="stylesheet" href="{{=URL('static','css/web2py-bootstrap3.css')}}" type="text/css" />
+    <link rel="stylesheet" href="{{=URL('static','uikit-3/css/uikit.min.css')}}" />
     <link rel="stylesheet" href="{{=URL('static','css/OZ_bootstrap.css')}}" type="text/css" />
     <link rel="stylesheet" href="{{=URL('static','css/OZ_specific.css')}}" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree.css')}}" />
     <link rel="stylesheet" href="{{=URL('static','css/OZ_shared.css')}}" type="text/css" />
     <!-- Favicons -->
     <link rel="shortcut icon" href="{{=URL('static','favicon.ico')}}" type="image/x-icon" />
@@ -32,10 +34,20 @@
     <!-- All JavaScript at the bottom, except for Modernizr which enables
          HTML5 elements & feature detects -->
     <script src="{{=URL('static','js/modernizr-2.8.3.min.js')}}"></script>
+    <script src="{{=URL('static','uikit-3/js/uikit.min.js')}}"></script>
+    <script src="{{=URL('static','uikit-3/js/uikit-icons.min.js')}}"></script>
     <!--[if lt IE 9]>
         <script src="{{=URL('static','js/respond-1.4.2.min.js')}}"></script>
         <![endif]-->
     {{include 'web2py_ajax.html'}} <!-- this includes jquery.js, calendar.js/.css and web2py.js -->
+
+    <!-- Treeviewer code for search / embedded view -->
+    {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
+    <script>var OZstrings={{include 'treeviewer/js_strings.json'}};</script>
+    <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common.js')}}"></script>
+    <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry.js')}}"></script>
+    <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/search_ui.js')}}"></script>
+
     {{block head}}{{end}}
     {{
     # using sidebars need to know what sidebar you want to use
@@ -69,6 +81,86 @@
             {{='auth' in globals() and auth.navbar('Welcome',mode='dropdown') or ''}}
           </ul>
           {{pass}}
+          <form class="nav navbar-form navbar-right" id="searchnav">
+
+
+
+
+  <div id="search-basic">
+    <div class="searchbox uk-search uk-search-default" id="search_form_basic">
+      <div class="searchinput"><div class="icon-beside-input">
+          <button   class="spinner" uk-spinner="ratio:0.5"></button>
+          <button   class="main-icon" uk-icon="icon: search"></button>
+        </div><input class="uk-search-input" type="search" placeholder="{{=T('Search all life...')}}" /></div>
+      <div uk-dropdown="pos: bottom-left; offset: 1" class="search_dropdown selectable uk-overflow-auto">
+        <div class="no_results">{{=T("No results found")}}</div>
+        <dl class="search_hits"></dl>
+        <dl class="popular_species"></dl>
+      </div>
+    </div>
+  </div>
+<script>
+(function() {
+    var box_selector = $('#searchnav');
+    var search_manager = OZentry.api_utils_setup({
+      /* These fill out the equivalently named variables in OneZoom global_config.
+         They need to be defined in this file to avoid hard-coding them into the OneZoom js code
+         They are coded with the full URL so that they can be used remotely (e.g. in a partial install) */
+      search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",
+      search_sponsor_api: "{{try:}}{{=myconf.take('API.search_sponsor')}}{{except:}}{{=URL('API','search_for_sponsor.json', scheme=True, host=True)}}{{pass}}",
+    }).search_manager;
+
+    $('.searchinput input', box_selector)
+        .blur(function(event) {
+            // if we have an already-selected location, and we lose focus, we simply revert
+            var searchbox = $(event.currentTarget).closest('.searchbox');
+            if ($('.searchresult', searchbox).attr('data-OZid')) {
+                searchbox.addClass('result_displayed_in_box');
+            }
+        })
+        .on('keyup', function(event) {
+
+            var search_term = this.value;
+            var searchbox = $(this).closest('.searchbox');
+            var searchresult = $('.searchresult', searchbox);
+            var dropdown = $('.search_dropdown', searchbox);
+            if (searchresult.attr('data-OZid')) {
+                onezoom.controller.unmark_area(searchresult.attr('data-OZid'));
+                searchresult.attr('data-OZid','');
+            }
+            if (search_term.length==0) {
+                $('.popular_species', dropdown).show();
+                {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
+                $('.no_results', dropdown).hide();
+                $('.search_hits', dropdown).empty();
+                search_manager.full_search(""); // this clears the search
+                $('.searchinput', searchbox).removeClass('waiting_for_search_result');
+            } else {
+                //$('.searchinput', searchbox).addClass('waiting_for_search_result');
+                var delay_ms = 1000;
+                if (event.which == 13) {
+                    delay_ms = 1;   //enter was pressed - don't delay
+                }
+            if ((search_term.replace(/ /g,'').length > 2)||((search_term.replace(/ /g,'').length > 1)&&(delay_ms == 1))) { // we're neve
+
+            search_manager.full_search(
+                search_term,
+                function(original_string, actual_search, results) {
+                    search_ui.searchPopulate(searchbox, original_string, results, function () {return null;})},
+                delay_ms,
+                function() {
+                    {{if is_testing:}}console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search");{{pass}}
+                    if(!($(".searchinput").hasClass('waiting_for_search_result'))) {
+                        $(".searchinput", searchbox).addClass('waiting_for_search_result'); // switch flag for search to on
+                    }});
+            }
+            }
+        });
+}())
+</script>
+
+
+          </form>
           {{if response.menu:}}
           {{=MENU(response.menu, _class='nav navbar-nav',li_class='dropdown',ul_class='dropdown-menu')}}
           {{pass}}
