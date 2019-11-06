@@ -1,0 +1,111 @@
+/* CSS entry point for UIKit-based content pages */
+@import "colour_scheme.scss";
+@import "search_ui.scss";
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: $oz-font-serif;
+  font-style: italic;
+}
+
+blockquote {
+  font-family: $oz-font-serif;
+  font-style: italic;
+}
+
+a, a:link, a:active, a:visited, a:hover {
+  color: inherit;
+}
+
+.endangered-red {
+  color: $oz-endangered-red;
+}
+
+/* ********** Header ********** */
+header {
+  padding: 10px 10px 0 10px;
+
+  border-bottom: 1px solid #3e463e;
+  @extend %oz-background-dark;
+}
+
+header .uk-navbar-nav>li>a {
+  text-transform: none;
+  span {
+    color: $oz-background-dark-text;
+    /* The navbar items have too much height, so underline a nested element */
+    border-bottom: 1px solid $oz-logo-green;
+  }
+  &:hover span {
+    color: $oz-logo-green;
+  }
+}
+
+header h1 {
+  color: $oz-logo-green;
+}
+
+header .masthead {
+  max-width: 520px;
+  margin: 0 auto;
+}
+header .masthead h1, header .masthead h1 a {
+  color: $oz-logo-green;
+  &:link, &:visited, &:hover, &:active {
+    color: $oz-logo-green;
+  }
+}
+
+/* ********** Grid modifications for homepage  ********** */
+
+.uk-grid-oz-dark {
+  background: $oz-background-dark;
+
+  &.uk-grid-small {
+    /* Modify grid so we get some padding around cells */
+    padding: 15px;
+    margin-left: 0;
+  }
+
+  .uk-card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: calc(50% - 20px);
+
+    width: 0; 
+    height: 0; 
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid $oz-background-dark;
+  }
+}
+
+.uk-container-center {
+  /* Future UI-kit property missing from our version */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ****** Homepage sections with image surrounds ******** */
+
+.hp-section {
+    overflow: hidden; /* contain background */
+
+    > .hp-section-body {
+        max-width: 910px;
+        margin: 1rem auto;
+        text-align: center;
+    }
+
+    &.bkgd-leaves {
+        background: $oz-background-lightgreen;
+    }
+
+    &.bkgd-quotes {
+        @extend %oz-background-dark;
+    }
+
+    &.bkgd-tree {
+        background: $oz-background-lightgreen;
+    }
+}

@@ -1,0 +1,26 @@
+$oz-background-dark: #182418;
+$oz-background-dark-text: #edeeed;
+$oz-background-dark-subdued: #a4a19b;
+$oz-background-lightgreen: #dbf3cc;
+$oz-logo-green: #83d34f;
+$oz-endangered-red: #d31818;
+
+$oz-font-serif: serif;
+
+%oz-background-dark {
+  background: $oz-background-dark;
+  color: $oz-background-dark-text;
+
+  h1, h2, h3, h4, h5, h6 {
+    color: $oz-logo-green;
+  }
+
+  .subdued {
+    color: $oz-background-dark-subdued;
+  }
+
+  blockquote, blockquote footer {
+    /* Override UIkit's styling for quotes */
+    color: $oz-background-dark-text;
+  }
+}
