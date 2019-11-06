@@ -30,10 +30,83 @@ def time_diff(startTime,endTime):
 
 def index():
     """
-    here we should find a random selection of things with highly-rated photos which have not been sponsored, and pass them in.
-    also check for the best rated photos for sponsorship, and pass those in.
+    Collect all information required for the home page
     """
-    return dict(n_species =  db(db.ordered_leaves).count(), n_images =  db(db.images_by_ott).count())
+    popular_otts = [549519, 14971, 676045, 410925]  # TODO: Where should these come from?
+    pop_images = {
+        r.ott:thumbnail_url(r.get('src'), r.get('src_id'))
+        for r in
+        db(db.images_by_ott.ott.belongs(popular_otts) & (db.images_by_ott.best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)
+    }
+
+    query = (db.reservations.verified_time != None) & ((db.reservations.deactivated == None) | (db.reservations.deactivated == ""))
+    if (request.vars.omit_nopics):
+        query = query & (db.reservations.verified_preferred_image_src != None)
+    sponsored_rows = db(query).select(
+        db.reservations.OTT_ID,
+        db.reservations.name,
+        db.reservations.user_nondefault_image,
+        db.reservations.verified_kind,
+        db.reservations.verified_name,
+        db.reservations.verified_more_info,
+        db.reservations.verified_preferred_image_src,
+        db.reservations.verified_preferred_image_src_id,
+        orderby=~db.reservations.verified_time|db.reservations.reserve_time,
+        limitby=(0, 20)
+        )
+    sponsored_scinames = {r.OTT_ID:r.name for r in sponsored_rows}
+    sponsored_images = {
+        r.ott:r
+        for r in db(db.images_by_ott.ott.belongs(r.OTT_ID for r in sponsored_rows) & (db.images_by_ott.best_any==1)).select(
+            db.images_by_ott.ott,
+            db.images_by_ott.src,
+            db.images_by_ott.src_id,
+            db.images_by_ott.rights,
+            db.images_by_ott.licence,
+            orderby=~db.images_by_ott.src
+        )
+    }
+    for r in sponsored_rows:
+        if r.user_nondefault_image != 0:
+            sponsored_images[r.OTT_ID] = db(
+                (db.images_by_ott.src_id==r.verified_preferred_image_src_id) &
+                (db.images_by_ott.src==r.verified_preferred_image_src)
+                ).select(
+                    db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
+                    db.images_by_ott.rights, db.images_by_ott.licence,
+                    orderby=~db.images_by_ott.src).first()
+
+    return dict(
+        n_species=db(db.ordered_leaves).count(),
+        n_images=db(db.images_by_ott).count(),
+        quotes=db().select(db.quotes.ALL, orderby = ~db.quotes.quality | db.quotes.id, limitby=(0, 5)),
+        news=[
+            dict(
+                heading=row.text_date if row.text_date else row.news_date.strftime("%d %B %Y").lstrip('0'),
+                body=row.html_description.replace(' class="thumbnail"', ' style="display:none"'),
+                image_href="/OZtree/static/images/gallery/otop_ss_small.png",
+                more_href="/milestones.html",
+            )
+            for row in db().select(db.news.ALL, orderby =~ db.news.news_date, limitby = (0, 5))
+        ],
+        sponsored=dict(
+            rows=sponsored_rows,
+            images=sponsored_images,
+            html_names={
+                ott:nice_species_name(sponsored_scinames[ott], vn, html=True, leaf=True, first_upper=True, break_line=2)
+                for ott,vn
+                in get_common_names([r.OTT_ID for r in sponsored_rows], return_nulls=True).items()}
+        ),
+        popular_places=[
+            dict(
+                tree_href='/life/@=%d' % ott,
+                image_href=pop_images.get(ott, URL('static','images/noImage_transparent.png')),
+                name=nice_species_name(None, vn, html=True, leaf=True, first_upper=True, break_line=2),
+            )
+            for ott, vn
+            in get_common_names(popular_otts, return_nulls=True).items()
+        ],
+    )
 
 @require_https_if_nonlocal()
 def user():
