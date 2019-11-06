@@ -306,7 +306,7 @@ class SearchManager {
         row = row.concat([score_result[0], {info_type: "Extra Vernacular", text: extra}])
     }
     // NB: See src/navigation/record.js:get_pinpoint() for how these are formed
-    row.pinpoint = '@' + tidy_latin.replace(/ /g, '_') + '=' + ott;
+    row.pinpoint = '@' + (tidy_latin || '').replace(/ /g, '_') + '=' + ott;
     return row;
   }
 }
