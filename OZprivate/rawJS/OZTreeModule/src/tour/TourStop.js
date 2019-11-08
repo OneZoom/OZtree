@@ -57,6 +57,7 @@ class TourStop {
   }
 
   complete_tourstop() {
+    this.tour.clear_callback_timers()
     if (this.state === TOURSTOP_EXIT) {
       return
     }
@@ -87,13 +88,14 @@ class TourStop {
    * 2. Reset timeout, which when triggered would otherwise leap to next tour stop
    */
   pause() {
+    this.tour.clear_callback_timers() // don't bother pausing these, just cancel them
     tree_state.flying = false
     // We would like to get the time elapsed if we at waiting to move on from TOURSTOP_END
     // but there is no obvious way to get it
     clearTimeout(this.goto_next_timer)
   }
 
-  continue() {
+  resume() {
     if ((this.state === TOURSTOP_EXIT) || (this.state === TOURSTOP_END)) {
       // Not in a transition, so jump back to the tourstop location (in case user has
       // moved the tree) and continue
@@ -122,7 +124,14 @@ class TourStop {
        * tours like the tutorial to interact programmatically with the OneZoom viewer
        */
           console.log("Executing a function prior to transition")
-          this.setting.exec[exec_when](this)
+          var timers = this.setting.exec[exec_when](this)
+          if (timers) {
+            if (timers.length) {
+                this.tour.callback_timers.push(...timers)
+            } else {
+                this.tour.callback_timers.push(timers)
+            }
+          }
       } else {
           console.log(
               "Cannot run whatever is defined in `exec." + exec_when + "`" +
@@ -186,7 +195,7 @@ class TourStop {
             })
             .catch(() => {})
         } else {
-          /* Fly normally */
+          /* Fly normally - if interrupted we reject() and require clicking "skip" */
           promise = promise
             .then(() => {
               this.throw_error_if_already_exited()

@@ -14,6 +14,7 @@ class Tour {
     this.tourstop_array = []
     this.started = false
     this.name = null
+    this.callback_timers = [] // To store any timers that are fired off by callbacks, so they can be cancelled if necessary
   }
 
   /**
@@ -138,11 +139,12 @@ class Tour {
                         "style": {"visibility": "hidden"}
                     },
                 "exec": null /* Only for javascript objects: define properties "on_stop",
-                * "on_transition", or "on_exit" as functions to execute those functions
+                * "on_transition", or "on_exit" as functions. Those functions are executed
                 * as the first event when arriving at a stop or when starting the
                 * transition into a stop. The function is passed the tourstop object as
                 * the first parameter so that you can access the text, the tour and its
-                * controller.
+                * controller. The function must return an array of any timers that it
+                * initiates, so that they can be cancelled if necessary. 
                 */
                 },
             },
@@ -180,7 +182,7 @@ class Tour {
    *    - "block": disable interaction
    *    - "exit": interaction causes tour exit
    *    - "exit_after_confirmation": interaction causes tour exit, but user must confirm first
-   *    - null: interaction has no effect on the tour (default)
+   *    - null: interaction permitted, tour pauses but can be resumed (default)
    */
   setup_setting(tour_setting, name, start_callback, end_callback, exit_callback, interaction) {
     console.log(tour_setting)
@@ -308,12 +310,12 @@ class Tour {
   /**
    * Continue paused tour stop
    */
-  continue() {
-    //console.log("continuing")
+  resume() {
+    //console.log("resuming")
     if (this.curr_stop()) {
-      this.curr_stop().continue()
+      this.curr_stop().resume()
     }
-    //console.log("continued")
+    //console.log("resuming")
   }
 
   /**
@@ -360,7 +362,8 @@ class Tour {
     
     if (this.curr_stop() && this.curr_stop().state === 'TOURSTOP_IS_FLYING') {  
       this.curr_stop().skip_transition()
-      console.log("goto_next: transition_skipped")
+      console.log("goto_next: transition skipped for " +
+        this.curr_stop().setting.update_class.title)
     } else {
         
       if (this.curr_step === this.tourstop_array.length - 1) {
@@ -371,10 +374,10 @@ class Tour {
         this.exit(false)
         return
       }
-    this.curr_step++
-    this.curr_stop().play('forward')
-    this.set_ui_content()
-  }
+      this.curr_step++
+      this.curr_stop().play('forward')
+      this.set_ui_content()
+    }
   }
 
   /**
@@ -436,7 +439,7 @@ class Tour {
       this.exit_confirm_popup.hide()
     })
     this.exit_confirm_popup.find('.' + this.exit_cancel_class).click(() => {
-      this.continue()
+      this.resume()
       this.exit_confirm_popup.hide()
     })
   }
@@ -609,6 +612,15 @@ class Tour {
     // Converting negative numbers to positive allows back & forth looping
     return this.tourstop_array[Math.abs(this.curr_step)]
   }
+
+  /**
+   * Clear callback timers
+   */
+  clear_callback_timers() {
+    this.callback_timers.forEach((timer) => clearTimeout(timer))
+    this.callback_timers = []
+  }
+
 
   /**
    * Set UI Content
