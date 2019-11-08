@@ -42,7 +42,7 @@
         "transition_in":"fly", // can be "fly" (default), "leap", or "fly_straight" (rare)
         "fly_in_speed":2, // Relative to the global animation_speed
         // Can be "show_self" "force_hide", otherwise (by default) previous stop is left unchanged during flight transition
-        "fly_in_visibility": null,
+        "transition_in_visibility": null,
         "ott": 93302, //Biota
         "update_class": {
           "title": "{{=T('What is the tree of life?')}}",
@@ -56,7 +56,7 @@
       },
       {
         "ott": 770315, // humans
-        "fly_in_visibility": null,
+        "transition_in_visibility": null,
         "fly_in_speed":0.7, // Relative to the global animation_speed
         "update_class": {
             "title": "{{=T('Exploring the tree')}}",
@@ -70,7 +70,7 @@
       {
         "ott": 351685,
         "transition_in": "fly_straight",
-        "fly_in_visibility": "show_self",
+        "transition_in_visibility": "show_self",
         "transition_in_wait": 1000, //Amount of time to wait before starting transition_in (after showing/hiding)
         "fly_in_speed": 0.25,
         "update_class": {
@@ -90,7 +90,7 @@
       {
         "ott": 913935,
         "fly_in_speed": 0.3,
-        "fly_in_visibility": "show_self",
+        "transition_in_visibility": "show_self",
         "transition_in_wait": 1000,
         "update_class": {
             "title": "{{=T('Zooming')}}",
@@ -107,7 +107,7 @@
       },
       {
           "ott": "532117",
-          "fly_in_visibility": "force_hide",
+          "transition_in_visibility": "force_hide",
           "update_class": {
           "tour_container": {"style": {"top":"40vh", "left":"30vh"}},
               "title": "{{=T('Threat of extinction')}}",
@@ -117,7 +117,7 @@
        },
        {
             "ott": "300553",
-            "fly_in_visibility": "show_self",
+            "transition_in_visibility": "show_self",
             "transition_in_wait": 2000,
             "update_class": {
                 // put this near the search box
@@ -132,7 +132,7 @@
        },
        {
             "ott": "237343", // An unfamiliar location in the fishes
-            "fly_in_visibility": "force_hide",
+            "transition_in_visibility": "force_hide",
             "fly_in_speed": 0.4,
             "transition_in": "fly_straight",
             "pos":"max",
@@ -150,7 +150,7 @@
         },
         {
             "ott": 229560,
-            "fly_in_visibility": "force_hide",
+            "transition_in_visibility": "force_hide",
             "pos":"max",
             "update_class": {
                 // put this near the common ancestor button
@@ -166,7 +166,7 @@
             },
             "wait": 15000,
             "exec": {
-                "on_stop": function(tourstop) {
+                "on_show": function(tourstop) {
                     // Special for the tutorial only: open up a window after a short pause, then close again
                     setTimeout(() => {
                         $("#tour_wrapper .outsidebox").hide()
@@ -185,7 +185,7 @@
         },
         {
             "ott": 99252,
-            "fly_in_visibility": "show_self",
+            "transition_in_visibility": "show_self",
             "fly_in_speed": 0.4,
             "transition_in_wait": 1000, //Amount of time to wait before starting transition_in (after showing/hiding)
             "update_class": {
@@ -200,7 +200,7 @@
             },
             "wait": 2000,
             "exec": {
-                "on_transition": function(tourstop) {
+                "on_start": function(tourstop) {
                     tourstop.controller.mark_area(tourstop.data_repo.ott_id_map[229560]) //prev stop
                     tourstop.controller.mark_area(tourstop.data_repo.ott_id_map[99252])  //plants
                 },
@@ -211,7 +211,7 @@
        },
         {
             "ott": null, // If there is no OTT, or it is null, return to roughly the position when the tour was first started
-            "fly_in_visibility": "show_self",
+            "transition_in_visibility": "show_self",
             "update_class": {
                 "tour_container": {"style": {"top": "10px", "left": "auto", "right":"530px"}},
                 "title": {"style": {"display":"None"}},

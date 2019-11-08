@@ -1,10 +1,10 @@
 import tree_state from '../tree_state'
 
 //Tour Stop States
-const TOURSTOP_INIT = 'TOURSTOP_INIT'
-const TOURSTOP_END = 'TOURSTOP_END'  //at the end of tour stop, wait for X seconds or until user presses next to continue
-const TOURSTOP_IS_FLYING = 'TOURSTOP_IS_FLYING'
-const TOURSTOP_EXIT = 'TOURSTOP_EXIT'
+const INACTIVE = 'TOURSTOP_EXIT'
+const TRANSITION_WAIT = 'TOURSTOP_INIT'
+const TRANSITION_MOVE = 'TOURSTOP_IS_FLYING'
+const ARRIVED = 'TOURSTOP_END'  //at the end of tour stop, wait for X seconds or until user presses next to continue
 
 const delay = (delayTime) => {
   return new Promise((resolve) => {
@@ -21,13 +21,20 @@ class TourStop {
     this.data_repo = this.tour.onezoom.data_repo
     this.setting = setting
     this.goto_next_timer = null
-    this.state = TOURSTOP_INIT
+    this.state = INACTIVE
     this.direction = 'forward'
     this.container_appended = false
 
     //Container is set when tour.setup_setting is called
     this.container = null
   }
+
+  // Export the constants
+  static get INACTIVE() {return INACTIVE}
+  static get TRANSITION_WAIT() {return TRANSITION_WAIT}
+  static get TRANSITION_MOVE() {return TRANSITION_MOVE}
+  static get ARRIVED() {return ARRIVED}
+
 
   /**
    * Find the OZid for this stop from this.setting.ott, or use the rough_initial_loc if
@@ -51,22 +58,24 @@ class TourStop {
    */
   exit() {
     this.pause()
-    this.state = TOURSTOP_EXIT
+    this.state = INACTIVE
     this.execute("on_exit")
     // Don't need to hide this stop: it might carry on being shown during next transition
   }
 
-  complete_tourstop() {
+  arrive_at_tourstop() {
     this.tour.clear_callback_timers()
-    if (this.state === TOURSTOP_EXIT) {
+    if (this.state === INACTIVE) {
       return
     }
-    this.execute("on_stop")
     // Show the tour stop *after* firing the function, in case we want the function do
     // do anything first (which could including showing the stop)
-    console.log("force hiding other stops during complete_tourstop")
-    this.tour.hide_other_stops(this.container)
-    this.state = TOURSTOP_END
+    console.log("force hiding all other stops on arrival")
+    var stop_just_shown = this.tour.hide_other_stops(this.container)
+    if (stop_just_shown) {
+       this.execute("on_show")
+    }
+    this.state = ARRIVED
     this.direction = 'forward'
     this.wait_and_goto_next()
   }    
@@ -80,7 +89,7 @@ class TourStop {
     this.controller.leap_to(this.OZid, this.setting.pos)
     console.log("force hiding other stops during skip")
     this.tour.hide_other_stops(this.container)
-    // this.complete_tourstop()
+    // this.arrive_at_tourstop()
   }
 
   /**
@@ -90,13 +99,13 @@ class TourStop {
   pause() {
     this.tour.clear_callback_timers() // don't bother pausing these, just cancel them
     tree_state.flying = false
-    // We would like to get the time elapsed if we at waiting to move on from TOURSTOP_END
+    // We would like to get the time elapsed if we at waiting to move on from ARRIVED
     // but there is no obvious way to get it
     clearTimeout(this.goto_next_timer)
   }
 
   resume() {
-    if ((this.state === TOURSTOP_EXIT) || (this.state === TOURSTOP_END)) {
+    if ((this.state === INACTIVE) || (this.state === ARRIVED)) {
       // Not in a transition, so jump back to the tourstop location (in case user has
       // moved the tree) and continue
       this.controller.leap_to(this.OZid, this.setting.pos)
@@ -110,7 +119,7 @@ class TourStop {
   }
 
   throw_error_if_already_exited() {
-      if (this.state === TOURSTOP_EXIT) {
+      if (this.state === INACTIVE) {
         throw new Error("Tourstop has already exited")
       }
   }
@@ -147,23 +156,33 @@ class TourStop {
    */
   play(direction) {
     this.direction = direction
-    this.state = TOURSTOP_INIT
     const transition_in_wait = this.setting.transition_in_wait
+    this.execute("on_start")
+    if (this.setting.transition_in_visibility === "force_hide") {
+      this.tour.hide_other_stops(null, true) // block interaction from stopping tour
+    } else if (this.setting.transition_in_visibility === "show_self") {
+      this.tour.hide_other_stops(this.container)
+      this.execute("on_show")
+    }
+    this.state = TRANSITION_WAIT
     console.log("playing tourstop: " + this.setting.update_class.title + " - " + direction)
+    
+    /* If tourstop is entered by going backwards previous, we should not wait to leap.
+     * Otherwise user might feel that the app gets stuck
+     */
+    let promise = Promise.resolve()
+    if (typeof transition_in_wait === 'number' && this.direction !== 'backward') {
+      promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
+    }
+
     /**
      * Perform flight or leap
      */
-    this.execute("on_transition")
-    let promise = Promise.resolve()
     if (this.setting.transition_in === 'leap' || this.direction === 'backward') {
       /* Leap */
-      //If user press previous, it should not wait to leap.
-      //Otherwise user might feel that the app gets stuck
-      if (typeof transition_in_wait === 'number' && this.direction !== 'backward') {
-        promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
-      }
       promise = promise
         .then(() => {
+            this.state = TRANSITION_MOVE
             this.throw_error_if_already_exited()
             return this.controller.leap_to(this.OZid, this.setting.pos)
          })
@@ -172,24 +191,12 @@ class TourStop {
         /* Flight */
         let into_node = this.setting.pos === 'max'
         let speed = this.setting.fly_in_speed || 1
-        this.state = TOURSTOP_IS_FLYING
-        if (this.setting.fly_in_visibility === "force_hide") {
-            this.block_user_interaction_when_normally_allowed()
-            this.tour.hide_other_stops()
-        } else if (this.setting.fly_in_visibility === "show_self") {
-            this.tour.hide_other_stops(this.container)
-        }
-
-        //If user press previous, it should not wait to fly.
-        //Otherwise user might feel that the app gets stuck
-        if (typeof transition_in_wait === 'number' && this.direction !== 'backward') {
-          promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
-        }
         
         if (this.setting.transition_in === 'fly_straight') {
           /* Fly-straight: this is an unusual thing to want to do */
           promise = promise
             .then(() => {
+              this.state = TRANSITION_MOVE
               this.throw_error_if_already_exited()
               return this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
             })
@@ -198,6 +205,7 @@ class TourStop {
           /* Fly normally - if interrupted we reject() and require clicking "skip" */
           promise = promise
             .then(() => {
+              this.state = TRANSITION_MOVE
               this.throw_error_if_already_exited()
               return this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
             })
@@ -205,11 +213,8 @@ class TourStop {
         }
     }
     promise
-      .then(() => {this.complete_tourstop()})
+      .then(() => {this.arrive_at_tourstop()})
       .catch(() => {})
-      .finally(() => {
-        this.restore_user_interaction_when_normally_allowed()
-      })
   }
 
   /**
@@ -235,40 +240,6 @@ class TourStop {
       return this.setting.wait_after_prev
     } else {
       return this.setting.wait //null means stay here until user interation
-    }
-  }
-
-  /**
-   * Block any user interaction in cases where it would normally be allowed: i.e. when
-   * tour.interaction equals 'null' or default. In other cases, user interaction during a
-   * tour is trapped and handled sen
-   */
-  block_user_interaction_when_normally_allowed() {
-    const tour = this.tour
-    if (tour.interaction && 
-      (tour.interaction === 'block' || 
-      tour.interaction === 'exit' || 
-      tour.interaction === 'exit_after_confirmation')) {
-        //Do nothing
-    } else {
-      console.log('set block user interation')
-      tree_state.disable_interaction = true
-    }
-  }
-
-  /**
-   * Recover user interaction after block_user_interaction_when_normally_allowed()
-   */
-  restore_user_interaction_when_normally_allowed() {
-    const tour = this.tour
-    if (tour.interaction &&
-      (tour.interaction === 'block' ||
-        tour.interaction === 'exit' ||
-        tour.interaction === 'exit_after_confirmation')) {
-      //Do nothing
-    } else {
-      console.log('unset block user interation')
-      tree_state.disable_interaction = false
     }
   }
 }

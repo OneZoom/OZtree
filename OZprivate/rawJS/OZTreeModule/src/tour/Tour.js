@@ -19,8 +19,8 @@ class Tour {
 
   /**
    * Give an example of a tour_settings object
-   * @param {boolean} as_json return a JSON string rather than a javascript object /**
-   * @return {(Object|String)} An example of the 
+   * @param {boolean} as_json return a JSON string rather than a javascript object
+   * @return {(Object|String)} An example of the tour settings object
    */
   example(as_json = false) {
     let setting_example = { 
@@ -97,7 +97,7 @@ class Tour {
                 "fly_in_speed": 2, /* speed relative to the global_anim_speed, as
                 * accessed via controller.set_anim_speed() & controller.get_anim_speed()
                 */
-                "fly_in_visibility": "show_self", /* Should we show the tourstop on
+                "transition_in_visibility": "show_self", /* Should we show the tourstop on
                 arrival (default), during transition-in ("show_self"), or force no
                 tourstops to be shown during transition in ("force_hide"). If the default
                 then the previous stop is likely to carry on being shown during
@@ -138,8 +138,8 @@ class Tour {
                     "tour_next": {
                         "style": {"visibility": "hidden"}
                     },
-                "exec": null /* Only for javascript objects: define properties "on_stop",
-                * "on_transition", or "on_exit" as functions. Those functions are executed
+                "exec": null /* Only for javascript objects: define properties "on_start",
+                * "on_show", or "on_exit" as functions. Those functions are executed
                 * as the first event when arriving at a stop or when starting the
                 * transition into a stop. The function is passed the tourstop object as
                 * the first parameter so that you can access the text, the tour and its
@@ -219,7 +219,7 @@ class Tour {
      * Merge shared settings with stop setting in tour stop
      */
     tour_setting.tourstops = tour_setting.tourstops || []
-    tour_setting['tourstops'].forEach(tourstop_setting => {
+    tour_setting['tourstops'].forEach((tourstop_setting) => {
       let merged_setting = {}
       $.extend(true, merged_setting, shared_setting, tourstop_setting)
       this.tourstop_array.push(new TourStop(this, merged_setting))
@@ -267,6 +267,7 @@ class Tour {
             alert("You have tried to start a tour that has not yet been set up")
         }
     }
+    // Reset
     this.exit(false)
     this.append_template_to_tourstop()
     //Enable tour style
@@ -280,16 +281,11 @@ class Tour {
     this.goto_next()
 
     /**
-     * disable interaction if interaction.effect equals to 
-     * 'block', 'exit', or 'exit_after_confirmation'
+     * disable interaction - it should be restored immediately the first stop is shown
+     * or on exit, but for the moment we should not allow the tour to be interrupted
+     * as there may otherwise be no indication that we are on a tour
      */
-    if (this.interaction && (
-      this.interaction === 'block' ||
-      this.interaction === 'exit' ||
-      this.interaction === 'exit_after_confirmation'
-    )) {
-      tree_state.disable_interaction = true
-    }
+    tree_state.disable_interaction = true
 
     if (typeof this.start_callback === 'function') {
       this.start_callback()
@@ -360,7 +356,7 @@ class Tour {
       return
     }
     
-    if (this.curr_stop() && this.curr_stop().state === 'TOURSTOP_IS_FLYING') {  
+    if (this.curr_stop() && this.curr_stop().state === TourStop.TRANSITION_MOVE) {  
       this.curr_stop().skip_transition()
       console.log("goto_next: transition skipped for " +
         this.curr_stop().setting.update_class.title)
@@ -400,16 +396,33 @@ class Tour {
   }
 
   /*
-   * Hide all the stops, but if one is given, and is hidden, show it
+   * Hide all the stops, but if one is given, and is hidden, show it.
+   *
+   * @param {Object} keep_shown The JQuery object to show or keep shown, or null if 
+   *    all stops should be hidden
+   * @param {boolean} block_user_interaction_when_normally_allowed If all stops are
+   *    hidden and we risks hiding all the control buttons too, which means that we could
+   *    accidentally pause the tour via an interaction, and we would have no idea
+   *    that we are still in a tour. To avoid this, we can specify 'true' here, which
+   *    bans interaction if it would normally pause or exit the tour.
+   * @return {boolean} true if keep_shown stop was previously hidden, and is now revealed; false
+   *     if keep_shown stop was already showing, or undefined if no keep_shown stop given
    */
-  hide_other_stops(keep_shown = null) {
+  hide_other_stops(keep_shown=null, block_user_interaction_when_normally_allowed=false) {
     if (keep_shown) {
-        $('#' + this.wrapper_id).find(".tourstop").not(keep_shown).hide()
-        if (keep_shown.is(":hidden")) {
-            keep_shown.show()
-        }
+      this.restore_user_interaction_when_normally_allowed()
+      $('#' + this.wrapper_id).find(".tourstop").not(keep_shown).hide()
+      if (keep_shown.is(":hidden")) {
+          keep_shown.show()
+          return true
+      } else {
+          return false
+      }
     } else {
-       $('#' + this.wrapper_id).find(".tourstop").hide()
+      $('#' + this.wrapper_id).find(".tourstop").hide()
+      if (block_user_interaction_when_normally_allowed) {
+        this.block_user_interaction_when_normally_allowed()
+      }
     }
   }
 
@@ -611,6 +624,38 @@ class Tour {
   curr_stop() {
     // Converting negative numbers to positive allows back & forth looping
     return this.tourstop_array[Math.abs(this.curr_step)]
+  }
+
+  /**
+   * Block any user interaction in cases where it would normally be allowed: i.e. when
+   * tour.interaction equals 'null' or default. In other cases, user interaction during a
+   * tour is trapped and handled sensibly
+   */
+  block_user_interaction_when_normally_allowed() {
+    if (this.interaction && 
+      (this.interaction === 'block' || 
+      this.interaction === 'exit' || 
+      this.interaction === 'exit_after_confirmation')) {
+        //Do nothing
+    } else {
+      console.log('set block user interation')
+      tree_state.disable_interaction = true
+    }
+  }
+
+  /**
+   * Recover user interaction after block_user_interaction_when_normally_allowed()
+   */
+  restore_user_interaction_when_normally_allowed() {
+    if (this.interaction &&
+      (this.interaction === 'block' ||
+      this.interaction === 'exit' ||
+      this.interaction === 'exit_after_confirmation')) {
+      //Do nothing
+    } else {
+      console.log('unset block user interation')
+      tree_state.disable_interaction = false
+    }
   }
 
   /**
