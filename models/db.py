@@ -653,7 +653,7 @@ db.define_table('tours',
 db.define_table('tourorders',
     Field('identifier', type = 'string', length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
     Field('transition', type = 'string', length=20), #the transition to this stop from the previous one
-    Field('node_fullzoom', type = boolean), #when we transition to here, should we zoom so the node fills the screen?
+    Field('node_fullzoom', type = boolean), #when we transition to a node, should we zoom so the node fills the screen? this has no effect when zooming to a leaf.
     Field('stop_number', type='integer', notnull=True), #the 0-based order of this stop in the defined tour
     Field('stop_id', type='integer', notnull=True), #the id in the tourstops table corresponding to this tour
     format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
@@ -664,12 +664,21 @@ db.define_table('tourstops',
     Field('video', type = 'string', length=20), #the youtube video number, if there is a video
     format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
 
+# these are popular palces, tours or other things that a user can use to explore the tree in a more guided way.  E.g. use as a first way into the tree or as suggestions of places to go / things to do once in.
+db.define_table('tree_startpoints',
+    Field('category', type = 'string', length=20), #a unique alphanumeric identifier which we can use to distinguish non default sets of startpoints for different trees (e.g. for list of popular places on homepage)
+    Field('parter_identifier', type = 'string', length=20), #an  alphanumeric category which we can use to distinguish partners (e.g. LinnSoc or OTOP) - this should match up with the 'partners' and 'partner_taxa' tables
+    Field('ott', type='integer'), #the ott of a taxon (i.e. a popular place on the tree)
+    Field('tour_identifier', type = 'string', length=20), #the identifier of a tour - this would be instead of an ott
+    format = '%(category)s_%(parter_identifier)s', migrate=is_testing)
+                
 # Somewhere to simply store the html for news items
 db.define_table('news',
     Field('category', type = 'string', length=20), # e.g. 'milestone', 'event', 
     Field('news_date', type = 'datetime', notnull=True, requires=IS_DATETIME()), #the date of the news
     Field('html_description', type='text'), # a description of the event
-    Field('text_summary', type='text'), # a description of the event. If absent, use the first sentence of the html_description
+    Field('html_summary', type='text'), # a short description of the event in HTML. If absent then the main HTML should be short enough.
+    Field('thumbnail_href', type='text'), # href to a thumbnail of the event 4:3 aspect ratio is best if absent the code will use the category field default jpeg instead.
     Field('text_date', type = 'text'), # in case we want a bespoke text for the date, e.g. July 30th-31st 2016
     format = '%(date)s_%(type)s', migrate=is_testing)
 
