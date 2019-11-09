@@ -23,17 +23,11 @@
         "fly_in_speed":0.1,
     },
     "tourstops": [
+    {{for ott in screensaver_otts:}}
         {
-            "ott": "991547",
+            "ott": "{{=ott}}",
             "wait": 1000
         },
-        {
-            "ott": "81461",
-            "wait": 1000
-        },
-        {
-            "ott": "99252",
-            "wait": 1000
-        },
+    {{pass}}
     ]
 }

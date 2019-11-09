@@ -36,6 +36,8 @@ class Tour {
                 * place the tour stops */
                 "next_class": "tour_next",
                 "prev_class": "tour_prev",
+                "play_class": "tour_play",
+                "pause_class": "tour_pause",
                 "exit_class": "tour_exit",
                 "exit_confirm_class": "exit_confirm",
                 "exit_cancel_class": "exit_cancel"
@@ -211,6 +213,8 @@ class Tour {
     /* the following 3 classes should probably belong to the tourstop instead */
     this.next_class = tour_setting.general.dom_names.next_class || 'tour_next'
     this.prev_class = tour_setting.general.dom_names.prev_class || 'tour_prev'
+    this.play_class = tour_setting.general.dom_names.prev_class || 'tour_play'
+    this.pause_class = tour_setting.general.dom_names.prev_class || 'tour_pause'
     this.exit_class = tour_setting.general.dom_names.exit_class || 'tour_exit'
 
     let shared_setting = tour_setting['tourstop_shared'] || {}
@@ -268,7 +272,7 @@ class Tour {
         }
     }
     // Reset
-    this.exit(false)
+    this.clear()
     this.append_template_to_tourstop()
     //Enable tour style
     console.log("Enabling tour " + this.name + "styles")
@@ -307,7 +311,6 @@ class Tour {
    * Continue paused tour stop
    */
   resume() {
-    //console.log("resuming")
     if (this.curr_stop()) {
       this.curr_stop().resume()
     }
@@ -315,10 +318,9 @@ class Tour {
   }
 
   /**
-   * Exit tour
+   * Clear tour
    */
-  exit(invoke_callback = true) {
-    console.log("exiting tour")
+  clear() {
     if (this.dump_template_when_inactive) {
       this.dump_template()
     }
@@ -338,12 +340,17 @@ class Tour {
     this.started = false
     this.curr_step = -1
     tree_state.disable_interaction = false
-
-    if (invoke_callback && typeof this.exit_callback === 'function') {
+  }
+  
+  /**
+   * Exit tour
+   */
+  exit() {
+    console.log("exiting tour")
+    this.clear()
+    if (typeof this.exit_callback === 'function') {
       this.exit_callback()
     }
-    //console.log("exited tour")
-
   }
 
   /**
@@ -367,7 +374,7 @@ class Tour {
         if (typeof this.end_callback === 'function') {
             this.end_callback()
         }
-        this.exit(false)
+        this.clear()
         return
       }
       this.curr_step++
@@ -427,7 +434,7 @@ class Tour {
   }
 
   /**
-   * Bind previous, next, exit button event
+   * Bind previous, next, pause, play, exit button event
    */
   bind_template_ui_event(tourstop) {
     tourstop.container.find('.' + this.next_class).click(() => {
@@ -436,6 +443,18 @@ class Tour {
 
     tourstop.container.find('.' + this.prev_class).click(() => {
       this.goto_prev()
+    })
+
+    tourstop.container.find('.' + this.play_class).click(() => {
+      if (this.started) {
+        this.resume()
+      } else {
+        this.start()
+      }
+    })
+
+    tourstop.container.find('.' + this.pause_class).click(() => {
+      this.pause()
     })
 
     tourstop.container.find('.' + this.exit_class).click(() => {
@@ -690,6 +709,7 @@ class Tour {
 
           /**
            * Set as html, allowing other styles etc to be set too
+           * warning: could be maliciously exploited
            */
           if (update_class[key].hasOwnProperty('html')) {
             selectedDom.html(update_class[key].html)
@@ -721,6 +741,13 @@ class Tour {
            */
           if (update_class[key].hasOwnProperty('src')) {
             selectedDom.attr('src', update_class[key].src)
+          }
+
+          /**
+           * Set a href - warning: could be maliciously exploited
+           */
+          if (update_class[key].hasOwnProperty('href')) {
+            selectedDom.attr('href', update_class[key].href)
           }
         } else if (typeof update_class[key] === 'function') {
           /**
