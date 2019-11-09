@@ -23,7 +23,9 @@ class TourStop {
     this.goto_next_timer = null
     this.state = INACTIVE
     this.direction = 'forward'
+    this.template_loaded = $.Deferred() // Allows us to fire off something once all templates have loaded
     this.container_appended = false
+    
 
     //Container is set when tour.setup_setting is called
     this.container = null

@@ -264,39 +264,45 @@ class Tour {
    * Start tour
    */
   start() {
-    if (!this.setting) {
-        if (this.name) {
-            alert("The tour " + this.name + " is disabled, as its settings are empty")
-        } else {
-            alert("You have tried to start a tour that has not yet been set up")
-        }
+    if (this.tourstop_array.length == 0) {
+        alert("This tour has no tourstops")
+        return
     }
-    // Reset
-    this.clear()
-    this.append_template_to_tourstop()
-    //Enable tour style
-    console.log("Enabling tour " + this.name + "styles")
-    $('#tour_style_' + this.tour_id).removeAttr('disabled')
-    $('#tour_exit_confirm_style_' + this.tour_id).removeAttr('disabled')
-
-    this.started = true
-    this.rough_initial_loc = this.onezoom.utils.largest_visible_node()
-    this.curr_step = -1
-    this.goto_next()
-
-    /**
-     * disable interaction - it should be restored immediately the first stop is shown
-     * or on exit, but for the moment we should not allow the tour to be interrupted
-     * as there may otherwise be no indication that we are on a tour
-     */
-    tree_state.disable_interaction = true
-
-    if (typeof this.start_callback === 'function') {
-      this.start_callback()
-    }
-    console.log("Tour " + this.name + "started")
+    // Make sure we only start when all the tourstop templates have loaded
+    $.when(...this.tourstop_array.map(a => a.template_loaded)).then(() => {
+      if (!this.setting) {
+          if (this.name) {
+              alert("The tour " + this.name + " is disabled, as its settings are empty")
+          } else {
+              alert("You have tried to start a tour that has not yet been set up")
+          }
+      }
+      // Reset
+      this.clear()
+      this.append_template_to_tourstop()
+      //Enable tour style
+      console.log("Enabling tour " + this.name + "styles")
+      $('#tour_style_' + this.tour_id).removeAttr('disabled')
+      $('#tour_exit_confirm_style_' + this.tour_id).removeAttr('disabled')
+    
+      this.started = true
+      this.rough_initial_loc = this.onezoom.utils.largest_visible_node()
+      this.curr_step = -1
+      this.goto_next()
+    
+      /**
+       * disable interaction - it should be restored immediately the first stop is shown
+       * or on exit, but for the moment we should not allow the tour to be interrupted
+       * as there may otherwise be no indication that we are on a tour
+       */
+      tree_state.disable_interaction = true
+    
+      if (typeof this.start_callback === 'function') {
+        this.start_callback()
+      }
+      console.log("Tour " + this.name + "started")
+    })
   }
-
   /**
    * Pause tour
    */
@@ -500,7 +506,7 @@ class Tour {
   }
 
   /**
-   * Opposite action to dump_template. This function would append tour stop templates into tour_wrapper
+   * Opposite action to dump_template. This function appends tour stop templates into tour_wrapper
    */
   append_template_to_tourstop() {
     this.tourstop_array.forEach(tourstop => {
@@ -544,14 +550,14 @@ class Tour {
       $(temp_div).load(template_url + " .container", () => {
         $(temp_div).hide()
         tourstop.container = $(temp_div) /* this is the way to access this specific stop */
-
         if (!this.dump_template_when_inactive) {
           $('#' + this.wrapper_id).append($(temp_div))
           tourstop.container_appended = true
           this.bind_template_ui_event(tourstop)
         }
-        
         this.prefetch_image(tourstop)
+        tourstop.template_loaded.resolve()
+        console.log("Created tourstop.container")
       })
 
       /**
