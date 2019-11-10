@@ -43,11 +43,14 @@ class Screensaver extends Tour {
    *    - "exit": interaction causes tour exit (default)
    *    - "exit_after_confirmation": interaction causes tour exit, but user must confirm first
    *    - null: interaction permitted, tour pauses but can be resumed
+   * @param {function} interaction_callback function to call when the user interacts with
+   *    the onezoom instance, e.g. by moving the mouse on screen, e.g. to activate a resume 
+   *    button if the tour is set to pause on interaction
    * @param {int} autostart_after_ms The number of milliseconds after which to activate.
    *    If undefined or null, use the 'ssaver' value from the URL
    */
   setup_setting(tour_setting, name, start_callback, loop_back_forth, exit_callback,
-                interaction, autostart_after_ms) {
+                interaction, interaction_callback, autostart_after_ms) {
     this.auto_activate_timer = null
     this.loop_back_forth = loop_back_forth
     this.autostart_after_ms = autostart_after_ms
@@ -55,7 +58,8 @@ class Screensaver extends Tour {
         // Default for a screensaver is to exit on interaction
         interaction = "exit"
     }
-    super.setup_setting(tour_setting, name, start_callback, null, exit_callback, interaction)
+    super.setup_setting(tour_setting, name, start_callback, null, exit_callback,
+                        interaction, interaction_callback)
     this.set_auto_start()
   }
   

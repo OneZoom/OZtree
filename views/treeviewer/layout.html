@@ -846,7 +846,15 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             window.tree_date);
 
         onezoom.add_hook('on_tree_loaded', () => {
-            onezoom.tutorial.setup_setting(window.globals['tutorial_config'], 'tutorial')})
+            onezoom.tutorial.setup_setting(
+                window.globals['tutorial_config'],
+                'tutorial',
+                UI_callbacks.closeAll, // before the tutorial runs, close modals etc.
+                null, // nothing on tutorial end
+                null, // nothing on premature exit
+                null, // allow interaction to pause the tutorial
+                function() {$(".tour_resume").show()} // if interaction, show the resume button
+                )})
         onezoom.add_hook('on_tree_loaded', () => {
             onezoom.screensaver.setup_setting(
                 // screensaver_config may only be defined for some displays
