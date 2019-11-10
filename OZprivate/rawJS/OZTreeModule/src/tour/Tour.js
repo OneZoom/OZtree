@@ -347,7 +347,7 @@ class Tour {
     }
     this.curr_stop().exit()   
     this.curr_step++
-    this.curr_stop().play('forward')
+    this.curr_stop().play_from_start('forward')
     this.set_ui_content()
   }
 
@@ -366,7 +366,7 @@ class Tour {
       this.curr_step--
     }
 
-    this.curr_stop().play('backward')
+    this.curr_stop().play_from_start('backward')
     this.set_ui_content()
   }
 
@@ -698,6 +698,7 @@ class Tour {
    */
   user_pause() {
     if (this.curr_stop()) {
+      console.log("User paused")
       this.curr_stop().pause()
     }
   }

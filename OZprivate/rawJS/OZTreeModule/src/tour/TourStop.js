@@ -4,7 +4,7 @@ import tree_state from '../tree_state'
 const INACTIVE = 'TOURSTOP_INACTIVE'
 const TRANSITION_WAIT = 'TOURSTOP_T_WAIT'
 const TRANSITION_MOVE = 'TOURSTOP_T_MOVE'
-const ARRIVED = 'TOURSTOP_ARRIVED'  //at the end of tour stop, wait for X seconds or until user presses next to continue
+const ARRIVED = 'TOURSTOP_ARRIVED'
 
 const delay = (delayTime) => {
   return new Promise((resolve) => {
@@ -15,6 +15,12 @@ const delay = (delayTime) => {
 }
 
 class TourStopClass {
+  // Export the constants
+  static get INACTIVE() {return INACTIVE}
+  static get TRANSITION_WAIT() {return TRANSITION_WAIT}
+  static get TRANSITION_MOVE() {return TRANSITION_MOVE}
+  static get ARRIVED() {return ARRIVED}
+
   constructor(tour, setting) {
     this.tour = tour
     this.controller = this.tour.onezoom.controller
@@ -22,6 +28,11 @@ class TourStopClass {
     this.setting = setting
     this.goto_next_timer = null
     this.state = INACTIVE
+    /* If we set tree_state.flying = false, we stop the flight and resolve the promise.
+     * This normally causes arrival at a stop, but sometimes we don't want to (e.g.
+     * if we are pausing or force-exiting the tourstop. Setting block_arrival solves this
+     */ 
+    this.block_arrival = false
     this.direction = 'forward'
     this.template_loaded = $.Deferred() // Allows us to fire off something once all templates have loaded
     this.container_appended = false
@@ -29,13 +40,6 @@ class TourStopClass {
     //Container is set when tour.setup_setting is called
     this.container = null
   }
-
-  // Export the constants
-  static get INACTIVE() {return INACTIVE}
-  static get TRANSITION_WAIT() {return TRANSITION_WAIT}
-  static get TRANSITION_MOVE() {return TRANSITION_MOVE}
-  static get ARRIVED() {return ARRIVED}
-
 
   /**
    * Find the OZid for this stop from this.setting.ott, or use the rough_initial_loc if
@@ -58,9 +62,10 @@ class TourStopClass {
    * Exit current stop
    */
   exit() {
-    tree_state.flying = false
     this.tour.clear_callback_timers()
     clearTimeout(this.goto_next_timer)
+    this.block_arrival = true
+    tree_state.flying = false
     this.state = INACTIVE
     this.execute("on_exit")
     // Don't need to hide this stop: it might carry on being shown during next transition
@@ -90,22 +95,23 @@ class TourStopClass {
     tree_state.flying = false
     // leap (this should cancel any exiting flight)
     this.controller.leap_to(this.OZid, this.setting.pos)
-    //this.tour.hide_other_stops(this.container)
-    // We may not need to call arrive_at_tourstop as this should be called when the
+    // We do not need to call arrive_at_tourstop as this should be called when the
     // transition promise is resolved
-    // this.arrive_at_tourstop()
   }
 
   /**
-   * 1. Pause fly animation
-   * 2. Reset timeout, which when triggered would otherwise leap to next tour stop
+   * 1. Reset timeout, which when triggered would otherwise leap to next tour stop
+   * 2. Stop fly animation, but ensure it doesn't cause tourstop arrival. Resuming
+   *    will start the animation again, from the new location.
    */
   pause() {
     this.tour.clear_callback_timers() // don't bother pausing these, just cancel them
-    tree_state.flying = false
     // We would like to get the time elapsed if we at waiting to move on from ARRIVED
     // but there is no obvious way to get it
     clearTimeout(this.goto_next_timer)
+
+    this.block_arrival = true
+    tree_state.flying = false
   }
 
   resume() {
@@ -154,13 +160,9 @@ class TourStopClass {
   }
 
   /**
-   * Play current tour stop, including the transition into the stop
-   * If wait time is present, then wait for that time, then goto next stop
-   * If wait time is not present, then listen to UI event for next action
+   * Play current tour stop from the start
    */
-  play(direction) {
-    this.direction = direction
-    const transition_in_wait = this.setting.transition_in_wait
+  play_from_start(direction) {
     this.execute("on_start")
     if (this.setting.transition_in_visibility === "force_hide") {
       this.tour.hide_other_stops(null, true) // block interaction from stopping tour
@@ -168,15 +170,30 @@ class TourStopClass {
       this.tour.hide_other_stops(this.container)
       this.execute("on_show")
     }
-    this.state = TRANSITION_WAIT
     console.log("playing tourstop: " + this.setting.update_class.title + " - " + direction)
-    
-    /* If tourstop is entered by going backwards previous, we should not wait to leap.
-     * Otherwise user might feel that the app gets stuck
-     */
+    this.play(direction)
+  }
+  
+  /**
+   * Play the main body of the tourstop including the transition into the stop if needed.
+   * If wait time is present, then wait for that time, then goto next stop
+   * If wait time is not present, then listen to UI event for next action
+   */
+  play(direction) {
+    this.block_arrival = false // Make sure we can arrive at the stop
+    this.direction = direction
+    const transition_in_wait = this.setting.transition_in_wait
     let promise = Promise.resolve()
-    if (typeof transition_in_wait === 'number' && this.direction !== 'backward') {
-      promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
+    
+    /* Wait before the transition animation, but only in certain circumstances.
+     * Don't wait if tourstop is entered by going backwards (otherwise user might feel the app is stuck)
+     * Don't wait if we are already in a transition animation (e.g. if we paused halfway through)
+     */
+    if (this.state !== TRANSITION_MOVE) {
+        this.state = TRANSITION_WAIT
+        if (typeof transition_in_wait === 'number' && this.direction !== 'backward') {
+          promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
+        }
     }
 
     /**
@@ -217,7 +234,12 @@ class TourStopClass {
         }
     }
     promise
-      .then(() => {this.arrive_at_tourstop()})
+      .then(() => {
+        if (this.block_arrival) {
+          this.block_arrival = false
+        } else {
+          this.arrive_at_tourstop()
+        }})
       .catch(() => {})
   }
 
