@@ -29,6 +29,10 @@
           "tour_exit": {
               "text": "{{=T('Exit tutorial')}}"
           },
+          "tour_resume": {
+              "style": {"display": "none"}, // Hide the resume button (will be shown on interaction)
+              "text": "{{=T('Resume tutorial')}}"
+          },
           "tour_forward": {
               "text": "{{=T('Skip')}} →"
           },

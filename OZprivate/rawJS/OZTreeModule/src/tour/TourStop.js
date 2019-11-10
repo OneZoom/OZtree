@@ -79,7 +79,7 @@ class TourStopClass {
     // Show the tour stop *after* firing the function, in case we want the function do
     // do anything first (which could including showing the stop)
     console.log("Arrived at tourstop: force hiding all other stops")
-    var stop_just_shown = this.tour.hide_other_stops(this.container)
+    var stop_just_shown = this.tour.hide_and_show_stops(this.container)
     if (stop_just_shown) {
        this.execute("on_show")
     }
@@ -117,10 +117,12 @@ class TourStopClass {
   resume() {
     if ((this.state === INACTIVE) || (this.state === ARRIVED)) {
       // Not in a transition, so jump back to the tourstop location (in case user has
-      // moved the tree) and continue
+      // moved the tree) and continue - it would be weird to fly on a path that wasn't 
+      /// part of the tour - so jump back to the last place when you were on the tour
       this.controller.leap_to(this.OZid, this.setting.pos)
       // We should really only have to wait for the remaining time at this stop, but
-      // that's tricky, so we wait again from the beginning.
+      // that's tricky, so we wait again from the beginning. - the tour was already in
+      // flight / transition an so it's appropriate to continue that to the destination.
       this.wait_and_goto_next()
     } else {
       this.play('forward')
@@ -165,12 +167,12 @@ class TourStopClass {
   play_from_start(direction) {
     this.execute("on_start")
     if (this.setting.transition_in_visibility === "force_hide") {
-      this.tour.hide_other_stops(null, true) // block interaction from stopping tour
+      this.tour.hide_and_show_stops(null, true) // block interaction from stopping tour
     } else if (this.setting.transition_in_visibility === "show_self") {
-      this.tour.hide_other_stops(this.container)
+      this.tour.hide_and_show_stops(this.container)
       this.execute("on_show")
     }
-    console.log("playing tourstop: " + this.setting.update_class.title + " - " + direction)
+    // console.log("playing tourstop: " + this.setting.update_class.title + " - " + direction)
     this.play(direction)
   }
   
@@ -182,65 +184,70 @@ class TourStopClass {
   play(direction) {
     this.block_arrival = false // Make sure we can arrive at the stop
     this.direction = direction
-    const transition_in_wait = this.setting.transition_in_wait
-    let promise = Promise.resolve()
-    
-    /* Wait before the transition animation, but only in certain circumstances.
-     * Don't wait if tourstop is entered by going backwards (otherwise user might feel the app is stuck)
-     * Don't wait if we are already in a transition animation (e.g. if we paused halfway through)
-     */
-    if (this.state !== TRANSITION_MOVE) {
+    if (!this.transition_promise_active) { // when first called transition_promise_active will be undefined and hence this statement will evaluate as true
+      this.transition_promise_active = true
+      let promise = Promise.resolve()
+      
+      /* Wait before the transition animation, but only in certain circumstances.
+       * Don't wait if tourstop is entered by going backwards (otherwise user might feel the app is stuck)
+       * Don't wait if we are already in a transition animation (e.g. if we paused halfway through)
+       */
+      if (this.state !== TRANSITION_MOVE) {
         this.state = TRANSITION_WAIT
+        const transition_in_wait = this.setting.transition_in_wait
         if (typeof transition_in_wait === 'number' && this.direction !== 'backward') {
           promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
         }
-    }
-
-    /**
-     * Perform flight or leap
-     */
-    if (this.setting.transition_in === 'leap' || this.direction === 'backward') {
-      /* Leap */
-      promise = promise
+      }
+    
+      /**
+       * Perform flight or leap
+       */
+      if (this.setting.transition_in === 'leap' || this.direction === 'backward') {
+        /* Leap */
+        promise = promise
+          .then(() => {
+              this.state = TRANSITION_MOVE
+              this.throw_error_if_already_exited()
+              return this.controller.leap_to(this.OZid, this.setting.pos)
+           })
+          .catch(() => {})
+      } else {
+          /* Flight */
+          let into_node = this.setting.pos === 'max'
+          let speed = this.setting.fly_in_speed || 1
+          
+          if (this.setting.transition_in === 'fly_straight') {
+            /* Fly-straight: this is an unusual thing to want to do */
+            promise = promise
+              .then(() => {
+                this.state = TRANSITION_MOVE
+                this.throw_error_if_already_exited()
+                return this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
+              })
+              .catch(() => {})
+          } else {
+            /* Fly normally - if interrupted we reject() and require clicking "skip" */
+            promise = promise
+              .then(() => {
+                this.state = TRANSITION_MOVE
+                this.throw_error_if_already_exited()
+                return this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
+              })
+              .catch(() => {})
+          }
+      }
+      promise
         .then(() => {
-            this.state = TRANSITION_MOVE
-            this.throw_error_if_already_exited()
-            return this.controller.leap_to(this.OZid, this.setting.pos)
-         })
-        .catch(() => {})
-    } else {
-        /* Flight */
-        let into_node = this.setting.pos === 'max'
-        let speed = this.setting.fly_in_speed || 1
-        
-        if (this.setting.transition_in === 'fly_straight') {
-          /* Fly-straight: this is an unusual thing to want to do */
-          promise = promise
-            .then(() => {
-              this.state = TRANSITION_MOVE
-              this.throw_error_if_already_exited()
-              return this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
-            })
-            .catch(() => {})
-        } else {
-          /* Fly normally - if interrupted we reject() and require clicking "skip" */
-          promise = promise
-            .then(() => {
-              this.state = TRANSITION_MOVE
-              this.throw_error_if_already_exited()
-              return this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
-            })
-            .catch(() => {})
-        }
+          if (this.block_arrival) {
+            this.block_arrival = false
+          } else {
+            this.arrive_at_tourstop()
+          }
+          this.transition_promise_active = null
+        })
+        .catch(() => {this.transition_promise_active = null})
     }
-    promise
-      .then(() => {
-        if (this.block_arrival) {
-          this.block_arrival = false
-        } else {
-          this.arrive_at_tourstop()
-        }})
-      .catch(() => {})
   }
 
   /**
@@ -250,6 +257,7 @@ class TourStopClass {
   wait_and_goto_next() {
     const wait_time = this.get_wait_time()
     if (typeof wait_time === 'number') {
+      clearTimeout(this.goto_next_timer)
       //console.log("Setting timer for " + wait_time + "milliseconds")
       this.goto_next_timer = setTimeout(() => {
         //console.log("Firing timer")
