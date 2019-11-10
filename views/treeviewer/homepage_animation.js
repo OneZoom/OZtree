@@ -18,16 +18,16 @@
       // "template_style" shouldn't be needed, as the css will be in the frontpage
       "update_class": {
           /**
-           * Replace content of classes e.g. $('.title'), $('.tour_prev'), $('.tour_next')
+           * Replace content of classes e.g. $('.title'), $('.tour_backward'), $('.tour_forward')
            * If a string, replace with the html. Otherwise could be "text", "style", or "src"
            */
-          "tour_prev": {
+          "tour_forward": {
               "text": "<"
           },
           "tour_play": {
               "text": "{{=T('Play')}}"
           },
-          "tour_next": {
+          "tour_backward": {
               "text": ">"
           },
       },

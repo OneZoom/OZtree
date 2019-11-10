@@ -1,4 +1,4 @@
-import TourStop from './TourStop'
+import TourStopClass from './TourStop'
 import tree_state from '../tree_state';
 import { add_hook } from '../util';
 
@@ -9,7 +9,7 @@ let tour_id = 1
 class Tour {
   constructor(onezoom) {
     this.tour_id = tour_id++
-    this.onezoom = onezoom
+    this.onezoom = onezoom // enabling access to controller
     this.curr_step = 0
     this.tourstop_array = []
     this.started = false
@@ -34,8 +34,8 @@ class Tour {
                  */
                 "wrapper_id": "tour_wrapper", /* the DOM id of the wrapper in which to
                 * place the tour stops */
-                "next_class": "tour_next",
-                "prev_class": "tour_prev",
+                "forward_class": "tour_forward",
+                "backward_class": "tour_backward",
                 "play_class": "tour_play",
                 "pause_class": "tour_pause",
                 "exit_class": "tour_exit",
@@ -51,7 +51,7 @@ class Tour {
             "template_style": "static/tour/tutorial_template.css",
             "update_class": {
                 "title": "OneZoom Demo Tour",
-                "tour_next": {
+                "tour_forward": {
                     "style": {"visibility": "hidden"}
                 },
             },
@@ -68,15 +68,15 @@ class Tour {
                     "img": {
                         "src": "http://images.onezoom.org/99/098/31338098.jpg"
                     },
-                    "tour_prev": {
-                        "style": {"visibility": "hidden"} /* Hide the previous button on
+                    "tour_backward": {
+                        "style": {"visibility": "hidden"} /* Hide the backward button on
                         * the first stop. Any class can be hidden like this, even the
                         * whole window (class = .container)
                         */
                     },
                 },
                 "wait": 6000, /* Wait a bit longer here: 6 seconds */
-                "wait_after_prev": 0  /* used if this stop is entered by going back */
+                "wait_after_backward": 0  /* used if this stop is entered by going back */
             },
             {
                 "ott": "991547",
@@ -137,7 +137,7 @@ class Tour {
                 */
                 "update_class": {
                     "window_text": "The End",
-                    "tour_next": {
+                    "tour_forward": {
                         "style": {"visibility": "hidden"}
                     },
                 "exec": null /* Only for javascript objects: define properties "on_start",
@@ -211,10 +211,10 @@ class Tour {
     this.exit_confirm_class = tour_setting.general.dom_names.exit_confirm_class || 'exit_confirm'
     this.exit_cancel_class = tour_setting.general.dom_names.exit_cancel_class || 'exit_cancel'
     /* the following 3 classes should probably belong to the tourstop instead */
-    this.next_class = tour_setting.general.dom_names.next_class || 'tour_next'
-    this.prev_class = tour_setting.general.dom_names.prev_class || 'tour_prev'
-    this.play_class = tour_setting.general.dom_names.prev_class || 'tour_play'
-    this.pause_class = tour_setting.general.dom_names.prev_class || 'tour_pause'
+    this.forward_class = tour_setting.general.dom_names.forward_class || 'tour_forward'
+    this.backward_class = tour_setting.general.dom_names.backward_class || 'tour_backward'
+    this.play_class = tour_setting.general.dom_names.play_class || 'tour_play'
+    this.pause_class = tour_setting.general.dom_names.pause_class || 'tour_pause'
     this.exit_class = tour_setting.general.dom_names.exit_class || 'tour_exit'
 
     let shared_setting = tour_setting['tourstop_shared'] || {}
@@ -226,7 +226,7 @@ class Tour {
     tour_setting['tourstops'].forEach((tourstop_setting) => {
       let merged_setting = {}
       $.extend(true, merged_setting, shared_setting, tourstop_setting)
-      this.tourstop_array.push(new TourStop(this, merged_setting))
+      this.tourstop_array.push(new TourStopClass(this, merged_setting))
     })
 
     /**
@@ -244,9 +244,9 @@ class Tour {
             /**
              * Only call exit if tour is running
              */
-            console.log("Action detected, exiting")
+            console.log("Action detected with interaction = " + this.interaction + ", exiting")
             if (this.interaction === 'exit') {
-              this.exit()
+              this.user_exit()
             } else if (this.exit_confirm_popup) {
               this.pause()
               this.exit_confirm_popup.show()
@@ -281,7 +281,7 @@ class Tour {
       this.clear()
       this.append_template_to_tourstop()
       //Enable tour style
-      console.log("Enabling tour " + this.name + "styles")
+      console.log("Enabling tour `" + this.name + "` styles")
       $('#tour_style_' + this.tour_id).removeAttr('disabled')
       $('#tour_exit_confirm_style_' + this.tour_id).removeAttr('disabled')
     
@@ -300,27 +300,8 @@ class Tour {
       if (typeof this.start_callback === 'function') {
         this.start_callback()
       }
-      console.log("Tour " + this.name + "started")
+      console.log("Tour `" + this.name + "` started")
     })
-  }
-  /**
-   * Pause tour
-   */
-  pause() {
-    if (this.curr_stop()) {
-      this.curr_stop().pause()
-    }
-    //console.log("paused")
-  }
-
-  /**
-   * Continue paused tour stop
-   */
-  resume() {
-    if (this.curr_stop()) {
-      this.curr_stop().resume()
-    }
-    //console.log("resuming")
   }
 
   /**
@@ -347,46 +328,27 @@ class Tour {
     this.curr_step = -1
     tree_state.disable_interaction = false
   }
-  
-  /**
-   * Exit tour
-   */
-  exit() {
-    console.log("exiting tour")
-    this.clear()
-    if (typeof this.exit_callback === 'function') {
-      this.exit_callback()
-    }
-  }
+
 
   /**
-   * Activate next tour stop. If transition is running, go to end of the
-   * current transition, otherwise go to next stop.
-   */
+   * Go to the next tour stop immediately
+   */  
   goto_next() {
-    console.log("goto_next called")
     if (!this.started) {
       return
     }
-    
-    if (this.curr_stop() && this.curr_stop().state === TourStop.TRANSITION_MOVE) {  
-      this.curr_stop().skip_transition()
-      console.log("goto_next: transition skipped for " +
-        this.curr_stop().setting.update_class.title)
-    } else {
-        
-      if (this.curr_step === this.tourstop_array.length - 1) {
-        // end of tour, exit gracefully
-        if (typeof this.end_callback === 'function') {
-            this.end_callback()
-        }
-        this.clear()
-        return
+    if (this.curr_step === this.tourstop_array.length - 1) {
+      // end of tour, exit gracefully
+      if (typeof this.end_callback === 'function') {
+          this.end_callback()
       }
-      this.curr_step++
-      this.curr_stop().play('forward')
-      this.set_ui_content()
+      this.clear()
+      return
     }
+    this.curr_stop().exit()   
+    this.curr_step++
+    this.curr_stop().play('forward')
+    this.set_ui_content()
   }
 
   /**
@@ -409,7 +371,7 @@ class Tour {
   }
 
   /*
-   * Hide all the stops, but if one is given, and is hidden, show it.
+   * Hide all the stops (optionally, except one, which will be shown)
    *
    * @param {Object} keep_shown The JQuery object to show or keep shown, or null if 
    *    all stops should be hidden
@@ -437,49 +399,6 @@ class Tour {
         this.block_user_interaction_when_normally_allowed()
       }
     }
-  }
-
-  /**
-   * Bind previous, next, pause, play, exit button event
-   */
-  bind_template_ui_event(tourstop) {
-    tourstop.container.find('.' + this.next_class).click(() => {
-      this.goto_next()
-    })
-
-    tourstop.container.find('.' + this.prev_class).click(() => {
-      this.goto_prev()
-    })
-
-    tourstop.container.find('.' + this.play_class).click(() => {
-      if (this.started) {
-        this.resume()
-      } else {
-        this.start()
-      }
-    })
-
-    tourstop.container.find('.' + this.pause_class).click(() => {
-      this.pause()
-    })
-
-    tourstop.container.find('.' + this.exit_class).click(() => {
-      this.exit()
-    })
-  }
-
-  /**
-   * Bind exit or hide exit confirm events on the buttons of exit confirm popup
-   */
-  bind_exit_confirm_event() {
-    this.exit_confirm_popup.find('.' + this.exit_confirm_class).click(() => {
-      this.exit()
-      this.exit_confirm_popup.hide()
-    })
-    this.exit_confirm_popup.find('.' + this.exit_cancel_class).click(() => {
-      this.resume()
-      this.exit_confirm_popup.hide()
-    })
   }
 
   /**
@@ -663,7 +582,6 @@ class Tour {
       this.interaction === 'exit_after_confirmation')) {
         //Do nothing
     } else {
-      console.log('set block user interation')
       tree_state.disable_interaction = true
     }
   }
@@ -678,7 +596,6 @@ class Tour {
       this.interaction === 'exit_after_confirmation')) {
       //Do nothing
     } else {
-      console.log('unset block user interation')
       tree_state.disable_interaction = false
     }
   }
@@ -763,6 +680,127 @@ class Tour {
         }
       }
     }
+  }
+
+  /**
+   * Play tour - initiated by user
+   */
+  user_play() {
+    if (this.started) {
+      this.user_resume()
+    } else {
+      this.start()
+    }
+  }
+
+  /**
+   * Pause tour
+   */
+  user_pause() {
+    if (this.curr_stop()) {
+      this.curr_stop().pause()
+    }
+  }
+
+  /**
+   * Resume paused tour stop
+   */
+  user_resume() {
+    if (this.curr_stop()) {
+      this.curr_stop().resume()
+    }
+  }
+
+  /**
+   * Exit tour
+   */
+  user_exit() {
+    this.clear()
+    if (typeof this.exit_callback === 'function') {
+      this.exit_callback()
+    }
+  }
+
+  /**
+   * Activate next tour stop. If transition is running, go to end of the
+   * current transition, otherwise go to next stop. Refer to Tours Timeline picture
+   * and accompany table for details
+   */
+  user_forward() {
+    let tourstop = this.curr_stop()
+    this.clear_callback_timers()
+    clearTimeout(this.goto_next_timer)
+    
+    if (!this.started) {
+        user_play()
+    }
+    if (!tourstop) {
+        console.log("Error: no current tourstop")
+        return
+    }
+    if (tourstop.state === TourStopClass.INACTIVE) {
+        console.log("Error: tried to goto_next on an inactive stop")
+        return
+    }
+    if (tourstop.state !== TourStopClass.ARRIVED) {
+        // We are in a transition
+        if (tourstop.setting.transition_in !== "show_self") {
+            // We are showing the previous stop or nothing at all
+            //console.log("User pressed forward when transitioning with current stop not shown")
+            this.curr_stop().skip_transition()
+        } else {
+            // We are showing the current stop
+            //console.log("User pressed forward when transitioning with current stop shown")
+            this.curr_stop().skip_transition()
+        }
+    } else {
+        // We are at the tourstop and have finished transitions
+        //console.log("User pressed forward at current stop")
+        this.goto_next()
+    }
+  }
+
+  user_backward() {
+    this.goto_prev()
+  }
+
+  /**
+   * Bind previous, next, pause, play, exit button event
+   */
+  bind_template_ui_event(tourstop) {
+    tourstop.container.find('.' + this.forward_class).click(() => {
+      this.user_forward()
+    })
+
+    tourstop.container.find('.' + this.backward_class).click(() => {
+      this.user_backward()
+    })
+
+    tourstop.container.find('.' + this.play_class).click(() => {
+      this.user_play()
+    })
+
+    tourstop.container.find('.' + this.pause_class).click(() => {
+      this.user_pause()
+    })
+
+    tourstop.container.find('.' + this.exit_class).click(() => {
+      this.user_exit()
+    })
+  }
+
+  /**
+   * Bind exit or hide exit confirm events on the buttons of exit confirm popup
+   */
+  bind_exit_confirm_event() {
+    this.exit_confirm_popup.find('.' + this.exit_confirm_class).click(() => {
+      this.user_exit()
+      this.exit_confirm_popup.hide()
+    })
+    this.exit_confirm_popup.find('.' + this.exit_cancel_class).click(() => {
+      this.user_resume()
+      this.exit_confirm_popup.hide()
+    })
   }
 }
 

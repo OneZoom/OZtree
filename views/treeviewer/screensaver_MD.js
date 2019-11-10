@@ -6,8 +6,8 @@
              * All the following values are default values.
              */
             "wrapper_id": "tour_wrapper",
-            "next_class": "tour_next",
-            "prev_class": "tour_prev",
+            "forward_class": "tour_forward",
+            "backward_class": "tour_backward",
             "exit_class": "tour_exit",
             "exit_confirm_class": "exit_confirm",
             "exit_cancel_class": "exit_cancel"

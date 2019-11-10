@@ -6,9 +6,9 @@
        * Specify which element to bind the next tour stop, previous tour stop and exit tour event.
        */
       "wrapper_id": "tour_wrapper",
-      "next_class": "tour_next",
+      "forward_class": "tour_forward",
       "exit_class": "tour_exit",
-      "prev_class": "tour_prev",
+      "backward_class": "tour_backward",
     },
   },
   /**
@@ -20,16 +20,16 @@
       "template_style": "static/tour/tutorial_template.css",
       "update_class": {
           /**
-           * Replace content of classes e.g. $('.title'), $('.tour_prev'), $('.tour_next')
+           * Replace content of classes e.g. $('.title'), $('.tour_backward'), $('.tour_forward')
            * If a string, replace with the html. Otherwise could be "text", "style", or "src"
            */
-          "tour_prev": {
+          "tour_backward": {
               "text": "← {{=T('Previous')}}"
           },
           "tour_exit": {
               "text": "{{=T('Exit tutorial')}}"
           },
-          "tour_next": {
+          "tour_forward": {
               "text": "{{=T('Skip')}} →"
           },
           "outsidebox": {
@@ -47,7 +47,7 @@
         "update_class": {
           "title": "{{=T('What is the tree of life?')}}",
           "window_text": "{{=T('The tree of life shows how all life on earth is related.  Each leaf represents a different species. The branches show how all these species evolved from common ancestors over billions of years.')}}",
-          "tour_prev": {
+          "tour_backward": {
             "style": {"visibility": "hidden"} // Prev button invisible for first stop
           },
         },
@@ -218,7 +218,7 @@
                 "window_text": {
                     "style":{"text-align":"center", "padding":"0.5em"},
                     "html":"<p>That’s the end of the tutorial. We’re returning you to the rough location where you were before starting.</p><h1>{{=T('Have fun exploring!')}}</h1>"},
-                "tour_next": {
+                "tour_forward": {
                     "style": {"visibility": "hidden"} // Prev button invisible for last stop
                     },
             },

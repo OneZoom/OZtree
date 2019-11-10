@@ -1,10 +1,10 @@
 import tree_state from '../tree_state'
 
 //Tour Stop States
-const INACTIVE = 'TOURSTOP_EXIT'
-const TRANSITION_WAIT = 'TOURSTOP_INIT'
-const TRANSITION_MOVE = 'TOURSTOP_IS_FLYING'
-const ARRIVED = 'TOURSTOP_END'  //at the end of tour stop, wait for X seconds or until user presses next to continue
+const INACTIVE = 'TOURSTOP_INACTIVE'
+const TRANSITION_WAIT = 'TOURSTOP_T_WAIT'
+const TRANSITION_MOVE = 'TOURSTOP_T_MOVE'
+const ARRIVED = 'TOURSTOP_ARRIVED'  //at the end of tour stop, wait for X seconds or until user presses next to continue
 
 const delay = (delayTime) => {
   return new Promise((resolve) => {
@@ -14,7 +14,7 @@ const delay = (delayTime) => {
   })
 }
 
-class TourStop {
+class TourStopClass {
   constructor(tour, setting) {
     this.tour = tour
     this.controller = this.tour.onezoom.controller
@@ -25,7 +25,6 @@ class TourStop {
     this.direction = 'forward'
     this.template_loaded = $.Deferred() // Allows us to fire off something once all templates have loaded
     this.container_appended = false
-    
 
     //Container is set when tour.setup_setting is called
     this.container = null
@@ -59,7 +58,9 @@ class TourStop {
    * Exit current stop
    */
   exit() {
-    this.pause()
+    tree_state.flying = false
+    this.tour.clear_callback_timers()
+    clearTimeout(this.goto_next_timer)
     this.state = INACTIVE
     this.execute("on_exit")
     // Don't need to hide this stop: it might carry on being shown during next transition
@@ -72,7 +73,7 @@ class TourStop {
     }
     // Show the tour stop *after* firing the function, in case we want the function do
     // do anything first (which could including showing the stop)
-    console.log("force hiding all other stops on arrival")
+    console.log("Arrived at tourstop: force hiding all other stops")
     var stop_just_shown = this.tour.hide_other_stops(this.container)
     if (stop_just_shown) {
        this.execute("on_show")
@@ -89,8 +90,9 @@ class TourStop {
     tree_state.flying = false
     // leap (this should cancel any exiting flight)
     this.controller.leap_to(this.OZid, this.setting.pos)
-    console.log("force hiding other stops during skip")
-    this.tour.hide_other_stops(this.container)
+    //this.tour.hide_other_stops(this.container)
+    // We may not need to call arrive_at_tourstop as this should be called when the
+    // transition promise is resolved
     // this.arrive_at_tourstop()
   }
 
@@ -237,13 +239,13 @@ class TourStop {
   get_wait_time() {
     if (
       this.direction === 'backward' &&
-      this.setting.hasOwnProperty('wait_after_prev')
+      this.setting.hasOwnProperty('wait_after_backward')
     ) {
-      return this.setting.wait_after_prev
+      return this.setting.wait_after_backward
     } else {
       return this.setting.wait //null means stay here until user interation
     }
   }
 }
 
-export default TourStop
+export default TourStopClass
