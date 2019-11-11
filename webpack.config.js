@@ -2,11 +2,15 @@ const webpack = require('webpack'); //to access built-in plugins
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const path = require('path')
 
+function OZTreeModule_src(x) {
+    return path.resolve(__dirname, 'OZprivate', 'rawJS', 'OZTreeModule', 'src', x),
+}
+
 var config = {
   entry: {
     //at: './OZprivate/rawJS/OZTreeModule/src/at.js',
-    OZentry: path.resolve(__dirname, 'OZprivate', 'rawJS', 'OZTreeModule', 'src', 'OZEntry.js'),
-    search_ui: './OZprivate/rawJS/OZTreeModule/src/search_ui.js',
+    OZentry: OZTreeModule_src('OZentry.js'),
+    search_ui: OZTreeModule_src('search_ui.js'),
     //polytomy: './OZprivate/rawJS/OZTreeModule/src/polytomy.js'
   },
   output: {
