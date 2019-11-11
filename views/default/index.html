@@ -48,10 +48,15 @@
   </div>
   <div> <!-- Right column -->
     <div class="uk-card uk-card-default uk-card-small">
+      <!-- to be restyled -->
+      <div style="border: 1px solid red; position: absolute; width: 75%; height: 75%" id="tour_wrapper"></div>
       <canvas id="OneZoomCanvasID" class="embedded" style="height: 100%"></canvas>
-    <!-- treeviewer constnats -->
+    <!-- treeviewer constants -->
     {{include 'treeviewer/dynamic_scripts.html' }}
     {{include 'treeviewer/server_urls.html' }}
+      <script>
+animation_config = {{include 'treeviewer/homepage_animation.js'}}
+      </script>
       <script>
 $(document).ready(function() {    /* Mainly a place to attach JS event handlers */
     // Set up some global variables
@@ -74,13 +79,17 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             window.cut_threshold,
             window.tree_date);
         window.onezoom.add_hook('on_tree_loaded', () => {
-            /* Start stuff here, e.g. a screensaver which fires off immediately
-            window.onezoom.screensaver.setup_setting(
-                my_config_file, 'animation',
-                null, // before the animation runs.
-                null, // nothing on animation exit
-                true); // loop back and forth
-            */
+            /* we use the 'screensaver' tour to provide a constant animation */
+            onezoom.screensaver.setup_setting(
+                animation_config,
+                'homepage_animation',
+                null, // nothing before the screensaver runs
+                true, // loop back and forth
+                null, // nothing on exit
+                "block", // disable interaction with the tree
+                null, // do not provide an interaction callback
+                0, // start immediately
+                ); 
         })
     }
 })
