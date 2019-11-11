@@ -244,6 +244,8 @@ class Tour {
     /** 
      * Add hooks called when the user interacts with the onezoom canvas
      */
+    if (this.interaction_hooks.length) {return} // hooks already added: don't add again
+
     if (this.interaction == null) {
       /**
        * Default behaviour: pause tour on interaction
@@ -363,8 +365,8 @@ class Tour {
     //hide tour
     this.started = false
     this.curr_step = -1
-    tree_state.disable_interaction = false
     this.remove_canvas_interaction_callbacks()
+    tree_state.disable_interaction = false
   }
 
 
@@ -621,6 +623,10 @@ class Tour {
       this.interaction === 'exit_after_confirmation')) {
         //Do nothing
     } else {
+      console.log("Blocking interaction")
+      // Setting tree_state.disable_interaction doesn't disable callbacks: we need to do
+      // that explicitly
+      this.remove_canvas_interaction_callbacks()
       tree_state.disable_interaction = true
     }
   }
@@ -635,6 +641,8 @@ class Tour {
       this.interaction === 'exit_after_confirmation')) {
       //Do nothing
     } else {
+      console.log("Enabling interaction")
+      this.add_canvas_interaction_callbacks()
       tree_state.disable_interaction = false
     }
   }
@@ -738,6 +746,7 @@ class Tour {
   user_pause() {
     if (this.started && this.curr_stop()) {
       console.log("User paused")
+      this.remove_canvas_interaction_callbacks() // Don't trigger any more pauses
       this.curr_stop().pause()
     }
   }
@@ -748,6 +757,7 @@ class Tour {
   user_resume() {
     if (this.started && this.curr_stop()) {
       console.log("User resumed")
+      this.add_canvas_interaction_callbacks() // Allow interactions to trigger pauses again
       this.curr_stop().resume()
     }
   }
