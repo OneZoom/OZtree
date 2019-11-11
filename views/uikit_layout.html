@@ -35,9 +35,15 @@
     <div class="w2p_flash alert alert-dismissable">{{=response.flash or ''}}</div>
     
     <!-- Navbar ======================================= -->
-<header>
+<header class="oz-section bkgd-darkspiral">
     <nav class="uk-navbar-container uk-navbar-transparent" uk-navbar role="navigation">
-      <div class="uk-navbar-left"><img src="{{=URL('static/images', 'oz-leaf-logo-dark.png')}}" alt="OneZoom" /></div>
+      <div class="uk-navbar-left">
+        <div class="logo uk-navbar-item">
+          <a href="/" id="OZ-logo">
+            <img src="{{=URL('static/images', 'oz-logo-1line-white.svg')}}" alt="OneZoom" />
+          </a>
+        </div>
+      </div>
       
       {{if response.menu:}}
         <div class="uk-navbar-center"><ul class="uk-navbar-nav">
@@ -139,7 +145,7 @@
     </nav>
 
     <!-- Masthead ===================================== -->    
-    <div class="masthead">{{block masthead}}{{end}}</div>
+    <div class="oz-section-body masthead">{{block masthead}}{{end}}</div>
 </header>
     <!-- Main ========================================= -->
     <!-- Begin page content -->

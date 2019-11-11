@@ -98,6 +98,7 @@ def index():
                 in get_common_names([r.OTT_ID for r in sponsored_rows], return_nulls=True).items()}
         ),
         popular_places=[
+            # These should be obtained out of the tree_startpoints table (category="homepage")
             dict(
                 tree_href='/life/@=%d' % ott,
                 image_href=pop_images.get(ott, URL('static','images/noImage_transparent.png')),
@@ -106,7 +107,19 @@ def index():
             for ott, vn
             in get_common_names(popular_otts, return_nulls=True).items()
         ],
+        animation_locations=[
+            # These should be obtained out of the tree_startpoints table (category="homepage_anim")
+            [244265, 'Mammals'],
+            [81461, 'Birds'],
+            [99252, 'Flowering plants'],
+            ],
     )
+
+def homepage_animation_template():
+    """
+    The html fragment used as a template for the embedded animation on the homepage
+    """
+    return dict()
 
 @require_https_if_nonlocal()
 def user():
@@ -1446,21 +1459,28 @@ def life_MD():
         'default', 'life_MDtouch/@Vertebrata=801601?ssaver=600&otthome=801601',
         url_encode=False))
 
+def lifeMD():
+    """
+    A helper function. At some point we want to replace life_MD with this
+    """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+    return dict(
+        screensaver_otts=[991547, 81461, 99252, 770315],
+        **treeview_info(has_text_tree=False))
+    
 def life_MDtouch():
     """
     The museum display version for touchscreens, which is sandboxed
     (and has no underlying text tree with links hidden by JS)
     """
-    response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return treeview_info(has_text_tree=False)
+    return lifeMD()
 
 def life_MDmouse():
     """
     The museum display version for mouse operated systems, which is sandboxed
     (and has no underlying text tree with links hidden by JS)
     """
-    response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return treeview_info(has_text_tree=False)
+    return lifeMD()
 
 def life_treasure():
     """

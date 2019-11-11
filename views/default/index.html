@@ -24,7 +24,7 @@
           In our interactive tree of life you can explore the relationships between
           {{="{:,}".format(n_species)}} species and wonder at {{="{:,}".format(n_images)}} images on a single zoomable page.
         </p>
-        <a href="/life.html">Start exploring</a>
+        <a href="/life.html" class="oz-pill pill-bottomright pill-sqicon">Show me how</a>
       </div>
 
       <div class="uk-card uk-card-default uk-card-small uk-card-body uk-width-expand">
@@ -48,10 +48,14 @@
   </div>
   <div> <!-- Right column -->
     <div class="uk-card uk-card-default uk-card-small">
+      <div class="hp_tour_ui" id="tour_wrapper"></div>
       <canvas id="OneZoomCanvasID" class="embedded" style="height: 100%"></canvas>
-    <!-- treeviewer constnats -->
+    <!-- treeviewer constants -->
     {{include 'treeviewer/dynamic_scripts.html' }}
     {{include 'treeviewer/server_urls.html' }}
+      <script>
+animation_config = {{include 'treeviewer/homepage_animation.js'}}
+      </script>
       <script>
 $(document).ready(function() {    /* Mainly a place to attach JS event handlers */
     // Set up some global variables
@@ -74,24 +78,27 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             window.cut_threshold,
             window.tree_date);
         window.onezoom.add_hook('on_tree_loaded', () => {
-            /* Start stuff here, e.g. a screensaver which fires off immediately
-            window.onezoom.screensaver.setup_setting(
-                my_config_file, 'animation',
-                null, // before the animation runs.
-                null, // nothing on animation exit
-                true); // loop back and forth
-            */
+            /* we use the 'screensaver' tour to provide a constant animation */
+            onezoom.screensaver.setup_setting(
+                animation_config,
+                'homepage_animation',
+                null, // nothing before the screensaver runs
+                true, // loop back and forth
+                null, // nothing on exit
+                "block", // disable interaction with the tree
+                null, // do not provide an interaction callback
+                0, // start immediately
+                ); 
         })
     }
 })
       </script>
-      <div id="tour_wrapper"></div><!-- only needed if we want the tour overlay-->
       </div>
     </div>
 </div>
 
 
-<section class="hp-section bkgd-leaves"><div class="hp-section-body">
+<section class="oz-section bkgd-leaves"><div class="oz-section-body">
   <h3 class="uk-card-title">Biodiversity and Conservation...</h3>
   <p>We want to help everyone appreciate biodiversity and the need to conserve it.<br/>
   <span class="endangered-red">Species shown as red leaves on our tree of life are known to be under threat of extinction.</span></p>
@@ -107,7 +114,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   {{pass}}
 </div>
 
-<section class="hp-section bkgd-quotes"><div class="hp-section-body">
+<section class="oz-section bkgd-quotes"><div class="oz-section-body">
   <h3>What they say...</h3>
 
   <div class="uk-position-relative" uk-slider>
@@ -126,7 +133,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
 </div></section>
 
 
-<section class="hp-section bkgd-tree"><div class="hp-section-body uk-position-relative">
+<section class="oz-section bkgd-polytomy"><div class="oz-section-body uk-position-relative">
   <h3 class="uk-card-title">Become a sponsor...</h3>
 
   <div class="uk-position-relative" uk-slider>
@@ -154,7 +161,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
 </div></section>
 
 
-<section class="hp-section bkgd-quotes"><div class="hp-section-body">
+<section class="oz-section bkgd-white"><div class="oz-section-body">
   <h3 class="uk-card-title">What we've been up to...</h3>
 
   <div class="uk-position-relative" uk-slider>

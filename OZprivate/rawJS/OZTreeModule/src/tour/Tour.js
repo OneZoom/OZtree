@@ -1,25 +1,25 @@
-import TourStop from './TourStop'
+import TourStopClass from './TourStop'
 import tree_state from '../tree_state';
-import { add_hook } from '../util';
-
-const Interaction_Action_Arr = ['mouse_down', 'mouse_wheel', 'touch_start', 'touch_move', 'touch_end']
+import { add_hook, remove_hook } from '../util';
 
 let tour_id = 1
+const Interaction_Action_Arr = ['mouse_down', 'mouse_wheel', 'touch_start', 'touch_move', 'touch_end']
 
 class Tour {
   constructor(onezoom) {
     this.tour_id = tour_id++
-    this.onezoom = onezoom
+    this.onezoom = onezoom // enabling access to controller
     this.curr_step = 0
     this.tourstop_array = []
     this.started = false
     this.name = null
+    this.callback_timers = [] // To store any timers that are fired off by callbacks, so they can be cancelled if necessary
   }
 
   /**
    * Give an example of a tour_settings object
-   * @param {boolean} as_json return a JSON string rather than a javascript object /**
-   * @return {(Object|String)} An example of the 
+   * @param {boolean} as_json return a JSON string rather than a javascript object
+   * @return {(Object|String)} An example of the tour settings object
    */
   example(as_json = false) {
     let setting_example = { 
@@ -33,8 +33,11 @@ class Tour {
                  */
                 "wrapper_id": "tour_wrapper", /* the DOM id of the wrapper in which to
                 * place the tour stops */
-                "next_class": "tour_next",
-                "prev_class": "tour_prev",
+                "forward_class": "tour_forward",
+                "backward_class": "tour_backward",
+                "play_class": "tour_play",
+                "pause_class": "tour_pause",
+                "resume_class": "tour_resume",
                 "exit_class": "tour_exit",
                 "exit_confirm_class": "exit_confirm",
                 "exit_cancel_class": "exit_cancel"
@@ -48,7 +51,7 @@ class Tour {
             "template_style": "static/tour/tutorial_template.css",
             "update_class": {
                 "title": "OneZoom Demo Tour",
-                "tour_next": {
+                "tour_forward": {
                     "style": {"visibility": "hidden"}
                 },
             },
@@ -65,15 +68,15 @@ class Tour {
                     "img": {
                         "src": "http://images.onezoom.org/99/098/31338098.jpg"
                     },
-                    "tour_prev": {
-                        "style": {"visibility": "hidden"} /* Hide the previous button on
+                    "tour_backward": {
+                        "style": {"visibility": "hidden"} /* Hide the backward button on
                         * the first stop. Any class can be hidden like this, even the
                         * whole window (class = .container)
                         */
                     },
                 },
                 "wait": 6000, /* Wait a bit longer here: 6 seconds */
-                "wait_after_prev": 0  /* used if this stop is entered by going back */
+                "wait_after_backward": 0  /* used if this stop is entered by going back */
             },
             {
                 "ott": "991547",
@@ -96,7 +99,7 @@ class Tour {
                 "fly_in_speed": 2, /* speed relative to the global_anim_speed, as
                 * accessed via controller.set_anim_speed() & controller.get_anim_speed()
                 */
-                "fly_in_visibility": "show_self", /* Should we show the tourstop on
+                "transition_in_visibility": "show_self", /* Should we show the tourstop on
                 arrival (default), during transition-in ("show_self"), or force no
                 tourstops to be shown during transition in ("force_hide"). If the default
                 then the previous stop is likely to carry on being shown during
@@ -134,15 +137,16 @@ class Tour {
                 */
                 "update_class": {
                     "window_text": "The End",
-                    "tour_next": {
+                    "tour_forward": {
                         "style": {"visibility": "hidden"}
                     },
-                "exec": null /* Only for javascript objects: define properties "on_stop",
-                * "on_transition", or "on_exit" as functions to execute those functions
+                "exec": null /* Only for javascript objects: define properties "on_start",
+                * "on_show", or "on_exit" as functions. Those functions are executed
                 * as the first event when arriving at a stop or when starting the
                 * transition into a stop. The function is passed the tourstop object as
                 * the first parameter so that you can access the text, the tour and its
-                * controller.
+                * controller. The function must return an array of any timers that it
+                * initiates, so that they can be cancelled if necessary. 
                 */
                 },
             },
@@ -175,15 +179,18 @@ class Tour {
    * @param {function} start_callback A function to run before the tour starts
    * @param {function} end_callback A function to run at the natural end of the tour 
    * @param {function} exit_callback A function to run at if the tour is exited prematurely
-   * @param {String} interaction what to do when the user interacts with the onezoom
+   * @param {String} interaction What to do when the user interacts with the onezoom
    *    instance, e.g. by moving the mouse on screen.
    *    - "block": disable interaction
    *    - "exit": interaction causes tour exit
    *    - "exit_after_confirmation": interaction causes tour exit, but user must confirm first
-   *    - null: interaction has no effect on the tour (default)
+   *    - null: interaction permitted, tour pauses but can be resumed (default)
+   * @param {function} interaction_callback Function to call when the user interacts with
+   *    the onezoom instance, e.g. by moving the mouse on screen, e.g. to activate a resume 
+   *    button if the tour is set to pause on interaction
    */
-  setup_setting(tour_setting, name, start_callback, end_callback, exit_callback, interaction) {
-    console.log(tour_setting)
+  setup_setting(tour_setting, name, start_callback, end_callback, exit_callback,
+                interaction, interaction_callback) {
     this.setting = tour_setting
     this.name = name || "tour_" + tour_id
     if (!this.setting) {return}
@@ -194,8 +201,11 @@ class Tour {
     this.end_callback = end_callback
     this.exit_callback = exit_callback
     this.interaction = interaction
+    this.interaction_callback = interaction_callback
+    this.interaction_hooks = {} // when we add interaction hooks, we store the ids here so we can remove them later
     /**
-     * If true, it will remove tour stop template from tour wrap when the tour is not active
+     * If true, dump_template_when_inactive will remove tour stop template from the tour
+     * wrapper when the tour is not active
      */
     this.dump_template_when_inactive = tour_setting.hasOwnProperty('dump_template_when_inactive') ? 
       tour_setting.dump_template_when_inactive : false
@@ -207,8 +217,11 @@ class Tour {
     this.exit_confirm_class = tour_setting.general.dom_names.exit_confirm_class || 'exit_confirm'
     this.exit_cancel_class = tour_setting.general.dom_names.exit_cancel_class || 'exit_cancel'
     /* the following 3 classes should probably belong to the tourstop instead */
-    this.next_class = tour_setting.general.dom_names.next_class || 'tour_next'
-    this.prev_class = tour_setting.general.dom_names.prev_class || 'tour_prev'
+    this.forward_class = tour_setting.general.dom_names.forward_class || 'tour_forward'
+    this.backward_class = tour_setting.general.dom_names.backward_class || 'tour_backward'
+    this.play_class = tour_setting.general.dom_names.play_class || 'tour_play'
+    this.pause_class = tour_setting.general.dom_names.pause_class || 'tour_pause'
+    this.resume_class = tour_setting.general.dom_names.resume_class || 'tour_resume'
     this.exit_class = tour_setting.general.dom_names.exit_class || 'tour_exit'
 
     let shared_setting = tour_setting['tourstop_shared'] || {}
@@ -217,110 +230,123 @@ class Tour {
      * Merge shared settings with stop setting in tour stop
      */
     tour_setting.tourstops = tour_setting.tourstops || []
-    tour_setting['tourstops'].forEach(tourstop_setting => {
+    tour_setting['tourstops'].forEach((tourstop_setting) => {
       let merged_setting = {}
       $.extend(true, merged_setting, shared_setting, tourstop_setting)
-      this.tourstop_array.push(new TourStop(this, merged_setting))
+      this.tourstop_array.push(new TourStopClass(this, merged_setting))
     })
-
-    /**
-     * Exit tour after interaction if setting.interaction.effect equals 'exit'
-     */
-    if (this.interaction &&
-      (
-        this.interaction === 'exit' ||
-        this.interaction === 'exit_after_confirmation'
-      )) {
-      Interaction_Action_Arr.forEach(action_name => {
-        console.log("Adding hook for " + action_name)
-        add_hook(action_name, () => {
-          if (this.started) {
-            /**
-             * Only call exit if tour is running
-             */
-            console.log("Action detected, exiting")
-            if (this.interaction === 'exit') {
-              this.exit()
-            } else if (this.exit_confirm_popup) {
-              this.pause()
-              this.exit_confirm_popup.show()
-            }
-          }
-        })
-      })
-    }
-
     this.load_template()
     this.load_ott_id_conversion_map()
+  }
+
+
+  add_canvas_interaction_callbacks() {
+    /** 
+     * Add hooks called when the user interacts with the onezoom canvas
+     */
+    if (this.interaction_hooks.length) {return} // hooks already added: don't add again
+
+    if (this.interaction == null) {
+      /**
+       * Default behaviour: pause tour on interaction
+       */
+      Interaction_Action_Arr.forEach(action_name => {
+        console.log("Adding hook for " + action_name)
+        this.interaction_hooks[action_name] = add_hook(action_name, () => {
+            if (typeof this.interaction_callback === 'function') {
+                this.interaction_callback()
+            }
+            this.user_pause()
+        })
+      })
+    } else {
+      /**
+       * Exit tour after interaction if setting.interaction.effect equals 'exit'
+       */
+      if (this.interaction === 'exit' ||
+          this.interaction === 'exit_after_confirmation') {
+        Interaction_Action_Arr.forEach(action_name => {
+          console.log("Adding hook for " + action_name)
+          this.interaction_hooks[action_name] = add_hook(action_name, () => {
+            console.log("Action detected with interaction = " + this.interaction + ", exiting")
+            if (typeof this.interaction_callback === 'function') {
+                this.interaction_callback()
+            }
+            if (this.interaction === 'exit') {
+              this.user_exit()
+            } else if (this.exit_confirm_popup) {
+              this.user_pause()
+              this.exit_confirm_popup.show()
+            }
+          })
+        })
+      } else {
+        if (typeof this.interaction_callback === 'function') {
+          Interaction_Action_Arr.forEach(action_name => {
+            this.interaction_hooks[action_name] = add_hook(action_name, () => {
+              this.interaction_callback()
+            })
+          })
+        }
+      }
+    }
+  }
+
+  remove_canvas_interaction_callbacks() {
+    for (let action_name in this.interaction_hooks) {
+      remove_hook(action_name, this.interaction_hooks[action_name])
+    }
   }
 
   /**
    * Start tour
    */
   start() {
-    if (!this.setting) {
-        if (this.name) {
-            alert("The tour " + this.name + " is disabled, as its settings are empty")
-        } else {
-            alert("You have tried to start a tour that has not yet been set up")
-        }
+    if (this.tourstop_array.length == 0) {
+        alert("This tour has no tourstops")
+        return
     }
-    this.exit(false)
-    this.append_template_to_tourstop()
-    //Enable tour style
-    console.log("Enabling tour " + this.name + "styles")
-    $('#tour_style_' + this.tour_id).removeAttr('disabled')
-    $('#tour_exit_confirm_style_' + this.tour_id).removeAttr('disabled')
-
-    this.started = true
-    this.rough_initial_loc = this.onezoom.utils.largest_visible_node()
-    this.curr_step = -1
-    this.goto_next()
-
-    /**
-     * disable interaction if interaction.effect equals to 
-     * 'block', 'exit', or 'exit_after_confirmation'
-     */
-    if (this.interaction && (
-      this.interaction === 'block' ||
-      this.interaction === 'exit' ||
-      this.interaction === 'exit_after_confirmation'
-    )) {
-      tree_state.disable_interaction = true
-    }
-
-    if (typeof this.start_callback === 'function') {
-      this.start_callback()
-    }
-    console.log("Tour " + this.name + "started")
+    // Make sure we only start when all the tourstop templates have loaded
+    $.when(...this.tourstop_array.map(a => a.template_loaded)).then(() => {
+      if (!this.setting) {
+          if (this.name) {
+              alert("The tour " + this.name + " is disabled, as its settings are empty")
+          } else {
+              alert("You have tried to start a tour that has not yet been set up")
+          }
+      }
+      // Reset
+      this.clear()
+      this.append_template_to_tourstop()
+      //Enable tour style
+      console.log("Enabling tour `" + this.name + "` styles")
+      $('#tour_style_' + this.tour_id).removeAttr('disabled')
+      $('#tour_exit_confirm_style_' + this.tour_id).removeAttr('disabled')
+    
+      this.started = true
+      this.add_canvas_interaction_callbacks()
+      this.rough_initial_loc = this.onezoom.utils.largest_visible_node()
+      this.curr_step = -1
+      this.goto_next()
+    
+      /**
+       * disable interaction - it should be restored immediately the first stop is shown
+       * or on exit, but for the moment we should not allow the tour to be interrupted
+       * as there may otherwise be no indication that we are on a tour
+       */
+      this.block_user_interaction_if_required()
+    
+      if (typeof this.start_callback === 'function') {
+        this.start_callback()
+      }
+      console.log("Tour `" + this.name + "` started")
+    })
   }
 
   /**
-   * Pause tour
+   * Clear tour
    */
-  pause() {
-    if (this.curr_stop()) {
-      this.curr_stop().pause()
-    }
-    //console.log("paused")
-  }
-
-  /**
-   * Continue paused tour stop
-   */
-  continue() {
-    //console.log("continuing")
-    if (this.curr_stop()) {
-      this.curr_stop().continue()
-    }
-    //console.log("continued")
-  }
-
-  /**
-   * Exit tour
-   */
-  exit(invoke_callback = true) {
-    console.log("exiting tour")
+  clear() {
     if (this.dump_template_when_inactive) {
       this.dump_template()
     }
@@ -328,7 +354,7 @@ class Tour {
     if (this.curr_stop()) {
       this.curr_stop().exit()
     }
-    this.hide_other_stops()
+    this.hide_and_show_stops()
 
     //disable tour stylesheet
     $('#tour_style_' + this.tour_id).attr('disabled', 'disabled')
@@ -339,42 +365,30 @@ class Tour {
     //hide tour
     this.started = false
     this.curr_step = -1
+    this.remove_canvas_interaction_callbacks()
     tree_state.disable_interaction = false
-
-    if (invoke_callback && typeof this.exit_callback === 'function') {
-      this.exit_callback()
-    }
-    //console.log("exited tour")
-
   }
 
+
   /**
-   * Activate next tour stop. If transition is running, go to end of the
-   * current transition, otherwise go to next stop.
-   */
+   * Go to the next tour stop immediately
+   */  
   goto_next() {
-    console.log("goto_next called")
     if (!this.started) {
       return
     }
-    
-    if (this.curr_stop() && this.curr_stop().state === 'TOURSTOP_IS_FLYING') {  
-      this.curr_stop().skip_transition()
-      console.log("goto_next: transition_skipped")
-    } else {
-        
-      if (this.curr_step === this.tourstop_array.length - 1) {
-        // end of tour, exit gracefully
-        if (typeof this.end_callback === 'function') {
-            this.end_callback()
-        }
-        this.exit(false)
-        return
+    if (this.curr_step === this.tourstop_array.length - 1) {
+      // end of tour, exit gracefully
+      if (typeof this.end_callback === 'function') {
+          this.end_callback()
       }
+      this.clear()
+      return
+    }
+    this.curr_stop().exit()   
     this.curr_step++
-    this.curr_stop().play('forward')
+    this.curr_stop().play_from_start('forward')
     this.set_ui_content()
-  }
   }
 
   /**
@@ -392,53 +406,41 @@ class Tour {
       this.curr_step--
     }
 
-    this.curr_stop().play('backward')
+    this.curr_stop().play_from_start('backward')
     this.set_ui_content()
   }
 
   /*
-   * Hide all the stops, but if one is given, and is hidden, show it
+   * Hide all the stops (optionally, except one, which will be shown)
+   * this function also takes care of user interaction which (in the deafult case of this.interaction == null) should only be allowed when a stop is shown.
+   * hence other parts of the code will potentially have disallowed interaction where here needs to be allowed if a stop is being shown.
+   *
+   * @param {Object} keep_shown The JQuery object to show or keep shown, or null if 
+   *    all stops should be hidden
+   * @param {boolean} block_user_interaction_if_required If all stops are
+   *    hidden and we risks hiding all the control buttons too, which means that we could
+   *    accidentally pause the tour via an interaction, and we would have no idea
+   *    that we are still in a tour. To avoid this, we can specify 'true' here, which
+   *    bans interaction if it would normally pause or exit the tour.
+   * @return {boolean} true if keep_shown stop was previously hidden, and is now revealed; false
+   *     if keep_shown stop was already showing, or undefined if no keep_shown stop given
    */
-  hide_other_stops(keep_shown = null) {
+  hide_and_show_stops(keep_shown=null, block_user_interaction_if_required=false) {
     if (keep_shown) {
-        $('#' + this.wrapper_id).find(".tourstop").not(keep_shown).hide()
-        if (keep_shown.is(":hidden")) {
-            keep_shown.show()
-        }
+      this.restore_user_interaction_if_required()
+      $('#' + this.wrapper_id).find(".tourstop").not(keep_shown).hide()
+      if (keep_shown.is(":hidden")) {
+          keep_shown.show()
+          return true
+      } else {
+          return false
+      }
     } else {
-       $('#' + this.wrapper_id).find(".tourstop").hide()
+      $('#' + this.wrapper_id).find(".tourstop").hide()
+      if (block_user_interaction_if_required) {
+        this.block_user_interaction_if_required()
+      }
     }
-  }
-
-  /**
-   * Bind previous, next, exit button event
-   */
-  bind_template_ui_event(tourstop) {
-    tourstop.container.find('.' + this.next_class).click(() => {
-      this.goto_next()
-    })
-
-    tourstop.container.find('.' + this.prev_class).click(() => {
-      this.goto_prev()
-    })
-
-    tourstop.container.find('.' + this.exit_class).click(() => {
-      this.exit()
-    })
-  }
-
-  /**
-   * Bind exit or hide exit confirm events on the buttons of exit confirm popup
-   */
-  bind_exit_confirm_event() {
-    this.exit_confirm_popup.find('.' + this.exit_confirm_class).click(() => {
-      this.exit()
-      this.exit_confirm_popup.hide()
-    })
-    this.exit_confirm_popup.find('.' + this.exit_cancel_class).click(() => {
-      this.continue()
-      this.exit_confirm_popup.hide()
-    })
   }
 
   /**
@@ -465,7 +467,7 @@ class Tour {
   }
 
   /**
-   * Opposite action to dump_template. This function would append tour stop templates into tour_wrapper
+   * Opposite action to dump_template. This function appends tour stop templates into tour_wrapper
    */
   append_template_to_tourstop() {
     this.tourstop_array.forEach(tourstop => {
@@ -509,14 +511,14 @@ class Tour {
       $(temp_div).load(template_url + " .container", () => {
         $(temp_div).hide()
         tourstop.container = $(temp_div) /* this is the way to access this specific stop */
-
         if (!this.dump_template_when_inactive) {
           $('#' + this.wrapper_id).append($(temp_div))
           tourstop.container_appended = true
           this.bind_template_ui_event(tourstop)
         }
-        
         this.prefetch_image(tourstop)
+        tourstop.template_loaded.resolve()
+        console.log("Created tourstop.container")
       })
 
       /**
@@ -611,6 +613,50 @@ class Tour {
   }
 
   /**
+   * Block any user interaction in cases where it would normally be allowed: i.e. when
+   * tour.interaction equals 'null' or default. In other cases, user interaction during a
+   * tour is trapped and handled sensibly
+   */
+  block_user_interaction_if_required() {
+    if (this.interaction && 
+      (this.interaction === 'exit' || 
+      this.interaction === 'exit_after_confirmation')) {
+        //Do nothing
+    } else {
+      console.log("Blocking interaction")
+      // Setting tree_state.disable_interaction doesn't disable callbacks: we need to do
+      // that explicitly
+      this.remove_canvas_interaction_callbacks()
+      tree_state.disable_interaction = true
+    }
+  }
+
+  /**
+   * Recover user interaction after block_user_interaction_if_required()
+   */
+  restore_user_interaction_if_required() {
+    if (this.interaction &&
+      (this.interaction === 'block' ||
+      this.interaction === 'exit' ||
+      this.interaction === 'exit_after_confirmation')) {
+      //Do nothing
+    } else {
+      console.log("Enabling interaction")
+      this.add_canvas_interaction_callbacks()
+      tree_state.disable_interaction = false
+    }
+  }
+
+  /**
+   * Clear callback timers
+   */
+  clear_callback_timers() {
+    this.callback_timers.forEach((timer) => clearTimeout(timer))
+    this.callback_timers = []
+  }
+
+
+  /**
    * Set UI Content
    */
   set_ui_content() {
@@ -633,6 +679,7 @@ class Tour {
 
           /**
            * Set as html, allowing other styles etc to be set too
+           * warning: could be maliciously exploited
            */
           if (update_class[key].hasOwnProperty('html')) {
             selectedDom.html(update_class[key].html)
@@ -665,6 +712,13 @@ class Tour {
           if (update_class[key].hasOwnProperty('src')) {
             selectedDom.attr('src', update_class[key].src)
           }
+
+          /**
+           * Set a href - warning: could be maliciously exploited
+           */
+          if (update_class[key].hasOwnProperty('href')) {
+            selectedDom.attr('href', update_class[key].href)
+          }
         } else if (typeof update_class[key] === 'function') {
           /**
            * Set by pure function
@@ -673,6 +727,135 @@ class Tour {
         }
       }
     }
+  }
+
+  /**
+   * Play tour - initiated by user
+   */
+  user_play() {
+    if (this.started) {
+      this.user_resume()
+    } else {
+      this.start()
+    }
+  }
+
+  /**
+   * Pause tour
+   */
+  user_pause() {
+    if (this.started && this.curr_stop()) {
+      console.log("User paused")
+      this.remove_canvas_interaction_callbacks() // Don't trigger any more pauses
+      this.curr_stop().pause()
+    }
+  }
+
+  /**
+   * Resume paused tour stop
+   */
+  user_resume() {
+    if (this.started && this.curr_stop()) {
+      console.log("User resumed")
+      this.add_canvas_interaction_callbacks() // Allow interactions to trigger pauses again
+      this.curr_stop().resume()
+    }
+  }
+
+  /**
+   * Exit tour
+   */
+  user_exit() {
+    this.clear()
+    if (typeof this.exit_callback === 'function') {
+      this.exit_callback()
+    }
+  }
+
+  /**
+   * Activate next tour stop. If transition is running, go to end of the
+   * current transition, otherwise go to next stop. Refer to Tours Timeline picture
+   * and accompany table for details
+   */
+  user_forward() {
+    let tourstop = this.curr_stop()
+    this.clear_callback_timers()
+    clearTimeout(this.goto_next_timer)
+    
+    if (!this.started) {
+        user_play()
+    }
+    if (!tourstop) {
+        console.log("Error: no current tourstop")
+        return
+    }
+    if (tourstop.state === TourStopClass.INACTIVE) {
+        console.log("Error: tried to goto_next on an inactive stop")
+        return
+    }
+    if (tourstop.state !== TourStopClass.ARRIVED) {
+        // We are in a transition
+        if (tourstop.setting.transition_in !== "show_self") {
+            // We are showing the previous stop or nothing at all
+            //console.log("User pressed forward when transitioning with current stop not shown")
+            this.curr_stop().skip_transition()
+        } else {
+            // We are showing the current stop
+            //console.log("User pressed forward when transitioning with current stop shown")
+            this.curr_stop().skip_transition()
+        }
+    } else {
+        // We are at the tourstop and have finished transitions
+        //console.log("User pressed forward at current stop")
+        this.goto_next()
+    }
+  }
+
+  user_backward() {
+    this.goto_prev()
+  }
+
+  /**
+   * Bind previous, next, pause, play, exit button event
+   */
+  bind_template_ui_event(tourstop) {
+    tourstop.container.find('.' + this.forward_class).click(() => {
+      this.user_forward()
+    })
+
+    tourstop.container.find('.' + this.backward_class).click(() => {
+      this.user_backward()
+    })
+
+    tourstop.container.find('.' + this.play_class).click(() => {
+      this.user_play()
+    })
+
+    tourstop.container.find('.' + this.pause_class).click(() => {
+      this.user_pause()
+    })
+
+    tourstop.container.find('.' + this.resume_class).click(() => {
+      this.user_resume()
+    })
+
+    tourstop.container.find('.' + this.exit_class).click(() => {
+      this.user_exit()
+    })
+  }
+
+  /**
+   * Bind exit or hide exit confirm events on the buttons of exit confirm popup
+   */
+  bind_exit_confirm_event() {
+    this.exit_confirm_popup.find('.' + this.exit_confirm_class).click(() => {
+      this.user_exit()
+      this.exit_confirm_popup.hide()
+    })
+    this.exit_confirm_popup.find('.' + this.exit_cancel_class).click(() => {
+      this.user_resume()
+      this.exit_confirm_popup.hide()
+    })
   }
 }
 

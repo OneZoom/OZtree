@@ -1,26 +1,38 @@
-$oz-background-dark: #182418;
-$oz-background-dark-text: #edeeed;
-$oz-background-dark-subdued: #a4a19b;
-$oz-background-lightgreen: #dbf3cc;
-$oz-logo-green: #83d34f;
-$oz-endangered-red: #d31818;
+$oz_dark_bg: #1c261c;
+$oz_dark_fg: #3f473f;
+$oz_grey_bg: #736e63;
+$oz_grey_fg: #b8b3ae;
+$oz_red_bg: #d11c1c;
+$oz_red_fg: #ff9e7f;
+$oz_green_bg: #3a8a30;
+$oz_green_fg: #7fd14f;
+$oz_light_bg: #ffffff;
+$oz_light_fg: #d9f0ca;
 
 $oz-font-serif: serif;
+%oz-font-serif {
+  font-family: $oz-font-serif;
+  font-style: italic;
+}
 
 %oz-background-dark {
-  background: $oz-background-dark;
-  color: $oz-background-dark-text;
+  background: $oz_dark_bg;
+  color: $oz_light_bg;
 
   h1, h2, h3, h4, h5, h6 {
-    color: $oz-logo-green;
+    color: $oz_green_fg;
   }
 
   .subdued {
-    color: $oz-background-dark-subdued;
+    color: $oz_grey_fg;
   }
+}
 
-  blockquote, blockquote footer {
-    /* Override UIkit's styling for quotes */
-    color: $oz-background-dark-text;
-  }
+%oz-background-light {
+  background: $oz_light_fg;
+  color: $oz_dark_bg;
+}
+
+.endangered-red {
+  color: $oz_red_bg;
 }

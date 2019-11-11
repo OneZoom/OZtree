@@ -1,4 +1,4 @@
-import {api_wrapper} from './api_wrapper';
+import api_wrapper from './api_wrapper';
 import tree_state from '../tree_state';
 import config from '../global_config';
 

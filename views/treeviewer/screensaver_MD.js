@@ -6,8 +6,8 @@
              * All the following values are default values.
              */
             "wrapper_id": "tour_wrapper",
-            "next_class": "tour_next",
-            "prev_class": "tour_prev",
+            "forward_class": "tour_forward",
+            "backward_class": "tour_backward",
             "exit_class": "tour_exit",
             "exit_confirm_class": "exit_confirm",
             "exit_cancel_class": "exit_cancel"
@@ -23,17 +23,11 @@
         "fly_in_speed":0.1,
     },
     "tourstops": [
+    {{for ott in screensaver_otts:}}
         {
-            "ott": "991547",
+            "ott": "{{=ott}}",
             "wait": 1000
         },
-        {
-            "ott": "81461",
-            "wait": 1000
-        },
-        {
-            "ott": "99252",
-            "wait": 1000
-        },
+    {{pass}}
     ]
 }

@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const path = require('path')
 
 function OZTreeModule_src(x) {
-    return path.resolve(__dirname, 'OZprivate', 'rawJS', 'OZTreeModule', 'src', x),
+    return path.resolve(__dirname, 'OZprivate', 'rawJS', 'OZTreeModule', 'src', x);
 }
 
 var config = {
