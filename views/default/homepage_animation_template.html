@@ -1,9 +1,13 @@
 <!--all templates must be inside something which has class 'container' as a minimum.  
 This is because 'container' is hardcoded as the handle in the tour controller tour.js-->
 <div class='container'>
-  <div><a class="linkout" href="">{{=T('Start exploring')}} <span class="ottname"></span></a></div>
-  <div><span class='tour_backward button'>prev</span></div>
-  <div><span class='tour_play button'>play</span></div>
-  <div><span class='tour_pause button'>pause</span></div>
-  <div><span class='tour_forward button'>next</span></div>
+  <div><a class="linkout oz-pill pill-sqicon" href="">{{=T('Start exploring')}} <span class="ottname"></span></a></div>
+  <div class="tour-controls">
+    <a href="javascript:return(false)" class='tour_backward oz-pill pill-round'>
+      <svg xmlns="http://www.w3.org/2000/svg" width="19.2" height="29.5" viewBox="0 0 5.1 7.8"><path d="M4.2 7l-3-3.1 3-3" fill="none" stroke="#7fd14f" stroke-width="1.7" stroke-linecap="round" stroke-miterlimit="10"/></svg>
+    </a>
+    <a href="javascript:return(false)" class='tour_play oz-pill pill-round'>Camel</a>
+    <a href="javascript:return(false)" class='tour_pause oz-pill pill-round'>pause</a>
+    <a href="javascript:return(false)" class='tour_forward oz-pill pill-round'>next</a>
+  </div>
 </div>

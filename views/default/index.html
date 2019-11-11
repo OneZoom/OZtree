@@ -24,7 +24,7 @@
           In our interactive tree of life you can explore the relationships between
           {{="{:,}".format(n_species)}} species and wonder at {{="{:,}".format(n_images)}} images on a single zoomable page.
         </p>
-        <a href="/life.html">Start exploring</a>
+        <a href="/life.html" class="oz-pill pill-bottomright pill-sqicon">Show me how</a>
       </div>
 
       <div class="uk-card uk-card-default uk-card-small uk-card-body uk-width-expand">
@@ -48,8 +48,7 @@
   </div>
   <div> <!-- Right column -->
     <div class="uk-card uk-card-default uk-card-small">
-      <!-- to be restyled -->
-      <div style="border: 1px solid red; position: absolute; width: 75%; height: 75%" id="tour_wrapper"></div>
+      <div class="hp_tour_ui" id="tour_wrapper"></div>
       <canvas id="OneZoomCanvasID" class="embedded" style="height: 100%"></canvas>
     <!-- treeviewer constants -->
     {{include 'treeviewer/dynamic_scripts.html' }}
@@ -94,7 +93,6 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
     }
 })
       </script>
-      <div id="tour_wrapper"></div><!-- only needed if we want the tour overlay-->
       </div>
     </div>
 </div>

@@ -197,3 +197,60 @@ header .logo img {
   margin-left: auto;
   margin-right: auto;
 }
+
+/* ********** Call-to-action pills ********************** */
+
+.oz-pill {
+  @extend %oz-background-dark;
+
+  display: inline-block;
+  padding: 0.75rem 1rem;
+  border-radius: 1.5rem 0;
+
+  &, &:link, &:visited, &:active, &:hover {
+    color: $oz_green_fg;
+  }
+
+  &.pill-round {
+    border-radius: 1.5rem;
+    height: 1.2rem;
+    line-height: 1.2rem;
+  }
+
+  &.pill-bottomright {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border-radius: 1.5rem 0 0 0;
+  }
+
+  &.pill-sqicon {
+    background-image: url(../images/oz-logo-sqicon-white.svg);
+    background-repeat: no-repeat;
+    background-position: 97% center;
+    background-size: 1.5rem;
+    padding-right: calc(1.5rem + 1rem); /* Add icon size to normal padding */
+  }
+}
+
+/* ********** Home page tour UI ************************* */
+
+.hp_tour_ui {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  .tour-controls {
+    padding: 0.5rem;
+    text-align: right;
+  }
+
+  .linkout.oz-pill {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
