@@ -3,62 +3,174 @@
 @import "search_ui.scss";
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: $oz-font-serif;
-  font-style: italic;
+  @extend %oz-font-serif;
 }
 
-blockquote {
-  font-family: $oz-font-serif;
-  font-style: italic;
+blockquote, blockquote footer {
+  @extend %oz-font-serif;
+  color: inherit;  /* Override UIkit's styling for quotes */
 }
 
 a, a:link, a:active, a:visited, a:hover {
   color: inherit;
 }
 
-.endangered-red {
-  color: $oz-endangered-red;
-}
-
 /* ********** Header ********** */
 header {
-  padding: 10px 10px 0 10px;
-
-  border-bottom: 1px solid #3e463e;
-  @extend %oz-background-dark;
+  padding: 0 10px;
 }
 
 header .uk-navbar-nav>li>a {
   text-transform: none;
   span {
-    color: $oz-background-dark-text;
     /* The navbar items have too much height, so underline a nested element */
-    border-bottom: 1px solid $oz-logo-green;
+    border-bottom: 1px solid $oz_green_fg;
   }
-  &:hover span {
-    color: $oz-logo-green;
+  color: inherit;
+  &:hover, &.uk-open {
+    color: $oz_green_fg;
   }
-}
-
-header h1 {
-  color: $oz-logo-green;
 }
 
 header .masthead {
   max-width: 520px;
   margin: 0 auto;
-}
-header .masthead h1, header .masthead h1 a {
-  color: $oz-logo-green;
-  &:link, &:visited, &:hover, &:active {
-    color: $oz-logo-green;
+
+  h1, h1 a {
+    color: $oz_green_fg;
+    &:link, &:visited, &:hover, &:active {
+      color: $oz_green_fg;
+    }
+  }
+
+  .subdued {
+    @extend %oz-font-serif;
   }
 }
+
+header .logo img {
+  width: 220px;
+}
+
+/* ********** HP sections ********** */
+
+.oz-section {
+  overflow: hidden; /* contain background */
+
+  > .oz-section-body {
+    max-width: 500px;
+    margin: 1rem auto;
+    text-align: center;
+  }
+
+  &.bkgd-darkspiral, &.bkgd-leaves, &.bkgd-quotes, &.bkgd-polytomy {
+    position: relative; /* Contain the floating background elements */
+
+    & > * {
+      z-index: 1; /* Sit stuff on top of patterns if it floats */
+    }
+
+    &:before, &:after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center right;
+    }
+
+    &:after {
+      transform: scaleX(-1);
+    }
+  }
+
+  &.bkgd-leaves {
+    @extend %oz-background-light;
+    $background-image: url(../images/oz-sectionbg-leaves.svg);
+    $background-spacing: calc(50% + 700px / 2);
+
+    &:before, &:after {
+      top: 40px;
+      bottom: 40px;
+      background-image: $background-image;
+      background-size: contain;
+    }
+
+    &:before {
+      right: $background-spacing;
+    }
+
+    &:after {
+      left: $background-spacing;
+    }
+  }
+
+  &.bkgd-quotes {
+    @extend %oz-background-dark;
+    $background-image: url(../images/oz-sectionbg-quotes.svg);
+    $background-spacing: calc(50% + 700px / 2);
+
+    &:before, &:after {
+      background-image: $background-image;
+      background-size: contain;
+    }
+
+    &:before {
+      right: $background-spacing;
+    }
+
+    &:after {
+      left: $background-spacing;
+    }
+  }
+
+  &.bkgd-polytomy {
+    @extend %oz-background-light;
+    $background-image: url(../images/oz-sectionbg-polytomy.svg);
+    $background-spacing: calc(50% + 700px / 2);
+
+    &:before, &:after {
+      top: 10px;
+      background-image: $background-image;
+      background-position: top right;
+      opacity: 0.7;
+    }
+
+    &:before {
+      right: $background-spacing;
+    }
+
+    &:after {
+      left: $background-spacing;
+    }
+  }
+
+  &.bkgd-darkspiral {
+    @extend %oz-background-dark;
+    $background-image: url(../images/oz-sectionbg-darkspiral.svg);
+    $background-spacing: calc(50% + 700px / 2);
+
+    &:before {
+      background-image: $background-image;
+      right: $background-spacing;
+    }
+
+    &:after {
+      background-image: $background-image;
+      left: $background-spacing;
+    }
+  }
+}
+
 
 /* ********** Grid modifications for homepage  ********** */
 
 .uk-grid-oz-dark {
-  background: $oz-background-dark;
+  background: $oz_dark_bg;
 
   &.uk-grid-small {
     /* Modify grid so we get some padding around cells */
@@ -76,7 +188,7 @@ header .masthead h1, header .masthead h1 a {
     height: 0; 
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
-    border-top: 10px solid $oz-background-dark;
+    border-top: 10px solid $oz_dark_bg;
   }
 }
 
@@ -84,28 +196,4 @@ header .masthead h1, header .masthead h1 a {
   /* Future UI-kit property missing from our version */
   margin-left: auto;
   margin-right: auto;
-}
-
-/* ****** Homepage sections with image surrounds ******** */
-
-.hp-section {
-    overflow: hidden; /* contain background */
-
-    > .hp-section-body {
-        max-width: 910px;
-        margin: 1rem auto;
-        text-align: center;
-    }
-
-    &.bkgd-leaves {
-        background: $oz-background-lightgreen;
-    }
-
-    &.bkgd-quotes {
-        @extend %oz-background-dark;
-    }
-
-    &.bkgd-tree {
-        background: $oz-background-lightgreen;
-    }
 }
