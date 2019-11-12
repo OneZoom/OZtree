@@ -156,13 +156,45 @@
 
     {{block footer}} 
           
-    <footer class="footer" >
-      <div class="container-fluid">
-        <div class="copyright pull-left"> &#169; {{=request.now.year}} OneZoom, UK charity 1163559&#160;&#160;&#160;</div>
-        <div class="pull-right">
-            <a href="mailto:mail@onezoom.org" class="footlink" title="">E&#8209;mail</a>&nbsp;|&nbsp;<a href="https://twitter.com/OneZoomTree" class="footlink" target="_blank" title="">Twitter</a>&nbsp;|&nbsp;<a href="http://www.facebook.com/OneZoomTree" target="_blank" class="footlink" title="">Facebook</a>&nbsp;|&nbsp;<a href="{{=URL('default','terms.html', args='site')}}" target="_blank" class="footlink" title="">{{=T('Terms and Cookies')}}</a>
+    <footer class="shortcuts" class="uk-grid-small uk-grid-match" uk-grid>
+      <div class="uk-width-1-3@m uk-text-center">
+        <br/></br/>
+        <ul class="oz-pill leaf-list"><li><a href="TODO:">Sponsor a leaf now!</a></li></ul>
+      </div>
+
+      <div class="uk-width-1-6@m">
+        <h3>Follow us</h3>
+        <div>
+          <a href="mailto:mail@onezoom.org" title=""><span uk-icon="icon: mail" style="vertical-align: bottom;"></span>&nbsp; E&#8209;mail</a><br/>
+          <a href="https://twitter.com/OneZoomTree" target="_blank" title=""><span uk-icon="icon: twitter" style="vertical-align: bottom;"></span>&nbsp; Twitter</a><br/>
+          <a href="http://www.facebook.com/OneZoomTree" target="_blank" title=""><span uk-icon="icon: facebook" style="vertical-align: bottom;"></span>&nbsp; Facebook</a><br/>
         </div>
       </div>
+
+      <div class="uk-width-1-6@m">
+        <h3>Quick links</h3>
+        <ul>
+          <li><a href="/data_sources.html">Data sources</a></li>
+          <li><a href="/tree_index.html">Legacy trees</a></li>
+          <li><a href="/developer.html">Developer tools</a></li>
+          <li><a href="/popularity/index.html">Popularity index</a></li>
+        </ul>
+      </div>
+
+      <div class="uk-width-1-3@m">
+        <h3>Milestones</h3>
+        <ul>
+          <li>TODO: 1</li>
+          <li>TODO: 2</li>
+        </ul>
+        <a href="{{=URL('default','milestones.html')}}"><i>Read all</i></a>
+      </div>
+
+    </footer>
+    <footer class="terms">
+      <span>© {{=request.now.year}} OneZoom, UK charity 1163559</span>
+      &nbsp;|&nbsp;
+      <a href="{{=URL('default','terms.html', args='site')}}" target="_blank" class="footlink" title="">{{=T('Terms and Cookies')}}</a>
     </footer>
     {{end}}
     <!-- Analytics ==================================== -->

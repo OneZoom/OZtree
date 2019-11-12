@@ -71,6 +71,39 @@ body > header .logo img {
   width: 220px;
 }
 
+/* ********** Footer ********** */
+
+body > footer {
+  font-size: 80%;
+
+  &.shortcuts {
+    @extend %oz-background-dark;
+    padding: 1rem 0 !important;
+
+    .oz-pill {
+      border: 1px solid $oz_light_bg;
+      padding: 0.3rem 1rem;
+    }
+
+    h3 {
+      font-size: 1rem;
+      margin: 0 0 0.2rem 0;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+  }
+
+  &.terms {
+    padding: 0.3rem;
+    background-color: $oz_terms_bg;
+    color: $oz_terms_fg;
+    text-align: center;
+  }
+}
+
 /* ********** HP sections ********** */
 
 .oz-section {
