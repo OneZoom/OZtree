@@ -250,10 +250,12 @@ body > footer {
 .uk-grid-oz-dark {
   background: $oz_dark_bg;
 
-  &.uk-grid-small {
-    /* Modify grid so we get some padding around cells */
-    padding: 15px;
-    margin-left: 0;
+  @media screen and (min-width: 960px) {
+    &.uk-grid-small {
+      /* Modify grid so we get some padding around cells */
+      padding: 15px;
+      margin-left: 0;
+    }
   }
 
   .uk-card::after {
