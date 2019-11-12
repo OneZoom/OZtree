@@ -139,24 +139,31 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   <div class="uk-position-relative" uk-slider>
     <div class="uk-slider-container"><ul class="uk-slider-items uk-child-width-1-2 uk-child-width-1-3@s uk-child-width-1-4@m">{{for i,item in enumerate(sponsored['rows']):}}
       <li>
-        <figure>
-        <figcaption>{{=(sponsored['html_names'][item['OTT_ID']])}}</figcaption>
         <a href="{{=URL('life/@=' + str(item['OTT_ID']), url_encode=False)}}">
-        <img alt="Go to this species on the OneZoom tree of life"
-            {{img = sponsored['images'].get(item['OTT_ID'])}}
-            {{if img:}}
-                src="{{=thumbnail_url(img.get('src'), img.get('src_id'))}}"
-                title="{{=' / '.join([t for t in [img.rights, img.licence] if t]).replace('"',"'")}}"
-            {{else:}}
-                src="{{=URL('static','images/noImage_transparent.png')}}"
-            {{pass}} />
+          <figure class="uk-text-small">
+            <img alt=""
+                 style="border-radius: 50%; width: 100px; height: 100px; background: whitesmoke;"
+                {{img = sponsored['images'].get(item['OTT_ID'])}}
+                {{if img:}}
+                    src="{{=thumbnail_url(img.get('src'), img.get('src_id'))}}"
+                    title="{{=' / '.join([t for t in [img.rights, img.licence] if t]).replace('"',"'")}}"
+                {{else:}}
+                    src="{{=URL('static','images/noImage_transparent.png')}}"
+                {{pass}} />
+            <figcaption>
+              <div style="height: 4.2rem; overflow: hidden">{{=(sponsored['html_names'][item['OTT_ID']])}}</div>
+              <div style="margin-bottom: 0.5rem;">Sponsored {{=item['verified_kind']}}</div>
+              <div><i>
+                {{=item['verified_name']}}
+                {{if item.get('verified_more_info', ''):}}— {{=item['verified_more_info']}}{{pass}}
+              </i></div>
+            </figcaption>
+          </figure>
         </a>
-        <figcaption>Sponsored {{=item['verified_kind']}}<br /><strong>{{=item['verified_name']}}</strong><br />{{=item['verified_more_info'] or ''}}</figcaption>
-        </figure>
       </li>
     {{pass}}</ul></div>
-    <a class="uk-position-center-left-out uk-position-small" href="#" uk-slidenav-previous uk-slider-item="previous"></a>
-    <a class="uk-position-center-right-out uk-position-small" href="#" uk-slidenav-next uk-slider-item="next"></a>
+    <a class="uk-position-top-left uk-position-small" style="top: 25px; left: -50px" href="#" uk-slidenav-previous uk-slider-item="previous"></a>
+    <a class="uk-position-top-right uk-position-small" style="top: 25px; right: -50px" href="#" uk-slidenav-next uk-slider-item="next"></a>
   </div>
 </div></section>
 

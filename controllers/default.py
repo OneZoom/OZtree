@@ -93,7 +93,7 @@ def index():
             rows=sponsored_rows,
             images=sponsored_images,
             html_names={
-                ott:nice_species_name(sponsored_scinames[ott], vn, html=True, leaf=True, first_upper=True, break_line=2)
+                ott:nice_species_name(sponsored_scinames[ott], vn, html=True, leaf=True, first_upper=True, break_line=1)
                 for ott,vn
                 in get_common_names([r.OTT_ID for r in sponsored_rows], return_nulls=True).items()}
         ),
