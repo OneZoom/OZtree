@@ -56,7 +56,7 @@ body > header .uk-navbar-nav>li>a {
 }
 
 body > header .masthead {
-  max-width: 520px;
+  max-width: 620px !important;
   margin: 0 auto;
 
   h1, h1 a {
@@ -110,7 +110,7 @@ body > footer {
   overflow: hidden; /* contain background */
 
   > .oz-section-body {
-    max-width: 650px;
+    max-width: 800px;
     margin: 1rem auto;
     text-align: center;
   }
@@ -164,9 +164,11 @@ body > footer {
   &.bkgd-quotes {
     @extend %oz-background-dark;
     $background-image: url(../images/oz-sectionbg-quotes.svg);
-    $background-spacing: calc(50% + 700px / 2);
+    $background-spacing: calc(50% + 900px / 2);
 
     &:before, &:after {
+      top: 10px;
+      bottom: 10px;
       background-image: $background-image;
       background-size: contain;
     }
@@ -178,13 +180,14 @@ body > footer {
     &:after {
       left: $background-spacing;
       transform: none;
+      background-position: center left;
     }
   }
 
   &.bkgd-polytomy {
     @extend %oz-background-light;
     $background-image: url(../images/oz-sectionbg-polytomy.svg);
-    $background-spacing: calc(50% + 700px / 2);
+    $background-spacing: calc(50% + 800px / 2);
 
     &:before, &:after {
       top: 10px;
