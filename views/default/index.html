@@ -174,15 +174,19 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   <div class="uk-position-relative" uk-slider>
     <div class="uk-slider-container"><ul class="uk-slider-items uk-child-width-1-1">{{for row in news:}}
       <li>
-        <div>
-          {{if row['image_href']:}}<img src="{{=row['image_href']}}" class="uk-float-left" />{{pass}}
-          <h4>{{=row['heading']}}</h4>
-          {{=XML(row['body'])}}
-          <a href="{{=row['more_href']}}">Read more...</a>
+        <div class="uk-grid-small uk-text-small" uk-grid>
+          <div class="uk-width-1-3@m">
+            {{if row['image_href']:}}<img src="{{=row['image_href']}}" class="oz-pill" />{{pass}}
+          </div>
+          <div class="uk-width-2-3@m uk-text-left">
+            <h4 style="line-height: 0.75">{{=row['heading']}}</h4>
+            {{=XML(row['body'])}}
+            <a href="{{=row['more_href']}}">Read more...</a>
+          </div>
         </div>
       </li>
     {{pass}}</ul></div>
-    <a class="uk-position-center-left-out uk-position-small" href="#" uk-slidenav-previous uk-slider-item="previous"></a>
-    <a class="uk-position-center-right-out uk-position-small" href="#" uk-slidenav-next uk-slider-item="next"></a>
+    <a class="uk-position-top-left uk-position-small" style="top: 25px; left: -50px" href="#" uk-slidenav-previous uk-slider-item="previous"></a>
+    <a class="uk-position-top-right-out uk-position-small" style="top: 25px; right: -50px" href="#" uk-slidenav-next uk-slider-item="next"></a>
   </div>
 </div></section>
