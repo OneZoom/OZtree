@@ -143,9 +143,11 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
 
 <div class="uk-grid-small uk-child-width-expand@s uk-grid-match" uk-grid>
   {{for sub_menu in response.menu[0:3]:}}
-    <div class="uk-card uk-card-default uk-card-small uk-card-body">
-      <h3 class="uk-card-title">{{=T(sub_menu[0])}}</h3>
-      {{=MENU(sub_menu[-1][0:4])}}
+    <div class="uk-card uk-card-body">
+      <div class="oz-pill">
+        <h3>{{=T(sub_menu[0])}}</h3>
+        {{=MENU(sub_menu[-1][0:4], _class="leaf-list")}}
+      </div>
     </div>
   {{pass}}
 </div>
