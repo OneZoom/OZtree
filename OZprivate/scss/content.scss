@@ -11,6 +11,11 @@ blockquote, blockquote footer {
   color: inherit;  /* Override UIkit's styling for quotes */
 }
 
+em {
+  @extend %oz-font-serif;
+  color: inherit;  /* Override UIkit's styling for em */
+}
+
 a, a:link, a:active, a:visited, a:hover {
   color: inherit;
 }
@@ -59,10 +64,6 @@ header .masthead {
     &:link, &:visited, &:hover, &:active {
       color: $oz_green_fg;
     }
-  }
-
-  .subdued {
-    @extend %oz-font-serif;
   }
 }
 

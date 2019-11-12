@@ -23,7 +23,7 @@ $oz-font-serif: serif;
     color: $oz_green_fg;
   }
 
-  .subdued {
+  em {
     color: $oz_grey_fg;
   }
 }
@@ -31,8 +31,9 @@ $oz-font-serif: serif;
 %oz-background-light {
   background: $oz_light_fg;
   color: $oz_dark_bg;
-}
 
-.endangered-red {
-  color: $oz_red_bg;
+  em {
+    color: $oz_red_bg;
+    font-family: inherit;
+  }
 }
