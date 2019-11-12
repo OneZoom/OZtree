@@ -8,7 +8,9 @@
     <div class="searchbox uk-search uk-search-default" id="search_form_basic">
       <div class="searchinput"><div class="icon-beside-input">
           <button   class="spinner" uk-spinner="ratio:0.5"></button>
-          <button   class="main-icon" uk-icon="icon: search"></button>
+          <button   class="uk-icon main-icon">
+            <img src="{{=URL('static/images', 'oz-logo-icon-darkbg.svg')}}" alt="" />
+          </button>
         </div><input class="uk-search-input" type="search" placeholder="{{=T('Search all life...')}}" /></div>
       <div uk-dropdown="pos: bottom-left; offset: 1" class="search_dropdown selectable uk-overflow-auto">
         <div class="no_results">{{=T("No results found")}}</div>
