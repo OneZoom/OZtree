@@ -125,6 +125,7 @@ header .logo img {
 
     &:after {
       left: $background-spacing;
+      transform: none;
     }
   }
 
