@@ -16,21 +16,6 @@
   "tourstop_shared": {
       "template": "default/homepage_animation_template.html",
       // "template_style" shouldn't be needed, as the css will be in the frontpage
-      "update_class": {
-          /**
-           * Replace content of classes e.g. $('.title'), $('.tour_backward'), $('.tour_forward')
-           * If a string, replace with the html. Otherwise could be "text", "style", or "src"
-           */
-          "tour_forward": {
-              "text": "<"
-          },
-          "tour_play": {
-              "text": "{{=T('Play')}}"
-          },
-          "tour_backward": {
-              "text": ">"
-          },
-      },
   },
   "tourstops": [
         {{for info in animation_locations:}}
