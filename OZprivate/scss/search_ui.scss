@@ -226,3 +226,16 @@ ul#searchboxes {
     margin: 0.25em auto;
     background: #ddd;
 }
+
+/* On miniscule screens, only display search box on click */
+@media screen and (max-width: 490px) {
+    #searchnav #search-basic .searchbox input {
+        width: calc(100vw - 3rem);
+    }
+    #searchnav #search-basic .searchinput:not(.uk-open) .uk-search-input:not(:focus) {
+        /* Hide simple search box until it's selected */
+        padding: 0;
+        width: 0;
+        border-left: none;
+    }
+}

@@ -424,17 +424,8 @@ iframe {
     }    
 }
 
-/* On miniscule screens, only display search box on click, and wrap the CA button */
+/* On miniscule screens, wrap the CA button */
 @media screen and (max-width: 490px) {
-    #searchnav #search-basic .searchbox input {
-        width: calc(100vw - 3rem);
-    }
-    #searchnav #search-basic .searchinput:not(.uk-open) .uk-search-input:not(:focus) {
-        /* Hide simple search box until it's selected */
-        padding: 0;
-        width: 0;
-        border-left: none;
-    }
     #external-modal .external-content .external-tabs::before {
         left: 0px;
     }
