@@ -258,6 +258,13 @@ body > footer {
     }
   }
 
+  @media screen and (max-width: 640px) {
+    /* Grid collapsed, so we specify the treeviewer height */
+    > div {
+      min-height: 50vh;
+    }
+  }
+
   .uk-card::after {
     content: "";
     position: absolute;
