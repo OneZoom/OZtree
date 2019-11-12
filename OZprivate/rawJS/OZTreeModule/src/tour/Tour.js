@@ -49,6 +49,8 @@ class Tour {
              */
             "template": "static/tour/tutorial_template.html",
             "template_style": "static/tour/tutorial_template.css",
+            "hide_tourstop_style": {"display": "none"}, // This is the default. Alternatively
+            "show_tourstop_style": {"display": "block"}, // try {"opacity":"0"} & {"opacity":"1"}
             "update_class": {
                 "title": "OneZoom Demo Tour",
                 "tour_forward": {
@@ -223,7 +225,9 @@ class Tour {
     this.pause_class = tour_setting.general.dom_names.pause_class || 'tour_pause'
     this.resume_class = tour_setting.general.dom_names.resume_class || 'tour_resume'
     this.exit_class = tour_setting.general.dom_names.exit_class || 'tour_exit'
-
+    /* some default settings */
+    this.hide_tourstop_style = {"display": "none"}
+    this.show_tourstop_style = {"display": "block"}
     let shared_setting = tour_setting['tourstop_shared'] || {}
 
     /**
@@ -319,7 +323,6 @@ class Tour {
       this.clear()
       this.append_template_to_tourstop()
       //Enable tour style
-      console.log("Enabling tour `" + this.name + "` styles")
       $('#tour_style_' + this.tour_id).removeAttr('disabled')
       $('#tour_exit_confirm_style_' + this.tour_id).removeAttr('disabled')
     
@@ -423,24 +426,27 @@ class Tour {
    *    that we are still in a tour. To avoid this, we can specify 'true' here, which
    *    bans interaction if it would normally pause or exit the tour.
    * @return {boolean} true if keep_shown stop was previously hidden, and is now revealed; false
-   *     if keep_shown stop was already showing, or undefined if no keep_shown stop given
+   *     if keep_shown stop was already showing, or null if no keep_shown stop given
    */
   hide_and_show_stops(keep_shown=null, block_user_interaction_if_required=false) {
-    if (keep_shown) {
-      this.restore_user_interaction_if_required()
-      $('#' + this.wrapper_id).find(".tourstop").not(keep_shown).hide()
-      if (keep_shown.is(":hidden")) {
-          keep_shown.show()
-          return true
-      } else {
-          return false
-      }
-    } else {
-      $('#' + this.wrapper_id).find(".tourstop").hide()
-      if (block_user_interaction_if_required) {
-        this.block_user_interaction_if_required()
-      }
+    let keep_shown_was_hidden = null
+    if (block_user_interaction_if_required) {
+      this.block_user_interaction_if_required()
     }
+    this.tourstop_array.forEach((tourstop) => {
+      if (tourstop.container == keep_shown) {
+        this.restore_user_interaction_if_required()
+        if (tourstop.shown()) {
+          keep_shown_was_hidden = false
+        } else {
+          tourstop.show()
+          keep_shown_was_hidden = true
+        }
+      } else {
+        tourstop.hide()
+      }
+    })
+    return keep_shown_was_hidden
   }
 
   /**
@@ -509,8 +515,8 @@ class Tour {
       const temp_div = document.createElement('div')
       temp_div.classList.add("tourstop", this.name)
       $(temp_div).load(template_url + " .container", () => {
-        $(temp_div).hide()
         tourstop.container = $(temp_div) /* this is the way to access this specific stop */
+        tourstop.hide()
         if (!this.dump_template_when_inactive) {
           $('#' + this.wrapper_id).append($(temp_div))
           tourstop.container_appended = true
@@ -623,7 +629,7 @@ class Tour {
       this.interaction === 'exit_after_confirmation')) {
         //Do nothing
     } else {
-      console.log("Blocking interaction")
+      //console.log("Blocking interaction")
       // Setting tree_state.disable_interaction doesn't disable callbacks: we need to do
       // that explicitly
       this.remove_canvas_interaction_callbacks()
@@ -641,7 +647,7 @@ class Tour {
       this.interaction === 'exit_after_confirmation')) {
       //Do nothing
     } else {
-      console.log("Enabling interaction")
+      //console.log("Enabling interaction")
       this.add_canvas_interaction_callbacks()
       tree_state.disable_interaction = false
     }
