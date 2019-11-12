@@ -41,6 +41,28 @@ ul.leaf-list {
 /* ********** Header ********** */
 body > header {
   padding: 0 10px;
+
+  @media screen and (max-width: 1000px) {
+    /* Nudge center navbar underneath, let it scroll */
+    nav.uk-navbar.uk-navbar-container > .uk-navbar-center {
+      top: calc(100% - 1rem);
+      left: 0;
+      right: 0;
+      transform: none;
+    }
+    nav.uk-navbar.uk-navbar-container > .uk-navbar-center > ul {
+      width: 100%;
+      overflow-x: auto;
+    }
+    nav.uk-navbar.uk-navbar-container > .uk-navbar-center > ul > li > a {
+      min-height: 2rem;
+    }
+    nav.uk-navbar.uk-navbar-container > .uk-navbar-center > ul > li > .uk-navbar-dropdown[style] {
+      left: 0px !important;
+      right: 0px !important;
+      width: auto !important;
+    }
+  }
 }
 
 body > header .uk-navbar-nav>li>a {
