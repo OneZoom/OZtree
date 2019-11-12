@@ -172,7 +172,7 @@ class TourStopClass {
       this.tour.hide_and_show_stops(this.container)
       this.execute("on_show")
     }
-    // console.log("playing tourstop: " + this.setting.update_class.title + " - " + direction)
+    // console.log("playing tourstop: " +  (this.setting.update_class.title || this.tour.curr_step) + " - " + direction)
     this.play(direction)
   }
   

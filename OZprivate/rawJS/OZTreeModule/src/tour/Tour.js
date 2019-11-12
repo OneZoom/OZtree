@@ -315,7 +315,7 @@ class Tour {
               alert("You have tried to start a tour that has not yet been set up")
           }
       }
-      // Reset
+      // Reset, should also set curr_step to 0
       this.clear()
       this.append_template_to_tourstop()
       //Enable tour style
@@ -326,20 +326,20 @@ class Tour {
       this.started = true
       this.add_canvas_interaction_callbacks()
       this.rough_initial_loc = this.onezoom.utils.largest_visible_node()
-      this.curr_step = -1
-      this.goto_next()
-    
+      console.log("Tour `" + this.name + "` started")
+      if (typeof this.start_callback === 'function') {
+        this.start_callback()
+      }
+
       /**
        * disable interaction - it should be restored immediately the first stop is shown
        * or on exit, but for the moment we should not allow the tour to be interrupted
        * as there may otherwise be no indication that we are on a tour
        */
       this.block_user_interaction_if_required()
-    
-      if (typeof this.start_callback === 'function') {
-        this.start_callback()
-      }
-      console.log("Tour `" + this.name + "` started")
+      // RUN!
+      this.curr_stop().play_from_start('forward')
+      this.set_ui_content()
     })
   }
 
@@ -364,7 +364,7 @@ class Tour {
 
     //hide tour
     this.started = false
-    this.curr_step = -1
+    this.curr_step = 0
     this.remove_canvas_interaction_callbacks()
     tree_state.disable_interaction = false
   }
@@ -377,6 +377,7 @@ class Tour {
     if (!this.started) {
       return
     }
+    this.curr_stop().exit()   
     if (this.curr_step === this.tourstop_array.length - 1) {
       // end of tour, exit gracefully
       if (typeof this.end_callback === 'function') {
@@ -385,10 +386,9 @@ class Tour {
       this.clear()
       return
     }
-    this.curr_stop().exit()   
     this.curr_step++
-    this.curr_stop().play_from_start('forward')
     this.set_ui_content()
+    this.curr_stop().play_from_start('forward')
   }
 
   /**
@@ -406,8 +406,8 @@ class Tour {
       this.curr_step--
     }
 
-    this.curr_stop().play_from_start('backward')
     this.set_ui_content()
+    this.curr_stop().play_from_start('backward')
   }
 
   /*

@@ -64,7 +64,7 @@ class Screensaver extends Tour {
   }
   
   start() {
-    //disable starting the tour automatically if it's already started
+    //clear any residual timers before starting
     clearTimeout(this.auto_activate_timer)
     super.start()
   }
@@ -85,11 +85,9 @@ class Screensaver extends Tour {
    * Activate next stop but never exit
    */
   goto_next() {
-    //console.log("goto_next called")
     if (!this.started) {
       return
     }
-
     this.curr_stop().exit()
     if (this.curr_step === this.tourstop_array.length - 1) {
       // end of tour: loop
@@ -100,7 +98,7 @@ class Screensaver extends Tour {
       }
     }
     this.curr_step++
-    this.curr_stop().play('forward')
+    this.curr_stop().play_from_start('forward')
     this.set_ui_content()
   }
 
