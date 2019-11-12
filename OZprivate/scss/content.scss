@@ -39,11 +39,11 @@ ul.leaf-list {
 }
 
 /* ********** Header ********** */
-header {
+body > header {
   padding: 0 10px;
 }
 
-header .uk-navbar-nav>li>a {
+body > header .uk-navbar-nav>li>a {
   text-transform: none;
   span {
     /* The navbar items have too much height, so underline a nested element */
@@ -55,7 +55,7 @@ header .uk-navbar-nav>li>a {
   }
 }
 
-header .masthead {
+body > header .masthead {
   max-width: 520px;
   margin: 0 auto;
 
@@ -67,7 +67,7 @@ header .masthead {
   }
 }
 
-header .logo img {
+body > header .logo img {
   width: 220px;
 }
 
