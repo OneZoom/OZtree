@@ -94,8 +94,8 @@ header .logo img {
     $background-spacing: calc(50% + 700px / 2);
 
     &:before, &:after {
-      top: 40px;
-      bottom: 40px;
+      top: 20px;
+      bottom: 20px;
       background-image: $background-image;
       background-size: contain;
     }
