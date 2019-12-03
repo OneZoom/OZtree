@@ -131,7 +131,7 @@ def search_init():
         # If a single node, don't worry about the name
         if len(ids) == 1:
             return {"ids": list(ids)}
-    except TypeError, ValueError:
+    except (TypeError, ValueError) as error:
         pass  # Some problem converting ott to int, try on name
     try:
         tidy_latin = request.vars.name.replace("_", " ")
