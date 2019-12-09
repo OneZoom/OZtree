@@ -72,14 +72,34 @@ class TourStopClass {
   }
 
   hide() {
-    if (this.container) {
-      this.container.css(this.setting.hide_tourstop_style || this.tour.hide_tourstop_style)
+    let style = this.setting.hide_tourstop_style || this.tour.hide_tourstop_style;
+
+    if (!this.container) {
+      return
+    }
+
+    if (style.add_class) {
+      this.container.addClass(style.add_class)
+    } else if (style.remove_class) {
+      this.container.removeClass(style.remove_class)
+    } else {
+      this.container.css(style)
     }
   }
 
   show() {
-    if (this.container) {
-      this.container.css(this.setting.show_tourstop_style || this.tour.show_tourstop_style)
+    let style = this.setting.show_tourstop_style || this.tour.show_tourstop_style;
+
+    if (!this.container) {
+      return
+    }
+
+    if (style.add_class) {
+      this.container.addClass(style.add_class)
+    } else if (style.remove_class) {
+      this.container.removeClass(style.remove_class)
+    } else {
+      this.container.css(style)
     }
   }
 

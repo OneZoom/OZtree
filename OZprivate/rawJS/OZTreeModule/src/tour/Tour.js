@@ -50,7 +50,7 @@ class Tour {
             "template": "static/tour/tutorial_template.html",
             "template_style": "static/tour/tutorial_template.css",
             "hide_tourstop_style": {"display": "none"}, // This is the default. Alternatively
-            "show_tourstop_style": {"display": "block"}, // try {"opacity":"0"} & {"opacity":"1"}
+            "show_tourstop_style": {"display": "block"}, // try {"opacity":"0"} & {"opacity":"1"} or {"add_class": "active"}, {"remove_class": "active"}
             "update_class": {
                 "title": "OneZoom Demo Tour",
                 "tour_forward": {
