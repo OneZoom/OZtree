@@ -51,8 +51,14 @@ body > header {
       transform: none;
     }
     nav.uk-navbar.uk-navbar-container > .uk-navbar-center > ul {
-      width: 100%;
-      overflow-x: auto;
+      margin: 0 auto; /* Center menu within navbar-container */
+      overflow-x: hidden;
+      /* Below 390 px, only room for 3 menu items, hide the rest */
+      @media screen and (max-width: 390px) {
+        > li + li + li + li {
+          display: none;
+        }
+      }
     }
     nav.uk-navbar.uk-navbar-container > .uk-navbar-center > ul > li > a {
       min-height: 2rem;
@@ -66,6 +72,7 @@ body > header {
 }
 
 body > header .uk-navbar-nav>li>a {
+  padding: 0 10px; /* Decrease padding to fit more links on IphoneSE */
   text-transform: none;
   span {
     /* The navbar items have too much height, so underline a nested element */
