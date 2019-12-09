@@ -261,7 +261,7 @@ body > footer {
   @media screen and (max-width: 640px) {
     /* Grid collapsed, so we specify the treeviewer height */
     > div {
-      min-height: 50vh;
+      min-height: 58vh;
     }
   }
 
@@ -276,6 +276,10 @@ body > footer {
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
     border-top: 10px solid $oz_dark_bg;
+  }
+
+  .uk-card-body {
+    overflow: hidden; /* Contain "What is the tree of life" text */
   }
 }
 
@@ -364,5 +368,39 @@ a.oz-pill {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+  }
+}
+
+/* ********** Home page stat circles ************************* */
+
+.hp-stat-circles {
+  @extend %oz-font-serif;
+  font-size: 120%;
+  position: relative;
+  float: right;
+  margin: -20px; /* Cancel out container padding */
+  padding: 0;
+  width: 12em;
+  height: calc(100% + 40px); /* 100% + padding */
+  overflow: hidden;
+
+  @media screen and (max-width: 1200px) {
+    display: none;
+  }
+
+  > * {
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-direction: column;
+    position: absolute;
+    border-radius: 100%;
+    background: $oz_green_fg;
+    color: $oz_dark_bg;
+    text-align: center;
+  }
+  + h3 {
+    margin-top: 0;
   }
 }
