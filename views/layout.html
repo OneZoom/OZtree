@@ -44,9 +44,7 @@
     <!-- Treeviewer code for search / embedded view -->
     {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
     <script>var OZstrings={{include 'treeviewer/js_strings.json'}};</script>
-    <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common.js')}}"></script>
-    <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry.js')}}"></script>
-    <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/search_ui.js')}}"></script>
+    {{include '../static/OZTreeModule/dist/OZ_script.html'}}
 
     {{block head}}{{end}}
     {{
