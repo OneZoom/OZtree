@@ -71,6 +71,26 @@ class TourStopClass {
     // Don't need to hide this stop: it might carry on being shown during next transition
   }
 
+  hide() {
+    if (this.container) {
+      this.container.css(this.setting.hide_tourstop_style || this.tour.hide_tourstop_style)
+    }
+  }
+
+  show() {
+    if (this.container) {
+      this.container.css(this.setting.show_tourstop_style || this.tour.show_tourstop_style)
+    }
+  }
+
+  shown() {
+    if (this.container) {
+      let requirements = this.setting.show_tourstop_style || this.tour.show_tourstop_style
+      return Object.entries(requirements).every((k, v) => {return this.container.css(k) === v})
+    }
+    return false
+  }
+
   arrive_at_tourstop() {
     this.tour.clear_callback_timers()
     if (this.state === INACTIVE) {
