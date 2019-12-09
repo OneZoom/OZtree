@@ -177,6 +177,9 @@ body > footer {
     &:before, &:after {
       top: 20px;
       bottom: 20px;
+      left: auto;
+      right: auto;
+      width: 400px;
       background-image: $background-image;
       background-size: contain;
     }
@@ -196,8 +199,11 @@ body > footer {
     $background-spacing: calc(50% + 900px / 2);
 
     &:before, &:after {
-      top: 10px;
-      bottom: 10px;
+      top: 40px;
+      bottom: 40px;
+      left: auto;
+      right: auto;
+      width: 400px;
       background-image: $background-image;
       background-size: contain;
     }
