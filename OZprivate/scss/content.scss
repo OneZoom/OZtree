@@ -78,7 +78,7 @@ body > header .uk-navbar-nav>li>a {
 }
 
 body > header .masthead {
-  max-width: 620px !important;
+  max-width: 800px !important;
   margin: 0 auto;
 
   h1, h1 a {
@@ -230,7 +230,7 @@ body > footer {
   &.bkgd-darkspiral {
     @extend %oz-background-dark;
     $background-image: url(../images/oz-sectionbg-darkspiral.svg);
-    $background-spacing: calc(50% + 700px / 2);
+    $background-spacing: calc(50% + 800px / 2);
 
     &:before {
       background-image: $background-image;
