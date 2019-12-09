@@ -28,6 +28,10 @@ $oz-font-serif: serif;
   em {
     color: $oz_grey_fg;
   }
+
+  .oz-pill {
+    border: 1px solid $oz_light_bg;
+  }
 }
 
 %oz-background-light {

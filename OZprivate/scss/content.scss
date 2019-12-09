@@ -36,6 +36,11 @@ ul.leaf-list {
     background-size: contain;
     background-repeat: no-repeat;
   }
+
+  &.oz-pill {
+    /* Nicer padding when being used as a call-to-action (e.g. sponsors) */
+    padding: 0.3rem 1rem;
+  }
 }
 
 /* ********** Header ********** */
@@ -108,11 +113,6 @@ body > footer {
   &.shortcuts {
     @extend %oz-background-dark;
     padding: 1rem 0 !important;
-
-    .oz-pill {
-      border: 1px solid $oz_light_bg;
-      padding: 0.3rem 1rem;
-    }
 
     h3 {
       font-size: 1rem;
