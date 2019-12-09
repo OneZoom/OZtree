@@ -333,14 +333,30 @@ a.oz-pill {
   right: 0;
 
   .tourstop {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    padding: 0.5rem;
     text-align: right;
-    transition: opacity .5s;
+
+    .tour-controls {
+      display: none;
+
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      padding: 0.5rem;
+    }
+    &.active .tour-controls {
+      display: block;
+      z-index: 1;
+    }
+    .linkout {
+      opacity: 0;
+      transition: opacity .5s;
+      transition-delay: .25s; /* Delay fading out so we don't fade to white too much */
+    }
+    &.active .linkout {
+      opacity: 1;
+      transition-delay: 0s;
+    }
   }
 
   .linkout.oz-pill {

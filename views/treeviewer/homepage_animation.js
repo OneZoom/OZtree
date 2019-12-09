@@ -16,8 +16,8 @@
   "tourstop_shared": {
       "template": "default/homepage_animation_template.html",
       // "template_style" shouldn't be needed, as the css will be in the frontpage
-      "hide_tourstop_style": {"opacity": "0"}, // Better than display:none for 
-      "show_tourstop_style": {"opacity": "1"}, // UIkit transitions
+      "hide_tourstop_style": {"remove_class": "active"},
+      "show_tourstop_style": {"add_class": "active"},
   },
   "tourstops": [
         {{for info in animation_locations:}}
