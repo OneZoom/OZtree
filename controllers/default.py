@@ -39,9 +39,9 @@ def index():
         db(db.images_by_ott.ott.belongs(popular_otts) & (db.images_by_ott.best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)
     }
 
-    query = (db.reservations.verified_time != None) & ((db.reservations.deactivated == None) | (db.reservations.deactivated == ""))
-    if (request.vars.omit_nopics):
-        query = query & (db.reservations.verified_preferred_image_src != None)
+    query = (db.reservations.verified_time != None) & \
+        ((db.reservations.deactivated == None) | (db.reservations.deactivated == "")) & \
+        (db.reservations.verified_preferred_image_src != None)
     sponsored_rows = db(query).select(
         db.reservations.OTT_ID,
         db.reservations.name,
