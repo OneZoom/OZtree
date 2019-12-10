@@ -296,13 +296,21 @@ class TourStopClass {
    */
   wait_and_goto_next() {
     const wait_time = this.get_wait_time()
+
+    const timer_tick = () => {
+      if (this.controller.is_tree_visible()) {
+        // Tree is ready to go, so go there
+        this.tour.goto_next();
+      } else {
+        // Tree not visible, so wait some more
+        this.goto_next_timer = setTimeout(timer_tick, wait_time);
+      }
+    };
+
     if (typeof wait_time === 'number') {
       clearTimeout(this.goto_next_timer)
       //console.log("Setting timer for " + wait_time + "milliseconds")
-      this.goto_next_timer = setTimeout(() => {
-        //console.log("Firing timer")
-        this.tour.goto_next()
-      }, wait_time)
+      this.goto_next_timer = setTimeout(timer_tick, wait_time);
     }
   }
 
