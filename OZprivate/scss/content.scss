@@ -391,6 +391,21 @@ body > footer {
     background-size: 1.5rem;
     padding-right: calc(1.5rem + 1rem); /* Add icon size to normal padding */
   }
+
+  &.with-splash {
+    position: relative;
+  }
+
+  .oz-pill-splash {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: calc(100% - 10rem);
+    background-size: cover;
+    background-position: center;
+    border-radius: 0 0 1.4rem 0;
+  }
 }
 
 a.oz-pill {

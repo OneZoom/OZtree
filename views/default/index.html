@@ -153,9 +153,11 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
 <div class="uk-child-width-expand@s uk-grid-match" style="border: 20px solid white" uk-grid>
   {{for sub_menu in response.menu[0:3]:}}
     <div>
-      <div class="oz-pill">
+      <div class="oz-pill with-splash">
         <h3>{{=T(sub_menu[0])}}</h3>
         {{=MENU(sub_menu[-1][0:4], _class="leaf-list")}}
+        <!-- NB: 15rem is length of longest menu item -->
+        <div class="oz-pill-splash" style="width: calc(100% - 15rem); background-image: url({{=menu_splash_images[sub_menu[0]]}})"></div>
       </div>
     </div>
   {{pass}}

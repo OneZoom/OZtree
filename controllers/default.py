@@ -131,6 +131,10 @@ def index():
             [81461, 'Birds'],
             [99252, 'Flowering plants'],
             ],
+        menu_splash_images={
+            sub_menu[0]:URL('static', 'images/oz-newssplash-%s.jpg' % sub_menu[0].lower().replace("for ", ""))
+            for sub_menu in response.menu
+        },
     )
 
 def homepage_animation_template():
