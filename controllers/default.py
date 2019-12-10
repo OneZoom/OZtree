@@ -84,7 +84,7 @@ def index():
             dict(
                 heading=row.text_date if row.text_date else row.news_date.strftime("%d %B %Y").lstrip('0'),
                 body=row.html_description.replace(' class="thumbnail"', ' style="display:none"'),
-                image_href="/OZtree/static/images/gallery/otop_ss_small.png",
+                image_href="/OZtree/static/images/oz-news-generic.jpg",
                 more_href="/milestones.html",
             )
             for row in db().select(db.news.ALL, orderby =~ db.news.news_date, limitby = (0, 5))
