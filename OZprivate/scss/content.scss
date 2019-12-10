@@ -43,14 +43,17 @@ ul.leaf-list {
   }
 }
 
-img.species, div.img-species > img {
+img.species, .img-species > img {
   background: whitesmoke;
   border-radius: 50%;
 }
-div.img-species {
+span.img-species {
+  display: inline-block;
+}
+.img-species {
   position: relative; /* Contain leafout background */
 }
-div.img-species.leafout::after {
+.img-species.leafout::after {
   content: "";
   position: absolute;
   top: 0;
