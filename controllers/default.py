@@ -101,7 +101,6 @@ def index():
         n_total_sponsored=db((db.reservations.verified_time != None) & ((db.reservations.deactivated == None) | (db.reservations.deactivated == ""))).count(distinct=db.reservations.user_registration_id),
         n_sponsored_leaves=db((db.reservations.verified_time != None) & ((db.reservations.deactivated == None) | (db.reservations.deactivated == ""))).count(),
         popular_places=[
-            # These should be obtained out of the tree_startpoints table (category="homepage")
             dict(
                 tree_href='/life/@=%d' % ott,
                 image_href=pop_images.get(ott, URL('static','images/noImage_transparent.png')),
