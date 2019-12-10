@@ -182,6 +182,7 @@ body > footer {
       bottom: 0;
       left: 0;
       right: 0;
+      pointer-events: none;
 
       background-repeat: no-repeat;
       background-size: cover;
@@ -240,6 +241,13 @@ body > footer {
       left: $background-spacing;
       transform: none;
       background-position: center left;
+    }
+
+    .oz-slider-arrow-left {
+      background-image: url(../images/oz-leftarrow-greenfg.svg);
+    }
+    .oz-slider-arrow-right {
+      background-image: url(../images/oz-rightarrow-greenfg.svg);
     }
   }
 
@@ -458,5 +466,22 @@ a.oz-pill {
   }
   + h3 {
     margin-top: 0;
+  }
+}
+
+/* ********** Home page slider prev/next arrows ************** */
+
+.oz-slider-arrow {
+  width: 35px;
+  height: 35px;
+  background-size: 100%;
+
+  &.oz-slider-arrow-left {
+    left: -60px;
+    background-image: url(../images/oz-leftarrow-darkbg.svg);
+  }
+  &.oz-slider-arrow-right {
+    right: -60px;
+    background-image: url(../images/oz-rightarrow-darkbg.svg);
   }
 }
