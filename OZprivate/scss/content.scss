@@ -66,6 +66,7 @@ div.img-species.leafout::after {
 /* ********** Header ********** */
 body > header {
   padding: 0 10px;
+  overflow: visible !important; /* Let search dropdown escape */
 
   @media screen and (max-width: 1000px) {
     /* Nudge center navbar underneath, let it scroll */
@@ -110,7 +111,7 @@ body > header {
 
   .masthead {
     max-width: 800px !important;
-    margin: 0 auto;
+    margin: 0 auto !important; /* override oz-section-body margins */
 
     h1, h1 a {
       color: $oz_green_fg;
@@ -403,7 +404,6 @@ a.oz-pill {
     }
     &.active .tour-controls {
       display: block;
-      z-index: 1;
     }
     .linkout {
       opacity: 0;
