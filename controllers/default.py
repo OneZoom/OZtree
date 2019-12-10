@@ -32,7 +32,8 @@ def index():
     """
     Collect all information required for the home page
     """
-    popular_otts = [549519, 14971, 676045, 410925]  # TODO: Where should these come from?
+    # TODO: Fetch these from tree_startpoints
+    popular_otts = [549519, 14971, 676045, 410925, 541928, 541936, 418570, 835324, 226178, 72667, 226185]
     pop_images = {
         r.ott:thumbnail_url(r.get('src'), r.get('src_id'))
         for r in
