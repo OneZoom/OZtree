@@ -377,13 +377,6 @@ body > footer {
     border-radius: 1.5rem;
   }
 
-  &.pill-bottomright {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    border-radius: 1.5rem 0 0 0;
-  }
-
   &.pill-leafout {
     background-image: url(../images/oz-logo-leafout-white.svg);
     background-repeat: no-repeat;
@@ -405,6 +398,20 @@ body > footer {
     background-size: cover;
     background-position: center;
     border-radius: 0 0 1.4rem 0;
+  }
+}
+
+.oz-card-bottom-right {
+  /* Negate card padding */
+  position: relative;
+  top: 20px;
+  left: 20px;
+
+  clear: both;
+  text-align: right;
+
+  .oz-pill {
+    border-radius: 1.5rem 0 0 0;
   }
 }
 
@@ -467,7 +474,7 @@ a.oz-pill {
   margin: -20px; /* Cancel out container padding */
   padding: 0;
   width: 12em;
-  height: calc(100% + 40px); /* 100% + padding */
+  height: 17rem;
   overflow: hidden;
 
   @media screen and (max-width: 1200px) {
