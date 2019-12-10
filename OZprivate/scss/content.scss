@@ -94,35 +94,35 @@ body > header {
       width: auto !important;
     }
   }
-}
 
-body > header .uk-navbar-nav>li>a {
-  padding: 0 10px; /* Decrease padding to fit more links on IphoneSE */
-  text-transform: none;
-  span {
-    /* The navbar items have too much height, so underline a nested element */
-    border-bottom: 1px solid $oz_green_fg;
-  }
-  color: inherit;
-  &:hover, &.uk-open {
-    color: $oz_green_fg;
-  }
-}
-
-body > header .masthead {
-  max-width: 800px !important;
-  margin: 0 auto;
-
-  h1, h1 a {
-    color: $oz_green_fg;
-    &:link, &:visited, &:hover, &:active {
+  .uk-navbar-nav>li>a {
+    padding: 0 10px; /* Decrease padding to fit more links on IphoneSE */
+    text-transform: none;
+    span {
+      /* The navbar items have too much height, so underline a nested element */
+      border-bottom: 1px solid $oz_green_fg;
+    }
+    color: inherit;
+    &:hover, &.uk-open {
       color: $oz_green_fg;
     }
   }
-}
 
-body > header .logo img {
-  width: 220px;
+  .masthead {
+    max-width: 800px !important;
+    margin: 0 auto;
+
+    h1, h1 a {
+      color: $oz_green_fg;
+      &:link, &:visited, &:hover, &:active {
+        color: $oz_green_fg;
+      }
+    }
+  }
+
+  .logo img {
+    width: 220px;
+  }
 }
 
 /* ********** Footer ********** */
