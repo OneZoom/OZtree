@@ -474,14 +474,17 @@ a.oz-pill {
 .oz-slider-arrow {
   width: 35px;
   height: 35px;
-  background-size: 100%;
+  margin: 15px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 
   &.oz-slider-arrow-left {
-    left: -60px;
+    left: -55px;
     background-image: url(../images/oz-leftarrow-darkbg.svg);
   }
   &.oz-slider-arrow-right {
-    right: -60px;
+    right: -55px;
     background-image: url(../images/oz-rightarrow-darkbg.svg);
   }
 }
