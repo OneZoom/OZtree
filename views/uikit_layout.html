@@ -127,7 +127,10 @@
             search_manager.full_search(
                 search_term,
                 function(original_string, actual_search, results) {
-                    search_ui.searchPopulate(searchbox, original_string, results, function () {return null;})},
+                    search_ui.searchPopulate(searchbox, original_string, results, function () {return null;});
+                    dropdown.find('dd').addClass('leafout');
+                    dropdown.find('a').attr('target', '_blank');
+                },
                 delay_ms,
                 function() {
                     {{if is_testing:}}console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search");{{pass}}

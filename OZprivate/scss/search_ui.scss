@@ -172,6 +172,21 @@ ul#searchboxes {
 
 #searchnav .search_dropdown dd {
     color: #444;
+
+    &.leafout {
+      position: relative;
+    }
+    &.leafout:after {
+      content: "";
+      position: absolute;
+      top: calc(50% - 10px);
+      right: -15px;
+      width: 20px;
+      height: 20px;
+      background-image: url(../images/oz-logo-leafout-black.svg);
+      background-repeat: no-repeat;
+      background-size: 100%;
+    }
 }
 
 #searchnav .search_dropdown dd:hover, #searchnav .search_dropdown dd p:hover {
