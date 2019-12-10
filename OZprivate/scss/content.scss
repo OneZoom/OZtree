@@ -149,7 +149,7 @@ body > footer {
     text-align: center;
   }
 
-  &.bkgd-darkspiral, &.bkgd-leaves, &.bkgd-quotes, &.bkgd-polytomy {
+  &.bkgd-darkspiral, &.bkgd-leaves, &.bkgd-quotes, &.bkgd-polytomy, &.bkgd-natural {
     position: relative; /* Contain the floating background elements */
 
     & > * {
@@ -227,6 +227,26 @@ body > footer {
   &.bkgd-polytomy {
     @extend %oz-background-light;
     $background-image: url(../images/oz-sectionbg-polytomy.svg);
+    $background-spacing: calc(50% + 800px / 2);
+
+    &:before, &:after {
+      top: 10px;
+      background-image: $background-image;
+      background-position: top right;
+      opacity: 0.7;
+    }
+
+    &:before {
+      right: $background-spacing;
+    }
+
+    &:after {
+      left: $background-spacing;
+    }
+  }
+
+  &.bkgd-natural {
+    $background-image: url(../images/oz-sectionbg-natural.svg);
     $background-spacing: calc(50% + 800px / 2);
 
     &:before, &:after {
