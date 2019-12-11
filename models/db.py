@@ -667,8 +667,9 @@ db.define_table('tourstops',
 # these are popular palces, tours or other things that a user can use to explore the tree in a more guided way.  E.g. use as a first way into the tree or as suggestions of places to go / things to do once in.
 db.define_table('tree_startpoints',
     Field('category', type = 'string', length=20), #a unique alphanumeric identifier which we can use to distinguish non default sets of startpoints for different trees (e.g. for list of popular places on homepage)
-    Field('parter_identifier', type = 'string', length=20), #an  alphanumeric category which we can use to distinguish partners (e.g. LinnSoc or OTOP) - this should match up with the 'partners' and 'partner_taxa' tables
+    Field('partner_identifier', type = 'string', length=20), #an alphanumeric category which we can use to distinguish partners (e.g. LinnSoc or OTOP) - this should match up with the 'partners' and 'partner_taxa' tables
     Field('ott', type='integer'), #the ott of a taxon (i.e. a popular place on the tree)
+    Field('image_url', type='text', #use this instead of the default image for that OTT (allows e.g. non organism images)
     Field('tour_identifier', type = 'string', length=20), #the identifier of a tour - this would be instead of an ott
     format = '%(category)s_%(parter_identifier)s', migrate=is_testing)
                 
