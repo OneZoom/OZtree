@@ -74,7 +74,7 @@ body > header {
   @media screen and (max-width: 1000px) {
     /* Nudge center navbar underneath, let it scroll */
     nav.uk-navbar.uk-navbar-container > .uk-navbar-center {
-      top: calc(100% - 1rem);
+      top: calc(100% - 1.3rem);
       left: 0;
       right: 0;
       transform: none;
@@ -136,7 +136,7 @@ body > footer {
 
   &.shortcuts {
     @extend %oz-background-dark;
-    padding: 1rem 0 !important;
+    padding: 1rem !important;
 
     h3 {
       font-size: 1rem;
@@ -163,7 +163,11 @@ body > footer {
   overflow: hidden; /* contain background */
 
   > .oz-section-body {
-    max-width: 800px;
+    /* max-width is roughly max(80vw, 800px) */
+    max-width: 80vw;
+    @media screen and (min-width: 930px) {
+      max-width: 800px;
+    }
     margin: 1rem auto;
     text-align: center;
   }
@@ -182,6 +186,7 @@ body > footer {
       bottom: 0;
       left: 0;
       right: 0;
+      pointer-events: none;
 
       background-repeat: no-repeat;
       background-size: cover;
@@ -240,6 +245,13 @@ body > footer {
       left: $background-spacing;
       transform: none;
       background-position: center left;
+    }
+
+    .oz-slider-arrow-left {
+      background-image: url(../images/oz-leftarrow-greenfg.svg);
+    }
+    .oz-slider-arrow-right {
+      background-image: url(../images/oz-rightarrow-greenfg.svg);
     }
   }
 
@@ -320,6 +332,9 @@ body > footer {
     > div {
       min-height: 58vh;
     }
+    .uk-grid-small {
+      margin-left: 0; /* margins collapsed, so don't need to nudge over */
+    }
   }
 
   .uk-card::after {
@@ -362,19 +377,41 @@ body > footer {
     border-radius: 1.5rem;
   }
 
-  &.pill-bottomright {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    border-radius: 1.5rem 0 0 0;
-  }
-
   &.pill-leafout {
     background-image: url(../images/oz-logo-leafout-white.svg);
     background-repeat: no-repeat;
     background-position: 97% center;
     background-size: 1.5rem;
     padding-right: calc(1.5rem + 1rem); /* Add icon size to normal padding */
+  }
+
+  &.with-splash {
+    position: relative;
+  }
+
+  .oz-pill-splash {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: calc(100% - 10rem);
+    background-size: cover;
+    background-position: center;
+    border-radius: 0 0 1.4rem 0;
+  }
+}
+
+.oz-card-bottom-right {
+  /* Negate card padding */
+  position: relative;
+  top: 20px;
+  left: 20px;
+
+  clear: both;
+  text-align: right;
+
+  .oz-pill {
+    border-radius: 1.5rem 0 0 0;
   }
 }
 
@@ -412,10 +449,12 @@ a.oz-pill {
       opacity: 0;
       transition: opacity .5s;
       transition-delay: .25s; /* Delay fading out so we don't fade to white too much */
+      pointer-events: none;
     }
     &.active .linkout {
       opacity: 1;
       transition-delay: 0s;
+      pointer-events: auto;
     }
   }
 
@@ -437,7 +476,7 @@ a.oz-pill {
   margin: -20px; /* Cancel out container padding */
   padding: 0;
   width: 12em;
-  height: calc(100% + 40px); /* 100% + padding */
+  height: 17rem;
   overflow: hidden;
 
   @media screen and (max-width: 1200px) {
@@ -458,5 +497,25 @@ a.oz-pill {
   }
   + h3 {
     margin-top: 0;
+  }
+}
+
+/* ********** Home page slider prev/next arrows ************** */
+
+.oz-slider-arrow {
+  width: 35px;
+  height: 35px;
+  margin: 15px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+
+  &.oz-slider-arrow-left {
+    left: -55px;
+    background-image: url(../images/oz-leftarrow-darkbg.svg);
+  }
+  &.oz-slider-arrow-right {
+    right: -55px;
+    background-image: url(../images/oz-rightarrow-darkbg.svg);
   }
 }

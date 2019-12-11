@@ -13,6 +13,17 @@ import { record_url } from '../navigation/record';
 export default function (Controller) {
 
   /**
+   * Is the canvas visible to the user?
+   */
+  Controller.prototype.is_tree_visible = function () {
+    if (this.canvas.ownerDocument.visibilityState !== 'visible') {
+      // Entire page is hidden
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * Zoom in on the canvas, centered on the middle of the canvas.
    * @method button_zoom_in
    * @memberof Controller
