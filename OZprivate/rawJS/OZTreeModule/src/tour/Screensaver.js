@@ -59,8 +59,7 @@ class Screensaver extends Tour {
         interaction = "exit"
     }
     super.setup_setting(tour_setting, name, start_callback, null, exit_callback,
-                        interaction, interaction_callback)
-    this.set_auto_start()
+                        interaction, interaction_callback, () => {this.set_auto_start()})
   }
   
   start() {

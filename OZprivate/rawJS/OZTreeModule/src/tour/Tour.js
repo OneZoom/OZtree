@@ -190,9 +190,11 @@ class Tour {
    * @param {function} interaction_callback Function to call when the user interacts with
    *    the onezoom instance, e.g. by moving the mouse on screen, e.g. to activate a resume 
    *    button if the tour is set to pause on interaction
+   * @param {function} ready_callback Function to call when the tour is ready to go (in
+   *    particular, we have the mappings from OTT-> onezoom IDs ready
    */
   setup_setting(tour_setting, name, start_callback, end_callback, exit_callback,
-                interaction, interaction_callback) {
+                interaction, interaction_callback, ready_callback) {
     this.setting = tour_setting
     this.name = name || "tour_" + tour_id
     if (!this.setting) {return}
@@ -240,7 +242,7 @@ class Tour {
       this.tourstop_array.push(new TourStopClass(this, merged_setting))
     })
     this.load_template()
-    this.load_ott_id_conversion_map()
+    this.load_ott_id_conversion_map(ready_callback)
   }
 
 
@@ -594,7 +596,7 @@ class Tour {
   /**
    * Fetch ott -> id conversion map
    */
-  load_ott_id_conversion_map() {
+  load_ott_id_conversion_map(ready_callback) {
     const ott_id_set = new Set()
     this.tourstop_array.forEach(tourstop => {
       if (tourstop.setting.ott && !isNaN(tourstop.setting.ott)) {
@@ -608,8 +610,8 @@ class Tour {
 
     this.onezoom.utils.process_taxon_list(
       JSON.stringify(ott_id_array),
-      function () { },
-      function () { }
+      null, null,
+      ready_callback
     )
   }
 

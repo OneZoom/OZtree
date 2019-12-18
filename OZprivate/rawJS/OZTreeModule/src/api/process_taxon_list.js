@@ -12,8 +12,9 @@ import data_repo from '../factory/data_repo'
  * ['header text',{'OTT':1234,'en':'name to use},{...]
  * @param {Function} taxon_callback - the 4-param UI function [f(ott, used_name, sciname, OZid)] to call on a header string, e.g. adding it to a list
  * @param {Function} header_callback - the 1-param UI function [f(label)] to call on a header string, e.g. adding it to a list
+ * @param {Function} completed_callback - a function [f()] to call once the taxa have been processed and the data_repo filled
  */
-export default function (taxon_json, taxon_callback, header_callback) {
+export default function (taxon_json, taxon_callback, header_callback, completed_callback) {
   if (taxon_json) {
     let taxon_list = JSON.parse(taxon_json);
     if (taxon_list && taxon_list.length) {
@@ -45,11 +46,18 @@ export default function (taxon_json, taxon_callback, header_callback) {
               let scinames = res[1];
               for (let i = 0; i < taxon_list.length; i++) {
                 if (typeof (taxon_list[i]) === "string") {
-                  header_callback(taxon_list[i]);
+                  if (typeof header_callback === "function") {
+                      header_callback(taxon_list[i]);
+                  }
                 } else {
-                  let ott = taxon_list[i].OTT.toString();
-                  taxon_callback(ott, taxon_list[i].vernacular, scinames[ott], ott_id_map[ott]);
+                  if (typeof taxon_callback === "function") {
+                      let ott = taxon_list[i].OTT.toString();
+                      taxon_callback(ott, taxon_list[i].vernacular, scinames[ott], ott_id_map[ott]);
+                  }
                 }
+              }
+              if (typeof completed_callback === "function") {
+                completed_callback();
               }
             }
           })
