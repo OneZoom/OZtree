@@ -1463,12 +1463,6 @@ def treeview_info(has_text_tree=True):
     location = remove_location_arg(request.args)
     partner  = remove_partner_arg(request.args)
     page_info={'partner': partner}
-    if len(request.args) and request.args[0] == 'tour':
-        #could have been life/trail2016/tour/newtour/@Mammalia or simply life/trail2016/tour/@Mammalia
-        tour_name = None if len(request.args)==1 else request.args[1]
-        page_info.update({'subtitle': 'Tours',
-                   'tourname': tour_name #only *-=. and alphanumeric in args, so can use this in js
-                   })
     if has_text_tree:
         tt = text_tree(location)
         page_info.update({'tree': tt, 'title_name': ", ".join(life_text_init_taxa(tt))})

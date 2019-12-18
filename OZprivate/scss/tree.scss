@@ -341,22 +341,6 @@ iframe {
     height: 1.5em;
 }
 
-#tourbox {
-    /* display:none; */
-    position: absolute;
-    padding: 1em;
-    right: 10%;
-    bottom: 10%;
-    color: black;
-    background-color: white;
-    border: 1px solid black;
-    border-radius: 1em;
-}    
-
-#tourbox select#next {
-    width: 8em;
-}
-
 .selectable {
     user-select: text; 
     -webkit-touch-callout: text;
