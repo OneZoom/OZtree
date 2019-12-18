@@ -6,7 +6,7 @@
 <div class="home-heading uk-text-center">
   <h1>Welcome to the OneZoom tree of life explorer...</h1>
   <p>An interactive map of the evolutionary tree of all life on our planet. Discover your favourites, see which species are under threat, and be amazed by biodiversity.</p>
-  <em>Our tree of life explorer is designed to be easily accessible for everyone; we also provide educational tools for teachers, software for scientists and interactive exhibits for museums.</em>
+  <em>Our tree of life explorer is designed to be easily accessible for everyone; we also provide free educational tools for teachers, software for scientists and interactive exhibits for museums.</em>
 </div>
 {{end block}}
 
@@ -28,7 +28,7 @@
           In our interactive tree of life you can explore the relationships between
           <b>{{="{:,}".format(n_species)}}</b> species and wonder at <b>{{="{:,}".format(n_images)}}</b> images on a single zoomable page.
         </p>
-        <div class="oz-card-bottom-right"><a href="/life.html" class="oz-pill pill-leafout" target="_blank">Show me how</a></div>
+        <div class="oz-card-bottom-right"><a href="/life.html" class="oz-pill pill-leafout" target="_blank">Start exploring</a></div>
       </div>
 
       <div class="uk-card uk-card-default uk-card-small uk-card-body uk-width-expand">
@@ -188,8 +188,8 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   <h3 class="uk-card-title">Become a sponsor...</h3>
 
   <p>
-    OneZoom is a registered non-profit in the UK, all our products are for free. {{=n_total_sponsored}} people like you
-    have helped us by making donations. Their names appear as sponsors on {{=n_sponsored_leaves}} leaves of our tree of life.
+  OneZoom is a registered non-profit in the UK, all our products are for free. <a href="{{=URL('default', 'donor_list.html')}}">{{=n_total_sponsored}} people like you</a> have helped us by making donations. Their names appear as sponsors on
+    <a href="{{=URL('default', 'sponsored.html')}}">{{=n_sponsored_leaves}} leaves of our tree of life</a>.
   </p>
   <p>Only one name per leaf so get your favourite while you can, for yourself or as a gift.</p>
 
