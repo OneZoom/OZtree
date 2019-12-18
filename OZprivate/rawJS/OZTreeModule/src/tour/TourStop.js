@@ -118,7 +118,7 @@ class TourStopClass {
     }
     // Show the tour stop *after* firing the function, in case we want the function do
     // do anything first (which could including showing the stop)
-    console.log("Arrived at tourstop: force hiding all other stops")
+    if (window.is_testing) console.log("Arrived at tourstop: force hiding all other stops")
     var stop_just_shown = this.tour.hide_and_show_stops(this.container)
     if (stop_just_shown) {
        this.execute("on_show")
@@ -184,7 +184,7 @@ class TourStopClass {
        * functions, not anything stored in the tours database. It allows non-user
        * tours like the tutorial to interact programmatically with the OneZoom viewer
        */
-          console.log("Executing a function prior to transition")
+          if (window.is_testing) console.log("Executing a function prior to transition")
           var timers = this.setting.exec[exec_when](this)
           if (timers) {
             if (timers.length) {
@@ -205,6 +205,8 @@ class TourStopClass {
    * Play current tour stop from the start
    */
   play_from_start(direction) {
+    if (window.is_testing) console.log(Date().toString() + ": playing tourstop " +
+        (this.setting.update_class.title || this.tour.curr_step) + " - " + direction)
     this.execute("on_start")
     if (this.setting.transition_in_visibility === "force_hide") {
       this.tour.hide_and_show_stops(null, true) // block interaction from stopping tour
@@ -212,7 +214,6 @@ class TourStopClass {
       this.tour.hide_and_show_stops(this.container)
       this.execute("on_show")
     }
-    // console.log("playing tourstop: " +  (this.setting.update_class.title || this.tour.curr_step) + " - " + direction)
     this.play(direction)
   }
   
@@ -309,7 +310,7 @@ class TourStopClass {
 
     if (typeof wait_time === 'number') {
       clearTimeout(this.goto_next_timer)
-      //console.log("Setting timer for " + wait_time + "milliseconds")
+      if (window.is_testing) console.log("Setting timer for " + wait_time + "milliseconds")
       this.goto_next_timer = setTimeout(timer_tick, wait_time);
     }
   }

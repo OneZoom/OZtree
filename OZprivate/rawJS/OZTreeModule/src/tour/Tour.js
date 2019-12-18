@@ -257,7 +257,7 @@ class Tour {
        * Default behaviour: pause tour on interaction
        */
       Interaction_Action_Arr.forEach(action_name => {
-        console.log("Adding hook for " + action_name)
+        if (window.is_testing) console.log("Adding hook for " + action_name)
         this.interaction_hooks[action_name] = add_hook(action_name, () => {
             if (typeof this.interaction_callback === 'function') {
                 this.interaction_callback()
@@ -272,9 +272,9 @@ class Tour {
       if (this.interaction === 'exit' ||
           this.interaction === 'exit_after_confirmation') {
         Interaction_Action_Arr.forEach(action_name => {
-          console.log("Adding hook for " + action_name)
+          if (window.is_testing) console.log("Adding hook for " + action_name)
           this.interaction_hooks[action_name] = add_hook(action_name, () => {
-            console.log("Action detected with interaction = " + this.interaction + ", exiting")
+            if (window.is_testing) console.log("Action detected with interaction = " + this.interaction + ", exiting")
             if (typeof this.interaction_callback === 'function') {
                 this.interaction_callback()
             }
@@ -331,7 +331,7 @@ class Tour {
       this.started = true
       this.add_canvas_interaction_callbacks()
       this.rough_initial_loc = this.onezoom.utils.largest_visible_node()
-      console.log("Tour `" + this.name + "` started")
+      if (window.is_testing) console.log("Tour `" + this.name + "` started")
       if (typeof this.start_callback === 'function') {
         this.start_callback()
       }
@@ -526,7 +526,7 @@ class Tour {
         }
         this.prefetch_image(tourstop)
         tourstop.template_loaded.resolve()
-        console.log("Created tourstop.container")
+        if (window.is_testing) console.log("Created tourstop.container")
       })
 
       /**
@@ -753,7 +753,7 @@ class Tour {
    */
   user_pause() {
     if (this.started && this.curr_stop()) {
-      console.log("User paused")
+      if (window.is_testing) console.log("User paused")
       this.remove_canvas_interaction_callbacks() // Don't trigger any more pauses
       this.curr_stop().pause()
     }
@@ -764,7 +764,7 @@ class Tour {
    */
   user_resume() {
     if (this.started && this.curr_stop()) {
-      console.log("User resumed")
+      if (window.is_testing) console.log("User resumed")
       this.add_canvas_interaction_callbacks() // Allow interactions to trigger pauses again
       this.curr_stop().resume()
     }
