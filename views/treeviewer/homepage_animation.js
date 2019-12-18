@@ -18,6 +18,7 @@
       // "template_style" shouldn't be needed, as the css will be in the frontpage
       "hide_tourstop_style": {"remove_class": "active"},
       "show_tourstop_style": {"add_class": "active"},
+      "fly_in_speed": 0.3, /* speed relative to the global_anim_speed */
   },
   "tourstops": [
         {{for info in animation_locations:}}
@@ -28,7 +29,7 @@
                     "href": "life/@={{=info[0]}}"},
                 "ottname": "{{=info[1]}}"
             },
-            "wait": 500
+            "wait": 1000
         },
         {{pass}}
    ]
