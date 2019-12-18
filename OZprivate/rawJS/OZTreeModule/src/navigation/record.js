@@ -75,9 +75,9 @@ function current_view_near_previous_view(loc, querystring, hash) {
   else if (current_state.vis_type !== previous_state.vis_type) return false;
   else if (current_state.ott === previous_state.ott) {
     //If no tap window open and position not changed a lot, do not record current position into history.
-    if (!current_state.tap_ott && !previous_state.tap_ott) return true;
+    if (!current_state.tap_ott_or_id && !previous_state.tap_ott_or_id) return true;
     //If opened tap is same as previous, do not record current position into history.
-    if (current_state.tap_ott && previous_state.tap_ott && current_state.tap_ott === previous_state.tap_ott) return true;
+    if (current_state.tap_ott_or_id && previous_state.tap_ott_or_id && (current_state.tap_ott_or_id === previous_state.tap_ott)) return true;
   }
   return false;
 }
@@ -208,7 +208,7 @@ function get_current_state(node, title, options) {
     let popup_state = get_popup_state();
     if (popup_state) {
       state.tap_action = popup_state[0];
-      state.tap_ott = popup_state[1];
+      state.tap_ott_or_id = popup_state[1];
     }
   }
   return state;

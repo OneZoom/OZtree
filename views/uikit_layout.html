@@ -164,26 +164,15 @@
     <footer class="shortcuts" class="uk-grid-small uk-grid-match" uk-grid>
       <div class="uk-width-1-3@m uk-text-center">
         <style>
-         .footer-images img.species {
+         #footer-images img.species {
            width: 60px;
            height: 60px;
            margin: 10px 3px;
          }
         </style>
-        <div class="uk-child-width-1-3 footer-images" style="position: relative">
-        <a href="/life/@=609788">
-          <img class="species" alt="Common swift" src="//images.onezoom.org/99/929/27066929.jpg" title="© Jürgen Howaldt / CC-BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0/)" />
-        </a>
-        <a href="/life/@=609788">
-          <img class="species" alt="Common swift" src="//images.onezoom.org/99/929/27066929.jpg" title="© Jürgen Howaldt / CC-BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0/)" />
-        </a>
-        <a href="/life/@=609788">
-          <img class="species" alt="Common swift" src="//images.onezoom.org/99/929/27066929.jpg" title="© Jürgen Howaldt / CC-BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0/)" />
-        </a>
-        </div>
+        {{=LOAD('default', 'footer_sponsor_items.load', target="footer-images", ajax=False, _style="position: relative", _class="uk-child-width-1-3")}}
         <ul class="oz-pill leaf-list"><li><a href="{{=URL('default', 'sponsor.html')}}">Sponsor a leaf now!</a></li></ul>
       </div>
-
       <div class="uk-width-1-2 uk-width-1-6@m">
         <h3>About us</h3>
         <ul>

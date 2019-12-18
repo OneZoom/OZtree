@@ -1,4 +1,5 @@
 import tree_state from '../tree_state';
+import data_repo from '../factory/data_repo';
 
 /**
  * Get largest visible node on the screen which meets the condition.
@@ -108,18 +109,18 @@ function parse_querystring(state, querystring) {
   for (let i = 0; i < querystring.length; i++) {
     if (/^pop=/.test(querystring[i])) {
       let tap_params = querystring[i].substring(querystring[i].indexOf("=") + 1).split("_");
-      let tap_ott, tap_action;
+      let tap_ott_or_id, tap_action;
       if (tap_params.length == 2) {
-        //new params. pop=ol_id
-        tap_ott = tap_params[1];
+        //new param specification style, e.g. "pop=ol_id"
         tap_action = decode_popup_action(tap_params[0]);
+        tap_ott_or_id = tap_params[1];
       } else {
-        //old params. pop=id
-        tap_ott = tap_params[0];
+        //old params specification style. pop=id
+        tap_ott_or_id = tap_params[0];
         tap_action = "ow_leaf";
       }
       state.tap_action = tap_action;
-      state.tap_ott = parseInt(tap_ott);
+      state.tap_ott_or_id = parseInt(tap_ott_or_id);
     } else if (/^vis=/.test(querystring[i])) {
       let vis_type = querystring[i].substring(querystring[i].indexOf("=") + 1);
       state.vis_type = vis_type;

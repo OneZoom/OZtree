@@ -137,6 +137,14 @@ def index():
         },
     )
 
+def footer_sponsor_items():
+    """
+    Three hardcoded images for groups that can be sponsored - appears on every page =>
+    should not make a db request
+    """
+    return dict()
+
+
 def homepage_animation_template():
     """
     The html fragment used as a template for the embedded animation on the homepage
