@@ -73,8 +73,11 @@ body > header {
 
   @media screen and (max-width: 1000px) {
     /* Nudge center navbar underneath, let it scroll */
+    nav.uk-navbar.uk-navbar-container {
+      margin-bottom: 1rem;
+    }
     nav.uk-navbar.uk-navbar-container > .uk-navbar-center {
-      top: calc(100% - 1.3rem);
+      top: calc(100% - 1rem);
       left: 0;
       right: 0;
       transform: none;
