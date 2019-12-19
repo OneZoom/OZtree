@@ -34,17 +34,18 @@ def index():
     """
     # TODO: Fetch these from tree_startpoints
     popular_otts = [549519, 14971, 676045, 410925, 541928, 541936, 418570, 835324, 226178, 72667, 226185]
+    # TODO: Override image urls if tree_startpoints.image_url exists
     pop_images = {
         r.ott:thumbnail_url(r.get('src'), r.get('src_id'))
         for r in
-        db(db.images_by_ott.ott.belongs(popular_otts) & (db.images_by_ott.best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)
+        db(db.images_by_ott.ott.belongs(popular_otts) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)
     }
 
     endangered_otts = [158484, 417957, 995054, 1029454, 921451]
     endangered_images = {
         r.ott:thumbnail_url(r.get('src'), r.get('src_id'))
         for r in
-        db(db.images_by_ott.ott.belongs(endangered_otts) & (db.images_by_ott.best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)
+        db(db.images_by_ott.ott.belongs(endangered_otts) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)
     }
 
     query = (db.reservations.verified_time != None) & \
@@ -65,7 +66,7 @@ def index():
     sponsored_scinames = {r.OTT_ID:r.name for r in sponsored_rows}
     sponsored_images = {
         r.ott:r
-        for r in db(db.images_by_ott.ott.belongs(r.OTT_ID for r in sponsored_rows) & (db.images_by_ott.best_any==1)).select(
+        for r in db(db.images_by_ott.ott.belongs(r.OTT_ID for r in sponsored_rows) & (db.images_by_ott.overall_best_any==1)).select(
             db.images_by_ott.ott,
             db.images_by_ott.src,
             db.images_by_ott.src_id,
@@ -686,7 +687,7 @@ def sponsored():
     sci_names = {r.OTT_ID:r.name for r in curr_rows}
     html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).items()}
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
-    default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(sci_names.keys()) & (db.images_by_ott.best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
+    default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(sci_names.keys()) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
     #also look at the nondefault images if present - 
     user_images = {}
     for r in curr_rows:
