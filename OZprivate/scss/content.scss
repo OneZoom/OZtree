@@ -322,6 +322,10 @@ body > footer {
 .uk-grid-oz-dark {
   background: $oz_dark_bg;
 
+  &.uk-grid-small {
+    /* Padding above/below cells */
+    padding: 15px 0;
+  }
   @media screen and (min-width: 960px) {
     &.uk-grid-small {
       /* Modify grid so we get some padding around cells */
