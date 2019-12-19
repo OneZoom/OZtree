@@ -145,7 +145,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   <em>Species shown as red leaves on our tree of life are known to be under threat of extinction.</em></p>
 
   <div class="endangered-species">{{for p in endangered:}}
-    <a href="{{=p['tree_href']}}" target="_blank"><span class="img-species leafout"><img class="species" src="{{=p['image_href']}}" alt="" /></span></a>
+    <a href="{{=p['tree_href']}}" title="{{=p['name']}}" target="_blank"><span class="img-species leafout"><img class="species" src="{{=p['image_href']}}" alt="{{=p['name']}}" /></span></a>
   {{pass}}</div>
 </div></section>
 
