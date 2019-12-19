@@ -44,7 +44,7 @@ def index():
     endangered_images = {
         r.ott:thumbnail_url(r.get('src'), r.get('src_id'))
         for r in
-        db(db.images_by_ott.ott.belongs(popular_otts) & (db.images_by_ott.best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)
+        db(db.images_by_ott.ott.belongs(endangered_otts) & (db.images_by_ott.best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)
     }
 
     query = (db.reservations.verified_time != None) & \
