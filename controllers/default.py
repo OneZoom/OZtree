@@ -41,7 +41,7 @@ def index():
         db(db.images_by_ott.ott.belongs(popular_otts) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)
     }
 
-    endangered_otts = [158484, 417957, 995054, 1029454, 921451]
+    endangered_otts = [351685, 42314, 430337, 995054, 872573, 921451]
     endangered_images = {
         r.ott:thumbnail_url(r.get('src'), r.get('src_id'))
         for r in
