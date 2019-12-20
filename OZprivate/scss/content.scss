@@ -66,6 +66,12 @@ span.img-species {
   background-size: 30px;
 }
 
+.endangered-species .img-species.leafout::after {
+  right: -10px;
+  background-image: url(../images/oz-logo-leafout-outline-red.svg);
+  background-position: right bottom;
+}
+
 /* ********** Header ********** */
 body > header {
   padding: 0 10px;
