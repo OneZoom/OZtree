@@ -183,6 +183,9 @@ def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mappin
         provider = int(EOLrow['resource_id'])
         if provider in EOL2OTT:
             src = source_ptrs[EOL2OTT[provider]]
+            if EOL2OTT[provider] == "gbif" and not EOLrow['resource_pk'].isdigit():
+                # The EoL file has duplicate (non numeric) IDs for GBIF: ignore these
+                continue
             providerid = str(EOLrow['resource_pk'])
             EOLid = int(EOLrow['page_id'])
             if providerid in src:
@@ -292,7 +295,8 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
         if (reader.line_num % 1000000 == 0):
             info("{} rows read, {} used,  mem usage {:.1f} Mb".format(
                 reader.line_num, used, OTT_popularity_mapping.memory_usage_resource()))
-        if int(EOLrow['resource_id']) == iucn_num and EOLrow['resource_pk']: #there are lots of IUCN rows with no IUCN number, so check EOLrow[1]!= "" and != None
+        if int(EOLrow['resource_id']) == iucn_num and not EOLrow['resource_pk'].isdigit(): 
+            #there are lots of IUCN rows with no IUCN number, so check EOLrow[1]!= ""
             try:
                 for ott in eol_mapping[int(EOLrow['page_id'])]:
                     OTT_ptrs[ott]['iucn'] = str(int(EOLrow['resource_pk']))
@@ -301,7 +305,7 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
                 pass #no equivalent eol id in eol_mapping
             except ValueError:
                 warn(" Cannot convert IUCN ID {} to integer on line {} of {}.".format(
-                    EOLrow['resource_pk'], reader.line_num, identifiers_file.name), file=sys.stderr);
+                    EOLrow['resource_pk'], reader.line_num, identifiers_file.name));
 
     if verbosity:
         info(" Matched {} IUCN entries in the EoL identifiers file. Mem usage {:.1f} Mb".format(
@@ -647,8 +651,8 @@ def main():
     #from http://eol.org/api/docs/provider_hierarchies
     #these need to be an ordered dict with the first being the preferred id used when getting a corresponding wikidata ID
     #all the ids for these are integers >= 0
-    int_sources = OrderedDict((('ncbi', 676), ('if', 596), ('worms', 459), ('irmng', 1347), ('gbif', 800)))
-    int_sources = OrderedDict((('ncbi', 676), ('worms', 459))) # update when EoL has harvested index fungorum, IRMNG & GBIF
+    int_sources = OrderedDict([('ncbi', 676), ('if', 596), ('worms', 459), ('irmng', 1347), ('gbif', 800)])
+    int_sources = OrderedDict([('ncbi', 676), ('worms', 459), ('gbif', 767)]) # update when EoL has harvested index fungorum & IRMNG
     #the ids for these sources may not be numbers (e.g. Silva has things like D11377/#1
     nonint_sources = OrderedDict()
     sources = int_sources.copy()

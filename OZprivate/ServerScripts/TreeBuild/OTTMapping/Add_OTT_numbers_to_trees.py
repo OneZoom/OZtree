@@ -138,18 +138,37 @@ for f in args.newick_files:
         if m:
             context_name = m.group(1)
         try:
-            tree = Tree.get(data=treestr[treestart:], schema="newick", suppress_leaf_node_taxa=True, terminating_semicolon_required=False, preserve_underscores=True, rooting='default-rooted')
+            tree = Tree.get(
+                data=treestr[treestart:], schema="newick", suppress_leaf_node_taxa=True,
+                terminating_semicolon_required=False, preserve_underscores=True,
+                rooting='default-rooted')
         except:
             print("WARNING: error reading tree '{}'".format(f))
             raise
         #check for polytomies
         for nd in tree.postorder_internal_node_iter():
             if len(nd._child_nodes) != 2:
-                print("WARNING: in {} there is a branch ({}) with {} child nodes: this will be removed by OneZoom".format(f, nd.label or "<unnamed>", len(nd._child_nodes)), file=sys.stderr)
+                if len(nd._child_nodes)==1:
+                    print(
+                        "WARNING: in {} there is a unary node ({}) which may be removed"
+                        " later".format(f, nd.label or "<unnamed>"), file=sys.stderr)
+                else:
+                    print(
+                        "WARNING: in {} there is a node ({}) with {} child nodes: this"
+                        " may be resolved in random order later"
+                        .format(f, nd.label or "<unnamed>", len(nd._child_nodes)),
+                        file=sys.stderr)
                 
-        #These are cases where v5 of the OpenTree incorrectly gives them the same number as another species
-        OTT_wrong_synonyms =['Geochelone_nigra_ephippium', 'Geochelone_nigra_guntheri','Geochelone_nigra_vandenburghi', 'Geochelone_nigra_microphyes', 'Pachyptila_crassirostris', 'Ducula_spilorrhoa','Ducula_luctuosa', 'Ducula_subflavescens', 'Lophura_hoogerwerfi', 'Acomys_airensis', 'Alouatta_nigerrima', 'Myotis_occultus']
-        #these are cases where OneZoom probably has an incorrect species (OpenTree has them as a synonym of something else) but I can't be bothered to correct the OZ tree
+        #These are cases where v5 of the OpenTree incorrectly gives them the same number
+        # as another species
+        OTT_wrong_synonyms =[
+            'Geochelone_nigra_ephippium', 'Geochelone_nigra_guntheri',
+            'Geochelone_nigra_vandenburghi', 'Geochelone_nigra_microphyes',
+            'Pachyptila_crassirostris', 'Ducula_spilorrhoa','Ducula_luctuosa',
+            'Ducula_subflavescens', 'Lophura_hoogerwerfi', 'Acomys_airensis',
+            'Alouatta_nigerrima', 'Myotis_occultus']
+        #these are cases where OneZoom probably has an incorrect species (OpenTree has
+        # them as a synonym of something else) but I can't be bothered to correct the OZ tree
         OZ_spurious_spp = ['Cyclemys_orbiculata','Cyclemys_ovata']
         ignore = OTT_wrong_synonyms + OZ_spurious_spp
                 
@@ -163,7 +182,7 @@ for f in args.newick_files:
 
         
         replacement_species = {'Anas_andium':'Anas_flavirostris_andium', 'Hylobates_abbotti':'Hylobates_muelleri_abbotti', 'Hylobates_funereus':'Hylobates_muelleri_funereus', 'Galago_zanzibaricus':'Galagoides_zanzibaricus', 'Avahi_ramanantsoavani':'Avahi_ramanantsoavanai','Galeopterus_peninsulae':'Galeopterus_variegatus_peninsulae'}
-        OTT_mistakes = {'Aotus_azarae':'Aotus_azarai','Galagoides_demidovii':'Galagoides_demidoff', 'Ateles_chamek':'Ateles_belzebuth_chamek', 'Eulemur_collaris':'Eulemur_fulvus_collaris', 'Alouatta_macconnelli':'Alouatta_seniculus_macconnelli', 'Lepilemur_tymerlachsoni':'Lepilemur_tymerlachsonorum','Cebus_robustus':'Cebus_nigritus_robustus','Aotus_infulatus':'Aotus_azarai_infulatus'}
+        OTT_mistakes = {'Ateles_chamek':'Ateles_belzebuth_chamek', 'Eulemur_collaris':'Eulemur_fulvus_collaris', 'Alouatta_macconnelli':'Alouatta_seniculus_macconnelli', 'Cebus_robustus':'Cebus_nigritus_robustus','Aotus_infulatus':'Aotus_azarai_infulatus'}
         replacement_species.update(OTT_mistakes)
         replacement_species = {replacement_species[n.label].replace("_", " "):n for n in to_change if n.label in replacement_species}
 

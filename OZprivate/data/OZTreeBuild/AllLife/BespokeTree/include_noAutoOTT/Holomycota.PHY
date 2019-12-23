@@ -1,0 +1,52 @@
+[There is a decent, up-to-date dated "fungal" tree in Tedersoo et al (2018) https://link.springer.com/article/10.1007%2Fs13225-018-0401-0 
+Figure 4. which dates the basal split at roughly 1120 MYA
+
+The rough backbone of the fungal tree from this paper is
+
+(
+  (Fonticulida_ott5247669:800,Nucleariida_ott5247670:800)Cristidiscoidea/Nucleariae(ott5246837):250,
+  (
+    (Rozella_ott958913:800,Microsporidia_ott16113:800)Rozellomycota:150,
+    (APHELIDA:900,ALL_OTHERS:900):50
+  )Fungi:100
+)Holomycota:70
+
+Here I use the term "Holomycota" (https://en.wikipedia.org/wiki/Holomycota) instead of Nucletmycea
+
+Note that Tedersoo et al suggest Rozellomycota as a preferential synonym of Cryptomycota
+and Aphelidiomycota as a preferential synonym of Aphelida
+
+The ALL_OTHERS grouping consists of the more conventional fungi, which bifurcate into a
+group consisting of
+
+Group 1 ((Blastocladiomycota:625,(Neocallimastigomycota, Monoblepharomycota, Chytridiomycota)Chytridiomyceta:200):200):75
+
+or to give OTT ids, (Blastocladiomycota_ott469418,(Neocallimastigomycota_ott380931,Monoblepharomycota_ott305126,Chytridiomycota)Chytridiomyceta) - note that Chytridiomycota_ott177160
+is, however, non-monophyletic in OT 11.4: we can roughly substitute (Chytridiales_ott319483+Spizellomycetales_ott383212)+(Rhizophydiales_ott967026+Gromochytriales_ott5384682), i.e.
+
+(Blastocladiomycota_ott469418@,(Neocallimastigomycota_ott380931@,Monoblepharomycota_ott305126@,((Chytridiales_ott319483@,Spizellomycetales_ott383212@),(Rhizophydiales_ott967026@,Gromochytriales_ott5384682@))Chytridiomycota_ott177160)Chytridiomyceta)
+
+and the rest, which contain most of the better-known fungi. This better-known
+subgroup splits again into 2 major groupings:
+
+Group 2a: ((Basidiobolomycota, Olpidiomycota), (Entomophthoromycota, Kickxellomycota, Zoopagomycota)Zoopagomyceta)
+
+i.e. Group2a = ((Basidiobolomycota_ott149101,Olpidiomycota_ott5602140),(Entomophthoromycota_ott887960,Kickxellomycota_ott759290,Zoopagomycota_ott956400)Zoopagomyceta)
+
+Group 2b: (((Ascomycota, Basidiomycota, Entorrhizomycota)Dikarya, Glomeromycota), (Calcarisporiellomycota, Mucoromycota)), Mortierellomycota)
+
+Or in OTT terms (Ascomycota_ott439373,Basidiomycota_ott634628,Entorrhizomycota_ott5653719)Dikarya_ott656316
+
+Note that the position of Glomeromycota and Mortierellomycota is variable depending on the sequences
+used for analysis, and Tedersoo et al suggest defining Mycoromyceta as Mucoromycota+Calcarisporiellomycota+Mortierellomycota+Glomeromycota, or in OT 11.4, which has
+Calcarisporiellales as missing (barren, unplaced)
+
+Mucoromycotina_ott564951 (includes Mortierellales) , Glomeromycota_ott385878
+
+So we can put
+
+Group2b = ((Mucoromycotina_ott564951,Glomeromycota_ott385878)Mycoromyceta,(Ascomycota_ott439373,Basidiomycota_ott634628,Entorrhizomycota_ott5653719)Dikarya_ott656316)
+
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Fungi]
+((Fonticulida_ott5247669@:800,Nucleariida_ott5247670@:800)Nucleariae:250,((Rozella_ott958913@:800,Microsporidia_ott16113@:800)Rozellomycota:150,(APHELIDA@:900,((Blastocladiomycota_ott469418@:625,(Neocallimastigomycota_ott380931@:575,Monoblepharomycota_ott305126@:575,((Chytridiales_ott319483@:350,Spizellomycetales_ott383212@:350):75,(Rhizophydiales_ott967026@:350,Gromochytriales_ott5384682@:350):75)Chytridiomycota_ott177160:150)Chytridiomyceta:50):200,(((Basidiobolomycota_ott149101@:675,Olpidiomycota_ott5602140@:675):75,(Entomophthoromycota_ott887960@:700,Kickxellomycota_ott759290@:700,Zoopagomycota_ott956400@:700)Zoopagomyceta:50):25,((Mucoromycotina_ott564951@:690,Glomeromycota_ott385878@:690)Mycoromyceta:10,(Ascomycota_ott439373@:650,Basidiomycota_ott634628@:650,Entorrhizomycota_ott5653719@:650)Dikarya_ott656316:50):75):50):75):50)Fungi_ott352914:100
+)Holomycota_ott5246132:70;
