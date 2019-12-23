@@ -3,7 +3,7 @@ For some vague but believable dates, see Stajich (2009) Current Biology 19:R840 
 
 Note that I have removed a single leaf called 'Clade_L_ott5247662' which has sneaked in to OTv7 at the root of choanoflagellates)
 
-I have spaced out the filasterans & DRIPs by 100 MY from the divergence of the fungi at 1100, pushing choanoflagellates to 800 MYA. Dates for the Ministeria/Capsaspora divergence are deep (~ 1/7th of the way from the filozoan root) as per fig 1 from Shalchian-Tabrizi et al 2008
+I have spaced out the filasterans & DRIPs by ~100 MY from the divergence between holozoa and holomycota at ~1120 (from Tedersoo et al, 2018), pushing choanoflagellates to 800 MYA. Dates for the Ministeria/Capsaspora divergence are deep (~ 1/7th of the way from the filozoan root) as per fig 1 from Shalchian-Tabrizi et al 2008
 
 The position of various basal Eukaryote groups is under flux, see http://www.ncbi.nlm.nih.gov/pubmed/23587248, http://onlinelibrary.wiley.com/doi/10.1111/j.1550-7408.2012.00644.x/abstract and http://onlinelibrary.wiley.com/doi/10.1111/j.1550-7408.2008.00373.x/full. This tree is based on the diagram from "The Eukaryotic Tree of Life from a Global Phylogenomic Perspective" by Fabien Burki (http://cshperspectives.cshlp.org/content/6/5/a016147).
 
@@ -19,25 +19,30 @@ NB Aigarchaeota comes under Thaumarchaeota in the OTT. To make the tacK part, I 
 
 (((Crenarchaeota_ott114216, Thermococci_ott921413),(Thaumarchaeota_ott102415,Thermoplasmata_ott921398)),Korarchaeota_ott266344)
 
-Lokiarcheota, should be sister to Eukaryotes, but is incertae sedis in 10.4
+The Asgard group of archaea should probably be sister to Eukaryotes
 
-*Lokiarchaeota_ott5561807
+Asgard-group_ott7000000
 
 dPANN from http://gbe.oxfordjournals.org/content/6/3/474.full, consisting of
 
-(((Nanoarchaeota_ott678209@,*Diapherotrites_ott5205266@),(*Aenigmarchaeota_ott4795972@,*Nanohaloarchaeota_ott5351807@)),(**Micrarchaeum_ott5248238@,Parvarchaeum_ott4796454@))
+(((Nanoarchaeota_ott678209@,*Diapherotrites_ott5205266@),(*Aenigmarchaeota_ott4795972@,**Nanohaloarchaeota_ott5351807@)),(**Micrarchaeum_ott5248238@,Parvarchaeum_ott4796454@))
 
-Where taxa marked * are missing from synth tree 9.1-10.4, and can be added from 8, and Micrarchaeum is listed as 'Miscellaneous Euryarchaeotic Group(MEG) ott5248238'
+Where taxa marked * are missing from synth tree 9.1-10.4, and can be added from 8,
+Micrarchaeum is listed as 'Miscellaneous Euryarchaeotic Group(MEG) ott5248238', and
+Nanohaloarchaeota is simply Nanosalina (ott296712) +Haloredivivus (ott186386) + Nanosalinarum (*ott296715)
 
 
-Parvarchaeum_ott4796454 in 9.1 is nested within Halobacteria
+Parvarchaeum_ott4796454 in 9.1 is nested within Halobacteria (and we can also remove its parent, Deep Sea Hydrothermal Vent Gp 6: ott5248234
 
-That leaves Euryarchaeota as the remaining Archaea minus the rest:
+That leaves Euryarchaeota as the remaining Archaea minus the rest (including Nanosalina ott296712 and Haloredivivus ott186386, which are separately in the Nanohaloarchaeota)
 
-Euryarchaeota_ott635958~996421-5561807-114216-921413-102415-921398-266344-678209-5205266-4795972-5351807-5248234-4796454-5248238
+Euryarchaeota_ott635958~996421-7000000-114216-921413-102415-921398-266344-678209-5205266-4795972-4796454-5248234-5248238-296712-186386-296715
+
+(Note that the groups marked with * are also included in this removal, so this will generate a few
+(ignorable) warnings about "Could not find subtree _ottXXXX within tree XXX/996421.nwk"
 
 TAK groups form Thaumarchaeota and Aigarchaeota (Aigarchaeota comes under Thaumarchaeota in the OTT). In OpenTree v5 this is sister to Thermoplasmata_ott921398). We add Korarchaeota as the sister to this, then 
 TACK is this clade plus the siter group Crenarchaeota (In OpenTree v5 this is sister to Thermococci_ottott921413)
 
 ]
-((((((((((((METAZOA@:150,Choanoflagellida_ott202765~-5247662@:800.0)CollarClade_:100,((Ministeria_vibrans_ott787809,Ministeria_marisola_ott2832559)Ministeria_ott787811:770,Capsaspora_owczarzaki_ott1053060:770)Filasterea:130)Filozoa:100,Ichthyosporea_ott623671@:1000.0)Holozoa:200,NUCLETMYCEA@:1200)Opisthokonta:100,APUS@)Amorphea_minus_amoebozoa_:100,(Amoebozoa_ott1064655~-5246123@:1400.0,((Collodictyonidae_ott4738986@:1400.0,Rigifilida_ott973629@:1400.0),Malawimonas_ott935422@:1400.0):0):0)Amorphea:100,(BIKONTA@:1400,Excavata_ott2927065~-935422@:1400)Diphoda:100)Eukaryota:400,Lokiarchaeota_ott5561807:1900)LE_clade_:25,(((Crenarchaeota_ott114216@,Thermococci_ott921413@),(Thaumarchaeota_ott102415@,Thermoplasmata_ott921398@)),Korarchaeota_ott266344@)TACK_group)TACKLE_clade_:100,(((Nanoarchaeota_ott678209@,Diapherotrites_ott5205266@),(Aenigmarchaeota_ott4795972@,Nanohaloarchaeota_ott5351807@)),(Micrarchaeum_ott5248238@,Parvarchaeum_ott4796454@))dPANN_group)TACKLED_clade_:100,Euryarchaeota_ott635958~996421-5561807-114216-921413-102415-921398-266344-678209-5205266-4795972-5351807-5248234-4796454-5248238@:2125.0)AllArchaeaAndEukaryotes_,Eubacteria_ott844192@)biota_ott93302;
+((((((((((((METAZOA@:150,Choanoflagellida_ott202765~-5247662@:800.0)CollarClade_:100,((Ministeria_vibrans_ott787809,Ministeria_marisola_ott2832559)Ministeria_ott787811:770,Capsaspora_owczarzaki_ott1053060:770)Filasterea:130)Filozoa:100,Ichthyosporea_ott623671@:1000.0)Holozoa:120,HOLOMYCOTA@:1120)Opisthokonta:180,APUS@)Amorphea_minus_amoebozoa_:100,(Amoebozoa_ott1064655~-5246123@:1400.0,((Collodictyonidae_ott4738986@:1400.0,Rigifilida_ott973629@:1400.0),Malawimonas_ott935422@:1400.0):0):0)Amorphea:100,(BIKONTA@:1400,Excavata_ott2927065~-935422@:1400)Diphoda:100)Eukaryota:400,Asgardarchaeota_ott7000000@:1900)LE_clade_:25,(((Crenarchaeota_ott114216@,Thermococci_ott921413@),(Thaumarchaeota_ott102415@,Thermoplasmata_ott921398@)),Korarchaeota_ott266344@)TACK_group)TACKLE_clade_:100,(((Nanoarchaeota_ott678209@,Diapherotrites_ott5205266@),(Aenigmarchaeota_ott4795972@,(Candidatus_Nanosalina_ott296712,Candidatus_Haloredivivus_ott186386,Candidatus_Nanosalinarum_ott296715)Nanohaloarchaeota_ott5351807)),(Micrarchaeum_ott5248238@,Parvarchaeum_ott4796454@))dPANN_group)TACKLED_clade_:100,Euryarchaeota_ott635958~996421-7000000-114216-921413-102415-921398-266344-678209-5205266-4795972-5248234-4796454-5248238-296712-186386-296715@:2125.0)AllArchaeaAndEukaryotes_,Eubacteria_ott844192@)biota_ott93302;

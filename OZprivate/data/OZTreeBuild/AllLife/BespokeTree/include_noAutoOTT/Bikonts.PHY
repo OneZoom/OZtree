@@ -2,7 +2,7 @@
 
 The difference from the OpenTree is that the grouping of Centrohelida, Picozoa is placed next to Haptophytes, and Cryptophyceae (or Cryptomonada) are the sister to Archaeplastida, rather than sister to the Chloroplastida.
 
-I remove some basal branches in Rhizaria, e.g. (5247609 "Novel Clade Gran-1").
+I remove some basal branches in Rhizaria, e.g. (5247609, 5247595, 5247616, 5247604, 5247619, 5247594, 5247620, 5247600 "Novel Clade XXX", 5247612 "7-5.4", , ).
 
 ]
-(((Haptophyta_ott151014@,(Centrohelida_ott755852@,Picozoa_ott4738955@))Problematic_eukaryotes,((Alveolata_ott266751@,Stramenopiles_ott266745@),Rhizaria_ott6929~-5247609@)SAR),(Cryptophyceae_ott497055@,(Glaucophyta_ott664970@,(Rhodophyceae_ott878953@,CHLOROPLASTIDA@))Archaeplastida))Bikonta;
+(((Haptophyta_ott151014@,(Centrohelida_ott755852@,Picozoa_ott4738955@))Problematic_eukaryotes,((Alveolata_ott266751@,Stramenopiles_ott266745@),Rhizaria_ott6929~-5247609-5247595-5247616-5247604-5247619-5247594-5247620-5247600-5247612@)SAR),(Cryptophyceae_ott491172@,(Glaucophyta_ott664970@,(Rhodophyceae_ott878953@,Chloroplastida_ott361838@))Archaeplastida))Bikonta;
