@@ -8,8 +8,9 @@ The instructions below are primarily intended for creating a full tree of all li
 We assume you are running in a bash shell, so that you can define the following settings before you create a tree, and use them in the scripts below as `${OT_VERSION}` and `${OZ_TREE}`
 
 ```
-OT_VERSION=11_4 #or whatever your OpenTree version is
-OT_TAXONOMY_VERSION=3.1draft2 
+OT_VERSION=12_3 #or whatever your OpenTree version is
+OT_TAXONOMY_VERSION=3.2
+OT_TAXONOMY_EXTRA=draft9 #optional - the draft for this version, e.g. for 3.1draft2
 OZ_TREE=AllLife #a tree directory in data/OZTreeBuild
 ```
 
@@ -21,7 +22,7 @@ If you are have installed perl modules to a different location (e.g. as a local 
 # Preliminaries
 
 
-First check that you have the required OpenTree, Wikimedia, and Encyclopedia of Life files, in particular `OZprivate/data/OpenTree/draftversion${OT_VERSION}.tre`, `OZprivate/data/OpenTree/ott/taxonomy.tsv`, `OZprivate/data/OpenTree/Wiki/wd_JSON`, `OZprivate/data/OpenTree/EOL/provider_ids.csv` and for popularity calculations, `OZprivate/data/OpenTree/Wiki/wp_SQL` and `OZprivate/data/OpenTree/Wiki/wp_pagecounts`  (see [OZprivate/data/README.markdown](../../data/README.markdown) - in particular, to create the `.tre` file you may need to run 
+First check that you have the required OpenTree, Wikimedia, and Encyclopedia of Life files, in particular `OZprivate/data/OpenTree/draftversion${OT_VERSION}.tre`, `OZprivate/data/OpenTree/ott${OT_TAXONOMY_VERSION}/taxonomy.tsv`, `OZprivate/data/OpenTree/Wiki/wd_JSON`, `OZprivate/data/OpenTree/EOL/provider_ids.csv` and for popularity calculations, `OZprivate/data/OpenTree/Wiki/wp_SQL` and `OZprivate/data/OpenTree/Wiki/wp_pagecounts`  (see [OZprivate/data/README.markdown](../../data/README.markdown) - in particular, to create the `.tre` file you may need to run 
 ```
 perl -pe 's/\)mrcaott\d+ott\d+/\)/g; s/[ _]+/_/g;' labelled_supertree_simplified_ottnames.tre > draftversion${OT_VERSION}.tre
 ```
@@ -40,7 +41,7 @@ If you already have your own newick tree with open tree ids on it already, and d
 		
 	```
 	OZprivate/ServerScripts/TreeBuild/OTTMapping/Add_OTT_numbers_to_trees.py \
-	--savein OZprivate/data/OZTreeBuild/${OZ_TREE}/BespokeTree/include_OTT${OT_TAXONOMY_VERSION} \
+	--savein OZprivate/data/OZTreeBuild/${OZ_TREE}/BespokeTree/include_OTT${OT_TAXONOMY_VERSION}${OT_TAXONOMY_EXTRA} \
 	OZprivate/data/OZTreeBuild/${OZ_TREE}/BespokeTree/include_noAutoOTT/*.[pP][hH][yY]
 	```
 
@@ -95,7 +96,7 @@ If you already have your own newick tree with open tree ids on it already, and d
 	```
 	OZprivate/ServerScripts/TaxonMappingAndPopularity/CSV_base_table_creator.py \
 	OZprivate/data/OZTreeBuild/${OZ_TREE}/${OZ_TREE}_full_tree.phy \
-	OZprivate/data/OpenTree/ott/taxonomy.tsv \
+	OZprivate/data/OpenTree/ott${OT_TAXONOMY_VERSION}/taxonomy.tsv \
 	OZprivate/data/EOL/provider_ids.csv \
 	OZprivate/data/Wiki/wd_JSON/latest-all.json.bz2 \
 	OZprivate/data/Wiki/wp_SQL/enwiki-latest-page.sql.gz \
