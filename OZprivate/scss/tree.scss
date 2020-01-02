@@ -66,11 +66,17 @@ body.loading #UI #loading_spinner {
     float: left;
     min-height: 20px; /* Override uk-navbar's min-height */
 }
-.logo a {
+.logo a, .icon-beside-input .main-icon {
     opacity: 0.55;
+}
+.icon-beside-input .main-icon {
+    opacity: 0.45;
 }
 .logo a:hover {
     opacity: 1;
+}
+.icon-beside-input .main-icon:hover {
+    opacity: 0.7;
 }
 .logo a, #logo img {
     vertical-align: middle;
