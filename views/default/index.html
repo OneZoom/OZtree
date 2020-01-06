@@ -15,11 +15,7 @@
   <div> <!-- left column -->
     <div class="uk-grid-small" uk-grid>
 
-      <div class="uk-card uk-card-default uk-card-small uk-card-body">
-        <ul class="hp-stat-circles">
-            <li style="top: -9%; right: 10%; width: 7rem; height: 7rem;">{{="{:,}".format(n_species)}} species</li>
-            <li style="top: 30%; right: 45%; width: 5.5rem; height: 5.5rem;">{{="{:,}".format(n_images)}} images</li>
-        </ul>
+      <div class="uk-card uk-card-default uk-card-small uk-card-body oz-info-card">
         <h3 class="uk-card-title">What is the tree of life?</h3>
         <p>
           The tree of life shows how all life on earth is related.
@@ -28,7 +24,13 @@
           In our interactive tree of life you can explore the relationships between
           <b>{{="{:,}".format(n_species)}}</b> species and wonder at <b>{{="{:,}".format(n_images)}}</b> images on a single zoomable page.
         </p>
-        <div class="oz-card-bottom-right"><a href="/life.html" class="oz-pill pill-leafout" target="_blank">Start exploring</a></div>
+        <div class="oz-info-card-aside">
+          <ul class="hp-stat-circles">
+            <li style="top: -1.3rem; right: 10%; width: 7rem; height: 7rem;">{{="{:,}".format(n_species)}} species</li>
+            <li style="top: 30%; right: 45%; width: 5.5rem; height: 5.5rem;">{{="{:,}".format(n_images)}} images</li>
+          </ul>
+          <div class="oz-card-bottom-right"><a href="/life.html" class="oz-pill pill-leafout" target="_blank">Start exploring</a></div>
+        </div>
       </div>
 
       <div class="uk-card uk-card-default uk-card-small uk-card-body uk-width-expand">
