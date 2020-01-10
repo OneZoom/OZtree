@@ -1,6 +1,7 @@
-# Ignore everything
-*
+# Ignore everything in the root
+/*
 
 # But not these files...
 !.gitignore
 !README.markdown
+!Test*
