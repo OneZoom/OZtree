@@ -2,7 +2,7 @@
 Files herein are .gitignored. To get the site working, this folder should contain the following files (or symlinks to them)
 	
 * `draftversionXXX.tre`
-* `ott/taxonomy.tsv`
+* `ottX.Y/taxonomy.tsv`
 
 ### How to get the files
 * `draftversionXXX.tre` should contain an OpenTree newick file with simplified names and `mrca***` labels removed. This can be created from the OpenTree download file `labelled_supertree_simplified_ottnames.tre`. To get this file, you can either download the complete OpenTree distribution, or get the single necessary file by following the link from [https://tree.opentreeoflife.org/about/synthesis-release/](https://tree.opentreeoflife.org/about/synthesis-release/) to 'browse full output' then 'labelled_supertree/index.html'. Make sure that you *don't* get the `...without_monotypic.tre` version, otherwise you will be missing some intermediate nodes, and the popularity ratings may suffer.
