@@ -1,0 +1,35 @@
+uid	|	parent_uid	|	name	|	rank	|	sourceinfo	|	uniqname	|	flags	|	
+312031	|	770311	|	Homininae	|	subfamily	|	ncbi:207598	|		|		|	
+417957	|	312031	|	Pan	|	genus	|	ncbi:9596,gbif:2436437,irmng:1392385	|		|	sibling_higher	|	
+84217	|	417950	|	Pan troglodytes vellerosus	|	subspecies	|	ncbi:91950	|		|	infraspecific	|	
+112831	|	417950	|	Pan troglodytes ellioti	|	subspecies	|	ncbi:756884	|		|	infraspecific	|	
+752845	|	417950	|	Pan troglodytes schweinfurthii	|	subspecies	|	ncbi:37010	|		|	infraspecific	|	
+752847	|	417950	|	Pan troglodytes verus	|	subspecies	|	ncbi:37012	|		|	infraspecific	|	
+767875	|	417950	|	Pan troglodytes troglodytes	|	subspecies	|	ncbi:37011	|		|	infraspecific	|	
+158484	|	417957	|	Pan paniscus	|	species	|	ncbi:9597,gbif:5219533,irmng:10419555	|		|		|	
+417969	|	312031	|	Gorilla	|	genus	|	ncbi:9592,gbif:2436440,irmng:1435397	|		|	sibling_higher	|	
+351685	|	417969	|	Gorilla beringei	|	species	|	ncbi:499232,gbif:7262070	|		|		|	
+317556	|	351685	|	Gorilla beringei graueri	|	subspecies	|	ncbi:46359	|		|	infraspecific	|	
+624503	|	351685	|	Gorilla beringei beringei	|	subspecies	|	ncbi:1159185	|		|	infraspecific	|	
+417965	|	417969	|	Gorilla gorilla	|	species	|	ncbi:9593,gbif:2436441,irmng:11039388	|		|		|	
+835035	|	417965	|	Gorilla gorilla diehli	|	subspecies	|	ncbi:406788	|		|	infraspecific	|	
+417953	|	417965	|	Gorilla gorilla gorilla	|	subspecies	|	ncbi:9595	|		|	infraspecific	|	
+620805	|	417965	|	Gorilla gorilla uellensis	|	subspecies	|	ncbi:183511	|		|	infraspecific	|	
+770309	|	312031	|	Homo	|	genus	|	ncbi:9605,gbif:2436435,irmng:1000957,irmng:1209753,irmng:1160674,irmng:1035772	|		|	sibling_higher	|	
+3607676	|	770309	|	Homo heidelbergensis	|	species	|	ncbi:1425170,gbif:4827561,irmng:10961818	|		|	sibling_higher,extinct	|	
+770315	|	770309	|	Homo sapiens	|	species	|	ncbi:9606,gbif:2436436,irmng:11388931,irmng:10857762	|		|	sibling_higher |
+83926	|	770315	|	Homo sapiens neanderthalensis	|	subspecies	|	ncbi:63221,gbif:4827584,irmng:11388321	|		|	extinct,infraspecific	|	
+3607681	|	770309	|	Homo antecessor	|	species	|	gbif:4827548,irmng:10002185	|		|	sibling_higher,extinct	|	
+3607678	|	770309	|	Homo habilis	|	species	|	gbif:4827554,irmng:10539035	|		|	sibling_higher,extinct	|	
+3607671	|	770309	|	Homo erectus	|	species	|	gbif:4827564,irmng:10690896,irmng:10031853	|		|	sibling_higher,extinct |
+3607673	|	770309	|	Homo rudolfensis	|	species	|	gbif:4827581,irmng:11089734	|		|	sibling_higher,extinct	|	
+3607722	|	770311	|	Praeanthropus	|	genus	|	gbif:4827547,irmng:1097586	|		|	sibling_higher,extinct	|	
+3607732	|	3607722	|	Orrorin tugenensis	|	species	|	gbif:4827659,irmng:11320418	|		|	sibling_higher,extinct	|	
+3607705	|	770311	|	Ardipithecus	|	genus	|	gbif:4827629,irmng:1222967	|		|	sibling_higher,extinct	|	
+3607716	|	3607705	|	Australopithecus ramidus	|	species	|	gbif:4827631,irmng:11300154	|		|	extinct	|	
+3607690	|	770311	|	Paranthropus	|	genus	|	gbif:4827633,irmng:1306934	|		|	sibling_higher,extinct	|	
+3607689	|	3607690	|	Paranthropus boisei	|	species	|	gbif:4827634,irmng:10992869	|		|	extinct	|	
+3607718	|	3607690	|	Paranthropus aethiopicus	|	species	|	gbif:4827637,irmng:11104555	|		|	extinct	|	
+3607708	|	3607690	|	Paranthropus robustus	|	species	|	gbif:4827640,irmng:11419625	|		|	extinct	|	
+3607688	|	770311	|	Sahelanthropus	|	genus	|	gbif:4827668,irmng:1207402	|		|	sibling_higher,extinct	|	
+3607687	|	3607688	|	Sahelanthropus tchadensis	|	species	|	gbif:4827669,irmng:11323562	|		|	extinct	|	
