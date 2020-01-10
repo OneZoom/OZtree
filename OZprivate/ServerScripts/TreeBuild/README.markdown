@@ -144,6 +144,10 @@ If you already have your own newick tree with open tree ids on it already, and d
 	(note that this both updates the ICUN data in the DB and percolates up interior node info)
 12. (10 mins) If this is a site with sponsorship (only the main OZ site), set the pricing structure using SET_PRICES.html (accessible from the management pages).
 13. (5 mins - this does seem to be necessary for ordered nodes & ordered leaves). Make sure indexes are reset. Look at the commands at the end of db.py for the SQL to do this - they involve logging in to the SQL server (e.g. via Sequel Pro on Mac) and pasting all the drop index and create index commands.
+14. Check that your web site is set up correctly (e.g. that the fields are in the right encoding, etc), but running the site tests:
+	```
+	python3 -m nose ./tests/site_setup
+	```
     
     ## at last
 14. Have a well deserved cup of tea
