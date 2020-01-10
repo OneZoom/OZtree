@@ -287,7 +287,9 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
                 else:
                     completed_eols[EOLid]=int(data['identifier'])
                     if EOLid  != completed_eols[EOLid]:
-                        logger.warning("The requested EOL id ({}) has changed to {}. The mapping of OTT to EOL ids may need updating".format(EOLid, data['identifier']))
+                        logger.warning(
+                            "The requested EOL id ({}) has changed to {}. The mapping of"
+                            " OTT to EOL ids may need updating".format(EOLid, data['identifier']))
                     OTTid = eol_page_to_ott[EOLid]
                     if 'vernacularNames' in data:
                         #remove all the outdated names for this ott (don't care if there are none)
@@ -300,13 +302,22 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
                                 #lang_primary is the 'primary' letter (lowercase) language, e.g. 'en', 'cmn'
                                 lang_primary = nm['language'].split('-')[0].lower()
                                 if len(vernacular) > name_length_chars:
-                                    logger.warning("vernacular name for EOL {} (ott {}) > {} characters.\nTruncating".format(EOLid, OTTid, name_length_chars))
+                                    logger.warning(
+                                        "vernacular name for EOL {} (ott {}) > {} characters."
+                                        "\nTruncating".format(EOLid, OTTid, name_length_chars))
                                 if lang_primary=='en' and (vernacular.startswith("A ") or vernacular.startswith("a ")):
                                     #ignore english vernaculars like "a beetle" 
                                     continue
-                                sql = "INSERT INTO {0} (ott, vernacular, lang_primary, lang_full, preferred, src, src_id, updated) VALUES ({1}, {1}, {1}, {1}, {1}, {1},{1}, {2});".format(names_table, subs, datetime_now)
+                                sql = (
+                                    "INSERT INTO {0} "
+                                    "(ott, vernacular, lang_primary, lang_full, preferred, src, src_id, updated) "
+                                    "VALUES ({1}, {1}, {1}, {1}, {1}, {1},{1}, {2});"
+                                    .format(names_table, subs, datetime_now))
                                 db_cursor.execute(sql, (OTTid, vernacular[:name_length_chars], lang_primary, nm['language'].lower(), 1 if nm.get('eol_preferred') else 0, src_flags['eol'],EOLid))
-                                logging.debug("Inserted vernacular ({}) for {}".format(vernacular, data['scientificName']))
+                                logging.debug(
+                                    "Inserted vernacular ({}/{}:{}) for {}".format(
+                                        lang_primary, nm['language'].lower(), vernacular,
+                                        data['scientificName']))
                             except:
                                 logger.warning("problem inserting vernacular name for EOL {} (ott {})".format(EOLid, OTTid))
                         db_connection.commit()

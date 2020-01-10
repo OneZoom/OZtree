@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-#NB: this should be executed first (begins with _ and the web2py book says "Models in the same folder/subfolder are executed in alphabetical order.")
+# NB: this should be executed first (begins with _ and the web2py book says 
+# "Models in the same folder/subfolder are executed in alphabetical order.")
 import sys
 # Python 2 and 3, instead of python2 unichr:
 oldchr = chr  # For supporting python 2 in places
@@ -8,9 +9,9 @@ from builtins import chr
 try:
     from gluon import current
 except ImportError:
-    #this is not being used in web2py, but instead in an independent python app
-    #simply define cache.ram to be a function that returns the result of calling the 2nd arg
-    #This is a complex HACK!!!
+    # This is not being used in web2py, but instead in an independent python app: simply
+    # define cache.ram to be a function that returns the result of calling the 2nd arg
+    # This is a complex HACK!!!
     cache = type("", (), dict(ram=lambda self, name, func, **kw: func()))()
     current = type("", (), {})() #allow us to set e.g. current.OZglobals, so we don't bomb out later
     def T(x):
@@ -23,14 +24,16 @@ except ImportError:
 if sys.version_info[0] == 2:
     range = xrange
     
-percent_crop_expansion = 12.5 #max amount to expand crops by to fit in circle
+percent_crop_expansion = 12.5 # max amount to expand crops by to fit in circle
 
 ## Some bitwise flags for use later
 
 # bitwise flags for existence of different language wikipedia articles
 # this variable is also used in construct_wiki_info in CSV_base_table_creator.py
 wikiflags = cache.ram('wikiflags',
-    lambda: {lang:bit for (bit,lang) in enumerate(['en','de','es','fr','ja','ru','it','zh','pt','ar','pl','nl','fa','tr','sv','he','uk','id','vi','ko'])},
+    lambda: {lang:bit for (bit,lang) in enumerate([
+        'en', 'de', 'es', 'fr', 'ja', 'ru', 'it', 'zh', 'pt', 'ar', 'pl', 'nl', 'fa',
+        'tr', 'sv', 'he', 'uk', 'id', 'vi',' ko'])},
     time_expire = None)
 
 # Source flags are used to identify the source of images and vernacular names, and chose
