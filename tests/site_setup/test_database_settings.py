@@ -124,7 +124,7 @@ class TestDatabaseSettings(unittest.TestCase):
             db_cursor.execute("SELECT VERSION()")
             version = db_cursor.fetchone()[0]
             if version.startswith("5.6"):
-                self.skipTest(self, "Older MYSQL version not tested")
+                self.skipTest("Older MYSQL version not tested")
             self.db['connection'].commit() #need to commit here otherwise next select returns stale data
             db_cursor.execute("SELECT @@GLOBAL.range_optimizer_max_mem_size")
             range_optimizer_max_mem_size = db_cursor.fetchone()
