@@ -26,6 +26,14 @@
     <script src="{{=URL('static','uikit-3/js/uikit.min.js')}}"></script>
     <script src="{{=URL('static','uikit-3/js/uikit-icons.min.js')}}"></script>
     <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/content.css')}}" />
+    
+    {{
+    response.include_meta()
+    response.include_files()
+    }}
+    <!-- include 'web2py_ajax.html' could be done here, but it performs more than we want so we disect it and keep only the bits we really need -->
+
+
     {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
     {{include '../static/OZTreeModule/dist/OZ_script.html'}}
     <script>var OZstrings={{include 'treeviewer/js_strings.json'}}</script>
@@ -155,7 +163,7 @@
     <!-- Main ========================================= -->
     <!-- Begin page content -->
 
-    <div class="container-fluid">
+    <div class="main_content">
         {{include}}
     </div>
 
