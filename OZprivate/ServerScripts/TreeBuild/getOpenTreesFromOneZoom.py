@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
 
-"""Usage: getOpenTreesFromOneZoom.py OpenTreeFile.tre output_dir to_include file1.PHY file2.PHY ... > include_text.js_fragment
+"""Usage: getOpenTreesFromOneZoom.py OpenTreeFile.tre output_dir file1.PHY file2.PHY ... > include_text
 
 or as a python routine which will print out the same
 
@@ -33,19 +33,6 @@ This number is ignored when specifying a file of included taxa, and it is also i
 In other words, to force all depths to the default value, overriding any per-taxon value, use a negative number, 
 e.g. '-5' forces all extraction to depth 5, and '-Inf' sets all taxa to be extracted to the maximum depth.
 
-If specifying a to_include file, it is simply in the format:
-
-Hippocampus_hippocampus_ott630167
-Anthaxia_candens_ott3415523
-Hapalochlaena_lunulata_ott1033634
-Eumimesis_d'almeidai_ott5545324
-
-(note that these names are after newick parsing, but with underscores retained, so e.g. the drafttree file would have 
-'Eumimesis_d''almeidai_ott5545324')
-
-If such a file is used, the inclusion files will contain these species plus all nodes on the way to them, each with
-an alternative leaf marked #N, where N is the number of leaves that descend from this node.
-
 The actual inclusion is done by the OneZoom js Tree class, this script merely creates the
 files to include. It does this by extracting the relevant subtree from the full OpenTree (e.g.
 a tree based on http://files.opentreeoflife.org/trees/. The script extracts newick files from this tree using a defined
@@ -61,37 +48,44 @@ This javascript code can be pasted directly into the OneZoom tree init file.
 
 """
 
-
 import re
 import os
 import sys
 import math
+import logging
 from subprocess import call
+
 from dendropy import TreeList
-from prune_trees_from_dict import warn, get_taxa_include_dict_from_csv, prune_tree
+from prune_trees_from_dict import get_taxa_include_dict_from_csv, prune_tree
 
-def get_species_level_tree(filename):
-    '''download the synthetic OpenTree with corresponding taxonomy, and process it to get a file'''
-    import urllib.request
-    subspecies_removal_utility = os.path.join(os.path.dirname(os.path.realpath(__file__)), "subspecies_delete.pl")
-    full_tree_download = OpenTreeURL.rsplit('/',1)[1]
-    OpenTreeTaxURL = "http://files.opentreeoflife.org/ott/ott2.9.tgz"
-    taxonomy_location = "ott/taxonomy.tsv" #the location of the taxonomy file in the ott archive
-    full_ott_download =  OpenTreeTaxURL.rsplit('/',1)[1]
-    warn("downloading the opentree from "+ OpenTreeURL)
-    urllib.request.urlretrieve(OpenTreeURL, full_tree_download)
-    call(["gunzip", full_tree_download])
-    warn("downloading the (large) opentree taxonomy from "+ OpenTreeURL)
-    urllib.request.urlretrieve(OpenTreeTaxURL, full_ott_download)
-    call(["tar", "-zxf", full_ott_download, taxonomy_location])
-    warn("removing subspecies etc from "+ OpenTreeURL + " using " + subspecies_removal_utility)
-    call([subspecies_removal_utility, re.sub(".gz$", "", full_tree_download), taxonomy_location, filename])
-    return os.path.isfile(filename)
+def getTaxonNameMap(filename):
+    '''
+    Place the names of the taxa in the taxonomy file into a dictionary keyed by OTT id
+    If the taxon is an extinct species, add the "extinct" dagger symbol (†) before the
+    taxon name.
+    '''
+    taxon_map = {}
+    with open(filename, 'rt') as taxon_file:
+        reader = csv.DictReader(taxonomy_file, delimiter='\t')
+        for row in reader:
+            if row['flags'].contains('extinct'):
+                taxon_map[int(row['uid'])] = row['name']
+                assert not row['name'].startswith('†')
+            else:
+                taxon_map[int(row['uid'])] = '†' + row['name']
+    return taxon_map
 
-def getOpenTreesFromOneZoom(OpenTreeFile, output_dir, include_var, phy_files, verbose=False):
+
+def getOpenTreesFromOneZoom(
+    OpenTreeFile, OpenTreeTaxonomy, output_dir, include_var, phy_files, verbose=False):
     '''Python routine to get OToL subtrees from phy files. If include_var is a number, 
     treat it as a recursion depth, otherwise a dictionary of names to keep. 
     The parameter phy_files should be an iterable list of .phy or .PHY filenames'''
+
+
+    taxom_map = getTaxonNames(args.OpenTreeTaxonomy)
+
+
     from numbers import Number
     ExtractionUtility = os.path.join(os.path.dirname(os.path.realpath(__file__)), "subtree_extract.pl")
     #find all nodes that end in  ott plus a number and (optionally) some other numbers starting with underscore, ending in
@@ -199,23 +193,18 @@ def getOpenTreesFromOneZoom(OpenTreeFile, output_dir, include_var, phy_files, ve
 if __name__ == "__main__":
     import argparse
     import time
-    parser = argparse.ArgumentParser(description='Create subtrees from the Open Tree of Life, on the basis of ott numbers in a set of newick files. See https://github.com/jrosindell/OneZoomTouch')
+    parser = argparse.ArgumentParser(description='Create subtrees from the Open Tree of Life, on the basis of ott numbers in a set of newick files.')
     parser.add_argument('--verbose', '-v', action="store_true", help='verbose: output extra non-essential info')
-    parser.add_argument('OpenTreeFile', help='Path to the Open Tree file, which should have had polytomies removed, and probably subspecies too. See https://github.com/jrosindell/OneZoomTouch')
-    parser.add_argument('output_dir', help='Path to the directory in which to save the OpenTree subtrees. See https://github.com/jrosindell/OneZoomTouch')
-    parser.add_argument('include_var', help='If this is a file, it specifies a list of taxa: OpenTree files will be pruned to only include these taxa. Otherwise it is taken as a number, the default recursion depth (can also be "inf"). It it is a negative number, this recursion depth overrides any in the newick files. To force all taxa to be included, use `-- -inf` (note the extra `--` argument is needed to avoid -inf being treated as a command-line arg). See https://github.com/jrosindell/OneZoomTouch')
+    parser.add_argument('OpenTreeFile', help='Path to the Open Tree file, containing only open tree numbers.')
+    parser.add_argument('OpenTreeTaxonomy', help='Path to the Open Tree Taxonomy file (taxonomy.tsv) corresponding to the OpenTreeFile.')
+    parser.add_argument('output_dir', help='Path to the directory in which to save the OpenTree subtrees')
     parser.add_argument('parse_files', nargs='+', help='A list of newick files to parse for OTT numbers, giving the subtrees to extract.')
     args = parser.parse_args()
 
-    if os.path.isfile(args.include_var):
-        include_var = get_taxa_include_dict_from_csv(args.include_var)
-    else:
-        include_var = float("Inf")
-        try:
-            include_var = float(args.include_var)
-        except ValueError: #if we cannot convert the recursion depth to a number
-            warn('Cannot read default recursion depth ({}) as a number, assuming default is that all species should be output.'.format(args.include_var))
+    args.verbose
+
     start = time.time()
-    getOpenTreesFromOneZoom(args.OpenTreeFile, args.output_dir, include_var, args.parse_files, args.verbose)
+    getOpenTreesFromOneZoom(
+        args.OpenTreeFile, args.OpenTreeTaxonomy, args.output_dir, args.parse_files)
     end = time.time()
     warn("Time taken: {} seconds".format(end - start))

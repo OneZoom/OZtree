@@ -39,7 +39,7 @@ while (<TREE>) { #read in reverse order, separated by close brackets
       $open_brace = "(";
     }
   }
-  if (m|^([- \w'/]+_ott($match)'?)\D|) {
+  if (m|^([- \w'/]*ott($match)'?)\D|) {
      $braces{$2} = {depth=>0, lines=>["$1",";"]};
   }
 }

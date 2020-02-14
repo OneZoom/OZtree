@@ -8,7 +8,7 @@ The instructions below are primarily intended for creating a full tree of all li
 We assume you are running in a bash shell, so that you can define the following settings before you create a tree, and use them in the scripts below as `${OT_VERSION}` and `${OZ_TREE}`
 
 ```
-OT_VERSION=12_3 #or whatever your OpenTree version is
+OT_VERSION=12.3 #or whatever your OpenTree version is
 OT_TAXONOMY_VERSION=3.2
 OT_TAXONOMY_EXTRA=draft9 #optional - the draft for this version, e.g. for 3.1draft2
 OZ_TREE=AllLife #a tree directory in data/OZTreeBuild
@@ -16,17 +16,10 @@ OZ_TREE=AllLife #a tree directory in data/OZTreeBuild
 
 In the instructions which follow, we assume that your tree version corresponds to that in the online OpenTree API. You can check this by running `curl -X POST https://api.opentreeoflife.org/v3/tree_of_life/about`, and also check that the taxonomy version in the API corresponds to that used in your tree, by running `curl -X POST https://api.opentreeoflife.org/v3/taxonomy/about`. If these do not match, the tree and taxonomy versions above, you may not fully map all the names in your tree in step 1 below.
 
-If you are have installed perl modules to a different location (e.g. as a local user), you may also need to set `export PERL5LIB=/path/to/my_perl_modules/lib/perl5`.
-
-
 # Preliminaries
 
 
-First check that you have the required OpenTree, Wikimedia, and Encyclopedia of Life files, in particular `OZprivate/data/OpenTree/draftversion${OT_VERSION}.tre`, `OZprivate/data/OpenTree/ott${OT_TAXONOMY_VERSION}/taxonomy.tsv`, `OZprivate/data/OpenTree/Wiki/wd_JSON`, `OZprivate/data/OpenTree/EOL/provider_ids.csv` and for popularity calculations, `OZprivate/data/OpenTree/Wiki/wp_SQL` and `OZprivate/data/OpenTree/Wiki/wp_pagecounts`  (see [OZprivate/data/README.markdown](../../data/README.markdown) - in particular, to create the `.tre` file you may need to run 
-```
-perl -pe 's/\)mrcaott\d+ott\d+/\)/g; s/[ _]+/_/g;' labelled_supertree_simplified_ottnames.tre > draftversion${OT_VERSION}.tre
-```
-as detailed [here](../../data/OpenTree/README.markdown))
+First check that you have the required OpenTree, Wikimedia, and Encyclopedia of Life files, in particular `OZprivate/data/OpenTree/${OT_VERSION}/labelled_supertree.tre`, `OZprivate/data/OpenTree/ott${OT_TAXONOMY_VERSION}/taxonomy.tsv`, `OZprivate/data/OpenTree/Wiki/wd_JSON`, `OZprivate/data/OpenTree/EOL/provider_ids.csv` and for popularity calculations, `OZprivate/data/OpenTree/Wiki/wp_SQL` and `OZprivate/data/OpenTree/Wiki/wp_pagecounts`  (see [OZprivate/data/README.markdown](../../data/README.markdown).
 
 # Building a tree
 
@@ -53,15 +46,15 @@ If you already have your own newick tree with open tree ids on it already, and d
 	```
 	If you do not have any supplementary `.nwk` subtrees in the  `OT_required` directory, this step will output a warning, which can be ignored.
 
-3. (10 mins) Construct OpenTree subtrees for inclusion from the `draftversion${OT_VERSION}.tre` file. The subtrees to be extracted are specified by inclusion strings in the `.PHY` files created in step 1. The command for this is `getOpenTreesFromOneZoom.py`, and it needs to be run from within the `OZprivate/data/OZTreeBuild/${OZ_TREE}` directory, as follows:
+3. (10 mins) Construct OpenTree subtrees for inclusion from the `${OT_VERSION}/labelled_supertree.tre` file. The subtrees to be extracted are specified by inclusion strings in the `.PHY` files created in step 1. The command for this is `extract_trees.py`, and it can be run as follows:
 
 	```
-	(cd OZprivate/data/OZTreeBuild/${OZ_TREE} && \
-	 ../../../ServerScripts/TreeBuild/getOpenTreesFromOneZoom.py -v \
-	 ../../OpenTree/draftversion${OT_VERSION}.tre \
-	 OpenTreeParts/OpenTree_all/ -- -Inf \
-	 BespokeTree/include_files/*.PHY \
-	 > AdditionalFiles/substitute_commands_to_include_in_full_tree_js_file.txt)
+	 OZprivate/ServerScripts/TreeBuild/getOpenTreesFromOneZoom.py -v \
+	 OZprivate/data/OpenTree/{OT_VERSION}/labelled_supertree.tre \
+	 OZprivate/data/OZTreeBuild/${OZ_TREE}/OpenTreeParts/OpenTree_all/ \
+	 --supplementary_taxonomy OZprivate/data/OZTreeBuild/${OZ_TREE}/BespokeTree/SupplementaryTaxonomy.tsv \
+	 OZprivate/data/OZTreeBuild/${OZ_TREE}/BespokeTree/include_files/*.PHY \
+	 > OZprivate/data/OZTreeBuild/${OZ_TREE}/AdditionalFiles/substitute_commands_to_include_in_full_tree_js_file.txt
 	```
 	If you are not including any OpenTree subtrees in your final tree, you should have no `.PHY` files, and this step will output a warning, which can be ignored.
 	
