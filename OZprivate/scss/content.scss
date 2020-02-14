@@ -20,6 +20,12 @@ a, a:link, a:active, a:visited, a:hover {
   color: inherit;
 }
 
+.main_content {
+a, a:link, a:active, a:visited, a:hover {
+color: $oz_green_bg;
+}
+}
+
 ul.leaf-list {
   padding-left: 0;
   line-height: 2rem;
@@ -424,11 +430,7 @@ body > footer {
   }
 }
 
-a.oz-pill {
-  &:link, &:visited, &:active, &:hover {
-    color: $oz_green_fg;
-  }
-}
+
 
 /* ********** Home page tour UI ************************* */
 

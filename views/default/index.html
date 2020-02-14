@@ -1,6 +1,6 @@
 {{response.title='OneZoom Tree of Life Explorer'}}
+{{response.files.append(URL('static', 'css/content_index.css'))}}
 {{extend 'uikit_layout.html'}}
-
 
 {{block masthead}}
 <div class="home-heading uk-text-center">
@@ -152,7 +152,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
 </div></section>
 
 
-<div class="uk-child-width-expand@s uk-grid-match" style="border: 20px solid white" uk-grid>
+<div class="uk-child-width-expand@m uk-grid-match" style="border: 20px solid white" uk-grid>
   {{for sub_menu in response.menu[0:3]:}}
     <div>
       <div class="oz-pill with-splash">
