@@ -1,0 +1,16 @@
+@import "colour_scheme.scss";
+
+
+.main_content{
+    a, a:link, a:active, a:visited, a:hover {
+    color: inherit;
+    }
+}
+
+a.oz-pill {
+&:link, &:visited, &:active, &:hover {
+color: $oz_green_fg;
+}
+}
+
+
