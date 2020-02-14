@@ -76,7 +76,7 @@ def index():
         )
     }
     for r in sponsored_rows:
-        if r.user_nondefault_image != 0:
+        if r.user_nondefault_image:
             sponsored_images[r.OTT_ID] = db(
                 (db.images_by_ott.src_id==r.verified_preferred_image_src_id) &
                 (db.images_by_ott.src==r.verified_preferred_image_src)
