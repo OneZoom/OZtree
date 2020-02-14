@@ -305,7 +305,7 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
                 pass #no equivalent eol id in eol_mapping
             except ValueError:
                 warn(" Cannot convert IUCN ID {} to integer on line {} of {}.".format(
-                    EOLrow['resource_pk'], reader.line_num, identifiers_file.name));
+                    EOLrow['resource_pk'], reader.line_num, identifiers_file.name), file=sys.stderr);
 
     if verbosity:
         info(" Matched {} IUCN entries in the EoL identifiers file. Mem usage {:.1f} Mb".format(

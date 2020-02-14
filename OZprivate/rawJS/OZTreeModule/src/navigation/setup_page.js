@@ -97,9 +97,19 @@ function setup_page_by_state(state) {
   })
   .then(function () {
     //open popup dialog if exists.
-    if (state.tap_action && state.tap_ott) {
+    if (state.tap_action && (state.tap_ott_or_id || state.ott)) {
       global_button_action.action = state.tap_action;
-      global_button_action.data = parseInt(state.tap_ott);
+      if (state.tap_ott_or_id) {
+        global_button_action.data = parseInt(state.tap_ott_or_id);
+      } else {
+        //try to fill in automatically from the ott - this allows e.g. ?osn_&init=jump
+        if (state.tap_action.endsWith('node')) {
+          //nodes must be referenced by OZid, not ott
+          global_button_action.data = parseInt(data_repo.ott_id_map[state.ott]);
+        } else {
+          global_button_action.data = parseInt(state.ott);
+        }
+      }
       click_on_button_cb(controller);
     } else {
       controller.close_all();

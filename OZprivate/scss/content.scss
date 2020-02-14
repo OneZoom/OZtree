@@ -1,0 +1,542 @@
+/* CSS entry point for UIKit-based content pages */
+@import "colour_scheme.scss";
+@import "search_ui.scss";
+
+h1, h2, h3, h4, h5, h6 {
+  @extend %oz-font-serif;
+}
+
+blockquote, blockquote footer {
+  @extend %oz-font-serif;
+  color: inherit;  /* Override UIkit's styling for quotes */
+}
+
+em {
+  @extend %oz-font-serif;
+  color: inherit;  /* Override UIkit's styling for em */
+}
+
+a, a:link, a:active, a:visited, a:hover {
+  color: inherit;
+}
+
+ul.leaf-list {
+  padding-left: 0;
+  line-height: 2rem;
+
+  li { list-style: none; }
+  li:before {
+    content: '';
+    display: inline-block;
+    vertical-align: text-bottom;
+    width: 2rem;
+    height: 1rem;
+    padding-right: 1rem;
+    background-image: url(../images/oz-leaf-greenfg.svg);
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+
+  &.oz-pill {
+    /* Nicer padding when being used as a call-to-action (e.g. sponsors) */
+    padding: 0.3rem 1rem;
+  }
+}
+
+img.species, .img-species > img {
+  background: whitesmoke;
+  border-radius: 50%;
+}
+span.img-species {
+  display: inline-block;
+}
+.img-species {
+  position: relative; /* Contain leafout background */
+}
+.img-species.leafout::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-image: url(../images/oz-logo-leafout-outline.svg);
+  background-repeat: no-repeat;
+  background-position: center 85%;
+  background-size: 30px;
+}
+
+.endangered-species .img-species.leafout::after {
+  right: -10px;
+  background-image: url(../images/oz-logo-leafout-outline-red.svg);
+  background-position: right bottom;
+}
+
+/* ********** Header ********** */
+body > header {
+  padding: 0 10px;
+  overflow: visible !important; /* Let search dropdown escape */
+
+  @media screen and (max-width: 1000px) {
+    /* Nudge center navbar underneath, let it scroll */
+    nav.uk-navbar.uk-navbar-container {
+      margin-bottom: 1rem;
+    }
+    nav.uk-navbar.uk-navbar-container > .uk-navbar-center {
+      top: calc(100% - 1rem);
+      left: 0;
+      right: 0;
+      transform: none;
+    }
+    nav.uk-navbar.uk-navbar-container > .uk-navbar-center > ul {
+      margin: 0 auto; /* Center menu within navbar-container */
+      overflow-x: hidden;
+      /* Below 390 px, only room for 3 menu items, hide the rest */
+      @media screen and (max-width: 390px) {
+        > li + li + li + li {
+          display: none;
+        }
+      }
+    }
+    nav.uk-navbar.uk-navbar-container > .uk-navbar-center > ul > li > a {
+      min-height: 2rem;
+    }
+    nav.uk-navbar.uk-navbar-container > .uk-navbar-center > ul > li > .uk-navbar-dropdown[style] {
+      left: 0px !important;
+      right: 0px !important;
+      width: auto !important;
+    }
+  }
+
+  .uk-navbar-nav>li>a {
+    padding: 0 10px; /* Decrease padding to fit more links on IphoneSE */
+    text-transform: none;
+    span {
+      /* The navbar items have too much height, so underline a nested element */
+      border-bottom: 1px solid $oz_green_fg;
+    }
+    color: inherit;
+    &:hover, &.uk-open {
+      color: $oz_green_fg;
+    }
+  }
+
+  .masthead {
+    max-width: 800px !important;
+    margin: 0 auto !important; /* override oz-section-body margins */
+
+    h1, h1 a {
+      color: $oz_green_fg;
+      &:link, &:visited, &:hover, &:active {
+        color: $oz_green_fg;
+      }
+    }
+  }
+
+  .logo img {
+    width: 220px;
+  }
+}
+
+/* ********** Footer ********** */
+
+body > footer {
+  font-size: 80%;
+
+  &.shortcuts {
+    @extend %oz-background-dark;
+    padding: 1rem !important;
+
+    h3 {
+      font-size: 1rem;
+      margin: 0 0 0.2rem 0;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+  }
+
+  &.terms {
+    padding: 0.3rem;
+    background-color: $oz_terms_bg;
+    color: $oz_terms_fg;
+    text-align: center;
+  }
+}
+
+/* ********** HP sections ********** */
+
+.oz-section {
+  overflow: hidden; /* contain background */
+
+  > .oz-section-body {
+    /* max-width is roughly max(80vw, 800px) */
+    max-width: 80vw;
+    @media screen and (min-width: 930px) {
+      max-width: 800px;
+    }
+    margin: 1rem auto;
+    text-align: center;
+  }
+
+  &.bkgd-darkspiral, &.bkgd-leaves, &.bkgd-quotes, &.bkgd-polytomy, &.bkgd-natural {
+    position: relative; /* Contain the floating background elements */
+
+    & > * {
+      z-index: 1; /* Sit stuff on top of patterns if it floats */
+    }
+
+    &:before, &:after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center right;
+    }
+
+    &:after {
+      transform: scaleX(-1);
+    }
+  }
+
+  &.bkgd-leaves {
+    @extend %oz-background-light;
+    $background-image: url(../images/oz-sectionbg-leaves.svg);
+    $background-spacing: calc(50% + 700px / 2);
+
+    &:before, &:after {
+      top: 50px;
+      bottom: 50px;
+      left: auto;
+      right: auto;
+      width: 400px;
+      background-image: $background-image;
+      background-size: contain;
+    }
+
+    &:before {
+      right: $background-spacing;
+    }
+
+    &:after {
+      left: $background-spacing;
+    }
+  }
+
+  &.bkgd-quotes {
+    @extend %oz-background-dark;
+    $background-image: url(../images/oz-sectionbg-quotes.svg);
+    $background-spacing: calc(50% + 900px / 2);
+
+    &:before, &:after {
+      top: 40px;
+      bottom: 40px;
+      left: auto;
+      right: auto;
+      width: 400px;
+      background-image: $background-image;
+      background-size: contain;
+    }
+
+    &:before {
+      right: $background-spacing;
+    }
+
+    &:after {
+      left: $background-spacing;
+      transform: none;
+      background-position: center left;
+    }
+
+    .oz-slider-arrow-left {
+      background-image: url(../images/oz-leftarrow-greenfg.svg);
+    }
+    .oz-slider-arrow-right {
+      background-image: url(../images/oz-rightarrow-greenfg.svg);
+    }
+  }
+
+  &.bkgd-polytomy {
+    @extend %oz-background-light;
+    $background-image: url(../images/oz-sectionbg-polytomy.svg);
+    $background-spacing: calc(50% + 800px / 2);
+
+    &:before, &:after {
+      top: 10px;
+      background-image: $background-image;
+      background-position: top right;
+      opacity: 0.7;
+    }
+
+    &:before {
+      right: $background-spacing;
+    }
+
+    &:after {
+      left: $background-spacing;
+    }
+  }
+
+  &.bkgd-natural {
+    $background-image: url(../images/oz-sectionbg-natural.svg);
+    $background-spacing: calc(50% + 800px / 2);
+
+    &:before, &:after {
+      top: 10px;
+      background-image: $background-image;
+      background-position: top right;
+      opacity: 0.7;
+    }
+
+    &:before {
+      right: $background-spacing;
+    }
+
+    &:after {
+      left: $background-spacing;
+    }
+  }
+
+  &.bkgd-darkspiral {
+    @extend %oz-background-dark;
+    $background-image: url(../images/oz-sectionbg-darkspiral.svg);
+    $background-spacing: calc(50% + 800px / 2);
+
+    &:before {
+      background-image: $background-image;
+      right: $background-spacing;
+    }
+
+    &:after {
+      background-image: $background-image;
+      left: $background-spacing;
+    }
+  }
+}
+
+
+/* ********** Grid modifications for homepage  ********** */
+
+.uk-grid-oz-dark {
+  background: $oz_dark_bg;
+
+  &.uk-grid-small {
+    /* Padding above/below cells */
+    padding: 15px 0;
+  }
+  @media screen and (min-width: 960px) {
+    &.uk-grid-small {
+      /* Modify grid so we get some padding around cells */
+      padding: 15px;
+      margin-left: 0;
+    }
+  }
+
+  @media screen and (max-width: 640px) {
+    /* Grid collapsed, so we specify the treeviewer height */
+    > div {
+      min-height: 58vh;
+    }
+    .uk-grid-small {
+      margin-left: 0; /* margins collapsed, so don't need to nudge over */
+    }
+  }
+
+  .uk-card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: calc(50% - 20px);
+
+    width: 0; 
+    height: 0; 
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid $oz_dark_bg;
+  }
+
+  .uk-card-body {
+    overflow: hidden; /* Contain "What is the tree of life" text */
+  }
+}
+
+.uk-container-center {
+  /* Future UI-kit property missing from our version */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ********** Call-to-action pills ********************** */
+
+.oz-pill {
+  @extend %oz-background-dark;
+
+  display: inline-block;
+  border-radius: 1.5rem 0;
+
+  &:not(img) {
+    padding: 0.75rem 1rem;
+  }
+
+  &.pill-round {
+    border-radius: 1.5rem;
+  }
+
+  &.pill-leafout {
+    background-image: url(../images/oz-logo-leafout-white.svg);
+    background-repeat: no-repeat;
+    background-position: 97% center;
+    background-size: 1.5rem;
+    padding-right: calc(1.5rem + 1rem); /* Add icon size to normal padding */
+  }
+
+  &.with-splash {
+    position: relative;
+  }
+
+  .oz-pill-splash {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: calc(100% - 10rem);
+    background-size: cover;
+    background-position: center;
+    border-radius: 0 0 1.4rem 0;
+  }
+}
+
+.oz-card-bottom-right {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+
+  .oz-pill {
+    border-radius: 1.5rem 0 0 0;
+  }
+}
+
+a.oz-pill {
+  &:link, &:visited, &:active, &:hover {
+    color: $oz_green_fg;
+  }
+}
+
+/* ********** Home page tour UI ************************* */
+
+.hp_tour_ui {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  .tourstop {
+    text-align: right;
+
+    .tour-controls {
+      display: none;
+
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      padding: 0.5rem;
+    }
+    &.active .tour-controls {
+      display: block;
+    }
+    .linkout {
+      opacity: 0;
+      transition: opacity .5s;
+      transition-delay: .25s; /* Delay fading out so we don't fade to white too much */
+      pointer-events: none;
+    }
+    &.active .linkout {
+      opacity: 1;
+      transition-delay: 0s;
+      pointer-events: auto;
+    }
+  }
+
+  .linkout.oz-pill {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* ********** Home page stat circles ************************* */
+
+.oz-info-card {
+  .oz-info-card-aside {
+    min-height: 1rem; /* Use this as padding to stop text clashing with "start exploring" */
+  }
+
+  @media screen and (min-width: 1200px) {
+    padding-right: calc(12em) !important;
+
+    .oz-info-card-aside {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 12em;
+      overflow: hidden;
+    }
+  }
+
+  .hp-stat-circles {
+    @extend %oz-font-serif;
+    font-size: 120%;
+
+    @media screen and (max-width: 1200px) {
+      display: none;
+    }
+
+    > * {
+      list-style-type: none;
+      display: flex;
+      justify-content: center;
+      align-content: center;
+      flex-direction: column;
+      position: absolute;
+      border-radius: 100%;
+      background: $oz_green_fg;
+      color: $oz_dark_bg;
+      text-align: center;
+    }
+    + h3 {
+      margin-top: 0;
+    }
+  }
+}
+
+/* ********** Home page slider prev/next arrows ************** */
+
+.oz-slider-arrow {
+  width: 35px;
+  height: 35px;
+  margin: 15px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+
+  &.oz-slider-arrow-left {
+    left: -55px;
+    background-image: url(../images/oz-leftarrow-darkbg.svg);
+  }
+  &.oz-slider-arrow-right {
+    right: -55px;
+    background-image: url(../images/oz-rightarrow-darkbg.svg);
+  }
+}

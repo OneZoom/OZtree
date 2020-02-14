@@ -25,13 +25,11 @@ page, and another that can be used in conjunction with the first and which provi
 functionality. At the moment, a single file is created, called OZentry.js
  * @function default
  * @memberof OZentry
- * @param {string} condensed_newick - A 'condensed Newick' string, e.g. as defined in completetree_XXXXX.js 
- * (condensed Newick is a ladderized-ascending binary newick tree with all characters except braces removed, 
- * and curly braces substituted where a bifurcation only exists order to randomly resolve polytomies.
- * @param {Object} metadata - A list of 
  * @param {Object} server_urls - A named key:value dict of urls that the api manager etc needs to fire 
  *     off AJAX requests. See global_config.js for the list of necessary names
  * @param {Object} UI_functions A named key:value dict of UI functions that the OZ js might want to call
+ * @param {Object} pagetitle_function - A function that takes a single string (could be null) and returns a title 
+ *     to use in the &lt;title&gt; section of the page. E.g. <code>function(t) {return (t)?'OneZoom: '+t:'OneZoom Tree of Life Explorer'}</code>
  * @param {String} canvasID The DOM ID of the canvas element, used e.g. in getElementById(canvasID)
  * @param {Object} default_viz_settings - Specifications for the default colour, layout, tree shape, etc. 
  *  These can be specified as key:values to override the defaults, or given as an object of the correct sort.
@@ -42,8 +40,14 @@ functionality. At the moment, a single file is created, called OZentry.js
  *  3. Write your own "theme" object and pass it here e.g. use default_viz_settings = {colours:my_theme_object}
  *  4. Use an existing theme and modify it by passing additional parameters here, as described in tree_settings.set_default()
  *     e.g. use default_viz_settings = {cols:'natural', 'cols.branch.stroke':'rgb(190,0,0)'}
- * @param {Object} pagetitle_function - A function that takes a single string (could be null) and returns a title 
- *     to use in the &lt;title&gt; section of the page. E.g. <code>function(t) {return (t)?'OneZoom: '+t:'OneZoom Tree of Life Explorer'}</code>
+ * @param {string} condensed_newick - A 'condensed Newick' string, e.g. as defined in completetree_XXXXX.js 
+ * (condensed Newick is a ladderized-ascending binary newick tree with all characters except braces removed, 
+ * and curly braces substituted where a bifurcation only exists order to randomly resolve polytomies.
+ * @param {Object} metadata - *** To document ...
+ * @param {Object} dichotomy_cut_position_map_json_string - *** To document ...
+ * @param {Object} polytomy_cut_position_map_json_string - *** To document ...
+ * @param {Object} cut_thresholds - *** To document ... 
+ * @param {Object} tree_dates - *** To document ...
  * @return {Object} a OneZoom object which exposes OneZoom objects and functions to the user. In particular, .data_repo contains a DataRepo object, and .controller contains a Controller object.
  */
 function setup(
@@ -69,6 +73,11 @@ function setup(
     if (UI_functions.hasOwnProperty(name) && config.ui.hasOwnProperty(name)) {
       config.ui[name] = UI_functions[name];
     }
+  }
+
+  if (!document.body.classList.contains('tree-viewer')) {
+      // Don't record tree changes on embedded uses
+      config.disable_record_url = true;
   }
 
   let return_value = {};
@@ -184,5 +193,4 @@ function api_utils_setup(server_urls) {
   }
 }
 
-export default setup;
-export { api_utils_setup }
+export {setup as default, api_utils_setup};

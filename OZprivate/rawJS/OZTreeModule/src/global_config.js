@@ -86,7 +86,7 @@ config.ui = {
      OneZoom code */
   closeAll: function () {/* by default, do nothing */ },
   loadingMessage: function (active) {
-    console.log(active ? "Page loading..." : "Finished loading.");
+    if (window.is_testing) console.log(active ? "Page loading..." : "Finished loading.");
   },
   badOTT: function (ott) {
     alert('You have passed in a bad name or number, so we have\n' +
@@ -146,5 +146,10 @@ config.pic = {
   max_allowed_pic_map_size: 800,
   clear_image_cache_interval: 240000
 }
+
+/** @property {boolean} disable_record_url - Don't update the page URL as the tree moves
+ */
+config.disable_record_url = false;
+
 
 export default config;

@@ -30,10 +30,127 @@ def time_diff(startTime,endTime):
 
 def index():
     """
-    here we should find a random selection of things with highly-rated photos which have not been sponsored, and pass them in.
-    also check for the best rated photos for sponsorship, and pass those in.
+    Collect all information required for the home page
     """
-    return dict(n_species =  db(db.ordered_leaves).count(), n_images =  db(db.images_by_ott).count())
+    # TODO: Fetch these from tree_startpoints
+    popular_otts = [549519, 14971, 676045, 410925, 541928, 541936, 418570, 835324, 226178, 72667, 226185]
+    # TODO: Override image urls if tree_startpoints.image_url exists
+    pop_images = {
+        r.ott:thumbnail_url(r.get('src'), r.get('src_id'))
+        for r in
+        db(db.images_by_ott.ott.belongs(popular_otts) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)
+    }
+
+    endangered_otts = [351685, 42314, 430337, 995054, 872573, 921451]
+    endangered_images = {
+        r.ott:thumbnail_url(r.get('src'), r.get('src_id'))
+        for r in
+        db(db.images_by_ott.ott.belongs(endangered_otts) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)
+    }
+
+    query = (db.reservations.verified_time != None) & \
+        ((db.reservations.deactivated == None) | (db.reservations.deactivated == "")) & \
+        (db.reservations.verified_preferred_image_src != None)
+    sponsored_rows = db(query).select(
+        db.reservations.OTT_ID,
+        db.reservations.name,
+        db.reservations.user_nondefault_image,
+        db.reservations.verified_kind,
+        db.reservations.verified_name,
+        db.reservations.verified_more_info,
+        db.reservations.verified_preferred_image_src,
+        db.reservations.verified_preferred_image_src_id,
+        orderby=~db.reservations.verified_time|db.reservations.reserve_time,
+        limitby=(0, 20)
+        )
+    sponsored_scinames = {r.OTT_ID:r.name for r in sponsored_rows}
+    sponsored_images = {
+        r.ott:r
+        for r in db(db.images_by_ott.ott.belongs(r.OTT_ID for r in sponsored_rows) & (db.images_by_ott.overall_best_any==1)).select(
+            db.images_by_ott.ott,
+            db.images_by_ott.src,
+            db.images_by_ott.src_id,
+            db.images_by_ott.rights,
+            db.images_by_ott.licence,
+            orderby=~db.images_by_ott.src
+        )
+    }
+    for r in sponsored_rows:
+        if r.user_nondefault_image != 0:
+            sponsored_images[r.OTT_ID] = db(
+                (db.images_by_ott.src_id==r.verified_preferred_image_src_id) &
+                (db.images_by_ott.src==r.verified_preferred_image_src)
+                ).select(
+                    db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
+                    db.images_by_ott.rights, db.images_by_ott.licence,
+                    orderby=~db.images_by_ott.src).first()
+
+    return dict(
+        n_species=db(db.ordered_leaves).count(),
+        n_images=db(db.images_by_ott).count(),
+        quotes=db().select(db.quotes.ALL, orderby = ~db.quotes.quality | db.quotes.id, limitby=(0, 5)),
+        news=[
+            dict(
+                heading=row.text_date if row.text_date else row.news_date.strftime("%d %B %Y").lstrip('0'),
+                body=row.html_description.replace(' class="thumbnail"', ' style="display:none"'),
+                image_href="/OZtree/static/images/oz-news-generic.jpg",
+                more_href="/milestones.html",
+            )
+            for row in db().select(db.news.ALL, orderby =~ db.news.news_date, limitby = (0, 5))
+        ],
+        sponsored=dict(
+            rows=sponsored_rows,
+            images=sponsored_images,
+            html_names={
+                ott:nice_species_name(sponsored_scinames[ott], vn, html=True, leaf=True, first_upper=True, break_line=1)
+                for ott,vn
+                in get_common_names([r.OTT_ID for r in sponsored_rows], return_nulls=True).items()}
+        ),
+        n_total_sponsored=db(db.reservations.PP_e_mail != None).count(distinct=db.reservations.PP_e_mail),
+        n_sponsored_leaves=db((db.reservations.verified_time != None) & ((db.reservations.deactivated == None) | (db.reservations.deactivated == ""))).count(),
+        popular_places=[
+            dict(
+                tree_href='/life/@=%d' % ott,
+                image_href=pop_images.get(ott, URL('static','images/noImage_transparent.png')),
+                name=nice_species_name(None, vn, html=True, leaf=True, first_upper=True, break_line=2),
+            )
+            for ott, vn
+            in get_common_names(popular_otts, return_nulls=True).items()
+        ],
+        endangered=[
+            dict(
+                tree_href='/life/@=%d' % ott,
+                image_href=endangered_images.get(ott, URL('static','images/noImage_transparent.png')),
+                name=nice_species_name(None, vn, html=True, leaf=True, first_upper=True, break_line=2),
+            )
+            for ott, vn
+            in get_common_names(endangered_otts, return_nulls=True).items()
+        ],
+        animation_locations=[
+            # These should be obtained out of the tree_startpoints table (category="homepage_anim")
+            [244265, 'Mammals'],
+            [81461, 'Birds'],
+            [99252, 'Flowering plants'],
+            ],
+        menu_splash_images={
+            sub_menu[0]:URL('static', 'images/oz-newssplash-%s.jpg' % sub_menu[0].lower().replace("for ", ""))
+            for sub_menu in response.menu
+        },
+    )
+
+def footer_sponsor_items():
+    """
+    Three hardcoded images for groups that can be sponsored - appears on every page =>
+    should not make a db request
+    """
+    return dict()
+
+
+def homepage_animation_template():
+    """
+    The html fragment used as a template for the embedded animation on the homepage
+    """
+    return dict()
 
 @require_https_if_nonlocal()
 def user():
@@ -570,7 +687,7 @@ def sponsored():
     sci_names = {r.OTT_ID:r.name for r in curr_rows}
     html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).items()}
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
-    default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(sci_names.keys()) & (db.images_by_ott.best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
+    default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(sci_names.keys()) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
     #also look at the nondefault images if present - 
     user_images = {}
     for r in curr_rows:
@@ -1347,12 +1464,6 @@ def treeview_info(has_text_tree=True):
     location = remove_location_arg(request.args)
     partner  = remove_partner_arg(request.args)
     page_info={'partner': partner}
-    if len(request.args) and request.args[0] == 'tour':
-        #could have been life/trail2016/tour/newtour/@Mammalia or simply life/trail2016/tour/@Mammalia
-        tour_name = None if len(request.args)==1 else request.args[1]
-        page_info.update({'subtitle': 'Tours',
-                   'tourname': tour_name #only *-=. and alphanumeric in args, so can use this in js
-                   })
     if has_text_tree:
         tt = text_tree(location)
         page_info.update({'tree': tt, 'title_name': ", ".join(life_text_init_taxa(tt))})
@@ -1373,21 +1484,28 @@ def life_MD():
         'default', 'life_MDtouch/@Vertebrata=801601?ssaver=600&otthome=801601',
         url_encode=False))
 
+def lifeMD():
+    """
+    A helper function. At some point we want to replace life_MD with this
+    """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+    return dict(
+        screensaver_otts=[991547, 81461, 99252, 770315],
+        **treeview_info(has_text_tree=False))
+    
 def life_MDtouch():
     """
     The museum display version for touchscreens, which is sandboxed
     (and has no underlying text tree with links hidden by JS)
     """
-    response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return treeview_info(has_text_tree=False)
+    return lifeMD()
 
 def life_MDmouse():
     """
     The museum display version for mouse operated systems, which is sandboxed
     (and has no underlying text tree with links hidden by JS)
     """
-    response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return treeview_info(has_text_tree=False)
+    return lifeMD()
 
 def life_treasure():
     """

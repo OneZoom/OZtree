@@ -1,14 +1,16 @@
 {{include 'link_modifier.html'}}
 <!-- This contains all the overlay on top of the OneZoom canvas. It can be reloaded in different languages -->
 
-{{if not request.vars.no_oz_logo:}}<div class="logo uk-navbar-item">{{#The logo *never* opens a new tab (but it can be removed)}}{{=no_tab_A(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('default','index', extension=False), _id="OZ-logo")}}</div>{{pass}}
+{{if not request.vars.no_oz_logo:}}<div class="logo uk-navbar-item">{{#The logo *never* opens a new tab (but it can be removed)}}{{=no_tab_A(IMG(_src=URL('static','images/oz-logo-1line-mono-dark.svg')), _href=URL('default','index', extension=False), _id="OZ-logo")}}</div>{{pass}}
 {{if request.vars.partner_logo:}}<div class="logo uk-navbar-item">{{if request.vars.partner_url:}}{{=A(IMG(_src=request.vars.partner_logo), _href=request.vars.partner_url)}}{{else:}}{{=SPAN(IMG(_src=request.vars.partner_logo))}}{{pass}}</div>{{pass}}
 <div class="uk-navbar-item" id="searchnav">
   <div id="search-basic">
     <div class="searchbox uk-search uk-search-default" id="search_form_basic">
       <div class="searchinput"><div class="icon-beside-input">
           <button   class="spinner" uk-spinner="ratio:0.5"></button>
-          <button   class="main-icon" uk-icon="icon: search"></button>
+          <button   class="uk-icon main-icon">
+            <img src="{{=URL('static/images', 'oz-logo-icon-darkbg.svg')}}" alt="" />
+          </button>
         </div><input class="uk-search-input" type="search" placeholder="{{=T('Search all life...')}}" /></div>
       <div uk-dropdown="pos: bottom-left; offset: 1" class="search_dropdown selectable uk-overflow-auto">
         <div class="no_results">{{=T("No results found")}}</div>

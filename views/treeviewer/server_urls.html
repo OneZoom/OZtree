@@ -1,0 +1,37 @@
+  <script type="text/javascript">
+var server_urls = {
+  /* These fill out the equivalently named variables in OneZoom global_config.
+     They need to be defined in this file to avoid hard-coding them into the OneZoom js code 
+     They are coded with the full URL so that they can be used remotely (e.g. in a partial install) */
+  data_path_pics: {{=XML(js_thumbnail_url)}},
+  node_details_api: "{{try:}}{{=myconf.take('API.node')}}{{except:}}{{=URL('API','node_details.json', scheme=True, host=True)}}{{pass}}",
+  search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",
+  search_sponsor_api: "{{try:}}{{=myconf.take('API.search_sponsor')}}{{except:}}{{=URL('API','search_for_sponsor.json', scheme=True, host=True)}}{{pass}}",
+  search_init_api: "{{try:}}{{=myconf.take('API.search_init')}}{{except:}}{{=URL('API','search_init.json', scheme=True, host=True)}}{{pass}}",
+  ott2id_arry_api: "{{try:}}{{=myconf.take('API.ott2id_array')}}{{except:}}{{=URL('API', 'get_ids_by_ott_array.json', scheme=True, host=True)}}{{pass}}",
+  otts2vns_api: "{{try:}}{{=myconf.take('API.otts2vns')}}{{except:}}{{=URL('API','otts2vns.json', scheme=True, host=True)}}{{pass}}",
+  image_details_api: "{{try:}}{{=myconf.take('API.image')}}{{except:}}{{=URL('API', 'image_details.json', scheme=True, host=True)}}{{pass}}",
+  update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
+  tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
+
+  {{popup_vars = dict(setup_params.get('popups', {}).get('vars', {}), lang='...LANG...') if 'setup_params' in vars() else dict(lang='...LANG...')}}
+  OZ_leaf_json_url_func: function(ott, lang) {return("{{=XML(URL(
+      'tree',
+      'leaf_linkouts',
+      scheme=True,
+      host=True,
+      extension='json',
+      args=['...OTT...'],
+      vars=popup_vars
+  ))}}".replace('...OTT...', (ott || '').toString() || "").replace('...LANG...', lang || ''))},
+  OZ_node_json_url_func: function(id, lang) {return("{{=XML(URL(
+      'tree',
+      'node_linkouts',
+      scheme=True,
+      host=True,
+      extension='json',
+      args=['...ID...'],
+      vars=popup_vars
+  ))}}".replace('...ID...', id.toString() || "").replace('...LANG...', lang || ''))},
+};
+  </script>
