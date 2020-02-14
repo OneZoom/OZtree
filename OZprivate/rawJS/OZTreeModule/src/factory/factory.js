@@ -40,10 +40,15 @@ class Factory {
   /**
    * Develop undeveloped parts to connect the current tree to the specified node.
    * @param {integer} to_leaf 1 means the specified node is an interior node. -1 means its a leaf.
-   * @param {integer} to_index metacode of the node
+   * @param {integer} to_index OneZoom id (metacode) of the node
    */
-  dynamic_loading_by_metacode(to_leaf, to_index) {
-    return _dl_codein_fly(to_leaf, to_index, this.root);
+  dynamic_loading_by_metacode(OZid) {
+    if (OZid < 0) {
+        // leaf
+        return _dl_codein_fly(1, -OZid, this.root)
+    } else {
+        return _dl_codein_fly(-1, OZid, this.root)
+    }
   }
 }
 

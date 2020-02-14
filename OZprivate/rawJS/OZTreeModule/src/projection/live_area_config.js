@@ -43,7 +43,7 @@ live_area_config.interior_sponsor_text = {
 
 live_area_config.interior_image = {
   register_button_event: function(data) {
-    global_button_action.action = "jump";
+    global_button_action.action = "leap";
     global_button_action.data = data;
   }  
 }

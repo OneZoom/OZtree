@@ -1,5 +1,6 @@
 import tree_state from '../tree_state';
 import {record_url_delayed} from '../navigation/record';
+import { call_hook } from '../util';
 
 class TouchInteractor {
   constructor() {
@@ -19,6 +20,11 @@ class TouchInteractor {
     canvas.addEventListener("touchend", this.touch_end.bind(this), false);
   }
   touch_start(event) {
+    call_hook('touch_start')
+    if (tree_state.disable_interaction) {
+      return
+    }
+
     this.controller.close_all();
     event.preventDefault();
     event.stopPropagation();
@@ -36,6 +42,11 @@ class TouchInteractor {
   }
   
   touch_move(event) {
+    call_hook('touch_move')
+    if (tree_state.disable_interaction) {
+      return
+    }
+
     event.preventDefault();    
     event.stopPropagation();
     if(event.targetTouches.length >= 2) {// might need to fix this
@@ -76,6 +87,11 @@ class TouchInteractor {
   }
   
   touch_end(event) {
+    call_hook('touch_end')
+    if (tree_state.disable_interaction) {
+      return
+    }
+    
     event.preventDefault();    
     event.stopPropagation();
     if(event.targetTouches.length == 0) {

@@ -1,4 +1,5 @@
 uid	name	sourceinfo	notes
-mrcaott42ott55949	Myomorpha	ncbi:1963758	hack around bad OpenTree synonomy issue, see https://github.com/OpenTreeOfLife/feedback/issues/340
-4422029	Phortica polychaeta	gbif:1560621,irmng:	override irmng to hack around https://github.com/jrosindell/OneZoomComplete/issues/485
-1886863	Arytrura musculus	gbif:1777695,irmng:	override irmng to hack around https://github.com/jrosindell/OneZoomComplete/issues/485
+809432	Strigops habroptilus	ncbi:57251,irmng:11435975	Add in missing kakapo
+324662	Miliaria	ncbi:100458,irmng:1299055
+324663	Miliaria calandra	ncbi:100459,irmng:10854787	Add in missing corn bunting
+1097101	Miliaria calandra parroti	ncbi:505316

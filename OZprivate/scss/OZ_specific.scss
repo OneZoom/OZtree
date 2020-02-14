@@ -30,6 +30,10 @@ input[type=checkbox], input[type=radio] {
     white-space: nowrap;
 }
 
+.svgover {
+    width: 100%;
+}
+
 // ===== Footer ====== //
 .footer {
   position: absolute;
@@ -58,7 +62,12 @@ input[type=checkbox], input[type=radio] {
 // ===== General === //
 
 h1,h2,header {text-align: center}
-h3,h4,h5 {text-align: left}
+h3,h4,h5 {
+    text-align: left
+    strong {
+        color: black;
+    }
+}
 
 dt {margin-left: 1em}
 dd {margin-left: 2em}
@@ -80,6 +89,10 @@ img.lft_edge {
 }
 
 img.centre {
+}
+
+figure {
+    border: 0
 }
 
 // ===== Index ====== //
@@ -253,8 +266,6 @@ ul.sponsor_list li {
     background-position: .5em .5em; 
 }
 
-
-
 // ===== Sponsored, donor_list ====== //
 
 .sponsored_list {
@@ -379,7 +390,7 @@ ul.sponsor_list li {
   font-weight:bold
 }
 
-// ===== Multi-columns (FAQ & milestones) ====== //
+// ===== Multi-columns (FAQ, endorsements, & milestones) ====== //
 
 ul.columns {
     list-style-type: none;

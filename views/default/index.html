@@ -1,104 +1,272 @@
-{{response.files.append(URL('static', 'OZSite/index.js'))}}
 {{response.title='OneZoom Tree of Life Explorer'}}
-{{extend 'layout.html'}}
+{{extend 'uikit_layout.html'}}
 
-<div class="col-sm-6" id = "left_column">
-<h2>Welcome to the OneZoom <a href="life/@Eukaryota">tree of life explorer</a></h2>
-<p class="main_text">An interactive map of the evolutionary relationships between {{="{:,}".format(n_species)}} species of life on our planet. Each leaf on the tree represents a species and the branches show how they are connected through evolution. Discover your favourites, see which species are under threat, and wonder at {{="{:,}".format(n_images)}} images on a single page.</p>
-<a id="carousel_link" href="life.html/@Mammalia?init=zoom">
-<div class="carousel" >
-   <!-- list the images inside 'cycler': use the 'title' attribute to determine which location in the tree to zoom to -->
-  <div id="cycler">
-    <img src="{{=URL('static','images/Screenshots/therian_mammals.jpg')}}" title="Mammalia" alt="Mammals" class="active">
-    <img src="{{=URL('static','images/Screenshots/AfricanApes.jpg')}}" title="Homininae" alt="Humans and our close relatives" >
-    <img src="{{=URL('static','images/Screenshots/Eukaryota.jpg')}}" title="Eukaryota" alt="All Complex Lifeforms">
-    <img src="{{=URL('static','images/Screenshots/Dogs.jpg')}}" title="Canidae" alt="The Dog Family">
-    <img src="{{=URL('static','images/Screenshots/vascular_plants.jpg')}}" title="Tracheophyta=67490" alt="Vascular plants">
-    <img src="{{=URL('static','images/Screenshots/Archelosauria.jpg')}}" title="Archelosauria" alt="Birds, Crocodiles, and Turtles">
-    <img src="{{=URL('static','images/Screenshots/frogs_toads_salamanders.jpg')}}" title="Batrachia" alt="Frogs, Toads and Salamanders">
-                              
-    <img src="{{=URL('static','images/Screenshots/diphoda.jpg')}}" title="Diphoda" alt="Plants, Algae and their relatives">
-    <img src="{{=URL('static','images/Screenshots/insects_with_complete_metamorphosis.jpg')}}" title="Endopterygota" alt="Insects with complete metamorphosis">
-    <!-- <img src="{{=URL('static','images/Screenshots/jellyfish_and_corals.jpg')}}" title="Cnidarians=658828" alt="Jellyfish, Corals and their relatives"> -->
-    <img src="{{=URL('static','images/Screenshots/arthropods.jpg')}}" title="Arthropoda" alt="Arthropods">
-    <img src="{{=URL('static','images/Screenshots/Gnathostomata.jpg')}}" title="Gnathostomata=278114" alt="The Jawed Vertebrates">
- </div>
+
+{{block masthead}}
+<div class="home-heading uk-text-center">
+  <h1>Welcome to the OneZoom tree of life explorer...</h1>
+  <p>An interactive map of the evolutionary tree of all life on our planet. Discover your favourites, see which species are under threat, and be amazed by biodiversity.</p>
+  <em>Our tree of life explorer is designed to be easily accessible for everyone; we also provide free educational tools for teachers, software for scientists and interactive exhibits for museums.</em>
 </div>
-<p>Explore<br /><span class="targets">The Mammals</span></p></a>
+{{end block}}
+
+
+<div class="uk-grid-small uk-child-width-expand@s uk-grid-match uk-grid-oz-dark" uk-grid>
+  <div> <!-- left column -->
+    <div class="uk-grid-small" uk-grid>
+
+      <div class="uk-card uk-card-default uk-card-small uk-card-body oz-info-card">
+        <h3 class="uk-card-title">What is the tree of life?</h3>
+        <p>
+          The tree of life shows how all life on earth is related.
+          Each leaf represents a different species.
+          The branches show how these many species evolved from common ancestors over billions of years.
+          In our interactive tree of life you can explore the relationships between
+          <b>{{="{:,}".format(n_species)}}</b> species and wonder at <b>{{="{:,}".format(n_images)}}</b> images on a single zoomable page.
+        </p>
+        <div class="oz-info-card-aside">
+          <ul class="hp-stat-circles">
+            <li style="top: -1.3rem; right: 10%; width: 7rem; height: 7rem;">{{="{:,}".format(n_species)}} species</li>
+            <li style="top: 30%; right: 45%; width: 5.5rem; height: 5.5rem;">{{="{:,}".format(n_images)}} images</li>
+          </ul>
+          <div class="oz-card-bottom-right"><a href="/life.html" class="oz-pill pill-leafout" target="_blank">Start exploring</a></div>
+        </div>
+      </div>
+
+      <div class="uk-card uk-card-default uk-card-small uk-card-body uk-width-expand">
+        <h3 class="uk-card-title">Popular places to start exploring...</h3>
+
+        <style>
+        .oz-slider-popularplaces img {
+          border: 3px solid white;
+        }
+        .oz-slider-popularplaces .inner-container {
+          width: 90%;
+          margin: 0 auto;
+        }
+
+        .oz-slider-popularplaces li {
+          transition: opacity 0.1s;
+          opacity: 0;
+        }
+        .oz-slider-popularplaces li.uk-active {
+          z-index: 1;
+          opacity: 1;
+          transition: opacity 0.3s;
+        }
+
+        .oz-slider-popularplaces img {
+          margin: 1rem 0;
+          transform: scale(1.2);
+        }
+        </style>
+        <div class="uk-position-relative uk-width-5-6 uk-container-center oz-slider-popularplaces" uk-slider="center: true; index: 1">
+          <div class="uk-slider-container"><div class="inner-container"><ul class="uk-slider-items uk-child-width-1-3 uk-child-width-1-5@l">{{for p in popular_places:}}
+            <li>
+              <a href="{{=p['tree_href']}}" target="_blank"><figure>
+                <div class="img-species leafout"><img src="{{=p['image_href']}}" alt="" /></div>
+                <figcaption class="uk-text-center">{{=XML(p['name'])}}</figcaption>
+              </figure></a>
+            </li>
+          {{pass}}</ul></div></div>
+          <a class="uk-position-top-left oz-slider-arrow oz-slider-arrow-left" style="height: 127px" href="#" uk-slider-item="previous"></a>
+          <a class="uk-position-top-right oz-slider-arrow oz-slider-arrow-right" style="height: 127px" href="#" uk-slider-item="next"></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div> <!-- Right column -->
+    <div class="uk-card uk-card-default uk-card-small">
+      <div class="hp_tour_ui" id="tour_wrapper"></div>
+      <canvas id="OneZoomCanvasID" class="embedded" style="width: 100%; height: 100%"></canvas>
+    <!-- treeviewer constants -->
+    {{include 'treeviewer/dynamic_scripts.html' }}
+    {{include 'treeviewer/server_urls.html' }}
+      <script>
+animation_config = {{include 'treeviewer/homepage_animation.js'}}
+      </script>
+      <script>
+$(document).ready(function() {    /* Mainly a place to attach JS event handlers */
+    // Set up some global variables
+    /** CREATE A ONEZOOM INSTANCE
+    this allows us to access e.g. onezoom.controller, onezoom.config, etc (defined in OZentry.js)
+     **/
+
+    setup_onezoom()
+    function setup_onezoom() {
+        window.onezoom = OZentry.default(
+            window.server_urls,
+            null, // No UI
+            null, // No window title function
+            'OneZoomCanvasID',
+            window['tree_config'],
+            window.rawData,
+            window.metadata,
+            window.cut_position_map_json_str,
+            window.polytomy_cut_position_map_json_str,
+            window.cut_threshold,
+            window.tree_date);
+        window.onezoom.add_hook('on_tree_loaded', () => {
+            /* we use the 'screensaver' tour to provide a constant animation */
+            onezoom.screensaver.setup_setting(
+                animation_config,
+                'homepage_animation',
+                null, // nothing before the screensaver runs
+                true, // loop back and forth
+                null, // nothing on exit
+                "block", // disable interaction with the tree
+                null, // do not provide an interaction callback
+                0, // start immediately
+                ); 
+        })
+    }
+})
+      </script>
+      </div>
+    </div>
 </div>
 
-<div class="col-sm-6" id = "right_column">
-<h2><a href="sponsor.html">Sponsor a leaf</a> for yourself or as a gift</h2>
-<p>We're a not for profit organisation, your donations help us provide easy access to scientific knowledge on biodiversity and evolution. Your support will be acknowledged on the leaf of the tree that you sponsor. For museums and other public venues, you can become a partner and <a href="installations.html">install OneZoom as an educational exhibit</a>.</p>
+
+<section class="oz-section bkgd-leaves"><div class="oz-section-body">
+  <style>
+  .endangered-species {
+    height: 100px;
+    overflow: hidden;
+  }
+  .endangered-species a {
+    margin: 0 1rem;
+  }
+  .endangered-species .img-species {
+    width: 100px;
+    height: 100px;
+  }
+  </style>
+  <h3 class="uk-card-title">Biodiversity and Conservation...</h3>
+  <p>We want to help everyone appreciate biodiversity and the need to conserve it.<br/>
+  <em>Species shown as red leaves on our tree of life are known to be under threat of extinction.</em></p>
+
+  <div class="endangered-species">{{for p in endangered:}}
+    <a href="{{=p['tree_href']}}" title="{{=p['name']}}" target="_blank"><span class="img-species leafout"><img class="species" src="{{=p['image_href']}}" alt="{{=p['name']}}" /></span></a>
+  {{pass}}</div>
+</div></section>
 
 
-
-<div class="sponsor_viz"><ul>
-<li>
-  <a href="life/@=927499">
-    <img src = "{{=thumbnail_url(src_flags['eol_old'],32635767)}}">
-    <span>Marsh fritillary</span>
-  </a>
-</li><li>
-  <a href="life/@=886851">
-    <img src = "{{=thumbnail_url(src_flags['eol_old'],27776626)}}">
-    <span>Purple loosestrife</span>
-  </a>
-</li><li>
-  <a href="life/@Carcharodon_carcharias">
-    <img src = "{{=thumbnail_url(src_flags['eol_old'],28671251)}}">
-    <span>Great white shark</span>
-  </a>
-</li><li>
-  <a href="life/@Quercus_robur">
-    <img src = "{{=thumbnail_url(src_flags['eol_old'],27700647)}}">
-    <span>English Oak</span>
-  </a>
-</li><li>
-  <a href="life/@=774309">
-    <img src = "{{=thumbnail_url(src_flags['eol_old'],28689888)}}">
-    <span>Oncilla</span>
-  </a>
-</li><li>
-  <a href="life/@=584702">
-    <img src = "{{=thumbnail_url(src_flags['eol_old'],28694109)}}">
-    <span>Sabre squirrelfish</span>
-  </a>
-</li><li>
-  <a href="life/@=534514">
-    <img src = "{{=thumbnail_url(src_flags['eol_old'],32364675)}}">
-    <span>Common kestrel</span>
-  </a>
-</li><li>
-  <a href="life/@=115764">
-    <img src = "{{=thumbnail_url(src_flags['eol_old'],25661393)}}">
-    <span>Violescent sea-whip</span>
-  </a>
-</li>
-</ul>
-<h4>Sponsored recently, or see <a href="{{=URL('default', 'sponsored')}}">more examples&hellip;</a></h4>
-<ul>
-<li>
-  <a href="life/@=549519">
-    <img src = "{{=thumbnail_url(src_flags['onezoom_via_eol'],8056745)}}">
-    <span>Common kingfisher</span>
-  </a>
-</li><li>
-  <a href="life/@=14971">
-    <img src = "{{=thumbnail_url(src_flags['onezoom_via_eol'],-26836264)}}">
-    <span>Venus fly-trap</span>
-  </a>
-</li><li>
-  <a href="life/@=676045">
-    <img src = "{{=thumbnail_url(src_flags['onezoom_via_eol'],8028934)}}">
-    <span>Peace lily</span>
-  </a>
-</li><li>
-  <a href="life/@=410925">
-    <img src = "{{=thumbnail_url(src_flags['eol'],7794634)}}">
-    <span>Eastern gray squirrel</span>
-  </a>
-</li>
-</ul></div>
+<div class="uk-child-width-expand@s uk-grid-match" style="border: 20px solid white" uk-grid>
+  {{for sub_menu in response.menu[0:3]:}}
+    <div>
+      <div class="oz-pill with-splash">
+        <h3>{{=T(sub_menu[0])}}</h3>
+        {{=MENU(sub_menu[-1][0:4], _class="leaf-list")}}
+        <!-- NB: 15rem is length of longest menu item -->
+        <div class="oz-pill-splash" style="width: calc(100% - 15rem); background-image: url({{=menu_splash_images[sub_menu[0]]}})"></div>
+      </div>
+    </div>
+  {{pass}}
 </div>
 
+<section class="oz-section bkgd-quotes"><div class="oz-section-body">
+  <h3>What they say...</h3>
+
+  <div class="uk-position-relative" uk-slider>
+    <div class="uk-slider-container"><ul class="uk-slider-items uk-child-width-1-1">{{for q in quotes:}}
+      <li>
+        <blockquote>{{=XML(q.html_quote)}}
+          <footer class="blockquote-footer">
+              <cite>{{if q.person_url:}}<a href="{{=q.person_url}}" target="_blank">{{=q.person}}</a>{{else:}}{{=q.person}}{{pass}}{{if q.html_affiliation:}}, {{=XML(q.html_affiliation)}}{{pass}}</cite>
+          </footer>
+        </blockquote>
+      </li>
+    {{pass}}</ul></div>
+    <a class="uk-position-top-left oz-slider-arrow oz-slider-arrow-left" href="#" uk-slider-item="previous"></a>
+    <a class="uk-position-top-right oz-slider-arrow oz-slider-arrow-right" href="#" uk-slider-item="next"></a>
+  </div>
+
+  <div><a href="{{=URL('default', 'endorsements.html')}}">Other endorsements</a></div>
+</div></section>
+
+
+<section class="oz-section bkgd-polytomy"><div class="oz-section-body uk-position-relative">
+  <h3 class="uk-card-title">Become a sponsor...</h3>
+
+  <p>
+  OneZoom is a registered non-profit in the UK, all our products are for free. <a href="{{=URL('default', 'donor_list.html')}}">{{=n_total_sponsored}} people like you</a> have helped us by making donations. Their names appear as sponsors on
+    <a href="{{=URL('default', 'sponsored.html')}}">{{=n_sponsored_leaves}} leaves of our tree of life</a>.
+  </p>
+  <p>Only one name per leaf so get your favourite while you can, for yourself or as a gift.</p>
+
+  <style>
+    .oz-slider-sponsored figure {
+      padding: 0.3rem;
+    }
+    .oz-slider-sponsored li:first-child {
+    }
+    .oz-slider-sponsored figure img {
+      width: 100px; height: 100px;
+      margin-bottom: 1rem;
+    }
+    .oz-slider-sponsored .sponsored-by {
+      color: green;
+      font-size: 95%;
+    }
+    .oz-slider-sponsored a:hover  {
+      text-decoration: none;
+    }
+    .oz-slider-sponsored a:hover figcaption > div:first-child {
+      text-decoration: underline;
+    }
+  </style>
+  <div class="uk-position-relative oz-slider-sponsored" uk-slider>
+    <div class="uk-slider-container"><ul class="uk-slider-items uk-child-width-1-2 uk-child-width-1-3@s uk-child-width-1-4@m">{{for i,item in enumerate(sponsored['rows']):}}
+      <li>
+        <a href="{{=URL('life/@=' + str(item['OTT_ID']), url_encode=False)}}" target="_blank">
+          <figure class="uk-text-small">
+            <img class="species" alt=""
+                {{img = sponsored['images'].get(item['OTT_ID'])}}
+                {{if img:}}
+                    src="{{=thumbnail_url(img.get('src'), img.get('src_id'))}}"
+                    title="{{=' / '.join([t for t in [img.rights, img.licence] if t]).replace('"',"'")}}"
+                {{else:}}
+                    src="{{=URL('static','images/noImage_transparent.png')}}"
+                {{pass}} />
+            <figcaption>
+              <div style="height: 4.2rem; overflow: hidden">{{=(sponsored['html_names'][item['OTT_ID']])}}</div>
+              <div style="margin-bottom: 0.5rem;">Sponsored {{=item['verified_kind']}}</div>
+              <div><i class="sponsored-by">
+                {{=item['verified_name']}}
+                {{if item.get('verified_more_info', ''):}}— {{=item['verified_more_info']}}{{pass}}
+              </i></div>
+            </figcaption>
+          </figure>
+        </a>
+      </li>
+    {{pass}}</ul></div>
+    <a class="uk-position-top-left oz-slider-arrow oz-slider-arrow-left" style="height:65px" href="#" uk-slider-item="previous"></a>
+    <a class="uk-position-top-right oz-slider-arrow oz-slider-arrow-right" style="height:65px" href="#" uk-slider-item="next"></a>
+  </div>
+  <ul class="oz-pill leaf-list"><li><a href="{{=URL('default', 'sponsor.html')}}">Sponsor a leaf now!</a></li></ul>
+</div></section>
+
+
+<section class="oz-section bkgd-natural"><div class="oz-section-body">
+  <h3 class="uk-card-title">What we've been up to...</h3>
+
+  <div class="uk-position-relative" uk-slider>
+    <div class="uk-slider-container"><ul class="uk-slider-items uk-child-width-1-1">{{for row in news:}}
+      <li>
+        <div class="uk-grid-small uk-text-small" uk-grid>
+          <div class="uk-width-1-3@m">
+            {{if row['image_href']:}}<img src="{{=row['image_href']}}" class="oz-pill" />{{pass}}
+          </div>
+          <div class="uk-width-2-3@m uk-text-left">
+            <h4 style="line-height: 0.75">{{=row['heading']}}</h4>
+            {{=XML(row['body'])}}
+            <a href="{{=row['more_href']}}">Read more...</a>
+          </div>
+        </div>
+      </li>
+    {{pass}}</ul></div>
+    <a class="uk-position-top-left oz-slider-arrow oz-slider-arrow-left" style="height:90%" href="#" uk-slider-item="previous"></a>
+    <a class="uk-position-top-right oz-slider-arrow oz-slider-arrow-right" style="height:90%" href="#" uk-slider-item="next"></a>
+  </div>
+</div></section>

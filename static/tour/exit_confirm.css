@@ -1,0 +1,36 @@
+#tour_wrapper .shader {
+  z-index: 200;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, .1);
+}
+
+#tour_wrapper .popup {
+  position: absolute;
+  border: 1px solid #ababab;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 10px 20px;
+}
+
+#tour_wrapper .text {
+  margin-bottom: 15px;
+}
+
+#tour_wrapper button {
+  border-radius: 2px;
+  padding: 6px;
+  background: white;
+  border: 1px solid #888888;
+  margin-right: 10px;
+}
+
+#tour_wrapper button:hover {
+  background-color: #eeeeee;
+  cursor: pointer;
+}

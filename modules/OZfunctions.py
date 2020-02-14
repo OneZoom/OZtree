@@ -284,6 +284,18 @@ def require_https_if_nonlocal() :
         else:
             return func
     return wrapper
+    
+def extract_summary(html):
+    """
+    For the news items, extract the summary by taking the html and simply grabbing the
+    text between <span class="summary"> and </span>, and removing any html tags. This is
+    a horrible hack, but since it is only us that write news items, it should suffice
+    """
+    m = re.search(r'<span\s+class\s*=\s*[\'"]summary[\s"\'].*?>(.+?)</span>', html, re.IGNORECASE)
+    if m:
+        return re.sub(r'<[^>]+>', '', m.group(1))
+    else:
+        return None
 
 def nodes_info_from_array(
         leafIDs_array, nodeIDs_array,

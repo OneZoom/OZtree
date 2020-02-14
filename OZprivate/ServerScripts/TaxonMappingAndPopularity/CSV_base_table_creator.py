@@ -175,16 +175,19 @@ def add_eol_IDs_from_EOL_table_dump(source_ptrs, identifiers_file, source_mappin
     used=0
     EOL2OTT = {v:k for k,v in source_mapping.items()}
     identifiers_file.seek(0)
-    reader = csv.reader(identifiers_file, escapechar='\\')
+    reader = csv.DictReader(identifiers_file)
     for EOLrow in reader:
         if (reader.line_num % 1000000 == 0):
             info("-> {} rows read, {} used,  mem usage {:.1f} Mb".format(
                 reader.line_num, used, OTT_popularity_mapping.memory_usage_resource()))
-        provider = int(EOLrow[2])
+        provider = int(EOLrow['resource_id'])
         if provider in EOL2OTT:
             src = source_ptrs[EOL2OTT[provider]]
-            providerid = str(EOLrow[1])
-            EOLid = int(EOLrow[3])
+            if EOL2OTT[provider] == "gbif" and not EOLrow['resource_pk'].isdigit():
+                # The EoL file has duplicate (non numeric) IDs for GBIF: ignore these
+                continue
+            providerid = str(EOLrow['resource_pk'])
+            EOLid = int(EOLrow['page_id'])
             if providerid in src:
                 used += 1;
                 src[providerid]['EoL'] = EOLid
@@ -277,7 +280,7 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
     """
     used=0
     
-    iucn_num = 622 #see https://github.com/EOL/tramea/issues/162
+    iucn_num = 5 #see https://github.com/EOL/tramea/issues/162
     eol_mapping = {} #to store eol=>iucn
     for OTTid, data in OTT_ptrs.items():
          if 'eol' in data:
@@ -287,20 +290,22 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
                 eol_mapping[data['eol']] = [OTTid]
             
     identifiers_file.seek(0)
-    reader = csv.reader(identifiers_file, escapechar='\\')
+    reader = csv.DictReader(identifiers_file)
     for EOLrow in reader:
         if (reader.line_num % 1000000 == 0):
             info("{} rows read, {} used,  mem usage {:.1f} Mb".format(
                 reader.line_num, used, OTT_popularity_mapping.memory_usage_resource()))
-        if int(EOLrow[2]) == iucn_num and EOLrow[1]: #there are lots of IUCN rows with no IUCN number, so check EOLrow[1]!= "" and != None
+        if int(EOLrow['resource_id']) == iucn_num and not EOLrow['resource_pk'].isdigit(): 
+            #there are lots of IUCN rows with no IUCN number, so check EOLrow[1]!= ""
             try:
-                for ott in eol_mapping[int(EOLrow[3])]:
-                    OTT_ptrs[ott]['iucn'] = str(EOLrow[1])
+                for ott in eol_mapping[int(EOLrow['page_id'])]:
+                    OTT_ptrs[ott]['iucn'] = str(int(EOLrow['resource_pk']))
                     used += 1
             except LookupError:
                 pass #no equivalent eol id in eol_mapping
             except ValueError:
-                warn(" Cannot convert IUCN ID {} to integer on line {} of {}.".format(EOLrow[1], reader.line_num, identifiers_file.name), file=sys.stderr);
+                warn(" Cannot convert IUCN ID {} to integer on line {} of {}.".format(
+                    EOLrow['resource_pk'], reader.line_num, identifiers_file.name), file=sys.stderr);
 
     if verbosity:
         info(" Matched {} IUCN entries in the EoL identifiers file. Mem usage {:.1f} Mb".format(
@@ -309,7 +314,7 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
     #now go through and double-check against IUCN stored on wikidata
     for OTTid, data in OTT_ptrs.items():
         try:
-            wd_iucn = str(data['wd']['initial_wiki_item']['iucn'])
+            wd_iucn = str(int(data['wd']['initial_wiki_item']['iucn']))
             if 'iucn' in data:
                 if wd_iucn != data['iucn']:
                     data['iucn'] = "|".join([data['iucn'], wd_iucn])
@@ -318,6 +323,9 @@ def populate_iucn(OTT_ptrs, identifiers_file, verbosity=0):
             else:
                 data['iucn'] = wd_iucn
                 used += 1
+        except ValueError:
+            warn(" Cannot convert wikidata IUCN ID {} to integer.".format(
+                data['wd']['initial_wiki_item']['iucn']), file=sys.stderr);
         except:
             pass #we can't find a wd iucn. Oh well...
     if verbosity:
@@ -643,7 +651,8 @@ def main():
     #from http://eol.org/api/docs/provider_hierarchies
     #these need to be an ordered dict with the first being the preferred id used when getting a corresponding wikidata ID
     #all the ids for these are integers >= 0
-    int_sources = OrderedDict((('ncbi', 1172), ('if', 596), ('worms', 123), ('irmng', 1347), ('gbif', 800)))
+    int_sources = OrderedDict([('ncbi', 676), ('if', 596), ('worms', 459), ('irmng', 1347), ('gbif', 800)])
+    int_sources = OrderedDict([('ncbi', 676), ('worms', 459), ('gbif', 767)]) # update when EoL has harvested index fungorum & IRMNG
     #the ids for these sources may not be numbers (e.g. Silva has things like D11377/#1
     nonint_sources = OrderedDict()
     sources = int_sources.copy()

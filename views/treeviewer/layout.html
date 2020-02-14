@@ -32,92 +32,146 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
   <script src="{{=URL('static','uikit-3/js/uikit-icons.min.js')}}"></script>
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree.css')}}" />
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/OZ_shared.css')}}" />
-  <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/common.js')}}"></script>
-  <script type="text/javascript" src="{{=URL('static', 'OZTreeModule/dist/OZentry.js')}}"></script>
-{{if str(page_info.get('try_local_treefiles_version')).isdigit():}}
-  <!-- Load local versions of the files first. If the return value from the API/version call does not match, variables in here will simply be replaced -->
-  <script type="text/javascript" src="{{=URL("static", "FinalOutputs/data/completetree_{}.js".format(page_info["try_local_treefiles_version"]))}}"></script>
-  <script type="text/javascript" src="{{=URL("static", "FinalOutputs/data/cut_position_map_{}.js".format(page_info["try_local_treefiles_version"]))}}"></script>
-  <script type="text/javascript" src="{{=URL("static", "FinalOutputs/data/dates_{}.js".format(page_info["try_local_treefiles_version"]))}}"></script>
-{{pass}}
-  <script type="text/javascript">
-    /* we load the data files dynamically because they:
-     *  (a) are large and
-     *  (b) depend on a version number collected via an ajax call 
-     */
-    var version_error = function(data) {
-      document.write('{{=CAT(H1(T("Sorry, there has been a OneZoom version error"), _id="version-error"), P("Please contact mail@onezoom.org quoting the following error:"))}}' + 
-        '<blockquote>' + data + '<blockquote>');
-    };
-    var dynamic_scripts_to_load = [
-        '{{=URL("static", "FinalOutputs/data/completetree_...VERSION....js", scheme=True, host=True)}}',
-        '{{=URL("static", "FinalOutputs/data/cut_position_map_...VERSION....js", scheme=True, host=True)}}',
-        '{{=URL("static", "FinalOutputs/data/dates_...VERSION....js", scheme=True, host=True)}}'
-    ];
-    $.each(dynamic_scripts_to_load, function() {$.holdReady(true);}); //hold the ready state from firing until all dynamic_scripts are loaded
-    $.ajax({
-      type:"GET", 
-      url: "{{=URL('API', 'version', scheme=True, host=True, extension='json')}}", 
-      success: function(data) {
-        if (parseInt(data.version)) {
-          {{if page_info.get('try_local_treefiles_version'):}}
-          if (data.version == "{{=page_info.get('try_local_treefiles_version')}}") {
-            {{if is_testing:}}console.log("Local treefiles already loaded");{{pass}}
-            $.each(dynamic_scripts_to_load, function() {$.holdReady(false);}); //once added to the head, these should force page to wait until all loaded before ready
-          } else {
-            alert("The local files in this restricted version of the OneZoom viewer are out of date. Please update your version. " + 
-                "Meanwhile, all data files are being supplanted by remote versions, which is slower")
-          {{else:}}
-          {
-          {{pass}}
-            $.each(dynamic_scripts_to_load, 
-              function(index, src_name) {
-                $.ajax({
-                  url: src_name.replace("...VERSION...", data.version),
-                  dataType: "script",
-                  cache: true, //these version scripts never change, so we can always cache them
-                  success: function() {
-                    $.holdReady(false);
-                    {{if is_testing:}}console.log("Loaded " + this.url);{{pass}}
-                  },
-                  error: function() {version_error("Could not get " + this.url);}
-                });
-              });
-          }
-        } else {
-            version_error(data.error);
-        }
-      },
-      error: function() {version_error("Could not get " + this.url);}
-    });
-  </script>
+  {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
+  {{include '../static/OZTreeModule/dist/OZ_script.html'}}
 
+  <!-- treeviewer constants -->
+  {{include 'treeviewer/dynamic_scripts.html' }}
+  {{include 'treeviewer/server_urls.html' }}
+  <script>var OZstrings={{include 'treeviewer/js_strings.json'}}</script>
   <script type="text/javascript">
-    //include a few default params early on, so they can be used / overridden in the file which includes this layout
-    var extra_title = "{{='/' + partner if partner else ''}}";
-    var OZstrings={{include 'treeviewer/js_strings.json'}}
-    var server_urls = {
-      /* These fill out the equivalently named variables in OneZoom global_config.
-         They need to be defined here to avoid hard-coding them into the OneZoom js code 
-         They are coded with the full URL so that they can be used remotely (e.g. in a partial install) */
-      data_path_pics: {{=XML(js_thumbnail_url)}},
-      node_details_api: "{{try:}}{{=myconf.take('API.node')}}{{except:}}{{=URL('API','node_details.json', scheme=True, host=True)}}{{pass}}",
-      search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",
-      search_sponsor_api: "{{try:}}{{=myconf.take('API.search_sponsor')}}{{except:}}{{=URL('API','search_for_sponsor.json', scheme=True, host=True)}}{{pass}}",
-      search_init_api: "{{try:}}{{=myconf.take('API.search_init')}}{{except:}}{{=URL('API','search_init.json', scheme=True, host=True)}}{{pass}}",
-      ott2id_arry_api: "{{try:}}{{=myconf.take('API.ott2id_array')}}{{except:}}{{=URL('API', 'get_ids_by_ott_array.json', scheme=True, host=True)}}{{pass}}",
-      otts2vns_api: "{{try:}}{{=myconf.take('API.otts2vns')}}{{except:}}{{=URL('API','otts2vns.json', scheme=True, host=True)}}{{pass}}",
-      image_details_api: "{{try:}}{{=myconf.take('API.image')}}{{except:}}{{=URL('API', 'image_details.json', scheme=True, host=True)}}{{pass}}",
-      update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
-      tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
-      OZ_leaf_json_url_func: function(ott, lang) {return("{{=XML(URL('tree', 'leaf_linkouts', scheme=True, host=True, extension='json', args=['...OTT...'], vars=dict((setup_params.get('popups') or {}).get('vars') or {}, lang='...LANG...')))}}".replace('...OTT...', (ott || '').toString() || "").replace('...LANG...', lang || ''))},
-      OZ_node_json_url_func: function(id, lang) {return("{{=XML(URL('tree', 'node_linkouts', scheme=True, host=True, extension='json', args=['...ID...'], vars=dict((setup_params.get('popups') or {}).get('vars') or {}, lang='...LANG...')))}}".replace('...ID...', id.toString() || "").replace('...LANG...', lang || ''))},
+    //include a few default funcs & params early on, so they can be used / overridden in the file which includes this layout
+    var globals = {} /* A place to store global variables that are set in the file which includes this one */
+    var extra_title = "{{='/' + partner if partner else ''}}"
+
+    var UI_callbacks = {};
+
+    UI_callbacks.badOTT = function(ott) { 
+      /* used within setup_page.js when the page tries to load a bad location */
+      $("#error-modal a.OpenTreeSearchOnTree").attr("href","https://tree.opentreeoflife.org/opentree/argus/ottol@" +  ott.toString());
+      $("#error-modal a.OpenTreeSearchInTaxonomy").attr("href","https://tree.opentreeoflife.org/taxonomy/browse?id=" + ott.toString());
+      onezoom.controller.button_reset();
+      UIkit.modal('#error-modal').show();
     };
+    
+    UI_callbacks.closeAll = function() {
+      {{if is_testing:}}console.log("OneZoom internal JS has been asked to hide all open modals & dropdowns");{{pass}}
+      $('.uk-modal-container').each(function() {
+          UIkit.modal(this).hide(false); // Hide immediately, by default we wait in case mouse comes back
+      });
+      $('[uk-dropdown]').each(function() {
+          UIkit.dropdown(this).hide(false); // Hide immediately, by default we wait in case mouse comes back
+      });
+    };
+    
+    /** Display / hide the loading spinner */
+    UI_callbacks.loadingMessage = function (active) {
+      document.body.classList.toggle('loading', active);
+    };
+    
+    UI_callbacks.openCopyright = function(pic_src, pic_fn) {
+      var load_url = "{{=XML(URL('tree', 'pic_info', scheme=True, host=True, extension='html', args=['...PICSRC...', '...PICFN...'], vars=(setup_params.get('popups') or {}).get('vars')))}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
+      var link_url = "{{=URL('tree','pic_info', scheme=True, host=True, extension=False, args=['...PICSRC...', '...PICFN...'], vars={'redirect':1})}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
+      $("#imageinfo-modal .popup-content .iframe-loading-info").show();
+      $("#imageinfo-modal .popup-content .no-loading-info").hide();
+      //Always load into a new iframe
+      var ifrm = document.createElement("iframe");
+      ifrm.setAttribute('src', load_url);
+      ifrm.addEventListener('load', function() {
+        {{if is_testing:}}console.log("Hiding image iframe loading info");{{pass}}
+        $(".iframe-loading-info", $(this).parent().parent()).hide()
+      }, false);
+      ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
+      $("#imageinfo-modal .popup-content").append(ifrm);
+      $("#imageinfo-modal .uk-modal-header a").attr('href', link_url);
+      UIkit.modal('#imageinfo-modal').show();
+      return [load_url, link_url]
+    };
+    
+    /* called as soon as a request to open a linkouts window is made */
+    UI_callbacks.openLinkouts = function() {
+      {{if is_testing:}}console.log("OneZoom internal JS has been asked to open tabs");{{pass}}
+      $('#external-modal .no-tab-data').hide();
+      $('#external-modal .external-content').hide();
+      $('#external-modal .tab-loading-info').show();
+      UIkit.modal('#external-modal').show();
+      {{if is_testing:}}console.log("Hidden content and showing loading animation");{{pass}}
+    };
+    
+    /* called when the API returns with details about contents of the linkouts window */
+    UI_callbacks.populateLinkouts = function(responseJSON, initialSelected) {
+        console.log("populating linkout tabs with API data from", responseJSON);
+      {{if is_testing:}}console.log("populating linkout tabs with API data from", responseJSON);{{pass}}
+      if (initialSelected) {
+          initialSelected = $('#external-modal .external-tabs li').index($("#"+ initialSelected))
+      } else {
+          initialSelected = 0
+      }
+      var select_tab_index=null;
+      var url_dict = responseJSON.data;
+      var n_tabs = 0;
+      // make sure the id names correspond to the names returned by the api
+      $("#external-modal .external-tabs li").each(function(index) {
+        var tab = $(this);
+        var linkout_name = tab.attr('id'); //'wiki', 'eol', etc. Visited in order specified in html file
+        if (linkout_name) {
+          if (url_dict.hasOwnProperty(linkout_name) && url_dict[linkout_name].length) {
+            var url_arr = url_dict[linkout_name] //contains the list of urls for this tab
+            n_tabs += 1;
+            tab.show(); //show the tab at the top (but not necessarily the content yet)
+            if (select_tab_index == null) select_tab_index = index; //start selecting earliest non-hidden tab
+            if (index == initialSelected) select_tab_index = index; //override if initialSelected is not hidden
+            var specific_popup = $("#external-modal .popup-container ." + linkout_name);
+            //set the data-src attribute to the url. When the tab is shown, it will get src from there
+            specific_popup.attr("data-src", url_arr[0]);
+            {{if is_testing:}}console.log("set data-src for '" + linkout_name + "' to " + url_arr[0]);{{pass}}
+            //define the linkout (some hackery here to allow the same element to act as a plain link or a 'post' submission)
+            $(".expand-tab form input[type=hidden]", specific_popup).remove()
+            switch (url_arr.length) {
+                case 1: //only a single URL for the iframe and the linkout - use that for both
+                  $(".expand-tab form", specific_popup).removeAttr("action");
+                  $(".expand-tab form a", specific_popup).attr("href", url_arr[0]).removeAttr("onclick");
+                  break;
+                case 2: //second value in the response gives a different URL for the linkout
+                  $(".expand-tab form", specific_popup).removeAttr("action");
+                  $(".expand-tab form a", specific_popup).attr("href", url_arr[1]).removeAttr("onclick");
+                  break;
+                case 3: //third value in the response gives a set of key:value params to add as POST variables
+                  $(".expand-tab form", specific_popup).attr("action", url_arr[1]);
+                  $.each(url_arr[2], function(key, data) {
+                      $(".expand-tab form", specific_popup).append($('<input>').attr({'type':'hidden','name':key,'value':data}));
+                  });
+                  $(".expand-tab form a", specific_popup).attr("onclick", "$(this).parent().submit();return false").removeAttr("href");
+              }
+          } else {
+            {{if is_testing:}}console.log("Hiding tab for '" + linkout_name + "' which is not present for this taxon");{{pass}}
+            tab.hide(); //hide irrelevant tabs (those not returned by the API)
+          }
+        }
+      });
+      if (n_tabs == 0) {
+        {{if is_testing:}}console.log("The API did not return any linkout URLs that match those expected in the UI");{{pass}}
+        $('#external-modal .no-tab-data').show()
+      }
+      UIkit.tab('#external-modal .external-tabs').show(select_tab_index);
+      load_tab($("#external-modal .popup-container li").eq(select_tab_index));
+      $('#external-modal .tab-loading-info').hide();
+      $('#external-modal .external-content').show();
+    };
+
   </script>
 {{include}}
 <script>
-    pagetitle_func = pagetitle_func || function(nm) {return (nm)?("OneZoom" + extra_title + ": " + nm):"OneZoom" + extra_title + " Tree of Life Explorer"};
-    document.title = pagetitle_func("{{=page_info.get('title_name')}}");
+    var title_name = "{{=page_info.get('title_name') or ""}}";
+    if (window['pagetitle_func']) {
+        document.title = pagetitle_func(title_name);
+    } else {
+        if (title_name) {
+            document.title = "OneZoom" + extra_title + ": " + title_name;
+        } else {
+            document.title = "OneZoom" + extra_title + " Tree of Life Explorer";
+        }
+    }
 </script>
   <noscript>
     <style>
@@ -126,9 +180,10 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
     </style>
   </noscript>
 </head>
-<body id = "wholebody" style="user-select:none; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select:none; -ms-user-select:none;" unselectable = "on" class="loading">
+<body id = "wholebody" style="user-select:none; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select:none; -ms-user-select:none;" unselectable = "on" class="loading tree-viewer">
     <!-- main body of document - canvas, then rest of UI elements in a single div -->
   <canvas id="OneZoomCanvasID" tabindex="1">{{include 'treeviewer/life_text.load'}}</canvas>
+  <div id="tour_wrapper"></div>
   {{=LOAD("treeviewer",setup_params['UI_layer']['page'],vars=setup_params['UI_layer'].get("vars"), ajax=False, target="UI")}}
   <script type="text/javascript">
 /* define most of the JS after the main page has loaded */
@@ -136,123 +191,9 @@ var onezoom = null; //will be filled out on document ready
 var locations_json = '{{=XML(setup_params.get("locations_json") or "[]")}}';
 
 /* UI functions that allow javascript in the main viewer to interact with the UI.
-    Names for each function are hard-coded into the OneZoom viewer (in config.ui within global_config.js)
-these refer to items in the viewer_UI file */
+    Names for each function are hard-coded into the OneZoom viewer  in config.ui within 
+    global_config.js. These refer to items in the viewer_UI file */
 
-
-var UI_callbacks = {
-  
-  badOTT: function(ott) { /* used within setup_page.js when the page tries to load a bad location */
-    $("#error-modal a.OpenTreeSearchOnTree").attr("href","https://tree.opentreeoflife.org/opentree/argus/ottol@" +  ott.toString());
-    $("#error-modal a.OpenTreeSearchInTaxonomy").attr("href","https://tree.opentreeoflife.org/taxonomy/browse?id=" + ott.toString());
-    onezoom.controller.button_reset();
-    UIkit.modal('#error-modal').show();
-  },
-
-  closeAll: function() {
-    {{if is_testing:}}console.log("OneZoom internal JS has been asked to hide all open modals & dropdowns");{{pass}}
-    $('.uk-modal-container').each(function() {
-        UIkit.modal(this).hide(false); // Hide immediately, by default we wait in case mouse comes back
-    });
-    $('[uk-dropdown]').each(function() {
-        UIkit.dropdown(this).hide(false); // Hide immediately, by default we wait in case mouse comes back
-    });
-  },
-
-  /** Display / hide the loading spinner */
-  loadingMessage: function (active) {
-    document.body.classList.toggle('loading', active);
-  },
-
-  openCopyright: function(pic_src, pic_fn) {
-    var load_url = "{{=XML(URL('tree', 'pic_info', scheme=True, host=True, extension='html', args=['...PICSRC...', '...PICFN...'], vars=(setup_params.get('popups') or {}).get('vars')))}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
-    var link_url = "{{=URL('tree','pic_info', scheme=True, host=True, extension=False, args=['...PICSRC...', '...PICFN...'], vars={'redirect':1})}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
-    $("#imageinfo-modal .popup-content .iframe-loading-info").show();
-    $("#imageinfo-modal .popup-content .no-loading-info").hide();
-    //Always load into a new iframe
-    var ifrm = document.createElement("iframe");
-    ifrm.setAttribute('src', load_url);
-    ifrm.addEventListener('load', function() {
-      {{if is_testing:}}console.log("Hiding image iframe loading info");{{pass}}
-      $(".iframe-loading-info", $(this).parent().parent()).hide()
-    }, false);
-    ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
-    $("#imageinfo-modal .popup-content").append(ifrm);
-    $("#imageinfo-modal .uk-modal-header a").attr('href', link_url);
-    UIkit.modal('#imageinfo-modal').show();
-    return [load_url, link_url]
-  },
-
-  /* called as soon as a request to open a linkouts window is made */
-  openLinkouts: function() {
-    {{if is_testing:}}console.log("OneZoom internal JS has been asked to open tabs");{{pass}}
-    $('#external-modal .no-tab-data').hide();
-    $('#external-modal .external-content').hide();
-    $('#external-modal .tab-loading-info').show();
-    UIkit.modal('#external-modal').show();
-    {{if is_testing:}}console.log("Hidden content and showing loading animation");{{pass}}
-  },
-
-  /* called when the API returns with details about contents of the linkouts window */
-  populateLinkouts: function(responseJSON, initialSelected) {
-    {{if is_testing:}}console.log("populating linkout tabs with API data from", responseJSON);{{pass}}
-    if (initialSelected) {
-        initialSelected = $('#external-modal .external-tabs li').index($("#"+ initialSelected))
-    } else {
-        initialSelected = 0
-    }
-    var select_tab_index=null;
-    var url_dict = responseJSON.data;
-    var n_tabs = 0;
-    // make sure the id names correspond to the names returned by the api
-    $("#external-modal .external-tabs li").each(function(index) {
-      var tab = $(this);
-      var linkout_name = tab.attr('id'); //'wiki', 'eol', etc. Visited in order specified in html file
-      if (linkout_name) {
-        if (url_dict.hasOwnProperty(linkout_name) && url_dict[linkout_name].length) {
-          var url_arr = url_dict[linkout_name] //contains the list of urls for this tab
-          n_tabs += 1;
-          tab.show(); //show the tab at the top (but not necessarily the content yet)
-          if (select_tab_index == null) select_tab_index = index; //start selecting earliest non-hidden tab
-          if (index == initialSelected) select_tab_index = index; //override if initialSelected is not hidden
-          var specific_popup = $("#external-modal .popup-container ." + linkout_name);
-          //set the data-src attribute to the url. When the tab is shown, it will get src from there
-          specific_popup.attr("data-src", url_arr[0]);
-          {{if is_testing:}}console.log("set data-src for '" + linkout_name + "' to " + url_arr[0]);{{pass}}
-          //define the linkout (some hackery here to allow the same element to act as a plain link or a 'post' submission)
-          $(".expand-tab form input[type=hidden]", specific_popup).remove()
-          switch (url_arr.length) {
-              case 1: //only a single URL for the iframe and the linkout - use that for both
-                $(".expand-tab form", specific_popup).removeAttr("action");
-                $(".expand-tab form a", specific_popup).attr("href", url_arr[0]).removeAttr("onclick");
-                break;
-              case 2: //second value in the response gives a different URL for the linkout
-                $(".expand-tab form", specific_popup).removeAttr("action");
-                $(".expand-tab form a", specific_popup).attr("href", url_arr[1]).removeAttr("onclick");
-                break;
-              case 3: //third value in the response gives a set of key:value params to add as POST variables
-                $(".expand-tab form", specific_popup).attr("action", url_arr[1]);
-                $.each(url_arr[2], function(key, data) {
-                    $(".expand-tab form", specific_popup).append($('<input>').attr({'type':'hidden','name':key,'value':data}));
-                });
-                $(".expand-tab form a", specific_popup).attr("onclick", "$(this).parent().submit();return false").removeAttr("href");
-            }
-        } else {
-          {{if is_testing:}}console.log("Hiding tab for '" + linkout_name + "' which is not present for this taxon");{{pass}}
-          tab.hide(); //hide irrelevant tabs (those not returned by the API)
-        }
-      }
-    });
-    if (n_tabs == 0) {
-      {{if is_testing:}}console.log("The API did not return any linkout URLs that match those expected in the UI");{{pass}}
-      $('#external-modal .no-tab-data').show()
-    }
-    UIkit.tab('#external-modal .external-tabs').show(select_tab_index);
-    load_tab($("#external-modal .popup-container li").eq(select_tab_index));
-    $('#external-modal .tab-loading-info').hide();
-    $('#external-modal .external-content').show();
-  }
-};
 
 function closeAndLeap(event, OZIDin, original_searchbox) {
     //TODO: add hit in search count.
@@ -263,7 +204,7 @@ function closeAndLeap(event, OZIDin, original_searchbox) {
             UI_callbacks.closeAll();
         }
     }
-    if (OZIDin) onezoom.controller.jump_to_OZid(OZIDin);
+    if (OZIDin) onezoom.controller.default_move_to(OZIDin);
 }
 
 
@@ -281,97 +222,6 @@ function load_tab(tab_content) {
       //add iframe inside a div wrapper
       tab_content.append($('<div>', {'class':'popup-content iframe-container'}).append(ifrm));
   }
-}
-
-// only used in searchPopulate(...)
-function compile_names(record) {
-    var is_leaf = record[2] < 0;
-    if (record[0] && record[1]) {
-        return "<p>" + record[0] + "</p>" + "(" + (is_leaf?"<i>"+record[1]+"</i>":record[1]) + ")";
-    } else if (record[0]) {
-        return "<p>" + record[0] + "</p>";
-    } else if (record[1]) {
-        return (is_leaf?"<p><i>"+record[1]+"</i></p>":"<p>"+record[1]+"</p>");
-    }
-}
-
-// only used in searchPopulate(...)
-function compile_sponsorship(record) {
-    if (record.length >= 5 && record[4] && record[4].info_type == "Sponsorship Info") {
-        return '<p class="sponsorship-info">' + record[4].text + "</p>";
-    } else if (record.length >= 5 && record[4] && record[4].info_type == "Extra Vernacular") {
-        return '<p class="extra-info">' + record[4].text + "</p>";
-    } else {
-        return "";
-    }
-}
-
-function is_sponsored(search_result_item) {
-    if (search_result_item.length > 4) {
-        return (search_result_item[4]['info_type']=="Sponsorship Info")
-    }
-    return false;
-}
-
-/* Callback function for when total search is complete.
- * The parameter 'click_callback_id_name' should be another
- * callback that is fired when an item is clicked on in the list
- * (called with event, OZid, item_name, sci_name)
- */
-function searchPopulate(searchbox, original_search, search_result, click_callback_id_name) {
-    // we want to test if we're waiting for a result at all and if we're not then do nothing regardless
-    // think the status of the spinner should be used as this test i.e. the spinner starts going when an 
-    // API call is actually made and stops going only when an API call is received 
-    
-    {{if is_testing:}}console.log("populating search results");{{pass}}
-
-    if ($(".searchinput input", searchbox).val() == original_search)
-    {
-        // the results match what's still in the box so populate the results
-        // we want to check that the original_search is still the same as what's in the box
-        $(".searchinput", searchbox).removeClass('waiting_for_search_result');
-        var dropdown = $(".search_dropdown", searchbox);
-        {{if is_testing:}}console.log("Hiding popular species section of dropdown");{{pass}}
-        $('.popular_species', dropdown).hide();
-        $('.search_hits', dropdown).empty();
-        if (search_result.length == 0) {
-            $('.no_results', dropdown).show();
-        } else {
-            {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
-            $('.no_results', dropdown).hide();
-            if (!is_sponsored(search_result[0])) {
-                $(".search_hits", dropdown).append($('<dt></dt>').text(OZstrings['NameHits']))
-            }
-            var sponsored=false;
-            $.each(search_result, function(index) {
-                 if (index==200) {
-                    //we have shown 200 items already
-                    $(".search_hits", dropdown).append(
-                        $('<dd></dd>').html("<em>(only showing top 200 hits)</em>"))
-                    return false
-                 }
-                 var result = this;
-                 if ((sponsored==false) && (is_sponsored(result))) {
-                 $(".search_hits", dropdown).append($('<dt class="sponsorhits"></dt>').html(OZstrings['SponsorHits']))
-                 sponsored=true;
-                 }
-                 var tempHTML = compile_names(result);
-                 tempHTML += compile_sponsorship(result);
-                 $(".search_hits", dropdown).append(
-                                                    $('<dd></dd>')
-                                                    .html(tempHTML)
-                                                    .click(function(event) {
-                                                           var OZid = result[2];
-                                                           var given_name = result[0];
-                                                           var sciname = result[1];
-                                                           click_callback_id_name(event, result[2], result[0], result[1]);})
-                                                    );
-                 })
-        }
-        UIkit.dropdown(dropdown).show();
-    }
-    {{if is_testing:}}else{console.log("ignoring search results return beacause box has changed");}{{pass}}
-    // else the box has since changed contents do nothing
 }
 
 /* Add a set of species (e.g. popular species) to a target list, 
@@ -408,8 +258,7 @@ function setup_location_list(target, taxon_list_json, click_callback_id_name) {
                 );
             }
         },
-        function(header) {target.append($('<dt>').text(OZstrings.hasOwnProperty(header)?OZstrings[header]:header))},
-        onezoom.data_repo);
+        function(header) {target.append($('<dt>').text(OZstrings.hasOwnProperty(header)?OZstrings[header]:header))});
 }
 
 var previous_location_codes;
@@ -456,7 +305,7 @@ function update_location_menu(loc_root) {
                 {{if is_testing:}}console.log("Small screen width detected, so closing location box before jump");{{pass}}
                 $("#locationDropdown").hide();
               };
-              onezoom.controller.perform_flight_animation($(this).data('locationCode'));
+              onezoom.controller.fly_on_tree_to($(this).data('locationCode'));
             })
             .append(my_location_names[i] + "<br>(" + onezoom.utils.number_convert(my_location_richness[i]) + ")")
         )
@@ -622,19 +471,15 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
             //if (search_term.replace(/ /g,'').length > 1) { // we're never going to search for a single character
             
             onezoom.search_manager.full_search(
-                                               search_term,
-                                               function(original_string, actual_search, results) {
-                                               searchPopulate(searchbox, original_string, results, UI_reset_marked_via_event)
-                                               },
-                                               delay_ms,
-                                               function() {
-                                               {{if is_testing:}}console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search");{{pass}}
-                                               if(!($(".searchinput").hasClass('waiting_for_search_result')))
-                                               {
-                                               $(".searchinput", searchbox).addClass('waiting_for_search_result'); // switch flag for search to on
-                                               }
-                                               }
-                                               );
+                search_term,
+                function(original_string, actual_search, results) {
+                    search_ui.searchPopulate(searchbox, original_string, results, UI_reset_marked_via_event)},
+                delay_ms,
+                function() {
+                    {{if is_testing:}}console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search");{{pass}}
+                    if(!($(".searchinput").hasClass('waiting_for_search_result'))) {
+                        $(".searchinput", searchbox).addClass('waiting_for_search_result'); // switch flag for search to on
+                    }});
             }
             }
         });
@@ -668,18 +513,34 @@ function setupUI() {
     $("#UI").on("touchstart touchmove touchend", preventTouchZoom);
     $("[uk-modal]").on("touchstart touchmove touchend", preventTouchZoom);
 
-    $('#upButton')
+    $('#outButton .icon-container')
         .click(function(){onezoom.controller.button_zoom_up()});
-    $('#inButton')
+    $('#inButton .icon-container')
         .click(function(){onezoom.controller.button_zoom_in()});
-    $('#outButton')
-        .click(function(){onezoom.controller.button_zoom_out()});
-    $('#resetButton')
+    $('#resetButton .icon-container')
         .click(function(){onezoom.controller.button_reset()});
+
+    /* Control Button Hint Toggle */
+    $('#controlButtons #hideControlsButton .icon-container')
+        .click(function() {
+            $('#controlButtons').addClass('button-label-hidden')
+        })
+
+    $('#controlButtons #showControlsButton .icon-container')
+        .click(function () {
+            $('#controlButtons').removeClass('button-label-hidden')
+        })
+    
+    $('#controlButtons #howToUseButton .icon-container')
+        .click(function () {
+            onezoom.tutorial.start()  //activate tutorial
+        })
+
 
     $('input[name="imgsource"]').change(function() {onezoom.controller.set_image_source(this.value)});
     $('input[name="treeshape"]').change(function() {onezoom.controller.change_view_type(this.value)});
     $('input[name="colourtype"]').change(function() {onezoom.controller.change_color_theme(this.value)});
+    $('input[name="searchmode"]').change(function () { onezoom.controller.set_search_jump_mode(this.value) });
     $('select#language').change(function() {
         //reset the OZ strings to the new language
         var lang_param = (this.value)?('lang='+this.value):'';
@@ -710,6 +571,7 @@ function setupUI() {
        $('input[name=treeshape]').val([onezoom.controller.get_view_type()]);
        $('input[name=colourtype]').val([onezoom.controller.get_color_theme()]);
        $('select#language').val(onezoom.controller.get_language());
+       $('input[name=searchmode]').val([onezoom.controller.get_search_jump_mode()]);
     });
 
     $('#locationDropdown')
@@ -798,7 +660,10 @@ function setupUI() {
              onezoom.search_manager.full_search(
                                                 search_term,
                                                 function(original_string, actual_search, results) {
-                                                searchPopulate(searchbox, original_string, results, function(event, OZid) {closeAndLeap(event, OZid, $('#search-basic'))})
+                                                search_ui.searchPopulate(searchbox, original_string, results, function(event, OZid) {
+                                                    event.preventDefault();  // Don't follow links
+                                                    closeAndLeap(event, OZid, $('#search-basic'));
+                                                })
                                                 },
                                                 delay_ms,
                                                 function() {
@@ -963,20 +828,46 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
     this allows us to access e.g. onezoom.controller, onezoom.config, etc (defined in OZentry.js)
      **/
     {{if is_testing:}}console.log("Starting OneZoom viewer");{{pass}}
-    onezoom = OZentry.default(
-        window.server_urls, 
-        window.UI_callbacks, 
-        window.pagetitle_func,
-        'OneZoomCanvasID', 
-        window.tree_config, 
-        window.rawData, 
-        window.metadata,
-        window.cut_position_map_json_str, 
-        window.polytomy_cut_position_map_json_str, 
-        window.cut_threshold,
-        window.tree_date);
-    {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape=False)}}
-    setupUI();
+    
+    setup_onezoom()
+
+    function setup_onezoom() {  
+        onezoom = OZentry.default(
+            window.server_urls,
+            window.UI_callbacks,
+            window.pagetitle_func,
+            'OneZoomCanvasID',
+            window['tree_config'],
+            window.rawData,
+            window.metadata,
+            window.cut_position_map_json_str,
+            window.polytomy_cut_position_map_json_str,
+            window.cut_threshold,
+            window.tree_date);
+
+        onezoom.add_hook('on_tree_loaded', () => {
+            onezoom.tutorial.setup_setting(
+                window.globals['tutorial_config'],
+                'tutorial',
+                UI_callbacks.closeAll, // before the tutorial runs, close modals etc.
+                null, // nothing on tutorial end
+                null, // nothing on premature exit
+                null, // allow interaction to pause the tutorial
+                function() {$(".tour_resume").show()} // if interaction, show the resume button
+                )})
+        onezoom.add_hook('on_tree_loaded', () => {
+            onezoom.screensaver.setup_setting(
+                // screensaver_config may only be defined for some displays
+                window.globals['screensaver_config'], 'screensaver',
+                UI_callbacks.closeAll, // before the screensaver runs, close modals etc.
+                true, // loop back and forth
+                null, // nothing on screensaver exit
+                ); 
+        })
+    
+        {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape = False)}}
+        setupUI();
+    }
 })
 
   </script>

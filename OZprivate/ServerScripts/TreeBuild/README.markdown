@@ -8,8 +8,9 @@ The instructions below are primarily intended for creating a full tree of all li
 We assume you are running in a bash shell, so that you can define the following settings before you create a tree, and use them in the scripts below as `${OT_VERSION}` and `${OZ_TREE}`
 
 ```
-OT_VERSION=10_4 #or whatever your OpenTree version is
-OT_TAXONOMY_VERSION=3.0draft6 
+OT_VERSION=12_3 #or whatever your OpenTree version is
+OT_TAXONOMY_VERSION=3.2
+OT_TAXONOMY_EXTRA=draft9 #optional - the draft for this version, e.g. for 3.1draft2
 OZ_TREE=AllLife #a tree directory in data/OZTreeBuild
 ```
 
@@ -21,7 +22,7 @@ If you are have installed perl modules to a different location (e.g. as a local 
 # Preliminaries
 
 
-First check that you have the required OpenTree, Wikimedia, and Encyclopedia of Life files, in particular `OZprivate/data/OpenTree/draftversion${OT_VERSION}.tre`, `OZprivate/data/OpenTree/ott/taxonomy.tsv`, `OZprivate/data/OpenTree/Wiki/wd_JSON`, `OZprivate/data/OpenTree/EOL/identifiers.csv` and for popularity calculations, `OZprivate/data/OpenTree/Wiki/wp_SQL` and `OZprivate/data/OpenTree/Wiki/wp_pagecounts`  (see [OZprivate/data/README.markdown](../../data/README.markdown) - in particular, to create the `.tre` file you may need to run 
+First check that you have the required OpenTree, Wikimedia, and Encyclopedia of Life files, in particular `OZprivate/data/OpenTree/draftversion${OT_VERSION}.tre`, `OZprivate/data/OpenTree/ott${OT_TAXONOMY_VERSION}/taxonomy.tsv`, `OZprivate/data/OpenTree/Wiki/wd_JSON`, `OZprivate/data/OpenTree/EOL/provider_ids.csv` and for popularity calculations, `OZprivate/data/OpenTree/Wiki/wp_SQL` and `OZprivate/data/OpenTree/Wiki/wp_pagecounts`  (see [OZprivate/data/README.markdown](../../data/README.markdown) - in particular, to create the `.tre` file you may need to run 
 ```
 perl -pe 's/\)mrcaott\d+ott\d+/\)/g; s/[ _]+/_/g;' labelled_supertree_simplified_ottnames.tre > draftversion${OT_VERSION}.tre
 ```
@@ -36,11 +37,11 @@ If you already have your own newick tree with open tree ids on it already, and d
 ## Create the tree
 
 
-1. (10 mins) Use the [OpenTree API](https://github.com/OpenTreeOfLife/germinator/wiki/Synthetic-tree-API-v3) to add OTT ids to any non-opentree taxa in our own bespoke phylogenies (those in `*.phy` or `*.PHY` files). The new `.phy` and `.PHY` files will be created in a new directory within `OZprivate/data/OZTreeBuild/${OZ_TREE}/BespokeTree`, and a symlink to that directory will be created called `include_files` 
+1. (5 mins) Use the [OpenTree API](https://github.com/OpenTreeOfLife/germinator/wiki/Synthetic-tree-API-v3) to add OTT ids to any non-opentree taxa in our own bespoke phylogenies (those in `*.phy` or `*.PHY` files). The new `.phy` and `.PHY` files will be created in a new directory within `OZprivate/data/OZTreeBuild/${OZ_TREE}/BespokeTree`, and a symlink to that directory will be created called `include_files` 
 		
 	```
 	OZprivate/ServerScripts/TreeBuild/OTTMapping/Add_OTT_numbers_to_trees.py \
-	--savein OZprivate/data/OZTreeBuild/${OZ_TREE}/BespokeTree/include_OTT${OT_TAXONOMY_VERSION} \
+	--savein OZprivate/data/OZTreeBuild/${OZ_TREE}/BespokeTree/include_OTT${OT_TAXONOMY_VERSION}${OT_TAXONOMY_EXTRA} \
 	OZprivate/data/OZTreeBuild/${OZ_TREE}/BespokeTree/include_noAutoOTT/*.[pP][hH][yY]
 	```
 
@@ -52,7 +53,7 @@ If you already have your own newick tree with open tree ids on it already, and d
 	```
 	If you do not have any supplementary `.nwk` subtrees in the  `OT_required` directory, this step will output a warning, which can be ignored.
 
-3. (15 mins) Construct OpenTree subtrees for inclusion from the `draftversion${OT_VERSION}.tre` file. The subtrees to be extracted are specified by inclusion strings in the `.PHY` files created in step 1. The command for this is `getOpenTreesFromOneZoom.py`, and it needs to be run from within the `OZprivate/data/OZTreeBuild/${OZ_TREE}` directory, as follows:
+3. (10 mins) Construct OpenTree subtrees for inclusion from the `draftversion${OT_VERSION}.tre` file. The subtrees to be extracted are specified by inclusion strings in the `.PHY` files created in step 1. The command for this is `getOpenTreesFromOneZoom.py`, and it needs to be run from within the `OZprivate/data/OZTreeBuild/${OZ_TREE}` directory, as follows:
 
 	```
 	(cd OZprivate/data/OZTreeBuild/${OZ_TREE} && \
@@ -64,7 +65,7 @@ If you already have your own newick tree with open tree ids on it already, and d
 	```
 	If you are not including any OpenTree subtrees in your final tree, you should have no `.PHY` files, and this step will output a warning, which can be ignored.
 	
-4. (15 mins) substitute these subtrees into the main tree, and save the resulting full newick file using the hacky perl script: 
+4. (5 mins) substitute these subtrees into the main tree, and save the resulting full newick file using the hacky perl script: 
 
    ```
    cat OZprivate/data/OZTreeBuild/${OZ_TREE}/AdditionalFiles/base_tree.js \
@@ -95,10 +96,10 @@ If you already have your own newick tree with open tree ids on it already, and d
 	```
 	OZprivate/ServerScripts/TaxonMappingAndPopularity/CSV_base_table_creator.py \
 	OZprivate/data/OZTreeBuild/${OZ_TREE}/${OZ_TREE}_full_tree.phy \
-	OZprivate/data/OpenTree/ott/taxonomy.tsv \
-	OZprivate/data/EOL/identifiers.csv \
-	OZprivate/data/Wiki/wd_JSON/* \
-	OZprivate/data/Wiki/wp_SQL/* \
+	OZprivate/data/OpenTree/ott${OT_TAXONOMY_VERSION}/taxonomy.tsv \
+	OZprivate/data/EOL/provider_ids.csv \
+	OZprivate/data/Wiki/wd_JSON/latest-all.json.bz2 \
+	OZprivate/data/Wiki/wp_SQL/enwiki-latest-page.sql.gz \
 	OZprivate/data/Wiki/wp_pagecounts/pagecount*.bz2 \
 	-o OZprivate/data/output_files -v \
 	--exclude Archosauria_ott335588 Dinosauria_ott90215 \
@@ -116,7 +117,7 @@ If you already have your own newick tree with open tree ids on it already, and d
     
 7. If you are running the tree building scripts on a different computer to the one running the web server, you will need to push the `completetree_XXXXXX.js`, `completetree_XXXXXX.js.gz`, `cut_position_map_XXXXXX.js`, `cut_position_map_XXXXXX.js.gz`, `dates_XXXXXX.js`
 , `dates_XXXXXX.js.gz` files onto your server, e.g. by pushing to your local Github repo then pulling the latest github changes to the server.
-8. (15 mins) load the CSV tables into the DB, usng the SQL commands printed in step 5 (the ones that start simething like `TRUNCATE TABLE ordered_leaves; LOAD DATA LOCAL INFILE ...;` `TRUNCATE TABLE ordered_nodes; LOAD DATA LOCAL INFILE ...;`). Either do so via a GUI utility, or copy the `.csv.mySQL` files to a local directory on the machine running your SQL server (e.g. using `scp -C` for compression) and run your `LOAD DATA LOCAL INFILE` commands on the mysql command line (this may require you to start the command line utility using `mysql --local-infile`, e.g.:
+8. (15 mins) load the CSV tables into the DB, using the SQL commands printed in step 5 (the ones that start simething like `TRUNCATE TABLE ordered_leaves; LOAD DATA LOCAL INFILE ...;` `TRUNCATE TABLE ordered_nodes; LOAD DATA LOCAL INFILE ...;`). Either do so via a GUI utility, or copy the `.csv.mySQL` files to a local directory on the machine running your SQL server (e.g. using `scp -C` for compression) and run your `LOAD DATA LOCAL INFILE` commands on the mysql command line (this may require you to start the command line utility using `mysql --local-infile`, e.g.:
 
    ```
    mysql --local-infile --host db.sundivenetworks.net --user onezoom --password --database onezoom_dev

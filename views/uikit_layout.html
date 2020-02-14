@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<!--[if (gt IE 9)|!(IE)]><!--> <html class="no-js" lang="{{=T.accepted_language or 'en'}}"> <!--<![endif]-->
+  <head>
+    <meta charset="utf-8">
+    <!-- www.phpied.com/conditional-comments-block-downloads/ -->
+    <!-- Always force latest IE rendering engine
+         (even in intranet) & Chrome Frame
+         Remove this if you use the .htaccess -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge{{=not request.is_local and ',chrome=1' or ''}}">
+    <!--  Mobile Viewport Fix
+          j.mp/mobileviewport & davidbcalhoun.com/2010/viewport-metatag
+          device-width: Occupy full width of the screen in its current orientation
+          initial-scale = 1.0 retains dimensions instead of zooming out if page height > device height
+          user-scalable = yes allows the user to zoom in -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{=response.title or request.application}}</title>
+    <!-- http://dev.w3.org/html5/markup/meta.name.html -->
+    <meta name="application-name" content="{{=request.application}}">
+    <!-- Speaking of Google, don't forget to set your site up:
+         http://google.com/webmasters -->
+    <meta name="google-site-verification" content="">
+    {{if response.canonical:}}<link rel="canonical" href="{{=response.canonical}}">{{pass}}
+
+    <script type="text/javascript" src="{{=URL('static','js/jquery.min.js')}}"></script>
+    <link rel="stylesheet" href="{{=URL('static','uikit-3/css/uikit.min.css')}}" />
+    <script src="{{=URL('static','uikit-3/js/uikit.min.js')}}"></script>
+    <script src="{{=URL('static','uikit-3/js/uikit-icons.min.js')}}"></script>
+    <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/content.css')}}" />
+    {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
+    {{include '../static/OZTreeModule/dist/OZ_script.html'}}
+    <script>var OZstrings={{include 'treeviewer/js_strings.json'}}</script>
+  </head>
+  <body class="standalone">
+    <!--[if lt IE 8]><p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p><![endif]-->
+    <div class="w2p_flash alert alert-dismissable">{{=response.flash or ''}}</div>
+    
+    <!-- Navbar ======================================= -->
+<header class="oz-section bkgd-darkspiral">
+    <nav class="uk-navbar-container uk-navbar-transparent" uk-navbar role="navigation">
+      <div class="uk-navbar-left">
+        <div class="logo uk-navbar-item">
+          <a href="/" id="OZ-logo">
+            <img src="{{=URL('static/images', 'oz-logo-1line-white.svg')}}" alt="OneZoom" />
+          </a>
+        </div>
+      </div>
+      
+      {{if response.menu:}}
+        <div class="uk-navbar-center"><ul class="uk-navbar-nav">
+          {{for m in response.menu:}}
+            <li>
+                <a href="{{=m[2] or '#'}}" class="{{if m[1]:}}uk-active{{pass}}"><span>{{=m[0]}}</span></a>
+                <div class="uk-navbar-dropdown">
+                    {{=MENU(m[3], _class="uk-nav uk-navbar-dropdown-nav", li_class="")}}
+                </div>
+            </li>
+          {{pass}}
+        </ul></div>
+      {{pass}}
+
+      <div class="uk-navbar-right">
+
+        {{if request.vars.get('login') is not None:}}
+          {{='auth' in globals() and auth.navbar('Welcome',mode='dropdown') or ''}}
+        {{pass}}
+
+        <div id="searchnav">
+  <div id="search-basic">
+    <div class="searchbox uk-search uk-search-default" id="search_form_basic">
+      <div class="searchinput"><div class="icon-beside-input">
+          <button class="spinner" uk-spinner="ratio:0.5"></button>
+          <button class="uk-icon main-icon">
+            <img src="{{=URL('static/images', 'oz-logo-icon-darkbg.svg')}}" alt="" />
+          </button>
+        </div><input class="uk-search-input" type="search" placeholder="{{=T('Search all life...')}}" /></div>
+      <div uk-dropdown="pos: bottom-left; offset: 1" class="search_dropdown selectable uk-overflow-auto">
+        <div class="no_results">{{=T("No results found")}}</div>
+        <dl class="search_hits"></dl>
+        <dl class="popular_species"></dl>
+      </div>
+    </div>
+  </div>
+<script>
+(function() {
+    var box_selector = $('#searchnav');
+    var search_manager = OZentry.api_utils_setup({
+      /* These fill out the equivalently named variables in OneZoom global_config.
+         They need to be defined in this file to avoid hard-coding them into the OneZoom js code
+         They are coded with the full URL so that they can be used remotely (e.g. in a partial install) */
+      search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",
+      search_sponsor_api: "{{try:}}{{=myconf.take('API.search_sponsor')}}{{except:}}{{=URL('API','search_for_sponsor.json', scheme=True, host=True)}}{{pass}}",
+    }).search_manager;
+
+    $('.searchinput input', box_selector)
+        .blur(function(event) {
+            // if we have an already-selected location, and we lose focus, we simply revert
+            var searchbox = $(event.currentTarget).closest('.searchbox');
+            if ($('.searchresult', searchbox).attr('data-OZid')) {
+                searchbox.addClass('result_displayed_in_box');
+            }
+        })
+        .on('keyup', function(event) {
+
+            var search_term = this.value;
+            var searchbox = $(this).closest('.searchbox');
+            var searchresult = $('.searchresult', searchbox);
+            var dropdown = $('.search_dropdown', searchbox);
+            if (searchresult.attr('data-OZid')) {
+                onezoom.controller.unmark_area(searchresult.attr('data-OZid'));
+                searchresult.attr('data-OZid','');
+            }
+            if (search_term.length==0) {
+                $('.popular_species', dropdown).show();
+                {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
+                $('.no_results', dropdown).hide();
+                $('.search_hits', dropdown).empty();
+                search_manager.full_search(""); // this clears the search
+                $('.searchinput', searchbox).removeClass('waiting_for_search_result');
+            } else {
+                //$('.searchinput', searchbox).addClass('waiting_for_search_result');
+                var delay_ms = 1000;
+                if (event.which == 13) {
+                    delay_ms = 1;   //enter was pressed - don't delay
+                }
+            if ((search_term.replace(/ /g,'').length > 2)||((search_term.replace(/ /g,'').length > 1)&&(delay_ms == 1))) { // we're neve
+
+            search_manager.full_search(
+                search_term,
+                function(original_string, actual_search, results) {
+                    search_ui.searchPopulate(searchbox, original_string, results, function () {return null;});
+                    dropdown.find('dd').addClass('leafout');
+                    dropdown.find('a').attr('target', '_blank');
+                },
+                delay_ms,
+                function() {
+                    {{if is_testing:}}console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search");{{pass}}
+                    if(!($(".searchinput").hasClass('waiting_for_search_result'))) {
+                        $(".searchinput", searchbox).addClass('waiting_for_search_result'); // switch flag for search to on
+                    }});
+            }
+            }
+        });
+}())
+</script>
+
+
+          </div>
+
+      </div>
+    </nav>
+
+    <!-- Masthead ===================================== -->    
+    <div class="oz-section-body masthead">{{block masthead}}{{end}}</div>
+</header>
+    <!-- Main ========================================= -->
+    <!-- Begin page content -->
+
+    <div class="container-fluid">
+        {{include}}
+    </div>
+
+    {{block footer}} 
+          
+    <footer class="shortcuts" class="uk-grid-small uk-grid-match" uk-grid>
+      <div class="uk-width-1-3@m uk-text-center">
+        <style>
+         #footer-images img.species {
+           width: 60px;
+           height: 60px;
+           margin: 10px 3px;
+         }
+        </style>
+        {{=LOAD('default', 'footer_sponsor_items.load', target="footer-images", ajax=False, _style="position: relative", _class="uk-child-width-1-3")}}
+        <ul class="oz-pill leaf-list"><li><a href="{{=URL('default', 'sponsor.html')}}">Sponsor a leaf now!</a></li></ul>
+      </div>
+      <div class="uk-width-1-2 uk-width-1-6@m">
+        <h3>About us</h3>
+        <ul>
+          <li><a href="/milestones.html">Milestones</a></li>
+          <li><a href="/endorsements.html">Endorsements</a></li>
+          <li><a href="/about.html">About OneZoom</a></li>
+          <li><a href="/team.html">Team</a></li>
+          <li><a href="/FAQ.html">FAQ</a></li>
+        </ul>
+      </div>
+
+      <div class="uk-width-1-2 uk-width-1-6@m">
+        <h3>Quick links</h3>
+        <ul>
+          <li><a href="/data_sources.html">Data sources</a></li>
+          <li><a href="/tree_index.html">Legacy trees</a></li>
+          <li><a href="/developer.html">Developer tools</a></li>
+          <li><a href="/popularity/index.html">Popularity index</a></li>
+        </ul>
+      </div>
+
+      <div class="uk-width-1-6@m">
+        <h3>Follow us</h3>
+        <div>
+          <a href="mailto:mail@onezoom.org" title=""><span uk-icon="icon: mail" style="vertical-align: bottom;"></span>&nbsp; E&#8209;mail</a><br/>
+          <a href="https://twitter.com/OneZoomTree" target="_blank" title=""><span uk-icon="icon: twitter" style="vertical-align: bottom;"></span>&nbsp; Twitter</a><br/>
+          <a href="http://www.facebook.com/OneZoomTree" target="_blank" title=""><span uk-icon="icon: facebook" style="vertical-align: bottom;"></span>&nbsp; Facebook</a><br/>
+        </div>
+      </div>
+
+    </footer>
+    <footer class="terms">
+      <span>© {{=request.now.year}} OneZoom, UK charity 1163559</span>
+      &nbsp;|&nbsp;
+      <a href="{{=URL('default','terms.html', args='site')}}" target="_blank" class="footlink" title="">{{=T('Terms and Cookies')}}</a>
+    </footer>
+    {{end}}
+    <!-- Analytics ==================================== -->
+    <script type="text/javascript" src="{{=URL('static','site-specific/google-analytics.js')}}"></script>
+
+    <!-- Share ============================y============
+    <script src="{{=URL('static','js/share.js',vars=dict(static=URL('static','images')))}}"></script> -->
+    {{block page_js}}{{end page_js}}
+  </body>
+</html>

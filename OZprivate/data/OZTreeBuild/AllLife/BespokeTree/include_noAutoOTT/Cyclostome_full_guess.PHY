@@ -16,7 +16,7 @@ Mordacia/Lampetra split: 150Ma
 Lampetra/Petromyzon split: 25Ma
 Rubicundus/Myxine split (Fig 3 from Fernholm, if myx/epta=90, extra depth = 20) => 110Ma
 
-To produce a rendezvous at 525Ma, the root needs to be 43Ma long. Eptatretus lopheliae (ott3644164) and Eptatretus rubicundus (ott772588) have been removed to be placed in Rubicundus
+To produce a rendezvous at 525Ma, the root needs to be 43Ma long. Eptatretus rubicundus (ott772588) needs to be removed to be placed in Rubicundus
 
 #from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Vertebrates]
-(((Rubicundus_lopheliae:0.0,Rubicundus_rubicundus_ott772588:0.0):110.0,(Eptatretus_ott852681~-772588-3644164@:90.0,(Neomyxine_ott3644215@:0.0,Myxine_ott34455@:0.0):90.0):20.0)Myxiniformes:372.0,LAMPREYS@:332.0)CYCLOSTOMATA:43.0;
+(((Rubicundus_lopheliae:0.0,Rubicundus_rubicundus_ott772588:0.0):110.0,(Eptatretus_ott852681~-772588@:90.0,(Neomyxine_ott3644215@:0.0,Myxine_ott34455@:0.0):90.0):20.0)Myxiniformes:372.0,LAMPREYS@:332.0)CYCLOSTOMATA:43.0;

@@ -1,0 +1,381 @@
+{{response.title='OneZoom: Museum display launch'}}
+{{extend 'layout.html'}}
+<div class="row-fluid">
+    <header>
+        <h1>OneZoom museum display launcher</h1>
+        <p>
+        If you are a museum or other educational institution you can have a OneZoom exhibit running for free in seconds. </p>
+     </header>
+</div>
+
+
+<div id = "top_matter" class="row-fluid">
+    
+    <div class="col-md-4">
+   
+    
+    <h4>Setup</h4>
+     <ul>
+    <li>You will need a suitable computer ideally with a touch screen, but at least with a mouse.
+    </li>
+    <li>Your machine should have a stable connection to the internet.
+    </li>
+    <li>The OneZoom display runs in a web browser as a single page.  Use this page to generate a link to your customized museum display page.
+    </li>
+    <li>You should set up your local machine such that walk up users cannot access other functions of the computer or other web pages.
+    </li>
+    <li>Full local installation is possible but not recommended, please <a href="mailto:mail@onezoom.org?Subject=Museum display question" target="_top">contact us</a> for more information.
+    </li>
+     </ul>
+    
+    
+    <a href = "{{=URL('static','images/gallery/sydney_kiosk.jpg')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/sydney_kiosk_small.jpg')}}" alt=""></a>
+    <p>A OneZoom based museum display at the Wild Planet exhibition at The Australian Museum in Sydney.</p>
+    
+    </div>
+    <div class="col-md-4">
+    
+    <h4>Key features</h4>
+    
+    <p>Our museum display page differs from the normal OneZoom tree viewer pages in several ways that are designed to make it optimal for use in an exhibition.</p>
+    <ul>
+    
+    <li> The control buttons are larger and with text always present to show what they do.
+    </li>
+    
+    <li> All links that could enable a user to click and get out of the page are removed, including from the Wikipedia information page insets.  This should make it impossible for your visitors to click on anything in the page that might result in displaying inappropriate content.
+    </li>
+    
+    <li> There are no settings that can be adjusted by the walk up user.  Instead you choose the fixed settings below and save the URL in your system as the home page of the display
+    </li>
+    
+    <li> After a number of seconds of inactivity the display will zoom around engagingly to help attract users (screen saver mode).
+    </li>
+    
+    <li> There is a tutorial that explains how to explore the tree.
+    </li>
+
+    <li> You can select a home focus for your display, which could be all life, but could equally be some branch of the tree that your exhibition is focused on.
+    </li>
+    
+    </ul>
+    
+    <h4>Try out the display</h4>
+    
+    <button id="open-in-new-tab-top">Launch in a new tab</button>
+    <p>Opens using the default settings. To change the settings and get a URL for your installation scroll down and use the form below.</p>
+    
+     <h4>Get added to our list of installations</h4>
+    
+    <p> You are free to use this page to include OneZoom in your exhibition without contacting us.  We do appreciate feedback and also it is helpful to know which venues are using OneZoom so please do <a href="mailto:mail@onezoom.org?Subject=Museum display feedback" target="_top">get in touch</a> and tell us about your plans if you can.  We may be able to make some improvements to the code based on your feedback.  We can also mention your exhibition on social media and list it on our {{=XML( (A(T('installations page'),_href="/installations.html",_target="_blank")))}}.</p>
+    
+    </div>
+    <div class="col-md-4">
+    <h4>Please note</h4>
+    
+    <p> We are a UK registered charity (non-profit) and our work is supported almost entirely by sponsorships from end users.  The names of sponsors may thus appear on leaves of the tree.  All text is checked by us before appearing. We do not permit walk up users to sponsor from public displays as it would require entering personal information.  Instead we provide basic information about how they could sponsor from their own device.
+    </p>
+    
+    <p>Use of this display online is free. We are able to provide support and build customized options for your display, but normally expect an at cost contribution to the sustainability of the OneZoom in exchange for service. Use of this page as with any other page on the site is subject to our {{=XML( (A(T('terms and conditions'),_href="/terms.html",_target="_blank")))}}.
+    </p>
+    <a href = "{{=URL('static','images/gallery/One_Zoom_Science_Uncovered.jpg')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/One_Zoom_Science_Uncovered_small.jpg')}}" alt=""></a>
+    
+    <p>OneZoom at the Natural History Museum in London for Science Uncovered.</p>
+
+    </div>
+    </div>
+
+    <div id="museum-container" class= "col-md-12" >
+        <hr>
+    <header>
+    <h1>Display options</h1>
+    <p>You don't have to change any of these options unless you want to.  To implement a quick display leave everything on its default value.</p>
+    </header>
+    
+    
+    
+    
+    <!--<p>Choose the style of visualisation you want to have for the tree of life.</p>-->
+    <div class="form-group">
+      <label class="left-label">Tree visualization style</label>
+      <div class="right-input">
+        <select class="view-type" style="width:100%;">
+          <option value="spiral">Spiral (default)</option>
+          <option value="natural">Natural</option>
+          <option value="fern">Fern</option>
+          <option value="balanced">Balanced</option>
+          <option value="polytomy">Polytomy</option>
+        </select>
+      </div>
+    </div>
+
+    <!--<p>Choose the source of images for your tree display, select public domain if you want to use screenshots and images of it without needing to credit any of the individual photographers, select verified for a more reliable set of images that have been verified at source, select nothing if you want the best quality images (recommended).</p> -->
+    <div class="form-group">
+      <label class="left-label">Image Source</label>
+      <div class="right-input">
+        <select class="image-source" style="width:100%;">
+          <option value="best_any">Best quality (recommended)</option>
+          <option value="best_verified"
+            title="Only show images that have been verified by a taxonomist. For any image, click or zoom on the © symbol for details">
+            Verified as correct</option>
+          <option value="best_pd">Public Domain</option>
+        </select>
+      </div>
+    </div>
+
+     <!--<p>Choose the language you want to use for the tree display.</p>-->
+    
+    <div class="form-group">
+      <label class="left-label">Language</label>
+      <div class="right-input">
+        <select class="language" style="width:100%;"
+          title="Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.">
+          <optgroup label="Translated">
+            <option value="en">English (default)</option>
+            <option value="fr">Français</option>
+            <option value="sv">Svenska</option>
+          </optgroup>
+          <optgroup label="Not yet translated">
+            <option value="zh">中文</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+ 
+    <!-- <p>When the user searches for something, or clicks on a popular place, would you like the viewer to go immediately there, or to fly on a smooth path to the destination (Fly is recommended). </p> -->
+    
+    <div class="form-group">
+      <label class="left-label">Animation Preference</label>
+      <div class="right-input">
+        <select class="anim-setting" style="width:100%;">
+          <option value="flight">Fly (recommended)</option>
+          <option value="jump">Jump</option>
+        </select>
+      </div>
+      <p>When the user searches</p>
+    </div>
+
+    <!--<p>Choose the home location for your display, this is where it will return if a user resets the view.  If you only ever wanted a tree of Vertebrates select vertebrates and these will be the focus, only the user will be permitted to zoom out from vertebrates and explore other areas if they wish.</p> -->
+    
+    <div class="form-group">
+      <label class="left-label left-label-input">Home location</label>
+      <div class="right-input otthome-id" style="width:600px;">
+        <select style="width: 300px;">
+          <option value="">All life (default)</option>
+          <option value="244265">Mammals</option>
+          <option value="81461">Birds</option>
+          <option value="991547">Frogs and toads</option>
+          <option value="801601">Vertebrates</option>
+          <option value="1062253">Insects</option>
+          <option value="691846">Animals</option>
+          <option value="361838">Green plants</option>
+          <option value="99252">Flowering plants</option>
+          <option value="1012685">Mushrooms</option>
+          <option value="304358">Complex life</option>
+          <option value="" disabled>—————————————————</option>
+          <option value="custom">Custom OTT ID</option>
+        </select>
+        <input readonly type="text" class="form-control" style="width:280px;display:inline-block;" />
+      </div>
+    </div>
+
+      <!--<p>Measured in seconds, how long the display should be inactive for before going into its screensaver mode.</p>-->
+    
+    <div class="form-group">
+      <label class="left-label left-label-input">Screensaver Wait Time</label>
+      <div class="right-input input-group screensaver">
+        <input oninput="this.value=this.value.replace(/[^0-9]/g,'');" type="text" class="form-control" value="600"
+          aria-describedby="screensaver-addon" />
+        <span class="input-group-addon" id="screensaver-addon">seconds</span>
+      </div>
+    </div>
+        <!--<p>Will users primarily interact via a touch screen or via a mouse? This only affects the tutorial included in the display.</p>-->
+        
+        <div class="form-group">
+            <label class="left-label left-label-input">Hardware for interaction</label>
+            <div class="right-input">
+                <select class="hardware" style="width:100%;">
+                    <option value="touch">Multi-touch screen (recommended)</option>
+                    <option value="mouse">Mouse with scroll wheel</option>
+                </select>
+            </div>
+            <p> This only affects the tutorial function</p>
+        </div>
+ 
+    
+    <hr>
+    
+    <div style="height: 30px"></div>
+    <div class="form-group">
+      <label class="left-label left-label-input">Generated URL</label>
+      <div class="right-input url-result">
+        <input type="text" class="form-control" readonly />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="left-label"> </label>
+      <div class="right-input button-group">
+        <button id="copy">Copy display URL to clipboard</button>
+        <button id="open-in-new-tab">Test display now in a new tab</button>
+        <button id="open">Close launch page and go to display</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<style>
+  #museum-container .left-label {
+    float: left;
+    width: 170px;
+    text-align: right;
+  }
+
+  #museum-container .left-label-input {
+    height: 28px;
+    line-height: 28px;
+  }
+
+  #museum-container .right-input {
+    float: left;
+    width: 300px;
+    margin-left: 25px;
+  }
+
+  #museum-container .right-input select,
+  #museum-container .right-input input {
+    height: 28px;
+  }
+
+  #museum-container .right-input.url-result {
+    width: 800px;
+  }
+
+  #museum-container .right-input.url-result input {
+    background-color: #eee;
+  }
+
+  #museum-container .right-input.button-group {
+    padding-top: 10px;
+  }
+
+  #museum-container .form-group {
+    margin-bottom: 10px;
+  }
+
+  #museum-container .form-group:after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+</style>
+
+<script>
+  //anoymous function so that it won't pollute global namespace
+  ; (function () {
+    function setURL() {
+      const HOST = window.location.host
+      const PROTOCAL = window.location.protocol
+
+      const view_type = $('#museum-container .view-type')
+        .find('option:selected')
+        .val()
+      const image_source = $('#museum-container .image-source')
+        .find('option:selected')
+        .val()
+      const language = $('#museum-container .language')
+        .find('option:selected')
+        .val()
+      const anim_setting = $('#museum-container .anim-setting')
+        .find('option:selected')
+        .val()
+      const otthome_id = $('#museum-container .otthome-id input').val()
+      const screensaver_timer = $('#museum-container .screensaver input').val()
+
+      let query = `vis=${view_type}&img=${image_source}&lang=${language}&anim=${anim_setting}`
+      if (otthome_id && otthome_id!= "") {
+        query = query + `&otthome=${otthome_id}`
+      }
+      if (screensaver_timer) {
+        query = query + `&ssaver=${screensaver_timer}`
+      }
+    
+     const hardwareType = $('#museum-container .hardware').val()
+
+     
+      $('#museum-container .url-result input').val(
+        PROTOCAL + '//' + HOST + '/life_MD'+hardwareType+'?' + query,
+      )
+    }
+
+    /**
+     * When otthome-id dropdown selection changes, do two things:
+     * 1. enable or disable otthome-id input readonly property
+     * 2. change otthome-id input value
+     */
+    function setHomeOttId() {
+      const optionVal = $('#museum-container .otthome-id select')
+        .find('option:selected')
+        .val()
+      if (optionVal === 'custom') {
+        $('#museum-container .otthome-id input').attr('readonly', false)
+      } else {
+        $('#museum-container .otthome-id input').attr('readonly', true)
+        $('#museum-container .otthome-id input').val(optionVal)
+      }
+    }
+
+    //Initial setup
+    setHomeOttId()
+    setURL()
+
+    //Bind copy event
+    $('#museum-container #copy').click(function () {
+      var input = $('#museum-container .url-result input')
+      input.select()
+      document.execCommand('copy')
+      input.blur()
+    })
+
+    //Bind open in new tab event
+    $('#museum-container #open-in-new-tab').click(function () {
+      var url = $('#museum-container .url-result input').val()
+      window.open(url, null)
+    })
+     
+     //Bind open in new tab event (top)
+     $('#top_matter #open-in-new-tab-top').click(function () {
+                                                   var url = $('#museum-container .url-result input').val()
+                                                   window.open(url, null)
+                                                   })
+     
+     //Bind open in new tab event
+     $('#museum-container #open').click(function () {
+       var url = $('#museum-container .url-result input').val()
+       location.href = url
+    })
+
+    //Bind dropdown selection event
+    $('#museum-container select').change(function () {
+      setURL()
+    })
+
+    //Bind text input change event
+    $(
+      '#museum-container .screensaver input, #museum-container .otthome-id input',
+    ).change(function () {
+      setURL()
+    })
+
+    /**
+     * When otthome-id dropdown selection changes, do two things:
+     * 1. enable or disable otthome-id input readonly property
+     * 2. change otthome-id input value
+     */
+    $('#museum-container .otthome-id select').change(function () {
+      setHomeOttId()
+      setURL()
+    })
+  })()
+</script>

@@ -6,7 +6,7 @@
      * this over and over... all will be bound to the document
      */
     /*adds btn class to buttons*/
-    $('button', target).addClass('btn btn-default');
+    $('button:not(.uk-icon)', target).addClass('btn btn-default'); // Local modification: Don't style icons in search bar
     $("p.w2p-autocomplete-widget input").addClass('form-control');
     $('form input[type="submit"], form input[type="button"]', target).addClass('btn btn-default');
     /* javascript for PasswordWidget*/

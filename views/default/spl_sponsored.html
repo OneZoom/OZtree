@@ -1,20 +1,58 @@
-{{response.title='OneZoom: '+T('already sponsored species')}}
+{{
+response.title='OneZoom: '+T('already sponsored species')
+response.files.append(URL('static','OZSponsor/background.css'))
+}}
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
-    <h3>{{=T('This leaf has been sponsored')}}</h3>
-    <div class="sponsored_list">
-    <figure>
-        {{img = user_image or default_image}}
-        <figure>
-            <figcaption>{{=XML(long_name)}}</figcaption>
-            <img alt="{{=T('Image of %s') % (species_name)}}"
-{{if img:}}
-    src="{{=thumbnail_url(img.src, img.src_id)}}"
-    title="{{=' / '.join([t for t in [img.rights, img.licence] if t]).replace('"',"'")}}"
-{{else:}}
-    src="{{=URL('static','images/noImage_transparent.png')}}"
-{{pass}} />
-        </figure>
-    <figcaption>Sponsored {{=verified_kind}}<br /><strong>{{=verified_name}}</strong><br />{{=verified_more_info or ''}}</figcaption></figure>
-    </div>    
-    <p>{{=XML(T('If you would like to sponsor something, we’ve still got %s.') % (A(T('lots of great leaves available for sponsorship'), _href=URL('default','sponsor.html')),))}}</p>
+
+<div class="row-fluid">
+        <header>
+            <h1>{{=T('This leaf has been sponsored')}}</h1>
+            <p> {{=XML(T('You can explore this tree of life at home or on your mobile device from %s') % (A("www.onezoom.org", _href="//www.onezoom.org", target="_blank", _style="text-decoration: underline;"),))}}</p>
+        </header>
+</div>
+
+<div class = "row-fluid">
+    
+  
+    <div class="col-md-4 ">
+ 
+                <h4>{{=T('About leaf sponsorship')}}</h4>
+                <p> {{=T('You can sponsor leaves on the OneZoom tree of life for yourself or as a unique gift for someone you know. As a thank-you, we acknowledge donations to the OneZoom charity (non-profit) by displaying your chosen sponsor’s name on the leaf of your choice. Your donations will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.')}}</p>
+   </div>
+   <div class="col-md-4 ">
+                <div class="sponsored_list">
+                    <ul>
+                    <li>
+                    <figure>
+                        {{img = user_image or default_image}}
+                        <figure>
+                            <figcaption>{{=XML(long_name)}}</figcaption>
+                            <img alt="{{=T('Image of %s') % (species_name)}}"
+                            {{if img:}}
+                            src="{{=thumbnail_url(img.src, img.src_id)}}"
+                            title="{{=' / '.join([t for t in [img.rights, img.licence] if t]).replace('"',"'")}}"
+                            {{else:}}
+                            src="{{=URL('static','images/noImage_transparent.png')}}"
+                            {{pass}} />
+                        </figure>
+                        <figcaption>Sponsored {{=verified_kind}}<br /><strong>{{=verified_name}}</strong></figcaption></figure>
+                    </li>
+                    </ul>
+                </div>
+   </div>
+   <div class="col-md-4 ">
+                <h4>{{=T('There are plenty more leaves')}}</h4>
+                <p> {{=T('We’re sorry if you wanted to sponsor this leaf.  There is only one name per species so get your favourite species while you can.')}}</p>
+                <p>{{# Make all internal URLs absolute so they get culled when sandboxing
+                =XML(T('If you would like to sponsor something else, we’ve still got %s.') % (A(T('lots of great leaves available for sponsorship'), _href=URL('default','sponsor.html', scheme=True, host=True)),))}}</p>
+                
+                <p> {{=T('Thank you for your interest in supporting our work.')}}</p>
+
+     </div>
+    </div>
+
+
+
+
+

@@ -1,0 +1,22 @@
+[
+The main genera Aphelidium and Pseudaphelidium (only 1 sp) are absent from the Aphelida in the synthetic tree (v11.4)
+with "major_rank_conflict" although they are present in the taxonomy file. 
+So I have constructed a temporary phylogeny by hand below, using e.g. 
+http://journal.frontiersin.org/Journal/10.3389/fmicb.2014.00112/ and
+https://www.ncbi.nlm.nih.gov/pubmed/28187245
+
+(also see the recent classification in https://imafungus.biomedcentral.com/articles/10.1186/s43008-019-0005-7
+which describes the only species of Aphelidium_ott as:
+
+Aphelidium chaetophorae
+Aphelidium chlorococcorum
+Aphelidium deformans
+Aphelidium desmodesmi
+Aphelidium melosirae
+Aphelidium tribonematis 
+
+(Pseudaphelidium,(Paraphelidium,((Aphelidium_desmodesmi,(other Aphelidium))Aphelidium,Amoeboaphelidium)))
+
+
+#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=All life]
+(Pseudaphelidium_drebesii,(Paraphelidium_ott6376324@,((Aphelidium_desmodesmi,(Aphelidium_chaetophorae,Aphelidium_chlorococcorum,Aphelidium_deformans,Aphelidium_melosirae,Aphelidium_tribonematis))Aphelidium_ott4938757,Amoeboaphelidium_ott1077715@))Aphelidea_ott5355148)Aphelida_ott7060273;

@@ -4,4 +4,5 @@
     <h3>{{=T('Error when sponsoring')}}</h3>
     <p>{{=T('Apologies, there seems to be something wrong with the OneZoom sponsorship process.')}}</p>
     <p>{{=XML(T('We would appreciate it if you could %s') % (A(T('contact us'), _href='mailto:mail@onezoom.org?subject=Error in sponsoring a species with Open Tree ID %s'.format(OTT_ID_Varin))))}}</p>
-    <p>{{=XML(T('Don’t worry, we’ve still got %s.') % (A(T('lots of great leaves available for sponsorship'), _href=URL('default','sponsor.html'))))}}</p>
+    <p>{{# Make all internal URLs absolute so they get culled when sandboxing
+         =XML(T('Don’t worry, we’ve still got %s.') % (A(T('lots of great leaves available for sponsorship'), _href=URL('default','sponsor.html', scheme=True, host=True))))}}</p>

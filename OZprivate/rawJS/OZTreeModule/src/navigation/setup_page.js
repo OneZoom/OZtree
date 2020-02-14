@@ -1,10 +1,11 @@
-import {parse_query} from './utils';
+import { parse_query } from './utils';
 import data_repo from '../factory/data_repo';
 import api_manager from '../api/api_manager';
 import get_controller from '../controller/controller';
 import tree_state from '../tree_state';
-import {global_button_action, click_on_button_cb} from '../button_manager';
+import { global_button_action, click_on_button_cb } from '../button_manager';
 import config from '../global_config';
+import tree_settings from '../tree_settings';
 
 /**
  * This function is fired when user navigates the history.
@@ -33,71 +34,105 @@ function setup_loading_page() {
  * @return {Promise} return a promise which would turn to resolve if the metacode is found, otherwise turn to reject.
  */
 function get_id_by_state(state) {
-  let promise = new Promise(function(resolve, reject) {
-    if (!state) reject();
-    else if (state.node_id) resolve(state.node_id);
-    else if (state.ott && data_repo.ott_id_map[state.ott]) resolve(data_repo.ott_id_map[state.ott]);
-    else if (state.latin_name && data_repo.name_id_map[state.latin_name]) resolve(data_repo.name_id_map[state.latin_name]);
-    else if (state.ott || state.latin_name) {
-      let data = {};
-      if (state.ott) data.ott = state.ott;
-      if (state.latin_name) data.name = state.latin_name;
-      let params = {
-        data: data,
-        success: function(res) {
-          if (res.ids && res.ids.length) {
-            resolve(res.ids[0]);
-          } else {
-            reject();
+  if (!state) {
+    return Promise.reject(new Error('Expect to get state, but pass in undefined'));
+  } else if (state.node_id) {
+    return Promise.resolve(state.node_id);
+  } else if (state.ott && data_repo.ott_id_map[state.ott]) {
+    return Promise.resolve(data_repo.ott_id_map[state.ott]);
+  } else if (state.latin_name && data_repo.name_id_map[state.latin_name]) {
+    return Promise.resolve(data_repo.name_id_map[state.latin_name]);
+  } else if (state.ott || state.latin_name) {
+    return get_ott_to_id_by_api(state.ott, state.latin_name)
+  } else {
+    return Promise.reject(new Error('Neither ott or latin name is found in state'));
+  }
+}
+
+function get_ott_to_id_by_api(ott, latin_name) {
+  return new Promise(function(resolve, reject) {
+    let data = {}
+    if (ott) data.ott = ott
+    if (latin_name) data.name = latin_name
+    let params = {
+      data: data,
+      success: function (res) {
+        if (res.ids && res.ids.length) {
+          if (ott) {
+            data_repo.ott_id_map[ott] = res.ids[0]
+            data_repo.id_ott_map[res.ids[0]] = ott
           }
-        },
-        error: function(res) {
+          resolve(res.ids[0]);
+        } else {
           reject();
         }
-      };
-      api_manager.search_init(params);
-    } else {
-      reject();
-    }
-  });
-  return promise;
+      },
+      error: function (res) {
+        reject(res);
+      }
+    };
+    api_manager.search_init(params);
+  })
 }
 
 function setup_page_by_state(state) {
   let controller = get_controller();
-  if (state.vis_type) controller.change_view_type(state.vis_type);
-  if (!config.lang) config.lang = state.lang || '';
+  if (state.vis_type) controller.change_view_type(state.vis_type, true);
+  if (state.image_source) controller.set_image_source(state.image_source, true)
+  if (state.lang) controller.set_language(state.lang, true)
+  if (state.search_jump_mode) controller.set_search_jump_mode(state.search_jump_mode)
   if (state.title) document.title = unescape(state.title);
+  if (state.home_ott_id) config.home_ott_id = state.home_ott_id
+  if (state.screen_saver_inactive_duration) tree_settings.ssaver_inactive_duration_seconds = state.screen_saver_inactive_duration * 1000
 
   controller.close_all();
 
-  get_id_by_state(state).then(function(id) {
+  let promise = state.home_ott_id ? get_ott_to_id_by_api(state.home_ott_id) : Promise.resolve()
+
+  promise
+  .then(() => {return get_id_by_state(state)})
+  .then(function (id) {
     tree_state.url_parsed = true;
-    return controller.fly_to_node(id, state.xp !== undefined ? state : state.init);
-  }).then(function() {
+    return controller.init_move_to(id, state.xp !== undefined ? state : state.init);
+  })
+  .then(function () {
     //open popup dialog if exists.
-    if (state.tap_action && state.tap_ott) {
+    if (state.tap_action && (state.tap_ott_or_id || state.ott)) {
       global_button_action.action = state.tap_action;
-      global_button_action.data = parseInt(state.tap_ott);
+      if (state.tap_ott_or_id) {
+        global_button_action.data = parseInt(state.tap_ott_or_id);
+      } else {
+        //try to fill in automatically from the ott - this allows e.g. ?osn_&init=jump
+        if (state.tap_action.endsWith('node')) {
+          //nodes must be referenced by OZid, not ott
+          global_button_action.data = parseInt(data_repo.ott_id_map[state.ott]);
+        } else {
+          global_button_action.data = parseInt(state.ott);
+        }
+      }
       click_on_button_cb(controller);
     } else {
       controller.close_all();
     }
-  }).catch(function(error) {
+  })
+  .catch(function (error) {
     tree_state.url_parsed = true;
     //TODO: separate out promise reject and error handling.
     controller.reset();
-    if (state.ott) {
-        if (typeof config.ui.badOTT !== 'function') {
-            alert('Developer error: you need to define a UI function named badOTT that takes a bad OTT and pings up an error page')
-        } else {
-            config.ui.badOTT(state.ott);
-        }
+    const ozId = data_repo.ott_id_map[config.home_ott_id]
+    if (ozId) {
+      controller.init_move_to(ozId)
+    } else if (state.ott) {
+      if (typeof config.ui.badOTT !== 'function') {
+        alert('Developer error: you need to define a UI function named badOTT that takes a bad OTT and pings up an error page')
+      } else {
+        config.ui.badOTT(state.ott);
+      }
     }
-    throw error;
+    // throw error;
   });
 }
 
 
-export {popupstate, setup_loading_page};
+export { popupstate, setup_loading_page };
 

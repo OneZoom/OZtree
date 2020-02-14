@@ -544,7 +544,7 @@ def add_pagesize_for_titles(wiki_title_ptrs, wikipedia_SQL_dump, verbosity):
     
     The second entry (column 2) within each brace gives the namespace (we need namespace=0 for 'normal' pages).
     Column 3 gives the title (in unicode).
-    The page length is in Column 12
+    The page length is in Column 11
     
     Note that titles have had spaces replaced with underscores
     """
@@ -552,7 +552,7 @@ def add_pagesize_for_titles(wiki_title_ptrs, wikipedia_SQL_dump, verbosity):
     #the column numbers for each datum are specified in the SQL file, and hardcoded here.
     page_table_namespace_column = 2
     page_table_title_column = 3
-    page_table_pagelen_column = 12
+    page_table_pagelen_column = 11
     with gzip.open(wikipedia_SQL_dump, 'rt', encoding='utf-8') as file: #use csv reader as it copes well e.g. with escaped SQL quotes in fields etc.
         pagelen_file = csv.reader(file, quotechar='\'',doublequote=True)
         match_line = "INSERT INTO `page` VALUES"

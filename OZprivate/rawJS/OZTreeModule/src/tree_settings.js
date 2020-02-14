@@ -1,16 +1,16 @@
 /* this document is the master controller of all the different tree views and which components of the code they use */
 
 
-import {set_layout} from './projection/layout/layout_manager';
-import {set_factory_midnode} from './factory/factory';
-import {set_theme} from './themes/color_theme';
-import {set_pre_calculator} from './projection/pre_calc/pre_calc';
-import {set_horizon_calculator} from './projection/horizon_calc/horizon_calc';
+import { set_layout } from './projection/layout/layout_manager';
+import { set_factory_midnode } from './factory/factory';
+import { set_theme } from './themes/color_theme';
+import { set_pre_calculator } from './projection/pre_calc/pre_calc';
+import { set_horizon_calculator } from './projection/horizon_calc/horizon_calc';
 
 import ATNodeLayout from './projection/layout/AT/node_layout';
 import ATLeafLayout from './projection/layout/AT/leaf_layout';
 import ATSignpostLayout from './projection/layout/AT/signpost_layout';
-import ATBranchLayout from './projection/layout/AT/branch_layout'; 
+import ATBranchLayout from './projection/layout/AT/branch_layout';
 import ATMidnode from './factory/at_midnode';
 
 import LifeNodeLayout from './projection/layout/life/node_layout';
@@ -27,7 +27,7 @@ import OtopBranchLayout from './projection/layout/otop/branch_layout';
 import PolytomyNodeLayout from './projection/layout/polytomy/node_layout';
 import PolytomyLeafLayout from './projection/layout/polytomy/leaf_layout';
 import PolytomySignpostLayout from './projection/layout/polytomy/signpost_layout';
-import PolytomyBranchLayout from './projection/layout/polytomy/branch_layout'; 
+import PolytomyBranchLayout from './projection/layout/polytomy/branch_layout';
 import PolytomyMidnode from './factory/polytomy_midnode';
 
 // creating a second different kind of polytomy view
@@ -44,102 +44,130 @@ export let pic_src_order;
 
 //get & set params using dot notation
 const getPath = (object, path, defaultValue) => path
-   .split('.')
-   .reduce((o, p) => o ? o[p] : defaultValue, object)
+  .split('.')
+  .reduce((o, p) => o ? o[p] : defaultValue, object)
 const setPath = (object, path, value) => path
-   .split('.')
-   .reduce((o,p) => o[p] = path.split('.').pop() === p ? value : o[p] || {}, object)
+  .split('.')
+  .reduce((o, p) => o[p] = path.split('.').pop() === p ? value : o[p] || {}, object)
 
 //we should probably store lang in here too, as it can be changed
 class TreeSettings {
   constructor() {
     this.options = {
-      cols:  Object.assign({}, ...Object.keys(themes).map(k => ({[k]: themes[k]}))), //assign each theme to an object by name,
-      layout:{
-          branch:{tree:     LifeBranchLayout,
-                  AT:       ATBranchLayout,
-                  otop:     OtopBranchLayout,
-                  polytomy: PolytomyBranchLayout},
-          node:  {tree:     LifeNodeLayout,
-                  AT:       ATNodeLayout,
-                  otop:     OtopNodeLayout,
-                  polytomy: PolytomyNodeLayout},
-          leaf:  {tree:     LifeLeafLayout,
-                  AT:       ATLeafLayout,
-                  otop:     OtopLeafLayout,
-                  polytomy: PolytomyLeafLayout},
-          sign:  {tree:     LifeSignpostLayout,
-                  AT:       ATSignpostLayout,
-                  otop:     OtopSignpostLayout,
-                  polytomy: PolytomySignpostLayout}},
-    // James note - there should be some kind of table which defines which kind of underlying data/ midnode structure use each view requires - this will be neater if we start building other polytomy views and views that incorporate branch lengths.
-      midnode: {tree:     LifeMidnode,
-                AT:       ATMidnode,
-                polytomy: PolytomyMidnode},
-      vis: {spiral:  'spiral',
-            balanced:'balanced',
-            fern:    'fern',
-            natural: 'natural',
-            polytomy:'polytomy'}
+      cols: Object.assign({}, ...Object.keys(themes).map(k => ({ [k]: themes[k] }))), //assign each theme to an object by name,
+      layout: {
+        branch: {
+          tree: LifeBranchLayout,
+          AT: ATBranchLayout,
+          otop: OtopBranchLayout,
+          polytomy: PolytomyBranchLayout
+        },
+        node: {
+          tree: LifeNodeLayout,
+          AT: ATNodeLayout,
+          otop: OtopNodeLayout,
+          polytomy: PolytomyNodeLayout
+        },
+        leaf: {
+          tree: LifeLeafLayout,
+          AT: ATLeafLayout,
+          otop: OtopLeafLayout,
+          polytomy: PolytomyLeafLayout
+        },
+        sign: {
+          tree: LifeSignpostLayout,
+          AT: ATSignpostLayout,
+          otop: OtopSignpostLayout,
+          polytomy: PolytomySignpostLayout
+        }
+      },
+      // James note - there should be some kind of table which defines which kind of underlying data/ midnode structure use each view requires - this will be neater if we start building other polytomy views and views that incorporate branch lengths.
+      midnode: {
+        tree: LifeMidnode,
+        AT: ATMidnode,
+        polytomy: PolytomyMidnode
+      },
+      vis: {
+        spiral: 'spiral',
+        balanced: 'balanced',
+        fern: 'fern',
+        natural: 'natural',
+        polytomy: 'polytomy'
+      }
     }
-    
+
     this.default = {
       cols: this.options.cols.natural,
       layout: {
-          branch: this.options.layout.branch.tree,
-          node:   this.options.layout.node.tree,
-          leaf:   this.options.layout.leaf.tree,
-          sign:   this.options.layout.sign.tree
+        branch: this.options.layout.branch.tree,
+        node: this.options.layout.node.tree,
+        leaf: this.options.layout.leaf.tree,
+        sign: this.options.layout.sign.tree
       },
       midnode: LifeMidnode,
-      vis: this.options.vis.spiral
+      vis: this.options.vis.spiral,
     }
+
+    this._ssaver_inactive_duration_seconds = 600 * 1000 //600 seconds
   }
-  
+
   //private method used internally
   _overwrite_default(user_set, path) {
     //if path = 'branch.leaf', user_set could be e.g. {'branch.leaf':'tree'} or {branch:{leaf:'tree'}} or even an object, e.g. {'branch.leaf':{foo:'bar'}}
     let val = user_set[path] || getPath(user_set, path); //e.g. 'tree'
     if (val) {
-        if (typeof val === 'string') {
-            let o = getPath(this.options, path)
-            if (o && o.hasOwnProperty(val)) {
-                //string passed by user is a NAME from the options selection, e.g. {midnode:'AT'}
-                setPath(this.default, path, o[val]);
-            } else {
-                //string passed by user does not correspond to a name => inject it directly, e.g. cols.branch.stroke':'rgb(0,100,100)'
-                setPath(this.default, path, val);
-            }
+      if (typeof val === 'string') {
+        let o = getPath(this.options, path)
+        if (o && o.hasOwnProperty(val)) {
+          //string passed by user is a NAME from the options selection, e.g. {midnode:'AT'}
+          setPath(this.default, path, o[val]);
         } else {
-            setPath(this.default, path, val); //assume the object specified in the user-passed in settings is fine
+          //string passed by user does not correspond to a name => inject it directly, e.g. cols.branch.stroke':'rgb(0,100,100)'
+          setPath(this.default, path, val);
         }
+      } else {
+        setPath(this.default, path, val); //assume the object specified in the user-passed in settings is fine
+      }
     }
   }
-  
+
+  get ssaver_inactive_duration_seconds() {
+    return this._ssaver_inactive_duration_seconds
+  }
+
+  set ssaver_inactive_duration_seconds(value) {
+    const valueInt = parseInt(value)
+    if (isNaN(valueInt) || valueInt <= 0) {
+      throw new Error('screen saver inactive duration should be a number and greater than 0')
+    } else {
+      this._ssaver_inactive_duration_seconds = valueInt
+    }
+  }
+
   get vis() {
     for (let k of Object.keys(this.options.vis)) {
-        if (this.options.vis[k] == this.current.vis) {
-            return k;
-        }
+      if (this.options.vis[k] == this.current.vis) {
+        return k;
+      }
     }
     return undefined;
   }
-  
+
   set vis(value) {
     set_pre_calculator(value);
     this.current.vis = value;
     if (is_binary_viewtype(value)) {
-        set_horizon_calculator('bezier');
+      set_horizon_calculator('bezier');
     } else {
-        //polytomy
-        set_horizon_calculator('polytomy');
+      //polytomy
+      set_horizon_calculator('polytomy');
     }
   }
-  
+
   is_default_vis() {
     return this.current.vis === this.default.vis;
   }
-  
+
   get cols() {
     for (let k of Object.keys(this.options.cols)) {
       if (this.options.cols[k] == this.current.cols) {
@@ -148,23 +176,23 @@ class TreeSettings {
     }
     return undefined;
   }
-  
+
   set cols(val) {
     if (typeof val === 'string') {
       if (this.options.cols.hasOwnProperty(val)) {
         if (this.current.cols !== this.options.cols[val]) {
-          set_theme(this.current.cols=this.options.cols[val]);
+          set_theme(this.current.cols = this.options.cols[val]);
         } else {
           //changing to the same theme as current - do nothing
         }
       } else {
-            throw new Error("No such theme: " + val);
-        }
-      } else {
-        set_theme(this.current.cols=val);
+        throw new Error("No such theme: " + val);
       }
+    } else {
+      set_theme(this.current.cols = val);
+    }
   }
-  
+
   is_default_cols() {
     return this.current.cols === this.default.cols;
   }
@@ -215,25 +243,25 @@ class TreeSettings {
     set_factory_midnode(this.current.midnode);
     this.vis = this.default.vis; //force vis to be set properly using getter
   }
-  
+
   /**
    * If switch between binary and polytomy, then set factory root if the tree has been built before, or rebuild the tree if 
    * the tree has not been built before.
    * If the tree needs to be rebuilt, firstly draw loading on screen, then set timeout to refresh loading on screen.
    */
   rebuild_tree(curr, prev, controller) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
       if (curr === "polytomy" && is_binary_viewtype(prev)) {
         set_layout(PolytomyBranchLayout, PolytomyNodeLayout, PolytomyLeafLayout, PolytomySignpostLayout);
         set_factory_midnode(PolytomyMidnode);
         controller.binary_tree = controller.factory.root;
         if (controller.polytomy_tree) {
           controller.factory.root = controller.polytomy_tree;
-          resolve();    
+          resolve();
         } else {
           controller.stop_refresh_loop();
           controller.draw_loading();
-          setTimeout(function() {
+          setTimeout(function () {
             controller.rebuild_tree();
             controller.trigger_refresh_loop();
             resolve();
@@ -241,33 +269,33 @@ class TreeSettings {
         }
       } else if (is_binary_viewtype(curr) && prev === "polytomy") {
         set_layout(this.current.layout.branch, this.current.layout.node, this.current.layout.leaf, this.current.layout.sign);
-          set_factory_midnode(this.current.midnode);
-          controller.polytomy_tree = controller.factory.root;
-          if (controller.binary_tree) {
-            controller.factory.root = controller.binary_tree;
-            resolve();
-          } else {
-            controller.stop_refresh_loop();
-            controller.draw_loading();
-            setTimeout(function() {
-              controller.rebuild_tree();
-              controller.trigger_refresh_loop();
-              resolve();
-            }, 10);
-          }
-        } else {
+        set_factory_midnode(this.current.midnode);
+        controller.polytomy_tree = controller.factory.root;
+        if (controller.binary_tree) {
+          controller.factory.root = controller.binary_tree;
           resolve();
+        } else {
+          controller.stop_refresh_loop();
+          controller.draw_loading();
+          setTimeout(function () {
+            controller.rebuild_tree();
+            controller.trigger_refresh_loop();
+            resolve();
+          }, 10);
         }
+      } else {
+        resolve();
+      }
     });
   }
   //this should be coded into tree_settings properly
   change_language(lang, controller, data_repo) {
-    config.lang=lang;
+    config.lang = lang;
     if (data_repo) {
-        data_repo.clear_cached_vernaculars();
+      data_repo.clear_cached_vernaculars();
     }
     if (controller) {
-        refetch_node_details(controller.root); //empty caches to replace language-specific info (e.g. vernacular names)
+      refetch_node_details(controller.root); //empty caches to replace language-specific info (e.g. vernacular names)
     }
   }
 }
@@ -284,7 +312,7 @@ function refetch_node_details(node) {
   node.detail_fetched = false;
   node._cname = null;         //delete the cached vernacular
   node._spec_num_full = null; //delete the cached "xxx,xxx species"
-  for (let i=0; i<node.children.length; i++) {
+  for (let i = 0; i < node.children.length; i++) {
     refetch_node_details(node.children[i]);
   }
 }
