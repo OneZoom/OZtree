@@ -1,16 +1,19 @@
 {{response.title='OneZoom trees index'}}
-{{extend 'layout.html'}}
+{{extend 'uikit_layout.html'}}
 
-<div class="row-fluid">
-    <div class="col-md-12">
-        <header><h1>A collection of other trees built with OneZoom</h1>
-<p>Quite a number of other trees have been built with OneZoom over the years. Here are some examples of our favourites.</p>
-</header>
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+    <h1>A collection of other trees built with OneZoom</h1>
+</div>
+{{end block}}
+
+<div>
+    <div class = "uk-padding " ><em>Quite a number of other trees have been built with OneZoom over the years. Here are some examples of our favourites.</em>
     </div>
 </div>
 
-<div class="row-fluid">
-    <div class="col-md-3">
+<div class="uk-grid-small uk-text-small uk-child-width-1-4@m " uk-grid>
+    <div class = "uk-padding uk-padding-remove-top">
       
       <a target = "_blank" class="thumbnail" href = "{{=URL('ADEPD_birds_nunes_etal_2015.html')}}">
           <img src= "{{=URL('static','images/treeThumbs/ADEPD.png')}}" alt="">
@@ -28,7 +31,7 @@
       <p>Seed plant tree to accompany Zanne et al. manuscript - Zanne et. al. Nature. doi:10.1038/nature12872. (2013)</p>
       
     </div>
-    <div class="col-md-3">
+    <div class = "uk-padding uk-padding-remove-top">
         <a target = "_blank" class="thumbnail" href="fish.htm">
             <img src= "{{=URL('static','images/treeThumbs/Deepfin.png')}}" alt="">
                 </a>
@@ -44,7 +47,7 @@
         <p>Euphorbia tree, provided by Jess Peirson and Euphorbia PBI.</p>
         
     </div>
-    <div class="col-md-3">
+    <div class = "uk-padding uk-padding-remove-top">
         
         <a href = "porifera" target = "_blank" class="thumbnail" href="porifera.htm">
             <img src= "{{=URL('static','images/treeThumbs/porifera.png')}}" alt="">
@@ -62,7 +65,7 @@
         <p>Simon Fraser University display online version - highlighting SFU researchers on the tetrapod tree. Simon Fraser University also have a permanent OneZoom display &mdash;we can produce the same for any other university or organisation.</p>
         
     </div>
-    <div class="col-md-3">
+    <div class = "uk-padding uk-padding-remove-top">
         <a href = "tetrapods_SFU.html" target = "_blank" class="thumbnail" href="plants_Soltis2.htm">
             <img src= "{{=URL('static','images/treeThumbs/Soltis.png')}}" alt="">
                 </a>

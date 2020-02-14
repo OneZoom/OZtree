@@ -4,11 +4,19 @@ def link(a, **kwargs):
     return A(a, _href=a, **kwargs)
 pass
 }}
-{{extend 'layout.html'}}
-<div class="row-fluid">
-    <div class="col-md-12">    
 
-<h1>OneZoom popularity service</h1>
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+   <h1>OneZoom taxa popularity index API</h1>
+</div>
+{{end block}}
+
+
+{{extend 'uikit_layout.html'}}
+<div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
+    <div class = "uk-padding">
+        
+        <h4>Overview</h4>
 <p>As part of OneZoom, we have developed methods to assign a phylogenetically informed
 <q>popularity</q> score to every species on the <a href="http://www.onezoom.org">OneZoom tree of life</a>
 (i.e. nearly all described species of life on Earth). This is done by using our mappings from
@@ -22,6 +30,8 @@ popularity measures. Given the predominance of visits from the US, we might also
 set period of time (truncated so as to remove spikes), combined with the size of the wikipedia page. This base or <q>raw</q> popularity is then 
 percolated up and down the tree, so that species gain some fraction of the popularity of their subspecies plus the popularity of their parent taxa. We call this the <em>phylogenetic popularity</em>, or simply <q>popularity</q> for short.
 Using the evolutionary tree, or phylogeny, means that popularity should be less influenced by the level of knowledge of a taxon (for example, if few people visit a page for a particular beetle species, but instead consult a higher-level in the taxonomic hierarchy). It also means that all species that can be placed on the tree should get <em>some</em> popularity measure, even if they do not have a wikipedia page.</p>
+
+    
 <p>A major issue with any such popularity statistic is that the value is subject
 to change as the OneZoom tree topology changes, and as wikipedia visits and page size data change. For this reason, you are recommended only to 
 consider the <em>relative</em> popularity values - i.e. the ranked order. It is also not necessarily clear what it means to compare the popularity of taxa at different 
@@ -40,7 +50,7 @@ For example, lancelets are classified in OneZoom as Cephalochordata (OTT 176555)
 in which all living cephalochordates also fall, is not recognised in OneZoom or in this API.</p>
 
 
-<h2>Services available</h2>
+<h4>Services available</h4>
 Popularity services are accessed via URLs that return JSON data for any set of passed-in Open Tree Taxonomy identifiers (you cannot pass in scientific names).
 All services require you to specify an API key (e.g. by appending <code>key=MY_API_KEY</code> to the URL) this allows us to keep track 
 of the volume of requests we get from different private users: no other information is stored. 
@@ -49,8 +59,14 @@ If you have not been given an API key, you can use the <q>public</q> key (<code>
 and {{=public_max_returns_per_taxon}} results for each taxon requested.
 {{pass}}
 
-<h3>URL: <code>popularity/list</code></h3>
+    </div>
+    <div class = "uk-padding">
+        
+<h4>URL: <code>popularity/list</code></h4>
 An API to get a list of taxa ranked by popularity, e.g. {{=link(URL('list', host=True, vars={"key":0, "otts":"770315"}))}} (see <a href="#examples">examples below</a> for more).
+
+
+        
 <h4>Parameters</h4>
 <dl>
 <dt>Required</dt>
@@ -60,6 +76,9 @@ An API to get a list of taxa ranked by popularity, e.g. {{=link(URL('list', host
   <dt><code>otts</code></dt><dd>A comma-separated list of <a href="https://tree.opentreeoflife.org/about/taxonomy-version/">Open Tree Taxonomy identifiers</a> (one or more positive integers)</dd>
  </dl>
 </dd>
+
+
+
 <dt>Optional</dt>
 <dd>
  <dl>
@@ -83,16 +102,26 @@ you may wish to set this to a higher value. There is an upper limit on the maxim
 </dd>
 </dl>
 Non-monophyletic groups, like "reptiles", can be queried by combining the OTTs for all their constituent parts into a single call (see examples below). However, this cannot be then combined in turn with the <code>spread_taxa_evenly</code> parameter, to find the most popular groups of different sets of species. So for example, to find the 5 most popular reptiles and 5 most popular plants, you must make 2 separate API calls, one with all the identifiers defining the reptile clade, and another with the identifier for the plant clade.
+
+    </div>
+    <div class = "uk-padding">
+        
 <h4>Return values</h4>
 In the absence of error, the returned JSON object contains the following properties:
 <dl>
 <dt><code>header</code><dt><dd>An object containing the names of each column, mapped to an index into the data "data" array (below). At a minimum the columns include &quot;ott&quot;, &quot;popularity&quot;, and &quot;popularity_rank&quot;. Depending on the parameters passed in, they may also include &quot;name&quot;. To get e.g. the popularity rank of the Nth species, you can thus do <code>data[X][header.popularity_rank]</code>.</dd>
+    
+  
+    
 <dt><code>data</code></dt><dd>A list of arrays, one per valid OTT returned. Each array in the list contains a set of values as described in the <code>header</code> property. The list of arrays is sorted according the to <code>sort</code> parameter. Taxa above the species level have no popularity rank</dd>
 <dt><code>tot_spp</code></dt><dd>The total number of species in the OneZoom popularity list. This gives the maximum possible value for &quot;popularity_rank&quot;. Quantiles for ranks can be gained by dividing the rank by this number (for example, </dd>
 <dt><code>n_taxa</code></dt><dd>The total number of taxa that this call would have listed, were it not limited to returning only a certain number</dd>
 <dt><code>max_taxa_in</code></dt><dd>The maximum number of OTTs this API key is allowed to send in the comma-separated list.</dd>
 <dt><code>max_taxa_out</code></dt><dd>The maximum number of taxa this API key is allowed to return.</dd>
 </dl>
+
+
+
 
 <h4 id="examples">Examples</h4>
 <dl>
@@ -105,6 +134,9 @@ In the absence of error, the returned JSON object contains the following propert
 <dt>The 30 most popular mammals and birds combined (i.e. 15 mammals and 15 birds), with names</dt>
 <dd>{{=link(URL('list', host=True, vars={"key":0, "otts":"244265,81461", "expand_taxa":1, "max":30, 'spread_taxa_evenly':1, "names":1}, url_encode=False))}} (NB: OTT 244265 = Mammalia, 81461 = Aves (birds))</dd>
 </dl>
+
+
+
 <h4>Test this API</h4>
 <form action="{{=URL('list')}}" method="get" >
 <dl>
@@ -121,3 +153,4 @@ In the absence of error, the returned JSON object contains the following propert
 
 </div>
 </div>
+

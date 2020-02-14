@@ -1,8 +1,8 @@
 {{include 'link_modifier.html'}}
 
 <div class="about">
-<div class="row-fluid">
-<div class="col-md-4">
+<div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
+<div class = "uk-padding uk-padding-remove-top">
 
 <h3>Our Software</h3>
 <p>The OneZoom software allows you to explore the tree of life in a completely new way that is similar to viewing a geographical map.  This is done using techniques from a branch of mathematics known as fractal geometry, which enable us to condense the entire tree of life into a single page. OneZoom is so named because all the information is on one page, all you have to do is zoom to reveal further details. </p>
@@ -29,7 +29,7 @@ OneZoom is a charitable incorporated organisation (non-profit) registered under 
 
 </div>
 
-<div class="col-md-4">
+<div class=""uk-padding uk-padding-remove-top"">
 
 <h3>Sponsorship scheme</h3>
 
@@ -67,7 +67,7 @@ OneZoom is a charitable incorporated organisation (non-profit) registered under 
 
 </div>
 
-<div class="col-md-4">
+<div class="uk-padding uk-padding-remove-top">
 
 
 <h3>People and credits</h3>
