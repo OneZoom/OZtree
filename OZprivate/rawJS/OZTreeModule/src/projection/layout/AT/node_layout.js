@@ -58,16 +58,16 @@ class ATNodeLayout extends NodeLayoutBase {
 function get_concestor_interior_header(node) {
   let textonly_header;
   let concestor_append = "Concestor " + node.concestor + ",";
-  if (node.lengthbr && node.lengthbr>0) {
+  if (node.age_Ma && node.age_Ma>0) {
     //This is a dated node
     if (is_primary_or_secondary_name(node)) {
       textonly_header = (["", "", "the most recent common ancestor to today’s",
-      "the " + gpmapper(node.lengthbr) + " period, lived " + concestor_append,
-      ageAsText(node.lengthbr) + ", during"]);
+      "the " + gpmapper(node.age_Ma) + " period, lived " + concestor_append,
+      ageAsText(node.age_Ma) + ", during"]);
     } else {
       textonly_header = (["", "common ancestor to species including",  "lived " + concestor_append + " the most recent",
-      "during the " + gpmapper(node.lengthbr) + " period,",
-      ageAsText(node.lengthbr)])
+      "during the " + gpmapper(node.age_Ma) + " period,",
+      ageAsText(node.age_Ma)])
     }
   } else {
     //This is an undated node (shouldn't happen)

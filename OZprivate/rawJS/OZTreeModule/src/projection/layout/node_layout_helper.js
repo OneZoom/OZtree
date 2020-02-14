@@ -601,12 +601,12 @@ class NodeLayoutBase {
 
   get_date_str(node) {
     let date_str;
-    if (node.lengthbr > 10) {
-      date_str = (Math.round((node.lengthbr)*10)/10.0).toString() + " Ma";
-    } else if (node.lengthbr > 1) {
-      date_str = (Math.round((node.lengthbr)*100)/100.0).toString()  + " Ma";
-    } else if (node.lengthbr > 0) {
-      date_str = (Math.round((node.lengthbr)*10000)/10.0).toString()  + " Ka";
+    if (node.age_Ma > 10) {
+      date_str = (Math.round((node.age_Ma)*10)/10.0).toString() + " Ma";
+    } else if (node.age_Ma > 1) {
+      date_str = (Math.round((node.age_Ma)*100)/100.0).toString()  + " Ma";
+    } else if (node.age_Ma > 0) {
+      date_str = (Math.round((node.age_Ma)*10000)/10.0).toString()  + " Ka";
     } else {
       date_str = "";
     }
@@ -616,8 +616,8 @@ class NodeLayoutBase {
   get_textonly_header(node) {
     let ntxt = OZstrings['node_labels']['text_only']
     let textonly_header;
-    if (node.lengthbr && node.lengthbr>0) {
-      let vars = {'date_with_units':ageAsText(node.lengthbr), 'geo_time':gpmapper(node.lengthbr, true)};
+    if (node.age_Ma && node.age_Ma>0) {
+      let vars = {'date_with_units':ageAsText(node.age_Ma), 'geo_time':gpmapper(node.age_Ma, true)};
       if (is_primary_or_secondary_name(node)) {
         textonly_header = substitute_variables(ntxt['dated']['named'], vars).split("\n").reverse();
       } else {
@@ -637,8 +637,8 @@ class NodeLayoutBase {
     let ntxt = OZstrings['node_labels']['with_pic']
     let pic_header_text;
     //NB - these are in reverse order, as we often don't use the top two lines
-    if (node.lengthbr && (node.lengthbr>0)) {
-      let vars = {'date_with_units':ageAsText(node.lengthbr), 'geo_time':gpmapper(node.lengthbr, true)};
+    if (node.age_Ma && (node.age_Ma>0)) {
+      let vars = {'date_with_units':ageAsText(node.age_Ma), 'geo_time':gpmapper(node.age_Ma, true)};
       if (is_primary_or_secondary_name(node)) {
         pic_header_text = substitute_variables(ntxt['dated']['named'], vars).split("\n").reverse();
       } else {

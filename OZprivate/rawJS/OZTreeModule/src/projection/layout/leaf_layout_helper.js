@@ -13,7 +13,7 @@ import {global_button_action} from '../../button_manager';
 import {live_area_config} from '../live_area_config';
 import {add_mr} from '../move_restriction';
 import {get_image, image_ready} from '../../image_cache';
-import {extxt, spec_num_full} from '../../factory/utils';
+import {extxt, spec_num_full, ageAsText} from '../../factory/utils';
 import config from '../../global_config';
 
 class LeafLayoutBase {
@@ -156,16 +156,24 @@ class LeafLayoutBase {
   }
   
   get_conservation_text(node) {
-    if (node.redlist === "EX" 
-    ||node.redlist === "EW"
-    ||node.redlist === "CR"
-    ||node.redlist === "EN"
-    ||node.redlist === "VU"
-    ||node.redlist === "NT"
-    ||node.redlist === "LC") {
-      return [OZstrings["Conservation"], OZstrings["IUCN Red List status:"], extxt(node)]
+    if (node.extinction_Ma !== null) {
+      if (node.extinction_Ma !== true) {
+        return ageAsText(node.extinction_Ma, true).split("\n");
+      } else {
+        return OZstrings["Fossil species"].split("\n");
+      };
     } else {
-      return [];
+      if (node.redlist === "EX" 
+      ||node.redlist === "EW"
+      ||node.redlist === "CR"
+      ||node.redlist === "EN"
+      ||node.redlist === "VU"
+      ||node.redlist === "NT"
+      ||node.redlist === "LC") {
+        return [OZstrings["Conservation"], OZstrings["IUCN Red List status:"], extxt(node)]
+      } else {
+        return [];
+      }
     }
   }
 

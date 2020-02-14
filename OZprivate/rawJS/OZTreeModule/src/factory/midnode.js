@@ -25,13 +25,13 @@ class Midnode {
     this._sponsor_name = null;
     this._sponsor_kind = null;
     this._sponsor_extra = null;
-    this._age = null;
+    this._age = undefined;
     this._spec_num_full = null;
     this._picset_len = null;
     this._picset_codes = null;
     this._signpost_common = false;
     this._threatened_branch = null;
-    this._redlist = null;
+    this._redlist = undefined;
     this._pic_filename = null;
     this._picID_credit = null;
     this._picID_src = null;
@@ -90,13 +90,13 @@ class Midnode {
     this._sponsor_name = null;
     this._sponsor_kind = null;
     this._sponsor_extra = null;
-    this._age = null;
+    this._age = undefined;
     this._spec_num_full = null;
     this._picset_len = null;
     this._picset_codes = null;
     this._signpost_common = false;
     this._threatened_branch = null;
-    this._redlist = null;
+    this._redlist = undefined;
     this._pic_filename = null;
     this._picID_credit = null;
     this._picID_src = null;
@@ -239,7 +239,7 @@ class Midnode {
 
   
   /**
-   * Get attribute of node by key name. Use this function to fetch metadata of node only.
+   * Get attribute of node or leaf by key name from the data_repo store.
    */
   get_attribute(key_name) {
     if (this.detail_fetched && this.is_leaf) {
@@ -327,14 +327,28 @@ class Midnode {
     }
     return _sponsor_extra;
   }
-  get lengthbr() {
-    if (this._age !== null) return this._age;
-    let age = this.get_attribute("lengthbr");
-    age = isNaN(age) ? 0 : age;
+  get age_Ma() {
+     /* used for internal node dates - if 0 or null, this is unknown */
+    if (this._age !== undefined) return this._age;
+    let _age_Ma = this.get_attribute("age_Ma");
+    _age_Ma = isNaN(_age_Ma) ? 0 : _age_Ma;
     if (this.detail_fetched) {
-      this._age = age;
+      this._age = _age_Ma;
     }
-    return age;
+    return _age_Ma;
+  }
+  get extinction_Ma() {
+    /* used for leaf dates. Extant are null, unknown is marked by a large negative value
+       (-1e4: more Mya than the age of the planet). In this case we simply return `true`.
+       Zero might mark something very recently extinct, e.g. marked as extinct by IUCN
+    */
+    if (this._age !== undefined) return this._age;
+    let _extinction_Ma = this.get_attribute("extinction_date");
+    _extinction_Ma = (_extinction_Ma < -5e3)?true:_extinction_Ma
+    if (this.detail_fetched) {
+      this._age = _extinction_Ma;
+    }
+    return _extinction_Ma;
   }
   get spec_num_full() {
     if (this._spec_num_full !== null) return this._spec_num_full;
@@ -396,7 +410,7 @@ class Midnode {
     return num_threatened > this.richness_val * 0.5;
   }
   get redlist() {
-    if (this._redlist !== null) return this._redlist;
+    if (this._redlist !== undefined) return this._redlist;
     let _redlist = this.get_attribute("IUCN");
     if (this.detail_fetched) {
       this._redlist = _redlist;

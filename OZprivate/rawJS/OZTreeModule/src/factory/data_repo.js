@@ -257,6 +257,7 @@ function parse_ordered_leaves(data_repo, leaves, node_details) {
     leaf_meta_entry[data_repo.mc_key_l["OTTid"]] = ott;
     leaf_meta_entry[data_repo.mc_key_l["scientificName"]] =leaves[i][node_details.leaf_cols["name"]];
     leaf_meta_entry[data_repo.mc_key_l["popularity"]] = leaves[i][node_details.leaf_cols["popularity"]];
+    leaf_meta_entry[data_repo.mc_key_l["extinction_date"]] = leaves[i][node_details.leaf_cols["extinction_date"]];
   }
 }
 
@@ -269,7 +270,7 @@ function parse_ordered_nodes(data_repo, nodes, node_details) {
     node_meta_entry[data_repo.mc_key_n["OTTid"]] = ott;
     node_meta_entry[data_repo.mc_key_n["scientificName"]] = nodes[i][node_details.node_cols["name"]];
     node_meta_entry[data_repo.mc_key_n["popularity"]] = nodes[i][node_details.node_cols["popularity"]];
-    node_meta_entry[data_repo.mc_key_n["lengthbr"]] = Math.abs(nodes[i][node_details.node_cols["age"]]);
+    node_meta_entry[data_repo.mc_key_n["age_Ma"]] = Math.abs(nodes[i][node_details.node_cols["age"]]);
     
     node_meta_entry[data_repo.mc_key_n["sp1"]] = nodes[i][node_details.node_cols["{pic}1"]];
     node_meta_entry[data_repo.mc_key_n["sp2"]] = nodes[i][node_details.node_cols["{pic}2"]];
