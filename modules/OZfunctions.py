@@ -87,6 +87,19 @@ def score(lang_full_search, lang_primary_search, lang_full_target, preferred_sta
         score += 100
     return score
 
+def add_the(common, leaf):
+    """
+    "common tern" -> "the common tern", but 'a nematode' kept as is
+    NB: this will be difficult to internationalize with gendered words
+    """
+    if common and not re.match(r'[Aa] ', common):
+        if leaf:
+            return current.T("the ## singular") + common 
+        else:
+            return current.T("the ## plural") + common
+    else:
+        return common
+
 def nice_species_name(scientific=None, common=None, the=False, html=False, leaf=False, first_upper=False, break_line=None):
     """
     Constructs a nice species name, with common name in there too.
@@ -100,14 +113,14 @@ def nice_species_name(scientific=None, common=None, the=False, html=False, leaf=
     db = current.db
     species_nicename = (scientific or '').replace('_',' ').strip()
     common = (common or '').strip()
-    if the and common and not re.match(r'[Aa] ',common):
-        common = "the " + common #"common tern" -> "the common tern", but 'a nematode' kept as is
+    if the:
+        common = add_the(common)
     if first_upper:
         common = common.capitalize()
     if html:
         if species_nicename:
             if leaf: #species in italics
-                species_nicename = I(species_nicename, _class=" ".join(["taxonomy","species"]))
+                species_nicename = I(species_nicename, _class=" ".join(["taxonomy", "species"]))
             else:
                 species_nicename = SPAN(species_nicename, _class="taxonomy")
             if common:
