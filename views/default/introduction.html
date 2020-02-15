@@ -1,0 +1,13 @@
+{{response.title='About OneZoom'}}
+{{extend 'uikit_layout.html'}}
+{{response.files.append(URL('static', 'css/OZ_shared.css'))}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+    <h1>About the OneZoom Tree of Life Explorer</h1>
+</div>
+{{end block}}
+
+<div class = "uk-padding">
+{{include 'default/about.load'}}
+</div>

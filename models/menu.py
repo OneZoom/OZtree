@@ -35,16 +35,16 @@ response.google_analytics_id = None
 
 response.menu = [
                  (T('For Everyone'), False, None , [ #need to set url_encode=False to avoid web2py quoting the @ sign
-                                            (T('See a view of all life'), False, URL('default', 'life', url_encode=False)),
+                                            (T('See a view of all life'), False, URL('default', 'introduction', url_encode=False)),
                                             (T('Your name on the tree'), False, URL('default' , 'sponsor.html')),
                                             (T('Send a tr-eCard'), False, URL('default' , 'sponsor.html')),
                                             (T('Act for biodiversity'), False, URL('default' , 'otop.html')),
                                             ]),
                 
                  (T('For Education'), False, None , [
-                                                    (T('Installations'), False, URL('default' , 'installations.html')),
+                                                    (T('Installations'), False, URL('education' , 'installations.html')),
                                                     (T('Display launcher'), False, URL('education' , 'museum_display_setup.html')),
-                                                    (T('Screenshot tool'), False , URL('default' , 'life_expert.html?img=best_pd')),
+                                                    (T('Screenshot tool'), False , URL('education' , 'screenshot_launcher.html')),
                                                    ]),
                  
                  (T('For Science'), False, None , [
