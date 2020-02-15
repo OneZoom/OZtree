@@ -34,7 +34,7 @@ def index():
     Collect all information required for the home page
     """
     # OTTs from the tree_startpoints table
-    startpoints_ott_map, hrefs, images, titles = {}, {}, {}, {}
+    startpoints_ott_map, hrefs, images, titles, text_titles = {}, {}, {}, {}, {}
     carousel, anim, threatened = [], [], []
     for r in db(
             (db.tree_startpoints.category.startswith('homepage')) &
@@ -54,9 +54,9 @@ def index():
         if r.tour_identifier:
             hrefs[key] = '/life/' + r.tour_identifier
             title = db(db.tours.identifier == r.tour_identifier).select(db.tours.name).first()
-            titles[key] = title.name if title else r.tour_identifier
+            text_titles[key] = title.name if title else r.tour_identifier
         else:
-            titles[key] = ""
+            text_titles[key] = ""
         if r.ott:
             # We might still want to find e.g. an image, even if we are looking at a tour
             startpoints_ott_map[r.ott] = key
@@ -111,19 +111,19 @@ def index():
         st_leaf_for_node_otts[r.rpd1] = startpoints_ott_map[r.ott]
         titles[r.ott] = r.name
     # Add or change to vernacular names in the titles
-    otts = [ott for ott in titles.keys() if isinstance(ott, int)]
-    for ott, vn in get_common_names(otts, return_nulls=True).items():
+    for ott, vn in get_common_names(titles.keys(), return_nulls=True).items():
         # Do one thing for the startpoints (simple names) ...
         startpoint_key = startpoints_ott_map.get(ott, None)
         if startpoint_key:
-            if not titles[startpoint_key]:
-                titles[startpoint_key] = nice_species_name(
+            if not text_titles[startpoint_key]:
+                text_titles[startpoint_key] = nice_species_name(
                     (titles[ott] if vn is None else None), vn, html=True,
                     leaf=ott not in st_node_otts, first_upper=True, break_line=2)
         # ... and another for the sponsored items
         titles[ott] = nice_species_name(
             titles[ott], vn, html=True,
             leaf=ott not in st_node_otts, first_upper=True,  break_line=1)
+    titles.update(text_titles)
 
     # Images
     # Startpoint images
