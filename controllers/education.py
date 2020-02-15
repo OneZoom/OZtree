@@ -11,3 +11,9 @@ def treasure_hunt_setup():
     Allow a teacher to type in some otts for a treasure hunt
     """
     return dict()
+
+def installations():
+    return dict()
+
+def screenshot_launcher():
+    return dict()

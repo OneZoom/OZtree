@@ -42,9 +42,9 @@ response.menu = [
                                             ]),
                 
                  (T('For Education'), False, None , [
-                                                    (T('Installations'), False, URL('default' , 'installations.html')),
+                                                    (T('Installations'), False, URL('education' , 'installations.html')),
                                                     (T('Display launcher'), False, URL('education' , 'museum_display_setup.html')),
-                                                    (T('Screenshot tool'), False , URL('default' , 'life_expert.html?img=best_pd')),
+                                                    (T('Screenshot tool'), False , URL('education' , 'screenshot_launcher.html')),
                                                    ]),
                  
                  (T('For Science'), False, None , [
