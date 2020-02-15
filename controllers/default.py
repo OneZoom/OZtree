@@ -126,7 +126,8 @@ def index():
         if vn is not None:
             has_vernacular.add(ott)
         titles[ott] = nice_species_name(
-            titles[ott], vn, html=True, leaf=ott not in st_node_otts,  break_line=1)
+            titles[ott], vn, html=True, leaf=ott not in st_node_otts, 
+            first_upper=True, break_line=1)
     titles.update(text_titles)
 
     # Images
