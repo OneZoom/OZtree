@@ -1,5 +1,13 @@
 {{response.title='OneZoom: Terms and conditions'}}
-{{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
 {{response.files.append(URL('static', 'css/OZ_shared.css'))}}
-<h1>Terms and conditions</h1>
-{{include 'default/terms.load'}}
+{{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+    <h1>Terms and conditions</h1>
+</div>
+{{end block}}
+
+<div class = "uk-padding">
+    {{include 'default/terms.load'}}
+</div>

@@ -26,6 +26,22 @@ color: $oz_green_bg;
 }
 }
 
+img.rgt_edge {
+height: auto;
+float:right;
+margin-left: 0;
+margin-right:-20px;
+background-color: white;
+}
+
+img.lft_edge {
+height: auto;
+float:left;
+margin-right: 0;
+margin-left:-50px;
+background-color: white;
+}
+
 ul.leaf-list {
   padding-left: 0;
   line-height: 2rem;
