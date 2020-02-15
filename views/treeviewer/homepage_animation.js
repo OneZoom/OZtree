@@ -21,16 +21,18 @@
       "fly_in_speed": 0.3, /* speed relative to the global_anim_speed */
   },
   "tourstops": [
-        {{for info in animation_locations:}}
+        {{for key in anim:}}
+        {{if key.isdigit():}}
         {   "transition_in_visibility": "show_self", // Show the name of where we are going
-            "ott": "{{=info[0]}}",
+            "ott": "{{=key}}",
             "update_class": {
                 "linkout": {
-                    "href": "life/@={{=info[0]}}"},
-                "ottname": "{{=info[1]}}"
+                    "href": "{{=hrefs.get(key, "")}}"},
+                "ottname": "{{=XML(html_names.get(key, 'Unknown'))}}"
             },
             "wait": 1000
         },
+        {{pass}}
         {{pass}}
    ]
 }

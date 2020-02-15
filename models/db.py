@@ -666,11 +666,24 @@ db.define_table('tourstops',
 
 # these are popular palces, tours or other things that a user can use to explore the tree in a more guided way.  E.g. use as a first way into the tree or as suggestions of places to go / things to do once in.
 db.define_table('tree_startpoints',
-    Field('category', type = 'string', length=20), #a unique alphanumeric identifier which we can use to distinguish non default sets of startpoints for different trees (e.g. for list of popular places on homepage)
-    Field('partner_identifier', type = 'string', length=20), #an alphanumeric category which we can use to distinguish partners (e.g. LinnSoc or OTOP) - this should match up with the 'partners' and 'partner_taxa' tables
-    Field('ott', type='integer'), #the ott of a taxon (i.e. a popular place on the tree)
-    Field('image_url', type='text'), #use this instead of the default image for that OTT (allows e.g. non organism images)
-    Field('tour_identifier', type = 'string', length=20), #the identifier of a tour - this would be instead of an ott
+    Field('category', type = 'string', length=20, comment=(
+        "A unique alphanumeric identifier which is used to categorise the startpoints "
+        "for example 'homepage_anim' for the list of points visited in the animation on "
+        "the home page, 'homepage_main' for the main pictures on the homepage carousel "
+        "'homepage_red' for the threatened or endangered species on the homepage. We "
+        "might also want to place the popular places menu items in here later, rather "
+        "than hardcoding them in the controllers")),
+    Field('partner_identifier', type = 'string', length=20, comment=(
+        "An alphanumeric category which we can use to distinguish partners (e.g."
+        "LinnSoc or OTOP) - this should match up with the 'partners' and 'partner_taxa'"
+        "tables")),
+    Field('ott', type='integer', comment=(
+        "The ott of the startpoint, used to get the picture and (if tour_identifier is "
+        "None) the starting location")),
+    Field('image_url', type='text', comment=(
+        "Used instead of the default image (allows e.g. non organism images for tours)")),
+    Field('tour_identifier', type = 'string', length=20, comment=(
+        "A string giving a tour name, which will override the ott as the startpoint")),
     format = '%(category)s_%(parter_identifier)s', migrate=is_testing)
                 
 # Somewhere to simply store the html for news items
@@ -923,6 +936,9 @@ CREATE INDEX API_index           ON API_use (API)          USING HASH;
 
 DROP   INDEX date_index          ON API_use;
 CREATE INDEX date_index          ON API_use (end_date)     USING HASH;
+
+DROP   INDEX category_index      ON tree_startpoints;
+CREATE INDEX category_index      ON tree_startpoints (category);
 
 # The following are the indexes for ordered leaves & ordered nodes, useful to re-do after a new tree is imported 
 

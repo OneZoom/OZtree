@@ -32,28 +32,39 @@ def index():
     """
     Collect all information required for the home page
     """
-    # TODO: Fetch these from tree_startpoints
-    popular_otts = [549519, 14971, 676045, 410925, 541928, 541936, 418570, 835324, 226178, 72667, 226185]
-    # TODO: Override image urls if tree_startpoints.image_url exists
-    pop_images = {
-        r.ott:thumbnail_url(r.get('src'), r.get('src_id'))
-        for r in
-        db(db.images_by_ott.ott.belongs(popular_otts) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)
-    }
-
-    endangered_otts = [351685, 42314, 430337, 995054, 872573, 921451]
-    endangered_images = {
-        r.ott:thumbnail_url(r.get('src'), r.get('src_id'))
-        for r in
-        db(db.images_by_ott.ott.belongs(endangered_otts) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)
-    }
-
+    # OTTs from the tree_startpoints table
+    startpoints_ott_map, hrefs, images = {}, {}, {}
+    carousel, anim, threatened = [], [], []
+    for r in db(
+            (db.tree_startpoints.category.startswith('homepage')) &
+            (db.tree_startpoints.partner_identifier == None)
+        ).select(
+            db.tree_startpoints.ott, db.tree_startpoints.category,
+            db.tree_startpoints.image_url, db.tree_startpoints.tour_identifier):
+        key = r.tour_identifier or str(r.ott)
+        if r.category.endswith("main"):
+            carousel.append(key)
+        elif r.category.endswith("anim"):
+            anim.append(key)
+        elif r.category.endswith("red"):
+            threatened.append(key)
+        if r.ott:
+            startpoints_ott_map[r.ott] = key
+        else:
+            if r.tour_identifier:
+                raise NotImplementedError("Tour URLs have not yet been implemented")
+                hrefs[key] = '/life/' + r.tour_identifier
+            else:
+                raise ValueError("Need an ott or a tour name")            
+        if r.image_url:
+            images[key] = {'url': r.image_url}
+    
+    # OTTs from the reservations table (i.e. sponsored)
     query = (db.reservations.verified_time != None) & \
         ((db.reservations.deactivated == None) | (db.reservations.deactivated == "")) & \
         (db.reservations.verified_preferred_image_src != None)
     sponsored_rows = db(query).select(
         db.reservations.OTT_ID,
-        db.reservations.name,
         db.reservations.user_nondefault_image,
         db.reservations.verified_kind,
         db.reservations.verified_name,
@@ -63,27 +74,45 @@ def index():
         orderby=~db.reservations.verified_time|db.reservations.reserve_time,
         limitby=(0, 20)
         )
-    sponsored_scinames = {r.OTT_ID:r.name for r in sponsored_rows}
-    sponsored_images = {
-        r.ott:r
-        for r in db(db.images_by_ott.ott.belongs(r.OTT_ID for r in sponsored_rows) & (db.images_by_ott.overall_best_any==1)).select(
-            db.images_by_ott.ott,
-            db.images_by_ott.src,
-            db.images_by_ott.src_id,
-            db.images_by_ott.rights,
-            db.images_by_ott.licence,
-            orderby=~db.images_by_ott.src
-        )
-    }
-    for r in sponsored_rows:
-        if r.user_nondefault_image:
-            sponsored_images[r.OTT_ID] = db(
-                (db.images_by_ott.src_id==r.verified_preferred_image_src_id) &
-                (db.images_by_ott.src==r.verified_preferred_image_src)
-                ).select(
-                    db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
-                    db.images_by_ott.rights, db.images_by_ott.licence,
-                    orderby=~db.images_by_ott.src).first()
+    
+    sponsored_otts = [r.OTT_ID for r in sponsored_rows]
+    otts = set(list(startpoints_ott_map.keys()) + sponsored_otts)
+    
+    for ott in otts:
+        hrefs[ott] = '/life/@=%d' % ott
+        key = startpoints_ott_map.get(ott, ott)
+        if key not in hrefs:
+            hrefs[key] = hrefs[ott]
+    
+    # Add in ott-collected images
+    for r in db(
+            (db.images_by_ott.ott.belongs(otts)) & (db.images_by_ott.overall_best_any==1)
+        ).select(
+            db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
+            db.images_by_ott.rights, db.images_by_ott.licence):
+        img = {'url':thumbnail_url(r.src, r.src_id), 'rights':r.rights, 'licence': r.licence.split('(')[0]}
+        images[r.ott] = img
+        key = startpoints_ott_map.get(r.ott, r.ott)
+        if key not in images:
+            images[key] = img
+    blank = {'url': URL('static','images/noImage_transparent.png')}
+    for key in sponsored_otts + list(startpoints_ott_map.values()):
+        if key not in images:
+            images[key] = blank
+
+
+    names = {}
+    for r in db(db.ordered_leaves.ott.belongs(otts)).select(db.ordered_leaves.ott, db.ordered_leaves.name):
+        names[r.ott] = names[startpoints_ott_map.get(r.ott, r.ott)] = (r.name, True)
+    for r in db(db.ordered_nodes.ott.belongs(otts)).select(db.ordered_nodes.ott, db.ordered_nodes.name):
+        names[r.ott] = names[startpoints_ott_map.get(r.ott, r.ott)] = (r.name, False)
+    for ott, vn in get_common_names(otts, return_nulls=True).items():
+        sci, isleaf = names[ott]
+        names[ott] = nice_species_name(
+            sci, vn, html=True, leaf=isleaf, first_upper=True,  break_line=1)
+        startpoint_key = startpoints_ott_map.get(ott)
+        names[startpoint_key] = nice_species_name(
+            (sci if vn is None else None), vn, html=True, leaf=isleaf, first_upper=True, break_line=2)
 
     return dict(
         n_species=db(db.ordered_leaves).count(),
@@ -98,44 +127,14 @@ def index():
             )
             for row in db().select(db.news.ALL, orderby =~ db.news.news_date, limitby = (0, 5))
         ],
-        sponsored=dict(
-            rows=sponsored_rows,
-            images=sponsored_images,
-            html_names={
-                ott:nice_species_name(sponsored_scinames[ott], vn, html=True, leaf=True, first_upper=True, break_line=1)
-                for ott,vn
-                in get_common_names([r.OTT_ID for r in sponsored_rows], return_nulls=True).items()}
-        ),
+        carousel=carousel, anim=anim, threatened=threatened, sponsored=sponsored_rows,
+        hrefs=hrefs, images=images, html_names=names,
         n_total_sponsored=db(db.reservations.PP_e_mail != None).count(distinct=db.reservations.PP_e_mail),
         n_sponsored_leaves=db((db.reservations.verified_time != None) & ((db.reservations.deactivated == None) | (db.reservations.deactivated == ""))).count(),
-        popular_places=[
-            dict(
-                tree_href='/life/@=%d' % ott,
-                image_href=pop_images.get(ott, URL('static','images/noImage_transparent.png')),
-                name=nice_species_name(None, vn, html=True, leaf=True, first_upper=True, break_line=2),
-            )
-            for ott, vn
-            in get_common_names(popular_otts, return_nulls=True).items()
-        ],
-        endangered=[
-            dict(
-                tree_href='/life/@=%d' % ott,
-                image_href=endangered_images.get(ott, URL('static','images/noImage_transparent.png')),
-                name=nice_species_name(None, vn, html=True, leaf=True, first_upper=True, break_line=2),
-            )
-            for ott, vn
-            in get_common_names(endangered_otts, return_nulls=True).items()
-        ],
-        animation_locations=[
-            # These should be obtained out of the tree_startpoints table (category="homepage_anim")
-            [244265, 'Mammals'],
-            [81461, 'Birds'],
-            [99252, 'Flowering plants'],
-            ],
         menu_splash_images={
             sub_menu[0]:URL('static', 'images/oz-newssplash-%s.jpg' % sub_menu[0].lower().replace("for ", ""))
             for sub_menu in response.menu
-        },
+        }
     )
 
 def footer_sponsor_items():
