@@ -559,3 +559,11 @@ body > footer {
     background-image: url(../images/oz-rightarrow-darkbg.svg);
   }
 }
+
+
+.main_content a.a-light {
+    color: $oz_green_fg;
+    &:link, &:active, &:visited, &:hover {
+        color: $oz_green_fg;
+    }
+}
