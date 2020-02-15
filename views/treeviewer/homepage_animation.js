@@ -27,8 +27,8 @@
             "ott": "{{=key}}",
             "update_class": {
                 "linkout": {
-                    "href": "{{=hrefs.get(key, "")}}"},
-                "ottname": "{{=XML(html_names.get(key, 'Unknown'))}}"
+                    "href": "{{=hrefs.get(key, "")}}"}, {{name=html_names.get(key, '')}}
+                "ottname": "{{=XML(add_the(name, False) if has_vernacular else name)}}"
             },
             "wait": 1000
         },

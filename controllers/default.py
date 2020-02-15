@@ -8,7 +8,7 @@ from collections import OrderedDict
 
 from OZfunctions import (
     nice_species_name, get_common_name, get_common_names, sponsorable_children_query,
-    language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal,
+    language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, add_the,
     ids_from_otts_array, nodes_info_from_array, nodes_info_from_string, extract_summary)
 
 
@@ -63,7 +63,8 @@ def index():
 
     # Pick 5 random threatened spp 
     random.seed(request.now.month*100 + request.now.day)
-    threatened = random.sample(threatened, 5)
+    if len(threatened) > 5:
+        threatened = random.sample(threatened, 5)
     keys = set(carousel + anim + threatened)
     # Remove the unused threatened ones
     startpoints_ott_map = {k: v for k, v in startpoints_ott_map.items() if v in keys}
@@ -97,7 +98,7 @@ def index():
             hrefs[key] = '/life/@=%d' % ott
     
     # Names
-    st_leaf_otts, st_node_otts = set(), set()
+    st_leaf_otts, st_node_otts, has_vernacular = set(), set(), set()
     st_leaf_for_node_otts = {}
     # Look up scientific names for startpoint otts
     for r in db(db.ordered_leaves.ott.belongs(startpoints_ott_map.keys())).select(
@@ -116,13 +117,16 @@ def index():
         startpoint_key = startpoints_ott_map.get(ott, None)
         if startpoint_key:
             if not text_titles[startpoint_key]:
+                if vn is not None:
+                    has_vernacular.add(startpoint_key)
                 text_titles[startpoint_key] = nice_species_name(
                     (titles[ott] if vn is None else None), vn, html=True,
-                    leaf=ott not in st_node_otts, first_upper=True, break_line=2)
-        # ... and another for the sponsored items
+                    leaf=ott not in st_node_otts, break_line=2)
+        # ... and another for the sponsored items (both common and sci in the string)
+        if vn is not None:
+            has_vernacular.add(ott)
         titles[ott] = nice_species_name(
-            titles[ott], vn, html=True,
-            leaf=ott not in st_node_otts, first_upper=True,  break_line=1)
+            titles[ott], vn, html=True, leaf=ott not in st_node_otts,  break_line=1)
     titles.update(text_titles)
 
     # Images
@@ -167,7 +171,7 @@ def index():
             for row in db().select(db.news.ALL, orderby =~ db.news.news_date, limitby = (0, 5))
         ],
         carousel=carousel, anim=anim, threatened=threatened, sponsored=sponsored_rows,
-        hrefs=hrefs, images=images, html_names=titles,
+        hrefs=hrefs, images=images, html_names=titles, has_vernacular=has_vernacular, add_the=add_the,
         n_total_sponsored=db(db.reservations.PP_e_mail != None).count(distinct=db.reservations.PP_e_mail),
         n_sponsored_leaves=db((db.reservations.verified_time != None) & ((db.reservations.deactivated == None) | (db.reservations.deactivated == ""))).count(),
         menu_splash_images={
