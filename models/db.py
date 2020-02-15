@@ -942,6 +942,9 @@ CREATE INDEX date_index          ON API_use (end_date)     USING HASH;
 DROP   INDEX category_index      ON tree_startpoints;
 CREATE INDEX category_index      ON tree_startpoints (category);
 
+DROP   INDEX pi_index            ON tree_startpoints;
+CREATE INDEX pi_index            ON tree_startpoints (partner_identifier);
+
 # The following are the indexes for ordered leaves & ordered nodes, useful to re-do after a new tree is imported 
 
 DROP   INDEX price_index         ON ordered_leaves;

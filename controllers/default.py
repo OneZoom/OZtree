@@ -33,7 +33,7 @@ def index():
     Collect all information required for the home page
     """
     # OTTs from the tree_startpoints table
-    startpoints_ott_map, hrefs, images = {}, {}, {}
+    startpoints_ott_map, hrefs, images, titles = {}, {}, {}, {}
     carousel, anim, threatened = [], [], []
     for r in db(
             (db.tree_startpoints.category.startswith('homepage')) &
@@ -48,16 +48,17 @@ def index():
             anim.append(key)
         elif r.category.endswith("red"):
             threatened.append(key)
-        if r.ott:
-            startpoints_ott_map[r.ott] = key
-        else:
-            if r.tour_identifier:
-                raise NotImplementedError("Tour URLs have not yet been implemented")
-                hrefs[key] = '/life/' + r.tour_identifier
-            else:
-                raise ValueError("Need an ott or a tour name")            
         if r.image_url:
             images[key] = {'url': r.image_url}
+        if r.tour_identifier:
+            hrefs[key] = '/life/' + r.tour_identifier
+            title = db(db.tours.identifier == r.tour_identifier).select(db.tours.name).first()
+            titles[key] = title.name if title else r.tour_identifier
+        else:
+            titles[key] = ""
+        if r.ott:
+            # We might still want to look up e.g. an image, even if we are looking at a tour
+            startpoints_ott_map[r.ott] = key
     
     # OTTs from the reservations table (i.e. sponsored)
     query = (db.reservations.verified_time != None) & \
@@ -65,6 +66,7 @@ def index():
         (db.reservations.verified_preferred_image_src != None)
     sponsored_rows = db(query).select(
         db.reservations.OTT_ID,
+        db.reservations.name,
         db.reservations.user_nondefault_image,
         db.reservations.verified_kind,
         db.reservations.verified_name,
@@ -75,44 +77,73 @@ def index():
         limitby=(0, 20)
         )
     
-    sponsored_otts = [r.OTT_ID for r in sponsored_rows]
-    otts = set(list(startpoints_ott_map.keys()) + sponsored_otts)
-    
-    for ott in otts:
-        hrefs[ott] = '/life/@=%d' % ott
-        key = startpoints_ott_map.get(ott, ott)
+    spon_leaf_otts = set()
+    sponsored_by_ott = {}
+    for r in sponsored_rows:
+        sponsored_by_ott[r.OTT_ID] = r
+        hrefs[r.OTT_ID] = '/life/@=%d' % r.OTT_ID
+        spon_leaf_otts.add(r.OTT_ID)
+        titles[r.OTT_ID] = r.name
+    for ott, key in startpoints_ott_map.items():
         if key not in hrefs:
-            hrefs[key] = hrefs[ott]
+            hrefs[key] = '/life/@=%d' % ott
     
-    # Add in ott-collected images
+    # Names
+    st_leaf_otts, st_node_otts = set(), set()
+    st_leaf_for_node_otts = {}
+    # Look up scientific names for startpoint otts
+    for r in db(db.ordered_leaves.ott.belongs(startpoints_ott_map.keys())).select(
+            db.ordered_leaves.ott, db.ordered_leaves.name):
+        st_leaf_otts.add(r.ott)
+        titles[r.ott] = r.name
+    # Look up scientific names and best PD image otts for all startpoint otts
+    for r in db(db.ordered_nodes.ott.belongs(list(startpoints_ott_map.keys()))).select(
+            db.ordered_nodes.ott, db.ordered_nodes.name, db.ordered_nodes.rpd1):
+        st_node_otts.add(r.ott)
+        st_leaf_for_node_otts[r.rpd1] = startpoints_ott_map[r.ott]
+        titles[r.ott] = r.name
+    # Add or change to vernacular names in the titles
+    otts = [ott for ott in titles.keys() if isinstance(ott, int)]
+    for ott, vn in get_common_names(otts, return_nulls=True).items():
+        # Do one thing for the startpoints (simple names) ...
+        startpoint_key = startpoints_ott_map.get(ott, None)
+        if startpoint_key:
+            if not titles[startpoint_key]:
+                titles[startpoint_key] = nice_species_name(
+                    (titles[ott] if vn is None else None), vn, html=True,
+                    leaf=ott not in st_node_otts, first_upper=True, break_line=2)
+        # ... and another for the sponsored items
+        titles[ott] = nice_species_name(
+            titles[ott], vn, html=True,
+            leaf=ott not in st_node_otts, first_upper=True,  break_line=1)
+
+    # Images
+    # Startpoint images
+    otts = st_leaf_otts | set(st_leaf_for_node_otts.keys())
     for r in db(
-            (db.images_by_ott.ott.belongs(otts)) & (db.images_by_ott.overall_best_any==1)
+            (db.images_by_ott.ott.belongs(otts)) & (db.images_by_ott.overall_best_pd==1)
+        ).select(
+            db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id):
+        key = startpoints_ott_map.get(r.ott, None) or st_leaf_for_node_otts.get(r.ott, None)
+        if key not in images:
+            images[key] = {'url':thumbnail_url(r.src, r.src_id)}
+    # Startpoint images
+    for r in db(
+            (db.images_by_ott.ott.belongs(spon_leaf_otts)) & (db.images_by_ott.overall_best_any==1)
         ).select(
             db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
             db.images_by_ott.rights, db.images_by_ott.licence):
-        img = {'url':thumbnail_url(r.src, r.src_id), 'rights':r.rights, 'licence': r.licence.split('(')[0]}
-        images[r.ott] = img
-        key = startpoints_ott_map.get(r.ott, r.ott)
-        if key not in images:
-            images[key] = img
+        reservations_row = sponsored_by_ott[r.ott]
+        if reservations_row.user_nondefault_image:
+            images[r.ott] = {'url':thumbnail_url(
+                reservations_row.verified_preferred_image_src,
+                reservations_row.verified_preferred_image_src_id)}
+        else:
+            images[r.ott] = {'url':thumbnail_url(r.src, r.src_id), 'rights':r.rights, 'licence': r.licence.split('(')[0]}
     blank = {'url': URL('static','images/noImage_transparent.png')}
-    for key in sponsored_otts + list(startpoints_ott_map.values()):
+    for key in titles.keys():
         if key not in images:
             images[key] = blank
-
-
-    names = {}
-    for r in db(db.ordered_leaves.ott.belongs(otts)).select(db.ordered_leaves.ott, db.ordered_leaves.name):
-        names[r.ott] = names[startpoints_ott_map.get(r.ott, r.ott)] = (r.name, True)
-    for r in db(db.ordered_nodes.ott.belongs(otts)).select(db.ordered_nodes.ott, db.ordered_nodes.name):
-        names[r.ott] = names[startpoints_ott_map.get(r.ott, r.ott)] = (r.name, False)
-    for ott, vn in get_common_names(otts, return_nulls=True).items():
-        sci, isleaf = names[ott]
-        names[ott] = nice_species_name(
-            sci, vn, html=True, leaf=isleaf, first_upper=True,  break_line=1)
-        startpoint_key = startpoints_ott_map.get(ott)
-        names[startpoint_key] = nice_species_name(
-            (sci if vn is None else None), vn, html=True, leaf=isleaf, first_upper=True, break_line=2)
 
     return dict(
         n_species=db(db.ordered_leaves).count(),
@@ -128,7 +159,7 @@ def index():
             for row in db().select(db.news.ALL, orderby =~ db.news.news_date, limitby = (0, 5))
         ],
         carousel=carousel, anim=anim, threatened=threatened, sponsored=sponsored_rows,
-        hrefs=hrefs, images=images, html_names=names,
+        hrefs=hrefs, images=images, html_names=titles,
         n_total_sponsored=db(db.reservations.PP_e_mail != None).count(distinct=db.reservations.PP_e_mail),
         n_sponsored_leaves=db((db.reservations.verified_time != None) & ((db.reservations.deactivated == None) | (db.reservations.deactivated == ""))).count(),
         menu_splash_images={
@@ -1126,15 +1157,13 @@ def endorsements():
     return dict(quotes=quotes)
 
 def impacts():
-    redirect(URL('default', 'endorsements.html'))
-    return dict()
+    redirect(URL('default', 'endorsements'))
 
 def impact():
-    redirect(URL('default', 'endorsements.html'))
-    return dict()
+    redirect(URL('default', 'endorsements'))
 
 def installations():
-    return dict()
+    redirect(URL('education', 'installations'))
 
 def developer():
     return dict()
