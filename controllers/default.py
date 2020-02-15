@@ -63,7 +63,8 @@ def index():
 
     # Pick 5 random threatened spp 
     random.seed(request.now.month*100 + request.now.day)
-    threatened = random.sample(threatened, 5)
+    if len(threatened) > 5:
+        threatened = random.sample(threatened, 5)
     keys = set(carousel + anim + threatened)
     # Remove the unused threatened ones
     startpoints_ott_map = {k: v for k, v in startpoints_ott_map.items() if v in keys}
@@ -121,7 +122,6 @@ def index():
                 text_titles[startpoint_key] = nice_species_name(
                     (titles[ott] if vn is None else None), vn, html=True,
                     leaf=ott not in st_node_otts, break_line=2)
-                print(text_titles[startpoint_key])
         # ... and another for the sponsored items (both common and sci in the string)
         if vn is not None:
             has_vernacular.add(ott)
