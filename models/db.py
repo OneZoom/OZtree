@@ -664,7 +664,9 @@ db.define_table('tourstops',
     Field('video', type = 'string', length=20), #the youtube video number, if there is a video
     format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
 
-# these are popular palces, tours or other things that a user can use to explore the tree in a more guided way.  E.g. use as a first way into the tree or as suggestions of places to go / things to do once in.
+# These are popular places, tours or other things that a user can use to explore the tree
+# in a more guided way.  E.g. use as a first way into the tree or as suggestions of places
+# to go / things to do once in.
 db.define_table('tree_startpoints',
     Field('category', type = 'string', length=20, comment=(
         "A unique alphanumeric identifier which is used to categorise the startpoints "
@@ -684,8 +686,8 @@ db.define_table('tree_startpoints',
         "Used instead of the default image (allows e.g. non organism images for tours)")),
     Field('tour_identifier', type = 'string', length=20, comment=(
         "A string giving a tour name, which will override the ott as the startpoint")),
-    format = '%(category)s_%(parter_identifier)s', migrate=is_testing)
-                
+    format = '%(category)s_%(partner_identifier)s', migrate=is_testing)
+
 # Somewhere to simply store the html for news items
 db.define_table('news',
     Field('category', type = 'string', length=20), # e.g. 'milestone', 'event', 
