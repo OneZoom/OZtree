@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # this file is released under public domain and you can use without limitations
 import re
+import random
 import urllib
 from json import dumps
 from collections import OrderedDict
@@ -57,8 +58,15 @@ def index():
         else:
             titles[key] = ""
         if r.ott:
-            # We might still want to look up e.g. an image, even if we are looking at a tour
+            # We might still want to find e.g. an image, even if we are looking at a tour
             startpoints_ott_map[r.ott] = key
+
+    # Pick 5 random threatened spp 
+    random.seed(request.now.month*100 + request.now.day)
+    threatened = random.sample(threatened, 5)
+    keys = set(carousel + anim + threatened)
+    # Remove the unused threatened ones
+    startpoints_ott_map = {k: v for k, v in startpoints_ott_map.items() if v in keys}
     
     # OTTs from the reservations table (i.e. sponsored)
     query = (db.reservations.verified_time != None) & \
@@ -1142,6 +1150,9 @@ def pp_process_post():
         return(dict(vars=request.vars, args=request.args))
 
 """ these empty controllers are for other OneZoom pages"""
+
+def introduction():
+    return dict()
 
 def sponsor_thanks():
     return dict()
