@@ -1,21 +1,26 @@
 {{response.title='OneZoom: Endorsements'}}
-{{extend 'layout.html'}}
-<div class="container-fluid">
-    <div class="row-fluid">
-        <div class="col-md-12">
-            <header><h1>Endorsements of OneZoom</h1>
-                <p>If you like our tree of life explorer, please <a href="mailto:mail@onezoom.org">e-mail us</a> your comments to add to this page</p>
-                </header>
-        </div>
-    </div>
-    <div class="row-fluid">
-        <div class="col-md-12">
-            <ul class="columns">
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{extend 'uikit_layout.html'}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+    <h1>Endorsements and Impacts of OneZoom</h1>
+    <em>If you like our tree of life explorer, please <a href="mailto:mail@onezoom.org">e-mail us</a> your comments to add to this page.</em>
+</div>
+{{end block}}
+
+
+
+
+    <div>
+        <div class=" uk-text-small uk-padding-small uk-column-1-3@m" >
+            <h2 class="uk-padding-small">Endorsements</h2>
+            <ul class = "blockquote-ul">
 {{category_order=['Scientists', 'Lecturers and professors', 'User quotes', 'Professionals', 'Students', 'Educators']}}
 {{for category in category_order + [q for q in quotes.keys() if q not in category_order]:}}
                 <li><h4>{{=category}}</h4>
     {{for q in quotes.get(category,[]):}}
-                    <blockquote>{{=XML(q.html_quote)}}
+                    <blockquote class = "blockquote-main">{{=XML(q.html_quote)}}
                         <footer class="blockquote-footer">
                             <cite>{{if q.person_url:}}<a href="{{=q.person_url}}" target="_blank">{{=q.person}}</a>{{else:}}{{=q.person}}{{pass}}{{if q.html_affiliation:}}, {{=XML(q.html_affiliation)}}{{pass}}</cite>
                         </footer>
@@ -35,24 +40,23 @@
     </div>
 
 
-    <div class="row-fluid">
-        <div class="col-md-12">
-            <header><h1>Impacts of OneZoom</h1>
-            </header>
-        </div>
-        <div class="col-md-4">
+
+
+
+<div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
+    <div class = "uk-padding">
+        <h2 class="uk-padding-small">Impacts</h2>
             <a href="{{=URL('static','images/gallery/One_Zoom_Science_Uncovered.jpg')}}" target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/One_Zoom_Science_Uncovered_small.jpg')}}" alt=""></a>
             <p>The OneZoom software in its most basic form was released in October 2012. It's already been used as a source of natural history information by a million unique users. In addition, this software has been used in more specific science and education settings, including as an interactive display at museums and exhibitions around the globe. OneZoom has been adapted to solve other data visualisation problems such as human genealogy.</p>
             
             <a href = "{{=URL('static','images/gallery/AT_cover.png')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/AT_cover_small.png')}}" alt=""></a>
             
             <p>Our tree of life visualisations have been used prominently in <cite>The Ancestor's Tale (2nd edition), by Richard Dawkins &#38; Yan Wong (2016)</cite>. They were also adapted by renowned artist Naziha Mestaoui for use at the core of One Tree One Planet in Florida (2017)</p>
-        </div>
     </div>
 
 
-    <div class="row-fluid">
-        <div class="col-md-4">
+    <div class = "uk-padding">
+
             <h4>Attendance at events</h4>
             <ol>
                 <li><a href="https://www.linnean.org/meetings-and-events/events/the-tree-of-life-1" target="_blank">The Linnean Society</a> Tree of life presentation by Yan Wong and James Rosindell, 5th December 2017</li>
@@ -79,7 +83,8 @@
                 <li><a href="http://www3.imperial.ac.uk/festival" target="_blank">Imperial Festival</a> 2-4 May 2013</li>
             </ol>
         </div>
-        <div class="col-md-4">
+    <div class = "uk-padding">
+
             <h4>Known reuse of our software</h4>
             <ol>
                 <li><a href="http://pavlin-identitytree.home.amu.edu.pl/tetrapods.htm" target="_blank">Pavel Linhart - tetrapod sounds</a></li>
@@ -100,13 +105,13 @@
             <a href="{{=URL('static','images/gallery/MUT_exhibition.jpeg')}}" target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/MUT_exhibition_small.jpeg')}}" alt=""></a>
             <p>Using OneZoom software in your webpage or at your exhibition?  Please <a href="mailto:mail@onezoom.org">let us know</a> so you can be listed here too.</p>
         </div>
-    </div><!--/row-->
-    <div class="row-fluid">
-        <div class="col-md-12">
-            <header><h1>Media coverage</h1>
-            </header>
-        </div>
-        <div class="col-md-4">
+    </div>
+
+
+
+<div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
+    <div class = "uk-padding">
+        <h2 class="uk-padding-small">Media coverage</h2>
             <ul>
                 <li><a href="https://soundcloud.com/zsl-1826/zsl-wild-science-podcast-ten-years-on-the-edge-of-existence" target="_blank">ZSL wild science podcast</a></li>
                 <li><a href="https://www.zsl.org/blogs/artefact-of-the-month/depicting-the-tree-of-life" target="_blank">ZSL blog</a></li>
@@ -136,10 +141,8 @@
                 <li><a href="http://www.nea.org/tools/lessons/57400.htm" target="_blank">National Education Association</a></li>
                 <li><a href="http://www.vetscite.org" target="_blank"> Veterinary Sciences Tomorrow</a></li>
             </ul>
-        </div>
     </div>
-    <div class="row-fluid">
-        <div class="col-md-4">
+  <div class = "uk-padding">
             <ul>
                 <li><a href="http://www.20minutos.es/noticia/1621933/0/arbol-de-la-vida/digital/ancestro-especies/" target="_blank">20minutos.es</a></li>
                 <li><a href="http://www.abc.es/20121017/ciencia/abci-primer-arbol-vida-internet-201210171300.html" target="_blank">ABC Spanish</a></li>
@@ -176,7 +179,7 @@
                 <li><a href="http://www.alphagalileo.org/ViewItem.aspx?ItemId=126991&CultureCode=en" target="_blank"> alphagalileo.org</a></li>
             </ul>
         </div>
-        <div class="col-md-4">
+  <div class = "uk-padding">
             <ul>
             <li><a href="http://phys.org/news/2012-10-tree-life-online.html" target="_blank">Phys.org</a></li>
                 <li><a href="http://phys.org/news/2013-04-viewing-life-onezoom.html" target="_blank">Phys.org further coverage</a></li>
@@ -214,5 +217,5 @@
                 <li><a href="http://pressandpolicy.bl.uk/content/detail.aspx?ReleaseID=1666&NewsAreaId=2" target="_blank">British Library Press Release</a></li>
             </ul>
         </div>
-    </div><!--/row-->
-</div> <!--/container>
+    </div>
+
