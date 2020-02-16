@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os.path
 
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
@@ -29,11 +30,15 @@ is_testing = False
 
 ## get config params etc
 if is_testing:
-    #might want to load a different appconfig.ini file, which can be passed in during testing to the rocket server
+    # For unit testing, we might want to load a different appconfig.ini file, which can
+    # be passed in to the rocket server as the last arg on the command-line.
     # (on the main server this is not used, and we default back to appconfig.ini
-    if request.env.cmd_options and request.env.cmd_options.args[-1]:
-        myconf = AppConfig(request.env.cmd_options.args[-1], reload=True)
-    else:
+    try:
+        if os.path.isfile(request.env.cmd_options.args[-1]):
+            myconf = AppConfig(request.env.cmd_options.args[-1], reload=True)
+        else:
+            raise IOError("No such file")
+    except (IOError, IndexError, AttributeError):
         myconf = AppConfig(reload=True) #changes to appconfig.ini do not require restart
     T.is_writable = True #allow translators to add new languages e.g. on the test (beta) site, but not on prod
 else:
@@ -61,7 +66,6 @@ name_length_chars = 190 ##max length for a species name is 190 chars (allows ind
 ## Set up database link
 #########################################################################
 
-import os.path
 ## if NOT running on Google App Engine use SQLite or other DB
 DALstring = myconf.take('db.uri')
 doMigration = myconf.take('db.migrate') in ['true', '1', 't', 'y', 'yes', 'True']
@@ -604,15 +608,33 @@ db.define_table('eol_inspected',
 
 # this table contains info to provide a list of interesting places to sponsor. 
 db.define_table('sponsor_picks',
-    Field('identifier', type = 'string', unique=True, length=20, notnull=True), #a unique identifier: if a number this refers to an OTT id
-    Field('display_order', type = 'integer', unique=True), #What order to display them in on the page. If NULL, this is disabled
-    Field('name', type='text', notnull=True), #the name that appears on the webpage. May be translated
-    Field('subtext', type='text'), #optional subtext to explain the list. May be translated
-    Field('thumb_url', type='text'), #a url to a thumbnail picture. If NULL, use the thumb_src and thumb_src_id fields below
-    Field('thumb_src', type='integer'), #details of a potential thumbnail picture - a number from src_flags, e.g. 1 for OneZoom, 2 for Eol, etc.
-    Field('thumb_src_id', type='integer'), #details of a potential thumbnail picture - the identifier within src, e.g. the data_object id for EoL
-    Field('otts', type='text'), #a comma-separated list of ott ids. If NULL, generate a list of OTTs by converting the identifier field above to an integer and using the sponsor_node page. Otherwise use the sponsor_handpick page
-    Field('vars', type='text'), #a JSON string used to add variables to the linked web page, e.g. {'n':12} to increase the number of species in each price category, or {'user_more_info':'sponsor info'} or {'partner':partner_identifier} - where partner_identifier matches that value from the partners table below.
+    Field('identifier', type = 'string', unique=True, length=20, notnull=True, comment=(
+        "A unique identifier. If a number this refers to an OTT id, but otherwise a "
+        "bespoke list whose OTTs are listed in the 'otts field'")),
+    Field('display_order', type = 'integer', unique=True, comment=(
+        "What order to display them in on the page. If NULL, this is disabled")),
+    Field('display_flags', type = 'integer', comment=(
+        "Whether to display this pick in different contexts, with the contexts"
+        "as listed in the sponsor_suggestion_flags array")),
+    Field('name', type='text', notnull=True, comment=(
+        "The name that appears next to this pick on the webpage. May be translated")),
+    Field('subtext', type='text', comment=(
+        "optional subtext to explain the list. May be translated")),
+    Field('thumb_url', type='text', comment=(
+        "A URL to a thumbnail image. If NULL use the thumb_src & thumb_src_id fields")),
+    Field('thumb_src', type='integer', comment=(
+        "A number from src_flags, e.g. 1 for OneZoom, 2 for Eol, etc.")),
+    Field('thumb_src_id', type='integer', comment=(
+        "The identifier within src, e.g. the data_object id for EoL")),
+    Field('otts', type='text', comment=(
+        "A comma-separated list of ott ids. If NULL, generate a single ott by "
+        "converting the identifier field above to an integer and linking to that "
+        "sponsor_node page. Otherwise use the sponsor_handpick page")),
+    Field('vars', type='text', comment=(
+        "A JSON string used to add variables to the linked web page, e.g. {'n':12}"
+        "to increase the number of species in each price category, or "
+        "{'user_more_info':'sponsor info'} or {'partner':partner_identifier} "
+        "where partner_identifier matches that value from the partners table below.")),
     format = '%(identifier)s_%(name)s', migrate=is_testing)
 
 # this table lists potential OneZoom 'partners' with whom we might share profits

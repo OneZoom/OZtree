@@ -30,7 +30,9 @@ percent_crop_expansion = 12.5 #max amount to expand crops by to fit in circle
 # bitwise flags for existence of different language wikipedia articles
 # this variable is also used in construct_wiki_info in CSV_base_table_creator.py
 wikiflags = cache.ram('wikiflags',
-    lambda: {lang:bit for (bit,lang) in enumerate(['en','de','es','fr','ja','ru','it','zh','pt','ar','pl','nl','fa','tr','sv','he','uk','id','vi','ko'])},
+    lambda: {lang:bit for (bit,lang) in enumerate([
+        'en', 'de', 'es', 'fr', 'ja', 'ru', 'it', 'zh', 'pt', 'ar',
+        'pl', 'nl', 'fa', 'tr', 'sv', 'he', 'uk', 'id', 'vi', 'ko'])},
     time_expire = None)
 
 # Source flags are used to identify the source of images and vernacular names, and chose
@@ -70,14 +72,20 @@ inv_src_flags = cache.ram('inv_src_flags',
     lambda: {src_flags[k]:k for k in src_flags},
     time_expire = None)    
 
-#For keeping track of where users are looking
-#NB: if eol ID was inspected via copyright symbol, the user is going straight to the
-# data_object (image) page, and we can probably assume they won't be
-# altering the vernacular name, just cropping the image. If via the tab, then
-# they might be changing images or names. If via == "name", then we can assume that
-# only the vernacular name has been inspected (e.g. an internal node)
+# For keeping track of where users are looking
+# NB: if eol ID was inspected via copyright symbol, the user is going straight to the
+#  data_object (image) page, and we can probably assume they won't be
+#  altering the vernacular name, just cropping the image. If via the tab, then
+#  they might be changing images or names. If via == "name", then we can assume that
+#  only the vernacular name has been inspected (e.g. an internal node)
 eol_inspect_via_flags = cache.ram('eol_inspect_via_flags',
     lambda: {'EoL_tab':1, 'image':2, 'sponsor':3, 'name':4},
+    time_expire = None)
+
+# Flags to mark whether a sponsor pick suggestion is appropriate in different contexts,
+# for example if the context is a sponsorship "by" or "for" someone
+sponsor_suggestion_flags = cache.ram('sponsor_suggestion_flags',
+    lambda: {'sponsor_by':1, 'sponsor_for':2},
     time_expire = None)
 
 #classes of image (see comments in images_by_ott definition below). 
