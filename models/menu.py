@@ -38,7 +38,7 @@ response.menu = [
                                             (T('A view of all life'), False, URL('default', 'introduction', url_encode=False)),
                                             (T('Your name on the tree'), False, URL('default' , 'sponsor.html')),
                                             (T('Send a tr-eCard'), False, URL('default' , 'sponsor.html')),
-                                            (T('Act for biodiversity'), False, URL('default' , 'otop.html')),
+                                            (T('Act for biodiversity'), False, URL('default' , 'otop_intro.html')),
                                             ]),
                 
                  (T('For Education'), False, None , [
