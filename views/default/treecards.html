@@ -8,29 +8,63 @@
 </div>
 {{end block}}
 
+ <h2 class="uk-text-center uk-padding-small" >What makes a Tr-eCard special?</h2>
+
 <div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
-     <div class = "uk-padding">
-         <h4>Every card is unique</h4>
-         <p>Each Choose a species on the tree </p>
+     <div class = "uk-padding uk-padding-remove-top">
+         <h4>It's a donation to charity</h4>
+         <p>
+         Your Tr-eCard recognises another person via a donation to our charity, promoting biodiversity, evolution and conservation of the variety of life on earth.
+         </p>
+         <em>
+         "Sponsored for Jane Broadbent, Tortoises are simply the best!"
+         </em>
+
+         <div><img src= "{{=URL('static','images/Screenshots/sponsor_for_1.png')}}" alt=""></div>
+
+        
+        
          
      </div>
-    <div class = "uk-padding">
+    <div class = "uk-padding uk-padding-remove-top">
+        <h4>It's a public greeting</h4>
+        <p>
+        Your message is a public acknowledgement to the person receiving your Tr-eCard that appears on our beautiful tree of life.  It can be seen by any one of our visitors - over a million so far.
+        </p>
+        <em>
+            "Sponsored for Felix Quade, Thank you for everything!"
+        </em>
         
-        <h4>Name a leaf as a treat for yourself, or for someone else</h4>
-        <p>We'll display your name (or your friend's) on your selected leaf for any donation over &pound;5. With over two million leaves, there's something for everyone.</p>
-        <p>OneZoom is a <a href="{{=URL('static','images/RegistrationCertificate.jpg')}}" target="_blank">registered UK charity</a>, your donations help us provide easy access to scientific knowledge about biodiversity and evolution, the variety of life on Earth, and the need to conserve it.</p>
+        
+        <img src= "{{=URL('static','images/Screenshots/sponsor_for_2.png')}}" alt="">
 
-        <h3>Choose a category</h3>
-        <ul class="short-sponsor-ideas">
-            {{for key, info in pick.items():}}
-            {{if not info.get("subtext"):}}
-            <li class="{{=str(key)}}"><a href="{{=URL(info['page'], vars=info.get('vars'))}}"><img src='{{=info["thumb_url"]}}' />{{=info["name"]}}</a>
-            {{pass}}{{pass}}
-        </ul>
+
     </div>
-    <div class = "uk-padding search-panel">
+    <div class = "uk-padding uk-padding-remove-top search-panel">
+        <h4>It's exclusively yours</h4>
+        <p>
+        Your greeting appears on a species that you choose specially for the recipient. That place on the tree will be exclusively theirs for at least four years.
+        </p>
+        <em>
+            "Sponsored for Lynn and Charlotte, who love bunnies"
+        </em>
+        <img src= "{{=URL('static','images/Screenshots/sponsor_for_3.png')}}" alt="">
+
     </div>
 </div>
+
+<h4>Name a leaf as a treat for yourself, or for someone else</h4>
+<p>We'll display your name (or your friend's as a Tr-eCard) on your selected leaf for any donation over &pound;5. With over two million leaves, there's something for everyone.</p>
+<p>OneZoom is a <a href="{{=URL('static','images/RegistrationCertificate.jpg')}}" target="_blank">registered UK charity</a>, your donations help us provide easy access to scientific knowledge about biodiversity and evolution, the variety of life on Earth, and the need to conserve it.</p>
+
+<h3>Choose a category</h3>
+<ul class="short-sponsor-ideas">
+    {{for key, info in pick.items():}}
+    {{if not info.get("subtext"):}}
+    <li class="{{=str(key)}}"><a href="{{=URL(info['page'], vars=info.get('vars'))}}"><img src='{{=info["thumb_url"]}}' />{{=info["name"]}}</a>
+        {{pass}}{{pass}}
+        </ul>
+
 
 <!--
  <p>We'll add some examples of each category with images to show people</p>

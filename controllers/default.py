@@ -826,22 +826,10 @@ def sponsor_picks() : #this is a private function
     return pick
     
 def sponsor():
-    languages = []
-    count = db.vernacular_by_ott.lang_full.count()
-    for row in db(db.vernacular_by_ott.preferred == True).select(db.vernacular_by_ott.lang_full, count, groupby=db.vernacular_by_ott.lang_full, orderby=~count):
-        lang_data = language(row.vernacular_by_ott.lang_full)
-        if lang_data:
-            languages.append({'abbrev':row.vernacular_by_ott.lang_full, 'en':lang_data[0].capitalize(), 'native':lang_data[1].capitalize()})
-    return dict(pick=sponsor_picks(), languages=languages, n_species =  db(db.ordered_leaves).count())
+    return dict(pick=sponsor_picks())
 
 def treecards():
-    languages = []
-    count = db.vernacular_by_ott.lang_full.count()
-    for row in db(db.vernacular_by_ott.preferred == True).select(db.vernacular_by_ott.lang_full, count, groupby=db.vernacular_by_ott.lang_full, orderby=~count):
-        lang_data = language(row.vernacular_by_ott.lang_full)
-        if lang_data:
-            languages.append({'abbrev':row.vernacular_by_ott.lang_full, 'en':lang_data[0].capitalize(), 'native':lang_data[1].capitalize()})
-    return dict(pick=sponsor_picks(), languages=languages, n_species =  db(db.ordered_leaves).count())
+    return dict(pick=sponsor_picks())
 
 
 
