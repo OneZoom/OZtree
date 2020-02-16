@@ -5,7 +5,7 @@
 
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
-    <h1>OneZoom Screenshot tool</h1>
+    <h1>OneZoom screenshot tool</h1>
 </div>
 {{end block}}
 
@@ -17,17 +17,30 @@
         <h4>Introduction</h4>
         <p>Screenshots taken with a normal screenshot tool are unlikely to have a good enough resolution for many uses. Our built in screenshot tool enables you to generate a vector graphic (.svg file) of any view of the tree. These files can be opened in a web browser or using free image manipulation software (such as Inkscape) ready for use in print, in educational materials, or elsewhere online. </p>
         
+        <div class = "uk-padding">
+            <a class = "a-light oz-pill pill-leafout" href = "{{=URL('default','life_expert.html',vars=dict(img='best_pd'))}}" target = "_blank">Launch the screenshot tool</a>
+        </div>
+        
     </div>
     <div class = "uk-padding uk-padding-remove-top">
+        
+         <img class="uk-align-center uk-margin-remove-top" src= "{{=URL('static','images/Screenshots/mammals_PD_framed.png')}}" alt="screenshot button highlighted on toolbar" width="60%">
+        
         <h4>Permissions</h4>
         <p >We encourage wide use of screenshots from OneZoom. The default option of this tool uses public domain images only, so you can reuse the screenshots and only need to mention OneZoom as the source.  Please be careful of permissions if you change the image settings because you may need to credit each photographer individually. Please also see our {{=A('Terms of use', _href=URL('default','terms.html'))}} </p>
     </div>
     <div class = "uk-padding uk-padding-remove-top">
         <h4>How to use</h4>
-        <p >After launching the tool, navigate the tree to the location you want a screenshot of.  You can change the tree view  using the settings button on the bottom left.  Once you're happy the view is correct, press the camera button (also on the bottom left) and your web browser should invite you to download the file onto your local computer.  Any images will be embedded within the downloaded file.</p>
+        
+        
+            
+        <p>After launching the tool, navigate the tree to your desired location.  You can change the tree view  using the settings button on the tool bar (bottom left).</p>
+        
+        <img class="uk-align-center uk-margin-remove-top" src= "{{=URL('static','images/Screenshots/screenshot_tool.png')}}" alt="screenshot button highlighted on toolbar" width="60%">
+        <p >
+        Once you're happy the view is correct, press the camera button on the tool bar (indicated above) and your web browser should invite you to download the file onto your local computer.  Any images will be embedded within the downloaded file.</p>
+        
     </div>
 </div>
 
-<div class = "uk-padding">
-    <a class = "a-light oz-pill pill-leafout" href = "{{=URL('default','life_expert.html',vars=dict(img='best_pd'))}}" target = "_blank">Launch the screenshot tool</a>
-</div>
+
