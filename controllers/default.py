@@ -1159,6 +1159,9 @@ def pp_process_post():
 def introduction():
     return dict()
 
+def otop_intro():
+    return dict()
+
 def sponsor_thanks():
     return dict()
 
