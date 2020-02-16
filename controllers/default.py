@@ -41,7 +41,8 @@ def index():
             (db.tree_startpoints.partner_identifier == None)
         ).select(
             db.tree_startpoints.ott, db.tree_startpoints.category,
-            db.tree_startpoints.image_url, db.tree_startpoints.tour_identifier):
+            db.tree_startpoints.image_url, db.tree_startpoints.tour_identifier,
+            orderby = db.tree_startpoints.id):
         key = r.tour_identifier or str(r.ott)
         if r.category.endswith("main"):
             carousel.append(key)
