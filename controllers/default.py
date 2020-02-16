@@ -65,7 +65,8 @@ def index():
     random.seed(request.now.month*100 + request.now.day)
     if len(threatened) > 5:
         threatened = random.sample(threatened, 5)
-    keys = set(carousel + anim + threatened)
+    image_required = set(carousel + threatened)
+    keys = set(anim) |  image_required
     # Remove the unused threatened ones
     startpoints_ott_map = {k: v for k, v in startpoints_ott_map.items() if v in keys}
     
@@ -109,7 +110,8 @@ def index():
     for r in db(db.ordered_nodes.ott.belongs(list(startpoints_ott_map.keys()))).select(
             db.ordered_nodes.ott, db.ordered_nodes.name, db.ordered_nodes.rpd1):
         st_node_otts.add(r.ott)
-        st_leaf_for_node_otts[r.rpd1] = startpoints_ott_map[r.ott]
+        if startpoints_ott_map[r.ott] in image_required:
+            st_leaf_for_node_otts[r.rpd1] = startpoints_ott_map[r.ott]
         titles[r.ott] = r.name
     # Add or change to vernacular names in the titles
     for ott, vn in get_common_names(titles.keys(), return_nulls=True).items():
@@ -140,7 +142,7 @@ def index():
         key = startpoints_ott_map.get(r.ott, None) or st_leaf_for_node_otts.get(r.ott, None)
         if key not in images:
             images[key] = {'url':thumbnail_url(r.src, r.src_id)}
-    # Startpoint images
+    # Sponsored images
     for r in db(
             (db.images_by_ott.ott.belongs(spon_leaf_otts)) & (db.images_by_ott.overall_best_any==1)
         ).select(
