@@ -1,0 +1,82 @@
+{{response.title='OneZoom: Search for a species to sponsor'}}
+{{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
+
+<div class="row-fluid">
+    <div class="col-md-6">
+        <h1 class="full-title">Sponsor a leaf on the Tree of Life</h1>
+        <h2 class="full-title">Name a leaf as a treat for yourself, or for someone else</h2>
+        <p>We'll display your name (or your friend's) on your selected leaf for any donation over &pound;5. With over two million leaves, there's something for everyone.</p>
+        <p>OneZoom is a <a href="{{=URL('static','images/RegistrationCertificate.jpg')}}" target="_blank">registered UK charity</a>, your donations help us provide easy access to scientific knowledge about biodiversity and evolution, the variety of life on Earth, and the need to conserve it.</p>
+
+        <h3>Choose a category</h3>
+        <ul class="short-sponsor-ideas">
+            {{for key, info in pick.items():}}
+            {{if not info.get("subtext"):}}
+            <li class="{{=str(key)}}"><a href="{{=URL(info['page'], vars=info.get('vars'))}}"><img src='{{=info["thumb_url"]}}' />{{=info["name"]}}</a>
+            {{pass}}{{pass}}
+        </ul>
+        <ul class="long-sponsor-ideas lined">
+            {{for ottid, info in pick.items():}}
+            {{if info.get("subtext"):}}
+            <li class="{{=str(ottid)}}"><a href="{{=URL(info['page'], vars=info.get('vars'))}}"><img src='{{=info["thumb_url"]}}' />{{=info["name"]}}</a>
+            <p class="subtext">{{=XML(info['subtext'])}}</p></li>
+            {{pass}}{{pass}}
+        </ul>
+    </div>
+    <div class="col-md-6 search-panel">
+        <h3>Search the Tree of Life</h3>
+        <form action="{{=URL('search_name')}}" class="lined">
+            <h4>Search for animals, plants, or other creatures to sponsor</h4>
+            <fieldset>
+                <p>Search {{="{0:0.1f}".format(round(n_species/1.0e6,1))}} million species and higher-level groups</p>
+                <input type="hidden" name="n" value="50" />
+                <input type="search" name="query" />
+                <p>with common names in <select name="lang">
+                {{for lang in languages:}}
+                    <option value="{{=lang['abbrev']}}">{{=lang['native']}}{{if lang['abbrev']!='en':}} ({{=lang['en']}}){{pass}}</option>
+                {{pass}}
+                </select>
+
+                <button class="btn btn-primary" type="submit">Search the tree</button>
+            </fieldset>
+        </form>
+        <form action="{{=URL('API', 'search_for_sponsor')}}" class="lined">
+            <h4>Search for names and details of sponsors</h4>
+            <fieldset>
+                <input type="search" name="query" class="" />
+                <input type="hidden" name="limit" value="6" />
+                <input type="hidden" name="default_images" value="1" />
+                <select name="type">
+                    <option value="all">search all sponsorships</option>
+                    <option value="for">sponsorships for someone else</option>
+                    <option value="by">sponsorships for the sponsor themselves</option>
+                </select>
+                <button class="btn btn-primary" type="submit">Search sponsorships</button>
+            </fieldset>
+        </form>
+        
+        <h4 id = "sponsor_title" class="lined">Explore the tree</h4>
+        <p>You can search within our tree viewer, or simply browse the tree to see what catches your eye.</p>
+        <a class="btn btn-primary" href="{{=URL('life.html')}}">Go to the tree</a>
+    </div>
+</div>
+
+<!--
+ <p>We'll add some examples of each category with images to show people</p>
+ <ul>
+ <li>£5 ... tens of thousands available (possibly no photo or common name but some nice things if you search for them)</li>
+ <li>£10 ... just under a million available</li>
+ <li>£20 ... just under a million available (orchids and roses)</li>
+ <li>£40 ... tens of thousands available (e.g. blue ringed octopus, seahorse, fruit bat)</li>
+ <li>£75 ... thousands available (e.g. rattlesnake, poison dart frog, hummingbird, tea or coffee, venus flytrap, barbary macaque)</li>
+ <li>£150 ... hundreds available (e.g. giraffe, scarlet macaw, penguin)</li>
+ <li>£ contact us ... a few really cool species (e.g lion)</li>
+ </ul>
+ -->
+
+
+
+
+
+
+
