@@ -32,7 +32,7 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
         } else if (record[0]) {
             return "<p>" + add_link(record[0], record) + "</p>";
         } else if (record[1]) {
-            return (is_leaf?"<p>" + add_link("<i>"+record[1]+"</i>", record) + "</p>":"<p>"+record[1]+"</p>");
+            return (is_leaf?"<p>" + add_link("<i>"+record[1]+"</i>", record) + "</p>":"<p>"+add_link(record[1],  record)+"</p>");
         }
     }
 
