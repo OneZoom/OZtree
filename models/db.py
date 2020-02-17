@@ -615,7 +615,7 @@ db.define_table('sponsor_picks',
         "What order to display them in on the page. If NULL, this is disabled")),
     Field('display_flags', type = 'integer', comment=(
         "Whether to display this pick in different contexts, with the contexts"
-        "as listed in the sponsor_suggestion_flags array")),
+        "as listed in the sponsor_suggestion_flags array. If NULL, alwys use")),
     Field('name', type='text', notnull=True, comment=(
         "The name that appears next to this pick on the webpage. May be translated")),
     Field('subtext', type='text', comment=(
