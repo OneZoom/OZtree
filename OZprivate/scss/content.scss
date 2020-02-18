@@ -66,6 +66,11 @@ ul.leaf-list {
   }
 }
 
+.no-break-paras li, .no-break-paras p {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
 img.species, .img-species > img {
   background: whitesmoke;
   border-radius: 50%;
