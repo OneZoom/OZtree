@@ -5,6 +5,8 @@
   "main": "Gruntfile.js",
   "directories": {
     "js_src": "OZprivate/rawJS/OZTreeModule/src",
+    "js_dist": "OZprivate/rawJS/OZTreeModule/dist",
+    "js_dest": "static/OZTreeModule/dist",
     "old_js_src": "OZprivate/rawJS/OZTree/src",
     "old_js_dist": "OZprivate/rawJS/OZTree/dist",
     "old_js_dest": "static/OZTree/dist",
@@ -14,9 +16,9 @@
   },
   "scripts": {
     "test": "npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/*.js",
-    "precompile_js": "NODE_ENV='production' webpack --config webpack.config.js",
-    "precompile_js_dev:watch": "webpack --watch --config webpack.config.dev.js",
-    "precompile_js_dev": "webpack --config webpack.config.js"
+    "compile_js": "NODE_ENV='production' webpack --config webpack.config.js",
+    "compile_js_dev:watch": "webpack --watch --config webpack.config.dev.js",
+    "compile_js_dev": "webpack --config webpack.config.js"
   },
   "repository": {
     "type": "git",

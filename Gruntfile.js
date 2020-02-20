@@ -2,22 +2,22 @@ module.exports = function (grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     exec: {
-      precompile_python: {
+      compile_python: {
         // compile python to make it faster on the server and hence reduce server load.
         // this needs python 2 installed to work
         cwd: "../../",
-        command: 'python2 -c "import gluon.compileapp; gluon.compileapp.compile_application(\'' + process.cwd() + '\', skip_failed_views=True)"'
+        command: 'python3 -c "import gluon.compileapp; gluon.compileapp.compile_application(\'' + process.cwd() + '\', skip_failed_views=True)"'
       },
       test: {
         command: 'npm run test'
       },
-      precompile_js: {
-        command: 'npm run precompile_js' //command defined in package.json
+      compile_js: {
+        command: 'npm run compile_js' //command defined in package.json
       },
-      precompile_js_dev: {
-        command: 'npm run precompile_js_dev' //command defined in package.json
+      compile_js_dev: {
+        command: 'npm run compile_js_dev' //command defined in package.json
       },
-      precompile_docs: {
+      unify_docs: {
         //put all markdown files referred to in OZTreeModule/docs/index.markdown in a single _compiled.markdown file
         //and substitute .png / svg images with data (base64 encoded for png) so they become embedded in the doc
         cwd: "OZprivate/rawJS/OZTreeModule/docs",
@@ -66,6 +66,7 @@ module.exports = function (grunt) {
       }
     },
     compass: {
+      // SCSS -> CSS files
       dist: {
         options: {
           sassDir: '<%=pkg.directories.css_src%>',
@@ -75,7 +76,7 @@ module.exports = function (grunt) {
         }
       }
     },
-    uglify: {
+    uglify: { // NB: the main tree viewer is minified using webpack, not directly in grunt
       main: {
         files: {
           //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
@@ -86,23 +87,16 @@ module.exports = function (grunt) {
         }
       }
     },
-    clean: {
-      build:[
+    clean: [
+        '<%=pkg.directories.js_dest%>/*',
+        '<%=pkg.directories.js_dist%>/*.js*',
         //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
         //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
         //is solved
         '<%=pkg.directories.old_js_dest%>/*',
-        '<%=pkg.directories.old_js_dist%>/*.js*',
-      ],
-      compile:[
-        //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
-        //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
-        //is solved
-        '<%=pkg.directories.old_js_dest%>/*',
-        '<%=pkg.directories.old_js_dist%>/*.js*',
-      ],
-    },
-    compress: {
+        '<%=pkg.directories.old_js_dist%>/*.js*'
+    ],
+    compress: {  // NB: the main tree viewer is compressed using webpack, not directly in grunt
       main: {
         options: {
           mode: 'gzip'
@@ -137,17 +131,19 @@ module.exports = function (grunt) {
       }
     },
     copy: {
-      to_live: {
+      prod: {
         files: [
-          // includes files within path
-          {expand: true, cwd: '<%=pkg.directories.old_js_dist%>', src: "**", dest: '<%=pkg.directories.old_js_dest%>/', filter: 'isFile'},
+          {expand: true, cwd: '<%=pkg.directories.js_dist%>', src: "**", dest: '<%=pkg.directories.js_dest%>/', filter: 'isFile'},
+          {expand: true, cwd: '<%=pkg.directories.old_js_dist%>', src: "**", dest: '<%=pkg.directories.old_js_dest%>/', filter: 'isFile'}
         ]
       },
-      //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
-      //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
-      //is solved
-      old_js: {
-          expand: true, cwd: '<%=pkg.directories.old_js_src%>', src: '*.js', dest: '<%=pkg.directories.old_js_dist%>/', filter: 'isFile'
+      dev: {
+        files: [
+          {expand: true, cwd: '<%=pkg.directories.js_dist%>', src: "**", dest: '<%=pkg.directories.js_dest%>/', filter: 'isFile'},
+          // old_js hasn't been moved to dist by the uglify script
+          {expand: true, cwd: '<%=pkg.directories.old_js_src%>', src: '*.js', dest: '<%=pkg.directories.old_js_dist%>/', filter: 'isFile'},
+          {expand: true, cwd: '<%=pkg.directories.old_js_src%>', src: '*.js', dest: '<%=pkg.directories.old_js_dest%>/', filter: 'isFile'}
+        ]
       },
     },
     curl: {
@@ -170,16 +166,17 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-curl');
 
   grunt.registerTask("test", ["exec:test"]);
-  grunt.registerTask("precompile-python", ["exec:precompile_python"]);
-  grunt.registerTask("precompile-js", ["exec:precompile_js"]);
-  grunt.registerTask("precompile-js_dev", ["exec:precompile_js_dev"]);
+  grunt.registerTask("css", ["compass"]);
+  grunt.registerTask("docs", ["jsdoc2md", "exec:unify_docs"]);
+  grunt.registerTask("compile-python", ["exec:compile_python"]);
+  grunt.registerTask("compile-js", ["exec:compile_js"]);
+  grunt.registerTask("compile-js_dev", ["exec:compile_js_dev"]);
   grunt.registerTask("partial-install", ["curl:get_minlife", "exec:partial_install"]);
   grunt.registerTask("partial-local-install", [
     "compile",
     "exec:partial_local_install:life.html:minlife.html",
     "exec:partial_local_install:otop.html:minotop.html",
   ]);
-  grunt.registerTask("precompile-docs", ["jsdoc2md", "exec:precompile_docs"]);
-  grunt.registerTask("build", ["clean:build", "precompile-python", "precompile-js", "copy:old_js", "compass", "uglify", "compress", "precompile-docs"]);
-  grunt.registerTask("compile", ["clean:compile", "precompile-js", "copy:old_js", "compass", "compress", "copy:to_live", "precompile-docs"]);
+  grunt.registerTask("prod", ["clean", "compile-python", "compile-js", "compass", "uglify", "compress", "copy:prod", "docs"]);
+  grunt.registerTask("dev",  ["clean",               "compile-js_dev", "compass",           "compress", "copy:dev",  "docs"]);
 };

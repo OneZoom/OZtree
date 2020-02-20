@@ -14,7 +14,9 @@ var config = {
     maxEntrypointSize: 350000,
     maxAssetSize: 350000 
   },
-  stats: { children: false },
+  stats: {
+    children: false
+  },
   entry: {
     //at: './OZprivate/rawJS/OZTreeModule/src/at.js',
     OZentry: OZTreeModule_src('OZentry.js'),
