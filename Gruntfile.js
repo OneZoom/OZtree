@@ -78,10 +78,6 @@ module.exports = function (grunt) {
     uglify: {
       main: {
         files: {
-          //also moves the files
-          '<%=pkg.directories.js_dest%>/common.js': ['<%=pkg.directories.js_dist%>/common.js'],
-          '<%=pkg.directories.js_dest%>/search_ui.js': ['<%=pkg.directories.js_dist%>/search_ui.js'],
-          '<%=pkg.directories.js_dest%>/OZentry.js': ['<%=pkg.directories.js_dist%>/OZentry.js'],
           //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
           //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
           //is solved
@@ -92,8 +88,6 @@ module.exports = function (grunt) {
     },
     clean: {
       build:[
-        '<%=pkg.directories.js_dest%>/*',
-        '<%=pkg.directories.js_dist%>/*.js*',
         //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
         //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
         //is solved
@@ -101,8 +95,6 @@ module.exports = function (grunt) {
         '<%=pkg.directories.old_js_dist%>/*.js*',
       ],
       compile:[
-        '<%=pkg.directories.js_dest%>/*',
-        '<%=pkg.directories.js_dist%>/*.js*',
         //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
         //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
         //is solved
@@ -116,13 +108,6 @@ module.exports = function (grunt) {
           mode: 'gzip'
         },
         files: [
-          {
-            expand: true,
-            cwd: '<%=pkg.directories.js_dest%>',
-            src: ['*.js'],
-            dest: '<%=pkg.directories.js_dest%>',
-            ext: '.js.gz'
-          },
           { //quick hack for the fragments of old code
             //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
             //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
@@ -155,7 +140,6 @@ module.exports = function (grunt) {
       to_live: {
         files: [
           // includes files within path
-          {expand: true, cwd: '<%=pkg.directories.js_dist%>', src: "**", dest: '<%=pkg.directories.js_dest%>/', filter: 'isFile'},
           {expand: true, cwd: '<%=pkg.directories.old_js_dist%>', src: "**", dest: '<%=pkg.directories.old_js_dest%>/', filter: 'isFile'},
         ]
       },
