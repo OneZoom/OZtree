@@ -6,7 +6,7 @@ module.exports = function (grunt) {
         // compile python to make it faster on the server and hence reduce server load.
         // this needs python 2 installed to work
         cwd: "../../",
-        command: 'python3 -c "import gluon.compileapp; gluon.compileapp.compile_application(\'' + process.cwd() + '\', skip_failed_views=True)"'
+        command: 'python2 -c "import gluon.compileapp; gluon.compileapp.compile_application(\'' + process.cwd() + '\', skip_failed_views=True)"'
       },
       test: {
         command: 'npm run test'
