@@ -137,7 +137,20 @@ When running OneZoom as a public server, you may wish to note:
 	}
 	```
 	
-* We run web2py using supervisord, so the following commands will restart web2py and the nginx web server
+* We run web2py using supervisord in a python 3 virtual env. The approriate supervisord line looks something like:
+
+```
+[program:uwsgi_onezoom]
+directory=/home/myuser/OneZoomComplete
+command=/usr/local/bin/uwsgi -s /var/run/uwsgi/uwsgi_onezoom_XXX.sock
+--chmod-socket=666 --need-app --master --home=/path/to/my_venv
+--wsgi-file wsgihandler.py --processes 1 --threads 10 --uid XXX --gid XXXX
+process_name=%(program_name)s%(process_num)d
+... #other params
+numprocs=5
+```
+
+and the following commands therefore restart web2py and the nginx web server
 
     ```
     sudo service supervisord restart #e.g. after editing /usr/local/etc/supervisord.conf
@@ -148,6 +161,6 @@ When running OneZoom as a public server, you may wish to note:
 
     ```
     sudo service nginx stop
-    sudo letsencrypt renew
+    sudo certbot renew
     sudo service nginx start
     ```

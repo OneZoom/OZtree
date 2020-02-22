@@ -12,22 +12,20 @@ There are two ways in which you can install OneZoom on a personal computer: full
 ## Requirements and packages
 For all installation methods, you will need to install node.js (and npm, the node package manager), and the webpack package. To compile the OneZoom javascript codebase automatically, you will then need to install grunt. To generate documentation or make a partial install, you will also need perl installed on your system.
 
-For full installation, you will additionally need to install web2py, and ensure that you have the programming language python (version 2) installed on your system, which is what web2py uses. You will also need access to a database backend (e.g. mySQL running on your own computer, or on a remote server which you can administer).
+For full installation, you will additionally need to install web2py, and ensure that you have the programming language python installed on your system, which is what web2py uses. You will also need access to a database backend (e.g. mySQL running on your own computer, or on a remote server which you can administer).
 
-To create trees, you will need python version 3 and perl, along with a number of libraries, as listed below.
-
-To run some of the processing scripts, you will also need python 3 installed.
+To create trees, you will need python and perl, along with a number of libraries, as listed below.
 
 ### Required packages
 The OneZoom codebase uses the following software (licenses for each listed in braces):
 
-* [Python](https://www.python.org) (versions 2.7 and 3.4) with the following libraries installed:
-	* Python 2.7: mysql-connector-python
-	* Python 3.4: piexif
-	* Python 3.4: nose + js2py + selenium +  e.g. chromedriver_installer (for functional testing)
-	* Python 3.4: requests
-	* Python 3.4: pymysql
-	* Python 3.4: Dendropy
+* [Python](https://www.python.org) (assumed version 3.7) with the following libraries installed:
+	* mysql-connector-python
+	* pymysql
+	* piexif
+	* requests
+	* Dendropy
+	* (for functional testing) nose + js2py + selenium +  e.g. chromedriver_installer 
 * [Perl](https://www.perl.org) with the following libraries installed
  	* File::ReadBackwards
  	* LWP::Simple
