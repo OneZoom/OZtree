@@ -4,9 +4,9 @@ module.exports = function (grunt) {
     exec: {
       compile_python: {
         // compile python to make it faster on the server and hence reduce server load.
-        // this needs python 2 installed to work
+        // should probably be run using the same python version as used to run web2py
         cwd: "../../",
-        command: 'python2 -c "import gluon.compileapp; gluon.compileapp.compile_application(\'' + process.cwd() + '\', skip_failed_views=True)"'
+        command: 'python3.7 -c "import gluon.compileapp; gluon.compileapp.compile_application(\'' + process.cwd() + '\', skip_failed_views=True)"'
       },
       test: {
         command: 'npm run test'
