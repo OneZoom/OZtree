@@ -11,8 +11,8 @@ function OZTreeModule_src(x) {
 var config = {
   performance: {
     // See https://github.com/OneZoom/OZtree/issues/246
-    maxEntrypointSize: 350000,
-    maxAssetSize: 350000 
+    maxEntrypointSize: 355000,
+    maxAssetSize: 355000 
   },
   stats: {
     children: false
