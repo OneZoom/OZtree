@@ -1,0 +1,3 @@
+<% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
+<script class="" src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
+<% } %>
