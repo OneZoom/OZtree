@@ -12,7 +12,7 @@
           device-width: Occupy full width of the screen in its current orientation
           initial-scale = 1.0 retains dimensions instead of zooming out if page height > device height
           user-scalable = yes allows the user to zoom in -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{{=response.title or request.application}}</title>
     <!-- http://dev.w3.org/html5/markup/meta.name.html -->
     <meta name="application-name" content="{{=request.application}}">
@@ -181,7 +181,7 @@
         {{=LOAD('default', 'footer_sponsor_items.load', target="footer-images", ajax=False, _style="position: relative", _class="uk-child-width-1-3")}}
         <ul class="oz-pill leaf-list"><li><a href="{{=URL('default', 'sponsor.html')}}">Sponsor a leaf now!</a></li></ul>
       </div>
-      <div class="uk-width-1-2 uk-width-1-6@m">
+      <div class="uk-width-1-3 uk-width-1-6@m">
         <h3>About us</h3>
         <ul>
           <li><a href="/milestones.html">Milestones</a></li>
@@ -192,7 +192,7 @@
         </ul>
       </div>
 
-      <div class="uk-width-1-2 uk-width-1-6@m">
+      <div class="uk-width-1-3 uk-width-1-6@m">
         <h3>Quick links</h3>
         <ul>
           <li><a href="/data_sources.html">Data sources</a></li>
@@ -202,7 +202,7 @@
         </ul>
       </div>
 
-      <div class="uk-width-1-6@m">
+      <div class="uk-width-1-3 uk-width-1-6@m">
         <h3>Follow us</h3>
         <div>
           <a href="mailto:mail@onezoom.org" title=""><span uk-icon="icon: mail" style="vertical-align: bottom;"></span>&nbsp; E&#8209;mail</a><br/>
