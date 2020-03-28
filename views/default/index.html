@@ -173,7 +173,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
       <li>
         <blockquote>{{=XML(q.html_quote)}}
           <footer class="blockquote-footer">
-              <cite>{{if q.person_url:}}<a href="{{=q.person_url}}" target="_blank">{{=q.person}}</a>{{else:}}{{=q.person}}{{pass}}{{if q.html_affiliation:}}, {{=XML(q.html_affiliation)}}{{pass}}</cite>
+              <cite>{{=q.person}}{{if q.html_affiliation:}}, {{=XML(q.html_affiliation)}}{{pass}}</cite>
           </footer>
         </blockquote>
       </li>
