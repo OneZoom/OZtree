@@ -59,7 +59,7 @@ Before anything else, get the OZtree app from [github](https://github.com/OneZoo
 ### For a full installation (recommended):
 	
 1. Install a source code version of [web2py](http://www.web2py.com), placing your [OZtree repository](https://github.com/OneZoom/OZtree) within the web2py `applications` directory.
-2. Compile the client-side explorer code by running `npm install` from within the OZtree folder you have just moved, then run `grunt compile` (or `grunt build` if in production mode) - see *"[Building the OneZoom tree viewer](#building-the-onezoom-tree-viewer)"*.
+2. Compile the client-side explorer code by running `npm install` from within the OZtree folder you have just moved, then run `grunt dev` (or `grunt prod` if in production mode) - see *"[Building the OneZoom tree viewer](#building-the-onezoom-tree-viewer)"*.
 3. [Install](http://dev.mysql.com/downloads/mysql/) & start MySQL, then create a new database (see *"[Setting up the database backend](#setting-up-the-database-backend)"*)
 4. Create a appconfig.ini file in `OZtree/private`, with `migrate=1` and which references this database with the appropriate username and password. We also recommend copying the `routes.py` file from `OZtree/_MOVE_CONTENTS_TO_WEB2PY_DIR` to the top level of your web2py installation - see *"[Web2py installation](#web2py-installation)"*
 5. Fire up a temporary web2py server and visit the main page to create the (empty) database tables - see *"[Starting and shutting down web2py](#starting-and-shutting-down-web2py)"*
