@@ -25,7 +25,7 @@ module.exports = function (grunt) {
       },
       partial_install: {
         //See documentation in https://github.com/OneZoom/OZtree#onezoom-setup
-        command: "perl -i OZprivate/ServerScripts/Utilities/partial_install.pl static/minlife.html"
+        command: "python3 OZprivate/ServerScripts/Utilities/partial_install.py static/minlife.html"
       },
       partial_local_install: {
         //used for development only. This will create the minlife file as normal, but
@@ -43,7 +43,7 @@ module.exports = function (grunt) {
             output_file = input_file
           }
           return "curl -s 'http://127.0.0.1:8000/" + input_file + "' > static/" + output_file + ";" +
-                 "perl -i OZprivate/ServerScripts/Utilities/partial_install.pl static/" + output_file + ";" +
+                 "python3 OZprivate/ServerScripts/Utilities/partial_install.py static/" + output_file + ";" +
                  "perl -i -pe 's|http://127.0.0.1:8000|http://beta.onezoom.org|g' static/" + output_file + ";";
         }
       }
