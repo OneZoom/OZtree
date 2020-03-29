@@ -18,7 +18,7 @@
       // "template_style" shouldn't be needed, as the css will be in the frontpage
       "hide_tourstop_style": {"remove_class": "active"},
       "show_tourstop_style": {"add_class": "active"},
-      "fly_in_speed": 0.3, /* speed relative to the global_anim_speed */
+      "fly_in_speed": 1.7, /* speed relative to the global_anim_speed */
   },
   "tourstops": [
         {{for key in anim:}}
@@ -30,7 +30,7 @@
                     "href": "{{=hrefs.get(key, "")}}"}, {{name=html_names.get(key, '')}}
                 "ottname": "{{=XML(add_the(name, False) if has_vernacular else name)}}"
             },
-            "wait": 1000
+            "wait": 7500
         },
         {{pass}}
         {{pass}}
