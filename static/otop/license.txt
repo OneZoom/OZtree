@@ -4,4 +4,5 @@ One Tree, One Planet
 
 Image files found in this folder are copyright Naziha Mestaoui 2018 and utilised in the One Tree, One Planet view in OneZoom.  
 
-Image files in this folder are made available under a Creative Commons Attribution-NoDerivatives 4.0 International license (CC BY-ND 4.0)
+Image files in this folder are made available under a Creative Commons 
+Attribution-NonCommercial-NoDerivs 4.0 International license (CC BY-NC-ND 4.0)
