@@ -26,7 +26,7 @@ from gluon import current
 
 ## once in production, set is_testing=False to gain optimizations
 ## this will also set migration=False for all tables, so that the DB table definitions are fixed
-is_testing = False
+is_testing = True
 
 ## get config params etc
 if is_testing:
@@ -49,6 +49,9 @@ else:
 ## we also need to define a javascript equivalent for use on the client side
 try:
     thumb_base_url = myconf.take('images.url_base')
+    if thumb_base_url.startswith("//"):
+        # Add http: or https: to make it possible to view pages even from file:// urls
+        thumb_base_url = request.env.wsgi_url_scheme + ":" + thumb_base_url
     local_pic_path = None
 except:
     thumb_base_url = URL('static','FinalOutputs/img', scheme=True, host=True, extension=False)+"/"
