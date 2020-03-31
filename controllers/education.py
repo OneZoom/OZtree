@@ -17,3 +17,6 @@ def installations():
 
 def screenshot_launcher():
     return dict()
+
+def educational_materials():
+    return dict()
