@@ -80,107 +80,94 @@ function setup(
       config.disable_record_url = true;
   }
 
-  let return_value = {};
+  let oz = { // the onezoom object that will be returned
+    'utils': { // Some useful utility functions to expose
+      'spec_num_full': spec_num_full,
+      'number_convert': number_convert,
+      'view_richness': view_richness,
+      'process_taxon_list': process_taxon_list,
+      'new_tour': (self) => {return new Tour(self)} // so we can create new tours
+    }};
+
   if (canvasID) {
     tree_settings.set_default(default_viz_settings); // implements the config for that tree.
-
-    api_manager.start(); // this is called on both the if and the else branch. Would be neater to put it right at the top: would that break anything?
+    api_manager.start();
 
     let controller = get_controller();
     controller.setup_canvas(document.getElementById(canvasID));
     controller.draw_loading();
 
-    return_value.controller = controller;
-    return_value.tree_settings = tree_settings;
-    return_value.tree_state = tree_state;
-    return_value.data_repo = data_repo;
+    oz.controller = controller;
+    oz.tree_settings = tree_settings;
+    oz.tree_state = tree_state;
+    oz.data_repo = data_repo;
+    oz.utils.largest_visible_node = () => {
+      let node = get_largest_visible_node(oz.controller.root)
+      if (node.is_leaf) {
+          return -node.metacode
+      } else {
+          return node.metacode
+      }
+    }
   } else {
-    //on a page with no canvas, there is no point having either a controller or a data_repo
+    // Page with no canvas: no point having either a controller or a data_repo
     api_manager.start();
-    return_value.tree_settings = null;
-    return_value.controller = null;
-    return_value.tree_state = null;
-    return_value.data_repo = null;
+    oz.tree_settings = null;
+    oz.controller = null;
+    oz.tree_state = null;
+    oz.data_repo = null;
   }
 
-  return_value.config = config;
-  return_value.search_manager = search_manager;
+  oz.config = config;
+  oz.search_manager = search_manager;
   // TO DO - use data_repo passed in to the entry function, so we don't need to include it in the initial JS
-  return_value.search_manager.add_data_repo(return_value.data_repo);
-  // return_value.tours = {};
-  // //next function should be spun off into a tours.js module
-  // return_value.tours.page = function (tourname, next_stop_number, success_func) {
-  //   let params = {
-  //     data: { tourname: tourname, stopnum: next_stop_number },
-  //     success: success_func,
-  //     error: function (res) {
-  //       reject();
-  //     }
-  //   };
-  //   api_manager.tour_detail(params);
-  // }
-  return_value.tutorial = new Tour(return_value)
-  return_value.screensaver = new Screensaver(return_value)
-  return_value.utils = {};
-  return_value.utils.spec_num_full = spec_num_full;
-  return_value.utils.number_convert = number_convert;
-  return_value.utils.view_richness = view_richness;
-  return_value.utils.process_taxon_list = process_taxon_list;
-  if (return_value.controller) {
-      return_value.utils.largest_visible_node = () => {
-        let node = get_largest_visible_node(return_value.controller.root)
-        if (node.is_leaf) {
-            return -node.metacode
-        } else {
-            return node.metacode
+  oz.search_manager.add_data_repo(oz.data_repo);
+  oz.tutorial = oz.utils.new_tour(oz)
+  oz.screensaver = new Screensaver(oz)
+  oz.add_hook = add_hook;
+
+  // use setTimeout so that loading screen is displayed before build tree starts.
+  // TO DO - we should probably use promises here rather than rely on timeouts completing
+  setTimeout(() => {
+    if (oz.controller) {
+        //start fetching metadata for the tree, using global variables that have been defined in files 
+        //10000 is cut threshold for cut_position_map_json_str
+        //TODO: It shouldn't be hard coded.
+        // the cut map file should eventually contain the information of what it's for. cut_map_json is a 
+        // stringified json object which maps node position in rawData to its cut position of its children in rawData
+    
+        //10000 should be replaced with the threshold used to generate cut_position_map.js. If the string of a node in ]
+        //rawData is shorter than cut_threshold, then there is no need to find its cut position and add it in cut_map_json.
+        let cut_threshold = window.cut_threshold || 10000;
+        let tree_date = window.tree_date || "{}";
+        let data_obj = {
+          raw_data: condensed_newick,
+          cut_map: JSON.parse(dichotomy_cut_position_map_json_string || "{}"),
+          poly_cut_map: JSON.parse(polytomy_cut_position_map_json_string || "{}"),
+          metadata: metadata,
+          cut_threshold: cut_thresholds || 10000,
+          tree_date: tree_dates || "{}"
         }
-      }
-  }        
-  return_value.add_hook = add_hook;
 
-  //setTimeout so that draw loading would be displayed before build tree starts.
-  setTimeout(function () {
-    //start fetching metadata for the tree, using global variables that have been defined in files like 
-    //10000 is cut threshold for cut_position_map_json_str
-    //TODO: It shouldn't be hard coded.
-    // the cut map file should eventually contain the information of what it's for. cut_map_json is a 
-    // stringified json object which maps node position in rawData to its cut position of its children in rawData
-
-    //10000 should be replaced with the threshold used to generate cut_position_map.js. If the string of a node in ]
-    //rawData is shorter than cut_threshold, then there is no need to find its cut position and add it in cut_map_json.
-    let cut_threshold = window.cut_threshold || 10000;
-    let tree_date = window.tree_date || "{}";
-
-
-    let data_obj = {
-      raw_data: condensed_newick,
-      cut_map: JSON.parse(dichotomy_cut_position_map_json_string || "{}"),
-      poly_cut_map: JSON.parse(polytomy_cut_position_map_json_string || "{}"),
-      metadata: metadata,
-      cut_threshold: cut_thresholds || 10000,
-      tree_date: tree_dates || "{}"
-    }
-
-    if (return_value.controller) {
-        return_value.controller.build_tree(data_obj)
+        oz.controller.build_tree(data_obj)
         //Jump or fly to a place in the tree marked by the url when the page loads.
         setup_loading_page()
-        call_hook("on_tree_loaded")
-        return_value.controller.find_proper_initial_threshold()
-        return_value.controller.trigger_refresh_loop()
+        oz.controller.find_proper_initial_threshold()
+        oz.controller.trigger_refresh_loop()
         //listen to user mouse, touch, icon click, window resize and user navigation events.
-        return_value.controller.bind_listener()
+        oz.controller.bind_listener()
         //start garbage collection of tree to keep the size of the tree in memory reasonable
+        call_hook("on_tree_loaded")
     }
     garbage_collection_start()
   }, 50);
 
-  return return_value;
+  return oz;
 }
 
 /**
- * Call this function would return an object containing API helpers
- * User could use this object to call API helpers without create OneZoom instance.
+ * This function returns an object containing API helpers
+ * User can use this object to call API helpers without creating a OneZoom instance.
  * 
  * @param {Object} server_urls - A named key:value dict of urls that the api manager etc needs to fire
  *     off AJAX requests. See global_config.js for the list of necessary names

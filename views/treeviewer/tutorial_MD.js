@@ -16,8 +16,8 @@
    * Each tour stop could overwrite the properties independently
    */
   "tourstop_shared": {
-      "template": "static/tour/tutorial_template.html",
-      "template_style": "static/tour/tutorial_template.css",
+      "template": "{{=URL('static', 'tour/tutorial_template.html')}}",
+      "template_style": "{{=URL('static', 'tour/tutorial_template.css')}}",
       "update_class": {
           /**
            * Replace content of classes e.g. $('.title'), $('.tour_backward'), $('.tour_forward')

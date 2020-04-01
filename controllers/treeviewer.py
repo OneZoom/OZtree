@@ -57,6 +57,14 @@ def minlife():
     return dict(
         page_info = {'title_name':'Minimal OneZoom page','try_local_treefiles_version':__check_version()})
 
+
+def minlife_tour():
+    """
+    A minimum version for restricted installation that does not contain the text tree and disallows language / tree switching
+    This version will be downloaded from the main server
+    """
+    return minlife()
+
 def about_plus_data():
     """
     Only in the treeviewer

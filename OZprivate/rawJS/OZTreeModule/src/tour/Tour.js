@@ -25,8 +25,9 @@ class Tour {
     let setting_example = { 
         /* Settings general to the tour, rather that specific to each tour stop */
         "general": {
-            confirm_template: 'static/tour/exit_confirm.html', // Must be defined if the interaction parameter  
-            confirm_template_style: 'static/tour/exit_confirm.css', // ditto
+            // replace with a url to the template without http etc (will be escaped)
+            confirm_template: "/static/tour/exit_confirm.html", // Must be defined if the interaction parameter is true
+            confirm_template_style: "/static/tour/exit_confirm.css", // ditto
             "dom_names": {
                 /* The following values are actually the defaults, but we specify them
                  * here anyway for illustration purposes
@@ -47,15 +48,12 @@ class Tour {
              * tour. They are overridden by any identically named values defined in each
              * element of the "tourstop" array.
              */
-            "template": "static/tour/tutorial_template.html",
-            "template_style": "static/tour/tutorial_template.css",
+            "template": "/static/tour/tour_template.html",
+            "template_style": "/static/tour/tour_template.css",
             "hide_tourstop_style": {"display": "none"}, // This is the default. Alternatively
             "show_tourstop_style": {"display": "block"}, // try {"opacity":"0"} & {"opacity":"1"} or {"add_class": "active"}, {"remove_class": "active"}
             "update_class": {
-                "title": "OneZoom Demo Tour",
-                "tour_forward": {
-                    "style": {"visibility": "hidden"}
-                },
+                "title": "OneZoom Demo Tour"
             },
             "wait": 3000 /* For this tour, by default wait 3 seconds between each stop.
             * (if not specified, the default is null, meaning wait until the "next"
@@ -458,7 +456,7 @@ class Tour {
     const update_class = tourstop.setting.update_class || {}
     const container = tourstop.container
     for (let key in update_class) {
-      if (typeof update_class[key] === 'object' && update_class[key].hasOwnProperty('src')) {
+      if (update_class[key] && typeof update_class[key] === 'object' && update_class[key].hasOwnProperty('src')) {
         container.find('.' + key).attr('src', update_class[key].src)
       }
     }
@@ -507,12 +505,7 @@ class Tour {
       /**
        * Load template div
        */
-      const template_url =
-        location.protocol +
-        '//' +
-        location.host +
-        '/' +
-        encodeURI(tourstop.setting.template)
+      const template_url = encodeURI(tourstop.setting.template)
 
       const temp_div = document.createElement('div')
       temp_div.classList.add("tourstop", this.name)
@@ -538,12 +531,7 @@ class Tour {
       ) {
         style_url_cache.add(tourstop.setting.template_style)
 
-        const style_url =
-          location.protocol +
-          '//' +
-          location.host +
-          '/' +
-          encodeURI(tourstop.setting.template_style)
+        const style_url = encodeURI(tourstop.setting.template_style)
         $('head').append(
           $('<link rel="stylesheet" type="text/css" disabled id=tour_style_' + this.tour_id + ' />').attr(
             'href',
@@ -563,11 +551,7 @@ class Tour {
       if (!this.setting.general.hasOwnProperty('confirm_template')) {
         console.error('You choose to popup confirmation popup when user interacts, but no popup template is provided')
       } else {
-        const template_url = location.protocol +
-          '//' +
-          location.host +
-          '/' +
-          encodeURIComponent(this.setting.general.confirm_template)
+        const template_url = encodeURIComponent(this.setting.general.confirm_template)
 
         const temp_div = document.createElement('div')
         $(temp_div).load(template_url + " .container", () => {
@@ -577,12 +561,7 @@ class Tour {
           this.bind_exit_confirm_event()
         })
 
-        const style_url =
-          location.protocol +
-          '//' +
-          location.host +
-          '/' +
-          this.setting.general.confirm_template_style
+        const style_url = this.setting.general.confirm_template_style
         $('head').append(
           $('<link rel="stylesheet" type="text/css" disabled id=tour_exit_confirm_style_' + this.tour_id + ' />').attr(
             'href',

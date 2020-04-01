@@ -1,3 +1,7 @@
+partial_install_site = "http://beta.onezoom.org";
+partial_local_install_site = "http://127.0.0.1:8000"; // if you are running a local installation
+
+
 module.exports = function (grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -23,29 +27,14 @@ module.exports = function (grunt) {
         cwd: "OZprivate/rawJS/OZTreeModule/docs",
         command: "perl compile_docs.pl index.markdown > _compiled.markdown"
       },
-      partial_install: {
-        //See documentation in https://github.com/OneZoom/OZtree#onezoom-setup
-        command: "python3 OZprivate/ServerScripts/Utilities/partial_install.py static/minlife.html"
-      },
-      partial_local_install: {
-        //used for development only. This will create the minlife file as normal, but
-        //using your local machine to source the page, rather than downloading the minlife
-        //file from the main OneZoom server. This means that as well as local changes to
-        //the treeviewer javascript, local changes you make to other files (such as
-        // treeviewer/layout.html and treeviewer/UI_layer.load) will be incorporated
-        //into the minlife tree. However, it assumes you have a local server running on
-        //127.0.0.1:8000, and pics_dir = http://images.onezoom.org/ set in your appconfig.ini.
-        //
-        //See documentation in https://github.com/OneZoom/OZtree#onezoom-setup
-        command: function (input_file, output_file) {
-          if (!output_file) {
-            // Only one argument supplied, assume input and output are the same
-            output_file = input_file
-          }
-          return "curl -s 'http://127.0.0.1:8000/" + input_file + "' > static/" + output_file + ";" +
-                 "python3 OZprivate/ServerScripts/Utilities/partial_install.py static/" + output_file + ";" +
-                 "perl -i -pe 's|http://127.0.0.1:8000|http://beta.onezoom.org|g' static/" + output_file + ";";
-        }
+      convert_links_to_local: {
+        // Any .html file in /static is fair game. See documentation in
+        // https://github.com/OneZoom/OZtree#onezoom-setup
+        command: 
+            "python3 OZprivate/ServerScripts/Utilities/partial_install.py" +
+            " --search " + partial_local_install_site + // replace local urls, for partial local install
+            " --replace " + partial_install_site +
+            " static/*.html"
       }
     },
     jsdoc2md: {
@@ -88,6 +77,7 @@ module.exports = function (grunt) {
       }
     },
     clean: [
+        'compiled',
         '<%=pkg.directories.js_dest%>/*',
         '<%=pkg.directories.js_dist%>/*.js*',
         //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
@@ -146,12 +136,29 @@ module.exports = function (grunt) {
         ]
       },
     },
-    curl: {
+    'curl-dir': {
         'get_minlife': {
             //this should be changed to the production URL when live
             //src:'http://www.onezoom.org/treeviewer/minlife.html/?lang=' + grunt.option('lang') || '',
-            src:'http://beta.onezoom.org/treeviewer/minlife.html',
-            dest:'static/minlife.html',
+            src: [
+                partial_install_site + '/treeviewer/minlife.html',
+                partial_install_site + '/treeviewer/minlife_tour.html',
+            ],
+            dest:'static',
+        },
+        'get_local_minlife': {
+            //used for development only. This will create the minlife file as normal, but
+            //using your local machine to source the page, rather than downloading the minlife
+            //file from the main OneZoom server. This means that as well as local changes to
+            //the treeviewer javascript, local changes you make to other files (such as
+            // treeviewer/layout.html and treeviewer/UI_layer.load) will be incorporated
+            //into the minlife tree. However, it assumes you have a local server running on
+            //127.0.0.1:8000, and pics_dir = http://images.onezoom.org/ set in your appconfig.ini.
+            src: [
+                partial_local_install_site + '/treeviewer/minlife.html',
+                partial_local_install_site + '/treeviewer/minlife_tour.html',
+            ],
+            dest:'static',
         }
     }
   });
@@ -171,12 +178,8 @@ module.exports = function (grunt) {
   grunt.registerTask("compile-python", ["exec:compile_python"]);
   grunt.registerTask("compile-js", ["exec:compile_js"]);
   grunt.registerTask("compile-js_dev", ["exec:compile_js_dev"]);
-  grunt.registerTask("partial-install", ["curl:get_minlife", "exec:partial_install"]);
-  grunt.registerTask("partial-local-install", [
-    "compile",
-    "exec:partial_local_install:life.html:minlife.html",
-    "exec:partial_local_install:otop.html:minotop.html",
-  ]);
+  grunt.registerTask("partial-install",       ["compile-js", "copy:dev", "curl-dir:get_minlife", "exec:convert_links_to_local"]);
+  grunt.registerTask("partial-local-install", ["compile-js", "copy:dev", "curl-dir:get_local_minlife", "exec:convert_links_to_local"]);
   grunt.registerTask("prod", ["clean", "compile-python", "compile-js", "compass", "uglify", "compress", "copy:prod", "docs"]);
   grunt.registerTask("dev",  ["clean",               "compile-js_dev", "compass",           "compress", "copy:dev",  "docs"]);
 };
