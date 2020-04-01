@@ -47,9 +47,9 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
     var globals = {} /* A place to store global variables that are set in the file which includes this one */
     var extra_title = "{{='/' + partner if partner else ''}}"
 
-    var UI_callbacks = {};
+    globals.UI_callbacks = {};
 
-    UI_callbacks.badOTT = function(ott) { 
+    globals.UI_callbacks.badOTT = function(ott) { 
       /* used within setup_page.js when the page tries to load a bad location */
       $("#error-modal a.OpenTreeSearchOnTree").attr("href","https://tree.opentreeoflife.org/opentree/argus/ottol@" +  ott.toString());
       $("#error-modal a.OpenTreeSearchInTaxonomy").attr("href","https://tree.opentreeoflife.org/taxonomy/browse?id=" + ott.toString());
@@ -57,7 +57,7 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
       UIkit.modal('#error-modal').show();
     };
     
-    UI_callbacks.closeAll = function() {
+    globals.UI_callbacks.closeAll = function() {
       {{if is_testing:}}console.log("OneZoom internal JS has been asked to hide all open modals & dropdowns");{{pass}}
       $('.uk-modal-container').each(function() {
           UIkit.modal(this).hide(false); // Hide immediately, by default we wait in case mouse comes back
@@ -68,11 +68,11 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
     };
     
     /** Display / hide the loading spinner */
-    UI_callbacks.loadingMessage = function (active) {
+    globals.UI_callbacks.loadingMessage = function (active) {
       document.body.classList.toggle('loading', active);
     };
     
-    UI_callbacks.openCopyright = function(pic_src, pic_fn) {
+    globals.UI_callbacks.openCopyright = function(pic_src, pic_fn) {
       var load_url = "{{=XML(URL('tree', 'pic_info', scheme=True, host=True, extension='html', args=['...PICSRC...', '...PICFN...'], vars=(setup_params.get('popups') or {}).get('vars')))}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
       var link_url = "{{=URL('tree','pic_info', scheme=True, host=True, extension=False, args=['...PICSRC...', '...PICFN...'], vars={'redirect':1})}}".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
       $("#imageinfo-modal .popup-content .iframe-loading-info").show();
@@ -92,7 +92,7 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
     };
     
     /* called as soon as a request to open a linkouts window is made */
-    UI_callbacks.openLinkouts = function() {
+    globals.UI_callbacks.openLinkouts = function() {
       {{if is_testing:}}console.log("OneZoom internal JS has been asked to open tabs");{{pass}}
       $('#external-modal .no-tab-data').hide();
       $('#external-modal .external-content').hide();
@@ -102,7 +102,7 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
     };
     
     /* called when the API returns with details about contents of the linkouts window */
-    UI_callbacks.populateLinkouts = function(responseJSON, initialSelected) {
+    globals.UI_callbacks.populateLinkouts = function(responseJSON, initialSelected) {
         console.log("populating linkout tabs with API data from", responseJSON);
       {{if is_testing:}}console.log("populating linkout tabs with API data from", responseJSON);{{pass}}
       if (initialSelected) {
@@ -204,7 +204,7 @@ function closeAndLeap(event, OZIDin, original_searchbox) {
     var dropdown = $(".search_dropdown", original_searchbox)
     if (dropdown.length) {
         if ((dropdown.first().outerWidth()*2) > document.getElementById("OneZoomCanvasID").width) {
-            UI_callbacks.closeAll();
+            globals.UI_callbacks.closeAll();
         }
     }
     if (OZIDin) onezoom.controller.default_move_to(OZIDin);
@@ -539,7 +539,6 @@ function setupUI() {
             onezoom.tutorial.start()  //activate tutorial
         })
 
-
     $('input[name="imgsource"]').change(function() {onezoom.controller.set_image_source(this.value)});
     $('input[name="treeshape"]').change(function() {onezoom.controller.change_view_type(this.value)});
     $('input[name="colourtype"]').change(function() {onezoom.controller.change_color_theme(this.value)});
@@ -822,7 +821,8 @@ function setupUI() {
         add_advanced_searchbox();
         toggleAdvancedSearch(false);        
     }
-    
+
+    $(document).triggerHandler("setupUI", onezoom);
 }
 
 $(document).ready(function() {    /* Mainly a place to attach JS event handlers */
@@ -837,7 +837,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
     function setup_onezoom() {  
         onezoom = OZentry.default(
             window.server_urls,
-            window.UI_callbacks,
+            window.globals.UI_callbacks,
             window.pagetitle_func,
             'OneZoomCanvasID',
             window['tree_config'],
@@ -850,23 +850,24 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
 
         onezoom.add_hook('on_tree_loaded', () => {
             onezoom.tutorial.setup_setting(
-                window.globals['tutorial_config'],
-                'tutorial',
-                UI_callbacks.closeAll, // before the tutorial runs, close modals etc.
+                globals['tutorial_config'], 'tutorial',
+                globals.UI_callbacks.closeAll, // before the tutorial runs, close modals etc.
                 null, // nothing on tutorial end
                 null, // nothing on premature exit
                 null, // allow interaction to pause the tutorial
                 function() {$(".tour_resume").show()} // if interaction, show the resume button
                 )})
+        /* The screensaver is a type of tour with a different calling signature */
         onezoom.add_hook('on_tree_loaded', () => {
             onezoom.screensaver.setup_setting(
                 // screensaver_config may only be defined for some displays
                 window.globals['screensaver_config'], 'screensaver',
-                UI_callbacks.closeAll, // before the screensaver runs, close modals etc.
+                globals.UI_callbacks.closeAll, // before the screensaver runs, close modals etc.
                 true, // loop back and forth
                 null, // nothing on screensaver exit
-                ); 
+                );
         })
+        $(document).triggerHandler("setupOneZoom", [onezoom])
     
         {{response.write(";\n".join(setup_params.get('pre_ui_setup', [])), escape = False)}}
         setupUI();
