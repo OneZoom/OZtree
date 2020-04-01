@@ -149,8 +149,12 @@ body.loading #UI #loading_spinner {
     display: none;
 }
 
-/* Hide hide/show control button and how to use button */
-#controlButtons #showControlsButton, #controlButtons #hideControlsButton, #controlButtons #howToUseButton {
+/* Hide hide/show control button, how to use button, tour button, etc */
+#controlButtons #showControlsButton,
+#controlButtons #hideControlsButton,
+#controlButtons #howToUseButton,
+#controlButtons #tourButton,
+{
     display: none;
 }
 

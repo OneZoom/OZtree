@@ -94,6 +94,12 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     </div>
     <span class='button-label'>{{=T('How to use')}}</span>
   </li>
+  <li id="tourButton">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('Take a tour')}}" uk-icon="icon: world"></a>
+    </div>
+    <span class='button-label'>{{=T('How to use')}}</span>
+  </li>
   <li id="hideControlsButton">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Hide panel')}}" uk-icon="icon: triangle-left"></a>
