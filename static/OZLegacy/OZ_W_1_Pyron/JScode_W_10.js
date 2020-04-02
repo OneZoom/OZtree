@@ -1299,7 +1299,7 @@ function autotext3(initalic,texttodisp,textx,texty,textw,defpt)
 	function tutorialstart()
 	{
         justopened = false;
-        mywindow = window.open("http://www.onezoom.org/tutorial2.htm");
+        mywindow = window.open("https://www.youtube.com/watch?v=ngt0XLFgN28");
         popup_out();
 	}
 	
