@@ -1,6 +1,6 @@
 partial_install_site = "http://beta.onezoom.org";
 partial_local_install_site = "http://127.0.0.1:8000"; // if you are running a local installation
-
+preferred_python3 = "python3.7"; // in case you have multiple python3 versions installed
 
 module.exports = function (grunt) {
   grunt.initConfig({
@@ -10,7 +10,14 @@ module.exports = function (grunt) {
         // compile python to make it faster on the server and hence reduce server load.
         // should probably be run using the same python version as used to run web2py
         cwd: "../../",
-        command: 'python3.7 -c "import gluon.compileapp; gluon.compileapp.compile_application(\'' + process.cwd() + '\', skip_failed_views=True)"'
+        command:
+                preferred_python3 + ' -c "import gluon.compileapp; gluon.compileapp.compile_application(\''
+                + process.cwd()
+                + '\', skip_failed_views=True)"'
+            + ' || ' + // If python 3.7 isn't available, use the system-defined python3 instead
+                'python3 -c "import gluon.compileapp; gluon.compileapp.compile_application(\''
+                + process.cwd()
+                + '\', skip_failed_views=True)"'
       },
       test: {
         command: 'npm run test'
@@ -178,8 +185,8 @@ module.exports = function (grunt) {
   grunt.registerTask("compile-python", ["exec:compile_python"]);
   grunt.registerTask("compile-js", ["exec:compile_js"]);
   grunt.registerTask("compile-js_dev", ["exec:compile_js_dev"]);
-  grunt.registerTask("partial-install",       ["compile-js", "copy:dev", "curl-dir:get_minlife", "exec:convert_links_to_local"]);
-  grunt.registerTask("partial-local-install", ["compile-js", "copy:dev", "curl-dir:get_local_minlife", "exec:convert_links_to_local"]);
+  grunt.registerTask("partial-install",       ["compile-js", "compass", "copy:dev", "curl-dir:get_minlife", "exec:convert_links_to_local"]);
+  grunt.registerTask("partial-local-install", ["compile-js", "compass", "copy:dev", "curl-dir:get_local_minlife", "exec:convert_links_to_local"]);
   grunt.registerTask("prod", ["clean", "compile-python", "compile-js", "compass", "uglify", "compress", "copy:prod", "docs"]);
   grunt.registerTask("dev",  ["clean",               "compile-js_dev", "compass",           "compress", "copy:dev",  "docs"]);
 };
