@@ -17,7 +17,7 @@ For full installation, you will additionally need to install web2py, and ensure 
 To create trees, you will need python and perl, along with a number of libraries, as listed below.
 
 ### Required packages
-The OneZoom codebase uses the following software (licenses for each listed in braces):
+The OneZoom codebase uses the following software (licenses for each listed in braces). The first three are programming languages which may well already be installed on your computer.
 
 * [Python](https://www.python.org) (assumed version 3.7) with the following libraries installed:
 	* mysql-connector-python
@@ -35,31 +35,34 @@ The OneZoom codebase uses the following software (licenses for each listed in br
  	* Text::CSV
  	* Image::ExifTool
  	* DBD::mysql
+* [Ruby](https://www.ruby-lang.org) (only to install the 'compass' program, see below)
 * [web2py](http://web2py.com) (LGPL license)
-* [npm]() node.js
+* [npm](https://www.npmjs.com/get-npm), part of node.js which, when run will install a large number of other packages including 
+        * [grunt](https://gruntjs.com) (MIT licence): to automate creating the OneZoom website files
+	* [webpack](https://webpack.js.org) (MIT licence): to package the OneZoom javascript tree viewer into a library
 	* jsdoc-to-markdown (MIT licence): to produce documentation from source code
-	* webpack (for compression)
-* [grunt]() 
-	* xxxx
+* [compass](http://compass-style.org) to create the style sheets for OneZoom web pages
 * [ImageMagick](https://www.imagemagick.org/script/index.php) (Apache 2.0) for processing thumbnails
-* [UIkit 3](https://getuikit.com) (MIT) for the User Interface (included in the OneZoom github repo)
+* [UIkit 3](https://getuikit.com) (MIT licence) for the User Interface (this code is included in the OneZoom github repo, and does not need downloading)
 
 ## Quick installation steps
 
-Before anything else, get the OZtree app from [github](https://github.com/OneZoom/OZtree) - see *"Downloading the OZtree app"*. You should also make sure you have node.js and the node package manager (npm) and the grunt command-line interface installed on your system - see *"Building the OneZoom tree viewer"*
+Before anything else, get the OZtree app from [github](https://github.com/OneZoom/OZtree) - see *"Downloading the OZtree app"*. You should also make sure you have node.js and the node package manager (npm), see *"Building the OneZoom tree viewer"*
 
 
 ### For a partial installation (less tested):
 
-1. From anywhere within the OZtree download, run `npm install`, and compile the client-side explorer code using `grunt compile` - see *"Building the OneZoom tree viewer"*.
-2. Run `grunt partial-install`. This should download the "minlife' and minlife_tour pages from the central OneZoom website, modify links within them, and place appropriately names html files into the `static` directory of your OZtree distribution.
-3. Open e.g. `static/minlife.html` with a web browser of your choice (we recommend Chrome or Safari). Note that this file needs to stay within the static directory to work at all. You may also need to allow your browser to allow local files to be loaded via AJAX (i.e. disabling some local cross-origin checks). Different browsers do this in different ways: for example in Chrome you can start up your browser with the `--allow-file-access-from-files` option, and in Safari, you can choose "Disable Local File Restrictions" from the "Developer" menu.
-4. Note that the normal `minlife.html` file will use local versions of data files and the javascript treeviewer, but will get API information form the OneZoom website, *and* also use the OneZoom website as the source for the html page which embeds the viewer. For developers only, who may wish to create a minlife version not only using modified javascript in the treeviewer but also with bespoke html, you can run `grunt partial-local-install`. This is much more effort since it requires you to set up a full installation (as below) before creating the minlife scripts, but once created, the files in `static` will be enough for other users to view (and test) your modifications.
+1. Install the command-line version of `grunt` using `npm install -g grunt-cli`, then `gem update --system` followed by `gem install compass` to install the software to create css stylesheets. You may need to have administrator privileges to do this. 
+2. From anywhere within the OZtree download, run `npm install` to install all the packages for automation.
+3. Create a partial installation by running `grunt partial-install`. This downloads the "minlife" and "minlife_tour" pages from the central OneZoom website, modifies links within them, and places appropriately named html files into the `static` directory of your OZtree distribution.
+4. Open e.g. `static/minlife.html` with a web browser of your choice (we recommend Chrome or Safari). Note that this file needs to stay within the static directory to work at all. You may also need to allow your browser to allow local files to be loaded via AJAX (i.e. disabling some local cross-origin checks). Different browsers do this in different ways: for example in Chrome you can start up your browser with the `--allow-file-access-from-files` option, and in Safari, you can choose "Disable Local File Restrictions" from the "Developer" menu.
+5. Note that the normal `minlife.html` file will use local versions of data files and the javascript treeviewer, but will get API information form the OneZoom website, *and* also use the OneZoom website as the source for the html page which embeds the viewer. For developers only, who may wish to create a minlife version not only using modified javascript in the treeviewer but also with bespoke html, you can run `grunt partial-local-install`. This is much more effort since it requires you to set up a full installation (as below) before creating the minlife scripts, but once created, the files in `static` will be enough for other users to view (and test) your modifications.
 
 ### For a full installation (recommended):
 	
 1. Install a source code version of [web2py](http://www.web2py.com), placing your [OZtree repository](https://github.com/OneZoom/OZtree) within the web2py `applications` directory.
-2. Compile the client-side explorer code by running `npm install` from within the OZtree folder you have just moved, then run `grunt dev` (or `grunt prod` if in production mode) - see *"[Building the OneZoom tree viewer](#building-the-onezoom-tree-viewer)"*.
+2. Install command-line software by running `npm install -g grunt-cli`, then `gem update --system` followed by `gem install compass` (you may need to do all this with administrator privileges).
+3. Run `npm install` from within the OZtree folder you moved in step 1. then run `grunt dev` (or `grunt prod` if in production mode) - see *"[Building the OneZoom tree viewer](#building-the-onezoom-tree-viewer)"*.
 3. [Install](http://dev.mysql.com/downloads/mysql/) & start MySQL, then create a new database (see *"[Setting up the database backend](#setting-up-the-database-backend)"*)
 4. Create a appconfig.ini file in `OZtree/private`, with `migrate=1` and which references this database with the appropriate username and password. We also recommend copying the `routes.py` file from `OZtree/_MOVE_CONTENTS_TO_WEB2PY_DIR` to the top level of your web2py installation - see *"[Web2py installation](#web2py-installation)"*
 5. Fire up a temporary web2py server and visit the main page to create the (empty) database tables - see *"[Starting and shutting down web2py](#starting-and-shutting-down-web2py)"*
@@ -84,7 +87,7 @@ Compiling and creating the OneZoom explorer javascript code requires grunt to be
 npm install -g grunt-cli
 ```
 
-Then from within the `OZtree` directory, you can install any other required packages with:
+To create css files you will also need to install the "compass" software program, e.g. using `gem update --system && gem install compass`. To install these is likely to require administrator privileges. Other required packages can then be installed from within the OZtree folder by simply typing the following (which may take a while to complete!)
 
 ```
 npm install
@@ -93,13 +96,13 @@ npm install
 Once these are installed you can run grunt as follows (feel free to examine the configuration options which are stored in `Gruntfile.js` in the main OZtree directory):
 
 #### Compile documentation
-`grunt precompile-docs`: Use this command to generate a compiled documentation file. This will generate a large compiled markdown file in `OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown`, which is best viewed once you have got web2py running, by pointing your browser to `dev/DOCS` (e.g. at `http://127.0.0.1:8000/dev/DOCS`).  Note that viewing this page requires a working internet connection to get various formatting files)
+`grunt docs`: Use this command to generate a compiled documentation file. This will generate a large compiled markdown file in `OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown`, which is best viewed once you have got web2py running, by pointing your browser to `dev/DOCS` (e.g. at `http://127.0.0.1:8000/dev/DOCS`).  Note that viewing this page requires a working internet connection to get various formatting files)
 
 #### In development mode:
-`grunt compile`: This command bundles multiple js files into one.
+`grunt dev`: This command bundles multiple js files into one.
 
 #### In production mode:
-`grunt build`: This command does three things. Firstly, it pre compiles python code. Then it bundles multiple js files into one. Lastly, it minifies bundled js files.
+`grunt prod`: This command does three things. Firstly, it pre-compiles python code. Then it bundles multiple js files into one. Lastly, it minifies bundled js files.
 
 
 ## The server-side database
