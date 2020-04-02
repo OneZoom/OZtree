@@ -1,5 +1,5 @@
 =========================================================================================
-OneZoom Tree of Life explorer Version 3.2
+OneZoom Tree of Life explorer Version 3.4
 =========================================================================================
 
 Licensed under the OneZoom Licence, Version 1 (the “Licence”). You may not use this software file unless you comply with the terms and obligations in the Licence. You may obtain a copy of the Licence at: www.onezoom.org/static/downloads/OneZoom_License_V1.pdf and you will also find a copy in the root directory of the OneZoom software GitHub repository.
