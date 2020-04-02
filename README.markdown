@@ -37,12 +37,13 @@ The OneZoom codebase uses the following software (licenses for each listed in br
  	* DBD::mysql
 * [Ruby](https://www.ruby-lang.org) (only to install the 'compass' program, see below)
 * [web2py](http://web2py.com) (LGPL license)
-* [npm](https://www.npmjs.com/get-npm), part of node.js which, when run will install a large number of other packages including 
-        * [grunt](https://gruntjs.com) (MIT licence): to automate creating the OneZoom website files
+* [npm](https://www.npmjs.com/get-npm), part of node.js which, when run will install a large number of other packages including
+	* [grunt](https://gruntjs.com) (MIT licence): to automate creating the OneZoom website files
 	* [webpack](https://webpack.js.org) (MIT licence): to package the OneZoom javascript tree viewer into a library
 	* jsdoc-to-markdown (MIT licence): to produce documentation from source code
-* [compass](http://compass-style.org) to create the style sheets for OneZoom web pages
+* [compass](http://compass-style.org) (MIT licence) to create the style sheets for OneZoom web pages
 * [ImageMagick](https://www.imagemagick.org/script/index.php) (Apache 2.0) for processing thumbnails
+* [curl](https://curl.haxx.se) (MIT-like licence) to download partial installs (`curl` is probably already installed on your computer)
 * [UIkit 3](https://getuikit.com) (MIT licence) for the User Interface (this code is included in the OneZoom github repo, and does not need downloading)
 
 ## Quick installation steps
