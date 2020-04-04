@@ -20,7 +20,7 @@
 {{for category in category_order + [q for q in quotes.keys() if q not in category_order]:}}
                 <li><h4>{{=category}}</h4>
     {{for q in quotes.get(category,[]):}}
-                    <blockquote class = "blockquote-main">{{=XML(q.html_quote)}}
+                    <blockquote id="quote{{=q.id}}" class="blockquote-main">{{=XML(q.html_quote)}}
                         <footer class="blockquote-footer">
                             <cite>{{if q.person_url:}}<a href="{{=q.person_url}}" target="_blank">{{=q.person}}</a>{{else:}}{{=q.person}}{{pass}}{{if q.html_affiliation:}}, {{=XML(q.html_affiliation)}}{{pass}}</cite>
                         </footer>

@@ -168,16 +168,16 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
 <section class="oz-section bkgd-quotes"><div class="oz-section-body">
   <h3>What they say...</h3>
 
-  <div class="uk-position-relative" uk-slider>
-    <div class="uk-slider-container"><ul class="uk-slider-items uk-child-width-1-1">{{for q in quotes:}}
+  <div class="uk-position-relative" uk-slider="autoplay: true; autoplay-interval: 10000; pause-on-hover: true">
+    <div class="uk-slider-container"><ul class="uk-slider-items uk-child-width-1-1">{{for q_items in quotes:}}{{for q in q_items:}} 
       <li>
         <blockquote>{{=XML(q.html_quote)}}
           <footer class="blockquote-footer">
-              <cite>{{=q.person}}{{if q.html_affiliation:}}, {{=XML(q.html_affiliation)}}{{pass}}</cite>
+              <cite><a href="{{=URL('default', 'endorsements.html#quote' + str(q.id))}}">{{=q.person}}{{if q.html_affiliation:}}, {{=XML(q.html_affiliation)}}{{pass}}</a></cite>
           </footer>
         </blockquote>
       </li>
-    {{pass}}</ul></div>
+    {{pass}}{{pass}}</ul></div>
     <a class="uk-position-top-left oz-slider-arrow oz-slider-arrow-left" href="#" uk-slider-item="previous"></a>
     <a class="uk-position-top-right oz-slider-arrow oz-slider-arrow-right" href="#" uk-slider-item="next"></a>
   </div>
