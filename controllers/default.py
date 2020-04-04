@@ -830,8 +830,8 @@ def sponsored():
                     orderby=~db.images_by_ott.src).first()
     if (request.vars.highlight_pd):
         pds.add(None) #ones without a src_id are public doman
-        pds |= set([l['src_id'] for k,l in default_images.items() if unicode(l['licence'], 'utf8').endswith(u'\u009C')]) #all pd pics should end with \u009C on the licence
-        pds |= set([l['src_id'] for k,l in user_images.items() if unicode(l['licence'], 'utf8').endswith(u'\u009C')]) #all pd pics should end with \u009C on the licence
+        pds |= set([l['src_id'] for k,l in default_images.items() if l['licence'].endswith(u'\u009C')]) #all pd pics should end with \u009C on the licence
+        pds |= set([l['src_id'] for k,l in user_images.items() if l['licence'].endswith(u'\u009C')]) #all pd pics should end with \u009C on the licence
     return dict(rows=curr_rows, page=page, items_per_page=items_per_page, tot=tot, vars=request.vars, pds=pds, html_names=html_names, user_images=user_images, default_images=default_images)
 
 def donor_list():
