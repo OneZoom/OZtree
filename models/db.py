@@ -766,3 +766,5 @@ if db._uri.startswith("sqlite://"):
 #note mysql does not allow IF NOT EXISTS for index creation. Indexes may need to be added manually. See 
 # http://stackoverflow.com/questions/36602374/web2py-how-to-call-a-call-a-function-on-table-creation
 # for mysql, try this one-off command
+
+# to build indexes - the code has been moved to /OZprivate/Examples/SQL\ example\ scripts for safe keeping
