@@ -41,7 +41,6 @@ class TestImageFiles(object):
             db_cursor = self.db['connection'].cursor()
             for sql in [
                 "SELECT src, src_id, ott from `{}`".format('images_by_ott'),
-                "SELECT user_preferred_image_src, user_preferred_image_src_id, OTT_ID from `{}` WHERE user_preferred_image_src IS NOT NULL".format('reservations'),
                 "SELECT verified_preferred_image_src, verified_preferred_image_src_id, OTT_ID from `{}` where verified_preferred_image_src IS NOT NULL".format('reservations')]:
                 db_cursor.execute(sql)
                 otts=set()
