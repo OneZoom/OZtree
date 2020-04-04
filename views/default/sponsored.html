@@ -14,14 +14,14 @@
                 <figure>{{img = user_images.get(item['OTT_ID']) or default_images.get(item['OTT_ID'])}}
                     <figure>
                         <figcaption>{{=(html_names[item['OTT_ID']])}}</figcaption>
-                        <a href="{{=URL('life/@=' + str(item['OTT_ID']), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life" height="150" width="150"
+                        <a href="{{=URL('life/@=' + str(item['OTT_ID']), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life"
 {{if img:}}
     src="{{=thumbnail_url(img.get('src'), img.get('src_id'))}}"
     title="{{=' / '.join([t for t in [img.rights, img.licence] if t]).replace('"',"'")}}"
-    {{if img.get('src_id') in pds:}}class="pd" {{pass}}
+    class="{{if img.get('src_id') in pds:}}pd{{pass}}"
 {{else:}}
     src="{{=URL('static','images/noImage_transparent.png')}}"
-    {{if None in pds:}}class="pd" {{pass}}
+    class="nopic {{if None in pds:}}pd{{pass}}"
 {{pass}} />
                         </a>
                     </figure>
