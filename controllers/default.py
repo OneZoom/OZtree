@@ -164,7 +164,10 @@ def index():
     return dict(
         n_species=db(db.ordered_leaves).count(),
         n_images=db(db.images_by_ott).count(),
-        quotes=db().select(db.quotes.ALL, orderby = ~db.quotes.quality | db.quotes.id, limitby=(0, 5)),
+        quotes=[
+            db(db.quotes.quality >= 190).select(db.quotes.ALL, orderby='<random>', limitby=(0, 2)),
+            db((db.quotes.quality < 190) & (db.quotes.quality >= 100)).select(db.quotes.ALL, orderby='<random>', limitby=(0, 8))
+            ],
         news=[
             dict(
                 heading=row.text_date if row.text_date else row.news_date.strftime("%d %B %Y").lstrip('0'),
