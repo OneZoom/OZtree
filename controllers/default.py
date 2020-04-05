@@ -1318,9 +1318,6 @@ def FAQ():
     price_levels_pence = sorted([row.price for row in db().select(db.prices.price)])
     return dict(n_species =  db(db.ordered_leaves).count(), second_cheapest_price_pence=price_levels_pence[1])
 
-def gallery():
-    return dict()
-
 def tree_index():
     return dict()
 
