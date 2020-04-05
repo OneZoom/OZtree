@@ -11,11 +11,11 @@
 
 <h2 class="uk-padding">Events, milestones, and news: 2018 - 2020</h2>
 <div>
-    <div class=" uk-text-small uk-column-1-3@m">
-        <ul>
+    <div class="uk-text-small uk-column-1-3@m">
+        <ul class="columns">
             {{for row in news:}}
             {{if row.news_date < request.now and row.news_date.year >= 2018:}}
-                <li>
+                <li id="news-item{{=row.id}}">
                     <h4><time datetime="{{=row.news_date}}">{{if row.text_date:}}{{=row.text_date}}{{else:}}{{=row.news_date.strftime("%d %B %Y").lstrip('0')}}{{pass}}</time></h4>
                     {{=XML(row.html_description)}}
                 </li>
@@ -27,8 +27,8 @@
 
 <h2 class="uk-padding">Events, milestones, and news: 2016 - 2017</h2>
   <div>
-    <div class=" uk-text-small uk-column-1-3@m">
-      <ul>
+    <div class="uk-text-small uk-column-1-3@m">
+      <ul class="columns">
 {{for row in news:}}
 {{if 2016 <= row.news_date.year <= 2017:}}
           <li>
@@ -43,10 +43,9 @@
 
 
 <h2 class="uk-padding">Events, milestones, and news: 2014 - 2015</h2>
-
   <div>
-    <div class=" uk-text-small uk-column-1-3@m">
-      <ul>
+    <div class="uk-text-small uk-column-1-3@m">
+      <ul class="columns">
 {{for row in news:}}
 {{if 2014 <= row.news_date.year <= 2015:}}
           <li>
@@ -64,7 +63,7 @@
 
   <div>
     <div class=" uk-text-small uk-column-1-3@m">
-      <ul>
+      <ul class="columns">
 {{for row in news:}}
 {{if 2012 <= row.news_date.year <= 2013:}}
           <li>
@@ -87,7 +86,7 @@
 
           <p><q>Big data</q> is a growing issue in Science and Industry.  Modern computing has enabled large amounts of data to be captured and stored and has revolutionised many branches of science. These advances, however, lead to challenges, such as how to explore and visualise large data sets.  The very first blue-skies idea that could have been identified with OneZoom was that of a mind map so vast that it could contain all human knowledge.</p>
           
-          <a href="{{=URL('static','images/gallery/bubble_example.png')}}" target = "_blank" class="thumbnail">
+          <a href="{{=URL('static','images/gallery/highres/bubble_example.png')}}" target = "_blank" class="thumbnail">
               <img src="{{=URL('static','images/gallery/bubble_example_small.png')}}" alt="">
           </a>
           </div>
@@ -96,8 +95,8 @@
           
           <p>The idea was untouched for some time until one day, <a href="http://www.rosindell.org" target="_blank">James Rosindell</a> visited Charles Darwin's Down house with <a href="http://www.webpages.uidaho.edu/~lukeh/" target="_blank">Luke Harmon</a> who he was working with on a number of scientific projects.  Luke in particular made a big deal of their walking down Darwin's thinking path and said that they should try to think of a new idea to commemorate the occasion.</p>
           
-          <p><a href="{{=URL('static','images/gallery/James_Luke.jpeg')}}" target = "_blank" class="thumbnail">
-              <img src="{{=URL('static','images/gallery/James_Luke_small.jpeg')}}" alt="">
+          <p><a href="{{=URL('static','images/gallery/highres/James_Luke.jpg')}}" target = "_blank" class="thumbnail">
+              <img src="{{=URL('static','images/gallery/James_Luke_small.jpg')}}" alt="">
           </a></p>
           </div>
           <div class = "uk-padding uk-padding-remove-top">
