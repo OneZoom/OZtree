@@ -4,6 +4,17 @@
     margin: 0.5rem;  // Make some space around the page (does not apply to embedded pages)
 }
 
+.page-end {
+    text-align: center;
+}
+
+h3 {
+    margin-top: 1em; // separate out sections within a page, especially for single cols
+}
+
+h2:first-child, h3:first-child {
+    margin-top: 0; //but not the top of each column
+}
 // ==== Blockquote ==== //
 
 .blockquote-ul {
@@ -34,6 +45,108 @@ ul.columns {
         margin-bottom: 1.5em;
     }
 }
+
+// ===== Sponsor leaf ====== //
+.qrcode {
+  text-align: center;
+  #OZ-qrcode {
+    display: inline-block
+  }
+}
+
+#licenceText {
+    text-align: center;
+    display: none; /* this only gets shown if an image appears */
+}
+
+// ===== Sponsor node ====== //
+
+.showall {
+    color: #888888;
+    text-align: right;    
+    font-size: smaller;
+}
+
+.problem {
+    /* display:none; */
+}
+
+.spList {
+    padding:0;
+    list-style-type: none;
+}
+
+.spList li {
+    vertical-align: top;
+    display: inline-block;
+    margin: 0 0.2em 0.4em 0.2em;
+}
+
+.spList li a {
+    text-decoration: none;
+    height: 200px;
+    /* line-height: 200px; */
+}
+
+
+.spList li a.sponsor, .spList li label {
+    line-height: 1em;
+    width: 130px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center bottom;
+    color:rgb(130,130,130);
+    display: block;
+    border-radius: 3px;
+    border: 1px solid grey;
+    
+}
+
+.spList li a.sponsor:hover {
+    color:black;
+}
+
+.spList li p  {
+    display: table-cell;
+    line-height: 1.2;
+    height: 3em;
+    text-align: center;
+    padding: 0.25em 0.5em;
+    font-size: 14px; // To fit 4 lines of text over a picture
+}
+
+.spList li > p  {
+    width: 130px;
+}
+
+.alphabetical_list {
+    list-style-type: none;
+    padding:0;
+    margin:0;
+    padding-left:1em;
+    -webkit-columns: 6 150px;
+       -moz-columns: 6 150px;
+            columns: 6 150px;
+            
+}
+
+.alphabetical_list li {
+    padding:0;
+    margin:0;
+    margin-left:0.5em;
+    text-indent: -0.5em;
+}
+
+.alphabetical_list li a {
+    display:inline-block; /*makes sure the name doesn't get split between columns*/
+}
+
+
+.cname:first-letter {
+    color: red;
+    text-transform: capitalize;
+}
+
 
 // ===== Sponsor ====== //
 
@@ -268,4 +381,9 @@ body.embedded {
     position: absolute;
     width: 100%;
     text-align: center;
+}
+
+.example-leaf {
+    max-height: 600px;
+    margin-left: 5%; // Correct for the circle of the leaf not being centred
 }

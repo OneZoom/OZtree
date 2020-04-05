@@ -349,7 +349,7 @@ def sponsor_leaf():
         except:
             pass
     # initialise other variables that will be passed on to the page
-    species_name = common_name = the_long_name = None
+    species_name = common_name = the_long_name = default_image = None
     release_time = 0 #when this will become free, in seconds
    
     try:
@@ -373,7 +373,13 @@ def sponsor_leaf():
     if ((not leaf_entry) or             # invalid if not in ordered_leaves
         (leaf_entry.ott is None) or     # invalid if no OTT ID
         (' ' not in leaf_entry.name)):  # invalid if not a sp. name (no space/underscore)
-        status = "invalid" # will override maintenance
+            iucn_code = None
+            status = "invalid" # will override maintenance
+    else:
+        iucn_code = getattr(
+            db(db.iucn.ott == OTT_ID_Varin).select(db.iucn.status_code).first(),
+            'status_code',
+            None)
     
     if status == "":  # still need to figure out status, but should be able to get data
         # we might come into this with a partner set in request.vars (e.g. LinnSoc)
@@ -422,7 +428,7 @@ def sponsor_leaf():
                     last_view=request.now,
                     num_views=1,
                     reserve_time=request.now,
-                    user_registration_id =form_reservation_code)
+                    user_registration_id=form_reservation_code)
             else:
                 # update with full viewing data but no reservation, even if e.g. banned
                 db.reservations.insert(
@@ -558,16 +564,21 @@ def sponsor_leaf():
     elif status == "sponsored":
         response.view = request.controller + "/spl_sponsored." + request.extension
         return dict(
-            species_name=species_name,
-            js_species_name = dumps(species_name),
-            common_name=common_name,
-            js_common_name=dumps(common_name.capitalize() if common_name else None),
-            long_name = long_name,
-            default_image = default_image,
-            user_image=user_image,
-            verified_kind=reservation_row.verified_kind,
-            verified_name=reservation_row.verified_name,
-            verified_more_info=reservation_row.verified_more_info)
+            species_name      = species_name,
+            js_species_name   = dumps(species_name),
+            common_name       = common_name,
+            js_common_name    = dumps(common_name.capitalize() if common_name else None),
+            long_name         = long_name,
+            iucn_code         = iucn_code,
+            default_image     = default_image,
+            user_image        = user_image,
+            verified_kind     = reservation_row.verified_kind,
+            verified_name     = reservation_row.verified_name,
+            verified_more_info= reservation_row.verified_more_info)
+
+    elif status == "invalid":
+        response.view = request.controller + "/spl_invalid." + request.extension
+        return dict(OTT_ID=OTT_ID_Varin, species_name=species_name)
 
     elif not allow_sponsorship:
         if status.startswith("available"):
@@ -575,11 +586,13 @@ def sponsor_leaf():
         else:
             response.view = request.controller + "/spl_elsewhere_not." + request.extension
         return dict(
-            species_name=species_name, the_long_name=the_long_name, ott=OTT_ID_Varin)
-
-    elif status == "invalid":
-        response.view = request.controller + "/spl_invalid." + request.extension
-        return dict(OTT_ID=OTT_ID_Varin, species_name=species_name)
+            js_species_name = dumps(species_name),
+            js_common_name  = dumps(common_name.capitalize() if common_name else None),
+            species_name    = species_name,
+            the_long_name   = the_long_name,
+            iucn_code       = iucn_code,
+            default_image   = default_image,
+            ott             = OTT_ID_Varin)
 
     elif status.startswith("unverified"):
         if status == "unverified waiting for payment":
@@ -651,23 +664,24 @@ def sponsor_leaf():
             else:
                 pass  # Simply show the form
             return dict(
-                form=form,
-                id=reservation_row.id,
-                OTT_ID=OTT_ID_Varin,
-                EOL_ID=leaf_entry.get('eol', -1),
-                species_name=species_name,
-                js_species_name=dumps(species_name),
-                common_name=common_name,
-                js_common_name=dumps(common_name.capitalize() if common_name else None),
-                the_long_name=the_long_name,
-                leaf_price=leaf_price,
+                form              = form,
+                id                = reservation_row.id,
+                OTT_ID            = OTT_ID_Varin,
+                EOL_ID            = leaf_entry.get('eol', -1),
+                species_name      = species_name,
+                js_species_name   = dumps(species_name),
+                common_name       = common_name,
+                js_common_name    = dumps(common_name.capitalize() if common_name else None),
+                the_long_name     = the_long_name,
+                iucn_code         = iucn_code,
+                leaf_price        = leaf_price,
                 form_reservation_code=form_reservation_code,
                 percent_crop_expansion=percent_crop_expansion,
-                default_image=default_image,
-                partner_data=partner_data,
-                EoL_API_key=EoL_API_key,
-                max_global_price=max_global_price,
-                min_global_price=min_global_price)
+                default_image     = default_image,
+                partner_data      = partner_data,
+                EoL_API_key       = EoL_API_key,
+                max_global_price  = max_global_price,
+                min_global_price  = min_global_price)
         except TypeError: #leaf_entry.price is None, treat as banned
             response.view = request.controller + "/spl_banned." + request.extension
             return dict(
@@ -908,7 +922,7 @@ def sponsor_picks(sponsor_suggestion=None):
                 val['vars']=loads(row.vars)
             except:
                 val['vars']={}
-            if not row.thumb_url:
+            if not row.thumb_url and row.thumb_src is not None:
                 val['thumb_url']=thumbnail_url(row.thumb_src,row.thumb_src_id)
             if row.identifier.isdigit():
                 val['vars']['ott'] = row.identifier = int(row.identifier)
@@ -924,8 +938,17 @@ def sponsor():
         sponsor_suggestion=sponsor_suggestion_flags['sponsor_by']))
 
 def treecards():
-    return dict(pick=sponsor_picks(
-        sponsor_suggestion=sponsor_suggestion_flags['sponsor_for']))
+    prices = []
+    accumulate = 0
+    for row in db(db.prices).select(db.prices.ALL, orderby=db.prices.price):
+        accumulate += row.n_leaves
+        prices.append(
+            {'price_pounds': row.price/100, 'n': row.n_leaves, 'cumulative': accumulate})
+    for p in prices:
+        p['quantile'] = p['cumulative']/accumulate
+    return dict(
+        pick=sponsor_picks(sponsor_suggestion=sponsor_suggestion_flags['sponsor_for']),
+        prices=prices)
 
 
 
@@ -1098,7 +1121,7 @@ def sponsor_handpicks():
     except:
         max_returned = 8
     
-    if db(query) > 0:
+    if db(query).count() > 0:
         prices_pence = sorted([r.price for r in db().select(db.prices.price)]) + [None]
         otts = OrderedDict()
         image_urls = {}
@@ -1122,7 +1145,7 @@ def sponsor_handpicks():
                                left = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
                                orderby = orderby)
             otts[price_pounds] = [r.ordered_leaves.ott for r in rows]
-            image_urls.update({species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows})
+            image_urls.update({species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows if species.images_by_ott.src})
             sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows})
 
         #Now find the vernacular names for all these species

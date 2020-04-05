@@ -1,22 +1,20 @@
 {{response.title='OneZoom: search for a sponsorship'}}
-{{response.files.append(URL('static', 'OZSponsor/name_search.css'))}}
-{{extend 'layout.html'}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{extend 'uikit_layout.html'}}
 {{from OZfunctions import nice_species_name}}
 {{try:}}{{n = int(request.vars.get('n'))}}{{except:}}{{n=20}}{{pass}}
-<div class="container-fluid intro">
-    <div class="col-sm-8">
-        <h3>Search for sponsors and sponsorship text on the OneZoom tree</h3>
-    </div>
-    <div class="col-sm-4">
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+          <h3>Search for sponsors and sponsorship text on the OneZoom tree</h3>
         <form><input type="text" name="query" value="{{=request.vars.get('query') or ''}}" />
         <button>Search{{if request.vars.get('query'):}} again{{pass}}</button>
         <input type="hidden" name="limit" value="{{=int(request.vars.limit or 6)}}" />
         <input type="hidden" name="default_images" value="1" />
         </form>
-    </div>
 </div>
+{{end block}}
 
-<div class="container-fluid">
+<div class="uk-padding">
 {{try:}}
 {{if reservations and len(reservations):}} 
     {{max_items = int(request.vars.display or 0)}}
@@ -44,5 +42,5 @@
 {{except:}}
 <p class="boilerplate">Please provide some text to search for</p>
 {{pass}}
-</div>
 <p><a href = "{{=URL('default', 'sponsor.html')}}">&lt;&nbsp;main sponsorship page</a></p>
+</div>

@@ -25,9 +25,7 @@
     <link rel="stylesheet" href="{{=URL('static','css/web2py-bootstrap3.css')}}" type="text/css" />
     <link rel="stylesheet" href="{{=URL('static','uikit-3/css/uikit.min.css')}}" />
     <link rel="stylesheet" href="{{=URL('static','css/OZ_bootstrap.css')}}" type="text/css" />
-    <link rel="stylesheet" href="{{=URL('static','css/OZ_specific.css')}}" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree.css')}}" />
-    <link rel="stylesheet" href="{{=URL('static','css/OZ_shared.css')}}" type="text/css" />
+    <link rel="stylesheet" href="{{=URL('static','css/content.css')}}" type="text/css" />
     <!-- Favicons -->
     <link rel="shortcut icon" href="{{=URL('static','favicon.ico')}}" type="image/x-icon" />
     <link rel="apple-touch-icon" href="{{=URL('static','favicon.png')}}" />
@@ -44,7 +42,7 @@
     <!-- Treeviewer code for search / embedded view -->
     {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
     <script>var OZstrings={{include 'treeviewer/js_strings.json'}};</script>
-    {{include '../static/OZTreeModule/dist/OZ_script.html'}}
+    {{include '../static/OZTreeModule/dist/OZ_main.html'}}
 
     {{block head}}{{end}}
     {{

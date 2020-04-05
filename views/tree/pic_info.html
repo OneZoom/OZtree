@@ -1,6 +1,15 @@
-{{response.title='OneZoom: Picture information'}}
-{{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
-{{if 'embed' in request.vars:}}<!--Page title in outer page-->{{else:}}<h3>{{=T('Image information held by OneZoom')}}</h3>{{pass}}
+{{
+    response.title='OneZoom: Picture information'
+    response.files.append(URL('static', 'css/content_pages.css'))
+}}
+{{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
+{{if 'embed' not in request.vars:}}
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+  <h2>{{=T('Image information held by OneZoom')}}</h2>
+</div>
+{{end block}}
+{{pass}}
 <dl id="imageinfo">
   <dt><img src="{{=thumbnail_url(image.src, image.src_id)}}"></dt>
   <dd>

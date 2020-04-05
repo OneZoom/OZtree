@@ -142,7 +142,7 @@ function setDataFromEoLdataObjectID(DOid, on_complete, EoL_key, timeout_ms, cros
         var query_string = "taxonomy=false&cache_ttl=&language=en&key=" + EoL_key;
         $.ajax({
             type: "GET",
-            url: "https://eol.org/api/data_objects/1.0/"+ DOid +".json",
+            url: "https://beta.eol.org/api/data_objects/1.0/"+ DOid +".json",
             data: query_string,
             on_complete: on_complete,
             error: function(){
@@ -208,7 +208,7 @@ function setDataFromEoLpageID(EOLid, on_complete, EoL_key, n_images, include_nam
         var query_string = "batch=false&id=" + parseInt(EOLid) + "&images_per_page=" + n_images + "&images_page=1&videos_per_page=0&videos_page=0&sounds_per_page=0&sounds_page=0&maps_per_page=0&maps_page=0&texts_per_page=0&texts_page=0&iucn=true&subjects=overview&licenses=pd%7Ccc-by%7Ccc-by-sa&details=true&synonyms=false&references=false&taxonomy=false&vetted=2&cache_ttl=&language=en&common_names=" + (include_names?'true':'false') + "&key=" + EoL_key;
         $.ajax({
             type: "GET",
-            url: "https://eol.org/api/pages/1.0.json", //always use https, as the http site fails
+            url: "https://beta.eol.org/api/pages/1.0.json", //always use https, as the http site fails
             data: query_string,
             EOLid: EOLid,
             on_complete: on_complete,
@@ -298,7 +298,7 @@ function setDataFromEoLpageID_batch(EOLid_batch, on_complete, EoL_key, n_images,
             $.ajax({
                 type: "GET",
                 //crossDomain: true,
-                url: "https://eol.org/api/pages/1.0.json",
+                url: "https://beta.eol.org/api/pages/1.0.json",
                 data: query_string,
                 EOLid_batch: EOLid_batch,
                 on_complete: on_complete,
