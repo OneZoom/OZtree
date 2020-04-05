@@ -15,17 +15,19 @@
     <div>
         <div class=" uk-text-small uk-padding-small uk-column-1-3@m" >
             <h2 class="uk-padding-small">Endorsements</h2>
-            <ul class = "blockquote-ul">
+            <ul class = "uk-list columns blockquote-ul">
 {{category_order=['Scientists', 'Lecturers and professors', 'User quotes', 'Professionals', 'Students', 'Educators']}}
 {{for category in category_order + [q for q in quotes.keys() if q not in category_order]:}}
-                <li><h4>{{=category}}</h4>
+                <li><h4>{{=category}}</h4> <ul class = "uk-list columns blockquote-ul">
     {{for q in quotes.get(category,[]):}}
+                    <li>
                     <blockquote id="quote{{=q.id}}" class="blockquote-main">{{=XML(q.html_quote)}}
                         <footer class="blockquote-footer">
                             <cite>{{if q.person_url:}}<a href="{{=q.person_url}}" target="_blank">{{=q.person}}</a>{{else:}}{{=q.person}}{{pass}}{{if q.html_affiliation:}}, {{=XML(q.html_affiliation)}}{{pass}}</cite>
                         </footer>
-                    </blockquote>
+                    </blockquote></li>
     {{pass}}
+    </ul>
                 </li>
     {{if category == "Professionals":}}
     {{ #Add a pretty picture in to break up the monotony}}
@@ -36,6 +38,9 @@
     {{pass}}
 {{pass}}
             </ul>
+            
+            <h3>Send in your own comments</h3>
+             <p>If you like our tree of life explorer, please <a href="mailto:mail@onezoom.org">e-mail us</a> your comments to add to this page.</p>
         </div>
     </div>
 
