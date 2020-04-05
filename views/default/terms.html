@@ -1,4 +1,5 @@
 {{response.title='OneZoom: Terms and conditions'}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
 {{response.files.append(URL('static', 'css/OZ_shared.css'))}}
 {{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
 
