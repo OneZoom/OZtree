@@ -4,6 +4,10 @@
 <div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
 <div class = "uk-padding uk-padding-remove-top">
 
+<h3 id="OneZoomMission">Our Mission</h3>
+    <p>Our mission is to advance the education of the public in the subjects of evolution, biodiversity and conservation of the variety of life on earth. We are a not for profit organisation registered in the UK.</p>
+
+
 <h3>Our Software</h3>
 <p>The OneZoom software allows you to explore the tree of life in a completely new way that is similar to viewing a geographical map.  This is done using techniques from a branch of mathematics known as fractal geometry, which enable us to condense the entire tree of life into a single page. OneZoom is so named because all the information is on one page, all you have to do is zoom to reveal further details. </p>
 
