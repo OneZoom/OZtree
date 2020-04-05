@@ -11,28 +11,39 @@
 <div class="uk-padding"><em>If you've done something special with OneZoom please <a href="mailto:mail@onezoom.org">let us know</a>.  Perhaps you've used it for teaching, visualising your own data or in a public display?  We have a whole range of tools available here, but we're always working on the next enhancements and are trying to build a developer community. Please don't struggle on if you hit difficulties or have concerns, instead <a href="mailto:mail@onezoom.org">contact us</a> so we can work together on solving your problem. OneZoom is a non-profit organisation and our purpose is to advance the education of the public in the subjects of evolution, biodiversity and conservation of the variety of life on earth.</em>
 </div>
 
-<div class="uk-padding uk-text-small uk-column-1-2@s uk-column-1-3@m uk-column-1-4@l no-break-paras">
+<div class="uk-padding uk-text-small uk-column-1-2@s uk-column-1-3@m no-break-paras">
   <h4>Introduction</h4>
   <p>Released versions of OneZoom span from 1.0 (2012) to 3.4 (2020). Some features from earlier versions have not been retained in the latest software, so versions 1.0 and 1.2 remain available to provide access to these features - such as customisation of the view to accommodate a user's tree and the growth animation function for dated trees.</p>
   <ol class="uk-list">
     <li>
-      <h4>Version 3.4</h4>
-      <p> Includes all the features of version 3.3.1 and adds a completely redesigned landing page together with improvements to the site content as a whole.</p>
-      <p>The source code of version 3.4 is publicly available under a OneZoom non-profit source available license. This means it's free to use for the advancement of science and science education, but it's not permitted to use for commercial purposes. For further details please see our plain language license FAQs and <a href=" http://github.com/onezoom/OZtree" target="_blank">our public GitHub repository</a>, which includes the complete formal license wording. If the OneZoom non-profit organisation ceases to exist our software will automatically become available under an OSI approved MIT license.</p>
-      <h5>Hosting your own variation of the OneZoom complete tree of life explorer.</h5>
+
+      <h4>Using source code from our public GitHub repository</h4>
+      
+      <p>All our live source code is available to view on our <a href=" http://github.com/onezoom/OZtree" target="_blank">public GitHub repository</a>.  Some parts are available for reuse under OSI approved fully open source licenses.  All other parts can be freely reused under a
+      
+      <a href="{{=URL('static','downloads/OneZoom_License_V1.pdf')}}" target="_blank">OneZoom non-profit source available license</a>. This basically means they are free to use for the advancement of science and science education, but not for commercial purposes. We know that 'commercial' can be an elastic term, we are willing to interpret this in a relaxed way to support any project whose aims are consistent with our own  <a href="{{=URL('default','about#OneZoomMission')}}">mission statement</a>. If you think this applies to you, please <a href="mailto:mail@onezoom.org">write to us</a> and we'd be happy to consider providing you with a letter confirming that we don't consider your project to be commercial.  For further details please see
+      <a href="{{=URL('static','downloads/OneZoom_License_V1_FAQ.pdf')}}" target="_blank">our plain language license FAQs</a>.</p>
+      
+      <p>Our objective is to encourage broad reuse of the OneZoom code whilst also protecting our unique model for maintaining the codebase and sustaining the live website.  If the OneZoom organisation ceases to exist our software will automatically become available under an OSI approved MIT license.  Remember that OneZoom is a registered not for profit organisation and the majority of work is done by unpaid volunteers.  If you have suitable software development expertise and want to contribute please <a href="mailto:mail@onezoom.org">let us know</a>, we'd be delighted to work with you.</p>
+      
+      <li>
+          
+      <h4>Hosting your own variation of the OneZoom complete tree of life explorer.</h4>
     
-      <p>If you contact us we can provide help and add you to our developer community from which you can receive support. The keys steps to getting started are as follows...</p>
+      <p>If you <a href="mailto:mail@onezoom.org">contact us</a> we can provide help and add you to our developer community from which you can receive support. The keys steps to getting started are as follows...</p>
       <ol>
-        <li>Download and install Python, Web2py, a mySQL server and a SQL database browser.</li>
-        <li>Pull the latest version of OneZoom from our public GitHub repository.</li>
-        <li>Read the license and other readme documentation, ask us about any queries or concerns.</li>
-        <li>Run the Web2py server locally and open the website to populate the database with the correct structure.</li>
-        <li>Contact us for a database dump (which will include everything we have except for sponsorship information). Alternatively run our Python scripts to generate your own data, but this will be harder and involves many steps includin getting large source data dumps from Open Tree of Life and Wikipedia as well as intensive use of the IUCN and EOL APIs to aquire further data.</li>
+        <li>Read the <a href="https://github.com/OneZoom/OZtree/blob/master/license.txt" target="_blank">license</a>, <a href="{{=URL('static','downloads/OneZoom_License_V1_FAQ.pdf')}}" target="_blank">plain language license FAQs</a> and <a href="https://github.com/OneZoom/OZtree/blob/master/README.markdown" target="_blank">readme documentation</a>, ask us about any queries or concerns.</li>
+        <li>Pull the latest version of OneZoom from our <a href=" http://github.com/onezoom/OZtree" target="_blank">public GitHub repository</a> and follow the instructions in the readme file.</li>
+        <li><a href="mailto:mail@onezoom.org">Contact us</a> for a database dump (which will include everything we have except for sponsorship information). Alternatively run our Python scripts to generate your own data, but this will be harder and involves many steps includin getting large source data dumps from Open Tree of Life and Wikipedia as well as intensive use of the IUCN and EOL APIs to aquire further data.</li>
         <li>Optional: get copies of the images from us so they can be hosted in an environment disconnected from the internet, such as a touch table without a network connection.</li>
       </ol>
     </li>
     <li>
-      <h4>Version 3.3.1</h4>
+    <h4>Version 3.4</h4>
+    <p> Includes all the features of version 3.3.1 and adds a completely redesigned landing page together with improvements to the site content as a whole.</p>
+    </li>
+    <li>
+      <h4>Version 3.3.1 (obsolete)</h4>
       <p> Includes all the features of version 3.3 and adds code to build a museum tree of life display exhibit  in seconds.  In particular, i) the user interface has been customized for museum display use, ii) the display URL has been 'sandboxed' so that users can't break out and explore material outside the tree of life and taxa pages on Wikipedia, iii) a new tutorial has been added to the display, and iv) a 'screensaver' function ensures that unattended displays automatically reset and fly around the tree to attract potential users passing by.  A new launch page enables customization of the museum display including the home taxa location, language, view type and other settings.  Version 3.4 also features some updates to the menus and pages on the website outside of the tree of life explorer.</p>
     </li>
     <li>
