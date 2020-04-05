@@ -22,9 +22,15 @@ a, a:link, a:active, a:visited, a:hover {
 }
 
 .main_content {
-a, a:link, a:active, a:visited, a:hover {
-color: $oz_green_bg;
-}
+  a, a:link, a:active, a:visited, a:hover {
+    color: $oz_green_bg;
+  }
+  a.a-light {
+    color: $oz_green_fg;
+    &:link, &:active, &:visited, &:hover {
+        color: $oz_green_fg;
+    }
+  }
 }
 
 img.rgt_edge {
@@ -43,158 +49,12 @@ margin-left:-50px;
 background-color: white;
 }
 
-ul.leaf-list {
-  padding-left: 0;
-  line-height: 2rem;
-
-  li { list-style: none; }
-  li:before {
-    content: '';
-    display: inline-block;
-    vertical-align: text-bottom;
-    width: 2rem;
-    height: 1rem;
-    padding-right: 1rem;
-    background-image: url(../images/oz-leaf-greenfg.svg);
-    background-size: contain;
-    background-repeat: no-repeat;
-  }
-
-  &.oz-pill {
-    /* Nicer padding when being used as a call-to-action (e.g. sponsors) */
-    padding: 0.3rem 1rem;
-  }
-}
-
 .no-break-paras li, .no-break-paras p {
     page-break-inside: avoid;
     break-inside: avoid;
 }
 
-img.species, .img-species > img {
-  background: whitesmoke;
-  border-radius: 50%;
-}
-span.img-species {
-  display: inline-block;
-}
-.img-species {
-  position: relative; /* Contain leafout background */
-}
-.img-species.leafout::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background-image: url(../images/oz-logo-leafout-outline.svg);
-  background-repeat: no-repeat;
-  background-position: center 85%;
-  background-size: 30px;
-}
-
-.endangered-species .img-species.leafout::after {
-  right: -10px;
-  background-image: url(../images/oz-logo-leafout-outline-red.svg);
-  background-position: right bottom;
-}
-
-/* ********** Header ********** */
-body > header {
-  padding: 0 10px;
-  overflow: visible !important; /* Let search dropdown escape */
-
-  @media screen and (max-width: 1000px) {
-    /* Nudge center navbar underneath, let it scroll */
-    nav.uk-navbar.uk-navbar-container {
-      margin-bottom: 1rem;
-    }
-    nav.uk-navbar.uk-navbar-container > .uk-navbar-center {
-      top: calc(100% - 1rem);
-      left: 0;
-      right: 0;
-      transform: none;
-    }
-    nav.uk-navbar.uk-navbar-container > .uk-navbar-center > ul {
-      margin: 0 auto; /* Center menu within navbar-container */
-      overflow-x: hidden;
-      /* Below 390 px, only room for 3 menu items, hide the rest */
-      @media screen and (max-width: 390px) {
-        > li + li + li + li {
-          display: none;
-        }
-      }
-    }
-    nav.uk-navbar.uk-navbar-container > .uk-navbar-center > ul > li > a {
-      min-height: 2rem;
-    }
-    nav.uk-navbar.uk-navbar-container > .uk-navbar-center > ul > li > .uk-navbar-dropdown[style] {
-      left: 0px !important;
-      right: 0px !important;
-      width: auto !important;
-    }
-  }
-
-  .uk-navbar-nav>li>a {
-    padding: 0 10px; /* Decrease padding to fit more links on IphoneSE */
-    text-transform: none;
-    span {
-      /* The navbar items have too much height, so underline a nested element */
-      border-bottom: 1px solid $oz_green_fg;
-    }
-    color: inherit;
-    &:hover, &.uk-open {
-      color: $oz_green_fg;
-    }
-  }
-
-  .masthead {
-    max-width: 800px !important;
-    margin: 0 auto !important; /* override oz-section-body margins */
-
-    h1, h1 a {
-      color: $oz_green_fg;
-      &:link, &:visited, &:hover, &:active {
-        color: $oz_green_fg;
-      }
-    }
-  }
-
-  .logo img {
-    width: 220px;
-  }
-}
-
-/* ********** Footer ********** */
-
-body > footer {
-  font-size: 80%;
-
-  &.shortcuts {
-    @extend %oz-background-dark;
-    padding: 1rem !important;
-
-    h3 {
-      font-size: 1rem;
-      margin: 0 0 0.2rem 0;
-    }
-
-    ul {
-      margin: 0;
-      padding-left: 18px;
-    }
-  }
-
-  &.terms {
-    padding: 0.3rem;
-    background-color: $oz_terms_bg;
-    color: $oz_terms_fg;
-    text-align: center;
-  }
-}
-
-/* ********** HP sections ********** */
+/* ********** Page sections (including header etc) ********** */
 
 .oz-section {
   overflow: hidden; /* contain background */
@@ -350,59 +210,130 @@ body > footer {
   }
 }
 
+/* ********** Header ********** */
+body > header {
+  padding: 0 10px;
+  overflow: visible !important; /* Let search dropdown escape */
 
-/* ********** Grid modifications for homepage  ********** */
-
-.uk-grid-oz-dark {
-  background: $oz_dark_bg;
-
-  &.uk-grid-small {
-    /* Padding above/below cells */
-    padding: 15px 0;
-  }
-  @media screen and (min-width: 960px) {
-    &.uk-grid-small {
-      /* Modify grid so we get some padding around cells */
-      padding: 15px;
-      margin-left: 0;
+  @media screen and (max-width: 1000px) {
+    /* Nudge center navbar underneath, let it scroll */
+    nav.uk-navbar.uk-navbar-container {
+      margin-bottom: 1rem;
+    }
+    nav.uk-navbar.uk-navbar-container > .uk-navbar-center {
+      top: calc(100% - 1rem);
+      left: 0;
+      right: 0;
+      transform: none;
+    }
+    nav.uk-navbar.uk-navbar-container > .uk-navbar-center > ul {
+      margin: 0 auto; /* Center menu within navbar-container */
+      overflow-x: hidden;
+      /* Below 390 px, only room for 3 menu items, hide the rest */
+      @media screen and (max-width: 390px) {
+        > li + li + li + li {
+          display: none;
+        }
+      }
+    }
+    nav.uk-navbar.uk-navbar-container > .uk-navbar-center > ul > li > a {
+      min-height: 2rem;
+    }
+    nav.uk-navbar.uk-navbar-container > .uk-navbar-center > ul > li > .uk-navbar-dropdown[style] {
+      left: 0px !important;
+      right: 0px !important;
+      width: auto !important;
     }
   }
 
-  @media screen and (max-width: 640px) {
-    /* Grid collapsed, so we specify the treeviewer height */
-    > div {
-      min-height: 58vh;
+  .uk-navbar-nav>li>a {
+    padding: 0 10px; /* Decrease padding to fit more links on IphoneSE */
+    text-transform: none;
+    span {
+      /* The navbar items have too much height, so underline a nested element */
+      border-bottom: 1px solid $oz_green_fg;
     }
-    .uk-grid-small {
-      margin-left: 0; /* margins collapsed, so don't need to nudge over */
+    color: inherit;
+    &:hover, &.uk-open {
+      color: $oz_green_fg;
     }
   }
 
-  .uk-card::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: calc(50% - 20px);
+  .masthead {
+    max-width: 800px !important;
+    margin: 0 auto !important; /* override oz-section-body margins */
 
-    width: 0; 
-    height: 0; 
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-top: 10px solid $oz_dark_bg;
+    h1, h1 a {
+      color: $oz_green_fg;
+      &:link, &:visited, &:hover, &:active {
+        color: $oz_green_fg;
+      }
+    }
   }
 
-  .uk-card-body {
-    overflow: hidden; /* Contain "What is the tree of life" text */
+  .logo img {
+    width: 220px;
   }
 }
 
-.uk-container-center {
-  /* Future UI-kit property missing from our version */
-  margin-left: auto;
-  margin-right: auto;
+/* ********** Footer ********** */
+
+body > footer {
+  img.species {
+    background: whitesmoke;
+    border-radius: 50%;
+  }
+
+  font-size: 80%;
+
+  &.shortcuts {
+    @extend %oz-background-dark;
+    padding: 1rem !important;
+
+    h3 {
+      font-size: 1rem;
+      margin: 0 0 0.2rem 0;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+  }
+
+  &.terms {
+    padding: 0.3rem;
+    background-color: $oz_terms_bg;
+    color: $oz_terms_fg;
+    text-align: center;
+  }
 }
 
-/* ********** Call-to-action pills ********************** */
+/* ********** Call-to-action pills & lists ********************** */
+
+ul.leaf-list {
+  padding-left: 0;
+  line-height: 2rem;
+
+  li { list-style: none; }
+  li:before {
+    content: '';
+    display: inline-block;
+    vertical-align: text-bottom;
+    width: 2rem;
+    height: 1rem;
+    padding-right: 1rem;
+    background-image: url(../images/oz-leaf-greenfg.svg);
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+
+  &.oz-pill {
+    /* Nicer padding when being used as a call-to-action (e.g. sponsors) */
+    padding: 0.3rem 1rem;
+  }
+}
+
 
 .oz-pill {
   @extend %oz-background-dark;
@@ -442,330 +373,9 @@ body > footer {
   }
 }
 
-.oz-card-bottom-right {
-  position: absolute;
-  right: 0;
-  bottom: 0;
 
-  .oz-pill {
-    border-radius: 1.5rem 0 0 0;
-  }
-}
-
-
-
-/* ********** Home page tour UI ************************* */
-
-.hp_tour_ui {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-
-  .tourstop {
-    text-align: right;
-
-    .tour-controls {
-      display: none;
-
-      position: absolute;
-      top: 0;
-      right: 0;
-      left: 0;
-      padding: 0.5rem;
-    }
-    &.active .tour-controls {
-      display: block;
-    }
-    .linkout {
-      opacity: 0;
-      transition: opacity .5s;
-      transition-delay: .25s; /* Delay fading out so we don't fade to white too much */
-      pointer-events: none;
-    }
-    &.active .linkout {
-      opacity: 1;
-      transition-delay: 0s;
-      pointer-events: auto;
-    }
-  }
-
-  .linkout.oz-pill {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-}
-
-/* ********** Home page stat circles ************************* */
-
-.oz-info-card {
-  .oz-info-card-aside {
-    min-height: 1rem; /* Use this as padding to stop text clashing with "start exploring" */
-  }
-
-  @media screen and (min-width: 1200px) {
-    padding-right: calc(12em) !important;
-
-    .oz-info-card-aside {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: 12em;
-      overflow: hidden;
-    }
-  }
-
-  .hp-stat-circles {
-    @extend %oz-font-serif;
-    font-size: 120%;
-
-    @media screen and (max-width: 1200px) {
-      display: none;
-    }
-
-    > * {
-      list-style-type: none;
-      display: flex;
-      justify-content: center;
-      align-content: center;
-      flex-direction: column;
-      position: absolute;
-      border-radius: 100%;
-      background: $oz_green_fg;
-      color: $oz_dark_bg;
-      text-align: center;
-    }
-    + h3 {
-      margin-top: 0;
-    }
-  }
-}
-
-/* ********** Home page slider prev/next arrows ************** */
-
-.oz-slider-arrow {
-  width: 35px;
-  height: 35px;
-  margin: 15px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-
-  &.oz-slider-arrow-left {
-    left: -55px;
-    background-image: url(../images/oz-leftarrow-darkbg.svg);
-  }
-  &.oz-slider-arrow-right {
-    right: -55px;
-    background-image: url(../images/oz-rightarrow-darkbg.svg);
-  }
-}
-
-
-.main_content a.a-light {
+a.oz-pill {
+  &:link, &:visited, &:active, &:hover {
     color: $oz_green_fg;
-    &:link, &:active, &:visited, &:hover {
-        color: $oz_green_fg;
-    }
-}
-
-/* ********** News items ************** */
-
-.news-list img.non-default {
-    border: 1px solid lightgray;
-}
-
-// ===== List pages, e.g. FAQ, milestones ====== //
-
-ul.columns {
-    > li {
-        display: inline-block;
-        -webkit-column-break-inside: avoid;
-                  page-break-inside: avoid;
-                       break-inside: avoid;
-        text-align: justify;
-        margin-bottom: 1.5em;
-    }
-}
-
-// ===== Sponsor ====== //
-
-.full-title {
-margin: 1.5rem 0 1.5rem 0
-}
-
-q {
-quotes: "\201C" "\201D" "\2018" "\2019";
-}
-
-.unpad {
-padding:0
-}
-
-.short-sponsor-ideas, .long-sponsor-ideas {
-list-style-type: none;
-font-size: 110%;
-margin:0;
-padding:0;
-li img {
-vertical-align: center;
-border-radius: 50%;
-height: 4rem;
-width: 4rem;
-margin: 0.5rem 0.5em 0.5rem 0;
-}
-
-.subtext {
-margin-top:-1.5rem;
-margin-left: 6rem;
-font-size: 75%;
-}
-}
-
-.short-sponsor-ideas {
-columns: 2 16em;
-}
-
-// ===== Search sponsor ====== //
-ul.sponsor_list {
-list-style: none;
-}
-ul.sponsor_list > li:nth-of-type(even) {
-}
-
-ul.sponsor_list li {
-padding-left: 80px;
-padding-top:20px;
-background-size:60px;
-height: 75px;
-background-repeat: no-repeat;
-background-position: .5em .5em;
-}
-
-// ===== Sponsored, donor_list ====== //
-
-.sponsored_list {
-padding: 0;
-margin: 0;
-display: flex;
-flex-wrap: wrap;
-justify-content: space-around;
-li {
-display: inline-block;
-position: relative;
-vertical-align:text-top;
-padding:0 1em;
-margin: 1em 0;
-/*    border-right: 1px solid grey;*/
-text-align: center;
-}
-img {
-border-radius: 50%;
-border: 2px solid grey;
-&.nopic {
-border: 1px solid grey; opacity: 0.2;
-}
-&.pd {
-border-color: green;
-}
-}
-}
-
-.donor_head h1 {
-padding:1em 4em 0 4em;
-}
-
-.donor_list {
-padding: 0;
-margin: 0;
-display: flex;
-flex-wrap: wrap;
-justify-content: space-around;
-li {
-display: inline-block;
-position: relative;
-vertical-align:text-top;
-padding:0 1em;
-margin: 1em 0;
-text-align: center;
-ul {  display: flex;
-flex-wrap: wrap;
-justify-content: space-around;
-padding: 0;
-margin: 0;
-li {
-display: inline-block;
-position: relative;
-}
-}
-}
-.donor {
-font-size: 2em;
-}
-img {
-border: 2px solid grey;
-&.nopic {
-border: 1px solid grey; opacity: 0.2;
-}
-}
-}
-
-
-.donor_list.cutoff_gt1000 {
-padding: 0;
-margin: 0;
-display: block;
-> li {
-margin:2em 10%;
-border-radius: 1em;
-border: 5px solid gold;
-display: block;
-vertical-align:text-top;
-padding:0 1em;
-text-align: center;
-}
-.donor {
-font-size: 2.5em;
-}
-img {
-width: 100px;
-border: 2px solid grey;
-}
-}
-
-.donor_list.cutoff_gt150 {
-padding: 0;
-margin: 0;
-display: block;
-> li {
-border-radius: 1em;
-border: 3px solid silver;
-display: block;
-vertical-align:text-top;
-padding:0 1em;
-margin: 2em 10%;
-text-align: center;
-}
-.donor {
-font-size: 2.5em;
-}
-img {
-width: 100px;
-border: 2px solid grey;
-}
-}
-
-.donor_foot {
-color: grey;
-font-size: smaller;
-margin-bottom: 1em
-}
-
-.hefty {
-font-size: 120%;
-font-weight:bold
+  }
 }
