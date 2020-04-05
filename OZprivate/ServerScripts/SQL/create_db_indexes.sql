@@ -41,7 +41,8 @@ call MakeFullUnicode('search_log', 'search_string');
 
 # note make sure that the name column in vernacular_by_name and the name column in ordered_leaves and ordered_nodes are of the same character set otherwise search can get incredibly slow even with indexes.
 
-
+DROP   INDEX news_date_index     ON news;
+CREATE INDEX news_date_index     ON news (news_date);
 
 DROP   INDEX ott_index           ON banned;
 CREATE INDEX ott_index           ON banned (ott)                      USING HASH;
