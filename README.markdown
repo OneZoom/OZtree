@@ -69,7 +69,7 @@ Before anything else, get the OZtree app from [github](https://github.com/OneZoo
 5. Fire up a temporary web2py server and visit the main page to create the (empty) database tables - see *"[Starting and shutting down web2py](#starting-and-shutting-down-web2py)"*
 6. Load up data into the tables: first create a user and assign it a 'manager' role in the `auth_` tables using the web2py database admin pages, then load the other tables using data from the original OneZoom site (e.g. sent to you via file transfer) - see *"[Filling the database](#filling-the-database)"*.
 7. Optimise your installation:
-	* create indexes on the tables by copying and pasting the text at the end of the `OZtree/models/db.py` file into a mysql client
+	* create indexes on the tables by running the SQL script in `OZtree/OZprivate/ServerScripts/SQL/create_db_indexes.sql`. You can do this, for example, by running `SOURCE /path/to/OZtree/OZprivate/ServerScripts/SQL/create_db_indexes.sql` within a mysql client.
 	* set `is_testing = False` in `models/db.py` and `migrate=0` in appconfig.ini.
 
 
@@ -259,7 +259,7 @@ Note that mySQL stupidly has a resticted version of the unicode character set, s
 
 ### Optimising tables (IMPORTANT)
 
-To get any decent performance out of your OneZoom instance, you will need to create indexes on the resulting tables. The commands for doing this are listed in a large comment at the end of `db.py`, from where they can be copied and pasted into a mysql client.
+To get any decent performance out of your OneZoom instance, you will need to create indexes on the resulting tables. The commands for doing this are listed in `OZtree/OZprivate/ServerScripts/SQL/create_db_indexes.sql`, from where they can be copied and pasted into a mysql client.
 
 The commands to create indices also include commands to convert some of the columns to 4-byte unicode if necessary (to incorporate e.g. full Japanese/Chinese common names), and to drop the indexes if they already exist. Some of these commands may cause SQL errors (e.g. "Can't DROP XXX") if you have not previously created any indices. These errors can be safely ignored. If you are using mysql workbench you may want to untick the option under Query to "Stop Script Execution on Errors", so that the index creation continues after each error.
 
