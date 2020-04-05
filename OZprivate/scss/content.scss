@@ -54,6 +54,12 @@ background-color: white;
     break-inside: avoid;
 }
 
+.uk-container-center {
+  /* Future UI-kit property missing from our version */
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* ********** Page sections (including header etc) ********** */
 
 .oz-section {
@@ -374,7 +380,7 @@ ul.leaf-list {
 }
 
 
-a.oz-pill {
+.main_content a.oz-pill {
   &:link, &:visited, &:active, &:hover {
     color: $oz_green_fg;
   }
