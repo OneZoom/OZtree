@@ -4,19 +4,19 @@ OneZoom Tree of Life explorer Version 3.4
 
 Licensed under the OneZoom Licence, Version 1 (the “Licence”). You may not use this software file unless you comply with the terms and obligations in the Licence. You may obtain a copy of the Licence at: www.onezoom.org/static/downloads/OneZoom_License_V1.pdf and you will also find a copy in the root directory of the OneZoom software GitHub repository.
 
-Copyright 2017 OneZoom CIO 
+Copyright 2020 OneZoom CIO 
 THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OR THAT THIS SOFTWARE IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE OR NON- INFRINGING. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE COVERED SOFTWARE IS WITH YOU. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS OF THIS SOFTWARE BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THIS SOFTWARE OR THE USE OR OTHER DEALINGS IN THIS SOFTWARE.
 
 Please contact mail@onezoom.org for details.
 
-Authors: Yan Wong, Kai Zhong and James Rosindell
+Authors: Yan Wong, Kai Zhong, Jamie Lentin and James Rosindell
 
 =========================================================================================
 Material to which the license does not apply - not licenced for reuse - but included for convenience as it is hosted on onezoom.org
 =========================================================================================
 
 1.) The OneZoom License text itself in the root directory and in /static/downloads
-2.) The OneZoom Charity registration certificate in /static/downloads
+2.) The OneZoom Charity registration certificate
 3.) Any files found in /static/images
 4.) User quotes appearing as content on the website which came from those users directly and should not be taken out of context.
 
