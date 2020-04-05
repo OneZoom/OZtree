@@ -265,6 +265,14 @@ body > header {
     }
   }
 
+  nav.uk-navbar .uk-navbar-nav .uk-navbar-dropdown-bottom-left {
+    /* dropdown menu is a little too low: move it up & override 15px default */
+    margin-top: 0;
+    /* also too much space above and below items */
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+
   .masthead {
     max-width: 800px !important;
     margin: 0 auto !important; /* override oz-section-body margins */
