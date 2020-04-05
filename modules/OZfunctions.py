@@ -114,7 +114,7 @@ def nice_species_name(scientific=None, common=None, the=False, html=False, leaf=
     species_nicename = (scientific or '').replace('_',' ').strip()
     common = (common or '').strip()
     if the:
-        common = add_the(common)
+        common = add_the(common, leaf)
     if first_upper:
         common = common.capitalize()
     if html:
