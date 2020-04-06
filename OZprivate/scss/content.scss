@@ -54,6 +54,12 @@ background-color: white;
     break-inside: avoid;
 }
 
+.uk-container-center {
+  /* Future UI-kit property missing from our version */
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* ********** Page sections (including header etc) ********** */
 
 .oz-section {
@@ -259,6 +265,14 @@ body > header {
     }
   }
 
+  nav.uk-navbar .uk-navbar-nav .uk-navbar-dropdown-bottom-left {
+    /* dropdown menu is a little too low: move it up & override 15px default */
+    margin-top: 0;
+    /* also too much space above and below items */
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+
   .masthead {
     max-width: 800px !important;
     margin: 0 auto !important; /* override oz-section-body margins */
@@ -374,7 +388,7 @@ ul.leaf-list {
 }
 
 
-a.oz-pill {
+.main_content a.oz-pill {
   &:link, &:visited, &:active, &:hover {
     color: $oz_green_fg;
   }
