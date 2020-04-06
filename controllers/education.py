@@ -19,4 +19,11 @@ def screenshot_launcher():
     return dict()
 
 def educational_materials():
-    return dict()
+    quotes = {}
+    rows = db().select(db.quotes.ALL, orderby = ~db.quotes.quality | db.quotes.id)
+    for r in rows:
+        if r.category in quotes:
+            quotes[r.category].append(r)
+        else:
+            quotes[r.category] = [r]
+    return dict(quotes=quotes)
