@@ -245,6 +245,7 @@ body.loading #UI #loading_spinner {
 
 #external-modal .uk-modal-dialog {
     height: 100%; /* always fill with the dialog */
+    width: 120em; //override the default max width of 1800px so it is wider but readable
 }
 
 #external-modal .external-content {
