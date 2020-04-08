@@ -30,7 +30,7 @@ def edit_language():
                 return dict(filename=filename, form=form)
         
             keys = sorted(strings.keys(), lambda x, y: cmp(
-                unicode(x, 'utf-8').lower(), unicode(y, 'utf-8').lower()))
+                x.lower(), y.lower()))
             rows = []
             rows.append(H2(T('Original/Translation')))
         
