@@ -1,4 +1,4 @@
-[In OTT v2.9 the obscure and recently discovered caecilian Chikila fulleri (OTT: 3617909) appears in the wrong place,and so has been deleted from this phylogeny.
+[Opentree 12.3 has /Ranoidea aurea/ (ott 7666857) placed high on the frog & toad tree, but it's actually a synonym of /Litoria aurea/, which is correctly placed, so is removed by hand here.
 
 #from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Tetrapods]
-((Anura_ott991547@:290,Caudata_ott984716@:290)Batrachia:20.0,Gymnophiona_ott118027~-3617909@:310)Amphibia:30.0;
+((Anura_ott991547~-7666857@:290,Caudata_ott984716@:290)Batrachia:20.0,Gymnophiona_ott118027@:310)Amphibia:30.0;
