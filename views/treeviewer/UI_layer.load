@@ -269,9 +269,9 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <li id="{{=tab['id']}}"><a href="#">{{if 'icon' in tab:}}<img src="{{=tab['icon']}}" title="{{=T(tab['name'], lazy=False)}}" class="uk-hidden@s" />{{pass}}<span class="uk-visible@s">{{=T(tab['name'], lazy=False)}}</span></a></li>
         {{pass}}
       </ul>
-      <ul class="popup-container uk-switcher">
+      <ul class="uk-switcher popup-container">
         {{for tab in tabs:}}
-        <li class="{{=tab['id']}}" data-name="{{=tab['name']}}" data-src="" aria-controls="{{=tab['id']}}-panel">
+        <li class="tab-content {{=tab['id']}}" data-name="{{=tab['name']}}" data-src="" aria-controls="{{=tab['id']}}-panel">
           <div class="uk-position-top-right expand-tab" style="{{if request.vars.get('no_external_links', False):}}display:none{{pass}}">
 {{#the linkout buttons are forms, to allow post requests to pass on reservation codes
   if request.vars.links!='none':
