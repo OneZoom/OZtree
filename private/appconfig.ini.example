@@ -33,7 +33,7 @@ url        = https://www.sandbox.paypal.com
 url_base = //images.onezoom.org/
 
 [sponsorship]
-; * allow. Should we allow the sponsorship page to be
+; * allow_sponsorship. Should we allow the sponsorship page to be
 ;    shown on this machine (0 or 1)? Usually not allowed, except on the
 ;    main OneZoom site (on museum displays people will not want
 ;    to enter paypal etc details). If set to anything other than 0/1 or all/none

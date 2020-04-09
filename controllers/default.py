@@ -775,9 +775,6 @@ def paypal():
 
 # TODO enabling edits and intelligent behaviour if a logged in user goes back to their own leaf    
 
-def search_name():
-    return dict()
-
 def sponsored():
     """
     a simple paged list of recently sponsored species

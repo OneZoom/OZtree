@@ -783,18 +783,15 @@ function setupUI() {
         $('#external-modal .tab-loading-info').hide();
       });
 
-    $('#external-modal .popup-container li').on('show', function (event) {
-        if ($(event.currentTarget).attr("data-src")) {
-            load_tab($(event.currentTarget));
+    $('#external-modal .external-content').on('show', function (event) {
+        if ($(event.target).closest('li.tab-content').attr("data-src")) {
+            load_tab($(event.target).closest('li.tab-content'));
         }
-        event.stopPropagation();
     });
     
-    $('#external-modal .popup-container li').on('hidden', function (event) {
-        /* make sure hiding anything within the container does not bubble up
-         * and make us think the entire modal has been hidden.
-         
-         We probably don't need this now...
+    $('#external-modal .popup-container li.tab-content').on('hidden', function (event) {
+        /* make sure hiding anything within the container (e.g. when the tabs are
+         * switched) does not bubble up and close the entire modal window.
          */
         event.stopPropagation();
     });
