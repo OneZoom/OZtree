@@ -56,7 +56,7 @@ response.menu = [
                                             ]),
                  
                  (T('About us'), False, None , [
-                                            (T('Milestones'), False , URL('default' , 'milestones.html') ),
+                                            (T('Project timeline'), False , URL('default' , 'timeline.html') ),
                                             (T('Endorsements'), False, URL('default' , 'endorsements.html')),
                                             (T('About OneZoom'), False, URL('default' , 'about.html')),
                                             (T('Donors'), False , URL('default' , 'donor_list.html') ),

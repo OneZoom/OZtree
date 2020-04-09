@@ -173,7 +173,7 @@ def index():
                 heading=row.text_date if row.text_date else row.news_date.strftime("%d %B %Y").lstrip('0'),
                 body=row.html_description.replace(' class="thumbnail"', ' style="display:none"'),
                 thumbnail_href=row.thumbnail_href,
-                more_href=URL("milestones.html#news-item{}".format(row.id))
+                more_href=URL("timeline.html#news-item{}".format(row.id))
             )
             for row in db().select(db.news.ALL, orderby =~ db.news.news_date, limitby = (0, 5))
         ],
@@ -1304,7 +1304,7 @@ def how():
 def team():
     return dict()
 
-def milestones():
+def timeline():
     news = db().select(db.news.ALL, orderby =~ db.news.news_date)
     return dict(news = news)
 
