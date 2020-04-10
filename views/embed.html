@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <html lang="{{=T.accepted_language or 'en'}}">
 <head>
-  <link rel="stylesheet" href="{{=URL('static','css/OZ_bootstrap.css')}}" type="text/css" />
-  <link rel="stylesheet" href="{{=URL('static','css/OZ_specific.css')}}" type="text/css" />
+  <script type="text/javascript" src="{{=URL('static','js/jquery.min.js')}}"></script>
+  <script src="{{=URL('static','uikit-3/js/uikit.min.js')}}"></script>
+  <link rel="stylesheet" href="{{=URL('static','uikit-3/css/uikit.min.css')}}" />
+  <link rel="stylesheet" href="{{=URL('static','css/content.css')}}" type="text/css" />
   <link rel="shortcut icon" href="{{=URL('static', 'favicon.ico')}}" type="image/x-icon" />
   <link rel="apple-touch-icon" href="{{=URL('static','favicon.png')}}">
-  {{include 'web2py_ajax.html'}}
-    <script>
+  <style>h2 {margin-top: 0}</style>
+{{
+    response.include_meta()
+    response.include_files()
+}}
+  <script>
+  var OZstrings={{include 'treeviewer/js_strings.json'}}
+  </script>
+  <script>
 /* When a page is embedded, we assume it is in the tree viewer, and thus needs pinch zoom functionality
  * removing, otherwise the viewer itself will be pinch zoomed. A better way would be to pass this
  * onto the iframe but not the rest of the viewer, e.g. by using http://timmywil.github.io/jquery.panzoom/.
@@ -86,21 +95,10 @@ pass
         <script src="{{=URL('static','js/respond-1.4.2.min.js')}}"></script>
         <![endif]-->
     {{block head}}{{end}}
-    {{
-    # using sidebars need to know what sidebar you want to use
-    mc0 = 'col-md-12'
-    mc1 = 'col-md-9'
-    mc2 = 'col-md-6'
-    left_sidebar_enabled = globals().get('left_sidebar_enabled', False)
-    right_sidebar_enabled = globals().get('right_sidebar_enabled', False)
-    middle_column = {0: mc0, 1: mc1, 2: mc2}[
-    (left_sidebar_enabled and 1 or 0)+(right_sidebar_enabled and 1 or 0)]
-    }}
   </head>
   <body class="embedded">
-    <div class="container-fluid">
-    <span id="fill"></span>
-        {{include}}
+    {{block masthead}}{{end}}
+    {{include}}
     </div>
     <!-- The javascript =============================== -->
     <script type="text/javascript" src="/static/site-specific/google-analytics.js"></script>
