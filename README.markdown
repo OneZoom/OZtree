@@ -208,11 +208,11 @@ Assuming you have python version 2 installed, should now try starting web2py as 
 
 ### Starting and shutting down web2py
 
-On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. This is complete overkill if you just want to run a local copy of OneZoom for testing purposes. You can simply run a [temporary and basic web2py server using Python](http://www.web2py.com/books/default/chapter/29/03/overview#Startup) (version 2, *not* version 3). The simplest is to open a command-line prompt in the root web2py folder, and run the following (assuming the command `python2` is linked to something like Python 2.7)
+On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. This is complete overkill if you just want to run a local copy of OneZoom for testing purposes. You can simply run a [temporary and basic web2py server using Python 3](http://www.web2py.com/books/default/chapter/29/03/overview#Startup). The simplest is to open a command-line prompt in the root web2py folder, and run the following (assuming the command `python3` is linked to something like Python 3.7)
 
-`python2 web2py.py -i 127.0.0.1 -p 8000 -a pass`
+`python3 web2py.py -i 127.0.0.1 -p 8000 -a pass`
 
-* (NB: it is possible to run a secure OneZoom site over https, but this is untested, and *may have problems when linking out to other sites*. To try this anyway (not currently recommended), create a `.crt` and `.key` file, e.g. by running the following in the web2py root directory: `openssl req -newkey rsa:2048 -x509 -days 365 -nodes -keyout oz.key -out oz.crt`, then use them when running web2py, as in: `python2 web2py.py -c oz.crt -k oz.key -i 127.0.0.1 -p 8000 -a pass`)
+* (NB: it is possible to run a secure OneZoom site over https. To try this using the basic web2py server, create a `.crt` and `.key` file, e.g. by running the following in the web2py root directory: `openssl req -newkey rsa:2048 -x509 -days 365 -nodes -keyout oz.key -out oz.crt`, then use them when running web2py, as in: `python3 web2py.py -c oz.crt -k oz.key -i 127.0.0.1 -p 8000 -a pass`)
 
 
 When web2py is run, it will print instructions telling how to shut down the web2py server. For example, on Windows you might use `taskkill /f /pid XXXX`, where `XXXX` is the process id.
