@@ -8,8 +8,6 @@ html {font-size: 150%}
 /* make the buttons larger */
 #controlButtons > li a {padding-right: 0.5rem; padding-left: 0.5rem;}
 #controlButtons > li a svg {width: 40px; height: 40px;}
-#advanced_search_button {width: 45px; height: 45px;}
-#advanced_search_button svg, .searchbox .main-icon svg, #common_ancestor_button svg, #add_searchbox svg {width: 30px; height: 30px;}
 .searchbox .spinner svg, .remove-searchbox svg {width: 25px; height: 25px;}
 #settingsDropdown, #infoDropdown {width: 12em;}
 
@@ -21,10 +19,10 @@ html {font-size: 150%}
     border-right: 1px solid #ddd;
     //Right border of control buttons would be overwrite by the background color of button-label
     border-left: 1px solid #ddd;
-    width: 140px;
+    width: 5rem;
     height: 100%;
     //TODO: line-height should be set dynamically as the parent's height is not fixed
-    line-height: 65px;
+    line-height: 2.1rem;
     text-align: left;
     padding-left: 20px;
     font-weight: 100;

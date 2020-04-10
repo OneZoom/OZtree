@@ -85,12 +85,21 @@ body.loading #UI #loading_spinner {
     height: 2rem;
 }
 
+#advanced_search_button {
+    width: 2rem; height: 2rem;
+}
+
+#advanced_search_button svg, .searchbox .main-icon svg,
+#common_ancestor_button svg, #add_searchbox svg {
+    width: 1.25rem; height: 1.25rem;
+}
+
 #controlButtons {
     position: fixed;
     bottom: 0.5em; 
     left:0.5em; 
     display:block; 
-    border: 1px solid #DDD; 
+    border: 1px solid #DDD;
     border-radius: 5px; 
     background-color: white;
     padding: 0.2em 0;
@@ -103,21 +112,22 @@ body.loading #UI #loading_spinner {
     border-radius: 5px;
     text-align: center;
     position: relative;
+    .icon-container {
+        width: 100%;
+        display: inline-block;
+        > a {
+            display: inline-block;
+            padding:0.5rem 0.1rem;
+            width: 2rem;
+            text-align: center;
+            > svg {
+                width: 1.25rem;
+                height:1.25rem;
+            }
+        }
+    }
 }
     
-#controlButtons > li a
-{
-  display: inline-block;
-  padding:0.5rem 0.1rem;
-  width: 2rem;
-  text-align: center;
-}
-
-#controlButtons li .icon-container {
-    width: 100%;
-    display: inline-block;
-}
-
 #controlButtons [uk-dropdown] {
     /* make sure dropdowns always fit in the viewport, but don't cover header (or possibly get lost under Safari URL bar) */
     max-height: calc(100vh - 8rem);
@@ -222,6 +232,12 @@ body.loading #UI #loading_spinner {
 }
 #infoDropdown li span {
     margin-right: 1em;
+}
+
+#settingsDropdown {
+    text-align: left;
+    padding: 0.6rem 20px 0.6rem 0rem;
+    min-width: 10rem;
 }
 
 .uk-modal-body {
