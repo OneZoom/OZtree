@@ -49,6 +49,12 @@ quotes: "\201C" "\201D" "\2018" "\2019";
 padding:0
 }
 
+.creature-code input {
+    font-size: 100%;
+    height: 2em;
+    text-align: center;
+}
+
 .short-sponsor-ideas, .long-sponsor-ideas {
 list-style-type: none;
 font-size: 110%;
@@ -70,7 +76,21 @@ font-size: 75%;
 }
 
 .short-sponsor-ideas {
-columns: 2 16em;
+columns: 2 12em;
+}
+
+.short-sponsor-ideas img {
+  max-width: none; // needed to override 100%, which can squash the image
+}
+
+.short-sponsor-ideas a {
+    display: table-row;
+    vertical-align: middle;
+}
+
+.short-sponsor-ideas a p {
+    display: table-cell;
+    vertical-align: middle;
 }
 
 // ===== Search sponsor ====== //
@@ -211,6 +231,12 @@ margin-bottom: 1em
 .hefty {
 font-size: 120%;
 font-weight:bold
+}
+
+.highlight {
+    border: 1px solid black;
+    background-color: yellow;
+    padding: 0.2rem;
 }
 
 // ===== Translations ====== //
