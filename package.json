@@ -7,9 +7,6 @@
     "js_src": "OZprivate/rawJS/OZTreeModule/src",
     "js_dist": "OZprivate/rawJS/OZTreeModule/dist",
     "js_dest": "static/OZTreeModule/dist",
-    "old_js_src": "OZprivate/rawJS/OZTree/src",
-    "old_js_dist": "OZprivate/rawJS/OZTree/dist",
-    "old_js_dest": "static/OZTree/dist",
     "css_src": "OZprivate/scss",
     "css_dist": "static/css",
     "old_css_dest_and_dist": "static/OZSponsor"
@@ -50,7 +47,6 @@
     "grunt-contrib-compress": "^1.6.0",
     "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-jshint": "^2.1.0",
-    "grunt-contrib-uglify": "^4.0.1",
     "grunt-contrib-watch": "^1.1.0",
     "grunt-curl": "^2.5.1",
     "grunt-exec": "^3.0.0",
