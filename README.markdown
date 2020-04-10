@@ -199,12 +199,12 @@ maintenance_mins = 0
 ;eol_api_key = 11111111111
 ```
 
-In order to use web2py you need to have a python v2 installed (v3 is not yet supported), the latest version can be found at
+In order to use web2py you need to have a python v3 installed, the latest version can be found at
 [https://www.python.org/downloads/](https://www.python.org/downloads/)
 
-NB: on Windows, make sure that you add `python` (and ideally `python2`) to the windows path during install, or the commands below will not work
+NB: on Windows, make sure that you add `python` (and ideally `python3`) to the windows path during install, or the commands below will not work
 
-Assuming you have python version 2 installed, should now try starting web2py as follows.
+Assuming you have python version 3 installed, should now try starting web2py as follows.
 
 ### Starting and shutting down web2py
 
