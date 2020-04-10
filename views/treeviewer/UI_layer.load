@@ -58,13 +58,13 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     </div>
     <span class='button-label top-border top-right-radius top-padding'>{{=T('Location')}}</span>
   </li>
-  <li id="inButton"    class="uk-visible@s">
+  <li id="inButton" class="uk-visible@s">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Zoom in')}}" uk-icon="icon: plus"></a>
     </div>
     <span class='button-label top-border'>{{=T('Zoom in')}}</span>
   </li>
-  <li id="outButton"    class="uk-visible@s">
+  <li id="outButton" class="uk-visible@s">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Zoom out')}}" uk-icon="icon: minus"></a>
     </div>
@@ -98,7 +98,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Take a tour')}}" uk-icon="icon: world"></a>
     </div>
-    <span class='button-label'>{{=T('How to use')}}</span>
+    <span class='button-label'>{{=T('Take a tour')}}</span>
   </li>
   <li id="hideControlsButton">
     <div class='icon-container'>
@@ -127,7 +127,10 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     </ul>
   </div>
   {{if not request.vars.get('hide_control_settings', False):}}
-  <li><a uk-tooltip="pos: right" title="{{=T('Settings')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: settings"></a></li>
+  <li>
+      <div class='icon-container'>
+        <a uk-tooltip="pos: right" title="{{=T('Settings')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: settings"></a>
+      </div>
   <form id="settingsDropdown" class="uk-navbar-dropdown" uk-dropdown="pos: right-bottom; mode: click;">
     <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
       <li class="uk-nav-header">{{=T('Image sources')}}</li>
@@ -191,6 +194,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         </li>
     </ul>
   </form>
+  </li>
   {{pass}}
 </ul>
 <div id="error-modal" class="uk-modal-container" uk-modal>
