@@ -72,26 +72,10 @@ module.exports = function (grunt) {
         }
       }
     },
-    uglify: { // NB: the main tree viewer is minified using webpack, not directly in grunt
-      main: {
-        files: {
-          //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
-          //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
-          //is solved
-          '<%=pkg.directories.old_js_dest%>/Drawing.js': ['<%=pkg.directories.old_js_dist%>/Drawing.js'],
-          '<%=pkg.directories.old_js_dest%>/Leaf_draw.js': ['<%=pkg.directories.old_js_dist%>/Leaf_draw.js'],
-        }
-      }
-    },
     clean: [
         'compiled',
         '<%=pkg.directories.js_dest%>/*',
         '<%=pkg.directories.js_dist%>/*.js*',
-        //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
-        //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
-        //is solved
-        '<%=pkg.directories.old_js_dest%>/*',
-        '<%=pkg.directories.old_js_dist%>/*.js*'
     ],
     compress: {  // NB: the main tree viewer is compressed using webpack, not directly in grunt
       main: {
@@ -99,17 +83,6 @@ module.exports = function (grunt) {
           mode: 'gzip'
         },
         files: [
-          { //quick hack for the fragments of old code
-            //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
-            //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
-            //is solved
-
-            expand: true,
-            cwd: '<%=pkg.directories.old_js_dest%>',
-            src: ['*.js'],
-            dest: '<%=pkg.directories.old_js_dest%>',
-            ext: '.js.gz'
-          },
           {
             expand: true,
             cwd: '<%=pkg.directories.css_dist%>',
@@ -130,16 +103,12 @@ module.exports = function (grunt) {
     copy: {
       prod: {
         files: [
-          {expand: true, cwd: '<%=pkg.directories.js_dist%>', src: "**", dest: '<%=pkg.directories.js_dest%>/', filter: 'isFile'},
-          {expand: true, cwd: '<%=pkg.directories.old_js_dist%>', src: "**", dest: '<%=pkg.directories.old_js_dest%>/', filter: 'isFile'}
+          {expand: true, cwd: '<%=pkg.directories.js_dist%>', src: "**", dest: '<%=pkg.directories.js_dest%>/', filter: 'isFile'}
         ]
       },
       dev: {
         files: [
-          {expand: true, cwd: '<%=pkg.directories.js_dist%>', src: "**", dest: '<%=pkg.directories.js_dest%>/', filter: 'isFile'},
-          // old_js hasn't been moved to dist by the uglify script
-          {expand: true, cwd: '<%=pkg.directories.old_js_src%>', src: '*.js', dest: '<%=pkg.directories.old_js_dist%>/', filter: 'isFile'},
-          {expand: true, cwd: '<%=pkg.directories.old_js_src%>', src: '*.js', dest: '<%=pkg.directories.old_js_dest%>/', filter: 'isFile'}
+          {expand: true, cwd: '<%=pkg.directories.js_dist%>', src: "**", dest: '<%=pkg.directories.js_dest%>/', filter: 'isFile'}
         ]
       },
     },
@@ -187,6 +156,6 @@ module.exports = function (grunt) {
   grunt.registerTask("compile-js_dev", ["exec:compile_js_dev"]);
   grunt.registerTask("partial-install",       ["compile-js", "compass", "copy:dev", "curl-dir:get_minlife", "exec:convert_links_to_local"]);
   grunt.registerTask("partial-local-install", ["compile-js", "compass", "copy:dev", "curl-dir:get_local_minlife", "exec:convert_links_to_local"]);
-  grunt.registerTask("prod", ["clean", "compile-python", "compile-js", "compass", "uglify", "compress", "copy:prod", "docs"]);
-  grunt.registerTask("dev",  ["clean",               "compile-js_dev", "compass",           "compress", "copy:dev",  "docs"]);
+  grunt.registerTask("prod", ["clean", "compile-python", "compile-js", "compass", "compress", "copy:prod", "docs"]);
+  grunt.registerTask("dev",  ["clean",               "compile-js_dev", "compass", "compress", "copy:dev",  "docs"]);
 };
