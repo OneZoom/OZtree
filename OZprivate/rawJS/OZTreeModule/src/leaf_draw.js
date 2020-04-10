@@ -13,6 +13,21 @@
 
 /* Some basic text & image drawing functions, not exported */
 
+// rectangle with rounded corners
+function draw_src(x,y,rx,ry,corner,context_in)
+{
+    context_in.beginPath();
+    context_in.moveTo( x + corner , y);
+    context_in.arc(x+corner,y+corner,corner,-Math.PI/2,Math.PI,true);
+    context_in.lineTo( x , y + ry - corner);
+    context_in.arc(x+corner,y+ry-corner,corner,Math.PI,Math.PI/2,true);
+    context_in.lineTo( x + rx - corner , y + ry);
+    context_in.arc(x+rx-corner,y+ry-corner,corner,Math.PI/2,0,true);
+    context_in.lineTo( x + rx , y + ry - corner );
+    context_in.arc(x+rx-corner,y+corner,corner,0,-Math.PI/2,true);
+    context_in.lineTo( x + corner , y);
+    context_in.closePath();
+}
 
 /* text printing tools */
 
