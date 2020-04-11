@@ -1,7 +1,16 @@
-{{response.title='OneZoom: Sponsor a leaf on the tree'}}
-{{extend 'layout.html'}}
-    <h1>{{=T('Thank you for your donation to OneZoom')}}</h1>
-    <p>{{=T('This will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.')}}</p>
+{{
+    response.title='OneZoom: '+T('thanks')
+    response.files.append(URL('static', 'css/content_pages.css'))
+}}
+{{extend 'uikit_layout.html'}}
 
-    <p>{{=T('We will be in touch soon by e-mail, we expect that in normal circumstances it will only take a few days to add your sponsorship details to the public tree.')}}</p>
-    <a href="index.html">{{=T('Continue to OneZoom main page')}}</a>
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+  <h1>T('thanks')</h1>
+</div>
+{{pass}}
+{{end block}}
+<h2>{{=T('Thank you for your donation to OneZoom')}}</h2>
+<p>{{=T('This will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.')}}</p>
+<p>{{=T('We will be in touch soon by e-mail, we expect that in normal circumstances it will only take a few days to add your sponsorship details to the public tree.')}}</p>
+<a href="index.html">{{=T('Continue to OneZoom main page')}}</a>

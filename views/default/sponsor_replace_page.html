@@ -1,17 +1,29 @@
-{{response.title='OneZoom: Sponsor a leaf on the tree'}}
-{{response.files.append(URL('static', 'OZSponsor/sponsor_replace_page.css'))}}
-{{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
+{{
+    response.title='OneZoom: '+T('sponsor a leaf on the tree')
+    response.files.append(URL('static', 'OZSponsor/sponsor_replace_page.css'))
+    response.files.append(URL('static', 'css/content_pages.css'))
+}}
+{{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
+
+{{block masthead}}
+{{if 'embed' not in request.vars:}}
+<div class="home-heading uk-text-center uk-padding-small">
+  <h1>Leaf sponsorship</h1>
+</div>
+{{pass}}
+{{end block}}
+
 {{if (data.PP_transaction_code):}}
     {{if (data.name):}}
-<h3>{{=XML(T('The leaf for the species <i>%s</i> on the OneZoom Tree of Life has been sponsored') % (data.name,))}}</h3>
+<h2>{{=XML(T('The leaf for the species <i>%s</i> on the OneZoom Tree of Life has been sponsored') % (data.name,))}}</h2>
     {{else:}}
-<h3>{{=T('This leaf on the OneZoom Tree of Life has been sponsored')}}</h3>
+<h2>{{=T('This leaf on the OneZoom Tree of Life has been sponsored')}}</h2>
     {{pass}}
 <p>{{=T('It normally takes 2-3 days for us to verify sponsorship text and update the tree. If you are the sponsor of this leaf please be patient, you should soon receive an e-mail to confirm that your leaf has gone live.')}}</p>
 <p>{{=XML(T('Please <a href="mailto:mail@onezoom.org?subject=Question about sponsorship of %s">ask us</a> if you have any questions, or if you wish to change your sponsorship text.') % (data.name,))}}</p>
 
 {{else:}}
-<h3>{{=T('Thank you for filling out the form to sponsor a leaf on OneZoom')}}</h3>
+<h2>{{=T('Thank you for filling out the form to sponsor a leaf on OneZoom')}}</h2>
 <ul>
     <li>{{=T('You should have been automatically redirected to complete your sponsorship: once done, your leaf will be marked as “awaiting confirmation”. We aim to approve your text within a few days, and will send you an email when it is live.')}}</li>
     <li>{{=XML(T('If for some reason you have not been able to complete your sponsorship, please <a href="mailto:mail@onezoom.org?subject=Leaf sponsorship">e-mail us</a> or try again after 6 minutes.'))}}</li>

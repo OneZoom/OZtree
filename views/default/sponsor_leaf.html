@@ -20,23 +20,31 @@
 response.title='OneZoom: Sponsor a leaf on the tree'
 response.files.append(URL('static', 'OZSponsor/sponsor_leaf.css'))
 response.files.append(URL('static', 'OZSponsor/EOLqueries.js'))
+response.files.append(URL('static','css/content_pages.css'))
 }}
 {{include '../static/OZTreeModule/dist/OZ_leaf_draw.html'}}
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
-{{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
+{{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
+{{block masthead}}
+{{if 'embed' not in request.vars:}}
+<div class="home-heading uk-text-center uk-padding-small">
+  <h1>Leaf sponsorship</h1>
+</div>
+{{pass}}
+{{end block}}
 <div>
-    <h1 id = "sponsor_title">{{=XML(T('Sponsor %s on the OneZoom Tree of Life Explorer') % (the_long_name or T("a species"),))}}</h1>
-    <p>{{=T('You can sponsor this leaf for yourself or as a unique gift for someone you know.')}}</p>
+  <h2 id = "sponsor_title">{{=XML(T('Sponsor %s on the OneZoom Tree of Life') % (the_long_name or T("a species"),))}}</h2>
+  <p>{{=T('You can sponsor this leaf for yourself or as a unique gift for someone you know.')}}</p>
+{{if partner_data:}}
+  <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the %s and %s by displaying your chosen sponsor’s name on %s') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), A(T(partner_data.get('name')), _href=partner_data.get('url'), _target="_blank"), the_long_name))}}.
+     {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s. %s.') % (int(round(100-partner_data.get('percentage'))), int(round(partner_data.get('percentage'))), T(partner_data.get('name')), T(partner_data.get('details')))  )  }}</p>
 
-    {{if partner_data:}}
-    <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the %s and %s by displaying your chosen sponsor’s name on %s') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), A(T(partner_data.get('name')), _href=partner_data.get('url'), _target="_blank"), the_long_name))}}.
-       {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s. %s.') % (int(round(100-partner_data.get('percentage'))), int(round(partner_data.get('percentage'))), T(partner_data.get('name')), T(partner_data.get('details')))  )  }}</p>
+{{else:}}
+  <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the %s by displaying your chosen sponsor’s name on %s. Your donations will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), the_long_name))}}</p>
 
-    {{else:}}
-    <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the %s by displaying your chosen sponsor’s name on %s. Your donations will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), the_long_name))}}</p>
-
-    {{pass}}
-    <p>{{=T('There can be only one sponsor for each leaf, so get your favourite creature before someone else does!')}} {{=T('Sponsorship is for a fixed period of %s years; after that, if you wish to renew your sponsorship, you will have the first refusal.') % (4,)}}</p>
+{{pass}}
+  <p>{{=T('There can be only one sponsor for each leaf, so get your favourite creature before someone else does!')}} 
+     {{=T('Sponsorship is for a fixed period of %s years; after that, if you wish to renew your sponsorship, you will have the first refusal.') % (4,)}}</p>
 </div>
 <form action="?ott={{=OTT_ID}}" enctype="multipart/form-data" method="post" {{if request.vars.get('embed'):}}target="_blank" onsubmit="setTimeout(function() {location.replace('sponsor_replace_page.html?embed={{=request.vars.get('embed')}}&ott={{=OTT_ID}}')}, 1000);" {{pass}}>
   <div>
@@ -72,7 +80,9 @@ response.files.append(URL('static', 'OZSponsor/EOLqueries.js'))
         value="{{if (request.vars['user_paid']) is not None:}}{{=request.vars['user_paid']}}{{else:}}{{if(leaf_price.is_integer()):}}{{=str(int(leaf_price))}}{{else:}}{{='{:.2f}'.format(leaf_price)}}{{pass}}{{pass}}" />
         <em class = "error_text"> {{if (form.errors["user_paid"]) is not None:}}{{=form.errors["user_paid"]}}{{pass}} </em></p></div>
     <p class="singlerow extra_info">
-    {{=T('The minimum donation required for other leaves ranges from from £%s to £%s depending on popularity. ') % (min_global_price, max_global_price)}}
+    {{=T('The minimum donation required for other leaves ranges from from £%s to £%s depending on popularity. ') % (
+        "{:.2f}".format(min_global_price).replace(".00", ""),
+        "{:.2f}".format(max_global_price).replace(".00", ""))}}
     
     <!-- show alternative if leaf is possibly too expensive-->
     {{if leaf_price>20:}}
@@ -84,27 +94,22 @@ response.files.append(URL('static', 'OZSponsor/EOLqueries.js'))
     {{else:}}
     <!-- no partner data to pass down but pass language -->
     {{=XML(T('If this leaf does not fit your budget consider our lists of %s and %s sorted by price to choose an alternative.') % (A(T('animals'), _href=URL('default','sponsor_node', vars=dict(id=759129,lang=request.vars['lang']))),A(T('plants'),_href=URL('default','sponsor_node', scheme=True, host=True, vars=dict(id=108637,lang=request.vars['lang'])))))}}</p>
-    
     {{pass}}
-    
     {{pass}}
     </p>
-    
     </fieldset>
-
-    
   </div>
-  <div class="container-fluid">
+  <div>
     <h3>{{=T('Preview of your sponsored leaf')}}</h3>
-    <div id = "leaf-options">
+    <div uk-grid class="uk-width-1-2@m">
       <div id="leaf">
         <canvas id="leafCanvas" onclick="drawPreview()"></canvas>
         <p id="licenceText"><a target = "_blank">{{=T('More information about this image')}}</a></p>
         <p class="extra_info">{{=T('*The final leaf may be facing in any direction on the tree, it may also change based on scientific advances.')}}</p>
+        <input type="hidden" id="user_preferred_image_src_input" name='user_preferred_image_src' value='{{=default_image.get("src","") if default_image else ""}}' />
+        <input type="hidden" id="user_preferred_image_src_id_input" name='user_preferred_image_src_id' value='{{=default_image.get("src_id","") if default_image else ""}}' />
       </div>
-      <input type="hidden" id="user_preferred_image_src_input" name='user_preferred_image_src' value='{{=default_image.get("src","") if default_image else ""}}' />
-      <input type="hidden" id="user_preferred_image_src_id_input" name='user_preferred_image_src_id' value='{{=default_image.get("src_id","") if default_image else ""}}' />
-      </div>
+    </div>
   </div>
   {{if 'embed' not in request.vars and not partner_data:}}
   <!-- don't want possibility for these link outs if embedding or if there is a partner involved as they will not keep the user in the partner tree -->
@@ -207,12 +212,12 @@ response.files.append(URL('static', 'OZSponsor/EOLqueries.js'))
 var mintextsize = 3; // the smallest size text you want to have displayed
 var fonttype = 'Helvetica'; // 'sans-serif' is good too
 var green1 = 'rgb(135,215,90)';
-var green2 = 'rgb(70,135,30)';
 
 var newcanvas;
 var leafContext;
 var widthRes = 500;
 var heightRes = 500;
+var node = {"redlist": "{{=iucn_code}}"}
 
 var max_n_thumbnails = 9;
 
@@ -232,39 +237,35 @@ image_objects.push({
 var selected_img = image_objects.length - 1;
 {{pass}}
 var leafImageFile = null; // image file (if null and image_objects exists then image is not loaded yet)
-var leaftext = [null,null];
-var leafCol = {
-    // relating to the leaf itself (not highlighted)
-    
-    "insideColor" : 'rgb(135,215,90)',
-    "outlineColor" : 'rgb(70,135,30)',
-    "BGColor" : 'rgb(255,255,255)',
-    "waterMark" : 'rgba(255,255,255,0.4)',
-    // relating to the leaf itself (highlighted)
-    "insideHighlight" : 'rgb(135,215,90)',
-    "outlineHighlight" : 'rgb(70,135,30)',
-    "BGHighlight" : 'rgb(255,255,255)',
-    "waterMarkHighlight" : 'rgba(255,255,255,0.4)',
-    
-    // relating to the sponsorship text part
-    "sponsorColor" : 'rgb(135,215,90)',
-    "sponsorHighlight" : 'rgb(255,255,255)',
-    
-    // relating to main text part
-    "textColor" : 'rgb(0,0,0)',
-    "textHighlight" : 'rgb(0,0,0)',
-    "textOutline" : 'rgba(255,255,255,0.6)',
-    
-    // image outside line
-    "imageLineColor" : 'rgb(110,110,110)',
-    "imageLineHighlight" : 'rgb(110,110,110)',
-    
-    // copyright symbol colors
-    "copyrightText" : 'rgb(135,215,90)',
-    "copyrightInside" : 'rgb(70,135,30)',
-    "copyrightTextHighlight" : 'rgb(255,255,255)',
-    "copyrightInsideHighlight" : 'rgb(0,0,0)'
-}
+var leafCol = leaf_draw.natural_theme.leaf;
+leafCol.bg.fill = 'rgba(255,255,255, 0)'; // Don't show the white outline
+    /* can override leafCol after this, e.g.
+     * leafCol.inside.fill  = 'rgb(135,215,90)'; // or could be a function of a node obj
+     * leafCol.outline.fill = 'rgb(70,135,30)';
+     * leafCol.bg.fill      = 'rgba(255,255,255, 0)';
+     *
+     * // relating to the leaf itself (highlighted)
+     * leafCol.inside_hover.fill   = 'rgb(135,215,90)';
+     * leafCol.outline_hover.fill' = 'rgb(70,135,30)';
+     *  
+     * // relating to the sponsorship text part
+     * leafCol.sponsor.fill       = 'rgba(255,255,255,0.4)'; // used if not highlighted
+     * leafCol.sponsor_hover.fill = 'rgb(255,255,255)';
+     *  
+     *  // relating to main text part
+     * leafCol.text.fill : 'rgb(0,0,0)';
+     * leafCol.text_hover.fill ='rgb(0,0,0)';
+     *  
+     *  // copyright symbol colors
+     * leafCol.copyright_hover.fill   = 'rgb(0,0,0)';
+     * leafCol.copyright_hover.stroke =  '';
+     * leafCol.copyright.fill = ;
+     * leafCol.copyright.stroke = ;
+     * leafCol.copyright.text.fill       = 'rgb(135,215,90)'; //copyrightText
+     * leafCol.copyright.text_hover.fill = 'rgb(255,255,255)'; //copyrightTextHighlight
+     */
+var sponsor_text_colours = {'base':leafCol.sponsor.fill, 'highlight': leafCol.sponsor_hover.fill}
+
 
 function updateDonorPlaceholder() {
     if ($("#sponsorBy").is(':checked')) {
@@ -343,15 +344,16 @@ function drawPreview()
     var sponsorTextCol
     if (hasText == true)
     {
-        leafCol.sponsorTextCol = 'rgb(255,255,255)';
+        leafCol.sponsorTextCol = sponsor_text_colours.highlight;
     }
     else
     {
-        leafCol.sponsorTextCol = green1;
+        leafCol.sponsorTextCol = sponsor_text_colours.base;
     }
     
     // draw the leaf base again (to wipe out any previous renderings)
-    leaf_draw.fullLeafBase(leafContext,widthRes/2.28,heightRes/2,widthRes/2.3,5.6,2,leafCol)
+    leaf_draw.fullLeafBase(
+        leafContext, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, leafCol, node)
     // draw the leaf details
     
     if (image_objects[selected_img])
@@ -361,15 +363,16 @@ function drawPreview()
         leaf_draw.fullLeaf(
             leafContext, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, hasText, null,
             sponsorText, extraText, {{=XML(js_common_name or '')}}, {{=XML(js_species_name)}},
-            leaftext[0], leaftext[1], null, leafImageFile, null, leafCol,
-            true, cfout[0], cfout[1], cfout[2])
+            null, null, null, fonttype, mintextsize, leafImageFile, null,
+            leafCol, node, true, cfout[0], cfout[1], cfout[2])
     }
     else
     {
         leaf_draw.fullLeaf(
             leafContext, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, hasText, null,
             sponsorText, extraText, {{=XML(js_common_name or '')}}, {{=XML(js_species_name)}},
-            leaftext[0], leaftext[1], null, leafImageFile, null, leafCol)
+            null, null, null, fonttype, mintextsize, leafImageFile, null,
+            leafCol, node)
     }
 }
 
@@ -389,7 +392,6 @@ function callbackAPIcomplete(data, flagsIn)
     */
     imageInfoReady = true;
     leafImageFile = null;
-    leaftext = [null,null];
     /* process data and redraw */
 
     if (data && data.hasOwnProperty("imageObjects")) {

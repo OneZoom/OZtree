@@ -11,6 +11,24 @@
  *
  ******************************************************/
 
+import {default as natural_theme} from './themes/natural_theme.js';
+
+/* Allow colours etc to vary depending on node properties
+ * if func_or_string is a function it is called with param `node`
+ * (default is node=undefined, which produces the default colours)
+ * For the default themes, if node is not empty, it can be e.g.
+ * node = {'redlist': 'NE'} // for a leaf
+ * node = {'richness_val': 2, 'threatened_branch': true} // for an internal node
+ */
+function node_eval(func_or_string, node)
+{
+    if (typeof func_or_string === "function") {
+        return func_or_string(node);
+    } else {
+        return func_or_string;
+    }
+}
+
 /* Some basic text & image drawing functions, not exported */
 
 // rectangle with rounded corners
@@ -31,7 +49,7 @@ function draw_src(x,y,rx,ry,corner,context_in)
 
 /* text printing tools */
 
-function autotext(dostroke, fontStyle, texttodisp, textx, texty, textw, defpt, context_in, mintextsize_extra)
+function autotext(dostroke, fontStyle, fonttype, mintextsize, texttodisp, textx, texty, textw, defpt, context_in, mintextsize_extra)
 {
   if (!texttodisp || texttodisp.length === 0) return;
     var drawntext = false;
@@ -66,9 +84,9 @@ function autotext(dostroke, fontStyle, texttodisp, textx, texty, textw, defpt, c
                 if (dostroke)
                 {
                     context_in.lineJoin = 'round';
-                    context_in.strokeText  (texttodisp , textx - textw/2.0,texty);
+                    context_in.strokeText(texttodisp , textx - textw/2.0,texty);
                 }
-                context_in.fillText  (texttodisp , textx - textw/2.0,texty);
+                context_in.fillText(texttodisp , textx - textw/2.0,texty);
                 drawntext = true;
             }
         }
@@ -86,7 +104,7 @@ function autotext(dostroke, fontStyle, texttodisp, textx, texty, textw, defpt, c
     return drawntext;
 }
 
-function autotext2(dostroke, fontStyle, texttodisp, textx, texty, textw, defpt, context_in, mintextsize_extra)
+function autotext2(dostroke, fontStyle, fonttype, mintextsize, texttodisp, textx, texty, textw, defpt, context_in, mintextsize_extra)
 {
   if (!texttodisp || texttodisp.length === 0) return;
     var drawntext = false;
@@ -113,7 +131,7 @@ function autotext2(dostroke, fontStyle, texttodisp, textx, texty, textw, defpt, 
         var print2 = " ";
         if (splitstr.length == 1)
         {
-            drawntext = autotext(dostroke,fontStyle,texttodisp,textx,texty,textw,defpt*1.5,context_in,mintextsize_extra);
+            drawntext = autotext(dostroke, fontStyle, fonttype, mintextsize, texttodisp, textx, texty, textw, defpt*1.5, context_in, mintextsize_extra);
         }
         else
         {
@@ -190,7 +208,9 @@ function autotext2(dostroke, fontStyle, texttodisp, textx, texty, textw, defpt, 
     return drawntext;
 }
 
-function autotext3(dostroke, fontStyle, texttodisp, textx, texty, textw, defpt, context_in)
+function autotext3(
+    dostroke, fontStyle, fonttype, mintextsize, texttodisp,
+    textx, texty, textw, defpt, context_in)
 {
   if (!texttodisp || texttodisp.length === 0) return;
     var drawntext = false;
@@ -219,13 +239,13 @@ function autotext3(dostroke, fontStyle, texttodisp, textx, texty, textw, defpt, 
         
         if (splitstr.length == 1)
         {
-            drawntext = autotext(dostroke,fontStyle,texttodisp,textx,texty,textw,defpt*1.5,context_in,0);
+            drawntext = autotext(dostroke, fontStyle, fonttype, mintextsize, texttodisp, textx, texty, textw, defpt*1.5, context_in, 0);
         }
         else
         {
             if (splitstr.length == 2)
             {
-                drawntext = autotext2(dostroke,fontStyle,texttodisp,textx,texty,textw,defpt*1.2,context_in,0);
+                drawntext = autotext2(dostroke, fontStyle, fonttype, mintextsize, texttodisp, textx, texty, textw, defpt*1.2, context_in,0);
             }
             else
             {
@@ -260,7 +280,7 @@ function autotext3(dostroke, fontStyle, texttodisp, textx, texty, textw, defpt, 
             
             if ((print3.length >= (print1.length+print2.length))||(print1.length >= (print3.length+print2.length)))
             {
-                drawntext = autotext2(dostroke,fontStyle,texttodisp,textx,texty,textw,defpt,context_in,0);
+                drawntext = autotext2(dostroke, fontStyle, fonttype, mintextsize, texttodisp, textx, texty, textw, defpt, context_in, 0);
             }
             else
             {
@@ -290,13 +310,13 @@ function autotext3(dostroke, fontStyle, texttodisp, textx, texty, textw, defpt, 
                         if (dostroke)
                         {
                             context_in.lineJoin = 'round';
-                            context_in.strokeText  (print1 , textx ,texty-defpt*textw/testw*1.2);
-                            context_in.strokeText  (print2 , textx ,texty);
-                            context_in.strokeText  (print3 , textx ,texty+defpt*textw/testw*1.2);
+                            context_in.strokeText(print1 , textx ,texty-defpt*textw/testw*1.2);
+                            context_in.strokeText(print2 , textx ,texty);
+                            context_in.strokeText(print3 , textx ,texty+defpt*textw/testw*1.2);
                         }
-                        context_in.fillText  (print1 , textx ,texty-defpt*textw/testw*1.2);
-                        context_in.fillText  (print2 , textx ,texty);
-                        context_in.fillText  (print3 , textx ,texty+defpt*textw/testw*1.2);
+                        context_in.fillText(print1 , textx ,texty-defpt*textw/testw*1.2);
+                        context_in.fillText(print2 , textx ,texty);
+                        context_in.fillText(print3 , textx ,texty+defpt*textw/testw*1.2);
                         drawntext = true;
                     }
                 }
@@ -305,13 +325,13 @@ function autotext3(dostroke, fontStyle, texttodisp, textx, texty, textw, defpt, 
                     if (dostroke)
                     {
                         context_in.lineJoin = 'round';
-                        context_in.strokeText  (print1 , textx ,texty-defpt*1.2);
-                        context_in.strokeText  (print2 , textx ,texty);
-                        context_in.strokeText  (print3 , textx ,texty+defpt*1.2);
+                        context_in.strokeText(print1 , textx ,texty-defpt*1.2);
+                        context_in.strokeText(print2 , textx ,texty);
+                        context_in.strokeText(print3 , textx ,texty+defpt*1.2);
                     }
-                    context_in.fillText  (print1 , textx ,texty-defpt*1.2);
-                    context_in.fillText  (print2 , textx ,texty);
-                    context_in.fillText  (print3 , textx ,texty+defpt*1.2);
+                    context_in.fillText(print1 , textx ,texty-defpt*1.2);
+                    context_in.fillText(print2 , textx ,texty);
+                    context_in.fillText(print3 , textx ,texty+defpt*1.2);
                     drawntext = true;
                 }
             }
@@ -413,7 +433,7 @@ function rounded_image(context_in, imageObject, x, y, w, borderColor, highlightC
         if(highlightColor)
         {
             
-            draw_src(x-w/2,y-w/2,w,w,w*0.03,context_in)
+            draw_src(x-w/2, y-w/2, w, w, w*0.03, context_in)
             context_in.fillStyle = highlightColor;
             context_in.fill();
         }
@@ -422,7 +442,7 @@ function rounded_image(context_in, imageObject, x, y, w, borderColor, highlightC
         context_in.save();
         
         // clip to the circle
-        draw_src(x-w/2,y-w/2,w,w,w*0.03,context_in)
+        draw_src(x-w/2, y-w/2, w, w, w*0.03, context_in)
         context_in.clip();
         
         // context.globalAlpha = 1.0; not used because images are 100% opaque now
@@ -437,7 +457,7 @@ function rounded_image(context_in, imageObject, x, y, w, borderColor, highlightC
             if (!cropMult)
             {
                 // as wide as it can be
-                var minDim = Math.min(imageObject.width,imageObject.height)
+                var minDim = Math.min(imageObject.width, imageObject.height)
                 {
                     thisCropMult = imageObject.width*w/minDim;
                 }
@@ -452,9 +472,13 @@ function rounded_image(context_in, imageObject, x, y, w, borderColor, highlightC
                 thisCropTop = cropTop*w;
             }
             
-            context_in.drawImage(imageObject,
-                                 -imageObject.width*thisCropLeft/thisCropMult, -imageObject.width*thisCropTop/thisCropMult, imageObject.width*w/thisCropMult, imageObject.width*w/thisCropMult,
-                                 x-w/2.0,y-w/2.0, w, w)
+            context_in.drawImage(
+                imageObject,
+                -imageObject.width*thisCropLeft/thisCropMult,
+                -imageObject.width*thisCropTop/thisCropMult,
+                imageObject.width*w/thisCropMult,
+                imageObject.width*w/thisCropMult,
+                x-w/2.0, y-w/2.0, w, w)
             
             //void ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
             
@@ -488,7 +512,10 @@ function rounded_image(context_in, imageObject, x, y, w, borderColor, highlightC
  * this function: draws a copyright symbol and handles zooming in as well as clicking
  *
  */
-function copyright(context_in, x, y, r, text, mouseTouch, fillColor, textColor, highlightColor, fillHighlightColor)
+function copyright(
+    context_in, x, y, r, fonttype, mintextsize, text, mouseTouch, 
+    textColor, strokeColor, fillColor,
+    textHighlightColor, strokeHighlightColor, fillHighlightColor)
 {
     var copyclick = false;
     // test for mouse / touch over the symbol
@@ -512,13 +539,13 @@ function copyright(context_in, x, y, r, text, mouseTouch, fillColor, textColor, 
 
     if(copyclick)
     {
+        context_in.strokeStyle = strokeHighlightColor;
         context_in.fillStyle = fillHighlightColor;
-        context_in.strokeStyle = highlightColor;
     }
     else
     {
+        context_in.strokeStyle = strokeColor;
         context_in.fillStyle = fillColor;
-        context_in.strokeStyle = textColor;
     }
     context_in.fill();
     context_in.stroke();
@@ -530,7 +557,7 @@ function copyright(context_in, x, y, r, text, mouseTouch, fillColor, textColor, 
     if(copyclick)
     {
         textStyle = 'bold';
-        context_in.fillStyle = highlightColor;
+        context_in.fillStyle = textHighlightColor;
     }
     else
     {
@@ -541,16 +568,22 @@ function copyright(context_in, x, y, r, text, mouseTouch, fillColor, textColor, 
     {
         if (r > 160)
         {
-            autotext3(false,textStyle,text, x,y,r*1.8,r,context_in,0);
+            autotext3(
+                false, textStyle, fonttype, mintextsize,
+                text, x, y, r*1.8, r, context_in, 0);
         }
         else if (text)
         {
-            autotext3(false,textStyle,text.substr(0,30)+" ...", x,y,r*1.5,r,context_in,0);
+            autotext3(
+                false, textStyle, fonttype, mintextsize,
+                text.substr(0,30)+" ...", x, y, r*1.5, r, context_in, 0);
         }
     }
     else
     {
-        autotext(false,textStyle,"C" , x,y,r,r*2,context_in,0);
+        autotext(
+            false, textStyle, fonttype, mintextsize,
+            "C" , x, y, r, r*2, context_in, 0);
     }
     return copyclick;
 }
@@ -571,7 +604,8 @@ function copyright(context_in, x, y, r, text, mouseTouch, fillColor, textColor, 
  *
  * returns: nothing
  */
-function circularOutlinedLeaf(leafContext,x,y,r,outlineThickness,insideColor,outlineColor)
+function circularOutlinedLeaf(
+    leafContext, x, y, r, outlineThickness, insideColor, outlineColor)
 {
     
     // save the context state so we don't mess it up
@@ -622,7 +656,8 @@ function circularOutlinedLeaf(leafContext,x,y,r,outlineThickness,insideColor,out
  *
  * returns: nothing
  */
-function circularDottedLeaf(leafContext,x,y,r,insideColor,outlineColor)
+function circularDottedLeaf(
+    leafContext, x, y, r, insideColor, outlineColor)
 {
     // gap
     // circularOutlinedLeaf(leafContext,x,y,r*0.8,0,'rgb(255,255,255)','rgb(255,255,255)');
@@ -775,19 +810,27 @@ function randomNaturalLeaf(leafContext, x, y, r, angle, insideColor, outlineColo
     // call naturalLeaf with an appropriate set of numbers for slightly different leaf looks
     if (pseudor == 0)
     {
-        naturalLeaf(leafContext,x,y,r,angle,0.45,0.25,Math.PI*0.4,Math.PI*0.4, insideColor,outlineColor);
+        naturalLeaf(
+            leafContext, x, y, r, angle, 0.45, 0.25, Math.PI*0.4, Math.PI*0.4,
+            insideColor,outlineColor);
     }
     if (pseudor == 1)
     {
-        naturalLeaf(leafContext,x,y,r,angle,0.45,-0.15,0,0.1, insideColor,outlineColor);
+        naturalLeaf(
+            leafContext, x, y, r, angle, 0.45, -0.15, 0, 0.1,
+            insideColor,outlineColor);
     }
     if (pseudor == 2)
     {
-        naturalLeaf(leafContext,x,y,r,angle,0.4,-0.25,-Math.PI*0.4,Math.PI*0.2, insideColor,outlineColor);
+        naturalLeaf(
+            leafContext, x, y, r, angle, 0.4, -0.25, -Math.PI*0.4, Math.PI*0.2,
+            insideColor, outlineColor);
     }
     if (pseudor == 3)
     {
-        naturalLeaf(leafContext,x,y,r,angle,0.45,0.15,0,0.2, insideColor,outlineColor);
+        naturalLeaf(
+            leafContext, x, y, r, angle, 0.45, 0.15, 0, 0.2,
+            insideColor, outlineColor);
     }
 }
 
@@ -849,7 +892,7 @@ function arcText(textContext, x, y, r, stringText, textDirection, startAngle, ga
 }
 
 // leaf drawing (without details)
-function ghostLeafBase(leafContext, x, y, r, angle, leafCol)
+function ghostLeafBase(leafContext, x, y, r, angle, leafCol, node={})
 {
     var detail_level = 0;
     if (r > 90)
@@ -860,17 +903,24 @@ function ghostLeafBase(leafContext, x, y, r, angle, leafCol)
     // DRAW MAIN LEAF PARTS
     if ((detail_level > 2)&&(!((typeof(drawsponsors) !== 'undefined')&&drawsponsors == false))) // global variable hack to turn off sponsorship text
     {
-        circularOutlinedLeaf(leafContext,x,y,r*0.935,r*0.015,leafCol.insideColor,leafCol.outlineColor)
-        //circularDottedLeaf(leafContext,x,y,r,leafCol.insideColor,leafCol.BGColor);
+        circularOutlinedLeaf(
+            leafContext, x, y, r*0.935, r*0.015,
+            node_eval(leafCol.inside.fill, node), node_eval(leafCol.outline.fill, node));
+        //circularDottedLeaf(leafContext,x,y,r, node_eval(leafCol.inside.fill, node),node_eval(leafCol.bg.fill, node));
     }
     else
     {
-        circularDottedLeaf(leafContext,x,y,r,leafCol.insideColor,leafCol.outlineColor);
+        circularDottedLeaf(
+            leafContext, x, y, r,
+            node_eval(leafCol.inside.fill, node), node_eval(leafCol.outline.fill, node));
     }
 }
 
-function fullLeafBase(leafContext, x, y, r, angle, type, leafCol)
+function fullLeafBase(leafContext, x, y, r, angle, type, leafCol, node={})
 {
+    if (!leafCol) {
+       //leafCol = theme.leaf
+    }
     var detail_level = 0;
     if (r > 20)
     {
@@ -880,7 +930,9 @@ function fullLeafBase(leafContext, x, y, r, angle, type, leafCol)
     // DRAW MAIN LEAF PARTS
     if (type == 1)
     {
-        circularOutlinedLeaf(leafContext,x,y,r,r*0.12,leafCol.insideColor,leafCol.outlineColor);
+        circularOutlinedLeaf(
+            leafContext, x, y, r, r*0.12, 
+            node_eval(leafCol.inside.fill, node), node_eval(leafCol.outline.fill, node));
     }
     else
     {
@@ -891,10 +943,12 @@ function fullLeafBase(leafContext, x, y, r, angle, type, leafCol)
             leafContext.beginPath();
             var clearrad = r*1.038;
             leafContext.arc(x,y,clearrad,0,Math.PI*2,true);
-            leafContext.fillStyle = leafCol.BGColor;
+            leafContext.fillStyle = node_eval(leafCol.bg.fill, node);
             leafContext.fill();
         }
-        randomNaturalLeaf(leafContext,x,y,r,angle,leafCol.insideColor,leafCol.outlineColor)
+        randomNaturalLeaf(
+            leafContext, x, y, r, angle,
+            node_eval(leafCol.inside.fill, node), node_eval(leafCol.outline.fill, node));
     }
 }
 
@@ -926,14 +980,6 @@ function fullLeafBase(leafContext, x, y, r, angle, type, leafCol)
  * imageObject is the image to be drawn (might be null)
  *
  *
- leafCol = {
- "insideColor" : this.leafcolor1()
- "outlineColor" : this.leafcolor2()
- "BGColor" : backgroundcolor
- "textColor" : this.leafcolor3()
- "highlightColor" : 'rgb(255,255,255)'
- "imageLineColor" : 'rgb(110,110,110)'
- }
  
  * returns:
  * a string indicating what to do on click with mouse and touch in their given locations
@@ -943,7 +989,10 @@ function fullLeafBase(leafContext, x, y, r, angle, type, leafCol)
  * "d" means details punchout link
  *
  */
-function ghostLeaf(leafContext, x, y, r, angle, mouseTouch, commonText, latinText, lineText, copyText, imageObject, hasImage, hasOTT, leafCol)
+function ghostLeaf(
+    leafContext, x, y, r, angle, mouseTouch,
+    commonText, latinText, lineText, copyText, fonttype, mintextsize,
+    imageObject, hasImage, hasOTT, leafCol, node={})
 {
     // DETERMINE DETAIL LEVEL
     // level 0 - basic leaf
@@ -978,8 +1027,10 @@ function ghostLeaf(leafContext, x, y, r, angle, mouseTouch, commonText, latinTex
         if(mouseTouch&&(((((mouseTouch[0]-x)*(mouseTouch[0]-x))+((mouseTouch[1]-y)*(mouseTouch[1]-y)))<=(r*r))))
         {
             leaf_clicking = "z";
-            circularDottedLeaf(leafContext,x,y,r,leafCol.insideColor,'rgb(0,0,0)');
-            //circularDottedLeaf(leafContext,x,y,r*0.935,r*0.015,leafCol.insideColor,'rgb(0,0,255)')
+            circularDottedLeaf(
+                leafContext, x, y, r,
+                node_eval(leafCol.inside.fill, node), 'rgb(0,0,0)');
+            //circularDottedLeaf(leafContext,x,y,r*0.935,r*0.015,node_eval(leafCol.inside.fill, node),'rgb(0,0,255)')
         }
     }
     
@@ -1011,27 +1062,37 @@ function ghostLeaf(leafContext, x, y, r, angle, mouseTouch, commonText, latinTex
             // draw copyright symbol
             
             // copyright symbol colors
-            if (copyright(leafContext,x+r*0.43,button_pos,r*0.035,copyText,mouseTouch,leafCol.copyrightInside,leafCol.copyrightText,leafCol.copyrightTextHighlight,leafCol.copyrightInsideHighlight))
+            if (copyright(
+                    leafContext, x+r*0.43, button_pos, r*0.035, fonttype, mintextsize,
+                    copyText, mouseTouch,
+                    node_eval(leafCol.copyright.text.fill, node),
+                    node_eval(leafCol.copyright.stroke, node),
+                    node_eval(leafCol.copyright.fill, node),
+                    node_eval(leafCol.copyright.text_hover.fill, node),
+                    node_eval(leafCol.copyright_hover.stroke, node),
+                    node_eval(leafCol.copyright_hover.fill, node)))
             {
                 leaf_clicking = "c";
             }
         }
     }
-    
-    
-   
-    
-    
-    /*
+
+     /*
      // DRAW MAIN LEAF PARTS
      if (detail_level > 2)
      {
-     circularOutlinedLeaf(leafContext,x,y,r*0.935,r*0.015,leafCol.insideColor,leafCol.outlineColor)
-     //circularDottedLeaf(leafContext,x,y,r,leafCol.insideColor,leafCol.BGColor);
+     circularOutlinedLeaf(
+        leafContext, x, y, r*0.935, r*0.015,
+        node_eval(leafCol.inside.fill, node), node_eval(leafCol.outline.fill, node))
+     //circularDottedLeaf(
+        leafContext, x, y, r,
+        node_eval(leafCol.inside.fill, node), node_eval(leafCol.bg.fill, node));
      }
      else
      {
-     circularDottedLeaf(leafContext,x,y,r,leafCol.insideColor,leafCol.outlineColor);
+     circularDottedLeaf(
+        leafContext,x,y,r,
+        node_eval(leafCol.inside.fill, node),node_eval(leafCol.outline.fill,node));
      }
      */
     
@@ -1048,7 +1109,7 @@ function ghostLeaf(leafContext, x, y, r, angle, mouseTouch, commonText, latinTex
             leafContext.arc(x,y,r*0.78,0,Math.PI*2,true);
             
             // draw outline
-            leafContext.strokeStyle = leafCol.waterMark;
+            leafContext.strokeStyle = node_eval(leafCol.sponsor.fill, node);
             leafContext.lineWidth = r*0.01;
             leafContext.stroke();
             
@@ -1067,12 +1128,18 @@ function ghostLeaf(leafContext, x, y, r, angle, mouseTouch, commonText, latinTex
             if (leaf_clicking == "s")
             {
                 // bold and highlighted because mouse over link
-                arcText(leafContext,x,y,r*(0.85),shortenedSponsorText,text_above,-Math.PI*(0.5)+text_above*tempadd,tempgap,r*textWidth,leafCol.textColor,'bold');
+                arcText(
+                    leafContext, x, y, r*(0.85), shortenedSponsorText, text_above,
+                    -Math.PI*(0.5)+text_above*tempadd, tempgap, r*textWidth,
+                    node_eval(leafCol.text.fill, node), 'bold');
             }
             else
             {
                 // standard text
-                arcText(leafContext,x,y,r*(0.85),shortenedSponsorText,text_above,-Math.PI*(0.5)+text_above*tempadd,tempgap,r*textWidth,leafCol.sponsorColor,null);
+                arcText(
+                    leafContext, x, y, r*(0.85), shortenedSponsorText, text_above, 
+                    -Math.PI*(0.5)+text_above*tempadd, tempgap, r*textWidth, 
+                    node_eval(leafCol.sponsor.fill, node), null);
             }
             
             shortenedSponsorText = ("SPONSOR A SPECIES AND WE'LL ADD IT");
@@ -1090,12 +1157,18 @@ function ghostLeaf(leafContext, x, y, r, angle, mouseTouch, commonText, latinTex
             if (leaf_clicking == "s")
             {
                 // bold and highlighted because mouse over link
-                arcText(leafContext,x,y,r*(0.85),shortenedSponsorText,text_above,-Math.PI*(0.5)+text_above*tempadd,tempgap,r*textWidth,leafCol.sponsorHighlight,'bold');
+                arcText(
+                    leafContext, x, y, r*(0.85), shortenedSponsorText, text_above,
+                    -Math.PI*(0.5)+text_above*tempadd, tempgap, r*textWidth, 
+                    node_eval(leafCol.sponsor_hover.fill, node), 'bold');
             }
             else
             {
                 // standard text
-                arcText(leafContext,x,y,r*(0.85),shortenedSponsorText,text_above,-Math.PI*(0.5)+text_above*tempadd,tempgap,r*textWidth,leafCol.sponsorColor,null);
+                arcText(
+                    leafContext, x, y, r*(0.85), shortenedSponsorText, text_above, 
+                    -Math.PI*(0.5)+text_above*tempadd, tempgap, r*textWidth, 
+                    node_eval(leafCol.sponsor.fill, node), null);
             }
         }
         
@@ -1124,40 +1197,65 @@ function ghostLeaf(leafContext, x, y, r, angle, mouseTouch, commonText, latinTex
                // }
                 //else
                 //{
-                    circle_cut_image(leafContext,imageObject,x,y,r*0.85,leafCol.insideColor,null);
+                    circle_cut_image(
+                        leafContext, imageObject, x, y, r*0.85,
+                        node_eval(leafCol.inside.fill, node), null);
                 //}
             }
             else
             {
                 
-                leafContext.fillStyle = leafCol.textColor;
+                leafContext.fillStyle = node_eval(leafCol.text.fill, node);
                 if (detail_level > 2)
                 {
-                    
-                    rounded_image(leafContext,imageObject,x,y,r*0.75,leafCol.insideColor,leafCol.highlightColor)
-                    
-                    
+                    rounded_image(
+                        leafContext, imageObject, x, y, r*0.75,
+                        node_eval(leafCol.inside.fill, node),
+                        null)
                     // full text and link but with no image
                     if (commonText)
                     {
                         if (latinText)
                         {
-                            //autotext(false,null,"•"+ latinText+ "•",x,y+r*0.5,r*1,r*0.1,leafContext,3);
-                            autotext(doStroke,null,OZstrings["sciname"]+ latinText,x,y+r*0.5,r*1,r*0.1,leafContext,3);
+                            //autotext(false,null,fonttype, mintextsize, "•"+ latinText+ "•",x,y+r*0.5,r*1,r*0.1,leafContext,3);
+                            autotext(
+                                doStroke, null, fonttype, mintextsize,
+                                OZstrings["sciname"]+ latinText,
+                                x, y+r*0.5, r*1, r*0.1, leafContext, 3);
                         }
-                        autotext2(doStroke,null,commonText,x,y-r*0.55,r*1,r*0.12,leafContext,3);
-                        autotext(doStroke,null,lineText , x,y+r*0.625,r,r*0.1,leafContext,3);
+                        autotext2(
+                            doStroke, null, fonttype, mintextsize,
+                            commonText,
+                            x, y-r*0.55, r*1, r*0.12, leafContext, 3);
+                        autotext(
+                            doStroke, null, fonttype, mintextsize,
+                            lineText,
+                            x, y+r*0.625, r, r*0.1, leafContext, 3);
                     }
                     else if (latinText)
                     {
-                        autotext(doStroke,null,OZstrings['No common name'],x,y+r*0.5,r*1,r*0.1,leafContext,3);
-                        autotext2(doStroke,null,latinText,x,y-r*0.55,r*1,r*0.1,leafContext,3);
-                        autotext(doStroke,null,lineText , x,y+r*0.65,r,r*0.1,leafContext,3);
+                        autotext(
+                            doStroke, null, fonttype, mintextsize,
+                            OZstrings['No common name'],
+                            x, y+r*0.5, r*1, r*0.1, leafContext, 3);
+                        autotext2(
+                            doStroke, null, fonttype, mintextsize,
+                            latinText,
+                            x, y-r*0.55, r*1, r*0.1, leafContext, 3);
+                        autotext(
+                            doStroke, null, fonttype, mintextsize,
+                            lineText,
+                            x, y+r*0.65, r, r*0.1, leafContext, 3);
                     }
                     else
                     {
-                        autotext(doStroke,null,OZstrings['No known name'],x,y-r*0.55,r*1,r*0.1,leafContext,3);
-                        autotext2(doStroke,null,lineText,x,y+r*0.55,r*1,r*0.12,leafContext,3);
+                        autotext(
+                            doStroke, null, fonttype, mintextsize,
+                            OZstrings['No known name'],
+                            x, y-r*0.55, r*1, r*0.1, leafContext, 3);
+                        autotext2(
+                            doStroke, null, fonttype, mintextsize,
+                            lineText, x, y+r*0.55, r*1, r*0.12, leafContext, 3);
                     }
                     
 
@@ -1166,37 +1264,55 @@ function ghostLeaf(leafContext, x, y, r, angle, mouseTouch, commonText, latinTex
                 {
                     if (commonText)
                     {
-                        autotext2(doStroke,null,commonText,x,y-r*0.55,r*1.1,r*0.15,leafContext,3);
+                        autotext2(
+                            doStroke, null, fonttype, mintextsize,
+                            commonText,
+                            x, y-r*0.55, r*1.1, r*0.15, leafContext, 3);
                     }
                     else if (latinText)
                     {
-                        autotext2(doStroke,null,latinText,x,y-r*0.55,r*1.1,r*0.15,leafContext,3);
+                        autotext2(
+                            doStroke, null, fonttype, mintextsize,
+                            latinText,
+                            x, y-r*0.55, r*1.1, r*0.15, leafContext, 3);
                     }
                     else
                     {
-                        autotext2(doStroke,null,lineText,x,y-r*0.55,r*1.1,r*0.15,leafContext,3);
+                        autotext2(
+                            doStroke, null, fonttype, mintextsize,
+                            lineText,
+                            x, y-r*0.55, r*1.1, r*0.15, leafContext, 3);
                     }
-                    rounded_image(leafContext,imageObject,x,y+r*0.2,r*0.95,leafCol.insideColor,leafCol.highlightColor)
+                    rounded_image(
+                        leafContext, imageObject, x, y+r*0.2, r*0.95,
+                        node_eval(leafCol.inside.fill, node),
+                        null, node)
                 }
             }
         }
         else
         {
-            leafContext.fillStyle = leafCol.textColor;
+            leafContext.fillStyle = node_eval(leafCol.text.fill, node);
             // draw some text
             if (detail_level < 3)
             {
                 if (commonText)
                 {
-                    autotext3(doStroke,null,commonText,x,y,r*1.25,r*0.3,leafContext,3);
+                    autotext3(
+                        doStroke, null, fonttype, mintextsize,
+                        commonText, x, y, r*1.25, r*0.3, leafContext, 3);
                 }
                 else if (latinText)
                 {
-                    autotext3(doStroke,null,latinText,x,y,r*1.25,r*0.3,leafContext,3);
+                    autotext3(
+                        doStroke, null, fonttype, mintextsize, 
+                        latinText, x, y, r*1.25, r*0.3, leafContext, 3);
                 }
                 else
                 {
-                    autotext2(doStroke,null,lineText,x,y,r*1.25,r*0.3,leafContext,3);
+                    autotext2(
+                        doStroke, null, fonttype, mintextsize,
+                        lineText, x, y, r*1.25, r*0.3, leafContext, 3);
                 }
             }
             else
@@ -1206,22 +1322,39 @@ function ghostLeaf(leafContext, x, y, r, angle, mouseTouch, commonText, latinTex
                 {
                     if (latinText)
                     {
-                        //autotext(false,null,"•"+latinText+"•",x,y-r*0.45,r*1,r*0.15,leafContext,3);
-                        autotext(doStroke,null,OZstrings['sciname']+latinText,x,y-r*0.45,r*1,r*0.12,leafContext,3);
+                        //autotext(false,null,fonttype, mintextsize,"•"+latinText+"•",x,y-r*0.45,r*1,r*0.15,leafContext,3);
+                        autotext(
+                            doStroke, null, fonttype, mintextsize,
+                            OZstrings['sciname']+latinText,
+                            x, y-r*0.45, r*1, r*0.12, leafContext, 3);
                     }
-                    autotext2(doStroke,null,commonText,x,y,r*1.35,r*0.25,leafContext,3);
-                    autotext(doStroke,null,lineText , x,y+r*0.45,r*0.9,r*0.12,leafContext,3);
+                    autotext2(
+                        doStroke, null, fonttype, mintextsize,
+                        commonText, x, y, r*1.35, r*0.25, leafContext, 3);
+                    autotext(
+                        doStroke, null, fonttype, mintextsize,
+                        lineText, x, y+r*0.45, r*0.9, r*0.12, leafContext, 3);
                 }
                 else if (latinText)
                 {
-                    autotext(doStroke,null,OZstrings['No common name'],x,y-r*0.45,r*1,r*0.12,leafContext,3);
-                    autotext2(doStroke,null,latinText,x,y,r*1.35,r*0.25,leafContext,3);
-                    autotext(doStroke,null,lineText , x,y+r*0.45,r*0.9,r*0.12,leafContext,3);
+                    autotext(
+                        doStroke, null, fonttype, mintextsize,
+                        OZstrings['No common name'], x, y-r*0.45, r*1, r*0.12, leafContext, 3);
+                    autotext2(
+                        doStroke, null, fonttype, mintextsize,
+                        latinText, x, y, r*1.35, r*0.25, leafContext,3);
+                    autotext(
+                        doStroke, null, fonttype, mintextsize,
+                        lineText, x, y+r*0.45, r*0.9, r*0.12, leafContext, 3);
                 }
                 else
                 {
-                    autotext(doStroke,null,OZstrings['No known name'],x,y-r*0.4,r*1,r*0.12,leafContext,3);
-                    autotext2(doStroke,null,lineText,x,y+r*0.2,r*1.35,r*0.25,leafContext,3);
+                    autotext(
+                        doStroke, null, fonttype, mintextsize,
+                        OZstrings['No known name'], x, y-r*0.4, r*1, r*0.12, leafContext, 3);
+                    autotext2(
+                        doStroke, null, fonttype, mintextsize,
+                        lineText, x, y+r*0.2, r*1.35, r*0.25, leafContext, 3);
                 }
             }
         }
@@ -1258,17 +1391,9 @@ function ghostLeaf(leafContext, x, y, r, angle, mouseTouch, commonText, latinTex
  * imageObject is the image to be drawn (might be null)
  *
  *
- leafCol = {
- "insideColor" : this.leafcolor1()
- "outlineColor" : this.leafcolor2()
- "BGColor" : backgroundcolor
- "textColor" : this.leafcolor3()
- "highlightColor" : 'rgb(255,255,255)'
- "imageLineColor" : 'rgb(110,110,110)'
- }
  
  */
-function loadingLeaf(leafContext, x, y, r, commonText, latinText, lineText, leafCol)
+function loadingLeaf(leafContext, x, y, r, commonText, latinText, lineText, leafCol, node={})
 {
     // DETERMINE DETAIL LEVEL
     // level 0 - basic leaf
@@ -1294,21 +1419,27 @@ function loadingLeaf(leafContext, x, y, r, commonText, latinText, lineText, leaf
     if (detail_level > 0)
     {
         
-        leafContext.fillStyle = leafCol.textColor;
+        leafContext.fillStyle = node_eval(leafCol.text.fill, node);
         // draw some text
         if (detail_level < 3)
         {
             if (commonText)
             {
-                autotext3(false,null,commonText,x,y,r*1.25,r*0.3,leafContext,3);
+                autotext3(
+                    false, null, fonttype, mintextsize,
+                    commonText, x, y, r*1.25, r*0.3, leafContext, 3);
             }
             else if (latinText)
             {
-                autotext3(false,null,latinText,x,y,r*1.25,r*0.3,leafContext,3);
+                autotext3(
+                    false, null, fonttype, mintextsize,
+                    latinText, x, y, r*1.25, r*0.3, leafContext, 3);
             }
             else
             {
-                autotext2(false,null,lineText,x,y,r*1.25,r*0.3,leafContext,3);
+                autotext2(
+                    false, null, fonttype, mintextsize,
+                    lineText, x, y, r*1.25, r*0.3, leafContext, 3);
             }
         }
         else
@@ -1318,21 +1449,38 @@ function loadingLeaf(leafContext, x, y, r, commonText, latinText, lineText, leaf
             {
                 if (latinText)
                 {
-                    autotext(false,null,OZstrings['sciname']+latinText,x,y-r*0.45,r*1,r*0.12,leafContext,3);
+                    autotext(
+                        false, null, fonttype, mintextsize,
+                        OZstrings['sciname']+latinText,
+                        x, y-r*0.45, r*1, r*0.12, leafContext, 3);
                 }
-                autotext2(false,null,commonText,x,y,r*1.35,r*0.25,leafContext,3);
-                autotext(false,null,lineText , x,y+r*0.45,r*0.9,r*0.12,leafContext,3);
+                autotext2(
+                    false, null, fonttype, mintextsize,
+                    commonText, x, y, r*1.35, r*0.25, leafContext, 3);
+                autotext(
+                    false, null,fonttype, mintextsize,
+                    lineText, x, y+r*0.45, r*0.9, r*0.12, leafContext, 3);
             }
             else if (latinText)
             {
-                autotext(false,null,OZstrings['No common name'],x,y-r*0.45,r*1,r*0.12,leafContext,3);
-                autotext2(false,null,latinText,x,y,r*1.35,r*0.25,leafContext,3);
-                autotext(false,null,lineText , x,y+r*0.45,r*0.9,r*0.12,leafContext,3);
+                autotext(
+                    false, null, fonttype, mintextsize,
+                    OZstrings['No common name'],x,y-r*0.45,r*1,r*0.12,leafContext,3);
+                autotext2(
+                    false, null, fonttype, mintextsize,
+                    latinText, x, y, r*1.35, r*0.25, leafContext, 3);
+                autotext(
+                    false, null, fonttype, mintextsize,
+                    lineText, x, y+r*0.45, r*0.9, r*0.12, leafContext, 3);
             }
             else
             {
-                autotext(false,null,OZstrings['No known name'],x,y-r*0.4,r*1,r*0.12,leafContext,3);
-                autotext2(false,null,lineText,x,y+r*0.2,r*1.35,r*0.25,leafContext,3);
+                autotext(
+                    false, null, fonttype, mintextsize,
+                    OZstrings['No known name'], x, y-r*0.4, r*1, r*0.12, leafContext, 3);
+                autotext2(
+                    false, null, fonttype, mintextsize,
+                    lineText, x, y+r*0.2, r*1.35, r*0.25, leafContext, 3);
             }
         }
         
@@ -1375,20 +1523,16 @@ function loadingLeaf(leafContext, x, y, r, commonText, latinText, lineText, leaf
  * hasImage is true if there is going to be an image (which might not be loaded if imageObject is null)
  * imageObject is the image to be drawn (might be null)
  *
- * insideColor is the colour of the inside
- * outlineColor is the colour of the outside
- * textColor is the colour of the text
- * BGColor us the background colour (needed for erasure of parts)
+ * leafCol.inside.fill is the colour of the inside of the leaf
+ * leafCol.outline.fill is the colour of the outside of the leaf
+ * leafCol.bg.fill us the background colour (needed for erasure of parts)
+ * leafCol.sponsor.fill is the colour of the unemphasised sponsorship text
+ * leafCol.sponsor_hover.fill is the colour of the highlighed sponsorship text
+ * leafCol.text.fill is the colour of the internal text
  * highlightColor used for buttons on mouseover and click
  *
  leafCol = {
- "insideColor" : this.leafcolor1()
- "outlineColor" : this.leafcolor2()
- "BGColor" : backgroundcolor
- "sponsorColor" : sponsorTextCol
- "textColor" : this.leafcolor3()
  "highlightColor" : 'rgb(255,255,255)'
- "imageLineColor" : 'rgb(110,110,110)'
  "textOverColor" : 'rgb(255,255,255)'
  }
  
@@ -1400,9 +1544,11 @@ function loadingLeaf(leafContext, x, y, r, commonText, latinText, lineText, leaf
  * "d" means details punchout link
  *
  */
-function fullLeaf(leafContext,x,y,r,angle,type,sponsored,mouseTouch,
-                  sponsorText,extraText,commonText,latinText,line1Text,line2Text,copyText,imageObject,hasImage,
-                  leafCol,requiresCrop,cropMult,cropLeft,cropTop)
+function fullLeaf(
+    leafContext, x, y, r, angle, type, sponsored, mouseTouch,
+    sponsorText, extraText, commonText, latinText, line1Text, line2Text, copyText,
+    fonttype, mintextsize, imageObject, hasImage, leafCol, node={},
+    requiresCrop,cropMult,cropLeft,cropTop)
 {
     
     // HACK ALERT: cropMult,cropLeft,cropTop WERE PUT IN LAST MINUTE TO SOLVE THE SPONSOR LEAF PAGE IT NEEDS TO BE ROLLED OUT FOR THE ENTIRE FILE LATER - FOR NOW IT'S ONLY IN THE PLACES WHERE IT SAYS "HACK ALERT"
@@ -1441,20 +1587,23 @@ function fullLeaf(leafContext,x,y,r,angle,type,sponsored,mouseTouch,
             leaf_clicking = "z";
             if (type == 1)
             {
-                circularOutlinedLeaf(leafContext,x,y,r,r*0.12,leafCol.insideHighlight,leafCol.outlineHighlight);
+                circularOutlinedLeaf(
+                    leafContext, x, y, r, r*0.12,
+                    node_eval(leafCol.inside_hover.fill, node),
+                    node_eval(leafCol.outline_hover.fill, node));
             }
             else
             {
-                randomNaturalLeaf(leafContext,x,y,r,angle,leafCol.insideHighlight,leafCol.outlineHighlight)
+                randomNaturalLeaf(
+                    leafContext, x, y, r, angle,
+                    node_eval(leafCol.inside_hover.fill, node),
+                    node_eval(leafCol.outline_hover.fill, node))
             }
             
         }
     }
     
     var doStroke = false;
-    
-    //console.log("click test");
-    
     if (detail_level > 2) // global variable hack to turn off sponsorship text
     {
         if(mouseTouch&&(((((mouseTouch[0]-x)*(mouseTouch[0]-x))+((mouseTouch[1]-y)*(mouseTouch[1]-y)))<=(r*r))))
@@ -1489,7 +1638,15 @@ function fullLeaf(leafContext,x,y,r,angle,type,sponsored,mouseTouch,
                 }
             
             // draw copyright symbol
-            if (copyright(leafContext, x+r*0.43, button_pos, r*0.035, copyText, mouseTouch, leafCol.copyrightInside, leafCol.copyrightText, leafCol.copyrightTextHighlight, leafCol.copyrightInsideHighlight))
+            if (copyright(
+                    leafContext, x+r*0.43, button_pos, r*0.035, fonttype, mintextsize,
+                    copyText, mouseTouch,
+                    node_eval(leafCol.copyright.text.fill, node),
+                    node_eval(leafCol.copyright.stroke, node),
+                    node_eval(leafCol.copyright.fill, node),
+                    node_eval(leafCol.copyright.text_hover.fill, node),
+                    node_eval(leafCol.copyright_hover.stroke, node),
+                    node_eval(leafCol.copyright_hover.fill, node)))
             {
                 leaf_clicking = "c";
             }
@@ -1508,7 +1665,9 @@ function fullLeaf(leafContext,x,y,r,angle,type,sponsored,mouseTouch,
      // DRAW MAIN LEAF PARTS
      if (type == 1)
      {
-     circularOutlinedLeaf(leafContext,x,y,r,r*0.12,leafCol.insideColor,leafCol.outlineColor);
+     circularOutlinedLeaf(
+        leafContext,x,y,r,r*0.12,
+        node_eval(leafCol.inside.fill, node), node_eval(leafCol.outline.fill, node));
      }
      else
      {
@@ -1519,10 +1678,12 @@ function fullLeaf(leafContext,x,y,r,angle,type,sponsored,mouseTouch,
      leafContext.beginPath();
      var clearrad = r*1.038;
      leafContext.arc(x,y,clearrad,0,Math.PI*2,true);
-     leafContext.fillStyle = leafCol.BGColor;
+     leafContext.fillStyle = leafCol.bg.fill;
      leafContext.fill();
      }
-     randomNaturalLeaf(leafContext,x,y,r,angle,leafCol.insideColor,leafCol.outlineColor)
+     randomNaturalLeaf(
+        leafContext,x,y,r,angle,
+        node_eval(leafCol.inside.fill, node), node_eval(leafCol.outline.fill, node))
      }
      */
     
@@ -1562,13 +1723,19 @@ function fullLeaf(leafContext,x,y,r,angle,type,sponsored,mouseTouch,
             // text under leaf
             if ((leaf_clicking == "s")||(sponsored))
             {
-                // bold and highlighted because mouse over link
-                arcText(leafContext,x,y,r*(1-0.06),shortenedSponsorText,text_above,-Math.PI*(0.5)+text_above*tempadd,tempgap,r*textWidth,leafCol.sponsorHighlight,'bold');
+                // bold and highlighted because mouse over link or sponsored
+                arcText(
+                    leafContext, x, y, r*(1-0.06), shortenedSponsorText, text_above,
+                    -Math.PI*(0.5)+text_above*tempadd, tempgap, r*textWidth,
+                    node_eval(leafCol.sponsor_hover.fill, node), 'bold');
             }
             else
             {
                 // standard text
-                arcText(leafContext,x,y,r*(1-0.06),shortenedSponsorText,text_above,-Math.PI*(0.5)+text_above*tempadd,tempgap,r*textWidth,leafCol.sponsorColor,null);
+                arcText(
+                    leafContext, x, y, r*(1-0.06), shortenedSponsorText, text_above,
+                    -Math.PI*(0.5)+text_above*tempadd, tempgap, r*textWidth, 
+                    node_eval(leafCol.sponsor.fill, node), null);
             }
         }
     }
@@ -1581,14 +1748,9 @@ function fullLeaf(leafContext,x,y,r,angle,type,sponsored,mouseTouch,
             // we have an image - note that if we're waiting for it to load and are at detail level 1 we escape and assume there is no image
             if (detail_level < 2)
             {
-                //if (leaf_clicking == "z")
-                //{
-                //    circle_cut_image(leafContext,imageObject,x,y,r*0.85,leafCol.highlightColor,leafCol.highlightColor);
-                //}
-                //else
-                //{
-                    circle_cut_image(leafContext,imageObject,x,y,r*0.85,leafCol.insideColor,null);
-                //}
+                    circle_cut_image(
+                        leafContext,imageObject,x,y,r*0.85,
+                        node_eval(leafCol.inside.fill, node), null);
             }
             else
             {
@@ -1598,13 +1760,13 @@ function fullLeaf(leafContext,x,y,r,angle,type,sponsored,mouseTouch,
                  context.fillStyle = 'rgb(85,85,85)';
                  context.lineCap="round";
                  context.lineWidth = Math.min(radiusr*0.08,6) ;
-                 autotext2(true,null,commonText,x,y-r*0.6,r*1.2,r*0.12,leafContext,3);
+                 autotext2(true,null,fonttype,mintextsize,commonText,x,y-r*0.6,r*1.2,r*0.12,leafContext,3);
                  */
                 
                 
                 //var button_pos = 0;
                 
-                leafContext.fillStyle = leafCol.textColor;
+                leafContext.fillStyle = node_eval(leafCol.text.fill, node);
                 if (detail_level > 2)
                 {
                     if (line1Text||line2Text)
@@ -1612,43 +1774,80 @@ function fullLeaf(leafContext,x,y,r,angle,type,sponsored,mouseTouch,
                         // no extra text
                         if (commonText)
                         {
-                            autotext(doStroke,'italic',latinText,x,y+r*0.5,r*1,r*0.1,leafContext,3);
-                            autotext2(doStroke,null,commonText,x,y-r*0.6,r*1.2,r*0.12,leafContext,3);
+                            autotext(
+                                doStroke, 'italic', fonttype, mintextsize,
+                                latinText, x, y+r*0.5, r*1, r*0.1, leafContext, 3);
+                            autotext2(
+                                doStroke, null, fonttype, mintextsize,
+                                commonText, x, y-r*0.6, r*1.2, r*0.12, leafContext, 3);
                         }
                         else
                         {
-                            autotext(doStroke,null,OZstrings['No common name'],x,y+r*0.5,r*1,r*0.1,leafContext,3);
-                            autotext2(doStroke,'italic',latinText,x,y-r*0.6,r*1.2,r*0.12,leafContext,3);
+                            autotext(
+                                doStroke, null, fonttype, mintextsize,
+                                OZstrings['No common name'],
+                                x, y+r*0.5, r*1, r*0.1, leafContext, 3);
+                            autotext2(
+                                doStroke, 'italic', fonttype, mintextsize,
+                                latinText, x, y-r*0.6, r*1.2, r*0.12, leafContext, 3);
                         }
-                        
-                        rounded_image(leafContext,imageObject,x,y,r*0.75,leafCol.insideColor,leafCol.highlightColor,requiresCrop,cropMult,cropLeft,cropTop)
+                        rounded_image(
+                            leafContext, imageObject, x, y, r*0.75,
+                            node_eval(leafCol.inside.fill, node),
+                            null,
+                            requiresCrop, cropMult, cropLeft, cropTop)
                         //button_pos = y+r*0.34;// 0.75/2 -0.05
                         
-                        autotext(doStroke,null,line1Text , x,y+r*0.625,r,r*0.07,leafContext,3);
-                        autotext(doStroke,null,line2Text , x,y+r*0.725,r,r*0.07,leafContext,3);
+                        autotext(
+                            doStroke, null,fonttype, mintextsize,
+                            line1Text, x, y+r*0.625, r, r*0.07, leafContext,3);
+                        autotext(
+                            doStroke, null, fonttype, mintextsize,
+                            line2Text, x, y+r*0.725, r, r*0.07, leafContext, 3);
                     }
                     else
                     {
                         // no extra text
                         if (commonText)
                         {
-                            autotext2(doStroke,'italic',latinText,x,y+r*0.63,r*1.1,r*0.12,leafContext,3);
-                            autotext2(doStroke,null,commonText,x,y-r*0.55,r*1.2,r*0.15,leafContext,3);
+                            autotext2(
+                                doStroke, 'italic', fonttype, mintextsize,
+                                latinText, x, y+r*0.63, r*1.1, r*0.12, leafContext, 3);
+                            autotext2(
+                                doStroke, null, fonttype, mintextsize,
+                                commonText, x, y-r*0.55, r*1.2, r*0.15, leafContext, 3);
                         }
                         else
                         {
-                            autotext2(doStroke,null,OZstrings['No common name'],x,y+r*0.63,r*1.1,r*0.12,leafContext,3);
-                            autotext2(doStroke,'italic',latinText,x,y-r*0.55,r*1.2,r*0.15,leafContext,3);
+                            autotext2(
+                                doStroke, null, fonttype, mintextsize,
+                                OZstrings['No common name'],
+                                x, y+r*0.63, r*1.1, r*0.12, leafContext, 3);
+                            autotext2(
+                                doStroke,'italic', fonttype, mintextsize,
+                                latinText, x, y-r*0.55, r*1.2, r*0.15, leafContext, 3);
                         }
                         
-                        rounded_image(leafContext,imageObject,x,y+r*0.05,r*0.75,leafCol.insideColor,leafCol.highlightColor,requiresCrop,cropMult,cropLeft,cropTop)
+                        rounded_image(
+                            leafContext, imageObject, x, y+r*0.05, r*0.75, 
+                            node_eval(leafCol.inside.fill, node),
+                            null,
+                            requiresCrop, cropMult, cropLeft, cropTop)
                         //button_pos = y+r*0.39//r*0.75/2+r*0.05-r*0.05
                     }
                     /*
                     if (r*0.035>6)
                     {
                         // draw copyright symbol
-                        if (copyright(leafContext,x+r*0.43,button_pos,r*0.035,copyText,mouseTouch,leafCol.outlineColor,leafCol.insideColor,leafCol.highlightColor))
+                        if (copyright(
+                            leafContext, x+r*0.43, button_pos, r*0.035,
+                            fonttype, mintextsize, copyText, mouseTouch,
+                            node_eval(leafCol.copyright.text.fill, node),
+                            node_eval(leafCol.copyright.stroke, node),
+                            node_eval(leafCol.copyright.fill, node),
+                            node_eval(leafCol.copyright.text_hover.fill, node),
+                            node_eval(leafCol.copyright_hover.stroke, node),
+                            node_eval(leafCol.copyright_hover.fill, node))
                         {
                             leaf_clicking = "c";
                         }
@@ -1659,29 +1858,41 @@ function fullLeaf(leafContext,x,y,r,angle,type,sponsored,mouseTouch,
                 {
                     if (commonText)
                     {
-                        autotext2(doStroke,null,commonText,x,y-r*0.55,r*1.1,r*0.15,leafContext,3);
+                        autotext2(
+                            doStroke, null,fonttype, mintextsize,
+                            commonText, x, y-r*0.55,r *1.1, r*0.15, leafContext, 3);
                     }
                     else
                     {
-                        autotext2(doStroke,'italic',latinText,x,y-r*0.55,r*1.1,r*0.15,leafContext,3);
+                        autotext2(
+                            doStroke, 'italic', fonttype, mintextsize,
+                            latinText, x, y-r*0.55, r*1.1, r*0.15, leafContext, 3);
                     }
-                    rounded_image(leafContext, imageObject, x, y+r*0.2, r*0.95, leafCol.insideColor, leafCol.highlightColor, requiresCrop, cropMult, cropLeft, cropTop)
+                    rounded_image(
+                        leafContext, imageObject, x, y+r*0.2, r*0.95,
+                        node_eval(leafCol.inside.fill, node),
+                        null,
+                        requiresCrop, cropMult, cropLeft, cropTop)
                 }
             }
         }
         else
         {
-            leafContext.fillStyle = leafCol.textColor;
+            leafContext.fillStyle = leafCol.text.fill;
             // draw some text
             if (detail_level < 3)
             {
                 if (commonText)
                 {
-                    autotext3(doStroke,null,commonText,x,y,r*1.25,r*0.3,leafContext,3);
+                    autotext3(
+                        doStroke, null, fonttype, mintextsize,
+                        commonText,x,y,r*1.25,r*0.3,leafContext,3);
                 }
                 else
                 {
-                    autotext3(doStroke,'italic',latinText,x,y,r*1.25,r*0.3,leafContext,3);
+                    autotext3(
+                        doStroke,'italic', fonttype, mintextsize,
+                        latinText,x,y,r*1.25,r*0.3,leafContext,3);
                 }
             }
             else
@@ -1692,38 +1903,60 @@ function fullLeaf(leafContext,x,y,r,angle,type,sponsored,mouseTouch,
                     // there is extra text
                     if (commonText)
                     {
-                        autotext2(doStroke,'italic',latinText,x,y-r*0.5,r*1.1,r*0.15,leafContext,3);
-                        autotext2(doStroke,null,commonText,x,y,r*1.5,r*0.25,leafContext,3);
+                        autotext2(
+                            doStroke, 'italic', fonttype, mintextsize,
+                            latinText, x, y-r*0.5, r*1.1, r*0.15, leafContext, 3);
+                        autotext2(
+                            doStroke, null, fonttype, mintextsize,
+                            commonText, x, y, r*1.5, r*0.25, leafContext, 3);
                     }
                     else
                     {
-                        autotext2(doStroke,null,OZstrings['No common name'],x,y-r*0.5,r*1.1,r*0.15,leafContext,3);
-                        autotext2(doStroke,'italic',latinText,x,y,r*1.5,r*0.25,leafContext,3);
+                        autotext2(
+                            doStroke, null, fonttype, mintextsize,
+                            OZstrings['No common name'],
+                            x, y-r*0.5, r*1.1, r*0.15, leafContext, 3);
+                        autotext2(
+                            doStroke, 'italic', fonttype, mintextsize,
+                            latinText, x, y, r*1.5, r*0.25, leafContext, 3);
                     }
                     
-                    autotext(doStroke,null,line1Text , x,y+r*0.45,r,r*0.1,leafContext,3);
-                    autotext(doStroke,null,line2Text , x,y+r*0.6,r,r*0.1,leafContext,3);
+                    autotext(
+                        doStroke, null, fonttype, mintextsize,
+                        line1Text, x, y+r*0.45, r, r*0.1, leafContext, 3);
+                    autotext(
+                        doStroke, null, fonttype, mintextsize,
+                        line2Text, x, y+r*0.6, r, r*0.1, leafContext, 3);
                 }
                 else
                 {
                     // no extra text
                     if (commonText)
                     {
-                        autotext2(doStroke,'italic',latinText,x,y-r*0.45,r*1.1,r*0.15,leafContext,3);
-                        autotext3(doStroke,null,commonText,x,y+r*0.2,r*1.4,r*0.2,leafContext,3);
+                        autotext2(
+                            doStroke, 'italic', fonttype, mintextsize,
+                            latinText, x, y-r*0.45, r*1.1, r*0.15, leafContext,3);
+                        autotext3(
+                            doStroke, null, fonttype, mintextsize,
+                            commonText, x, y+r*0.2, r*1.4, r*0.2, leafContext,3);
                     }
                     else
                     {
-                        autotext2(doStroke,null,OZstrings['No common name'],x,y-r*0.45,r*1.1,r*0.15,leafContext,3);
-                        autotext3(doStroke,'italic',latinText,x,y+r*0.2,r*1.4,r*0.2,leafContext,3);
+                        autotext2(
+                            doStroke, null, fonttype, mintextsize,
+                            OZstrings['No common name'],
+                            x, y-r*0.45, r*1.1, r*0.15, leafContext, 3);
+                        autotext3(
+                            doStroke, 'italic', fonttype, mintextsize,
+                            latinText, x, y+r*0.2, r*1.4, r*0.2, leafContext, 3);
                     }
                 }
             }
         }
     }
-    
     return leaf_clicking;
-}
+};
 
-export {circularOutlinedLeaf, circularDottedLeaf, naturalLeaf, randomNaturalLeaf, arcText, ghostLeafBase, fullLeafBase, ghostLeaf, loadingLeaf, fullLeaf};
-
+export {
+    circularOutlinedLeaf, circularDottedLeaf, naturalLeaf, randomNaturalLeaf, arcText,
+    ghostLeafBase, fullLeafBase, ghostLeaf, loadingLeaf, fullLeaf, natural_theme};

@@ -1,0 +1,14 @@
+h1, h2, h3, h3, h4, h6 {
+    font-family: inherit;
+    font-style: inherit;
+}
+
+h2 {
+    text-align: center;
+}
+
+html.leaf_redirect {
+    /* On sponsor leaf pages that are redirects (start with spl_), put in a leaf pic */
+    background-size: 100%;
+    background-image: url("/static/images/gallery/tree_background_JR_own_work_small.jpg");
+}

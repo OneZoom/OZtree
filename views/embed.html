@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="{{=T.accepted_language or 'en'}}">
+<html lang="{{=T.accepted_language or 'en'}}" class="{{='leaf_redirect' if response.view.startswith('default/spl_') else ''}}">
 <head>
   <script type="text/javascript" src="{{=URL('static','js/jquery.min.js')}}"></script>
   <script src="{{=URL('static','uikit-3/js/uikit.min.js')}}"></script>
   <link rel="stylesheet" href="{{=URL('static','uikit-3/css/uikit.min.css')}}" />
   <link rel="stylesheet" href="{{=URL('static','css/content.css')}}" type="text/css" />
+  <link rel="stylesheet" href="{{=URL('static','css/embed.css')}}" type="text/css" />
   <link rel="shortcut icon" href="{{=URL('static', 'favicon.ico')}}" type="image/x-icon" />
   <link rel="apple-touch-icon" href="{{=URL('static','favicon.png')}}">
   <style>h2 {margin-top: 0}</style>
@@ -56,7 +57,7 @@ if request.vars.embed:
     def A(*args, **kwargs): return web2py_A(*args, **dict(kwargs, _target='_blank'))
   else:
 }}
-<script>/* disable right click */ document.oncontextmenu = function() {return false;}</script>  
+<script>/* disable right click */ document.oncontextmenu = function() {return false;}</script>
 {{
     if request.vars.embed=='3':
       #add embed to any internal URLs 
@@ -64,10 +65,10 @@ if request.vars.embed:
       def URL(*args, **kwargs): return web2py_URL(*args, **dict(kwargs, vars=dict(kwargs.get('vars') or {}, embed=request.vars.embed)))
       #remove external A href links
       web2py_A = A
-      def A(*args, **kwargs): return web2py_A(*args, **kwargs) if '_target' not in kwargs and ('_href' not in kwargs or kwargs['_href'].startswith(".") or (kwargs['_href'].startswith("/") and not kwargs['_href'].startswith("//"))) else SPAN(*args, **kwargs)
+      def A(*args, **kwargs): return web2py_A(*args, **kwargs) if '_target' not in kwargs and ('_href' not in kwargs or kwargs['_href'].startswith(".") or (kwargs['_href'].startswith("/") and not kwargs['_href'].startswith("//"))) else SPAN(*args, _style="text-decoration: underline;", **kwargs)
     elif request.vars.embed=='4':
       #remove hyperlink from *all* links created via the web2py A() helper
-      def A(*args, **kwargs): return SPAN(*args, **kwargs)
+      def A(*args, **kwargs): return SPAN(*args, _style="text-decoration: underline;", **kwargs)
     pass
   pass
 pass
