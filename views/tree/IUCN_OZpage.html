@@ -1,0 +1,11 @@
+{{response.title='OneZoom IUCN page'}}
+{{extend 'embed.html'}}
+
+<h3>
+International Union for Conservation of Nature (IUCN) Red List of Threatened Species.
+</h3>
+
+<p>
+   The IUCN Red List is the most comprehensive resource for information on the degree to which species are threatened with extinction.  The IUCN do not permit embedding their resources into a window so we're not able to show you more information right here.  However we can provide a {{=A('link to more information about extinction risk for this species', callback=("http://www.iucnredlist.org/details/{}/0".format(int(request.vars.iucnid))), _target='blank')}}
+
+</p>

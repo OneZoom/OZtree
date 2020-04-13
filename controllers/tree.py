@@ -39,6 +39,8 @@ def wikipedia_OZpage():
         raise HTTP(400,e)
 
 
+def IUCN_OZpage():
+    return dict()
 
 def pic_info():
     """
@@ -274,7 +276,8 @@ def iucn_url(IUCNid):
     try:
         #we only have a single url to return as we haven't bothered to make a local IUCN page
         #see https://github.com/OneZoom/OZtree/issues/67
-        return(["http://www.iucnredlist.org/details/{}/0".format(int(IUCNid))])
+        IUCNURLarray = [URL('tree','IUCN_OZpage.html',vars=dict(iucnid=int(IUCNid))),"http://www.iucnredlist.org/details/{}/0".format(int(IUCNid))]
+        return(IUCNURLarray)
     except:
         raise HTTP(400,"No valid IUCN id provided")
 
