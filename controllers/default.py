@@ -2,7 +2,7 @@
 # this file is released under public domain and you can use without limitations
 import re
 import random
-import urllib
+import urllib.parse
 from json import dumps
 from collections import OrderedDict
 
@@ -776,13 +776,14 @@ def paypal():
             paypal_notify_string = ''
         paypal_url += ('/cgi-bin/webscr' +
                        '?cmd=_donations&business=mail@onezoom.org' +
-                       '&item_name=Donation+to+OneZoom+('+urllib.quote(row.name)+')'+
-                       '&item_number=leaf+sponsorship+-+'+urllib.quote(row.name)+
+                       '&item_name=Donation+to+OneZoom+('+urllib.parse.quote(row.name)+')'+
+                       '&item_number=leaf+sponsorship+-+'+urllib.parse.quote(row.name)+
                        '&return=' + URL("sponsor_thanks.html", scheme=True, host=True) +
                        paypal_notify_string +
-                       '&amount=' + urllib.quote('{:.2f}'.format(row.user_paid))+
+                       '&amount=' + urllib.parse.quote('{:.2f}'.format(row.user_paid))+
                        '&currency_code=GBP')
     except:
+        raise
         error="we couldn't find your leaf sponsorship information."
         return(dict(error=error, ott=request.vars.get('ott') or '<no available ID>'))
     redirect(paypal_url)
