@@ -144,7 +144,7 @@ response.files.append(URL('static','css/content_pages.css'))
         <input type="text" autocomplete="name" id="user_donor_name_input" name = "user_donor_name" size="40"
         value="{{if (request.vars['user_donor_name']) is not None:}}{{=request.vars['user_donor_name']}}{{pass}}" /> </p>
         
-        <em class = "error_text">{{if (form.errors["user_donor_title"] is not None) or (form.errors["user_donor_name"] is not None):}}{{=form.errors["user_donor_title_name"]}}{{pass}}</em></p>
+        <em class = "error_text">{{if form.errors["user_donor_title_name"] is not None:}}{{=form.errors["user_donor_title_name"]}}{{pass}}</em></p>
       </div>
       
         <p class="singlerow extra_info">{{=T('We can use this in correspondance, on our public list of donors, and the information is required if you agree to gift aid your donation (see below)')}}</p>
