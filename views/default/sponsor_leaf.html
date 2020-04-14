@@ -36,7 +36,7 @@ response.files.append(URL('static','css/content_pages.css'))
   <h2 id = "sponsor_title">{{=XML(T('Sponsor %s on the OneZoom Tree of Life') % (the_long_name or T("a species"),))}}</h2>
   <p>{{=T('You can sponsor this leaf for yourself or as a unique gift for someone you know.')}}</p>
 {{if partner_data:}}
-  <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the %s and %s by displaying your chosen sponsor’s name on %s') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), A(T(partner_data.get('name')), _href=partner_data.get('url'), _target="_blank"), the_long_name))}}.
+  <p>{{=XML(T('We will acknowledge your donation to the %s and %s by displaying your chosen sponsor’s name on %s') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), A(T(partner_data.get('name')), _href=partner_data.get('url'), _target="_blank"), the_long_name))}}.
      {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s. %s.') % (int(round(100-partner_data.get('percentage'))), int(round(partner_data.get('percentage'))), T(partner_data.get('name')), T(partner_data.get('details')))  )  }}</p>
 
 {{else:}}
@@ -144,7 +144,7 @@ response.files.append(URL('static','css/content_pages.css'))
         <input type="text" autocomplete="name" id="user_donor_name_input" name = "user_donor_name" size="40"
         value="{{if (request.vars['user_donor_name']) is not None:}}{{=request.vars['user_donor_name']}}{{pass}}" /> </p>
         
-        <em class = "error_text">{{if (form.errors["user_donor_title"]) is not None:}}{{=form.errors["user_donor_title"]}}{{pass}}{{if (form.errors["user_donor_name"]) is not None:}}{{=form.errors["user_donor_name"]}}{{pass}}</em></p>
+        <em class = "error_text">{{if (form.errors["user_donor_title"] is not None) or (form.errors["user_donor_name"] is not None):}}{{=form.errors["user_donor_title_name"]}}{{pass}}</em></p>
       </div>
       
         <p class="singlerow extra_info">{{=T('We can use this in correspondance, on our public list of donors, and the information is required if you agree to gift aid your donation (see below)')}}</p>

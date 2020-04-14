@@ -708,11 +708,14 @@ def validate_sponsor_leaf(form, leaf_price):
         form.errors.user_paid = T("Please enter a valid number")
     
     if form.vars.user_giftaid:
-        if not (form.vars.user_donor_title or "").strip():
-            form.errors.user_donor_title = T("We need your title to be able to claim gift aid")
-        if not form.vars.user_donor_name and form.vars.user_sponsor_kind != 'by':
-            form.errors.user_donor_name = T("We need your name to be able to claim gift aid")
-
+        missing_title = not (form.vars.user_donor_title or "").strip()
+        if missing_title:
+            form.errors.user_donor_title_name = T("We need your title to be able to claim gift aid")
+        if not (form.vars.user_donor_name or "").strip() and form.vars.user_sponsor_kind != 'by':
+            if missing_title:
+                form.errors.user_donor_title_name = T("We need your name and title to be able to claim gift aid")
+            else:
+                form.errors.user_donor_title_name = T("We need your name to be able to claim gift aid")
 
 def sponsor_leaf_redirect():
     """
