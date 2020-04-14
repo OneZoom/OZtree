@@ -108,6 +108,8 @@ response.generic_patterns = ['*'] if request.is_local else []
 response.formstyle = myconf.take('forms.formstyle')  # or 'bootstrap3_stacked' or 'bootstrap2' or other
 response.form_label_separator = myconf.take('forms.separator')
 
+response.headers['X-Powered-By'] = 'n/a'
+response.headers['Server'] = 'n/a'
 
 ## (optional) optimize handling of static files
 # response.optimize_css = 'concat,minify,inline'
@@ -537,7 +539,9 @@ db.define_table('reservations',
     Field('sponsorship_duration_days',type = 'integer'),
     # the length in days gained by the donation            
     Field('sponsorship_expires_after_days',type = 'integer'),
-    # the expiry date in days beyond verified time            
+    # the expiry date in days beyond verified time - different from sponsorship_duration_days
+    # because renewals will comprise the new sponsorship_duration plus any left over from
+    # the previous sponsorship amount
     Field('asking_price', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
     # price in pounds - good idea to hang on to this for accounting purposes and verification the numbers add up later
     Field('partner_percentage', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 

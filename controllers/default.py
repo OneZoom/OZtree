@@ -7,6 +7,7 @@ from json import dumps
 from collections import OrderedDict
 
 from OZfunctions import (
+    clear_reservation,
     nice_species_name, get_common_name, get_common_names, sponsorable_children_query,
     language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, add_the,
     ids_from_otts_array, nodes_info_from_array, nodes_info_from_string, extract_summary)
@@ -439,7 +440,9 @@ def sponsor_leaf():
         else:
             # there is already a row in the database so update
             reservation_query.update(
-                last_view=request.now, num_views=reservation_row.num_views+1)
+                last_view=request.now,
+                num_views=reservation_row.num_views+1,
+                name=species_name)
     
             # this may be available (because valid) but could be
             #  sponsored, unverified, reserved or still available  
@@ -475,25 +478,7 @@ def sponsor_leaf():
                         else:
                             # We've waited too long and can zap the personal data
                             # previously in the table then set available
-                            reservation_query.update(
-                                user_id=None, e_mail=None, twitter_name=None,
-                                allow_contact=None, user_sponsor_kind=None,
-                                user_sponsor_name=None, user_more_info=None,
-                                user_nondefault_image=None,
-                                user_preferred_image_src=None,
-                                user_preferred_image_src_id=None, user_updated_time=None,
-                                user_paid=None, user_message_OZ=None, user_giftaid=None,
-                                user_registration_id=None, PP_transaction_code=None,
-                                PP_e_mail=None, PP_first_name=None, PP_second_name=None,
-                                PP_town=None, PP_country=None, PP_house_and_street=None,
-                                PP_postcode=None, verified_kind=None, verified_name=None,
-                                verified_more_info=None,
-                                verified_preferred_image_src=None,
-                                verified_preferred_image_src_id=None, verified_time=None,
-                                verified_paid=None, verified_url=None, live_time=None,
-                                admin_comment=None, sponsorship_duration_days=None,
-                                asking_price=None, deactivated=None, sale_time=None,
-                                partner_name=None, partner_percentage=None)
+                            clear_reservation(OTT_ID_Varin)
                             # Note that this e.g. clears deactivated taxa, etc etc. Even 
                             # if status == available, allow_sponsorship can be False
                             # status is then used to decide the text to show the user
@@ -509,6 +494,7 @@ def sponsor_leaf():
                         # reserve the leaf because there is no reservetime on record
                         if allow_sponsorship:
                             reservation_query.update(
+                                name=species_name,
                                 reserve_time=request.now,
                                 user_registration_id=form_reservation_code)
                     else:
@@ -521,7 +507,9 @@ def sponsor_leaf():
                                 # it was the same user anyway so reset timer
                                 status = "available only to user"
                                 if allow_sponsorship:
-                                    reservation_query.update(reserve_time=request.now)
+                                    reservation_query.update(
+                                        name=species_name,
+                                        reserve_time=request.now)
                             else:
                                 status = "reserved"
                         else:
@@ -530,6 +518,7 @@ def sponsor_leaf():
                             # reserve the leaf because there is no reservetime on record
                             if allow_sponsorship:
                                 reservation_query.update(
+                                    name=species_name,
                                     reserve_time = request.now,
                                     user_registration_id = form_reservation_code)
         #re-do the query since we might have added the row ID now
@@ -643,6 +632,7 @@ def sponsor_leaf():
                 if is_testing:
                     response.flash = 'temp form accepted'
                 reservation_query.update(
+                    name=species_name,
                     reserve_time=request.now,
                     user_sponsor_lang = (request.env.http_accept_language or '').lower(),
                     asking_price=(leaf_price),
@@ -718,11 +708,14 @@ def validate_sponsor_leaf(form, leaf_price):
         form.errors.user_paid = T("Please enter a valid number")
     
     if form.vars.user_giftaid:
-        if not (form.vars.user_donor_title or "").strip():
-            form.errors.user_donor_title = T("We need your title to be able to claim gift aid")
-        if not form.vars.user_donor_name and form.vars.user_sponsor_kind != 'by':
-            form.errors.user_donor_name = T("We need your name to be able to claim gift aid")
-
+        missing_title = not (form.vars.user_donor_title or "").strip()
+        if missing_title:
+            form.errors.user_donor_title_name = T("We need your title to be able to claim gift aid")
+        if not (form.vars.user_donor_name or "").strip() and form.vars.user_sponsor_kind != 'by':
+            if missing_title:
+                form.errors.user_donor_title_name = T("We need your name and title to be able to claim gift aid")
+            else:
+                form.errors.user_donor_title_name = T("We need your name to be able to claim gift aid")
 
 def sponsor_leaf_redirect():
     """
