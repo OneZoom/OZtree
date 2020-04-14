@@ -439,7 +439,9 @@ def sponsor_leaf():
         else:
             # there is already a row in the database so update
             reservation_query.update(
-                last_view=request.now, num_views=reservation_row.num_views+1)
+                last_view=request.now,
+                num_views=reservation_row.num_views+1,
+                name=species_name)
     
             # this may be available (because valid) but could be
             #  sponsored, unverified, reserved or still available  
@@ -509,6 +511,7 @@ def sponsor_leaf():
                         # reserve the leaf because there is no reservetime on record
                         if allow_sponsorship:
                             reservation_query.update(
+                                name=species_name,
                                 reserve_time=request.now,
                                 user_registration_id=form_reservation_code)
                     else:
@@ -521,7 +524,9 @@ def sponsor_leaf():
                                 # it was the same user anyway so reset timer
                                 status = "available only to user"
                                 if allow_sponsorship:
-                                    reservation_query.update(reserve_time=request.now)
+                                    reservation_query.update(
+                                        name=species_name,
+                                        reserve_time=request.now)
                             else:
                                 status = "reserved"
                         else:
@@ -530,6 +535,7 @@ def sponsor_leaf():
                             # reserve the leaf because there is no reservetime on record
                             if allow_sponsorship:
                                 reservation_query.update(
+                                    name=species_name,
                                     reserve_time = request.now,
                                     user_registration_id = form_reservation_code)
         #re-do the query since we might have added the row ID now
@@ -643,6 +649,7 @@ def sponsor_leaf():
                 if is_testing:
                     response.flash = 'temp form accepted'
                 reservation_query.update(
+                    name=species_name,
                     reserve_time=request.now,
                     user_sponsor_lang = (request.env.http_accept_language or '').lower(),
                     asking_price=(leaf_price),
