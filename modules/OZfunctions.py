@@ -32,6 +32,14 @@ def __check_version(): #this is a private function
     except Exception as e:
         return str(e)
 
+def clear_reservation(reservations_table_id):
+    db = current.db
+    keep_fields = ('id', 'OTT_ID', 'num_views', 'last_view')
+    del_fields = {f: None for f in db.reservations.fields if f not in keep_fields}
+    assert len(keep_fields) + len(del_fields) == len(db.reservations.fields)
+    assert reservations_table_id is not None
+    db(db.reservations.OTT_ID == reservations_table_id).update(**del_fields)
+
 def lang_primary(req):
     language=req.vars.lang or req.env.http_accept_language or 'en'
     first_lang = language.split(',')[0]

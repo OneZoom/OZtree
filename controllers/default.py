@@ -7,6 +7,7 @@ from json import dumps
 from collections import OrderedDict
 
 from OZfunctions import (
+    clear_reservation,
     nice_species_name, get_common_name, get_common_names, sponsorable_children_query,
     language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, add_the,
     ids_from_otts_array, nodes_info_from_array, nodes_info_from_string, extract_summary)
@@ -477,25 +478,7 @@ def sponsor_leaf():
                         else:
                             # We've waited too long and can zap the personal data
                             # previously in the table then set available
-                            reservation_query.update(
-                                user_id=None, e_mail=None, twitter_name=None,
-                                allow_contact=None, user_sponsor_kind=None,
-                                user_sponsor_name=None, user_more_info=None,
-                                user_nondefault_image=None,
-                                user_preferred_image_src=None,
-                                user_preferred_image_src_id=None, user_updated_time=None,
-                                user_paid=None, user_message_OZ=None, user_giftaid=None,
-                                user_registration_id=None, PP_transaction_code=None,
-                                PP_e_mail=None, PP_first_name=None, PP_second_name=None,
-                                PP_town=None, PP_country=None, PP_house_and_street=None,
-                                PP_postcode=None, verified_kind=None, verified_name=None,
-                                verified_more_info=None,
-                                verified_preferred_image_src=None,
-                                verified_preferred_image_src_id=None, verified_time=None,
-                                verified_paid=None, verified_url=None, live_time=None,
-                                admin_comment=None, sponsorship_duration_days=None,
-                                asking_price=None, deactivated=None, sale_time=None,
-                                partner_name=None, partner_percentage=None)
+                            clear_reservation(OTT_ID_Varin)
                             # Note that this e.g. clears deactivated taxa, etc etc. Even 
                             # if status == available, allow_sponsorship can be False
                             # status is then used to decide the text to show the user
