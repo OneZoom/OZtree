@@ -15,11 +15,11 @@ from OZfunctions import (
 
 """ Some settings for sponsorship"""
 try:
-    reservation_time_limit = myconf.take('sponsorship.reservation_time_limit_mins') * 60.0
+    reservation_time_limit = float(myconf.take('sponsorship.reservation_time_limit_mins')) * 60.0
 except:
     reservation_time_limit = 360.0 #seconds
 try:
-    unpaid_time_limit = myconf.take('sponsorship.unpaid_time_limit_mins') * 60.0
+    unpaid_time_limit = float(myconf.take('sponsorship.unpaid_time_limit_mins')) * 60.0
 except:
     unpaid_time_limit = 2.0*24.0*60.0*60.0 #seconds
 
