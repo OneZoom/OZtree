@@ -101,7 +101,7 @@ response.files.append(URL('static','css/content_pages.css'))
   </div>
   <div>
     <h3>{{=T('Preview of your sponsored leaf')}}</h3>
-    <div uk-grid class="uk-width-1-2@m">
+    <div uk-grid class="uk-child-width-1-2@m">
       <div id="leaf">
         <canvas id="leafCanvas" onclick="drawPreview()"></canvas>
         <p id="licenceText"><a target = "_blank">{{=T('More information about this image')}}</a></p>
@@ -286,8 +286,8 @@ function drawPreview()
     var hasText = false;
     
     // get sponsor text and extra text
-    var sponsorTextInput = document.getElementById('user_sponsor_name_input')
-    var extraTextInput = document.getElementById('user_more_info_input')
+    var sponsorTextInput = document.getElementById('user_sponsor_name_input');
+    var extraTextInput = document.getElementById('user_more_info_input');
     if (sponsorTextInput.value)
     {
         sponsorText = sponsorTextInput.value
@@ -353,7 +353,7 @@ function drawPreview()
     
     // draw the leaf base again (to wipe out any previous renderings)
     leaf_draw.fullLeafBase(
-        leafContext, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, leafCol, node)
+        leafContext, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, leafCol, node);
     // draw the leaf details
     
     if (image_objects[selected_img])
@@ -479,12 +479,12 @@ function initImages() {
                                    type: 'radio',
                                    checked: ((i==selected_img)?'checked':null),
                                    onclick: 
-   'selected_img = "'+i+'";'+
-   'document.getElementById("user_preferred_image_src_input").value = '+image_objects[i].src+';'+
-   'document.getElementById("user_preferred_image_src_id_input").value = '+image_objects[i].src_id+';'+
-   'document.getElementById("user_nondefault_image_input").value = '+((i==0)?(image_objects[0].already_downloaded?"":"0"):"1")+';'+
-   'leafImageFile.src = "'+image_objects[i].url+'";'+ 
-   'drawPreview();'}), 
+   "selected_img = '" + i + "';"+
+   "document.getElementById('user_preferred_image_src_input').value=" + image_objects[i].src + ";"+
+   "document.getElementById('user_preferred_image_src_id_input').value=" + image_objects[i].src_id + ";"+
+   "document.getElementById('user_nondefault_image_input').value=" + ((i==0)?(image_objects[0].already_downloaded?"''":"'0'"):"'1'")+";"+
+   "leafImageFile.src = '" + image_objects[i].url + "';" + 
+   "drawPreview();"}), 
                     $('<label>', {for: 'r'+i,
                                   class: 'radio',
                                   style: 'width:'+img_size_px+'px;height:'+img_size_px+'px;'+bg_css})
