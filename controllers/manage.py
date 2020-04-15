@@ -15,7 +15,7 @@ def edit_language():
     import os
     import re
     import time
-    from gluon.languages import (read_dict, write_dict)
+    from gluon.languages import (read_dict, write_dict, to_native)
     from gluon.utils import md5_hash
     if len(request.args) == 0:
         raise HTTP(400 , "No language provided") 
@@ -29,8 +29,7 @@ def edit_language():
                 form = SPAN(strings['__corrupted__'], _class='error')
                 return dict(filename=filename, form=form)
         
-            keys = sorted(strings.keys(), lambda x, y: cmp(
-                x.lower(), y.lower()))
+            keys = sorted(strings.keys(), key=lambda x: to_native(x).lower())
             rows = []
             rows.append(H2(T('Original/Translation')))
         
