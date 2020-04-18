@@ -42,7 +42,6 @@ def node_details():
             include_names_in=language,
             image_type=request.vars.get('image_source') or "")
     except:  # E.g. if bad data has been passed in
-        raise
         return {}
 
 def image_details():
