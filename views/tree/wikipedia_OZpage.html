@@ -1,4 +1,29 @@
-{{response.title='OneZoom wikipedia page'}}
+<!DOCTYPE html>
+<html lang="{{=T.accepted_language or 'en'}}">
+<head>
+    <!-- Our own wikipedia page, without any external styling -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge{{=not request.is_local and ',chrome=1' or ''}}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+    .wikipedia-warning, .wikidata-warning {
+        color: black;
+        text-align: center;
+        background-color: yellow;
+    }
+    
+    .wikipage-source {
+        clear:both;
+        text-align: center;
+        background-color: lightgrey;
+    }
+    </style>
+<title>{{=T('OneZoom wikipedia page')}}</title>
+<head>
+  <script type="text/javascript" src="{{=URL('static','js/jquery.min.js')}}"></script>
+  <script>{{include 'embed.js' # ban zooming, right click if necessary, etc.}}</script>
+</head>
+<body>
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{  #note that embedding a remote page and removing links etc is trickier than if it is our own web2py page
     #as we can't override the URL and A helpers. Instead, we parse the html using Jquery and replace links. 
@@ -18,9 +43,7 @@
        restrict_links = 0
     pass
 }}
-{{extend 'embed.html'}}
-
-<div id="wikipage"><div class="ajax-loading-pic" style="height: 100%; display: flex; align-items: center; justify-content: center; background-color: white /* height 100 & bg:white hides the other loading pic */"><div>Obtaining wiki information<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></div></div></div>
+<div id="wikipage"><div class="ajax-loading-pic" style="height: 100%; display: flex; align-items: center; text-align: center; justify-content: center; background-color: white /* height 100 & bg:white hides the other loading pic */"><div>Obtaining wiki information<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></div></div></div>
 
 <script>
 /* this is where we do all the fancy wikipedia parsing stuff */
@@ -205,6 +228,14 @@ function append_wikipage(data) {
   {{if is_testing:}}console.log("Injecting wikipage from " + this.url);{{pass}}
   //double-check that we haven't inserted it while waiting for a previous AJAX call
   if (!this.selector.children().last().hasClass('wiki-content')) {
+    //add classes in wikipage body to the current body - needed for some styling in tables
+    var wikibody = data.match(/<body\s+.*?>/)
+    if (wikibody) {
+        //Jquery won't parse <body>: swap for a <div>
+        wikibody = $.parseHTML(wikibody[0].replace(/<body\s+/, "<div "));
+        $('body').addClass($(wikibody).attr('class'))
+        $('body').attr('dir', $(wikibody).attr('dir'))
+    };
     //convert reponse to html (should throw away <head> and <body> tags)
     var html_to_inject = $('<div class="wiki-content"></div>').append($.parseHTML(data));
     //just make sure we don't have a stray head or body
@@ -230,7 +261,7 @@ function append_wikipage(data) {
     var original_page = this.base_url + 'wiki/' + this.pagetitle;
     html_to_inject.append($('<footer></footer>').addClass('wikipage-source').html('{{=T("This is a summary of ")}} <a href="'+ original_page +'">' + original_page + '</a>'));
     sanitise_links(html_to_inject, this.restrict_links, this.base_url);
-    $('base,meta,link,title,style,script', html_to_inject).remove();
+    $('base,meta,link,title,script', html_to_inject).remove();
     $('div[role="note"]', html_to_inject).remove();
     $('div[role="navigation"]', html_to_inject).remove();
     html_to_inject.children('ul').remove(); //remove lists, e.g. "see also", etc. : Assumes references (to keep) are ordered lists (not always true)
@@ -243,3 +274,5 @@ $(document).ready(function() {
     show_wikipage_for_Qid($('#wikipage'), '{{=wikilang}}', 'Q{{=Qid}}', "{{=XML((sciname or '').replace(r'"', r'\"'))}}", {{=restrict_links}});
 })
 </script>
+</body>
+</html>

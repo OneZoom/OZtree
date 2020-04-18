@@ -358,23 +358,11 @@ font-weight:bold
     background-color: yellow;
 }
 
-// ===== Embedded pages (e.g. wikipedia) ====== //
+// ===== Embedded pages (but not wikipedia) ====== //
 
 body.embedded {
     padding: 0;
     margin: 0 0.3em;
-}
-
-.wikipedia-warning, .wikidata-warning {
-    color: black;
-    text-align: center;
-    background-color: yellow;
-}
-
-.wikipage-source {
-    clear:both;
-    text-align: center;
-    background-color: lightgrey;
 }
 
 .ajax-loading-pic {

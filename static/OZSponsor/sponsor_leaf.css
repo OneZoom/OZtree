@@ -74,7 +74,7 @@ h3, h4 {
 
 #select_pictures {
     flex-grow: 2;
-    max-width: 400px;
+    max-width: calc(350px + 30px + 3em); /* 3 pictures plus padding */
     margin-left:auto;
     margin-right:auto
 }
