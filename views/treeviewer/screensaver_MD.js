@@ -14,8 +14,8 @@
         },
     },
     "tourstop_shared": {
-        "template": "static/tour/tour_template.html",
-        "template_style": "static/tour/tour_template.css",
+        "template": "{{=URL('static', 'tour/tour_template.html')}}",
+        "template_style": "{{=URL('static', 'tour/tour_template.css')}}",
         "update_class": {
             // Don't show any boxes
             "container": {"style": {"display": "None"}}
