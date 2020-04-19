@@ -11,7 +11,7 @@ function preventTouchZoom(event) {
 }
 $(document).ready(function() {
     $("body").on("touchstart touchmove touchend", preventTouchZoom);
-})
+});
 
 {{
 ## Set up and override python functions for embedding
