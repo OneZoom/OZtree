@@ -1,4 +1,22 @@
-<form id="sponsor_form" action="{{=URL('default','paypal', extension='html', vars={'ott':OTT_ID})}}" method="post" {{if request.vars.get('embed'):}}target="_blank"{{pass}} onsubmit="validate_form_via_ajax_reload(this); return false;">
+{{if request.vars.get('embed'):}}
+
+{{form_target = "_blank" # paypal opens in new frame}}
+<script>
+  after_successful_submit = function() {
+    setTimeout(function() {
+      location.replace("{{=XML(URL('default', 'sponsor_replace_page.html', vars={'ott':OTT_ID}))}}")},
+      1000)};
+</script>
+{{else:}}
+{{form_target = "_self" # paypal opens in same window}}
+<script>
+  after_successful_submit = function() {};
+</script>
+{{pass}}
+
+<form id="sponsor_form" method="post" target="{{=form_target}}"
+  action="{{=URL('default','paypal', extension='html', vars={'ott':OTT_ID})}}"
+  onsubmit="validate_form_via_ajax_reload($(this).serializeArray()); return false;">
 
   <div>
     <h3>{{=T('Type the name of the person you want to appear on the leaf')}}</h3>
@@ -159,12 +177,7 @@
     // simply submit the form without firing the onsubmit handler
     var form = document.getElementById("sponsor_form");
     $(form).prop("onsubmit", null).off("submit"); // just to make sure
-{{if request.vars.get('embed'):}}
-    // the submit will open a new tab. The current tab needs changing after submission to say it's been done 
-    setTimeout(function() {
-      location.replace("{{=XML(URL('default', 'sponsor_replace_page.html', vars={'ott':OTT_ID}))}}")},
-      1000);
-{{pass}}
+    after_successful_submit();
     form.submit();
 </script>
 {{elif validated is False:}}
