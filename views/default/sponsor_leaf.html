@@ -47,7 +47,6 @@ response.files.append(URL('static','css/content_pages.css'))
      {{=T('Sponsorship is for a fixed period of %s years; after that, if you wish to renew your sponsorship, you will have the first refusal.') % (4,)}}</p>
 </div>
 
-<div id="sponsor_form_div"></div>
 <script>
 function validate_form_via_ajax_reload(post_object) {
     $.post(
@@ -57,9 +56,9 @@ function validate_form_via_ajax_reload(post_object) {
             $("#sponsor_form_div").html(data);
             initPreview()})
 }
-// Load in the view by hand-crafted AJAX so that we can do the same via form submission
-validate_form_via_ajax_reload({"form_reservation_code": "{{=form_reservation_code}}"});
 </script>
+{{# Load in the view without AJAX so that it works without javascript
+    =LOAD('default', 'sponsor_leaf.load', vars=request.vars, ajax=False, target="sponsor_form_div")}}
 
 <script>
 
@@ -370,4 +369,5 @@ function initPreview() {
 {{pass}}
 };
 
+$(document).ready(initPreview);
 </script>

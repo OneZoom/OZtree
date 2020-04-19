@@ -1,3 +1,9 @@
+{{ # Ensure we only include this once
+try:
+    __include_embed_js
+except NameError:
+    __include_embed_js = True
+}}
 /* When a page is embedded, we assume it is in the tree viewer, and thus needs pinch zoom functionality
  * removing, otherwise the viewer itself will be pinch zoomed. A better way would be to pass this
  * onto the iframe but not the rest of the viewer, e.g. by using http://timmywil.github.io/jquery.panzoom/.
@@ -57,3 +63,4 @@ if request.vars.embed:
   pass
 pass
 }}
+{{pass # end inclusion test}}

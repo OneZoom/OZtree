@@ -1,17 +1,17 @@
 {{if request.vars.get('embed'):}}
-
-{{form_target = "_blank" # paypal opens in new frame}}
-<script>
-  after_successful_submit = function() {
-    setTimeout(function() {
-      location.replace("{{=XML(URL('default', 'sponsor_replace_page.html', vars={'ott':OTT_ID}))}}")},
-      1000)};
-</script>
+    <!-- {{include 'embed.js' # in case this load component is called via AJAX - js not needed in this case}} -->
+    {{form_target = "_blank" # paypal opens in new frame}}
+    <script>
+      after_successful_submit = function() {
+        setTimeout(function() {
+          location.replace("{{=XML(URL('default', 'sponsor_replace_page.html', vars={'ott':OTT_ID}))}}")},
+          1000)};
+    </script>
 {{else:}}
-{{form_target = "_self" # paypal opens in same window}}
-<script>
-  after_successful_submit = function() {};
-</script>
+    {{form_target = "_self" # paypal opens in same window}}
+    <script>
+      after_successful_submit = function() {};
+    </script>
 {{pass}}
 
 <form id="sponsor_form" method="post" target="{{=form_target}}"
