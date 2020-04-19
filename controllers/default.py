@@ -237,6 +237,9 @@ def user():
 
 """ general pages """
 
+def custom_400():
+    return {}
+
 def custom_404():
     return {}
 

@@ -1,0 +1,26 @@
+{{
+response.title='OneZoom: ' + T('bad request')
+response.status = request.vars.code if 'code' in request.vars else 200
+}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
+{{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+    <h1>{{=T('I’m sorry Dave, I’m afraid I can’t do that')}}</h1>
+</div>
+{{end block}}
+
+
+
+<div class="uk-grid-small uk-text-small uk-child-width-1-2@m " uk-grid>
+    <div class = "uk-padding">
+        <h4>{{=T('Something’s not quite right: we haven’t been able to fulfil your request.')}}</p><p>{{=XML(T('If got here by following a link, please %s, otherwise you might want to %s.') % (A('let us know', _href='mailto:mail@onezoom.org?subject=Bad%20link%from%OneZoom%20website'),A('return to the front page', _href=URL('default', 'index'))))}}</h4>
+    </div>
+    <div class = "uk-padding">
+<p><figure class="right">{{=IMG(_src=URL('static','images/page_not_found.jpg'), _alt="Ape puzzle")}}<figcaption><p>{{=A("Gorilla gorilla gorilla", _href=URL('default', 'life/@Gorilla_gorilla', host=True, url_encode=False))}} puzzled too</p><p>{{=A("© Steven Straiton",_href="https://commons.wikimedia.org/wiki/File:Gorilla_Scratching_Head.jpg")}} {{=A(IMG(_src=URL('static','images/by.svg'), _alt="Creative commons attribution 2.0 generic licence"),_href="https://creativecommons.org/licenses/by/2.0/")}}</p></figcaption></figure>
+ </div>
+
+</div>
+
