@@ -608,92 +608,90 @@ def sponsor_leaf():
     elif status == "reserved":
         response.view = request.controller + "/spl_reserved." + request.extension
         return dict(
-            species_name=species_name,
-            the_long_name=the_long_name,
-            release_time=release_time)
+            species_name      = species_name,
+            the_long_name     = the_long_name,
+            release_time      = release_time)
 
-    
+    elif leaf_entry.price is None:
+        response.view = request.controller + "/spl_banned." + request.extension
+        return dict(
+            species_name    = species_name,
+            js_species_name = dumps(species_name),
+            common_name     = common_name,
+            js_common_name  = dumps(common_name.capitalize() if common_name else None),
+            long_name       = long_name,
+            default_image   = default_image)
+
     elif status.startswith("available"):
-        #potentially sponsorable
-        try:
-            # In the leaf table, price is in pence, not a float, to allow binning
-            leaf_price = 0.01*float(leaf_entry.price)
-            # Can sponsor here, so go through to the main sponsor_leaf page
+        # Can sponsor here, so go through to the main sponsor_leaf page
+        form = None
+        validated = None
+        leaf_price = 0.01*float(leaf_entry.price)
+        if request.extension == "load":
+            # This is the real form
+            print(request.vars)
             form = SQLFORM(db.reservations, reservation_row, 
                 fields=[
+                    ## List all fields that will be updated by sponsor leaf
+                    # Writable by the user
                     'e_mail','allow_contact','twitter_name', 'user_sponsor_kind',
                     'user_sponsor_name', 'user_more_info', 'user_donor_title',
                     'user_donor_name', 'user_donor_show', 'user_paid', 'user_message_OZ',
                     'user_nondefault_image', 'user_preferred_image_src',
-                    'user_preferred_image_src_id','user_giftaid'],
+                    'user_preferred_image_src_id','user_giftaid', 'user_sponsor_lang',
+                    # writeable=False -> filled out on validation
+                    'name', 'reserve_time', 'asking_price', 'user_updated_time',
+                    'asking_price', 'user_updated_time', 'sponsorship_duration_days',
+                    'partner_name', 'partner_percentage'
+                    ],
                 deletable = False)
-            if form.process(onvalidation=lambda x: validate_sponsor_leaf(x, leaf_price),
-                            session=None, formname='main_sponsor_form').accepted:
-                if is_testing:
-                    response.flash = 'temp form accepted'
-                reservation_query.update(
-                    name=species_name,
-                    reserve_time=request.now,
-                    user_sponsor_lang = (request.env.http_accept_language or '').lower(),
-                    asking_price=(leaf_price),
-                    user_updated_time=request.now,
-                    sponsorship_duration_days=365*4+1,
-                    partner_name=partner_data.get('partner_identifier'),
-                    partner_percentage=partner_data.get('percentage'))
-                if form.vars.user_sponsor_kind == "by" and not form.vars.user_donor_name:
-                    reservation_query.update(
-                        user_donor_name = form.vars.user_sponsor_name)
-                # now need to do our own other checks
-                v = {'ott':OTT_ID_Varin}
-                if request.vars.get('embed'):
-                    v['embed'] = request.vars.get('embed')
-                redirect(URL("default", "paypal", vars=v))
-        
+            if form.accepts(request.post_vars, None, formname="main_sponsor_form",
+                            onvalidation=lambda x: validate_sponsor_leaf(
+                                x, species_name, leaf_price, partner_data)):
+                validated = True # indicates to follow the form submission to paypal
             elif form.errors:
-                response.flash = 'please check the errors shown in red'
+                validated = False
             else:
                 pass  # Simply show the form
-            return dict(
-                form              = form,
-                id                = reservation_row.id,
-                OTT_ID            = OTT_ID_Varin,
-                EOL_ID            = leaf_entry.get('eol', -1),
-                species_name      = species_name,
-                js_species_name   = dumps(species_name),
-                common_name       = common_name,
-                js_common_name    = dumps(common_name.capitalize() if common_name else None),
-                the_long_name     = the_long_name,
-                iucn_code         = iucn_code,
-                leaf_price        = leaf_price,
-                form_reservation_code=form_reservation_code,
-                percent_crop_expansion=percent_crop_expansion,
-                default_image     = default_image,
-                partner_data      = partner_data,
-                EoL_API_key       = EoL_API_key,
-                max_global_price  = max_global_price,
-                min_global_price  = min_global_price)
-        except TypeError: #leaf_entry.price is None, treat as banned
-            response.view = request.controller + "/spl_banned." + request.extension
-            return dict(
-                species_name=species_name, js_species_name=dumps(species_name),
-                common_name=common_name,
-                js_common_name=dumps(common_name.capitalize() if common_name else None),
-                long_name=long_name, default_image=default_image, user_image=user_image)
+        return dict(
+            form                  = form,
+            validated             = validated,
+            id                    = reservation_row.id,
+            OTT_ID                = OTT_ID_Varin,
+            EOL_ID                = leaf_entry.get('eol', -1),
+            species_name          = species_name,
+            js_species_name       = dumps(species_name),
+            common_name           = common_name,
+            js_common_name        = dumps(common_name.capitalize() if common_name else None),
+            the_long_name         = the_long_name,
+            iucn_code             = iucn_code,
+            leaf_price            = 0.01*float(leaf_entry.price),
+            default_image         = default_image,
+            form_reservation_code = form_reservation_code,
+            percent_crop_expansion= percent_crop_expansion,
+            partner_data          = partner_data,
+            EoL_API_key           = EoL_API_key,
+            max_global_price      = max_global_price,
+            min_global_price      = min_global_price)
         
     else:
         #should never happen
         response.view = request.controller + "/spl_error." + request.extension
         return dict(OTT_ID = OTT_ID_Varin)
 
-def validate_sponsor_leaf(form, leaf_price):
+def validate_sponsor_leaf(form, species_name, leaf_price, partner_data):
     """
-    Do all this as custom validation as some is quite intricate
+    Do all this using custom validation as some is quite intricate
     """
     max_chars = 30
+    
+    # Validate user-input vars
     if len(form.vars.user_sponsor_name or "") == 0:
         form.errors.user_sponsor_name = T("You must enter some sponsor text")
     elif len(form.vars.user_sponsor_name or "") > max_chars:
         form.errors.user_sponsor_name = T("Text too long: max %s characters") % (max_chars, )
+    if form.vars.user_sponsor_kind == "by" and not form.vars.user_donor_name:
+        form.vars.user_donor_name = form.vars.user_sponsor_name
 
     if len(form.vars.user_more_info or "") > max_chars:
         form.errors.user_more_info = T("Text too long: max %s characters") % (max_chars, )
@@ -711,11 +709,21 @@ def validate_sponsor_leaf(form, leaf_price):
         missing_title = not (form.vars.user_donor_title or "").strip()
         if missing_title:
             form.errors.user_donor_title_name = T("We need your title to be able to claim gift aid")
-        if not (form.vars.user_donor_name or "").strip() and form.vars.user_sponsor_kind != 'by':
+        if not (form.vars.user_donor_name or "").strip():
             if missing_title:
                 form.errors.user_donor_title_name = T("We need your name and title to be able to claim gift aid")
             else:
                 form.errors.user_donor_title_name = T("We need your name to be able to claim gift aid")
+
+    # calculate writable=False vars, to insert
+    form.vars.name = species_name
+    form.vars.reserve_time = form.vars.user_updated_time = request.now
+    form.vars.user_sponsor_lang = (request.env.http_accept_language or '').lower()
+    form.vars.asking_price = leaf_price
+    form.vars.sponsorship_duration_days=365*4+1 ## 4 Years
+    form.vars.partner_name=partner_data.get('partner_identifier')
+    form.vars.partner_percentage=partner_data.get('percentage')
+    
 
 def sponsor_leaf_redirect():
     """
@@ -776,7 +784,6 @@ def paypal():
                        '&amount=' + urllib.parse.quote('{:.2f}'.format(row.user_paid))+
                        '&currency_code=GBP')
     except:
-        raise
         error="we couldn't find your leaf sponsorship information."
         return(dict(error=error, ott=request.vars.get('ott') or '<no available ID>'))
     redirect(paypal_url)
