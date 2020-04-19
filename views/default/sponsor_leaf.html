@@ -47,20 +47,19 @@ response.files.append(URL('static','css/content_pages.css'))
      {{=T('Sponsorship is for a fixed period of %s years; after that, if you wish to renew your sponsorship, you will have the first refusal.') % (4,)}}</p>
 </div>
 
-{{# LOAD the sponsor form by hand so that it can be reloaded (if failing validation)
-  #  without reloading the whole page. We do this by hand rather than use the built-in
-  #  web2py functions, so that if validated, we can carry through to the paypal page}}
+<div id="sponsor_form_div"></div>
 <script>
-function validate_form_via_ajax_reload(form_object) {
+function validate_form_via_ajax_reload(post_object) {
     $.post(
         "{{=XML(URL('default', 'sponsor_leaf.load', vars={'ott':OTT_ID}))}}", 
-        $(form_object).serializeArray(),
+        post_object,
         function(data) {
             $("#sponsor_form_div").html(data);
             initPreview()})
 }
+// Load in the view by hand-crafted AJAX so that we can do the same via form submission
+validate_form_via_ajax_reload({"form_reservation_code": "{{=form_reservation_code}}"});
 </script>
-{{=LOAD('default', 'sponsor_leaf.load', vars=request.vars, ajax=False, target="sponsor_form_div")}}
 
 <script>
 
@@ -370,7 +369,5 @@ function initPreview() {
     initImages();
 {{pass}}
 };
-
-$( document ).ready(initPreview);
 
 </script>
