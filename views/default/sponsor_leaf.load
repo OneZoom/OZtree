@@ -94,18 +94,10 @@
       
       <div><label for="user_donor_name_input">{{=T('Your title and name:')}}</label><p>
         
-        <select name="user_donor_title" autocomplete="honorific-prefix" id="user_donor_title_input"  value="{{if (request.vars['user_donor_title']) is not None:}}{{=request.vars['user_donor_title']}}{{pass}}">
-            <option value="   ">   </option>
-            <option value="Mr">Mr</option>
-            <option value="Mrs">Mrs</option>
-            <option value="Miss">Miss</option>
-            <option value="Ms">Ms</option>
-            <option value="Dr">Dr</option>
-            <option value="Prof">Prof</option>
-            <option value="Rev">Rev</option>
-            <option value="Sir">Sir</option>
-            <option value="Lord">Lord</option>
-            <option value="Lady">Lady</option>
+        <select name="user_donor_title" autocomplete="honorific-prefix" id="user_donor_title_input">
+            {{for v in ['   ', 'Mr', 'Mrs', 'Miss', 'Ms', 'Dr', 'Prof', 'Rev', 'Sir', 'Lord', 'Lady']:}}
+            <option value="{{=T(v)}}" {{='selected' if (request.vars['user_donor_title'] == v) else ''}}>{{=T(v)}}</option>            
+            {{pass}}
         </select>
         
         <input type="text" autocomplete="name" id="user_donor_name_input" name = "user_donor_name" size="40"
