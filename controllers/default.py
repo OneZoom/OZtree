@@ -629,7 +629,6 @@ def sponsor_leaf():
         leaf_price = 0.01*float(leaf_entry.price)
         if request.extension == "load":
             # This is the real form
-            print(request.vars)
             form = SQLFORM(db.reservations, reservation_row, 
                 fields=[
                     ## List all fields that will be updated by sponsor leaf
