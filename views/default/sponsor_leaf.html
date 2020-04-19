@@ -58,7 +58,9 @@ function validate_form_via_ajax_reload(post_object) {
 }
 </script>
 {{# Load in the view without AJAX so that it works without javascript
-    =LOAD('default', 'sponsor_leaf.load', vars=request.vars, ajax=False, target="sponsor_form_div")}}
+    vars = {'form_reservation_code': form_reservation_code}
+    vars.update(request.vars)
+    =LOAD('default', 'sponsor_leaf', extension="load", vars=vars, ajax=False, target="sponsor_form_div")}}
 
 <script>
 

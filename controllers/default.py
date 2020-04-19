@@ -235,14 +235,21 @@ def user():
  
     return dict(form=auth())
 
-""" general pages """
+## General pages ##
 
 def custom_404():
     return {}
 
-""" main leaf sponsorship routine """
+## Main leaf sponsorship routines ##
 
 def sponsor_leaf():
+    """
+    The main sponsorship page, which does most of the validation
+    """
+    return sponsor_leaf_check(
+        use_form_data=(request.extension == "load"), form_data_to_db=False)
+    
+def sponsor_leaf_check(use_form_data, form_data_to_db):
     """ 
     Take an open tree ID and from that ...
     1. figure out status of leaf and return the correct page
@@ -350,7 +357,7 @@ def sponsor_leaf():
         except:
             pass
     # initialise other variables that will be passed on to the page
-    species_name = common_name = the_long_name = default_image = None
+    sp_name = common_name = the_long_name = default_image = None
     release_time = 0 #when this will become free, in seconds
    
     try:
@@ -363,11 +370,9 @@ def sponsor_leaf():
         OTT_ID_Varin = int(request.vars.get('ott'))
         leaf_entry = db(db.ordered_leaves.ott == OTT_ID_Varin).select().first()
         common_name = get_common_name(OTT_ID_Varin)
-        species_name = leaf_entry.name
-        long_name = nice_species_name(
-            leaf_entry.name, common_name, html=True, leaf=True, the=False)
-        the_long_name = nice_species_name(
-            leaf_entry.name, common_name, html=True, leaf=True, the=True)
+        sp_name = leaf_entry.name
+        long_name = nice_species_name(sp_name, common_name, html=True, leaf=True, the=False)
+        the_long_name = nice_species_name(sp_name, common_name, html=True, leaf=True, the=True)
     except:
         OTT_ID_Varin = None
         leaf_entry = {}
@@ -442,7 +447,7 @@ def sponsor_leaf():
             reservation_query.update(
                 last_view=request.now,
                 num_views=reservation_row.num_views+1,
-                name=species_name)
+                name=sp_name)
     
             # this may be available (because valid) but could be
             #  sponsored, unverified, reserved or still available  
@@ -494,7 +499,7 @@ def sponsor_leaf():
                         # reserve the leaf because there is no reservetime on record
                         if allow_sponsorship:
                             reservation_query.update(
-                                name=species_name,
+                                name=sp_name,
                                 reserve_time=request.now,
                                 user_registration_id=form_reservation_code)
                     else:
@@ -508,7 +513,7 @@ def sponsor_leaf():
                                 status = "available only to user"
                                 if allow_sponsorship:
                                     reservation_query.update(
-                                        name=species_name,
+                                        name=sp_name,
                                         reserve_time=request.now)
                             else:
                                 status = "reserved"
@@ -518,7 +523,7 @@ def sponsor_leaf():
                             # reserve the leaf because there is no reservetime on record
                             if allow_sponsorship:
                                 reservation_query.update(
-                                    name=species_name,
+                                    name=sp_name,
                                     reserve_time = request.now,
                                     user_registration_id = form_reservation_code)
         #re-do the query since we might have added the row ID now
@@ -553,8 +558,8 @@ def sponsor_leaf():
     elif status == "sponsored":
         response.view = request.controller + "/spl_sponsored." + request.extension
         return dict(
-            species_name      = species_name,
-            js_species_name   = dumps(species_name),
+            species_name      = sp_name,
+            js_species_name   = dumps(sp_name),
             common_name       = common_name,
             js_common_name    = dumps(common_name.capitalize() if common_name else None),
             long_name         = long_name,
@@ -567,7 +572,7 @@ def sponsor_leaf():
 
     elif status == "invalid":
         response.view = request.controller + "/spl_invalid." + request.extension
-        return dict(OTT_ID=OTT_ID_Varin, species_name=species_name)
+        return dict(OTT_ID=OTT_ID_Varin, species_name=sp_name)
 
     elif not allow_sponsorship:
         if status.startswith("available"):
@@ -575,9 +580,9 @@ def sponsor_leaf():
         else:
             response.view = request.controller + "/spl_elsewhere_not." + request.extension
         return dict(
-            js_species_name = dumps(species_name),
+            js_species_name = dumps(sp_name),
             js_common_name  = dumps(common_name.capitalize() if common_name else None),
-            species_name    = species_name,
+            species_name    = sp_name,
             the_long_name   = the_long_name,
             iucn_code       = iucn_code,
             default_image   = default_image,
@@ -587,47 +592,48 @@ def sponsor_leaf():
         if status == "unverified waiting for payment":
             response.view = request.controller + "/spl_waitpay." + request.extension    
             return dict(
-                species_name=species_name,
+                species_name=sp_name,
                 the_long_name=the_long_name,
                 unpaid_time_limit_hours= int(unpaid_time_limit/60.0/60.0))
         else:
             response.view = request.controller + "/spl_unverified." + request.extension
-            return dict(species_name = species_name)
+            return dict(species_name = sp_name)
 
     elif status == "banned":
         response.view = request.controller + "/spl_banned." + request.extension
         return dict(
-            species_name=species_name,
-            js_species_name=dumps(species_name),
-            common_name=common_name,
-            js_common_name=dumps(common_name.capitalize() if common_name else None),
-            long_name=long_name,
-            default_image=default_image,
-            user_image=user_image)
+            species_name    = sp_name,
+            js_species_name = dumps(sp_name),
+            common_name     = common_name,
+            js_common_name  = dumps(common_name.capitalize() if common_name else None),
+            long_name       = long_name,
+            default_image   = default_image,
+            user_image      = user_image)
 
     elif status == "reserved":
         response.view = request.controller + "/spl_reserved." + request.extension
         return dict(
-            species_name      = species_name,
-            the_long_name     = the_long_name,
-            release_time      = release_time)
+            species_name    = sp_name,
+            the_long_name   = the_long_name,
+            release_time    = release_time)
 
     elif leaf_entry.price is None:
         response.view = request.controller + "/spl_banned." + request.extension
         return dict(
-            species_name    = species_name,
-            js_species_name = dumps(species_name),
+            species_name    = sp_name,
+            js_species_name = dumps(sp_name),
             common_name     = common_name,
             js_common_name  = dumps(common_name.capitalize() if common_name else None),
             long_name       = long_name,
             default_image   = default_image)
 
     elif status.startswith("available"):
+        response.view = request.controller + "/sponsor_leaf." + request.extension
         # Can sponsor here, so go through to the main sponsor_leaf page
         form = None
         validated = None
-        leaf_price = 0.01*float(leaf_entry.price)
-        if request.extension == "load":
+        price = 0.01*float(leaf_entry.price)
+        if use_form_data:
             # This is the real form
             form = SQLFORM(db.reservations, reservation_row, 
                 fields=[
@@ -644,9 +650,12 @@ def sponsor_leaf():
                     'partner_name', 'partner_percentage'
                     ],
                 deletable = False)
-            if form.accepts(request.post_vars, None, formname="main_sponsor_form",
-                            onvalidation=lambda x: validate_sponsor_leaf(
-                                x, species_name, leaf_price, partner_data)):
+            if form.accepts(
+                    request.vars, # use both GET + POST vars: GET vars passed when accessed via LOAD
+                    session=None,
+                    formname="main_sponsor_form",
+                    dbio=form_data_to_db,
+                    onvalidation=lambda x: valid_spons(x, sp_name, price, partner_data)):
                 validated = True # indicates to follow the form submission to paypal
             elif form.errors:
                 validated = False
@@ -658,13 +667,13 @@ def sponsor_leaf():
             id                    = reservation_row.id,
             OTT_ID                = OTT_ID_Varin,
             EOL_ID                = leaf_entry.get('eol', -1),
-            species_name          = species_name,
-            js_species_name       = dumps(species_name),
+            species_name          = sp_name,
+            js_species_name       = dumps(sp_name),
             common_name           = common_name,
             js_common_name        = dumps(common_name.capitalize() if common_name else None),
             the_long_name         = the_long_name,
             iucn_code             = iucn_code,
-            leaf_price            = 0.01*float(leaf_entry.price),
+            price                 = 0.01*float(leaf_entry.price),
             default_image         = default_image,
             form_reservation_code = form_reservation_code,
             percent_crop_expansion= percent_crop_expansion,
@@ -678,12 +687,59 @@ def sponsor_leaf():
         response.view = request.controller + "/spl_error." + request.extension
         return dict(OTT_ID = OTT_ID_Varin)
 
-def validate_sponsor_leaf(form, species_name, leaf_price, partner_data):
+
+def sponsor_pay():
+    """
+    Actually save the payment details in the db, and then redirect to a payments system, 
+    e.g. paypal
+    """
+    result = sponsor_leaf_check(use_form_data=True, form_data_to_db=True)
+    if not result.get('validated', None):
+        # Keep trying to validate, using the sponsor_leaf views
+        return result
+    else:
+        # Jump out to paypal
+        db_saved = result['form'].vars
+        try:
+            # redirect the user to a paypal page that (if completed) triggers paypal to then visit
+            # an OZ page, confirming payment: this is called an IPN. Details in pp_process_post.html
+            try:
+                paypal_url = myconf.take('paypal.url')
+                if not paypal_url:
+                    raise ValueError('blank paypal config')
+            except:
+                paypal_url = 'https://www.sandbox.paypal.com'
+            try:
+                paypal_notify_string = 'notify_url=' + myconf.take('paypal.notify_url') + '/pp_process_post.html/'+str(db_saved.OTT_ID)
+            except:
+                paypal_notify_string = ''
+            paypal_url += (
+                '/cgi-bin/webscr'
+                '?cmd=_donations'
+                '&business=mail@onezoom.org'
+                '&item_name=Donation+to+OneZoom+({sp_name})'
+                '&item_number=leaf+sponsorship+-+{sp_name}'
+                '&return={ret_url}'
+                '{notify_string}'
+                '&amount={amount}'
+                '&currency_code=GBP'.format(
+                     sp_name=urllib.parse.quote(db_saved.name),
+                     ret_url=URL("sponsor_thanks.html", scheme=True, host=True),
+                     notify_string=paypal_notify_string,
+                     amount=urllib.parse.quote('{:.2f}'.format(db_saved.user_paid))))
+            redirect(paypal_url)
+        except:
+            raise
+            error="we couldn't find your leaf sponsorship information."
+            response.view = request.controller + "/sponsor_pay." + request.extension
+            return(dict(error=error, ott=request.vars.get('ott') or '<no available ID>'))
+
+
+def valid_spons(form, species_name, price_pounds, partner_data):
     """
     Do all this using custom validation as some is quite intricate
     """
     max_chars = 30
-    
     # Validate user-input vars
     if len(form.vars.user_sponsor_name or "") == 0:
         form.errors.user_sponsor_name = T("You must enter some sponsor text")
@@ -699,8 +755,8 @@ def validate_sponsor_leaf(form, species_name, leaf_price, partner_data):
         form.errors.user_sponsor_kind = T("Sponsorship can only be 'by' or 'for'")
 
     try:
-        if float(form.vars.user_paid) < leaf_price:
-            form.errors.user_paid = T("Please donate at least £%s to sponsor this leaf, or you could simply choose another leaf") % ("{:.2f}".format(leaf_price), )
+        if float(form.vars.user_paid) < price_pounds:
+            form.errors.user_paid = T("Please donate at least £%s to sponsor this leaf, or you could simply choose another leaf") % ("{:.2f}".format(price_pounds), )
     except:
         form.errors.user_paid = T("Please enter a valid number")
     
@@ -718,7 +774,7 @@ def validate_sponsor_leaf(form, species_name, leaf_price, partner_data):
     form.vars.name = species_name
     form.vars.reserve_time = form.vars.user_updated_time = request.now
     form.vars.user_sponsor_lang = (request.env.http_accept_language or '').lower()
-    form.vars.asking_price = leaf_price
+    form.vars.asking_price = price_pounds
     form.vars.sponsorship_duration_days=365*4+1 ## 4 Years
     form.vars.partner_name=partner_data.get('partner_identifier')
     form.vars.partner_percentage=partner_data.get('percentage')
@@ -736,13 +792,14 @@ def sponsor_replace_page():
     """
     try:
         OTT_ID_Varin = int(request.vars.get('ott'))
-        row = db(db.reservations.OTT_ID == OTT_ID_Varin).select(db.reservations.OTT_ID,
-                                                                db.reservations.name,
-                                                                db.reservations.user_sponsor_kind,
-                                                                db.reservations.user_sponsor_name,
-                                                                db.reservations.user_more_info,
-                                                                db.reservations.user_paid,
-                                                                db.reservations.PP_transaction_code).first()
+        row = db(db.reservations.OTT_ID == OTT_ID_Varin).select(
+            db.reservations.OTT_ID,
+            db.reservations.name,
+            db.reservations.user_sponsor_kind,
+            db.reservations.user_sponsor_name,
+            db.reservations.user_more_info,
+            db.reservations.user_paid,
+            db.reservations.PP_transaction_code).first()
         if row is None:
             raise IndexError(T("Could not match against a row in the database"))
         return(dict(data=row))
@@ -750,42 +807,6 @@ def sponsor_replace_page():
         raise_incorrect_url(URL('index', scheme=True, host=True), T("Error - you gave no OTT number.") + " " + T("Go back to the home page"))
     except Exception as e:
         raise_incorrect_url(URL('index', scheme=True, host=True), str(e) + ". " + T("Go back to the home page"))
-    
-def paypal():
-    """
-    redirects the user to a paypal page that (if completed) should trigger paypal to in turn
-    visit an OZ page (pp_process_post.html) to confirm the payment has gone through - this is called an IPN
-    If there are problems, https://developer.paypal.com/docs/classic/ipn/integration-guide/IPNOperations/
-    gives details for how to debug.
-    """
-    error=""
-    try:
-        OTT_ID_Varin = int(request.vars.get('ott'))
-        row = db((db.reservations.OTT_ID == OTT_ID_Varin) & ((db.reservations.PP_transaction_code == None) | (db.reservations.PP_transaction_code == 'reserved'))).select(db.reservations.name, db.reservations.user_paid).first()
-        if row is None or row.user_paid is None or row.user_paid < 0:
-            raise IndexError("Could not match against a row in the database")
-        try:
-            paypal_url = myconf.take('paypal.url')
-            if not paypal_url:
-                raise ValueError('blank paypal config')
-        except:
-            paypal_url = 'https://www.sandbox.paypal.com'
-        try:
-            paypal_notify_string = '&notify_url=' + myconf.take('paypal.notify_url') + '/pp_process_post.html/'+str(OTT_ID_Varin)
-        except:
-            paypal_notify_string = ''
-        paypal_url += ('/cgi-bin/webscr' +
-                       '?cmd=_donations&business=mail@onezoom.org' +
-                       '&item_name=Donation+to+OneZoom+('+urllib.parse.quote(row.name)+')'+
-                       '&item_number=leaf+sponsorship+-+'+urllib.parse.quote(row.name)+
-                       '&return=' + URL("sponsor_thanks.html", scheme=True, host=True) +
-                       paypal_notify_string +
-                       '&amount=' + urllib.parse.quote('{:.2f}'.format(row.user_paid))+
-                       '&currency_code=GBP')
-    except:
-        error="we couldn't find your leaf sponsorship information."
-        return(dict(error=error, ott=request.vars.get('ott') or '<no available ID>'))
-    redirect(paypal_url)
 
 # TODO enabling edits and intelligent behaviour if a logged in user goes back to their own leaf    
 
@@ -1188,11 +1209,11 @@ def list_sponsorable_children():
 
 def pp_process_post():
     """
-    Should only ever be visited by paypal, to confirm the payment has been made. For debugging problems, see
+    Only visited by paypal, to confirm the payment has been made. For debugging problems, see
     https://developer.paypal.com/docs/classic/ipn/integration-guide/IPNOperations/
      
-    If paypal.save_to_tmp_file_dir in appconfig.ini is e.g. '/var/tmp' then save a temp file called
-    www.onezoom.org_paypal_OTTXXX_TIMESTAMPmilliseconds.json to that dir
+    If paypal.save_to_tmp_file_dir in appconfig.ini is e.g. '/var/tmp' then save a temp
+    file called `www.onezoom.org_paypal_OTTXXX_TIMESTAMPmilliseconds.json` to that dir
     
     If called with no args, return nothing, so as not to excite interest
     """
