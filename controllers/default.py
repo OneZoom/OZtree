@@ -443,12 +443,13 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
                     last_view=request.now,
                     num_views=1)
         else:
-            # there is already a row in the database so update
-            reservation_query.update(
-                last_view=request.now,
-                num_views=reservation_row.num_views+1,
-                name=sp_name)
-    
+            # there is already a row in the database so update if this is the main visit
+            if request.function == 'sponsor_leaf' and request.extension == "html":
+                reservation_query.update(
+                    last_view=request.now,
+                    num_views=reservation_row.num_views+1,
+                    name=sp_name)
+
             # this may be available (because valid) but could be
             #  sponsored, unverified, reserved or still available  
             # easiest cases to rule out are relating sponsored and unverified cases.
