@@ -15,7 +15,7 @@
 {{pass}}
 
 <form id="sponsor_form" method="post" target="{{=form_target}}"
-  action="{{=URL('default','paypal', extension='html', vars={'ott':OTT_ID})}}"
+  action="{{='sponsor_pay.html?ott=' + str(int(OTT_ID))}}"
   onsubmit="validate_form_via_ajax_reload($(this).serializeArray()); return false;">
 
   <div>
@@ -43,8 +43,8 @@
     
     </p>
     
-    <div><label for="user_paid_input">{{=T('Your donation amount (£%s or greater for this leaf):') % (str(int(leaf_price)) if leaf_price.is_integer() else '{:f}'.format(leaf_price))}} </label><p><input type="number" step="0.01" id="user_paid_input" name = "user_paid"
-        value="{{if (request.vars['user_paid']) is not None:}}{{=request.vars['user_paid']}}{{else:}}{{if(leaf_price.is_integer()):}}{{=str(int(leaf_price))}}{{else:}}{{='{:.2f}'.format(leaf_price)}}{{pass}}{{pass}}" />
+    <div><label for="user_paid_input">{{=T('Your donation amount (£%s or greater for this leaf):') % ('{:.2f}'.format(price))}} </label><p>£<input type="number" step="0.01" id="user_paid_input" name = "user_paid"
+        value="{{if (request.vars['user_paid']) is not None:}}{{=request.vars['user_paid']}}{{else:}}{{='{:.2f}'.format(price).replace('.00','')}}{{pass}}" />
         <em class = "error_text"> {{if (form.errors["user_paid"]) is not None:}}{{=form.errors["user_paid"]}}{{pass}} </em></p></div>
     <p class="singlerow extra_info">
     {{=T('The minimum donation required for other leaves ranges from from £%s to £%s depending on popularity. ') % (
@@ -52,7 +52,7 @@
         "{:.2f}".format(max_global_price).replace(".00", ""))}}
     
     <!-- show alternative if leaf is possibly too expensive-->
-    {{if leaf_price>20:}}
+    {{if price>25:}}
     
     {{if partner_data:}}
     <!-- pass down URL vars so future sponsorships are still for the same partner -->
