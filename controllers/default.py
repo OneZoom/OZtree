@@ -711,7 +711,7 @@ def sponsor_pay():
             except:
                 paypal_url = 'https://www.sandbox.paypal.com'
             try:
-                paypal_notify_string = 'notify_url=' + myconf.take('paypal.notify_url') + '/pp_process_post.html/'+str(db_saved.OTT_ID)
+                paypal_notify_string = '&notify_url=' + myconf.take('paypal.notify_url') + '/pp_process_post.html/'+str(db_saved.OTT_ID)
             except:
                 paypal_notify_string = ''
             paypal_url += (
