@@ -55,10 +55,10 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     <div class='icon-container'>
       <a uk-icon="icon: compass"></a>
     </div>
-    <span class='button-label top-border top-right-radius top-padding'>{{=T('Location')}}</span>
     <div uk-dropdown="pos: right-bottom; delay-hide: 1000; boundary: #controlButtons; boundary-align: true" id="locationDropdown">
         <ol class="location-list"></ol>
     </div>
+    <span class='button-label top-border top-right-radius top-padding'>{{=T('Location')}}</span>
   </li>
   <li id="inButton" class="uk-visible@s">
     <div class='icon-container'>
