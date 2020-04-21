@@ -538,11 +538,11 @@ db.define_table('reservations',
     Field('admin_comment', type = 'text'),            
     # comments for any purpose edited by us  
     Field('sponsorship_duration_days',type = 'integer', writable=False),
-    # the length in days gained by the donation            
-    Field('sponsorship_expires_after_days',type = 'integer', writable=False),
-    # the expiry date in days beyond verified time - different from sponsorship_duration_days
-    # because renewals will comprise the new sponsorship_duration plus any left over from
-    # the previous sponsorship amount
+    # the length in days gained by the most recent donation
+    Field('sponsorship_ends',type = 'datetime', writable=False),
+    # the expiry date, set during validation. For new sponsorships, this will be the verified_time plus
+    # the sponsorship_duration_days. For renewed leaves, the difference between sponsorship_ends and
+    # verified_time can be 2 or 3 (or more) times the sponsorship_duration_days
     Field('asking_price', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100)), writable=False), 
     # price in pounds - good idea to hang on to this for accounting purposes and verification the numbers add up later
     Field('partner_percentage', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100)), writable=False), 
