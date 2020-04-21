@@ -45,19 +45,18 @@
           margin: 0 auto;
         }
 
-        .oz-slider-popularplaces li {
+        .oz-slider-popularplaces li figcaption {
           transition: opacity 0.1s;
           opacity: 0;
         }
-        .oz-slider-popularplaces li.uk-active {
-          z-index: 1;
+        .oz-slider-popularplaces li.uk-active figcaption {
           opacity: 1;
           transition: opacity 0.3s;
         }
-
-        .oz-slider-popularplaces img {
-          margin: 1rem 0;
-          transform: scale(1.2);
+        .oz-slider-popularplaces li img {
+          margin: 50% 0;
+          transform: scale(1);
+          transition: transform 0.1s;
         }
         </style>
         <div class="uk-position-relative uk-width-5-6 uk-container-center oz-slider-popularplaces" uk-slider="center: true; index: 1">
@@ -73,6 +72,37 @@
           <a class="uk-position-top-right oz-slider-arrow oz-slider-arrow-right" style="height: 127px" href="#" uk-slider-item="next"></a>
         </div>
       </div>
+      <script>
+       function popularplaces_recalc() {
+           var all_items, mid_point, i;
+
+           // Clear styling from inactive items
+           all_items = Array.prototype.slice.call(document.querySelectorAll('.oz-slider-popularplaces ul.uk-slider-items li:not(.uk-active)'));
+           for (i = 0; i < all_items.length; i++) {
+               all_items[i].style['z-index'] = '';
+               all_items[i].querySelector('img').style.transform = '';
+           }
+
+           // Get active items, sorted by CSS & HTML order
+           all_items = Array.prototype.slice.call(document.querySelectorAll('.oz-slider-popularplaces ul.uk-slider-items li.uk-active'));
+           all_items.sort(function (a, b) {
+               return parseInt(getComputedStyle(a).order, 10) - parseInt(getComputedStyle(b).order, 10);
+           });
+
+           // Arrange around midpoint
+           mid_point = (all_items.length / 2) - 0.5;
+           for (i = 0; i < all_items.length; i++) {
+               all_items[i].style['z-index'] = all_items.length - Math.abs(Math.floor(i - mid_point));
+               all_items[i].querySelector('img').style.transform = 'scale(' + (1.2 + (mid_point - Math.abs(i - mid_point)) * 0.8/mid_point) + ')';
+           }
+       };
+       // Fire both before and after so we look like we're working at the same time as the scroll
+       // TODO: Listen to itemshow, assume that the item that isn't the new one is about to be hidden?
+       document.querySelector('.oz-slider-popularplaces').addEventListener('itemshow', popularplaces_recalc);
+       document.querySelector('.oz-slider-popularplaces').addEventListener('itemshown', popularplaces_recalc);
+       // TODO: Event that happens after init finishing?
+       setTimeout(popularplaces_recalc, 100);
+      </script>
 
     </div>
   </div>
