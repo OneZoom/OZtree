@@ -34,6 +34,8 @@ body.tree-viewer {
     image-rendering:-o-crisp-edges;
     image-rendering:-webkit-optimize-contrast;
     -ms-interpolation-mode: nearest-neighbor;
+
+    touch-action: none; /* Don't let browser zoom canvas, we handle these events */
 }
 
 #UI #loading_spinner {
