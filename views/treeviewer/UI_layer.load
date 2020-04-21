@@ -28,7 +28,9 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
               </div><input class="uk-search-input" type="search" value="" readonly />\
             </div><div class="searchinput"><div class="icon-beside-input">\
                 <button   class="spinner" uk-spinner="ratio:0.5"></button>\
-                <button   class="main-icon" uk-icon="icon: search"></button>\
+                <button   class="uk-icon main-icon">\
+                  <img src="{{=URL('static/images', 'oz-logo-icon-darkbg.svg')}}" alt="" />\
+                </button>\
               </div><input class="uk-search-input" type="search" placeholder="{{=T('Trace a path to...')}}" />\
             </div><div uk-dropdown="pos: bottom-left;  offset: 1; mode: click" class="search_dropdown" class="selectable uk-overflow-auto">\
               <div class="no_results">{{=T("No results found")}}</div>\
