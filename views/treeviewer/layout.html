@@ -308,7 +308,7 @@ function update_location_menu(loc_root) {
                 {{if is_testing:}}console.log("Small screen width detected, so closing location box before jump");{{pass}}
                 $("#locationDropdown").hide();
               };
-              onezoom.controller.fly_on_tree_to($(this).data('locationCode'));
+              onezoom.controller.default_move_to($(this).data('locationCode'));
             })
             .append(my_location_names[i] + "<br>(" + onezoom.utils.number_convert(my_location_richness[i]) + ")")
         )
