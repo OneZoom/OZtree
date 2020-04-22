@@ -117,6 +117,7 @@ function setup_page_by_state(state) {
   })
   .catch(function (error) {
     tree_state.url_parsed = true;
+    console.error("Failed to setup_page_by_state:", error);
     //TODO: separate out promise reject and error handling.
     controller.reset();
     const ozId = data_repo.ott_id_map[config.home_ott_id]
