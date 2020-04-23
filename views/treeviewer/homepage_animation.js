@@ -14,7 +14,7 @@
    * Each tour stop could overwrite the properties independently
    */
   "tourstop_shared": {
-      "template": {{=URL("default","homepage_animation_template.html")}},
+      "template": "{{=URL('default','homepage_animation_template.html')}}",
       // "template_style" shouldn't be needed, as the css will be in the frontpage
       "hide_tourstop_style": {"remove_class": "active"},
       "show_tourstop_style": {"add_class": "active"},
