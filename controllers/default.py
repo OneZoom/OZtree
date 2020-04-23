@@ -54,7 +54,7 @@ def index():
         if r.image_url:
             images[key] = {'url': r.image_url}
         if r.tour_identifier:
-            hrefs[key] = '/life/' + r.tour_identifier
+            hrefs[key] = URL('life/' + r.tour_identifier)
             title = db(db.tours.identifier == r.tour_identifier).select(db.tours.name).first()
             text_titles[key] = title.name if title else r.tour_identifier
         else:
@@ -93,12 +93,12 @@ def index():
     sponsored_by_ott = {}
     for r in sponsored_rows:
         sponsored_by_ott[r.OTT_ID] = r
-        hrefs[r.OTT_ID] = '/life/@=%d' % r.OTT_ID
+        hrefs[r.OTT_ID] = URL('life/@=%d' % r.OTT_ID, url_encode=False)
         spon_leaf_otts.add(r.OTT_ID)
         titles[r.OTT_ID] = r.name
     for ott, key in startpoints_ott_map.items():
         if key not in hrefs:
-            hrefs[key] = '/life/@=%d' % ott
+            hrefs[key] = URL('life/@=%d' % ott, url_encode=False)
     
     # Names
     st_leaf_otts, st_node_otts, has_vernacular = set(), set(), set()
