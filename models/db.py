@@ -438,7 +438,7 @@ db.define_table('reservations',
                              
     Field('user_id', type = 'reference auth_user' , requires=IS_EMPTY_OR(IS_IN_DB(db, 'auth_user.id','%(first_name)s %(last_name)s'))),
     # points to user table - built in      
-    Field('e_mail', type = 'text',requires=IS_EMPTY_OR(IS_EMAIL())),
+    Field('e_mail', type = 'string', length=200, requires=IS_EMPTY_OR(IS_EMAIL())),
     Field('twitter_name', type = 'text'),
     Field('allow_contact', type = boolean),
     # in case they don't want to log in to process this.            
