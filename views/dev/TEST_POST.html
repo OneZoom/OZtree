@@ -1,7 +1,7 @@
 {{response.title='OneZoom: Test posting'}}
 {{extend 'layout.html'}}
 <h1>Test posting like paypal does</h1>
-<form name="myform" action="pp_process_post.html/773491" method="POST">
+<form name="myform" action={{=URL('default','pp_process_post.html/773491')}} method="POST">
 This should send a 'post' request to test_post.html with
 <pre>&lt;input type="hidden" name="var1" id="hiddenField" value="my value"&gt;</pre>
 <input type="hidden" name="first_name" value="Yan & James">
@@ -13,7 +13,7 @@ This should send a 'post' request to test_post.html with
 <input type="hidden" name="address_country" value="Britain">
 <input type="hidden" name="payer_email" value="yan@pixie.org.uk">
 <input type="hidden" name="mc_gross" value="200">
-<input type="hidden" name="auth_id" value="TransactionCode1234">
+<input type="hidden" name="txn_id" value="TransactionCode1234">
 <input type="hidden" name="payment_date" value="Paypal sale time">
 
 <input type="submit" value="Submit">

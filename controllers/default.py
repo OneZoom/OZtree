@@ -1221,6 +1221,7 @@ def pp_process_post():
     
     If called with no args, return nothing, so as not to excite interest
     """
+    
     if len(request.args) == 0:
         return {}
     try:
@@ -1303,7 +1304,7 @@ def pp_process_post():
     ##check that r contains "VERIFIED"
     
     if err:
-        raise HTTP(400, e.message) #should flag up to PP that there is a problem with this transaction
+        raise HTTP(400, err) #should flag up to PP that there is a problem with this transaction
     else:
         return(dict(vars=request.vars, args=request.args))
 
