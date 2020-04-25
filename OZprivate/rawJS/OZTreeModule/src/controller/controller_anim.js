@@ -5,9 +5,16 @@ import data_repo from '../factory/data_repo';
 import * as position_helper from '../position_helper';
 import config from '../global_config';
 
+class UserInterruptError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "UserInterruptError";
+  }
+}
+
 /**
- * This function would firstly collects nodes and leaves which are on or near the main branch in the fly animation.
- * Then it will fetch metadata of these nodes or leaves and return resolve when it's done.
+ * This function collects nodes and leaves which are on or near the main branch in the fly animation,
+ * animation, then fetches metadata of these nodes or leaves, returning resolve when done.
  * @param {node} root controller.root
  * @return {Promise}
  * -- resolve when metadata is returned.
@@ -167,7 +174,7 @@ export default function (Controller) {
 
     return new Promise((resolve, reject) => {
       position_helper.perform_actual_fly(
-        this, into_node, speed, accel_type || 'linear', resolve, () => reject(new Error('Fly is interrupted')));
+        this, into_node, speed, accel_type || 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
     })
   }
     
@@ -246,7 +253,7 @@ export default function (Controller) {
         if (src_OZid == null) {
             // Find largest visible node: use this as our starting point
             let top_node = get_largest_visible_node(this.root, function(node) { return node.ott; }) || this.root;
-            src_OZid = (top_node.is_leaf? -1 : -1) * top_node.metacode;
+            src_OZid = (top_node.is_leaf? -1 : 1) * top_node.metacode;
         } else {
             // Move to start location
             p = p.then(function () {

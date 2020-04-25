@@ -2,6 +2,7 @@ import { parse_query } from './utils';
 import data_repo from '../factory/data_repo';
 import api_manager from '../api/api_manager';
 import get_controller from '../controller/controller';
+import UserInterruptError from '../controller/controller_anim';
 import tree_state from '../tree_state';
 import { global_button_action, click_on_button_cb } from '../button_manager';
 import config from '../global_config';
@@ -117,7 +118,9 @@ function setup_page_by_state(state) {
   })
   .catch(function (error) {
     tree_state.url_parsed = true;
+    if (error instanceof UserInterruptError) return true; // Temporary hack around  https://github.com/OneZoom/OZtree/issues/231#issuecomment-617719250
     //TODO: separate out promise reject and error handling.
+    console.error("Failed to setup_page_by_state:", error);
     controller.reset();
     const ozId = data_repo.ott_id_map[config.home_ott_id]
     if (ozId) {
