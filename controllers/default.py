@@ -704,6 +704,7 @@ def sponsor_pay():
     else:
         # Jump out to paypal
         db_saved = result['form'].vars
+        OTT_ID_str = str(int(result['OTT_ID'])) # this is the only field not in the form
         try:
             # redirect the user to a paypal page that (if completed) triggers paypal to then visit
             # an OZ page, confirming payment: this is called an IPN. Details in pp_process_post.html
@@ -714,7 +715,9 @@ def sponsor_pay():
             except:
                 paypal_url = 'https://www.sandbox.paypal.com'
             try:
-                paypal_notify_string = '&notify_url=' + myconf.take('paypal.notify_url') + '/pp_process_post.html/'+str(db_saved.OTT_ID)
+                paypal_notify_string = (
+                    '&notify_url=' + myconf.take('paypal.notify_url')
+                    + '/pp_process_post.html/' + OTT_ID_str)
             except:
                 paypal_notify_string = ''
             paypal_url += (
