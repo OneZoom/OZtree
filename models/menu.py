@@ -66,20 +66,6 @@ response.menu = [
                  ]
 
 
-"""(T('Donor thanks'), False, URL('default' , 'donor_list.html')),"""
-
-
-"""(T('More'), False, None , [
-                           (T('Past milstones'), False , URL('default' , 'milestones') ),
-                            (T('Future plans'), False , URL('default' , 'future')),
-                           (T('Other trees'), False , URL('default' , 'tree_index')),
-                           (T('Images and videos'), False , URL('default' , 'gallery')),
-                           (T('Developer tools'), False , URL('default' , 'developer')),
-                           (T('Terms of use'), False , URL('default' , 'terms.html#useterms')),
-                           ]), """
-
-
-
 DEVELOPMENT_MENU = False
 
 #########################################################################
