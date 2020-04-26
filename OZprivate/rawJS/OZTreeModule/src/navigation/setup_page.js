@@ -118,7 +118,11 @@ function setup_page_by_state(state) {
   })
   .catch(function (error) {
     tree_state.url_parsed = true;
-    if (error instanceof UserInterruptError) return true; // Temporary hack around  https://github.com/OneZoom/OZtree/issues/231#issuecomment-617719250
+    // Temporary hack around  https://github.com/OneZoom/OZtree/issues/231#issuecomment-617719250  
+    if ((error instanceof UserInterruptError) ||
+        (error.name === "UserInterruptError")) { // instanceof doesn't always work in bable 6
+            return true;
+    }
     //TODO: separate out promise reject and error handling.
     console.error("Failed to setup_page_by_state:", error);
     controller.reset();
