@@ -1,14 +1,16 @@
 {{include 'link_modifier.html'}}
 <!-- This contains all the overlay on top of the OneZoom canvas. It can be reloaded in different languages -->
 
-{{if not request.vars.no_oz_logo:}}<div class="logo uk-navbar-item">{{#The logo *never* opens a new tab (but it can be removed)}}{{=no_tab_A(IMG(_src=URL('static','images/OZ_logo5_grey3.png')), _href=URL('default','index', extension=False), _id="OZ-logo")}}</div>{{pass}}
+{{if not request.vars.no_oz_logo:}}<div class="logo uk-navbar-item">{{#The logo *never* opens a new tab (but it can be removed)}}{{=no_tab_A(IMG(_src=URL('static','images/oz-logo-1line-mono-dark.svg')), _href=URL('default','index', extension=False), _id="OZ-logo")}}</div>{{pass}}
 {{if request.vars.partner_logo:}}<div class="logo uk-navbar-item">{{if request.vars.partner_url:}}{{=A(IMG(_src=request.vars.partner_logo), _href=request.vars.partner_url)}}{{else:}}{{=SPAN(IMG(_src=request.vars.partner_logo))}}{{pass}}</div>{{pass}}
 <div class="uk-navbar-item" id="searchnav">
   <div id="search-basic">
     <div class="searchbox uk-search uk-search-default" id="search_form_basic">
       <div class="searchinput"><div class="icon-beside-input">
           <button   class="spinner" uk-spinner="ratio:0.5"></button>
-          <button   class="main-icon" uk-icon="icon: search"></button>
+          <button   class="uk-icon main-icon">
+            <img src="{{=URL('static/images', 'oz-logo-icon-darkbg.svg')}}" alt="" />
+          </button>
         </div><input class="uk-search-input" type="search" placeholder="{{=T('Search all life...')}}" /></div>
       <div uk-dropdown="pos: bottom-left; offset: 1" class="search_dropdown selectable uk-overflow-auto">
         <div class="no_results">{{=T("No results found")}}</div>
@@ -26,7 +28,9 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
               </div><input class="uk-search-input" type="search" value="" readonly />\
             </div><div class="searchinput"><div class="icon-beside-input">\
                 <button   class="spinner" uk-spinner="ratio:0.5"></button>\
-                <button   class="main-icon" uk-icon="icon: search"></button>\
+                <button   class="uk-icon main-icon">\
+                  <img src="{{=URL('static/images', 'oz-logo-icon-darkbg.svg')}}" alt="" />\
+                </button>\
               </div><input class="uk-search-input" type="search" placeholder="{{=T('Trace a path to...')}}" />\
             </div><div uk-dropdown="pos: bottom-left;  offset: 1; mode: click" class="search_dropdown" class="selectable uk-overflow-auto">\
               <div class="no_results">{{=T("No results found")}}</div>\
@@ -47,17 +51,75 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
 </div>
 
 <ul id="controlButtons" class="uk-iconnav uk-iconnav-vertical">
-  <li id="locationButton"><a uk-icon="icon: compass"></a></li>
-  <div uk-dropdown="pos: right-bottom; delay-hide: 1000; boundary: #controlButtons; boundary-align: true" id="locationDropdown">
-      <ol class="location-list"></ol>
-  </div>
-  <li id="inButton"    class="uk-visible@s"><a uk-tooltip="pos: right" title="{{=T('Zoom in')}}" uk-icon="icon: plus"></a></li>
-  <li id="outButton"   class="uk-visible@s"><a uk-tooltip="pos: right" title="{{=T('Zoom out')}}" uk-icon="icon: minus"></a></li>
-  <li id="upButton"    class="uk-visible@s"><a uk-tooltip="pos: right" title="{{=T('Previous ancestor')}}" uk-icon="icon: chevron-up; ratio: 1.35"></a></li>
-  <li id="resetButton" class="uk-visible@s"><a uk-tooltip="pos: right" title="{{=T('Reset view')}}" uk-icon="icon: chevron-up;  ratio: 0.9"></a></li>
-  <li id="screenshotButton"                ><a uk-tooltip="pos: right" title="{{=T('Take an svg screenshot')}}" onclick="make_screenshot(this);" uk-icon="icon: camera"></a></li>
-  <li id="singleInfoButton"                ><a uk-tooltip="pos: right" title="{{=T('Information')}}" href="#info-modal" uk-toggle uk-icon="icon: info"></a></li>
-  <li id="multipleInfoButton"              ><a uk-tooltip="pos: right" title="{{=T('Information')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: info"></a></li>
+  <li id="locationButton">
+    <div class='icon-container'>
+      <a uk-icon="icon: compass"></a>
+    </div><!-- inline-block: hide whitespace
+    --><div uk-dropdown="pos: right-bottom; delay-hide: 1000; boundary: #controlButtons; boundary-align: true" id="locationDropdown">
+        <ol class="location-list"></ol>
+    </div><!-- inline-block: hide whitespace
+    --><span class='button-label top-border top-right-radius top-padding'>{{=T('Location')}}</span>
+  </li>
+  <li id="inButton" class="uk-visible@s">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('Zoom in')}}" uk-icon="icon: plus"></a>
+    </div>
+    <span class='button-label top-border'>{{=T('Zoom in')}}</span>
+  </li>
+  <li id="outButton" class="uk-visible@s">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('Zoom out')}}" uk-icon="icon: minus"></a>
+    </div>
+    <span class='button-label'>{{=T('Zoom out')}}</span>
+  </li>
+  <li id="resetButton" class="uk-visible@s">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('Reset view')}}" uk-icon="icon: refresh"></a>
+    </div>
+    <span class='button-label'>{{=T('Reset view')}}</span>
+  </li>
+  <li id="screenshotButton">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('Take an svg screenshot')}}" onclick="make_screenshot(this);" uk-icon="icon: camera"></a>
+    </div>
+    <span class='button-label'>{{=T('Take an svg screenshot')}}</span>
+  </li>
+  <li id="singleInfoButton">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('Information')}}" href="#info-modal" uk-toggle uk-icon="icon: info"></a>
+    </div>
+    <span class='button-label top-border'>{{=T('Information')}}</span>
+  </li>
+  <li id="howToUseButton">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('How to use')}}" uk-icon="icon: question"></a>
+    </div>
+    <span class='button-label'>{{=T('How to use')}}</span>
+  </li>
+  <li id="tourButton">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('Take a tour')}}" uk-icon="icon: world"></a>
+    </div>
+    <span class='button-label'>{{=T('Take a tour')}}</span>
+  </li>
+  <li id="hideControlsButton">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('Hide panel')}}" uk-icon="icon: triangle-left"></a>
+    </div>
+    <span class='button-label top-border bottom-border bottom-right-radius bottom-padding'>{{=T('Hide panel')}}</span>
+  </li>
+  <li id="showControlsButton">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('Show panel')}}" uk-icon="icon: triangle-right"></a>
+    </div>
+  </li>
+  <li id="multipleInfoButton">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('Information')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: info"></a>
+    </div>
+    <span class='button-label'>Information</span>
+  </li>
+
   <div id="infoDropdown" uk-dropdown="pos: right; mode: click;">
     <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
       <li><a href="#howuse-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('How to use')}}</a></li>
@@ -67,7 +129,10 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     </ul>
   </div>
   {{if not request.vars.get('hide_control_settings', False):}}
-  <li><a uk-tooltip="pos: right" title="{{=T('Settings')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: settings"></a></li>
+  <li>
+      <div class='icon-container'>
+        <a uk-tooltip="pos: right" title="{{=T('Settings')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: settings"></a>
+      </div>
   <form id="settingsDropdown" class="uk-navbar-dropdown" uk-dropdown="pos: right-bottom; mode: click;">
     <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
       <li class="uk-nav-header">{{=T('Image sources')}}</li>
@@ -98,25 +163,40 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <input class="uk-radio" type="radio" name="colourtype" value="popularity"> {{=T('Popularity')}}</label></li> -->
       <li class="uk-nav-header treeswitch">{{=T('Tree## partner')}}</li>
       <li class="treeswitch"><select id="treepage" class="uk-select uk-form-small">
-        <option value="life">Original OneZoom</option>
-        <option value="AT">Ancestor’s Tale</option>
+        <option value="life">{{=T('Original OneZoom')}}</option>
+        <option value="AT">{{=T('Ancestor’s Tale')}}</option>
         <!--<option value="linnean">Linnean Society</option>
-        <option value="kew">Kew</option> -->
+        option value="kew">Kew</option> -->
         </select></li>
       <li class="uk-nav-header langswitch">{{=T("Language")}}</li>
       <li class="langswitch"><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1] if browser_language else None,)}}">
         <option value="">{{=T('Browser default')}}</option>
-        <optgroup label="Translated">
+        <optgroup label="{{=T('Translated')}}">
           <option value="en">English</option>
           <option value="fr">Français</option>
           <option value="sv">Svenska</option>
         </optgroup>
-        <optgroup label="Not yet translated">
+        <optgroup label="{{=T('Not yet translated')}}">
           <option value="zh">中文</option>
         </optgroup>
         </select></li>
+        <li class="uk-nav-header animswitch">{{=T("SEARCH MODE")}}</li>
+        <li class="animswitch">
+          <li>
+            <label>
+              <input class="uk-radio" type="radio" name="searchmode" value="flight"> {{=T('Fly')}}
+            </label>
+          </li>
+          <li>
+            <label>
+              <input class="uk-radio" type="radio" name="searchmode" value="jump"> {{=T('Jump')}}
+            </label>
+          </li>
+        </li>
+        </li>
     </ul>
   </form>
+  </li>
   {{pass}}
 </ul>
 <div id="error-modal" class="uk-modal-container" uk-modal>
@@ -192,24 +272,23 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
       <ul uk-tab class="external-tabs">
         <!--A list of all the available tabs-->
         {{for tab in tabs:}}
-        <li id="{{=tab['id']}}"><a href="#">{{if 'icon' in tab:}}<img src="{{=tab['icon']}}" title="{{=tab['name']}}" class="uk-hidden@s" />{{pass}}<span class="uk-visible@s">{{=tab['name']}}</span></a></li>
+        <li id="{{=tab['id']}}"><a href="#">{{if 'icon' in tab:}}<img src="{{=tab['icon']}}" title="{{=T(tab['name'], lazy=False)}}" class="uk-hidden@s" />{{pass}}<span class="uk-visible@s">{{=T(tab['name'], lazy=False)}}</span></a></li>
         {{pass}}
       </ul>
-      <ul class="popup-container uk-switcher">
+      <ul class="uk-switcher popup-container">
         {{for tab in tabs:}}
-        <li class="{{=tab['id']}}" data-name="{{=tab['name']}}" data-src="" aria-controls="{{=tab['id']}}-panel">
+        <li class="tab-content {{=tab['id']}}" data-name="{{=tab['name']}}" data-src="" aria-controls="{{=tab['id']}}-panel">
           <div class="uk-position-top-right expand-tab" style="{{if request.vars.get('no_external_links', False):}}display:none{{pass}}">
 {{#the linkout buttons are forms, to allow post requests to pass on reservation codes
   if request.vars.links!='none':
 }}
-            <form class="no_disable" target="_blank" method="post" onsubmit="return true"><a class="uk-icon-button" uk-tooltip="pos: left" title="{{=T('Open this %s tab in a new window') % (tab['name'],)}}" uk-icon="icon: expand; ratio: 0.75" target="_blank"></a></form>
+            <form class="no_disable" target="_blank" method="post" onsubmit="return true"><a class="uk-icon-button" uk-tooltip="pos: left" title="{{=T('Open this %s tab in a new window') % (T(tab['name'], lazy=False),)}}" uk-icon="icon: expand; ratio: 0.75" target="_blank"></a></form>
 {{pass}}
           </div>
-          <p class="iframe-loading-info uk-position-center">{{=T('Waiting for %s page to load') % (tab['name'])}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
+          <p class="iframe-loading-info uk-position-center">{{=T('Waiting for %s page to load') % (T(tab['name'], lazy=False))}}<br /><img src="{{=URL('static','images/ajax-loader.gif')}}" /></p>
         </li>
         {{pass}}
       </ul>
     </div>
   </div>
 </div>
-{{#=LOAD('default', 'tourstop.load', target="tourbox", ajax=False)}}

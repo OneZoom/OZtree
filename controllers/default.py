@@ -1,18 +1,25 @@
 # -*- coding: utf-8 -*-
 # this file is released under public domain and you can use without limitations
 import re
-import urllib
+import random
+import urllib.parse
 from json import dumps
+from collections import OrderedDict
 
-from OZfunctions import nice_species_name, get_common_name, get_common_names, sponsorable_children_query, language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal
+from OZfunctions import (
+    clear_reservation,
+    nice_species_name, get_common_name, get_common_names, sponsorable_children_query,
+    language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, add_the,
+    ids_from_otts_array, nodes_info_from_array, nodes_info_from_string, extract_summary)
+
 
 """ Some settings for sponsorship"""
 try:
-    reservation_time_limit = myconf.take('sponsorship.reservation_time_limit_mins') * 60.0
+    reservation_time_limit = float(myconf.take('sponsorship.reservation_time_limit_mins')) * 60.0
 except:
     reservation_time_limit = 360.0 #seconds
 try:
-    unpaid_time_limit = myconf.take('sponsorship.unpaid_time_limit_mins') * 60.0
+    unpaid_time_limit = float(myconf.take('sponsorship.unpaid_time_limit_mins')) * 60.0
 except:
     unpaid_time_limit = 2.0*24.0*60.0*60.0 #seconds
 
@@ -25,10 +32,175 @@ def time_diff(startTime,endTime):
 
 def index():
     """
-    here we should find a random selection of things with highly-rated photos which have not been sponsored, and pass them in.
-    also check for the best rated photos for sponsorship, and pass those in.
+    Collect all information required for the home page
     """
-    return dict(n_species =  db(db.ordered_leaves).count(), n_images =  db(db.images_by_ott).count())
+    # OTTs from the tree_startpoints table
+    startpoints_ott_map, hrefs, images, titles, text_titles = {}, {}, {}, {}, {}
+    carousel, anim, threatened = [], [], []
+    for r in db(
+            (db.tree_startpoints.category.startswith('homepage')) &
+            (db.tree_startpoints.partner_identifier == None)
+        ).select(
+            db.tree_startpoints.ott, db.tree_startpoints.category,
+            db.tree_startpoints.image_url, db.tree_startpoints.tour_identifier,
+            orderby = db.tree_startpoints.id):
+        key = r.tour_identifier or str(r.ott)
+        if r.category.endswith("main"):
+            carousel.append(key)
+        elif r.category.endswith("anim"):
+            anim.append(key)
+        elif r.category.endswith("red"):
+            threatened.append(key)
+        if r.image_url:
+            images[key] = {'url': r.image_url}
+        if r.tour_identifier:
+            hrefs[key] = URL('life/' + r.tour_identifier)
+            title = db(db.tours.identifier == r.tour_identifier).select(db.tours.name).first()
+            text_titles[key] = title.name if title else r.tour_identifier
+        else:
+            text_titles[key] = ""
+        if r.ott:
+            # We might still want to find e.g. an image, even if we are looking at a tour
+            startpoints_ott_map[r.ott] = key
+
+    # Pick 5 random threatened spp 
+    random.seed(request.now.month*100 + request.now.day)
+    if len(threatened) > 5:
+        threatened = random.sample(threatened, 5)
+    image_required = set(carousel + threatened)
+    keys = set(anim) |  image_required
+    # Remove the unused threatened ones
+    startpoints_ott_map = {k: v for k, v in startpoints_ott_map.items() if v in keys}
+    
+    # OTTs from the reservations table (i.e. sponsored)
+    query = (db.reservations.verified_time != None) & \
+        ((db.reservations.deactivated == None) | (db.reservations.deactivated == "")) & \
+        (db.reservations.verified_preferred_image_src != None)
+    sponsored_rows = db(query).select(
+        db.reservations.OTT_ID,
+        db.reservations.name,
+        db.reservations.user_nondefault_image,
+        db.reservations.verified_kind,
+        db.reservations.verified_name,
+        db.reservations.verified_more_info,
+        db.reservations.verified_preferred_image_src,
+        db.reservations.verified_preferred_image_src_id,
+        orderby=~db.reservations.verified_time|db.reservations.reserve_time,
+        limitby=(0, 20)
+        )
+    
+    spon_leaf_otts = set()
+    sponsored_by_ott = {}
+    for r in sponsored_rows:
+        sponsored_by_ott[r.OTT_ID] = r
+        hrefs[r.OTT_ID] = URL('life/@=%d' % r.OTT_ID, url_encode=False)
+        spon_leaf_otts.add(r.OTT_ID)
+        titles[r.OTT_ID] = r.name
+    for ott, key in startpoints_ott_map.items():
+        if key not in hrefs:
+            hrefs[key] = URL('life/@=%d' % ott, url_encode=False)
+    
+    # Names
+    st_leaf_otts, st_node_otts, has_vernacular = set(), set(), set()
+    st_leaf_for_node_otts = {}
+    # Look up scientific names for startpoint otts
+    for r in db(db.ordered_leaves.ott.belongs(startpoints_ott_map.keys())).select(
+            db.ordered_leaves.ott, db.ordered_leaves.name):
+        st_leaf_otts.add(r.ott)
+        titles[r.ott] = r.name
+    # Look up scientific names and best PD image otts for all startpoint otts
+    for r in db(db.ordered_nodes.ott.belongs(list(startpoints_ott_map.keys()))).select(
+            db.ordered_nodes.ott, db.ordered_nodes.name, db.ordered_nodes.rpd1):
+        st_node_otts.add(r.ott)
+        if startpoints_ott_map[r.ott] in image_required:
+            st_leaf_for_node_otts[r.rpd1] = startpoints_ott_map[r.ott]
+        titles[r.ott] = r.name
+    # Add or change to vernacular names in the titles
+    for ott, vn in get_common_names(titles.keys(), return_nulls=True).items():
+        # Do one thing for the startpoints (simple names) ...
+        startpoint_key = startpoints_ott_map.get(ott, None)
+        if startpoint_key:
+            if not text_titles[startpoint_key]:
+                if vn is not None:
+                    has_vernacular.add(startpoint_key)
+                text_titles[startpoint_key] = nice_species_name(
+                    (titles[ott] if vn is None else None), vn, html=True,
+                    leaf=ott not in st_node_otts, break_line=2)
+        # ... and another for the sponsored items (both common and sci in the string)
+        if vn is not None:
+            has_vernacular.add(ott)
+        titles[ott] = nice_species_name(
+            titles[ott], vn, html=True, leaf=ott not in st_node_otts, 
+            first_upper=True, break_line=1)
+    titles.update(text_titles)
+
+    # Images
+    # Startpoint images
+    otts = st_leaf_otts | set(st_leaf_for_node_otts.keys())
+    for r in db(
+            (db.images_by_ott.ott.belongs(otts)) & (db.images_by_ott.overall_best_pd==1)
+        ).select(
+            db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id):
+        key = startpoints_ott_map.get(r.ott, None) or st_leaf_for_node_otts.get(r.ott, None)
+        if key not in images:
+            images[key] = {'url':thumbnail_url(r.src, r.src_id)}
+    # Sponsored images
+    for r in db(
+            (db.images_by_ott.ott.belongs(spon_leaf_otts)) & (db.images_by_ott.overall_best_any==1)
+        ).select(
+            db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
+            db.images_by_ott.rights, db.images_by_ott.licence):
+        reservations_row = sponsored_by_ott[r.ott]
+        if reservations_row.user_nondefault_image:
+            images[r.ott] = {'url':thumbnail_url(
+                reservations_row.verified_preferred_image_src,
+                reservations_row.verified_preferred_image_src_id)}
+        else:
+            images[r.ott] = {'url':thumbnail_url(r.src, r.src_id), 'rights':r.rights, 'licence': r.licence.split('(')[0]}
+    blank = {'url': URL('static','images/noImage_transparent.png')}
+    for key in titles.keys():
+        if key not in images:
+            images[key] = blank
+
+    return dict(
+        n_species=db(db.ordered_leaves).count(),
+        n_images=db(db.images_by_ott).count(),
+        quotes=[
+            db(db.quotes.quality >= 190).select(db.quotes.ALL, orderby='<random>', limitby=(0, 2)),
+            db((db.quotes.quality < 190) & (db.quotes.quality >= 100)).select(db.quotes.ALL, orderby='<random>', limitby=(0, 8))
+            ],
+        news=[
+            dict(
+                heading=row.text_date if row.text_date else row.news_date.strftime("%d %B %Y").lstrip('0'),
+                body=row.html_description.replace(' class="thumbnail"', ' style="display:none"'),
+                thumbnail_href=row.thumbnail_href,
+                more_href=URL("timeline.html#news-item{}".format(row.id))
+            )
+            for row in db().select(db.news.ALL, orderby =~ db.news.news_date, limitby = (0, 5))
+        ],
+        carousel=carousel, anim=anim, threatened=threatened, sponsored=sponsored_rows,
+        hrefs=hrefs, images=images, html_names=titles, has_vernacular=has_vernacular, add_the=add_the,
+        n_total_sponsored=db(db.reservations.PP_e_mail != None).count(distinct=db.reservations.PP_e_mail),
+        n_sponsored_leaves=db((db.reservations.verified_time != None) & ((db.reservations.deactivated == None) | (db.reservations.deactivated == ""))).count(),
+        menu_splash_images={
+            sub_menu[0]:URL('static', 'images/oz-newssplash-%s.jpg' % sub_menu[0].lower().replace("for ", ""))
+            for sub_menu in response.menu
+        }
+    )
+
+def footer_sponsor_items():
+    """
+    Three hardcoded images for groups that can be sponsored - appears on every page =>
+    should not make a db request
+    """
+    return dict()
+
+
+def homepage_animation_template():
+    """
+    The html fragment used as a template for the embedded animation on the homepage
+    """
+    return dict()
 
 @require_https_if_nonlocal()
 def user():
@@ -63,70 +235,93 @@ def user():
  
     return dict(form=auth())
 
-""" general pages """
+## General pages ##
+
+def custom_400():
+    return {}
 
 def custom_404():
     return {}
 
-""" main leaf sponsorship routine """
+## Main leaf sponsorship routines ##
 
 def sponsor_leaf():
-    """ 
-        this function will take open tree ID and from that ...
-        1.) figure out status of leaf and return the correct page
-            these options will all forward to different pages (the view is listed in square brackets), selected in the following order:
-
-            * maintenance [spl_maintenance.html] - the site is in maintenance mode, and we don't want to allow any access to reservations data
-
-            * no status set [spl_error.html] - something went very wrong
-
-                The following can be shown even when sponsorship is turned off
-            * sponsored [spl_sponsored.html] - it's already been sponsored
-            * invalid [spl_invalid.html] - not an actual sponsorable OTTid
-            * banned [spl_banned.html] - cannot sponsor this
-            * available on main site [spl_elsewhere.html] - it may be available but this onezoom instance doesn't allow sponsorship (e.g. in a museum)
-            
-                The following can only be shown if sponsorship is on.
-            * unverified [spl_unverified.html] - it's already been sponsored but the details haven't been verified yet
-            * unverified waiting for payment [spl_waitpay.html] - has been sponsored but paypal hasn't sent us confirmation (could be that they didn't actually pay, so may become free after a few days)
-
-
-                The following are only shown when sponsorship is allowed and not in maintenance mode
-            * reserved [spl_reserved.html] - another user was active on this page recently and it's being reserved for them for a few minutes
-            * available [sponsor_leaf.html] - the leaf is fully available, so proceed
-            * available only to user [sponsor_leaf.html] - it's available but for this user only
-        it will also provide the current best picture for that taxon (if one exists)
-        2.) update the 'reserved' table with new numbers of views and view times / user ids etc.
-        3.) collect the name, price and EOL ids from the database and return them to the page
-        4.) look up the partner_taxa table, find the ranges of leaf ids that will trigger a partner deal,
-            check if this leaf id is within any range, and if so, find the partner_identifier and return the
-            details to the page for that partner (taken from the partners table).
-
-        database info that needs to be handled by this function
-        
-            OTT_ID
-            name
-        
-            num_views
-            last_view
-            reserve_time
-            user_registration_id
+    """
+    The main sponsorship page, which does most of the validation
+    """
+    return sponsor_leaf_check(
+        use_form_data=(request.extension == "load"), form_data_to_db=False)
     
-            user_id (? - later)
-            e_mail
-            twitter_name
-            allow_contact
-        
-            user_sponsor_kind
-            user_sponsor_name
-            user_more_info
-            user_preferred_image_src
-            user_preferred_image_src_id
-            user_updated_time
-            user_paid
-            user_message_OZ
+def sponsor_leaf_check(use_form_data, form_data_to_db):
+    """ 
+    Take an open tree ID and from that ...
+    1. figure out status of leaf and return the correct page
+        these options will all forward to different pages (view listed in square
+        brackets below), selected in the following order:
 
-        This function DOES NOT need to update the sponsor or verified info tables because these are handled separately. Additionally, e-mail, address and name as well as receipt should be captured from Paypal """
+        * maintenance [spl_maintenance.html] - the site is in maintenance mode,
+            and we don't want to allow any access to reservations data
+
+        * no status set [spl_error.html] - something went very wrong
+
+      Shown even when sponsorship is turned off
+        * sponsored [spl_sponsored.html] - it's already been sponsored
+        * invalid [spl_invalid.html] - not an actual sponsorable OTTid
+        * banned [spl_banned.html] - cannot sponsor this
+        * available on main site [spl_elsewhere.html] - it may be available but this
+            onezoom instance doesn't allow sponsorship (e.g. in a museum)
+        
+      Shown if sponsorship is on.
+        * unverified [spl_unverified.html] - it's already been sponsored but the
+            details haven't been verified yet
+        * unverified waiting for payment [spl_waitpay.html] - has been sponsored but
+            paypal hasn't sent us confirmation (could be that they didn't actually
+            pay, so may become free after a few days)
+
+
+      Shown when sponsorship is allowed and not in maintenance mode
+        * reserved [spl_reserved.html] - another user was active on this page
+            recently and it's being reserved for them for a few minutes
+        * available [sponsor_leaf.html] - the leaf is fully available, so proceed
+        * available only to user [sponsor_leaf.html] - available for this user only
+    
+    (the function also provides the current best picture for that leaf if one exists)
+
+    2. Update the reservations table with new # of views, last view time / user ids etc.
+    3. Collect the name, price and EOL ids from the database and return them to the page
+    4. Look up the partner_taxa table, find the ranges of leaf ids that will trigger a
+        partner deal, check if this leaf id is within any range, and if so, find the
+        partner_identifier and return the details to the page for that partner
+        (taken from the partners table) ### NOT YET DONE ###
+
+    Database info that needs to be handled by this function:
+    
+        OTT_ID
+        name
+    
+        num_views
+        last_view
+        reserve_time
+        user_registration_id
+    
+        user_id (? - later)
+        e_mail
+        twitter_name
+        allow_contact
+    
+        user_sponsor_kind
+        user_sponsor_name
+        user_more_info
+        user_preferred_image_src
+        user_preferred_image_src_id
+        user_updated_time
+        user_paid
+        user_message_OZ
+
+    This function DOES NOT need to update the sponsor or verified info tables because
+    these are handled separately. Additionally, e-mail, address and name as well as
+    receipt should be captured from Paypal
+    """
     # initialise status flag (it will get updated if all is OK)
     status = ""
 
@@ -165,7 +360,7 @@ def sponsor_leaf():
         except:
             pass
     # initialise other variables that will be passed on to the page
-    species_name = common_name = the_long_name = None
+    sp_name = common_name = the_long_name = default_image = None
     release_time = 0 #when this will become free, in seconds
    
     try:
@@ -178,22 +373,28 @@ def sponsor_leaf():
         OTT_ID_Varin = int(request.vars.get('ott'))
         leaf_entry = db(db.ordered_leaves.ott == OTT_ID_Varin).select().first()
         common_name = get_common_name(OTT_ID_Varin)
-        species_name = leaf_entry.name
-        long_name = nice_species_name(leaf_entry.name, common_name, html=True, leaf=True, the=False)
-        the_long_name = nice_species_name(leaf_entry.name, common_name, html=True, leaf=True, the=True)
+        sp_name = leaf_entry.name
+        long_name = nice_species_name(sp_name, common_name, html=True, leaf=True, the=False)
+        the_long_name = nice_species_name(sp_name, common_name, html=True, leaf=True, the=True)
     except:
         OTT_ID_Varin = None
         leaf_entry = {}
-    if ((not leaf_entry) or              #invalid if not in ordered_leaves
-        (leaf_entry.ott is None) or      #invalid if no OTT ID
-        (' ' not in leaf_entry.name)):   #invalid if not a species name (e.g. no space/underscore)
-        status = "invalid" # will override maintenance
+    if ((not leaf_entry) or             # invalid if not in ordered_leaves
+        (leaf_entry.ott is None) or     # invalid if no OTT ID
+        (' ' not in leaf_entry.name)):  # invalid if not a sp. name (no space/underscore)
+            iucn_code = None
+            status = "invalid" # will override maintenance
+    else:
+        iucn_code = getattr(
+            db(db.iucn.ott == OTT_ID_Varin).select(db.iucn.status_code).first(),
+            'status_code',
+            None)
     
-    if status == "": #still need to figure out status, but should be able to get data
-        #we might come into this with an established partner set in request.vars (e.g. LinnSoc)
+    if status == "":  # still need to figure out status, but should be able to get data
+        # we might come into this with a partner set in request.vars (e.g. LinnSoc)
         partner = request.vars.get('partner')
         """
-        TO DO & CHECK - This allows specific parts of the tree to be associated with a partner
+        TO DO & CHECK - Allows specific parts of the tree to be associated with a partner
         if partner is None:
             #check through partner_taxa for leaves that might match this one
             partner = db((~db.partner_taxa.deactived) & 
@@ -203,17 +404,19 @@ def sponsor_leaf():
         if partner is None:
             #pull out potential partner *nodes* that we might need to check
             #also check if this leaf lies within any of the node ranges
+            #this should include a join with ordered_nodes to get the ranges, & a select
             partner = db((~db.partner_taxa.deactived) & 
                          (db.partner_taxa.is_leaf == False) &
                          (OTT_ID_Varin >= db.ordered_nodes.leaf_lft) &
                          (OTT_ID_Varin <= db.ordered_nodes.leaf_rgt) &
                          (db.ordered_nodes.ott == db.partner.ott).first()
-                        ).select(db.partner_taxa.partner_identifier) #this should include a join with ordered_nodes to get the ranges, and a select
+                        ).select(db.partner_taxa.partner_identifier) 
         """
         try:
             if partner is None:
                 raise AttributeError
-            partner_data = db(db.partners.partner_identifier == partner).select(db.partners.ALL).first().as_dict() #this could be null
+            partner_data = db(db.partners.partner_identifier == partner).select(
+                db.partners.ALL).first().as_dict()  # NB: this could be null
         except AttributeError:
             partner_data = {}
             
@@ -222,8 +425,8 @@ def sponsor_leaf():
             status = "banned"
         # we need to update the reservations table regardless of banned status)
         reservation_query = db(db.reservations.OTT_ID == OTT_ID_Varin)
-        reservation_entry = reservation_query.select().first()
-        if reservation_entry is None:
+        reservation_row = reservation_query.select().first()
+        if reservation_row is None:
             # there is no row in the database for this case so add one
             if (status == ""):
                 status = "available"
@@ -234,7 +437,7 @@ def sponsor_leaf():
                     last_view=request.now,
                     num_views=1,
                     reserve_time=request.now,
-                    user_registration_id =form_reservation_code)
+                    user_registration_id=form_reservation_code)
             else:
                 # update with full viewing data but no reservation, even if e.g. banned
                 db.reservations.insert(
@@ -243,20 +446,28 @@ def sponsor_leaf():
                     last_view=request.now,
                     num_views=1)
         else:
-            # there is already a row in the database so update
-            reservation_query.update(last_view=request.now, num_views=reservation_entry.num_views+1)
-    
-            # this may be available (because valid) but could be sponsored, unverified, reserved or available still 
-            # easiest cases to rule out are relating sponsored and unverified cases. In either case they would appear in the leger
-            ledger_user_name = reservation_entry.user_sponsor_name
-            ledger_PP_transaction_code = reservation_entry.PP_transaction_code
-            ledger_verified_time = reservation_entry.verified_time
-            # the way we know something is fully sponsored is if PP transaction code is filled out  
-            #nb. this could be with us typing "yet to be paid" in which case verified_paid can be NULL 
-            # so "verified paid " should not be used as a test of whether something is available or not
-            # For forked sites, we do not pass PP transaction code (confidential), so we have to check first if 
-            # verified.
-            # Need to have another option here if verified_time is too long ago - we should move this to the expired_reservations table and clear it.
+            # there is already a row in the database so update if this is the main visit
+            if request.function == 'sponsor_leaf' and request.extension == "html":
+                reservation_query.update(
+                    last_view=request.now,
+                    num_views=reservation_row.num_views+1,
+                    name=sp_name)
+
+            # this may be available (because valid) but could be
+            #  sponsored, unverified, reserved or still available  
+            # easiest cases to rule out are relating sponsored and unverified cases.
+            # In either case they would appear in the leger
+            ledger_user_name = reservation_row.user_sponsor_name
+            ledger_PP_transaction_code = reservation_row.PP_transaction_code
+            ledger_verified_time = reservation_row.verified_time
+            # We know something is fully sponsored if PP transaction code is filled out  
+            # NB: this could be with us typing "yet to be paid" in which case
+            #  verified_paid can be NULL, so "verified paid " should not be used as a
+            #  test of whether something is available or not
+            # For forked sites, we do not pass PP transaction code (confidential), so we
+            #   have to check first if verified.
+            # Need to have another option here if verified_time is too long ago - we
+            #  should move this to the expired_reservations table and clear it.
             if (ledger_verified_time):
                 status = "sponsored"
             elif status != "banned":
@@ -267,15 +478,16 @@ def sponsor_leaf():
                         status = "unverified"
                     else:
                         # unverified and unpaid - test time
-                        startTime = reservation_entry.reserve_time
+                        startTime = reservation_row.reserve_time
                         endTime = request.now
                         timesince = ((endTime-startTime).total_seconds())
                         # now we check if the time is too great
                         if (timesince < (unpaid_time_limit)):
                             status = "unverified waiting for payment"
                         else:
-                            # we've waited too long and can zap the personal data previously in the table then set available
-                            reservation_query.update(user_id=None, e_mail=None, twitter_name=None, allow_contact=None, user_sponsor_kind=None, user_sponsor_name=None, user_more_info=None, user_nondefault_image=None, user_preferred_image_src=None, user_preferred_image_src_id=None, user_updated_time=None, user_paid=None, user_message_OZ=None, user_giftaid=None, user_registration_id=None, PP_transaction_code=None, PP_e_mail=None, PP_first_name=None, PP_second_name=None, PP_town=None, PP_country=None, PP_house_and_street=None, PP_postcode=None, verified_kind=None, verified_name=None, verified_more_info=None, verified_preferred_image_src=None, verified_preferred_image_src_id=None, verified_time=None, verified_paid=None, verified_url=None, live_time=None, admin_comment=None, sponsorship_duration_days=None, asking_price=None, deactivated=None, sale_time=None, partner_name=None, partner_percentage=None)
+                            # We've waited too long and can zap the personal data
+                            # previously in the table then set available
+                            clear_reservation(OTT_ID_Varin)
                             # Note that this e.g. clears deactivated taxa, etc etc. Even 
                             # if status == available, allow_sponsorship can be False
                             # status is then used to decide the text to show the user
@@ -284,45 +496,59 @@ def sponsor_leaf():
                     # The page has no user name entered & is also valid (not banned etc)
                     # it could only be reserved or available
                     # First thing is to determine time difference since reserved
-                    startTime = reservation_entry.reserve_time   
+                    startTime = reservation_row.reserve_time   
                     endTime = request.now
                     if (startTime == None):
                         status = "available"
                         # reserve the leaf because there is no reservetime on record
-                        reservation_query.update(reserve_time=request.now, user_registration_id=form_reservation_code)
+                        if allow_sponsorship:
+                            reservation_query.update(
+                                name=sp_name,
+                                reserve_time=request.now,
+                                user_registration_id=form_reservation_code)
                     else:
-                        # we need to compare times to figure out if there is a time difference
+                        # compare times to figure out if there is a time difference
                         timesince = ((endTime-startTime).total_seconds())
                         if (timesince < (reservation_time_limit)):
                             release_time = reservation_time_limit - timesince
                             # we may be reserved if it wasn't us
-                            if(form_reservation_code == reservation_entry.user_registration_id):
+                            if(form_reservation_code == reservation_row.user_registration_id):
                                 # it was the same user anyway so reset timer
                                 status = "available only to user"
-                                reservation_query.update(reserve_time=request.now)
+                                if allow_sponsorship:
+                                    reservation_query.update(
+                                        name=sp_name,
+                                        reserve_time=request.now)
                             else:
                                 status = "reserved"
                         else:
                             # it's available still
                             status = "available"
                             # reserve the leaf because there is no reservetime on record
-                            reservation_query.update(reserve_time = request.now, user_registration_id = form_reservation_code)
+                            if allow_sponsorship:
+                                reservation_query.update(
+                                    name=sp_name,
+                                    reserve_time = request.now,
+                                    user_registration_id = form_reservation_code)
         #re-do the query since we might have added the row ID now
-        reservation_entry = reservation_query.select().first()
-        if reservation_entry is None:
+        reservation_row = reservation_query.select().first()
+        if reservation_row is None:
             raise HTTP(400,"Error: row is not defined. Please try reloading the page")
     
         #get the best picture for this ott, if there is one.
-        default_image = db((db.images_by_ott.ott == OTT_ID_Varin) & (db.images_by_ott.overall_best_any == True)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence).first()
+        query = (db.images_by_ott.ott == OTT_ID_Varin)
+        query &= (db.images_by_ott.overall_best_any == True)
+        default_image = db(query).select(
+            db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
+            db.images_by_ott.rights, db.images_by_ott.licence).first()
         #also look at the nondefault images if present
-        if reservation_entry.user_nondefault_image:
-            src_id = reservation_entry.verified_preferred_image_src_id
-            src = reservation_entry.verified_preferred_image_src
-            user_image = db(
-                (db.images_by_ott.src_id == src_id) & (db.images_by_ott.src == src)
-                ).select(
-                    db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, 
-                    db.images_by_ott.rights, db.images_by_ott.licence).first()
+        if reservation_row.user_nondefault_image:
+            src_id = reservation_row.verified_preferred_image_src_id
+            src = reservation_row.verified_preferred_image_src
+            query = (db.images_by_ott.src_id == src_id) & (db.images_by_ott.src == src)
+            user_image = db(query).select(
+                db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, 
+                db.images_by_ott.rights, db.images_by_ott.licence).first()
         else:
             user_image=None
 
@@ -335,106 +561,199 @@ def sponsor_leaf():
 
     elif status == "sponsored":
         response.view = request.controller + "/spl_sponsored." + request.extension
-        return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), long_name = long_name, default_image = default_image, user_image=user_image, verified_kind=reservation_entry.verified_kind, verified_name=reservation_entry.verified_name, verified_more_info=reservation_entry.verified_more_info)
+        return dict(
+            species_name      = sp_name,
+            js_species_name   = dumps(sp_name),
+            common_name       = common_name,
+            js_common_name    = dumps(common_name.capitalize() if common_name else None),
+            long_name         = long_name,
+            iucn_code         = iucn_code,
+            default_image     = default_image,
+            user_image        = user_image,
+            verified_kind     = reservation_row.verified_kind,
+            verified_name     = reservation_row.verified_name,
+            verified_more_info= reservation_row.verified_more_info)
+
+    elif status == "invalid":
+        response.view = request.controller + "/spl_invalid." + request.extension
+        return dict(OTT_ID=OTT_ID_Varin, species_name=sp_name)
 
     elif not allow_sponsorship:
         if status.startswith("available"):
             response.view = request.controller + "/spl_elsewhere." + request.extension
         else:
             response.view = request.controller + "/spl_elsewhere_not." + request.extension
-        return dict(species_name = species_name, the_long_name = the_long_name, ott=OTT_ID_Varin)
-
-    elif status == "invalid":
-        response.view = request.controller + "/spl_invalid." + request.extension
-        return dict(OTT_ID = OTT_ID_Varin, species_name = species_name)
+        return dict(
+            js_species_name = dumps(sp_name),
+            js_common_name  = dumps(common_name.capitalize() if common_name else None),
+            species_name    = sp_name,
+            the_long_name   = the_long_name,
+            iucn_code       = iucn_code,
+            default_image   = default_image,
+            ott             = OTT_ID_Varin)
 
     elif status.startswith("unverified"):
         if status == "unverified waiting for payment":
             response.view = request.controller + "/spl_waitpay." + request.extension    
-            return dict(species_name = species_name,  the_long_name = the_long_name, unpaid_time_limit_hours= int(unpaid_time_limit/60.0/60.0))
+            return dict(
+                species_name=sp_name,
+                the_long_name=the_long_name,
+                unpaid_time_limit_hours= int(unpaid_time_limit/60.0/60.0))
         else:
             response.view = request.controller + "/spl_unverified." + request.extension
-            return dict(species_name = species_name)
+            return dict(species_name = sp_name)
 
     elif status == "banned":
         response.view = request.controller + "/spl_banned." + request.extension
-        return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), long_name = long_name, default_image = default_image, user_image=user_image)
+        return dict(
+            species_name    = sp_name,
+            js_species_name = dumps(sp_name),
+            common_name     = common_name,
+            js_common_name  = dumps(common_name.capitalize() if common_name else None),
+            long_name       = long_name,
+            default_image   = default_image,
+            user_image      = user_image)
 
     elif status == "reserved":
         response.view = request.controller + "/spl_reserved." + request.extension
-        return dict(species_name = species_name, the_long_name = the_long_name, release_time = release_time)
+        return dict(
+            species_name    = sp_name,
+            the_long_name   = the_long_name,
+            release_time    = release_time)
 
-    
+    elif leaf_entry.price is None:
+        response.view = request.controller + "/spl_banned." + request.extension
+        return dict(
+            species_name    = sp_name,
+            js_species_name = dumps(sp_name),
+            common_name     = common_name,
+            js_common_name  = dumps(common_name.capitalize() if common_name else None),
+            long_name       = long_name,
+            default_image   = default_image)
+
     elif status.startswith("available"):
-        #potentially sponsorable
-        try:
-            leaf_price = 0.01*float(leaf_entry.price) #in the leaf table, price is in pence, not a float, to allow binning
-            #can sponsor here, go through to the main sponsor_leaf page
-            form = SQLFORM(db.reservations, reservation_entry, 
-                fields=['e_mail','allow_contact','twitter_name', 'user_sponsor_kind', 'user_sponsor_name', 'user_more_info', 
-                    'user_donor_title', 'user_donor_name', 'user_donor_show', 'user_paid', 'user_message_OZ',
-                    'user_nondefault_image', 'user_preferred_image_src', 'user_preferred_image_src_id','user_giftaid'],
+        response.view = request.controller + "/sponsor_leaf." + request.extension
+        # Can sponsor here, so go through to the main sponsor_leaf page
+        form = None
+        validated = None
+        price = 0.01*float(leaf_entry.price)
+        if use_form_data:
+            # This is the real form
+            form = SQLFORM(db.reservations, reservation_row, 
+                fields=[
+                    ## List all fields that will be updated by sponsor leaf
+                    # Writable by the user
+                    'e_mail','allow_contact','twitter_name', 'user_sponsor_kind',
+                    'user_sponsor_name', 'user_more_info', 'user_donor_title',
+                    'user_donor_name', 'user_donor_show', 'user_paid', 'user_message_OZ',
+                    'user_nondefault_image', 'user_preferred_image_src',
+                    'user_preferred_image_src_id','user_giftaid', 'user_sponsor_lang',
+                    # writeable=False -> filled out on validation
+                    'name', 'reserve_time', 'asking_price', 'user_updated_time',
+                    'asking_price', 'user_updated_time', 'sponsorship_duration_days',
+                    'partner_name', 'partner_percentage'
+                    ],
                 deletable = False)
-            if form.process(session=None, formname='main_sponsor_form', onvalidation=lambda x: validate_sponsor_leaf(x, leaf_price)).accepted:
-                #response.flash = 'temp form accepted' # debug
-                reservation_query.update(
-                    reserve_time=request.now,
-                    user_sponsor_lang = (request.env.http_accept_language or '').lower(),
-                    asking_price=(leaf_price),
-                    user_updated_time=request.now,
-                    sponsorship_duration_days=365*4+1,
-                    partner_name=partner_data.get('partner_identifier'),
-                    partner_percentage=partner_data.get('percentage'))
-                if form.vars.user_sponsor_kind == "by" and not form.vars.user_donor_name:
-                    reservation_query.update(
-                        user_donor_name = form.vars.user_sponsor_name)
-                # now need to do our own other checks
-                v = {'ott':OTT_ID_Varin}
-                if request.vars.get('embed'):
-                    v['embed'] = request.vars.get('embed')
-                redirect(URL("default", "paypal", vars=v))
-        
+            if form.accepts(
+                    request.vars, # use both GET + POST vars: GET vars passed when accessed via LOAD
+                    session=None,
+                    formname="main_sponsor_form",
+                    dbio=form_data_to_db,
+                    onvalidation=lambda x: valid_spons(x, sp_name, price, partner_data)):
+                validated = True # indicates to follow the form submission to paypal
             elif form.errors:
-                response.flash = 'please check the errors shown in red'
+                validated = False
             else:
-                #the form should simply be shown
-                pass
-            return dict(
-                form=form,
-                id=reservation_entry.id,
-                OTT_ID=OTT_ID_Varin,
-                EOL_ID=leaf_entry.get('eol', -1),
-                species_name=species_name,
-                js_species_name=dumps(species_name),
-                common_name=common_name,
-                js_common_name=dumps(common_name.capitalize() if common_name else None),
-                the_long_name=the_long_name,
-                leaf_price=leaf_price,
-                form_reservation_code=form_reservation_code,
-                percent_crop_expansion=percent_crop_expansion,
-                default_image=default_image,
-                partner_data=partner_data,
-                EoL_API_key=EoL_API_key,
-                max_global_price=max_global_price,
-                min_global_price=min_global_price)
-        except TypeError: #leaf_entry.price is None, treat as banned
-            response.view = request.controller + "/spl_banned." + request.extension
-            return dict(species_name = species_name, js_species_name = dumps(species_name), common_name = common_name, js_common_name = dumps(common_name.capitalize() if common_name else None), long_name = long_name, default_image = default_image, user_image=user_image)
+                pass  # Simply show the form
+        return dict(
+            form                  = form,
+            validated             = validated,
+            id                    = reservation_row.id,
+            OTT_ID                = OTT_ID_Varin,
+            EOL_ID                = leaf_entry.get('eol', -1),
+            species_name          = sp_name,
+            js_species_name       = dumps(sp_name),
+            common_name           = common_name,
+            js_common_name        = dumps(common_name.capitalize() if common_name else None),
+            the_long_name         = the_long_name,
+            iucn_code             = iucn_code,
+            price                 = 0.01*float(leaf_entry.price),
+            default_image         = default_image,
+            form_reservation_code = form_reservation_code,
+            percent_crop_expansion= percent_crop_expansion,
+            partner_data          = partner_data,
+            EoL_API_key           = EoL_API_key,
+            max_global_price      = max_global_price,
+            min_global_price      = min_global_price)
         
     else:
         #should never happen
         response.view = request.controller + "/spl_error." + request.extension
         return dict(OTT_ID = OTT_ID_Varin)
 
-def validate_sponsor_leaf(form, leaf_price):
+
+def sponsor_pay():
     """
-    Do all this as custom validation as some is quite intricate
+    Actually save the payment details in the db, and then redirect to a payments system, 
+    e.g. paypal
+    """
+    result = sponsor_leaf_check(use_form_data=True, form_data_to_db=True)
+    if not result.get('validated', None):
+        # Keep trying to validate, using the sponsor_leaf views
+        return result
+    else:
+        # Jump out to paypal
+        db_saved = result['form'].vars
+        OTT_ID_str = str(int(result['OTT_ID'])) # this is the only field not in the form
+        try:
+            # redirect the user to a paypal page that (if completed) triggers paypal to then visit
+            # an OZ page, confirming payment: this is called an IPN. Details in pp_process_post.html
+            try:
+                paypal_url = myconf.take('paypal.url')
+                if not paypal_url:
+                    raise ValueError('blank paypal config')
+            except:
+                paypal_url = 'https://www.sandbox.paypal.com'
+            try:
+                paypal_notify_string = (
+                    '&notify_url=' + myconf.take('paypal.notify_url')
+                    + '/pp_process_post.html/' + OTT_ID_str)
+            except:
+                paypal_notify_string = ''
+            paypal_url += (
+                '/cgi-bin/webscr'
+                '?cmd=_donations'
+                '&business=mail@onezoom.org'
+                '&item_name=Donation+to+OneZoom+({sp_name})'
+                '&item_number=leaf+sponsorship+-+{sp_name}'
+                '&return={ret_url}'
+                '{notify_string}'
+                '&amount={amount}'
+                '&currency_code=GBP'.format(
+                     sp_name=urllib.parse.quote(db_saved.name),
+                     ret_url=URL("sponsor_thanks.html", scheme=True, host=True),
+                     notify_string=paypal_notify_string,
+                     amount=urllib.parse.quote('{:.2f}'.format(db_saved.user_paid))))
+            redirect(paypal_url)
+        except:
+            raise
+            error="we couldn't find your leaf sponsorship information."
+            response.view = request.controller + "/sponsor_pay." + request.extension
+            return(dict(error=error, ott=request.vars.get('ott') or '<no available ID>'))
+
+
+def valid_spons(form, species_name, price_pounds, partner_data):
+    """
+    Do all this using custom validation as some is quite intricate
     """
     max_chars = 30
+    # Validate user-input vars
     if len(form.vars.user_sponsor_name or "") == 0:
         form.errors.user_sponsor_name = T("You must enter some sponsor text")
     elif len(form.vars.user_sponsor_name or "") > max_chars:
         form.errors.user_sponsor_name = T("Text too long: max %s characters") % (max_chars, )
+    if form.vars.user_sponsor_kind == "by" and not form.vars.user_donor_name:
+        form.vars.user_donor_name = form.vars.user_sponsor_name
 
     if len(form.vars.user_more_info or "") > max_chars:
         form.errors.user_more_info = T("Text too long: max %s characters") % (max_chars, )
@@ -443,17 +762,30 @@ def validate_sponsor_leaf(form, leaf_price):
         form.errors.user_sponsor_kind = T("Sponsorship can only be 'by' or 'for'")
 
     try:
-        if float(form.vars.user_paid) < leaf_price:
-            form.errors.user_paid = T("Please donate at least £%s to sponsor this leaf, or you could simply choose another leaf") % ("{:.2f}".format(leaf_price), )
+        if float(form.vars.user_paid) < price_pounds:
+            form.errors.user_paid = T("Please donate at least £%s to sponsor this leaf, or you could simply choose another leaf") % ("{:.2f}".format(price_pounds), )
     except:
         form.errors.user_paid = T("Please enter a valid number")
     
     if form.vars.user_giftaid:
-        if not (form.vars.user_donor_title or "").strip():
-            form.errors.user_donor_title = T("We need your title to be able to claim gift aid")
-        if not form.vars.user_donor_name and form.vars.user_sponsor_kind != 'by':
-            form.errors.user_donor_name = T("We need your name to be able to claim gift aid")
+        missing_title = not (form.vars.user_donor_title or "").strip()
+        if missing_title:
+            form.errors.user_donor_title_name = T("We need your title to be able to claim gift aid")
+        if not (form.vars.user_donor_name or "").strip():
+            if missing_title:
+                form.errors.user_donor_title_name = T("We need your name and title to be able to claim gift aid")
+            else:
+                form.errors.user_donor_title_name = T("We need your name to be able to claim gift aid")
 
+    # calculate writable=False vars, to insert
+    form.vars.name = species_name
+    form.vars.reserve_time = form.vars.user_updated_time = request.now
+    form.vars.user_sponsor_lang = (request.env.http_accept_language or '').lower()
+    form.vars.asking_price = price_pounds
+    form.vars.sponsorship_duration_days=365*4+1 ## 4 Years
+    form.vars.partner_name=partner_data.get('partner_identifier')
+    form.vars.partner_percentage=partner_data.get('percentage')
+    
 
 def sponsor_leaf_redirect():
     """
@@ -467,13 +799,14 @@ def sponsor_replace_page():
     """
     try:
         OTT_ID_Varin = int(request.vars.get('ott'))
-        row = db(db.reservations.OTT_ID == OTT_ID_Varin).select(db.reservations.OTT_ID,
-                                                                db.reservations.name,
-                                                                db.reservations.user_sponsor_kind,
-                                                                db.reservations.user_sponsor_name,
-                                                                db.reservations.user_more_info,
-                                                                db.reservations.user_paid,
-                                                                db.reservations.PP_transaction_code).first()
+        row = db(db.reservations.OTT_ID == OTT_ID_Varin).select(
+            db.reservations.OTT_ID,
+            db.reservations.name,
+            db.reservations.user_sponsor_kind,
+            db.reservations.user_sponsor_name,
+            db.reservations.user_more_info,
+            db.reservations.user_paid,
+            db.reservations.PP_transaction_code).first()
         if row is None:
             raise IndexError(T("Could not match against a row in the database"))
         return(dict(data=row))
@@ -481,47 +814,8 @@ def sponsor_replace_page():
         raise_incorrect_url(URL('index', scheme=True, host=True), T("Error - you gave no OTT number.") + " " + T("Go back to the home page"))
     except Exception as e:
         raise_incorrect_url(URL('index', scheme=True, host=True), str(e) + ". " + T("Go back to the home page"))
-    
-def paypal():
-    """
-    redirects the user to a paypal page that (if completed) should trigger paypal to in turn
-    visit an OZ page (pp_process_post.html) to confirm the payment has gone through - this is called an IPN
-    If there are problems, https://developer.paypal.com/docs/classic/ipn/integration-guide/IPNOperations/
-    gives details for how to debug.
-    """
-    error=""
-    try:
-        OTT_ID_Varin = int(request.vars.get('ott'))
-        row = db((db.reservations.OTT_ID == OTT_ID_Varin) & ((db.reservations.PP_transaction_code == None) | (db.reservations.PP_transaction_code == 'reserved'))).select(db.reservations.name, db.reservations.user_paid).first()
-        if row is None or row.user_paid is None or row.user_paid < 0:
-            raise IndexError("Could not match against a row in the database")
-        try:
-            paypal_url = myconf.take('paypal.url')
-            if not paypal_url:
-                raise ValueError('blank paypal config')
-        except:
-            paypal_url = 'https://www.sandbox.paypal.com'
-        try:
-            paypal_notify_string = '&notify_url=' + myconf.take('paypal.notify_url') + '/pp_process_post.html/'+str(OTT_ID_Varin)
-        except:
-            paypal_notify_string = ''
-        paypal_url += ('/cgi-bin/webscr' +
-                       '?cmd=_donations&business=mail@onezoom.org' +
-                       '&item_name=Donation+to+OneZoom+('+urllib.quote(row.name)+')'+
-                       '&item_number=leaf+sponsorship+-+'+urllib.quote(row.name)+
-                       '&return=' + URL("sponsor_thanks.html", scheme=True, host=True) +
-                       paypal_notify_string +
-                       '&amount=' + urllib.quote('{:.2f}'.format(row.user_paid))+
-                       '&currency_code=GBP')
-    except:
-        error="we couldn't find your leaf sponsorship information."
-        return(dict(error=error, ott=request.vars.get('ott') or '<no available ID>'))
-    redirect(paypal_url)
 
 # TODO enabling edits and intelligent behaviour if a logged in user goes back to their own leaf    
-
-def search_name():
-    return dict()
 
 def sponsored():
     """
@@ -531,26 +825,29 @@ def sponsored():
     else: page=0
     items_per_page=20
     tot=None
-    query = (db.reservations.verified_time != None) & ((db.reservations.deactivated == None) | (db.reservations.deactivated == ""))
+    resv = db.reservations
+    query = (resv.verified_time != None)
+    query &= ((resv.deactivated == None) | (resv.deactivated == ""))
     if (request.vars.omit_nopics):
-        query = query & (db.reservations.verified_preferred_image_src != None)
+        query = query & (resv.verified_preferred_image_src != None)
     if (request.vars.getfirst('search_mesg')):
-        sanitized = "".join([ch for ch in request.vars.getfirst('search_mesg') if ch.isalnum()])
-        query = query & (db.reservations.user_message_OZ.contains(sanitized))
+        sanitized = "".join(
+            [ch for ch in request.vars.getfirst('search_mesg') if ch.isalnum()])
+        query = query & (resv.user_message_OZ.contains(sanitized))
     if (request.vars.sum):
-        sum = db.reservations.user_paid.sum()
+        sum = resv.user_paid.sum()
         tot = db(query).select(sum).first()[sum]
     limitby=(page*items_per_page,(page+1)*items_per_page+1)
     curr_rows = db(query).select(
-        db.reservations.OTT_ID,
-        db.reservations.name,
-        db.reservations.user_nondefault_image,
-        db.reservations.verified_kind,
-        db.reservations.verified_name,
-        db.reservations.verified_more_info,
-        db.reservations.verified_preferred_image_src,
-        db.reservations.verified_preferred_image_src_id,
-        orderby=~db.reservations.verified_time|db.reservations.reserve_time,
+        resv.OTT_ID,
+        resv.name,
+        resv.user_nondefault_image,
+        resv.verified_kind,
+        resv.verified_name,
+        resv.verified_more_info,
+        resv.verified_preferred_image_src,
+        resv.verified_preferred_image_src_id,
+        orderby=~resv.verified_time|resv.reserve_time,
         limitby=limitby
         )
 
@@ -558,7 +855,7 @@ def sponsored():
     sci_names = {r.OTT_ID:r.name for r in curr_rows}
     html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).items()}
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
-    default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(sci_names.keys()) & (db.images_by_ott.best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
+    default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(sci_names.keys()) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
     #also look at the nondefault images if present - 
     user_images = {}
     for r in curr_rows:
@@ -572,8 +869,8 @@ def sponsored():
                     orderby=~db.images_by_ott.src).first()
     if (request.vars.highlight_pd):
         pds.add(None) #ones without a src_id are public doman
-        pds |= set([l['src_id'] for k,l in default_images.items() if unicode(l['licence'], 'utf8').endswith(u'\u009C')]) #all pd pics should end with \u009C on the licence
-        pds |= set([l['src_id'] for k,l in user_images.items() if unicode(l['licence'], 'utf8').endswith(u'\u009C')]) #all pd pics should end with \u009C on the licence
+        pds |= set([l['src_id'] for k,l in default_images.items() if l['licence'].endswith(u'\u009C')]) #all pd pics should end with \u009C on the licence
+        pds |= set([l['src_id'] for k,l in user_images.items() if l['licence'].endswith(u'\u009C')]) #all pd pics should end with \u009C on the licence
     return dict(rows=curr_rows, page=page, items_per_page=items_per_page, tot=tot, vars=request.vars, pds=pds, html_names=html_names, user_images=user_images, default_images=default_images)
 
 def donor_list():
@@ -624,53 +921,76 @@ def donor_list():
 
 
 
-def sponsor_picks() : #this is a private function
+def sponsor_picks(sponsor_suggestion=None):
     """
     Get the list of hand-picked nodes, from the sponsor_picks table. If a node has a
-    identifier which is a positive integer, this refers to an ott, and the node can be displayed using the 
-    sponsor_node function. Otherwise it is a bespoke collection, displayed using sponsor_handpicks
+    identifier which is a positive integer, this refers to an ott, and the node can be
+    displayed using the sponsor_node function. Otherwise it is a bespoke collection,
+    displayed using sponsor_handpicks.
+    The sponsor_suggestion parameter filters which picks are chosen to be returned:
+    * if an integer, it is one (or a combination) of the bitflags defined in
+        sponsor_suggestion_flags
+    * if it is a string, it indicates a specific sponsor_picks identifier (group name,
+        e.g. "trail2016" to be picked)
     """
 
     #save 'ott':123 in pick[xxx].vars
     pick = {}
-    for row in db(db.sponsor_picks.display_order is not None).select(db.sponsor_picks.ALL, orderby=db.sponsor_picks.display_order):
-        
-        val = {v:row[v] for v in db.sponsor_picks.fields}
-        try:
-            val['vars']=loads(row.vars)
-        except:
-            val['vars']={}
-        if not row.thumb_url:
-            val['thumb_url']=thumbnail_url(row.thumb_src,row.thumb_src_id)
-        if row.identifier.isdigit():
-            val['vars']['ott'] = row.identifier = int(row.identifier)
-            val['page'] = 'sponsor_node'
-        else:
-            val['page'] = 'sponsor_handpicks'
-            val['vars']['group_name'] = row.identifier
-        pick[row.identifier] = val
+    sp_tab = db.sponsor_picks
+    query = (sp_tab.display_order is not None)
+    try:
+        query &= (sp_tab.identifier == (sponsor_suggestion+""))
+    except TypeError:
+        pass  # sponsor_suggestion was a number
+    for row in db(query).select(orderby=sp_tab.display_order):
+        if (row.display_flags is None or sponsor_suggestion is None or
+               row.display_flags & sponsor_suggestion):
+            val = {v:row[v] for v in sp_tab.fields}
+            try:
+                val['vars']=loads(row.vars)
+            except:
+                val['vars']={}
+            if not row.thumb_url and row.thumb_src is not None:
+                val['thumb_url']=thumbnail_url(row.thumb_src,row.thumb_src_id)
+            if row.identifier.isdigit():
+                val['vars']['ott'] = row.identifier = int(row.identifier)
+                val['page'] = 'sponsor_node'
+            else:
+                val['page'] = 'sponsor_handpicks'
+                val['vars']['group_name'] = row.identifier
+            pick[row.identifier] = val
     return pick
     
 def sponsor():
-    languages = []
-    count = db.vernacular_by_ott.lang_full.count()
-    for row in db(db.vernacular_by_ott.preferred == True).select(db.vernacular_by_ott.lang_full, count, groupby=db.vernacular_by_ott.lang_full, orderby=~count):
-        lang_data = language(row.vernacular_by_ott.lang_full)
-        if lang_data:
-            languages.append({'abbrev':row.vernacular_by_ott.lang_full, 'en':lang_data[0].capitalize(), 'native':lang_data[1].capitalize()})
-    return dict(pick=sponsor_picks(), languages=languages, n_species =  db(db.ordered_leaves).count())
+    return dict(pick=sponsor_picks(
+        sponsor_suggestion=sponsor_suggestion_flags['sponsor_by']))
+
+def treecards():
+    prices = []
+    accumulate = 0
+    for row in db(db.prices).select(db.prices.ALL, orderby=db.prices.price):
+        accumulate += row.n_leaves
+        prices.append(
+            {'price_pounds': row.price/100, 'n': row.n_leaves, 'cumulative': accumulate})
+    for p in prices:
+        p['quantile'] = p['cumulative']/accumulate
+    return dict(
+        pick=sponsor_picks(sponsor_suggestion=sponsor_suggestion_flags['sponsor_for']),
+        prices=prices)
+
 
 
 def sponsor_node_price():
     """
-    This refines the base_query to pick <max> leaves for a price band, for use in a 'subpage' (paged row) 
+    Pick <max> leaves for a price band, and return data for the price bands.
     By default ranks by popularity. If price_pence is blank, this returns the 'contact us' details.
     
-    This query is the one that we think slows down the website, because people click on nodes high up
-    in the tree, and a badly-formed query will need to sort millions of leaves according to the image ranking.
-    
-    For this reason, we make 2 queries, firstly for leaves with an image, ranked by image rating, and then 
-    (if we don't get enough results returned) for leaves without an image, ranked by popularity
+    IMPORTANT NOTE: this query has the potential to slow down the website when someone
+      clicks on a node high up in the tree: a badly-formed query will end up sorting
+      millions of leaves according to the image ranking. For this reason, we make 2
+      queries, firstly for leaves with an image, ranked by image rating, and then 
+      (if we don't get enough results returned) for leaves without an image, ranked
+      by popularity.
     """
     price_levels_pence = sorted([row.price for row in db().select(db.prices.price)])
     try:
@@ -688,30 +1008,39 @@ def sponsor_node_price():
             price_pence = None
         query = (db.ordered_leaves.price==price_pence) & query
 
+        # Use some shortcuts
+        img_tab = db.images_by_ott
+        leaf_tab = db.ordered_leaves
         if price_pence is None or price_pence > price_levels_pence[0]:
-            rows_with_images = db(query & (db.images_by_ott.overall_best_any)).select(
+            rows_with_img = db(query & (img_tab.overall_best_any)).select(
                 db.ordered_leaves.ott,
                 db.ordered_leaves.name,
-                db.images_by_ott.src,
-                db.images_by_ott.src_id,
-                db.images_by_ott.rights,
-                db.images_by_ott.licence,
-                join = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
-                limitby = (start, start+n+1), #add an extra on so we can see if there are any more
-                orderby = "images_by_ott.rating DESC")
-            image_urls = {species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows_with_images}
-            image_attributions = {species.ordered_leaves.ott:(' / '.join([t for t in [species.images_by_ott.rights, species.images_by_ott.licence] if t])) for species in rows_with_images}
-            otts = [species.ordered_leaves.ott for species in rows_with_images]
-            sci_names = {species.ordered_leaves.ott:species.ordered_leaves.name for species in rows_with_images}
+                img_tab.src,
+                img_tab.src_id,
+                img_tab.rights,
+                img_tab.licence,
+                join=img_tab.on(img_tab.ott == leaf_tab.ott),
+                limitby=(start, start+n+1), # add an extra one to check if more required
+                orderby=~img_tab.rating)
+            otts = [r.ordered_leaves.ott for r in rows_with_img]
+            sci_names = {
+                r.ordered_leaves.ott: r.ordered_leaves.name for r in rows_with_img}
+            image_urls = {
+                r.ordered_leaves.ott: thumbnail_url(
+                    r.images_by_ott.src, r.images_by_ott.src_id) for r in rows_with_img}
+            image_attributions = {
+                r.ordered_leaves.ott: (' / '.join(
+                    [t for t in [r.images_by_ott.rights, r.images_by_ott.licence] if t]))
+                        for r in rows_with_img}
             
-            extra_needed = (n+1) - len(rows_with_images)
+            extra_needed = (n+1) - len(rows_with_img)
             if extra_needed > 0:            #not enough leaves with images. We need to get ones without images too
                 count = db.ordered_leaves.ott.count()
                 total_with_images = db(query & (db.images_by_ott.overall_best_any)).select(
                     count, 
                     join = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott)
                 ).first()[count]
-                start = start - total_with_images + len(rows_with_images)
+                start = start - total_with_images + len(rows_with_img)
                 assert start >= 0
                 rows_without_images = db(query & (db.images_by_ott.ott == None)).select(
                     db.ordered_leaves.ott, 
@@ -741,7 +1070,7 @@ def sponsor_node_price():
                 ).first()[count]
                 start = start - total_without_images + len(rows_without_images)
                 assert start >= 0
-                rows_with_images = db(query & (db.images_by_ott.overall_best_any)).select(
+                rows_with_img = db(query & (db.images_by_ott.overall_best_any)).select(
                     db.ordered_leaves.ott, 
                     db.ordered_leaves.name,
                     db.images_by_ott.src,
@@ -751,10 +1080,10 @@ def sponsor_node_price():
                     join = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
                     limitby=(start, start+extra_needed), 
                     orderby = "images_by_ott.rating ASC")
-                image_urls = {species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows_with_images}
-                image_attributions = {species.ordered_leaves.ott:(' / '.join([t for t in [species.images_by_ott.rights, species.images_by_ott.licence] if t])) for species in rows_with_images}
-                otts.extend([species.ordered_leaves.ott for species in rows_with_images])
-                sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows_with_images})
+                image_urls = {species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows_with_img}
+                image_attributions = {species.ordered_leaves.ott:(' / '.join([t for t in [species.images_by_ott.rights, species.images_by_ott.licence] if t])) for species in rows_with_img}
+                otts.extend([species.ordered_leaves.ott for species in rows_with_img])
+                sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows_with_img})
 
         #now construct the vernacular names
         html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(otts, return_nulls=True).items()}
@@ -805,8 +1134,7 @@ def sponsor_node_redirect():
 def sponsor_handpicks():
     """
     This differs from sponsor_node because it uses pre-selected lists of taxa, that have been 
-    hand picked by a manager (e.g. for David Attenborough's Birthday list). We should possibly 
-    be storing these in a database, but for the moment we get them from the sponsor_picks() function.
+    hand picked by a manager (e.g. for David Attenborough's Birthday list).
     They should not need to be paged
     """
     valid_dict = sponsor_picks()
@@ -820,9 +1148,8 @@ def sponsor_handpicks():
         max_returned = int(request.vars.n)
     except:
         max_returned = 8
-    from collections import OrderedDict
     
-    if db(query) > 0:
+    if db(query).count() > 0:
         prices_pence = sorted([r.price for r in db().select(db.prices.price)]) + [None]
         otts = OrderedDict()
         image_urls = {}
@@ -846,7 +1173,7 @@ def sponsor_handpicks():
                                left = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
                                orderby = orderby)
             otts[price_pounds] = [r.ordered_leaves.ott for r in rows]
-            image_urls.update({species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows})
+            image_urls.update({species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows if species.images_by_ott.src})
             sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows})
 
         #Now find the vernacular names for all these species
@@ -889,14 +1216,15 @@ def list_sponsorable_children():
 
 def pp_process_post():
     """
-    Should only ever be visited by paypal, to confirm the payment has been made. For debugging problems, see
+    Only visited by paypal, to confirm the payment has been made. For debugging problems, see
     https://developer.paypal.com/docs/classic/ipn/integration-guide/IPNOperations/
      
-    If paypal.save_to_tmp_file_dir in appconfig.ini is e.g. '/var/tmp' then save a temp file called
-    www.onezoom.org_paypal_OTTXXX_TIMESTAMPmilliseconds.json to that dir
+    If paypal.save_to_tmp_file_dir in appconfig.ini is e.g. '/var/tmp' then save a temp
+    file called `www.onezoom.org_paypal_OTTXXX_TIMESTAMPmilliseconds.json` to that dir
     
     If called with no args, return nothing, so as not to excite interest
     """
+    
     if len(request.args) == 0:
         return {}
     try:
@@ -979,28 +1307,39 @@ def pp_process_post():
     ##check that r contains "VERIFIED"
     
     if err:
-        raise HTTP(400, e.message) #should flag up to PP that there is a problem with this transaction
+        raise HTTP(400, err) #should flag up to PP that there is a problem with this transaction
     else:
         return(dict(vars=request.vars, args=request.args))
 
 """ these empty controllers are for other OneZoom pages"""
 
+def introduction():
+    return dict()
+
+def otop_intro():
+    return dict()
+
 def sponsor_thanks():
     return dict()
 
 def endorsements():
-    return dict()
+    quotes = {}
+    rows = db().select(db.quotes.ALL, orderby = ~db.quotes.quality | db.quotes.id)
+    for r in rows:
+        if r.category in quotes:
+            quotes[r.category].append(r)
+        else:
+            quotes[r.category] = [r]
+    return dict(quotes=quotes)
 
 def impacts():
-    redirect(URL('default', 'endorsements.html'))
-    return dict()
+    redirect(URL('default', 'endorsements'))
 
 def impact():
-    redirect(URL('default', 'endorsements.html'))
-    return dict()
+    redirect(URL('default', 'endorsements'))
 
 def installations():
-    return dict()
+    redirect(URL('education', 'installations'))
 
 def developer():
     return dict()
@@ -1017,8 +1356,9 @@ def how():
 def team():
     return dict()
 
-def milestones():
-    return dict()
+def timeline():
+    news = db().select(db.news.ALL, orderby =~ db.news.news_date)
+    return dict(news = news)
 
 def terms():
     return dict()
@@ -1026,6 +1366,9 @@ def terms():
 def FAQ():
     price_levels_pence = sorted([row.price for row in db().select(db.prices.price)])
     return dict(n_species =  db(db.ordered_leaves).count(), second_cheapest_price_pence=price_levels_pence[1])
+
+def gallery():
+    return dict()
 
 def tree_index():
     return dict()
@@ -1175,7 +1518,6 @@ def text_tree(location_string):
     # which has all the string up to the '?' or '#'
     #we have to use both the name and the ott number to get the list of species. 
     #NB: both name or ott could have multiple matches.
-    from collections import OrderedDict
 
     base_ott=base_name=''
     try:
@@ -1329,12 +1671,6 @@ def treeview_info(has_text_tree=True):
     location = remove_location_arg(request.args)
     partner  = remove_partner_arg(request.args)
     page_info={'partner': partner}
-    if len(request.args) and request.args[0] == 'tour':
-        #could have been life/trail2016/tour/newtour/@Mammalia or simply life/trail2016/tour/@Mammalia
-        tour_name = None if len(request.args)==1 else request.args[1]
-        page_info.update({'subtitle': 'Tours',
-                   'tourname': tour_name #only *-=. and alphanumeric in args, so can use this in js
-                   })
     if has_text_tree:
         tt = text_tree(location)
         page_info.update({'tree': tt, 'title_name': ", ".join(life_text_init_taxa(tt))})
@@ -1349,10 +1685,84 @@ def life():
 
 def life_MD():
     """
-    The museum display version, which is sandboxed (and has no underlying text tree with links hidden by JS)
+    Temporarily redirect for darwin & dinos exhibit
+    """
+    redirect(URL(
+        'default', 'life_MDtouch/@Vertebrata=801601?ssaver=600&otthome=801601',
+        url_encode=False))
+
+def lifeMD():
+    """
+    A helper function. At some point we want to replace life_MD with this
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
-    return treeview_info(has_text_tree=False)
+    return dict(
+        screensaver_otts=[991547, 81461, 99252, 770315],
+        **treeview_info(has_text_tree=False))
+    
+def life_MDtouch():
+    """
+    The museum display version for touchscreens, which is sandboxed
+    (and has no underlying text tree with links hidden by JS)
+    """
+    return lifeMD()
+
+def life_MDmouse():
+    """
+    The museum display version for mouse operated systems, which is sandboxed
+    (and has no underlying text tree with links hidden by JS)
+    """
+    return lifeMD()
+
+def life_treasure():
+    """
+    The treasure hunt version, which is sandboxed (and has no underlying text tree with links hidden by JS)
+    """
+    otts = [int(ott) for ott in request.vars.getlist('treasure_taxa') if ott.isdigit()]
+    ids = ids_from_otts_array(otts)
+    id_by_ott = OrderedDict()
+    for ott in otts:
+        if ott in ids['leaves']:
+            id_by_ott[ott]=ids['leaves'][ott]
+        elif ott in ids['nodes']:
+            id_by_ott[ott]=ids['nodes'][ott]
+
+    mappings = nodes_info_from_string('','')
+    leaf_cols = mappings['colnames_leaves']
+    node_cols = mappings['colnames_nodes']
+    data = nodes_info_from_array(
+        ids['leaves'].values(),
+        ids['nodes'].values(),
+        include_names_in=request.vars.lang or request.env.http_accept_language or 'en',
+        include_sponsorship=False)
+    # organise data keyed by ott
+    formatted_name_by_ott = {}
+    vernacular_by_ott={k:v for k,v in data['vernacular_by_ott']}
+    for row in data['leaves']:
+        ott = row[leaf_cols['ott']]
+        if ott:
+            formatted_name_by_ott[ott] = nice_species_name(
+                scientific=row[leaf_cols['name']],
+                common=vernacular_by_ott.get(ott, None),
+                html=True,
+                leaf=True,
+                first_upper=True)
+    for row in data['nodes']:
+        ott = row[node_cols['ott']]
+        if ott:
+            formatted_name_by_ott[ott] = nice_species_name(
+                scientific=row[node_cols['name']],
+                common=vernacular_by_ott.get(ott, None),
+                html=True,
+                leaf=False,
+                first_upper=True)
+
+    
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+    return dict(
+        treasure_id_by_ott=id_by_ott,
+        formatted_name_by_ott=formatted_name_by_ott,
+        **treeview_info(has_text_tree=False))
 
 def life_expert():
     """
@@ -1425,7 +1835,7 @@ def gnathostomata():
 
 def list_controllers():
     """
-    In testing mod only, list all controllers
+    In testing mode only, list all controllers
     Code taken from from applications/admin/controllers/default.py
     """
     from gluon.compileapp import find_exposed_functions

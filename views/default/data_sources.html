@@ -1,8 +1,14 @@
 {{response.title='OneZoom data sources'}}
-{{extend 'layout.html'}}
 {{response.files.append(URL('static', 'css/OZ_shared.css'))}}
-<div class="row-fluid">
-<div class="col-md-12">
-<h1>OneZoom Data sources</h1>
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{extend 'uikit_layout.html'}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+    <h1>OneZoom data sources</h1>
+</div>
+{{end block}}
+
+<div class = "uk-padding">
 {{include 'default/data_sources.load'}}
-</div></div>
+</div>

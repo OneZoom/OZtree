@@ -1,9 +1,10 @@
 import get_controller from '../controller/controller';
 import tree_settings from '../tree_settings';
-import {global_button_action, is_popup_state} from '../button_manager';
-import {get_largest_visible_node, parse_query, encode_popup_action} from './utils';
-import {add_hook} from '../util/index';
+import { global_button_action, is_popup_state } from '../button_manager';
+import { get_largest_visible_node, parse_query, encode_popup_action } from './utils';
+import { add_hook } from '../util/index';
 import config from '../global_config';
+import data_repo from '../factory/data_repo';
 
 let timer = null;
 
@@ -28,12 +29,19 @@ function record_url_delayed() {
  */
 function record_url(options, force) {
   let controller = get_controller();
+
   clearTimeout(timer);
+
+  if (config.disable_record_url) {
+    // In an embedded view, e.g. Don't modify the page URL
+    return;
+  }
+
   options = options || {};
   let node_with_ott = get_largest_visible_node_with_ott(controller.root);
   if (!node_with_ott) return;
   let node_with_name = get_largest_visible_node_with_name(controller.root);
-  
+
   let title = get_title(node_with_name, node_with_ott);
   let hash = get_position_hash(node_with_ott);
   let loc = get_pinpoint(node_with_ott);
@@ -41,9 +49,13 @@ function record_url(options, force) {
   if (current_view_near_previous_view(loc, querystring, hash) && !(force)) {
     return;
   } else if (window.location.protocol != "file:") {
-    let state = get_current_state(node_with_ott, title, options); 
+    let state = get_current_state(node_with_ott, title, options);
     let url = loc + querystring + hash;
-    window.history.pushState(null, title, window.location.origin + pathname_exclude_append() + "/" + url);
+    if (options.replaceURL) {
+      window.history.replaceState(null, title, window.location.origin + pathname_exclude_append() + "/" + url);
+    } else {
+      window.history.pushState(null, title, window.location.origin + pathname_exclude_append() + "/" + url);
+    }
     document.title = unescape(title);
   }
 }
@@ -63,21 +75,21 @@ function current_view_near_previous_view(loc, querystring, hash) {
   else if (current_state.vis_type !== previous_state.vis_type) return false;
   else if (current_state.ott === previous_state.ott) {
     //If no tap window open and position not changed a lot, do not record current position into history.
-    if (!current_state.tap_ott && !previous_state.tap_ott) return true;
+    if (!current_state.tap_ott_or_id && !previous_state.tap_ott_or_id) return true;
     //If opened tap is same as previous, do not record current position into history.
-    if (current_state.tap_ott && previous_state.tap_ott && current_state.tap_ott === previous_state.tap_ott) return true;
-  } 
+    if (current_state.tap_ott_or_id && previous_state.tap_ott_or_id && (current_state.tap_ott_or_id === previous_state.tap_ott)) return true;
+  }
   return false;
 }
 
 function get_largest_visible_node_with_ott(node) {
-  return get_largest_visible_node(node, function(node) {
+  return get_largest_visible_node(node, function (node) {
     return node.ott;
   });
 }
 
 function get_largest_visible_node_with_name(node) {
-  return get_largest_visible_node(node, function(node) {
+  return get_largest_visible_node(node, function (node) {
     return node.cname || node.latin_name;
   });
 }
@@ -89,7 +101,7 @@ function get_largest_visible_node_with_name(node) {
 function get_pos_if_reanchor(node) {
   let xp = node.xvar;
   let yp = node.yvar;
-  let ws = node.rvar/220;
+  let ws = node.rvar / 220;
   return [xp, yp, ws];
 }
 
@@ -102,7 +114,7 @@ function get_title(node_with_name, node_with_ott) {
   } else if (node_with_ott.latin_name) {
     return config.title_func(node_with_ott.latin_name);
   } else {
-    return config.title_func();  
+    return config.title_func();
   }
 }
 
@@ -122,33 +134,49 @@ function get_params(options) {
     //if we set some defaults in the original page, make sure we echo them here
     querystring.push(config.default_setting)
   }
+
   if (!tree_settings.is_default_vis()) {
     let vis_string = tree_settings.vis;
     if (vis_string) {
       querystring.push("vis=" + encodeURIComponent(vis_string));
     } //else could be undefined if some random string was used
   }
+
   if (!tree_settings.is_default_cols()) {
     let cols_string = tree_settings.cols;
     if (cols_string) {
       querystring.push("cols=" + encodeURIComponent(cols_string));
     } //else could be undefined if we since changed components of the colours
   }
+
   if (config.lang) {
-      querystring.push("lang=" + encodeURIComponent(config.lang));
+    querystring.push("lang=" + encodeURIComponent(config.lang));
   }
+
+  if (data_repo.image_source) {
+    querystring.push("img=" + encodeURIComponent(data_repo.image_source))
+  }
+
+  if (config.search_jump_mode) {
+    querystring.push("anim=" + encodeURIComponent(config.search_jump_mode))
+  }
+
+  if (config.home_ott_id) {
+    querystring.push('otthome=' + encodeURIComponent(config.home_ott_id))
+  }
+
   if (options.record_popup) {
     let popup_state = get_popup_state();
     if (popup_state) {
       querystring.push("pop=" + encode_popup_action(popup_state[0]) + "_" + popup_state[1]);
-    }  
+    }
   }
   // Preserve all custom parts of current querystring
-  (config.custom_querystring_params || []).map(function (part_name) {
-      var m = window.location.search.match(new RegExp('(^|&|\\?)' + part_name + '=[^&]+','g'));
-      (m || []).map(function (part) {
-          querystring.push(part.replace(/^[&?]/, ''));
-      });
+  (config.custom_querystring_params || []).concat(['ssaver']).map(function (part_name) {
+    var m = window.location.search.match(new RegExp('(^|&|\\?)' + part_name + '=[^&]+', 'g'));
+    (m || []).map(function (part) {
+      querystring.push(part.replace(/^[&?]/, ''));
+    });
   });
   querystring = querystring.join('&')
   if (querystring !== '') {
@@ -163,7 +191,7 @@ function get_popup_state() {
     if (is_popup_state()) {
       return [global_button_action.action, global_button_action.data];
     }
-  }  
+  }
   return null;
 }
 
@@ -179,9 +207,9 @@ function get_current_state(node, title, options) {
   if (options.record_popup) {
     let popup_state = get_popup_state();
     if (popup_state) {
-      state.tap_action = popup_state[0];  
-      state.tap_ott = popup_state[1];
-    }    
+      state.tap_action = popup_state[0];
+      state.tap_ott_or_id = popup_state[1];
+    }
   }
   return state;
 }
@@ -198,11 +226,11 @@ function pathname_exclude_append() {
   //note that window.location.pathname does not include ?a=b and #foobar parts
   let index = window.location.pathname.indexOf("@");
   if (index === -1) {
-    return window.location.pathname.replace(/\/$/,"");
+    return window.location.pathname.replace(/\/$/, "");
   } else {
-    return window.location.pathname.substring(0, index).replace(/\/$/,"");
+    return window.location.pathname.substring(0, index).replace(/\/$/, "");
   }
 }
 
 
-export {record_url_delayed, record_url};
+export { record_url_delayed, record_url };

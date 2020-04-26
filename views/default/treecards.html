@@ -1,0 +1,94 @@
+{{response.title='OneZoom: Search for a species to sponsor'}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+    <h1 class="full-title">Surprise someone with a Tr-eCard</h1>
+</div>
+{{end block}}
+
+<h2 class="uk-text-center uk-padding-small" >What makes a Tr-eCard special?</h2>
+
+<div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
+    <div class = "uk-padding uk-padding-remove-top">
+        <h3>It's a donation to charity</h3>
+        <p>Your Tr-eCard recognises another person via a donation to our charity, promoting biodiversity, evolution and conservation of the variety of life on earth.</p>
+        <em>"Sponsored for Jane Broadbent, Tortoises are simply the best!"</em>
+        <img class="example-leaf" src="{{=URL('static','images/Screenshots/sponsor_for_1.png')}}" alt="">
+    </div>
+    <div class="uk-padding uk-padding-remove-top">
+        <h3>It's a public greeting</h3>
+        <p>Your message is a public acknowledgement to the person receiving your Tr-eCard that appears on our beautiful tree of life.  It can be seen by any one of our visitors - over a million so far.</p>
+        <em>"Sponsored for Felix Quade, Thank you for everything!"</em>
+        <img class="example-leaf" src="{{=URL('static','images/Screenshots/sponsor_for_2.png')}}" alt="">
+    </div>
+    <div class="uk-padding uk-padding-remove-top">
+        <h3>It's exclusively yours</h3>
+        <p>Your greeting appears on a species that you choose specially for the recipient. That place on the tree will be exclusively theirs for at least four years.</p>
+        <em>"Sponsored for Lynn and Charlotte, who love bunnies"</em>
+        <img class="example-leaf" src="{{=URL('static','images/Screenshots/sponsor_for_3.png')}}" alt="">
+    </div>
+</div>
+
+<h2 class="uk-text-center uk-padding-small" >How to send a Tr-eCard</h2>
+<div class="uk-grid-small uk-text-small uk-child-width-1-2@m " uk-grid>
+    <div class = "uk-padding uk-padding-remove-top">
+        <p>You first need to choose your species using the tools on this page.  Most species requre a donation of
+{{for p in prices:}}
+  {{if p['quantile']<0.5:}}&pound;{{="{:.2f}".format(p['price_pounds']).replace(".00","")}},
+  {{else:}}or &pound;{{="{:.2f}".format(p['price_pounds']).replace(".00","")}} to sponsor
+  {{break}}
+  {{pass}}
+  (roughly {{="{:.1g}".format((prices[-1]['quantile']-prices[-2]['quantile']) * 100)}}% are in the top bracket of &pound;{{="{:.2f}".format(prices[-1]['price_pounds']).replace(".00","")}}).
+With over two million leaves, there's something for everyone.</p>
+        <p>If you find your species whilst exploring the tree, zoom in and click on it to bring up a menu; one of the options will be to sponsor.  You can also find your species from the menus on this page, clicking on it will take you straight to the sponsorship form.  Once you get to the sponsorship form just follow the instructions.</p>
+        <p>Your text will need to be verified to appear on the public tree, once this has been done you will receive an e-mail with a link.  You can then send this on to the recipient of your Tr-eCard</p>
+        <p>OneZoom is a <a href="{{=URL('static','images/RegistrationCertificate.jpg')}}" target="_blank">registered UK charity</a>, your donations help us provide easy access to scientific knowledge about biodiversity and evolution, the variety of life on Earth, and the need to conserve it.</p>
+        <h3 id = "sponsor_title" class="lined">Explore the tree to choose your species</h3>
+        <p>You can search within our tree viewer, or simply browse the tree to see what catches your eye.</p>
+        <div class="uk-text-center uk-padding"> <a class = "a-light oz-pill pill-leafout" href = "{{=URL('default','life.html')}}" target = "_blank">Explore now</a></div>
+    </div>
+    <div class="uk-padding uk-padding-remove-top">
+        <h3>Choose a category to find your species</h3>
+        <ul class="short-sponsor-ideas">
+            {{for key, info in pick.items():}}{{if not info.get("subtext"):}}
+            <li class="{{=str(key)}}"><a href="{{=URL(info['page'], vars=info.get('vars'))}}"><img src='{{=info["thumb_url"]}}' /><p>{{=info["name"]}}</p></a>
+            {{pass}}{{pass}}
+        </ul>
+        <h3>... or search for existing sponsorships</h3>
+        <form action="{{=URL('API', 'search_for_sponsor')}}" class="lined">
+            <fieldset>
+                <input type="search" name="query" class="" />
+                <input type="hidden" name="limit" value="6" />
+                <input type="hidden" name="default_images" value="1" />
+                <select name="type">
+                    <option value="all">search all sponsorships</option>
+                    <option value="for">sponsorships for someone else</option>
+                    <option value="by">sponsorships for the sponsor themselves</option>
+                </select>
+                <button class="btn btn-primary" type="submit">Search sponsorships</button>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+<!--
+ <p>We'll add some examples of each category with images to show people</p>
+ <ul>
+ <li>£5 ... tens of thousands available (possibly no photo or common name but some nice things if you search for them)</li>
+ <li>£10 ... just under a million available</li>
+ <li>£20 ... just under a million available (orchids and roses)</li>
+ <li>£40 ... tens of thousands available (e.g. blue ringed octopus, seahorse, fruit bat)</li>
+ <li>£75 ... thousands available (e.g. rattlesnake, poison dart frog, hummingbird, tea or coffee, venus flytrap, barbary macaque)</li>
+ <li>£150 ... hundreds available (e.g. giraffe, scarlet macaw, penguin)</li>
+ <li>£ contact us ... a few really cool species (e.g lion)</li>
+ </ul>
+ -->
+
+
+
+
+
+
+

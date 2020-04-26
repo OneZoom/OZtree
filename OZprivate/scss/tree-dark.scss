@@ -45,3 +45,8 @@ $color-ui-foreground: #eee;
 .uk-modal-dialog h6, .uk-modal-dialog .uk-h6 {
   color: #c5c5c5;
 }
+
+#searchnav .icon-beside-input .main-icon img {
+  /* oz-logo-icon-darkbg.svg needs to be lightened for contrast */
+  filter: invert(1);
+}

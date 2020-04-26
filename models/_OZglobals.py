@@ -2,6 +2,7 @@
 #NB: this should be executed first (begins with _ and the web2py book says "Models in the same folder/subfolder are executed in alphabetical order.")
 import sys
 # Python 2 and 3, instead of python2 unichr:
+oldchr = chr  # For supporting python 2 in places
 from builtins import chr
 
 try:
@@ -29,7 +30,9 @@ percent_crop_expansion = 12.5 #max amount to expand crops by to fit in circle
 # bitwise flags for existence of different language wikipedia articles
 # this variable is also used in construct_wiki_info in CSV_base_table_creator.py
 wikiflags = cache.ram('wikiflags',
-    lambda: {lang:bit for (bit,lang) in enumerate(['en','de','es','fr','ja','ru','it','zh','pt','ar','pl','nl','fa','tr','sv','he','uk','id','vi','ko'])},
+    lambda: {lang:bit for (bit,lang) in enumerate([
+        'en', 'de', 'es', 'fr', 'ja', 'ru', 'it', 'zh', 'pt', 'ar',
+        'pl', 'nl', 'fa', 'tr', 'sv', 'he', 'uk', 'id', 'vi', 'ko'])},
     time_expire = None)
 
 # Source flags are used to identify the source of images and vernacular names, and chose
@@ -69,14 +72,20 @@ inv_src_flags = cache.ram('inv_src_flags',
     lambda: {src_flags[k]:k for k in src_flags},
     time_expire = None)    
 
-#For keeping track of where users are looking
-#NB: if eol ID was inspected via copyright symbol, the user is going straight to the
-# data_object (image) page, and we can probably assume they won't be
-# altering the vernacular name, just cropping the image. If via the tab, then
-# they might be changing images or names. If via == "name", then we can assume that
-# only the vernacular name has been inspected (e.g. an internal node)
+# For keeping track of where users are looking
+# NB: if eol ID was inspected via copyright symbol, the user is going straight to the
+#  data_object (image) page, and we can probably assume they won't be
+#  altering the vernacular name, just cropping the image. If via the tab, then
+#  they might be changing images or names. If via == "name", then we can assume that
+#  only the vernacular name has been inspected (e.g. an internal node)
 eol_inspect_via_flags = cache.ram('eol_inspect_via_flags',
     lambda: {'EoL_tab':1, 'image':2, 'sponsor':3, 'name':4},
+    time_expire = None)
+
+# Flags to mark whether a sponsor pick suggestion is appropriate in different contexts,
+# for example if the context is a sponsorship "by" or "for" someone
+sponsor_suggestion_flags = cache.ram('sponsor_suggestion_flags',
+    lambda: {'sponsor_by':1, 'sponsor_for':2},
     time_expire = None)
 
 #classes of image (see comments in images_by_ott definition below). 
@@ -295,14 +304,14 @@ logographic_transcriptions = cache.ram('logographic_transcriptions',
 # id / name / icon of all tabs
 tab_definitions = cache.ram('tab_definitions',
     lambda: __import__('collections').OrderedDict([
-      ('opentree',{'id':'opentree',   'name':T('OpenTree'),     'icon':URL('static','images/mini-opentree-logo.png')}),
-      ('wiki',{'id':'wiki',   'name':T('Wikipedia'),            'icon':URL('static','images/W.svg')}),
-      ('eol',{'id':'eol',     'name':T('Encyclopedia of Life'), 'icon':URL('static','images/EoL.png')}),
-      ('iucn',{'id':'iucn',   'name':T('Conservation'),         'icon':URL('static','images/IUCN_Red_List.svg')}),
-      ('ncbi',{'id':'ncbi',   'name':T('Genetics'),             'icon':URL('static','images/DNA_icon.svg')}),
+      ('opentree',{'id':'opentree',   'name':'OpenTree',     'icon':URL('static','images/mini-opentree-logo.png')}),
+      ('wiki',{'id':'wiki',   'name':'Wikipedia',            'icon':URL('static','images/W.svg')}),
+      ('eol',{'id':'eol',     'name':'Encyclopedia of Life', 'icon':URL('static','images/EoL.png')}),
+      ('iucn',{'id':'iucn',   'name':'Conservation',         'icon':URL('static','images/IUCN_Red_List.svg')}),
+      ('ncbi',{'id':'ncbi',   'name':'Genetics',             'icon':URL('static','images/DNA_icon.svg')}),
       #('powo',{'id':'powo',   'name':T('Kew')}),
-      ('ozlinks',{'id':'ozlinks','name':T('External Links'), 'icon':URL('static','images/links.svg')}),
-      ('ozspons',{'id':'ozspons','name':T('Sponsor'), 'icon':URL('static','images/sponsor.png')})]),
+      ('ozlinks',{'id':'ozlinks','name':'External Links', 'icon':URL('static','images/links.svg')}),
+      ('ozspons',{'id':'ozspons','name':'Sponsor', 'icon':URL('static','images/sponsor.png')})]),
     time_expire = None)
 
 

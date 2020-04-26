@@ -55,10 +55,35 @@ input[type=checkbox], input[type=radio] {
   }
 }
 
-// ===== General === //
+// ==== Blockquote ==== //
+
+.blockquote-ul {
+list-style-type: none;
+font-style: none;
+}
+
+.blockquote-footer {
+color: #a6a6a6;
+
+}
+
+.blockquote-main {
+font-size: .875rem;
+padding: 0 0 0 0.5em;
+border-left: 5px solid #ccc;
+}
+
+
+
+// ===== General ==== //
 
 h1,h2,header {text-align: center}
-h3,h4,h5 {text-align: left}
+h3,h4,h5 {
+    text-align: left
+    strong {
+        color: black;
+    }
+}
 
 dt {margin-left: 1em}
 dd {margin-left: 2em}
@@ -80,6 +105,10 @@ img.lft_edge {
 }
 
 img.centre {
+}
+
+figure {
+    border: 0
 }
 
 // ===== Index ====== //
@@ -180,6 +209,7 @@ h1 {
     }
   }
 }
+
 // ===== Sponsor ====== //
 
 .full-title {
@@ -236,150 +266,8 @@ q {
     columns: 2 16em;
 }
 
-// ===== Search sponsor ====== //
-ul.sponsor_list {
-    list-style: none;
-}
-ul.sponsor_list > li:nth-of-type(even) {
-    background-color: $grey-lightest;
-}
 
-ul.sponsor_list li {
-    padding-left: 80px; 
-    padding-top:20px; 
-    background-size:60px; 
-    height: 75px; 
-    background-repeat: no-repeat; 
-    background-position: .5em .5em; 
-}
-
-
-
-// ===== Sponsored, donor_list ====== //
-
-.sponsored_list {
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around; 
-  li {
-    display: inline-block; 
-    position: relative; 
-    vertical-align:text-top; 
-    padding:0 1em; 
-    margin: 1em 0; 
-/*    border-right: 1px solid grey;*/
-    text-align: center;
-  }
-  img {
-    border-radius: 50%;
-    border: 2px solid grey;
-    &.nopic {
-    border: 1px solid grey; opacity: 0.2;
-    }
-    &.pd {
-    border-color: green;
-    }
-  }
-}
-
-.donor_head h1 {
-    padding:1em 4em 0 4em;
-}
-
-.donor_list {
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around; 
-  li {
-    display: inline-block; 
-    position: relative; 
-    vertical-align:text-top; 
-    padding:0 1em; 
-    margin: 1em 0; 
-    text-align: center;
-    ul {  display: flex;
-          flex-wrap: wrap;
-          justify-content: space-around;
-          padding: 0;
-          margin: 0;
-          li {
-                display: inline-block; 
-                position: relative;             
-          }
-    }
-  }
-  .donor {
-    font-size: 2em;
-  }
-  img {
-    border: 2px solid grey;
-    &.nopic {
-    border: 1px solid grey; opacity: 0.2;
-    }
-  }
-}
-
-
-.donor_list.cutoff_gt1000 {
-  padding: 0;
-  margin: 0;
-  display: block;
-  > li {
-    margin:2em 10%;
-    border-radius: 1em;
-    border: 5px solid gold;
-    display: block; 
-    vertical-align:text-top; 
-    padding:0 1em; 
-    text-align: center;
-  }
-  .donor {
-    font-size: 2.5em;
-  }
-  img {
-    width: 100px;
-    border: 2px solid grey;
-  }
-}
-
-.donor_list.cutoff_gt150 {
-  padding: 0;
-  margin: 0;
-  display: block;
-  > li {
-    border-radius: 1em;
-    border: 3px solid silver;
-    display: block; 
-    vertical-align:text-top; 
-    padding:0 1em; 
-    margin: 2em 10%; 
-    text-align: center;
-  }
-  .donor {
-    font-size: 2.5em;
-  }
-  img {
-    width: 100px;
-    border: 2px solid grey;
-  }
-}
-
-.donor_foot {
-    color: grey;
-    font-size: smaller;
-    margin-bottom: 1em
-}
-
-.hefty {
-  font-size: 120%;
-  font-weight:bold
-}
-
-// ===== Multi-columns (FAQ & milestones) ====== //
+// ===== Multi-columns (FAQ, endorsements, & milestones) ====== //
 
 ul.columns {
     list-style-type: none;
@@ -393,6 +281,7 @@ ul.columns {
           page-break-inside: avoid;
                break-inside: avoid;
     text-align: justify;
+    margin-bottom: 1.5em;
 }
 
 .columns.faq li p {
@@ -428,43 +317,12 @@ ul.columns.last {
           border-bottom: 0;
 }
 
-// ===== Translations ====== //
-
-.untranslated {
-    background-color: yellow;
-}
-
-// ===== Embedded pages (e.g. wikipedia) ====== //
-
-.wikipedia-warning, .wikidata-warning {
-    color: black;
-    text-align: center;
-    background-color: yellow;
-}
-
-.wikipage-source {
-    clear:both;
-    text-align: center;
-    background-color: lightgrey;
-}
-
-.ajax-loading-pic {
-    position: absolute;
-    width: 100%;
-    text-align: center;
-}
-
 // ===== Override some stupid web2py bootstrap defaults ==== //
 header {
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
     box-shadow: none;
     margin-bottom: auto;
-}
-
-header h1 {
-    color: #000!important;
-    text-shadow: none;
 }
 
 

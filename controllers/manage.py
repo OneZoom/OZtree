@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from OZfunctions import *
+import warnings
 
 @require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
@@ -14,7 +15,7 @@ def edit_language():
     import os
     import re
     import time
-    from gluon.languages import (read_dict, write_dict)
+    from gluon.languages import (read_dict, write_dict, to_native)
     from gluon.utils import md5_hash
     if len(request.args) == 0:
         raise HTTP(400 , "No language provided") 
@@ -28,8 +29,7 @@ def edit_language():
                 form = SPAN(strings['__corrupted__'], _class='error')
                 return dict(filename=filename, form=form)
         
-            keys = sorted(strings.keys(), lambda x, y: cmp(
-                unicode(x, 'utf-8').lower(), unicode(y, 'utf-8').lower()))
+            keys = sorted(strings.keys(), key=lambda x: to_native(x).lower())
             rows = []
             rows.append(H2(T('Original/Translation')))
         
@@ -66,8 +66,13 @@ def edit_language():
                 strs = dict()
                 for key in keys:
                     name = md5_hash(key)
-                    if form.vars[name] == chr(127):
-                        continue
+                    with warnings.catch_warnings(record=True) as w:
+                        try:
+                            if form.vars[name] == chr(127):
+                                continue
+                        except UnicodeWarning:
+                            if form.vars[name] == oldchr(127):
+                                continue
                     strs[key] = form.vars[name]
                 write_dict(filename, strs)
                 session.flash = T('file saved on %(time)s', dict(time=time.ctime()))

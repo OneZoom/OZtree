@@ -34,42 +34,36 @@ response.google_analytics_id = None
 # james todo manager only menu?
 
 response.menu = [
-                 (T('Explore'), False, None , [ #need to set url_encode=False to avoid web2py quoting the @ sign
-                                            (T('All complex life'), False, URL('default', 'life', args=['@Eukaryota=304358'], url_encode=False)),
-                                            (T('Vascular plants'), False, URL('default','life', args=['@Tracheophyta=10210'], url_encode=False)),
-                                            (T('Birds'), False , URL('default','life', args=['@Aves=81461'], url_encode=False)),
-                                            (T('Amphibians'), False , URL('default','life', args=['@Amphibia=544595'], url_encode=False)),
-                                            (T('Mammals'), False , URL('default','life', args=['@Mammalia'], url_encode=False)),
-                                            (T('Apes'), False, URL('default','life', args=['@Hominoidea=38619'], url_encode=False))
+                 (T('For Everyone'), False, None , [ #need to set url_encode=False to avoid web2py quoting the @ sign
+                                            (T('A view of all life'), False, URL('default', 'introduction', url_encode=False)),
+                                            (T('Your name on the tree'), False, URL('default' , 'sponsor.html')),
+                                            (T('Send a tr-eCard'), False, URL('default' , 'treecards.html')),
+                                            (T('Act for biodiversity'), False, URL('default' , 'otop_intro.html')),
                                             ]),
-                 (T('Sponsor'), False, URL('default' , 'sponsor.html')),
-                 (T('Installations'), False, URL('default' , 'installations.html')),
-                 (T('Endorsements'), False, URL('default' , 'endorsements.html')),
-                 (T('More'), False, None , [
-                                            (T('Milestones'), False , URL('default' , 'milestones.html') ),
-                                            (T('About OneZoom'), False, URL('default' , 'about.html')),
+                
+                 (T('For Education'), False, None , [
+                                                    (T('Installations'), False, URL('education' , 'installations.html')),
+                                                    (T('Display launcher'), False, URL('education' , 'museum_display_setup.html')),
+                                                     (T('Educational materials'), False , URL('education' , 'educational_materials.html')),
+                                                    (T('Screenshot tool'), False , URL('education' , 'screenshot_launcher.html')),
+                                                   ]),
+                 
+                 (T('For Science'), False, None , [
                                             (T('Data sources'), False, URL('default' , 'data_sources.html')),
+                                            (T('Legacy trees'), False , URL('default' , 'tree_index.html')),
+                                            (T('Developer tools'), False , URL('default' , 'developer.html')),
+                                            (T('Popularity index'), False , URL('popularity' , 'index.html')),
+                                            ]),
+                 
+                 (T('About us'), False, None , [
+                                            (T('Project timeline'), False , URL('default' , 'timeline.html') ),
+                                            (T('Endorsements'), False, URL('default' , 'endorsements.html')),
+                                            (T('About OneZoom'), False, URL('default' , 'about.html')),
                                             (T('Donors'), False , URL('default' , 'donor_list.html') ),
                                             (T('Team'), False, URL('default' , 'team.html')),
                                             (T('FAQ'), False, URL('default' , 'FAQ.html')),
-                                            (T('Legacy trees'), False , URL('default' , 'tree_index.html')),
-                                            (T('Developer tools'), False , URL('default' , 'developer.html')),
                                             ]),
                  ]
-
-
-"""(T('Donor thanks'), False, URL('default' , 'donor_list.html')),"""
-
-
-"""(T('More'), False, None , [
-                           (T('Past milstones'), False , URL('default' , 'milestones') ),
-                            (T('Future plans'), False , URL('default' , 'future')),
-                           (T('Other trees'), False , URL('default' , 'tree_index')),
-                           (T('Images and videos'), False , URL('default' , 'gallery')),
-                           (T('Developer tools'), False , URL('default' , 'developer')),
-                           (T('Terms of use'), False , URL('default' , 'terms.html#useterms')),
-                           ]), """
-
 
 
 DEVELOPMENT_MENU = False

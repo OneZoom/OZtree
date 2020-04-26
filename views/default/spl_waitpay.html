@@ -1,6 +1,17 @@
-{{response.title='OneZoom: '+T('species awaiting sponsorship payment')}}
+{{
+    response.title='OneZoom: '+T('species awaiting sponsorship payment')
+    response.files.append(URL('static', 'css/content_pages.css'))
+}}
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
-{{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
-    <h3>{{=T('Reserved pending donation receipt')}}</h3>
-    <p>{{=XML(T('This leaf, %s, has been reserved and is waiting to be matched to a donation. If you are the person who reserved it you might wish to return to this page later to see if the status has progressed to <q>awaiting admin check</q>, as it does sometimes take a while for payments to be processed and posted.  If you suspect something went wrong at the PayPal stage please %s to resolve it. After %s hours this leaf will become available again unless it is matched to a donation.') % (the_long_name, A(T('contact us'),_href="mailto:mail@onezoom.org"), unpaid_time_limit_hours))}}</p>
-    <p>{{=T('Only one sponsor per leaf so get your favourite species before someone else does.')}}</p>
+{{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
+
+{{block masthead}}
+{{if 'embed' not in request.vars:}}
+<div class="home-heading uk-text-center uk-padding-small">
+  <h1>Leaf sponsorship</h1>
+</div>
+{{pass}}
+{{end block}}
+<h2>{{=T('Reserved pending donation receipt')}}</h2>
+<p>{{=XML(T('This leaf, %s, has been reserved and is waiting to be matched to a donation. If you are the person who reserved it you might wish to return to this page later to see if the status has progressed to <q>awaiting admin check</q>, as it does sometimes take a while for payments to be processed and posted.  If you suspect something went wrong at the PayPal stage please %s to resolve it. After %s hours this leaf will become available again unless it is matched to a donation.') % (the_long_name, A(T('contact us'),_href="mailto:mail@onezoom.org"), unpaid_time_limit_hours))}}</p>
+<p>{{=T('Only one sponsor per leaf so get your favourite species before someone else does.')}}</p>

@@ -1,20 +1,21 @@
 {{response.title='OneZoom: Choose a species to sponsor'}}
-{{response.files.append(URL('static', 'OZSponsor/sponsor_node.css'))}}
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
-{{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
+{{response.files.insert(0,URL('static','js/web2py.js')) #To allow =LOAD(ajax=True) to work}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
 
-<!-- (ottid, name, eolid)*6*price + status in {error string} -->
-<div class="row-fluid intro">
-  <div class="col-md-12">
-    <header><h1>{{=T('Choose a leaf to sponsor on the OneZoom Tree of Life Explorer')}}</h1>
-    <p>{{=T('Sponsor a leaf for yourself or as a unique gift for someone you know.')}}</p></header>
-    <p>{{info_text = T('All the species on this page are descended from the part of the tree that you clicked on. We have selected some popular ones to show you, or you can look through %(sp_list)s. If you choose to sponsor one, we will acknowledge your donation to the %(oz_link)s and %(partner_link)s by displaying your chosen sponsor’s name on that leaf of the tree. Donations to OneZoom will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. %(partner_fund_use)s.') if partner else T('All the species on this page are descended from the part of the tree that you clicked on. We have selected some popular ones to show you, or you can look through %(sp_list)s. If you choose to sponsor one, we will acknowledge your donation to the %(oz_link)s by displaying your chosen sponsor’s name on that leaf of the tree. Donations to OneZoom will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.')}}
-    {{=XML(info_text % dict(sp_list=A(T("an alphabetical list"), _href=URL('list_sponsorable_children', vars=vars)), oz_link=A(T("OneZoom charity"), _href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"),partner_fund_use=T(partner.get('details')) if partner else "",partner_link=A(partner.get('name'), _href=partner.get('url'), _target="_blank") if partner else ""))}}</p>
-  </div>
+{{block masthead}}
+{{if 'embed' not in request.vars:}}
+<div class="home-heading uk-text-center uk-padding-small">
+  <h1>Sponsorship suggestions</h1>
 </div>
-
-<div class="row-fluid">
-   <div class="col-md-12">
+{{pass}}
+{{end block}}
+<h2>{{=T('Choose a leaf to sponsor on the OneZoom Tree of Life')}}</h2>
+<em>{{=T('Sponsor a leaf for yourself or as a unique gift for someone you know.')}}</em>
+<p>{{info_text = T('All the species on this page are descended from the part of the tree that you clicked on. We have selected some popular ones to show you, or you can look through %(sp_list)s. If you choose to sponsor one, we will acknowledge your donation to the %(oz_link)s and %(partner_link)s by displaying your chosen sponsor’s name on that leaf of the tree. Donations to OneZoom will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. %(partner_fund_use)s.') if partner else T('All the species on this page are descended from the part of the tree that you clicked on. We have selected some popular ones to show you, or you can look through %(sp_list)s. If you choose to sponsor one, we will acknowledge your donation to the %(oz_link)s by displaying your chosen sponsor’s name on that leaf of the tree. Donations to OneZoom will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.')}}
+    {{=XML(info_text % dict(sp_list=A(T("an alphabetical list"), _href=URL('list_sponsorable_children', vars=vars)), oz_link=A(T("OneZoom charity"), _href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"),partner_fund_use=T(partner.get('details')) if partner else "",partner_link=A(partner.get('name'), _href=partner.get('url'), _target="_blank") if partner else ""))}}</p>
+<div>
 {{if error is not None:}}
     <h4>{{=error}}</h4>
 {{else:}}
@@ -29,22 +30,15 @@
                 {{if len(first25)>24 and i==23:}}
                     <li>{{=XML(A(T('…more'),_href=URL('list_sponsorable_children', vars=vars)))}}</li>
                 {{else:}}
-                    <li>{{=XML(I(A(spp.name), _href=URL('sponsor_leaf', vars=dict(vars,ott=spp.ott))))}}</i></a></li>
+                    <li>{{=XML(A(I(spp.name), _href=URL('sponsor_leaf', vars=dict(vars,ott=spp.ott))))}}</i></a></li>
                 {{pass}}
             {{pass}}
         {{pass}}
         </ul>
     {{pass}}
 {{pass}}
-
-</div>
 </div>
 
-{{if request.vars.embed:}}
-{{else:}}
-<div class="row-fluid">
-   <div class="col-md-12">
-        <p>{{=XML(T("If you fancy something different, you can %s, or simply %s and see what you like.") % (A(T('search for other available species'), _href=URL('default','sponsor')), A("browse the tree of life", _href=URL('default','life'))))}}</p>
-    </div>
-</div>
+{{if not request.vars.embed:}}
+<p>{{=XML(T("If you fancy something different, you can %s, or simply %s and see what you like.") % (A(T('check out some of our suggestions'), _href=URL('default','sponsor')), A("browse the tree of life", _href=URL('default','life'))))}}</p>
 {{pass}}

@@ -1,13 +1,16 @@
 {{response.title='OneZoom: Alphabetical list of children'}}
-{{extend 'embed.html' if request.vars.get('embed') else 'layout.html'}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{extend 'embed.html' if request.vars.get('embed') else 'uikit_layout.html'}}
 {{if len(species)==0:}} 
-    Sorry, no results found.
+    <h2 class="uk-container-center">Sorry, no results found.</h2>
 {{else:}}
-    <h4>Alphabetical list of species in this group</h4>
+{{block masthead}}
+    <h2>Alphabetical list of species in this group</h2>
+{{end block}}
     <ul>
     {{for i,s in enumerate(species):}}
         {{if i==items_per_page: break}}
-        <li><a href="{{=URL('sponsor_leaf', vars={k:v for d in [request.vars, {'ott':s.ott}] for k,v in d.items()})}}"><i class="taxonomy">{{=s.name.replace('_', ' ')}}</i></a> &mdash; &pound;{{if s.price is None:}}contact us{{else:}}{{="{:.2f}".format(1.0/100.0*s.price)}}{{pass}} or more to sponsor.</li>
+        <li><a href="{{=URL('default', 'sponsor_leaf', vars={k:v for d in [request.vars, {'ott':s.ott}] for k,v in d.items()})}}"><i class="taxonomy">{{=s.name.replace('_', ' ')}}</i></a> &mdash; &pound;{{if s.price is None:}}contact us{{else:}}{{="{:.2f}".format(1.0/100.0*s.price)}}{{pass}} or more to sponsor.</li>
     {{pass}}
     </ul>
     {{if page:}}

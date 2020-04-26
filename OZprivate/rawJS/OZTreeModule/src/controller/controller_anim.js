@@ -5,9 +5,16 @@ import data_repo from '../factory/data_repo';
 import * as position_helper from '../position_helper';
 import config from '../global_config';
 
+class UserInterruptError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "UserInterruptError";
+  }
+}
+
 /**
- * This function would firstly collects nodes and leaves which are on or near the main branch in the fly animation.
- * Then it will fetch metadata of these nodes or leaves and return resolve when it's done.
+ * This function collects nodes and leaves which are on or near the main branch in the fly animation,
+ * animation, then fetches metadata of these nodes or leaves, returning resolve when done.
  * @param {node} root controller.root
  * @return {Promise}
  * -- resolve when metadata is returned.
@@ -112,78 +119,96 @@ function get_details_of_nodes_in_view_during_fly(root) {
  */
 export default function (Controller) {
   /**
-   * @param {integer} codein_fly 
-   * codein_fly < 0, leaf(metacode == -codein_fly),
-   * codein_fly > 0, interior_node(metacode == codein_fly)
-   */   
-  Controller.prototype.perform_leap_animation = function(codein_fly) {
-    tree_state.flying = false;
-    this.develop_branch_to(codein_fly);
-    position_helper.perform_actual_leap(this);
-  }
-
-  /**
-   * Leap directly to a new position
+   * Leap directly to a new OneZoom node id in the tree. If a position is given, it
+   * should be of the form [xp, yp, ws] or {'xp': xp, 'yp': yp, 'ws': ws}
    *
-   * @param {object} new_pos {xp: .., yp: .., ws: ..}
-   * @param {integer} codein_fly
-   * codein_fly < 0, leaf(metacode == -codein_fly),
-   * codein_fly > 0, interior_node(metacode == codein_fly)
-   */
-  Controller.prototype.perform_leap_to_position = function(codein_fly, new_pos) {
-      //jump to position pinpoint by reanchored node(codeIn) and position(state.xp, state.yp, state.ws)
-      //TO DO - James says this needs to work even if the screen size etc has changed
-      tree_state.xp = new_pos.xp;
-      tree_state.yp = new_pos.yp;
-      tree_state.ws = new_pos.ws;
-      this.develop_and_reanchor_to(codein_fly);
-      this.re_calc();
-      this.trigger_refresh_loop();
-  };
+   * @param {integer} dest_OZid The OneZoom node ID (*not* the OTT). Caution: these IDs
+   *    are not permanent, but change every time the tree is updated. These are read as
+   *        dest_OZid < 0 means a leaf (metacode == -dest_OZid),
+   *        dest_OZid > 0 means an interior_node (metacode == dest_OZid)
+   * @param {object} position (optional) an object or array of the form [xp, yp, ws] or
+   *    {'xp': xp, 'yp': yp, 'ws': ws} where xp, yp, ws are numeric
+   */   
+  Controller.prototype.leap_to = function(dest_OZid, position=null) {
+    return new Promise((resolve) => {
+      tree_state.flying = false;
+      if (position && (typeof(position) === 'object')) {
+        tree_state.xp = position.xp || position[0] || 0
+        tree_state.yp = position.yp || position[1] || 0
+        tree_state.ws = position.ws || position[2] || 1
+        this.develop_and_reanchor_to(dest_OZid);
+        this.re_calc();
+        this.trigger_refresh_loop();
+      } else {
+        this.develop_branch_to(dest_OZid);
+        position_helper.perform_actual_leap(this);
+      }
+      resolve()
+    })
+  }
   
   /**
-   * zooms you to a specified place in the tree from your current position
-   * it doesn't change direction and so does a bad job for cousins (see perform_flight_transition for a solution)
-   * @param {integer} codein_fly
-   * codein_fly < 0, leaf(metacode == -codein_fly),
-   * codein_fly > 0, interior_node(metacode == codein_fly)
-   * @param {boolean} into_node Set this to 'true' to end up zoomed so the interior node fills the screen, rather than  
-   * the wider-angle viewpoint that to show the entire tree structure descended from that node.
-   * @param {func} finalize_func is optional, and gives a function to call at the end of the zoom
-   * @return {boolean} returns false if the distance to codein_fly is too short so there is no animation performed.
+   * Fly directly to a specified OneZoom node id in the tree from your current position.
+   * As this doesn't involve a change in direction, it may not not display the
+   * relationship between species around the current position and those at the target
+   * location (i.e. it may do a bad job for cousins). For this you probably want to use
+   * the function `fly_on_tree_to()`
+   * @param {integer} dest_OZid The OneZoom node ID (not the OTT). Caution: these IDs are
+   *     not permanent, but change every time the tree is updated. These are read as
+   *        dest_OZid < 0 means a leaf (metacode == -dest_OZid),
+   *        dest_OZid > 0 means an interior_node (metacode == dest_OZid)
+   * @param {boolean} into_node Set this to 'true' to end up zoomed so the interior node
+   *     fills the screen, rather than the wider-angle viewpoint that
+   *     shows the entire tree structure descended from that node.
+   * @param {float} speed The speed of this transition relative to the global animation
+   *     speed. Values over 1 lead to faster animations (default = 1)
+   * @param {string} accel_type The acceleration type, one of
+   *    "linear" (default, also used if null), "accel", or "decel".
+   * @param {func} finalize_func The function to call at the end of the zoom (optional)
+   * @return {Promise} resolve when fly finishes. throws an exception when fly is interrupted
    */
-  Controller.prototype.perform_flight_animation = function(codein_fly, into_node, finalize_func) {
+  Controller.prototype.fly_straight_to = function(
+        dest_OZid, into_node, speed=1, accel_type='linear') {
     tree_state.flying = false;
-    this.develop_branch_to(codein_fly);
-    return position_helper.perform_actual_fly(this, into_node, finalize_func);
+    this.develop_branch_to(dest_OZid);
+
+    return new Promise((resolve, reject) => {
+      position_helper.perform_actual_fly(
+        this, into_node, speed, accel_type || 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
+    })
   }
     
     
     /**
-     * Zooms from current location to any new location via common ancestor and in a sensible way
-     * this is a key function for making TreeTours work.
-     * Later this will need to accept a transition speed and type input.
-     * @param {integer} codeout_fly is the point used to calculate the point to fly out to
-     * The flight transition will first fly from the current position to the MRCA between
-     * codeout_fly and codein_fly. If null, we calculate the MRCA between the current position 
-     * (the node whose descendants include all leaves on screen) and codein_fly. If an integer, the
-     * codeout_fly value specifies a node as follows:
-     * codeout_fly < 0, leaf(metacode == -codein_fly),
-     * codeout_fly > 0, interior_node(metacode == codein_fly)
-     * @param {integer} codein_fly is the place to fly into
-     * codein_fly < 0, leaf(metacode == -codein_fly),
-     * codein_fly > 0, interior_node(metacode == codein_fly)
-     * @param {boolean} into_node Set this to 'true' to end up zoomed so the interior node fills the screen, rather than  
-     * the wider-angle viewpoint that to show the entire tree structure descended from that node.
-     * @param {func} finalize_func is optional, and gives a function to call at the end of the zoom
-     * @return {boolean} returns false if the distance to codein_fly is too short so there is no animation performed.
+     * Zooms from current location to any new location via common ancestor and in a
+     * sensible way. This is a key function for making TreeTours work.
+     * @param {integer} src_OZid is either a OneZoom id used to calculate the source for
+     *     the flight, or `null`. If null, we calculate the MRCA between the current position 
+     *     (the node whose descendants include all leaves on screen) and dest_OZid.
+     *     If an integer, the src_OZid value specifies a node as follows:
+     *         src_OZid < 0, means a leaf (metacode == -src_OZid),
+     *         src_OZid > 0, means an interior_node (metacode == src_OZid)
+     * @param {integer} dest_OZid is the place to fly in to:
+     *     dest_OZid < 0 means a leaf (metacode == -dest_OZid),
+     *     dest_OZid > 0 means an interior_node (metacode == dest_OZid)
+     * @param {boolean} into_node Set this to 'true' to end up zoomed so the interior
+     *     node fills the screen, rather than the wider-angle viewpoint that
+     *     shows the entire tree structure descended from that node.
+     * @param {float} speed The speed of this transition relative to the global animation
+     *     speed. Values over 1 lead to faster animations (default = 1)
+     * @param {string} accel_type The acceleration type, one of "linear", "accel", 
+     *    "decel", or "parabolic" (the default, also used if null). CURRENTLY IGNORED.
+     * @param {func} finalize_func The function to call at the end of the zoom (optional)
+     * @return {promise} returns a promise
      *
      *
      * e.g. try in the console
-     * onezoom.controller.perform_flight_animation(782900)
-     * onezoom.controller.perform_flight_transition(782900, 713573, true)
+     * onezoom.controller.fly_straight_to(782900)
+     * onezoom.controller.fly_on_tree_to(782900, 713573, true)
      */
-    Controller.prototype.perform_flight_transition = function(codeout_fly, codein_fly, into_node, finalize_func) {
+    Controller.prototype.fly_on_tree_to = function(
+            src_OZid, dest_OZid,
+            into_node=false, speed=1, accel_type="parabolic", finalize_func=null) {
         var p = new Promise(function (resolve) {
             document.body.classList.add('loading');
             window.setTimeout(resolve, 200);
@@ -195,7 +220,7 @@ export default function (Controller) {
 
             // Leaf and interior metacodes aren't unique, treat leaves as negative;
             function to_id(n) {
-                return n.children.length > 0 ? n.metacode : -n.metacode;
+                return n.is_leaf ? -n.metacode : n.metacode;
             }
 
             // Mark each node in heirarchy as visited
@@ -225,25 +250,21 @@ export default function (Controller) {
             throw new Error("No common nodes for " + node_start + " and " + node_end);
         }
 
-        if (codeout_fly == null) {
-            // Find largest visible node, use this as our starting point
-            codeout_fly = get_largest_visible_node(this.root, function(node) { return node.ott; }) || this.root;
-            // NB: This is opposite to the below.
-            codeout_fly = (codeout_fly.full_children_length > 0 ? 1 : -1) * codeout_fly.metacode;
+        if (src_OZid == null) {
+            // Find largest visible node: use this as our starting point
+            let top_node = get_largest_visible_node(this.root, function(node) { return node.ott; }) || this.root;
+            src_OZid = (top_node.is_leaf? -1 : 1) * top_node.metacode;
         } else {
             // Move to start location
             p = p.then(function () {
-                return new Promise(function (resolve) {
-                    this.perform_leap_animation(codeout_fly);
-                    resolve();
-                }.bind(this));
+              return this.leap_to(src_OZid)
             }.bind(this));
         }
 
         p = p.then(function () {
             var flight_path = get_flight_path(
-                this.develop_branch_to(codeout_fly),
-                this.develop_branch_to(codein_fly)
+                this.develop_branch_to(src_OZid),
+                this.develop_branch_to(dest_OZid)
             );
             document.body.classList.remove('loading');
             return flight_path;
@@ -257,7 +278,7 @@ export default function (Controller) {
                 // NB: Ideally we'd parallelise this, but the interface doesn't allow it yet.
                 flight_p = flight_p.then(function () {
                     position_helper.clear_target(this.root);
-                    position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
+                    position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
                     return get_details_of_nodes_in_view_during_fly(this.root);
                 }.bind(this));
             }.bind(this));
@@ -273,12 +294,12 @@ export default function (Controller) {
                 var accel_func = idx === arr.length - 1 ? 'decel'
                                : idx === 0 ? 'accel'
                                : null;
-
                 flight_p = flight_p.then(function () {
-                    return new Promise(function (resolve) {
+                    return new Promise(function (resolve, reject) {
                         position_helper.clear_target(this.root);
-                        position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
-                        position_helper.perform_actual_fly(this, accel_func === 'final' ? into_node : false, resolve, accel_func);
+                        position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
+                        position_helper.perform_actual_fly(
+                          this, (accel_func === 'decel') ? into_node : false, speed, accel_func, resolve, () => reject(new UserInterruptError('Fly is interrupted')));
                     }.bind(this));
                 }.bind(this));
             }.bind(this));
@@ -297,67 +318,68 @@ export default function (Controller) {
     };
 
   /**
-   * init could be one of:
-   * -- undefined or null(default as pzoom)
-   * -- zoom
-   * -- pzoom
-   * -- jump (or any other string, since this is the last branch)
-   * -- { xp: .., yp: .., ws: ..}
-   * Pzoom would be reset to zoom if the targeted node is too close to the root. Since pzoom would zoom a fixed length,
-   * pzoom from a close node would result the tree being zoomed from a very small view.
+   * Does an initial move to a OneZoom destination, chosing to leap, fly, or fly from a
+   * slightly zoomed-out location depending on the value of the `init` parameter.
+   * @param {string} init One of:
+   *    -- "pzoom", undefined, or null (the default)
+   *    -- "zoom"
+   *    -- "leap" (or any other non-empty string, since this is the last branch)
+   *    -- { xp: .., yp: .., ws: ..} (if so, leap straight to this position)
+   * Note that "pzoom" is treated as "zoom" if the targeted node is too close to the root.
+   * This is because "pzoom" zooms by a fixed amount, meaning that from a close node it 
+   * would results in the tree being zoomed from a very small view.
    *
    * Return a promise for when the animation is finished
    */
-  Controller.prototype.fly_to_node = function (OZIDin, init) {
+  Controller.prototype.init_move_to = function (dest_OZid, init) {
     var n;
 
     if (!init) init = "pzoom";
 
     this.reset();
-    if (init.xp !== undefined) {
-      this.perform_leap_to_position(OZIDin, init);
-      return Promise.resolve();
+    if (!isNaN(init.xp)) {
+      return this.leap_to(dest_OZid, init);
     }
 
     if (init == "zoom") {
-      return this.perform_flight_transition(this.root.metacode, OZIDin);
+      return this.fly_on_tree_to(this.root.metacode, dest_OZid);
     }
 
     if (init == "pzoom") {
-      // Jump to node
-      this.perform_leap_animation(OZIDin);
-      // Zoom out marginally
-      // TODO: This will refuse to go back further than a given point, but that's much futher back than before
-      this.zoomout(tree_state.widthres/2, tree_state.heightres/2, 0.1, true);
-      // Fly back in again
-      return this.perform_flight_transition(null, OZIDin);
+      // Leap to node
+      return this.leap_to(dest_OZid)
+        .then(() => {
+          // Zoom out marginally
+          // TODO: This will refuse to go back further than a given point, but that's much futher back than before
+          this.zoomout(tree_state.widthres / 2, tree_state.heightres / 2, 0.1, true);
+          // Fly back in again
+          return this.fly_on_tree_to(null, dest_OZid);
+        })
     }
 
-    // init == "jump"
-    // NB: perform_leap_animation won't fetch details, we do it ourselves
+    // init == "leap"
+    // NB: leap_to won't fetch details, we do it ourselves
     position_helper.clear_target(this.root);
-    n = this.develop_branch_to(OZIDin);
-    position_helper.target_by_code(this.root, n.full_children_length > 0 ? -1 : 1, n.metacode);
+    n = this.develop_branch_to(dest_OZid);
+    position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
     return get_details_of_nodes_in_view_during_fly(this.root).then(function () {
-        this.perform_leap_animation(OZIDin, init);
+        return this.leap_to(dest_OZid, init);
     }.bind(this));
   };
   
   /**
-   * Develops tree to codein_fly, then precalculates the tree, set target to help position helper to leap or fly.
-   * @param {integer} codein_fly
-   * codein_fly < 0, leaf(metacode == -codein_fly),
-   * codein_fly > 0, interior_node(metacode == codein_fly)
+   * Develops tree to OZid, then precalculates the tree, set target to help position helper to leap or fly.
+   * @param {integer} OZid
+   *    OZid < 0, leaf(metacode == -OZid),
+   *    OZid > 0, interior_node(metacode == OZid)
    */
-  Controller.prototype.develop_branch_to = function(codein_fly) {
-    let to_leaf  = codein_fly > 0 ? -1 : 1;
-    let to_index = codein_fly > 0 ? codein_fly : -codein_fly;  
+  Controller.prototype.develop_branch_to = function(OZid) {
     let root = this.root;
-    let selected_node = this.factory.dynamic_loading_by_metacode(to_leaf, to_index);
+    let selected_node = this.factory.dynamic_loading_by_metacode(OZid);
     this.projection.pre_calc(root);
     this.projection.calc_horizon(root);
     position_helper.clear_target(root);
-    position_helper.target_by_code(root, to_leaf, to_index);
+    position_helper.target_by_code(root, OZid);
     return selected_node;
   }
   
@@ -371,7 +393,7 @@ export default function (Controller) {
     try {
       if (isNaN(num)) {
         tree_state.flying = false;
-        throw new Error("In zoomin anim, num is nan");
+        throw new Error("In zoomin_anim, num is nan");
       }
       let self = this;
       this.zoomin(x, y, scale);
@@ -420,16 +442,14 @@ export default function (Controller) {
   }
   
   /**
-   * @param {integer} codein_fly
-   * codein_fly < 0, leaf(metacode == -codein_fly),
-   * codein_fly > 0, interior_node(metacode == codein_fly)
-   * develop the tree to the node specified by codein_fly, then reanchor at this node.
+   * develop the tree to the node specified by OZid, then reanchor at this node.
+   * @param {integer} OZid
+   *    OZid < 0, leaf(metacode == -OZid),
+   *    OZid > 0, interior_node(metacode == OZid)
    */
-  Controller.prototype.develop_and_reanchor_to = function(codein_fly) {
-    let to_leaf  = codein_fly > 0 ? -1 : 1;
-    let to_index = codein_fly > 0 ? codein_fly : -codein_fly;  
+  Controller.prototype.develop_and_reanchor_to = function(OZid) {
     let root = this.root;
-    let anchor_node = this.factory.dynamic_loading_by_metacode(to_leaf, to_index);
+    let anchor_node = this.factory.dynamic_loading_by_metacode(OZid);
     this.projection.pre_calc(root, true)
     this.projection.calc_horizon(root);
     position_helper.deanchor(root);

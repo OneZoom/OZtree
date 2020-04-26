@@ -318,24 +318,17 @@ function parse_pics(data_repo, pics, order, node_details) {
     let ott = pics[i][node_details.pic_cols["ott"]];
     let id = -data_repo.ott_id_map[ott];
     if (!data_repo.metadata.leaf_meta[id]) data_repo.metadata.leaf_meta[id] = new Array(data_repo.leaf_col_len);
-    //pick the image with the smallest src number
-    let src = order ? order[pics[i][node_details.pic_cols["src"]]] : pics[i][node_details.pic_cols["src"]].toString();
     let pic_entry = data_repo.metadata.leaf_meta[id];
-    if (pic_entry[data_repo.mc_key_l["picID_src"]] < src) {
-      //don't save this image: we have one already
-      //NB: this never happens if metadata.leaf_meta[id] has no info
-    } else {
-      pic_entry[data_repo.mc_key_l["picID_src"]]    = pics[i][node_details.pic_cols["src"]].toString();
-      pic_entry[data_repo.mc_key_l["picID"]]        = pics[i][node_details.pic_cols["src_id"]].toString();
-      pic_entry[data_repo.mc_key_l["picID_rating"]] = pics[i][node_details.pic_cols["rating"]];
-      /** 
-       * this attribute would be fetched by image_details api call. 
-       * set credit to null to force it being fetched by image_details API call. Otherwise if user change image source, the image credit
-       * might refer to previous image source.
-       */
-      pic_entry[data_repo.mc_key_l["picID_credit"]] = null;
-      // metadata.leaf_meta[id][data_repo.mc_key_l["picID_credit"]] = leaf_pics[i][pic_cols["rights"]] + " / "+ leaf_pics[i][pic_cols["licence"]];
-    }
+    pic_entry[data_repo.mc_key_l["picID_src"]]    = pics[i][node_details.pic_cols["src"]].toString();
+    pic_entry[data_repo.mc_key_l["picID"]]        = pics[i][node_details.pic_cols["src_id"]].toString();
+    pic_entry[data_repo.mc_key_l["picID_rating"]] = pics[i][node_details.pic_cols["rating"]];
+    /** 
+     * this attribute is fetched by image_details api call. 
+     * set credit to null to force it being fetched by image_details API call. 
+     * Otherwise if user change image source, the image credit
+     * might refer to previous image source.
+     */
+    pic_entry[data_repo.mc_key_l["picID_credit"]] = null;
   }
 }
 

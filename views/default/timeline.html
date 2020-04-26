@@ -1,0 +1,113 @@
+{{response.title='OneZoom: Timeline'}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{extend 'uikit_layout.html'}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+    <h1>OneZoom project timeline</h1>
+<em>Please consider following us on <a href="http://twitter.com/OneZoomTree" target="_blank">Twitter</a> and <a href="http://www.facebook.com/OneZoomTree" target="_blank">Facebook</a> for updates on our progress.</em>
+</div>
+{{end block}}
+
+
+<h2 class="uk-padding">Events, milestones, and news: 2018 - 2020</h2>
+<div>
+    <div class="uk-text-small uk-column-1-3@m">
+        <ul class="columns">
+            {{for row in news:}}
+            {{if row.news_date < request.now and row.news_date.year >= 2018:}}
+                <li id="news-item{{=row.id}}">
+                    <h4><time datetime="{{=row.news_date}}">{{if row.text_date:}}{{=row.text_date}}{{else:}}{{=row.news_date.strftime("%d %B %Y").lstrip('0')}}{{pass}}</time></h4>
+                    {{=XML(row.html_description)}}
+                </li>
+                {{pass}}
+                {{pass}}
+                </ul>
+    </div>
+</div>
+
+<h2 class="uk-padding">Events, milestones, and news: 2016 - 2017</h2>
+  <div>
+    <div class="uk-text-small uk-column-1-3@m">
+      <ul class="columns">
+{{for row in news:}}
+{{if 2016 <= row.news_date.year <= 2017:}}
+          <li>
+          <h4><time datetime="{{=row.news_date}}">{{if row.text_date:}}{{=row.text_date}}{{else:}}{{=row.news_date.strftime("%d %B %Y").lstrip('0')}}{{pass}}</time></h4>
+          {{=XML(row.html_description)}}
+          </li>
+{{pass}}
+{{pass}}
+      </ul>
+    </div>
+  </div>
+
+
+<h2 class="uk-padding">Events, milestones, and news: 2014 - 2015</h2>
+  <div>
+    <div class="uk-text-small uk-column-1-3@m">
+      <ul class="columns">
+{{for row in news:}}
+{{if 2014 <= row.news_date.year <= 2015:}}
+          <li>
+          <h4><time datetime="{{=row.news_date}}">{{if row.text_date:}}{{=row.text_date}}{{else:}}{{=row.news_date.strftime("%d %B %Y").lstrip('0')}}{{pass}}</time></h4>
+          {{=XML(row.html_description)}}
+          </li>
+{{pass}}
+{{pass}}
+      </ul>
+    </div>
+  </div>
+
+
+<h2 class="uk-padding">Events, milestones, and news: 2012 - 2013</h2>
+
+  <div>
+    <div class=" uk-text-small uk-column-1-3@m">
+      <ul class="columns">
+{{for row in news:}}
+{{if 2012 <= row.news_date.year <= 2013:}}
+          <li>
+          <h4><time datetime="{{=row.news_date}}">{{if row.text_date:}}{{=row.text_date}}{{else:}}{{=row.news_date.strftime("%d %B %Y").lstrip('0')}}{{pass}}</time></h4>
+          {{=XML(row.html_description)}}
+          </li>
+{{pass}}
+{{pass}}
+      </ul>
+    </div>
+  </div>
+
+
+<h2 class="uk-padding">OneZoom Project Beginnings in 2011</h2>
+
+
+  <div>
+      <div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
+          <div class = "uk-padding uk-padding-remove-top">
+
+          <p><q>Big data</q> is a growing issue in Science and Industry.  Modern computing has enabled large amounts of data to be captured and stored and has revolutionised many branches of science. These advances, however, lead to challenges, such as how to explore and visualise large data sets.  The very first blue-skies idea that could have been identified with OneZoom was that of a mind map so vast that it could contain all human knowledge.</p>
+          
+          <a href="{{=URL('static','images/gallery/highres/bubble_example.png')}}" target = "_blank" class="thumbnail">
+              <img src="{{=URL('static','images/gallery/bubble_example_small.png')}}" alt="">
+          </a>
+          </div>
+          <div class = "uk-padding uk-padding-remove-top">
+          <p>The concept involved making the information easy to explore by laying it out in ever smaller bubbles using a fractal structure and a zooming interface so that the computer never runs out of space to put the information no matter how much there is. </p>
+          
+          <p>The idea was untouched for some time until one day, <a href="http://www.rosindell.org" target="_blank">James Rosindell</a> visited Charles Darwin's Down house with <a href="http://www.webpages.uidaho.edu/~lukeh/" target="_blank">Luke Harmon</a> who he was working with on a number of scientific projects.  Luke in particular made a big deal of their walking down Darwin's thinking path and said that they should try to think of a new idea to commemorate the occasion.</p>
+          
+          <p><a href="{{=URL('static','images/gallery/highres/James_Luke.jpg')}}" target = "_blank" class="thumbnail">
+              <img src="{{=URL('static','images/gallery/James_Luke_small.jpg')}}" alt="">
+          </a></p>
+          </div>
+          <div class = "uk-padding uk-padding-remove-top">
+          <p>The photo shows James (left) and Luke (right) in front of Down house, taken just after their lap of the thinking path.  It is unfortunate that none of the ideas they discussed whilst actually on the thinking path have led anywhere yet, but it was less than two hours later when wandering around central London that the topic of tree visualisation came up and James suggested a possible way to visualise the tree of life based on an adaptation of his fractal mind map idea.</p>
+          
+          <p>James initially worked on coding OneZoom only during his spare time, taking advice from Luke in particular, but also from many others. After that, James further developed OneZoom as part of his research program at <a href="http://www3.imperial.ac.uk" target="_blank">Imperial College London</a>, which is funded by a research fellowship from the <a href="http://www.nerc.ac.uk" target="_blank">Natural Environment Research Council</a> (NERC).</p>
+
+          
+      </div>
+  </div>
+
+  </div>
+

@@ -39,25 +39,27 @@ class TestImageFiles(object):
         else:
             tmpfiles = []
             db_cursor = self.db['connection'].cursor()
-            sql = "SELECT src, src_id, ott from `{}`".format('images_by_ott')
-            db_cursor.execute(sql)
-            otts=set()
-            fns=set()
-            for row in db_cursor:
-                #should correct this from line 48/49 of db.py
-                if not os.path.isfile(os.path.join(local_pic_path(row[0], row[1]), str(row[1])+".jpg")):
-                    if not tmpfiles:
-                        tmpfiles.append(tempfile.NamedTemporaryFile(mode="w+t", delete=False))
-                        tmpfiles.append(tempfile.NamedTemporaryFile(mode="w+t", delete=False))
-                    fns.add("{}/{}".format(row[0], row[1]))
-                    otts.add(str(int(row[2])))
-                    if (len(fns) == reporting_batch_size):
-                        print(".", flush=True)
-                        print(" ".join(fns), file=tmpfiles[0])
-                        print(" ".join(otts), file=tmpfiles[1])
-                        fns.clear()
-                        otts.clear()
-            self.db['connection'].commit() #need to commit here otherwise next select returns stale data
+            for sql in [
+                "SELECT src, src_id, ott from `{}`".format('images_by_ott'),
+                "SELECT verified_preferred_image_src, verified_preferred_image_src_id, OTT_ID from `{}` where verified_preferred_image_src IS NOT NULL".format('reservations')]:
+                db_cursor.execute(sql)
+                otts=set()
+                fns=set()
+                for row in db_cursor:
+                    #should correct this from line 48/49 of db.py
+                    if not os.path.isfile(os.path.join(local_pic_path(row[0], row[1]), str(row[1])+".jpg")):
+                        if not tmpfiles:
+                            tmpfiles.append(tempfile.NamedTemporaryFile(mode="w+t", delete=False))
+                            tmpfiles.append(tempfile.NamedTemporaryFile(mode="w+t", delete=False))
+                        fns.add("{}/{}".format(row[0], row[1]))
+                        otts.add(str(int(row[2])))
+                        if (len(fns) == reporting_batch_size):
+                            print(".", flush=True)
+                            print(" ".join(fns), file=tmpfiles[0])
+                            print(" ".join(otts), file=tmpfiles[1])
+                            fns.clear()
+                            otts.clear()
+                self.db['connection'].commit() #need to commit here otherwise next select returns stale data
             db_cursor.close() 
             if len(fns) or len(otts):
                 print(" ".join(fns), file=tmpfiles[0])

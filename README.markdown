@@ -12,22 +12,20 @@ There are two ways in which you can install OneZoom on a personal computer: full
 ## Requirements and packages
 For all installation methods, you will need to install node.js (and npm, the node package manager), and the webpack package. To compile the OneZoom javascript codebase automatically, you will then need to install grunt. To generate documentation or make a partial install, you will also need perl installed on your system.
 
-For full installation, you will additionally need to install web2py, and ensure that you have the programming language python (version 2) installed on your system, which is what web2py uses. You will also need access to a database backend (e.g. mySQL running on your own computer, or on a remote server which you can administer).
+For full installation, you will additionally need to install web2py, and ensure that you have the programming language python installed on your system, which is what web2py uses. You will also need access to a database backend (e.g. mySQL running on your own computer, or on a remote server which you can administer).
 
-To create trees, you will need python version 3 and perl, along with a number of libraries, as listed below.
-
-To run some of the processing scripts, you will also need python 3 installed.
+To create trees, you will need python and perl, along with a number of libraries, as listed below.
 
 ### Required packages
-The OneZoom codebase uses the following software (licenses for each listed in braces):
+The OneZoom codebase uses the following software (licenses for each listed in braces). The first three are programming languages which may well already be installed on your computer.
 
-* [Python](https://www.python.org) (versions 2.7 and 3.4) with the following libraries installed:
-	* Python 2.7: mysql-connector-python
-	* Python 3.4: piexif
-	* Python 3.4: nose + js2py + selenium +  e.g. chromedriver_installer (for functional testing)
-	* Python 3.4: requests
-	* Python 3.4: pymysql
-	* Python 3.4: Dendropy
+* [Python](https://www.python.org) (assumed version 3.7) with the following libraries installed:
+	* mysql-connector-python
+	* pymysql
+	* piexif
+	* requests
+	* Dendropy
+	* (for functional testing) nose + js2py + selenium +  e.g. chromedriver_installer 
 * [Perl](https://www.perl.org) with the following libraries installed
  	* File::ReadBackwards
  	* LWP::Simple
@@ -37,37 +35,41 @@ The OneZoom codebase uses the following software (licenses for each listed in br
  	* Text::CSV
  	* Image::ExifTool
  	* DBD::mysql
+* [Ruby](https://www.ruby-lang.org) (only to install the 'compass' program, see below)
 * [web2py](http://web2py.com) (LGPL license)
-* [npm]() node.js
+* [npm](https://www.npmjs.com/get-npm), part of node.js which, when run will install a large number of other packages including
+	* [grunt](https://gruntjs.com) (MIT licence): to automate creating the OneZoom website files
+	* [webpack](https://webpack.js.org) (MIT licence): to package the OneZoom javascript tree viewer into a library
 	* jsdoc-to-markdown (MIT licence): to produce documentation from source code
-	* webpack (for compression)
-* [grunt]() 
-	* xxxx
+* [compass](http://compass-style.org) (MIT licence) to create the style sheets for OneZoom web pages
 * [ImageMagick](https://www.imagemagick.org/script/index.php) (Apache 2.0) for processing thumbnails
-* [UIkit 3](https://getuikit.com) (MIT) for the User Interface (included in the OneZoom github repo)
+* [curl](https://curl.haxx.se) (MIT-like licence) to download partial installs (`curl` is probably already installed on your computer)
+* [UIkit 3](https://getuikit.com) (MIT licence) for the User Interface (this code is included in the OneZoom github repo, and does not need downloading)
 
 ## Quick installation steps
 
-Before anything else, get the OZtree app from [github](https://github.com/OneZoom/OZtree) - see *"Downloading the OZtree app"*. You should also make sure you have node.js and the node package manager (npm) and the grunt command-line interface installed on your system - see *"Building the OneZoom tree viewer"*
+Before anything else, get the OZtree app from [github](https://github.com/OneZoom/OZtree) - see *"Downloading the OZtree app"*. You should also make sure you have node.js and the node package manager (npm), see *"Building the OneZoom tree viewer"*
 
 
 ### For a partial installation (less tested):
 
-1. From anywhere within the OZtree download, run `npm install`, and compile the client-side explorer code using `grunt compile` - see *"Building the OneZoom tree viewer"*.
-2. Run `grunt partial-install`. This should download the "minlife' page from the central OneZoom website, modify links within it, and place a file named `minlife.html` into the `static` directory of your OZtree distribution.
-3. Open `minlife.html` with a web browser of your choice (we recommend Chrome or Safari). Note that this file needs to stay within the static directory to work at all.
-4. Note that the normal `minlife.html` file will use local versions of data files and the javascript treeviewer, but will get API information form the OneZoom website, *and* also use the OneZoom website as the source for the html page which embeds the viewer. For developers only, who may wish to create a minlife version not only using modified javascript in the treeviewer but also with bespoke html, you can run `grunt partial-local-install`. This is much more effort since it requires you to set up a full installation (as below) before creating the minlife scripts, but once created, the files in `static` will be enough for other users to view (and test) your modifications.
+1. Install the command-line version of `grunt` using `npm install -g grunt-cli`, then `gem update --system` followed by `gem install compass` to install the software to create css stylesheets. You may need to have administrator privileges to do this. 
+2. From anywhere within the OZtree download, run `npm install` to install all the packages for automation.
+3. Create a partial installation by running `grunt partial-install`. This downloads the "minlife" and "minlife_tour" pages from the central OneZoom website, modifies links within them, and places appropriately named html files into the `static` directory of your OZtree distribution.
+4. Open e.g. `static/minlife.html` with a web browser of your choice (we recommend Chrome or Safari). Note that this file needs to stay within the static directory to work at all. You may also need to allow your browser to allow local files to be loaded via AJAX (i.e. disabling some local cross-origin checks). Different browsers do this in different ways: for example in Chrome you can start up your browser with the `--allow-file-access-from-files` option, and in Safari, you can choose "Disable Local File Restrictions" from the "Developer" menu.
+5. Note that the normal `minlife.html` file will use local versions of data files and the javascript treeviewer, but will get API information form the OneZoom website, *and* also use the OneZoom website as the source for the html page which embeds the viewer. For developers only, who may wish to create a minlife version not only using modified javascript in the treeviewer but also with bespoke html, you can run `grunt partial-local-install`. This is much more effort since it requires you to set up a full installation (as below) before creating the minlife scripts, but once created, the files in `static` will be enough for other users to view (and test) your modifications.
 
 ### For a full installation (recommended):
 	
 1. Install a source code version of [web2py](http://www.web2py.com), placing your [OZtree repository](https://github.com/OneZoom/OZtree) within the web2py `applications` directory.
-2. Compile the client-side explorer code by running `npm install` from within the OZtree folder you have just moved, then run `grunt compile` (or `grunt build` if in production mode) - see *"[Building the OneZoom tree viewer](#building-the-onezoom-tree-viewer)"*.
+2. Install command-line software by running `npm install -g grunt-cli`, then `gem update --system` followed by `gem install compass` (you may need to do all this with administrator privileges).
+3. Run `npm install` from within the OZtree folder you moved in step 1. then run `grunt dev` (or `grunt prod` if in production mode) - see *"[Building the OneZoom tree viewer](#building-the-onezoom-tree-viewer)"*.
 3. [Install](http://dev.mysql.com/downloads/mysql/) & start MySQL, then create a new database (see *"[Setting up the database backend](#setting-up-the-database-backend)"*)
 4. Create a appconfig.ini file in `OZtree/private`, with `migrate=1` and which references this database with the appropriate username and password. We also recommend copying the `routes.py` file from `OZtree/_MOVE_CONTENTS_TO_WEB2PY_DIR` to the top level of your web2py installation - see *"[Web2py installation](#web2py-installation)"*
 5. Fire up a temporary web2py server and visit the main page to create the (empty) database tables - see *"[Starting and shutting down web2py](#starting-and-shutting-down-web2py)"*
 6. Load up data into the tables: first create a user and assign it a 'manager' role in the `auth_` tables using the web2py database admin pages, then load the other tables using data from the original OneZoom site (e.g. sent to you via file transfer) - see *"[Filling the database](#filling-the-database)"*.
 7. Optimise your installation:
-	* create indexes on the tables by copying and pasting the text at the end of the `OZtree/models/db.py` file into a mysql client
+	* create indexes on the tables by running the SQL script in `OZtree/OZprivate/ServerScripts/SQL/create_db_indexes.sql`. You can do this, for example, by running `SOURCE /path/to/OZtree/OZprivate/ServerScripts/SQL/create_db_indexes.sql` within a mysql client.
 	* set `is_testing = False` in `models/db.py` and `migrate=0` in appconfig.ini.
 
 
@@ -86,7 +88,7 @@ Compiling and creating the OneZoom explorer javascript code requires grunt to be
 npm install -g grunt-cli
 ```
 
-Then from within the `OZtree` directory, you can install any other required packages with:
+To create css files you will also need to install the "compass" software program, e.g. using `gem update --system && gem install compass`. To install these is likely to require administrator privileges. Other required packages can then be installed from within the OZtree folder by simply typing the following (which may take a while to complete!)
 
 ```
 npm install
@@ -95,13 +97,13 @@ npm install
 Once these are installed you can run grunt as follows (feel free to examine the configuration options which are stored in `Gruntfile.js` in the main OZtree directory):
 
 #### Compile documentation
-`grunt precompile-docs`: Use this command to generate a compiled documentation file. This will generate a large compiled markdown file in `OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown`, which is best viewed once you have got web2py running, by pointing your browser to `dev/DOCS` (e.g. at `http://127.0.0.1:8000/dev/DOCS`).  Note that viewing this page requires a working internet connection to get various formatting files)
+`grunt docs`: Use this command to generate a compiled documentation file. This will generate a large compiled markdown file in `OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown`, which is best viewed once you have got web2py running, by pointing your browser to `dev/DOCS` (e.g. at `http://127.0.0.1:8000/dev/DOCS`).  Note that viewing this page requires a working internet connection to get various formatting files)
 
 #### In development mode:
-`grunt compile`: This command bundles multiple js files into one.
+`grunt dev`: This command bundles multiple js files into one.
 
 #### In production mode:
-`grunt build`: This command does three things. Firstly, it pre compiles python code. Then it bundles multiple js files into one. Lastly, it minifies bundled js files.
+`grunt prod`: This command does three things. Firstly, it pre-compiles python code. Then it bundles multiple js files into one. Lastly, it minifies bundled js files.
 
 
 ## The server-side database
@@ -197,20 +199,20 @@ maintenance_mins = 0
 ;eol_api_key = 11111111111
 ```
 
-In order to use web2py you need to have a python v2 installed (v3 is not yet supported), the latest version can be found at
+In order to use web2py you need to have a python v3 installed, the latest version can be found at
 [https://www.python.org/downloads/](https://www.python.org/downloads/)
 
-NB: on Windows, make sure that you add `python` (and ideally `python2`) to the windows path during install, or the commands below will not work
+NB: on Windows, make sure that you add `python` (and ideally `python3`) to the windows path during install, or the commands below will not work
 
-Assuming you have python version 2 installed, should now try starting web2py as follows.
+Assuming you have python version 3 installed, should now try starting web2py as follows.
 
 ### Starting and shutting down web2py
 
-On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. This is complete overkill if you just want to run a local copy of OneZoom for testing purposes. You can simply run a [temporary and basic web2py server using Python](http://www.web2py.com/books/default/chapter/29/03/overview#Startup) (version 2, *not* version 3). The simplest is to open a command-line prompt in the root web2py folder, and run the following (assuming the command `python2` is linked to something like Python 2.7)
+On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. This is complete overkill if you just want to run a local copy of OneZoom for testing purposes. You can simply run a [temporary and basic web2py server using Python 3](http://www.web2py.com/books/default/chapter/29/03/overview#Startup). The simplest is to open a command-line prompt in the root web2py folder, and run the following (assuming the command `python3` is linked to something like Python 3.7)
 
-`python2 web2py.py -i 127.0.0.1 -p 8000 -a pass`
+`python3 web2py.py -i 127.0.0.1 -p 8000 -a pass`
 
-* (NB: it is possible to run a secure OneZoom site over https, but this is untested, and *may have problems when linking out to other sites*. To try this anyway (not currently recommended), create a `.crt` and `.key` file, e.g. by running the following in the web2py root directory: `openssl req -newkey rsa:2048 -x509 -days 365 -nodes -keyout oz.key -out oz.crt`, then use them when running web2py, as in: `python2 web2py.py -c oz.crt -k oz.key -i 127.0.0.1 -p 8000 -a pass`)
+* (NB: it is possible to run a secure OneZoom site over https. To try this using the basic web2py server, create a `.crt` and `.key` file, e.g. by running the following in the web2py root directory: `openssl req -newkey rsa:2048 -x509 -days 365 -nodes -keyout oz.key -out oz.crt`, then use them when running web2py, as in: `python3 web2py.py -c oz.crt -k oz.key -i 127.0.0.1 -p 8000 -a pass`)
 
 
 When web2py is run, it will print instructions telling how to shut down the web2py server. For example, on Windows you might use `taskkill /f /pid XXXX`, where `XXXX` is the process id.
@@ -257,7 +259,7 @@ Note that mySQL stupidly has a resticted version of the unicode character set, s
 
 ### Optimising tables (IMPORTANT)
 
-To get any decent performance out of your OneZoom instance, you will need to create indexes on the resulting tables. The commands for doing this are listed in a large comment at the end of `db.py`, from where they can be copied and pasted into a mysql client.
+To get any decent performance out of your OneZoom instance, you will need to create indexes on the resulting tables. The commands for doing this are listed in `OZtree/OZprivate/ServerScripts/SQL/create_db_indexes.sql`, from where they can be copied and pasted into a mysql client.
 
 The commands to create indices also include commands to convert some of the columns to 4-byte unicode if necessary (to incorporate e.g. full Japanese/Chinese common names), and to drop the indexes if they already exist. Some of these commands may cause SQL errors (e.g. "Can't DROP XXX") if you have not previously created any indices. These errors can be safely ignored. If you are using mysql workbench you may want to untick the option under Query to "Stop Script Execution on Errors", so that the index creation continues after each error.
 

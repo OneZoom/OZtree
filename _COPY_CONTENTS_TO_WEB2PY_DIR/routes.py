@@ -7,6 +7,7 @@ routers = dict(
                )
 
 routes_onerror = [('OZtree/404', '/OZtree/default/custom_404.html')]
+routes_onerror = [('OZtree/400', '/OZtree/default/custom_400.html')]
 
 logging = 'off'
 

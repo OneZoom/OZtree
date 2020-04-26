@@ -74,7 +74,7 @@ h3, h4 {
 
 #select_pictures {
     flex-grow: 2;
-    max-width: 400px;
+    max-width: calc(350px + 30px + 3em); /* 3 pictures plus padding */
     margin-left:auto;
     margin-right:auto
 }
@@ -209,4 +209,8 @@ h3, h4 {
 
 .right p {
     margin:0;
+}
+
+.shortcuts .leaf-list {
+    display: none; /* Hide the "Sponsor a leaf now" button in the footer, as it's confusing when *on* the sponsor leaf page (too near the "donate" button) */
 }

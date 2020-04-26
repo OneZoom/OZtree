@@ -20,201 +20,61 @@
 response.title='OneZoom: Sponsor a leaf on the tree'
 response.files.append(URL('static', 'OZSponsor/sponsor_leaf.css'))
 response.files.append(URL('static', 'OZSponsor/EOLqueries.js'))
-response.files.append(URL('static', 'OZTree/dist/Drawing.js'))
-response.files.append(URL('static', 'OZTree/dist/Leaf_draw.js'))
+response.files.append(URL('static','css/content_pages.css'))
 }}
+{{include '../static/OZTreeModule/dist/OZ_leaf_draw.html'}}
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
-{{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
-<script>var OZstrings={{include 'treeviewer/js_strings.json'}}</script>
-<div>
-    <h1 id = "sponsor_title">{{=XML(T('Sponsor %s on the OneZoom Tree of Life Explorer') % (the_long_name or T("a species"),))}}</h1>
-    <p>{{=T('You can sponsor this leaf for yourself or as a unique gift for someone you know.')}}</p>
-
-    {{if partner_data:}}
-    <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the %s and %s by displaying your chosen sponsor’s name on %s') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), A(T(partner_data.get('name')), _href=partner_data.get('url'), _target="_blank"), the_long_name))}}.
-       {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s. %s.') % (int(round(100-partner_data.get('percentage'))), int(round(partner_data.get('percentage'))), T(partner_data.get('name')), T(partner_data.get('details')))  )  }}</p>
-
-    {{else:}}
-    <p>{{=XML(T('As a thank-you, we will acknowledge your donation to the %s by displaying your chosen sponsor’s name on %s. Your donations will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), the_long_name))}}</p>
-
-    {{pass}}
-    <p>{{=T('There can be only one sponsor for each leaf, so get your favourite creature before someone else does!')}} {{=T('Sponsorship is for a fixed period of %s years; after that, if you wish to renew your sponsorship, you will have the first refusal.') % (4,)}}</p>
+{{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
+{{block masthead}}
+{{if 'embed' not in request.vars:}}
+<div class="home-heading uk-text-center uk-padding-small">
+  <h1>Leaf sponsorship</h1>
 </div>
-<form action="?ott={{=OTT_ID}}" enctype="multipart/form-data" method="post" {{if request.vars.get('embed'):}}target="_blank" onsubmit="setTimeout(function() {location.replace('sponsor_replace_page.html?embed={{=request.vars.get('embed')}}&ott={{=OTT_ID}}')}, 1000);" {{pass}}>
-  <div>
-    <h3>{{=T('Type the name of the person you want to appear on the leaf')}}</h3>
-    <fieldset>
-      <div class="singlerow"><label>{{=T('Sponsored by')}} <input type="radio" value="by" onclick="updateDonorPlaceholder();drawPreview()" id = "sponsorBy" name = "user_sponsor_kind" {{=("" if request.vars.user_sponsor_kind == "for" else "checked")}} /></label><label>{{=T('Sponsored as a gift for')}} <input type="radio"  value="for" id = "sponsorFor" name = "user_sponsor_kind" onclick="updateDonorPlaceholder();drawPreview()" {{=("checked" if request.vars.user_sponsor_kind == "for" else "")}}/></label></div>
-      <div><label for="user_sponsor_name_input">{{=T('Sponsorship name (required): ')}}</label><p><input type="text" autocomplete="off" id="user_sponsor_name_input" name = "user_sponsor_name" maxlength="30" size="30" onchange="updateDonorPlaceholder();drawPreview()" onkeyup="updateDonorPlaceholder();drawPreview()" placeholder="{{=T('e.g. Jane Smith')}}"
-      value="{{if (request.vars['user_sponsor_name']) is not None:}}{{=request.vars['user_sponsor_name']}}{{pass}}" /> 
-        <em class = "error_text" > {{if (form.errors["user_sponsor_name"]) is not None:}}{{=form.errors["user_sponsor_name"]}}{{pass}} </em></p></div>
-      <div><label for="user_more_info_input">{{=T('Extra text (optional): ')}}</label><p><input type="text" id="user_more_info_input" autocomplete="off" name = "user_more_info"  maxlength="30" size="30" onchange="drawPreview()" onkeyup="drawPreview()" placeholder = "{{=T('e.g. Edinburgh, UK')}}"
-          value="{{if (request.vars['user_more_info']) is not None:}}{{=request.vars['user_more_info']}}{{pass}}"/>
-        <em class = "error_text"> {{if (form.errors["user_more_info"]) is not None:}}{{=form.errors["user_more_info"]}}{{pass}} </em></p></div>
+{{pass}}
+{{end block}}
+<div>
+  <h2 id = "sponsor_title">{{=XML(T('Sponsor %s on the OneZoom Tree of Life') % (the_long_name or T("a species"),))}}</h2>
+  <p>{{=T('You can sponsor this leaf for yourself or as a unique gift for someone you know.')}}</p>
+{{if partner_data:}}
+  <p>{{=XML(T('We will acknowledge your donation to the %s and %s by displaying your chosen sponsor’s name on %s') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), A(T(partner_data.get('name')), _href=partner_data.get('url'), _target="_blank"), the_long_name))}}.
+     {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s. %s.') % (int(round(100-partner_data.get('percentage'))), int(round(partner_data.get('percentage'))), T(partner_data.get('name')), T(partner_data.get('details')))  )  }}</p>
 
-      
-      
-     <p class="singlerow extra_info">
-       {{if partner_data:}}
-       
-      {{=XML(T('Extra text will only show when fully zoomed in; it can be used for your location, or to say who it’s from if you are sponsoring as a gift for another person (e.g. Happy Birthday from John Smith). The extra text will appear on our main tree at %s and %s tree at %s, but may not necessarily be shown on versions elsewhere.') % (A('OneZoom.org/life', _href="http://www.onezoom.org/life", _target="blank"), T(partner_data.get('name')), A('OneZoom.org/life/%s'% partner_data.get('partner_identifier'), _href="http://www.onezoom.org/life/%s"% partner_data.get('partner_identifier'), _target="blank"),))}}
-    
-       
-       {{else:}}
-     {{=XML(T('Extra text will only show when fully zoomed in; it can be used for your location, or to say who it’s from if you are sponsoring as a gift for another person (e.g. Happy Birthday from John Smith). The extra text will appear on our main tree at %s, but may not necessarily be shown on versions elsewhere.') % (A('OneZoom.org/life', _href="http://www.onezoom.org/life", _target="blank"),))}}
-       
-       {{pass}}
-       
-    {{=T('We will check that the sponsorship text is appropriate, and contact you if there is a problem. This is not intended to be advertising so please do not include web links. Normally your text should appear on the tree within a week.')}}
-    
-    
-    </p>
-    
-    <div><label for="user_paid_input">{{=T('Your donation amount (£%s or greater for this leaf):') % (str(int(leaf_price)) if leaf_price.is_integer() else '{:f}'.format(leaf_price))}} </label><p><input type="number" step="0.01" id="user_paid_input" name = "user_paid"
-        value="{{if (request.vars['user_paid']) is not None:}}{{=request.vars['user_paid']}}{{else:}}{{if(leaf_price.is_integer()):}}{{=str(int(leaf_price))}}{{else:}}{{='{:.2f}'.format(leaf_price)}}{{pass}}{{pass}}" />
-        <em class = "error_text"> {{if (form.errors["user_paid"]) is not None:}}{{=form.errors["user_paid"]}}{{pass}} </em></p></div>
-    <p class="singlerow extra_info">
-    {{=T('The minimum donation required for other leaves ranges from from £%s to £%s depending on popularity. ') % (min_global_price, max_global_price)}}
-    
-    <!-- show alternative if leaf is possibly too expensive-->
-    {{if leaf_price>20:}}
-    
-    {{if partner_data:}}
-    <!-- pass down URL vars so future sponsorships are still for the same partner -->
- {{=XML(T('If this leaf does not fit your budget consider our lists of %s and %s sorted by price to choose an alternative.') % (A(T('animals'), _href=URL('default','sponsor_node', vars=dict(id=759129,partner=request.vars['partner'],user_more_info=request.vars['user_more_info'],lang=request.vars['lang']))),A(T('plants'),_href=URL('default','sponsor_node', scheme=True, host=True, vars=dict(id=108637,partner=request.vars['partner'],user_more_info=request.vars['user_more_info'],lang=request.vars['lang'])))))}}</p>
-    
-    {{else:}}
-    <!-- no partner data to pass down but pass language -->
-    {{=XML(T('If this leaf does not fit your budget consider our lists of %s and %s sorted by price to choose an alternative.') % (A(T('animals'), _href=URL('default','sponsor_node', vars=dict(id=759129,lang=request.vars['lang']))),A(T('plants'),_href=URL('default','sponsor_node', scheme=True, host=True, vars=dict(id=108637,lang=request.vars['lang'])))))}}</p>
-    
-    {{pass}}
-    
-    {{pass}}
-    </p>
-    
-    </fieldset>
+{{else:}}
+  <p>{{=XML(T('We will acknowledge your donation to the %s by displaying your chosen sponsor’s name on %s. Your donations will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), the_long_name))}}</p>
 
-    
-  </div>
-  <div class="container-fluid">
-    <h3>{{=T('Preview of your sponsored leaf')}}</h3>
-    <div id = "leaf-options">
-      <div id="leaf">
-        <canvas id="leafCanvas" onclick="drawPreview()"></canvas>
-        <p id="licenceText"><a target = "_blank">{{=T('More information about this image')}}</a></p>
-        <p class="extra_info">{{=T('*The final leaf may be facing in any direction on the tree, it may also change based on scientific advances.')}}</p>
-      </div>
-      <input type="hidden" id="user_preferred_image_src_input" name='user_preferred_image_src' value='{{=default_image.get("src","") if default_image else ""}}' />
-      <input type="hidden" id="user_preferred_image_src_id_input" name='user_preferred_image_src_id' value='{{=default_image.get("src_id","") if default_image else ""}}' />
-      </div>
-  </div>
-  {{if 'embed' not in request.vars and not partner_data:}}
-  <!-- don't want possibility for these link outs if embedding or if there is a partner involved as they will not keep the user in the partner tree -->
-  <div class="subleaf">
-    <p>{{=XML(T('If you fancy something different, you can %s, or simply %s and see what you like.') % (A(T('search for other available species'), _href=URL('default','sponsor')),A(T('browse the tree of life'),_href=URL('default','life.html', scheme=True, host=True))))}}</p>
-  </div>
-  {{pass}}
-  <div>
-    <h3>{{=T('A few more details (optional)')}}</h3>
-    <fieldset>
-      <div><label for="e-mail_input">{{=T('Your e-mail (recommended):')}}</label><p><input type="text" autocomplete="email" id="e-mail_input" name = "e_mail" size="40"
-        value="{{if (request.vars['e_mail']) is not None:}}{{=request.vars['e_mail']}}{{pass}}" /> 
-        <em class = "error_text"> {{if (form.errors["e_mail"]) is not None:}}{{=form.errors["e_mail"]}}{{pass}} </em></p></div>
-      <p class="singlerow extra_info">{{=T('If we need to contact you about your donation or changes to your leaf, we will use the email entered here, otherwise we will use the email from your PayPal donation.')}}</p>
-      
-      <div><label for="user_donor_name_input">{{=T('Your title and name:')}}</label><p>
-        
-        <select name="user_donor_title" autocomplete="honorific-prefix" id="user_donor_title_input"  value="{{if (request.vars['user_donor_title']) is not None:}}{{=request.vars['user_donor_title']}}{{pass}}">
-            <option value="   ">   </option>
-            <option value="Mr">Mr</option>
-            <option value="Mrs">Mrs</option>
-            <option value="Miss">Miss</option>
-            <option value="Ms">Ms</option>
-            <option value="Dr">Dr</option>
-            <option value="Prof">Prof</option>
-            <option value="Rev">Rev</option>
-            <option value="Sir">Sir</option>
-            <option value="Lord">Lord</option>
-            <option value="Lady">Lady</option>
-        </select>
-        
-        <input type="text" autocomplete="name" id="user_donor_name_input" name = "user_donor_name" size="40"
-        value="{{if (request.vars['user_donor_name']) is not None:}}{{=request.vars['user_donor_name']}}{{pass}}" /> </p>
-        
-        <em class = "error_text">{{if (form.errors["user_donor_title"]) is not None:}}{{=form.errors["user_donor_title"]}}{{pass}}{{if (form.errors["user_donor_name"]) is not None:}}{{=form.errors["user_donor_name"]}}{{pass}}</em></p>
-      </div>
-      
-        <p class="singlerow extra_info">{{=T('We can use this in correspondance, on our public list of donors, and the information is required if you agree to gift aid your donation (see below)')}}</p>
-        
-      <div><label for="user_donor_show_input">{{=XML(T('We would love to be able to thank you by name:  if this box is ticked we’ll add your name to our public %s.') % (A(T('list of donors'), _href='/donor_list', _target="blank"),))}}</label><p><input type="checkbox" autocomplete id="user_donor_show_input" name = "user_donor_show"/></p></div>
-      <p class="singlerow extra_info">{{=T('This is in addition to your sponsored leaf on the tree; we’ll only use the name above (and of course, we’ll never show your email).')}}</p>
-      
-      <div><label for="allow_contact_input">{{=T('Allow further contact?')}}</label><p><input type="checkbox" autocomplete id="allow_contact_input" name = "allow_contact" /></p></div>
-      <p class="singlerow extra_info">{{=XML(T('On rare occasions we may wish to inform you about new / major changes to OneZoom (for more frequent updates, you might also like to %s)') % (A(T('follow us on Twitter'), _href='https://twitter.com/OneZoomTree', _target="_blank"),))}}</p>
-      
-      <div><label for="user_message_OZ_input">{{=T('Your message to us (optional)')}} </label><p><input type="text" autocomplete="off" id="user_message_OZ_input" name = "user_message_OZ"  size="40"
-        value="{{if (request.vars['user_message_OZ']) is not None:}}{{=request.vars['user_message_OZ']}}{{pass}}"/> 
-        <em class = "error_text"> {{if (form.errors["user_message_OZ"]) is not None:}}{{=form.errors["user_message_OZ"]}}{{pass}} </em></p></div>
-      <div><label for="user_twitter_input">{{=T('Your Twitter handle (optional)')}} </label><p><span class="twitter_at">@</span><input type = "text" autocomplete="off" id="user_twitter_input" name="twitter_name" size="37"
-        value="{{if (request.vars['twitter_name']) is not None:}}{{=request.vars['twitter_name']}}{{pass}}"/>
-        <em class = "error_text"> {{if (form.errors["twitter_name"]) is not None:}}{{=form.errors["twitter_name"]}}{{pass}} </em></p></div>
-      <p class="singlerow extra_info">{{=T('If you enter your Twitter handle, we will tweet when your leaf goes live')}}</p>
-      <div class="singlerow">{{=XML(T('OneZoom is %s in the UK.') % (A('registered charity number 1163559', _href="//www.onezoom.org/static/images/RegistrationCertificate.jpg", _target="_blank"),))}}</div>
-      <div class="singlerow">{{=T('If you are a UK tax payer please consider making a Gift Aid declaration which will increase the value of your donation by 25% at no cost to you')}}</div>
- 
-      <button type='button' onclick="document.getElementById('gift_aid').style.display='block'; document.getElementById('user_giftaid_input').checked = true;">{{=T('Click if you are a UK tax payer and agree to Gift Aid')}}</button>
-              <!-- these bits should open up automatically -->
-      <div id = "gift_aid" {{if request.vars.user_giftaid:}}style="display:block"{{pass}}>
-        <h3>{{=T('Gift Aid declaration')}}</h3>
-        <p>{{=T('Thank you for considering Gift Aid. Please share your street address by ticking the box when you make your donation through PayPal, this information is required for us to reclaim gift aid. Please also confirm that you agree to the below Gift Aid declaration.')}}</p>
-        {{if partner_data.get('giftaid'):}}          
-        <p>I want to Gift Aid this donation and any donations I make in the future or have made in the past 4 years to OneZoom and {{=T(partner_data.get('name'))}}</p>
-        <p>I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of
-  Gift Aid claimed on all my donations in that tax year it is my responsibility to pay any difference.</p>
-        <p>Please notify both OneZoom and {{=A(T(partner_data.get('name')), _href=partner_data.get('general_url'),_target="_blank")}} if you want to cancel this declaration, change your name or home address, or if you no longer pay sufficient tax on your income and/or capital gains.</p>
-        <p>If you pay Income Tax at the higher or additional rate and want to receive the additional tax relief due to you, you must include all your Gift Aid donations on your Self-Assessment tax return or ask HM Revenue and Customs to adjust your tax code.</p>
-        <p>Gift Aid is reclaimed by OneZoom and {{=T(partner_data.get('name'))}} from the tax you pay for the current tax year. We will use the name and address from your PayPal receipt for this purpose and will share this information with {{=A(T(partner_data.get('name')), _href=partner_data.get('url'),_target="_blank")}} for the purposes of Gift Aid - please make sure that information is up to date.</p>
+{{pass}}
+  <p>{{=T('There can be only one sponsor for each leaf, so get your favourite creature before someone else does!')}} 
+     {{=T('Sponsorship is for a fixed period of %s years; after that, if you wish to renew your sponsorship, you will have the first refusal.') % (4,)}}</p>
+</div>
 
-        <p> I agree to all the above statements: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" {{if request.vars.user_giftaid:}}checked{{pass}}/></p>
-        {{else:}}
-        <p>I want to Gift Aid this donation and any donations I make in the future or have made in the past 4 years to OneZoom</p>
-        <p>I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of
-        Gift Aid claimed on all my donations in that tax year it is my responsibility to pay any difference.</p>
-        <p>Please notify the charity if you want to cancel this declaration, change your name or home address, or if you no longer pay sufficient tax on your income and/or capital gains.</p>
-        <p>If you pay Income Tax at the higher or additional rate and want to receive the additional tax relief due to you, you must include all your Gift Aid donations on your Self-Assessment tax return or ask HM Revenue and Customs to adjust your tax code.</p>
-        <p>Gift Aid is reclaimed by the charity from the tax you pay for the current tax year. We will use the name and address from your PayPal receipt for this purpose - please make sure that information is up to date</p>
-          
-        <p> I agree: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" {{if request.vars.user_giftaid:}}checked{{pass}}/></p>
-        
-          {{pass}}
-                <p> Please note: we will need your name, title and UK street address to process gift aid, so please fill in these fields above. Please also remember to instruct PayPal to share your postal address when making your payment - thank you.</p>
-          
-      </div>
-      <input type="hidden" id="user_nondefault_image_input" name="user_nondefault_image" value="" />
-      <input type="hidden" name="id" value="{{=id}}" />
-      <input type="hidden" name="form_reservation_code" value="{{=form_reservation_code}}" />
-      <input type="hidden" name="_formname" value="main_sponsor_form" />
-      {{if partner_data:}}
-      <input type="hidden" name="partner" value="{{=partner_data.get('partner_identifier') or ''}}" />
-      {{pass}}
-    </fieldset>
-    <p class="submit_donate">{{=XML(T('Accept %s and <input id="submit_button" type="submit" value = "Donate"/> using PayPal') % (A(T('terms'),_href="/terms.html",_target="_blank"), ))}}{{if request.vars.get('embed'):}} <span>{{=T('(opens in a new window)')}}</span>{{pass}}.</p>
-  </div>
-</form>
+<script>
+function validate_form_via_ajax_reload(post_object) {
+    $.post(
+        "{{=XML(URL('default', 'sponsor_leaf.load', vars={'ott':OTT_ID}))}}", 
+        post_object,
+        function(data) {
+            $("#sponsor_form_div").html(data);
+            initPreview()})
+}
+</script>
+{{# Load in the view without AJAX so that it works without javascript
+    vars = {'form_reservation_code': form_reservation_code}
+    vars.update(request.vars)
+    =LOAD('default', 'sponsor_leaf', extension="load", vars=vars, ajax=False, target="sponsor_form_div")}}
 
 <script>
 
 /* define global variables */
 
 var mintextsize = 3; // the smallest size text you want to have displayed
-var fonttype = 'Helvetica'; // change the text font to match the rest of your article and journal style // 'sans-serif' // is good too
+var fonttype = 'Helvetica'; // 'sans-serif' is good too
 var green1 = 'rgb(135,215,90)';
-var green2 = 'rgb(70,135,30)';
 
 var newcanvas;
 var leafContext;
 var widthRes = 500;
 var heightRes = 500;
+var node = {"redlist": "{{=iucn_code}}"}
 
 var max_n_thumbnails = 9;
 
@@ -234,39 +94,35 @@ image_objects.push({
 var selected_img = image_objects.length - 1;
 {{pass}}
 var leafImageFile = null; // image file (if null and image_objects exists then image is not loaded yet)
-var leaftext = [null,null];
-var leafCol = {
-    // relating to the leaf itself (not highlighted)
-    
-    "insideColor" : 'rgb(135,215,90)',
-    "outlineColor" : 'rgb(70,135,30)',
-    "BGColor" : 'rgb(255,255,255)',
-    "waterMark" : 'rgba(255,255,255,0.4)',
-    // relating to the leaf itself (highlighted)
-    "insideHighlight" : 'rgb(135,215,90)',
-    "outlineHighlight" : 'rgb(70,135,30)',
-    "BGHighlight" : 'rgb(255,255,255)',
-    "waterMarkHighlight" : 'rgba(255,255,255,0.4)',
-    
-    // relating to the sponsorship text part
-    "sponsorColor" : 'rgb(135,215,90)',
-    "sponsorHighlight" : 'rgb(255,255,255)',
-    
-    // relating to main text part
-    "textColor" : 'rgb(0,0,0)',
-    "textHighlight" : 'rgb(0,0,0)',
-    "textOutline" : 'rgba(255,255,255,0.6)',
-    
-    // image outside line
-    "imageLineColor" : 'rgb(110,110,110)',
-    "imageLineHighlight" : 'rgb(110,110,110)',
-    
-    // copyright symbol colors
-    "copyrightText" : 'rgb(135,215,90)',
-    "copyrightInside" : 'rgb(70,135,30)',
-    "copyrightTextHighlight" : 'rgb(255,255,255)',
-    "copyrightInsideHighlight" : 'rgb(0,0,0)'
-}
+var leafCol = leaf_draw.natural_theme.leaf;
+leafCol.bg.fill = 'rgba(255,255,255, 0)'; // Don't show the white outline
+    /* can override leafCol after this, e.g.
+     * leafCol.inside.fill  = 'rgb(135,215,90)'; // or could be a function of a node obj
+     * leafCol.outline.fill = 'rgb(70,135,30)';
+     * leafCol.bg.fill      = 'rgba(255,255,255, 0)';
+     *
+     * // relating to the leaf itself (highlighted)
+     * leafCol.inside_hover.fill   = 'rgb(135,215,90)';
+     * leafCol.outline_hover.fill' = 'rgb(70,135,30)';
+     *  
+     * // relating to the sponsorship text part
+     * leafCol.sponsor.fill       = 'rgba(255,255,255,0.4)'; // used if not highlighted
+     * leafCol.sponsor_hover.fill = 'rgb(255,255,255)';
+     *  
+     *  // relating to main text part
+     * leafCol.text.fill : 'rgb(0,0,0)';
+     * leafCol.text_hover.fill ='rgb(0,0,0)';
+     *  
+     *  // copyright symbol colors
+     * leafCol.copyright_hover.fill   = 'rgb(0,0,0)';
+     * leafCol.copyright_hover.stroke =  '';
+     * leafCol.copyright.fill = ;
+     * leafCol.copyright.stroke = ;
+     * leafCol.copyright.text.fill       = 'rgb(135,215,90)'; //copyrightText
+     * leafCol.copyright.text_hover.fill = 'rgb(255,255,255)'; //copyrightTextHighlight
+     */
+var sponsor_text_colours = {'base':leafCol.sponsor.fill, 'highlight': leafCol.sponsor_hover.fill}
+
 
 function updateDonorPlaceholder() {
     if ($("#sponsorBy").is(':checked')) {
@@ -287,8 +143,8 @@ function drawPreview()
     var hasText = false;
     
     // get sponsor text and extra text
-    var sponsorTextInput = document.getElementById('user_sponsor_name_input')
-    var extraTextInput = document.getElementById('user_more_info_input')
+    var sponsorTextInput = document.getElementById('user_sponsor_name_input');
+    var extraTextInput = document.getElementById('user_more_info_input');
     if (sponsorTextInput.value)
     {
         sponsorText = sponsorTextInput.value
@@ -345,33 +201,35 @@ function drawPreview()
     var sponsorTextCol
     if (hasText == true)
     {
-        leafCol.sponsorTextCol = 'rgb(255,255,255)';
+        leafCol.sponsorTextCol = sponsor_text_colours.highlight;
     }
     else
     {
-        leafCol.sponsorTextCol = green1;
+        leafCol.sponsorTextCol = sponsor_text_colours.base;
     }
     
     // draw the leaf base again (to wipe out any previous renderings)
-    fullLeafBase(leafContext,widthRes/2.28,heightRes/2,widthRes/2.3,5.6,2,leafCol)
+    leaf_draw.fullLeafBase(
+        leafContext, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, leafCol, node);
     // draw the leaf details
     
     if (image_objects[selected_img])
     {
         
         var cfout = crop_frac(image_objects[selected_img],{{=percent_crop_expansion}});
-        fullLeaf(
+        leaf_draw.fullLeaf(
             leafContext, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, hasText, null,
             sponsorText, extraText, {{=XML(js_common_name or '')}}, {{=XML(js_species_name)}},
-            leaftext[0], leaftext[1], null, leafImageFile, null, leafCol,
-            true, cfout[0], cfout[1], cfout[2])
+            null, null, null, fonttype, mintextsize, leafImageFile, null,
+            leafCol, node, true, cfout[0], cfout[1], cfout[2])
     }
     else
     {
-        fullLeaf(
+        leaf_draw.fullLeaf(
             leafContext, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, hasText, null,
             sponsorText, extraText, {{=XML(js_common_name or '')}}, {{=XML(js_species_name)}},
-            leaftext[0], leaftext[1], null, leafImageFile, null, leafCol)
+            null, null, null, fonttype, mintextsize, leafImageFile, null,
+            leafCol, node)
     }
 }
 
@@ -391,7 +249,6 @@ function callbackAPIcomplete(data, flagsIn)
     */
     imageInfoReady = true;
     leafImageFile = null;
-    leaftext = [null,null];
     /* process data and redraw */
 
     if (data && data.hasOwnProperty("imageObjects")) {
@@ -479,12 +336,12 @@ function initImages() {
                                    type: 'radio',
                                    checked: ((i==selected_img)?'checked':null),
                                    onclick: 
-   'selected_img = "'+i+'";'+
-   'document.getElementById("user_preferred_image_src_input").value = '+image_objects[i].src+';'+
-   'document.getElementById("user_preferred_image_src_id_input").value = '+image_objects[i].src_id+';'+
-   'document.getElementById("user_nondefault_image_input").value = '+((i==0)?(image_objects[0].already_downloaded?"":"0"):"1")+';'+
-   'leafImageFile.src = "'+image_objects[i].url+'";'+ 
-   'drawPreview();'}), 
+   "selected_img = '" + i + "';"+
+   "document.getElementById('user_preferred_image_src_input').value=" + image_objects[i].src + ";"+
+   "document.getElementById('user_preferred_image_src_id_input').value=" + image_objects[i].src_id + ";"+
+   "document.getElementById('user_nondefault_image_input').value=" + ((i==0)?(image_objects[0].already_downloaded?"''":"'0'"):"'1'")+";"+
+   "leafImageFile.src = '" + image_objects[i].url + "';" + 
+   "drawPreview();"}), 
                     $('<label>', {for: 'r'+i,
                                   class: 'radio',
                                   style: 'width:'+img_size_px+'px;height:'+img_size_px+'px;'+bg_css})
@@ -495,7 +352,7 @@ function initImages() {
     }
 }
 
-$( document ).ready(function() {
+function initPreview() {
     updateDonorPlaceholder(); //do it now, in case we are refreshing
     newcanvas = document.getElementById("leafCanvas");
     leafContext = newcanvas.getContext('2d');
@@ -512,6 +369,7 @@ $( document ).ready(function() {
 {{else:}}
     initImages();
 {{pass}}
-});
+};
 
+$(document).ready(initPreview);
 </script>

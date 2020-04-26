@@ -1,0 +1,101 @@
+{{response.title='OneZoom: Museum display installations'}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{extend 'uikit_layout.html'}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+     <h1 class="full-title">Software for interactive displays at museums and other venues</h1>
+</div>
+{{end block}}
+
+
+<div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
+    <div class = "uk-padding">
+                                      
+                                        <a href = "{{=URL('static','images/gallery/highres/One_Zoom_Science_Uncovered.jpg')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/One_Zoom_Science_Uncovered_small.jpg')}}" alt=""></a>
+                        <h3>Benefits of working with us</h3>
+                        
+                         <ol>
+                             <li>We're <strong>registered as a not for profit organisation</strong>, everything we do is with the aim of science communication around biodiversity, evolution and conservation.</li>
+                             <li>We offer <strong>a partnership scheme with the aim of sharing what we've created for free</strong>.</li>
+                             <li>Our team includes a <strong>range of experts in biology, computing and science communication</strong>.</li>
+                             <li>Any not-for-profit venues choosing the option of including leaf sponsorship in their displays can <strong>benefit through sharing of donations</strong> made through their display.</li>
+                             <li>We foster close <strong>mutual relationships with data providers</strong> including Encyclopedia of Life and Open Tree of Life.</li>
+                             <li>The OneZoom software has been a <strong>recognised leader in this field for over seven years</strong>.</li>
+                             <li>We've built the whole visualisation codebase from the ground up with tree of life visualisation in mind, so <strong>everything is optimised for this use case</strong> and easily adapted.</li>
+                             <li>Our reach stretches beyond museum installations and includes a significant online presence as well as uptake with <strong>other media types</strong> including books such as the Ancestor's Tale by Richard Dawkins and Yan Wong. These multiple angles feed into each other synergistically.</li>
+                         </ol>
+                         
+                         
+                        <a href = "{{=URL('static','images/gallery/highres/AT_cover.png')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/AT_cover_small.png')}}" alt=""></a>
+                       
+                    </div>
+                             
+                              <div class = "uk-padding">
+                                 
+                                 <h3>Get up and running now</h3>
+                                 
+                                 <p> If you have the hardware already installed <strong> your custom display can be up and running in seconds </strong> via our <a href="/education/museum_display_setup.html"> customised display launcher</a>.</p>
+                                 
+                                   <p><a href = "/life_MDtouch/@=93302?lang=en&img=best_any&anim=flight&ssaver=6" id="open-in-new-tab-top" class = "a-light oz-pill pill-leafout">Try the display with default settings</a></p>
+                                 
+                                 
+                                 <h3>Data features</h3>
+                                 
+                                 <ol>
+                                     <li>The tree of life used in our displays includes <strong>over 2 million species</strong> covering all known life on earth, except some bacteria and extinct species.</li>
+                                     <li>More than <strong>130,000 different images</strong> of species are integrated into the tree.</li>
+                                     <li><strong>Dates of common ancestry</strong> are included in many popular areas of the tree.</li>
+                                     <li><strong>Rich metadata</strong> are mapped onto our tree including extinction risk (from IUCN), species popularity for every species (our own metric) and common names in 160 different languages.</li>
+                                     <li>Our data are <strong>updated automatically</strong> and <strong>regularly curated by biologists</strong> using reliable sources.</li>
+                                     <li>Displays can be <strong>customised to fit with the theme and learning aims of an exhibit</strong>.</li>
+                                 </ol>
+                                 
+                                 <a href = "{{=URL('static','images/gallery/highres/insects_screenshot.png')}}"  target = "_blank" class="thumbnail">
+                                     <img src= "{{=URL('static','images/gallery/insects_screenshot_small.png')}}" alt="">
+                                         </a>
+                                 
+                                 <h3>Key functions</h3>
+                                 <ol>
+                                     <li>A choice between several <strong>visually beautiful and distinctive</strong> tree designs with the option to work with us to create a new one using the OneZoom framework.</li>
+                                     <li><strong>Easy to use navigation</strong>, like a map with zooming and panning by full multi-touch, or by tapping on simple signposts.</li>
+                                     <li>Integrated <strong>search feature</strong>, including common ancestor search.</li>
+                                     <li><strong>Cusomisable popular areas</strong>.</li>
+                                     <li><strong>Location feature shows where you are</strong> in the deeply hierarchical tree strucuture.</li>
+                                     <li>Embedded sounds and sound player on leaves and nodes.*</li>
+                                     <li>Screensaver zooms around the tree to help attract people when not in use.</li>
+                                     <li><strong>Tutorial function</strong> shows people how to use the display.</li>
+                                 </ol>
+                                 
+                                 <p>* indicates features currently only available in our older sofware which is open source. We are working towards incorporating those features and many news ones into the latest version of OneZoom for use in public display installations.</p>
+                                 
+                             </div>
+                             
+                                   <div class = "uk-padding">
+                                      
+                                      <h3>Our installations so far</h3>
+                                      
+                                       <p>Our software for interactive displays is focused on the tree of life and has appeared in various forms at eight venues in five different countries to date.</p>
+                                      
+                                      <a href="{{=URL('static','images/gallery/highres/MUT_exhibition.jpeg')}}" target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/MUT_exhibition_small.jpeg')}}" alt=""></a>
+                                      
+                                      <ol>
+                                          <li><a href="https://museumofidaho.org/upcoming-exhibits/" target="_blank">Musuem of Idaho Darwin and Dinosaurs</a> 28th September 2019 - 31st May 2020</li>
+                                          <li><a href="https://www.floridamuseum.ufl.edu" target="_blank">Florida Museum of Natural History</a> September 2017</li>
+                                          <li><a href="http://www.harn.ufl.edu" target="_blank">Harn museum of art in Gainesville, Florida</a> August 2017</li>
+                                          <li><a href="http://australianmuseum.net.au/landing/wild-planet/" target="_blank">Wild planet at The Australian Museum in Sydney</a> September 2015, permanent feature</li>
+                                          <li><a href="http://www.wyomingbiodiversity.org" target="_blank">The University of Wyoming Biodiversity Institute </a> August 2015, permanent feature</li>
+                                          <li><a href="http://www.riverprojectnyc.org" target="_blank">The River Project, New York</a> August 2014</li>
+                                          <li><a href="http://www.bl.uk" target="_blank">Beautiful Science at The British Library</a> 20th February 2014 - 26th May 2014.</li>
+                                          <li><a href="http://www.unimuseum.uni-tuebingen.de/schoenes-wissen.html" target="_blank">Science and Aesthetics at MUT</a> 19th April - 1st September 2013</li>
+                                          <li><a href="{{=URL('default','tetrapods_SFU')}}" target="_blank">Simon Fraser University</a> 18th March 2013, permanent feature</li>
+                                      </ol>
+                                      
+                                            <a href = "{{=URL('static','images/gallery/highres/sydney_kiosk.jpg')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/sydney_kiosk_small.jpg')}}" alt=""></a>
+                                                <p>An adapted version of OneZoom projected onto the side of the Florida Museum of Natural History</p>
+                                             <a href = "{{=URL('static','images/gallery/highres/florida_museum_projection_1.png')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/florida_museum_projection_1_small.png')}}" alt=""></a>
+                                         
+                                      
+                                  </div>
+              
+                </div><!--/row-->

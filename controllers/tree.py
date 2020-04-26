@@ -39,6 +39,8 @@ def wikipedia_OZpage():
         raise HTTP(400,e)
 
 
+def IUCN_OZpage():
+    return dict()
 
 def pic_info():
     """
@@ -104,7 +106,6 @@ def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
     urls = {} #for a list of the keys the UI expect to be returned (e.g. wiki, eol, ozspons) see UI_layer() in treeviewer.py
     name = None
     errors = []
-
     try:
         core_table = "ordered_leaves" if is_leaf else "ordered_nodes"
         if id is not None:
@@ -123,11 +124,12 @@ def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
             ott =  row[core_table].ott
             name = row[core_table].name
             try:
-                first_lang = (request.env.http_accept_language or 'en').split(',')[0]
+                lang = request.vars.lang or request.env.http_accept_language or 'en'
+                first_lang = lang.split(',')[0]
                 lang_primary = first_lang.split("-")[0]
             except:
                 lang_primary ='en'
-            wikilang = request.vars.wikilang or lang_primary
+            wikilang = lang_primary if lang_primary in wikiflags else 'en'
             if row[core_table].ott:
                 urls['opentree'] = opentree_url(row[core_table].ott)
             if row[core_table].wikidata:
@@ -274,7 +276,8 @@ def iucn_url(IUCNid):
     try:
         #we only have a single url to return as we haven't bothered to make a local IUCN page
         #see https://github.com/OneZoom/OZtree/issues/67
-        return(["http://www.iucnredlist.org/details/{}/0".format(int(IUCNid))])
+        IUCNURLarray = [URL('tree','IUCN_OZpage.html',vars=dict(iucnid=int(IUCNid))),"http://www.iucnredlist.org/details/{}/0".format(int(IUCNid))]
+        return(IUCNURLarray)
     except:
         raise HTTP(400,"No valid IUCN id provided")
 

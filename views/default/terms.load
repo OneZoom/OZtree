@@ -5,11 +5,13 @@
 <!-- if we put /site on the end then we want the main website terms first and sponsorship second, otherwise we want sponsorship first-->
 
 <div class="row-fluid" style="order: {{=(4 if request.args and request.args[0]=='site' else 1)}};">
-<div class="col-md-12 intro">
+<div>
 <h3>Leaf sponsorship</h3>
 <p>We’d be delighted if you would consider sponsoring a leaf on the OneZoom Tree of Life. OneZoom is a registered UK charity, and the funds we raise allow us to maintain and improve this tree of life explorer as a resource for everyone. Note that sponsorship text is publically visible on the tree so must be appropriate for this, and also that we aim to keep our scientific information as up to date as possible, which may affect some aspects of your sponsored leaf in the future. We have written the guidelines below to make you aware of how we will manage this; we hope you will find them fair. When sponsoring a leaf on the tree, you must also agree to our data protection and privacy policy, our cookie policy and our general terms of website use.</p>
 </div>
-<div class="col-md-6">
+
+<div class="uk-grid-small uk-text-small uk-child-width-1-2@m " uk-grid>
+<div class = "uk-padding uk-padding-remove-top">
 
 <h4>Acceptable sponsorship text</h4>
 
@@ -40,7 +42,7 @@
 
 </div>
 
-<div class="col-md-6">
+<div class = "uk-padding uk-padding-remove-top">
 
 <h4>What happens to revenue generated through sponsorship</h4>
 
@@ -70,14 +72,16 @@
 </ol>
 </div>
 </div>
+</div>
 
-
-<div class="row-fluid" style="order: {{=(1 if request.args and request.args[0]=='site' else 3)}};">
-<div class="col-md-12 intro">
+<div style="order: {{=(1 if request.args and request.args[0]=='site' else 3)}};">
+<div>
 <h3 id = "useterms">Use of the OneZoom website</h3>
 <p>By using the website you are assumed to have agreed to these terms and conditions as well as our cookie policy and our data protection and privacy policy. We are sorry that the terms are quite lengthy, however, we have worked hard to make the terms of use both clear and reasonable.</p>
 </div>
-<div class="col-md-6">
+
+<div class="uk-grid-small uk-text-small uk-child-width-1-2@m " uk-grid>
+<div class = "uk-padding uk-padding-remove-top">
 
 <h4>General</h4>
 
@@ -106,7 +110,7 @@
 </ol>
 
 </div>
-<div class="col-md-6">
+<div class = "uk-padding uk-padding-remove-top">
 <ul>
 
 <h4>Trademark and media origin</h4>
@@ -114,7 +118,8 @@
 <ol>
 
 <li>The trademark OneZoom is registered in the UK and USA and is owned by Imperial Innovations. It is provided to the charity OneZoom under sub-license from James Rosindell.</li>
-<li>Images on this website are generally available under creative commons and public domain licenses with license details available from the copyright symbol next to each image in the main tree of life explorer.</li>
+<li>Images on our tree of life explorer are available under creative commons and public domain licenses with license details available from the copyright symbol next to each image in the main explorer pages.</li>
+<li>Images found elsewhere on our website, for example on our timeline, may be provided by third parties who we have worked with.</li>
 <li>Quotes and user opinions are owned by the original author of the text who in each case has either given permission for OneZoom to use the quote, or made the text publicly available.</li>
 <img class="rgt_edge" src="{{=URL('static','images/leaves/Rpic1.png')}}" />
 <li>All other material on this site is owned by the OneZoom charity and its third party licensors.</li>
@@ -126,7 +131,10 @@
 
 <ol>
 
-<li>Screenshots from anywhere on the site may be reused with citation to OneZoom. It is your responsibility to check the license for any images appearing within the screenshot, which may also require acknowledgements. You might find our {{=A('expert view', _href=URL('default','life_expert.html'))}} useful which has a button to download screenshots from the tree as an SVG. Note there there are also settings to include only images we believe to be in the public domain. Please write to us if you are not sure about image permissions.</li>
+<li>Screenshots from our tree of life explorer may be reused with citation to OneZoom.org. It is your responsibility to check the license for any images appearing within the screenshot, which may also require acknowledgements. You might find our {{=A('Screenshot tool', _href=URL('education','screenshot_launcher.html'))}} useful which has a button to download screenshots from the tree as an SVG. Note there there are also settings to include only images we believe to be in the public domain.</li>
+
+<li>Images found elsewhere on our website may be owned by a third party who has given permission to OneZoom but not granted permission for more general reuse, please do not reuse media from the broader website without checking first.</li>
+<li>Please write to us if you are not sure about image permissions.</li>
 <li>Scientific literature using screenshots or citing the OneZoom viewer should cite Rosindell J, Harmon LJ (2012) “OneZoom: A Fractal Explorer for the Tree of Life” {{=A("PLoS Biol 10(10): e1001406.", _href="http://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.1001406", _target="_blank")}} (doi:10.1371/journal.pbio.1001406) as well as the OneZoom.org website.</li>
 <li>Text from anywhere on the site may be reused with proper citation.</li>
 
@@ -134,15 +142,17 @@
 
 </div>
 </div>
+</div>
 
 
-
-<div class="row-fluid" style="order: {{=(2 if request.args and request.args[0]=='site' else 4)}};">
-<div class="col-md-12 intro">
+<div style="order: {{=(2 if request.args and request.args[0]=='site' else 4)}};">
+<div>
 <h3 id = "useterms">Cookie policy</h3>
 <p>We use cookies. By using our website you must agree to this.</p>
 </div>
-<div class="col-md-6">
+
+<div class="uk-grid-small uk-text-small uk-child-width-1-2@m " uk-grid>
+<div class = "uk-padding uk-padding-remove-top">
 <img class="lft_edge" src="{{=URL('static','images/leaves/Lpic1.png')}}" />
 
 <p>Cookies are small files created when you visit a site and contain a unique, anonymous number. They are stored in the cookie directory of your hard drive and may not expire at the end of your session.</p>
@@ -153,7 +163,7 @@
 
 
 </div>
-<div class="col-md-6">
+<div class = "uk-padding uk-padding-remove-top">
 
 <p>To operate Google Analytics which enables us to see usage statistics for our website, including which kind of devices are being used to browse our website. Our usage of Google Analytics anonymises your computer’s Internet Protocol address (IP address, a technical standard which allows data to be transmitted between two devices) and does not link with any other personal data of yours that we may have. Google store the information on usage of our website in accordance with their own privacy policy.</p>
 
@@ -161,16 +171,18 @@
 
 </div>
 </div>
+</div>
 
-<div class="row-fluid" style="order: {{=(5 if request.args and request.args[0]=='site' else 2)}};">
-<div class="col-md-12 intro">
+<div style="order: {{=(5 if request.args and request.args[0]=='site' else 2)}};">
+<div>
 <h3 id = "useterms">Data Protection and Privacy policy</h3>
 <p>By using this website you acknowledge that you have read the terms of this Data Protection and Privacy Policy and that you consent to the collection of information from you and use of such information as described in this policy.</p>
 
 <p>This website is operated by the charity OneZoom. We will protect and keep confidential information collected from you as a result of use of this website.
 Links within this site to other websites are not covered by this Data Protection and Privacy Policy.</p>
 </div>
-<div class="col-md-6">
+<div class="uk-grid-small uk-text-small uk-child-width-1-2@m " uk-grid>
+<div class = "uk-padding uk-padding-remove-top">
 
 <h4>Personal data that we collect from you and where it’s collected from</h4>
 
@@ -251,7 +263,7 @@ Links within this site to other websites are not covered by this Data Protection
 <p>All data sent to us by e-mail is stored by Google and duplicated on personal mail programs of trusted members of our team.</p>
 
 </div>
-<div class="col-md-6">
+<div class = "uk-padding uk-padding-remove-top">
 
 
 
@@ -331,13 +343,15 @@ Links within this site to other websites are not covered by this Data Protection
 
 </div>
 </div>
+</div>
 
-<div class="row-fluid" style="order: {{=(3 if request.args and request.args[0]=='site' else 5)}};">
-<div class="col-md-12 intro">
+<div style="order: {{=(3 if request.args and request.args[0]=='site' else 5)}};">
+<div intro">
 <h3 id = "useterms">Use of the OneZoom popularity index</h3>
 <p>We provide a popularity index for all species of life, which can be used by third parties. This is based on page size and recent visiting statistics from taxon pages on the English language Wikipedia. The data is available for reuse by download or API. Reuse of this data is subject to the following conditions.</p>
 </div>
-<div class="col-md-6">
+<div class="uk-grid-small uk-text-small uk-child-width-1-2@m " uk-grid>
+<div class = "uk-padding uk-padding-remove-top">
 <ul>
 <li>The data must be credited as ‘The OneZoom popularity index’ with citation to Yan Wong and OneZoom with a web address www.onezoom.org. The index is updated regularly and your citation must include the date accessed unless you access the API in real time.</li>
 <li>It is our intention to formally publish a description of the popularity index in a scientific journal. Please check back here for information on citing this before returning final versions for scientific publications using our popularity index.</li>
@@ -346,7 +360,7 @@ Links within this site to other websites are not covered by this Data Protection
 
 </ul>
 </div>
-<div class="col-md-6">
+<div class = "uk-padding uk-padding-remove-top">
 <ul>
 <li>Access to our data via public key API is subject to restrictions and requests to the API may be denied at peak times or if the service is abused.</li>
 <li>Please download the complete dataset instead of using the API if you require the full set of popularity information.</li>
@@ -354,6 +368,7 @@ Links within this site to other websites are not covered by this Data Protection
 <li>We collect data from private key uses of our API, this is handled in accordance with our Data Protection and Privacy Policy.</li>
 
 </ul>
+</div>
 </div>
 </div>
 

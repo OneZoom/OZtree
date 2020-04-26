@@ -1,10 +1,10 @@
 #this reads in already-calculated popularity data from nested_set_leaves
 #header is name,extinction_date,ott,wikidata,wikipedia_lang_flag,eol,iucn,popularity,price,image_updated,vname_updated,ncbi,ifung,worms,irmng,gbif
 
-pop <- read.delim("~/Documents/Research/OneZoom/OneZoomComplete/applications/OneZoom/OZprivate/data/output_files/ordered_leaves.csv",
+pop <- read.delim("~/Documents/Research/OneZoom/OneZoomPublic_web2py/applications/OZtree/OZprivate/data/output_files/ordered_leaves_25772594.csv",
                   header=T,
                   sep=",",
-                  colClasses=c("NULL", "NULL",'character',"NULL","NULL","NULL","NULL", "NULL","NULL", 'numeric',"NULL","NULL","NULL","NULL","NULL","NULL"),
+                  colClasses=c("NULL", "NULL",'character',"NULL","NULL","NULL","NULL", "NULL","NULL", "NULL", 'numeric',"NULL","NULL","NULL","NULL","NULL","NULL"),
                   stringsAsFactors=F)
 rownames(pop) <- make.names(pop$name, unique=TRUE)
 

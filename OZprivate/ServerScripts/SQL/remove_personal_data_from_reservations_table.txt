@@ -1,0 +1,37 @@
+/* This SQL removes personal data from the reservations table so that it can be used locallal for testing - it keeps in the names of donors who set donor_show = 1 - it keeps the public sponsorship info.  it removes rows of unsponsored data as well though this is a slow command */
+
+DELETE FROM reservations WHERE live_time IS NULL;
+
+UPDATE reservations SET 
+user_registration_id = NULL,
+user_id = NULL,
+e_mail = NULL,
+twitter_name = NULL,
+PP_transaction_code = NULL,
+PP_e_mail = NULL,
+PP_first_name = NULL,
+PP_second_name = NULL,
+PP_town = NULL,
+PP_country = NULL,
+PP_house_and_street = NULL,
+PP_postcode = NULL,
+verified_donor_title = NULL,
+verified_donor_name = NULL,
+verified_paid = NULL,
+verified_url = NULL;
+
+UPDATE reservations SET 
+user_donor_title = NULL,
+user_donor_name = NULL,
+user_donor_show = NULL,
+verified_donor_title = NULL,
+verified_donor_name = NULL
+WHERE user_donor_show IS NULL;
+
+UPDATE reservations SET 
+user_donor_title = NULL,
+user_donor_name = NULL,
+user_donor_show = NULL,
+verified_donor_title = NULL,
+verified_donor_name = NULL
+WHERE user_donor_show != 1;

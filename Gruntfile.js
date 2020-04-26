@@ -1,51 +1,47 @@
+partial_install_site = "http://beta.onezoom.org";
+partial_local_install_site = "http://127.0.0.1:8000"; // if you are running a local installation
+preferred_python3 = "python3.7"; // in case you have multiple python3 versions installed
+
 module.exports = function (grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     exec: {
-      precompile_python: {
+      compile_python: {
         // compile python to make it faster on the server and hence reduce server load.
-        // this needs python 2 installed to work
+        // should probably be run using the same python version as used to run web2py
         cwd: "../../",
-        command: 'python2 -c "import gluon.compileapp; gluon.compileapp.compile_application(\'' + process.cwd() + '\', skip_failed_views=True)"'
+        command:
+                preferred_python3 + ' -c "import gluon.compileapp; gluon.compileapp.compile_application(\''
+                + process.cwd()
+                + '\', skip_failed_views=True)"'
+            + ' || ' + // If python 3.7 isn't available, use the system-defined python3 instead
+                'python3 -c "import gluon.compileapp; gluon.compileapp.compile_application(\''
+                + process.cwd()
+                + '\', skip_failed_views=True)"'
       },
       test: {
         command: 'npm run test'
       },
-      precompile_js: {
-        command: 'npm run precompile_js' //command defined in package.json
+      compile_js: {
+        command: 'npm run compile_js' //command defined in package.json
       },
-      precompile_js_dev: {
-        command: 'npm run precompile_js_dev' //command defined in package.json
+      compile_js_dev: {
+        command: 'npm run compile_js_dev' //command defined in package.json
       },
-      precompile_docs: {
+      unify_docs: {
         //put all markdown files referred to in OZTreeModule/docs/index.markdown in a single _compiled.markdown file
         //and substitute .png / svg images with data (base64 encoded for png) so they become embedded in the doc
         cwd: "OZprivate/rawJS/OZTreeModule/docs",
         command: "perl compile_docs.pl index.markdown > _compiled.markdown"
       },
-      partial_install: {
-        //See documentation in https://github.com/OneZoom/OZtree#onezoom-setup
-        command: "perl -i OZprivate/ServerScripts/Utilities/partial_install.pl static/minlife.html"
-      },
-      partial_local_install: {
-        //used for development only. This will create the minlife file as normal, but
-        //using your local machine to source the page, rather than downloading the minlife
-        //file from the main OneZoom server. This means that as well as local changes to
-        //the treeviewer javascript, local changes you make to other files (such as
-        // treeviewer/layout.html and treeviewer/UI_layer.load) will be incorporated
-        //into the minlife tree. However, it assumes you have a local server running on
-        //127.0.0.1:8000, and pics_dir = http://images.onezoom.org/ set in your appconfig.ini.
-        //
-        //See documentation in https://github.com/OneZoom/OZtree#onezoom-setup
-        command: function (input_file, output_file) {
-          if (!output_file) {
-            // Only one argument supplied, assume input and output are the same
-            output_file = input_file
-          }
-          return "curl -s 'http://127.0.0.1:8000/" + input_file + "' > static/" + output_file + ";" +
-                 "perl -i OZprivate/ServerScripts/Utilities/partial_install.pl static/" + output_file + ";" +
-                 "perl -i -pe 's|http://127.0.0.1:8000|http://beta.onezoom.org|g' static/" + output_file + ";";
-        }
+      convert_links_to_local: {
+        // Any .html file in /static is fair game. See documentation in
+        // https://github.com/OneZoom/OZtree#onezoom-setup
+        command: 
+            "python3 OZprivate/ServerScripts/Utilities/partial_install.py" +
+            " --search " + partial_local_install_site + // replace local urls, for partial local install
+            " --replace " + partial_install_site +
+            " static/*.html"
       }
     },
     jsdoc2md: {
@@ -66,6 +62,7 @@ module.exports = function (grunt) {
       }
     },
     compass: {
+      // SCSS -> CSS files
       dist: {
         options: {
           sassDir: '<%=pkg.directories.css_src%>',
@@ -75,41 +72,12 @@ module.exports = function (grunt) {
         }
       }
     },
-    uglify: {
-      main: {
-        files: {
-          //also moves the files
-          '<%=pkg.directories.js_dest%>/common.js': ['<%=pkg.directories.js_dist%>/common.js'],
-          '<%=pkg.directories.js_dest%>/OZentry.js': ['<%=pkg.directories.js_dist%>/OZentry.js'],
-          //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
-          //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
-          //is solved
-          '<%=pkg.directories.old_js_dest%>/Drawing.js': ['<%=pkg.directories.old_js_dist%>/Drawing.js'],
-          '<%=pkg.directories.old_js_dest%>/Leaf_draw.js': ['<%=pkg.directories.old_js_dist%>/Leaf_draw.js'],
-        }
-      }
-    },
-    clean: {
-      build:[
+    clean: [
+        'compiled',
         '<%=pkg.directories.js_dest%>/*',
         '<%=pkg.directories.js_dist%>/*.js*',
-        //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
-        //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
-        //is solved
-        '<%=pkg.directories.old_js_dest%>/*',
-        '<%=pkg.directories.old_js_dist%>/*.js*',
-      ],
-      compile:[
-        '<%=pkg.directories.js_dest%>/*',
-        '<%=pkg.directories.js_dist%>/*.js*',
-        //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
-        //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
-        //is solved
-        '<%=pkg.directories.old_js_dest%>/*',
-        '<%=pkg.directories.old_js_dist%>/*.js*',
-      ],
-    },
-    compress: {
+    ],
+    compress: {  // NB: the main tree viewer is compressed using webpack, not directly in grunt
       main: {
         options: {
           mode: 'gzip'
@@ -117,59 +85,61 @@ module.exports = function (grunt) {
         files: [
           {
             expand: true,
-            cwd: '<%=pkg.directories.js_dest%>',
-            src: ['*.js'],
-            dest: '<%=pkg.directories.js_dest%>',
-            ext: '.js.gz'
-          },
-          { //quick hack for the fragments of old code
-            //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
-            //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
-            //is solved
-
-            expand: true,
-            cwd: '<%=pkg.directories.old_js_dest%>',
-            src: ['*.js'],
-            dest: '<%=pkg.directories.old_js_dest%>',
-            ext: '.js.gz'
-          },
-          {
-            expand: true,
             cwd: '<%=pkg.directories.css_dist%>',
             src: ['*.css'],
             dest: '<%=pkg.directories.css_dist%>',
+            ext: '.css.gz'
+          },
+          {
+            expand: true,
+            cwd: '<%=pkg.directories.old_css_dest_and_dist%>',
+            src: ['*.css'],
+            dest: '<%=pkg.directories.old_css_dest_and_dist%>',
             ext: '.css.gz'
           }
         ]
       }
     },
     copy: {
-      to_live: {
+      prod: {
         files: [
-          // includes files within path
-          {expand: true, cwd: '<%=pkg.directories.js_dist%>', src: "**", dest: '<%=pkg.directories.js_dest%>/', filter: 'isFile'},
-          {expand: true, cwd: '<%=pkg.directories.old_js_dist%>', src: "**", dest: '<%=pkg.directories.old_js_dest%>/', filter: 'isFile'},
+          {expand: true, cwd: '<%=pkg.directories.js_dist%>', src: "**", dest: '<%=pkg.directories.js_dest%>/', filter: 'isFile'}
         ]
       },
-      //these "old" files only help with drawing leaves on the sponsor_leaf etc pages, and
-      //can be ignored. They can be removed when https://github.com/OneZoom/OZtree/issues/28
-      //is solved
-      old_js: {
-          expand: true, cwd: '<%=pkg.directories.old_js_src%>', src: '*.js', dest: '<%=pkg.directories.old_js_dist%>/', filter: 'isFile'
+      dev: {
+        files: [
+          {expand: true, cwd: '<%=pkg.directories.js_dist%>', src: "**", dest: '<%=pkg.directories.js_dest%>/', filter: 'isFile'}
+        ]
       },
     },
-    curl: {
+    'curl-dir': {
         'get_minlife': {
             //this should be changed to the production URL when live
             //src:'http://www.onezoom.org/treeviewer/minlife.html/?lang=' + grunt.option('lang') || '',
-            src:'http://beta.onezoom.org/treeviewer/minlife.html',
-            dest:'static/minlife.html',
+            src: [
+                partial_install_site + '/treeviewer/minlife.html',
+                partial_install_site + '/treeviewer/minlife_tour.html',
+            ],
+            dest:'static',
+        },
+        'get_local_minlife': {
+            //used for development only. This will create the minlife file as normal, but
+            //using your local machine to source the page, rather than downloading the minlife
+            //file from the main OneZoom server. This means that as well as local changes to
+            //the treeviewer javascript, local changes you make to other files (such as
+            // treeviewer/layout.html and treeviewer/UI_layer.load) will be incorporated
+            //into the minlife tree. However, it assumes you have a local server running on
+            //127.0.0.1:8000, and pics_dir = http://images.onezoom.org/ set in your appconfig.ini.
+            src: [
+                partial_local_install_site + '/treeviewer/minlife.html',
+                partial_local_install_site + '/treeviewer/minlife_tour.html',
+            ],
+            dest:'static',
         }
     }
   });
 
   grunt.loadNpmTasks("grunt-exec");
-  grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-compress');
   grunt.loadNpmTasks('grunt-contrib-compass');
@@ -178,16 +148,13 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-curl');
 
   grunt.registerTask("test", ["exec:test"]);
-  grunt.registerTask("precompile-python", ["exec:precompile_python"]);
-  grunt.registerTask("precompile-js", ["exec:precompile_js"]);
-  grunt.registerTask("precompile-js_dev", ["exec:precompile_js_dev"]);
-  grunt.registerTask("partial-install", ["curl:get_minlife", "exec:partial_install"]);
-  grunt.registerTask("partial-local-install", [
-    "compile",
-    "exec:partial_local_install:life.html:minlife.html",
-    "exec:partial_local_install:otop.html:minotop.html",
-  ]);
-  grunt.registerTask("precompile-docs", ["jsdoc2md", "exec:precompile_docs"]);
-  grunt.registerTask("build", ["clean:build", "precompile-python", "precompile-js", "copy:old_js", "compass","uglify", "compress","precompile-docs"]);
-  grunt.registerTask("compile", ["clean:compile", "precompile-js_dev", "copy:old_js", "compass" , "copy:to_live", "precompile-docs"]);
+  grunt.registerTask("css", ["compass"]);
+  grunt.registerTask("docs", ["jsdoc2md", "exec:unify_docs"]);
+  grunt.registerTask("compile-python", ["exec:compile_python"]);
+  grunt.registerTask("compile-js", ["exec:compile_js"]);
+  grunt.registerTask("compile-js_dev", ["exec:compile_js_dev"]);
+  grunt.registerTask("partial-install",       ["compile-js", "compass", "copy:dev", "curl-dir:get_minlife", "exec:convert_links_to_local"]);
+  grunt.registerTask("partial-local-install", ["compile-js", "compass", "copy:dev", "curl-dir:get_local_minlife", "exec:convert_links_to_local"]);
+  grunt.registerTask("prod", ["clean", "compile-python", "compile-js", "compass", "compress", "copy:prod", "docs"]);
+  grunt.registerTask("dev",  ["clean",               "compile-js_dev", "compass", "compress", "copy:dev",  "docs"]);
 };

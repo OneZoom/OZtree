@@ -1,5 +1,16 @@
-{{response.title='OneZoom: Links for ' + name}}
-{{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
+{{
+    response.title='OneZoom: '+T('Links for ') + str(name)
+    response.files.append(URL('static','css/content_pages.css'))
+}}
+{{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
+
+{{block masthead}}
+{{if 'embed' not in request.vars:}}
+<div class="home-heading uk-text-center uk-padding-small">
+  <h1>Links</h1>
+</div>
+{{pass}}
+{{end block}}
 
 <h3>Links for <i>{{=name}}</i> (OTT {{=ott}})</h3>
 <ul>{{for k,d in data.items():}}

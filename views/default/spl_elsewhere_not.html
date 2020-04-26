@@ -1,19 +1,87 @@
 {{
-response.title='OneZoom: '+T('sponsor a species')
+    response.title='OneZoom: '+T('non-sponsorable species')
+    response.files.append(URL('static','css/content_pages.css'))
 }}
-
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
-{{extend ('embed.html' if 'embed' in request.vars else 'layout.html')}}
+{{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
 
-<h3>{{=XML(T('Sponsor a leaf and support OneZoom'))}}</h3>
+{{include '../static/OZTreeModule/dist/OZ_leaf_draw.html'}}
 
-<p>{{=T('This tree of life explorer is made available by OneZoom, a UK charity (non-profit organisation). The aim of OneZoom is to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.')}}</p>
+{{block masthead}}
+{{if 'embed' not in request.vars:}}
+<div class="home-heading uk-text-center uk-padding-small">
+  <h1>Leaf sponsorship</h1>
+</div>
+{{pass}}
+{{end block}}
+<h2>{{=XML(T('Sorry, this leaf is not available to sponsor right now'))}}</h2>
+<em>This leaf is current unavailable for direct sponsorship, either because someone else
+has sponsored it and it is still being processed, or because it is one of a handful of
+special species which are only available via direct communication with us. You can
+double-check by visiting the leaf on our main site at
+{{=A("www.onezoom.org/life/@={}".format(ott), _href="//www.onezoom.org/life/@={}".format(ott), target="_blank")}}</em>
+<div class="uk-grid uk-text-small uk-child-width-1-3@m" uk-grid>
+  <div>
+    <h3>{{=T('About leaf sponsorship')}}</h3>
+    <p>{{=T('You can sponsor leaves on the OneZoom tree of life for yourself or as a unique gift for someone you know. As a thank-you, we acknowledge donations to the OneZoom charity (non-profit) by displaying your chosen sponsor’s name on the leaf of your choice. Your donations will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.')}}</p>
+  </div>
+  <div>
+    <script>
+    var fonttype = 'Helvetica'; // 'sans-serif' is good too
+    var mintextsize = 3; // the smallest size text you want to have displayed
+    
+    var widthRes = 500;
+    var heightRes = 500;
+    var leaftext = [null, null];
+    var hasSponsor = false;
+    var sponsorText = "{{=T('Not currently available to sponsor')}}".toUpperCase();
+    var leafCol = leaf_draw.natural_theme.leaf;
+    leafCol.sponsor.fill = leafCol.sponsor_hover.fill; // Highlight the text more
+    leafCol.bg.fill = 'rgba(255,255,255, 0)'; // Don't show the white outline
+    var node = {"redlist": "{{=iucn_code}}"}
 
-<p>{{=T('Sponsoring a leaf on the tree of life helps support OneZoom and, as a thank you, your name (or the name of a nominated friend) will appear on this leaf of the tree, both here and elsewhere.')}}</p>
+    function drawPreview(context, image) {
+        leaf_draw.fullLeafBase(
+            context, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, leafCol, node)
+        leaf_draw.fullLeaf(
+            context, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, hasSponsor, null,
+            sponsorText, "", {{=XML(js_common_name or '')}}, {{=XML(js_species_name)}},
+            leaftext[0], leaftext[1], null, fonttype, mintextsize, image, null, leafCol, node)
+    }
 
-<p>{{=T('There can only be one sponsor per leaf so get your favourite species before someone else does.')}}</p>
+    $( document ).ready(function() {
+        var newcanvas = document.getElementById("leafCanvas");
+        var leafContext = newcanvas.getContext('2d');
+        newcanvas.width = widthRes;
+        newcanvas.height = heightRes;
+        leafContext.textBaseline = 'middle';
 
-<p>{{=T('This leaf is not currently available for sponsorship, but many others are...')}}</p>
+    {{if default_image:}}
+        var leafImageFile = new Image();
+        leafImageFile.src = "{{=thumbnail_url(default_image.src,default_image.src_id)}}"
+        leafImageFile.onload = function() {
+            $('#licenceText').show();
+            drawPreview(leafContext, leafImageFile);
+        }
+    {{else:}}
+        drawPreview(leafContext);
+    {{pass}}
+    });
+    </script>
+    <canvas class="example-leaf" id="leafCanvas"></canvas>
+    <p id="licenceText">{{=XML(
+        A(
+            T('More information about this image'),
+            _href=URL(
+                'tree', 'pic_info',
+                args=[getattr(default_image, 'src', ''), getattr(default_image, 'src_id', '')])))
+        }}</a></p>
+  </div>
+  <div>
+    <h3>{{=T('There are plenty more leaves')}}</h3>
+    <p> {{=T('We’re sorry if you wanted to sponsor this leaf.  There is only one name per species so get your favourite species while you can.')}}</p>
+    <p>{{=XML(T('Find another leaf to sponsor on OneZoom at %s') % (A("www.onezoom.org/sponsor", _href="//www.onezoom.org/sponsor", target="_blank"),))}}</a></p>
+    <p> {{=T('Thank you for your interest in supporting our work.')}}</p>
+  </div>
+</div>
 
-{{#NB the links here should be hardcoded to jump out to the (external) main OZ website}}
-<p>{{=XML(T('Find another leaf to sponsor on OneZoom at %s') % (A("www.onezoom.org/sponsor", _href="//www.onezoom.org/sponsor", target="_blank", _style="text-decoration: underline;"),))}}</a></p>

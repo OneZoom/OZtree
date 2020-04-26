@@ -11,6 +11,18 @@ def js_strings():
     """
     return dict()
 
+def dynamic_scripts():
+    """
+    Javascript to load any large data files in advance
+    """
+    return dict()
+
+def server_urls():
+    """
+    Javascript to define API urls
+    """
+    return dict()
+
 def UI_layer():
     """
     We require any UI to provide the main html code for the UI in a separate page, viewer_UI,
@@ -44,6 +56,14 @@ def minlife():
     """
     return dict(
         page_info = {'title_name':'Minimal OneZoom page','try_local_treefiles_version':__check_version()})
+
+
+def minlife_tour():
+    """
+    A minimum version for restricted installation that does not contain the text tree and disallows language / tree switching
+    This version will be downloaded from the main server
+    """
+    return minlife()
 
 def about_plus_data():
     """

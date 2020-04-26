@@ -1,35 +1,37 @@
-{{response.title='OneZoom: Recently sponsored species'}}
-{{extend 'layout.html'}}
-<div class="row-fluid">
-    <div class="col-md-12">
-        <h1>Species sponsored recently{{if request.vars.search_mesg == 'AT16':}} through the <a href="http://ancestorstrail.org.uk">Ancestor&rsquo;s Trail</a>{{pass}}</h1>
-        <h2>Each image links to a leaf on the OneZoom tree</h2>
-        {{if tot:}}<h5>Total amount so far = &pound;{{=tot}}</h5>{{pass}}
-    </div>
+{{
+    response.title='OneZoom: '+T('recently sponsored species')
+    response.files.append(URL('static','css/content_pages.css'))
+}}
+{{extend 'uikit_layout.html'}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+  <h1>Species sponsored recently{{if request.vars.search_mesg == 'AT16':}} through the <a href="http://ancestorstrail.org.uk">Ancestor&rsquo;s Trail</a>{{pass}}</h1>
+  <em>Each image links to a leaf on the OneZoom tree</em>
 </div>
-<div class="row-fluid">
-    <div class="col-md-12">
-        <ol class="sponsored_list">{{for i,item in enumerate(rows):}}{{if i==items_per_page: break}}
-            <li>
-                <figure>{{img = user_images.get(item['OTT_ID']) or default_images.get(item['OTT_ID'])}}
-                    <figure>
-                        <figcaption>{{=(html_names[item['OTT_ID']])}}</figcaption>
-                        <a href="{{=URL('life/@=' + str(item['OTT_ID']), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life"
+{{end block}}
+
+{{if tot:}}<h5>Total amount so far = &pound;{{=tot}}</h5>{{pass}}
+<ol class="sponsored_list">{{for i,item in enumerate(rows):}}{{if i==items_per_page: break}}
+    <li>
+        <figure>{{img = user_images.get(item['OTT_ID']) or default_images.get(item['OTT_ID'])}}
+            <figure>
+                <figcaption>{{=(html_names[item['OTT_ID']])}}</figcaption>
+                <a href="{{=URL('life/@=' + str(item['OTT_ID']), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life"
 {{if img:}}
     src="{{=thumbnail_url(img.get('src'), img.get('src_id'))}}"
     title="{{=' / '.join([t for t in [img.rights, img.licence] if t]).replace('"',"'")}}"
-    {{if img.get('src_id') in pds:}}class="pd" {{pass}}
+    class="{{if img.get('src_id') in pds:}}pd{{pass}}"
 {{else:}}
     src="{{=URL('static','images/noImage_transparent.png')}}"
-    {{if None in pds:}}class="pd" {{pass}}
+    class="nopic {{if None in pds:}}pd{{pass}}"
 {{pass}} />
-                        </a>
-                    </figure>
-                <figcaption>Sponsored {{=item['verified_kind']}}<br /><strong>{{=item['verified_name']}}</strong><br />{{=item['verified_more_info'] or ''}}</figcaption></figure>
-            </li>
+               </a>
+           </figure>
+       <figcaption>Sponsored {{=item['verified_kind']}}<br /><strong>{{=item['verified_name']}}</strong><br />{{=item['verified_more_info'] or ''}}</figcaption></figure>
+    </li>
 {{pass}}
-        </ol>
-        {{if page:}}{{=A(XML('&lt;&nbsp;previous&nbsp;'+str(items_per_page)+'..'),_href=URL(args=[page-1], vars=vars),_class='hefty')}}{{pass}}
-        {{if len(rows)>items_per_page:}}{{=A(XML('..next&nbsp;'+str(items_per_page)+'&nbsp;&gt;'),_href=URL(args=[page+1], vars=vars),_class='hefty')}}{{pass}}
-    </div>
-</div>
+</ol>
+
+{{if page:}}{{=A(XML('&lt;&nbsp;previous&nbsp;'+str(items_per_page)+'..'),_href=URL(args=[page-1], vars=vars),_class='hefty')}}{{pass}}
+{{if len(rows)>items_per_page:}}{{=A(XML('..next&nbsp;'+str(items_per_page)+'&nbsp;&gt;'),_href=URL(args=[page+1], vars=vars),_class='hefty')}}{{pass}}

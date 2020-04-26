@@ -1,0 +1,30 @@
+{{# Hardcoded for a set of nodes so that this footer never hits the DB }}
+{{# Display a different combination of 3 pics on different days }}
+{{num_displayed, data = 3, [
+(81461, "Birds", 99, 2007015),
+(16033, "Marsupials", 99, 27118722),
+(698424, "Whales and dolphins", 99, 26789875),
+(768677, "Bovids", 99, 26805931),
+(746703, "Afrotheres", 99, 32449888),
+(583541, "Waterlilies", 99, 26801380),
+(46248, "Daisy family", 99, 27723598),
+(948914, "Geraniums", 99, 5821064),
+(568999, "Dragonflies", 30, 7073022),
+(965954, "Butterflies and moths", 99, 32635820),
+(1012685, "Mushrooms", 99, 27063145),
+(1007058, "Seahorses", 99, 5826670),
+(78477, "Sharks", 99, 27151677),
+(991547, "Frogs and toads", 99, 22938164),
+(965942, "Lady beetles", 99, 5816650),
+(7368, "Cephalopods", 99, 5825172),
+(212701, "Shrimps and more", 99, 2004366),
+]}}
+{{a_rand, m_rand, rng = 16807, 2147483647, request.now.month*100 + request.now.day}}
+{{pic_index=set()}}
+{{while len(pic_index) < num_displayed:}}
+    {{rng = (rng * a_rand) % m_rand}}
+    {{pic_index.add(rng % len(data))}}
+{{pass}}
+{{for p in pic_index:}}
+<a href="/life/@={{=data[p][0]}}?pop=osn_&init=jump" target="_blank"><img class="species" alt="{{=data[p][1]}}" src="{{=thumbnail_url(data[p][2], data[p][3])}}" /></a>
+{{pass}}

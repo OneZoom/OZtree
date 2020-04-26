@@ -49,6 +49,7 @@ onezoom = OZentry.default(
 	polytomy_cut_position_map_json_str, 
 	cut_threshold,
 	tree_date);
+onezoom.run()
 onezoom.controller.button_zoom_in()
 ```
 
