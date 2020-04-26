@@ -210,3 +210,7 @@ h3, h4 {
 .right p {
     margin:0;
 }
+
+.shortcuts .leaf-list {
+    display: none; /* Hide the "Sponsor a leaf now" button in the footer, as it's confusing when *on* the sponsor leaf page (too near the "donate" button) */
+}
