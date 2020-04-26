@@ -1,8 +1,17 @@
 {{response.title='OneZoom: Test posting'}}
 {{extend 'layout.html'}}
 <h1>Test posting like paypal does</h1>
-<form name="myform" action="pp_process_post.html/773491" method="POST">
-This should send a 'post' request to test_post.html with
+
+<p>This requires an OTT of a species that has been sponsored but not yet paid for.
+It makes request.args[0] the OTT_ID. If no OTT is given, we default to 773491, the
+coelacanth. If you want to test with another ott, you need to append it the the end of
+the TEST_POST url, as in
+<a href="{{=URL('test_post/773491')}}">{{=URL('test_post/773491', scheme=True, host=True)}}</a>.</p>
+
+<h4>OTT {{=ott}}</h4>
+
+<form name="myform" action="{{=URL('default', 'pp_process_post', args=[ott])}}" method="POST">
+This form should send a 'post' request to pp_process_post.html/{{=ott}} with
 <pre>&lt;input type="hidden" name="var1" id="hiddenField" value="my value"&gt;</pre>
 <input type="hidden" name="first_name" value="Yan & James">
 <input type="hidden" name="last_name" value="éspadrilles">
@@ -13,17 +22,16 @@ This should send a 'post' request to test_post.html with
 <input type="hidden" name="address_country" value="Britain">
 <input type="hidden" name="payer_email" value="yan@pixie.org.uk">
 <input type="hidden" name="mc_gross" value="200">
-<input type="hidden" name="auth_id" value="TransactionCode1234">
+<input type="hidden" name="txn_id" value="TransactionCode1234">
 <input type="hidden" name="payment_date" value="Paypal sale time">
 
 <input type="submit" value="Submit">
 </form>
 
-Just like paypal calling (for OTT ID 1234
+Just like paypal calling (for OTT ID 1234)
 
-<p><pre>pp_process_post.html/570365?first_name=John&last_name=Smith...</pre></p>
+<p><pre>pp_process_post.html/1234?first_name=John&last_name=Smith...</pre></p>
 
-Note that this makes request.args[0] the OTT_ID
 
 <pre>
 
@@ -38,7 +46,7 @@ PP provides the following:
 
 ** payer_email -> PP_e_mail
 ** mc_gross -> verified_paid
-** auth_id -> PP_transaction_code
+** txn_id -> PP_transaction_code
 ** payment_date -> sale_time
 
 </pre>
