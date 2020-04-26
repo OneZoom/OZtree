@@ -219,7 +219,7 @@
      * document - the document object (defaults to the current document)
      */
     ctx = function (o) {
-        var defaultOptions = { width:500, height:500, embedImages : true}, options;
+        var defaultOptions = { width:500, height:500, embedImages : false}, options;
 
         //keep support for this way of calling C2S: new C2S(width,height)
         if (arguments.length > 1) {

@@ -66,16 +66,15 @@ setup_params = {
             context = new C2S({
                 width: document.getElementById("OneZoomCanvasID").width,
                 height: document.getElementById("OneZoomCanvasID").height,
-                embedImages: true
             });
             onezoom.controller.draw_single_frame(context);
             var svg_content = context.getSerializedSvg(true);
             /* Change MIME type to trick the browser to download the file instead of displaying it */
-            lnk.setAttribute('download', 'OneZoomScreenshot.svg');
-            lnk.href = 'data:application-x/force-download;charset=utf-8,' + encodeURIComponent(svg_content);
+            lnk.href = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg_content);
             return true;
         } catch (err) {
             alert("You can't save pictures with embedded images unless you enable '-allow-file-access-from-files' in chrome, or equivalent in other browsers.")
+            console.error(err)
             lnk.removeAttribute("href");
             return false;
         }
