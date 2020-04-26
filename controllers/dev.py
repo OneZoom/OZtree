@@ -25,7 +25,11 @@ def COMPILED_DOCS():
 
 @auth.requires_membership(role='manager')
 def TEST_POST():
-    return dict()
+    try:
+        ott = int(request.args[0])
+    except (ValueError, TypeError):
+        ott = 773491
+    return dict(ott=ott)
 
 @auth.requires_membership(role='manager')
 def TEST_EOL_API():
