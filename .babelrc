@@ -1,5 +1,12 @@
 {
   "presets": [
-    "@babel/env"
+    ["@babel/env", {
+        "targets": {
+          "browsers": [
+              "defaults",
+              "not ie <= 11",
+          ]
+        },
+    }]
   ]
 }
