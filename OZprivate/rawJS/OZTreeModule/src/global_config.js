@@ -86,7 +86,16 @@ config.ui = {
      OneZoom code */
   closeAll: function () {/* by default, do nothing */ },
   loadingMessage: function (active) {
-    if (window.is_testing) console.log(active ? "Page loading..." : "Finished loading.");
+    if (window.is_testing) {
+      console.log(active ? "Page loading..." : "Finished loading.");
+      if (active) {
+        console.time("Page load");
+        //console.profile("Page load");
+      } else {
+        console.timeEnd("Page load");
+        //console.profileEnd();
+      }
+    }
   },
   badOTT: function (ott) {
     alert('You have passed in a bad name or number, so we have\n' +
