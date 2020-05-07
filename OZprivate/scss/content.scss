@@ -226,6 +226,14 @@ body > header {
     nav.uk-navbar.uk-navbar-container {
       margin-bottom: 1rem;
     }
+    nav.uk-navbar.uk-navbar-container > .uk-navbar-left {
+      /* Below 390 px, get rid of padding around logo, so search box has room to expand */
+      @media screen and (max-width: 390px) {
+        > .uk-navbar-item {
+          padding: 0;
+        }
+      }
+    }
     nav.uk-navbar.uk-navbar-container > .uk-navbar-center {
       top: calc(100% - 1rem);
       left: 0;
