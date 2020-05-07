@@ -2,7 +2,7 @@ const webpack = require('webpack'); //to access built-in plugins
 const CompressionPlugin = require('compression-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const path = require('path')
 
 function OZTreeModule_src(x) {
@@ -33,7 +33,12 @@ var config = {
     leaf_draw: OZTreeModule_src('leaf_draw.js'),
   },
   optimization: {
-    minimizer: [new UglifyJsPlugin()],
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        test: /\.js(\?.*)?$/i,
+      }),
+    ],
   },
   output: {
     filename: '[name].[hash].js',
