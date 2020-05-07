@@ -55,10 +55,13 @@
           opacity: 1;
           transition: opacity 0.3s;
         }
-        .oz-slider-popularplaces li img {
+        .oz-slider-popularplaces li .img-species {
           margin: 50% 0;
           transform: scale(1);
           transition: transform 0.1s;
+        }
+        .oz-slider-popularplaces li .img-species.leafout::after {
+          background-size: 20px;
         }
         </style>
         <div class="uk-position-relative uk-width-5-6 uk-container-center oz-slider-popularplaces" uk-slider="center: true; index: 1">
@@ -95,7 +98,7 @@
            mid_point = (all_items.length / 2) - 0.5;
            for (i = 0; i < all_items.length; i++) {
                all_items[i].style['z-index'] = all_items.length - Math.abs(Math.floor(i - mid_point));
-               all_items[i].querySelector('img').style.transform = 'scale(' + (1.2 + (mid_point - Math.abs(i - mid_point)) * 0.8/mid_point) + ')';
+               all_items[i].querySelector('div.img-species').style.transform = 'scale(' + (1.2 + (mid_point - Math.abs(i - mid_point)) * 0.8/mid_point) + ')';
            }
        };
        function wait_for_slider_init() {
