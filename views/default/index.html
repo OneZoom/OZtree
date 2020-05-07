@@ -96,12 +96,19 @@
                all_items[i].querySelector('img').style.transform = 'scale(' + (1.2 + (mid_point - Math.abs(i - mid_point)) * 0.8/mid_point) + ')';
            }
        };
+       function wait_for_slider_init() {
+           if (document.querySelectorAll('.oz-slider-popularplaces .uk-active').length > 0) {
+               popularplaces_recalc();
+           } else {
+               setTimeout(wait_for_slider_init, 100);
+           }
+       }
+
        // Fire both before and after so we look like we're working at the same time as the scroll
        // TODO: Listen to itemshow, assume that the item that isn't the new one is about to be hidden?
        document.querySelector('.oz-slider-popularplaces').addEventListener('itemshow', popularplaces_recalc);
        document.querySelector('.oz-slider-popularplaces').addEventListener('itemshown', popularplaces_recalc);
-       // TODO: Event that happens after init finishing?
-       setTimeout(popularplaces_recalc, 100);
+       wait_for_slider_init(); // Start busy-wait until slider is ready
       </script>
 
     </div>
