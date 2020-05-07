@@ -32,7 +32,7 @@ function setup_loading_page() {
  * -- ott
  * -- latin_name
  * This function first try to find metacode by looking at local storage. If the metacode is not found, then try to search the server.
- * @return {Promise} return a promise which would turn to resolve if the metacode is found, otherwise turn to reject.
+ * @return {Promise} return a promise which would turn to resolve if the metacode is found, otherwise resolve as undefined (i.e. nowhere to go)
  */
 function get_id_by_state(state) {
   if (!state) {
@@ -46,7 +46,8 @@ function get_id_by_state(state) {
   } else if (state.ott || state.latin_name) {
     return get_ott_to_id_by_api(state.ott, state.latin_name)
   } else {
-    return Promise.reject(new Error('Neither ott or latin name is found in state'));
+    // Neither ott or latin name is found in state, so nowhere to go
+    return Promise.resolve(undefined);
   }
 }
 
@@ -94,7 +95,10 @@ function setup_page_by_state(state) {
   .then(() => {return get_id_by_state(state)})
   .then(function (id) {
     tree_state.url_parsed = true;
-    return controller.init_move_to(id, state.xp !== undefined ? state : state.init);
+    if (id !== undefined) {
+        // If there's somewhere to move to, do that.
+        return controller.init_move_to(id, state.xp !== undefined ? state : state.init);
+    }
   })
   .then(function () {
     //open popup dialog if exists.
