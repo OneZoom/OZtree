@@ -2,16 +2,21 @@ class ObjectPool {
   constructor(ClassType, size) {
     this.ClassType = ClassType;
     this.size = size;
-    this.init();
   }
   init() {
     this.arr = new Array(this.size);
     this.available_obj = new Array(this.size);
+    //console.time("ObjectPool " + this.ClassType.name + " create " + this.size);
     for (let i=0; i<this.size; i++) {
       this.create_new_obj(i, i);
     }
+    //console.timeEnd("ObjectPool " + this.ClassType.name + " create " + this.size);
   }
   get() {
+    if (this.available_obj === undefined) {
+        // We haven't been init'ed yet, so do it now
+        this.init();
+    }
     if (this.available_obj.length == 0) {
       let prev_size = this.size;
       this.size += Math.round(Math.max(this.size/10, 10));
