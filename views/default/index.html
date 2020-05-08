@@ -82,7 +82,7 @@
            var all_items, mid_point, i;
 
            // Clear styling from inactive items
-           all_items = Array.prototype.slice.call(document.querySelectorAll('.oz-slider-popularplaces ul.uk-slider-items li li:not(.uk-active)'));
+           all_items = Array.prototype.slice.call(document.querySelectorAll('.oz-slider-popularplaces ul.uk-slider-items li'));
            for (i = 0; i < all_items.length; i++) {
                all_items[i].style['z-index'] = '';
                all_items[i].querySelector('div.img-species').style.transform = '';
