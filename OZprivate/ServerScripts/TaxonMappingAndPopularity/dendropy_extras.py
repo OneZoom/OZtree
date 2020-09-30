@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 -u
+#!/usr/bin/env -S python3 -u
 """
 A set of functions for monkey patching into dendropy objects.
 These all assume that the tree has been loaded with suppress_leaf_node_taxa=True
