@@ -12,6 +12,7 @@ OT_VERSION=12_3 #or whatever your OpenTree version is
 OT_TAXONOMY_VERSION=3.2
 OT_TAXONOMY_EXTRA=draft9 #optional - the draft for this version, e.g. for 3.1draft2
 OZ_TREE=AllLife #a tree directory in data/OZTreeBuild
+THREADS=-T40 #or however many cpus you want to throw at the process (or omit on personal machines)
 ```
 
 In the instructions which follow, we assume that your tree version corresponds to that in the online OpenTree API. You can check this by running `curl -X POST https://api.opentreeoflife.org/v3/tree_of_life/about`, and also check that the taxonomy version in the API corresponds to that used in your tree, by running `curl -X POST https://api.opentreeoflife.org/v3/taxonomy/about`. If these do not match, the tree and taxonomy versions above, you may not fully map all the names in your tree in step 1 below.
@@ -57,9 +58,8 @@ If you already have your own newick tree with open tree ids on it already, and d
 
 	```
 	(cd OZprivate/data/OZTreeBuild/${OZ_TREE} && \
-	 ../../../ServerScripts/TreeBuild/getOpenTreesFromOneZoom.py -v \
-	 ../../OpenTree/draftversion${OT_VERSION}.tre \
-	 OpenTreeParts/OpenTree_all/ -- -Inf \
+	 ../../../ServerScripts/TreeBuild/getOpenTreesFromOneZoom.py -vv ${THREADS} \
+	 ../../OpenTree/draftversion${OT_VERSION}.tre OpenTreeParts/OpenTree_all/ \
 	 BespokeTree/include_files/*.PHY \
 	 > AdditionalFiles/substitute_commands_to_include_in_full_tree_js_file.txt)
 	```
