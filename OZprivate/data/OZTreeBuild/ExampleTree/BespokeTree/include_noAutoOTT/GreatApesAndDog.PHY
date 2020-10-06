@@ -1,4 +1,5 @@
-[Example file that grafts a Pongo phylogeny from OpenTree onto a great ape backbone. 
+[Example file that grafts a Pongo phylogeny from OpenTree onto a great ape backbone, and
+adds domestic dogs (Canis lupus familiaris) as a unary node below Canis lupus.
 
 NOTES:
 
@@ -23,4 +24,4 @@ NOTES:
     https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts.
 
 context=Mammals]
-((Homo_sapiens_ott770315:7,(Pan_paniscus:2,Pan_troglodytes:2)Pan:5,(Gorilla_gorilla:1.8,Gorilla_beringei:1.8)Gorilla_ott417969:5.2):5,Pongo_ott417949@:14)Hominidae;
+(((Homo_sapiens_ott770315:7,(Pan_paniscus:2,Pan_troglodytes:2)Pan:5,(Gorilla_gorilla:1.8,Gorilla_beringei:1.8)Gorilla_ott417969:5.2):5,Pongo_ott417949@:14)Hominidae,((Canis_lupus_familiaris)Canis_lupus)Carnivora);
