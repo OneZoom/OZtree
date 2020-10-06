@@ -97,14 +97,14 @@ If you already have your own newick tree with open tree ids on it already, and d
 	OZprivate/ServerScripts/TaxonMappingAndPopularity/CSV_base_table_creator.py \
 	OZprivate/data/OZTreeBuild/${OZ_TREE}/${OZ_TREE}_full_tree.phy \
 	OZprivate/data/OpenTree/ott${OT_TAXONOMY_VERSION}/taxonomy.tsv \
-	OZprivate/data/EOL/provider_ids.csv \
+	OZprivate/data/EOL/provider_ids.csv.gz \
 	OZprivate/data/Wiki/wd_JSON/latest-all.json.bz2 \
 	OZprivate/data/Wiki/wp_SQL/enwiki-latest-page.sql.gz \
 	OZprivate/data/Wiki/wp_pagecounts/pagecount*.bz2 \
 	-o OZprivate/data/output_files -v \
 	--exclude Archosauria_ott335588 Dinosauria_ott90215 \
 	--extra_source_file OZprivate/data/OZTreeBuild/${OZ_TREE}/BespokeTree/SupplementaryTaxonomy.tsv \
-	> OZprivate/data/output_files/ordered_output.log
+	${THREADS} > OZprivate/data/output_files/ordered_output.log
 	```
 6. (5 mins) turn the most recently saved tree files (saved in step (5) as `OZprivate/data/output_files/ordered_tree_XXXXXX.poly` and `ordered_dates_XXXXXX.json`) into bracketed newick strings in `static/FinalOutputs/data/basetree_XXXXXX.js`, `static/FinalOutputs/data/polytree_XXXXXX.js`, a cutpoints file in `static/FinalOutputs/data/cut_position_map_XXXXXX.js`, and a dates file in `static/FinalOutputs/data/dates_XXXXXX.json` as well as their gzipped equivalents, using 
 	
