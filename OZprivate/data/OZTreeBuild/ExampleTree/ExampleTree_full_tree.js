@@ -3,8 +3,12 @@
 
 //;# Base tree for chordates, assuming initial divergence at 550Mya.
 
-$tree = new Tree('BespokeTree/include_files/GreatApes.PHY');
+$tree = new Tree('BespokeTree/include_files/GreatApesAndDog.PHY');
 
 //;# PHYLOGENIES PART FILLED BY OPEN TREE OF LIFE
 //;# Commands output from getOpenTreesFromOneZoom.py
+
+
+//;#  == None ==, from file BespokeTree/include_files/GreatApesAndDog.PHY
+$tree.substitute('Pongo_ott417949@\\d*', 'OpenTreeParts/OpenTree_all/417949.phy');
 
