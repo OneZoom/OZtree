@@ -14,7 +14,7 @@ popularity recalculation (NB: "ancestor" popularities include the popularity of 
 The routines work by taking an OpenTree taxonomy file and map each line to wikidata Qid using source ids
 
     each source id is stored in a object, e.g. {"id":NCBIid}, to which we add wiki info such as the qID
-    {"id":NCBIid, wd:{"final_wiki_item":{"Q":Qid}}}
+    {"id":NCBIid, WikidataItem(Q=Qid)}
     
     the object is pointed to from two sources, a source_data 2D array and an OTT_ids array, e.g.
     
@@ -134,6 +134,7 @@ we can find these (very few) examples by the wikidata query at https://w.wiki/en
 import sys
 import csv
 import re
+import io
 import gzip
 import os.path
 import json
@@ -199,17 +200,23 @@ class PartialBzip2(indexed_bzip2.IndexedBzip2File):
     @classmethod
     def block_info(cls, bz2_filename):
         """
-        Return original bz2_filename, equivalent block offsets filename, and uncompressed
-        size. The offsets_filename can be used to reload block offsets for the file using
+        Return original bz2_filename, equivalent block offsets filename, and, if the
+        offsets file exists, the uncompressed file size in bytes. The offsets_filename
+        can be used to reload block offsets for the file using
         block_offsets = pickle.load(offsets_filename).
         
         This method can be used to get block offsets in parallel for multiple files using
         multiprocessing.Pool
         """
+        filesize = None
         with cls(bz2_filename) as file:
-            block_offsets_filename = file.block_offset_filecache()
-            file.seek(0, 2)
-            return bz2_filename, block_offsets_filename, file.tell()
+            if os.path.isfile(file.offsets_filename):
+                with open(file.offsets_filename, 'rb' ) as block_offsets_file:
+                    file.set_block_offsets(pickle.load(block_offsets_file))
+            else:
+                file.save_block_offset_file()  # This creates and associates the offsets
+            filesize = file.size()
+        return bz2_filename, file.offsets_filename, filesize
     
 
     @property
@@ -237,6 +244,12 @@ class PartialBzip2(indexed_bzip2.IndexedBzip2File):
         if not os.path.isfile(self.offsets_filename):
             self.save_block_offset_file()
         return self.offsets_filename
+
+    def size(self):
+        saved_pos = self.tell()
+        tot_bytes = self.seek( 0, io.SEEK_END )
+        self.seek(saved_pos)
+        return tot_bytes
 
     def reset(self):
         if self.start >= 0:
@@ -295,8 +308,15 @@ class WikidataItem:
         """
         try:
             return getattr(self, attribute)
-        except:
+        except AttributeError:
             raise KeyError
+
+    def get(self, attribute, default=None):
+        try:
+            return getattr(self, attribute)
+        except AttributeError:
+            return default
+        
 
     def add_sitelinks(self, json_item, return_wikilang=None):
         """
@@ -400,12 +420,13 @@ def JSON_contains_known_dbID(json_item, known_items):
                     f"Can't find a value for {source} for Q{Qid(json_item)} "
                     f"({label(json_item)}) in wikidata")
                 continue
-            try:
-                if int(src_id) in known_items[source]:
-                    ret[source] = int(src_id)
-            except ValueError:
-                if src_id in known_items[source]:
-                    ret[source] = src_id
+            if src_id:
+                try:
+                    if int(src_id) in known_items[source]:
+                        ret[source] = int(src_id)
+                except ValueError:
+                    if src_id in known_items[source]:
+                        ret[source] = src_id
     return ret
 
 
@@ -446,10 +467,10 @@ def create_from_taxonomy(OTTtax_filename, sources, OTT_ptrs, extra_taxonomy_file
             logging.warning(
                 f" Extra taxonomy file '{extra_taxonomy_file}' not found, so ignored")
         
+    used = 0
     for fn in data_files:
         with open(fn, 'rt',  encoding="utf-8") as f:
             reader = csv.DictReader(f, delimiter='\t')
-            used = 0
             for OTTrow in reader:
                 #first 2 lines are header & blank in taxonomy.tsv
                 if ((reader.line_num-2) % 1000000 == 0) and reader.line_num > 2:
@@ -503,6 +524,7 @@ def wikidata_info(
     start_byte=None,
     stop_byte=None,
     block_offsets_filename=None,
+    thread_id=None,
     EOLid_property_id='P830', 
     IUCNid_property_id=['P141','P627'], 
     IPNIid_property_id='P961',
@@ -588,18 +610,30 @@ def wikidata_info(
         stop_byte,
         block_offsets_filename,
     ) as WDF: #open filehandle, to allow read as bytes (converted to UTF8 later)
+        if start_byte is None or start_byte < 0:
+            start_byte = 0  # Just for outputting
+        if stop_byte is None or stop_byte == math.inf:
+            stop_byte = None if block_offsets_filename is None else WDF.size()
         logging.debug(
             f"  > Reading full lines from {wikidata_json_dump_file} following byte "
             f"{start_byte} up to the line including byte {stop_byte}.")
-        n_eol=n_iucn=n_ipni=0
+        
         for line_num, line in enumerate(WDF):
             info['bytes_read'] += len(line)
-            if (line_num % 1000000 == 0):
-                logging.debug(
-                    f"Reading wikidata JSON dump from byte {start_byte} to {stop_byte}: "
-                    f"{(WDF.tell()-WDF.start) / (WDF.stop - WDF.start) * 100.0}% done. "
-                    f"{line_num} entries read, {len(Q_to_WD)} relevant entries, {n_eol} "
-                    f"with EoL ids, {n_ipni} with IUCN ids. Mem usage{mem():.1f} Mb")
+            if (line_num % 100000 == 0):
+                more_info = pc = ""
+                if EOLid_property_id:
+                    more_info += f", {info.get('n_eol', 0)} with EoL ids"
+                if IUCNid_property_id:
+                    more_info += f", {info.get('n_iucn', 0)} with IUCN ids"
+                if IPNIid_property_id:
+                    more_info += f", {info.get('n_ipni', 0)} with IPNI ids"
+                if stop_byte is not None:
+                    pc = f"({((WDF.tell()-WDF.start)/(WDF.stop-WDF.start)*100.0):.1f}%) "
+                logging.info(
+                    f" - thread {thread_id}: {((WDF.tell()-start_byte)/1024/1024):.1f} "
+                    f"MiB {pc}of wikidata JSON dump read. {len(Q_to_WD)}/{line_num} "
+                    f"relevant items{more_info}. Mem usage {mem():.1f} Mb")
             #this file is in byte form, so must match byte strings
             if not(line.startswith(b'{"type":"item"') and quick_byte_match.search(line)):
                 continue
@@ -624,7 +658,7 @@ def wikidata_info(
                     for alt in i.get("qualifiers", {}).get('P642', []):
                         vernaculars.add(wikidata_value(alt).get("numeric-id"))
                     else:
-                        logging.info(
+                        logging.debug(
                             " Found a common name property without any qualifiers for "
                             f"Q{Qid(json_item)} ({label(json_item)}). The name may be "
                             "poly/paraphyletic (e.g. 'slugs', 'coral', 'rabbit', "
@@ -701,8 +735,9 @@ def wikidata_info(
                 #a wikimedia template (Q19887878): we can ignore it without printing a message
                 pass
             else:
-                #possibly flag up problems here, in case there are taxa which are instances of more specific types, e.g. ichnotaxon, etc etc.
-                logging.info(
+                #possibly flag up problems here, in case there are taxa which are instances
+                # of more specific types, e.g. ichnotaxon, etc etc.
+                logging.debug(
                     f" Possible problem with wikidata item Q{Qid(json_item)} "
                     f" ({label(json_item)}): might be a taxon but cannot get taxon data")
     return Q_to_WD, WPname_to_WD, src_to_WD, replace_Q, info
@@ -717,6 +752,8 @@ def overwrite_wd(Q_to_WD, Q_replacements, only_if_more_popular, check_lang=None)
     """
     changed = set()
     for origQ, (newQ, label) in Q_replacements.items():
+        if origQ not in Q_to_WD:
+            continue  # Could be a mistake in the JSON, pointing to the wrong Qid
         force_overwrite = True
         if only_if_more_popular:
             force_overwrite = None                
@@ -738,12 +775,14 @@ def overwrite_wd(Q_to_WD, Q_replacements, only_if_more_popular, check_lang=None)
                 changed.add(newQ)
     return
 
-def identify_best_wikidata(OTT_ptrs, order_to_trust):
+def identify_best_wikidata(OTT_ptrs, lang, order_to_trust):
     """
-    Each OTT number may point to several wiki entries, one for the NCBI number, another for the WORMS number, etc etc.
-    Hopefully these will point to the same entry, but they may not. If they are different we need to choose the best one
-    to use. We set OTT_ptrs[OTTid]['wd'] to the entry with the most numbers supporting this entry. 
-    In the case of a tie, we pick the one associated with the lowest (nearest 0) order_to_trust value
+    Each OTT number may point to several wiki entries, one for the NCBI number, another
+    for the WORMS number, etc etc. Hopefully these will point to the same entry, but they
+    may not. If they are different we need to choose the best one to use. We set
+    OTT_ptrs[OTTid]['wd'] to the entry with the most numbers supporting this entry. In
+    the case of a tie, if only one has a wikipedia entry in 'lang', we pick that one or
+    otherwise we pick the one associated with the lowest (nearest 0) order_to_trust value
     """
     OTTs_with_wd = allOTTs = 0
     for OTTid, data in OTT_ptrs.items():
@@ -766,12 +805,18 @@ def identify_best_wikidata(OTT_ptrs, order_to_trust):
             data['wd'] = {} #for future referencing, it is helpful to have a blank array here
         else:
             OTTs_with_wd += 1
-            # sort so the list with more srcs comes first, keeping original order if tied
-            best_src = sorted(choose.values(), key=len, reverse=True)[0][0]
+            # Sort by presence of wikipedia link in the given lang, keeping order if tied
+            linked_src = sorted( # items for a Q should point to the same wd => take x[0]
+                choose.values(),
+                key=lambda x: lang in data['sources'][x[0]]['wd'].l,
+                reverse=True
+            )
+            # re-sort so the list with more srcs comes first, keeping order if tied
+            best_src = sorted(linked_src, key=len, reverse=True)[0][0]
             data['wd'] = data['sources'][best_src]['wd']
             if len(choose) > 1:
                 logging.info(
-                    f" More than one wikidata ID {choose.keys()} for ott {OTTid}, "
+                    f"  More than one wikidata ID {list(choose.keys())} for ott {OTTid},"
                     f" chosen {data['wd'].Q}")
     logging.info(
         f" ✔ {allOTTs} final OpenTree taxa of which {OTTs_with_wd} "
@@ -841,6 +886,8 @@ def pageviews_for_titles(
     start_byte=None,
     stop_byte=None,
     offset_filename=None,
+    thread_id=None,
+    filetot=None,
     wiki_suffix="z"):
     '''
     Return a dict mapping wiki_title => monthly pageview
@@ -873,13 +920,16 @@ def pageviews_for_titles(
         stop_byte,
         offset_filename,
     ) as PAGECOUNTfile:
+        file_info = ""
+        if filetot:
+            file_info = f"file {filetot[0]}/{filetot[1]} part {filetot[2]}/{filetot[3]} "
         try:
             problem_lines = [] #there are apparently some errors in the unicode dumps
             for n, line in enumerate(PAGECOUNTfile):
                 if (n % 10000000 == 0):
                     logging.info(
-                        " - Reading pagecount file of number of page views: "
-                        f"{n} lines read from file {bz2_filename}. Mem usage {mem()} Mb")
+                        f" - thread {thread_id}: read {n} lines of pageviews file "
+                        f"{file_info}({os.path.basename(bz2_filename)}). Mem usage {mem():.1f} Mb")
                 if line.startswith(match_project):
                     try:
                         info = line[start_char:].rstrip(b'\r\n\\rn').rsplit(b' ', 1)
@@ -913,7 +963,7 @@ def sum_popularity_over_tree(tree, OTT_ptrs=None, exclude=[], pop_store='pop', v
     'pop_store' is the name of the attribute in which to store the popularity. If you wish to create a tree
     with popularity on the branches, you can pass in pop_store='edge_length'
     
-    NB: if OTT_ptrs is given, then the popularity is stored in the object pointed to by OTT_ptrs[OTTid]['wd']['final_wiki_item']['pop'], where
+    NB: if OTT_ptrs is given, then the raw popularity is stored in the object pointed to by OTT_ptrs[OTTid]['wd'], where
     OTTid can be extracted from the node label in the tree. If OTT_ptrs is None, then the popularity is stored in the node object 
     itself, in Node.data['wd']['pop'].
     popularity summed up and down the tree depends on the OpenTree structure, and is stored in OTT_ptrs[OTTid]['pop_ancst'] 
@@ -981,7 +1031,7 @@ def sum_popularity_over_tree(tree, OTT_ptrs=None, exclude=[], pop_store='pop', v
                 node.n_pop_ancestors = node._parent_node.n_pop_ancestors            
             if node.label and node.label =='Spermatophyta':
                 node.seedplant = True
-                print("Found plant root", file=sys.stderr)
+                logging.info("Found plant root")
             else:
                 node.seedplant = node._parent_node.seedplant
     

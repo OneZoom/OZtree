@@ -61,7 +61,7 @@ import inspect
 import random
 import os.path
 from collections import OrderedDict, defaultdict
-from time import time
+import time
 from math import log, inf
 import tempfile
 import pickle
@@ -71,7 +71,6 @@ import multiprocessing
 
 import multiprocessing_logging
 from indexed_bzip2 import IndexedBzip2File
-from filehash import FileHash 
 from dendropy import Node, Tree
 
 #local packages
@@ -253,7 +252,8 @@ def identify_best_EoLdata(OTT_ptrs, sources):
                 choose = [EOLid for EOLid in choose if len(choose[EOLid]) == max_refs]
             best = min(choose)
             data['eol'] = best
-            logging.debug(" {}, chosen {}".format(errstr, best))
+            if errstr:
+                logging.debug(" {}, chosen {}".format(errstr, best))
     logging.info(" ✔ Of {} OpenTree taxa, {} ({:.2f}%) have EoL entries in the EoL identifiers file, and {} have multiple possible EOL ids. Mem usage {:.1f} Mb".format(
             validOTTs, OTTs_with_EOLmatch, OTTs_with_EOLmatch/validOTTs * 100, dups, 
             OTT_popularity_mapping.mem()))
@@ -269,7 +269,7 @@ def set_wikidata_in_parallel(bz2_filename, source_ptrs, lang, num_threads):
         uncompressed_size=None
     else:
         n_chunks = num_threads
-        logging.debug(f"  > Getting bzip2 block offsets for {bz2_filename}")
+        logging.debug(f"  > Calculating hash to get offset file for {bz2_filename}")
         info = OTT_popularity_mapping.PartialBzip2.block_info(bz2_filename)
         offsets_filename = info[1]
         uncompressed_size = info[2]
@@ -288,6 +288,7 @@ def set_wikidata_in_parallel(bz2_filename, source_ptrs, lang, num_threads):
             byte_chunks[:-1],  # start_after_byte
             byte_chunks[1:],  # stop_including_byte
             itertools.repeat(offsets_filename),
+            itertools.count()
         )
         WDitems = {}
         WPnames = {}
@@ -295,6 +296,7 @@ def set_wikidata_in_parallel(bz2_filename, source_ptrs, lang, num_threads):
         sum_info = defaultdict(int)
         # Most time is taken within the process => we set maxtasksperchild=1 to free mem
         with multiprocessing.Pool(processes=num_threads, maxtasksperchild=1) as pool:
+            logging.debug(f"  > Creating a pool of {num_threads} parallel processes")
             for Q_to_WD, WPname_to_WD, src_to_WD, replace_Q, info in pool.imap_unordered(
                 OTT_popularity_mapping.wikidata_info_single_arg,
                 params
@@ -360,15 +362,17 @@ def set_wikipedia_pageviews_in_parallel(filenames, WPnames, lang, num_threads):
         pickle.dump(set(WPnames.keys()), WPnames_file)
         WPnames_file.flush()
         params = []
-        for fn in filenames:
-            for i in range(file_splits[fn]):
+        for i, fn in enumerate(filenames):
+            for j in range(file_splits[fn]):
                 params.append((
                     fn,
                     WPnames_file.name,
                     lang,
-                    byte_chunks[fn][i],
-                    byte_chunks[fn][i+1],
+                    byte_chunks[fn][j],
+                    byte_chunks[fn][j+1],
                     offset_filenames[fn],
+                    len(params),
+                    (i+1, len(filenames), j+1, file_splits[fn]),
                 ))
         with multiprocessing.Pool(processes=num_threads, maxtasksperchild=1) as pool:
             for WPnames_views in pool.imap_unordered(
@@ -443,18 +447,14 @@ def populate_iucn(OTT_ptrs, identifiers_filename, verbosity=0):
                 logging.info(
                     f" - {reader.line_num} rows read, {used} used. "
                     f"Mem usage {OTT_popularity_mapping.mem():.1f} Mb")
-            if int(EOLrow['resource_id']) == iucn_num and not EOLrow['resource_pk'].isdigit(): 
-                #there are lots of IUCN rows with no IUCN number, so check EOLrow[1]!= ""
+            if int(EOLrow['resource_id']) == iucn_num and EOLrow['resource_pk'].isdigit(): 
+                #there are lots of non-species IUCN rows with pk == str (e.g. Animalia)
                 try:
                     for ott in eol_mapping[int(EOLrow['page_id'])]:
-                        OTT_ptrs[ott]['iucn'] = str(int(EOLrow['resource_pk']))
+                        OTT_ptrs[ott]['iucn'] = EOLrow['resource_pk']
                         used += 1
                 except LookupError:
                     pass #no equivalent eol id in eol_mapping
-                except ValueError:
-                    logging.warning(" Cannot convert IUCN ID {} to integer on line {} of {}.".format(
-                        EOLrow['resource_pk'], reader.line_num, identifiers_file.name), file=sys.stderr);
-    
         logging.info(
             f" > matched {used} IUCN entries in the EoL identifiers file. "
             f"Mem usage {OTT_popularity_mapping.mem():.1f} Mb")
@@ -462,22 +462,23 @@ def populate_iucn(OTT_ptrs, identifiers_filename, verbosity=0):
     #now go through and double-check against IUCN stored on wikidata
     for OTTid, data in OTT_ptrs.items():
         try:
-            wd_iucn = str(int(data['wd']['initial_wiki_item']['iucn']))
-            if 'iucn' in data:
-                if wd_iucn != data['iucn']:
-                    data['iucn'] = "|".join([data['iucn'], wd_iucn])
-                    logging.info(
-                        " conflicting IUCN IDs for OTT {}: EoL = {} (via http://eol.org/pages/{}), wikidata = {} (via http://http://wikidata.org/wiki/Q{}).".format(OTTid, data['iucn'], data['eol'], wd_iucn, data['wd']['initial_wiki_item']['Q']));
-            else:
+            wd_iucn = str(int(data['wd'].iucn))
+            if 'iucn' not in data:
                 data['iucn'] = wd_iucn
                 used += 1
+            else:
+                if wd_iucn not in data['iucn'].split("|"):
+                    data['iucn'] += "|" + wd_iucn
+                logging.debug(
+                    " conflicting IUCN IDs for OTT {}: EoL = {} (via http://eol.org/pages/{}), wikidata = {} (via http://http://wikidata.org/wiki/Q{}).".format(
+                        OTTid, data['iucn'], data['eol'], wd_iucn, data['wd'].Q));
         except ValueError:
             logging.warning(
-                " Cannot convert wikidata IUCN ID {} to integer.".format(
-                data['wd']['initial_wiki_item']['iucn']), file=sys.stderr);
-        except:
-            pass #we can't find a wd iucn. Oh well...
-    logging.info(" > Increased IUCN coverage to {} taxa using wikidata".format(used))
+                f" Cannot convert wikidata IUCN ID {data['wd'].iucn} to integer.")
+        except (KeyError, AttributeError):
+            pass  # can't find a wd instance or an iucn within the wd instance. Oh well.
+
+    logging.info(f" > Increased IUCN coverage to {used} taxa using wikidata")
 
 
 def popularity_function(
@@ -576,7 +577,7 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, save_sql=
      'pop_ancst': 220183.23395609166,
      'sources': {'ncbi': None,
                  'worms': None, 
-                 'gbif': {'wd': {'final_wiki_item':{'Q': 15478814, 'EoL': 1100788}}, 'id': '2840414'}, 
+                 'gbif': {'wd': WikidataItem(Q=15478814, EoL=1100788), 'id': '2840414'}, 
                  'if': None, 
                  'irmng': None},
      'popularity': 220183.23395609166,
@@ -588,9 +589,9 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, save_sql=
     data = {'wd': WikidataItem(Q=15478814, EoL=1100788, l={'en','fr'}, pageviews=[64, 47], pagesize=1465, raw_pop=285.14470010855894)}, 
      'pop_dscdt': 0, 
      'pop_ancst': 392245.76075749274, 
-     'sources': {'ncbi': {'wd': {'final_wiki_item':{'PGviews': [64, 47], 'pop': 285.14470010855894, 'Q': 4672161, 'EoL': 281897, 'PGsz': 1465}, 'EoL': 281897, 'id': '691616'}}, 
+     'sources': {'ncbi': {'wd': WikidataItem(pageviews=[64, 47], raw_popularity=285.14470010855894, Q=4672161, EoL=281897, pagesize=1465), 'EoL': 281897, 'id': '691616'}}, 
                  'worms': None, 
-                 'gbif': {'wd': {'final_wiki_item':{'PGviews': [64, 47], 'pop': 285.14470010855894, 'Q': 4672161, 'EoL': 281897, 'PGsz': 1465}, 'id': '1968205'}}, 
+                 'gbif': {'wd': WikidataItem(pageviews=[64, 47], raw_popularity=285.14470010855894, Q=4672161, EoL=281897, pagesize=1465), 'id': '1968205'}}, 
                  'if': None, 
                  'irmng': {'EoL': 281897, 'id': '10290975'}}, 
      'eol': 281897}
@@ -723,7 +724,6 @@ def output_simplified_tree(tree, taxonomy_file, outdir, version, seed, save_sql=
                 f"LOAD DATA LOCAL INFILE '{sqlfile}' REPLACE INTO TABLE `ordered{tab}` "
                 f"FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' "
                 f"IGNORE 1 LINES ({open(fn).readline().rstrip()}) SET id = NULL;")
-    logging.info("✔ ALL DONE")
     
 
 def map_wiki_info(
@@ -743,6 +743,7 @@ def map_wiki_info(
     
     Return True if popularity is mapped
     """
+    logging.debug(f"Processing wikidata json dump in parallel for {lang}")
     popularity_steps = 0
     WDitems, WPnames, swap_Qs = set_wikidata_in_parallel(
         WD_filename, source_ptrs, lang, num_threads)
@@ -773,7 +774,7 @@ def map_wiki_info(
             
     #Here we might want to multiply up some taxa, e.g. plants, see https://github.com/OneZoom/OZtree/issues/130
     logging.info(" > Finding best wiki matches")
-    OTT_popularity_mapping.identify_best_wikidata(OTT_ptrs, source_order)
+    OTT_popularity_mapping.identify_best_wikidata(OTT_ptrs, lang, source_order)
 
     logging.info(" > Swapping vernacular wikidata items into taxon items")
     OTT_popularity_mapping.overwrite_wd(
@@ -828,25 +829,30 @@ def percolate_popularity(
     #NB to examine a taxon for popularity contributions here, you could try
     for focal_label in info_on_focal_labels:
         focal_taxon = focal_label.replace("_", " ")
-        n = tree.find_node_with_label(focal_taxon)
-        print("{}: own pop = {} (Q{}) descendant pop sum = {}".format(
-            focal_taxon, n.pop_store, n.data['wd']['final_wiki_item']['Q'], n.descendants_popsum))
-        
-        for t, tip in enumerate(n.leaf_iter()):
-          print("Tip {} = {}: own_pop = {}, Qid = {}".format(
-            t, tip.label, getattr(tip,"pop_store",None), tip.data['wd']['final_wiki_item']['Q']))
-          if t > 100:
-            print("More tips exist, but have been omitted")
-            break
-        while(n.parent_node):
-         n = n.parent_node
-         if n.pop_store:
-           print("Ancestors: {} = {:.2f}".format(n.label, n.pop_store))
-
+        node = tree.find_node_with_label(focal_taxon)
+        try:
+            print("{}: own pop = {} (Q{}) descendant pop sum = {}".format(
+                focal_taxon, node.pop_store, node.data['wd'].get('Q', ' absent'), node.descendants_popsum))
+            try:
+                leaf_iter = node.leaf_node_iter()
+            except AttributeError:
+                leaf_iter = node.leaf_iter()
+            for t, tip in enumerate(leaf_iter):
+              print("Tip {} = {}: own_pop = {}, Qid = Q{}".format(
+                t, tip.label, getattr(tip, "pop_store", None), tip.data['wd'].get('Q', ' absent')))
+              if t > 100:
+                print("More tips exist, but have been omitted")
+                break
+            while(node.parent_node):
+             node = node.parent_node
+             if node.pop_store:
+               print("Ancestors: {} = {:.2f}".format(node.label, node.pop_store))
+        except (IndexError, AttributeError) as e:
+            logging.warning(f"Problem reporting on focal taxon '{focal_taxon}': {e}")
 
 def main(args):
     random_seed_addition = 1234
-   
+    start = time.time()
     if args.verbosity==0:
         logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
     elif args.verbosity==1:
@@ -854,9 +860,8 @@ def main(args):
     elif args.verbosity>=2:
         logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
     logging.info(
-        f"Generating OneZoom data using {args.num_threads} threads. "
-        "If you are reading wikidata and wikipedia dumps, this can take many hours!")
-
+        f"OneZoom data generation started on {time.asctime(time.localtime(time.time()))}"
+        f" using {args.num_threads} threads. For large input files this may take hours!")
     if args.num_threads > 1:
         # Allow logging even when multiprocessing
         multiprocessing_logging.install_mp_handler()
@@ -915,7 +920,9 @@ def main(args):
     output_simplified_tree(
         tree, args.OpenTreeTaxonomy, args.output_location, args.version, 
         random_seed_addition)
-        
+    t_fmt = "%H hrs %M min %S sec"
+    logging.info(f"✔ ALL DONE IN {time.strftime(t_fmt, time.gmtime(time.time()-start))}")
+       
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Convert a newick file with OpenTree labels into refined trees and CSV tables, while mapping Open Tree of Life Taxonomy IDs to other ids (including EoL & Wikidata)')
@@ -941,7 +948,7 @@ if __name__ == "__main__":
         help='The language wikipedia to check for popularity, e.g. "en". Where there are multiple Wikidata items for a taxon (e.g. one under the common name, one under the scientific name), then we also default to using the WD item with the sitelink in this language.')
     parser.add_argument('--num_threads', '-T', default=1, type=int,
         help='The number of threads to use for reading bzip files etc. If >1, use multithreading') 
-    parser.add_argument('--version', default=int(time()/60.0), 
+    parser.add_argument('--version', default=int(time.time()/60.0), 
         help='A unique version number for the tree, to be saved in the DB tables & output files. Defaults to minutes since epoch (time()/60)')
     parser.add_argument('--extra_source_file', default=None, type=str, 
         help='An optional additional file to supplement the taxonomy.tsv file, providing additional mappings from OTTs to source ids (useful for overriding . The first line should be a header contining "uid" and "sourceinfo" column headers, as taxonomy.tsv. NB the OTT can be a number, or an ID of the form "mrcaott409215ott616649").')
@@ -952,3 +959,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     main(args)
+    

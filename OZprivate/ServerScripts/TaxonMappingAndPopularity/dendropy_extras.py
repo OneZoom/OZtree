@@ -67,7 +67,7 @@ def prune_non_species(
                 nodes_to_remove['unlabelled'].append(nd)
             elif any(match in nd.label for match in bad_matches):
                 logging.info(
-                    "Removing '{nd.label}' since it contains one of {bad_matches}")
+                    f"Removing '{nd.label}' since it contains one of {bad_matches}")
                 nodes_to_remove['bad_match'].append(nd)
         for k, nodes in nodes_to_remove.items():
             for nd in nodes:
