@@ -1,0 +1,41 @@
+uid	|	parent_uid	|	name	|	rank	|	sourceinfo	|	uniqname	|	flags	|
+770315	|	770309	|	Homo sapiens	|	species	|	ncbi:9606,gbif:2436436,irmng:11388931,irmng:10857762	|	|	sibling_higher	|
+417949	|	1082538	|	Pongo	|	genus	|	ncbi:9599,gbif:5219531,irmng:1223112	|	|	|
+7655082	|	417949	|	unclassified Pongo	|	no rank - terminal	|	ncbi:2624844	|	|	was_container,not_otu	|
+7067552	|	417949	|	Pongo tapanuliensis	|	species	|	ncbi:2051901,gbif:9311132	|	|	|
+770295	|	417949	|	Pongo abelii	|	species	|	ncbi:9601,gbif:5707420	|	|	|
+770302	|	417949	|	Pongo pygmaeus	|	species	|	ncbi:9600,gbif:5219532,irmng:11011124	|	|	|
+770308	|	770302	|	Pongo pygmaeus pygmaeus	|	subspecies	|	ncbi:9602	|	|	infraspecific	|
+4941446	|	417949	|	Pongo abelii x pygmaeus	|	species	|	ncbi:502961	|	|	hybrid	|
+770307	|	417949	|	Pongo sp.	|	species	|	ncbi:9603	|	|	not_otu	|
+6145149	|	417949	|	Pongo hooijeri	|	species	|	gbif:8697378	|	|	extinct	|
+417957	|	312031	|	Pan	|	genus	|	ncbi:9596,gbif:2436437,irmng:1392385	|	|	sibling_higher	|
+417950	|	417957	|	Pan troglodytes	|	species	|	ncbi:9598,gbif:5219534,irmng:11326321	|	|	|
+767875	|	417950	|	Pan troglodytes troglodytes	|	subspecies	|	ncbi:37011	|	|	infraspecific	|
+158484	|	417957	|	Pan paniscus	|	species	|	ncbi:9597,gbif:5219533,irmng:10419555	|	|	|
+417969	|	312031	|	Gorilla	|	genus	|	ncbi:9592,gbif:2436440,irmng:1435397	|	|	sibling_higher	|
+351685	|	417969	|	Gorilla beringei	|	species	|	ncbi:499232,gbif:7262070	|	|	|
+317556	|	351685	|	Gorilla beringei graueri	|	subspecies	|	ncbi:46359	|	|	infraspecific	|
+624503	|	351685	|	Gorilla beringei beringei	|	subspecies	|	ncbi:1159185	|	|	infraspecific	|
+417965	|	417969	|	Gorilla gorilla	|	species	|	ncbi:9593,gbif:2436441,irmng:11039388	|	|	|
+835035	|	417965	|	Gorilla gorilla diehli	|	subspecies	|	ncbi:406788	|	|	infraspecific	|
+417953	|	417965	|	Gorilla gorilla gorilla	|	subspecies	|	ncbi:9595	|	|	infraspecific	|
+620805	|	417965	|	Gorilla gorilla uellensis	|	subspecies	|	ncbi:183511	|	|	infraspecific	|
+44565	|	392223	|	Carnivora	|	order	|	ncbi:33554,worms:2687,gbif:732,irmng:12116	|	|	|
+247341	|	372706	|	Canis lupus	|	species	|	ncbi:9612,gbif:5219173,irmng:11407661	|	|	|
+67371	|	247341	|	Canis lupus baileyi	|	subspecies	|	ncbi:143281	|	|	infraspecific	|
+80830	|	247341	|	Canis lupus laniger	|	subspecies	|	ncbi:554455	|	|	infraspecific	|
+7067596	|	247341	|	Canis lupus orion	|	subspecies	|	ncbi:2605939	|	|	infraspecific	|
+318630	|	247341	|	Canis lupus hodophilax	|	subspecies	|	ncbi:188536	|	|	infraspecific	|
+545727	|	247341	|	Canis lupus signatus	|	subspecies	|	ncbi:425934	|	|	infraspecific	|
+5340002	|	247341	|	Canis lupus arctos	|	subspecies	|	ncbi:1320375	|	|	infraspecific	|
+263524	|	247341	|	Canis lupus mogollonensis	|	subspecies	|	ncbi:659069	|	|	infraspecific	|	
+5839539	|	247341	|	Canis lupus variabilis	|	subspecies	|	ncbi:1605264	|	|	infraspecific	|
+883675	|	247341	|	Canis lupus lupus	|	subspecies	|	ncbi:443256	|	|	infraspecific	|
+4941916	|	247341	|	Canis lupus campestris	|	subspecies	|	ncbi:1341016	|	|	infraspecific	|
+948004	|	247341	|	Canis lupus lycaon	|	subspecies	|	ncbi:228401	|	|	infraspecific	|
+47497	|	247341	|	Canis lupus pallipes	|	subspecies	|	ncbi:246882	|	|	infraspecific	|
+234374	|	247341	|	Canis lupus desertorum	|	subspecies	|	ncbi:1295334	|	|	infraspecific	|
+247333	|	247341	|	Canis lupus familiaris	|	subspecies	|	ncbi:9615	|	|	infraspecific	|
+380529	|	247341	|	Canis lupus dingo	|	subspecies	|	ncbi:286419	|	|	infraspecific	|
+83897	|	247341	|	Canis lupus hattai	|	subspecies	|	ncbi:644627	|	|	infraspecific	|
