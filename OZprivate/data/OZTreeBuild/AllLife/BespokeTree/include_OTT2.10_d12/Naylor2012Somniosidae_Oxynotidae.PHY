@@ -1,7 +1,0 @@
-[Arrangement from 'Elasmobranch Phylogeny: A Mitochondrial Estimate Based on 595 Species' (see http://sharksrays.org). NB, the Somniosidae/Oxynotidae 
-clade from sharksrays.org should also include Centroscymnus & Proscymnodon, but these are hard to include
-from the opentree, as they are marked as non monophyletic, so have simply been omitted (yuck)
-
-#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Vertebrates]
-(Somniosus_ott442056@,(Scymnodalatias_ott3595305@,((Centroselachus_ott756559@,Zameus_ott399864@),(Scymnodon_ott956139@,Oxynotidae_ott250745@))))SomniosidaeOxynotidae;
-

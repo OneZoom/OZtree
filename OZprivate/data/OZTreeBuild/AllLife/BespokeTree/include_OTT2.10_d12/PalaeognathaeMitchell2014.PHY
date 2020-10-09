@@ -1,7 +1,0 @@
-[from Mitchell et al 2014 Ancient DNA reveals elephant birds and kiwi are sister taxa and clarifies ratite bird evolution, Fig 1 (mitochondrial data)
-
-This is an example of using 'extinction props', such as (:0.0005)Dinornis_robustus:58.1, which states that Dinornis_robustus, the south island Moa, went extinct 0.0005 Mya (500 years ago)
-
-#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Birds]
-((((TINAMIFORMES@:16.4,(:0.0005)Dinornis_robustus_ott208456:58.1):7.2,((Dromaius_novaehollandiae_ott829513:26.8,(Casuarius_unappendiculatus_ott3600826:9.141456853,(Casuarius_casuarius_ott589152:4.470343872,Casuarius_bennetti_ott402459:4.470343872):4.671112981)Casuariidae_ott589161:17.65854)Casuariiformes_ott589166:31.1,(((Apteryx_mantelli_ott748998:1.660378298,Apteryx_australis_ott241834:1.660378298):8.009111584,(Apteryx_owenii_ott241844:3.422265785,Apteryx_haastii_ott241836:3.422265785):6.247224097)Apterygiformes_ott816668:40.33,((:0.0004)Aepyornis_maximus_ott463543:17.2,(:0.0004)Mullerornis_agilis_ott84218:17.2)Aepyornithidae_ott747911:32.8):7.9):7.4):2.8,(Rhea_americana_ott857864:8.6,Rhea_pennata_ott857860:8.6)Rheiformes_ott829553:59.5):4.7,Struthio_camelus_ott647692:72.8)Palaeognathae_ott81443;
-
