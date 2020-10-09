@@ -68,7 +68,7 @@ $tree.substitute('GALAPAGOS_FINCHES_AND_ALLIES_@',  'BespokeTree/include_files/G
 $tree.substitute('MAMMALIA@',       'BespokeTree/include_files/Mammal_base.phy',            140); //;# base @180, C16=320Ma
 $tree.substitute('MARSUPIALIA@',    'BespokeTree/include_files/Marsupial_recalibrated.phy', 73); //;# base@87 C14=160Ma
 $tree.substitute('EUTHERIA@',       'BespokeTree/include_files/PlacentalsPoulakakis2010.phy',  70); //;# C13=90Ma
-$tree.substitute('BOREOEUTHERIA@',  'BespokeTree/include_files/BoreoeutheriaOneZoom.phy', 5); //;# C12=85Ma
+$tree.substitute('BOREOEUTHERIA@',  'BespokeTree/include_files/BoreoeutheriaOneZoom_altered.phy', 5); //;# C12=85Ma
 $tree.substitute('XENARTHRA@',      'BespokeTree/include_files/XenarthraOneZoom.phy', 17.8); //;# OZ base @ 71.3, A+X @ 89.1
 $tree.substitute('AFROTHERIA@',     'BespokeTree/include_files/AfrotheriaPoulakakis2010.phy', 4.9); //;# base @ 84.2, A+X @ 89.1
 
