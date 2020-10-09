@@ -377,7 +377,7 @@ def nodes_info_from_string(
     #Get nodes first and collect OTTs for looking up vernaculars. These contain leaf otts in the representative pictures
     base_ncols = ["id","ott","popularity","age","name","iucnNE","iucnDD","iucnLC","iucnNT","iucnVU","iucnEN","iucnCR","iucnEW","iucnEX"]
     pic_ncols = ["{pic}1","{pic}2","{pic}3","{pic}4","{pic}5","{pic}6","{pic}7","{pic}8"]
-    pic_col_name = {"best_any":"rep", "best_verified":"rtr","best_pd":"rpd"}[image_type]
+    pic_col_name = {"best_any": "rep", "best_verified":"rtr", "best_pd":"rpd"}[image_type]
     all_ncols = base_ncols + pic_ncols
     node_cols = {nm:index for index, nm in enumerate(all_ncols)} 
     if nodeIDs_string:
@@ -422,6 +422,8 @@ def nodes_info_from_string(
     #the logic for finding *which* vernaculars to use is in javascript
     #e.g. we probably want to return all 'en-XXX' values, even if the language is en-GB
     #then choose en-GB, en (plain) and en-OTHER in that order
+    vernacular_name_query_res = []
+    vernacular_name_query_res2 = []
     if include_names_in:
         first_lang = include_names_in.split(',')[0]
         lang_primary = first_lang.split("-")[0]
@@ -431,17 +433,13 @@ def nodes_info_from_string(
             query3 += " AND preferred=TRUE ORDER BY src"
             sql = query3.format(otts=",".join(nodeOtts | leafOtts))
             vernacular_name_query_res = db.executesql(sql, (lang_primary,))
-        else:
-            vernacular_name_query_res = []
-    if len(nodeNames) + len(leafNames):
-        names = nodeNames | leafNames
-        query4 = "SELECT name,vernacular FROM vernacular_by_name WHERE lang_primary={}".format(db.placeholder)
-        query4 += " AND name IN (" + ','.join([db.placeholder]*len(names)) + ")"
-        query4 += " AND preferred=TRUE ORDER BY src"
-        sql = query4
-        vernacular_name_query_res2 = db.executesql(sql, [lang_primary]+list(names))
-    else:
-        vernacular_name_query_res2 = []
+        if len(nodeNames) + len(leafNames):
+            names = nodeNames | leafNames
+            query4 = "SELECT name,vernacular FROM vernacular_by_name WHERE lang_primary={}".format(db.placeholder)
+            query4 += " AND name IN (" + ','.join([db.placeholder]*len(names)) + ")"
+            query4 += " AND preferred=TRUE ORDER BY src"
+            sql = query4
+            vernacular_name_query_res2 = db.executesql(sql, [lang_primary]+list(names))
     
     #find pictures, iucn, and reservation details (only from leaves)
     images_by_ott_query_res = iucn_query_res = reservations_res = None #don't bother getting images for nodes without otts
@@ -516,15 +514,16 @@ def nodes_info_from_string(
 
 
 def ids_from_otts_string(ottCommaSepString):
-    return ids_from_otts_array(ottCommaSepString.split(","))
+    return ids_from_otts_array(
+        [int(id) for id in ottCommaSepString.split(",") if id.isdigit()]
+    )
 
-def ids_from_otts_array(ottArray):
+def ids_from_otts_array(ottIntegers):
     try:
         db = current.db
-        ottArray = [int(x) for x in ottArray]  # Convert from string if necessary
-        query = db.ordered_nodes.ott.belongs(ottArray)
+        query = db.ordered_nodes.ott.belongs(ottIntegers)
         nodes = db(query).select(db.ordered_nodes.id, db.ordered_nodes.ott, db.ordered_nodes.name)
-        query = db.ordered_leaves.ott.belongs(ottArray)
+        query = db.ordered_leaves.ott.belongs(ottIntegers)
         leaves = db(query).select(db.ordered_leaves.id, db.ordered_leaves.ott, db.ordered_leaves.name)
         return {
             "nodes":  {n.ott:n.id for n in nodes},
@@ -532,5 +531,4 @@ def ids_from_otts_array(ottArray):
             "names":  dict([(n.ott,n.name) for n in nodes] + [(n.ott,n.name) for n in leaves])
         }
     except:
-        raise
         return {"nodes": {}, "leaves": {}, "names": {}}
