@@ -1,0 +1,27 @@
+[Example file that grafts a Pongo phylogeny from OpenTree onto a great ape backbone, and
+adds domestic dogs (Canis lupus familiaris) as a unary node below Canis lupus.
+
+NOTES:
+
+* Grafting is done with the '@' sign. Note that the instructions in 
+    OZprivate/ServerScripts/TreeBuild/README.markdown assume that phylogeny files 
+    which graft parts of the opentree are saved with an uppercase `.PHY` extension. 
+
+* In the example below, the Homo/Pan/Gorilla split is set as a trichotomy, 
+    for demonstration purposes.
+
+* To force a name to have a particular ott, but not graft a subtree, the ott number 
+    can be added without an '@' sign (as shown below with Homo_sapiens and Gorilla).
+
+* Additional files (e.g. my_subphylogeny.phy) are conventionally grafted into the tree 
+    by including a name followed by an "@" sign, (e.g. "MY_INCLUDE_NAME@"), then 
+    specifying the filename in the Life_full_tree_start.js file, e.g.
+
+   $tree.substitute('MY_INCLUDE_NAME@', 'BespokeTree/include_files/my_subphylogeny.phy');
+
+* As shown below, the last line of this comment field can specify a context, to help when
+    mapping scientific names to Open Tree IDs. Valid contexts to use are listed at 
+    https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts.
+
+context=Mammals]
+(((Homo_sapiens_ott770315:7,(Pan_paniscus:2,Pan_troglodytes:2)Pan:5,(Gorilla_gorilla:1.8,Gorilla_beringei:1.8)Gorilla_ott417969:5.2):5,Pongo_ott417949@:14)Hominidae,((Canis_lupus_familiaris)Canis_lupus)Carnivora);

@@ -1,7 +1,0 @@
-[Opentree is missing gars altogether, so cannot be relied upon This is based on the Deepfin2 tree, which is only missing 2 gars: Lepisosteus platyrhincus &  Atractosteus tristoechus. 
-
-Wright et al./Molecular Phylogenetics and Evolution 63 (2012) 848–856 has (Atractosteus_spatula,Atractosteus_tristoechus) as slightly less than 1/2 way from Atractosteus_tropicus, hence 2.5Ma. Lepisosteus platyrhincus placement disagrees with DeepFin, so here placed as sister to Lepisosteus_oculatus
-
-#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Vertebrates]
-(Amia_calva_ott329623:267.9,(((Atractosteus_spatula_ott904117:2.5,Atractosteus_tristoechus_ott124009:2.5):2.873563,Atractosteus_tropicus_ott124014:5.373563):16.241946,(Lepisosteus_platostomus_ott731608:5.131151,((Lepisosteus_oculatus_ott1028028:3.197364,Lepisosteus_platyrhincus_ott804455:3.197364):0.0,Lepisosteus_osseus_ott519445:3.197364):1.933787):16.484359)Lepisosteiformes_ott904125:246.28449)Holostei_ott5502194;
-

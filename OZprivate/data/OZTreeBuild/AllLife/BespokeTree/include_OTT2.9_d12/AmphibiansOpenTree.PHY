@@ -1,5 +1,0 @@
-[In OTT v2.9 the obscure and recently discovered caecilian Chikila fulleri (OTT: 3617909) appears in the wrong place,and so has been deleted from this phylogeny.
-
-#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Tetrapods]
-((Anura_ott991547@:290.0,Caudata_ott984716@:290.0)Batrachia_ott471197:20.0,'Gymnophiona_ott118027~-3617909@':310.0)Amphibia_ott544595:30.0;
-

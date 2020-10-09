@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 -u
+#!/usr/bin/env -S python3 -u
 """
 A set of functions for monkey patching into dendropy objects.
 These all assume that the tree has been loaded with suppress_leaf_node_taxa=True
@@ -8,9 +8,9 @@ These all assume that the tree has been loaded with suppress_leaf_node_taxa=True
 # To be patched into the Tree object
 #
 import itertools
+import logging
 
-def prune_children_of_otts(self, ott_species_list, verbosity=0):
-    from warnings import warn
+def prune_children_of_otts(self, ott_species_list):
     to_trim = set()
     for nd in self.postorder_internal_node_iter():
         try:
@@ -24,7 +24,9 @@ def prune_children_of_otts(self, ott_species_list, verbosity=0):
                 #check for species within this group
                 for sub_nd in nd.postorder_internal_node_iter():
                     if sub_nd in to_trim:
-                        warn("Species {} is contained within another species {}: not trimming it".format(sub_nd.label, nd.label))
+                        logging.warning(
+                            f"Species {sub_nd.label} is contained within another "
+                            "species {nd.label}: not trimming it")
                         trim_me = False
                 if trim_me:
                     to_trim.add(nd)
@@ -35,48 +37,50 @@ def prune_children_of_otts(self, ott_species_list, verbosity=0):
     return(to_trim)
         
                         
-def prune_non_species(self,
-            recursive=True,
-            bad_matches = [], #any strings in here indicate non-species (e.g. ' cf.')
-            update_bipartitions=False,
-            verbosity=0):
-        """
-        Recursive=true means remove tips (which may create more tips) and keep going until non left to prune
-        Removes all terminal nodes whose name is '' or does not contain a space. Extinction props should be 
-        unlabelled nodes with a length, e.g.
-        ((:65)Tyrannosaurus_rex,Birds)
-        """
-        nodes_removed = {'no_space':[],'unlabelled':[],'bad_match':[]}
-        done = False
-        while not done:
-            nodes_to_remove = {k:[] for k in nodes_removed.keys()}
-            for nd in self.leaf_node_iter():
-                if nd.label is None:
-                    if nd.edge.length and nd.parent_node and nd.parent_node.label and (nd.parent_node.num_child_nodes()==1):
-                        #only an extinction prop, if it has a length AND the parent node is a named unifurcation
-                        pass
-                    else:
-                        nodes_to_remove['no_space'].append(nd)
-                elif ' ' not in nd.label: #number of spaces is 0: a leaf, but probably not a species. Also catches label==''
-                    if verbosity:
-                        print("Removing '{}' since it does not seem to be a species (it does not contain a space)".format(nd.label))
-                    nodes_to_remove['unlabelled'].append(nd)
-                elif any(match in nd.label for match in bad_matches):
-                    if verbosity:
-                        print("Removing '{}' since it contains one of {}".format(nd.label, bad_matches))
-                    nodes_to_remove['bad_match'].append(nd)
-            for k, nodes in nodes_to_remove.items():
-                for nd in nodes:
-                    nd.edge.tail_node.remove_child(nd)
-                nodes_removed[k] += nodes
-            if not recursive:
-                done = True
-            if all([len(v)==0 for v in nodes_to_remove.values()]):
-                done = True
-                
-        if update_bipartitions:
-            self.update_bipartitions()
-        return nodes_removed
+def prune_non_species(
+    self,
+    recursive=True,
+    bad_matches = [], #any strings in here indicate non-species (e.g. ' cf.')
+    update_bipartitions=False,
+):
+    """
+    Recursive=true means remove tips (which may create more tips) and keep going until non left to prune
+    Removes all terminal nodes whose name is '' or does not contain a space. Extinction props should be 
+    unlabelled nodes with a length, e.g.
+    ((:65)Tyrannosaurus_rex,Birds)
+    """
+    nodes_removed = {'no_space':[],'unlabelled':[],'bad_match':[]}
+    done = False
+    while not done:
+        nodes_to_remove = {k:[] for k in nodes_removed.keys()}
+        for nd in self.leaf_node_iter():
+            if nd.label is None:
+                if nd.edge.length and nd.parent_node and nd.parent_node.label and (nd.parent_node.num_child_nodes()==1):
+                    #only an extinction prop, if it has a length AND the parent node is a named unifurcation
+                    pass
+                else:
+                    nodes_to_remove['no_space'].append(nd)
+            elif ' ' not in nd.label: #number of spaces is 0: a leaf, but probably not a species. Also catches label==''
+                logging.info(
+                    f"Removing '{nd.label}' since it does not seem to be a species "
+                    "(it does not contain a space)")
+                nodes_to_remove['unlabelled'].append(nd)
+            elif any(match in nd.label for match in bad_matches):
+                logging.info(
+                    f"Removing '{nd.label}' since it contains one of {bad_matches}")
+                nodes_to_remove['bad_match'].append(nd)
+        for k, nodes in nodes_to_remove.items():
+            for nd in nodes:
+                nd.edge.tail_node.remove_child(nd)
+            nodes_removed[k] += nodes
+        if not recursive:
+            done = True
+        if all([len(v)==0 for v in nodes_to_remove.values()]):
+            done = True
+            
+    if update_bipartitions:
+        self.update_bipartitions()
+    return nodes_removed
 
 def set_node_ages(self):
     """
@@ -94,7 +98,6 @@ def set_node_ages(self):
     #Percolate age up the tree (go from tips upwards, assuming all tips at 0Ma)
     #Where children disagree on the age of their parent, take the larger number
     tot_ages=0
-    from warnings import warn
     for node in self.postorder_node_iter():
         if node.is_leaf():
             node.age = 0
@@ -102,7 +105,7 @@ def set_node_ages(self):
             l = node.edge.length
             if getattr(node,'age',None) is not None and l is not None:
                 if l<0:
-                    warn("length <0 for {}".format(node.label))
+                    logging.warning(f"length <0 for {node.label}")
                 l=0 if l<0 else l
                 if getattr(node.parent_node,'age', None) is None:
                     node.parent_node.age = node.age + l
@@ -111,14 +114,12 @@ def set_node_ages(self):
                     if node.parent_node.age < (node.age + l):
                         node.parent_node.age = node.age + l
                     if (abs(node.parent_node.age - (node.age + l)) >= 1):
-                        warn("Age of node '{}' (child of {}) is {} via one route, but has a child node '{}' of age {}, attached by a branch of length {}, which sums to {}.".format(
-                             node.parent_node.label,
-                             [n.label for n in node.ancestor_iter() if n.label][:3],
-                             node.parent_node.age,
-                             node.label,
-                             node.age,
-                             l,
-                             node.age+l))
+                        parent = [n.label for n in node.ancestor_iter() if n.label][:3]
+                        logging.warning(
+                            f"Age of node '{node.parent_node.label}' (child of {parent}) "
+                            f"is {node.parent_node.age} via one route, but has a child "
+                            f"node '{node.label}' of age {node.age}, attached by a "
+                            f"branch of length {l}, which sums to {node.age+l}.")
 
     #For newly fixed ages, now percolate them down the tree if we know the age of a deeper node
     for node in self.preorder_node_iter():
@@ -161,7 +162,7 @@ def is_on_unifurcation_path(node):
     return node.num_child_nodes()==1 or \
         (node.parent_node and node.parent_node.num_child_nodes() == 1)
 
-def remove_unifurcations_keeping_higher_taxa(self, verbosity=0):
+def remove_unifurcations_keeping_higher_taxa(self):
     """
     Does a more sophisticated pass than the remove_unifurcations flag in Dendropy4:
     * If this is a unifurcation ending in a leaf, the lowest level (i.e. species) is 
@@ -187,9 +188,9 @@ def remove_unifurcations_keeping_higher_taxa(self, verbosity=0):
                 if sequential_unary_nodes[0].num_child_nodes() == 0:
                     #this ends in a tip, we can rely on the normal suppress_unifurcation
                     #behaviour (by default Dendropy keeps the lowest level taxa)
-                    if verbosity > 1:
-                        print("Unary nodes ending in tip left so that first is used: " + 
-                            ", ".join([(x.label or "<None>") for x in sequential_unary_nodes]))
+                    logging.debug(
+                        "Unary nodes ending in tip left so that first is used: " + 
+                        ", ".join([(x.label or "None") for x in sequential_unary_nodes]))
                 else:
                     #sort so that best is last - by popularity then presence of label, 
                     #finally by existing position
@@ -197,9 +198,9 @@ def remove_unifurcations_keeping_higher_taxa(self, verbosity=0):
                         sequential_unary_nodes,
                         key = lambda n: (n.data.get('raw_popularity'),bool(getattr(n,'label',""))))
                     keep_node = sorted_unary_nodes[-1]
-                    if verbosity > 1:
-                        print("Unary nodes collapsed to last in this list: " + 
-                            ", ".join([(x.label or "None") for x in sorted_unary_nodes]))
+                    logging.debug(
+                        "Unary nodes collapsed to last in this list: " + 
+                        ", ".join([(x.label or "None") for x in sorted_unary_nodes]))
                     for nd in sequential_unary_nodes:
                         #these should still be in postorder
                         if nd != keep_node:
@@ -283,7 +284,6 @@ def write_preorder_to_csv(self, leaf_file, extra_leaf_data_properties, node_file
     """
     import csv
     from collections import OrderedDict
-    from warnings import warn
     leaf_csv = csv.writer(leaf_file, quoting=csv.QUOTE_MINIMAL, lineterminator="\n")
     leaf_csv.writerow(['parent','real_parent','name', 'extinction_date'] + list(extra_leaf_data_properties.keys()))
     node_csv = csv.writer(node_file, quoting=csv.QUOTE_MINIMAL, lineterminator="\n")

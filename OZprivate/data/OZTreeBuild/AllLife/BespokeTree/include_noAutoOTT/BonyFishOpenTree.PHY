@@ -1,7 +1,7 @@
 [This hand-crafted file takes the divergence of most of the orders from Deepfin4 (https://sites.google.com/site/guilleorti/classification-v-4) and grafts the OpenTree nodes onto them.
 
 
-This has been hand-scaled to fit in with dates in the Ancestor's Tale, and Deepfin 4 (http://currents.plos.org/treeoflife/article/the-tree-of-life-and-a-new-classification-of-bony-fishes/ Fig 12).
+This has been hand-scaled to fit in with dates in the Ancestor's Tale, and Deepfin 4 (http://currents.plos.org/treeoflife/article/the-tree-of-life-and-a-new-classification-of-bony-fishes/ https://doi.org/10.1371/currents.tol.53ba26640df0ccaee75bb165c8c26288 Fig 12).
 
 In particular: I ignore the shallow lungfish/human divergence, and place Dipnotetrapodomorpha @ 415Ma with Sarcopterygii @ 420 Ma.
 

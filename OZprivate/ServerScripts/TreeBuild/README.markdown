@@ -12,6 +12,7 @@ OT_VERSION=12_3 #or whatever your OpenTree version is
 OT_TAXONOMY_VERSION=3.2
 OT_TAXONOMY_EXTRA=draft9 #optional - the draft for this version, e.g. for 3.1draft2
 OZ_TREE=AllLife #a tree directory in data/OZTreeBuild
+THREADS=-T40 #or however many cpus you want to throw at the process (or omit on personal machines)
 ```
 
 In the instructions which follow, we assume that your tree version corresponds to that in the online OpenTree API. You can check this by running `curl -X POST https://api.opentreeoflife.org/v3/tree_of_life/about`, and also check that the taxonomy version in the API corresponds to that used in your tree, by running `curl -X POST https://api.opentreeoflife.org/v3/taxonomy/about`. If these do not match, the tree and taxonomy versions above, you may not fully map all the names in your tree in step 1 below.
@@ -57,9 +58,8 @@ If you already have your own newick tree with open tree ids on it already, and d
 
 	```
 	(cd OZprivate/data/OZTreeBuild/${OZ_TREE} && \
-	 ../../../ServerScripts/TreeBuild/getOpenTreesFromOneZoom.py -v \
-	 ../../OpenTree/draftversion${OT_VERSION}.tre \
-	 OpenTreeParts/OpenTree_all/ -- -Inf \
+	 ../../../ServerScripts/TreeBuild/getOpenTreesFromOneZoom.py -vv ${THREADS} \
+	 ../../OpenTree/draftversion${OT_VERSION}.tre OpenTreeParts/OpenTree_all/ \
 	 BespokeTree/include_files/*.PHY \
 	 > AdditionalFiles/substitute_commands_to_include_in_full_tree_js_file.txt)
 	```
@@ -76,7 +76,7 @@ If you already have your own newick tree with open tree ids on it already, and d
    ${OZ_TREE}_full_tree.js \
    > ${OZ_TREE}_full_tree.phy)
    ```
-   Now that we are not having to run this every sponsorship time, we should probably re-write this to actually know what tree structure looks like, maybe using Python/DendroPy (see https://github.com/jrosindell/OneZoomComplete/issues/340). Note that any '@' signs in the `${OZ_TREE}_full_tree.phy` output file are indicative of OpenTree substitutions that have not been possible: it would be good to check to see if there are other sources (or old OpenTree versions) that have trees for these nodes, and place them as .phy files in `OZprivate/data/OZTreeBuild/${OZ_TREE}/OpenTreeParts/OT_required/`. You can check with
+   Now that we are not having to run this every sponsorship time, we should probably re-write this to actually know what tree structure looks like, maybe using Python/DendroPy (see https://github.com/jrosindell/OneZoomComplete/issues/340) and also to automatically create the list of DOIs at `static/FinalOutputs/refs.txt`. Note that any '@' signs in the `${OZ_TREE}_full_tree.phy` output file are indicative of OpenTree substitutions that have not been possible: it would be good to check to see if there are other sources (or old OpenTree versions) that have trees for these nodes, and place them as .phy files in `OZprivate/data/OZTreeBuild/${OZ_TREE}/OpenTreeParts/OT_required/`. You can check with
 
    ```
    grep -o '.............@' OZprivate/data/OZTreeBuild/${OZ_TREE}/${OZ_TREE}_full_tree.phy
@@ -89,7 +89,9 @@ If you already have your own newick tree with open tree ids on it already, and d
 
 	## create the base tree and table data
    
-5. (4-8 hours) This is the long step. On the basis of the `${OZ_TREE}_full_tree.phy` file, look for ID mappings between different datasets, calculate popularity measures via wikidata/pedia, refine the tree (remove subspecies, randomly break polytomies, remove unifurcations etc), and then create corresponding database tables together with `ordered_tree_XXXXX.nwk`, `ordered_tree_XXXXX.poly` (same file but with polytomies marked with curly braces), and `ordered_tree_XXXXX.date` files (where XXXXX is the version number, usually a timestamp). Since round braces, curly braces, and commas are banned from the `simplified_ottnames` file, we can create minimal topology files by simply removing everything except these characters from the `.nwk` and `.poly` files. If the tree has been ladderised, with polytomies and unifurcations removed, the commas are also redundant, and can be removed. This is done in the next step, which saves these highly shortened strings into .js data files. 
+5. (many hours) This is the long step, although it can benefit from parallel decoding of the wikimedia database dump files, so it can be worth running this on a multiprocessor machine (e.g. with 64 or even 128 cores, setting `${THREADS}` as appropriate). On the basis of the `${OZ_TREE}_full_tree.phy` file, look for ID mappings between different datasets, calculate popularity measures via wikidata/pedia, refine the tree (remove subspecies, randomly break polytomies, remove unifurcations etc), and then create corresponding database tables together with `ordered_tree_XXXXX.nwk`, `ordered_tree_XXXXX.poly` (same file but with polytomies marked with curly braces), and `ordered_tree_XXXXX.date` files (where XXXXX is the version number, usually a timestamp).
+
+    Additional flags can be given to override the OpenTree taxonomy in specific cases (using `--extra_source_file`), and to exclude certain taxa (e.g. dinosaurs) from the popularity calculations.
 
 	If you do not have comprehensive tree of a clade, it probably doesn't make sense to calculate popularity measures, and you can run this script with the `-p` flag (or omit the references to the `wp_` wikipedia files. Most of the time for this command is spent going throught the wikidata JSON dump, so if you want to save time and don't care about mapping to wikipedia items at all, you can omit the `wd_JSON` parameter too.
 	
@@ -97,15 +99,18 @@ If you already have your own newick tree with open tree ids on it already, and d
 	OZprivate/ServerScripts/TaxonMappingAndPopularity/CSV_base_table_creator.py \
 	OZprivate/data/OZTreeBuild/${OZ_TREE}/${OZ_TREE}_full_tree.phy \
 	OZprivate/data/OpenTree/ott${OT_TAXONOMY_VERSION}/taxonomy.tsv \
-	OZprivate/data/EOL/provider_ids.csv \
+	OZprivate/data/EOL/provider_ids.csv.gz \
 	OZprivate/data/Wiki/wd_JSON/latest-all.json.bz2 \
 	OZprivate/data/Wiki/wp_SQL/enwiki-latest-page.sql.gz \
 	OZprivate/data/Wiki/wp_pagecounts/pagecount*.bz2 \
 	-o OZprivate/data/output_files -v \
 	--exclude Archosauria_ott335588 Dinosauria_ott90215 \
 	--extra_source_file OZprivate/data/OZTreeBuild/${OZ_TREE}/BespokeTree/SupplementaryTaxonomy.tsv \
-	> OZprivate/data/output_files/ordered_output.log
+	${THREADS} 2> OZprivate/data/output_files/ordered_output.log
 	```
+
+    Since round braces, curly braces, and commas are banned from the `simplified_ottnames` file, we can create minimal topology files by simply removing everything except these characters from the `.nwk` and `.poly` files. If the tree has been ladderised, with polytomies and unifurcations removed, the commas are also redundant, and can be removed. This is done in the next step, which saves these highly shortened strings into .js data files. 
+
 6. (5 mins) turn the most recently saved tree files (saved in step (5) as `OZprivate/data/output_files/ordered_tree_XXXXXX.poly` and `ordered_dates_XXXXXX.json`) into bracketed newick strings in `static/FinalOutputs/data/basetree_XXXXXX.js`, `static/FinalOutputs/data/polytree_XXXXXX.js`, a cutpoints file in `static/FinalOutputs/data/cut_position_map_XXXXXX.js`, and a dates file in `static/FinalOutputs/data/dates_XXXXXX.json` as well as their gzipped equivalents, using 
 	
 	```

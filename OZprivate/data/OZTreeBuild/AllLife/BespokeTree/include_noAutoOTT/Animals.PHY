@@ -1,16 +1,19 @@
 [
-The position of Ctenophores is debated. After discussion with Jordi Paps etc, I keep them in the same place: see Ryan Hejnol 2009, but also Phillipe 2011. Discussion at https://yanwong.me/?p=971
+The position of Ctenophores is debated. After pers. comm. Jordi Paps etc, I keep them in the same place: see Ryan Hejnol 2009, but also Phillipe 2011. Discussion at https://yanwong.me/?p=971
 
-For some vague but believable dates, see Stajich (2009) Current Biology 19:R840 http://www.sciencedirect.com/science/article/pii/S0960982209013827 
+For some vague but believable dates, see Stajich (2009) Current Biology 19:R840 https://doi.org/10.1016/j.cub.2009.07.004 
 
-The initial divergence within Cnidaria (70My basal branch) taken by scaling Fig 1 of Zapata et al. http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0139068 to a Cnidarian depth of 590 Ma
+The initial divergence within Cnidaria (70My basal branch) taken by scaling Fig 1 of Zapata et al. https://doi.org/10.1371/journal.pone.0139068 to a Cnidarian depth of 590 Ma
 
-Xenoturbella from Greg W. Rouse, Nerida G. Wilson, Jose I. Carvajal & Robert C. Vrijenhoek: New deep-sea species of Xenoturbella and the position of Xenacoelomorpha. Note that Xenoturbella westbladi is now thought to be a variant of Xenoturbella bocki
+Xenoturbella from Greg W. Rouse, Nerida G. Wilson, Jose I. Carvajal & Robert C. Vrijenhoek: New deep-sea species of Xenoturbella and the position of Xenacoelomorpha https://doi.org/10.1038/nature16545 . Note that Xenoturbella westbladi is now thought to be a variant of Xenoturbella bocki
 ((Xenoturbella_hollandorum,Xenoturbella_bocki),(Xenoturbella_monstrosa,(Xenoturbella_profunda,Xenoturbella_churro)))Xenoturbella
 
-Rough date proportions from Cannon et al (2016, fig 2) http://www.nature.com/nature/journal/v530/n7588/abs/nature16520.html
+Rough date proportions from Cannon et al (2016, fig 2) https://doi.org/10.1038/nature16520 
 
 ((Xenoturbella_hollandorum,Xenoturbella_bocki),(Xenoturbella_monstrosa,(Xenoturbella_profunda,Xenoturbella_churro)))Xenoturbella:550
 
+New Trichoplax species from https://doi.org/10.1016/j.cub.2019.01.068 , which gives
+(Polyplacotoma_mediterranea,(Trichoplax_adhaerens,Hoilungia_hongkongensis))Placozoa;
+
 #from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Animals]
-((((((((((CYCLOSTOMATA@:525,GNATHOSTOMATA@:525)Vertebrata_ott801601:10,Tunicata_ott125649@:535)ChordataMinusAmphioxus_:5,Cephalochordata_ott176555@:540)Chordata:10,AMBULACRARIA@:550)Deuterostomia:10,PROTOSTOMIA@:560)Nephrozoa:10,((Acoela_ott283423@:520,Nemertodermatida_ott490210@:520)ACOELOMORPHA:20,((Xenoturbella_hollandorum,Xenoturbella_bocki),(Xenoturbella_monstrosa,(Xenoturbella_profunda,Xenoturbella_churro)))Xenoturbella:550)XENACOELOMORPHA:30)Bilateria:20,(Anthozoa_ott1084488@:520,CnidariaMinusAnthozoa__ott641033~-1084488@:520)Cnidaria:70)BilatCnid_:10,CTENOPHORA@:600)BiCnCt_:20,Trichoplax_adhaerens_ott570365:620)BiCnCtPl_:30,PORIFERA@:650)Metazoa;
+((((((((((CYCLOSTOMATA@:525,GNATHOSTOMATA@:525)Vertebrata_ott801601:10,Tunicata_ott125649@:535)ChordataMinusAmphioxus_:5,Cephalochordata_ott176555@:540)Chordata:10,AMBULACRARIA@:550)Deuterostomia:10,PROTOSTOMIA@:560)Nephrozoa:10,((Acoela_ott283423@:520,Nemertodermatida_ott490210@:520)ACOELOMORPHA:20,((Xenoturbella_hollandorum,Xenoturbella_bocki),(Xenoturbella_monstrosa,(Xenoturbella_profunda,Xenoturbella_churro)))Xenoturbella:550)XENACOELOMORPHA:30)Bilateria:20,(Anthozoa_ott1084488@:520,CnidariaMinusAnthozoa__ott641033~-1084488@:520)Cnidaria:70)BilatCnid_:10,CTENOPHORA@:600)BiCnCt_:20,(Polyplacotoma_mediterranea,(Trichoplax_adhaerens,Hoilungia_hongkongensis))Placozoa:620)BiCnCtPl_:30,PORIFERA@:650)Metazoa;

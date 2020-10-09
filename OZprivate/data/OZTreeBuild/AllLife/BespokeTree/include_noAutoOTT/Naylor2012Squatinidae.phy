@@ -1,4 +1,4 @@
-[Arrangement from 'Elasmobranch Phylogeny: A Mitochondrial Estimate Based on 595 Species' (see http://sharksrays.org)
+[Arrangement from 'Elasmobranch Phylogeny: A Mitochondrial Estimate Based on 595 Species' (https://doi.org/10.1201/B11867-9 see http://sharksrays.org)
 Angel sharks (Squatinidae) are non monophyletic in the Opentree, but this is probably an error. So we use the subtree from sharksrays.org, with additions from the opentree (based on VélezZuazo), but unfortunately this is missing about 20 species.
 
 #from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Vertebrates]

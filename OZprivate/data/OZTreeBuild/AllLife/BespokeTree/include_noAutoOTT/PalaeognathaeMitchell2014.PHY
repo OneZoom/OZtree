@@ -1,4 +1,4 @@
-[from Mitchell et al 2014 Ancient DNA reveals elephant birds and kiwi are sister taxa and clarifies ratite bird evolution, Fig 1 (mitochondrial data)
+[from Mitchell et al 2014 Ancient DNA reveals elephant birds and kiwi are sister taxa and clarifies ratite bird evolution, https://doi.org/10.1126/science.1251981 Fig 1 (mitochondrial data)
 
 This is an example of using 'extinction props', such as (:0.0005)Dinornis_robustus:58.1, which states that Dinornis_robustus, the south island Moa, went extinct 0.0005 Mya (500 years ago)
 
