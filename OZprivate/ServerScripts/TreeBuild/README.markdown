@@ -76,7 +76,7 @@ If you already have your own newick tree with open tree ids on it already, and d
    ${OZ_TREE}_full_tree.js \
    > ${OZ_TREE}_full_tree.phy)
    ```
-   Now that we are not having to run this every sponsorship time, we should probably re-write this to actually know what tree structure looks like, maybe using Python/DendroPy (see https://github.com/jrosindell/OneZoomComplete/issues/340). Note that any '@' signs in the `${OZ_TREE}_full_tree.phy` output file are indicative of OpenTree substitutions that have not been possible: it would be good to check to see if there are other sources (or old OpenTree versions) that have trees for these nodes, and place them as .phy files in `OZprivate/data/OZTreeBuild/${OZ_TREE}/OpenTreeParts/OT_required/`. You can check with
+   Now that we are not having to run this every sponsorship time, we should probably re-write this to actually know what tree structure looks like, maybe using Python/DendroPy (see https://github.com/jrosindell/OneZoomComplete/issues/340) and also to automatically create the list of DOIs at `static/FinalOutputs/refs.txt`. Note that any '@' signs in the `${OZ_TREE}_full_tree.phy` output file are indicative of OpenTree substitutions that have not been possible: it would be good to check to see if there are other sources (or old OpenTree versions) that have trees for these nodes, and place them as .phy files in `OZprivate/data/OZTreeBuild/${OZ_TREE}/OpenTreeParts/OT_required/`. You can check with
 
    ```
    grep -o '.............@' OZprivate/data/OZTreeBuild/${OZ_TREE}/${OZ_TREE}_full_tree.phy

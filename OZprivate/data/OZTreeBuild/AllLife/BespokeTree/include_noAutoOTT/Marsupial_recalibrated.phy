@@ -1,6 +1,6 @@
-[This is the BinindaEmonds et al. 2007 tree, but with orders rearranged as per Nilsson, M. A.; Churakov, G.; Sommer, M.; Tran, N. V.; Zemann, A.; Brosius, J. R.; Schmitz, J. R. Nilsson, M. A.; Churakov, G.; Sommer, M.; Tran, N. V.; Zemann, A.; Brosius, J. R.; Schmitz, J. R. (2010). "Tracking Marsupial Evolution Using Archaic Genomic Retroposon Insertions". PLoS Biology 8 (7): e1000436.
+[This is the BinindaEmonds et al. 2007 tree, but with orders rearranged as per Nilsson, M. A.; Churakov, G.; Sommer, M.; Tran, N. V.; Zemann, A.; Brosius, J. R.; Schmitz, J. R. Nilsson, M. A.; Churakov, G.; Sommer, M.; Tran, N. V.; Zemann, A.; Brosius, J. R.; Schmitz, J. R. (2010). "Tracking Marsupial Evolution Using Archaic Genomic Retroposon Insertions". PLoS Biology 8 (7): e1000436. https://doi.org/10.1371/journal.pbio.1000436
 
-Also seen (apart from opossums) in Mitchell, K.J., Pratt, R.C., Watson, L.N., et al. (2014) Molecular Phylogeny, Biogeography, and Habitat Preference Evolution of Marsupials. Molecular Biology and Evolution 31: 2322–2330. from where rescaling dates are taken (figure 1)
+Also seen (apart from opossums) in Mitchell, K.J., Pratt, R.C., Watson, L.N., et al. (2014) Molecular Phylogeny, Biogeography, and Habitat Preference Evolution of Marsupials. Molecular Biology and Evolution 31: 2322–2330. https://doi.org/10.1093/molbev/msu176 from where rescaling dates are taken (figure 1)
 
 #sequence length should be irrelevant here, set it to something high
 Sequence length = 1000000; 

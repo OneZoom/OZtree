@@ -2,10 +2,10 @@
 The main genera Aphelidium and Pseudaphelidium (only 1 sp) are absent from the Aphelida in the synthetic tree (v11.4)
 with "major_rank_conflict" although they are present in the taxonomy file. 
 So I have constructed a temporary phylogeny by hand below, using e.g. 
-http://journal.frontiersin.org/Journal/10.3389/fmicb.2014.00112/ and
-https://www.ncbi.nlm.nih.gov/pubmed/28187245
+https://doi.org/10.3389/fmicb.2014.00112 and
+https://doi.org/10.1111/jeu.12401
 
-(also see the recent classification in https://imafungus.biomedcentral.com/articles/10.1186/s43008-019-0005-7
+(also see the recent classification in https://doi.org/10.1186/s43008-019-0005-7
 which describes the only species of Aphelidium_ott as:
 
 Aphelidium chaetophorae
