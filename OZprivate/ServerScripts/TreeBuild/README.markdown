@@ -89,7 +89,9 @@ If you already have your own newick tree with open tree ids on it already, and d
 
 	## create the base tree and table data
    
-5. (4-8 hours) This is the long step. On the basis of the `${OZ_TREE}_full_tree.phy` file, look for ID mappings between different datasets, calculate popularity measures via wikidata/pedia, refine the tree (remove subspecies, randomly break polytomies, remove unifurcations etc), and then create corresponding database tables together with `ordered_tree_XXXXX.nwk`, `ordered_tree_XXXXX.poly` (same file but with polytomies marked with curly braces), and `ordered_tree_XXXXX.date` files (where XXXXX is the version number, usually a timestamp). Since round braces, curly braces, and commas are banned from the `simplified_ottnames` file, we can create minimal topology files by simply removing everything except these characters from the `.nwk` and `.poly` files. If the tree has been ladderised, with polytomies and unifurcations removed, the commas are also redundant, and can be removed. This is done in the next step, which saves these highly shortened strings into .js data files. 
+5. (many hours) This is the long step, although it can benefit from parallel decoding of the wikimedia database dump files, so it can be worth running this on a multiprocessor machine (e.g. with 64 or even 128 cores, setting `${THREADS}` as appropriate). On the basis of the `${OZ_TREE}_full_tree.phy` file, look for ID mappings between different datasets, calculate popularity measures via wikidata/pedia, refine the tree (remove subspecies, randomly break polytomies, remove unifurcations etc), and then create corresponding database tables together with `ordered_tree_XXXXX.nwk`, `ordered_tree_XXXXX.poly` (same file but with polytomies marked with curly braces), and `ordered_tree_XXXXX.date` files (where XXXXX is the version number, usually a timestamp).
+
+    Additional flags can be given to override the OpenTree taxonomy in specific cases (using `--extra_source_file`), and to exclude certain taxa (e.g. dinosaurs) from the popularity calculations.
 
 	If you do not have comprehensive tree of a clade, it probably doesn't make sense to calculate popularity measures, and you can run this script with the `-p` flag (or omit the references to the `wp_` wikipedia files. Most of the time for this command is spent going throught the wikidata JSON dump, so if you want to save time and don't care about mapping to wikipedia items at all, you can omit the `wd_JSON` parameter too.
 	
@@ -104,8 +106,11 @@ If you already have your own newick tree with open tree ids on it already, and d
 	-o OZprivate/data/output_files -v \
 	--exclude Archosauria_ott335588 Dinosauria_ott90215 \
 	--extra_source_file OZprivate/data/OZTreeBuild/${OZ_TREE}/BespokeTree/SupplementaryTaxonomy.tsv \
-	${THREADS} > OZprivate/data/output_files/ordered_output.log
+	${THREADS} 2> OZprivate/data/output_files/ordered_output.log
 	```
+
+    Since round braces, curly braces, and commas are banned from the `simplified_ottnames` file, we can create minimal topology files by simply removing everything except these characters from the `.nwk` and `.poly` files. If the tree has been ladderised, with polytomies and unifurcations removed, the commas are also redundant, and can be removed. This is done in the next step, which saves these highly shortened strings into .js data files. 
+
 6. (5 mins) turn the most recently saved tree files (saved in step (5) as `OZprivate/data/output_files/ordered_tree_XXXXXX.poly` and `ordered_dates_XXXXXX.json`) into bracketed newick strings in `static/FinalOutputs/data/basetree_XXXXXX.js`, `static/FinalOutputs/data/polytree_XXXXXX.js`, a cutpoints file in `static/FinalOutputs/data/cut_position_map_XXXXXX.js`, and a dates file in `static/FinalOutputs/data/dates_XXXXXX.json` as well as their gzipped equivalents, using 
 	
 	```
