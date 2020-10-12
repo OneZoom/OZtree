@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-from OZfunctions import *
 import warnings
 
-@require_https_if_nonlocal()
+@OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def index():
     '''this is a page to give quick links to all the management routines'''
@@ -79,7 +78,7 @@ def edit_language():
                 redirect(URL(r=request, args=request.args))
             return dict(filename=filename, form=form)
 
-@require_https_if_nonlocal()
+@OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def SHOW_SPONSOR_SUMS():
     '''list the sponsors by amount
@@ -104,7 +103,7 @@ def SHOW_SPONSOR_SUMS():
         groupby=groupby, orderby= cols['sum_paid'] + " DESC")
     return dict(rows = rows, cols=cols)
 
-@require_https_if_nonlocal()
+@OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def SPONSOR_VALIDATE():
     """
@@ -163,7 +162,7 @@ def SPONSOR_VALIDATE():
     rows = db(query).select(db.reservations.id,limitby=limitby, orderby=~db.reservations.user_updated_time) #NB can't order by sale time as it is from paypal, and not in a standard datatime format
     return dict(rows=[r.id for r in rows], page=page, vars=request.vars, items_per_page=items_per_page)
 
-@require_https_if_nonlocal()
+@OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def SPONSOR_UPDATE():
     #needs to be called with single row id
@@ -213,8 +212,10 @@ def SPONSOR_UPDATE():
         read_only['EOL_ID'] = EOLrow['eol']
     else:
         read_only['EOL_ID'] = None
-    read_only['common_name'] = get_common_name(read_only['OTT_ID'], lang=read_only['user_sponsor_lang'])
-    read_only['html_name']=nice_species_name(read_only['name'], read_only['common_name'], html=True, leaf=True, break_line=2)
+    read_only['common_name'] = OZfunc.get_common_name(
+        read_only['OTT_ID'], lang=read_only['user_sponsor_lang'])
+    read_only['html_name'] = OZfunc.nice_species_name(
+        read_only['name'], read_only['common_name'], html=True, leaf=True, break_line=2)
     # Only stick variables in the form that will be updated by the verified page
     form = SQLFORM(db.reservations, db.reservations(row_id),_id='form_{}'.format(row_id), submit_button="OK", fields = write_to_cols, deletable = False)
     
@@ -266,9 +267,15 @@ def SPONSOR_UPDATE():
             try:
                 from twython import Twython
                 twitter = Twython(myconf.take('twitter.consumer_key'), myconf.take('twitter.consumer_secret'), myconf.take('twitter.access_key'), myconf.take('twitter.access_secret'))
-                tweet = 'Thank you @{} for sponsoring {} on OneZoom. See it at {}'.format(twittername_t, nice_species_name(binomial_name_t, common_name_t, the=True),url_t)
+                tweet = 'Thank you @{} for sponsoring {} on OneZoom. See it at {}'.format(
+                    twittername_t,
+                    OZfunc.nice_species_name(binomial_name_t, common_name_t, the=True),
+                    url_t)
                 if len(tweet) > 140:
-                    tweet = 'Thank you @{} for sponsoring {} on OneZoom. See it at {}'.format(twittername_t, nice_species_name(binomial_name_t),url_t)
+                    tweet = 'Thank you @{} for sponsoring {} on OneZoom. See it at {}'.format(
+                        twittername_t,
+                        OZfunc.nice_species_name(binomial_name_t),
+                        url_t)
                     if len(tweet) > 140:
                         tweet = 'Thank you @{} for sponsoring {} on OneZoom'.format(twittername_t, binomial_name_t)
                     
@@ -395,7 +402,7 @@ def SPONSOR_UPDATE():
         )
 
 
-@require_https_if_nonlocal()
+@OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def LIST_IMAGES():
     """this mines the database for all images and shows them ranked by popularity
@@ -452,7 +459,7 @@ def LIST_IMAGES():
         images[src_name] = rows[(page*items_per_page):(1+(page+1)*items_per_page)]
     return dict(pics=images, time=time(), form=form, page=page, items_per_page=items_per_page, vars=request.vars)
 
-@require_https_if_nonlocal()
+@OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def SHOW_EMAILS():
     """
@@ -485,7 +492,7 @@ def SHOW_EMAILS():
                                                              orderby=~db.reservations.reserve_time)
 
     otts = [s.OTT_ID for s in sponsors]                                                         
-    cnames = get_common_names(otts)
+    cnames = OZfunc.get_common_names(otts)
     for s in sponsors:
         #we can't use the paypal emails etc because we haven't been paid!
         if s.e_mail:
@@ -525,7 +532,7 @@ def SHOW_EMAILS():
                                                              db.reservations.user_message_OZ,
                                                              orderby=~db.reservations.reserve_time)
     otts = [s.OTT_ID for s in sponsors]                                                         
-    cnames = get_common_names(otts)
+    cnames = OZfunc.get_common_names(otts)
     for s in sponsors:
         details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.user_sponsor_name, s.e_mail or s.PP_e_mail, s.PP_first_name, s.PP_second_name, sponsor_for= (s.user_sponsor_kind=='for'), email_type='to_verify')
         if s.user_preferred_image_src and s.user_preferred_image_src_id:
@@ -561,7 +568,7 @@ def SHOW_EMAILS():
                                                                 db.reservations.user_message_OZ,
                                                                 orderby=~db.reservations.reserve_time)
     otts = [s.OTT_ID for s in sponsors]                                                         
-    cnames = get_common_names(otts)
+    cnames = OZfunc.get_common_names(otts)
     for s in sponsors:
         details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.verified_name, s.e_mail or s.PP_e_mail, s.PP_first_name, s.PP_second_name, sponsor_for= s.verified_kind=='for', email_type='live')
         if s.verified_preferred_image_src and s.verified_preferred_image_src_id:
@@ -600,7 +607,7 @@ def SHOW_EMAILS():
 
 """ these are admin tools for database import """
 
-@require_https_if_nonlocal()
+@OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def SET_PRICES():
     """This sets cutoff prices in the sql database
@@ -717,7 +724,7 @@ def SET_PRICES():
 example_spp=sorted(example_spp, key=lambda tup: tup[1]), previous_prices = db().select(db.prices.ALL))
 
 
-@require_https_if_nonlocal()
+@OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def GENERATE_TREE():
     """
@@ -745,7 +752,7 @@ def GENERATE_TREE():
             proc = subprocess.Popen(cmd, cwd= working_dir, stdout=outfile, stderr=subprocess.STDOUT)
         return(dict(script_fired=True, lockfile = full_lockfile, logfile = full_logfile, time = time.ctime()))
 
-@require_https_if_nonlocal()
+@OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def REIMPORT_TREE_TABLES():
     """
@@ -805,7 +812,7 @@ def REIMPORT_TREE_TABLES():
     
     return dict(leaffile = leaffile, nodefile = nodefile, unsponsoredleaffile=unsponsoredleaffile, status=status, sql_cmds=[sql_cmd1, sql_cmd2, sql_cmd3], ret_text=ret_text)
 
-@require_https_if_nonlocal()
+@OZfunc.require_https_if_nonlocal()
 def emails(ott, species_name, common_name, sponsor_name, email, PP_first_name=None, PP_second_name=None, sponsor_for=False, email_type='live'):
     """
     The email texts that we might want to send out
@@ -826,14 +833,14 @@ def emails(ott, species_name, common_name, sponsor_name, email, PP_first_name=No
         return({'type':'Payment not gone through',
                 'email':email,
                 'mail_subject':'Your OneZoom sponsorship of '+species_name,
-                'mail_body':'Dear {username},\r\n\r\nThank you for visiting OneZoom and filling out the form to sponsor the {species} leaf{for_name}.\r\n\r\nWe noticed that something went wrong and we never received any donation from you on PayPal - you should not have been charged for this. If you would still like to sponsor {species} it may still be available at\r\nhttp://www.onezoom.org/sponsor_leaf?ott={ott}\r\n\r\nIf you’ve had any difficulties with our site or with PayPal, please write to let us know and we’d be very happy to help,\r\n\r\nThank you again for your interest in our tree of life project.\r\n\r\nThe OneZoom team (charity number 1163559)'.format(username=username, ott=ott, species= nice_species_name(species_name, common_name), for_name = for_name)})
+                'mail_body':'Dear {username},\r\n\r\nThank you for visiting OneZoom and filling out the form to sponsor the {species} leaf{for_name}.\r\n\r\nWe noticed that something went wrong and we never received any donation from you on PayPal - you should not have been charged for this. If you would still like to sponsor {species} it may still be available at\r\nhttp://www.onezoom.org/sponsor_leaf?ott={ott}\r\n\r\nIf you’ve had any difficulties with our site or with PayPal, please write to let us know and we’d be very happy to help,\r\n\r\nThank you again for your interest in our tree of life project.\r\n\r\nThe OneZoom team (charity number 1163559)'.format(username=username, ott=ott, species=OZfunc.nice_species_name(species_name, common_name), for_name = for_name)})
     elif email_type=='to_verify':
         return({'type':'Paid, require verifying',
                 'email':email,
                 'mail_subject':'Your OneZoom sponsorship of '+ species_name,
-                'mail_body': 'Dear {username},\r\n\r\nThank you so much for your donation to OneZoom. We have received your payment for {the_species}, and are about to verify your sponsorship text. This should only take a few days. We will email you when your sponsorship goes live. \r\n\r\nThe OneZoom Team (UK charity number 1163559)'.format(username=username, ott=ott, the_species=nice_species_name(species_name, common_name, the=True))})              
+                'mail_body': 'Dear {username},\r\n\r\nThank you so much for your donation to OneZoom. We have received your payment for {the_species}, and are about to verify your sponsorship text. This should only take a few days. We will email you when your sponsorship goes live. \r\n\r\nThe OneZoom Team (UK charity number 1163559)'.format(username=username, ott=ott, the_species=OZfunc.nice_species_name(species_name, common_name, the=True))})              
     else:
         return({'type':'Verified on',
                 'email':email,
                 'mail_subject':'Your OneZoom sponsorship of '+ species_name +' has gone live',
-                'mail_body':'Dear {username},\r\n\r\nThank you so much for your donation to OneZoom.  This will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. \r\n\r\nWe are very pleased to be able to tell you that your sponsored leaf, {the_species}, has now appeared on the tree decorated with your sponsorship details. \r\n\r\nIt’s now there for all to see at \r\n\r\nhttp://www.onezoom.org/life/@={ott}\r\n\r\nor, if you’d like to fly through the tree to your sponsored leaf try \r\n\r\nhttp://www.onezoom.org/life/@={ott}?init=zoom\r\n\r\nThere’s also the more obvious link\r\n\r\nonezoom.org/life/@{species_name_with_underscores}\r\n\r\nbut this may be less stable (for example sometimes two very different creatures on the tree share the same scientific name, so you may end up going to the wrong place).\r\n\r\nPlease consider sharing the link with your friends and family!\r\n\r\nWe welcome your feedback and are always keen to find ways to make OneZoom better.\r\n\r\nThank you again for your donation, we hope you enjoy exploring our tree of life. \r\n\r\nThe OneZoom Team (UK charity number 1163559)'.format(username=username, ott=ott, species_name_with_underscores =species_name.replace(" ","_"), the_species=nice_species_name(species_name, common_name, the=True), for_name = for_name)})
+                'mail_body':'Dear {username},\r\n\r\nThank you so much for your donation to OneZoom.  This will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. \r\n\r\nWe are very pleased to be able to tell you that your sponsored leaf, {the_species}, has now appeared on the tree decorated with your sponsorship details. \r\n\r\nIt’s now there for all to see at \r\n\r\nhttp://www.onezoom.org/life/@={ott}\r\n\r\nor, if you’d like to fly through the tree to your sponsored leaf try \r\n\r\nhttp://www.onezoom.org/life/@={ott}?init=zoom\r\n\r\nThere’s also the more obvious link\r\n\r\nonezoom.org/life/@{species_name_with_underscores}\r\n\r\nbut this may be less stable (for example sometimes two very different creatures on the tree share the same scientific name, so you may end up going to the wrong place).\r\n\r\nPlease consider sharing the link with your friends and family!\r\n\r\nWe welcome your feedback and are always keen to find ways to make OneZoom better.\r\n\r\nThank you again for your donation, we hope you enjoy exploring our tree of life. \r\n\r\nThe OneZoom Team (UK charity number 1163559)'.format(username=username, ott=ott, species_name_with_underscores =species_name.replace(" ","_"), the_species=OZfunc.nice_species_name(species_name, common_name, the=True), for_name = for_name)})

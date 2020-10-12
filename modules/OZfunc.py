@@ -319,12 +319,14 @@ def extract_summary(html):
         return None
 
 def nodes_info_from_array(
-        leafIDs_array, nodeIDs_array,
-        include_names_in="",
-        include_pics=True,
-        include_iucn=True,
-        image_type='best_any',
-        include_sponsorship=True):
+    leafIDs_array, nodeIDs_array,
+    include_names_in="",
+    include_pics=True,
+    include_iucn=True,
+    image_type='best_any',
+    include_sponsorship=True,
+    include_pic_details=False,
+):
     leafIDs_string = ",".join([str(int(l)) for l in leafIDs_array])
     nodeIDs_string = ",".join([str(int(n)) for n in nodeIDs_array])
     return nodes_info_from_string(
@@ -332,18 +334,21 @@ def nodes_info_from_array(
         include_names_in=include_names_in,
         include_pics=include_pics,
         include_iucn=include_iucn,
-        include_sponsorship=include_sponsorship,
         image_type=image_type,
+        include_sponsorship=include_sponsorship,
+        include_pic_details=include_pic_details,
         check_malicious = False)  # No need to check if badly formed: we have made them
 
 def nodes_info_from_string(
-        leafIDs_string, nodeIDs_string,
-        include_names_in="",
-        include_pics=True,
-        include_iucn=True,
-        include_sponsorship=True,
-        image_type='best_any',
-        check_malicious=True):
+    leafIDs_string, nodeIDs_string,
+    include_names_in="",
+    include_pics=True,
+    include_iucn=True,
+    image_type='best_any',
+    include_sponsorship=True,
+    include_pic_details=False,
+    check_malicious=True,
+):
     """
     This is the most frequently used function, called primarily by API/node_details.json
     It needs to be very fast, so does a lot of plain SQL command construction.
@@ -376,6 +381,7 @@ def nodes_info_from_string(
     
     #Get nodes first and collect OTTs for looking up vernaculars. These contain leaf otts in the representative pictures
     base_ncols = ["id","ott","popularity","age","name","iucnNE","iucnDD","iucnLC","iucnNT","iucnVU","iucnEN","iucnCR","iucnEW","iucnEX"]
+    # TODO - there is a bug here where we don't actually substitute {pic} into the name
     pic_ncols = ["{pic}1","{pic}2","{pic}3","{pic}4","{pic}5","{pic}6","{pic}7","{pic}8"]
     pic_col_name = {"best_any": "rep", "best_verified":"rtr", "best_pd":"rpd"}[image_type]
     all_ncols = base_ncols + pic_ncols
@@ -443,7 +449,10 @@ def nodes_info_from_string(
     
     #find pictures, iucn, and reservation details (only from leaves)
     images_by_ott_query_res = iucn_query_res = reservations_res = None #don't bother getting images for nodes without otts
-    all_pcols = ["ott", "src_id", "src", "rating"]
+    if include_pic_details:
+        all_pcols = ["ott", "src_id", "src", "rating", "rights", "licence"]
+    else:
+        all_pcols = ["ott", "src_id", "src", "rating"]
     all_rcols = ["OTT_ID", "verified_kind", "verified_name", "verified_more_info", "verified_url"]
     alt_rtxt = {"verified_name":"'leaf_sponsored'",
                  "verified_more_info":"''",
@@ -513,12 +522,11 @@ def nodes_info_from_string(
             reservations=[])
 
 
-def ids_from_otts_string(ottCommaSepString):
-    return ids_from_otts_array(
-        [int(id) for id in ottCommaSepString.split(",") if id.isdigit()]
-    )
+def query_val_to_ints(CommaSepString):
+    return [int(id) for id in CommaSepString.split(",") if id.isdigit()]
 
-def ids_from_otts_array(ottIntegers):
+def otts2ids(ottIntegers):
+    "Pass in an array of ott ints"
     try:
         db = current.db
         query = db.ordered_nodes.ott.belongs(ottIntegers)
