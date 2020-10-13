@@ -37,12 +37,12 @@ in which all living cephalochordates also fall, is not recognised in OneZoom or 
 <p>Public APIs are available which, for a given set of Open Tree Taxonomy (OTT) identifiers, return:</p>
 <ul>
 <li>the best matching vernacular (common) names in a given language</li>
-<li>a set of identifiers in different online databases, such as Wikidata, the Encyclopedia of Life, ot the IUCN Red List.</li>
+<li>a set of identifiers in different online databases, such as Wikidata, the Encyclopedia of Life, or the IUCN Red List</li>
 <li>a set of up to 8 <q>representative images</q> for higher level taxa</li>
 </ul>
 API services are accessed via URLs that return JSON data for any set of passed-in
 <a href="https://tree.opentreeoflife.org/about/taxonomy-version/">Open Tree Taxonomy identifiers</a> 
-you cannot pass in scientific names).
+(you cannot pass in scientific names).
 Services generally require you to specify an API key (e.g. by appending <code>key=MY_API_KEY</code> to the URL) this allows us to keep track of the volume of requests we get from different private users: no other information is stored. 
 {{if public_key is not None:}}
 If you have not been given an API key, you can use the <q>public</q> key (<code>{{=public_key}}</code>), which is restricted to {{=public_max_taxa_per_query}} taxa per request.
@@ -112,15 +112,6 @@ some popular species such as humans have both an official <a href="https://www.w
   <dl class="parameters">
    <dt><code>key</code><dt><dd>Your OneZoom API key {{if public_key is not None:}}(use the public key <q><code>{{=public_key}}</code></q> if you have not been given one){{pass}}</dd>
    <dt><code>otts</code></dt><dd>A comma-separated list of <a href="https://tree.opentreeoflife.org/about/taxonomy-version/">Open Tree Taxonomy identifiers</a> (one or more positive integers)</dd>
-  </dl>
- </dd>
- <dt>Optional</dt>
- <dd>
-  <dl class="parameters">
-   <dt><code>lang</code></dt><dd>A language code to specify which language to use. This can be a <a href="">2 or 3 letter code</a> such as <code>en</code> or <code>fr</code>, or a more specific regional code such as <code>en-gb</code> (British English) or <code>zh-hant</code> (Chinese, in traditional script). If not given, assume <code>en</code></dd>
-   <dt><code>all</code><dt><dd>If <code>1</code> or any truthy value, instead of returning a single best name for each OTT, return an array of names for each OTT, in decreasing order of preference.</dd>
-   <dt><code>include_unpreferred</code><dt><dd>If <code>1</code> or any truthy value, and a single name is requested for each OTT (i.e. <code>all</code> is not set), then if there is no name marked as <q>preferred</q> in this language, consider returning a name marked as <q>unpreferred</q> (i.e. less likely to be correct).</dd>
-   <dt><code>nulls</code><dt><dd>If <code>1</code> or any truthy value, and there is no vernacular in the specified language, return a <code>null</code> value for this OTT in the returned JSON object, otherwise the OTT ID will be absent from the returned object</dd>
   </dl>
  </dd>
 </dl>
