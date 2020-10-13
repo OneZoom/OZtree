@@ -15,6 +15,10 @@ This contains the API functions - node_details, image_details, search_names, and
 We should probably compile all docstrings in these files into markdown documentation
 """
 
+identifier_cols = ['ott', 'ncbi','ifung', 'worms', 'irmng', 'gbif', 'ipni', 'eol', 'wikidata']
+identifier_leaf_cols = identifier_cols + ['iucn']
+
+
 def index():
     """
     Describe some of the more public APIs (OTT mappings, node_images, otts2vns)
@@ -23,12 +27,18 @@ def index():
         db.API_users.APIkey, db.API_users.max_taxa_per_query, db.API_users.max_returns_per_taxon).first()
     if public_constraints:
         return dict(
-            public_key = public_constraints.APIkey,
+            identifier_cols=identifier_cols,
+            identifier_leaf_cols=identifier_leaf_cols,
+            public_key=public_constraints.APIkey,
             public_max_taxa_per_query = public_constraints.max_taxa_per_query,
-            public_max_returns_per_taxon =  public_constraints.max_returns_per_taxon
-            )
+            public_max_returns_per_taxon =  public_constraints.max_returns_per_taxon,
+        )
     else:
-        return dict(public_key = None)
+        return dict(
+            identifier_cols=identifier_cols,
+            identifier_leaf_cols=identifier_leaf_cols,
+            public_key=None,
+        )
 
 
 def error():
@@ -179,29 +189,6 @@ def search_init():
         return {"ids": sorted(ids)}
     return {"empty": request.vars.ott}
 
-def search_for_sciname():
-    """
-    Search for a starting match on the latin name as stored in the ordered_leaves or ordered_nodes tables
-    String passed in is ?query=xxxx
-    """
-    session.forget(response)
-    response.headers["Access-Control-Allow-Origin"] = '*'
-    try:
-        searchFor = " ".join(make_unicode(request.vars.query or "").split())
-        result = []
-        if searchFor and len(searchFor)>1:
-            if not request.vars.nodes_only:
-                result += [[r.id, r.ott, r.name] for r in \
-                    db(db.ordered_leaves.name.startswith(searchFor)).select(db.ordered_leaves.id, db.ordered_leaves.ott, db.ordered_leaves.name)]
-            if not request.vars.leaves_only:
-                result += [[r.id, r.ott, r.name] for r in \
-                    db(db.ordered_nodes.name.startswith(searchFor)).select(db.ordered_nodes.id, db.ordered_nodes.ott, db.ordered_nodes.name)]
-        return dict(result=result)
-    except:
-        if is_testing:
-            raise
-        else:
-            return {}
         
 # request.vars contains:
 #  -- String: query
@@ -713,6 +700,38 @@ def children_of_EOL():
 # Publicly documented APIs #
 ############################
 
+
+def search_for_sciname():
+    """
+    Search for a starting match on the latin name as stored in the ordered_leaves or ordered_nodes tables
+    String passed in is ?query=xxxx
+    """
+    session.forget(response)
+    
+    if "." not in request.env.path_info.split('/')[2]:
+        request.extension = "json"
+    response.view = request.controller + "/" + request.function + "." + request.extension    
+    # Not limited as only one name is searched for
+    
+    response.headers["Access-Control-Allow-Origin"] = '*'
+    try:
+        searchFor = " ".join(make_unicode(request.vars.query or "").split())
+        result = []
+        if searchFor and len(searchFor)>1:
+            if not request.vars.nodes_only:
+                result += [[r.id, r.ott, r.name] for r in \
+                    db(db.ordered_leaves.name.startswith(searchFor)).select(db.ordered_leaves.id, db.ordered_leaves.ott, db.ordered_leaves.name)]
+            if not request.vars.leaves_only:
+                result += [[r.id, r.ott, r.name] for r in \
+                    db(db.ordered_nodes.name.startswith(searchFor)).select(db.ordered_nodes.id, db.ordered_nodes.ott, db.ordered_nodes.name)]
+        return dict(result=result)
+    except:
+        if is_testing:
+            raise
+        else:
+            return {}
+
+
 def otts2vns():
     '''
     Also used in the OneZoom viewer e.g. to fill out the popular species lists,
@@ -819,22 +838,24 @@ def node_images():
             p[pic_cols['rating']],
         ]         
     
+    returned_otts = {}
     for l in results['leaves']:
         ott = l[leaf_cols['ott']]
         if ott in pics:
             pics[ott][headers['name']] = l[leaf_cols['name']]
+        if ott in otts:
+            returned_otts[ott] = [ott]
 
-    nodes = {}
     for n in results['nodes']:
-        nodes[n[node_cols['ott']]] = [n[c] for c in node_image_cols]
+        returned_otts[n[node_cols['ott']]] = [n[c] for c in node_image_cols]
 
-    return dict(nodes=nodes, headers=headers, images=pics)
+    return dict(otts=returned_otts, headers=headers, images=pics)
     
 
 def otts2identifiers():
     """
     Return the identifiers in other databases for the passed-in set of OTT IDs.
-    Called as http://mysite/otts2ids.json?otts=770315,844192
+    Called as http://mysite/otts2identifiers.json?otts=770315,844192
     """
     session.forget(response)
 
@@ -858,16 +879,14 @@ def otts2identifiers():
         )))
     
     response.headers["Access-Control-Allow-Origin"] = '*'
-    cols = ['ott', 'ncbi','ifung', 'worms', 'irmng', 'gbif', 'ipni', 'eol', 'wikidata']
-    leaf_cols = cols + ['iucn']
-    colname_map = {name: i for i, name in enumerate(leaf_cols)}
-    ret = []
-    rows = db(db.ordered_leaves.ott.belongs(otts)).select(*leaf_cols)
+    colname_map = {name: i for i, name in enumerate(identifier_leaf_cols)}
+    ret = {}
+    rows = db(db.ordered_leaves.ott.belongs(otts)).select(*identifier_leaf_cols)
     for row in rows:
-        ret.append([row[c] for c in leaf_cols])
-    rows = db(db.ordered_nodes.ott.belongs(otts)).select(*cols)
+        ret[row.ott] = [row[c] for c in identifier_leaf_cols]
+    rows = db(db.ordered_nodes.ott.belongs(otts)).select(*identifier_cols)
     for row in rows:
-        ret.append([row[c] for c in cols])
+        ret[row.ott] = [row[c] for c in identifier_cols]
     return dict(
         headers=colname_map,
         ids=ret)

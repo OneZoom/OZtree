@@ -42,9 +42,9 @@ levels of the taxonomic hierarchy. However, comparing species popularity values 
 (but not higher-level taxa) are ranked from 1 to <i>n<sub>taxa</sub></i>, where <i>n<sub>taxa</sub></i> is the maximum number of species on the 
 OneZoom tree (the current value of <i>n<sub>taxa</sub></i> is also is returned by each API call).</p>
 
-<p>Note that we do not normally distinguish subspecies, such as <i class="taxonomy">Canis lupus familiaris</i> (the domestic dog) on the OneZoom tree: 
+<p>Note that we do not normally include subspecies, such as <i class="taxonomy">Canis lupus familiaris</i> (the domestic dog) on the OneZoom tree: 
 only the full species, <i class="taxonomy">Canis lupus</i> (the grey wolf, including the domestic dog, dingo, Indian wolf, etc.), will be
-displayed on the tree or returned using this API. Even although there <em>is</em> an Open Tree identifier for <i class="taxonomy">Canis lupus familiaris</i>,  
+displayed on the tree or returned using this API. Although there <em>is</em> an Open Tree identifier for <i class="taxonomy">Canis lupus familiaris</i>,  
 it will not be recognised if passed to this API. Additionally, OneZoom does not store higher level names for monospecific taxa, i.e.
 for a species like the tuatara, <i class="taxonomy">Sphenodon punctatus</i>, the OTT for the species (35890) will be recognised, but searching for the genus 
 <i class="taxonomy">Sphenodon</i> (OTT 35886) will not return any results, nor will the higher level monospecific order Rhynchocephalia (OTT 35876).

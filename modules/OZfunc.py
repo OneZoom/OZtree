@@ -161,7 +161,7 @@ def get_common_names(identifiers, return_nulls=False, OTT=True, lang=None,
     Given a set of identifiers (by default, OTTs, but otherwise names), get one best vernacular for each id. 
     'best' is defined as the vernacular that has preferred == True, and which has the best language match.
     Language matches rely on languages specified as http://www.w3.org/International/articles/language-tags/
-    A language tag can consist of subtags, e.g. en-gb, fr-ca (these have been made lowecase)
+    A language tag can consist of subtags, e.g. en-gb, fr-ca (these have been made lowercase)
     We call the first subtag the 'primary language', and only match vernaculars where the primary language matches
     However, if there are multiple matches on primary language, we prefer (in order)
     1) Most preferred: a match on full name (e.g. browser language = en-gb, vernacular tagged as en-gb)
@@ -209,7 +209,7 @@ def get_common_names(identifiers, return_nulls=False, OTT=True, lang=None,
                 if vernaculars[r[col]][1] < rscore:
                     raise
             except:
-                vernaculars[r[col]] = [r.vernacular,rscore]
+                vernaculars[r[col]] = [r.vernacular, rscore]
         return({v: (vernaculars[v][0] if vernaculars[v] else None) for v in vernaculars})
 
 def get_common_name(ott, name=None, lang=None, include_unpreferred=False):
