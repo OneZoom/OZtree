@@ -6,11 +6,11 @@ import urllib.parse
 from json import dumps
 from collections import OrderedDict
 
-from OZfunctions import (
+from OZfunc import (
     clear_reservation,
     nice_species_name, get_common_name, get_common_names, sponsorable_children_query,
     language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, add_the,
-    ids_from_otts_array, nodes_info_from_array, nodes_info_from_string, extract_summary)
+    otts2ids, nodes_info_from_array, nodes_info_from_string, extract_summary)
 
 
 """ Some settings for sponsorship"""
@@ -1719,7 +1719,7 @@ def life_treasure():
     The treasure hunt version, which is sandboxed (and has no underlying text tree with links hidden by JS)
     """
     otts = [int(ott) for ott in request.vars.getlist('treasure_taxa') if ott.isdigit()]
-    ids = ids_from_otts_array(otts)
+    ids = otts2ids(otts)
     id_by_ott = OrderedDict()
     for ott in otts:
         if ott in ids['leaves']:

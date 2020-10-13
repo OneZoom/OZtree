@@ -1,0 +1,197 @@
+{{response.title='OneZoom: tree APIs'}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{
+def link(a, **kwargs):
+    # Just saves us having to re-write the actual URL twice
+    return A(a, _href=a, **kwargs)
+pass
+}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+   <h1>OneZoom tree APIs</h1>
+   <em>These APIs allow you to access data used to populate the OneZoom tree.</em>
+</div>
+{{end block}}
+
+
+{{extend 'uikit_layout.html'}}
+<div class="uk-grid-small uk-text-small" uk-grid>
+    <div class = "uk-padding">
+        
+        <h2>Overview</h2>
+<p>Several mappings used by the OneZoom Tree of Life Explorer may be useful for other purposes, and are made available via public APIs. These APIs all require an OTT ID to be passed in (e.g. the OTT ID for <i>Homo sapiens</i> is 770315, for mammals it is 244265). You can obtain OTT IDs for scientific names through the Open Tree of Life <a href="https://github.com/OpenTreeOfLife/germinator/wiki/TNRS-API-v3">TNRS service</a>.</p>
+
+<p>Note that APIs only return results that are on the OneZoom Tree of Life. For example, we do not normally include subspecies, such as <i class="taxonomy">Canis lupus familiaris</i> (the domestic dog) on the OneZoom tree: 
+only the full species, <i class="taxonomy">Canis lupus</i> (the grey wolf, including the domestic dog, dingo, Indian wolf, etc.), are
+displayed on the tree and returned using from OneZoom APIs. Although there <em>is</em> an Open Tree identifier for <i class="taxonomy">Canis lupus familiaris</i>,  
+it will not be recognised if passed to this API. Additionally, OneZoom does not store higher level names for monospecific taxa, i.e.
+for a species like the tuatara, <i class="taxonomy">Sphenodon punctatus</i>, the OTT for the species (35890) will be recognised, but searching for the genus 
+<i class="taxonomy">Sphenodon</i> (OTT 35886) will not return any results, nor will the higher level monospecific order Rhynchocephalia (OTT 35876).
+In a similar vein, where multiple taxonomic names describe the same set of species on the OneZoom tree, only the <em>highest</em> distinguishing level is used. 
+For example, lancelets are classified in OneZoom as Cephalochordata (OTT 176555): the lower level family Branchiostomidae (OTT 176551), 
+in which all living cephalochordates also fall, is not recognised in OneZoom or in this API.</p>
+
+
+<h2>Services available</h2>
+<p>Public APIs are available which, for a given set of Open Tree Taxonomy (OTT) identifiers, return:</p>
+<ul>
+<li>the best matching vernacular (common) names in a given language</li>
+<li>a set of identifiers in different online databases, such as Wikidata, the Encyclopedia of Life, ot the IUCN Red List.</li>
+<li>a set of up to 8 <q>representative images</q> for higher level taxa</li>
+</ul>
+API services are accessed via URLs that return JSON data for any set of passed-in
+<a href="https://tree.opentreeoflife.org/about/taxonomy-version/">Open Tree Taxonomy identifiers</a> 
+you cannot pass in scientific names).
+Services generally require you to specify an API key (e.g. by appending <code>key=MY_API_KEY</code> to the URL) this allows us to keep track of the volume of requests we get from different private users: no other information is stored. 
+{{if public_key is not None:}}
+If you have not been given an API key, you can use the <q>public</q> key (<code>{{=public_key}}</code>), which is restricted to {{=public_max_taxa_per_query}} taxa per request.
+{{pass}}
+<p>Please remember to cite OneZoom if you use this API in your own project or publication.</p>
+ </div>
+</div>
+<div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
+ <div class = "uk-padding">
+        
+<h3>URL: <code>API/otts2vns</code></h3>
+<p>An API to get a <q>best hit</q> vernacular (common) name for an OTT , e.g. {{=link(URL('otts2vns', host=True, vars={"key":0, "otts":"770315,244265,542509"}, url_encode=False))}}.</p>    
+<h4>Parameters</h4>
+<dl>
+ <dt>Required</dt>
+ <dd>
+  <dl class="parameters">
+   <dt><code>key</code><dt><dd>Your OneZoom API key {{if public_key is not None:}}(use the public key <q><code>{{=public_key}}</code></q> if you have not been given one){{pass}}</dd>
+   <dt><code>otts</code></dt><dd>A comma-separated list of <a href="https://tree.opentreeoflife.org/about/taxonomy-version/">Open Tree Taxonomy identifiers</a> (one or more positive integers)</dd>
+  </dl>
+ </dd>
+ <dt>Optional</dt>
+ <dd>
+  <dl class="parameters">
+   <dt><code>lang</code></dt><dd>A language code to specify which language to use. This can be a <a href="">2 or 3 letter code</a> such as <code>en</code> or <code>fr</code>, or a more specific regional code such as <code>en-gb</code> (British English) or <code>zh-hant</code> (Chinese, in traditional script). If not given, assume <code>en</code></dd>
+   <dt><code>all</code><dt><dd>If <code>1</code> or any truthy value, instead of returning a single best name for each OTT, return an array of names for each OTT, in decreasing order of preference.</dd>
+   <dt><code>include_unpreferred</code><dt><dd>If <code>1</code> or any truthy value, and a single name is requested for each OTT (i.e. <code>all</code> is not set), then if there is no name marked as <q>preferred</q> in this language, consider returning a name marked as <q>unpreferred</q> (i.e. less likely to be correct).</dd>
+   <dt><code>nulls</code><dt><dd>If <code>1</code> or any truthy value, and there is no vernacular in the specified language, return a <code>null</code> value for this OTT in the returned JSON object, otherwise the OTT ID will be absent from the returned object</dd>
+  </dl>
+ </dd>
+</dl>
+
+<h4>Return values</h4>
+In the absence of error, the returned JSON object contains the following properties:
+<dl class="parameters">
+<dt><code>lang</code><dt><dd>The <code>lang</code> string originally used in the request.</dd>
+<dt>OTT ids ...</dt><dd>Each OTT ID passed in will create a JSON property whose name is the OTT ID and value is a string (or array of strings, if <code>all</code> is specified). Unicode characters are represented as e.g. "\u5c0f"</dd>
+</dl>
+
+
+<h4>Test this API</h4>
+<form action="{{=URL('otts2vns')}}" method="get" >
+<ul class="parameters">
+<li><label>key: <input type="text" name="key" value="0" size="4"/></label></li>
+<li><label>otts: <input type="text" name="otts" value="770315,244265,542509" /></label> (244265 is mammals, 542509 is <i class="taxonomy">Mus musculus</i>, the house mouse)</li>
+<li><label>lang: <input type="text" name="lang" value="en" size="8"/></label></li>
+<li><label>all: <input type="checkbox" name="all"></label></li>
+<li><label>include_unpreferred: <input type="checkbox" name="include_unpreferred"></label></li>
+<li><label>nulls: <input type="checkbox" name="nulls"></label></li>
+</ul>
+<input type="submit" value="Try it!">
+</dl>
+</form>
+
+ </div>
+ <div class = "uk-padding">
+        
+<h3>URL: <code>API/otts2identifiers</code></h3>
+<p>An API to get identifiers in other databases such as Wikidata and the Encyclopedia of Life, e.g. {{=link(URL('otts2identifiers', host=True, vars={"key":0, "otts":"770315,244265,542509"}, url_encode=False))}}.</p>
+<p>Currently identifiers are returned for all taxa from the following databases: {{=identifier_cols}}, with leaf node taxa having additional identifiers for {{=list(set(identifier_leaf_cols)-set(identifier_cols))}}. Note that
+some popular species such as humans have both an official <a href="https://www.wikidata.org/wiki/Q15978631"><q>taxonomic</q> Wikidata entry</a> and a <a href="https://www.wikidata.org/wiki/Q5"><q>common name</q> entry</a> (which tends to contain the links to different language wikipedias). In this case we tend to return the common name entry (unless it has no english language wikipedia link).</p>
+
+<h4>Parameters</h4>
+<dl>
+ <dt>Required</dt>
+ <dd>
+  <dl class="parameters">
+   <dt><code>key</code><dt><dd>Your OneZoom API key {{if public_key is not None:}}(use the public key <q><code>{{=public_key}}</code></q> if you have not been given one){{pass}}</dd>
+   <dt><code>otts</code></dt><dd>A comma-separated list of <a href="https://tree.opentreeoflife.org/about/taxonomy-version/">Open Tree Taxonomy identifiers</a> (one or more positive integers)</dd>
+  </dl>
+ </dd>
+ <dt>Optional</dt>
+ <dd>
+  <dl class="parameters">
+   <dt><code>lang</code></dt><dd>A language code to specify which language to use. This can be a <a href="">2 or 3 letter code</a> such as <code>en</code> or <code>fr</code>, or a more specific regional code such as <code>en-gb</code> (British English) or <code>zh-hant</code> (Chinese, in traditional script). If not given, assume <code>en</code></dd>
+   <dt><code>all</code><dt><dd>If <code>1</code> or any truthy value, instead of returning a single best name for each OTT, return an array of names for each OTT, in decreasing order of preference.</dd>
+   <dt><code>include_unpreferred</code><dt><dd>If <code>1</code> or any truthy value, and a single name is requested for each OTT (i.e. <code>all</code> is not set), then if there is no name marked as <q>preferred</q> in this language, consider returning a name marked as <q>unpreferred</q> (i.e. less likely to be correct).</dd>
+   <dt><code>nulls</code><dt><dd>If <code>1</code> or any truthy value, and there is no vernacular in the specified language, return a <code>null</code> value for this OTT in the returned JSON object, otherwise the OTT ID will be absent from the returned object</dd>
+  </dl>
+ </dd>
+</dl>
+
+<h4>Return values</h4>
+In the absence of error, the returned JSON object contains the following properties:
+<dl class="parameters">
+<dt><code>headers</code><dt><dd>So as to avoid repeating the same properties for each OTT returned, the <code>headers</code> object provides an integer index into each item returned in the <code>ids</code> object. For example, given a returned object <code>ret</code> the Wikidata Q-ID of humans (OTT 770315) can be accessed using <code>ret.ids["770315"][ret.headers.wikidata]</code></dd>
+<dt><code>ids</code></dt><dd>This property contains JSON object listing identifiers. Each name in the object is an OTT ID, with a corresponding value being an array of data. The order of the values corresponds to the headers provided above.</dd>
+</dl>
+
+
+<h4>Test this API</h4>
+<form action="{{=URL('otts2identifiers')}}" method="get" >
+<ul class="parameters">
+<li><label>key: <input type="text" name="key" value="0" size="4"/></label></li>
+<li><label>otts: <input type="text" name="otts" value="770315,244265,542509" /></label> (244265 is mammals, 542509 is <i class="taxonomy">Mus musculus</i>, the house mouse)</li>
+</ul>
+<input type="submit" value="Try it!">
+</dl>
+</form>
+
+ </div>
+ <div class = "uk-padding">
+        
+<h3>URL: <code>API/node_images</code></h3>
+<p>An API to get reusable, phylogenetically diverse and representative images for higher taxa. Images are either Creative Commons Attribution only,  Creative Commons Share-Alike, or public domain. Each taxon can return URLs to up to 8 square thumbnail images, along with their copyright and licensing information, and a quality score, e.g. {{=link(URL('node_images', host=True, vars={"key":0, "otts":"244265,361838"}, url_encode=False))}}</p>
+
+<h4>Parameters</h4>
+<dl>
+ <dt>Required</dt>
+ <dd>
+  <dl class="parameters">
+   <dt><code>key</code><dt><dd>Your OneZoom API key {{if public_key is not None:}}(use the public key <q><code>{{=public_key}}</code></q> if you have not been given one){{pass}}</dd>
+   <dt><code>otts</code></dt><dd>A comma-separated list of <a href="https://tree.opentreeoflife.org/about/taxonomy-version/">Open Tree Taxonomy identifiers</a> (one or more positive integers)</dd>
+  </dl>
+ </dd>
+ <dt>Optional</dt>
+ <dd>
+  <dl class="parameters">
+   <dt><code>type</code></dt><dd>Either <code>any</code>, <code>verified</code> or <code>pd</code>, specifying whether to return any representative images, only images that have been verified as correctly identified, or only public domain images. If not given, assume <code>any</code>.</dd>
+  </dl>
+ </dd>
+</dl>
+
+
+
+<h4>Return values</h4>
+In the absence of error, the returned JSON object contains the following properties:
+<dl class="parameters">
+<dt><code>node_otts</code><dt><dd>A map of input OTT ids to an array of up to 8 OTTs of species that have "representative" images available.</dd>
+<dt><code>headers</code><dt><dd>So as to avoid repeating the same properties for each image returned, the <code>headers</code> object provides an integer index into each item returned in the <code>images</code> object. For example, given a returned object <code>r</code> the URLs of the first 3 images used to represent mammals (OTT 244265) can be accessed using <code>r.images[r.otts["244265"][0]][r.headers.url]</code>, <code>r.images[r.otts["244265"][1]][r.headers.url]</code>, <code>r.images[r.otts["244265"][2]][r.headers.url]</code>. The headers for each image include <code>name</code> (scientific name), <code>url</code>, <code>rights</code> (the copyright holder), <code>licence</code> (e.g. <q>CC-BY 2.0 (http://creativecommons.org/licenses/by/2.0/)</q>) and <code>rating</code> (an image rating, from 0..50000).</dd>
+<dt><code>images</code></dt><dd>The list of images, keyed by the OTT ID of the pictured species</dd>
+</dl>
+
+
+<h4>Test this API</h4>
+<form action="{{=URL('node_images')}}" method="get" >
+<ul class="parameters">
+<li><label>key: <input type="text" name="key" value="0" size="4"/></label></li>
+<li><label>otts: <input type="text" name="otts" value="244265,361838" /></label> (244265 is mammals, 361838 is green plants</li>
+<li><label>type: <select name="type">
+  <option value="any">any</option>
+  <option value="verified">verified</option>
+  <option value="pd">pd</option>
+</select></label></li>
+</ul>
+<input type="submit" value="Try it!">
+</dl>
+</form>
+
+ </div>
+</div>
+
