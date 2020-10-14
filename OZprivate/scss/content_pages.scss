@@ -385,3 +385,8 @@ body.embedded {
 .parameters dd {
     margin-left: 1em;
 }
+
+ol.inline > li
+{
+  display: inline-block;
+}

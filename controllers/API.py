@@ -838,18 +838,19 @@ def node_images():
             p[pic_cols['rating']],
         ]         
     
-    returned_otts = {}
+    original_taxa = {}
     for l in results['leaves']:
         ott = l[leaf_cols['ott']]
         if ott in pics:
             pics[ott][headers['name']] = l[leaf_cols['name']]
         if ott in otts:
-            returned_otts[ott] = [ott]
+            original_taxa[ott] = {'name': l[leaf_cols['name']], 'otts': [ott]}
 
     for n in results['nodes']:
-        returned_otts[n[node_cols['ott']]] = [n[c] for c in node_image_cols]
+        original_taxa[n[node_cols['ott']]] = {
+            'name': n[node_cols['name']], 'otts': [n[c] for c in node_image_cols]}
 
-    return dict(otts=returned_otts, headers=headers, images=pics)
+    return dict(taxa=original_taxa, headers=headers, images=pics, type=type)
     
 
 def otts2identifiers():
@@ -937,7 +938,7 @@ def get_limits(API_key):
                 code=400,
                 text=f"Sorry, the API key {result.APIkey} ({result.API}) is no longer allowed"
             )))
-    else: 
+    else:
         redirect(URL('error', vars=dict(
             code=400,
             text=f"Sorry, the API key {API_key} has not been recognised"

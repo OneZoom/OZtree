@@ -39,6 +39,7 @@ in which all living cephalochordates also fall, is not recognised in OneZoom or 
 <li>the best matching vernacular (common) names in a given language</li>
 <li>a set of identifiers in different online databases, such as Wikidata, the Encyclopedia of Life, or the IUCN Red List</li>
 <li>a set of up to 8 <q>representative images</q> for higher level taxa</li>
+<li>a <q>phylogenetically informed popularity index</q> for all taxa, which is <a href="{{=URL(c='popularity')}}">documented on a separate page</a></li>
 </ul>
 API services are accessed via URLs that return JSON data for any set of passed-in
 <a href="https://tree.opentreeoflife.org/about/taxonomy-version/">Open Tree Taxonomy identifiers</a> 
@@ -119,7 +120,8 @@ some popular species such as humans have both an official <a href="https://www.w
 <h4>Return values</h4>
 In the absence of error, the returned JSON object contains the following properties:
 <dl class="parameters">
-<dt><code>headers</code><dt><dd>So as to avoid repeating the same properties for each OTT returned, the <code>headers</code> object provides an integer index into each item returned in the <code>ids</code> object. For example, given a returned object <code>ret</code> the Wikidata Q-ID of humans (OTT 770315) can be accessed using <code>ret.ids["770315"][ret.headers.wikidata]</code></dd>
+<dt><code>headers</code><dt><dd>So as to avoid repeating the same properties for each OTT returned, the <code>headers</code> object provides an integer index into each item returned in the <code>ids</code> object. For example, given a returned object <code>ret</code> the Wikidata Q-ID of humans (OTT 770315) can be accessed using
+<pre style="font-size: x-small">ret.ids["770315"][ret.headers.wikidata]</pre></dd>
 <dt><code>ids</code></dt><dd>This property contains JSON object listing identifiers. Each name in the object is an OTT ID, with a corresponding value being an array of data. The order of the values corresponds to the headers provided above.</dd>
 </dl>
 
@@ -162,9 +164,12 @@ In the absence of error, the returned JSON object contains the following propert
 <h4>Return values</h4>
 In the absence of error, the returned JSON object contains the following properties:
 <dl class="parameters">
-<dt><code>node_otts</code><dt><dd>A map of input OTT ids to an array of up to 8 OTTs of species that have "representative" images available.</dd>
-<dt><code>headers</code><dt><dd>So as to avoid repeating the same properties for each image returned, the <code>headers</code> object provides an integer index into each item returned in the <code>images</code> object. For example, given a returned object <code>r</code> the URLs of the first 3 images used to represent mammals (OTT 244265) can be accessed using <code>r.images[r.otts["244265"][0]][r.headers.url]</code>, <code>r.images[r.otts["244265"][1]][r.headers.url]</code>, <code>r.images[r.otts["244265"][2]][r.headers.url]</code>. The headers for each image include <code>name</code> (scientific name), <code>url</code>, <code>rights</code> (the copyright holder), <code>licence</code> (e.g. <q>CC-BY 2.0 (http://creativecommons.org/licenses/by/2.0/)</q>) and <code>rating</code> (an image rating, from 0..50000).</dd>
+<dt><code>taxa</code><dt><dd>A map of input OTT ids to an object containing properties <code>name</code> (the scientific name of the input OTT, if it has one) and <code>otts</code> (an array of up to 8 OTTs of species that have "representative" images available).</dd>
+<dt><code>headers</code><dt><dd>So as to avoid repeating the same properties for each image returned, the <code>headers</code> object provides an integer index into each item returned in the <code>images</code> object. For example, given a returned object <code>r</code> the URLs of the first 3 images used to represent mammals (OTT 244265) can be accessed using <pre style="font-size: x-small">r.images[r.taxa["244265"].otts[0]][r.headers.url]
+r.images[r.taxa["244265"].otts[1]][r.headers.url]
+r.images[r.taxa["244265"].otts[2]][r.headers.url]</pre> The headers for each image include <code>name</code> (scientific name), <code>url</code>, <code>rights</code> (the copyright holder), <code>licence</code> (e.g. <q>CC-BY 2.0 (http://creativecommons.org/licenses/by/2.0/)</q>) and <code>rating</code> (an image rating, from 0..50000).</dd>
 <dt><code>images</code></dt><dd>The list of images, keyed by the OTT ID of the pictured species</dd>
+<dt><code>type</code></dt><dd>The type of images (<code>any</code>, <code>verified</code> or <code>pd</code>) requested.</dd>
 </dl>
 
 
@@ -180,6 +185,7 @@ In the absence of error, the returned JSON object contains the following propert
 </select></label></li>
 </ul>
 <input type="submit" value="Try it!">
+<input type='submit' value='Display results as html' onclick='this.form.action="{{=URL('node_images.html')}}";' />
 </dl>
 </form>
 
