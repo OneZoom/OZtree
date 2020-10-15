@@ -77,7 +77,7 @@
 <div style="order: {{=(1 if request.args and request.args[0]=='site' else 3)}};">
 <div>
 <h3 id = "useterms">Use of the OneZoom website</h3>
-<p>By using the website you are assumed to have agreed to these terms and conditions as well as our cookie policy and our data protection and privacy policy. We are sorry that the terms are quite lengthy, however, we have worked hard to make the terms of use both clear and reasonable.</p>
+<p>By using the website you are assumed to have agreed to these terms and conditions as well as our cookie policy and our data protection and privacy policy. We are sorry that the terms are quite lengthy, however, we have worked hard to make the terms of use both clear and reasonable. These terms were last updated on 15th October 2020</p>
 </div>
 
 <div class="uk-grid-small uk-text-small uk-child-width-1-2@m " uk-grid>
