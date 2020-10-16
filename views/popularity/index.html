@@ -22,7 +22,12 @@ pass
         <h4>Overview</h4>
 <p>As part of OneZoom, we have developed methods to assign a phylogenetically informed
 <q>popularity</q> score to every species on the <a href="http://www.onezoom.org">OneZoom tree of life</a>
-(i.e. nearly all described species of life on Earth). This is done by using our mappings from
+(i.e. nearly all described species of life on Earth).  The details of how it all works are now published on BioRxiv <a href="https://www.biorxiv.org/content/10.1101/2020.10.14.323055v1">"Dynamic visualisation of million-tip trees: the OneZoom project" Yan Wong, James Rosindell (2020)bioRxiv 2020.10.14.323055; doi: 10.1101/2020.10.14.323055</a>.</p>
+
+<p><a href="https://www.biorxiv.org/content/10.1101/2020.10.14.323055v1"><img src="/static/images/OZpopularity.jpg"  /></a></p>
+<p>Image from our publication showing the top twenty most popular species</p>
+
+<p>Calculating our popularity index is done by using our mappings from
  <a href="https://tree.opentreeoflife.org/about/taxonomy-version">Open Tree of Life taxonomy IDs</a>
 to <a href="https://www.wikidata.org/wiki/Q43649390">wikidata Qids</a>. From the Qid, we can find the equivalent wiki<em>pedia</em> page for that 
 taxon in any given language. Since the english language wikipedia is the most visited, we default to calculating popularity on the
@@ -155,7 +160,6 @@ In the absence of error, the returned JSON object contains the following propert
 </form>
 
 <p>Please remember to cite the OneZoom popularity index if you use it in your own project or publication. Use of the OneZoom popularity index is subject to our <a href = "{{=URL('default','terms.html/site')}}">terms of use</a>.</p>
-
 
 </div>
 </div>
