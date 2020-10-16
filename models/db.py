@@ -433,7 +433,7 @@ db.define_table('reservations',
     # these are general useful stats for a page
     Field('last_view', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME()), writable=False),
     Field('reserve_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME()), writable=False),
-    Field('user_registration_id', type = 'text', writable=False), #eventually this will correspond to a number in the registration_id field of the auth_user table (which should be initially filled out using OZfunctions/__make_user_code, but for the moment we generate a new UUID for each treeview session
+    Field('user_registration_id', type = 'text', writable=False), #eventually this will correspond to a number in the registration_id field of the auth_user table (which should be initially filled out using OZfunc/__make_user_code, but for the moment we generate a new UUID for each treeview session
     # these handle auto reservation of pages
                              
     Field('user_id', type = 'reference auth_user' , requires=IS_EMPTY_OR(IS_IN_DB(db, 'auth_user.id','%(first_name)s %(last_name)s'))),

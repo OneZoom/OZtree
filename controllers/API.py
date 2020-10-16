@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import sys
 import re
-from OZfunctions import punctuation_to_space, __check_version, is_logographic, child_leaf_query
-from OZfunctions import ids_from_otts_string, nodes_info_from_string
+from numbers import Number
+
+import OZfunc
 """
 This contains the API functions - node_details, image_details, search_names, and search_sponsors. search_node also exists, which is a combination of search_names and search_sponsors.
 # request.vars:
@@ -14,8 +15,46 @@ This contains the API functions - node_details, image_details, search_names, and
 We should probably compile all docstrings in these files into markdown documentation
 """
 
+identifier_cols = ['ott', 'ncbi','ifung', 'worms', 'irmng', 'gbif', 'ipni', 'eol', 'wikidata']
+identifier_leaf_cols = identifier_cols + ['iucn']
+
+
+def index():
+    """
+    Describe some of the more public APIs (OTT mappings, node_images, otts2vns)
+    """
+    public_constraints = db(db.API_users.API_user_name=="public").select(
+        db.API_users.APIkey, db.API_users.max_taxa_per_query, db.API_users.max_returns_per_taxon).first()
+    if public_constraints:
+        return dict(
+            identifier_cols=identifier_cols,
+            identifier_leaf_cols=identifier_leaf_cols,
+            public_key=public_constraints.APIkey,
+            public_max_taxa_per_query = public_constraints.max_taxa_per_query,
+            public_max_returns_per_taxon =  public_constraints.max_returns_per_taxon,
+        )
+    else:
+        return dict(
+            identifier_cols=identifier_cols,
+            identifier_leaf_cols=identifier_leaf_cols,
+            public_key=None,
+        )
+
+
+def error():
+    """
+    Return a JSONified error string
+    """
+    #set the default view to JSON, if there is no file extension (override web2py default of .html)
+    if "." not in request.env.path_info.split('/')[2]:
+        request.extension = "json"
+    response.view = request.controller + "/" + request.function + "." + request.extension
+    response.status = request.vars.code or 400
+    return dict(error=request.vars.text)
+    
+
 def version():
-    v = __check_version()
+    v = OZfunc.__check_version()
     try:
         return dict(version=int(v))
     except ValueError:
@@ -36,7 +75,7 @@ def node_details():
     response.headers["Access-Control-Allow-Origin"] = '*'
     try:
         language = request.vars.lang or request.env.http_accept_language or 'en'
-        return nodes_info_from_string(
+        return OZfunc.nodes_info_from_string(
             request.vars.leaf_ids or "",
             request.vars.node_ids or "",
             include_names_in=language,
@@ -150,29 +189,6 @@ def search_init():
         return {"ids": sorted(ids)}
     return {"empty": request.vars.ott}
 
-def search_for_sciname():
-    """
-    Search for a starting match on the latin name as stored in the ordered_leaves or ordered_nodes tables
-    String passed in is ?query=xxxx
-    """
-    session.forget(response)
-    response.headers["Access-Control-Allow-Origin"] = '*'
-    try:
-        searchFor = " ".join(make_unicode(request.vars.query or "").split())
-        result = []
-        if searchFor and len(searchFor)>1:
-            if not request.vars.nodes_only:
-                result += [[r.id, r.ott, r.name] for r in \
-                    db(db.ordered_leaves.name.startswith(searchFor)).select(db.ordered_leaves.id, db.ordered_leaves.ott, db.ordered_leaves.name)]
-            if not request.vars.leaves_only:
-                result += [[r.id, r.ott, r.name] for r in \
-                    db(db.ordered_nodes.name.startswith(searchFor)).select(db.ordered_nodes.id, db.ordered_nodes.ott, db.ordered_nodes.name)]
-        return dict(result=result)
-    except:
-        if is_testing:
-            raise
-        else:
-            return {}
         
 # request.vars contains:
 #  -- String: query
@@ -241,11 +257,18 @@ def search_by_name(searchFor, language, order_by_popularity=False, limit=None, s
     colnames = base_colnames + ['vernacular','extra_vernaculars']
     colname_map = {nm:index for index,nm in enumerate(colnames)}
 
+    ret = {"headers":colname_map, "leaf_hits":[], "node_hits":[], "lang":language}
     try:
         originalSearchFor = searchFor
-        searchFor = punctuation_to_space(searchFor).split()
-        if len(searchFor)==0 or all([(len(word)<=1 and not is_logographic(word, lang_primary)) for word in searchFor]):
-            raise
+        searchFor = OZfunc.punctuation_to_space(searchFor).split()
+        if (
+            len(searchFor)==0 or
+            all([
+                (len(word)<=1 and not OZfunc.is_logographic(word, lang_primary))
+                for word in searchFor]
+            )
+        ):
+            return ret
         longWords = []
         shortWords = []
         for word in searchFor:
@@ -365,9 +388,12 @@ def search_by_name(searchFor, language, order_by_popularity=False, limit=None, s
                         row.extend(name_to_vern[name])
                     except:
                         pass #might reach here if the latin name has matched, but no vernaculars
-        return {"headers":colname_map, "leaf_hits": results.get('ordered_leaves'), "node_hits": results.get('ordered_nodes'), "lang":language}    
+        ret['leaf_hits'] = results.get('ordered_leaves')
+        ret['node_hits'] = results.get('ordered_nodes')
     except:
-        return {"headers":colname_map, "leaf_hits":[], "node_hits":[], "lang":language}
+        pass  # Bad form here, but we always want to return *something* (even a blank)
+
+    return ret
 
         
 #find best vernacular name which matches user's query group by ott.
@@ -445,7 +471,6 @@ def search_for_sponsor():
             return {'lang':language}
         
 def search_sponsor(searchFor, searchType, language, order_by_recent=None, limit=None, start=0, defaultImages=False):
-    from OZfunctions import get_common_names
     if searchFor:
         try:
             lang_primary = language.split(',')[0].split("-")[0].lower()
@@ -524,7 +549,7 @@ def search_sponsor(searchFor, searchType, language, order_by_recent=None, limit=
             leaves = db(query).select(db.ordered_leaves.id, db.ordered_leaves.ott)
         
             language=request.vars.lang or request.env.http_accept_language or 'en'
-            common_names = get_common_names(reservationsOttArray, lang=language)
+            common_names = OZfunc.get_common_names(reservationsOttArray, lang=language)
             
             if defaultImages:
                 return {"common_names": common_names, "lang":language, "reservations": reservations,  "leaves": leaves, "headers": colname_map, "default_images":{row.ott:[row.src, row.src_id] for row in db(db.images_by_ott.ott.belongs(reservationsOttArray) & (db.images_by_ott.best_any == True)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, orderby=~db.images_by_ott.src)} }
@@ -547,31 +572,8 @@ def get_ids_by_ott_array():
     """
     session.forget(response)
     response.headers["Access-Control-Allow-Origin"] = '*'
-    return ids_from_otts_string(request.vars.ott_array or "")
+    return OZfunc.otts2ids(OZfunc.query_val_to_ints(request.vars.getlast("ott_array", "")))
 
-def otts2vns():
-    '''
-    Used e.g. to fill out the popular species lists,
-    can call with request.vars.lang=XX and with prefer_short=1
-    Will return nulls for unmatched otts if return_nulls=1
-    Returns e.g. {"770315":"Human","872567":"Brown Bear", "lang":"en-gb"}
-    '''
-    session.forget(response)
-    from OZfunctions import get_common_names
-    response.headers["Access-Control-Allow-Origin"] = '*'
-    lang = request.vars.lang or request.env.http_accept_language or 'en'
-    try:
-        ret_otts = get_common_names([int(x) for x in request.vars.otts.split(',')],
-            return_nulls = True if request.vars.nulls else False,
-            prefer_short_name=True if request.vars.prefer_short else False,
-            include_unpreferred = True if (request.vars.include_unpreferred or request.vars.all) else False,
-            return_all = True if request.vars.all else False,
-            lang=lang)
-        ret_otts['lang']=lang
-        return ret_otts
-    except (AttributeError, ValueError):
-        return {'lang':lang}
-    
 def update_visit_count():
     session.forget(response)
     response.headers["Access-Control-Allow-Origin"] = '*'
@@ -609,6 +611,9 @@ def update_visit_count():
     
     
 def get_id_by_ott():
+    """
+    A fast single item version of get_ids_by_ott_array
+    """
     session.forget(response)
     response.headers["Access-Control-Allow-Origin"] = '*'
     ott = request.vars.ott
@@ -623,19 +628,20 @@ def get_id_by_ott():
             return {"id": -result[0].id}
     return {"id": "none"}
 
-## A few convenience pages not used by the OneZoom viewer, which return JSON data about various identifiers, children, etc.
 
 def getOTT():
-    """ this is called as a json request with potentially multiple identifiers, e.g.
-        http://mysite/getOTT.json?eol=123&eol=456&ncbi=789 
-        and should return the OTT ids and scientific names  EOLid in JSON form: {'data':'5678'}
-        
-        This is useful for common-name searching, where the EoL search API returns EOL identifiers
-        which can then be matched against OneZoom leaves.
     """
+    This is called as a json request with potentially multiple identifiers, e.g.
+    http://mysite/getOTT.json?eol=123&eol=456&ncbi=789 
+    and should return the OTT ids and scientific names  EOLid in JSON form: {'data':'5678'}
+    
+    This is useful for common-name searching, where the EoL search API returns EOL identifiers
+    which can then be matched against OneZoom leaves.
+    """
+    session.forget(response)
+    response.headers["Access-Control-Allow-Origin"] = '*'
     sources = ["eol", "ncbi", "iucn"]
     data = {}
-    from numbers import Number
     try:
         for s in sources:
             if s in request.vars:
@@ -659,7 +665,7 @@ def children_of_OTT():
     """
     try:
         OTTid = int(request.args[0])
-        query = child_leaf_query('ott', OTTid)
+        query = OZfunc.child_leaf_query('ott', OTTid)
         query = query & (db.ordered_leaves.eol!=None)
         rows = select_leaves(query,
                              request.vars.get('page'),
@@ -679,7 +685,7 @@ def children_of_EOL():
     """
     try:
         EOLid = int(request.args[0])
-        query = child_leaf_query('eol', EOLid)
+        query = OZfunc.child_leaf_query('eol', EOLid)
         query = query & (db.ordered_leaves.eol!=None)
         rows = select_leaves(query,
                              request.vars.get('page'),
@@ -688,6 +694,207 @@ def children_of_EOL():
         return(dict(data={'EOL2OTT':{r.eol:r.ott for r in rows}}))
     except ValueError: # probably bad int inputted
         return(dict(errors=['EOL id must be an integer'], data=None))
+
+
+############################
+# Publicly documented APIs #
+############################
+
+
+def search_for_sciname():
+    """
+    Search for a starting match on the latin name as stored in the ordered_leaves or ordered_nodes tables
+    String passed in is ?query=xxxx
+    """
+    session.forget(response)
+    
+    if "." not in request.env.path_info.split('/')[2]:
+        request.extension = "json"
+    response.view = request.controller + "/" + request.function + "." + request.extension    
+    # Not limited as only one name is searched for
+    
+    response.headers["Access-Control-Allow-Origin"] = '*'
+    try:
+        searchFor = " ".join(make_unicode(request.vars.query or "").split())
+        result = []
+        if searchFor and len(searchFor)>1:
+            if not request.vars.nodes_only:
+                result += [[r.id, r.ott, r.name] for r in \
+                    db(db.ordered_leaves.name.startswith(searchFor)).select(db.ordered_leaves.id, db.ordered_leaves.ott, db.ordered_leaves.name)]
+            if not request.vars.leaves_only:
+                result += [[r.id, r.ott, r.name] for r in \
+                    db(db.ordered_nodes.name.startswith(searchFor)).select(db.ordered_nodes.id, db.ordered_nodes.ott, db.ordered_nodes.name)]
+        return dict(result=result)
+    except:
+        if is_testing:
+            raise
+        else:
+            return {}
+
+
+def otts2vns():
+    '''
+    Also used in the OneZoom viewer e.g. to fill out the popular species lists,
+    can call with request.vars.lang=XX and with prefer_short=1
+    Will return nulls for unmatched otts if return_nulls=1
+    Returns e.g. {"770315":"Human","872567":"Brown Bear", "lang":"en-gb"}
+    '''
+    session.forget(response)
+
+    if "." not in request.env.path_info.split('/')[2]:
+        request.extension = "json"
+    response.view = request.controller + "/" + request.function + "." + request.extension
+    
+    if request.vars.key is None:
+        # As this is used in the OneZoom app with no key, we explcitly allow it, but
+        # limit the maximum number of taxa in the viewer to 25
+        max_otts = 25
+    else:
+        max_otts = get_limits(request.vars.getlast("key", ""))
+
+    otts = OZfunc.query_val_to_ints(request.vars.getlast("otts", ""))
+    if len(otts) <= max_otts:
+        pass
+    else:
+        redirect(URL('error', vars=dict(
+            code=400,
+            text=f"You must pass in at least 1 and not more than {max_otts} OTT ids"
+        )))
+
+    lang = request.vars.lang or request.env.http_accept_language or 'en'
+    response.headers["Access-Control-Allow-Origin"] = '*'
+
+    try:
+        ret_otts = OZfunc.get_common_names(
+            otts,
+            return_nulls=(True if request.vars.nulls else False),
+            prefer_short_name=(True if request.vars.prefer_short else False),
+            include_unpreferred=(True if (request.vars.include_unpreferred or request.vars.all) else False),
+            return_all=(True if request.vars.all else False),
+            lang=lang,
+        )
+        ret_otts['lang']=lang
+        return ret_otts
+    except (AttributeError, ValueError):
+        return {'lang':lang}
+
+
+def node_images():
+    """
+    Return the 8 representative images for a set of OTT IDs, along with their license
+    info, etc. Note that this API call is not used in the OneZoom viewer: it is
+    inefficient because many requested nodes share images.
+    This API is placed here for other users of the OneZoom APIs
+    """
+    session.forget(response)
+
+    if "." not in request.env.path_info.split('/')[2]:
+        request.extension = "json"
+    response.view = request.controller + "/" + request.function + "." + request.extension
+    
+    if request.vars.key is None:
+        redirect(URL('error', vars=dict(
+            code=400,
+            text="Please use an API key (use 0 for the public API key)"
+        )))
+    max_otts = get_limits(request.vars.getlast("key", ""))
+    otts = OZfunc.query_val_to_ints(request.vars.getlast("otts", ""))
+    if 0 < len(otts) <= max_otts:
+        pass
+    else:
+        redirect(URL('error', vars=dict(
+            code=400,
+            text="You must pass in at least 1 and not more than {max_otts} OTT ids"
+        )))
+
+    response.headers["Access-Control-Allow-Origin"] = '*'
+    ids = OZfunc.otts2ids(otts)
+    # Allowed types == "any", "verified", or "pd"
+    type = request.vars.type if request.vars.type in ("any", "verified", "pd") else "any"
+    leaf_ids = list(ids['leaves'].values())
+    node_ids = list(ids['nodes'].values())
+    colnames = OZfunc.nodes_info_from_string("", "", include_pic_details=True, check_malicious=False)
+    node_cols = colnames['colnames_nodes']
+    node_image_cols = [node_cols["{pic}"+str(x+1)] for x in range(8)] # This may need correcting if we change the pic colname
+    leaf_cols = colnames['colnames_leaves']
+    pic_cols = colnames['colnames_images']
+    results = OZfunc.nodes_info_from_array(
+        leaf_ids,
+        node_ids,
+        include_pics=True,
+        include_iucn=False,
+        include_sponsorship=False,
+        image_type='best_' + type,
+        include_pic_details=True,
+    )
+    headers = {'name':0, 'url':1, 'rights':2, 'licence':3, 'rating':4}
+    pics = {}
+    for p in results['leafPic']:
+        pics[p[pic_cols['ott']]] = [
+            None,
+            thumbnail_url(p[pic_cols['src']], p[pic_cols['src_id']]),
+            p[pic_cols['rights']],
+            p[pic_cols['licence']],
+            p[pic_cols['rating']],
+        ]         
+    
+    original_taxa = {}
+    for l in results['leaves']:
+        ott = l[leaf_cols['ott']]
+        if ott in pics:
+            pics[ott][headers['name']] = l[leaf_cols['name']]
+        if ott in otts:
+            original_taxa[ott] = {'name': l[leaf_cols['name']], 'otts': [ott]}
+
+    for n in results['nodes']:
+        original_taxa[n[node_cols['ott']]] = {
+            'name': n[node_cols['name']], 'otts': [n[c] for c in node_image_cols]}
+
+    return dict(taxa=original_taxa, headers=headers, images=pics, type=type)
+    
+
+def otts2identifiers():
+    """
+    Return the identifiers in other databases for the passed-in set of OTT IDs.
+    Called as http://mysite/otts2identifiers.json?otts=770315,844192
+    """
+    session.forget(response)
+
+    if "." not in request.env.path_info.split('/')[2]:
+        request.extension = "json"
+    response.view = request.controller + "/" + request.function + "." + request.extension
+    
+    if request.vars.key is None:
+        redirect(URL('error', vars=dict(
+            code=400,
+            text="Please use an API key (use 0 for the public API key)"
+        )))
+    max_otts = get_limits(request.vars.getlast("key", ""))
+    otts = OZfunc.query_val_to_ints(request.vars.getlast("otts", ""))
+    if 0 < len(otts) <= max_otts:
+        pass
+    else:
+        redirect(URL('error', vars=dict(
+            code=400,
+            text="You must pass in at least 1 and not more than {max_otts} OTT ids"
+        )))
+    
+    response.headers["Access-Control-Allow-Origin"] = '*'
+    colname_map = {name: i for i, name in enumerate(identifier_leaf_cols)}
+    ret = {}
+    rows = db(db.ordered_leaves.ott.belongs(otts)).select(*identifier_leaf_cols)
+    for row in rows:
+        ret[row.ott] = [row[c] for c in identifier_leaf_cols]
+    rows = db(db.ordered_nodes.ott.belongs(otts)).select(*identifier_cols)
+    for row in rows:
+        ret[row.ott] = [row[c] for c in identifier_cols]
+    return dict(
+        headers=colname_map,
+        ids=ret)
+
+
+#PRIVATE FUNCTIONS
+
 
 def select_leaves(query, page=None, limit=None, sortcol=""):
     """ Selects on a query. If 'sortcol' is entered as uppercase, sort descending (requires all sortable cols to be lowercase names) """
@@ -708,8 +915,6 @@ def select_leaves(query, page=None, limit=None, sortcol=""):
     return db(query).select(limitby=limitby, orderby=orderby, *select)
 
 
-#PRIVATE FUNCTIONS
-
 def make_unicode(input):
     try:
         if input and type(input) != unicode:
@@ -717,3 +922,24 @@ def make_unicode(input):
     except NameError:
         pass #for python3
     return input
+
+
+def get_limits(API_key):
+    """
+    Similar to get_limits in popularity.py but only return the max taxa allowed per query
+    """
+    results = db(db.API_users.APIkey == API_key).select(db.API_users.ALL)
+    if results:
+        result = results.first()
+        if result.max_taxa_per_query:
+            return result.max_taxa_per_query
+        else:
+            redirect(URL('error', vars=dict(
+                code=400,
+                text=f"Sorry, the API key {result.APIkey} ({result.API}) is no longer allowed"
+            )))
+    else:
+        redirect(URL('error', vars=dict(
+            code=400,
+            text=f"Sorry, the API key {API_key} has not been recognised"
+        )))

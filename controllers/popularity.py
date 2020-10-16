@@ -70,7 +70,7 @@ def test():
     else:
         API_user = None
         
-    if auth.is_logged_in() or API_user and API_user.API_user_name is not 'public':
+    if auth.is_logged_in() or API_user and API_user.API_user_name != 'public':
         if request.vars.ott:
             try:
                 headers = ['ott', 'name', 'wikidata', 'popularity', 'raw_popularity']

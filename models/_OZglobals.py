@@ -38,7 +38,7 @@ wikiflags = cache.ram('wikiflags',
 # Source flags are used to identify the source of images and vernacular names, and chose
 # which to show (lower numbers have priority). Images are saved in a folder named
 # using this number. We should try to keep these numbers <=99, so that they can form
-# part of a overall score (e.g. see score() in OZfunctions.py.
+# part of a overall score (e.g. see score() in OZfunc.py.
 # The 'bespoke' category can be used for specific client websites, that wish to provide
 # their own images and/or names. This always takes priority, and if required, a URL 
 # for a picture can be given in appconfig.ini for e.g. copyright information, as is
@@ -53,7 +53,7 @@ wikiflags = cache.ram('wikiflags',
 # upon this.
 # 'short_imprecise_name' is used only for vernacular names (not images) to mark a 
 # (potentially inaccurate) name that takes priority only for display. There is special
-# code to deal with this in OZfunctions.py
+# code to deal with this in OZfunc.py
 src_flags = cache.ram('src_flags',
     lambda: {'bespoke':1, 'onezoom_bespoke':2,
         'onezoom_via_eol':3, 'iucn':4, 'arkive':5, 'wiki':20, 'eol': 30,

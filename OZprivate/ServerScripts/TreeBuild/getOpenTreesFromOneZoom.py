@@ -66,156 +66,147 @@ import re
 import os
 import sys
 import math
+import multiprocessing
+import logging
+import argparse
+import time
+import itertools
 from subprocess import call
+
+from multiprocessing_logging import install_mp_handler
 from dendropy import TreeList
-from prune_trees_from_dict import warn, get_taxa_include_dict_from_csv, prune_tree
 
-def get_species_level_tree(filename):
-    '''download the synthetic OpenTree with corresponding taxonomy, and process it to get a file'''
-    import urllib.request
-    subspecies_removal_utility = os.path.join(os.path.dirname(os.path.realpath(__file__)), "subspecies_delete.pl")
-    full_tree_download = OpenTreeURL.rsplit('/',1)[1]
-    OpenTreeTaxURL = "http://files.opentreeoflife.org/ott/ott2.9.tgz"
-    taxonomy_location = "ott/taxonomy.tsv" #the location of the taxonomy file in the ott archive
-    full_ott_download =  OpenTreeTaxURL.rsplit('/',1)[1]
-    warn("downloading the opentree from "+ OpenTreeURL)
-    urllib.request.urlretrieve(OpenTreeURL, full_tree_download)
-    call(["gunzip", full_tree_download])
-    warn("downloading the (large) opentree taxonomy from "+ OpenTreeURL)
-    urllib.request.urlretrieve(OpenTreeTaxURL, full_ott_download)
-    call(["tar", "-zxf", full_ott_download, taxonomy_location])
-    warn("removing subspecies etc from "+ OpenTreeURL + " using " + subspecies_removal_utility)
-    call([subspecies_removal_utility, re.sub(".gz$", "", full_tree_download), taxonomy_location, filename])
-    return os.path.isfile(filename)
+from prune_trees_from_dict import prune_tree
 
-def getOpenTreesFromOneZoom(OpenTreeFile, output_dir, include_var, phy_files, verbose=False):
-    '''Python routine to get OToL subtrees from phy files. If include_var is a number, 
-    treat it as a recursion depth, otherwise a dictionary of names to keep. 
-    The parameter phy_files should be an iterable list of .phy or .PHY filenames'''
+EXTRACTION_UTILITY = os.path.join(os.path.dirname(os.path.realpath(__file__)), "subtree_extract.pl")
+
+def getOpenTreesFromOneZoomFile(params):
+    '''Python routine to get OToL subtrees from a phy file'''
+    OpenTreeFile, output_dir, file = params
     from numbers import Number
-    ExtractionUtility = os.path.join(os.path.dirname(os.path.realpath(__file__)), "subtree_extract.pl")
     #find all nodes that end in  ott plus a number and (optionally) some other numbers starting with underscore, ending in
     # an at sign followed optionally by another number (giving the max depth) are OpenTree subnode IDs
     
     # the first number after the ott is always the ott number to use as the filename. 
     # the 1) ott123 2) ott_123: use the name, not the ott id
     
+
     ottRE = re.compile(r"^(.*)_ott([-~\d]+)\@(\d*)$")
     id_pattern = re.compile(r"(\d*)~?([-\d]*)$")
-    
-    if not os.path.isfile(OpenTreeFile):
-        OpenTreeURL = "http://files.opentreeoflife.org/synthesis/opentree9.1/output/labelled_supertree/labelled_supertree_simplified_ottnames.tre"
-        warn("Could not find the OpenTree file {}. Do you want to download it from {}".format(OpenTreeFile, OpenTreeURL))
-        if (input("Press Enter to accept, or N to abort... ") == "N"):
-            sys.exit(0)
-        if not get_species_level_tree(OpenTreeFile):
-            warn("Could not get the Open Tree of Life newick file to save at {}".format(OpenTreeFile))
-    if isinstance(include_var, Number):
-        keep = True #means keep all of the species down to a certain depth, i.e. do not use an include list
-        default_recursion_depth = include_var
+
+    if file == "-":
+        trees = TreeList.get_from_stream(sys.stdin, schema="newick", preserve_underscores=True, rooting='default-rooted')
+        file = "<stdin>"
     else:
-        keep = include_var
-        default_recursion_depth = float('nan')
-    
-    for file in phy_files:
-        if file == "-":
-            trees = TreeList.get_from_stream(sys.stdin, schema="newick", preserve_underscores=True, rooting='default-rooted')
-            file = "<stdin>"
-        else:
-            try:
-                with open(file, 'r', encoding="utf8") as stream:
-                    trees = TreeList.get_from_stream(stream, schema="newick", preserve_underscores=True, rooting='default-rooted')
-            except Exception as e:
-                trees = []
-                warn("Problem reading tree from {}: {}".format(file, e))
-                
-        for tree in trees:
-            for i, include_ott in enumerate(tree.preorder_node_iter(
-                    lambda node: True if hasattr(node, "taxon") and node.taxon is not None and ottRE.search(node.taxon.label) else False
-                )):
-                if i==0:
-                    print("\n//;#  == {} ==, from file {}".format(tree.seed_node.label, file))
-                #each of these is a file to @include
-                #first get recursion depth from the end of the string
-                match = ottRE.search(include_ott.taxon.label)
-                name = match.group(1)
-                ottIDs = match.group(2)
-                if default_recursion_depth < 0:
-                    recursion_depth = abs(default_recursion_depth)
-                else:
-                    recursion_depth = float(match.group(3)) if len(match.group(3)) else default_recursion_depth
-                match = id_pattern.match(ottIDs)
-                if match:
-                    subfile_name = match.group(1) or name
-                    del_otts = (match.group(2) or '').split('-') #split by minus signs
-                    base_ott = del_otts.pop(0) or match.group(1) #first number after '=' is the tree to extract.
-                    system_call = [ExtractionUtility]
-                    if keep==True and math.isfinite(recursion_depth):
-                        system_call.append("-d={}".format(int(recursion_depth)))
-                    system_call.append(os.path.relpath(OpenTreeFile, output_dir))
-                    system_call.append(base_ott)
-                    OpenSubTreeFile = os.path.join(output_dir, base_ott + ".nwk")
-                    if verbose:
-                        warn("For "+include_ott.taxon.label+": extracting tree into " + OpenSubTreeFile, prefix='');
-                    call(system_call, cwd=output_dir) #should create many ottID.nwk files
-                    OutputFilename = os.path.join(output_dir, subfile_name + ".phy")
-                    if os.path.isfile(OpenSubTreeFile):
-                        removed = "" if len(del_otts)==0 else " removed {}".format(del_otts)
-                        subtree = prune_tree(OpenSubTreeFile, keep, del_otts)
-                        if keep == True:
-                            if verbose:
-                                warn("Found file {} with {} leaf taxa,{} and extracted to max depth: {}".format(OpenSubTreeFile, len(subtree.taxon_namespace), removed, recursion_depth), prefix='')
-                        else:
-                            subtree_size = len(subtree.leaf_nodes())
-                            if verbose:
-                                warn("Found file with {} leaf taxa, {}, and simplified to only selected taxa ({} {})".format(len(subtree.taxon_namespace), removed, subtree_size, 'leaf' if subtree_size==1 else 'leaves', del_otts), prefix='')
-                        '''this is not needed until the OpenTree has branch lengths
-            
-                        subtree.ultrametricize() #maybe use subtree.calc_node_ages()
-                        warn("ultrametricized\n", prefix="")
-                        #subtree->get_root()->set_branch_length(undef);
-                        stem_height = include_ott.edge_length - subtree.calc_tree_height
-                        if (stem_height < 0):'''
-                        
-                        if verbose:
-                            warn("Now writing to {}".format(OutputFilename), prefix='')
-                        with open(OutputFilename, 'w', encoding='UTF-8') as outputstream:
-                            subtree.write_to_stream(outputstream,'newick', unquoted_underscores=True, suppress_rooting=True)
+        try:
+            with open(file, 'r', encoding="utf8") as stream:
+                trees = TreeList.get_from_stream(stream, schema="newick", preserve_underscores=True, rooting='default-rooted')
+        except Exception as e:
+            trees = []
+            logging.warning("Problem reading tree from {}: {}".format(file, e))
+    return_string = ""
 
-                        max_tree_height = 0
-                        if include_ott.edge_length is not None and include_ott.edge_length > max_tree_height:
-                            stem_height = include_ott.edge_length- max_tree_height
-                        else:
-                            stem_height = 0
+    for tree in trees:
+        for i, include_ott in enumerate(tree.preorder_node_iter(
+                lambda node: True if hasattr(node, "taxon") and node.taxon is not None and ottRE.search(node.taxon.label) else False
+            )):
+            if i==0:
+                return_string += "\n//;#  == {} ==, from file {}".format(
+                    tree.seed_node.label, file) + "\n"
+            #each of these is a file to @include
+            #first get recursion depth from the end of the string
+            match = ottRE.search(include_ott.taxon.label)
+            name = match.group(1)
+            ottIDs = match.group(2)
+            match = id_pattern.match(ottIDs)
+            if match:
+                subfile_name = match.group(1) or name
+                del_otts = (match.group(2) or '').split('-') #split by minus signs
+                base_ott = del_otts.pop(0) or match.group(1) #first number after '=' is the tree to extract.
+                system_call = [EXTRACTION_UTILITY]
+                system_call.append(os.path.relpath(OpenTreeFile, output_dir))
+                system_call.append(base_ott)
+                OpenSubTreeFile = os.path.join(output_dir, base_ott + ".nwk")
+                logging.info("For "+include_ott.taxon.label+": extracting tree into " + OpenSubTreeFile);
+                call(system_call, cwd=output_dir) #should create many ottID.nwk files
+                OutputFilename = os.path.join(output_dir, subfile_name + ".phy")
+                if os.path.isfile(OpenSubTreeFile):
+                    removed = "" if len(del_otts)==0 else ", removed {}".format(del_otts)
+                    subtree = prune_tree(OpenSubTreeFile, True, del_otts)
+                    subtree_size = len(subtree.leaf_nodes())
+                    logging.info(
+                        "Found file with {} leaf taxa{}, and simplified to only selected taxa ({} {})"
+                        .format(
+                            len(subtree.taxon_namespace),
+                            removed, subtree_size,
+                            'leaf' if subtree_size==1 else 'leaves',
+                            del_otts))
 
-                        # print(r'$tree.substitute_with_fn_last("{}_ott{}@\\d*", {}, "{}", {}); //;# "user/OpenTree/{}");'.format(name, ottIDs, stem_height, name, len(subtree.taxon_namespace), OutputFilename))
-                        # OpenTrees are currently not dated, so we should omit the 'stem_length' value, so that the node becomes
-                        # 'date unknown'
-                        print(r"$tree.substitute('{}_ott{}@\\d*', '{}');".format(name, ottIDs, OutputFilename))
+                    '''this is not needed until the OpenTree has branch lengths
+        
+                    subtree.ultrametricize() #maybe use subtree.calc_node_ages()
+                    logging.info("ultrametricized\n")
+                    #subtree->get_root()->set_branch_length(undef);
+                    stem_height = include_ott.edge_length - subtree.calc_tree_height
+                    if (stem_height < 0):'''
+                    
+                    logging.info("Now writing to {}".format(OutputFilename))
+                    with open(OutputFilename, 'w', encoding='UTF-8') as outputstream:
+                        subtree.write_to_stream(outputstream,'newick', unquoted_underscores=True, suppress_rooting=True)
+
+                    max_tree_height = 0
+                    if include_ott.edge_length is not None and include_ott.edge_length > max_tree_height:
+                        stem_height = include_ott.edge_length- max_tree_height
                     else:
-                        warn("File " + OpenSubTreeFile + " does not exist, skipping\n")
-                        
+                        stem_height = 0
+
+                    # print(r'$tree.substitute_with_fn_last("{}_ott{}@\\d*", {}, "{}", {}); //;# "user/OpenTree/{}");'.format(name, ottIDs, stem_height, name, len(subtree.taxon_namespace), OutputFilename))
+                    # OpenTrees are currently not dated, so we should omit the 'stem_length' value, so that the node becomes
+                    # 'date unknown'
+                    return_string += r"$tree.substitute('{}_ott{}@\\d*', '{}');".format(
+                        name, ottIDs, OutputFilename) + "\n"
+                else:
+                    logging.warning("File " + OpenSubTreeFile + " does not exist, skipping")
+    return return_string, file
+
 ###### routine starts here
 if __name__ == "__main__":
-    import argparse
-    import time
-    parser = argparse.ArgumentParser(description='Create subtrees from the Open Tree of Life, on the basis of ott numbers in a set of newick files. See https://github.com/jrosindell/OneZoomTouch')
-    parser.add_argument('--verbose', '-v', action="store_true", help='verbose: output extra non-essential info')
-    parser.add_argument('OpenTreeFile', help='Path to the Open Tree file, which should have had polytomies removed, and probably subspecies too. See https://github.com/jrosindell/OneZoomTouch')
+    
+    parser = argparse.ArgumentParser(description='Create subtrees from the Open Tree of Life, on the basis of ott numbers in a set of newick files.')
+    parser.add_argument('--verbosity', '-v', action='count', default=0, help='verbosity level: output extra non-essential info')
+    parser.add_argument('OpenTreeFile', help='Path to the Open Tree newick file')
     parser.add_argument('output_dir', help='Path to the directory in which to save the OpenTree subtrees. See https://github.com/jrosindell/OneZoomTouch')
-    parser.add_argument('include_var', help='If this is a file, it specifies a list of taxa: OpenTree files will be pruned to only include these taxa. Otherwise it is taken as a number, the default recursion depth (can also be "inf"). It it is a negative number, this recursion depth overrides any in the newick files. To force all taxa to be included, use `-- -inf` (note the extra `--` argument is needed to avoid -inf being treated as a command-line arg). See https://github.com/jrosindell/OneZoomTouch')
     parser.add_argument('parse_files', nargs='+', help='A list of newick files to parse for OTT numbers, giving the subtrees to extract.')
+    parser.add_argument('--include_var', help='Deprecated (used to be used to restrict the depth of recursion)')
+    parser.add_argument('--num_threads', '-T', default=1, type=int,
+        help='The number of threads to use. If >1, use multithreading') 
     args = parser.parse_args()
 
-    if os.path.isfile(args.include_var):
-        include_var = get_taxa_include_dict_from_csv(args.include_var)
-    else:
-        include_var = float("Inf")
-        try:
-            include_var = float(args.include_var)
-        except ValueError: #if we cannot convert the recursion depth to a number
-            warn('Cannot read default recursion depth ({}) as a number, assuming default is that all species should be output.'.format(args.include_var))
+    if args.verbosity==0:
+        logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
+    elif args.verbosity==1:
+        logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+    elif args.verbosity==2:
+        logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+    install_mp_handler()
+
     start = time.time()
-    getOpenTreesFromOneZoom(args.OpenTreeFile, args.output_dir, include_var, args.parse_files, args.verbose)
+    if not os.path.isfile(args.OpenTreeFile):
+        logging.warning("Could not find the OpenTree file {}".format(args.OpenTreeFile))
+    params_iter = zip(
+        itertools.repeat(args.OpenTreeFile),
+        itertools.repeat(args.output_dir),
+        args.parse_files)
+    if args.num_threads > 1:
+        with multiprocessing.Pool(processes=args.num_threads) as pool:
+            for ret, fn in pool.imap_unordered(getOpenTreesFromOneZoomFile, params_iter):
+                logging.info(f"== Parsed file {fn}")
+                print(ret)
+    else:
+        for params in params_iter:
+            ret, fn = getOpenTreesFromOneZoomFile(params)
+            logging.info(f"== Parsed file {fn}")
+            print(ret)
+            
     end = time.time()
-    warn("Time taken: {} seconds".format(end - start))
+    logging.debug("Time taken: {} seconds".format(end - start))

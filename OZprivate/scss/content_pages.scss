@@ -375,3 +375,18 @@ body.embedded {
     max-height: 600px;
     margin-left: 5%; // Correct for the circle of the leaf not being centred
 }
+
+// ===== APIs ====== //
+
+.parameters label {
+    font-weight: bold;
+}
+
+.parameters dd {
+    margin-left: 1em;
+}
+
+ol.inline > li
+{
+  display: inline-block;
+}

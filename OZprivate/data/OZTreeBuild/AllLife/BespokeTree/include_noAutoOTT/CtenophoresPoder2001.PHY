@@ -1,5 +1,5 @@
-[OToL relies only on taxonomy and the 3 taxon tree in Ryan et al 2013. As far asI can tell, Poder (2001) "A molecular phylogenetic framework for the phylum Ctenophora using 18S rRNA genes" figure 3 still holds as the best summary of ctenophore phylogeny. Certainly Cydippida (still precent in OpenTree 11.4)
-is usually considered non-monophyletic (e.g. see https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5664179/)
+[OToL relies only on taxonomy and the 3 taxon tree in Ryan et al 2013. As far asI can tell, Poder (2001) "A molecular phylogenetic framework for the phylum Ctenophora using 18S rRNA genes" https://doi.org/10.1006/mpev.2001.1036 figure 3 still holds as the best summary of ctenophore phylogeny. Certainly Cydippida (still precent in OpenTree 11.4)
+is usually considered non-monophyletic (e.g. see https://doi.org/10.1038/s41559-017-0331-3 )
 
 The Poder phylogeny goes something like:
 

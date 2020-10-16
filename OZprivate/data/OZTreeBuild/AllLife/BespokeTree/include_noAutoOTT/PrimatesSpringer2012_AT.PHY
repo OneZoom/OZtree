@@ -1,4 +1,4 @@
-[From Springer 2012: http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0049521 (Supp Information Text s2:  Newick timetree with autocorrelated rates and soft bounded constraints). Lagomorph, Treeshrew & Colugo information has been removed, along with gibbons.
+[From Springer 2012: https://doi.org/10.1371/journal.pone.0049521 (Supp Information Text s2:  Newick timetree with autocorrelated rates and soft bounded constraints). Lagomorph, Treeshrew & Colugo information has been removed, along with gibbons.
 
 # sequence length is arbitrarily long. Should not affect the algorithm
 Sequence length = 10000000;

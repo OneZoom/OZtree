@@ -1,0 +1,23 @@
+{{response.title='OneZoom: search for a sponsorship'}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{extend 'uikit_layout.html'}}
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+          <h3>Representative images from API</h3>
+</div>
+{{end block}}
+
+<div class="uk-padding">
+<dl>
+{{for input_ott, info in taxa.items():}}
+<dt>Representative images for OTT {{=f"{input_ott} ({info['name']})"}}</dt>
+<dd>
+<ol class="inline">
+{{for i, pic_ott in enumerate(info['otts']):}}
+<li style="margin-bottom: 0.5em">{{if pic_ott is None:}}blank{{else:}}<a href="{{=URL('default','life/@=' + str(pic_ott), url_encode=False)}}"><figure><figcaption>{{=f"{i}: OTT {pic_ott}"}}</figcaption><img title="{{=images[pic_ott][headers['rights']]}}, {{=images[pic_ott][headers['licence']]}}" src="{{=images[pic_ott][headers['url']]}}" /><figcaption class="uk-text-center"><i class="taxonomy">{{=f"{images[pic_ott][headers['name']]}"}}</i></figcaption></figure></a>{{pass}}</li>
+{{pass}}
+</ol>
+</dt>
+{{pass}}
+</dl> 
+</div>

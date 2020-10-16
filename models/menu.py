@@ -53,6 +53,7 @@ response.menu = [
                                             (T('Legacy trees'), False , URL('default' , 'tree_index.html')),
                                             (T('Developer tools'), False , URL('default' , 'developer.html')),
                                             (T('Popularity index'), False , URL('popularity' , 'index.html')),
+                                            (T('Public APIs'), False , URL('API','index.html')),
                                             ]),
                  
                  (T('About us'), False, None , [
