@@ -1,0 +1,6 @@
+Recording the JS code (which can be put into the JS console of the live browser) for a zooming animation to be screencasted.
+
+onezoom.controller.fly_on_tree_to(1,-887526,false,0.25)
+
+This will zoom into humans (or change the 887526 to the OZID of any leaf)
+The 0.25 will give animation speed 1/4 of the default speed.
