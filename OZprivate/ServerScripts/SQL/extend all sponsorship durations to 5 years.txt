@@ -1,0 +1,5 @@
+UPDATE reservations
+SET 
+    sponsorship_duration_days = 1827
+WHERE
+    sponsorship_duration_days IS NOT NULL AND sponsorship_duration_days >= 1000 AND live_time IS NOT NULL
