@@ -332,11 +332,6 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
     if maint:
         status = "maintenance"
 
-    max_price = db.prices.price.max()
-    max_global_price = db().select(max_price).first()[max_price] / 100
-    min_price = db.prices.price.min()
-    min_global_price = db().select(min_price).first()[min_price] / 100
-    
     if (request.vars.get('form_reservation_code')):
         form_reservation_code = request.vars.form_reservation_code
     else:
@@ -665,6 +660,11 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
                 validated = False
             else:
                 pass  # Simply show the form
+
+        max_price = db.prices.price.max()
+        max_global_price = db().select(max_price).first()[max_price] / 100
+        min_price = db.prices.price.min()
+        min_global_price = db().select(min_price).first()[min_price] / 100
         return dict(
             form                  = form,
             validated             = validated,
