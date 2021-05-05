@@ -232,8 +232,8 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   <h3 class="uk-card-title">Become a sponsor...</h3>
 
   <p>
-  OneZoom is a registered non-profit in the UK, all our products are for free. <a href="{{=URL('default', 'donor_list.html')}}">{{=n_total_sponsored}} people like you</a> have helped us by making donations. Their names appear as sponsors on
-    <a href="{{=URL('default', 'sponsored.html')}}">{{=n_sponsored_leaves}} leaves of our tree of life</a>.
+  OneZoom is a registered non-profit in the UK, all our products are available for free. {{if n_total_sponsored > 0:}}<a href="{{=URL('default', 'donor_list.html')}}">{{=n_total_sponsored}} people like you</a> have helped us by making donations. Their names appear as sponsors on
+    <a href="{{=URL('default', 'sponsored.html')}}">{{=n_sponsored_leaves}} leaves of our tree of life</a>.{{pass}}
   </p>
   <p>Only one name per leaf so get your favourite while you can, for yourself or as a gift.</p>
 
@@ -282,7 +282,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
     <a class="uk-position-top-left oz-slider-arrow oz-slider-arrow-left" style="height:65px" href="#" uk-slider-item="previous"></a>
     <a class="uk-position-top-right oz-slider-arrow oz-slider-arrow-right" style="height:65px" href="#" uk-slider-item="next"></a>
   </div>
-  <ul class="oz-pill leaf-list"><li><a href="{{=URL('default', 'sponsor.html')}}">Sponsor a leaf now!</a></li></ul>
+  <ul class="oz-pill leaf-list"><li><a href="//www.onezoom.org/sponsor.html">Sponsor a leaf now!</a></li></ul>
 </div></section>
 
 
