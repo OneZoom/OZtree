@@ -1,6 +1,7 @@
 partial_install_site = "http://beta.onezoom.org";
 partial_local_install_site = "http://127.0.0.1:8000"; // if you are running a local installation
 preferred_python3 = "python3.7"; // in case you have multiple python3 versions installed
+const sass = require('sass');
 
 module.exports = function (grunt) {
   grunt.initConfig({
@@ -61,15 +62,21 @@ module.exports = function (grunt) {
         }
       }
     },
-    compass: {
+    sass: {
       // SCSS -> CSS files
+      options: {
+        implementation: sass,
+        sourceMap: true,
+        outputStyle: 'compressed'
+      },
       dist: {
-        options: {
-          sassDir: '<%=pkg.directories.css_src%>',
-          cssDir: '<%=pkg.directories.css_dist%>',
-          environment: 'development',
-          outputStyle: 'compressed'
-        }
+         files: [{
+             expand: true,
+             cwd: '<%=pkg.directories.css_src%>',
+             src: ['*.scss'],
+             ext: '.css',
+             dest: '<%=pkg.directories.css_dist%>'
+         }]
       }
     },
     clean: [
@@ -142,19 +149,19 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks("grunt-exec");
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-compress');
-  grunt.loadNpmTasks('grunt-contrib-compass');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-jsdoc-to-markdown');
   grunt.loadNpmTasks('grunt-curl');
+  grunt.loadNpmTasks('grunt-sass');
 
   grunt.registerTask("test", ["exec:test"]);
-  grunt.registerTask("css", ["compass"]);
+  grunt.registerTask("css", ["sass"]);
   grunt.registerTask("docs", ["jsdoc2md", "exec:unify_docs"]);
   grunt.registerTask("compile-python", ["exec:compile_python"]);
   grunt.registerTask("compile-js", ["exec:compile_js"]);
   grunt.registerTask("compile-js_dev", ["exec:compile_js_dev"]);
-  grunt.registerTask("partial-install",       ["compile-js", "compass", "copy:dev", "curl-dir:get_minlife", "exec:convert_links_to_local"]);
-  grunt.registerTask("partial-local-install", ["compile-js", "compass", "copy:dev", "curl-dir:get_local_minlife", "exec:convert_links_to_local"]);
-  grunt.registerTask("prod", ["clean", "compile-python", "compile-js", "compass", "compress", "copy:prod", "docs"]);
-  grunt.registerTask("dev",  ["clean",               "compile-js_dev", "compass", "compress", "copy:dev",  "docs"]);
+  grunt.registerTask("partial-install",       ["compile-js", "css", "copy:dev", "curl-dir:get_minlife", "exec:convert_links_to_local"]);
+  grunt.registerTask("partial-local-install", ["compile-js", "css", "copy:dev", "curl-dir:get_local_minlife", "exec:convert_links_to_local"]);
+  grunt.registerTask("prod", ["clean", "compile-python", "compile-js", "css", "compress", "copy:prod", "docs"]);
+  grunt.registerTask("dev",  ["clean",               "compile-js_dev", "css", "compress", "copy:dev",  "docs"]);
 };
