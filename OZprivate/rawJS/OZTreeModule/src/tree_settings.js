@@ -270,6 +270,7 @@ class TreeSettings {
       let next_tree = is_binary_viewtype(curr) ? controller.binary_tree : controller.polytomy_tree;
       if (next_tree) {
         controller.factory.root = next_tree;
+        controller.trigger_refresh_loop();
         resolve();
       } else {
         controller.stop_refresh_loop();
