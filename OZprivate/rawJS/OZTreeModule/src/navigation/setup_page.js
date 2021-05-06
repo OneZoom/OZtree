@@ -143,5 +143,5 @@ function setup_page_by_state(state) {
 }
 
 
-export { popupstate, setup_loading_page };
+export { get_id_by_state, popupstate, setup_loading_page };
 

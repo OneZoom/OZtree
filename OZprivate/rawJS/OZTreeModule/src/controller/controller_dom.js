@@ -6,6 +6,8 @@ import config from '../global_config';
 import tree_settings from '../tree_settings';
 import data_repo from '../factory/data_repo';
 import { record_url } from '../navigation/record';
+import { get_id_by_state } from '../navigation/setup_page';
+import { parse_window_location } from '../navigation/utils';
 
 /**
  * @class Controller
@@ -120,11 +122,18 @@ export default function (Controller) {
       let prev = tree_settings.vis
       tree_settings.vis = vis;
       let self = this;
+
+      // Get pre-rebuild state, so we can restore the rough position by ID
+      let state = parse_window_location();
+
       tree_settings.rebuild_tree(vis, prev, this).then(function () {
         self.update_form();
         self.reset();
-        if (!init) {
-          record_url();
+        return get_id_by_state(state);
+      }).then(function (id) {
+        // Move to the ID specified in the old state
+        if (id) {
+          return(self.init_move_to(id, "leap"));
         }
       });
     }
