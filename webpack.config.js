@@ -74,14 +74,14 @@ var config = {
       template: OZTreeModule_src('OZ_script_template.html')
     }),
     new FileManagerPlugin({
-      onEnd: {
+      events: { onEnd: {
         copy: [
           {source: OZTreeModule_dist("OZentry.[hash].js"), destination: OZTreeModule_dist("OZentry.js")},
           {source: OZTreeModule_dist("search_ui.[hash].js"), destination: OZTreeModule_dist("search_ui.js")},
           {source: OZTreeModule_dist("leaf_draw.[hash].js"), destination: OZTreeModule_dist("leaf_draw.js")}
         ]
       }
-    }),
+    }}),
     new CompressionPlugin(
     )
   ]
