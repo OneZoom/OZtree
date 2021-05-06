@@ -345,10 +345,11 @@ function UI_reset_marked(searchbox, OZIDin, given_name, sciname, event) {
     {{if is_testing:}}console.log("Hiding search dropdown");{{pass}}
     UIkit.dropdown($('.search_dropdown', searchbox)).hide();
     if (searchresult.attr('data-OZid')) {
-        onezoom.controller.unmark_area(searchresult.attr('data-OZid'));
+        onezoom.controller.unmark_area(parseInt(searchresult.attr('data-OZid'), 10));
     }
     var colour = onezoom.controller.mark_area(OZIDin);
     load_into_searchbox(searchbox, OZIDin, given_name, sciname, colour);    
+    {{if is_testing:}}console.log("Marking " + OZIDin + " with " + colour);{{pass}}
     closeAndLeap(event, onezoom.controller.get_ancestor_of_marked(), searchbox);
 }
 
@@ -391,7 +392,7 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
     $('.remove-searchbox', box_selector)
         .click(function(event) {
             var searchbox = $(event.currentTarget).closest('.searchbox');
-            var highlighted = $('.searchresult', searchbox).attr('data-OZid');
+            var highlighted = parseInt($('.searchresult', searchbox).attr('data-OZid'), 10);
             if (highlighted) onezoom.controller.unmark_area(highlighted);
             searchbox.remove();
             if ($('#search-advanced #searchboxes li').length == 0) {
@@ -409,7 +410,7 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
     $('.searchresult .icon-beside-input .main-icon', box_selector)
         .on('click',function(event) {
                {{if is_testing:}}console.log("icon clicked for jumping");{{pass}}
-            var OZid = $(event.currentTarget).closest('.searchresult').attr('data-OZid');
+            var OZid = parseInt($(event.currentTarget).closest('.searchresult').attr('data-OZid'), 10);
             if (OZid) closeAndLeap(event, OZid, box_selector);
             event.preventDefault();
             event.stopPropagation();
@@ -453,7 +454,7 @@ function add_advanced_searchbox(OZid, name, sciname, col) {
             var searchresult = $('.searchresult', searchbox);
             var dropdown = $('.search_dropdown', searchbox);
             if (searchresult.attr('data-OZid')) {
-                onezoom.controller.unmark_area(searchresult.attr('data-OZid'));
+                onezoom.controller.unmark_area(parseInt(searchresult.attr('data-OZid'), 10));
                 searchresult.attr('data-OZid','');
             }
             if (search_term.length==0) {

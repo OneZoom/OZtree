@@ -21,6 +21,8 @@ export default function (Controller) {
         {
             area_code = OZid_to_mark;
             // use the OneZoom id as the area_code if one has not been entered
+        } else {
+            if (typeof area_code !== 'number') throw new Error("area_code should be numeric");
         }
         this.develop_branch_to(OZid_to_mark);
         // this marks a target down the tree to the new node and clears all previous targets.
@@ -112,6 +114,7 @@ export default function (Controller) {
      * @param area_code is the code that we want to associate with this marked area (as given before to mark area function)
      */
     Controller.prototype.unmark_area = function(area_code) {
+        if (typeof area_code !== 'number') throw new Error("area_code should be numeric");
         unmark_area_from_code(this.root,area_code);
         // this will ripple down adding the area target
         // now need to cut from the color_map
