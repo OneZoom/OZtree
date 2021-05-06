@@ -251,40 +251,34 @@ class TreeSettings {
    */
   rebuild_tree(curr, prev, controller) {
     return new Promise(function (resolve, reject) {
+      // Store existing tree for re-use later
+      if (is_binary_viewtype(prev)) {
+        controller.binary_tree = controller.factory.root;
+      } else {
+        controller.polytomy_tree = controller.factory.root;
+      }
+
+      // Switch layouts
       if (curr === "polytomy" && is_binary_viewtype(prev)) {
         set_layout(PolytomyBranchLayout, PolytomyNodeLayout, PolytomyLeafLayout, PolytomySignpostLayout);
         set_factory_midnode(PolytomyMidnode);
-        controller.binary_tree = controller.factory.root;
-        if (controller.polytomy_tree) {
-          controller.factory.root = controller.polytomy_tree;
-          resolve();
-        } else {
-          controller.stop_refresh_loop();
-          controller.draw_loading();
-          setTimeout(function () {
-            controller.rebuild_tree();
-            controller.trigger_refresh_loop();
-            resolve();
-          }, 10);
-        }
       } else if (is_binary_viewtype(curr) && prev === "polytomy") {
         set_layout(this.current.layout.branch, this.current.layout.node, this.current.layout.leaf, this.current.layout.sign);
         set_factory_midnode(this.current.midnode);
-        controller.polytomy_tree = controller.factory.root;
-        if (controller.binary_tree) {
-          controller.factory.root = controller.binary_tree;
-          resolve();
-        } else {
-          controller.stop_refresh_loop();
-          controller.draw_loading();
-          setTimeout(function () {
-            controller.rebuild_tree();
-            controller.trigger_refresh_loop();
-            resolve();
-          }, 10);
-        }
-      } else {
+      }
+
+      let next_tree = is_binary_viewtype(curr) ? controller.binary_tree : controller.polytomy_tree;
+      if (next_tree) {
+        controller.factory.root = next_tree;
         resolve();
+      } else {
+        controller.stop_refresh_loop();
+        controller.draw_loading();
+        setTimeout(function () {
+          controller.rebuild_tree();
+          controller.trigger_refresh_loop();
+          resolve();
+        }, 10);
       }
     }.bind(this));
   }
