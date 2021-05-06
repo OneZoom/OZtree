@@ -1,7 +1,7 @@
 import get_controller from '../controller/controller';
 import tree_settings from '../tree_settings';
 import { global_button_action, is_popup_state } from '../button_manager';
-import { get_largest_visible_node, parse_query, encode_popup_action } from './utils';
+import { get_largest_visible_node, parse_window_location, parse_query, encode_popup_action } from './utils';
 import { add_hook } from '../util/index';
 import config from '../global_config';
 import data_repo from '../factory/data_repo';
@@ -66,8 +66,7 @@ function record_url(options, force) {
  * -- both view has no popup window or both view have the same popup window (same means its context are based on same ott)
  */
 function current_view_near_previous_view(loc, querystring, hash) {
-  let previous_location = (window.location.pathname.indexOf("@") === -1) ? null : window.location.pathname.slice(window.location.pathname.indexOf("@"));
-  let previous_state = parse_query(previous_location, window.location.search, window.location.hash);
+  let previous_state = parse_window_location();
   let current_state = parse_query(loc, querystring, hash);
   if (current_state === null && previous_state !== null) return false;
   else if (current_state !== null && previous_state === null) return false;

@@ -1,4 +1,4 @@
-import { parse_query } from './utils';
+import { parse_window_location, parse_query } from './utils';
 import data_repo from '../factory/data_repo';
 import api_manager from '../api/api_manager';
 import get_controller from '../controller/controller';
@@ -13,8 +13,7 @@ import tree_settings from '../tree_settings';
  * State can be fetched either by event.state or parsing url.
  */
 function popupstate(event) {
-  let loc = (window.location.pathname.indexOf("@") === -1) ? null : window.location.pathname.slice(window.location.pathname.indexOf("@"));
-  let state = parse_query(loc, window.location.search, window.location.hash);
+  let state = parse_window_location();
   setup_page_by_state(state);
 }
 
@@ -22,8 +21,7 @@ function popupstate(event) {
  * This function is fired when the page loads and the tree is built. This function would jump or fly the tree according to url.
  */
 function setup_loading_page() {
-  let loc = (window.location.pathname.indexOf("@") === -1) ? null : window.location.pathname.slice(window.location.pathname.indexOf("@"));
-  let state = parse_query(loc, window.location.search, window.location.hash);
+  let state = parse_window_location();
   setup_page_by_state(state);
 }
 
