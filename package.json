@@ -38,7 +38,7 @@
     "babel-polyfill": "^6.26.0",
     "babel-tape-runner": "^3.0.0",
     "babelify": "^10.0.0",
-    "compression-webpack-plugin": "^6.1.1",
+    "compression-webpack-plugin": "^7.1.2",
     "filemanager-webpack-plugin": "^4.0.0",
     "grunt": "^1.1.0",
     "grunt-browserify": "^5.3.0",
@@ -49,12 +49,12 @@
     "grunt-contrib-watch": "^1.1.0",
     "grunt-curl": "^2.5.1",
     "grunt-exec": "^3.0.0",
-    "grunt-jsdoc-to-markdown": "^5.0.0",
-    "html-webpack-plugin": "^4.0.2",
+    "grunt-jsdoc-to-markdown": "^6.0.0",
+    "html-webpack-plugin": "^5.3.1",
     "tape": "^4.13.2",
-    "terser-webpack-plugin": "^1.4.3",
-    "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "terser-webpack-plugin": "^5.1.1",
+    "webpack": "^5.36.2",
+    "webpack-cli": "^4.7.0"
   },
   "dependencies": {
     "grunt-sass": "^3.1.0",
