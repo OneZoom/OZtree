@@ -119,19 +119,14 @@ export default function (Controller) {
     if (vis !== tree_settings.vis) {
       let prev = tree_settings.vis
       tree_settings.vis = vis;
-      let self = this
-      if (prev == "polytomy") {
-        record_url();
-        document.location.reload()
-      } else {
-        tree_settings.rebuild_tree(vis, prev, this).then(function () {
-          self.update_form();
-          self.reset();
-          if (!init) {
-            record_url();
-          }
-        });
-      }
+      let self = this;
+      tree_settings.rebuild_tree(vis, prev, this).then(function () {
+        self.update_form();
+        self.reset();
+        if (!init) {
+          record_url();
+        }
+      });
     }
   }
   Controller.prototype.get_view_type = function () {
