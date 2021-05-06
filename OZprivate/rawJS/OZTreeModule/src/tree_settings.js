@@ -286,7 +286,7 @@ class TreeSettings {
       } else {
         resolve();
       }
-    });
+    }.bind(this));
   }
   //this should be coded into tree_settings properly
   change_language(lang, controller, data_repo) {
