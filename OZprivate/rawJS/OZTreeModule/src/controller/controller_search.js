@@ -105,6 +105,8 @@ export default function (Controller) {
         }
         
         mark_area_from_targeted_node(this.root,area_code);
+        // Trigger a redraw to make sure marked areas are painted
+        this.trigger_refresh_loop();
         // this will ripple down adding the area target
         return(mark_color)
     }
@@ -126,6 +128,8 @@ export default function (Controller) {
                 break;
             }
         }
+        // Trigger a redraw to make sure marked areas aren't painted
+        this.trigger_refresh_loop();
     }
     
     /**
