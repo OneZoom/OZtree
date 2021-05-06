@@ -35,13 +35,11 @@ The OneZoom codebase uses the following software (licenses for each listed in br
  	* Text::CSV
  	* Image::ExifTool
  	* DBD::mysql
-* [Ruby](https://www.ruby-lang.org) (only to install the 'compass' program, see below)
 * [web2py](http://web2py.com) (LGPL license)
 * [npm](https://www.npmjs.com/get-npm), part of node.js which, when run will install a large number of other packages including
 	* [grunt](https://gruntjs.com) (MIT licence): to automate creating the OneZoom website files
 	* [webpack](https://webpack.js.org) (MIT licence): to package the OneZoom javascript tree viewer into a library
 	* jsdoc-to-markdown (MIT licence): to produce documentation from source code
-* [compass](http://compass-style.org) (MIT licence) to create the style sheets for OneZoom web pages
 * [ImageMagick](https://www.imagemagick.org/script/index.php) (Apache 2.0) for processing thumbnails
 * [curl](https://curl.haxx.se) (MIT-like licence) to download partial installs (`curl` is probably already installed on your computer)
 * [UIkit 3](https://getuikit.com) (MIT licence) for the User Interface (this code is included in the OneZoom github repo, and does not need downloading)
@@ -53,7 +51,7 @@ Before anything else, get the OZtree app from [github](https://github.com/OneZoo
 
 ### For a partial installation (less tested):
 
-1. Install the command-line version of `grunt` using `npm install -g grunt-cli`, then `gem update --system` followed by `gem install compass` to install the software to create css stylesheets. You may need to have administrator privileges to do this. 
+1. Install the command-line version of `grunt` using `npm install -g grunt-cli`. You may need to have administrator privileges to do this. 
 2. From anywhere within the OZtree download, run `npm install` to install all the packages for automation.
 3. Create a partial installation by running `grunt partial-install`. This downloads the "minlife" and "minlife_tour" pages from the central OneZoom website, modifies links within them, and places appropriately named html files into the `static` directory of your OZtree distribution.
 4. Open e.g. `static/minlife.html` with a web browser of your choice (we recommend Chrome or Safari). Note that this file needs to stay within the static directory to work at all. You may also need to allow your browser to allow local files to be loaded via AJAX (i.e. disabling some local cross-origin checks). Different browsers do this in different ways: for example in Chrome you can start up your browser with the `--allow-file-access-from-files` option, and in Safari, you can choose "Disable Local File Restrictions" from the "Developer" menu.
@@ -62,7 +60,7 @@ Before anything else, get the OZtree app from [github](https://github.com/OneZoo
 ### For a full installation (recommended):
 	
 1. Install a source code version of [web2py](http://www.web2py.com), placing your [OZtree repository](https://github.com/OneZoom/OZtree) within the web2py `applications` directory.
-2. Install command-line software by running `npm install -g grunt-cli`, then `gem update --system` followed by `gem install compass` (you may need to do all this with administrator privileges).
+2. Install command-line software by running `npm install -g grunt-cli` (you may need to do all this with administrator privileges).
 3. Run `npm install` from within the OZtree folder you moved in step 1. then run `grunt dev` (or `grunt prod` if in production mode) - see *"[Building the OneZoom tree viewer](#building-the-onezoom-tree-viewer)"*.
 3. [Install](http://dev.mysql.com/downloads/mysql/) & start MySQL, then create a new database (see *"[Setting up the database backend](#setting-up-the-database-backend)"*)
 4. Create a appconfig.ini file in `OZtree/private`, with `migrate=1` and which references this database with the appropriate username and password. We also recommend copying the `routes.py` file from `OZtree/_MOVE_CONTENTS_TO_WEB2PY_DIR` to the top level of your web2py installation - see *"[Web2py installation](#web2py-installation)"*
@@ -88,7 +86,7 @@ Compiling and creating the OneZoom explorer javascript code requires grunt to be
 npm install -g grunt-cli
 ```
 
-To create css files you will also need to install the "compass" software program, e.g. using `gem update --system && gem install compass`. To install these is likely to require administrator privileges. Other required packages can then be installed from within the OZtree folder by simply typing the following (which may take a while to complete!)
+To install this is likely to require administrator privileges. Other required packages can then be installed from within the OZtree folder by simply typing the following (which may take a while to complete!)
 
 ```
 npm install
