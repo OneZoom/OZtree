@@ -38,7 +38,7 @@
     "babel-polyfill": "^6.26.0",
     "babel-tape-runner": "^3.0.0",
     "babelify": "^10.0.0",
-    "compression-webpack-plugin": "^7.1.2",
+    "compression-webpack-plugin": "^6.1.1",
     "filemanager-webpack-plugin": "^4.0.0",
     "grunt": "^1.1.0",
     "grunt-browserify": "^5.3.0",
