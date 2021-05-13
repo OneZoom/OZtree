@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 # this file is released under public domain and you can use without limitations
+import datetime
+import itertools
 import re
 import random
 import urllib.parse
@@ -816,6 +818,105 @@ def sponsor_replace_page():
         raise_incorrect_url(URL('index', scheme=True, host=True), str(e) + ". " + T("Go back to the home page"))
 
 # TODO enabling edits and intelligent behaviour if a logged in user goes back to their own leaf    
+
+def sponsor_renew():
+    '''list items currently sponsored by a user
+    '''
+    # TODO: Bunch of constants that need better homes
+    renew_discount = 0.2  # Discount applied to price if renewing
+    expiry_soon_date = datetime.datetime.today() + datetime.timedelta(days=90)  # datetime before which expiry will be "soon"
+
+    try:
+        # TODO: Token parsing and validating
+        user_email = request.args[0]
+    except IndexError:
+        raise_incorrect_url(URL('index', scheme=True, host=True), "Missing token. " + T("Go back to the home page"))
+
+    # Get active, expiring reservations
+    active_rows, expiring_rows = ([], [])
+    for r in db(db.reservations.e_mail == user_email).iterselect(
+                db.reservations.ALL,
+                orderby="sponsorship_ends",
+            ):
+        if r.sponsorship_ends >= expiry_soon_date:
+            active_rows.append(r)
+        else:
+            expiring_rows.append(r)
+
+    # Get expired reservations, including who now owns it
+    expired_rows = []
+    expired_replacements = {}
+    for r in db((db.expired_reservations.e_mail == user_email) & (db.expired_reservations.was_renewed != True)).iterselect(
+                db.expired_reservations.ALL,
+                db.reservations.ALL,
+                left=db.reservations.on(db.expired_reservations.OTT_ID == db.reservations.OTT_ID),
+                orderby="expired_reservations.sponsorship_ends",
+            ):
+        expired_rows.append(r.expired_reservations)
+        if r.reservations.OTT_ID is not None:
+            expired_replacements[r.expired_reservations.OTT_ID] = r.reservations
+
+    expired_otts = set(r.OTT_ID for r in expired_rows)
+    sci_names = {r.OTT_ID:r.name for r in itertools.chain(active_rows, expiring_rows, expired_rows)}
+    html_names = {
+        ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2)
+        for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).items()
+    }
+
+    # Sponsored images
+    images = {}
+    for r in db(
+            (db.images_by_ott.ott.belongs(sci_names.keys())) & (db.images_by_ott.overall_best_any==1)
+        ).iterselect(
+            db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
+            db.images_by_ott.rights, db.images_by_ott.licence):
+        images[r.ott] = {'url':thumbnail_url(r.src, r.src_id), 'rights':r.rights, 'licence': r.licence.split('(')[0]}
+
+    prices = {}
+    for r in db(db.ordered_leaves.ott.belongs(sci_names.keys())).iterselect(
+                db.ordered_leaves.ott,
+                db.ordered_leaves.price,
+                db.banned.ott,
+                left=db.banned.on(db.banned.ott == db.ordered_leaves.ott),
+            ):
+        if r.banned.ott is not None or r.ordered_leaves.price is None:
+            # No price for banned / unpriced leaves
+            pass 
+        elif r.ordered_leaves.ott in expired_otts:
+            # No discount if expired
+            prices[r.ordered_leaves.ott] = dict(price=r.ordered_leaves.price, discount=None)
+        else:
+            # Discount items currently owned
+            prices[r.ordered_leaves.ott] = dict(
+                price=int(r.ordered_leaves.price * (1 - renew_discount)),
+                discount=r.ordered_leaves.price - int(r.ordered_leaves.price * (1 - renew_discount)),
+            )
+
+    most_recent = None
+    for r in itertools.chain(active_rows, expiring_rows, expired_rows):
+        # Use most_recent to derive global user details, e.g. name, gift aid status.
+        if most_recent is None:
+            most_recent = r
+
+        # If there's a nondefault image, replace with that
+        if r.user_nondefault_image:
+            images[r.ott] = {'url':thumbnail_url(
+                r.verified_preferred_image_src,
+                r.verified_preferred_image_src_id)}
+
+    return dict(
+        all_row_categories=[
+            dict(title="Active sponsorships", is_open=False, defselect=False, rows=active_rows, replacements={}),
+            dict(title="Sponsorships expiring soon", is_open=True, defselect=True, rows=expiring_rows, replacements={}),
+            dict(title="Expired sponsorships", is_open=True, defselect=True, rows=expired_rows, replacements=expired_replacements),
+        ],
+        html_names=html_names,
+        images=images,
+        prices=prices,
+        most_recent=most_recent,
+        vars=request.vars,
+    )
+
 
 def sponsored():
     """
