@@ -40,6 +40,173 @@ def clear_reservation(reservations_table_id):
     assert reservations_table_id is not None
     db(db.reservations.OTT_ID == reservations_table_id).update(**del_fields)
 
+def add_reservation(OTT_ID_Varin, form_reservation_code, reservation_time_limit, unpaid_time_limit, allow_sponsorship=False, update_view_count=False):
+    """
+    Try and add a reservation for OTT_ID_Varin
+    - form_reservation_code: Temporary identifier for current user
+    - allow_sponsorship: Should this instance allow sponsorship?
+    - update_view_count: Should the view count for the OTT be incremented?
+    - reservation_time_limit: sponsorship.reservation_time_limit_mins config option
+    - unpaid_time_limit: sponsorship.unpaid_time_limit_mins config option
+
+    Returns
+    - status: String describing reservation status.
+    - reservation_row: row from reservations table
+    """
+    db = current.db
+    request = current.request
+    # initialise status flag (it will get updated if all is OK)
+    status = ""
+    reservation_row = None
+    # now search for OTTID in the leaf table
+    try:
+        leaf_entry = db(db.ordered_leaves.ott == OTT_ID_Varin).select().first()
+        common_name = get_common_name(OTT_ID_Varin)
+        sp_name = leaf_entry.name
+    except:
+        OTT_ID_Varin = None
+        leaf_entry = {}
+    if ((not leaf_entry) or             # invalid if not in ordered_leaves
+        (leaf_entry.ott is None) or     # invalid if no OTT ID
+        (' ' not in leaf_entry.name)):  # invalid if not a sp. name (no space/underscore)
+            status = "invalid" # will override maintenance
+
+    if status == "":  # still need to figure out status, but should be able to get data
+        # we might come into this with a partner set in request.vars (e.g. LinnSoc)
+        """
+        TO DO & CHECK - Allows specific parts of the tree to be associated with a partner
+        if partner is None:
+            #check through partner_taxa for leaves that might match this one
+            partner = db((~db.partner_taxa.deactived) & 
+                         (db.partner_taxa.is_leaf == True) &
+                         (db.partner_taxa.ott == OTT_ID_Varin)
+                        ).select(db.partner_taxa.partner_identifier).first()
+        if partner is None:
+            #pull out potential partner *nodes* that we might need to check
+            #also check if this leaf lies within any of the node ranges
+            #this should include a join with ordered_nodes to get the ranges, & a select
+            partner = db((~db.partner_taxa.deactived) & 
+                         (db.partner_taxa.is_leaf == False) &
+                         (OTT_ID_Varin >= db.ordered_nodes.leaf_lft) &
+                         (OTT_ID_Varin <= db.ordered_nodes.leaf_rgt) &
+                         (db.ordered_nodes.ott == db.partner.ott).first()
+                        ).select(db.partner_taxa.partner_identifier) 
+        """
+        # find out if the leaf is banned
+        if db(db.banned.ott == OTT_ID_Varin).count() >= 1:
+            status = "banned"
+        # we need to update the reservations table regardless of banned status)
+        reservation_query = db(db.reservations.OTT_ID == OTT_ID_Varin)
+        reservation_row = reservation_query.select().first()
+        if reservation_row is None:
+            # there is no row in the database for this case so add one
+            if (status == ""):
+                status = "available"
+            if status == "available" and allow_sponsorship:
+                db.reservations.insert(
+                    OTT_ID = OTT_ID_Varin,
+                    name=leaf_entry.name,
+                    last_view=request.now,
+                    num_views=1,
+                    reserve_time=request.now,
+                    user_registration_id=form_reservation_code)
+            else:
+                # update with full viewing data but no reservation, even if e.g. banned
+                db.reservations.insert(
+                    OTT_ID = OTT_ID_Varin,
+                    name=leaf_entry.name,
+                    last_view=request.now,
+                    num_views=1)
+        else:
+            # there is already a row in the database so update if this is the main visit
+            if update_view_count:
+                reservation_query.update(
+                    last_view=request.now,
+                    num_views=(reservation_row.num_views or 0)+1,
+                    name=sp_name)
+
+            # this may be available (because valid) but could be
+            #  sponsored, unverified, reserved or still available  
+            # easiest cases to rule out are relating sponsored and unverified cases.
+            # In either case they would appear in the leger
+            ledger_user_name = reservation_row.user_sponsor_name
+            ledger_PP_transaction_code = reservation_row.PP_transaction_code
+            ledger_verified_time = reservation_row.verified_time
+            # We know something is fully sponsored if PP transaction code is filled out  
+            # NB: this could be with us typing "yet to be paid" in which case
+            #  verified_paid can be NULL, so "verified paid " should not be used as a
+            #  test of whether something is available or not
+            # For forked sites, we do not pass PP transaction code (confidential), so we
+            #   have to check first if verified.
+            # Need to have another option here if verified_time is too long ago - we
+            #  should move this to the expired_reservations table and clear it.
+            if (ledger_verified_time):
+                status = "sponsored"
+            elif status != "banned":
+                if (ledger_user_name):
+                # something has been filled in
+                    if (ledger_PP_transaction_code):
+                        #we have a code (or have reserved this taxon)
+                        status = "unverified"
+                    else:
+                        # unverified and unpaid - test time
+                        startTime = reservation_row.reserve_time
+                        endTime = request.now
+                        timesince = ((endTime-startTime).total_seconds())
+                        # now we check if the time is too great
+                        if (timesince < (unpaid_time_limit)):
+                            status = "unverified waiting for payment"
+                        else:
+                            # We've waited too long and can zap the personal data
+                            # previously in the table then set available
+                            clear_reservation(OTT_ID_Varin)
+                            # Note that this e.g. clears deactivated taxa, etc etc. Even 
+                            # if status == available, allow_sponsorship can be False
+                            # status is then used to decide the text to show the user
+                            status = "available"
+                else:
+                    # The page has no user name entered & is also valid (not banned etc)
+                    # it could only be reserved or available
+                    # First thing is to determine time difference since reserved
+                    startTime = reservation_row.reserve_time   
+                    endTime = request.now
+                    if (startTime == None):
+                        status = "available"
+                        # reserve the leaf because there is no reservetime on record
+                        if allow_sponsorship:
+                            reservation_query.update(
+                                name=sp_name,
+                                reserve_time=request.now,
+                                user_registration_id=form_reservation_code)
+                    else:
+                        # compare times to figure out if there is a time difference
+                        timesince = ((endTime-startTime).total_seconds())
+                        if (timesince < (reservation_time_limit)):
+                            release_time = reservation_time_limit - timesince
+                            # we may be reserved if it wasn't us
+                            if(form_reservation_code == reservation_row.user_registration_id):
+                                # it was the same user anyway so reset timer
+                                status = "available only to user"
+                                if allow_sponsorship:
+                                    reservation_query.update(
+                                        name=sp_name,
+                                        reserve_time=request.now)
+                            else:
+                                status = "reserved"
+                        else:
+                            # it's available still
+                            status = "available"
+                            # reserve the leaf because there is no reservetime on record
+                            if allow_sponsorship:
+                                reservation_query.update(
+                                    name=sp_name,
+                                    reserve_time = request.now,
+                                    user_registration_id = form_reservation_code)
+
+        #re-do the query since we might have added the row ID now
+        reservation_row = reservation_query.select().first()
+    return status, reservation_row
+
 def lang_primary(req):
     language=req.vars.lang or req.env.http_accept_language or 'en'
     first_lang = language.split(',')[0]
