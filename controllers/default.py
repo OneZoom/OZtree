@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # this file is released under public domain and you can use without limitations
 import datetime
+import hashlib
 import itertools
 import re
 import random
@@ -710,16 +711,25 @@ def sponsor_renew():
 
     # Get expired reservations, including who now owns it
     expired_rows = []
-    expired_replacements = {}
+    expired_statuses = {}
     for r in db((db.expired_reservations.e_mail == user_email) & (db.expired_reservations.was_renewed != True)).iterselect(
                 db.expired_reservations.ALL,
-                db.reservations.ALL,
-                left=db.reservations.on(db.expired_reservations.OTT_ID == db.reservations.OTT_ID),
                 orderby="expired_reservations.sponsorship_ends",
             ):
-        expired_rows.append(r.expired_reservations)
-        if r.reservations.OTT_ID is not None:
-            expired_replacements[r.expired_reservations.OTT_ID] = r.reservations
+        expired_rows.append(r)
+
+        # Try reserving each
+        status, new_reservation = add_reservation(
+            r.OTT_ID,
+            # NB: Use the e-mail address as our form_reservation_code
+            hashlib.sha256(user_email.encode('utf8')).hexdigest(),
+            reservation_time_limit,
+            unpaid_time_limit,
+            allow_sponsorship=True)
+        expired_statuses[r.OTT_ID] = dict(
+            status=status,
+            reservation=new_reservation,
+        )
 
     expired_otts = set(r.OTT_ID for r in expired_rows)
     sci_names = {r.OTT_ID:r.name for r in itertools.chain(active_rows, expiring_rows, expired_rows)}
@@ -771,9 +781,9 @@ def sponsor_renew():
 
     return dict(
         all_row_categories=[
-            dict(title="Active sponsorships", is_open=False, defselect=False, rows=active_rows, replacements={}),
-            dict(title="Sponsorships expiring soon", is_open=True, defselect=True, rows=expiring_rows, replacements={}),
-            dict(title="Expired sponsorships", is_open=True, defselect=True, rows=expired_rows, replacements=expired_replacements),
+            dict(title="Active sponsorships", is_open=False, defselect=False, rows=active_rows, status={}),
+            dict(title="Sponsorships expiring soon", is_open=True, defselect=True, rows=expiring_rows, status={}),
+            dict(title="Expired sponsorships", is_open=True, defselect=True, rows=expired_rows, status=expired_statuses),
         ],
         html_names=html_names,
         images=images,

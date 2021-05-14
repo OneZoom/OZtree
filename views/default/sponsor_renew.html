@@ -75,9 +75,10 @@ and renew those that are expiring soon. Scroll down and select what you want to 
               </div>
 
               <div class="uk-form-controls">
-                {{if item.OTT_ID in row_category['replacements']:}}
-                  Now sponsored by {{=row_category['replacements'][item.OTT_ID]['verified_name']}}
-                {{elif item.OTT_ID in prices:}}
+                {{status = row_category['status'].get(item.OTT_ID, dict(status='available'))}}
+                {{if status['status'] == 'sponsored':}}
+                  Now sponsored by {{=status['reservation']['verified_name']}}
+                {{elif status['status'].startswith('available') and item.OTT_ID in prices:}}
                   <input type="hidden" name="price_{{=item.OTT_ID}}" value="{{=prices[item.OTT_ID]['price']}}" />
                   {{if row_category['defselect']:}}<input type="hidden" name="defselect_{{=item.OTT_ID}}" value="true" />{{pass}}
                   <label><input type="checkbox"
