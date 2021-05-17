@@ -788,7 +788,8 @@ def sponsor_renew():
         html_names=html_names,
         images=images,
         prices=prices,
-        most_recent=most_recent,
+        most_recent=most_recent,  # NB: May be None if there's no reservations
+        user_email=user_email,
         vars=request.vars,
     )
 

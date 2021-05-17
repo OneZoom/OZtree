@@ -6,7 +6,7 @@
 
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
-    <h1>This is the private sponsorship renewal page for {{=most_recent.e_mail}}</h1>
+    <h1>This is the private sponsorship renewal page for {{=user_email}}</h1>
     <p>There is also a public page available at TODO: that you can share if you wish.</p>
 </div>
 {{end block}}
@@ -115,7 +115,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
     </div>
   </fieldset>
 
-  {{if most_recent.user_giftaid:}}
+  {{if most_recent is not None and most_recent.user_giftaid:}}
     <p>Thank you for agreeing to gift aid all your donations when you sponsored before. Any new donations will also be treated as
     gift aided, please <a href="mailto:mail@onezoom.org">write to us</a> if you wish to change your gift aid declaration.</p>
   {{else:}}
