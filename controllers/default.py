@@ -700,7 +700,7 @@ def sponsor_renew():
 
     # Get active, expiring reservations
     active_rows, expiring_rows = ([], [])
-    for r in db(db.reservations.e_mail == user_email).iterselect(
+    for r in db(db.reservations.e_mail == user_email).select(
                 db.reservations.ALL,
                 orderby="sponsorship_ends",
             ):
@@ -712,7 +712,7 @@ def sponsor_renew():
     # Get expired reservations, including who now owns it
     expired_rows = []
     expired_statuses = {}
-    for r in db((db.expired_reservations.e_mail == user_email) & (db.expired_reservations.was_renewed != True)).iterselect(
+    for r in db((db.expired_reservations.e_mail == user_email) & (db.expired_reservations.was_renewed != True)).select(
                 db.expired_reservations.ALL,
                 orderby="expired_reservations.sponsorship_ends",
             ):
@@ -742,13 +742,13 @@ def sponsor_renew():
     images = {}
     for r in db(
             (db.images_by_ott.ott.belongs(sci_names.keys())) & (db.images_by_ott.overall_best_any==1)
-        ).iterselect(
+        ).select(
             db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
             db.images_by_ott.rights, db.images_by_ott.licence):
         images[r.ott] = {'url':thumbnail_url(r.src, r.src_id), 'rights':r.rights, 'licence': r.licence.split('(')[0]}
 
     prices = {}
-    for r in db(db.ordered_leaves.ott.belongs(sci_names.keys())).iterselect(
+    for r in db(db.ordered_leaves.ott.belongs(sci_names.keys())).select(
                 db.ordered_leaves.ott,
                 db.ordered_leaves.price,
                 db.banned.ott,
