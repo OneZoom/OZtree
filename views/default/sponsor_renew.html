@@ -106,15 +106,22 @@ and renew those that are expiring soon. Scroll down and select what you want to 
   <div id="renewal_payment" style="display: none">
   <fieldset>
     <div>
-      <label id="amount_input_label" for="amount_input">{{=T('Your donation amount (£%s or greater for selected leaves):') % 0}} </label>
-      <p>
-        £<input type="number"
-                step="0.01"
-                id="amount_input"
+      <label for="amount_extra_input">Give an extra donation to onezoom:</label>
+        <p>£<input type="number"
+                step="1"
+                id="amount_extra_input"
+                name="amount_extra"
+                value="0" /></p>
+    </div>
+    <div>
+      <label for="amount_input">Your total donation to onezoom:</label>
+        <p>£<input type="number"
                 name="amount"
-                value="0" />
-        <em class="error_text"> TODO: </em>
-      </p>
+                id="amount_input"
+                value="0"
+                readonly="readonly"
+                style="border: none; font-size: 120%"
+                /></p>
     </div>
     <input type="hidden"
            name="cmd"
@@ -155,15 +162,14 @@ and renew those that are expiring soon. Scroll down and select what you want to 
 
 <script>(function () {
   var form = document.getElementById('sponsor_form'),
-      el_renewal_payment = document.getElementById("renewal_payment"),
-      el_amount_input_label = document.getElementById("amount_input_label");
+      el_renewal_payment = document.getElementById("renewal_payment");
 
   form.addEventListener("change", function (e) {
      var renew_otts = [],
          renew_scinames = [],
          renew_price = 0;
 
-     if (e.target.name.startsWith('oz_renew_')) {
+     if (e.target.name.startsWith('oz_renew_') || e.target.name == 'amount_extra') {
          for (let field of form.elements) {
              if (field.name && field.name.startsWith('oz_renew_') && field.checked) {
                  // Found a checked renew box, add the price to total
@@ -172,7 +178,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                  renew_scinames.push(field.getAttribute('data-sciname'));
              }
          }
-         renew_price = (renew_price / 100).toFixed(2);
+         renew_price = (renew_price / 100 + parseInt(form.elements.amount_extra.value, 10)).toFixed(2);
          el_renewal_payment.style.display = renew_price > 0 ? '' : 'none';
          form.elements.amount.value = renew_price;
          form.elements.amount.min = renew_price;
@@ -191,7 +197,6 @@ and renew those that are expiring soon. Scroll down and select what you want to 
              // Limit string to keep under paypal restrictions
              form.elements.item_number.value = form.elements.item_number.value.substring(0, 124) + "...";
          }
-         el_amount_input_label.textContent = el_amount_input_label.textContent.replace(/£[0-9.]+/, "£" + renew_price);
      }
   });
 
