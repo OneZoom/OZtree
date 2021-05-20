@@ -32,6 +32,39 @@ def __check_version(): #this is a private function
     except Exception as e:
         return str(e)
 
+
+def sponsorship_enabled():
+    """
+    Return whether sponsorship should be allowed on this instance, deriving from:
+
+    * URL "no_sponsoring" parameter
+    * sponsorship.allow_sponsorship config option
+    * Role of current user (if config is not 1/0/all/none)
+
+    Default to not allowing sponsorships, unless actively turned on
+    """
+    myconf = current.globalenv['myconf']
+    request = current.request
+    auth = current.globalenv['Auth']
+
+    if request.vars.no_sponsoring:
+        # Shut off sponsoring via. URL param (e.g. museum display on main OZ site)
+        return False
+
+    # Read sponsorship setting from config
+    try:
+        spons = myconf.take('sponsorship.allow_sponsorship')
+    except:
+        spons = '0'
+    if spons.lower() in ['1', 'all']:
+        return True
+    if spons.lower() in ['0', 'none']:
+        return False
+
+    # If anything other than '1' or 'all', treat this as a role, e.g. "manager"
+    return auth.has_membership(role=spons)
+
+
 def clear_reservation(reservations_table_id):
     db = current.db
     keep_fields = ('id', 'OTT_ID', 'num_views', 'last_view')

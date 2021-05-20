@@ -10,7 +10,7 @@ from json import dumps
 from collections import OrderedDict
 
 from OZfunc import (
-    clear_reservation, add_reservation,
+    sponsorship_enabled, clear_reservation, add_reservation,
     nice_species_name, get_common_name, get_common_names, sponsorable_children_query,
     language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, add_the,
     otts2ids, nodes_info_from_array, nodes_info_from_string, extract_summary)
@@ -338,29 +338,13 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
         maint = 0
     if maint:
         status = "maintenance"
+    allow_sponsorship = sponsorship_enabled()
 
     if (request.vars.get('form_reservation_code')):
         form_reservation_code = request.vars.form_reservation_code
     else:
         form_reservation_code = __make_user_code()
-    # default to not allowing sponsorships, unless actively turned on in appconfig.ini
-    # even if turned on, sometimes (e.g. museum display on main OZ site) we shut off 
-    # sponsoring anyway by passing a url param.
-    allow_sponsorship = False
-    if request.vars.no_sponsoring:
-        pass
-    else:
-        try:
-            spons = myconf.take('sponsorship.allow_sponsorship')
-            if spons.lower() in ['1', 'all']:
-                allow_sponsorship = True
-            elif spons.lower() in ['0', 'none']:
-                allow_sponsorship = False
-            # If anything other than '1' or 'all', treat this as a role, e.g. "manager"
-            elif auth.has_membership(role=spons):
-                allow_sponsorship = True
-        except:
-            pass
+
     # initialise other variables that will be passed on to the page
     sp_name = common_name = the_long_name = default_image = None
     release_time = 0 #when this will become free, in seconds
@@ -697,6 +681,19 @@ def sponsor_renew():
         user_email = request.args[0]
     except IndexError:
         raise_incorrect_url(URL('index', scheme=True, host=True), "Missing token. " + T("Go back to the home page"))
+
+    # Check maintenance state
+    try:
+        maint = int(myconf.take('sponsorship.maintenance_mins'))
+    except:
+        maint = 0
+    if maint:
+        response.view = request.controller + "/spl_maintenance." + request.extension
+        return dict(mins=str(maint))
+
+    # Check allow_sponsorship state
+    if not sponsorship_enabled():
+        raise_incorrect_url(URL('index', scheme=True, host=True), "Can't renew sponsorship from here." + T("Go back to the home page"))
 
     # Get active, expiring reservations
     active_rows, expiring_rows = ([], [])
