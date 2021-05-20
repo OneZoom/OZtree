@@ -731,24 +731,19 @@ def sponsor_renew():
             reservation=new_reservation,
         )
 
-    expired_otts = set(r.OTT_ID for r in expired_rows)
-    sci_names = {r.OTT_ID:r.name for r in itertools.chain(active_rows, expiring_rows, expired_rows)}
-    html_names = {
-        ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2)
-        for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).items()
-    }
+    rows_by_ott = {r.OTT_ID:r for r in itertools.chain(active_rows, expiring_rows, expired_rows)}
 
     # Sponsored images
     images = {}
     for r in db(
-            (db.images_by_ott.ott.belongs(sci_names.keys())) & (db.images_by_ott.overall_best_any==1)
+            (db.images_by_ott.ott.belongs(rows_by_ott.keys())) & (db.images_by_ott.overall_best_any==1)
         ).select(
             db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
             db.images_by_ott.rights, db.images_by_ott.licence):
         images[r.ott] = {'url':thumbnail_url(r.src, r.src_id), 'rights':r.rights, 'licence': r.licence.split('(')[0]}
 
     prices = {}
-    for r in db(db.ordered_leaves.ott.belongs(sci_names.keys())).select(
+    for r in db(db.ordered_leaves.ott.belongs(rows_by_ott.keys())).select(
                 db.ordered_leaves.ott,
                 db.ordered_leaves.price,
                 db.banned.ott,
@@ -757,7 +752,7 @@ def sponsor_renew():
         if r.banned.ott is not None or r.ordered_leaves.price is None:
             # No price for banned / unpriced leaves
             pass 
-        elif r.ordered_leaves.ott in expired_otts:
+        elif r.ordered_leaves.ott in expired_statuses:
             # No discount if expired
             prices[r.ordered_leaves.ott] = dict(price=r.ordered_leaves.price, discount=None)
         else:
@@ -779,18 +774,45 @@ def sponsor_renew():
                 r.verified_preferred_image_src,
                 r.verified_preferred_image_src_id)}
 
+    # If there's a form submission, validate it
+    errors = {}
+    if 'amount_extra' in request.vars:
+        if int(request.vars['amount_extra']) < 0:
+            errors['amount_extra'] = T("Extra donation can't be negative")
+
+    if 'amount' in request.vars:
+        calc_amount = int(request.vars['amount_extra']) * 100
+        for k, v in request.vars.items():
+            if not k.startswith('oz_renew_'):
+                continue
+            ott = int(k.split("_", 3)[2])
+
+            if ott not in prices:
+                errors[k] = "OTT %d not sponsorable" % ott
+            else:
+                # Update user_donor_show in DB (NB: If field missing, checkbox is unchecked)
+                rows_by_ott[ott].update_record(user_donor_show=bool(request.vars.get("oz_user_donor_show_%d" % ott, False)))
+                # Add actual price (not what user reported) to our sum
+                calc_amount += prices[ott]['price']
+        if '{:.2f}'.format(calc_amount / 100) != request.vars['amount']:
+            errors['amount'] = T("Total sponsorship amount doesn't match")
+
     return dict(
         all_row_categories=[
             dict(title=T("Active sponsorships"), is_open=False, defselect=False, rows=active_rows, status={}),
             dict(title=T("Sponsorships expiring soon"), is_open=True, defselect=True, rows=expiring_rows, status={}),
             dict(title=T("Expired sponsorships"), is_open=True, defselect=True, rows=expired_rows, status=expired_statuses),
         ],
-        sci_names=sci_names,
-        html_names=html_names,
+        sci_names={k:r.name for k, r in rows_by_ott.items()},
+        html_names={
+            ott:nice_species_name(rows_by_ott[ott].name, vn, html=True, leaf=True, first_upper=True, break_line=2)
+            for ott,vn in get_common_names(rows_by_ott.keys(), return_nulls=True).items()
+        },
         images=images,
         prices=prices,
         most_recent=most_recent,  # NB: May be None if there's no reservations
         user_email=user_email,
+        errors=errors,
         vars=request.vars,
     )
 

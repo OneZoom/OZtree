@@ -79,8 +79,8 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                 {{elif status['status'].startswith('available') and item.OTT_ID in prices:}}
                   <label><input type="checkbox"
                                 class="uk-checkbox"
-                                name="oz_show_on_donor_page_{{=item.OTT_ID}}"
-                                {{='checked="checked"' if request.vars.get('oz_show_on_donor_page_%d' % item.OTT_ID, item.user_donor_show) else ''}}
+                                name="oz_user_donor_show_{{=item.OTT_ID}}"
+                                {{='checked="checked"' if request.vars.get('oz_user_donor_show_%d' % item.OTT_ID, item.user_donor_show) else ''}}
                                 > Show on <a href="{{=URL('default', 'donor_list.html')}}">donor page</a></input></label>
                   <br/>
                   <label class="renew_checkbox">
@@ -113,7 +113,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                 id="amount_extra_input"
                 name="amount_extra"
                 value="{{=request.vars.get('amount_extra', 0)}}"
-                /></p>
+                />{{if 'amount_extra' in errors:}}<em class="error_text">{{=errors['amount_extra']}}</em>{{pass}}</p>
     </div>
     <div>
       <label for="amount_input">Your total donation to onezoom:</label>
@@ -123,7 +123,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                 value="{{=request.vars.get('amount', 0)}}"
                 readonly="readonly"
                 style="border: none; font-size: 120%"
-                /></p>
+                />{{if 'amount' in errors:}}<em class="error_text">{{=errors['amount']}}</em>{{pass}}</p>
     </div>
     <input type="hidden"
            name="cmd"
