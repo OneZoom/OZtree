@@ -23,9 +23,7 @@ so that they don't have to renew during the height of the COVID crisis. This pag
 and renew those that are expiring soon. Scroll down and select what you want to renew, or to do this quickly
 </p>
 
-<form id="sponsor_form" method="post"
-  action="sponsor_pay.html"
-  onsubmit="validate_form_via_ajax_reload($(this).serializeArray()); return false;">
+<form id="sponsor_form" method="post">
 
   <p class="submit_donate"><input type="button" id="button_renew_all" value="Select all that are due for renewal soon and proceed" /></p>
 
@@ -79,15 +77,20 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                 {{if status['status'] == 'sponsored':}}
                   Now sponsored by {{=status['reservation']['verified_name']}}
                 {{elif status['status'].startswith('available') and item.OTT_ID in prices:}}
-                  <input type="hidden" name="price_{{=item.OTT_ID}}" value="{{=prices[item.OTT_ID]['price']}}" />
-                  {{if row_category['defselect']:}}<input type="hidden" name="defselect_{{=item.OTT_ID}}" value="true" />{{pass}}
                   <label><input type="checkbox"
                                 class="uk-checkbox"
-                                name="show_on_donor_page_{{=item.OTT_ID}}"
+                                name="oz_show_on_donor_page_{{=item.OTT_ID}}"
                                 {{='checked="checked"' if item.user_donor_show else ''}}
                                 > Show on <a href="{{=URL('default', 'donor_list.html')}}">donor page</a></input></label>
                   <br/>
-                  <label class="renew_checkbox"><input type="checkbox" class="uk-checkbox" name="renew_{{=item.OTT_ID}}"> Select to renew</input></label>
+                  <label class="renew_checkbox">
+                    <input type="checkbox"
+                           class="uk-checkbox {{if row_category['defselect']:}}defselect{{pass}}"
+                           name="oz_renew_{{=item.OTT_ID}}"
+                           value="{{=prices[item.OTT_ID]['price']}}"
+                           data-sciname="{{=sci_names.get(item.OTT_ID, 'Unknown')}}"
+                           > Select to renew</input>
+                  </label>
                 {{else:}}
                   To renew, please <a href="mailto:mail@onezoom.org">write to us</a>
                 {{pass}}
@@ -103,16 +106,37 @@ and renew those that are expiring soon. Scroll down and select what you want to 
   <div id="renewal_payment" style="display: none">
   <fieldset>
     <div>
-      <label for="user_paid_input">{{=T('Your donation amount (£%s or greater for selected leaves):') % 0}} </label>
+      <label id="amount_input_label" for="amount_input">{{=T('Your donation amount (£%s or greater for selected leaves):') % 0}} </label>
       <p>
         £<input type="number"
                 step="0.01"
-                id="user_paid_input"
-                name="user_paid"
+                id="amount_input"
+                name="amount"
                 value="0" />
         <em class="error_text"> TODO: </em>
       </p>
     </div>
+    <input type="hidden"
+           name="cmd"
+           value="_donations" />
+    <input type="hidden"
+           name="business"
+           value="mail@onezoom.org" />
+    <input type="hidden"
+           name="item_name"
+           value="Leaf sponsorship renewal (for 0 leaves)" />
+    <input type="hidden"
+           name="item_number"
+           value="" />
+    <input type="hidden"
+           name="currency_code"
+           value="GBP" />
+    <input type="hidden"
+           name="return"
+           value="{{=URL("sponsor_thanks.html", scheme=True, host=True)}}" />
+    <input type="hidden"
+           name="notify_url"
+           value="{{=URL("pp_process_post.html", scheme=True, host=True)}}" />
   </fieldset>
 
   {{if most_recent is not None and most_recent.user_giftaid:}}
@@ -130,25 +154,45 @@ and renew those that are expiring soon. Scroll down and select what you want to 
 <p>You cannot change your sponsorship text from this page, if you want to do that please <a href="mailto:mail@onezoom.org">write to us</a>.</p>
 
 <script>(function () {
-  var form = document.getElementById('sponsor_form');
+  var form = document.getElementById('sponsor_form'),
+      el_renewal_payment = document.getElementById("renewal_payment"),
+      el_amount_input_label = document.getElementById("amount_input_label");
 
   form.addEventListener("change", function (e) {
-     var renew_count = 0,
+     var renew_otts = [],
+         renew_scinames = [],
          renew_price = 0;
 
-     for (let field of form.elements) {
-         if (field.name && field.name.match(/renew_\d+/) && field.checked) {
-             // Found a checked renew box, add the price to total
-             let ottid = field.name.split("_")[1];
-             renew_count += 1;
-             renew_price += parseInt(form.elements["price_" + ottid].value, 10);
+     if (e.target.name.startsWith('oz_renew_')) {
+         for (let field of form.elements) {
+             if (field.name && field.name.startsWith('oz_renew_') && field.checked) {
+                 // Found a checked renew box, add the price to total
+                 renew_price += parseInt(field.value, 10);
+                 renew_otts.push(parseInt(field.name.split("_")[2], 10));
+                 renew_scinames.push(field.getAttribute('data-sciname'));
+             }
          }
+         renew_price = (renew_price / 100).toFixed(2);
+         el_renewal_payment.style.display = renew_price > 0 ? '' : 'none';
+         form.elements.amount.value = renew_price;
+         form.elements.amount.min = renew_price;
+
+         form.elements.item_name.value = form.elements.item_name.value.replace(
+             /\(.*\)/,
+             "(for " + renew_scinames.join(",") + ")");
+         if (form.elements.item_name.value.length > 127) {
+             // Limit string to keep under paypal restrictions
+             form.elements.item_name.value = form.elements.item_name.value.replace(
+                 /\(.*\)/,
+                 "(for " + renew_scinames.length + " leaves)");
+         }
+         form.elements.item_number.value = renew_otts.join("/");
+         if (form.elements.item_number.value.length > 127) {
+             // Limit string to keep under paypal restrictions
+             form.elements.item_number.value = form.elements.item_number.value.substring(0, 124) + "...";
+         }
+         el_amount_input_label.textContent = el_amount_input_label.textContent.replace(/£[0-9.]+/, "£" + renew_price);
      }
-     document.getElementById("renewal_payment").style.display = renew_price > 0 ? '' : 'none';
-     if ((parseFloat(form.elements['user_paid'].value) * 100) < renew_price) {
-         form.elements['user_paid'].value = (renew_price / 100).toFixed(2);
-     }
-     form.elements['user_paid'].min = (renew_price / 100).toFixed(2);
   });
 
   form.addEventListener("click", function (e) {
@@ -156,15 +200,11 @@ and renew those that are expiring soon. Scroll down and select what you want to 
          e.preventDefault();
          e.stopPropagation();
          for (let field of e.target.form.elements) {
-             // Find everything with a defselect hidden field
-             if (field.name && field.name.match(/defselect_\d+/)) {
-                 let ottid = field.name.split("_")[1],
-                     renew_input = form.elements["renew_" + ottid];
-
-                 // Check it if not already checked
-                 if (!renew_input.checked) {
-                     renew_input.checked = true;
-                     renew_input.dispatchEvent(new Event('change', { bubbles: true }));
+             // Check everything with a defselect class
+             if (field.name && field.name.startsWith('oz_renew_')) {
+                 if (field.classList.contains('defselect') && !field.checked) {
+                     field.checked = true;
+                     field.dispatchEvent(new Event('change', { bubbles: true }));
                  }
              }
          }
