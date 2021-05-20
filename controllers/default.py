@@ -25,6 +25,12 @@ try:
     unpaid_time_limit = float(myconf.take('sponsorship.unpaid_time_limit_mins')) * 60.0
 except:
     unpaid_time_limit = 2.0*24.0*60.0*60.0 #seconds
+try:
+    paypal_url = myconf.take('paypal.url')
+    if not paypal_url:
+        raise ValueError('blank paypal config')
+except:
+    paypal_url = 'https://www.sandbox.paypal.com'
 
 """ generally useful functions """
 
@@ -577,12 +583,6 @@ def sponsor_pay():
             # redirect the user to a paypal page that (if completed) triggers paypal to then visit
             # an OZ page, confirming payment: this is called an IPN. Details in pp_process_post.html
             try:
-                paypal_url = myconf.take('paypal.url')
-                if not paypal_url:
-                    raise ValueError('blank paypal config')
-            except:
-                paypal_url = 'https://www.sandbox.paypal.com'
-            try:
                 paypal_notify_string = (
                     '&notify_url=' + myconf.take('paypal.notify_url')
                     + '/pp_process_post.html/' + OTT_ID_str)
@@ -796,6 +796,10 @@ def sponsor_renew():
                 calc_amount += prices[ott]['price']
         if '{:.2f}'.format(calc_amount / 100) != request.vars['amount']:
             errors['amount'] = T("Total sponsorship amount doesn't match")
+
+    # If got this far without errors, good to submit to paypal
+    if 'cmd' in request.vars and len(errors) == 0:
+        raise HTTP(307, "Redirect", Location=paypal_url + '/cgi-bin/webscr')
 
     return dict(
         all_row_categories=[
