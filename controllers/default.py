@@ -781,9 +781,9 @@ def sponsor_renew():
 
     return dict(
         all_row_categories=[
-            dict(title="Active sponsorships", is_open=False, defselect=False, rows=active_rows, status={}),
-            dict(title="Sponsorships expiring soon", is_open=True, defselect=True, rows=expiring_rows, status={}),
-            dict(title="Expired sponsorships", is_open=True, defselect=True, rows=expired_rows, status=expired_statuses),
+            dict(title=T("Active sponsorships"), is_open=False, defselect=False, rows=active_rows, status={}),
+            dict(title=T("Sponsorships expiring soon"), is_open=True, defselect=True, rows=expiring_rows, status={}),
+            dict(title=T("Expired sponsorships"), is_open=True, defselect=True, rows=expired_rows, status=expired_statuses),
         ],
         sci_names=sci_names,
         html_names=html_names,
