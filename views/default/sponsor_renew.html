@@ -80,7 +80,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                   <label><input type="checkbox"
                                 class="uk-checkbox"
                                 name="oz_show_on_donor_page_{{=item.OTT_ID}}"
-                                {{='checked="checked"' if item.user_donor_show else ''}}
+                                {{='checked="checked"' if request.vars.get('oz_show_on_donor_page_%d' % item.OTT_ID, item.user_donor_show) else ''}}
                                 > Show on <a href="{{=URL('default', 'donor_list.html')}}">donor page</a></input></label>
                   <br/>
                   <label class="renew_checkbox">
@@ -88,6 +88,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                            class="uk-checkbox {{if row_category['defselect']:}}defselect{{pass}}"
                            name="oz_renew_{{=item.OTT_ID}}"
                            value="{{=prices[item.OTT_ID]['price']}}"
+                           {{='checked="checked"' if request.vars.get('oz_renew_%d' % item.OTT_ID, False) else ''}}
                            data-sciname="{{=sci_names.get(item.OTT_ID, 'Unknown')}}"
                            > Select to renew</input>
                   </label>
@@ -103,7 +104,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
     {{pass}}
   </ul>
 
-  <div id="renewal_payment" style="display: none">
+  <div id="renewal_payment" {{if float(request.vars.get('amount', 0)) < 0.01:}}style="display: none"{{pass}}>
   <fieldset>
     <div>
       <label for="amount_extra_input">Give an extra donation to onezoom:</label>
@@ -111,14 +112,15 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                 step="1"
                 id="amount_extra_input"
                 name="amount_extra"
-                value="0" /></p>
+                value="{{=request.vars.get('amount_extra', 0)}}"
+                /></p>
     </div>
     <div>
       <label for="amount_input">Your total donation to onezoom:</label>
         <p>£<input type="number"
                 name="amount"
                 id="amount_input"
-                value="0"
+                value="{{=request.vars.get('amount', 0)}}"
                 readonly="readonly"
                 style="border: none; font-size: 120%"
                 /></p>
@@ -199,6 +201,8 @@ and renew those that are expiring soon. Scroll down and select what you want to 
          }
      }
   });
+  // Make sure form is in-sync on startup
+  form.elements.amount_extra.dispatchEvent(new Event('change', { bubbles: true }));
 
   form.addEventListener("click", function (e) {
      if (e.target.id == "button_renew_all") {
