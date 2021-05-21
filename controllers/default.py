@@ -740,6 +740,15 @@ def sponsor_renew():
             reservation_time_limit,
             unpaid_time_limit,
             allow_sponsorship=True)
+        if status.startswith('available'):
+            # Copy over details from any fields that are marked as writable
+            # NB: This includes the verified_* fields
+            new_reservation.update_record(**{
+                k:r[k]
+                for k
+                in db.expired_reservations.fields
+                if db.expired_reservations[k].writable
+            })
         expired_statuses[r.OTT_ID] = dict(
             status=status,
             reservation=new_reservation,

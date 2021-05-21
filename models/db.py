@@ -503,20 +503,20 @@ db.define_table('reservations',
     # can we collect gift aid?
                
     # paypal returned information
-    Field('PP_transaction_code', type = 'text'),
-    Field('PP_e_mail', type = 'string', length=200),
+    Field('PP_transaction_code', type = 'text', writable = False),
+    Field('PP_e_mail', type = 'string', length=200, writable = False),
     # another e-mail just in case we need it for verification
-    Field('PP_first_name', type = 'text'),
-    Field('PP_second_name', type = 'text'),
+    Field('PP_first_name', type = 'text', writable = False),
+    Field('PP_second_name', type = 'text', writable = False),
     # name to help with sponsorship text verification
-    Field('PP_town', type = 'text'),
-    Field('PP_country', type = 'text'),
+    Field('PP_town', type = 'text', writable = False),
+    Field('PP_country', type = 'text', writable = False),
     # address to help with further info verification
-    Field('PP_house_and_street', type = 'text'),
-    Field('PP_postcode', type = 'text'),
+    Field('PP_house_and_street', type = 'text', writable = False),
+    Field('PP_postcode', type = 'text', writable = False),
     # save the two above only if they have agreed to give us gift aid
 
-    Field('sale_time', type = 'text'),
+    Field('sale_time', type = 'text', writable = False),
     # seems professional to know when they paid and wise to keep it separate from expiry date
                 
     # a verified copy of what's in the sponsor table. Can also use this to check if this entry has been sponsored and verified
@@ -540,14 +540,14 @@ db.define_table('reservations',
     # field is still filled out, but user_nondefault_image should be 1.
     Field('verified_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
     # if verified_time = NULL then details haven't been verified
-    Field('verified_paid', type = 'text'), 
+    Field('verified_paid', type = 'text', writable = False), 
     # The amount paypal reported as being paid (as a stringified pounds/pence float) for this OTTID
     # May be NULL after payment if, e.g. payment received outside paypal, see notes in add_reservation()
     Field('verified_url', type = 'text'),  
     # url for those that agree to have one            
     Field('sponsorship_text_level', type = 'integer'),
     # How generally acceptable is the text (3 = completely standard & acceptable) - NULL=not reviewed
-    Field('live_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
+    Field('live_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME()), writable = False),
     # Temporarily reinstate live_time until we transfer the data into emailed_re_sponsorship column, then we can delete it
     Field('tweeted_re_sponsorship', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
     # the time when we emailed them
@@ -574,8 +574,8 @@ db.define_table('reservations',
     # percentage of this donation that is diverted to a OZ partner like Linn Soc (after paypal fees are deducted) 
     Field('partner_name', type = 'string', length=40, writable=False),
     # a standardised name for the partner (or multiple partners if it comes to that - would then assume equal split between partners)
-    Field('partner_paid_on', type = 'datetime', requires = IS_EMPTY_OR(IS_DATETIME())),
-    Field('giftaid_claimed_on', type = 'datetime', requires = IS_EMPTY_OR(IS_DATETIME())),
+    Field('partner_paid_on', type = 'datetime', requires = IS_EMPTY_OR(IS_DATETIME()), writable = False),
+    Field('giftaid_claimed_on', type = 'datetime', requires = IS_EMPTY_OR(IS_DATETIME()), writable = False),
     Field('deactivated', type = 'text'),
     # true if this row in the reservations table has been deliberately deactivated for any reason other than expiry e.g. complaint / species disappears etc.
                        
