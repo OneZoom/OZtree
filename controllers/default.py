@@ -31,6 +31,10 @@ try:
         raise ValueError('blank paypal config')
 except:
     paypal_url = 'https://www.sandbox.paypal.com'
+try:
+    sponsorship_renew_discount = float(myconf.take('sponsorship.renew_discount'))
+except:
+    sponsorship_renew_discount = 0.2
 
 """ generally useful functions """
 
@@ -672,8 +676,6 @@ def sponsor_replace_page():
 def sponsor_renew():
     '''list items currently sponsored by a user
     '''
-    # TODO: Bunch of constants that need better homes
-    renew_discount = 0.2  # Discount applied to price if renewing
     expiry_soon_date = datetime.datetime.today() + datetime.timedelta(days=90)  # datetime before which expiry will be "soon"
 
     try:
@@ -770,8 +772,8 @@ def sponsor_renew():
         else:
             # Discount items currently owned
             prices[r.ordered_leaves.ott] = dict(
-                price=int(r.ordered_leaves.price * (1 - renew_discount)),
-                discount=r.ordered_leaves.price - int(r.ordered_leaves.price * (1 - renew_discount)),
+                price=int(r.ordered_leaves.price * (1 - sponsorship_renew_discount)),
+                discount=r.ordered_leaves.price - int(r.ordered_leaves.price * (1 - sponsorship_renew_discount)),
             )
 
     most_recent = None
