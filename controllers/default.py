@@ -709,7 +709,10 @@ def sponsor_renew():
 
     # Get active, expiring reservations
     active_rows, expiring_rows = ([], [])
-    for r in db(db.reservations.e_mail == user_email).select(
+    for r in db(
+                (db.reservations.e_mail == user_email) &
+                (db.reservations.PP_transaction_code != None)  # i.e has been bought
+            ).select(
                 db.reservations.ALL,
                 orderby="sponsorship_ends",
             ):
