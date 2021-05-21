@@ -1254,17 +1254,31 @@ def list_sponsorable_children():
 def pp_process_post():
     """
     Only visited by paypal, to confirm the payment has been made. For debugging problems, see
-    https://developer.paypal.com/docs/classic/ipn/integration-guide/IPNOperations/
+    https://developer.paypal.com/docs/api-basics/notifications/ipn/IPNImplementation/
      
     If paypal.save_to_tmp_file_dir in appconfig.ini is e.g. '/var/tmp' then save a temp
     file called `www.onezoom.org_paypal_OTTXXX_TIMESTAMPmilliseconds.json` to that dir
     
     If called with no args, return nothing, so as not to excite interest
     """
-    
+    import urllib
+
     if len(request.args) == 0:
         return {}
     try:
+        # Make sure this request came from paypal
+        paypal_resp = urllib.request.urlopen(urllib.request.Request(
+            paypal_url.replace('//www', '//ipnpb') + '/cgi-bin/webscr',
+            data=("cmd=_notify-validate&" + urllib.parse.urlencode(request.post_vars)).encode(),
+            headers={
+                'content-type': 'application/x-www-form-urlencoded',
+            }))
+        if paypal_resp.code != 200:
+            raise ValueError("Invalid IPN response code: %d" % paypal_resp.code)
+        paypal_resp = paypal_resp.read().decode('ascii')
+        if paypal_resp != 'VERIFIED':
+            raise ValueError("Invalid IPN response: %s" % paypal_resp)
+
         OTT_ID_Varin = int(request.args[0])
         if OTT_ID_Varin <= 0:
             raise ValueError("Passed in OTT is not a positive integer")
@@ -1324,25 +1338,12 @@ def pp_process_post():
                     "{}{}_paypal_OTT{}_{}.json".format(
                         "PP_" if err is None else "PP_ERROR_",
                         "".join([char if char.isalnum() else "_" for char in request.env.http_host]),
-                        OTT_ID_Varin,
+                        '_'.join(request.args),
                         int(round(time.time() * 1000)))),
                     "w") as json_file:
                 json_file.write(dumps(request.vars))
     except:
         pass
-
-    #TO DO
-    #To check this is really from PP, we should post the message back to https://ipnpb.paypal.com/cgi-bin/webscr
-    #as per the request-response flow described at https://developer.paypal.com/docs/classic/ipn/integration-guide/IPNImplementation/
-    #e.g. 
-    #
-    #from gluon.tools import fetch
-    #pp_post_vars = request.post_vars
-    #pp_post_vars['cmd'] = '_notify-validate'
-    #headers = {'content-type': 'application/x-www-form-urlencoded', 'host': 'www.paypal.com'}
-    #r = fetch(https://ipnpb.paypal.com/cgi-bin/webscr, data=pp_post_vars, headers=headers, user_agent="WEB2PY-IPN-VerificationScript")
-    ##check that r contains "VERIFIED"
-    
     if err:
         raise HTTP(400, err) #should flag up to PP that there is a problem with this transaction
     else:
