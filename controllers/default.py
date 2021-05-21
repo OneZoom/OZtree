@@ -1341,7 +1341,12 @@ def pp_process_post():
                         '_'.join(request.args),
                         int(round(time.time() * 1000)))),
                     "w") as json_file:
-                json_file.write(dumps(request.vars))
+                out = request.vars.copy()
+                if err:
+                    import traceback
+                    out['__oz_error'] = str(err)
+                    out['__oz_traceback'] = traceback.format_exception(None, err, err.__traceback__)
+                json_file.write(dumps(out))
     except:
         pass
     if err:
