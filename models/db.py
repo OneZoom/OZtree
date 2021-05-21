@@ -490,7 +490,8 @@ db.define_table('reservations',
     Field('user_updated_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME()), writable=False),  
     # need to know when it was last updated to check for user updates         
     Field('user_paid', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
-    # the amount they actually paid in total (I think it would be silly not to give the option to increase the amount)   
+    # The amount (in pounds) the user promised to pay for this OTTID
+    # Set by user before paypal trip, validated to be >= asking_price (See valid_spons).
     Field('user_message_OZ', type = 'text', requires=(IS_LENGTH(maxsize=250))),
     # message for OZ e.g. to show on funding website or to request converstaion about url etc.
     Field('sponsorship_story', type = 'text', requires=(IS_LENGTH(maxsize=1000))),
@@ -540,7 +541,8 @@ db.define_table('reservations',
     Field('verified_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
     # if verified_time = NULL then details haven't been verified
     Field('verified_paid', type = 'text'), 
-    # has then amount paid been matched to paypal e-mail
+    # The amount paypal reported as being paid (as a stringified pounds/pence float) for this OTTID
+    # May be NULL after payment if, e.g. payment received outside paypal, see notes in add_reservation()
     Field('verified_url', type = 'text'),  
     # url for those that agree to have one            
     Field('sponsorship_text_level', type = 'integer'),
@@ -567,6 +569,7 @@ db.define_table('reservations',
     # verified_time can be 2 or 3 (or more) times the sponsorship_duration_days
     Field('asking_price', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100)), writable=False), 
     # price in pounds - good idea to hang on to this for accounting purposes and verification the numbers add up later
+    # Set as (ordered_leaves.price / 100) at time of purchase (See valid_spons)
     Field('partner_percentage', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100)), writable=False), 
     # percentage of this donation that is diverted to a OZ partner like Linn Soc (after paypal fees are deducted) 
     Field('partner_name', type = 'string', length=40, writable=False),

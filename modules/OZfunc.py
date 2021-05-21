@@ -165,11 +165,11 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, reservation_time_limit,
             ledger_user_name = reservation_row.user_sponsor_name
             ledger_PP_transaction_code = reservation_row.PP_transaction_code
             ledger_verified_time = reservation_row.verified_time
-            # We know something is fully sponsored if PP transaction code is filled out  
+            # We know something is fully sponsored if PP_transaction_code is filled out  
             # NB: this could be with us typing "yet to be paid" in which case
             #  verified_paid can be NULL, so "verified paid " should not be used as a
             #  test of whether something is available or not
-            # For forked sites, we do not pass PP transaction code (confidential), so we
+            # For forked sites, we do not pass PP_transaction_code (confidential), so we
             #   have to check first if verified.
             # Need to have another option here if verified_time is too long ago - we
             #  should move this to the expired_reservations table and clear it.
