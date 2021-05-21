@@ -1279,50 +1279,55 @@ def pp_process_post():
         if paypal_resp != 'VERIFIED':
             raise ValueError("Invalid IPN response: %s" % paypal_resp)
 
-        OTT_ID_Varin = int(request.args[0])
-        if OTT_ID_Varin <= 0:
-            raise ValueError("Passed in OTT is not a positive integer")
-        reservation_query = ((db.reservations.OTT_ID == OTT_ID_Varin) & 
-                             (db.reservations.user_sponsor_name != None) & 
-                             (db.reservations.user_paid > 4.5)
-                            )
-        
-        #it must be the case that this row exists in the db and that it has at a minimum a
-        # user_sponsor_name and a user_paid > £4.50
-        try:
-            paid = float(request.vars.mc_gross)
-        except:
-            paid = None
-        updated = db(reservation_query &
-                     #check the fields we are about to update are null (if not, this could be malicious)
-                     (db.reservations.PP_first_name == None) &
-                     (db.reservations.PP_second_name == None) &
-                     (db.reservations.PP_town == None) &
-                     (db.reservations.PP_country == None) &
-                     (db.reservations.PP_e_mail == None) &
-                     (db.reservations.verified_paid == None) &
-                     ((db.reservations.PP_transaction_code == None) | (db.reservations.PP_transaction_code == 'reserved')) &
-                     (db.reservations.sale_time == None)
-                    ).update(PP_first_name = request.vars.get('first_name'),
-                             PP_second_name = request.vars.get('last_name'),
-                             PP_town = ", ".join([t for t in [request.vars.get('address_city'), request.vars.get('address_state')] if t]),
-                             PP_country = request.vars.get('address_country'),
-                             PP_e_mail = request.vars.get('payer_email'),
-                             verified_paid = paid,
-                             PP_transaction_code = request.vars.get('txn_id'),
-                             sale_time = request.vars.get('payment_date')
-                            )
-        if not updated:
-            raise NameError('No row updated: some details may already be filled out, or the OTT/name/paid may be invalid')
-        #should only update house/st and postcode if giftaid is true
-        db(reservation_query & 
-           (db.reservations.user_giftaid == True) &
-           (db.reservations.PP_house_and_street == None) &
-           (db.reservations.PP_postcode == None)
-        ).update(
-            PP_house_and_street = request.vars.get('address_street'),
-            PP_postcode = request.vars.get('address_zip')
-        )
+        # Decide whether to use basket mode or OTT mode
+        if request.args[0] == 'basket':
+            raise NotImplementedError
+        else:
+            OTT_ID_Varin = int(request.args[0])
+            if OTT_ID_Varin <= 0:
+                raise ValueError("Passed in OTT is not a positive integer")
+            reservation_query = ((db.reservations.OTT_ID == OTT_ID_Varin) & 
+                                 (db.reservations.user_sponsor_name != None) & 
+                                 (db.reservations.user_paid > 4.5)
+                                )
+
+            #it must be the case that this row exists in the db and that it has at a minimum a
+            # user_sponsor_name and a user_paid > £4.50
+            try:
+                paid = float(request.vars.mc_gross)
+            except:
+                paid = None
+            updated = db(reservation_query &
+                         #check the fields we are about to update are null (if not, this could be malicious)
+                         # JL: PayPal says that a replay from the server is something you should expect, so not necessarily true
+                         (db.reservations.PP_first_name == None) &
+                         (db.reservations.PP_second_name == None) &
+                         (db.reservations.PP_town == None) &
+                         (db.reservations.PP_country == None) &
+                         (db.reservations.PP_e_mail == None) &
+                         (db.reservations.verified_paid == None) &
+                         ((db.reservations.PP_transaction_code == None) | (db.reservations.PP_transaction_code == 'reserved')) &
+                         (db.reservations.sale_time == None)
+                        ).update(PP_first_name = request.vars.get('first_name'),
+                                 PP_second_name = request.vars.get('last_name'),
+                                 PP_town = ", ".join([t for t in [request.vars.get('address_city'), request.vars.get('address_state')] if t]),
+                                 PP_country = request.vars.get('address_country'),
+                                 PP_e_mail = request.vars.get('payer_email'),
+                                 verified_paid = paid,
+                                 PP_transaction_code = request.vars.get('txn_id'),
+                                 sale_time = request.vars.get('payment_date')
+                                )
+            if not updated:
+                raise NameError('No row updated: some details may already be filled out, or the OTT/name/paid may be invalid')
+            #should only update house/st and postcode if giftaid is true
+            db(reservation_query & 
+               (db.reservations.user_giftaid == True) &
+               (db.reservations.PP_house_and_street == None) &
+               (db.reservations.PP_postcode == None)
+            ).update(
+                PP_house_and_street = request.vars.get('address_street'),
+                PP_postcode = request.vars.get('address_zip')
+            )
         err = None
     except Exception as e:
         err = e
