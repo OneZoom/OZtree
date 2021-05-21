@@ -4,6 +4,7 @@ Functions that are defined in controllers and that takes arguments are private.
 Functions defined in controllers and start with ‘__’ [double underscores] are private.
 Functions defined in controllers and having a space after the () and before the ‘:’ are private. 
 """
+import datetime
 import re
 import os
 import random
@@ -72,6 +73,74 @@ def clear_reservation(reservations_table_id):
     assert len(keep_fields) + len(del_fields) == len(db.reservations.fields)
     assert reservations_table_id is not None
     db(db.reservations.OTT_ID == reservations_table_id).update(**del_fields)
+
+
+def reservation_confirm_payment(basket_code, total_paid_pence, sponsorship_renew_discount, basket_fields):
+    """
+    Update all reservations with (basket_code) as paid, spreading (total_paid_pence)
+    across all reservations. Fill in (basket_fields) (i.e. Paypal info) for all rows.
+    """
+    db = current.db
+
+    if 'PP_transaction_code' not in basket_fields:
+        raise ValueError("basket_fields should at least have PP_transaction_code")
+
+    basket_rows = db(db.reservations.basket_code == basket_code).select()
+    if len(basket_rows) == 0:
+        raise ValueError("Unknown basket_code %s" % basket_code)
+
+    remaining_paid_pence = total_paid_pence
+    for r in basket_rows:
+        fields_to_update = basket_fields.copy()
+        if not r.user_giftaid:
+            # Without giftaid, we shouldn't store a users' location
+            fields_to_update['PP_house_and_street'] = None
+            fields_to_update['PP_postcode'] = None
+
+        if r.PP_transaction_code is not None:
+            if r.PP_transaction_code == basket_fields['PP_transaction_code']:
+                # PP_transaction_code matches, so is a replay of the same transaction, ignore.
+                continue
+            # Renewal of existing sponsorship. Backup old reservation
+            expired_r = r.as_dict()
+            del expired_r['id']
+            expired_r['was_renewed'] = True
+            db.expired_reservations.insert(**expired_r)
+
+            # Fetch latest asking price, apply renewal discount
+            # NB: Ideally we would have stored asking_price back when user saw
+            #     it, but can't erase old asking price
+            ott_price_pence = db(db.ordered_leaves.ott==r.OTT_ID).select(db.ordered_leaves.price).first().price
+            ott_price_pence = int(ott_price_pence * (1 - sponsorship_renew_discount))
+            fields_to_update['asking_price'] = ott_price_pence / 100
+
+            # Bump time to include renewal
+            fields_to_update['sponsorship_duration_days'] = 365*4+1
+            fields_to_update['sponsorship_ends'] = r.sponsorship_ends + datetime.timedelta(days=365*4+1)  ## 4 Years
+        else:
+            # NB: This is different to existing paths, but feels a more correct place to set sponsorship_ends
+            fields_to_update['sponsorship_duration_days'] = 365*4+1
+            fields_to_update['sponsorship_ends'] = datetime.datetime.now() + datetime.timedelta(days=365*4+1)  ## 4 Years
+            ott_price_pence = int(r.asking_price * 100)
+
+        if r.OTT_ID == basket_rows[-1].OTT_ID:
+            # Last item, throw all remaining funds onto it
+            ott_price_pence = max(ott_price_pence, remaining_paid_pence)
+        remaining_paid_pence -= ott_price_pence
+        if remaining_paid_pence < 0:
+            raise ValueError("Out of funds for basket %s: %d" % (
+                basket_code,
+                total_paid_pence,
+            ))
+        # NB: Strictly speaking user_paid is "What they promised to pay", and should
+        # have been set before the paypal trip. But with a basket of items we don't divvy up
+        # their donation until now.
+        fields_to_update['user_paid'] = ott_price_pence / 100
+        fields_to_update['verified_paid'] = '{:.2f}'.format(ott_price_pence / 100)
+
+        # Send all updates for this row
+        r.update_record(**fields_to_update)
+
 
 def add_reservation(OTT_ID_Varin, form_reservation_code, reservation_time_limit, unpaid_time_limit, allow_sponsorship=False, update_view_count=False):
     """

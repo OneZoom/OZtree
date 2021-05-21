@@ -10,7 +10,7 @@ from json import dumps
 from collections import OrderedDict
 
 from OZfunc import (
-    sponsorship_enabled, clear_reservation, add_reservation,
+    sponsorship_enabled, clear_reservation, add_reservation, reservation_confirm_payment,
     nice_species_name, get_common_name, get_common_names, sponsorable_children_query,
     language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, add_the,
     otts2ids, nodes_info_from_array, nodes_info_from_string, extract_summary)
@@ -1281,7 +1281,18 @@ def pp_process_post():
 
         # Decide whether to use basket mode or OTT mode
         if request.args[0] == 'basket':
-            raise NotImplementedError
+            reservation_confirm_payment(request.args[1], int(float(request.vars.mc_gross) * 100), sponsorship_renew_discount, dict(
+                sale_time=request.vars.get('payment_date'),
+                PP_first_name=request.vars.get('first_name'),
+                PP_second_name=request.vars.get('last_name'),
+                PP_town=", ".join([t for t in [request.vars.get('address_city'), request.vars.get('address_state')] if t]),
+                PP_country=request.vars.get('address_country'),
+                PP_e_mail=request.vars.get('payer_email'),
+                PP_transaction_code=request.vars.get('txn_id'),
+                # NB: These get cleared if user_giftaid isn't set
+                PP_house_and_street=request.vars.get('address_street'),
+                PP_postcode=request.vars.get('address_zip'),
+            ))
         else:
             OTT_ID_Varin = int(request.args[0])
             if OTT_ID_Varin <= 0:
