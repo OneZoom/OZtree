@@ -10,12 +10,12 @@ DELETE FROM expired_reservations;
 
 INSERT INTO reservations
         (e_mail,                           OTT_ID, verified_time,            sponsorship_ends,         user_giftaid, user_paid, user_donor_show, name, verified_kind, verified_name, verified_more_info)
- VALUES ('fixture_single@example.com',     714464, NOW() - INTERVAL 3 MONTH, NOW() + INTERVAL 1 WEEK,  TRUE,         134400,    TRUE,            'Anseranas semipalmata', 'By', 'Fixture Single', NULL)
-      , ('fixture_bannedott@example.com',  872573, NOW() - INTERVAL 3 MONTH, NOW() + INTERVAL 1 WEEK,  FALSE,        155400,    TRUE,            'Ailuropoda melanoleuca', 'By', 'Fixture BannedOTT', NULL)
-      , ('fixture_bannedott@example.com',  872577, NOW() - INTERVAL 3 MONTH, NOW() + INTERVAL 1 WEEK,  FALSE,        443400,    TRUE,            'Ursus americanus', 'By', 'Fixture BannedOTT', NULL)
-      , ('fixture_agemixture@example.com', 767829, NOW() - INTERVAL 3 MONTH, NOW() + INTERVAL 1 MONTH, TRUE,         534400,    TRUE,            'Anhima cornuta', 'By', 'Fixture Agemixture', 'Some more info I entered')
-      , ('fixture_agemixture@example.com', 860132, NOW() - INTERVAL 2 MONTH, NOW() + INTERVAL 2 MONTH, TRUE,         323400,    FALSE,           'Chauna torquata', 'By', 'Fixture Agemixture', 'I like it')
-      , ('fixture_agemixture@example.com', 241848, NOW() - INTERVAL 1 MONTH, NOW() + INTERVAL 3 MONTH, TRUE,         999400,    TRUE,            'Chauna chavaria', 'For', 'Mr. Agemixture', NULL)
+ VALUES ('fixture_single@example.com',     714464, NOW() - INTERVAL 3 MONTH, NOW() + INTERVAL 1 WEEK,  TRUE,         1344.00,    TRUE,            'Anseranas semipalmata', 'By', 'Fixture Single', NULL)
+      , ('fixture_bannedott@example.com',  872573, NOW() - INTERVAL 3 MONTH, NOW() + INTERVAL 1 WEEK,  FALSE,        1554.00,    TRUE,            'Ailuropoda melanoleuca', 'By', 'Fixture BannedOTT', NULL)
+      , ('fixture_bannedott@example.com',  872577, NOW() - INTERVAL 3 MONTH, NOW() + INTERVAL 1 WEEK,  FALSE,        4434.00,    TRUE,            'Ursus americanus', 'By', 'Fixture BannedOTT', NULL)
+      , ('fixture_agemixture@example.com', 767829, NOW() - INTERVAL 3 MONTH, NOW() + INTERVAL 1 MONTH, TRUE,         5344.00,    TRUE,            'Anhima cornuta', 'By', 'Fixture Agemixture', 'Some more info I entered')
+      , ('fixture_agemixture@example.com', 860132, NOW() - INTERVAL 2 MONTH, NOW() + INTERVAL 2 MONTH, TRUE,         3234.00,    FALSE,           'Chauna torquata', 'By', 'Fixture Agemixture', 'I like it')
+      , ('fixture_agemixture@example.com', 241848, NOW() - INTERVAL 1 MONTH, NOW() + INTERVAL 3 MONTH, TRUE,         9994.00,    TRUE,            'Chauna chavaria', 'For', 'Mr. Agemixture', NULL)
       ;
 
 INSERT INTO expired_reservations
