@@ -695,6 +695,18 @@ def sponsor_renew():
     if not sponsorship_enabled():
         raise_incorrect_url(URL('index', scheme=True, host=True), "Can't renew sponsorship from here." + T("Go back to the home page"))
 
+    # Get / re-cycle notify URL, including basket_code for this potential transaction
+    if 'notify_url' in request.vars:
+        notify_url = request.vars['notify_url']
+        if '/basket/' not in notify_url:
+            raise ValueError("Invalid notify_url: %s" % notify_url)
+    else:
+        try:
+            notify_url = myconf.take('paypal.notify_url') + '/pp_process_post.html'
+        except:
+            notify_url = URL("pp_process_post.html", scheme=True, host=True)
+        notify_url += '/basket/%s' % __make_user_code()
+
     # Get active, expiring reservations
     active_rows, expiring_rows = ([], [])
     for r in db(db.reservations.e_mail == user_email).select(
@@ -787,15 +799,24 @@ def sponsor_renew():
             if ott not in prices:
                 errors[k] = "OTT %d not sponsorable" % ott
             else:
-                # Update user_donor_show in DB (NB: If field missing, checkbox is unchecked)
-                rows_by_ott[ott].update_record(user_donor_show=bool(request.vars.get("oz_user_donor_show_%d" % ott, False)))
-                # Add actual price (not what user reported) to our sum
                 calc_amount += prices[ott]['price']
         if '{:.2f}'.format(calc_amount / 100) != request.vars['amount']:
             errors['amount'] = T("Total sponsorship amount doesn't match")
 
     # If got this far without errors, good to submit to paypal
     if 'cmd' in request.vars and len(errors) == 0:
+        basket_code = notify_url.split('/basket/', 2)[1]
+        for k, v in request.vars.items():
+            if not k.startswith('oz_renew_'):
+                continue
+            ott = int(k.split("_", 3)[2])
+
+            rows_by_ott[ott].update_record(
+                # Update user_donor_show in DB (NB: If field missing, checkbox is unchecked)
+                user_donor_show=bool(request.vars.get("oz_user_donor_show_%d" % ott, False)),
+                # Add row to basket
+                basket_code=basket_code,
+            )
         raise HTTP(307, "Redirect", Location=paypal_url + '/cgi-bin/webscr')
 
     return dict(
@@ -814,6 +835,7 @@ def sponsor_renew():
         most_recent=most_recent,  # NB: May be None if there's no reservations
         user_email=user_email,
         errors=errors,
+        notify_url=notify_url,
         vars=request.vars,
     )
 

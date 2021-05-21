@@ -439,6 +439,10 @@ db.define_table('reservations',
     # when refreshing e.g. a sponsor_leaf page we know that it is the same user trying to sponsor.
     # Eventually we intend this to correspond to a number in the registration_id field of the
     # auth_user table but for the moment we generate a new UUID for each treeview session
+    Field('basket_code', type='text', writable=False),
+    # A UUID created by OZfunc/__make_user_code identifying a group of items sent to paypal for
+    # purchase. Used to identify which OTTs have been purchased once confirmation of funds comes
+    # back from paypal, by being encoded in notify_url.
     
     # these handle auto reservation of pages
     Field('user_id', type = 'reference auth_user' , requires=IS_EMPTY_OR(IS_IN_DB(db, 'auth_user.id','%(first_name)s %(last_name)s'))),
