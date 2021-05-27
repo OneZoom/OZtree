@@ -156,7 +156,10 @@ and renew those that are expiring soon. Scroll down and select what you want to 
     <p>TODO: Message about not gift-aiding</p>
   {{pass}}
 
-  <p class="submit_donate">{{=XML(T('Accept %s and <input id="submit_button" type="submit" value = "Donate"/> using PayPal') % (A(T('terms'),_href="/terms.html",_target="_blank"), ))}}{{if request.vars.get('embed'):}} <span>{{=T('(opens in a new window)')}}</span>{{pass}}.</p>
+  <p>By donating to OneZoom you accept {{=A(T('terms and conditions'),_href="/terms.html",_target="_blank")}}{{if request.vars.get('embed'):}} <span>{{=T('(opens in a new window)')}}</span>{{pass}}.</p>
+  <div style="text-align: center"><ul class="oz-pill leaf-list"><li>
+    <input id="submit_button" type="submit" value="Donate using PayPal" class="uk-button uk-button-link"/>
+  </li></ul></div>
 
   </div>
 </form>
