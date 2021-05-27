@@ -735,6 +735,10 @@ def sponsor_renew():
             ):
         expired_rows.append(r)
 
+        if r.OTT_ID in expired_statuses:
+            # Already have a row for this one, no need to create another
+            continue
+
         # Try reserving each
         status, new_reservation = add_reservation(
             r.OTT_ID,

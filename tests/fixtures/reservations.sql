@@ -23,6 +23,7 @@ INSERT INTO expired_reservations
  VALUES ('fixture_agemixture@example.com', 714464, NOW() - INTERVAL 8 MONTH, NOW() - INTERVAL 1 MONTH, FALSE,       TRUE,         TRUE,            'FAKEPP1001',        'Anseranas semipalmata', 'By', 'Fixture Agemixture', NULL)
       , ('fixture_agemixture@example.com', 539138, NOW() - INTERVAL 9 MONTH, NOW() - INTERVAL 2 MONTH, FALSE,       TRUE,         TRUE,            'FAKEPP1002',        'Thalassornis leuconotus', 'By', 'Fixture Agemixture', NULL)
       , ('fixture_agemixture@example.com', 767829, NOW() - INTERVAL 12 MONTH,NOW() - INTERVAL 8 MONTH, TRUE,        TRUE,         TRUE,            'FAKEPP1003',        'Anhima cornuta', 'By', 'Fixture Agemixture', 'An old reservation')
+      , ('fixture_agemixture@example.com', 767829, NOW() - INTERVAL 24 MONTH,NOW() - INTERVAL 12 MONTH,TRUE,        TRUE,         TRUE,            'FAKEPP1003',        'Anhima cornuta', 'By', 'Fixture Agemixture', 'An old reservation')
       ;
 
 COMMIT;
