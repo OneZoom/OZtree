@@ -25,7 +25,9 @@ and renew those that are expiring soon. Scroll down and select what you want to 
 
 <form id="sponsor_form" method="post">
 
-  <p class="submit_donate"><input type="button" id="button_renew_all" value="Select all that are due for renewal soon and proceed" /></p>
+  <div style="text-align: center"><ul class="oz-pill leaf-list"><li>
+    <input type="button" id="button_renew_all" value="Select all that are due for renewal soon and proceed" class="uk-button uk-button-link" />
+  </li></ul></div>
 
   <ul uk-accordion="multiple: true">
     {{for row_category in all_row_categories:}}

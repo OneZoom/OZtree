@@ -398,6 +398,14 @@ ul.leaf-list {
     background-position: center;
     border-radius: 0 0 1.4rem 0;
   }
+
+  .uk-button {
+    text-transform: none;
+    font-size: 100%;
+  }
+  .uk-button-link {
+    @extend %oz-background-dark;
+  }
 }
 
 
