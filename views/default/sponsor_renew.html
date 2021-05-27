@@ -89,6 +89,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                            class="uk-checkbox {{if row_category['defselect']:}}defselect{{pass}}"
                            name="oz_renew_{{=item.OTT_ID}}"
                            value="{{=prices[item.OTT_ID]['price']}}"
+                           autocomplete="off"
                            {{='checked="checked"' if request.vars.get('oz_renew_%d' % item.OTT_ID, False) else ''}}
                            data-sciname="{{=sci_names.get(item.OTT_ID, 'Unknown')}}"
                            > Select to renew</input>
