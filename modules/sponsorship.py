@@ -67,6 +67,14 @@ def clear_reservation(reservations_table_id):
     db(db.reservations.OTT_ID == reservations_table_id).update(**del_fields)
 
 
+def reservation_add_to_basket(basket_code, reservation_row, basket_fields):
+    """Add (reservation_row) to a basket identified with (basket_code), update (basket_fields) dict of fields"""
+    reservation_row.update_record(
+        basket_code=basket_code,
+        **basket_fields)
+    return reservation_row
+
+
 def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
     """
     Update all reservations with (basket_code) as paid, spreading (total_paid_pence)
@@ -90,6 +98,9 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             fields_to_update['PP_house_and_street'] = None
             fields_to_update['PP_postcode'] = None
 
+        # Fetch latest asking price
+        ott_price_pence = db(db.ordered_leaves.ott==r.OTT_ID).select(db.ordered_leaves.price).first().price
+
         if r.PP_transaction_code is not None:
             if r.PP_transaction_code == basket_fields['PP_transaction_code']:
                 # PP_transaction_code matches, so is a replay of the same transaction, ignore.
@@ -100,21 +111,19 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             expired_r['was_renewed'] = True
             db.expired_reservations.insert(**expired_r)
 
-            # Fetch latest asking price, apply renewal discount
-            # NB: Ideally we would have stored asking_price back when user saw
-            #     it, but can't erase old asking price
-            ott_price_pence = db(db.ordered_leaves.ott==r.OTT_ID).select(db.ordered_leaves.price).first().price
-            ott_price_pence = int(ott_price_pence * (1 - sponsorship_renew_discount))
-            fields_to_update['asking_price'] = ott_price_pence / 100
-
             # Bump time to include renewal
             fields_to_update['sponsorship_duration_days'] = 365*4+1
             fields_to_update['sponsorship_ends'] = r.sponsorship_ends + datetime.timedelta(days=365*4+1)  ## 4 Years
+
+            # Apply renewal discount
+            ott_price_pence = int(ott_price_pence * (1 - sponsorship_renew_discount))
         else:
             # NB: This is different to existing paths, but feels a more correct place to set sponsorship_ends
             fields_to_update['sponsorship_duration_days'] = 365*4+1
             fields_to_update['sponsorship_ends'] = datetime.datetime.now() + datetime.timedelta(days=365*4+1)  ## 4 Years
-            ott_price_pence = int(r.asking_price * 100)
+
+        # Update DB entry with recalculated asking price
+        fields_to_update['asking_price'] = ott_price_pence / 100
 
         if r.OTT_ID == basket_rows[-1].OTT_ID:
             # Last item, throw all remaining funds onto it

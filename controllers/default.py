@@ -10,7 +10,8 @@ from json import dumps
 from collections import OrderedDict
 
 from sponsorship import (
-    sponsorship_enabled, clear_reservation, add_reservation, reservation_confirm_payment,
+    sponsorship_enabled, clear_reservation, add_reservation,
+    reservation_add_to_basket, reservation_confirm_payment,
     sponsorship_config, sponsorable_children_query)
 
 from OZfunc import (
@@ -808,12 +809,10 @@ def sponsor_renew():
                 continue
             ott = int(k.split("_", 3)[2])
 
-            rows_by_ott[ott].update_record(
+            reservation_add_to_basket(basket_code, rows_by_ott[ott], dict(
                 # Update user_donor_show in DB (NB: If field missing, checkbox is unchecked)
                 user_donor_show=bool(request.vars.get("oz_user_donor_show_%d" % ott, False)),
-                # Add row to basket
-                basket_code=basket_code,
-            )
+            ))
         raise HTTP(307, "Redirect", Location=paypal_url + '/cgi-bin/webscr')
 
     return dict(
