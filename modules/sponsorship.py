@@ -113,11 +113,12 @@ def reservation_confirm_payment(basket_code, total_paid_pence, sponsorship_renew
         r.update_record(**fields_to_update)
 
 
-def add_reservation(OTT_ID_Varin, form_reservation_code, reservation_time_limit, unpaid_time_limit, allow_sponsorship=False, update_view_count=False):
+def add_reservation(OTT_ID_Varin, form_reservation_code, reservation_time_limit, unpaid_time_limit, allow_sponsorship=False, prev_sponsorship=None, update_view_count=False):
     """
     Try and add a reservation for OTT_ID_Varin
     - form_reservation_code: Temporary identifier for current user
     - allow_sponsorship: Should this instance allow sponsorship?
+    - prev_sponsorship: A previous db.expired_reservations row, if supplied and able to sponsor again, details will be copied over.
     - update_view_count: Should the view count for the OTT be incremented?
     - reservation_time_limit: sponsorship.reservation_time_limit_mins config option
     - unpaid_time_limit: sponsorship.unpaid_time_limit_mins config option
@@ -278,6 +279,16 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, reservation_time_limit,
 
         #re-do the query since we might have added the row ID now
         reservation_row = reservation_query.select().first()
+
+        if status == 'available' and prev_sponsorship:
+            # Copy over details from any fields that are marked as writable
+            # NB: This includes the verified_* fields
+            reservation_row.update_record(**{
+                k:prev_sponsorship[k]
+                for k
+                in db.expired_reservations.fields
+                if db.expired_reservations[k].writable
+            })
     return status, reservation_row
 
 def sponsorable_children_query(target_id, qtype="ott"):
