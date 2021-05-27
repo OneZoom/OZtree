@@ -9,9 +9,12 @@ import urllib.parse
 from json import dumps
 from collections import OrderedDict
 
-from OZfunc import (
+from sponsorship import (
     sponsorship_enabled, clear_reservation, add_reservation, reservation_confirm_payment,
-    nice_species_name, get_common_name, get_common_names, sponsorable_children_query,
+    sponsorable_children_query)
+
+from OZfunc import (
+    nice_species_name, get_common_name, get_common_names,
     language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, add_the,
     otts2ids, nodes_info_from_array, nodes_info_from_string, extract_summary)
 
