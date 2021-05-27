@@ -33,7 +33,7 @@ class TestUnsponsorableSite(SponsorshipTest):
         ott = self.banned_unsponsored_ott()
         prev_n_visits, prev_last_visit, prev_reserve_time = self.visit_data(ott)
         def assert_tests(browser):
-            assert web2py_viewname_contains(browser, "spl_banned")
+            assert web2py_viewname_contains(browser, "spl_elsewhere_not")
             n_visits, last_visit, reserve_time = self.visit_data(ott)
             assert n_visits > prev_n_visits, "number of visits (was {}, now {}) should be augmented in unsponsorable_site mode".format(prev_n_visits, n_visits)
             assert abs(web2py_date_accessed(browser) - last_visit).seconds == 0, "last visit time should be recorded just now, even in unsponsorable_site mode"
