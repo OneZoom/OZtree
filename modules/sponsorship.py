@@ -5,6 +5,27 @@ from OZfunc import (
     child_leaf_query, get_common_name
 )
 
+def sponsorship_config():
+    """
+    Return dict of sponsorship config options, returning defaults if not available
+    """
+    myconf = current.globalenv['myconf']
+    out = dict()
+    try:
+        out['reservation_time_limit'] = float(myconf.take('sponsorship.reservation_time_limit_mins')) * 60.0
+    except:
+        out['reservation_time_limit'] = 360.0 #seconds
+    try:
+        out['unpaid_time_limit'] = float(myconf.take('sponsorship.unpaid_time_limit_mins')) * 60.0
+    except:
+        out['unpaid_time_limit'] = 2.0*24.0*60.0*60.0 #seconds
+    try:
+        out['sponsorship_renew_discount'] = float(myconf.take('sponsorship.renew_discount'))
+    except:
+        out['sponsorship_renew_discount'] = 0.2
+    return out
+
+
 def sponsorship_enabled():
     """
     Return whether sponsorship should be allowed on this instance, deriving from:
@@ -46,12 +67,13 @@ def clear_reservation(reservations_table_id):
     db(db.reservations.OTT_ID == reservations_table_id).update(**del_fields)
 
 
-def reservation_confirm_payment(basket_code, total_paid_pence, sponsorship_renew_discount, basket_fields):
+def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
     """
     Update all reservations with (basket_code) as paid, spreading (total_paid_pence)
     across all reservations. Fill in (basket_fields) (i.e. Paypal info) for all rows.
     """
     db = current.db
+    sponsorship_renew_discount = sponsorship_config()['sponsorship_renew_discount']
 
     if 'PP_transaction_code' not in basket_fields:
         raise ValueError("basket_fields should at least have PP_transaction_code")
@@ -113,15 +135,12 @@ def reservation_confirm_payment(basket_code, total_paid_pence, sponsorship_renew
         r.update_record(**fields_to_update)
 
 
-def add_reservation(OTT_ID_Varin, form_reservation_code, reservation_time_limit, unpaid_time_limit, allow_sponsorship=False, prev_sponsorship=None, update_view_count=False):
+def add_reservation(OTT_ID_Varin, form_reservation_code, prev_sponsorship=None, update_view_count=False):
     """
     Try and add a reservation for OTT_ID_Varin
     - form_reservation_code: Temporary identifier for current user
-    - allow_sponsorship: Should this instance allow sponsorship?
     - prev_sponsorship: A previous db.expired_reservations row, if supplied and able to sponsor again, details will be copied over.
     - update_view_count: Should the view count for the OTT be incremented?
-    - reservation_time_limit: sponsorship.reservation_time_limit_mins config option
-    - unpaid_time_limit: sponsorship.unpaid_time_limit_mins config option
 
     Returns
     - status: String describing reservation status.
@@ -129,6 +148,10 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, reservation_time_limit,
     """
     db = current.db
     request = current.request
+    sp_conf = sponsorship_config()
+    reservation_time_limit = sp_conf['reservation_time_limit']
+    unpaid_time_limit = sp_conf['unpaid_time_limit']
+    allow_sponsorship = sponsorship_enabled()
     # initialise status flag (it will get updated if all is OK)
     status = ""
     reservation_row = None

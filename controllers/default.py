@@ -11,7 +11,7 @@ from collections import OrderedDict
 
 from sponsorship import (
     sponsorship_enabled, clear_reservation, add_reservation, reservation_confirm_payment,
-    sponsorable_children_query)
+    sponsorship_config, sponsorable_children_query)
 
 from OZfunc import (
     nice_species_name, get_common_name, get_common_names,
@@ -21,23 +21,11 @@ from OZfunc import (
 
 """ Some settings for sponsorship"""
 try:
-    reservation_time_limit = float(myconf.take('sponsorship.reservation_time_limit_mins')) * 60.0
-except:
-    reservation_time_limit = 360.0 #seconds
-try:
-    unpaid_time_limit = float(myconf.take('sponsorship.unpaid_time_limit_mins')) * 60.0
-except:
-    unpaid_time_limit = 2.0*24.0*60.0*60.0 #seconds
-try:
     paypal_url = myconf.take('paypal.url')
     if not paypal_url:
         raise ValueError('blank paypal config')
 except:
     paypal_url = 'https://www.sandbox.paypal.com'
-try:
-    sponsorship_renew_discount = float(myconf.take('sponsorship.renew_discount'))
-except:
-    sponsorship_renew_discount = 0.2
 
 """ generally useful functions """
 
@@ -346,6 +334,7 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
     if maint:
         status = "maintenance"
     allow_sponsorship = sponsorship_enabled()
+    unpaid_time_limit = sponsorship_config()['unpaid_time_limit']
 
     if (request.vars.get('form_reservation_code')):
         form_reservation_code = request.vars.form_reservation_code
@@ -365,9 +354,6 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
     status, reservation_row = add_reservation(
         OTT_ID_Varin,
         form_reservation_code,
-        reservation_time_limit,
-        unpaid_time_limit,
-        allow_sponsorship=allow_sponsorship,
         update_view_count=(request.function == 'sponsor_leaf' and request.extension == "html"),
     )
 
@@ -680,6 +666,7 @@ def sponsor_renew():
     '''list items currently sponsored by a user
     '''
     expiry_soon_date = datetime.datetime.today() + datetime.timedelta(days=90)  # datetime before which expiry will be "soon"
+    sponsorship_renew_discount = sponsorship_config()['sponsorship_renew_discount']
 
     try:
         # TODO: Token parsing and validating
@@ -744,10 +731,7 @@ def sponsor_renew():
             r.OTT_ID,
             # NB: Use the e-mail address as our form_reservation_code
             hashlib.sha256(user_email.encode('utf8')).hexdigest(),
-            reservation_time_limit,
-            unpaid_time_limit,
-            prev_sponsorship=r,
-            allow_sponsorship=True)
+            prev_sponsorship=r)
         expired_statuses[r.OTT_ID] = dict(
             status=status,
             reservation=new_reservation,
@@ -1280,7 +1264,7 @@ def pp_process_post():
 
         # Decide whether to use basket mode or OTT mode
         if request.args[0] == 'basket':
-            reservation_confirm_payment(request.args[1], int(float(request.vars.mc_gross) * 100), sponsorship_renew_discount, dict(
+            reservation_confirm_payment(request.args[1], int(float(request.vars.mc_gross) * 100), dict(
                 sale_time=request.vars.get('payment_date'),
                 PP_first_name=request.vars.get('first_name'),
                 PP_second_name=request.vars.get('last_name'),
