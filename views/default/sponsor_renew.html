@@ -34,6 +34,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
           <a class="uk-accordion-title" href="#"><span class="uk-h3">{{=row_category['title']}}</span></a>
           <div class="uk-accordion-content"><ul class="uk-list"><li><hr/></li>{{for item in row_category['rows']:}}
             <li uk-grid class="uk-padding-small uk-child-width-1-5@m uk-flex-middle uk-text-small">
+              {{status = row_category['status'].get(item.OTT_ID, dict(status='available'))}}
               <div>
                 {{if item.OTT_ID in images:}}
                   <a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}" target="_blank">
@@ -64,7 +65,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
               </div>
 
               <div>
-                {{if item.OTT_ID in prices:}}
+                {{if status['status'].startswith('available') and item.OTT_ID in prices:}}
                   Renew by donating £{{='{:.0f}'.format(prices[item.OTT_ID]['price'] / 100)}}
                   {{if prices[item.OTT_ID]['discount']:}}(£{{='{:.0f}'.format(prices[item.OTT_ID]['discount'] / 100)}} discount){{pass}}
                 {{elif item.user_paid:}}
@@ -73,7 +74,6 @@ and renew those that are expiring soon. Scroll down and select what you want to 
               </div>
 
               <div class="uk-form-controls">
-                {{status = row_category['status'].get(item.OTT_ID, dict(status='available'))}}
                 {{if status['status'] == 'sponsored':}}
                   Now sponsored by {{=status['reservation']['verified_name']}}
                 {{elif status['status'].startswith('available') and item.OTT_ID in prices:}}
