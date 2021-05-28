@@ -701,7 +701,7 @@ def sponsor_renew():
         notify_url += '/basket/%s' % __make_user_code()
 
     # Get active, expiring reservations
-    active_rows, expiring_rows = ([], [])
+    active_rows, expiring_rows, rows_by_ott = ([], [], {})
     for r in db(
                 (db.reservations.e_mail == user_email) &
                 (db.reservations.PP_transaction_code != None)  # i.e has been bought
@@ -709,6 +709,7 @@ def sponsor_renew():
                 db.reservations.ALL,
                 orderby="sponsorship_ends",
             ):
+        rows_by_ott[r.OTT_ID] = r
         if r.sponsorship_ends >= expiry_soon_date:
             active_rows.append(r)
         else:
@@ -717,15 +718,15 @@ def sponsor_renew():
     # Get expired reservations, including who now owns it
     expired_rows = []
     expired_statuses = {}
-    for r in db((db.expired_reservations.e_mail == user_email) & (db.expired_reservations.was_renewed != True)).select(
+    for r in db((db.expired_reservations.e_mail == user_email)).select(
                 db.expired_reservations.ALL,
                 orderby="expired_reservations.sponsorship_ends",
             ):
-        expired_rows.append(r)
-
-        if r.OTT_ID in expired_statuses:
+        if r.OTT_ID in rows_by_ott:
             # Already have a row for this one, no need to create another
             continue
+        rows_by_ott[r.OTT_ID] = r
+        expired_rows.append(r)
 
         # Try reserving each
         status, new_reservation = add_reservation(
@@ -737,8 +738,6 @@ def sponsor_renew():
             reservation=new_reservation,
             prev_reservation=r,
         )
-
-    rows_by_ott = {r.OTT_ID:r for r in itertools.chain(active_rows, expiring_rows, expired_rows)}
 
     # Sponsored images
     images = {}
