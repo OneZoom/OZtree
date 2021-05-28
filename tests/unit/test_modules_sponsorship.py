@@ -85,7 +85,7 @@ class TestSponsorship(unittest.TestCase):
         reservation_confirm_payment('UT::BK001', 10000, dict(
             PP_transaction_code='UT::PP1',
             PP_e_mail='paypal@unittest.example.com',
-            sale_time='2020-01-01',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
         reservation_row.update_record(verified_time=current.request.now)
         status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
@@ -118,7 +118,6 @@ class TestSponsorship(unittest.TestCase):
             # NB: We don't set user_sponsor_name, add_to_basket will work it out.
             e_mail='002@unittest.example.com',  # NB: Overriding original e_mail
             prev_reservation_id=expired_r_id,
-            sale_time='2020-01-02',
         ))
 
         # Has all the details from expired_r, but not transaction details
@@ -133,13 +132,14 @@ class TestSponsorship(unittest.TestCase):
         reservation_confirm_payment('UT::BK002', 10000, dict(
             PP_transaction_code='UT::PP2',
             PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2002 GMT',
         ))
         expired_r = db(db.expired_reservations.id==expired_r_id).select().first()
         status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
         self.assertEqual(reservation_row.verified_time, expired_r.verified_time)
-        self.assertEqual(expired_r.sale_time, '2020-01-01')
-        self.assertEqual(reservation_row.sale_time, '2020-01-02')
+        self.assertEqual(expired_r.sale_time, '01:01:01 Jan 01, 2001 GMT')
+        self.assertEqual(reservation_row.sale_time, '01:01:01 Jan 01, 2002 GMT')
         self.assertEqual(reservation_row.user_sponsor_name, 'Arnold')
         self.assertEqual(reservation_row.verified_name, 'Definitely Arnold')
         self.assertEqual(reservation_row.PP_e_mail, 'paypal@unittest.example.com')
@@ -150,8 +150,11 @@ class TestSponsorship(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, r'PP_transaction_code'):
             reservation_confirm_payment("UT::invalid", 1000, dict())
 
-        with self.assertRaisesRegex(ValueError, r'basket_code UT::invalid'):
+        with self.assertRaisesRegex(ValueError, r'sale_time'):
             reservation_confirm_payment("UT::invalid", 1000, dict(PP_transaction_code='UT::001'))
+
+        with self.assertRaisesRegex(ValueError, r'basket_code UT::invalid'):
+            reservation_confirm_payment("UT::invalid", 1000, dict(PP_transaction_code='UT::001', sale_time='01:01:01 Jan 01, 2001 GMT'))
 
     def test_reservation_confirm_payment__giftaid(self):
         """Buy a single item with giftaid on/off"""
@@ -170,6 +173,7 @@ class TestSponsorship(unittest.TestCase):
             PP_house_and_street='PP House',
             PP_postcode='PO12 3DE',
             PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
 
         # Can't reserve it since it's unverified (not "sponsored" since we haven't set verified)
@@ -199,6 +203,7 @@ class TestSponsorship(unittest.TestCase):
             PP_house_and_street='PP House',
             PP_postcode='PO12 3DE',
             PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
 
         # Address gets set, old row left alone
@@ -227,6 +232,7 @@ class TestSponsorship(unittest.TestCase):
         reservation_confirm_payment('UT::BK001', 10000, dict(
             PP_transaction_code='UT::PP1',
             PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
 
         # Can't reserve it since it's unverified (not "sponsored" since we haven't set verified)
@@ -241,6 +247,7 @@ class TestSponsorship(unittest.TestCase):
         reservation_confirm_payment('UT::BK001', 10000, dict(
             PP_transaction_code='UT::PP1',
             PP_e_mail='paypal-replay-attack@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
         status, reservation_row = add_reservation(ott1, form_reservation_code="UT::002")
         self.assertEqual(status, 'unverified')
@@ -263,6 +270,7 @@ class TestSponsorship(unittest.TestCase):
         reservation_confirm_payment('UT::BK002', 10000, dict(
             PP_transaction_code='UT::PP2',
             PP_e_mail='paypal-new-addr@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
 
         # Now reserved for 8 years, with updated details

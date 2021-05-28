@@ -110,6 +110,8 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
 
     if 'PP_transaction_code' not in basket_fields:
         raise ValueError("basket_fields should at least have PP_transaction_code")
+    if 'sale_time' not in basket_fields:
+        raise ValueError("basket_fields should at least have sale_time")
 
     basket_rows = db(db.reservations.basket_code == basket_code).select()
     if len(basket_rows) == 0:
