@@ -219,6 +219,27 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(reservation_row2.PP_house_and_street, "PP House")
         self.assertEqual(reservation_row2.PP_postcode, "PO12 3DE")
 
+        # Giftaid claimed
+        reservation_row1.update_record(giftaid_claimed_on=current.request.now)
+        # NB: DB round trip to round down to MySQL precision
+        status, reservation_row1 = add_reservation(ott1, form_reservation_code="UT::002")
+        old_claimed_time = reservation_row1.giftaid_claimed_on
+
+        # Renew ott1, gift-aid no longer claimed
+        reservation_add_to_basket('UT::BK003', reservation_row1, dict())
+        reservation_confirm_payment('UT::BK003', 1000000, dict(
+            PP_transaction_code='UT::PP3',
+            PP_e_mail='paypal-new-addr@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
+        ))
+        status, reservation_row1 = add_reservation(ott1, form_reservation_code="UT::002")
+        self.assertEqual(status, 'sponsored')
+        self.assertEqual(reservation_row1.giftaid_claimed_on, None)
+
+        # ...but is on expired entry
+        expired_row = db(db.expired_reservations.id == reservation_row1.prev_reservation_id).select().first()
+        self.assertEqual(expired_row.giftaid_claimed_on, old_claimed_time)
+
     def test_reservation_confirm_payment__extension(self):
         """Buy an item twice to extend it"""
 
