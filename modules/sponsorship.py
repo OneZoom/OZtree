@@ -67,6 +67,24 @@ def clear_reservation(reservations_table_id):
     db(db.reservations.OTT_ID == reservations_table_id).update(**del_fields)
 
 
+def reservation_expire(r, keep_old_entry=False):
+    """
+    Make an expired_reservations row from reservations row (r)
+    If keep_old_entry=True, the existing reservation will be kept around
+    (e.g. for renewal)
+
+    NB: Does not check if the row should be expired (i.e. sponsorship_ends > now)
+    """
+    db = current.db
+    expired_r = r.as_dict()
+    del expired_r['id']
+    expired_r['was_renewed'] = True
+    expired_id = db.expired_reservations.insert(**expired_r)
+    if not keep_old_entry:
+        r.delete_record()
+    return expired_id
+
+
 def reservation_add_to_basket(basket_code, reservation_row, basket_fields):
     """Add (reservation_row) to a basket identified with (basket_code), update (basket_fields) dict of fields"""
     reservation_row.update_record(
@@ -106,10 +124,7 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
                 # PP_transaction_code matches, so is a replay of the same transaction, ignore.
                 continue
             # Renewal of existing sponsorship. Backup old reservation
-            expired_r = r.as_dict()
-            del expired_r['id']
-            expired_r['was_renewed'] = True
-            db.expired_reservations.insert(**expired_r)
+            reservation_expire(r, keep_old_entry=True)
 
             # Bump time to include renewal
             fields_to_update['sponsorship_duration_days'] = 365*4+1

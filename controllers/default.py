@@ -11,7 +11,7 @@ from collections import OrderedDict
 
 from sponsorship import (
     sponsorship_enabled, clear_reservation, add_reservation,
-    reservation_add_to_basket, reservation_confirm_payment,
+    reservation_add_to_basket, reservation_confirm_payment, reservation_expire,
     sponsorship_config, sponsorable_children_query)
 
 from OZfunc import (
