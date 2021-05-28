@@ -87,9 +87,11 @@ def reservation_add_to_basket(basket_code, reservation_row, basket_fields):
     """Add (reservation_row) to a basket identified with (basket_code), update (basket_fields) dict of fields"""
     db = current.db
     if not reservation_row.user_sponsor_name and 'user_sponsor_name' not in basket_fields:
-        if 'prev_reservation_id' in basket_fields:
+        if basket_fields.get('prev_reservation_id', False):
             # Try digging it out of the previous entry
             prev_row = db(db.expired_reservations.id == basket_fields['prev_reservation_id']).select().first()
+            if prev_row is None:
+                raise ValueError("Cannot find prev_reservation_id %d" % basket_fields['prev_reservation_id'])
             basket_fields['user_sponsor_name'] = prev_row.user_sponsor_name
         else:
             # This is what defines this row as potentially-bought, so has to be defined.

@@ -81,6 +81,7 @@ class TestSponsorship(unittest.TestCase):
             e_mail='001@unittest.example.com',
             user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
             verified_name="Definitely Arnold",
+            prev_reservation=None,
         ))
         reservation_confirm_payment('UT::BK001', 10000, dict(
             PP_transaction_code='UT::PP1',
