@@ -243,6 +243,11 @@ class TestSponsorship(unittest.TestCase):
         self.assertGreater(reservation_row.asking_price, 4)
         orig_asking_price = reservation_row.asking_price
 
+        # We paid well over the asking price, so there's a row with additional donation
+        donations = db(db.uncategorised_donation.basket_code==reservation_row.basket_code).select()
+        self.assertEqual(len(donations), 1)
+        self.assertEqual(donations[0].user_paid, (10000 - orig_asking_price * 100) / 100)
+
         # Replaying a transaction gets ignored
         reservation_confirm_payment('UT::BK001', 10000, dict(
             PP_transaction_code='UT::PP1',
@@ -267,7 +272,7 @@ class TestSponsorship(unittest.TestCase):
             e_mail='001@unittest.example.com',
             user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
         ))
-        reservation_confirm_payment('UT::BK002', 10000, dict(
+        reservation_confirm_payment('UT::BK002', int(orig_asking_price * 100 * (1 - 0.2)), dict(
             PP_transaction_code='UT::PP2',
             PP_e_mail='paypal-new-addr@unittest.example.com',
             sale_time='01:01:01 Jan 01, 2001 GMT',
@@ -285,6 +290,10 @@ class TestSponsorship(unittest.TestCase):
         # The asking price dropped, as it's a renewal
         self.assertEqual(reservation_row.asking_price, orig_asking_price * (1 - 0.2))
 
+        # We paid the correct figure, so no extra donation
+        donations = db(db.uncategorised_donation.basket_code==reservation_row.basket_code).select()
+        self.assertEqual(len(donations), 0)
+
         # Can find the old row as an expired reservation
         expired_row = db(
             (db.expired_reservations.OTT_ID == ott1) &
@@ -293,6 +302,114 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(expired_row.PP_e_mail, 'paypal@unittest.example.com')
         self.assertEqual(expired_row.asking_price, orig_asking_price)
         self.assertEqual(reservation_row.prev_reservation_id, expired_row.id)
+
+    def test_reservation_confirm_payment__insufficientfunds(self):
+        """Buying items with insufficient funds fails"""
+
+        # Reserve 3 OTTs
+        otts = find_unsponsored_otts(3)
+        status, reservation_row0 = add_reservation(otts[0], form_reservation_code="UT::001")
+        self.assertEqual(status, 'available')
+        status, reservation_row1 = add_reservation(otts[1], form_reservation_code="UT::001")
+        self.assertEqual(status, 'available')
+        status, reservation_row2 = add_reservation(otts[2], form_reservation_code="UT::001")
+        self.assertEqual(status, 'available')
+        reservation_add_to_basket('UT::BK001', reservation_row0, dict(
+            e_mail='001@unittest.example.com',
+            user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
+        ))
+        reservation_add_to_basket('UT::BK001', reservation_row1, dict(
+            e_mail='001@unittest.example.com',
+            user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
+        ))
+        reservation_add_to_basket('UT::BK001', reservation_row2, dict(
+            e_mail='001@unittest.example.com',
+            user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
+        ))
+
+        # Pay ~nothing, none get bought, instead make a tiny donaton
+        reservation_confirm_payment('UT::BK001', 1, dict(
+            PP_transaction_code='UT::PP1',
+            PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
+        ))
+        status, reservation_row0 = add_reservation(otts[0], form_reservation_code="UT::001")
+        self.assertEqual(status, 'unverified waiting for payment')
+        self.assertEqual(reservation_row0.admin_comment, "reservation_confirm_payment: Transaction UT::PP1 insufficient for purchase. Paid 1")
+        status, reservation_row1 = add_reservation(otts[1], form_reservation_code="UT::001")
+        self.assertEqual(status, 'unverified waiting for payment')
+        self.assertEqual(reservation_row1.admin_comment, "reservation_confirm_payment: Transaction UT::PP1 insufficient for purchase. Paid 1")
+        status, reservation_row2 = add_reservation(otts[2], form_reservation_code="UT::001")
+        self.assertEqual(status, 'unverified waiting for payment')
+        self.assertEqual(reservation_row2.admin_comment, "reservation_confirm_payment: Transaction UT::PP1 insufficient for purchase. Paid 1")
+        donations = db(db.uncategorised_donation.basket_code==reservation_row0.basket_code).select()
+        self.assertEqual(len(donations), 1)
+        self.assertEqual(donations[0].verified_paid, '0.01')
+        self.assertEqual(donations[0].PP_transaction_code, 'UT::PP1')
+
+        # Try replaying the transaction, situation doesn't change
+        reservation_confirm_payment('UT::BK001', 1, dict(
+            PP_transaction_code='UT::PP1',
+            PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
+        ))
+        status, reservation_row0 = add_reservation(otts[0], form_reservation_code="UT::001")
+        self.assertEqual(status, 'unverified waiting for payment')
+        status, reservation_row1 = add_reservation(otts[1], form_reservation_code="UT::001")
+        self.assertEqual(status, 'unverified waiting for payment')
+        status, reservation_row2 = add_reservation(otts[2], form_reservation_code="UT::001")
+        self.assertEqual(status, 'unverified waiting for payment')
+        donations = db(db.uncategorised_donation.basket_code==reservation_row0.basket_code).select()
+        self.assertEqual(len(donations), 1)
+        self.assertEqual(donations[0].verified_paid, '0.01')
+
+        # Pay again, enough for 2/3 items
+        # NB: This is tricky, but not impossible, to do through the interface. Pay, press back, pay again.
+        reservation_confirm_payment('UT::BK001', reservation_row0.asking_price * 100 + reservation_row1.asking_price * 100 + 3, dict(
+            PP_transaction_code='UT::PP2',
+            PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
+        ))
+        status, reservation_row0 = add_reservation(otts[0], form_reservation_code="UT::001")
+        self.assertEqual(status, 'unverified')
+        status, reservation_row1 = add_reservation(otts[1], form_reservation_code="UT::001")
+        self.assertEqual(status, 'unverified')
+        status, reservation_row2 = add_reservation(otts[2], form_reservation_code="UT::001")
+        self.assertEqual(status, 'unverified waiting for payment')
+        self.assertEqual(reservation_row2.admin_comment, "\n".join((
+            "reservation_confirm_payment: Transaction UT::PP2 insufficient for purchase. Paid 2003",
+            "reservation_confirm_payment: Transaction UT::PP1 insufficient for purchase. Paid 1",
+        )))
+        donations = db(db.uncategorised_donation.basket_code==reservation_row0.basket_code).select()
+        self.assertEqual(len(donations), 2)
+        self.assertEqual(donations[0].verified_paid, '0.01')
+        self.assertEqual(donations[1].verified_paid, '0.03')
+
+        # Verify otts[0]
+        reservation_row0.update_record(verified_time=current.request.now)
+        status, reservation_row0 = add_reservation(otts[0], form_reservation_code="UT::001")
+        self.assertEqual(status, 'sponsored')
+        old_sponsorship_ends = reservation_row0.sponsorship_ends
+
+        # Try to extend otts[0] without paying enough, should still be sponsored but sponsorship_ends same
+        reservation_add_to_basket('UT::BK002', reservation_row0, dict())
+        reservation_confirm_payment('UT::BK002', 2, dict(
+            PP_transaction_code='UT::PP3',
+            PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2002 GMT',
+        ))
+        status, reservation_row0 = add_reservation(otts[0], form_reservation_code="UT::001")
+        self.assertEqual(status, 'sponsored')
+        self.assertEqual(reservation_row0.sponsorship_ends, old_sponsorship_ends)
+        self.assertEqual(reservation_row0.admin_comment, "\n".join((
+            "reservation_confirm_payment: Transaction UT::PP3 insufficient for extension. Paid 2",
+            "reservation_confirm_payment: Transaction UT::PP1 insufficient for purchase. Paid 1",
+        )))
+
+        # Made a tiny donation
+        donations = db(db.uncategorised_donation.basket_code==reservation_row0.basket_code).select()
+        self.assertEqual(len(donations), 1)
+        self.assertEqual(donations[0].verified_paid, '0.02')
 
 
 def clear_unittest_sponsors():
@@ -308,6 +425,9 @@ def clear_unittest_sponsors():
         db.expired_reservations.user_registration_id.startswith('UT::') |
         db.expired_reservations.basket_code.startswith('UT::') |
         db.expired_reservations.e_mail.endswith('@unittest.example.com')).delete()
+    db(
+        db.uncategorised_donation.basket_code.startswith('UT::') |
+        db.uncategorised_donation.e_mail.endswith('@unittest.example.com')).delete()
 
 
 def set_allow_sponsorship(val):
@@ -318,12 +438,16 @@ def set_allow_sponsorship(val):
         del myconf.int_cache['sponsorship.allow_sponsorship']
 
 
-def find_unsponsored_ott():
+def find_unsponsored_otts(count):
     query = sponsorable_children_query(147604, qtype="ott")
-    r = db(query).select(limitby=(0, 1)).first()
-    if r is None:
-        raise ValueError("Can't find an available OTT")
-    return r.ott
+    rows = db(query).select(limitby=(0, count))
+    if len(rows) < count:
+        raise ValueError("Can't find available OTTs")
+    return [r.ott for r in rows]
+
+
+def find_unsponsored_ott():
+    return find_unsponsored_otts(1)[0]
 
 
 if __name__ == '__main__':

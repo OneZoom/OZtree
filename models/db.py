@@ -599,6 +599,42 @@ db.define_table('wiped_reservations',
     *[f.clone() for f in db.expired_reservations if f.name!='id'],
     format = '%(OTT_ID)s_%(name)s', migrate=is_testing)
 
+# Record donations via. paypal that can't be directly assigned to a node, e.g.
+# * Remainder of transaction after all node costs are met
+# * Remainder if transaction can only pay for OTTs x/y when the basket contains x/y/
+db.define_table('uncategorised_donation',
+    Field('basket_code', type='text', writable=False),
+    # A UUID created by OZfunc/__make_user_code identifying a group of items sent to paypal for
+    # purchase. Used to identify which OTTs have been purchased once confirmation of funds comes
+    # back from paypal, by being encoded in notify_url.
+    Field('sale_time', type = 'text', writable = False),
+    # seems professional to know when they paid and wise to keep it separate from expiry date
+    Field('verified_paid', type = 'text', writable = False), 
+    # The amount paypal reported as being paid (as a stringified pounds/pence float) for this OTTID
+    # May be NULL after payment if, e.g. payment received outside paypal, see notes in add_reservation()
+    Field('user_paid', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
+    # The amount (in pounds) the user promised to pay for this OTTID
+    Field('user_giftaid', type = boolean),
+    # can we collect gift aid?
+    Field('e_mail', type = 'string', length=200, requires=IS_EMPTY_OR(IS_EMAIL())),
+    Field('allow_contact', type = boolean),
+    # in case they don't want to log in to process this.            
+
+    # paypal returned information
+    Field('PP_transaction_code', type = 'text', writable = False),
+    Field('PP_e_mail', type = 'string', length=200, writable = False),
+    # another e-mail just in case we need it for verification
+    Field('PP_first_name', type = 'text', writable = False),
+    Field('PP_second_name', type = 'text', writable = False),
+    # name to help with sponsorship text verification
+    Field('PP_town', type = 'text', writable = False),
+    Field('PP_country', type = 'text', writable = False),
+    # address to help with further info verification
+    Field('PP_house_and_street', type = 'text', writable = False),
+    Field('PP_postcode', type = 'text', writable = False),
+    # save the two above only if they have agreed to give us gift aid
+    format = '%(sale_time)s_%(verified_paid)s')
+
 # this table defines the current pricing cutoff points
 db.define_table('prices',
     Field('price', type = 'integer', unique=True, requires=IS_NOT_EMPTY()),

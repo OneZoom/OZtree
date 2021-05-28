@@ -117,8 +117,14 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
     if len(basket_rows) == 0:
         raise ValueError("Unknown basket_code %s" % basket_code)
 
-    if basket_rows[0].PP_transaction_code == basket_fields['PP_transaction_code']:
-        # PP_transaction_code matches, so is a replay of a previous transaction, exit.
+    for r in basket_rows:
+        if basket_fields['PP_transaction_code'] == r.PP_transaction_code:
+            # PP_transaction_code matches, so is a replay of a previous transaction, exit.
+            # NB: It's possible for some of the basket to not have PP_t_c set, if they run out of funds.
+            return
+    if db(db.uncategorised_donation.PP_transaction_code == basket_fields['PP_transaction_code']).count() > 0:
+        # Already an uncategorized donation, so this is a replay of a previous transaction
+        # NB: We need to check here too in case all of the OTTs in this basket were unpaid.
         return
 
     remaining_paid_pence = total_paid_pence
@@ -133,7 +139,23 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
         ott_price_pence = db(db.ordered_leaves.ott==r.OTT_ID).select(db.ordered_leaves.price).first().price
 
         if r.verified_time is not None:  # i.e. is this an already paid for node?
-            # Extension of existing sponsorship. Remove old reservation and make a new one.
+            # Apply renewal discount for extension
+            ott_price_pence = int(ott_price_pence * (1 - sponsorship_renew_discount))
+
+            if remaining_paid_pence < ott_price_pence:
+                # Not enough funds to extend sponsorship. Make a note and move on
+                # NB: This isn't genuinely likely, but a potential attack if we don't preserve the old reservation
+                #     (1) Get at their renewals page
+                #     (2) Pay 0.01 for them, they all end up unpaid
+                #     (3) Wait for them to timeout, claim for yourself
+                r.update_record(admin_comment=("reservation_confirm_payment: Transaction %s insufficient for extension. Paid %d\n%s" % (
+                    basket_fields['PP_transaction_code'],
+                    total_paid_pence,
+                    r.admin_comment or "",
+                )).strip())
+                continue
+
+            # Remove old reservation and make a new one.
             prev_ott = r.OTT_ID
             prev_sponsorship_ends = r.sponsorship_ends
             prev_reservation_id = reservation_expire(r)
@@ -147,8 +169,6 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             fields_to_update['sponsorship_duration_days'] = 365*4+1
             fields_to_update['sponsorship_ends'] = prev_sponsorship_ends + datetime.timedelta(days=365*4+1)  ## 4 Years
 
-            # Apply renewal discount
-            ott_price_pence = int(ott_price_pence * (1 - sponsorship_renew_discount))
         else:
             # NB: This is different to existing paths, but feels a more correct place to set sponsorship_ends
             fields_to_update['sponsorship_duration_days'] = 365*4+1
@@ -166,23 +186,43 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
         # Update DB entry with recalculated asking price
         fields_to_update['asking_price'] = ott_price_pence / 100
 
-        if r.OTT_ID == basket_rows[-1].OTT_ID:
-            # Last item, throw all remaining funds onto it
-            ott_price_pence = max(ott_price_pence, remaining_paid_pence)
-        remaining_paid_pence -= ott_price_pence
-        if remaining_paid_pence < 0:
-            raise ValueError("Out of funds for basket %s: %d" % (
-                basket_code,
+        if remaining_paid_pence >= ott_price_pence:
+            # Can pay for this node, so do so.
+            remaining_paid_pence -= ott_price_pence
+            # NB: Strictly speaking user_paid is "What they promised to pay", and should
+            # have been set before the paypal trip. But with a basket of items we don't divvy up
+            # their donation until now.
+            fields_to_update['user_paid'] = ott_price_pence / 100
+            fields_to_update['verified_paid'] = '{:.2f}'.format(ott_price_pence / 100)
+        else:
+            # Can't pay for this node, but make all other changes
+            fields_to_update['user_paid'] = None
+            fields_to_update['verified_paid'] = None
+            fields_to_update['sale_time'] = None
+            # NB: Both need to be NULL to be unpaid according to add_transaction()
+            fields_to_update['verified_time'] = None
+            fields_to_update['PP_transaction_code'] = None
+            fields_to_update['admin_comment'] = ("reservation_confirm_payment: Transaction %s insufficient for purchase. Paid %d\n%s" % (
+                basket_fields['PP_transaction_code'],
                 total_paid_pence,
-            ))
-        # NB: Strictly speaking user_paid is "What they promised to pay", and should
-        # have been set before the paypal trip. But with a basket of items we don't divvy up
-        # their donation until now.
-        fields_to_update['user_paid'] = ott_price_pence / 100
-        fields_to_update['verified_paid'] = '{:.2f}'.format(ott_price_pence / 100)
+                r.admin_comment or "",
+            )).strip()
 
         # Send all updates for this row
         r.update_record(**fields_to_update)
+    if remaining_paid_pence > 0:
+        # Money left over after this transaction, make an uncategorised donation as well
+        fields_to_update = {
+            k:basket_rows[0][k]  # NB: Pull from first row to fill in any details previously set
+            for k in db.reservations.fields
+            if k in db.uncategorised_donation.fields and k not in set(('id',))
+        }
+        # Make sure payment fields are set properly
+        fields_to_update['user_paid'] = remaining_paid_pence / 100
+        fields_to_update['verified_paid'] = '{:.2f}'.format(remaining_paid_pence / 100)
+        fields_to_update['PP_transaction_code'] = basket_fields['PP_transaction_code']
+        fields_to_update['sale_time'] = basket_fields['sale_time']
+        db.uncategorised_donation.insert(**fields_to_update)
 
 
 def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False):
