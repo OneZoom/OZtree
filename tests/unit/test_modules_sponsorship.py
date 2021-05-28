@@ -14,6 +14,7 @@ from sponsorship import (
     sponsorship_enabled,
     reservation_add_to_basket,
     reservation_confirm_payment,
+    reservation_expire,
 )
 
 
@@ -68,6 +69,81 @@ class TestSponsorship(unittest.TestCase):
         current.request.now = (current.request.now + datetime.timedelta(days=1))
         status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
         self.assertEqual(status, 'available')
+
+    def test_add_reservation__renew_expired(self):
+        """Can renew an expired row"""
+
+        # Buy ott, validate
+        ott = find_unsponsored_ott()
+        status, reservation_row = add_reservation(ott, form_reservation_code="UT::001")
+        self.assertEqual(status, 'available')
+        reservation_add_to_basket('UT::BK001', reservation_row, dict(
+            e_mail='001@unittest.example.com',
+            user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
+            verified_name="Definitely Arnold",
+        ))
+        reservation_confirm_payment('UT::BK001', 10000, dict(
+            PP_transaction_code='UT::PP1',
+            PP_e_mail='paypal@unittest.example.com',
+            sale_time='2020-01-01',
+        ))
+        reservation_row.update_record(verified_time=current.request.now)
+        status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
+        self.assertEqual(status, 'sponsored')
+
+        # Expire the reservation
+        expired_r_id = reservation_expire(reservation_row)
+
+        # Is available to anyone
+        set_allow_sponsorship(0)
+        status, reservation_row = add_reservation(ott, form_reservation_code="UT::001")
+        self.assertEqual(status, 'available')
+        status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
+        self.assertEqual(status, 'available')
+
+        # Can reserve it referencing old node
+        set_allow_sponsorship(1)
+        status, reservation_row = add_reservation(ott, form_reservation_code="UT::001")
+        self.assertEqual(status, 'available')
+        status, reservation_row = add_reservation(ott, form_reservation_code="UT::001")
+        self.assertEqual(status, 'available only to user')
+        status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
+        self.assertEqual(status, 'reserved')
+
+        # Move ahead in time, to prove which times are different
+        current.request.now = (current.request.now + datetime.timedelta(days=1))
+
+        # Can buy it again, referencing old reservation
+        reservation_add_to_basket('UT::BK002', reservation_row, dict(
+            # NB: We don't set user_sponsor_name, add_to_basket will work it out.
+            e_mail='002@unittest.example.com',  # NB: Overriding original e_mail
+            prev_reservation_id=expired_r_id,
+            sale_time='2020-01-02',
+        ))
+
+        # Has all the details from expired_r, but not transaction details
+        status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
+        self.assertEqual(status, 'unverified waiting for payment')
+        self.assertEqual(reservation_row.user_sponsor_name, 'Arnold')
+        self.assertEqual(reservation_row.e_mail, '002@unittest.example.com')
+        self.assertEqual(reservation_row.PP_e_mail, None)
+        self.assertEqual(reservation_row.PP_transaction_code, None)
+
+        # Buy it, compare details with expired row
+        reservation_confirm_payment('UT::BK002', 10000, dict(
+            PP_transaction_code='UT::PP2',
+            PP_e_mail='paypal@unittest.example.com',
+        ))
+        expired_r = db(db.expired_reservations.id==expired_r_id).select().first()
+        status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
+        self.assertEqual(status, 'sponsored')
+        self.assertEqual(reservation_row.verified_time, expired_r.verified_time)
+        self.assertEqual(expired_r.sale_time, '2020-01-01')
+        self.assertEqual(reservation_row.sale_time, '2020-01-02')
+        self.assertEqual(reservation_row.user_sponsor_name, 'Arnold')
+        self.assertEqual(reservation_row.verified_name, 'Definitely Arnold')
+        self.assertEqual(reservation_row.PP_e_mail, 'paypal@unittest.example.com')
+        self.assertEqual(reservation_row.PP_transaction_code, 'UT::PP2')
 
     def test_reservation_confirm_payment__invalid(self):
         """Unknown baskets are an error"""
@@ -208,6 +284,7 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(expired_row.e_mail, '001@unittest.example.com')
         self.assertEqual(expired_row.PP_e_mail, 'paypal@unittest.example.com')
         self.assertEqual(expired_row.asking_price, orig_asking_price)
+        self.assertEqual(reservation_row.prev_reservation_id, expired_row.id)
 
 
 def clear_unittest_sponsors():

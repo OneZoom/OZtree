@@ -443,6 +443,9 @@ db.define_table('reservations',
     # A UUID created by OZfunc/__make_user_code identifying a group of items sent to paypal for
     # purchase. Used to identify which OTTs have been purchased once confirmation of funds comes
     # back from paypal, by being encoded in notify_url.
+    Field('prev_reservation_id', type='integer', writable=False, ),
+    # The ID of the previous sponsorship that this replaced (either with an extension or a renewal)
+    # NB: Ideally it'd be type='references expired_reservations.id', but we can't without a circular definition
     
     # these handle auto reservation of pages
     Field('user_id', type = 'reference auth_user' , requires=IS_EMPTY_OR(IS_IN_DB(db, 'auth_user.id','%(first_name)s %(last_name)s'))),

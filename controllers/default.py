@@ -731,11 +731,11 @@ def sponsor_renew():
         status, new_reservation = add_reservation(
             r.OTT_ID,
             # NB: Use the e-mail address as our form_reservation_code
-            hashlib.sha256(user_email.encode('utf8')).hexdigest(),
-            prev_sponsorship=r)
+            hashlib.sha256(user_email.encode('utf8')).hexdigest())
         expired_statuses[r.OTT_ID] = dict(
             status=status,
             reservation=new_reservation,
+            prev_reservation=r,
         )
 
     rows_by_ott = {r.OTT_ID:r for r in itertools.chain(active_rows, expiring_rows, expired_rows)}
@@ -809,9 +809,17 @@ def sponsor_renew():
                 continue
             ott = int(k.split("_", 3)[2])
 
-            reservation_add_to_basket(basket_code, rows_by_ott[ott], dict(
+            if ott in expired_statuses:
+                # We want to buy a fresh reservation, not the expired one
+                reserve_row = expired_statuses[ott]['reservation']
+                prev_reservation_id = expired_statuses[ott]['prev_reservation'].id
+            else:
+                reserve_row = rows_by_ott[ott]
+                prev_reservation_id = None
+            reservation_add_to_basket(basket_code, reserve_row, dict(
                 # Update user_donor_show in DB (NB: If field missing, checkbox is unchecked)
                 user_donor_show=bool(request.vars.get("oz_user_donor_show_%d" % ott, False)),
+                prev_reservation_id=prev_reservation_id
             ))
         raise HTTP(307, "Redirect", Location=paypal_url + '/cgi-bin/webscr')
 

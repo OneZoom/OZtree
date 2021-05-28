@@ -67,11 +67,10 @@ def clear_reservation(reservations_table_id):
     db(db.reservations.OTT_ID == reservations_table_id).update(**del_fields)
 
 
-def reservation_expire(r, keep_old_entry=False):
+def reservation_expire(r):
     """
-    Make an expired_reservations row from reservations row (r)
-    If keep_old_entry=True, the existing reservation will be kept around
-    (e.g. for renewal)
+    Move reservations row (r) into expired_reservations,
+    return expired_reservations.id
 
     NB: Does not check if the row should be expired (i.e. sponsorship_ends > now)
     """
@@ -80,13 +79,21 @@ def reservation_expire(r, keep_old_entry=False):
     del expired_r['id']
     expired_r['was_renewed'] = True
     expired_id = db.expired_reservations.insert(**expired_r)
-    if not keep_old_entry:
-        r.delete_record()
+    r.delete_record()
     return expired_id
 
 
 def reservation_add_to_basket(basket_code, reservation_row, basket_fields):
     """Add (reservation_row) to a basket identified with (basket_code), update (basket_fields) dict of fields"""
+    db = current.db
+    if not reservation_row.user_sponsor_name and 'user_sponsor_name' not in basket_fields:
+        if 'prev_reservation_id' in basket_fields:
+            # Try digging it out of the previous entry
+            prev_row = db(db.expired_reservations.id == basket_fields['prev_reservation_id']).select().first()
+            basket_fields['user_sponsor_name'] = prev_row.user_sponsor_name
+        else:
+            # This is what defines this row as potentially-bought, so has to be defined.
+            raise ValueError("Missing user_sponsor_name")
     reservation_row.update_record(
         basket_code=basket_code,
         **basket_fields)
@@ -108,6 +115,10 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
     if len(basket_rows) == 0:
         raise ValueError("Unknown basket_code %s" % basket_code)
 
+    if basket_rows[0].PP_transaction_code == basket_fields['PP_transaction_code']:
+        # PP_transaction_code matches, so is a replay of a previous transaction, exit.
+        return
+
     remaining_paid_pence = total_paid_pence
     for r in basket_rows:
         fields_to_update = basket_fields.copy()
@@ -119,16 +130,20 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
         # Fetch latest asking price
         ott_price_pence = db(db.ordered_leaves.ott==r.OTT_ID).select(db.ordered_leaves.price).first().price
 
-        if r.PP_transaction_code is not None:
-            if r.PP_transaction_code == basket_fields['PP_transaction_code']:
-                # PP_transaction_code matches, so is a replay of the same transaction, ignore.
-                continue
-            # Renewal of existing sponsorship. Backup old reservation
-            reservation_expire(r, keep_old_entry=True)
+        if r.verified_time is not None:  # i.e. is this an already paid for node?
+            # Extension of existing sponsorship. Remove old reservation and make a new one.
+            prev_ott = r.OTT_ID
+            prev_sponsorship_ends = r.sponsorship_ends
+            prev_reservation_id = reservation_expire(r)
+            status, r = add_reservation(prev_ott, basket_code)
+            assert status == 'available'  # We just expired the old one, this should work
+            reservation_add_to_basket(basket_code, r, dict(
+                prev_reservation_id=prev_reservation_id
+            ))
 
             # Bump time to include renewal
             fields_to_update['sponsorship_duration_days'] = 365*4+1
-            fields_to_update['sponsorship_ends'] = r.sponsorship_ends + datetime.timedelta(days=365*4+1)  ## 4 Years
+            fields_to_update['sponsorship_ends'] = prev_sponsorship_ends + datetime.timedelta(days=365*4+1)  ## 4 Years
 
             # Apply renewal discount
             ott_price_pence = int(ott_price_pence * (1 - sponsorship_renew_discount))
@@ -136,6 +151,15 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             # NB: This is different to existing paths, but feels a more correct place to set sponsorship_ends
             fields_to_update['sponsorship_duration_days'] = 365*4+1
             fields_to_update['sponsorship_ends'] = datetime.datetime.now() + datetime.timedelta(days=365*4+1)  ## 4 Years
+
+        # If there's a previous row, fill in any missing values using the old entry.
+        # Set either as part of an extension above, or as part of a renewal (on paypal-start)
+        # NB: This will include verified_time, if it was set before
+        if r.prev_reservation_id:
+            prev_row = db(db.expired_reservations.id == r.prev_reservation_id).select().first()
+            for k in db.expired_reservations.fields:
+                if db.expired_reservations[k].writable and k in db.reservations.fields and r[k] is None:
+                    fields_to_update[k] = prev_row[k]
 
         # Update DB entry with recalculated asking price
         fields_to_update['asking_price'] = ott_price_pence / 100
@@ -159,11 +183,10 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
         r.update_record(**fields_to_update)
 
 
-def add_reservation(OTT_ID_Varin, form_reservation_code, prev_sponsorship=None, update_view_count=False):
+def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False):
     """
     Try and add a reservation for OTT_ID_Varin
     - form_reservation_code: Temporary identifier for current user
-    - prev_sponsorship: A previous db.expired_reservations row, if supplied and able to sponsor again, details will be copied over.
     - update_view_count: Should the view count for the OTT be incremented?
 
     Returns
@@ -326,16 +349,6 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, prev_sponsorship=None, 
 
         #re-do the query since we might have added the row ID now
         reservation_row = reservation_query.select().first()
-
-        if status == 'available' and prev_sponsorship:
-            # Copy over details from any fields that are marked as writable
-            # NB: This includes the verified_* fields
-            reservation_row.update_record(**{
-                k:prev_sponsorship[k]
-                for k
-                in db.expired_reservations.fields
-                if db.expired_reservations[k].writable
-            })
     return status, reservation_row
 
 def sponsorable_children_query(target_id, qtype="ott"):
