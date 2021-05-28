@@ -46,7 +46,7 @@ class TestUnsponsorableSite(SponsorshipTest):
         """
         ott = self.sponsored_ott()
         prev_n_visits, prev_last_visit, prev_reserve_time = self.visit_data(ott)
-        time_diff_v = datetime.now() - prev_last_visit
+        time_diff_v = datetime.now() - (prev_last_visit or datetime.now())
         time_diff_r = datetime.now() - (prev_reserve_time or datetime.now())
         def assert_tests(browser):
             assert web2py_viewname_contains(browser, "spl_sponsored")
