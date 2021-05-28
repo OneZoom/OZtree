@@ -218,8 +218,8 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(reservation_row2.PP_house_and_street, "PP House")
         self.assertEqual(reservation_row2.PP_postcode, "PO12 3DE")
 
-    def test_reservation_confirm_payment__renew(self):
-        """Buy an item twice to renew it"""
+    def test_reservation_confirm_payment__extension(self):
+        """Buy an item twice to extend it"""
 
         # Buy ott1
         ott1 = find_unsponsored_ott()
