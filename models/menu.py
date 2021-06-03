@@ -15,10 +15,6 @@ response.meta.description = 'Tree of life explorer'
 response.meta.keywords = 'onezoom, one, zoom, fractal, tree, tree of life, phylogeny, explorer, life, species, biology, earth, deep zoom, big data, encyclopedia, evolution, ecology, sponsor'
 response.meta.generator = 'Web2py Web Framework'
 
-## your http://google.com/analytics id
-response.google_analytics_id = None
-
-
 # videos, 
 
 #OneZoom is committed to heightening awareness about the diversity of life on earth and its evolutionary history. Here you can explore the tree of life in a new way: it's like a map, everything is on one page, all you have to do is use your mouse wheel to zoom in and out.
