@@ -1,9 +1,14 @@
 import datetime
 from gluon import current
+from gluon.utils import web2py_uuid
 
 from OZfunc import (
     child_leaf_query, get_common_name
 )
+
+"""HMAC expiry in seconds, NB: This is when they're rotated, so an HMAC will be valid for 2xHMAC_EXPIRY"""
+SPONSOR_RENEW_HMAC_EXPIRY = 60 * 60 * 24 * 7
+
 
 def sponsorship_config():
     """
@@ -416,3 +421,53 @@ def sponsorable_children_query(target_id, qtype="ott"):
     
     query = query & (~db.ordered_leaves.ott.belongs(unavailable))
     return(query)
+
+
+def sponsor_renew_hmac_keys(force=False, expiry=SPONSOR_RENEW_HMAC_EXPIRY):
+    """Get all current HMAC keys, newest-first"""
+    cache = current.globalenv['cache']
+
+    # Try getting stored value, regardless of whether it has expired
+    old_hmac_keys = cache.disk(
+        'sponsor_renew_hmac_keys',
+        lambda: [web2py_uuid(), web2py_uuid()],  # NB: If no value at all, generate new set
+        time_expire=-1 if force else None)
+
+    # Try again, if the value we got previously was old, store rotated keys
+    return cache.disk(
+        'sponsor_renew_hmac_keys',
+        lambda: [web2py_uuid(), old_hmac_keys[0]],
+        time_expire=expiry)
+
+
+def sponsor_renew_url(email):
+    """
+    Generate a signed URL to renew e-mail (email), or None for an unknown user
+    """
+    db = current.db
+    URL = current.globalenv['URL']
+
+    if db(db.reservations.e_mail == email).count() == 0 and db(db.expired_reservations.e_mail == email).count() == 0:
+        return None
+
+    return URL(
+        'sponsor_renew.html',
+        args=[email],
+        scheme=True,
+        host=True,
+        hmac_key=sponsor_renew_hmac_keys()[0],
+    )
+
+
+def sponsor_renew_verify_url(request):
+    """Verify current request has a valid signature"""
+    URL = current.globalenv['URL']
+
+    # Try each of the hmac_keys in turn, if none work return the last error we got
+    e = None
+    for hmac_key in sponsor_renew_hmac_keys():
+        try:
+            return URL.verify(request, hmac_key=hmac_key)
+        except Exception as e:
+            pass
+    raise e

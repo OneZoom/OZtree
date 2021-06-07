@@ -5,6 +5,7 @@ python3 /srv/devel/onezoom/web2py.py \
 """
 import datetime
 import unittest
+import urllib.parse
 
 from gluon.globals import Request
 
@@ -15,6 +16,9 @@ from sponsorship import (
     reservation_add_to_basket,
     reservation_confirm_payment,
     reservation_expire,
+    sponsor_renew_hmac_keys,
+    sponsor_renew_url,
+    sponsor_renew_verify_url,
 )
 
 
@@ -457,6 +461,52 @@ class TestSponsorship(unittest.TestCase):
         donations = db(db.uncategorised_donation.basket_code==reservation_row0.basket_code).select()
         self.assertEqual(len(donations), 1)
         self.assertEqual(donations[0].verified_paid, '0.02')
+
+    def test_sponsor_renew_url(self):
+        # Reset keys, check that they don't change immediately
+        hmac_keys = sponsor_renew_hmac_keys(force=True)
+        self.assertEqual(hmac_keys, sponsor_renew_hmac_keys())
+
+        # Can't generate a URL yet, haven't sponsored anything
+        url = sponsor_renew_url(email='betty@unittest.example.com')
+        self.assertEqual(url, None)
+
+        # Buy ott1
+        ott1 = find_unsponsored_ott()
+        status, reservation_row = add_reservation(ott1, form_reservation_code="UT::001")
+        self.assertEqual(status, 'available')
+        reservation_add_to_basket('UT::BK001', reservation_row, dict(
+            e_mail='betty@unittest.example.com',
+            user_sponsor_name="Betty",  # NB: Have to at least set user_sponsor_name
+        ))
+        reservation_confirm_payment('UT::BK001', 10000, dict(
+            PP_transaction_code='UT::PP1',
+            PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
+        ))
+
+        # Generate a URL, it's signed
+        url = sponsor_renew_url(email='betty@unittest.example.com')
+        signature = urllib.parse.parse_qs(urllib.parse.urlparse(url).query)['_signature'][0]
+        self.assertTrue(len(signature) > 0)
+
+        # Verify it works
+        request.function = 'sponsor_renew'
+        request.args = ['betty@unittest.example.com']
+        request.get_vars._signature = signature
+        self.assertEqual(sponsor_renew_verify_url(request), True)
+
+        # ...but not for another e-mail address
+        request.function = 'sponsor_renew'
+        request.args = ['gelda@unittest.example.com']
+        request.get_vars._signature = signature
+        self.assertEqual(sponsor_renew_verify_url(request), False)
+
+        # ...or different signature
+        request.function = 'sponsor_renew'
+        request.args = ['betty@unittest.example.com']
+        request.get_vars._signature = "invalid-signature"
+        self.assertEqual(sponsor_renew_verify_url(request), False)
 
 
 def clear_unittest_sponsors():

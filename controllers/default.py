@@ -12,6 +12,7 @@ from collections import OrderedDict
 from sponsorship import (
     sponsorship_enabled, clear_reservation, add_reservation,
     reservation_add_to_basket, reservation_confirm_payment, reservation_expire,
+    sponsor_renew_url, sponsor_renew_verify_url,
     sponsorship_config, sponsorable_children_query)
 
 from OZfunc import (
@@ -663,6 +664,37 @@ def sponsor_replace_page():
 
 # TODO enabling edits and intelligent behaviour if a logged in user goes back to their own leaf    
 
+
+def sponsor_renew_request():
+    """
+    Request a renewal link emailed to you
+    """
+    form = FORM(
+        LABEL("E-mail"),
+        INPUT(_name='email', _class="uk-input uk-margin-bottom", requires=IS_EMAIL()),
+        INPUT(_type='submit', _class="uk-button uk-button-primary"))
+    if form.accepts(request.vars, session=None):
+        renew_link = sponsor_renew_url(form.vars.email)
+        if renew_link is None:
+            response.flash = 'Unknown e-mail address %s' % form.vars.email
+        elif mail is None:
+            response.flash = 'Now visit: %s (NB: No e-mail configuration in appconfig.ini, so cannot send)' % (
+                renew_link
+            )
+        else:
+            if mail.send(
+                to=form.vars.email,
+                subject=T("Renew your onezoom sponsorships"),
+                message="To renew your onezoom sponsorships, visit this URL: %s" % renew_link
+            ):
+                response.flash = 'An e-mail has been sent to %s' % form.vars.email
+            else:
+                response.flash = 'Could not send e-mail to %s' % form.vars.email
+    return dict(
+        form=form,
+    )
+
+
 def sponsor_renew():
     '''list items currently sponsored by a user
     '''
@@ -670,8 +702,10 @@ def sponsor_renew():
     sponsorship_renew_discount = sponsorship_config()['sponsorship_renew_discount']
 
     try:
-        # TODO: Token parsing and validating
-        user_email = request.args[0]
+        if sponsor_renew_verify_url(request):
+            user_email = request.args[0]
+        else:
+            raise HTTP(400, "Invalid renewal request for %s" % request.args[0])
     except IndexError:
         raise_incorrect_url(URL('index', scheme=True, host=True), "Missing token. " + T("Go back to the home page"))
 
