@@ -933,6 +933,62 @@ def sponsored():
         pds |= set([l['src_id'] for k,l in user_images.items() if l['licence'].endswith(u'\u009C')]) #all pd pics should end with \u009C on the licence
     return dict(rows=curr_rows, page=page, items_per_page=items_per_page, tot=tot, vars=request.vars, pds=pds, html_names=html_names, user_images=user_images, default_images=default_images)
 
+
+def donor():
+    """Individual donor page"""
+    if len(request.args) == 1:
+        username = request.args[0]
+    else:
+        redirect(URL('donor_list'))
+        return dict()
+
+    rows = db(
+        (db.reservations.username == username) &
+        (db.reservations.user_donor_show == True) &
+        (db.reservations.verified_time != None)).select(
+        db.reservations.ALL,
+        orderby="verified_time, reserve_time",
+        limitby=(0, 101),
+    )
+    most_recent = None
+    rows_by_ott = {}
+    total_paid = 0
+    for r in rows:
+        rows_by_ott[r.OTT_ID] = r
+        most_recent = r
+        total_paid += r.user_paid
+    if most_recent is None:
+        raise HTTP(400, "Unknown user %s" % username)
+
+    # Gold/silver/bronze
+    sponsor_status = None
+    for amount, v in [(0, None), (150, 'silver'), (1000, 'gold')]:
+        if total_paid > amount:
+            sponsor_status = v
+
+    # Sponsored images
+    images = {}
+    for r in db(
+            (db.images_by_ott.ott.belongs(rows_by_ott.keys())) & (db.images_by_ott.overall_best_any==1)
+        ).select(
+            db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
+            db.images_by_ott.rights, db.images_by_ott.licence):
+        images[r.ott] = {'url':thumbnail_url(r.src, r.src_id), 'rights':r.rights, 'licence': r.licence.split('(')[0]}
+
+    return dict(
+        rows=rows[0:100],
+        rows_has_more=len(rows) > 100,
+        sci_names={k:r.name for k, r in rows_by_ott.items()},
+        html_names={
+            ott:nice_species_name(rows_by_ott[ott].name, vn, html=True, leaf=True, first_upper=True, break_line=2)
+            for ott,vn in get_common_names(rows_by_ott.keys(), return_nulls=True).items()
+        },
+        images=images,
+        most_recent=most_recent,
+        sponsor_status=sponsor_status,
+    )
+
+
 def donor_list():
     '''list donors by name. Check manage/SHOW_SPONSOR_SUMS.html to see what names to add.
     '''

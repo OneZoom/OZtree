@@ -1,0 +1,35 @@
+{{response.title='OneZoom: Renew your sponsored items'}}
+{{response.files.append(URL('static', 'OZSponsor/sponsor_leaf.css'))}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{extend 'uikit_layout.html'}}
+{{import datetime}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+    <h1>Sponsorship page for {{=most_recent.user_donor_name}}</h1>
+    {{if sponsor_status:}}<p>{{=most_recent.user_donor_name}} is a <span>{{=sponsor_status}}</span> sponsor</p>{{pass}}
+</div>
+{{end block}}
+
+<ul class="uk-list">{{for item in rows:}}
+  <li uk-grid class="uk-padding-small uk-flex-middle uk-text-small">
+    {{if item.OTT_ID in images:}}<div class="uk-width-1-5@m">
+      <a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}" target="_blank">
+        <span class="img-species leafout"><img class="species" alt=""
+                src="{{=images[item.OTT_ID].get('url','')}}"
+              title="{{=' / '.join(s for s in [images[item.OTT_ID].get('rights', ''), images[item.OTT_ID].get('licence', '')] if s)}}" /></span>
+      </a>
+    </div>{{pass}}
+
+    <div>
+        <div>{{=html_names.get(item.OTT_ID, 'Unknown')}}</div>
+        <div>
+           Sponsored in {{=item['verified_time'].strftime("%Y")}} {{=item['verified_kind']}}
+           <i class="sponsored-by">{{=item['verified_name']}}</i>
+        </div>
+        {{if item.get('verified_more_info', ''):}}<br/><div>{{=item['verified_more_info']}}</div>{{pass}}
+    </div>
+  </li>
+{{pass}}</ul>
+
+{{if rows_has_more:}}<p>...and others</p>{{pass}}
