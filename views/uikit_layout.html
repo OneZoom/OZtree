@@ -40,7 +40,6 @@
   </head>
   <body class="standalone">
     <!--[if lt IE 8]><p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p><![endif]-->
-    <div class="w2p_flash alert alert-dismissable">{{=response.flash or ''}}</div>
     
     <!-- Navbar ======================================= -->
 <header class="oz-section bkgd-darkspiral">
@@ -164,6 +163,11 @@
     <!-- Begin page content -->
 
     <div class="main_content">
+        {{if response.flash:}}
+          <div class="uk-alert">
+            {{=response.flash}}
+          </div>
+        {{pass}}
         {{include}}
     </div>
 
