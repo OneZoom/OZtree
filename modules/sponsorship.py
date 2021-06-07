@@ -464,10 +464,7 @@ def sponsor_renew_verify_url(request):
     URL = current.globalenv['URL']
 
     # Try each of the hmac_keys in turn, if none work return the last error we got
-    e = None
     for hmac_key in sponsor_renew_hmac_keys():
-        try:
-            return URL.verify(request, hmac_key=hmac_key)
-        except Exception as e:
-            pass
-    raise e
+        if URL.verify(request, hmac_key=hmac_key):
+            return True
+    return False
