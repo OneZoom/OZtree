@@ -29,6 +29,31 @@ class TestSponsorship(unittest.TestCase):
 
     def tearDown(self):
         clear_unittest_sponsors()
+        # Remove anything created as part of tests
+        db.rollback()
+
+    def test_sponsorship_enabled__role(self):
+        """allow_sponsorship can be set to a role"""
+        auth = current.globalenv['auth']
+
+        role_id = auth.add_group("ut::candlestickmaker")
+        set_allow_sponsorship("ut::candlestickmaker")
+        # Not logged in, doesn't work
+        self.assertEqual(sponsorship_enabled(), False)
+
+        # Create emily, login, still not allowed
+        user = auth.get_or_create_user(dict(
+            username='ut::emily',
+            email='emily@unittest.example.com',
+            password='emilypw'
+        ))
+        auth.login_user(user)
+        self.assertNotEqual(auth.user, None)
+        self.assertEqual(sponsorship_enabled(), False)
+
+        # Make emily a candlestickmaker, now fine
+        auth.add_membership(role="ut::candlestickmaker", user_id=user.id)
+        self.assertEqual(sponsorship_enabled(), True)
 
     def test_add_reservation__invalid(self):
         """Invalid OTT is invalid"""

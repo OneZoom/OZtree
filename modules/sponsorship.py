@@ -38,7 +38,7 @@ def sponsorship_enabled():
     """
     myconf = current.globalenv['myconf']
     request = current.request
-    auth = current.globalenv['Auth']
+    auth = current.globalenv['auth']
 
     if request.vars.no_sponsoring:
         # Shut off sponsoring via. URL param (e.g. museum display on main OZ site)
