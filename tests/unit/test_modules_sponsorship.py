@@ -463,8 +463,19 @@ def set_allow_sponsorship(val):
 def find_unsponsored_otts(count):
     query = sponsorable_children_query(147604, qtype="ott")
     rows = db(query).select(limitby=(0, count))
+    prices = {}
+    for r in db(db.ordered_leaves.ott.belongs([r.ott for r in rows])).select(
+        db.ordered_leaves.ott,
+        db.ordered_leaves.price,
+        db.banned.ott,
+    ):
+        prices[r.ordered_leaves.ott] = r
+
     if len(rows) < count:
         raise ValueError("Can't find available OTTs")
+    rows = [r for r in rows if r.ott in prices and prices[r.ott].ordered_leaves.price > 0]
+    if len(rows) < count:
+        raise ValueError("Rows don't have associated prices set, visit /manage/SET_PRICES/")
     return [r.ott for r in rows]
 
 
