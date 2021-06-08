@@ -742,6 +742,7 @@ def sponsor_renew():
     active_rows, expiring_rows, rows_by_ott = ([], [], {})
     for r in db(
                 (db.reservations.e_mail == user_email) &
+                (db.reservations.verified_time != None) &
                 (db.reservations.PP_transaction_code != None)  # i.e has been bought
             ).select(
                 db.reservations.ALL,
