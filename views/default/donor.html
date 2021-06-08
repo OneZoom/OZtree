@@ -13,7 +13,7 @@
 
 <ul class="uk-list">{{for item in rows:}}
   <li uk-grid class="uk-padding-small uk-flex-middle uk-text-small">
-    {{if item.OTT_ID in images:}}<div class="uk-width-1-5@m">
+    {{if item.OTT_ID in images:}}<div class="uk-width-1-5@m" style="text-align:center">
       <a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}" target="_blank">
         <span class="img-species leafout leafout-corner"><img class="species" alt=""
                 src="{{=images[item.OTT_ID].get('url','')}}"
@@ -21,7 +21,7 @@
       </a>
     </div>{{pass}}
 
-    <div>
+    <div class="uk-width-1-5@m">
         <div>{{=html_names.get(item.OTT_ID, 'Unknown')}}</div>
         <div>
            Sponsored in {{=item['verified_time'].strftime("%Y")}} {{=item['verified_kind']}}
