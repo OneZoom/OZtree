@@ -29,6 +29,10 @@
         </div>
         {{if item.get('verified_more_info', ''):}}<br/><div>{{=item['verified_more_info']}}</div>{{pass}}
     </div>
+
+    {{if item.sponsorship_story:}}<div class="uk-width-expand@m">
+      <p>{{=item.sponsorship_story}}</p>
+    </div>{{pass}}
   </li>
 {{pass}}</ul>
 
