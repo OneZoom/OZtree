@@ -113,6 +113,7 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
     across all reservations. Fill in (basket_fields) (i.e. Paypal info) for all rows.
     """
     db = current.db
+    request = current.request
     sponsorship_renew_discount = sponsorship_config()['sponsorship_renew_discount']
 
     if 'PP_transaction_code' not in basket_fields:
@@ -179,7 +180,7 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
         else:
             # NB: This is different to existing paths, but feels a more correct place to set sponsorship_ends
             fields_to_update['sponsorship_duration_days'] = 365*4+1
-            fields_to_update['sponsorship_ends'] = datetime.datetime.now() + datetime.timedelta(days=365*4+1)  ## 4 Years
+            fields_to_update['sponsorship_ends'] = request.now + datetime.timedelta(days=365*4+1)  ## 4 Years
 
         # If there's a previous row, fill in any missing values using the old entry.
         # Set either as part of an extension above, or as part of a renewal (on paypal-start)
