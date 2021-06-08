@@ -165,6 +165,7 @@ export default function (Controller) {
     if (data_repo.image_source !== image_source) {
       data_repo.image_source = image_source;
       clear_node_pics(this.root);
+      this.trigger_refresh_loop()
       if (!init) {
         record_url({
           replaceURL: true
