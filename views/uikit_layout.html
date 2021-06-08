@@ -162,7 +162,7 @@
     <!-- Main ========================================= -->
     <!-- Begin page content -->
 
-    <div class="main_content">
+    <div class="main_content {{if globals().get('body_restricted_width', False):}}uk-container{{pass}}">
         {{if response.flash:}}
           <div class="uk-alert">
             {{=response.flash}}

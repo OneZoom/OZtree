@@ -2,6 +2,9 @@
 
 .main_content {
     margin: 0.5rem;  // Make some space around the page (does not apply to embedded pages)
+    &.uk-container {
+        margin: 0.5rem auto;
+    }
 }
 
 .page-end {

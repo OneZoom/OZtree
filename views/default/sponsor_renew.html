@@ -1,7 +1,7 @@
 {{response.title='OneZoom: Renew your sponsored items'}}
 {{response.files.append(URL('static', 'OZSponsor/sponsor_leaf.css'))}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
-{{extend 'uikit_layout.html'}}
+{{body_restricted_width = True}}{{extend 'uikit_layout.html'}}
 {{import datetime}}
 
 {{block masthead}}
