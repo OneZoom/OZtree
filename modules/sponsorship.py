@@ -424,21 +424,17 @@ def sponsorable_children_query(target_id, qtype="ott"):
     return(query)
 
 
-def sponsor_renew_hmac_keys(force=False, expiry=SPONSOR_RENEW_HMAC_EXPIRY):
-    """Get all current HMAC keys, newest-first"""
-    cache = current.globalenv['cache']
+def sponsor_renew_hmac_key():
+    """Get hmac_key, or error informatively"""
+    myconf = current.globalenv['myconf']
 
-    # Try getting stored value, regardless of whether it has expired
-    old_hmac_keys = cache.disk(
-        'sponsor_renew_hmac_keys',
-        lambda: [web2py_uuid(), web2py_uuid()],  # NB: If no value at all, generate new set
-        time_expire=-1 if force else None)
-
-    # Try again, if the value we got previously was old, store rotated keys
-    return cache.disk(
-        'sponsor_renew_hmac_keys',
-        lambda: [web2py_uuid(), old_hmac_keys[0]],
-        time_expire=expiry)
+    try:
+        out = myconf.take("sponsorship.hmac_key")
+    except:
+        raise ValueError("sponsorship.hmac_key not set in appconfig.ini, we need this to generate renewal URLs")
+    if len(out) < 10:
+        raise ValueError("sponsorship.hmac_key is too short, or still set to the example value")
+    return out
 
 
 def sponsor_renew_url(email):
@@ -456,7 +452,7 @@ def sponsor_renew_url(email):
         args=[email],
         scheme=True,
         host=True,
-        hmac_key=sponsor_renew_hmac_keys()[0],
+        hmac_key=sponsor_renew_hmac_key(),
     )
 
 
@@ -464,8 +460,4 @@ def sponsor_renew_verify_url(request):
     """Verify current request has a valid signature"""
     URL = current.globalenv['URL']
 
-    # Try each of the hmac_keys in turn, if none work return the last error we got
-    for hmac_key in sponsor_renew_hmac_keys():
-        if URL.verify(request, hmac_key=hmac_key):
-            return True
-    return False
+    return URL.verify(request, hmac_key=sponsor_renew_hmac_key())

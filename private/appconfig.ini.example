@@ -48,10 +48,13 @@ url_base = //images.onezoom.org/
 ;    user is looking at the sponsor page
 ; * unpaid_time_limit_mins: how long before a sponsored leaf becomes 
 ;    free again if we receive no payment notification
+; * hmac_key: A secret key used to generate signatures for links in renewal e-mails
+;    to prove users used a link from an e-mail we sent.
 allow_sponsorship = 0
 maintenance_mins = 0
 reservation_time_limit_mins = 6
 unpaid_time_limit_mins = 2880
+hmac_key = supersecretstring
 
 [api]
 ;If you want to get data from the Encyclopedia of Life, you need to put your own API key here. 

@@ -16,7 +16,7 @@ from sponsorship import (
     reservation_add_to_basket,
     reservation_confirm_payment,
     reservation_expire,
-    sponsor_renew_hmac_keys,
+    sponsor_renew_hmac_key,
     sponsor_renew_url,
     sponsor_renew_verify_url,
 )
@@ -463,10 +463,6 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(donations[0].verified_paid, '0.02')
 
     def test_sponsor_renew_url(self):
-        # Reset keys, check that they don't change immediately
-        hmac_keys = sponsor_renew_hmac_keys(force=True)
-        self.assertEqual(hmac_keys, sponsor_renew_hmac_keys())
-
         # Can't generate a URL yet, haven't sponsored anything
         url = sponsor_renew_url(email='betty@unittest.example.com')
         self.assertEqual(url, None)
@@ -484,6 +480,14 @@ class TestSponsorship(unittest.TestCase):
             PP_e_mail='paypal@unittest.example.com',
             sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
+
+        # Can't do anything until sponsorship.hmac_key is set
+        with self.assertRaisesRegex(ValueError, r'hmac_key'):
+            url = sponsor_renew_url(email='betty@unittest.example.com')
+        set_appconfig('sponsorship', 'hmac_key', 'secret')
+        with self.assertRaisesRegex(ValueError, r'hmac_key.*short'):
+            url = sponsor_renew_url(email='betty@unittest.example.com')
+        set_appconfig('sponsorship', 'hmac_key', 'aardvarkaardvark')
 
         # Generate a URL, it's signed
         url = sponsor_renew_url(email='betty@unittest.example.com')
@@ -527,12 +531,18 @@ def clear_unittest_sponsors():
         db.uncategorised_donation.e_mail.endswith('@unittest.example.com')).delete()
 
 
+def set_appconfig(section, key, val):
+    """Update site config (section).(key) = (val)"""
+    myconf = current.globalenv['myconf']
+    myconf[section][key] = str(val)
+    full_key = ".".join((section, key))
+    if full_key in myconf.int_cache:
+        del myconf.int_cache[full_key]
+
+
 def set_allow_sponsorship(val):
     """Update site config with new value for sponsorship.allow_sponsorship"""
-    myconf = current.globalenv['myconf']
-    myconf['sponsorship']['allow_sponsorship'] = str(val)
-    if 'sponsorship.allow_sponsorship' in myconf.int_cache:
-        del myconf.int_cache['sponsorship.allow_sponsorship']
+    set_appconfig('sponsorship', 'allow_sponsorship', val)
 
 
 def find_unsponsored_otts(count):
