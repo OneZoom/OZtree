@@ -72,6 +72,18 @@ def clear_reservation(reservations_table_id):
     db(db.reservations.OTT_ID == reservations_table_id).update(**del_fields)
 
 
+def reservation_get_all_expired():
+    """
+    Get all reservation rows that should be expired
+    """
+    db = current.db
+    request = current.request
+
+    return db(
+        (db.reservations.verified_time != None) &
+        (db.reservations.sponsorship_ends < request.now)
+    ).select(db.reservations.ALL)
+
 def reservation_expire(r):
     """
     Move reservations row (r) into expired_reservations,

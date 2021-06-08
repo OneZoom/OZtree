@@ -15,6 +15,7 @@ from sponsorship import (
     sponsorship_enabled,
     reservation_add_to_basket,
     reservation_confirm_payment,
+    reservation_get_all_expired,
     reservation_expire,
     sponsor_renew_hmac_key,
     sponsor_renew_url,
@@ -514,6 +515,67 @@ class TestSponsorship(unittest.TestCase):
         request.args = ['betty@unittest.example.com']
         request.get_vars._signature = "invalid-signature"
         self.assertEqual(sponsor_renew_verify_url(request), False)
+
+    def test_reservation_get_all_expired(self):
+        def gae():
+            # We only care about our unittest entries, there may be other things lurking in the DB
+            rows = [
+                r for r in reservation_get_all_expired()
+                if r.e_mail.endswith('@unittest.example.com')
+            ]
+            return rows
+
+        # Nothing has expired yet
+        self.assertEqual([r.OTT_ID for r in gae()], [])
+
+        # Buy ott1
+        ott1 = find_unsponsored_ott()
+        status, reservation_row = add_reservation(ott1, form_reservation_code="UT::001")
+        self.assertEqual(status, 'available')
+        reservation_add_to_basket('UT::BK001', reservation_row, dict(
+            e_mail='betty@unittest.example.com',
+            user_sponsor_name="Betty",  # NB: Have to at least set user_sponsor_name
+        ))
+        reservation_confirm_payment('UT::BK001', 10000, dict(
+            PP_transaction_code='UT::PP1',
+            PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
+        ))
+        reservation_row.update_record(verified_time=current.request.now)
+
+        # Buy ott2 10 days later
+        current.request.now = (current.request.now + datetime.timedelta(days=10))
+        ott2 = find_unsponsored_ott()
+        status, reservation_row = add_reservation(ott2, form_reservation_code="UT::002")
+        self.assertEqual(status, 'available')
+        reservation_add_to_basket('UT::BK002', reservation_row, dict(
+            e_mail='betty@unittest.example.com',
+            user_sponsor_name="Betty",  # NB: Have to at least set user_sponsor_name
+        ))
+        reservation_confirm_payment('UT::BK002', 10000, dict(
+            PP_transaction_code='UT::PP2',
+            PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 11, 2001 GMT',
+        ))
+        reservation_row.update_record(verified_time=current.request.now)
+
+        # Neither have expired yet
+        self.assertEqual([r.OTT_ID for r in gae()], [])
+
+        # 4 years later, the first has
+        current.request.now = current.request.now - datetime.timedelta(days=0) + datetime.timedelta(days=365*4+1)
+        self.assertEqual([r.OTT_ID for r in gae()], [ott1])
+
+        # 10 days later, the second has too
+        current.request.now = current.request.now + datetime.timedelta(days=10)
+        self.assertEqual([r.OTT_ID for r in gae()], [ott1, ott2])
+
+        # Expire the entries and they stop turning up
+        rows = gae()
+        reservation_expire(rows[0])
+        self.assertEqual([r.OTT_ID for r in gae()], [ott2])
+        reservation_expire(rows[1])
+        self.assertEqual([r.OTT_ID for r in gae()], [])
 
 
 def clear_unittest_sponsors():
