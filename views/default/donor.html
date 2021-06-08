@@ -36,4 +36,5 @@
   </li>
 {{pass}}</ul>
 
-{{if rows_has_more:}}<p>...and others</p>{{pass}}
+{{if page:}}{{=A(XML('&lt;&nbsp;previous&nbsp;'+str(items_per_page)+'..'),_href=URL(args=[args[0], page-1], vars=vars),_class='hefty')}}{{pass}}
+{{if len(rows)>items_per_page:}}{{=A(XML('..next&nbsp;'+str(items_per_page)+'&nbsp;&gt;'),_href=URL(args=[args[0], page+1], vars=vars),_class='hefty')}}{{pass}}

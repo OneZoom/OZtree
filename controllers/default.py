@@ -941,11 +941,13 @@ def sponsored():
 
 def donor():
     """Individual donor page"""
-    if len(request.args) == 1:
-        username = request.args[0]
-    else:
+    if len(request.args) == 0:
         redirect(URL('donor_list'))
         return dict()
+    username = request.args[0]
+    page = int(request.args[1]) if len(request.args) > 1 else 0
+    items_per_page=100
+    limitby=(page*items_per_page,(page+1)*items_per_page+1)
 
     rows = db(
         (db.reservations.username == username) &
@@ -953,7 +955,7 @@ def donor():
         (db.reservations.verified_time != None)).select(
         db.reservations.ALL,
         orderby="verified_time, reserve_time",
-        limitby=(0, 101),
+        limitby=limitby,
     )
     most_recent = None
     rows_by_ott = {}
@@ -981,8 +983,11 @@ def donor():
         images[r.ott] = {'url':thumbnail_url(r.src, r.src_id), 'rights':r.rights, 'licence': r.licence.split('(')[0]}
 
     return dict(
-        rows=rows[0:100],
-        rows_has_more=len(rows) > 100,
+        args=request.args,
+        vars=request.vars,
+        page=page,
+        items_per_page=items_per_page,
+        rows=rows,
         sci_names={k:r.name for k, r in rows_by_ott.items()},
         html_names={
             ott:nice_species_name(rows_by_ott[ott].name, vn, html=True, leaf=True, first_upper=True, break_line=2)
