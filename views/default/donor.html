@@ -6,8 +6,8 @@
 
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
-    <h1>Sponsorship page for {{=most_recent.user_donor_name}}</h1>
-    {{if sponsor_status:}}<p>{{=most_recent.user_donor_name}} is a <span>{{=sponsor_status}}</span> sponsor</p>{{pass}}
+    <h1>Sponsorship page for {{=most_recent.user_donor_name or most_recent.username}}</h1>
+    {{if sponsor_status:}}<p>{{=most_recent.user_donor_name or most_recent.username}} is a <span>{{=sponsor_status}}</span> sponsor</p>{{pass}}
 </div>
 {{end block}}
 
