@@ -37,7 +37,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
           <div class="uk-accordion-content"><ul class="uk-list"><li><hr/></li>{{for item in row_category['rows']:}}
             <li uk-grid class="uk-padding-small uk-child-width-1-5@m uk-flex-middle uk-text-small">
               {{status = row_category['status'].get(item.OTT_ID, dict(status='available'))}}
-              <div>
+              <div style="text-align:center">
                 {{if item.OTT_ID in images:}}
                   <a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}" target="_blank">
                     <span class="img-species leafout leafout-corner"><img class="species" alt=""
@@ -47,7 +47,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                 {{pass}}
               </div>
 
-              <div>
+              <div style="text-align:center">
                   <div>{{=html_names.get(item.OTT_ID, 'Unknown')}}</div>
                   <div>
                      Sponsored {{=item['verified_kind']}}
