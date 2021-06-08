@@ -493,7 +493,7 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
                     # Writable by the user
                     'e_mail','allow_contact','twitter_name', 'user_sponsor_kind',
                     'user_sponsor_name', 'user_more_info', 'user_donor_title',
-                    'user_donor_name', 'user_donor_show', 'user_paid', 'user_message_OZ',
+                    'user_donor_name', 'user_donor_hide', 'user_paid', 'user_message_OZ',
                     'user_nondefault_image', 'user_preferred_image_src',
                     'user_preferred_image_src_id','user_giftaid', 'user_sponsor_lang',
                     # writeable=False -> filled out on validation
@@ -855,8 +855,8 @@ def sponsor_renew():
                 reserve_row = rows_by_ott[ott]
                 prev_reservation_id = None
             reservation_add_to_basket(basket_code, reserve_row, dict(
-                # Update user_donor_show in DB (NB: If field missing, checkbox is unchecked)
-                user_donor_show=bool(request.vars.get("oz_user_donor_show_%d" % ott, False)),
+                # Update user_donor_hide in DB (NB: If field missing, checkbox is unchecked)
+                user_donor_hide=bool(request.vars.get("oz_user_donor_hide_%d" % ott, False)),
                 prev_reservation_id=prev_reservation_id
             ))
         raise HTTP(307, "Redirect", Location=paypal_url + '/cgi-bin/webscr')
@@ -951,7 +951,7 @@ def donor():
 
     rows = db(
         (db.reservations.username == username) &
-        (db.reservations.user_donor_show == True) &
+        ((db.reservations.user_donor_hide == None) | (db.reservations.user_donor_hide != True)) &
         (db.reservations.verified_time != None)).select(
         db.reservations.ALL,
         orderby="verified_time, reserve_time",
@@ -1012,7 +1012,10 @@ def donor_list():
     n_leaves = "COUNT(1)"
     groupby = "IFNULL(verified_donor_name,id)"
     limitby=(page*items_per_page,(page+1)*items_per_page+1)
-    curr_rows = db(db.reservations.verified_time != None).select(
+    curr_rows = db(
+        ((db.reservations.user_donor_hide == None) | (db.reservations.user_donor_hide != True)) &
+        (db.reservations.verified_time != None)
+    ).select(
               grouped_img_src,
               grouped_img_src_id,
               grouped_otts, 

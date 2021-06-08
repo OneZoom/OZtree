@@ -23,15 +23,15 @@ verified_url = NULL;
 UPDATE reservations SET 
 user_donor_title = NULL,
 user_donor_name = NULL,
-user_donor_show = NULL,
+user_donor_hide = NULL,
 verified_donor_title = NULL,
 verified_donor_name = NULL
-WHERE user_donor_show IS NULL;
+WHERE user_donor_hide IS NULL;
 
 UPDATE reservations SET 
 user_donor_title = NULL,
 user_donor_name = NULL,
-user_donor_show = NULL,
+user_donor_hide = NULL,
 verified_donor_title = NULL,
 verified_donor_name = NULL
-WHERE user_donor_show != 1;
+WHERE user_donor_hide = 1;

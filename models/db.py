@@ -472,8 +472,9 @@ db.define_table('reservations',
     # title of donor (Mr, Mrs, Dr, etc - needed for giftaid). . 
     Field('user_donor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # name of donor (different to user_sponsor_name if sponsored for someone). 
-    Field('user_donor_show', type = boolean),
-    # True if user doesn't mind online acknowledgment (e.g. on donors page). Prob shouldn't use title
+    Field('user_donor_hide', type = boolean),
+    # True if the user explicitly requested we hide acknowledgment on donors page / personal page
+    # False if they didn't check a box, NULL if they haven't been asked yet.
     Field('user_more_info', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(maxsize=30))), 
     # optional extra sponsorship text which could be shown on the leaf if there's enough space
     Field('user_nondefault_image', type = 'integer'),
