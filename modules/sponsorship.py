@@ -239,7 +239,8 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
     - update_view_count: Should the view count for the OTT be incremented?
 
     Returns
-    - status: String describing reservation status.
+    - status: String describing reservation status, One of
+    -         banned / available / available only to user / reserved / sponsored / unverified / unverified waiting for payment
     - reservation_row: row from reservations table
     """
     db = current.db

@@ -94,6 +94,8 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                            data-sciname="{{=sci_names.get(item.OTT_ID, 'Unknown')}}"
                            > Select to renew</input>
                   </label>
+                {{elif status['status'].startswith('unverified') or  status['status'] == 'reserved':}}
+                  This is currently reserved for someone else, try again later.
                 {{else:}}
                   To renew, please <a href="mailto:mail@onezoom.org">write to us</a>
                 {{pass}}
