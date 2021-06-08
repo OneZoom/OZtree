@@ -15,7 +15,7 @@
   <li uk-grid class="uk-padding-small uk-flex-middle uk-text-small">
     {{if item.OTT_ID in images:}}<div class="uk-width-1-5@m">
       <a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}" target="_blank">
-        <span class="img-species leafout"><img class="species" alt=""
+        <span class="img-species leafout leafout-corner"><img class="species" alt=""
                 src="{{=images[item.OTT_ID].get('url','')}}"
               title="{{=' / '.join(s for s in [images[item.OTT_ID].get('rights', ''), images[item.OTT_ID].get('licence', '')] if s)}}" /></span>
       </a>
