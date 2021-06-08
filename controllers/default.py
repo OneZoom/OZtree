@@ -705,9 +705,13 @@ def sponsor_renew():
         if sponsor_renew_verify_url(request):
             user_email = request.args[0]
         else:
-            raise HTTP(400, "Invalid renewal request for %s" % request.args[0])
+            session.flash = "Invalid renewal request for %s" % request.args[0]
+            redirect(URL('sponsor_renew_request'))
+            return(dict())
     except IndexError:
-        raise_incorrect_url(URL('index', scheme=True, host=True), "Missing token. " + T("Go back to the home page"))
+        session.flash = "Invalid renewal request: Missing token"
+        redirect(URL('sponsor_renew_request'))
+        return(dict())
 
     # Check maintenance state
     try:
