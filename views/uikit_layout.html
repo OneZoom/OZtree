@@ -40,6 +40,7 @@
   </head>
   <body class="standalone">
     <!--[if lt IE 8]><p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p><![endif]-->
+    {{include 'analytics.html'}}
     
     <!-- Navbar ======================================= -->
 <header class="oz-section bkgd-darkspiral">
@@ -224,9 +225,6 @@
       <a href="{{=URL('default','accessibility.html', args='site')}}" target="_blank" class="footlink" title="">{{=T('Accessibility')}}</a>
     </footer>
     {{end}}
-    <!-- Analytics ==================================== -->
-    <script type="text/javascript" src="{{=URL('static','site-specific/google-analytics.js')}}"></script>
-
     <!-- Share ============================y============
     <script src="{{=URL('static','js/share.js',vars=dict(static=URL('static','images')))}}"></script> -->
     {{block page_js}}{{end page_js}}
