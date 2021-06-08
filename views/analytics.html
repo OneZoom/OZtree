@@ -8,6 +8,6 @@
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
   
-    gtag('config', '{{=ga_code}}');
+    gtag('config', '{{=ga_code}}', { 'anonymize_ip': true });
   </script>
 {{pass}}
