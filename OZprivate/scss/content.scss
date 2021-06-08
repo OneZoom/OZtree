@@ -439,9 +439,11 @@ span.img-species {
   background-position: center 85%;
   background-size: 30px;
 }
-
-.endangered-species .img-species.leafout::after {
+.img-species.leafout.leafout-corner::after {
   right: -10px;
-  background-image: url(../images/oz-logo-leafout-outline-red.svg);
   background-position: right bottom;
+  background-image: url(../images/oz-logo-leafout-black.svg);
+}
+.endangered-species .img-species.leafout::after {
+  background-image: url(../images/oz-logo-leafout-outline-red.svg);
 }

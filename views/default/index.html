@@ -189,7 +189,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   <em>Red leaves on our tree of life show species known to be under threat of extinction.</em></p>
 
   <div class="endangered-species">{{for key in threatened:}}
-    <a href="{{=hrefs[key]}}" title="{{=str(html_names.get(key, '')).capitalize()}}" target="_blank"><span class="img-species leafout"><img class="species" src="{{=images[key]['url']}}" alt="{{=str(html_names.get(key, '')).capitalize()}}" /></span></a>
+    <a href="{{=hrefs[key]}}" title="{{=str(html_names.get(key, '')).capitalize()}}" target="_blank"><span class="img-species leafout leafout-corner"><img class="species" src="{{=images[key]['url']}}" alt="{{=str(html_names.get(key, '')).capitalize()}}" /></span></a>
   {{pass}}</div>
 </div></section>
 
