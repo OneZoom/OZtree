@@ -428,7 +428,7 @@ class TestSponsorship(unittest.TestCase):
         status, reservation_row2 = add_reservation(otts[2], form_reservation_code="UT::001")
         self.assertEqual(status, 'unverified waiting for payment')
         self.assertEqual(reservation_row2.admin_comment, "\n".join((
-            "reservation_confirm_payment: Transaction UT::PP2 insufficient for purchase. Paid 2003",
+            "reservation_confirm_payment: Transaction UT::PP2 insufficient for purchase. Paid %d" % (reservation_row0.asking_price * 100 + reservation_row1.asking_price * 100 + 3),
             "reservation_confirm_payment: Transaction UT::PP1 insufficient for purchase. Paid 1",
         )))
         donations = db(db.uncategorised_donation.basket_code==reservation_row0.basket_code).select()
