@@ -8,7 +8,7 @@ To build a tree, you will need to download various files from the internet. Thes
 
 * Open Tree of Life files (see [OpenTree/README.markdown](OpenTree/README.markdown)
 	* `labelled_supertree_simplified_ottnames.tre` (subsequently converted to `draftversionXXX.tre`, as detailed in the [OneZoom instructions](../ServerScripts/TreeBuild/README.markdown))
-	* `ott/taxonomy.tsv` 
+	* `ottX.Y/taxonomy.tsv` (where X.Y is the OT_TAXONOMY_VERSION)
 * Wikimedia files (see [Wiki/README.markdown](Wiki/README.markdown))
 	* `wd_JSON/latest-all.json.bz2`
 	* `wp_SQL/enwiki-latest-page.sql.gz`
