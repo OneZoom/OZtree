@@ -39,6 +39,8 @@ url_base = //images.onezoom.org/
 ;    to enter paypal etc details). If set to anything other than 0/1 or all/none
 ;    this is assumed to be a "role", such as manager, and only
 ;    people logged in with the role can sponsor (for testing purposes)
+;    please note that the OneZoom software license does not permit users of
+;    the code to set allow_sponsorship = 1 under any circumstances
 ; * maintenance_mins: to enable maintenance mode (e.g. when 
 ;    switching beta and production to enable a new website version)
 ;    set to the number of minutes you expect the site to be down
