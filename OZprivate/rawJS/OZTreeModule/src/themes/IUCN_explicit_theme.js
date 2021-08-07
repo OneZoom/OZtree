@@ -31,6 +31,7 @@ function outline_highlight(node) {
 }
 
 function leafcolor2b(node) {
+   // this is for the colour of the line around a leaf on mouseover
   switch(node.redlist) {
     case "EX":
     return ('rgb(50,50,50)');
@@ -66,6 +67,7 @@ function leafcolor1(node) {
 }
 
 function get_redlist_color(node) {
+  // this is for the colour of the interior of a leaf
   switch(node.redlist) {
     case "EX":
     //return ('rgb(150,175,215)'); // new blue
@@ -120,6 +122,7 @@ function leafcolor2(node) {
 }
 
 function get_redlist_color2(node) {
+  // this is for the colour of the line around a leaf without mouseover
   switch(node.redlist) {
     case "EX":
     //return ('rgb(0,30,150)');
