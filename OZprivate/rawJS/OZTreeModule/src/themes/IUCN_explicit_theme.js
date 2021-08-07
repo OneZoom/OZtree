@@ -57,10 +57,11 @@ function leafcolor2b(node) {
 }
 
 function leafcolor1(node) {
+  // for 'fake' leaves at end of branches that are not developed yet
   if (node.richness_val > 1 && node.threatened_branch) {
     return red1;
   } else if (node.richness_val > 1) {
-    return green1;
+    return iucnDefault;
   } else {
     return get_redlist_color(node);
   }
@@ -111,11 +112,12 @@ function get_redlist_color(node) {
 }
 
 function leafcolor2(node) {
+  // for 'fake' leaves at end of branches that are not developed yet
   if (node.richness_val > 1) {
     if (node.threatened_branch == true) {
       return red2;
     }
-    return green2;
+    return 'rgb(107,107,107)';
   } else {
     return(get_redlist_color2(node));
   }
@@ -146,10 +148,10 @@ function get_redlist_color2(node) {
     return green2;
     //return ('rgb(60,50,135)');
     case "NE":
-    return ('rgb(125,125,125)'); //green2 // 'rgb(107, 107, 107)'//'rgb(80,80,80)' //('rgb(120,120,120)');
+    return ('rgb(107,107,107)'); //green2 // 'rgb(107, 107, 107)'//'rgb(80,80,80)' //('rgb(120,120,120)');
     //return ('rgb(0,0,190)');
     default:
-    return ('rgb(125,125,125)'); //green2 //'rgb(107, 107, 107)' //'rgb(167, 159, 15)'//('rgb(237, 164, 33)');
+    return ('rgb(107,107,107)'); //green2 //'rgb(107, 107, 107)' //'rgb(167, 159, 15)'//('rgb(237, 164, 33)');
   }    
 }
 
