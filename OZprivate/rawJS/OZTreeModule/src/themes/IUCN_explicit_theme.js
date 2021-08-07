@@ -2,8 +2,8 @@ let green1= 'rgb(135,215,90)';
 let green2 = 'rgb(70,135,30)';
 let red1 = 'rgb(225,180,155)'; // green1;//
 let red2 = 'rgb(140,20,20)'; // green2;//
-let branch_color = 'rgb(125, 125, 125)';
-let bar_color = 'rgb(107, 107, 107)';
+let branch_color = 'rgb(125, 125, 125)'; //'rgb(84,37,1)'
+let bar_color =  'rgb(107, 107, 107)'; //'rgb(50,31,16)'//
 let highlight_color = 'rgba(255, 255, 255, .5)';
 let int_text_stroke_hover = 'rgb(96,96,96)';
 let int_text_fill_hover = 'rgb(255,255,255)';
@@ -11,16 +11,16 @@ let int_text_fill = 'rgb(255,255,255)';
 let int_sponsor_fill_hover = 'rgb(255, 255, 255)';
 let int_sponsor_fill = 'rgb(180, 180, 180)';
 
-let iucnEX = 'rgb(200,200,200)';
-let iucnEW = 'rgb(200,200,200)';
+let iucnEX = 'rgb(125,125,125)';
+let iucnEW = 'rgb(125,125,125)';
 let iucnCR = red1;
 let iucnEN = red1;
 let iucnVU = red1;
 let iucnNT = green1;
 let iucnLC = green1;
 let iucnDD = green1;
-let iucnNE = green1;
-let iucnDefault = green1;
+let iucnNE = 'rgb(240,240,240)'//'rgb(177,215,90)'//'rgb(213,71,0)' //'rgb(139, 146, 22)';
+let iucnDefault = 'rgb(240,240,240)'//'rgb(177,215,90)'//'rgb(213,71,0)' //'rgb(139, 146, 22)'
 
 function outline_highlight(node) {
   if (node.richness_val > 1) {
@@ -52,7 +52,7 @@ function leafcolor2b(node) {
     case "NE":
     return ('rgb(20,80,00)');
     default:
-    return ('rgb(20,80,00)');
+    return ('rgb(0,0,0)');
   }
 }
 
@@ -126,10 +126,10 @@ function get_redlist_color2(node) {
   switch(node.redlist) {
     case "EX":
     //return ('rgb(0,30,150)');
-    return ('rgb(110,110,110)');
+    return 'rgb(107,107,107)'//('rgb(110,110,110)');
     case "EW":
     //return ('rgb(0,30,150)');
-    return ('rgb(110,110,110)');
+    return 'rgb(107,107,107)'//('rgb(110,110,110)');
     case "CR":
     return red2;
     case "EN":
@@ -146,10 +146,10 @@ function get_redlist_color2(node) {
     return green2;
     //return ('rgb(60,50,135)');
     case "NE":
-    return green2;
+    return ('rgb(125,125,125)'); //green2 // 'rgb(107, 107, 107)'//'rgb(80,80,80)' //('rgb(120,120,120)');
     //return ('rgb(0,0,190)');
     default:
-    return green2;
+    return ('rgb(125,125,125)'); //green2 //'rgb(107, 107, 107)' //'rgb(167, 159, 15)'//('rgb(237, 164, 33)');
   }    
 }
 
