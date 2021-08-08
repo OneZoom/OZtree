@@ -347,11 +347,11 @@ const theme = {
     
     circle_hover: {
       stroke: grey,
-      fill: grey
+      fill: light_grey
     },
     circle: {
       stroke: grey,
-      fill: light_grey
+      fill: grey
     },
     circle_searchin: {
       stroke: half_transparent_white
