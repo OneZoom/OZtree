@@ -276,9 +276,18 @@ function get_leaf_text_fill(node) {
     }
 }
 
+function branch_colour(node) {
+    if (node._is_polytomy == 1)
+    {
+        return light_grey;
+    } else {
+        return grey;
+    }
+}
+
 const theme = {
   branch: {
-    stroke: light_grey,
+    stroke: branch_colour,
   
   // this pallette stores colours that are mapped to marked areas in config.marked_area_color_map
   marked_area_pallette: {
