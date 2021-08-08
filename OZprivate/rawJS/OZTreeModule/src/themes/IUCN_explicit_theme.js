@@ -1,30 +1,40 @@
-let green1= 'rgb(135,215,90)';
-let green2 = 'rgb(70,135,30)';
-let red1 = 'rgb(225,180,155)'; // green1;//
-let red2 = 'rgb(140,20,20)'; // green2;//
-let branch_color = 'rgb(125, 125, 125)'; //'rgb(84,37,1)'
-let bar_color =  'rgb(107, 107, 107)'; //'rgb(50,31,16)'//
-let highlight_color = 'rgba(255, 255, 255, .5)';
-let int_text_stroke_hover = 'rgb(96,96,96)';
-let int_text_fill_hover = 'rgb(255,255,255)';
-let int_text_fill = 'rgb(255,255,255)';
-let int_sponsor_fill_hover = 'rgb(255, 255, 255)';
-let int_sponsor_fill = 'rgb(180, 180, 180)';
+// define colours that will be used
 
-let iucnEX = 'rgb(125,125,125)';
-let iucnEW = 'rgb(125,125,125)';
-let iucnCR = red1;
-let iucnEN = red1;
-let iucnVU = red1;
-let iucnNT = green1;
-let iucnLC = green1;
-let iucnDD = green1;
-let iucnNE = 'rgb(240,240,240)'//'rgb(177,215,90)'//'rgb(213,71,0)' //'rgb(139, 146, 22)';
-let iucnDefault = 'rgb(240,240,240)'//'rgb(177,215,90)'//'rgb(213,71,0)' //'rgb(139, 146, 22)'
+let black = 'rgb(0,0,0)';
+let very_dark_grey = 'rgb(50,50,50)';
+let dark_grey = 'rgb(85,85,85)';
+let grey = 'rgb(107,107,107)';
+let light_grey = 'rgb(125,125,125)';
+let very_light_grey = 'rgb(180, 180, 180)';
+let off_white = 'rgb(240,240,240)'
+let white = 'rgb(255,255,255)';
+
+let half_transparent_black = 'rgba(0,0,0,0.5)';
+let transparent_black = 'rgba(0,0,0,0.2)';
+let slightly_tranparent_white = 'rgba(255,255,255,0.85)';
+let half_transparent_white = 'rgba(255,255,255,0.5)';
+let very_transparent_white = 'rgba(255,255,255,0.2)';
+
+let dark_green = 'rgb(20,80,00)';
+let green = 'rgb(70,135,30)';
+let light_green = 'rgb(135,215,90)';
+
+let dark_red = 'rgb(80,00,00)'
+let red = 'rgb(140,20,20)';
+let light_red = 'rgb(225,180,155)';
+
+let pastel_red = 'rgb(255,130,130)';
+let pastel_green = 'rgb(130,255,130)';
+let pastel_blue = 'rgb(130,130,255)';
+let pastel_cyan = 'rgb(100,200,200)';
+let pastel_magenta = 'rgb(200,100,200)';
+let pastel_yellow = 'rgb(200,200,100)';
+
+// define functions of a node that return different colours depending on node status
 
 function outline_highlight(node) {
   if (node.richness_val > 1) {
-    return 'rgb(0,0,0)';
+    return black;
   } else {
     return leafcolor2b(node);
   }
@@ -34,34 +44,34 @@ function leafcolor2b(node) {
    // this is for the colour of the line around a leaf on mouseover
   switch(node.redlist) {
     case "EX":
-    return ('rgb(50,50,50)');
+          return very_dark_grey;
     case "EW":
-    return ('rgb(50,50,50)');
+          return very_dark_grey;
     case "CR":
-    return ('rgb(80,00,00)');
+          return dark_red;
     case "EN":
-    return ('rgb(80,00,00)');
+          return dark_red;
     case "VU":
-    return ('rgb(80,00,00)');
+          return dark_red;
     case "NT":
-    return ('rgb(20,80,00)');
+          return dark_green;
     case "LC":
-    return ('rgb(20,80,00)');
+          return dark_green;
     case "DD":
-    return ('rgb(20,80,00)');
+          return very_dark_grey;
     case "NE":
-    return ('rgb(20,80,00)');
+          return very_dark_grey;
     default:
-    return ('rgb(0,0,0)');
+          return very_dark_grey;
   }
 }
 
 function leafcolor1(node) {
   // for 'fake' leaves at end of branches that are not developed yet
   if (node.richness_val > 1 && node.threatened_branch) {
-    return red1;
+    return light_red;
   } else if (node.richness_val > 1) {
-    return iucnDefault;
+    return off_white;
   } else {
     return get_redlist_color(node);
   }
@@ -71,43 +81,25 @@ function get_redlist_color(node) {
   // this is for the colour of the interior of a leaf
   switch(node.redlist) {
     case "EX":
-    //return ('rgb(150,175,215)'); // new blue
-    return iucnEX;
+          return light_grey;
     case "EW":
-    //return ('rgb(150,175,215)'); // new blue
-    return iucnEW;
-    //return ('rgb(80,80,80)');
+          return light_grey;
     case "CR":
-    return iucnCR;
-    //////////return (red1);
-    //'rgb(215,175,150)' = dinah pink
+          return light_red;
     case "EN":
-    //return ('rgb(225,185,130)');
-    //return ('rgb(210,170,145)');
-    return iucnEN;
-    //////////return (red1);
-    
+          return light_red;
     case "VU":
-    return iucnVU;
-    //return (red1);
-    //return ('rgb(210,170,145)');
-    //return ('rgb(220,220,220)');
+          return light_red;
     case "NT":
-    return iucnNT;
-    //return ('rgb(170,195,96)');
-    //return ('rgb(180,208,90)');
-    //return ('rgb(200,220,180)');
-    //return ('rgb(190,200,80)');
+          return light_green;
     case "LC":
-    return iucnLC;
+          return light_green;
     case "DD":
-    return iucnDD;
-    //return ('rgb(60,50,135)');
+          return off_white;
     case "NE":
-    return iucnNE;
-    //return ('rgb(0,0,190)');
+          return off_white;
     default:
-    return iucnDefault;
+          return off_white;
   }
 }
 
@@ -115,9 +107,9 @@ function leafcolor2(node) {
   // for 'fake' leaves at end of branches that are not developed yet
   if (node.richness_val > 1) {
     if (node.threatened_branch == true) {
-      return red2;
+      return red;
     }
-    return 'rgb(107,107,107)';
+    return grey;
   } else {
     return(get_redlist_color2(node));
   }
@@ -127,63 +119,78 @@ function get_redlist_color2(node) {
   // this is for the colour of the line around a leaf without mouseover
   switch(node.redlist) {
     case "EX":
-    //return ('rgb(0,30,150)');
-    return 'rgb(107,107,107)'//('rgb(110,110,110)');
+          return grey;
     case "EW":
-    //return ('rgb(0,30,150)');
-    return 'rgb(107,107,107)'//('rgb(110,110,110)');
+          return grey;
     case "CR":
-    return red2;
+          return red;
     case "EN":
-    //return (red2);
-    return red2;
+          return red;
     case "VU":
-    return red2;
-    //return ('rgb(170,0,0)');
+          return red;
     case "NT":
-    return green2;
+          return green;
     case "LC":
-    return green2;
+          return green;
     case "DD":
-    return green2;
-    //return ('rgb(60,50,135)');
+          return grey;
     case "NE":
-    return ('rgb(107,107,107)'); //green2 // 'rgb(107, 107, 107)'//'rgb(80,80,80)' //('rgb(120,120,120)');
-    //return ('rgb(0,0,190)');
+          return grey;
     default:
-    return ('rgb(107,107,107)'); //green2 //'rgb(107, 107, 107)' //'rgb(167, 159, 15)'//('rgb(237, 164, 33)');
+          return grey;
   }    
 }
 
 function sponsor_highlight(node) {
   if (node.richness_val > 1) {
-    return 'rgb(0,0,0)';
+    return black;
   } else {
-    return 'rgb(255,255,255)';
+    return white;
   }
 }
 
 function sponsor_color(node) {
   if (node.richness_val > 1) {
-    return 'rgb(110,110,110)';
+    return light_grey;
   } else {
-    return leafcolor1(node);
+      switch(node.redlist) {
+          case "EX":
+              return off_white;
+          case "EW":
+              return off_white;
+          case "CR":
+              return light_red;
+          case "EN":
+              return light_red;
+          case "VU":
+              return light_red;
+          case "NT":
+              return light_green;
+          case "LC":
+              return light_green;
+          case "DD":
+              return very_light_grey;
+          case "NE":
+              return very_light_grey;
+          default:
+              return very_light_grey;
+      }
   }
 }
 
 function copyright_highlight_fill(node) {
   if (node.richness_val > 1) {
-    return 'rgba(255,255,255,0.4)';
+    return half_transparent_white;
   } else {
-    return 'rgb(0,0,0)';
+    return white;
   }
 }
 
 function copyright_highlight_stroke(node) {
   if (node.richness_val > 1) {
-    return 'rgb(0,0,0)';
+    return black;
   } else {
-    return 'rgb(255,255,255)';
+    return white;
   }
 }
 
@@ -213,107 +220,155 @@ function copyright_text_fill(node) {
 
 function copyright_text_highlight_fill(node) {
   if (node.richness_val > 1) {
-    return 'rgb(0,0,0)';
+    return black;
   } else {
-    return 'rgb(255,255,255)';
+    return white;
   }
+}
+
+function leaf_text_hover_outline(node) {
+    switch(node.redlist) {
+        case "EX":
+            return very_transparent_white;
+        case "EW":
+            return very_transparent_white;
+        case "CR":
+            return half_transparent_white;
+        case "EN":
+            return half_transparent_white;
+        case "VU":
+            return half_transparent_white;
+        case "NT":
+            return half_transparent_white;
+        case "LC":
+            return half_transparent_white;
+        case "DD":
+            return transparent_black;
+        case "NE":
+            return transparent_black;
+        default:
+            return transparent_black;
+    }
+}
+
+function get_leaf_text_fill(node) {
+    switch(node.redlist) {
+        case "EX":
+            return white;
+        case "EW":
+            return white;
+        case "CR":
+            return black;
+        case "EN":
+            return black;
+        case "VU":
+            return black;
+        case "NT":
+            return black;
+        case "LC":
+            return black;
+        case "DD":
+            return black;
+        case "NE":
+            return black;
+        default:
+            return black;
+    }
 }
 
 const theme = {
   branch: {
-    stroke: branch_color,
+    stroke: light_grey,
   
   // this pallette stores colours that are mapped to marked areas in config.marked_area_color_map
   marked_area_pallette: {
-      '0': 'rgb(130,130,255)',
-      '1': 'rgb(255,130,130)',
-      '2': 'rgb(130,255,130)',
-      '3': 'rgb(200,100,200)',
-      '4': 'rgb(100,200,200)',
-      '5': 'rgb(200,200,100)'
+      '0': pastel_blue,
+      '1': pastel_red,
+      '2': pastel_green,
+      '3': pastel_magenta,
+      '4': pastel_cyan,
+      '5': pastel_yellow
   },
       
-      
     highlight_search_hit: {
-      stroke: 'rgb(200,100,100)'
+      stroke: pastel_red
     },
     // for search hit colouring including common ancestor markings
     highlight_search_hit1: {
-      stroke: 'rgb(200,100,100)'
+      stroke: pastel_red
     },
     highlight_search_hit2: {
-      stroke: 'rgb(100,100,200)'
+      stroke: pastel_blue
     },
     highlight_arrow_search_hit: {
-      fill: 'rgb(200,100,100)'
+      fill: pastel_red
     },
     highlight_arrow_search_hit1: {
-      fill: 'rgb(200,100,100)'
+      fill: pastel_red
     },
     highlight_arrow_search_hit2: {
-      fill: 'rgb(100,100,200)'
+      fill: pastel_blue
     }
   },
     
   interior: {
     pic_text_hover: {
-      stroke: int_text_stroke_hover,
-      fill: int_text_fill_hover
+      stroke: transparent_black,
+      fill: white
     },
     pic_text: {
-      fill: int_text_fill
+      fill: white
     },
     
     
     text_hover: {
-      stroke: int_text_stroke_hover
+      stroke: transparent_black
     },
     text: {
-      fill: int_text_fill
+      fill: white
     },
-    
     
     sponsor_text_hover: {
-      fill: int_sponsor_fill_hover
+      fill: white
     },
     sponsor_text: {
-      fill: int_sponsor_fill
+      fill: very_light_grey
     },
     
     
     circle_hover: {
-      stroke: bar_color,
-      fill: bar_color
+      stroke: grey,
+      fill: grey
     },
     circle: {
-      stroke: bar_color,
-      fill: branch_color
+      stroke: grey,
+      fill: light_grey
     },
     circle_searchin: {
-      stroke: highlight_color
+      stroke: half_transparent_white
     },
     circle_highlight: {
       outer: {
-        fill: branch_color
+        fill: light_grey
       },
       inner: {
-        fill: highlight_color
+        fill: half_transparent_white
       }
     },
       
     copyright_hover: {
-      fill: 'rgb(255,255,255)',
-      stroke: 'rgb(0,0,0)'
+      fill: white,
+      stroke: black
     },
       
     copyright: {
-      fill: 'rgba(255,255,255,0.5)',
-      stroke: 'rgb(0,0,0)',
+      fill: half_transparent_white,
+      stroke: black,
       text: {
-      fill: 'rgb(0,0,0)'
+      fill: black
       },
         text_hover: {
-        fill: 'rgb(0,0,0)',
+        fill: black,
       }
     }
       
@@ -321,31 +376,31 @@ const theme = {
     
   signpost: {
     pic: {
-      stroke: 'rgba(255,255,255,.5)'
+      stroke: half_transparent_white
     },
     
     pic_hover: {
-      stroke: 'rgba(0,0,0,.5)'
+      stroke: half_transparent_black
     },
     
     pic_inner: {
-      stroke: 'rgb(255,255,255)'
+      stroke: white
     },
     
     pic_text: {
-      stroke: 'rgba(255,255,255,0.85)',
-      fill: 'rgb(85,85,85)'
+      stroke: slightly_tranparent_white,
+      fill: dark_grey
     },
     
     pic_text_hover: {
-      stroke: 'rgb(255,255,255)',
-      fill: 'rgb(0,0,0)'
+      stroke: white,
+      fill: black
     }
   },
     
   leaf: {
     bg: {
-      fill: 'rgb(255,255,255)'
+      fill: white
     },
     
     'outline_hover': {
@@ -366,11 +421,11 @@ const theme = {
     },
     
     text: {
-      fill: 'rgb(0,0,0)'
+      fill: get_leaf_text_fill
     },
     
     'text_hover': {
-      stroke: 'rgba(255,255,255,0.6)'
+      stroke: leaf_text_hover_outline
     },
     
     sponsor: {
