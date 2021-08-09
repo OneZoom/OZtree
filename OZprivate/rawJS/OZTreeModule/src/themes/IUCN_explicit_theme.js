@@ -85,7 +85,7 @@ function get_redlist_color(node) {
     case "EW":
           return light_grey;
     case "CR":
-          return light_red;
+          return red;
     case "EN":
           return light_red;
     case "VU":
@@ -258,7 +258,7 @@ function get_leaf_text_fill(node) {
         case "EW":
             return white;
         case "CR":
-            return black;
+            return white;
         case "EN":
             return black;
         case "VU":
