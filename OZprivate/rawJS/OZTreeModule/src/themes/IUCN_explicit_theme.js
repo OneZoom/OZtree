@@ -81,7 +81,7 @@ function get_redlist_color(node) {
   // this is for the colour of the interior of a leaf
   switch(node.redlist) {
     case "EX":
-          return light_grey;
+          return grey;
     case "EW":
           return light_grey;
     case "CR":
