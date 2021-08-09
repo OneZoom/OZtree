@@ -117,7 +117,7 @@ class Midnode {
     this.start = start;
     this.end = end;
     calc_richness_of_node(this);
-    calc_polytomyness_of_node(this);
+    calc_polytomyness_of_node(data_repo,this);
     
     if (this.richness_val > 1) {
       // initialise children
@@ -536,15 +536,23 @@ function calc_richness_of_node(node) {
   }
 }
 
-function calc_polytomyness_of_node(node) {
+function calc_polytomyness_of_node(data_repo,node) {
     // ****** TODO JAMES ****** ///
-    if (Math.random() > 0.5)
-    {
-        node._is_polytomy = 1; // need to detect and update this.
-    }
-    else
-    {
-        node._is_polytomy = 2; // need to detect and update this.
+    
+    let start = node.start;
+    let end = node.end;
+    
+    node._is_polytomy = null
+    if (data_repo.raw_data.charAt(end) === '}') {
+        if (data_repo.raw_data.charAt(start) === '{') {
+             node._is_polytomy = true;
+        }
+    } else {
+        if (data_repo.raw_data.charAt(end) === ')') {
+            if (data_repo.raw_data.charAt(start) === '(') {
+                node._is_polytomy = false;
+            }
+        }
     }
 }
 

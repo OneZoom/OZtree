@@ -277,11 +277,11 @@ function get_leaf_text_fill(node) {
 }
 
 function branch_colour(node) {
-    if (node._is_polytomy == 1)
+    if (node._is_polytomy == true)
     {
-        return light_grey;
-    } else {
         return grey;
+    } else {
+        return light_grey;
     }
 }
 
