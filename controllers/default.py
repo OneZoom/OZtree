@@ -344,7 +344,6 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
         form_reservation_code = __make_user_code()
 
     # initialise other variables that will be passed on to the page
-    sp_name = common_name = the_long_name = default_image = None
     release_time = 0 #when this will become free, in seconds
    
     try:
@@ -353,16 +352,20 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
         EoL_API_key=""
 
     OTT_ID_Varin = int(request.vars.get('ott'))
-    status, reservation_row = add_reservation(
+    status, reservation_row, leaf_entry = add_reservation(
         OTT_ID_Varin,
         form_reservation_code,
         update_view_count=(request.function == 'sponsor_leaf' and request.extension == "html"),
     )
     iucn_code = None
-    if status != 'invalid':  # still need to figure out status, but should be able to get data
+    if status == 'invalid':  # must define some null vars
+        common_name = the_long_name = default_image = None
+        
+    else:  # still need to figure out status, but should be able to get data
         if reservation_row is None:
             raise HTTP(400,"Error: row is not defined. Please try reloading the page")
-
+        sp_name = leaf_entry.name
+        common_name = get_common_name(OTT_ID_Varin)
         # Fetch partner data if available
         partner = request.vars.get('partner')
         try:
@@ -378,7 +381,6 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
             'status_code',
             None)
 
-        leaf_entry = db(db.ordered_leaves.ott == OTT_ID_Varin).select().first()
         long_name = nice_species_name(sp_name, common_name, html=True, leaf=True, the=False)
         the_long_name = nice_species_name(sp_name, common_name, html=True, leaf=True, the=True)
 
@@ -767,7 +769,7 @@ def sponsor_renew():
         expired_rows.append(r)
 
         # Try reserving each
-        status, new_reservation = add_reservation(
+        status, new_reservation, _ = add_reservation(
             r.OTT_ID,
             # NB: Use the e-mail address as our form_reservation_code
             hashlib.sha256(user_email.encode('utf8')).hexdigest())

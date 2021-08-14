@@ -3,7 +3,7 @@ from gluon import current
 from gluon.utils import web2py_uuid
 
 from OZfunc import (
-    child_leaf_query, get_common_name
+    child_leaf_query
 )
 
 """HMAC expiry in seconds, NB: This is when they're rotated, so an HMAC will be valid for 2xHMAC_EXPIRY"""
@@ -179,7 +179,7 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             prev_ott = r.OTT_ID
             prev_sponsorship_ends = r.sponsorship_ends
             prev_reservation_id = reservation_expire(r)
-            status, r = add_reservation(prev_ott, basket_code)
+            status, r, _ = add_reservation(prev_ott, basket_code)
             assert status == 'available'  # We just expired the old one, this should work
             reservation_add_to_basket(basket_code, r, dict(
                 prev_reservation_id=prev_reservation_id
@@ -255,6 +255,7 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
     - status: String describing reservation status, One of
     -         banned / available / available only to user / reserved / sponsored / unverified / unverified waiting for payment
     - reservation_row: row from reservations table
+    - leaf_entry: row from ordered_leaves table
     """
     db = current.db
     request = current.request
@@ -268,11 +269,9 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
     # now search for OTTID in the leaf table
     try:
         leaf_entry = db(db.ordered_leaves.ott == OTT_ID_Varin).select().first()
-        common_name = get_common_name(OTT_ID_Varin)
-        sp_name = leaf_entry.name
     except:
         OTT_ID_Varin = None
-        leaf_entry = {}
+        leaf_entry = {'name': 'invalid'}
     if ((not leaf_entry) or             # invalid if not in ordered_leaves
         (leaf_entry.ott is None) or     # invalid if no OTT ID
         (' ' not in leaf_entry.name)):  # invalid if not a sp. name (no space/underscore)
@@ -330,7 +329,7 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
                 reservation_query.update(
                     last_view=request.now,
                     num_views=(reservation_row.num_views or 0)+1,
-                    name=sp_name)
+                    name=leaf_entry.name)
 
             # this may be available (because valid) but could be
             #  sponsored, unverified, reserved or still available  
@@ -382,7 +381,7 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
                         # reserve the leaf because there is no reservetime on record
                         if allow_sponsorship:
                             reservation_query.update(
-                                name=sp_name,
+                                name=leaf_entry.name,
                                 reserve_time=request.now,
                                 user_registration_id=form_reservation_code)
                     else:
@@ -396,7 +395,7 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
                                 status = "available only to user"
                                 if allow_sponsorship:
                                     reservation_query.update(
-                                        name=sp_name,
+                                        name=leaf_entry.name,
                                         reserve_time=request.now)
                             else:
                                 status = "reserved"
@@ -406,13 +405,13 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
                             # reserve the leaf because there is no reservetime on record
                             if allow_sponsorship:
                                 reservation_query.update(
-                                    name=sp_name,
+                                    name=leaf_entry.name,
                                     reserve_time = request.now,
                                     user_registration_id = form_reservation_code)
 
         #re-do the query since we might have added the row ID now
         reservation_row = reservation_query.select().first()
-    return status, reservation_row
+    return status, reservation_row, leaf_entry
 
 def sponsorable_children_query(target_id, qtype="ott"):
     """

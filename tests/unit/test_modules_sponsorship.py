@@ -62,7 +62,7 @@ class TestSponsorship(unittest.TestCase):
 
     def test_add_reservation__invalid(self):
         """Invalid OTT is invalid"""
-        status, reservation_row = add_reservation(-1000, form_reservation_code="UT::001")
+        status, reservation_row, _ = add_reservation(-1000, form_reservation_code="UT::001")
         self.assertEqual(status, 'invalid')
 
     def test_add_reservation__reserve(self):
@@ -73,10 +73,10 @@ class TestSponsorship(unittest.TestCase):
 
         # Anyone sees an empty item as available
         ott = find_unsponsored_ott()
-        status, reservation_row = add_reservation(ott, form_reservation_code="UT::001")
+        status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         self.assertEqual(reservation_row.OTT_ID, ott)
-        status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
+        status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::002")
         self.assertEqual(status, 'available')
         self.assertEqual(reservation_row.OTT_ID, ott)
 
@@ -86,18 +86,18 @@ class TestSponsorship(unittest.TestCase):
 
         # Can reserve an OTT, and re-request it
         ott = find_unsponsored_ott()
-        status, reservation_row = add_reservation(ott, form_reservation_code="UT::001")
+        status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         self.assertEqual(reservation_row.OTT_ID, ott)
-        status, reservation_row = add_reservation(ott, form_reservation_code="UT::001")
+        status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::001")
         self.assertEqual(status, 'available only to user')
         self.assertEqual(reservation_row.OTT_ID, ott)
 
         # Another user can't get it now, but can tomorrow
-        status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
+        status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::002")
         self.assertEqual(status, 'reserved')
         current.request.now = (current.request.now + datetime.timedelta(days=1))
-        status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
+        status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::002")
         self.assertEqual(status, 'available')
 
     def test_add_reservation__renew_expired(self):
@@ -105,7 +105,7 @@ class TestSponsorship(unittest.TestCase):
 
         # Buy ott, validate
         ott = find_unsponsored_ott()
-        status, reservation_row = add_reservation(ott, form_reservation_code="UT::001")
+        status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK001', reservation_row, dict(
             e_mail='001@unittest.example.com',
@@ -119,7 +119,7 @@ class TestSponsorship(unittest.TestCase):
             sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
         reservation_row.update_record(verified_time=current.request.now)
-        status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
+        status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
 
         # Expire the reservation
@@ -127,18 +127,18 @@ class TestSponsorship(unittest.TestCase):
 
         # Is available to anyone
         set_allow_sponsorship(0)
-        status, reservation_row = add_reservation(ott, form_reservation_code="UT::001")
+        status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
-        status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
+        status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::002")
         self.assertEqual(status, 'available')
 
         # Can reserve it referencing old node
         set_allow_sponsorship(1)
-        status, reservation_row = add_reservation(ott, form_reservation_code="UT::001")
+        status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
-        status, reservation_row = add_reservation(ott, form_reservation_code="UT::001")
+        status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::001")
         self.assertEqual(status, 'available only to user')
-        status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
+        status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::002")
         self.assertEqual(status, 'reserved')
 
         # Move ahead in time, to prove which times are different
@@ -152,7 +152,7 @@ class TestSponsorship(unittest.TestCase):
         ))
 
         # Has all the details from expired_r, but not transaction details
-        status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
+        status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::002")
         self.assertEqual(status, 'unverified waiting for payment')
         self.assertEqual(reservation_row.user_sponsor_name, 'Arnold')
         self.assertEqual(reservation_row.e_mail, '002@unittest.example.com')
@@ -166,7 +166,7 @@ class TestSponsorship(unittest.TestCase):
             sale_time='01:01:01 Jan 01, 2002 GMT',
         ))
         expired_r = db(db.expired_reservations.id==expired_r_id).select().first()
-        status, reservation_row = add_reservation(ott, form_reservation_code="UT::002")
+        status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
         self.assertEqual(reservation_row.verified_time, expired_r.verified_time)
         self.assertEqual(expired_r.sale_time, '01:01:01 Jan 01, 2001 GMT')
@@ -192,7 +192,7 @@ class TestSponsorship(unittest.TestCase):
 
         # Buy ott1 with giftaid off
         ott1 = find_unsponsored_ott()
-        status, reservation_row1 = add_reservation(ott1, form_reservation_code="UT::001")
+        status, reservation_row1, _ = add_reservation(ott1, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK001', reservation_row1, dict(
             e_mail='001@unittest.example.com',
@@ -208,7 +208,7 @@ class TestSponsorship(unittest.TestCase):
         ))
 
         # Can't reserve it since it's unverified (not "sponsored" since we haven't set verified)
-        status, reservation_row1 = add_reservation(ott1, form_reservation_code="UT::002")
+        status, reservation_row1, _ = add_reservation(ott1, form_reservation_code="UT::002")
         self.assertEqual(status, 'unverified')
         # E-mail got set, house/postcode didn't
         self.assertEqual(reservation_row1.PP_e_mail, 'paypal@unittest.example.com')
@@ -217,12 +217,12 @@ class TestSponsorship(unittest.TestCase):
 
         # Validate row, is fully sponsored
         reservation_row1.update_record(verified_time=current.request.now)
-        status, reservation_row1 = add_reservation(ott1, form_reservation_code="UT::002")
+        status, reservation_row1, _ = add_reservation(ott1, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
 
         # Buy ott2 with giftaid on
         ott2 = find_unsponsored_ott()
-        status, reservation_row2 = add_reservation(ott2, form_reservation_code="UT::001")
+        status, reservation_row2, _ = add_reservation(ott2, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK002', reservation_row2, dict(
             e_mail='001@unittest.example.com',
@@ -238,12 +238,12 @@ class TestSponsorship(unittest.TestCase):
         ))
 
         # Address gets set, old row left alone
-        status, reservation_row1 = add_reservation(ott1, form_reservation_code="UT::002")
+        status, reservation_row1, _ = add_reservation(ott1, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
         self.assertEqual(reservation_row1.PP_e_mail, 'paypal@unittest.example.com')
         self.assertEqual(reservation_row1.PP_house_and_street, None)
         self.assertEqual(reservation_row1.PP_postcode, None)
-        status, reservation_row2 = add_reservation(ott2, form_reservation_code="UT::002")
+        status, reservation_row2, _ = add_reservation(ott2, form_reservation_code="UT::002")
         self.assertEqual(status, 'unverified')
         self.assertEqual(reservation_row2.PP_e_mail, 'paypal@unittest.example.com')
         self.assertEqual(reservation_row2.PP_house_and_street, "PP House")
@@ -252,7 +252,7 @@ class TestSponsorship(unittest.TestCase):
         # Giftaid claimed
         reservation_row1.update_record(giftaid_claimed_on=current.request.now)
         # NB: DB round trip to round down to MySQL precision
-        status, reservation_row1 = add_reservation(ott1, form_reservation_code="UT::002")
+        status, reservation_row1, _ = add_reservation(ott1, form_reservation_code="UT::002")
         old_claimed_time = reservation_row1.giftaid_claimed_on
 
         # Renew ott1, gift-aid no longer claimed
@@ -262,7 +262,7 @@ class TestSponsorship(unittest.TestCase):
             PP_e_mail='paypal-new-addr@unittest.example.com',
             sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
-        status, reservation_row1 = add_reservation(ott1, form_reservation_code="UT::002")
+        status, reservation_row1, _ = add_reservation(ott1, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
         self.assertEqual(reservation_row1.giftaid_claimed_on, None)
 
@@ -275,7 +275,7 @@ class TestSponsorship(unittest.TestCase):
 
         # Buy ott1
         ott1 = find_unsponsored_ott()
-        status, reservation_row = add_reservation(ott1, form_reservation_code="UT::001")
+        status, reservation_row, _ = add_reservation(ott1, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK001', reservation_row, dict(
             e_mail='001@unittest.example.com',
@@ -288,7 +288,7 @@ class TestSponsorship(unittest.TestCase):
         ))
 
         # Can't reserve it since it's unverified (not "sponsored" since we haven't set verified)
-        status, reservation_row = add_reservation(ott1, form_reservation_code="UT::002")
+        status, reservation_row, _ = add_reservation(ott1, form_reservation_code="UT::002")
         self.assertEqual(status, 'unverified')
         # E-mail, asking price got set
         self.assertEqual(reservation_row.PP_e_mail, 'paypal@unittest.example.com')
@@ -306,13 +306,13 @@ class TestSponsorship(unittest.TestCase):
             PP_e_mail='paypal-replay-attack@unittest.example.com',
             sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
-        status, reservation_row = add_reservation(ott1, form_reservation_code="UT::002")
+        status, reservation_row, _ = add_reservation(ott1, form_reservation_code="UT::002")
         self.assertEqual(status, 'unverified')
         self.assertEqual(reservation_row.PP_e_mail, 'paypal@unittest.example.com')
 
         # Validate row, is fully sponsored for 4 years
         reservation_row.update_record(verified_time=current.request.now)
-        status, reservation_row = add_reservation(ott1, form_reservation_code="UT::002")
+        status, reservation_row, _ = add_reservation(ott1, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
         self.assertEqual(reservation_row.sponsorship_duration_days, 365 * 4 + 1)
         self.assertLess(
@@ -334,7 +334,7 @@ class TestSponsorship(unittest.TestCase):
         current.request.now = current.request.now + datetime.timedelta(days=10)
 
         # Now reserved for 8 years (NB: *not* 8 years, 10 days), with updated details
-        status, reservation_row = add_reservation(ott1, form_reservation_code="UT::002")
+        status, reservation_row, _ = add_reservation(ott1, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')  # NB: Verification status preserved
         self.assertEqual(reservation_row.PP_e_mail, 'paypal-new-addr@unittest.example.com')
         self.assertEqual(reservation_row.sponsorship_duration_days, 365 * 4 + 1)  # NB: Duration still 4 years.
@@ -363,11 +363,11 @@ class TestSponsorship(unittest.TestCase):
 
         # Reserve 3 OTTs
         otts = find_unsponsored_otts(3)
-        status, reservation_row0 = add_reservation(otts[0], form_reservation_code="UT::001")
+        status, reservation_row0, _ = add_reservation(otts[0], form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
-        status, reservation_row1 = add_reservation(otts[1], form_reservation_code="UT::001")
+        status, reservation_row1, _ = add_reservation(otts[1], form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
-        status, reservation_row2 = add_reservation(otts[2], form_reservation_code="UT::001")
+        status, reservation_row2, _ = add_reservation(otts[2], form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK001', reservation_row0, dict(
             e_mail='001@unittest.example.com',
@@ -388,13 +388,13 @@ class TestSponsorship(unittest.TestCase):
             PP_e_mail='paypal@unittest.example.com',
             sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
-        status, reservation_row0 = add_reservation(otts[0], form_reservation_code="UT::001")
+        status, reservation_row0, _ = add_reservation(otts[0], form_reservation_code="UT::001")
         self.assertEqual(status, 'unverified waiting for payment')
         self.assertEqual(reservation_row0.admin_comment, "reservation_confirm_payment: Transaction UT::PP1 insufficient for purchase. Paid 1")
-        status, reservation_row1 = add_reservation(otts[1], form_reservation_code="UT::001")
+        status, reservation_row1, _ = add_reservation(otts[1], form_reservation_code="UT::001")
         self.assertEqual(status, 'unverified waiting for payment')
         self.assertEqual(reservation_row1.admin_comment, "reservation_confirm_payment: Transaction UT::PP1 insufficient for purchase. Paid 1")
-        status, reservation_row2 = add_reservation(otts[2], form_reservation_code="UT::001")
+        status, reservation_row2, _ = add_reservation(otts[2], form_reservation_code="UT::001")
         self.assertEqual(status, 'unverified waiting for payment')
         self.assertEqual(reservation_row2.admin_comment, "reservation_confirm_payment: Transaction UT::PP1 insufficient for purchase. Paid 1")
         donations = db(db.uncategorised_donation.basket_code==reservation_row0.basket_code).select()
@@ -408,11 +408,11 @@ class TestSponsorship(unittest.TestCase):
             PP_e_mail='paypal@unittest.example.com',
             sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
-        status, reservation_row0 = add_reservation(otts[0], form_reservation_code="UT::001")
+        status, reservation_row0, _ = add_reservation(otts[0], form_reservation_code="UT::001")
         self.assertEqual(status, 'unverified waiting for payment')
-        status, reservation_row1 = add_reservation(otts[1], form_reservation_code="UT::001")
+        status, reservation_row1, _ = add_reservation(otts[1], form_reservation_code="UT::001")
         self.assertEqual(status, 'unverified waiting for payment')
-        status, reservation_row2 = add_reservation(otts[2], form_reservation_code="UT::001")
+        status, reservation_row2, _ = add_reservation(otts[2], form_reservation_code="UT::001")
         self.assertEqual(status, 'unverified waiting for payment')
         donations = db(db.uncategorised_donation.basket_code==reservation_row0.basket_code).select()
         self.assertEqual(len(donations), 1)
@@ -425,11 +425,11 @@ class TestSponsorship(unittest.TestCase):
             PP_e_mail='paypal@unittest.example.com',
             sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
-        status, reservation_row0 = add_reservation(otts[0], form_reservation_code="UT::001")
+        status, reservation_row0, _ = add_reservation(otts[0], form_reservation_code="UT::001")
         self.assertEqual(status, 'unverified')
-        status, reservation_row1 = add_reservation(otts[1], form_reservation_code="UT::001")
+        status, reservation_row1, _ = add_reservation(otts[1], form_reservation_code="UT::001")
         self.assertEqual(status, 'unverified')
-        status, reservation_row2 = add_reservation(otts[2], form_reservation_code="UT::001")
+        status, reservation_row2, _ = add_reservation(otts[2], form_reservation_code="UT::001")
         self.assertEqual(status, 'unverified waiting for payment')
         self.assertEqual(reservation_row2.admin_comment, "\n".join((
             "reservation_confirm_payment: Transaction UT::PP2 insufficient for purchase. Paid %d" % (reservation_row0.asking_price * 100 + reservation_row1.asking_price * 100 + 3),
@@ -442,7 +442,7 @@ class TestSponsorship(unittest.TestCase):
 
         # Verify otts[0]
         reservation_row0.update_record(verified_time=current.request.now)
-        status, reservation_row0 = add_reservation(otts[0], form_reservation_code="UT::001")
+        status, reservation_row0, _ = add_reservation(otts[0], form_reservation_code="UT::001")
         self.assertEqual(status, 'sponsored')
         old_sponsorship_ends = reservation_row0.sponsorship_ends
 
@@ -453,7 +453,7 @@ class TestSponsorship(unittest.TestCase):
             PP_e_mail='paypal@unittest.example.com',
             sale_time='01:01:01 Jan 01, 2002 GMT',
         ))
-        status, reservation_row0 = add_reservation(otts[0], form_reservation_code="UT::001")
+        status, reservation_row0, _ = add_reservation(otts[0], form_reservation_code="UT::001")
         self.assertEqual(status, 'sponsored')
         self.assertEqual(reservation_row0.sponsorship_ends, old_sponsorship_ends)
         self.assertEqual(reservation_row0.admin_comment, "\n".join((
@@ -473,7 +473,7 @@ class TestSponsorship(unittest.TestCase):
 
         # Buy ott1
         ott1 = find_unsponsored_ott()
-        status, reservation_row = add_reservation(ott1, form_reservation_code="UT::001")
+        status, reservation_row, _ = add_reservation(ott1, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK001', reservation_row, dict(
             e_mail='betty@unittest.example.com',
@@ -530,7 +530,7 @@ class TestSponsorship(unittest.TestCase):
 
         # Buy ott1
         ott1 = find_unsponsored_ott()
-        status, reservation_row = add_reservation(ott1, form_reservation_code="UT::001")
+        status, reservation_row, _ = add_reservation(ott1, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK001', reservation_row, dict(
             e_mail='betty@unittest.example.com',
@@ -546,7 +546,7 @@ class TestSponsorship(unittest.TestCase):
         # Buy ott2 10 days later
         current.request.now = (current.request.now + datetime.timedelta(days=10))
         ott2 = find_unsponsored_ott()
-        status, reservation_row = add_reservation(ott2, form_reservation_code="UT::002")
+        status, reservation_row, _ = add_reservation(ott2, form_reservation_code="UT::002")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK002', reservation_row, dict(
             e_mail='betty@unittest.example.com',
