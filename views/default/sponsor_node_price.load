@@ -3,9 +3,18 @@
 {{start_item = int(request.vars.start or 0)}}    
 {{vars=request.vars}}
 {{if price_pence:}}
-<h3>{{=T('Leaves requiring a minimum donation of £%s') % ('{:.0f}'.format(price_pence/100.0) if (float(price_pence)/100).is_integer() else '{:.2f}'.format(price_pence/100.0),)}}</h3>
+{{  if sponsorship_enabled:}}
+<h3>{{=T('Leaves requiring a minimum donation of £%s') % (f'{price_pence/100:.{0 if (price_pence/100).is_integer() else 2}f}' ,)}}</h3>
+{{  else:}}
+{{    descriptions = price_levels_pence.get(price_pence, ("Sponsorable species", "click to see how to sponsor"))}}
+<h3>{{=descriptions[0]}} ({{=descriptions[1]}})</h3>
+{{  pass}}
 {{else:}}
-<h3>{{=XML(T('Leaves that are only sponsorable by negotiation (<a %s>email us</a>)') % ('''href="mailto:mail@onezoom.org" onclick="if (typeof sponsor_page_link == 'function') {return sponsor_page_link(this);}"''',))}}</span></h3>
+{{  if sponsorship_enabled:}}
+<h3>{{=XML(T('Leaves that are only sponsorable by negotiation (<a %s>email us</a>)') % ('''href="mailto:mail@onezoom.org" onclick="if (typeof sponsor_page_link == 'function') {return sponsor_page_link(this);}"''',))}}</h3>
+{{  else:}}
+<h3>{{=XML(T('Unavailable or require negotiation to sponsor (contact <a %s>mail@onezoom.org</a>)') % ('''href="mailto:mail@onezoom.org" onclick="if (typeof sponsor_page_link == 'function') {return sponsor_page_link(this);}"''',))}}</h3>
+{{  pass}}
 {{pass}}
 <ul class = "spList">
     {{if max_items and start_item:}}

@@ -612,85 +612,106 @@ def SHOW_EMAILS():
 @OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def SET_PRICES():
+    import string
     """This sets cutoff prices in the sql database
     
     a) specific exclusions (£ contact us) (Humans, dog, etc.
     b) some specifically high-ranked taxa (I suggest all the icons on the home page should be boosted to e.g. 75 pounds)
     
     """
-    prices = [500,1000,2000,4000,7500,15000]
+    # Take the initial prices from the previous prices in the DB
+    bands = {string.ascii_uppercase[i]: row for i, row in enumerate(db().select(db.prices.ALL))}
+    n_leaves = db(db.ordered_leaves).count()
 
-    bespoke_prices = [ #these are in order highest to lowest
-      [], #150
-      ['Quercus_robur'], #75
-      ['Latimeria_chalumnae','Dionaea_muscipula', 'Sequoiadendron_giganteum', 'Architeuthis_dux', 'Micromys_minutus'], #most expensive - e.g. £40
-      ['Coccinella_septempunctata', 'Macrocystis_pyrifera', 'Amanita_muscaria', 'Anas_platyrhynchos', 'Brassica_oleracea', 'Giardia_intestinalis', 'Plasmodium_falciparum_Santa_Lucia']    #next most expensive - e.g. £20
+    bespoke_spp = [ #these are in order highest to lowest
+      [], # top band (e.g. £150)
+      ['Quercus_robur'], # next most expensive band (e.g. £75)
+      ['Latimeria_chalumnae','Dionaea_muscipula', 'Sequoiadendron_giganteum', 'Architeuthis_dux', 'Micromys_minutus'], # next most expensive (e.g. £40)
+      ['Coccinella_septempunctata', 'Macrocystis_pyrifera', 'Amanita_muscaria', 'Anas_platyrhynchos', 'Brassica_oleracea', 'Giardia_intestinalis', 'Plasmodium_falciparum_Santa_Lucia']    # next most expensive - e.g. £20
     ]
     
+    # Make a form with all the rows in it
+    other_fields = [f for f in db.prices if f.name not in ('id', 'quantile', 'n_leaves')]
     fields = []
-    for p in prices[:-1]:
-        fields.append(Field('max_pop_{}_pence'.format(p), requires=IS_NOT_EMPTY()))
+    for i, (band, row) in enumerate(sorted(bands.items(), reverse=True)):
+        if i > 0:
+            field = db.prices.quantile
+            # Don't have a max popularity cutoff for the highest price
+            fields.append(Field("_".join([field.name, band]), type = field.type, default=row[field.name], requires=IS_NOT_EMPTY()))
+        for field in other_fields:
+            fields.append(Field("_".join([field.name, band]), type = field.type, default=row[field.name]))
     form = SQLFORM.factory(*fields)
     
     if form.process().accepted:
- 
         #set the 'normal' prices first
         queries = {}
         cutoffs = {}
+        other_vars = {}
         prev = None
-        for p in sorted(prices):
+        for band in sorted(bands.keys()):
             if prev is None:
-                cutoffs[p] = form.vars["max_pop_{}_pence".format(p)]
-                queries[p] = (db((db.ordered_leaves.popularity == None) | 
-                                     (db.ordered_leaves.popularity <  cutoffs[p])))
-            elif form.vars["max_pop_{}_pence".format(p)] is not None:
-                cutoffs[p] = form.vars["max_pop_{}_pence".format(p)]            
-                queries[p] = db((db.ordered_leaves.popularity >= cutoffs[prev]) & 
-                                        (db.ordered_leaves.popularity <  cutoffs[p]))
+                # Cheapest category
+                quantile = float(form.vars["_".join(["quantile", band])])
+                cutoffs[band] = (quantile, int((1.0 - quantile / 100.0) * n_leaves))
+                queries[band] = db(
+                    (db.ordered_leaves.popularity_rank == None) | 
+                    (db.ordered_leaves.popularity_rank >  cutoffs[band][1]))
+            elif form.vars["_".join(["quantile", band])] is not None:
+                quantile = float(form.vars["_".join(["quantile", band])])
+                cutoffs[band] = (quantile, int((1.0 - quantile / 100.0) * n_leaves))
+                queries[band] = db(
+                    (db.ordered_leaves.popularity_rank <= cutoffs[prev][1]) & 
+                    (db.ordered_leaves.popularity_rank >  cutoffs[band][1]))
             else:
                 #this is the last one, which does not have a defined top price
-                queries[p] = db((db.ordered_leaves.popularity >= cutoffs[prev]))
-            prev = p
-            
-        #we can replace the last one with an open-ended query             
+                queries[band] = db(
+                    (db.ordered_leaves.popularity_rank <= cutoffs[prev][1]))
+            other_vars[band] = {
+                f.name: form.vars["_".join([f.name, band])]
+                for f in other_fields
+            }
+            prev = band
         
         #save the results
+        db.prices.truncate()
+        for band in sorted(bands.keys()):
+            num=queries[band].count()
+            db.prices.insert(
+                quantile=(float(cutoffs[band][0]) if band in cutoffs else None),
+                n_leaves=num,
+                **other_vars[band],
+            )
+
         output = []
-        tot=db(db.ordered_leaves).count()
         revenue = 0
         #also None means 'call us'
-        db.prices.truncate()
-        for p in sorted(prices):
-            cnt=queries[p].update(price=p)
-            num=queries[p].count()
-            revenue += 1.0*num*p/100.0
-            output.append("£{}: {:>8} species ({:.2f}%) - {} changed".format(1.0/100*p, num, 100.0*num/tot, cnt))
+        for band in sorted(bands):
+            price = other_vars[band]['price']
+            cnt=queries[band].update(price=price)
+            num=queries[band].count()
+            revenue += num*price/100
+            output.append(f"£{price/100}: {num:>8} species ({100*num/n_leaves:.2f}%) - {cnt} changed")
             output.append(BR())
 
             
-        response.flash = DIV("SET THE FOLLOWING DEFAULT PRICE STRUCTURE for {} species:".format(tot),
-                             BR(),PRE(*output), 
-                             ". Total revenue: {}!\nNow overriding the following special exclusions (and setting banned):".format(revenue), BR(),
-                             "{}".format(bespoke_prices)
-                             )
+        response.flash = DIV(
+            f"SET THE FOLLOWING DEFAULT PRICE STRUCTURE for {n_leaves} species:", BR(),PRE(*output), 
+            f". Total revenue: {revenue}!\nNow overriding the following special exclusions (and setting banned):", BR(),
+            f"{bespoke_spp}"
+        )
 
         #override with the bespoke ones
         target_band = 0
-        for p in sorted(prices, reverse=True):
-            db(db.ordered_leaves.name.belongs(bespoke_prices[target_band])).update(price=p)
+        for band in sorted(bands, reverse=True):
+            db(db.ordered_leaves.name.belongs(bespoke_spp[target_band])).update(price=other_vars[band]['price'])
             target_band+=1
-            if target_band>=len(bespoke_prices):
+            if target_band>=len(bespoke_spp):
                 break
 
         #make sure the banned ones are NULLified
         rows = db().select(db.banned.ott)
         for ban in rows:
             db(db.ordered_leaves.ott == ban.ott).update(price=None)
-
-        for p in sorted(prices):
-            num=queries[p].count()
-            db.prices.insert(price=p, current_cutoff=(float(cutoffs[p]) if p in cutoffs else None), n_leaves=num)
-
 
     elif form.errors:
         response.flash = 'form has errors'
@@ -715,15 +736,25 @@ def SET_PRICES():
         'Cephalotus follicularis':'Australian Pitcher Plant',
         'Macrocystis pyrifera':'Giant Kelp'
     }
-    rows = db(db.ordered_leaves.name.belongs(list(examples.keys()), all=False)).select(db.ordered_leaves.name, db.ordered_leaves.popularity)
-    example_spp = [(examples[r['name']],r['popularity']) for r in rows]
+    rows = db(db.ordered_leaves.name.belongs(list(examples.keys()), all=False)).select(
+        db.ordered_leaves.name, db.ordered_leaves.popularity, db.ordered_leaves.popularity_rank)
+    example_spp = [
+        (examples[r['name']], r['popularity'], (1 - r['popularity_rank']/n_leaves) * 100) for r in rows]
 
     mn = db.ordered_leaves.popularity.min()
     mx = db.ordered_leaves.popularity.max()
     pop_min=db(db.ordered_leaves).select(mn)
     pop_max=db(db.ordered_leaves).select(mx)
-    return dict(form=form, prices=prices[:-1], last_price=prices[-1], pop_min=pop_min[0][mn], pop_max=pop_max[0][mx], 
-example_spp=sorted(example_spp, key=lambda tup: tup[1]), previous_prices = db().select(db.prices.ALL))
+    return dict(
+        form=form,
+        bands={b: bands[b].price for b in sorted(bands.keys())},
+        other_fields=other_fields,
+        max_band=max(bands.keys()) if len(bands) else None,
+        pop_min=pop_min[0][mn],
+        pop_max=pop_max[0][mx],
+        example_spp=sorted(example_spp, key=lambda tup: tup[1]),
+        previous_prices = db().select(db.prices.ALL),
+    )
 
 
 @OZfunc.require_https_if_nonlocal()

@@ -358,7 +358,6 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
         form_reservation_code,
         update_view_count=(request.function == 'sponsor_leaf' and request.extension == "html"),
     )
-
     iucn_code = None
     if status != 'invalid':  # still need to figure out status, but should be able to get data
         if reservation_row is None:
@@ -1121,7 +1120,15 @@ def sponsor_node_price():
       (if we don't get enough results returned) for leaves without an image, ranked
       by popularity.
     """
-    price_levels_pence = sorted([row.price for row in db().select(db.prices.price)])
+    price_levels_pence = {
+        row.price: (str(row.class_description), str(row.price_description))
+        for row in db().select(
+            db.prices.price,
+            db.prices.class_description,
+            db.prices.price_description,
+        )
+    }
+    lowest_price_pence = min(price_levels_pence.keys())
     try:
         if request.vars.get('id'):
             query = sponsorable_children_query(int(request.vars.id), qtype="id")
@@ -1140,7 +1147,7 @@ def sponsor_node_price():
         # Use some shortcuts
         img_tab = db.images_by_ott
         leaf_tab = db.ordered_leaves
-        if price_pence is None or price_pence > price_levels_pence[0]:
+        if price_pence is None or price_pence > lowest_price_pence:
             rows_with_img = db(query & (img_tab.overall_best_any)).select(
                 db.ordered_leaves.ott,
                 db.ordered_leaves.name,
@@ -1216,10 +1223,18 @@ def sponsor_node_price():
 
         #now construct the vernacular names
         html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(otts, return_nulls=True).items()}
-        return dict(otts=otts, image_urls=image_urls, html_names = html_names, attributions=image_attributions, price_pence = price_pence)
-        
+        return dict(
+            otts=otts,
+            image_urls=image_urls,
+            html_names = html_names,
+            attributions=image_attributions,
+            price_pence = price_pence,
+            price_levels_pence=price_levels_pence,
+            sponsorship_enabled = sponsorship_enabled(),
+        )
+
     except:
-        raise_incorrect_url(URL(vars={'id':1, 'price':price_levels_pence[1]}, scheme=True, host=True),
+        raise_incorrect_url(URL(vars={'id': 1, 'price': ""}, scheme=True, host=True),
             T("Sorry, you passed in no ID or one that doesn't seem to correspond to a group on the tree."))
         
         
@@ -1325,7 +1340,14 @@ def list_sponsorable_children():
         page=int(request.args[0])
     except: 
         page=0
-        
+
+    price_levels_pence = {
+        row.price: row.price_description
+        for row in db().select(
+            db.prices.price,
+            db.prices.price_description,
+        )
+    }
     try:
         if request.vars.get('id'):
             query = sponsorable_children_query(int(request.vars.id), qtype="id")
@@ -1337,10 +1359,24 @@ def list_sponsorable_children():
                                    db.ordered_leaves.price,
                                    limitby=limitby, 
                                    orderby=db.ordered_leaves.name)
-        return(dict(species=species,page=page,items_per_page=items_per_page, error=""))
+        return dict(
+            species=species,
+            page=page,
+            items_per_page=items_per_page,
+            price_levels_pence=price_levels_pence,
+            sponsorship_enabled = sponsorship_enabled(),
+            error=""
+        )
 
     except:
-        return(dict(species=[],page=page, items_per_page=items_per_page, error="Sorry, you passed in an ID that doesn't seem to correspond to a group on the tree"))
+        return dict(
+            species=[],
+            page=page,
+            items_per_page=items_per_page,
+            price_levels_pence=price_levels_pence,
+            sponsorship_enabled = sponsorship_enabled(),
+            error="Sorry, you passed in an ID that doesn't seem to correspond to a group on the tree",
+        )
 
 
 def pp_process_post():

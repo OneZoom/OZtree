@@ -641,8 +641,11 @@ db.define_table('prices',
     Field('price', type = 'integer', unique=True, requires=IS_NOT_EMPTY()),
     Field('perpetuity_price', type = 'integer', requires=IS_NOT_EMPTY()),
     # Map the "normal" 4 year price to the in-perpetuity price
-    Field('current_cutoff', type = 'double'),
+    Field('quantile', type = 'double'),
     Field('n_leaves', type = 'integer'),
+    Field('class_description', type = 'string', length=100),
+    Field('price_description', type = 'string', length=100),
+    # Two text descriptions used in e.g. museum displays, where the price may not be up-to-date
     format = '%(price)s_%(n_leaves)s')
 
 # this table collects data for recently 'visited' nodes (i.e. requested through the API) 
