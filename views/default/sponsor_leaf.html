@@ -250,13 +250,14 @@ function callbackAPIcomplete(data, flagsIn)
     imageInfoReady = true;
     leafImageFile = null;
     /* process data and redraw */
-
+     
     if (data && data.hasOwnProperty("imageObjects")) {
         // Filter out if it is a duplicate of the existing image_objects[0]
         APIimgs = data.imageObjects.filter(
             function(o) {
                 //don't filter if the default is not an EoL image
-                if ((EoL_srcs.indexOf(image_objects[0].src) > -1) &&
+                if ((image_objects.length > 0) &&
+                    (EoL_srcs.indexOf(image_objects[0].src) > -1) &&
                     (image_objects[0].src_id == o.dataObjectVersionID.toString())) {
                     return false;
                 } else {
@@ -267,13 +268,15 @@ function callbackAPIcomplete(data, flagsIn)
             var APIimg = APIimgs[i];
             if (APIimg.dataObjectVersionID) {
                 var is_default = (image_objects.length == 0);
+                if (is_default) {selected_img = image_objects.length;};
                 image_objects.push({
                    /* If no default set, the default eol image is marked as a "plain" eol img, 
                       not via OZ, as this will be the selected image anyway */
                     "src": is_default?{{=src_flags['eol']}}:{{=src_flags['onezoom_via_eol']}},
                     "src_id": APIimg.dataObjectVersionID.toString(),
                     "url": APIimg.url, /* this is inserted by setDataFromEoLpageID */
-                    "default": is_default?1:0
+                    "default": is_default?1:0,
+                    "linkout_url": "//eol.org/media/" + APIimg.dataObjectVersionID.toString()
                 });
             }
         }
@@ -282,10 +285,15 @@ function callbackAPIcomplete(data, flagsIn)
 }
 
 function picInfoURL(img) {
-    /* return a url giving info about the image */
-    return '{{=URL("tree","pic_info", args=["...PIC_SRC...","...PIC_SRC_ID..."])}}/'
-        .replace("...PIC_SRC...", img.src)
-        .replace("...PIC_SRC_ID...", img.src_id);
+    /* return a url giving info about the image. If linkout_url exists, this
+     * has been injected via a call to the EoL API, so link straight out to there instead */
+    if (img.linkout_url) {
+        return img.linkout_url;
+    } else {
+        return '{{=URL("tree", "pic_info", args=["...PIC_SRC...","...PIC_SRC_ID..."])}}'
+            .replace("...PIC_SRC...", img.src)
+            .replace("...PIC_SRC_ID...", img.src_id);
+    }
 }
 
 function initImages() {
