@@ -8,9 +8,9 @@ The instructions below are primarily intended for creating a full tree of all li
 We assume you are running in a bash shell, so that you can define the following settings before you create a tree, and use them in the scripts below as `${OT_VERSION}` and `${OZ_TREE}`
 
 ```
-OT_VERSION=12_3 #or whatever your OpenTree version is
-OT_TAXONOMY_VERSION=3.2
-OT_TAXONOMY_EXTRA=draft9 #optional - the draft for this version, e.g. for 3.1draft2
+OT_VERSION=13_4 #or whatever your OpenTree version is
+OT_TAXONOMY_VERSION=3.3
+OT_TAXONOMY_EXTRA=draft1 #optional - the draft for this version, e.g. for 3.3draft1
 OZ_TREE=AllLife #a tree directory in data/OZTreeBuild
 THREADS=-T40 #or however many cpus you want to throw at the process (or omit on personal machines)
 ```
