@@ -163,13 +163,12 @@ def lookup_and_save_bespoke_EoL_images(eol_dataobject_to_ott, sess, API_key, db_
                     except:
                         raise
                         raise IOError("Could not download or crop file from data in '{}'.".format(image_info_json['eolMediaURL']))
-                   
             logger.info("= Stored user-specified image for ott {} (eol data object {}) =".format(OTTid, eol_doID))
             #now reset the overall fields (need to check all the values for this OTT
             sql = "UPDATE {0} set overall_best_any = 0, overall_best_verified = 0, overall_best_pd = 0 WHERE ott = {1}".format(images_table, subs)
             db_cursor.execute(sql, OTTid)
             for column in ('best_any', 'best_verified', 'best_pd'):
-                sql = "UPDATE {0} set `overall_{1}` = 1 where ott = {2} and {1} = 1 ORDER BY rating DESC, rating_confidence DESC, src ASC LIMIT 1".format(images_table, column, subs)
+                sql = "UPDATE {0} set `overall_{1}` = 1 where ott = {2} and {1} = 1 ORDER BY rating DESC, src ASC, rating_confidence DESC LIMIT 1".format(images_table, column, subs)
                 db_cursor.execute(sql, OTTid)
             db_connection.commit()
             logger.info("= Updated overall best flags for ott {} =".format(OTTid))
@@ -459,7 +458,7 @@ def lookup_and_save_auto_EoL_info(eol_page_to_ott, sess, API_key, db_connection,
             sql = "UPDATE `{0}` set {1} WHERE ott = {2}".format(images_table, ",".join("`{}`={}".format(c, subs) for c in best_cols.keys()), subs)
             db_cursor.execute(sql, list(best_cols.values()) + [ott])
             for column in ('best_'+l for l in image_status_labels):
-                sql = "UPDATE {0} set `overall_{1}` = 1 where ott = {2} and {1} = 1 ORDER BY rating DESC, rating_confidence DESC, src ASC LIMIT 1".format(images_table, column, subs)
+                sql = "UPDATE {0} set `overall_{1}` = 1 where ott = {2} and {1} = 1 ORDER BY rating DESC, src ASC, rating_confidence DESC LIMIT 1".format(images_table, column, subs)
                 db_cursor.execute(sql, ott)
             db_connection.commit()
 
