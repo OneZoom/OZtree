@@ -22,12 +22,14 @@ from OZfunc import (
 
 
 """ Some settings for sponsorship"""
-try:
-    paypal_url = myconf.take('paypal.url')
-    if not paypal_url:
-        raise ValueError('blank paypal config')
-except:
-    paypal_url = 'https://www.sandbox.paypal.com'
+def get_paypal_url():
+    try:
+        url = myconf.take('paypal.url')
+        if not url:
+            raise ValueError('blank paypal config')
+        return url
+    except:
+        return 'https://www.sandbox.paypal.com'
 
 """ generally useful functions """
 
@@ -568,7 +570,7 @@ def sponsor_pay():
                     + '/pp_process_post.html/' + OTT_ID_str)
             except:
                 paypal_notify_string = ''
-            paypal_url += (
+            redirect(get_paypal_url() + (
                 '/cgi-bin/webscr'
                 '?cmd=_donations'
                 '&business=mail@onezoom.org'
@@ -581,8 +583,7 @@ def sponsor_pay():
                      sp_name=urllib.parse.quote(db_saved.name),
                      ret_url=URL("sponsor_thanks.html", scheme=True, host=True),
                      notify_string=paypal_notify_string,
-                     amount=urllib.parse.quote('{:.2f}'.format(db_saved.user_paid))))
-            redirect(paypal_url)
+                     amount=urllib.parse.quote('{:.2f}'.format(db_saved.user_paid)))))
         except:
             raise
             error="we couldn't find your leaf sponsorship information."
@@ -860,7 +861,7 @@ def sponsor_renew():
                 user_donor_hide=bool(request.vars.get("oz_user_donor_hide_%d" % ott, False)),
                 prev_reservation_id=prev_reservation_id
             ))
-        raise HTTP(307, "Redirect", Location=paypal_url + '/cgi-bin/webscr')
+        raise HTTP(307, "Redirect", Location=get_paypal_url() + '/cgi-bin/webscr')
 
     return dict(
         all_row_categories=[
@@ -1397,8 +1398,9 @@ def pp_process_post():
         return {}
     try:
         # Make sure this request came from paypal
+        paypal_url = get_paypal_url().replace('//www', '//ipnpb')
         paypal_resp = urllib.request.urlopen(urllib.request.Request(
-            paypal_url.replace('//www', '//ipnpb') + '/cgi-bin/webscr',
+            paypal_url + '/cgi-bin/webscr',
             data=("cmd=_notify-validate&" + urllib.parse.urlencode(request.post_vars)).encode(),
             headers={
                 'content-type': 'application/x-www-form-urlencoded',
