@@ -1,6 +1,6 @@
 """
 Run with
-python3 /srv/devel/onezoom/web2py.py \
+python3 web2py.py \
     -S OZtree -M -R applications/OZtree/tests/unit/test_modules_sponsorship.py
 """
 import datetime
@@ -611,7 +611,9 @@ def set_allow_sponsorship(val):
 
 
 def find_unsponsored_otts(count):
-    query = sponsorable_children_query(147604, qtype="ott")
+    root_ott = db(db.ordered_nodes.id == 1).select(db.ordered_nodes.ott).first().ott
+    assert root_ott is not None  # normally this is all life ("biota") 
+    query = sponsorable_children_query(root_ott, qtype="ott")
     rows = db(query).select(limitby=(0, count))
     prices = {}
     for r in db(db.ordered_leaves.ott.belongs([r.ott for r in rows])).select(
