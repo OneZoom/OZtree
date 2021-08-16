@@ -7,11 +7,12 @@ import datetime
 import unittest
 import urllib.parse
 
+from applications.OZtree.tests.unit import util
+
 from gluon.globals import Request
 
 from sponsorship import (
     add_reservation,
-    sponsorable_children_query,
     sponsorship_enabled,
     reservation_add_to_basket,
     reservation_confirm_payment,
@@ -72,7 +73,7 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(sponsorship_enabled(), False)
 
         # Anyone sees an empty item as available
-        ott = find_unsponsored_ott()
+        ott = util.find_unsponsored_ott(db)
         status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         self.assertEqual(reservation_row.OTT_ID, ott)
@@ -85,7 +86,7 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(sponsorship_enabled(), True)
 
         # Can reserve an OTT, and re-request it
-        ott = find_unsponsored_ott()
+        ott = util.find_unsponsored_ott(db)
         status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         self.assertEqual(reservation_row.OTT_ID, ott)
@@ -104,7 +105,7 @@ class TestSponsorship(unittest.TestCase):
         """Can renew an expired row"""
 
         # Buy ott, validate
-        ott = find_unsponsored_ott()
+        ott = util.find_unsponsored_ott(db)
         status, reservation_row, _ = add_reservation(ott, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK001', reservation_row, dict(
@@ -191,7 +192,7 @@ class TestSponsorship(unittest.TestCase):
         """Buy a single item with giftaid on/off"""
 
         # Buy ott1 with giftaid off
-        ott1 = find_unsponsored_ott()
+        ott1 = util.find_unsponsored_ott(db)
         status, reservation_row1, _ = add_reservation(ott1, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK001', reservation_row1, dict(
@@ -221,7 +222,7 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(status, 'sponsored')
 
         # Buy ott2 with giftaid on
-        ott2 = find_unsponsored_ott()
+        ott2 = util.find_unsponsored_ott(db)
         status, reservation_row2, _ = add_reservation(ott2, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK002', reservation_row2, dict(
@@ -274,7 +275,7 @@ class TestSponsorship(unittest.TestCase):
         """Buy an item twice to extend it"""
 
         # Buy ott1
-        ott1 = find_unsponsored_ott()
+        ott1 = util.find_unsponsored_ott(db)
         status, reservation_row, _ = add_reservation(ott1, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK001', reservation_row, dict(
@@ -362,7 +363,7 @@ class TestSponsorship(unittest.TestCase):
         """Buying items with insufficient funds fails"""
 
         # Reserve 3 OTTs
-        otts = find_unsponsored_otts(3)
+        otts = util.find_unsponsored_otts(db, 3)
         status, reservation_row0, _ = add_reservation(otts[0], form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         status, reservation_row1, _ = add_reservation(otts[1], form_reservation_code="UT::001")
@@ -472,7 +473,7 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(url, None)
 
         # Buy ott1
-        ott1 = find_unsponsored_ott()
+        ott1 = util.find_unsponsored_ott(db)
         status, reservation_row, _ = add_reservation(ott1, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK001', reservation_row, dict(
@@ -529,7 +530,7 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual([r.OTT_ID for r in gae()], [])
 
         # Buy ott1
-        ott1 = find_unsponsored_ott()
+        ott1 = util.find_unsponsored_ott(db)
         status, reservation_row, _ = add_reservation(ott1, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK001', reservation_row, dict(
@@ -545,7 +546,7 @@ class TestSponsorship(unittest.TestCase):
 
         # Buy ott2 10 days later
         current.request.now = (current.request.now + datetime.timedelta(days=10))
-        ott2 = find_unsponsored_ott()
+        ott2 = util.find_unsponsored_ott(db)
         status, reservation_row, _ = add_reservation(ott2, form_reservation_code="UT::002")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK002', reservation_row, dict(
@@ -608,31 +609,6 @@ def set_appconfig(section, key, val):
 def set_allow_sponsorship(val):
     """Update site config with new value for sponsorship.allow_sponsorship"""
     set_appconfig('sponsorship', 'allow_sponsorship', val)
-
-
-def find_unsponsored_otts(count):
-    root_ott = db(db.ordered_nodes.id == 1).select(db.ordered_nodes.ott).first().ott
-    assert root_ott is not None  # normally this is all life ("biota") 
-    query = sponsorable_children_query(root_ott, qtype="ott")
-    rows = db(query).select(limitby=(0, count))
-    prices = {}
-    for r in db(db.ordered_leaves.ott.belongs([r.ott for r in rows])).select(
-        db.ordered_leaves.ott,
-        db.ordered_leaves.price,
-        db.banned.ott,
-    ):
-        prices[r.ordered_leaves.ott] = r
-
-    if len(rows) < count:
-        raise ValueError("Can't find available OTTs")
-    rows = [r for r in rows if r.ott in prices and prices[r.ott].ordered_leaves.price > 0]
-    if len(rows) < count:
-        raise ValueError("Rows don't have associated prices set, visit /manage/SET_PRICES/")
-    return [r.ott for r in rows]
-
-
-def find_unsponsored_ott():
-    return find_unsponsored_otts(1)[0]
 
 
 if __name__ == '__main__':
