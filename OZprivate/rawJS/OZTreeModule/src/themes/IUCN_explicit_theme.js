@@ -346,8 +346,8 @@ const theme = {
     
     
     circle_hover: {
-      stroke: grey,
-      fill: light_grey
+      stroke: dark_grey,
+      fill: dark_grey
     },
     circle: {
       stroke: grey,
