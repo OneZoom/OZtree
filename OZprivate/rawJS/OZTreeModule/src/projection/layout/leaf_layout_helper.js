@@ -41,9 +41,14 @@ class LeafLayoutBase {
   get_tip_leaf_shapes(node, shapes) {
     if(node.richness_val <= 1 || node.full_children_length === 0) {
       if (node.richness_val > 1) {
-        this.circle_leaf_shapes(node, shapes);
+        this.undeveloped_temp_leaf_shapes(node, shapes);
       } else {
-        this.full_leaf_shapes(node, shapes);
+          if (node.redlist == "EX") {
+              // this is an extinct species to do a different kind of leaf
+              this.extinct_leaf_shapes(node, shapes); // this will need work still....
+          } else {
+              this.full_leaf_shapes(node, shapes);
+          }
       }
       this.tip_leaf_text_image_shapes(node, shapes);
     }
@@ -74,17 +79,41 @@ class LeafLayoutBase {
     }
   }
 
-  circle_leaf_shapes(node, shapes) {
+  undeveloped_temp_leaf_shapes(node, shapes) {
     add_mr(this.get_leaf_x(node), this.get_leaf_y(node), this.get_leaf_radius(node) * 0.8);
     let arc_shape = ArcShape.create();
     arc_shape.x = node.xvar + node.rvar * node.arcx;
     arc_shape.y = node.yvar + node.rvar * node.arcy;
-    arc_shape.r = node.rvar * node.arcr * 0.8;
+    arc_shape.r = node.rvar * node.arcr * 0.65;
     arc_shape.circle = true;
     arc_shape.height = 2;
     arc_shape.do_fill = true;
     arc_shape.fill.color = color_theme.get_color("leaf.inside.fill", node);
     shapes.push(arc_shape);
+  }
+    
+  extinct_leaf_shapes(node, shapes) {
+    add_mr(this.get_leaf_x(node), this.get_leaf_y(node), this.get_leaf_radius(node) * 0.9);
+      
+    let arc_shape = ArcShape.create();
+    arc_shape.x = node.xvar + node.rvar * node.arcx;
+    arc_shape.y = node.yvar + node.rvar * node.arcy;
+    arc_shape.r = node.rvar * node.arcr * 0.92;
+    arc_shape.circle = true;
+    arc_shape.height = 2;
+    arc_shape.do_fill = true;
+    arc_shape.fill.color = color_theme.get_color("leaf.bg.fill", node);
+    shapes.push(arc_shape);
+      
+    let arc_shape_2 = ArcShape.create();
+    arc_shape_2.x = node.xvar + node.rvar * node.arcx;
+    arc_shape_2.y = node.yvar + node.rvar * node.arcy;
+    arc_shape_2.r = node.rvar * node.arcr * 0.9;
+    arc_shape_2.circle = true;
+    arc_shape_2.height = 2;
+    arc_shape_2.do_fill = true;
+    arc_shape_2.fill.color = color_theme.get_color("leaf.inside.fill", node);
+    shapes.push(arc_shape_2);
   }
 
   full_leaf_shapes(node, shapes) {
