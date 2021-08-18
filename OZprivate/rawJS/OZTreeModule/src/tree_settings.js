@@ -97,7 +97,7 @@ class TreeSettings {
     }
 
     this.default = {
-      cols: this.options.cols.natural,
+      cols: this.options.cols.IUCN,
       layout: {
         branch: this.options.layout.branch.tree,
         node: this.options.layout.node.tree,
