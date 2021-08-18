@@ -25,11 +25,7 @@ let red = 'rgb(140,20,20)';
 let light_red = 'rgb(225,180,155)';
 
 let pastel_red = 'rgb(255,130,130)';
-let pastel_green = 'rgb(130,255,130)';
 let pastel_blue = 'rgb(130,130,255)';
-let pastel_cyan = 'rgb(100,200,200)';
-let pastel_magenta = 'rgb(200,100,200)';
-let pastel_yellow = 'rgb(200,200,100)';
 
 // define functions of a node that return different colours depending on node status
 
@@ -295,10 +291,8 @@ const theme = {
   marked_area_pallette: {
       '0': pastel_blue,
       '1': pastel_red,
-      '2': pastel_green,
-      '3': pastel_magenta,
-      '4': pastel_cyan,
-      '5': pastel_yellow
+      '2': off_white,
+      '3': black
   },
       
     highlight_search_hit: {
