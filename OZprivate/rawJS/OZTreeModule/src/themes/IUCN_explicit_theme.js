@@ -1,10 +1,10 @@
 // define colours that will be used
 
 let black = 'rgb(0,0,0)';
-let very_dark_grey = 'rgb(50,50,50)';
-let dark_grey = 'rgb(85,85,85)';
-let grey = 'rgb(107,107,107)';
-let light_grey = 'rgb(125,125,125)';
+let very_dark_grey = 'rgb(40,40,40)';
+let dark_grey = 'rgb(75,75,75)';
+let grey = 'rgb(95,95,95)';
+let light_grey = 'rgb(135,135,135)';
 let very_light_grey = 'rgb(180, 180, 180)';
 let off_white = 'rgb(240,240,240)'
 let white = 'rgb(255,255,255)';
