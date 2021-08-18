@@ -4,6 +4,7 @@ let black = 'rgb(0,0,0)';
 let very_dark_grey = 'rgb(40,40,40)';
 let dark_grey = 'rgb(75,75,75)';
 let grey = 'rgb(95,95,95)';
+let mid_grey = 'rgb(115,115,115)';
 let light_grey = 'rgb(135,135,135)';
 let very_light_grey = 'rgb(180, 180, 180)';
 let off_white = 'rgb(240,240,240)'
@@ -105,6 +106,7 @@ function get_redlist_color(node) {
 
 function leafcolor2(node) {
   // for 'fake' leaves at end of branches that are not developed yet
+  // note that this is not the same as undeveloped branches that are rendered as circles by a different colour scheme and dealt with as part of branch rendering.
   if (node.richness_val > 1) {
     if (node.threatened_branch == true) {
       return red;
@@ -133,11 +135,11 @@ function get_redlist_color2(node) {
     case "LC":
           return green;
     case "DD":
-          return grey;
+          return mid_grey;
     case "NE":
-          return grey;
+          return mid_grey;
     default:
-          return grey;
+          return mid_grey;
   }    
 }
 
@@ -329,6 +331,10 @@ const theme = {
       fill: white
     },
     
+    undeveloped: {
+        stroke: light_grey,
+        fill: off_white
+    },
     
     text_hover: {
       stroke: transparent_black

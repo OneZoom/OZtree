@@ -259,6 +259,10 @@ const theme = {
       fill: int_text_fill
     },
     
+    undeveloped: {
+    stroke: branch_color,
+    fill: branch_color
+    },
     
     text_hover: {
       stroke: int_text_stroke_hover
