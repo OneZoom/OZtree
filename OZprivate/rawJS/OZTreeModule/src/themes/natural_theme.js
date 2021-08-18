@@ -1,401 +1,321 @@
-let green1= 'rgb(135,215,90)';
-let green2 = 'rgb(70,135,30)';
-let red1 = 'rgb(225,180,155)'; // green1;//
-let red2 = 'rgb(140,20,20)'; // green2;//
-let branch_color = 'rgb(125, 125, 125)';
-let bar_color = 'rgb(107, 107, 107)';
-let highlight_color = 'rgba(255, 255, 255, .5)';
-let int_text_stroke_hover = 'rgb(96,96,96)';
-let int_text_fill_hover = 'rgb(255,255,255)';
-let int_text_fill = 'rgb(255,255,255)';
-let int_sponsor_fill_hover = 'rgb(255, 255, 255)';
-let int_sponsor_fill = 'rgb(180, 180, 180)';
+// define colours that will be used
 
-let iucnEX = 'rgb(200,200,200)';
-let iucnEW = 'rgb(200,200,200)';
-let iucnCR = red1;
-let iucnEN = red1;
-let iucnVU = red1;
-let iucnNT = green1;
-let iucnLC = green1;
-let iucnDD = green1;
-let iucnNE = green1;
-let iucnDefault = green1;
+let black = 'rgb(0,0,0)';
+let very_dark_grey = 'rgb(40,40,40)';
+let dark_grey = 'rgb(75,75,75)';
+let grey = 'rgb(95,95,95)';
+let mid_grey = 'rgb(115,115,115)';
+let light_grey = 'rgb(135,135,135)';
+let very_light_grey = 'rgb(180, 180, 180)';
+let off_white = 'rgb(240,240,240)'
+let white = 'rgb(255,255,255)';
+
+let half_transparent_black = 'rgba(0,0,0,0.5)';
+let transparent_black = 'rgba(0,0,0,0.2)';
+let slightly_tranparent_white = 'rgba(255,255,255,0.85)';
+let half_transparent_white = 'rgba(255,255,255,0.5)';
+let very_transparent_white = 'rgba(255,255,255,0.2)';
+
+let dark_green = 'rgb(20,80,00)';
+let green = 'rgb(70,135,30)';
+let light_green = 'rgb(135,215,90)';
+
+let dark_brown = 'rgb(75,55,35)';
+let brown = 'rgb(125,70,55)';
+let light_brown = 'rgb(175,115,85)';
+
+let pastel_red = 'rgb(255,130,130)';
+let pastel_green = 'rgb(130,255,130)';
+let pastel_blue = 'rgb(130,130,255)';
+let pastel_cyan = 'rgb(100,200,200)';
+let pastel_magenta = 'rgb(200,100,200)';
+let pastel_yellow = 'rgb(200,200,100)';
+
+// define functions of a node that return different colours depending on node status
 
 function outline_highlight(node) {
-  if (node.richness_val > 1) {
-    return 'rgb(0,0,0)';
-  } else {
-    return leafcolor2b(node);
-  }
+    if (node.richness_val > 1) {
+        return black;
+    } else {
+        return leafcolor2b(node);
+    }
 }
 
 function leafcolor2b(node) {
-  switch(node.redlist) {
-    case "EX":
-    return ('rgb(50,50,50)');
-    case "EW":
-    return ('rgb(50,50,50)');
-    case "CR":
-    return ('rgb(80,00,00)');
-    case "EN":
-    return ('rgb(80,00,00)');
-    case "VU":
-    return ('rgb(80,00,00)');
-    case "NT":
-    return ('rgb(20,80,00)');
-    case "LC":
-    return ('rgb(20,80,00)');
-    case "DD":
-    return ('rgb(20,80,00)');
-    case "NE":
-    return ('rgb(20,80,00)');
-    default:
-    return ('rgb(20,80,00)');
-  }
+    return dark_green;
 }
 
 function leafcolor1(node) {
-  if (node.richness_val > 1 && node.threatened_branch) {
-    return red1;
-  } else if (node.richness_val > 1) {
-    return green1;
-  } else {
-    return get_redlist_color(node);
-  }
-}
-
-function get_redlist_color(node) {
-  switch(node.redlist) {
-    case "EX":
-    //return ('rgb(150,175,215)'); // new blue
-    return iucnEX;
-    case "EW":
-    //return ('rgb(150,175,215)'); // new blue
-    return iucnEW;
-    //return ('rgb(80,80,80)');
-    case "CR":
-    return iucnCR;
-    //////////return (red1);
-    //'rgb(215,175,150)' = dinah pink
-    case "EN":
-    //return ('rgb(225,185,130)');
-    //return ('rgb(210,170,145)');
-    return iucnEN;
-    //////////return (red1);
-    
-    case "VU":
-    return iucnVU;
-    //return (red1);
-    //return ('rgb(210,170,145)');
-    //return ('rgb(220,220,220)');
-    case "NT":
-    return iucnNT;
-    //return ('rgb(170,195,96)');
-    //return ('rgb(180,208,90)');
-    //return ('rgb(200,220,180)');
-    //return ('rgb(190,200,80)');
-    case "LC":
-    return iucnLC;
-    case "DD":
-    return iucnDD;
-    //return ('rgb(60,50,135)');
-    case "NE":
-    return iucnNE;
-    //return ('rgb(0,0,190)');
-    default:
-    return iucnDefault;
-  }
+    return light_green;
 }
 
 function leafcolor2(node) {
-  if (node.richness_val > 1) {
-    if (node.threatened_branch == true) {
-      return red2;
-    }
-    return green2;
-  } else {
-    return(get_redlist_color2(node));
-  }
-}
-
-function get_redlist_color2(node) {
-  switch(node.redlist) {
-    case "EX":
-    //return ('rgb(0,30,150)');
-    return ('rgb(110,110,110)');
-    case "EW":
-    //return ('rgb(0,30,150)');
-    return ('rgb(110,110,110)');
-    case "CR":
-    return red2;
-    case "EN":
-    //return (red2);
-    return red2;
-    case "VU":
-    return red2;
-    //return ('rgb(170,0,0)');
-    case "NT":
-    return green2;
-    case "LC":
-    return green2;
-    case "DD":
-    return green2;
-    //return ('rgb(60,50,135)');
-    case "NE":
-    return green2;
-    //return ('rgb(0,0,190)');
-    default:
-    return green2;
-  }    
+    // for 'fake' leaves at end of branches that are not developed yet
+    // note that this is not the same as undeveloped branches that are rendered as circles by a different colour scheme and dealt with as part of branch rendering.
+   return green;
 }
 
 function sponsor_highlight(node) {
-  if (node.richness_val > 1) {
-    return 'rgb(0,0,0)';
-  } else {
-    return 'rgb(255,255,255)';
-  }
+    if (node.richness_val > 1) {
+        return black;
+    } else {
+        return white;
+    }
 }
 
 function sponsor_color(node) {
-  if (node.richness_val > 1) {
-    return 'rgb(110,110,110)';
-  } else {
-    return leafcolor1(node);
-  }
+    if (node.richness_val > 1) {
+        return light_grey;
+    } else {
+        return light_green;
+    }
 }
 
 function copyright_highlight_fill(node) {
-  if (node.richness_val > 1) {
-    return 'rgba(255,255,255,0.4)';
-  } else {
-    return 'rgb(0,0,0)';
-  }
+    if (node.richness_val > 1) {
+        return half_transparent_white;
+    } else {
+        return white;
+    }
 }
 
 function copyright_highlight_stroke(node) {
-  if (node.richness_val > 1) {
-    return 'rgb(0,0,0)';
-  } else {
-    return 'rgb(255,255,255)';
-  }
+    if (node.richness_val > 1) {
+        return black;
+    } else {
+        return white;
+    }
 }
 
 function copyright_fill(node) {
-  if (node.richness_val > 1) {
-    return leafcolor1(node);
-  } else {
-    return leafcolor2(node);
-  }
+    if (node.richness_val > 1) {
+        return leafcolor1(node);
+    } else {
+        return leafcolor2(node);
+    }
 }
 
 function copyright_stroke(node) {
-  if (node.richness_val > 1) {
-    return leafcolor2(node);
-  } else {
-    return leafcolor1(node);
-  }
+    if (node.richness_val > 1) {
+        return leafcolor2(node);
+    } else {
+        return leafcolor1(node);
+    }
 }
 
 function copyright_text_fill(node) {
-  if (node.richness_val > 1) {
-    return leafcolor2(node);
-  } else {
-    return leafcolor1(node);
-  }
+    if (node.richness_val > 1) {
+        return leafcolor2(node);
+    } else {
+        return leafcolor1(node);
+    }
 }
 
 function copyright_text_highlight_fill(node) {
-  if (node.richness_val > 1) {
-    return 'rgb(0,0,0)';
-  } else {
-    return 'rgb(255,255,255)';
-  }
+    if (node.richness_val > 1) {
+        return black;
+    } else {
+        return white;
+    }
+}
+
+function leaf_text_hover_outline(node) {
+    return half_transparent_white;
+}
+
+function get_leaf_text_fill(node) {
+    return black;
+}
+
+function branch_colour(node) {
+    if (node._is_polytomy == true)
+    {
+        return brown;
+    } else {
+        return light_brown;
+    }
 }
 
 const theme = {
-  branch: {
-    stroke: branch_color,
-  
-  // this pallette stores colours that are mapped to marked areas in config.marked_area_color_map
-  marked_area_pallette: {
-      '0': 'rgb(130,130,255)',
-      '1': 'rgb(255,130,130)',
-      '2': 'rgb(130,255,130)',
-      '3': 'rgb(200,100,200)',
-      '4': 'rgb(100,200,200)',
-      '5': 'rgb(200,200,100)'
-  },
-      
-      
-    highlight_search_hit: {
-      stroke: 'rgb(200,100,100)'
-    },
+branch: {
+stroke: branch_colour,
+    
+    // this pallette stores colours that are mapped to marked areas in config.marked_area_color_map
+marked_area_pallette: {
+    '0': pastel_blue,
+    '1': pastel_red,
+    '2': pastel_green,
+    '3': pastel_magenta,
+    '4': pastel_cyan,
+    '5': pastel_yellow
+},
+    
+highlight_search_hit: {
+stroke: pastel_red
+},
     // for search hit colouring including common ancestor markings
-    highlight_search_hit1: {
-      stroke: 'rgb(200,100,100)'
-    },
-    highlight_search_hit2: {
-      stroke: 'rgb(100,100,200)'
-    },
-    highlight_arrow_search_hit: {
-      fill: 'rgb(200,100,100)'
-    },
-    highlight_arrow_search_hit1: {
-      fill: 'rgb(200,100,100)'
-    },
-    highlight_arrow_search_hit2: {
-      fill: 'rgb(100,100,200)'
-    }
-  },
+highlight_search_hit1: {
+stroke: pastel_red
+},
+highlight_search_hit2: {
+stroke: pastel_blue
+},
+highlight_arrow_search_hit: {
+fill: pastel_red
+},
+highlight_arrow_search_hit1: {
+fill: pastel_red
+},
+highlight_arrow_search_hit2: {
+fill: pastel_blue
+}
+},
     
-  interior: {
-    pic_text_hover: {
-      stroke: int_text_stroke_hover,
-      fill: int_text_fill_hover
-    },
-    pic_text: {
-      fill: int_text_fill
-    },
+interior: {
+pic_text_hover: {
+stroke: transparent_black,
+fill: white
+},
+pic_text: {
+fill: white
+},
     
-    undeveloped: {
-    stroke: branch_color,
-    fill: branch_color
-    },
+undeveloped: {
+stroke: light_grey,
+fill: off_white
+},
     
-    text_hover: {
-      stroke: int_text_stroke_hover
-    },
-    text: {
-      fill: int_text_fill
-    },
+text_hover: {
+stroke: transparent_black
+},
+text: {
+fill: white
+},
+    
+sponsor_text_hover: {
+fill: white
+},
+sponsor_text: {
+fill: light_brown
+},
     
     
-    sponsor_text_hover: {
-      fill: int_sponsor_fill_hover
-    },
-    sponsor_text: {
-      fill: int_sponsor_fill
-    },
+circle_hover: {
+stroke: dark_brown,
+fill: dark_brown
+},
+circle: {
+stroke: brown,
+fill: brown
+},
+circle_searchin: {
+stroke: half_transparent_white
+},
+circle_highlight: {
+outer: {
+fill: light_brown
+},
+inner: {
+fill: half_transparent_white
+}
+},
     
+copyright_hover: {
+fill: white,
+stroke: black
+},
     
-    circle_hover: {
-      stroke: bar_color,
-      fill: bar_color
-    },
-    circle: {
-      stroke: bar_color,
-      fill: branch_color
-    },
-    circle_searchin: {
-      stroke: highlight_color
-    },
-    circle_highlight: {
-      outer: {
-        fill: branch_color
-      },
-      inner: {
-        fill: highlight_color
-      }
-    },
-      
-    copyright_hover: {
-      fill: 'rgb(255,255,255)',
-      stroke: 'rgb(0,0,0)'
-    },
-      
-    copyright: {
-      fill: 'rgba(255,255,255,0.5)',
-      stroke: 'rgb(0,0,0)',
-      text: {
-      fill: 'rgb(0,0,0)'
-      },
-        text_hover: {
-        fill: 'rgb(0,0,0)',
-      }
-    }
-      
-  },
+copyright: {
+fill: half_transparent_white,
+stroke: black,
+text: {
+fill: black
+},
+text_hover: {
+fill: black,
+}
+}
     
-  signpost: {
-    pic: {
-      stroke: 'rgba(255,255,255,.5)'
-    },
+},
     
-    pic_hover: {
-      stroke: 'rgba(0,0,0,.5)'
-    },
+signpost: {
+pic: {
+stroke: half_transparent_white
+},
     
-    pic_inner: {
-      stroke: 'rgb(255,255,255)'
-    },
+pic_hover: {
+stroke: half_transparent_black
+},
     
-    pic_text: {
-      stroke: 'rgba(255,255,255,0.85)',
-      fill: 'rgb(85,85,85)'
-    },
+pic_inner: {
+stroke: white
+},
     
-    pic_text_hover: {
-      stroke: 'rgb(255,255,255)',
-      fill: 'rgb(0,0,0)'
-    }
-  },
+pic_text: {
+stroke: slightly_tranparent_white,
+fill: dark_grey
+},
     
-  leaf: {
-    bg: {
-      fill: 'rgb(255,255,255)'
-    },
+pic_text_hover: {
+stroke: white,
+fill: black
+}
+},
+    
+leaf: {
+bg: {
+fill: white
+},
     
     'outline_hover': {
-      fill: outline_highlight
+    fill: outline_highlight
     },
     
-    outline: {
-      fill: leafcolor2,
-      stroke: leafcolor2
-    },
+outline: {
+fill: leafcolor2,
+stroke: leafcolor2
+},
     
-    inside: {
-      fill: leafcolor1
-    },
+inside: {
+fill: leafcolor1
+},
     
     'inside_hover': {
-      fill: leafcolor1
+    fill: leafcolor1
     },
     
-    text: {
-      fill: 'rgb(0,0,0)'
-    },
+text: {
+fill: get_leaf_text_fill
+},
     
     'text_hover': {
-      stroke: 'rgba(255,255,255,0.6)'
+    stroke: leaf_text_hover_outline
     },
     
-    sponsor: {
-      fill: sponsor_color
-    },
+sponsor: {
+fill: sponsor_color
+},
     
     'sponsor_hover': {
-      fill: sponsor_highlight
+    fill: sponsor_highlight
     },
     
     'copyright_hover': {
-      fill: copyright_highlight_fill,
-      stroke: copyright_highlight_stroke
+    fill: copyright_highlight_fill,
+    stroke: copyright_highlight_stroke
     },
     
-    copyright: {
-      fill: copyright_fill,
-      stroke: copyright_stroke,
-      text: {
-        fill: copyright_text_fill
-      },
-      'text_hover': {
-        fill: copyright_text_highlight_fill
-      }
+copyright: {
+fill: copyright_fill,
+stroke: copyright_stroke,
+text: {
+fill: copyright_text_fill
+},
+    'text_hover': {
+    fill: copyright_text_highlight_fill
     }
-  }
+}
+}
 }
 
 export default theme;
