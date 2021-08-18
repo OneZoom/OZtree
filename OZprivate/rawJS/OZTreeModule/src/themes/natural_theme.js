@@ -132,7 +132,7 @@ function branch_colour(node) {
     {
         return brown;
     } else {
-        return light_brown;
+        return brown; //light_brown;
     }
 }
 
