@@ -8,6 +8,8 @@ export {default as AT} from './at_theme';
 export {default as otop} from './otop_theme';
 export {default as popularity} from './popularity_theme';
 export {default as IUCN} from './IUCN_explicit_theme';
+export {default as IUCN_CBF} from './IUCN_explicit_colour_blind_friendly';
+
 
 // from the console you can active any theme by typing
 // onezoom.controller.change_color_theme('_____')
