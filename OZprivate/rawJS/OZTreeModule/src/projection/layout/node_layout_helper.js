@@ -14,6 +14,7 @@ import {live_area_config} from '../live_area_config';
 
 class NodeLayoutBase {
   get_shapes(node, shapes) {
+      if (!(node._is_polytomy == true)) {
     this.reset_hover_state();
     this.calc_twh(node);
     if (!node.under_signpost) {
@@ -25,6 +26,7 @@ class NodeLayoutBase {
     } else {
         this.interior_circle_shapes(node, shapes);
     }
+  }
   }
   
   reset_hover_state() {
@@ -39,7 +41,7 @@ class NodeLayoutBase {
   }
   
   high_res_shapes(node, shapes) {
-    if ((config.projection.draw_all_details && node.rvar >= config.projection.node_high_res_thres)&&(!(node._is_polytomy == true))) {
+    if ((config.projection.draw_all_details && node.rvar >= config.projection.node_high_res_thres)) {
       this.high_res_sponsor_shapes(node, shapes);
       this.high_res_image_shapes(node, shapes);
       this.high_res_text_shapes(node, shapes);
@@ -482,7 +484,7 @@ class NodeLayoutBase {
 
   low_res_shapes(node, shapes) {
     let condition = config.projection.draw_all_details 
-      && node.rvar > config.projection.node_low_res_thres && node.rvar < config.projection.node_high_res_thres &&(!(node._is_polytomy == true));
+      && node.rvar > config.projection.node_low_res_thres && node.rvar < config.projection.node_high_res_thres;
     if (condition) {
       this.low_res_text_shapes(node, shapes);
       this.low_res_date_shapes(node, shapes);
@@ -537,7 +539,7 @@ class NodeLayoutBase {
   }
 
   live_area_interior_circle_test(node) {
-    return node.rvar < config.projection.node_high_res_thres && this.is_mouse_over_node(node) &&(!(node._is_polytomy == true));
+    return node.rvar < config.projection.node_high_res_thres && this.is_mouse_over_node(node);
   }
 
   interior_circle_shapes(node, shapes) {
