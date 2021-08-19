@@ -97,6 +97,7 @@ class TreeSettings {
     }
 
     this.default = {
+      colour_blind_friendly: false, 
       cols: this.options.cols.IUCN,
       layout: {
         branch: this.options.layout.branch.tree,
