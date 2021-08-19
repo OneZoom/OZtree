@@ -16,13 +16,13 @@ let slightly_tranparent_white = 'rgba(255,255,255,0.85)';
 let half_transparent_white = 'rgba(255,255,255,0.5)';
 let very_transparent_white = 'rgba(255,255,255,0.2)';
 
-let dark_blue = 'rgb(0,20,80)';
-let blue = 'rgb(30,70,135)';
-let light_blue = 'rgb(90,135,215)';
+let dark_green = 'rgb(20,80,00)';
+let green = 'rgb(70,135,30)';
+let light_green = 'rgb(135,215,90)';
 
-let dark_red = 'rgb(80,00,00)'
-let red = 'rgb(140,20,20)';
-let light_red = 'rgb(225,180,155)';
+let dark_brown = 'rgb(75,55,35)';
+let brown = 'rgb(125,70,55)';
+let light_brown = 'rgb(175,115,85)';
 
 let pastel_red = 'rgb(255,130,130)';
 let pastel_green = 'rgb(130,255,130)';
@@ -31,95 +31,28 @@ let pastel_cyan = 'rgb(100,200,200)';
 let pastel_magenta = 'rgb(200,100,200)';
 let pastel_yellow = 'rgb(200,200,100)';
 
-// define a colour gradient that will be linearly interpolated.
-let gradient = [
-  {num: 0, red:0, green:0, blue:150},
-  {num: 0.1, red:70, green:70, blue:200},
-  {num: 0.55, red:70, green:200, blue:70},
-  {num: 0.65, red:250, green:125, blue:30},
-  {num: 1, red:255, green:30, blue:30}
-]
-
-// define a colour gradient that will be linearly interpolated.
-let gradient2 = [
-                {num: 0, red:0, green:0, blue:100},
-                {num: 0.1, red:30, green:30, blue:150},
-                {num: 0.55, red:30, green:150, blue:30},
-                {num: 0.65, red:200, green:100, blue:0},
-                {num: 1, red:200, green:0, blue:0}
-                ]
-
 // define functions of a node that return different colours depending on node status
 
-//got these two numbers from the database - they will likely need updating nad someday should be fetched automatically
-const min_popularity = 10826;
-const max_popularity = 170009;
-let count = 0;
-
-function get_color_by_popularity(node,colour_map) {
-    if (!node.popularity) {
-        return mid_grey;
+function outline_highlight(node) {
+    if (node.richness_val > 1) {
+        return black;
     } else {
-        /**
-         * popularity       10826             -> 204009
-         * ratio            0                 -> 1
-         * color            rgb(140, 20, 30)  -> rgb(70, 135, 30)
-         */
-        
-        let ratio = (node.popularity - min_popularity) / max_popularity;
-        ratio = Math.max(ratio, 0);
-        ratio = Math.min(ratio, 1);
-        
-        for(let i = 1; i < colour_map.length; i++)
-        {
-            if (ratio <= colour_map[i].num) {
-                
-                let scaled_red = colour_map[i-1].red + (colour_map[i].red- colour_map[i-1].red)*(ratio - colour_map[i-1].num)/( colour_map[i].num - colour_map[i-1].num);
-                
-                 let scaled_green = colour_map[i-1].green + (colour_map[i].green- colour_map[i-1].green)*(ratio - colour_map[i-1].num)/( colour_map[i].num - colour_map[i-1].num);
-                
-                 let scaled_blue = colour_map[i-1].blue + (colour_map[i].blue- colour_map[i-1].blue)*(ratio - colour_map[i-1].num)/( colour_map[i].num - colour_map[i-1].num);
-
-                return `rgb(${scaled_red},${scaled_green},${scaled_blue})`;
-            }
-        }
+        return leafcolor2b(node);
     }
 }
 
-
-function outline_highlight(node) {
-    return black;
-}
-
-function sponsor_color(node) {
-    return slightly_tranparent_white;
-}
-
-function leaf_text_hover_outline(node) {
-    return transparent_black;
-}
-
-function get_leaf_text_fill(node) {
-    return white;
+function leafcolor2b(node) {
+    return dark_green;
 }
 
 function leafcolor1(node) {
-    // for 'fake' leaves at end of branches that are not developed yet
-    if (node.richness_val > 1) {
-        return off_white;
-    } else {
-        return get_color_by_popularity(node,gradient);
-    }
+    return light_green;
 }
 
 function leafcolor2(node) {
     // for 'fake' leaves at end of branches that are not developed yet
     // note that this is not the same as undeveloped branches that are rendered as circles by a different colour scheme and dealt with as part of branch rendering.
-    if (node.richness_val > 1) {
-        return grey;
-    } else {
-        return(get_color_by_popularity(node,gradient2));
-    }
+   return green;
 }
 
 function sponsor_highlight(node) {
@@ -127,6 +60,14 @@ function sponsor_highlight(node) {
         return black;
     } else {
         return white;
+    }
+}
+
+function sponsor_color(node) {
+    if (node.richness_val > 1) {
+        return light_grey;
+    } else {
+        return light_green;
     }
 }
 
@@ -178,12 +119,20 @@ function copyright_text_highlight_fill(node) {
     }
 }
 
+function leaf_text_hover_outline(node) {
+    return half_transparent_white;
+}
+
+function get_leaf_text_fill(node) {
+    return black;
+}
+
 function branch_colour(node) {
     if (node._is_polytomy == true)
     {
-        return grey;
+        return brown;
     } else {
-        return light_grey;
+        return brown; //light_brown;
     }
 }
 
@@ -195,10 +144,8 @@ stroke: branch_colour,
 marked_area_pallette: {
     '0': pastel_blue,
     '1': pastel_red,
-    '2': pastel_green,
-    '3': pastel_magenta,
-    '4': pastel_cyan,
-    '5': pastel_yellow
+    '2': off_white,
+    '3': black
 },
     
 highlight_search_hit: {
@@ -247,24 +194,24 @@ sponsor_text_hover: {
 fill: white
 },
 sponsor_text: {
-fill: very_light_grey
+fill: light_brown
 },
     
     
 circle_hover: {
-stroke: dark_grey,
-fill: dark_grey
+stroke: dark_brown,
+fill: dark_brown
 },
 circle: {
-stroke: grey,
-fill: grey
+stroke: brown,
+fill: brown
 },
 circle_searchin: {
 stroke: half_transparent_white
 },
 circle_highlight: {
 outer: {
-fill: light_grey
+fill: light_brown
 },
 inner: {
 fill: half_transparent_white

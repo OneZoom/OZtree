@@ -4,9 +4,11 @@
  * as one of the options available for the OneZoom object (in tree_settings.js)
  **/
 export {default as natural} from './natural_theme';
+export {default as natural_CBF} from './natural_colour_blind_friendly';
 export {default as AT} from './at_theme';
 export {default as otop} from './otop_theme';
 export {default as popularity} from './popularity_theme';
+export {default as popularity_CBF} from './popularity_colour_blind_friendly';
 export {default as IUCN} from './IUCN_explicit_theme';
 export {default as IUCN_CBF} from './IUCN_explicit_colour_blind_friendly';
 
