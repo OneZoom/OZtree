@@ -150,6 +150,7 @@ export default function (Controller) {
    */
   Controller.prototype.change_color_theme = function (color_theme) {
     tree_settings.cols = color_theme;
+    this.trigger_refresh_loop()
   }
   /**
    * Get the name of the current colour theme (one of the property name in tree_settings.options.cols)
