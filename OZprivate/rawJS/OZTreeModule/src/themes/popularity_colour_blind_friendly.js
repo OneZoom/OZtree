@@ -59,9 +59,7 @@ const max_popularity = 170009;
 let count = 0;
 
 function get_color_by_popularity(node,colour_map) {
-    if (!node.popularity) {
-        return mid_grey;
-    } else {
+   
         /**
          * popularity       10826             -> 204009
          * ratio            0                 -> 1
@@ -85,7 +83,6 @@ function get_color_by_popularity(node,colour_map) {
                 return `rgb(${scaled_red},${scaled_green},${scaled_blue})`;
             }
         }
-    }
 }
 
 
@@ -105,7 +102,11 @@ function get_leaf_text_fill(node) {
     if (node.richness_val > 1) {
         return off_white;
     } else {
+        if (!node.popularity) {
+            return mid_grey;
+        } else {
         return get_color_by_popularity(node,gradient3);
+        }
     }
 }
 
@@ -114,7 +115,11 @@ function leafcolor1(node) {
     if (node.richness_val > 1) {
         return off_white;
     } else {
+        if (!node.popularity) {
+            return off_white;
+        } else {
         return get_color_by_popularity(node,gradient);
+        }
     }
 }
 
@@ -124,7 +129,11 @@ function leafcolor2(node) {
     if (node.richness_val > 1) {
         return grey;
     } else {
+        if (!node.popularity) {
+            return mid_grey;
+        } else {
         return(get_color_by_popularity(node,gradient2));
+        }
     }
 }
 
