@@ -166,7 +166,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
 <li class="colourswitch"><select id="colourtype" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a colour palette for the tree')}}">
 <option value="IUCN">{{=T('Extinction risk')}}</option>
 <option value="popularity">{{=T('Species popularity')}}</option>
-<option value="natural">{{=T('Plain green/brown')}}</option>
+<option value="natural">{{=T('Plain green, brown')}}</option>
 </optgroup>
 </select></li>
 
