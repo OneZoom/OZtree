@@ -148,10 +148,16 @@ export default function (Controller) {
    * @param {String} - One of the theme names listed as keys in tree_settings.options.cols
    * @memberof Controller
    */
-  Controller.prototype.change_color_theme = function (color_theme) {
-    tree_settings.cols = color_theme;
+  Controller.prototype.change_color_theme = function (color_theme,colour_blind_friendly_status) {
+      tree_settings.colour_blind_friendly = colour_blind_friendly_status;
+      if (colour_blind_friendly_status) {
+          tree_settings.cols = color_theme + "_CBF";
+      } else {
+          tree_settings.cols = color_theme;
+      }
     this.trigger_refresh_loop()
   }
+    
   /**
    * Get the name of the current colour theme (one of the property name in tree_settings.options.cols)
    * or undefined if the current theme does not match any of those (i.e. is a bespoke theme)
