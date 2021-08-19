@@ -587,18 +587,18 @@ class NodeLayoutBase {
     }
     arc_shape.x = node.xvar + node.rvar * node.arcx;
     arc_shape.y = node.yvar + node.rvar * node.arcy;
-      arc_shape.r = node.rvar * node.arcr ;//* (1-config.projection.partl2/2.0); // uncomment here to make a ring around the node and similarly below.
+      arc_shape.r = node.rvar * node.arcr * (1-config.projection.partl2/2.0); 
     arc_shape.circle = true;
     arc_shape.height = 2;
     arc_shape.order = "fill_first";
-      arc_shape.do_stroke = false;//true;
-    //arc_shape.stroke.line_width = node.arcr * config.projection.partl2 * node.rvar;
-    //arc_shape.stroke.color = color_theme.get_color('interior.circle.stroke', node);
+      arc_shape.do_stroke = true;
+    arc_shape.stroke.line_width = node.arcr * config.projection.partl2 * node.rvar;
+    arc_shape.stroke.color = color_theme.get_color('interior.circle.stroke', node);
     
     arc_shape.do_fill = true;
     arc_shape.fill.color = color_theme.get_color('interior.circle.fill', node);
     if (this.hovering) {
-      //arc_shape.stroke.color = color_theme.get_color('interior.circle_hover.stroke', node);
+      arc_shape.stroke.color = color_theme.get_color('interior.circle_hover.stroke', node);
       arc_shape.fill.color = color_theme.get_color('interior.circle_hover.fill', node);
     }
     this.hovering = false;
