@@ -20,7 +20,7 @@ let dark_green = 'rgb(20,80,00)';
 let green = 'rgb(70,135,30)';
 let light_green = 'rgb(135,215,90)';
 
-let dark_brown = 'rgb(75,55,35)';
+let dark_brown = 'rgb(100,62,45)';
 let brown = 'rgb(125,70,55)';
 let light_brown = 'rgb(175,115,85)';
 
@@ -205,7 +205,7 @@ stroke: dark_brown,
 fill: dark_brown
 },
 circle: {
-stroke: brown,
+stroke: dark_brown,
 fill: brown
 },
 circle_searchin: {
@@ -301,8 +301,8 @@ fill: sponsor_color
     },
     
     'copyright_hover': {
-    fill: copyright_highlight_fill,
-    stroke: copyright_highlight_stroke
+    fill: copyright_fill,
+    stroke: white
     },
     
 copyright: {
@@ -312,7 +312,7 @@ text: {
 fill: copyright_text_fill
 },
     'text_hover': {
-    fill: copyright_text_highlight_fill
+    fill: white
     }
 }
 }
