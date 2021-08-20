@@ -3,10 +3,9 @@
 let black = 'rgb(0,0,0)';
 let very_dark_grey = 'rgb(40,40,40)';
 let dark_grey = 'rgb(75,75,75)';
-let grey = 'rgb(95,95,95)';
-let mid_grey = 'rgb(115,115,115)';
-let light_grey = 'rgb(135,135,135)';
-let very_light_grey = 'rgb(180, 180, 180)';
+let grey = 'rgb(110,110,110)';
+let light_grey = 'rgb(140, 140, 140)';
+let very_light_grey = 'rgb(190, 190, 190)';
 let off_white = 'rgb(240,240,240)'
 let white = 'rgb(255,255,255)';
 
@@ -121,7 +120,7 @@ function leafcolor2(node) {
         return grey;
     } else {
         if (!node.popularity) {
-            return mid_grey;
+            return grey;
         } else {
             return get_color_by_popularity(node,gradient2);
         }
@@ -136,11 +135,12 @@ function sponsor_highlight(node) {
     }
 }
 
+
 function copyright_highlight_fill(node) {
     if (node.richness_val > 1) {
         return half_transparent_white;
     } else {
-        return white;
+        return copyright_fill(node);
     }
 }
 
@@ -148,7 +148,7 @@ function copyright_highlight_stroke(node) {
     if (node.richness_val > 1) {
         return black;
     } else {
-        return white;
+        return sponsor_highlight(node);
     }
 }
 
@@ -164,7 +164,7 @@ function copyright_stroke(node) {
     if (node.richness_val > 1) {
         return leafcolor2(node);
     } else {
-        return leafcolor1(node);
+        return sponsor_color(node);
     }
 }
 
@@ -172,7 +172,7 @@ function copyright_text_fill(node) {
     if (node.richness_val > 1) {
         return leafcolor2(node);
     } else {
-        return leafcolor1(node);
+        return sponsor_color(node);
     }
 }
 
@@ -180,16 +180,16 @@ function copyright_text_highlight_fill(node) {
     if (node.richness_val > 1) {
         return black;
     } else {
-        return white;
+        return sponsor_highlight(node);
     }
 }
 
 function branch_colour(node) {
     if (node._is_polytomy == true)
     {
-        return grey;
-    } else {
         return light_grey;
+    } else {
+        return grey;
     }
 }
 
@@ -256,13 +256,13 @@ sponsor_text: {
 fill: very_light_grey
 },
     
-    
+ 
 circle_hover: {
-stroke: dark_grey,
-fill: dark_grey
+stroke: light_grey,
+fill: light_grey
 },
 circle: {
-stroke: grey,
+stroke: light_grey,
 fill: grey
 },
 circle_searchin: {
@@ -270,7 +270,7 @@ stroke: half_transparent_white
 },
 circle_highlight: {
 outer: {
-fill: light_grey
+fill: grey
 },
 inner: {
 fill: half_transparent_white
