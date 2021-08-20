@@ -3,10 +3,9 @@
 let black = 'rgb(0,0,0)';
 let very_dark_grey = 'rgb(40,40,40)';
 let dark_grey = 'rgb(75,75,75)';
-let grey = 'rgb(95,95,95)';
-let mid_grey = 'rgb(115,115,115)';
-let light_grey = 'rgb(135,135,135)';
-let very_light_grey = 'rgb(180, 180, 180)';
+let grey = 'rgb(110,110,110)';
+let light_grey = 'rgb(140, 140, 140)';
+let very_light_grey = 'rgb(190, 190, 190)';
 let off_white = 'rgb(240,240,240)'
 let white = 'rgb(255,255,255)';
 
@@ -45,9 +44,9 @@ function leafcolor2b(node) {
    // this is for the colour of the line around a leaf on mouseover
   switch(node.redlist) {
     case "EX":
-          return very_dark_grey;
+          return black;
     case "EW":
-          return very_dark_grey;
+          return black;
     case "CR":
           return dark_red;
     case "EN":
@@ -59,11 +58,11 @@ function leafcolor2b(node) {
     case "LC":
           return dark_green;
     case "DD":
-          return very_dark_grey;
+          return dark_grey;
     case "NE":
-          return very_dark_grey;
+          return dark_grey;
     default:
-          return very_dark_grey;
+          return dark_grey;
   }
 }
 
@@ -82,9 +81,9 @@ function get_redlist_color(node) {
   // this is for the colour of the interior of a leaf
   switch(node.redlist) {
     case "EX":
-          return grey;
+          return black;
     case "EW":
-          return light_grey;
+          return black;
     case "CR":
           return red;
     case "EN":
@@ -96,11 +95,11 @@ function get_redlist_color(node) {
     case "LC":
           return light_green;
     case "DD":
-          return off_white;
+          return light_grey;
     case "NE":
-          return off_white;
+          return light_grey;
     default:
-          return off_white;
+          return light_grey;
   }
 }
 
@@ -111,7 +110,7 @@ function leafcolor2(node) {
     if (node.threatened_branch == true) {
       return red;
     }
-    return grey;
+    return light_grey;
   } else {
     return(get_redlist_color2(node));
   }
@@ -121,9 +120,9 @@ function get_redlist_color2(node) {
   // this is for the colour of the line around a leaf without mouseover
   switch(node.redlist) {
     case "EX":
-          return grey;
+          return black;
     case "EW":
-          return grey;
+          return black;
     case "CR":
           return red;
     case "EN":
@@ -135,11 +134,11 @@ function get_redlist_color2(node) {
     case "LC":
           return green;
     case "DD":
-          return mid_grey;
+          return grey;
     case "NE":
-          return mid_grey;
+          return grey;
     default:
-          return mid_grey;
+          return grey;
   }    
 }
 
@@ -153,7 +152,7 @@ function sponsor_highlight(node) {
 
 function sponsor_color(node) {
   if (node.richness_val > 1) {
-    return light_grey;
+    return grey;
   } else {
       switch(node.redlist) {
           case "EX":
@@ -171,11 +170,11 @@ function sponsor_color(node) {
           case "LC":
               return light_green;
           case "DD":
-              return very_light_grey;
+              return off_white;
           case "NE":
-              return very_light_grey;
+              return off_white;
           default:
-              return very_light_grey;
+              return off_white;
       }
   }
 }
@@ -184,7 +183,7 @@ function copyright_highlight_fill(node) {
   if (node.richness_val > 1) {
     return half_transparent_white;
   } else {
-    return white;
+    return copyright_fill(node);
   }
 }
 
@@ -192,7 +191,7 @@ function copyright_highlight_stroke(node) {
   if (node.richness_val > 1) {
     return black;
   } else {
-    return white;
+    return sponsor_highlight(node);
   }
 }
 
@@ -208,7 +207,7 @@ function copyright_stroke(node) {
   if (node.richness_val > 1) {
     return leafcolor2(node);
   } else {
-    return leafcolor1(node);
+    return sponsor_color(node);
   }
 }
 
@@ -216,7 +215,7 @@ function copyright_text_fill(node) {
   if (node.richness_val > 1) {
     return leafcolor2(node);
   } else {
-    return leafcolor1(node);
+    return sponsor_color(node);
   }
 }
 
@@ -224,7 +223,7 @@ function copyright_text_highlight_fill(node) {
   if (node.richness_val > 1) {
     return black;
   } else {
-    return white;
+    return sponsor_highlight(node);
   }
 }
 
@@ -235,7 +234,7 @@ function leaf_text_hover_outline(node) {
         case "EW":
             return very_transparent_white;
         case "CR":
-            return half_transparent_white;
+            return transparent_black;
         case "EN":
             return half_transparent_white;
         case "VU":
@@ -270,20 +269,20 @@ function get_leaf_text_fill(node) {
         case "LC":
             return black;
         case "DD":
-            return black;
+            return white;
         case "NE":
-            return black;
+            return white;
         default:
-            return black;
+            return white;
     }
 }
 
 function branch_colour(node) {
     if (node._is_polytomy == true)
     {
-        return grey;
-    } else {
         return light_grey;
+    } else {
+        return grey;
     }
 }
 
@@ -332,7 +331,7 @@ const theme = {
     },
     
     undeveloped: {
-        stroke: light_grey,
+        stroke: grey,
         fill: off_white
     },
     
@@ -352,11 +351,11 @@ const theme = {
     
     
     circle_hover: {
-      stroke: dark_grey,
-      fill: dark_grey
+      stroke: light_grey,
+      fill: light_grey
     },
     circle: {
-      stroke: grey,
+      stroke: light_grey,
       fill: grey
     },
     circle_searchin: {
@@ -364,7 +363,7 @@ const theme = {
     },
     circle_highlight: {
       outer: {
-        fill: light_grey
+        fill: grey
       },
       inner: {
         fill: half_transparent_white
