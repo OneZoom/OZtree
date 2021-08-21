@@ -107,7 +107,7 @@ function get_leaf_text_fill(node) {
         return off_white;
     } else {
         if (!node.popularity) {
-            return mid_grey;
+            return grey;
         } else {
             return get_color_by_popularity(node,gradient3);
         }
