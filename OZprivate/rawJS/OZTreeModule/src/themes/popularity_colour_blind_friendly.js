@@ -3,10 +3,9 @@
 let black = 'rgb(0,0,0)';
 let very_dark_grey = 'rgb(40,40,40)';
 let dark_grey = 'rgb(75,75,75)';
-let grey = 'rgb(95,95,95)';
-let mid_grey = 'rgb(115,115,115)';
-let light_grey = 'rgb(135,135,135)';
-let very_light_grey = 'rgb(180, 180, 180)';
+let grey = 'rgb(110,110,110)';
+let light_grey = 'rgb(140, 140, 140)';
+let very_light_grey = 'rgb(190, 190, 190)';
 let off_white = 'rgb(240,240,240)'
 let white = 'rgb(255,255,255)';
 
@@ -25,31 +24,35 @@ let red = 'rgb(140,20,20)';
 let light_red = 'rgb(225,180,155)';
 
 let pastel_red = 'rgb(255,130,130)';
+let pastel_green = 'rgb(130,255,130)';
 let pastel_blue = 'rgb(130,130,255)';
+let pastel_cyan = 'rgb(100,200,200)';
+let pastel_magenta = 'rgb(200,100,200)';
+let pastel_yellow = 'rgb(200,200,100)';
 
 // define a colour gradient that will be linearly interpolated.
 let gradient = [
-    {num: 0, red:220, green:220, blue:255},
-    {num: 0.2, red:150, green:150, blue:200},
-    {num: 0.55, red:200, green:0, blue:0},
-    {num: 1, red:50, green:0, blue:0}
-]
+                {num: 0, red:220, green:220, blue:255},
+                {num: 0.2, red:150, green:150, blue:200},
+                {num: 0.55, red:200, green:0, blue:0},
+                {num: 1, red:50, green:0, blue:0}
+                ]
 
 // define a colour gradient that will be linearly interpolated.
 let gradient2 = [
-  {num: 0, red:0, green:0, blue:100},
-  {num: 0.2, red:70, green:70, blue:200},
-  {num: 0.55, red:200, green:0, blue:0},
-  {num: 1, red:50, green:0, blue:0}
-]
+                 {num: 0, red:0, green:0, blue:100},
+                 {num: 0.2, red:70, green:70, blue:200},
+                 {num: 0.55, red:200, green:0, blue:0},
+                 {num: 1, red:50, green:0, blue:0}
+                 ]
 
 // define a colour gradient that will be linearly interpolated.
 let gradient3 = [
-  {num: 0, red:0, green:0, blue:100},
-  {num: 0.2, red:0, green:0, blue:100},
-  {num: 0.2, red:255, green:255, blue:255},
-  {num: 1, red:255, green:255, blue:255}
-]
+                 {num: 0, red:0, green:0, blue:100},
+                 {num: 0.2, red:0, green:0, blue:100},
+                 {num: 0.2, red:255, green:255, blue:255},
+                 {num: 1, red:255, green:255, blue:255}
+                 ]
 
 // define functions of a node that return different colours depending on node status
 
@@ -59,7 +62,7 @@ const max_popularity = 170009;
 let count = 0;
 
 function get_color_by_popularity(node,colour_map) {
-   
+
         /**
          * popularity       10826             -> 204009
          * ratio            0                 -> 1
@@ -83,6 +86,7 @@ function get_color_by_popularity(node,colour_map) {
                 return `rgb(${scaled_red},${scaled_green},${scaled_blue})`;
             }
         }
+    
 }
 
 
@@ -105,7 +109,7 @@ function get_leaf_text_fill(node) {
         if (!node.popularity) {
             return mid_grey;
         } else {
-        return get_color_by_popularity(node,gradient3);
+            return get_color_by_popularity(node,gradient3);
         }
     }
 }
@@ -118,7 +122,7 @@ function leafcolor1(node) {
         if (!node.popularity) {
             return off_white;
         } else {
-        return get_color_by_popularity(node,gradient);
+            return get_color_by_popularity(node,gradient);
         }
     }
 }
@@ -130,9 +134,9 @@ function leafcolor2(node) {
         return grey;
     } else {
         if (!node.popularity) {
-            return mid_grey;
+            return grey;
         } else {
-        return(get_color_by_popularity(node,gradient2));
+            return get_color_by_popularity(node,gradient2);
         }
     }
 }
@@ -145,11 +149,12 @@ function sponsor_highlight(node) {
     }
 }
 
+
 function copyright_highlight_fill(node) {
     if (node.richness_val > 1) {
         return half_transparent_white;
     } else {
-        return white;
+        return copyright_fill(node);
     }
 }
 
@@ -157,7 +162,7 @@ function copyright_highlight_stroke(node) {
     if (node.richness_val > 1) {
         return black;
     } else {
-        return white;
+        return sponsor_highlight(node);
     }
 }
 
@@ -173,7 +178,7 @@ function copyright_stroke(node) {
     if (node.richness_val > 1) {
         return leafcolor2(node);
     } else {
-        return leafcolor1(node);
+        return sponsor_color(node);
     }
 }
 
@@ -181,7 +186,7 @@ function copyright_text_fill(node) {
     if (node.richness_val > 1) {
         return leafcolor2(node);
     } else {
-        return leafcolor1(node);
+        return sponsor_color(node);
     }
 }
 
@@ -189,16 +194,16 @@ function copyright_text_highlight_fill(node) {
     if (node.richness_val > 1) {
         return black;
     } else {
-        return white;
+        return sponsor_highlight(node);
     }
 }
 
 function branch_colour(node) {
     if (node._is_polytomy == true)
     {
-        return grey;
-    } else {
         return light_grey;
+    } else {
+        return grey;
     }
 }
 
@@ -263,13 +268,13 @@ sponsor_text: {
 fill: very_light_grey
 },
     
-    
+ 
 circle_hover: {
-stroke: dark_grey,
-fill: dark_grey
+stroke: light_grey,
+fill: light_grey
 },
 circle: {
-stroke: grey,
+stroke: light_grey,
 fill: grey
 },
 circle_searchin: {
@@ -277,7 +282,7 @@ stroke: half_transparent_white
 },
 circle_highlight: {
 outer: {
-fill: light_grey
+fill: grey
 },
 inner: {
 fill: half_transparent_white
