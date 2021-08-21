@@ -32,21 +32,27 @@ let pastel_yellow = 'rgb(200,200,100)';
 
 // define a colour gradient that will be linearly interpolated.
 let gradient = [
-  {num: 0, red:0, green:0, blue:150},
-  {num: 0.1, red:70, green:70, blue:200},
-  {num: 0.55, red:70, green:200, blue:70},
-  {num: 0.65, red:250, green:125, blue:30},
-  {num: 1, red:255, green:30, blue:30}
-]
+                {num: 0, red:220, green:220, blue:255},
+                {num: 0.2, red:150, green:150, blue:200},
+                {num: 0.55, red:200, green:0, blue:0},
+                {num: 1, red:50, green:0, blue:0}
+                ]
 
 // define a colour gradient that will be linearly interpolated.
 let gradient2 = [
-                {num: 0, red:0, green:0, blue:100},
-                {num: 0.1, red:30, green:30, blue:150},
-                {num: 0.55, red:30, green:150, blue:30},
-                {num: 0.65, red:200, green:100, blue:0},
-                {num: 1, red:200, green:0, blue:0}
-                ]
+                 {num: 0, red:0, green:0, blue:100},
+                 {num: 0.2, red:70, green:70, blue:200},
+                 {num: 0.55, red:200, green:0, blue:0},
+                 {num: 1, red:50, green:0, blue:0}
+                 ]
+
+// define a colour gradient that will be linearly interpolated.
+let gradient3 = [
+                 {num: 0, red:0, green:0, blue:100},
+                 {num: 0.2, red:0, green:0, blue:100},
+                 {num: 0.2, red:255, green:255, blue:255},
+                 {num: 1, red:255, green:255, blue:255}
+                 ]
 
 // define functions of a node that return different colours depending on node status
 
@@ -97,7 +103,15 @@ function leaf_text_hover_outline(node) {
 }
 
 function get_leaf_text_fill(node) {
-    return white;
+    if (node.richness_val > 1) {
+        return off_white;
+    } else {
+        if (!node.popularity) {
+            return mid_grey;
+        } else {
+            return get_color_by_popularity(node,gradient3);
+        }
+    }
 }
 
 function leafcolor1(node) {
@@ -201,10 +215,8 @@ stroke: branch_colour,
 marked_area_pallette: {
     '0': pastel_blue,
     '1': pastel_red,
-    '2': pastel_green,
-    '3': pastel_magenta,
-    '4': pastel_cyan,
-    '5': pastel_yellow
+    '2': off_white,
+    '3': black
 },
     
 highlight_search_hit: {

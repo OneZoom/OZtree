@@ -17,6 +17,10 @@ class NodeLayout extends NodeLayoutBase
     /** Don't include any circles */
     interior_circle_shapes(node, shapes) {
     }
+    
+    /** Don't include any circles */
+    interior_circle_full_shapes(node, shapes) {
+    }
 
     /** Only render low-res text */
     high_res_shapes(node, shapes) {

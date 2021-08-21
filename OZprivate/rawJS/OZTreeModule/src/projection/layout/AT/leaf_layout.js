@@ -18,6 +18,17 @@ class ATLeafLayout extends LeafLayoutBase {
     return -1;
   }
 
+    get_tip_leaf_shapes(node, shapes) {
+        if(node.richness_val <= 1 || node.full_children_length === 0) {
+            if (node.richness_val > 1) {
+                this.undeveloped_temp_leaf_shapes(node, shapes);
+            } else {
+                this.full_leaf_shapes(node, shapes);
+            }
+            this.tip_leaf_text_image_shapes(node, shapes);
+        }
+    }
+    
   get_fake_leaf_shapes(node, shapes) {
     if (node.richness_val > 1) {
       if (node.rvar < tree_state.threshold && node.has_child) {

@@ -41,9 +41,14 @@ class LeafLayoutBase {
   get_tip_leaf_shapes(node, shapes) {
     if(node.richness_val <= 1 || node.full_children_length === 0) {
       if (node.richness_val > 1) {
-        this.circle_leaf_shapes(node, shapes);
+        this.undeveloped_temp_leaf_shapes(node, shapes);
       } else {
-        this.full_leaf_shapes(node, shapes);
+          if (node.redlist == "EX") {
+              // this is an extinct species to do a different kind of leaf
+              this.extinct_leaf_shapes(node, shapes);
+          } else {
+              this.full_leaf_shapes(node, shapes);
+          }
       }
       this.tip_leaf_text_image_shapes(node, shapes);
     }
@@ -74,17 +79,33 @@ class LeafLayoutBase {
     }
   }
 
-  circle_leaf_shapes(node, shapes) {
+  undeveloped_temp_leaf_shapes(node, shapes) {
     add_mr(this.get_leaf_x(node), this.get_leaf_y(node), this.get_leaf_radius(node) * 0.8);
     let arc_shape = ArcShape.create();
     arc_shape.x = node.xvar + node.rvar * node.arcx;
     arc_shape.y = node.yvar + node.rvar * node.arcy;
-    arc_shape.r = node.rvar * node.arcr * 0.8;
+    arc_shape.r = node.rvar * node.arcr * 0.65;
     arc_shape.circle = true;
     arc_shape.height = 2;
     arc_shape.do_fill = true;
     arc_shape.fill.color = color_theme.get_color("leaf.inside.fill", node);
     shapes.push(arc_shape);
+  }
+    
+  extinct_leaf_shapes(node, shapes) {
+    
+      let arc_shape = ArcShape.create();
+      arc_shape.x = node.xvar + node.rvar * node.arcx;
+      arc_shape.y = node.yvar + node.rvar * node.arcy;
+      arc_shape.r = node.rvar * node.arcr * 0.92;
+      arc_shape.circle = true;
+      arc_shape.height = 2;
+      arc_shape.do_fill = true;
+      arc_shape.fill.color = color_theme.get_color("leaf.bg.fill", node);
+      shapes.push(arc_shape);
+      
+    this.circularLeafBase(this.get_leaf_x(node), this.get_leaf_y(node),this.get_leaf_radius(node)*0.9,0,node,shapes)
+      
   }
 
   full_leaf_shapes(node, shapes) {
@@ -197,17 +218,17 @@ class LeafLayoutBase {
   circularOutlinedLeaf(x,y,r,outlineThickness,node,shapes) {
     let arc_shape = ArcShape.create();
     if (this.hovering) {
-      arc_shape.fill.color = color_theme.get_color("leaf.outline_hover.fill", node);
+      arc_shape.stroke.color = color_theme.get_color("leaf.outline_hover.fill", node);
     } else {
-      arc_shape.fill.color = color_theme.get_color("leaf.inside.fill", node);
+      arc_shape.stroke.color = color_theme.get_color("leaf.outline.stroke", node);
     }
+    arc_shape.fill.color = color_theme.get_color("leaf.inside.fill", node);
     arc_shape.x = x;
     arc_shape.y = y;
     arc_shape.circle = true;
     arc_shape.do_fill = true;
     arc_shape.height = 2;
     arc_shape.do_stroke = true;
-    arc_shape.stroke.color = color_theme.get_color("leaf.outline.stroke", node);
     arc_shape.stroke.line_width = outlineThickness;
     arc_shape.order = "fill_first";
     if (outlineThickness >= 1) {
@@ -459,6 +480,8 @@ class LeafLayoutBase {
   }
 
   circularLeafBase(x,y,r,angle,node,shapes) {
+
+    add_mr(x,y,r);
     this.leafBaseLiveAreaTest(x,y,r,node);
     this.circularOutlinedLeaf(x,y,r,r*0.12,node,shapes);
     this.hovering = false;
