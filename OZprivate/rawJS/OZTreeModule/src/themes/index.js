@@ -13,6 +13,9 @@ export {default as popularity_CBF} from './popularity_colour_blind_friendly';
 export {default as IUCN} from './IUCN_explicit_theme';
 export {default as IUCN_CBF} from './IUCN_explicit_colour_blind_friendly';
 
+export {default as gencons} from './genetic_conservation_theme';
+export {default as gencons_CBF} from './genetic_conservation_theme';
+
 // any themes ending in CBF are colour blind friendly themes
 // all themes should be matched with a CBF equivalent
 // otop is accessed from a different page where no CBF option is in the UI
