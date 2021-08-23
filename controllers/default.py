@@ -361,7 +361,7 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
     )
     iucn_code = None
     if status == 'invalid':  # must define some null vars
-        common_name = the_long_name = default_image = None
+        common_name = the_long_name = default_image = sp_name = None
         
     else:  # still need to figure out status, but should be able to get data
         if reservation_row is None:
@@ -435,9 +435,9 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
         else:
             response.view = request.controller + "/spl_elsewhere_not." + request.extension
         return dict(
+            species_name    = sp_name,
             js_species_name = dumps(sp_name),
             js_common_name  = dumps(common_name.capitalize() if common_name else None),
-            species_name    = sp_name,
             the_long_name   = the_long_name,
             iucn_code       = iucn_code,
             default_image   = default_image,
