@@ -35,6 +35,11 @@ a, a:link, a:active, a:visited, a:hover {
   a.uk-accordion-title {
     color: inherit;
   }
+  h4 {
+    a, a:link, a:active, a:visited, a:hover {
+      color: inherit; /* in the timeline page (and others) linked headers appear normal */
+    }
+  }
 }
 
 img.rgt_edge {
