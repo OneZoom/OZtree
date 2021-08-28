@@ -5,15 +5,14 @@
 
 $tree = new Tree('BespokeTree/include_files/Base.PHY');
 
-//;# Consult here with Holland group for next 2 dates
-//;#  DEEPFIN tree root (Shark + bony-fish) is at 462.4. Guess for Cyclostome divergence = 500Mya
-
-$tree.substitute('APUS@', 'BespokeTree/include_files/Apusozoa_plus.PHY');
-$tree.substitute('BIKONTA@', 'BespokeTree/include_files/Bikonts.PHY');
+$tree.substitute('AMORPHEA@', 'BespokeTree/include_files/Amorphea.PHY', 50);
+$tree.substitute('CRUMS@', 'BespokeTree/include_files/CRuMs.PHY');
+$tree.substitute('DIAPHORETICKES@', 'BespokeTree/include_files/Diaphoretickes.PHY', 100);
 $tree.substitute('METAZOA@', 'BespokeTree/include_files/Animals.PHY', 150);
 $tree.substitute('PORIFERA@', 'BespokeTree/include_files/PoriferaOneZoom.phy', 50);
 $tree.substitute('CTENOPHORA@', 'BespokeTree/include_files/CtenophoresPoder2001.PHY', 50);
 $tree.substitute('AMBULACRARIA@', 'BespokeTree/include_files/Ambulacraria.PHY', 20, 'Ambulacraria'); //;# base @ 530Ma, C21 = 550Ma
+//;#  DEEPFIN tree root (Shark + bony-fish) is at 462.4. Guess for Cyclostome divergence = 500Mya
 $tree.substitute('CYCLOSTOMATA@', 'BespokeTree/include_files/Cyclostome_full_guess.PHY', 43);
 $tree.substitute('LAMPREYS@', 'BespokeTree/include_files/Lampreys_Potter2015.phy', 332.0);
 $tree.substitute('GNATHOSTOMATA@', 'BespokeTree/include_files/BonyFishOpenTree.PHY', 65); //;# base @ 
@@ -95,7 +94,7 @@ $tree.substitute('DERMOPTERA@',    'BespokeTree/include_files/DermopteraJanecka2
 
 //;# for dating look at B. Misof, et al. 2014. Phylogenomics resolves the timing and pattern of insect evolution. Science 346 (6210): 763-767.
 $tree.substitute('PROTOSTOMIA@', 'BespokeTree/include_files/Protostomes.PHY', 50);
-$tree.substitute('HOLOMYCOTA@', 'BespokeTree/include_files/Holomycota.PHY', 200);
+$tree.substitute('HOLOMYCOTA@', 'BespokeTree/include_files/Holomycota.PHY', 300);
 $tree.substitute('APHELIDA@', 'BespokeTree/include_files/Aphelida_rough.PHY', 100);
 
 //;# PHYLOGENIES PART FILLED BY OPEN TREE OF LIFE
