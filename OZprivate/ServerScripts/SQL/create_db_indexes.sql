@@ -83,6 +83,9 @@ CREATE INDEX ott_index           ON vernacular_by_ott (ott, lang_primary, prefer
 DROP   INDEX name_index          ON vernacular_by_name;
 CREATE INDEX name_index          ON vernacular_by_name (name, lang_primary, preferred, src);
 
+DROP   INDEX username_index      ON reservations;
+CREATE INDEX username_index      ON reservations (username)         USING HASH;
+
 DROP   INDEX ott_index           ON reservations;
 CREATE INDEX ott_index           ON reservations (OTT_ID)           USING HASH;
 

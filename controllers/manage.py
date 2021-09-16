@@ -2,6 +2,7 @@
 
 import OZfunc
 import warnings
+from usernames import find_username
 
 @OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
@@ -95,7 +96,7 @@ def SHOW_SPONSOR_SUMS():
     groupby = "IFNULL(PP_e_mail, id)"
     if request.vars['group_includes_name']:
         groupby += ", IFNULL(verified_donor_name,id)"
-    rows = db(db.reservations.live_time != None).select(
+    rows = db(db.reservations.verified_time != None).select(
         cols['donor_name'], 
         cols['e_mail'], 
         cols['pp_name'], 
@@ -139,6 +140,7 @@ def SPONSOR_VALIDATE():
     
     limitby=(page*items_per_page,(page+1)*items_per_page+1)
 
+    query = None
     if request.vars.show == 'validated':
         query = ((db.reservations.PP_transaction_code != None) & 
                 ((db.reservations.verified_time != None) |
@@ -150,9 +152,14 @@ def SPONSOR_VALIDATE():
                 ))
     elif request.vars.show == 'all':
         query = (db.reservations.PP_transaction_code != None)
-    elif request.vars.show and request.vars.show.isdigit():
-        query = (db.reservations.OTT_ID == int(request.vars.show))
-    else:
+    elif request.vars.show == 'unvalidated':
+        pass
+    elif isinstance(request.vars.show, str):
+        otts = request.vars.show.replace(" ", "").split(",")
+        otts = [int(ott) for ott in otts if ott.isdigit()]  # Only keep the integers
+        if len(otts) > 0:
+            query = (db.reservations.OTT_ID.belongs(otts))
+    if query is None:
         query =  ((db.reservations.PP_transaction_code != None) & 
                  (db.reservations.verified_time == None) &
                  (db.reservations.verified_kind == None) &
@@ -167,7 +174,8 @@ def SPONSOR_VALIDATE():
 @OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
 def SPONSOR_UPDATE():
-    #needs to be called with single row id
+    # This displays each row of the SPONSOR_VALIDATE page, and therefore
+    # needs to be called with single row id
     read_only_cols = [
         'id',
         'OTT_ID',
@@ -184,6 +192,7 @@ def SPONSOR_UPDATE():
         'user_preferred_image_src',
         'user_preferred_image_src_id',
         'user_message_OZ',
+        'user_donor_hide',
         'user_paid',
         'PP_first_name',
         'PP_second_name',
@@ -192,9 +201,11 @@ def SPONSOR_UPDATE():
         'PP_e_mail',
         'verified_paid',
         'asking_price',
-        'live_time',        
+        'emailed_re_sponsorship',
+        'tweeted_re_sponsorship',     
     ]
     write_to_cols = [
+        'username',
         'verified_kind',
         'verified_donor_title',
         'verified_donor_name',
@@ -207,6 +218,7 @@ def SPONSOR_UPDATE():
     ]
     row_id = request.args[0]
     row = db(db.reservations.id==row_id).select(*[db.reservations[n] for n in read_only_cols+write_to_cols]).first()
+    username, other_sponsorship_otts = find_username(row, return_otts=True)
     read_only = {k:row[k] for k in read_only_cols}
     read_only['percent_crop_expansion'] = percent_crop_expansion
     EOLrow = db(db.ordered_leaves.ott == row['OTT_ID']).select(db.ordered_leaves.eol).first()
@@ -219,18 +231,33 @@ def SPONSOR_UPDATE():
     read_only['html_name'] = OZfunc.nice_species_name(
         read_only['name'], read_only['common_name'], html=True, leaf=True, break_line=2)
     # Only stick variables in the form that will be updated by the verified page
-    form = SQLFORM(db.reservations, db.reservations(row_id),_id='form_{}'.format(row_id), submit_button="OK", fields = write_to_cols, deletable = False)
-    
+    try:
+        EoL_API_key = myconf.take('api.eol_api_key')
+    except:
+        EoL_API_key=""
+        response.flash="You should really set an eol_api_key in your appconfig.ini file"
+    form = SQLFORM(
+        db.reservations,
+        db.reservations(row_id),
+        _id='form_{}'.format(row_id),
+        submit_button="OK",
+        fields = write_to_cols,
+        deletable = False,
+    )
     to_be_validated = False
     ret_text=None
     if form.process(onsuccess=None).accepted:
+        if request.vars.get('new_username'):
+            if other_sponsorship_otts:
+                response.flash = 'Added to an existing username'
+            else:
+                response.flash = 'Created a new username'
         #update the validated_time here, and hack round the fact that various fields are set to NULL if passed in as a blank
         db.reservations[row_id]=dict(
             verified_time=request.now,
             verified_more_info=request.vars.get('verified_more_info'),
             verified_donor_title=request.vars.get('verified_donor_title'),
             verified_donor_name=request.vars.get('verified_donor_name'),
-        
         )
         
         #grab important information
@@ -241,7 +268,7 @@ def SPONSOR_UPDATE():
         ott_t = read_only['OTT_ID']
         url_t = "www.onezoom.org/life/@={}".format(ott_t) #build url
         email_t = read_only['e_mail'] or read_only['PP_e_mail'] #default to the email they gave us. If not, use the paypal one
-        if request.vars.auto_email and read_only['live_time'] is None and email_t:
+        if request.vars.auto_email and read_only['emailed_re_sponsorship'] is None and email_t:
             try:
                 if int(myconf.take('smtp.autosend_email')):
                     #generate email
@@ -254,8 +281,8 @@ def SPONSOR_UPDATE():
                         if mail.send(to=email_t,
                                      subject=gen_email['mail_subject'],
                                      message=gen_email['mail_body']):
-                            #update the live_time (time when contacted)
-                            db.reservations[row_id]=dict(live_time=request.now)
+                            #update the emailed_re_sponsorship (time when contacted)
+                            db.reservations[row_id]=dict(emailed_re_sponsorship=request.now)
                         else:
                             response.flash = "Could not send auto-email to " + email_t
                 else:
@@ -263,7 +290,7 @@ def SPONSOR_UPDATE():
             except BaseException: #can't get the myconf.take
                 response.flash = 'Auto-email is turned off. To turn it on, add "autosend_email = 1" to appconfig.ini'
             
-        if request.vars.auto_tweet and read_only['live_time'] is None and twittername_t:          
+        if request.vars.auto_tweet and read_only['tweeted_re_sponsorship'] is None and twittername_t:          
             #set up verification tokens
             #do a tweet
             try:
@@ -287,6 +314,8 @@ def SPONSOR_UPDATE():
                     send_tweet = False
                 if send_tweet:
                     twitter.update_status(status=tweet) #uncomment to make twitterbot live
+                    #update the tweeted_re_sponsorship (time when tweeted)
+                    db.reservations[row_id]=dict(tweeted_re_sponsorship=request.now)
                 else:
                     response.flash = CAT((P(response.flash) if response.flash else ""), P('Twitterbot is in testing mode, but would otherwise have said"', EM(tweet), '". To turn twitterbot on, add "autosend_tweet = 1" to appconfig.ini'))
             except Exception as e:
@@ -353,16 +382,19 @@ def SPONSOR_UPDATE():
         if form.errors:
             for elem in form.elements():
                 elem.update(_style='background-color: #FFBBBB')
-
         else:
             #this is what happens when the form is loaded at the start (not processed)
             ## variables rendered in a 'textarea' tag (DB fieldtype = text)
             ## variables rendered in an 'input' tag (DB fieldtype = integer, etc)
+            if not row['username']:
+                # Check if we have sponsorships from someone of the same username or email already
+                form.element(_name='username').update(_value=username)
+                to_be_validated = True
             if row['verified_donor_title'] is None:
-                form.element(_name='verified_donor_title').append((read_only['user_donor_title'] or "").strip())
+                form.element(_name='verified_donor_title').update(_value=(read_only['user_donor_title'] or "").strip())
                 to_be_validated = True
             if row['verified_donor_name'] is None:
-                form.element(_name='verified_donor_name').append((read_only['user_donor_name'] or "").strip())
+                form.element(_name='verified_donor_name').update(_value=(read_only['user_donor_name'] or "").strip())
                 to_be_validated = True
             if row['verified_name'] is None:
                 form.element(_name='verified_name').append((read_only['user_sponsor_name'] or "").strip())
@@ -383,15 +415,12 @@ def SPONSOR_UPDATE():
             row['verified_preferred_image_src'], row['verified_preferred_image_src_id'])
         form.element(_type='submit').update(_style='background-color: #999999; background-image:none; font-size: 1.6em;')
         form.element(_type='submit').update(_value='↻')
-    try:
-        EoL_API_key = myconf.take('api.eol_api_key')
-    except:
-        EoL_API_key=""
-        response.flash="You should really set an eol_api_key in your appconfig.ini file"
 
     return dict(
         form=form, 
         vars=read_only,
+        username=username,
+        other_sponsorship_otts=other_sponsorship_otts,
         img_src=img_src,
         img_src_id=img_src_id,
         to_be_validated=to_be_validated,
@@ -598,7 +627,7 @@ def SHOW_EMAILS():
     eol_images = [i[1] for i in imgs if i[0]==src_flags['eol']]
     contactable_emails = db((db.reservations.allow_contact == True)       &
                             (db.reservations.PP_transaction_code != None) & #requires transaction gone through
-                            (db.reservations.verified_kind != None)       & #requires verified
+                            (db.reservations.verified_time != None)       & #requires verified
                             ((db.reservations.e_mail != None) | (db.reservations.PP_e_mail != None)) #need an email
                            ).select(db.reservations.e_mail, db.reservations.PP_e_mail)
     return(dict(
@@ -756,34 +785,6 @@ def SET_PRICES():
         previous_prices = db().select(db.prices.ALL),
     )
 
-
-@OZfunc.require_https_if_nonlocal()
-@auth.requires_membership(role='manager')
-def GENERATE_TREE():
-    """
-    run the tree generation script - this takes ages, so use a lockfile
-    in OneZoom/OZprivate/data/YanTree/generate_tree.lock
-    """
-    import subprocess
-    import os
-    import time
-    import codecs
-    
-    working_dir = 'applications/OneZoom/OZprivate/'
-    lockfile = "data/YanTree/generate_tree.lock"
-    logfile = "data/YanTree/generate_tree.out"
-    script = "ServerScripts/TreeBuild/generate_crowdfunding_files.py"
-    
-    full_lockfile = os.path.join(working_dir, lockfile)
-    full_logfile = os.path.join(working_dir, logfile)
-    if os.path.isfile(full_lockfile):
-        return(dict(script_fired=False, lockfile = full_lockfile, logfile = full_logfile, time = time.ctime()))
-    else:
-        cmd = [script, "-v", "-db", myconf.take('db.uri'), "--lockfile", lockfile]
-        with codecs.open(full_logfile, "w", encoding='utf-8') as outfile:
-            outfile.write(" ".join(cmd) + "\n")
-            proc = subprocess.Popen(cmd, cwd= working_dir, stdout=outfile, stderr=subprocess.STDOUT)
-        return(dict(script_fired=True, lockfile = full_lockfile, logfile = full_logfile, time = time.ctime()))
 
 @OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
