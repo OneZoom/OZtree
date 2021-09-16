@@ -450,7 +450,7 @@ db.define_table('reservations',
     # these handle auto reservation of pages
     Field('user_id', type = 'reference auth_user' , requires=IS_EMPTY_OR(IS_IN_DB(db, 'auth_user.id','%(first_name)s %(last_name)s'))),
     # points to user table - built in. Is usually NULL because doner need not have a OneZoom login
-    db.auth_user.username.clone(),
+    db.auth_user.username.clone(unique=False, requires=None),
     # Create a "username" field of an identical type to that in auth_user.username.
     # People can set a username in the reservations table at any point which has to be one
     # that is not already present in reservations.username (and if it is idential to one
@@ -523,14 +523,14 @@ db.define_table('reservations',
     Field('sale_time', type = 'text', writable = False),
     # seems professional to know when they paid and wise to keep it separate from expiry date
                 
-    # a verified copy of what's in the sponsor table. Can also use this to check if this entry has been sponsored and verified
+    # a verified copy of what's in the sponsor table.
     Field('verified_kind', type = 'string', length=4, requires=IS_EMPTY_OR(IS_IN_SET(['by','for']))),
     # matches 'user_sponsor_kind'
     Field('verified_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30)), widget=SQLFORM.widgets.text.widget), 
     # matches 'user_sponsor_name'
-    Field('verified_donor_title', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30)), widget=SQLFORM.widgets.text.widget),
+    Field('verified_donor_title', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # matches 'user_donor_title'
-    Field('verified_donor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30)), widget=SQLFORM.widgets.text.widget),
+    Field('verified_donor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # matches 'user_donor_name'
     Field('verified_more_info', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(maxsize=30)), widget=SQLFORM.widgets.text.widget), 
     # matches 'user_more_info'
