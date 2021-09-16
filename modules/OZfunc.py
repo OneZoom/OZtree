@@ -424,9 +424,11 @@ def nodes_info_from_string(
     else:
         all_pcols = ["ott", "src_id", "src", "rating"]
     all_rcols = ["OTT_ID", "verified_kind", "verified_name", "verified_more_info", "verified_url"]
-    alt_rtxt = {"verified_name":"'leaf_sponsored'",
-                 "verified_more_info":"''",
-                 "verified_url":"NULL"}
+    alt_rtxt = {
+        "verified_name": "'leaf_sponsored'",
+        "verified_more_info": "''", 
+        "verified_url":"NULL",
+    }
     pic_cols = {nm:index for index,nm in enumerate(all_pcols)} 
     res_cols = {nm:index for index,nm in enumerate(all_rcols)} 
     if len(leafOtts):
@@ -496,7 +498,9 @@ def query_val_to_ints(CommaSepString):
     return [int(id) for id in CommaSepString.split(",") if id.isdigit()]
 
 def otts2ids(ottIntegers):
-    "Pass in an array of ott ints"
+    """
+    Pass in an array of ott ints
+    """
     try:
         db = current.db
         query = db.ordered_nodes.ott.belongs(ottIntegers)
