@@ -416,6 +416,7 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
 def sponsorable_children_query(target_id, qtype="ott"):
     """
     A function that returns a web2py query selecting the sponsorable children of this node.
+    Note a slight bug: this includes ones that have been reserved or sponsored but not paid for yet
     TO DO: change javascript so that nodes without an OTT use qtype='id'
     """
     db = current.db
