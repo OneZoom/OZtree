@@ -5,7 +5,7 @@
 {{block masthead}}
 <div class="home-heading uk-text-center">
   <h1>Welcome to the OneZoom tree of life explorer...</h1>
-  <p>An interactive map of the evolutionary links between all living things. Discover your favourites, see which species are under threat, and be amazed by the diversity of life on earth.</p>
+  <p>An interactive map of the evolutionary links between all living things known to science. Discover your favourites, see which species are under threat, and be amazed by the diversity of life on earth.</p>
   <em>Our tree of life explorer is designed to be easily accessible for everyone; we also provide free educational tools for teachers, software for scientists and interactive exhibits for museums.</em>
 </div>
 {{end block}}
@@ -186,7 +186,9 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   </style>
   <h3 class="uk-card-title">Biodiversity and Conservation...</h3>
   <p>We want to help everyone appreciate biodiversity and the need to conserve it.<br/>
-  <em>Red leaves on our tree of life show species known to be under threat of extinction.</em></p>
+  <em>Red leaves on our tree of life show species known to be under threat of extinction.</em><br/>
+  <span class="green-text"> Green leaves are either okay for now but might be nearly threatened.</span><br/>
+  <span class="grey-text">Most leaves are grey meaning that it's not known how threatened they are.</span></p>
 
   <div class="endangered-species">{{for key in threatened:}}
     <a href="{{=hrefs[key]}}" title="{{=str(html_names.get(key, '')).capitalize()}}" target="_blank"><span class="img-species leafout leafout-corner"><img class="species" src="{{=images[key]['url']}}" alt="{{=str(html_names.get(key, '')).capitalize()}}" /></span></a>
