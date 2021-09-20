@@ -31,7 +31,7 @@ response.meta.generator = 'Web2py Web Framework'
 
 response.menu = [
                  (T('For Everyone'), False, None , [ #need to set url_encode=False to avoid web2py quoting the @ sign
-                                            (T('A view of all life'), False, URL('default', 'introduction', url_encode=False)),
+                                            (T('A view of all known life'), False, URL('default', 'introduction', url_encode=False)),
                                             (T('Your name on the tree'), False, URL('default' , 'sponsor.html')),
                                             (T('Send a tr-eCard'), False, URL('default' , 'treecards.html')),
                                             (T('Act for biodiversity'), False, URL('default' , 'otop_intro.html')),
