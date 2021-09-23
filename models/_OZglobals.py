@@ -309,6 +309,7 @@ tab_definitions = cache.ram('tab_definitions',
       ('eol',{'id':'eol',     'name':'Encyclopedia of Life', 'icon':URL('static','images/EoL.png')}),
       ('iucn',{'id':'iucn',   'name':'Conservation',         'icon':URL('static','images/IUCN_Red_List.svg')}),
       ('ncbi',{'id':'ncbi',   'name':'Genetics',             'icon':URL('static','images/DNA_icon.svg')}),
+      ('gbif',{'id':'gbif',   'name':'Occurrence',           'icon':URL('static','images/DNA_icon.svg')}),
       #('powo',{'id':'powo',   'name':T('Kew')}),
       ('ozlinks',{'id':'ozlinks','name':'External Links', 'icon':URL('static','images/links.svg')}),
       ('ozspons',{'id':'ozspons','name':'Sponsor', 'icon':URL('static','images/sponsor.png')})]),
@@ -317,7 +318,7 @@ tab_definitions = cache.ram('tab_definitions',
 
 # Default tabs to display
 tab_defaults = cache.ram('tab_defaults',
-    lambda: ['wiki', 'eol', 'iucn', 'ncbi', 'ozspons'],
+    lambda: ['wiki', 'eol', 'iucn', 'ncbi', 'gbif', 'ozspons'],
     time_expire = None)
 
 

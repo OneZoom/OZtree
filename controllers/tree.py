@@ -140,6 +140,8 @@ def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
                 urls['ncbi'] = ncbi_url(row[core_table].ncbi)
             if row.iucn.iucn:
                 urls['iucn'] = iucn_url(row.iucn.iucn)
+            if row[core_table].gbif:
+                urls['gbif'] = gbif_url(row[core_table].gbif)
             if row[core_table].ipni:
                 urls['powo'] = powo_url(row[core_table].ipni) #would alter here if ipni availability calculated on the fly
         if sponsorship_urls: #always return a sponsorship url, even if e.g. invalid or ott missing
@@ -280,6 +282,12 @@ def iucn_url(IUCNid):
         return(IUCNURLarray)
     except:
         raise HTTP(400,"No valid IUCN id provided")
+
+def gbif_url(GBIFid):
+    try:
+        return("https://www.gbif.org/species/{}".format(int(GBIFid)))
+    except:
+        raise HTTP(400,"No valid GBIF id provided")
 
 def powo_url(IPNIid):
     """
