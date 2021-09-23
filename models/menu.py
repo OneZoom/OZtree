@@ -35,6 +35,7 @@ response.menu = [
                                             (T('Your name on the tree'), False, URL('default' , 'sponsor.html')),
                                             (T('Send a tr-eCard'), False, URL('default' , 'treecards.html')),
                                             (T('Act for biodiversity'), False, URL('default' , 'otop_intro.html')),
+                                            (T('Full user guide'), False, URL('default' , 'full_guide.html')),
                                             ]),
                 
                  (T('For Education'), False, None , [
