@@ -1510,6 +1510,9 @@ def introduction():
 def work_with_us():
     return dict()
 
+def full_guide():
+    return dict()
+
 def otop_intro():
     return dict()
 
