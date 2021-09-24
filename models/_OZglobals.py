@@ -318,7 +318,7 @@ tab_definitions = cache.ram('tab_definitions',
 
 # Default tabs to display
 tab_defaults = cache.ram('tab_defaults',
-    lambda: ['wiki', 'eol', 'iucn', 'ncbi', 'gbif', 'ozspons'],
+    lambda: ['wiki', 'iucn', 'gbif', 'ncbi', 'eol', 'ozspons'],
     time_expire = None)
 
 
