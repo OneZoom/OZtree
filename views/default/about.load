@@ -31,6 +31,12 @@ OneZoom is a charitable incorporated organisation (non-profit) registered under 
 
 <p>OneZoom is delighted to be a partner of the {{=A("One Tree, One Planet", _href="http://www.onetreeoneplanet.org")}} project since 2017.</p>
 
+<h3>Equality, diversity and accessibility</h3>
+
+<p> OneZoom is comitted to the principles of equality and diversity. We will not discriminate on the basis of age, disability, gender, gender reassignment, race, religion or sexual orientation. Our educational materials are open to everyone and we are taking steps to increase their accessibilty as much as is practical for a project of our size. Recent steps include a colour blind friendly mode for our main tree of life explorer and addition of an 'Mx' title on our sponsorship page for individauls with non-binary gender identity. We welcome all feedback on how we can {{=A("make our work more accessible",_href="/accessibility.html")}}.
+
+</p>
+
 </div>
 
 <div class=""uk-padding uk-padding-remove-top"">
@@ -104,6 +110,8 @@ OneZoom needs funding to be able to continue its work.  We are looking to attrac
 
 <p> We thank Prof. Richard Dawkins and Prof. Alice Roberts for their kind ongoing promotion of OneZoom at events and on social media.</p>
 
+<p><img class="rgt_edge" src="/static/images/leaves/Rpic3.png" /></p>
+
 <p> We thank Prof. Duncan Gillies who assisted James in the supervision and recruitment of Kai Zhong.</p>
 
 <p> We would also like to thank the following people (in alphabetical order) for providing a wide range of help and advice at various stages in the OneZoom project history:
@@ -168,7 +176,7 @@ Oliver Worsfold,
 Amy Zanne
 </p>
 
-<p>All versions of the OneZoom software from 2.0 through to 3.2 were developed jointly by Dr. James Rosindell, who primarily worked on visualisation and Dr. Yan Wong, who primarily worked on synthesising the tree data. Yan is a coauthor with Professor Richard Dawkins on <i>The Ancestor’s Tale</i>: a history of life, which has made extensive use of the OneZoom visualisations. The research done for the book has in turn contributed to the dataset used by the OneZoom software.</p>
+<p>All versions of the OneZoom software from 2.0 upwards were developed jointly by Dr. James Rosindell, who primarily worked on visualisation and Dr. Yan Wong, who primarily worked on synthesising the tree data. Yan is a coauthor with Professor Richard Dawkins on <i>The Ancestor’s Tale</i>: a history of life, which has made extensive use of the OneZoom visualisations. The research done for the book has in turn contributed to the dataset used by the OneZoom software.</p>
 
 <p>James originally devised the OneZoom concept in 2011, he initially worked on the project only during his spare time, taking advice from Luke Harmon in particular. After that, James further developed OneZoom as part of his research program at {{=A("Imperial College London", _href="http://www3.imperial.ac.uk", _target="_blank")}}, which was funded by a research fellowship from the {{A("Natural Environment Research Council", _href="http://www.nerc.ac.uk", _target="_blank")}} (NERC). The first version 1.0 of the software and an associated academic paper authored by James and Luke was published in 2012. All ongoing OneZoom activities have been managed by the independent OneZoom charity since its formation in 2015.</p>
 
