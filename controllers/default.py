@@ -1513,6 +1513,9 @@ def work_with_us():
 def full_guide():
     return dict()
 
+def sponsor_user_manage():
+    return dict()
+
 def otop_intro():
     return dict()
 
