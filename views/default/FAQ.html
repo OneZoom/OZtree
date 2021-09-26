@@ -11,12 +11,18 @@
 
 <div class="uk-padding uk-text-small uk-column-1-2@s uk-column-1-3@m">
     
+
+    
     <h4>Questions about the tree viewers</h4>
     <ul uk-accordion>
 <!-- make these look nice and friendly with nice pictures-->
     <li>
         <a class="uk-accordion-title" href="#">Q: What does the colour scheme indicate on your tree of life explorer?</a>
-        <div class="uk-accordion-content">A: On the standard OneZoom tree, leaves that are vulnerable, endangered, or critically endangered species according to the {{=A('IUCN Red List', _href="http://www.iucnredlist.org")}} are shown in red. These are all the species that are known to be under threat of extinction. The leaves shown in green (or blue when colour blind friendly mode is enabled) represent species that are known to not be under threat of extinction: they are least concern or near threatened according to the {{=A('IUCN Red List', _href="http://www.iucnredlist.org")}}. Most of the leaves are grey meaning that their extinction risk is not known, some of these might be officially recognised as data deficient by the IUCN red list, or occasionally they might be evaluated under another name that we've not been able to match up.  There are other colour schemes too including one that uses a continuous gradient of colour to indicate how popular species are according to our own {{=A("popularity index",_href="/popularity/index.html")}}. For more information please our {{=A("introductory page",_href="/introduction.html")}}, or the {{=A("full user guide",_href="/full_guide.html")}}. A colour key can be opened from the panel to the left of the tree of life explorer and the colour scheme can be changed in the settings menu which is also on the left.</div>
+        <div class="uk-accordion-content"><p>A: On the standard OneZoom tree, leaves that are vulnerable, endangered, or critically endangered species according to the {{=A('IUCN Red List', _href="http://www.iucnredlist.org")}} are shown in red. These are all the species that are known to be under threat of extinction. The leaves shown in green (or blue when colour blind friendly mode is enabled) represent species that are known to not be under threat of extinction: they are least concern or near threatened according to the {{=A('IUCN Red List', _href="http://www.iucnredlist.org")}}. Most of the leaves are grey meaning that their extinction risk is not known, some of these might be officially recognised as data deficient by the IUCN red list, or occasionally they might be evaluated under another name that we've not been able to match up.  There are other colour schemes too including one that uses a continuous gradient of colour to indicate how popular species are according to our own {{=A("popularity index",_href="/popularity/index.html")}}. For more information please our {{=A("introductory page",_href="/introduction.html")}}, or the {{=A("full user guide",_href="/full_guide.html")}}. A colour key can be opened from the panel to the left of the tree of life explorer and the colour scheme can be changed in the settings menu which is also on the left.</p>
+        
+        <center><img src= "{{=URL('static','images/user_guide/IUCN_col_scheme_square.jpg')}}" alt="" style = "width:100%"></img></center>
+
+        </div>
         </li>
 
     <li>
@@ -24,8 +30,11 @@
         <div class="uk-accordion-content">A: The width of the branches and the size of the leaves on the OneZoom tree are determined by the mathematics of the fractal form.  Our core software is written to be agnostic to way the tree is viewed and we provide several alternatives.  It would be relatively easy to make more and we would welcome collaboration with scientists who have alternative visualisation ideas that they would like to try.  We do not show any of the more traditional tree visualisations that would be more familiar to experts - this is beacuse none of them work well for a tree this size - the classic views will need some adaptation. Our default view remains the same as when OneZoom was lanuched, for now.  In this view, species with large leaves are the ones with few close living relatives - technically, leaf size is a measure of what conservationists call <q>evolutionary distinctiveness</q>. While it might seem more egalitarian to show, for example, all leaves at the same size, that would make most leaves impossible to see, as they would all need to be drawn at the smallest size available. To put this in context, when the smallest leaf on our tree is shown at a readable size, the rest of the tree occupies an area more than 60 times wider than the solar system. Similarly if the width of branches represented, for example, the number of living species descending from that branch, then the branch to the insects would be the only visible thing on the tree.</div>
         </li>
     </ul>
-    <center><img src= "{{=URL('static','images/IUCN_col_key.jpg')}}" alt="" style = "width:100%"></img></center>
 
+    <center><img src= "{{=URL('static','images/Screenshots/Vertebrates_IUCN.jpg')}}" alt="" style = "width:100%"></img></center>
+
+
+    
      <h4>Questions about the tree data</h4>
      <ul uk-accordion>
     <li>
@@ -48,6 +57,10 @@
         
     </li>
      </ul>
+     
+     <center><img src= "{{=URL('static','images/Screenshots/animals_node_PD.png')}}" alt="" style = "width:100%"></img></center>
+
+     
      <h4>Questions about leaf sponsorship</h4>
      <ul uk-accordion>
     <li>
@@ -71,15 +84,24 @@
     
     <li>
         <a class="uk-accordion-title" href="#">Q: Can I use your graphics or pictures in my own project?</a>
-        <div class="uk-accordion-content">A: Please feel free to use our fractal visualizations as you wish for non-commercial purposes, as long as you credit us. The images themselves have been gathered from a large number of sources (Wikipedia, Flickr, etc.), mostly via the {{=A('Encyclopedia of Life', _href="http://eol.org")}}, and each will have their own licence (either public domain, or cc-by, or cc-by-sa). You can look this up by zooming into the small copyright symbol at the bottom left of every image on the tree: the symbol also serves as a link that will take you to the image page on the Encyclopedia of Life, from where you can find the original source. For more details please see our {{=A('terms of use', _href=URL('default','terms#useterms'))}}. Note that if you wish to use a screenshot without having to provide a list of sources, then we recommend that you use our <q>public domain only</q> visualization (Settings&rarr;<wbr>Image&nbsp;Sources&rarr;<wbr>Public&nbsp;Domain). Higher resolution {{=A('SVG images', _href="http://www.w3.org/Graphics/SVG/")}} can be exported as screenshots from our {{=A('screenshot tool', _href=URL('education','screenshot_launcher.html'))}}.</div>
+        <div class="uk-accordion-content"><p>A: Please feel free to use our fractal visualizations as you wish for non-commercial purposes, as long as you credit us. The images themselves have been gathered from a large number of sources (Wikipedia, Flickr, etc.), mostly via the {{=A('Encyclopedia of Life', _href="http://eol.org")}}, and each will have their own licence (either public domain, or cc-by, or cc-by-sa). You can look this up by zooming into the small copyright symbol at the bottom left of every image on the tree: the symbol also serves as a link that will take you to the image page on the Encyclopedia of Life, from where you can find the original source. For more details please see our {{=A('terms of use', _href=URL('default','terms#useterms'))}}. Note that if you wish to use a screenshot without having to provide a list of sources, then we recommend that you use our <q>public domain only</q> visualization (Settings&rarr;<wbr>Image&nbsp;Sources&rarr;<wbr>Public&nbsp;Domain). Higher resolution {{=A('SVG images', _href="http://www.w3.org/Graphics/SVG/")}} can be exported as screenshots from our {{=A('screenshot tool', _href=URL('education','screenshot_launcher.html'))}}.</p>
+        
+        <center><img src= "{{=URL('static','images/user_guide/SS_example.jpg')}}" alt="" style = "width:100%"></img></center>
+
+        </div>
  </li>
-            
+    
+    
     
     <li>
         <a class="uk-accordion-title" href="#">Q: How long did this take to build?</a>
         <div class="uk-accordion-content">A: The quick answer is, a very, very long time... To give the longer answer as well though, the idea of OneZoom was first conceived in spring 2011, so it's been more than a decade already to get from nothing to the current state of the project. There have been some periods of really intensive work - for example in the run up to our launch as a charity with the OneZoom software version 2, Yan Wong and James Rosindell worked solidly together for 3 full days with only 5 hours sleep (in total!).</p><p>It's most important to say, though, that when most people ask this question they are thinking of the huge task of curating the images and all that data.  Actually this was a relatively small part of our workload thanks to the input of other projects and databases that already do a great job of providing such data. In particular, the Open Tree of Life project provided most of our tree of life and the images were got from the Encyclopedia of Life. Both these projects are fantastic resources that have been invaluable for us.</div>
      </li>
     
+    
+    <center><img src= "{{=URL('static','images/Screenshots/Polytomy.jpg')}}" alt="" style = "width:100%"></img></center>
+
+
     
 </ul>
 
