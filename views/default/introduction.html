@@ -5,6 +5,7 @@
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
     <h1>A view of all known life</h1>
+    <em>The essentials you need to know before you can start exploring our tree of life</em>
 </div>
 {{end block}}
 
@@ -14,14 +15,14 @@
         <h3>The tree of life </h3>
         <p> Everything that is alive, or has ever been alive has a place somewhere on the complete tree of life.  Each leaf represents a different species and the branches show how they are evolved from common ancestors over billions of years. </p>
        
-        <img src= "{{=URL('static','images/Screenshots/all_life_PD.png')}}" alt="">
+        <img src= "{{=URL('static','images/Screenshots/Life_spiral_brown.jpg')}}" alt="">
        
         <h3>Our vision </h3>
         <p>
         Our vision for OneZoom is to do for the tree of life what online mapping tools have done for the globe; to make the complete tree of life a public good at everyone’s fingertips, free of charge and free of advertising.
         
         </p>
-        <img src= "{{=URL('static','images/Screenshots/animals_node_PD.png')}}" alt="">
+        <img src= "{{=URL('static','images/Screenshots/animals_node_PD.png')}}" alt="" >
 
             <h3>What we've been doing</h3>
             
@@ -48,7 +49,7 @@
         
         
         <p>
-        OneZoom is the only tool where you can explore the complete tree of life, over two million species, on one page. You can find everything here from the <a href = "{{=URL('default','life.html/@Speovelia_aaa=4195803',url_encode=False)}}" target = "_blank">Aaa Water Treader Bug</a> to the <a href = "{{=URL('default','life.html/@Zamioculcas_zamiifolia=1049792',url_encode=False)}}" target = "_blank">ZZ Plant</a>. In fact, there are so many species on the OneZoom tree, that if it were printed, the paper would span our entire solar system… at least sixty times over.  This is also the only resource with images and common names of species in the complete tree of life.  Here, you can discover your favourite species, see which species are under threat, and be amazed by biodiversity.
+        OneZoom is the only tool where you can explore the complete tree of all known life, over two million species, on one page. You can find everything here from the <a href = "{{=URL('default','life.html/@Speovelia_aaa=4195803',url_encode=False)}}" target = "_blank">Aaa Water Treader Bug</a> to the <a href = "{{=URL('default','life.html/@Zamioculcas_zamiifolia=1049792',url_encode=False)}}" target = "_blank">ZZ Plant</a>. In fact, there are so many species on the OneZoom tree, that if it were printed, the paper would span our entire solar system… at least sixty times over.  This is also the only resource with images and common names of species in the complete tree of life.  Here, you can discover your favourite species, see which species are under threat, and be amazed by biodiversity.
         </p>
         <h3>Finding out more</h3>
         <img src= "{{=URL('static','images/Screenshots/Wiki_example.png')}}" alt="">
@@ -66,22 +67,57 @@
       <div class = "uk-text-center uk-padding-small">
           <a href = "{{=URL('default','life.html',vars=dict(vis='polytomy'))}}" target = "_blank">Try the polytomy view</a>
             </div>
-            <img class="uk-align-center uk-margin-remove-top" src= "{{=URL('static','images/Screenshots/polytomy_PD.png')}}" alt="">
+            <img class="uk-align-center uk-margin-remove-top" src= "{{=URL('static','images/Screenshots/Polytomy.jpg')}}" alt="" >
        
        <hr>
          <div class = "uk-text-center uk-padding-small">
                 <a href = "{{=URL('default','life.html',vars=dict(vis='fern'))}}" target = "_blank">Try the fern view</a>
                  </div>
          
-                <img class="uk-align-center uk-margin-remove-top" src= "{{=URL('static','images/Screenshots/fern_PD.png')}}" alt="" >
+                <img class="uk-align-center uk-margin-remove-top" src= "{{=URL('static','images/Screenshots/Fern_IUCN.jpg')}}" alt="" >
                 <hr>
                 <div class = "uk-text-center uk-padding-small">
                     <a href = "{{=URL('default','life.html',vars=dict(vis='natural'))}}" target = "_blank">Try the natural view</a>
                       </div>
-                    <img class="uk-align-center uk-margin-remove-top" src= "{{=URL('static','images/Screenshots/natural_PD.png')}}" alt="">
+                    <img class="uk-align-center uk-margin-remove-top" src= "{{=URL('static','images/Screenshots/Natural_view.jpg')}}" alt="">
                      
                    
     
       </div>
+    
+</div>
+
+
+<div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
+    <div class = "uk-padding">
+        <h3>What the colours mean</h3>
+        
+        <p>Leaves corresponding to species that are vulnerable, endangered, or critically endangered according to the {{=A('IUCN Red List', _href="http://www.iucnredlist.org")}} are shown in red. These are all the species that are known to be under threat of extinction. The leaves shown in green represent species that are known to be okay for now, that is not under threat of extinction. Most of the leaves are grey meaning that their risk of extinction is not known.</p>
+        
+        <center><img src= "{{=URL('static','images/user_guide/IUCN_col_scheme_square.jpg')}}" alt=""></img></center>
+        
+        
+                </div>
+    
+    <div class = "uk-padding">
+        
+        <h3>Changing the colour scheme</h3>
+        
+        <p>You can change the colour scheme from the menu of settings on the bottom left of the tree.  A colour key can also be opened from the information panel to the left of the tree of life explorer. Another colour scheme on offer shows how popular each species is according to our {{=A('index of species popularity', _href=URL('popularity','index'))}}.</p>
+        
+                 <a href="{{=URL('static','images/Screenshots/FullSize/Vertebrates_pop.jpg')}}" target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/Screenshots/Vertebrates_pop.jpg')}}" alt=""></a>
+        <hr>
+             <a href="{{=URL('static','images/user_guide/FullSize/pop_col_scheme.jpg')}}" target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/user_guide/pop_col_scheme.jpg')}}" alt=""></a>
+        
+        
+        <p>
+
+            </div>
+    
+    <div class = "uk-padding">
+
+        <h3>Being honest about what we don't know</h3>
+        
+                    </div>
     
 </div>
