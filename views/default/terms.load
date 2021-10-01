@@ -135,7 +135,7 @@
 
 <ol>
 
-<li>Screenshots from our tree of life explorer may be reused with citation to OneZoom.org. It is your responsibility to check the license for any images appearing within the screenshot, which may also require acknowledgements. You might find our {{=A('Screenshot tool', _href=URL('education','screenshot_launcher.html'))}} useful which has a button to download screenshots from the tree as an SVG. Note there there are also settings to include only images we believe to be in the public domain.</li>
+<li>Screenshots from our tree of life explorer may be reused with citation to OneZoom.org. It is your responsibility to check the license for any images appearing within the screenshot, which may also require acknowledgements. You might find our {{=A('Screenshot tool', _href=URL('education','screenshot_launcher.html'))}} useful which has a button to download screenshots from the tree as an SVG. Note there are also settings to include only images we believe to be in the public domain.</li>
 
 <li>Images found elsewhere on our website may be owned by a third party who has given permission to OneZoom but not granted permission for more general reuse, please do not reuse media from the broader website without checking first.</li>
 <li>Please write to us if you are not sure about image permissions.</li>
