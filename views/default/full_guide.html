@@ -5,83 +5,265 @@
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
     <h1>Full user guide</h1>
+    <em>Details of how to use all the features of the tree of life explorer</em>
 </div>
 {{end block}}
 
+
 <div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
     <div class = "uk-padding">
-        
-        <h3>The tree of life </h3>
+        <!--
+        1.) intro to tree
+        2.) zooming UI basics
+         -->
+        <h3>What is the tree of life?</h3>
         <p> Everything that is alive, or has ever been alive has a place somewhere on the complete tree of life.  Each leaf represents a different species and the branches show how they are evolved from common ancestors over billions of years. </p>
-       
-        <img src= "{{=URL('static','images/Screenshots/all_life_PD.png')}}" alt="">
-       
-        <h3>Our vision </h3>
-        <p>
-        Our vision for OneZoom is to do for the tree of life what online mapping tools have done for the globe; to make the complete tree of life a public good at everyone’s fingertips, free of charge and free of advertising.
         
-        </p>
-        <img src= "{{=URL('static','images/Screenshots/animals_node_PD.png')}}" alt="">
+       <img src= "{{=URL('static','images/Screenshots/Life_spiral_IUCN.jpg')}}" alt="">
+        
+        <h3>Basics of how to explore the tree</h3>
+        <p >Explore OneZoom like you would a geographic map. Zoom in to reveal more detail by pinching on your touch screen or scrolling on your mouse. To move around click and move your mouse or use your touch screen. Larger screens show + and - buttons on the bottom left that you can also use to zoom in and out.</p>
+        
+       <img src= "{{=URL('static','images/Screenshots/Mammals_plus_IUCN.jpg')}}" alt="">
+        
+     </div>
 
-            <h3>What we've been doing</h3>
-            
-            
-            <p>
-            We have been working on this resource since 2011, but all that time we have not done much curation of our own.  Instead we have been building tools to automatically connect together information that is already available from scientifically accurate resources. We then developed new technology to present these data in a visually stunning way that is easy to navigate.
-            
+     <div class = "uk-padding">
+        <!--
+        3.) IUCN colour scheme
+        -->
+        <h3>What the colours mean</h3>
+        <p> Under default settings, the leaf colours correspond to the risk of extinction for the species that leaf represents. Leaves corresponding to species that are "vulnerable", "endangered", or "critically endangered" according to the International Union for the Conservation of Nature (IUCN) {{=A('Red List', _href="http://www.iucnredlist.org")}} are shown in red. These are all the species that are known to be under threat of extinction. The leaves shown in green represent species that are known to be okay for now (not under threat of extinction). These are "least concern" or "near threatened" species.</p>
+        
+        <center><img src= "{{=URL('static','images/user_guide/IUCN_col_scheme_square.jpg')}}" alt=""></img></center>
+        <p>Most of the leaves are grey meaning that their risk of extinction is not known. This could be because the species is "not evaluated", or classified as "data deficient" by the IUCN.  It is also possible that a species with a grey leaf has been assessed by the IUCN but under a different species name that we weren't able to identify automatically.
             </p>
-            
-            
-        </div>
-    
-    
-    
-    
-    <div class = "uk-padding">
         
-        <h3>Brief instructions</h3>
-        <p >Explore OneZoom like you would a geographic map, zoom in to reveal more detail by pinching on your touch screen or scrolling on your mouse. To move around click and move your mouse or use your touch screen.</p>
-        
-        <div class = "uk-text-center uk-text-large"> <a class = "a-light oz-pill pill-leafout" href = "{{=URL('default','life.html')}}" target = "_blank">Explore now</a></div>
-        <h3>What you can see on the tree</h3>
-        
-        
-        
-        <p>
-        OneZoom is the only tool where you can explore the complete tree of life, over two million species, on one page. You can find everything here from the <a href = "{{=URL('default','life.html/@Speovelia_aaa=4195803',url_encode=False)}}" target = "_blank">Aaa Water Treader Bug</a> to the <a href = "{{=URL('default','life.html/@Zamioculcas_zamiifolia=1049792',url_encode=False)}}" target = "_blank">ZZ Plant</a>. In fact, there are so many species on the OneZoom tree, that if it were printed, the paper would span our entire solar system… at least sixty times over.  This is also the only resource with images and common names of species in the complete tree of life.  Here, you can discover your favourite species, see which species are under threat, and be amazed by biodiversity.
-        </p>
-        <h3>Finding out more</h3>
-        <img src= "{{=URL('static','images/Screenshots/Wiki_example.png')}}" alt="">
-            
-            <p>
-            As you explore the tree you can click on the creatures you see to quickly reveal information from other resources such as Wikipedia and the Encyclopedia of Life. So you need look no further whenever you want to find out more about the diversity of life on earth.
-            </p>
      </div>
     
     <div class = "uk-padding">
-        <h3>Different views of the same tree</h3>
-        <p>There are many different ways to look at the same tree of life apart from our default spiral view. Try some of the others, but remember that they all show the same information.</p>
-    
+        <!--
+         4.) Settings
+         -->
+        <h3>Settings menu</h3>
+        <p>Many of the things we'll be referring to in this user guide are accessible from a settings menu at the bottom left of the tree view. You need to press the settings button to open the settings menu.</p>
         
-      <div class = "uk-text-center uk-padding-small">
-          <a href = "{{=URL('default','life.html',vars=dict(vis='polytomy'))}}" target = "_blank">Try the polytomy view</a>
+        <center><img src= "{{=URL('static','images/user_guide/Settings.jpg')}}" alt=""></img></center>
+        
+        <p>The language setting is an easy one to explain to start with.  It does what it says on the tin and enables you to change the language of the tree of life explorer itself. Unfortunately, it does not yet change the language on other pages of our website.</p>
+        
+        <p>The page content setting enables you to select between sublely different markups of extra information on the tree. So far the only alternative to our default is a markup to accompany The Ancestor's Tale (2016) book by Dawkins and Wong.</p>
+        
+    </div>
+</div>
+
+
+<div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
+    <div class = "uk-padding">
+        <!--
+         5.) Changing the colour scheme
+         -->
+        <h3>Changing the colour scheme</h3>
+        
+         <img src= "{{=URL('static','images/user_guide/settings_colour.jpg')}}" alt="">
+        
+         <p>You can change the colour scheme from the settings menu. Another nice colour scheme on offer shows how popular each species is according to our {{=A('index of species popularity', _href=URL('popularity','index'))}}.
+
+       <img src= "{{=URL('static','images/user_guide/pop_col_scheme.jpg')}}" alt="">
+        
+        <p> The settings menu also has a tick box for colour blind friendly versions of all colour schemes.</p>
+        <center><img src= "{{=URL('static','images/user_guide/IUCN_col_scheme_CBF.jpg')}}" alt=""></img></center>
+        
+        <p> We have some plain colour schemes too in case you just want a simpler tree e.g. for screenshots using our {{=A('screenshot tool', _href=URL('default','screenshot_launcher'))}}.</p>
+        <img src= "{{=URL('static','images/Screenshots/Life_spiral_brown.jpg')}}" alt="">
+    </div>
+    
+    <div class = "uk-padding">
+        <!--
+         6.) Basic search within the tree
+         -->
+        <h3>Searching within the tree</h3>
+        <p>You can use the search box to type what you're looking for.  Press enter to search or just wait and a list of possible search results will appear. Select what you want and the tree will automatically take you there.  </p>
+        
+        <img src= "{{=URL('static','images/user_guide/Search.jpg')}}" alt="">
+        
+        <p>Please bear in mind, you won't find viruses or pre-historic species like dinosaurs. We hope to provide more information on these groups in future updates. Sill, there's already so much out there you'll be amazed what you can find.</p>
+        
+        <img src= "{{=URL('static','images/user_guide/settings_search.jpg')}}" alt="">
+
+        <p>In the settings menu, you can change the way you're taken to search results.  'Jump to results' will take the tree to place you want instantaneously. 'Fly to results' will automatically zoom you to your destination, which will take longer but allow you to see the context, including the relationship between what you're currently looking at and your search result.</p>
+        
+    </div>
+    
+    <div class = "uk-padding">
+        
+        <!--
+         7.) Zooming into leaves and nodes
+         -->
+        <h3>Zooming into leaves and nodes</h3>
+        <p>You can zoom right into leaves of the tree to give more information about that species.</p>
+        
+        <img src= "{{=URL('static','images/Screenshots/EN_PD.png')}}" alt="">
+            
+            <p>You can also zoom into the places where branches join together. We call these places 'nodes' and they represent the most recent common ancestor between two or more sets of species. </p>
+            
+            <img src= "{{=URL('static','images/Screenshots/animals_node_PD.png')}}" alt="">
+                
+                <p>Where possible, nodes show a representative set of descendent species' images. You can click on the names of any of these to be taken straight to the leaves of the tree that represent them.</p>
+                
+                </div>
+    
+   
+</div>
+
+
+<div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
+    
+    
+    
+    <div class = "uk-padding">
+        <!--
+         8.) Finding out more with wikipedia etc.
+         -->
+        <h3>Finding out more</h3>
+        
+        <p>
+        As you explore the tree you can click on the names of leaves and nodes to quickly reveal information from other resources such as Wikipedia and the Encyclopedia of Life. Clicking opens up a selection of tabs that you can easily swicth between. So you need look no further whenever you want to find out more about the diversity of life on earth.
+        </p>
+        
+        <img src= "{{=URL('static','images/Screenshots/Wiki_example.png')}}" alt="">
+            
+            <p>
+            Note that the tabs of information on offer aren't always the same as not every resource has infomration on every species.
+            </p>
+            
             </div>
-            <img class="uk-align-center uk-margin-remove-top" src= "{{=URL('static','images/Screenshots/polytomy_PD.png')}}" alt="">
-       
-       <hr>
-         <div class = "uk-text-center uk-padding-small">
-                <a href = "{{=URL('default','life.html',vars=dict(vis='fern'))}}" target = "_blank">Try the fern view</a>
-                 </div>
-         
-                <img class="uk-align-center uk-margin-remove-top" src= "{{=URL('static','images/Screenshots/fern_PD.png')}}" alt="" >
-                <hr>
-                <div class = "uk-text-center uk-padding-small">
-                    <a href = "{{=URL('default','life.html',vars=dict(vis='natural'))}}" target = "_blank">Try the natural view</a>
-                      </div>
-                    <img class="uk-align-center uk-margin-remove-top" src= "{{=URL('static','images/Screenshots/natural_PD.png')}}" alt="">
-                     
-                   
     
+    <div class = "uk-padding">
+        <!--
+         9.) Compass, reset and intelligent zoom out.
+         -->
+        <h3>Avoiding getting lost in the tree</h3>
+        <p>When exploring a large tree it can be easy to get lost. To help avoid this, when exploring with a mouse, the tree won't permit you to navigate to a place where no leaf or common ancestor is on the screen. It also won't let you zoom in to a useless extent (e.g. fill the whole screen with one letter.  We've provided additional tools to help you know where you are in the tree.</p>
+        
+        <img src= "{{=URL('static','images/user_guide/location_buttons.jpg')}}" alt="">
+            
+            <p>The list of groups opened with the compass icon are all clickable and will zoom the tree out automatically to the ancestor node that you clicked on.</p>
+            
+            <img src= "{{=URL('static','images/user_guide/Compass.jpg')}}" alt="">
+                
+                <p></p>
+                </div>
+    
+    <div class = "uk-padding">
+        <h3>More on the compass feature</h3>
+        <p> The compass feature only lists named nodes that are ancestors to your current view of the tree. The grey shapes between named nodes on your list also give information. The group 'Lady beetles' with 12 species is a very tiny part of the much larger group that contains it. The shape connecting the two is therefore almost a triangle showing that 'lady beetles' are a very tiny part of the 'Lady beetles and ladybird beetles'.</p>
+        
+        <img src= "{{=URL('static','images/user_guide/compass_eg1.png')}}" alt="">
+            
+            <p>Beetles represent a substantial proportion of the 'insects with complete metamorphosis' and hence the grey shape is a trapese that illustrates the group above is a substantial part of the group underneath.</p>
+
+            <img src= "{{=URL('static','images/user_guide/compass_eg2.png')}}" alt="">
+                
+                
+                </div>
+</div>
+
+<div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
+
+    <div class = "uk-padding">
+        <!--
+         10.) Polytomy colouring including lack of details on randomly resolved nodes
+         -->
+        <h3>What we don't know yet</h3>
+        
+        <p>In the tree of life we're displaying there are many places where one branch splits simulataneouly into more than two descendents - this is called a polytomy.  When polytomies occur, it is almost always because there isn't enough knowledge about the order in which the different species split apart.  The 'polytomy' view of the tree shows these polytomies directly wheras our other views randomly guess the order in which descendants of a polytomy are split. So that you know which parts are not resolved yet as you explore the tree, we colour the ranomly resolved branches in a slightly lighter shade.</p>
+        
+  
+    <img src= "{{=URL('static','images/Screenshots/Poly_col_plants.jpg')}}" alt="">
+  
+    <p>Nodes that exist only because of randomly resolved polytomies do not show any extra details. They will not have names and only represent most recent common ancestors if our random guess is correct. So it doesn't make sense to pretend there is anything to say about them.</p>
+  
+    <img src= "{{=URL('static','images/Screenshots/Ladybird_random_node.jpg')}}" alt="">
+  
+  </div>
+        <div class = "uk-padding">
+            
+            <!--
+             10.) View types
+             -->
+            <h3>Tree visualisation shape</h3>
+            <p>There are many different ways to look at the same tree of life apart from our default spiral view. Try some of the others from the settings menu, but remember that they all show the same underlying information.</p>
+            
+            <img class="uk-align-center uk-margin-remove-top" src= "{{=URL('static','images/Screenshots/Natural_view.jpg')}}" alt="">
+                
+                <img class="uk-align-center uk-margin-remove-top" src= "{{=URL('static','images/Screenshots/Fern_IUCN.jpg')}}" alt="">
+                
+                <p>The 'polytomy' view is a bit differnet because it displays directly when one branch joins more than two others.  As a result it doesn't contain any randomly resolved nodes.</p>
+                
+                <img class="uk-align-center uk-margin-remove-top" src= "{{=URL('static','images/Screenshots/Polytomy.jpg')}}" alt="" >
+                    
+                    </div>
+        
+        <div class = "uk-padding">
+            
+            <!--
+             11.) Images sources
+             -->
+            <h3>Image sources</h3>
+            
+            <p>We show the best quality images we can on the tree. Some images might require the author to be acknowledged, which is important to be aware of if you're reusing screenshots. Others might not be fully trusted as accurate images of the species.</p>
+            
+            <img src= "{{=URL('static','images/user_guide/Settings_images.png')}}" alt="">
+            
+            <p>In the settings you can select to show only 'verified' images that are more likley to be correct, or to show only 'public domain' images, which can be reused without acknowledging the source.</p>
+
+                 <img src= "{{=URL('static','images/user_guide/copyright.jpg')}}" alt="">
+            <p>The copyright symbol next to each image contains further information about the source.</p>
+            
+            <img src= "{{=URL('static','images/user_guide/copyright_opened.png')}}" alt="">
       </div>
-    
+</div>
+
+<div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
+   <div class = "uk-padding">
+       <!--
+       12.) find common ancestors and mark them (adding and CA button)
+        -->
+       <h3>Common ancestors</h3>
+       <p>The advanced search mode enables you to mark several locations on the tree and find their most recent common ancestor.</p>
+   
+        <img src= "{{=URL('static','images/user_guide/Advanced_search_button.jpg')}}" alt="">
+            
+       <p>Each of the two search boxes behaves like the main search box described earlier.  When you search for something it will be highlighted in a colour matched by a pin that appears next to the search box in the same colour.
+       
+       <img src= "{{=URL('static','images/user_guide/Advanced_search_CA.jpg')}}" alt="">
+           
+       <p>After selecting two search locations you can press the common ancestor button to take the tree to the location where the two locations share their most recent common ancestor.</p>
+
+   
+   </div>
+   <div class = "uk-padding">
+
+       <h3>Marking more locations</h3>
+       <img src= "{{=URL('static','images/user_guide/Advanced_search_5x_expanded.jpg')}}" alt="">
+
+       <p>If you wish to mark more than two places on the tree and find their common ancestor use the + button to add further search boxes.</p>
+       <img src= "{{=URL('static','images/user_guide/Advanced_search_5x.jpg')}}" alt="">
+
+       <p>The common ancestor button now shows the most recent common ancestor between all of the marked places.  Clikcing on the pin next to each marked place will take you to that part of the tree.</p>
+       
+   </div>
+   
+   <div class = "uk-padding">
+       <!--
+        13.) Information button
+        -->
+       <h3>Information button</h3>
+       
+       <p>The information button on the bottom left can be used to access further information about the tree.</p>
+       <img src= "{{=URL('static','images/user_guide/info_button.png')}}" alt="">
+       <p>The present guide is accessible from the 'how to use' option.  Another example is a detailed page listing all the data sources contributing to the tree.</p>
+       <img src= "{{=URL('static','images/user_guide/data_sources.png')}}" alt="">
+   </div>
 </div>
