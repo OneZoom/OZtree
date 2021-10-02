@@ -46,7 +46,7 @@
 <p>For added accuracy, and to provide a few divergence dates, the OneZoom site relies on the additional studies listed below for specific areas of the tree of life. Where possible, the OpenTree ({{=A("version 13.4",_href="http://files.opentreeoflife.org/synthesis/opentree13.4/output/", _target="_blank")}})  has been used to supplement these studies to include most or all currently recognized species. Note that the OneZoom display currently requires all branches to split in two (bifurcations), rather than simultaneously splitting into 3 or more branches (technically known as polytomies). Where polytomies exist in the trees used, the OneZoom software splits them randomly into bifurcations.</p>
 
 <h3>Other sources</h3>
-<p>This page is only for information on data sources. If you're wondering how to cite OneZoom itself or wondering about references that weren't data sources take a look at our {{=A('About page', _href=URL('default','about.html'))}}</p>
+<p>This page is only for information on data sources. If you're wondering how to cite OneZoom itself, or wondering about references that weren't data sources, please take a look at our {{=A('About page', _href=URL('default','about.html'))}}.</p>
 
 </div>
 </div>
