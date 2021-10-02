@@ -3,6 +3,7 @@
 <div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
 <div class = "uk-padding uk-padding-remove-top">
 
+
 <h3>Images</h3>
 
 <p><img src="{{=thumbnail_url(src_flags['eol_old'],26793885)}}" alt="" /></p>
@@ -11,6 +12,8 @@
 <h3>IUCN Red List status</h3>
 
 <p>In the current version, red leaves of the tree correspond to species that are threatened with extinction according to the {{=A("IUCN Red List",_href="http://www.iucnredlist.org", _target="_blank")}} of threatened species. Formally, these species are categorised as {{=A("vulnerable, endangered, or critically endangered",_href="http://www.iucnredlist.org/static/categories_criteria_3_1#categories", _target="_blank")}}. Green leaves correspond to species classified as {{=A("least concern, near threatened, data deficient or not evaluated",_href="http://www.iucnredlist.org/static/categories_criteria_3_1#categories", _target="_blank")}}. Grey leaves indicate species that are already {{=A("extinct, or extinct in the wild",_href="http://www.iucnredlist.org/static/categories_criteria_3_1#categories", _target="_blank")}}. If you zoom in on any leaf that has been evaluated on the {{=A("IUCN Red List",_href="http://www.iucnredlist.org", _target="_blank")}}, text should appear to indicate which category the species falls into. The categories correspond to extinction risk, which comes under our more general heading of information relevant for conservation.</p>
+
+
 
 </div>
 <div class = "uk-padding uk-padding-remove-top">
@@ -41,6 +44,9 @@
 <p>Species have been grafted onto this backbone using a large number of studies of various groups or organisms. In particular, many studies have been collected by the {{=A("Open Tree of Life",_href="http://www.opentreeoflife.org", _target="_blank")}} project, an {{=A("ambitious attempt",_href="http://www.pnas.org/content/112/41/12764", _target="_blank")}} to unify scientific studies into a comprehensive evolutionary tree of all known species of life on earth. This provides comprehensive coverage of approximately 2.2 million species, but the current draft version contains some problematic arrangements of relationships between higher-level groups (we encourage evolutionary scientists to {{=A("add data to the OpenTree",_href="https://tree.opentreeoflife.org/curator", _target="_blank")}}, from where it will eventually percolate down into the OneZoom software).</p>
 
 <p>For added accuracy, and to provide a few divergence dates, the OneZoom site relies on the additional studies listed below for specific areas of the tree of life. Where possible, the OpenTree ({{=A("version 13.4",_href="http://files.opentreeoflife.org/synthesis/opentree13.4/output/", _target="_blank")}})  has been used to supplement these studies to include most or all currently recognized species. Note that the OneZoom display currently requires all branches to split in two (bifurcations), rather than simultaneously splitting into 3 or more branches (technically known as polytomies). Where polytomies exist in the trees used, the OneZoom software splits them randomly into bifurcations.</p>
+
+<h3>Other sources</h3>
+<p>This page is only for information on data sources. If you're wondering how to cite OneZoom itself or wondering about references that weren't data sources take a look at our {{=A('About page', _href=URL('default','about.html'))}}</p>
 
 </div>
 </div>
