@@ -164,10 +164,24 @@ export default function (Controller) {
    * @method get_color_theme
    * @memberof Controller
    */
-  Controller.prototype.get_color_theme = function () {
-    return (tree_settings.cols);
-  }
+    Controller.prototype.get_color_theme = function () {
+       return (tree_settings.cols);
+    }
 
+    /**
+     * Get the name of the current colour theme (one of the property name in tree_settings.options.cols)
+     * or undefined if the current theme does not match any of those (i.e. is a bespoke theme)
+     * @method get_color_theme
+     * @memberof Controller
+     */
+    Controller.prototype.get_color_theme_CBF = function () {
+        if (tree_settings.colour_blind_friendly) {
+            return (true);
+        } else {
+            return (false);
+        }
+    }
+    
   Controller.prototype.set_image_source = function (image_source, init = false) {
     if (data_repo.image_source !== image_source) {
       data_repo.image_source = image_source;

@@ -1,56 +1,107 @@
 {{include 'link_modifier.html'}}
-<div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
 
-<div class = "uk-padding">
-<!--
-3.) IUCN colour scheme
--->
+<div class = "uk-padding" id = "General_col" style = "display:block">
 <h3>What the colours mean</h3>
 <p> Under default settings, the leaf colours correspond to the risk of extinction for the species that leaf represents. Leaves corresponding to species that are "vulnerable", "endangered", or "critically endangered" according to the International Union for the Conservation of Nature (IUCN) {{=A('Red List', _href="http://www.iucnredlist.org")}} are shown in red. These are all the species that are known to be under threat of extinction. The leaves shown in green represent species that are known to be okay for now (not under threat of extinction). These are "least concern" or "near threatened" species.</p>
 
-<center><img src= "{{=URL('static','images/user_guide/IUCN_col_scheme_square.jpg')}}" alt=""></img></center>
-<p>Most of the leaves are grey meaning that their risk of extinction is not known. This could be because the species is "not evaluated", or classified as "data deficient" by the IUCN.  It is also possible that a species with a grey leaf has been assessed by the IUCN but under a different species name that we weren't able to identify automatically.
-</p>
+<center><img srcset="{{=URL('static','images/user_guide/IUCN_col_scheme.jpg')}}  1600w, {{=URL('static','images/user_guide/IUCN_col_scheme_square.jpg')}} 800w" src= "{{=URL('static','images/user_guide/IUCN_col_scheme.jpg')}}" alt="" style = "width:100%"></img></center>
 
-</div>
-
-<div class = "uk-padding">
-<!--
-5.) Changing the colour scheme
--->
-<h3>Changing the colour scheme</h3>
-
-<img src= "{{=URL('static','images/user_guide/settings_colour.jpg')}}" alt="">
-
-<p>You can change the colour scheme from the settings menu. Another nice colour scheme on offer shows how popular each species is according to our {{=A('index of species popularity', _href=URL('popularity','index'))}}.
-
-<img src= "{{=URL('static','images/user_guide/pop_col_scheme.jpg')}}" alt="">
-
-<p> The settings menu also has a tick box for colour blind friendly versions of all colour schemes.</p>
-<center><img src= "{{=URL('static','images/user_guide/IUCN_col_scheme_CBF.jpg')}}" alt=""></img></center>
-
-<p> We have some plain colour schemes too in case you just want a simpler tree e.g. for screenshots using our {{=A('screenshot tool', _href=URL('default','screenshot_launcher'))}}.</p>
-<img src= "{{=URL('static','images/Screenshots/Life_spiral_brown.jpg')}}" alt="">
-</div>
-
-<div class = "uk-padding">
-<!--
-10.) Polytomy colouring including lack of details on randomly resolved nodes
--->
-<h3>What we don't know yet</h3>
-
-<p>In the tree of life we're displaying there are many places where one branch splits simultaneously into more than two descendants - this is called a polytomy.  When polytomies occur, it is almost always because there isn't enough knowledge about the order in which the different species split apart.  The 'polytomy' view of the tree shows these polytomies directly whereas our other views randomly guess the order in which descendants of a polytomy are split. So that you know which parts are not resolved yet as you explore the tree, we colour the randomly resolved branches in a slightly lighter shade.</p>
-
-
-<img src= "{{=URL('static','images/Screenshots/Poly_col_plants_expanded.jpg')}}" alt="">
-
-<p>Nodes that exist only because of randomly resolved polytomies do not show any extra details. They will not have names and only represent most recent common ancestors if our random guess is correct. So it doesn't make sense to pretend there is anything to say about them.</p>
-
-<img src= "{{=URL('static','images/Screenshots/Ladybird_random_node.jpg')}}" alt="">
+<p>Most of the leaves are grey meaning that their risk of extinction is not known. This could be because the species is "not evaluated", or classified as "data deficient" by the IUCN.  It is also possible that a species with a grey leaf has been assessed by the IUCN but under a different species name that we weren't able to identify automatically.</p>
 
 </div>
 
 
+<div class = "uk-padding" id = "IUCN_col" style = "display:none">
+<h3>Extinction risk</h3>
+
+<center><img srcset="{{=URL('static','images/user_guide/IUCN_col_scheme.jpg')}}  1600w, {{=URL('static','images/user_guide/IUCN_col_scheme_square.jpg')}} 800w" src= "{{=URL('static','images/user_guide/IUCN_col_scheme.jpg')}}" alt="" style = "width:100%"></img></center>
+
+<p> The leaf colours correspond to the risk of extinction for the species that leaf represents. Leaves corresponding to species that are "vulnerable", "endangered", or "critically endangered" according to the International Union for the Conservation of Nature (IUCN) {{=A('Red List', _href="http://www.iucnredlist.org")}} are shown in red. These are all the species that are known to be under threat of extinction. The leaves shown in green represent species that are known to be okay for now (not under threat of extinction). These are "least concern" or "near threatened" species. Most of the leaves are grey meaning that their risk of extinction is not known. This could be because the species is "not evaluated", or classified as "data deficient" by the IUCN.  It is also possible that a species with a grey leaf has been assessed by the IUCN but under a different species name that we weren't able to identify automatically.</p>
+
+</div>
+
+<div class = "uk-padding" id = "IUCN_CBF_col" style = "display:none">
+<h3>Extinction risk - colour blind friendly</h3>
+
+<center><img srcset="{{=URL('static','images/user_guide/IUCN_col_scheme_CBF.jpg')}}  1600w, {{=URL('static','images/user_guide/IUCN_col_scheme_square_CBF.jpg')}} 800w" src= "{{=URL('static','images/user_guide/IUCN_col_scheme_CBF.jpg')}}" alt="" style = "width:100%"></img></center>
+
+<p> The leaf colours correspond to the risk of extinction for the species that leaf represents. Leaves corresponding to species that are "vulnerable", "endangered", or "critically endangered" according to the International Union for the Conservation of Nature (IUCN) {{=A('Red List', _href="http://www.iucnredlist.org")}} are shown in red. These are all the species that are known to be under threat of extinction. The leaves shown in blue represent species that are known to be okay for now (not under threat of extinction). These are "least concern" or "near threatened" species. Most of the leaves are grey meaning that their risk of extinction is not known. This could be because the species is "not evaluated", or classified as "data deficient" by the IUCN.  It is also possible that a species with a grey leaf has been assessed by the IUCN but under a different species name that we weren't able to identify automatically.</p>
+
 </div>
 
 
+<div class = "uk-padding" id = "popularity_col" style = "display:none">
+<h3>Popularity</h3>
+
+<center><img src= "{{=URL('static','images/user_guide/Pop_col_scheme.jpg')}}" alt="" style = "width:100%"></img></center>
+
+<p> The leaf colours correspond to how popular the species is according to our {{=A('index of species popularity', _href=URL('popularity','index.html'))}}, which is calculated for every species in the tree. Popularity for a given species takes into account page length and page views for the English language Wikipedia entry of that species (if such a page exists) and also all the named groups (higher taxa to use the scientific term) containing that species.</p>
+
+</div>
+
+
+<div class = "uk-padding" id = "popularity_CBF_col" style = "display:none">
+<h3>Popularity - colour blind friendly</h3>
+
+<center><img src= "{{=URL('static','images/user_guide/Pop_col_scheme_CBF.jpg')}}" alt="" style = "width:100%"></img></center>
+
+<p> The leaf colours correspond to how popular the species is according to our {{=A('index of species popularity', _href=URL('popularity','index.html'))}}, which is calculated for every species in the tree. Popularity for a given species takes into account page length and page views for the English language Wikipedia entry of that species (if such a page exists) and also all the named groups (higher taxa to use the scientific term) containing that species.</p>
+
+
+</div>
+
+<div class = "uk-padding" id = "natural_col" style = "display:none">
+<h3>Plain green, brown</h3>
+
+<p> A plain colour scheme with green leaves and brown branches made to look like a tree. All leaves are shown in the same way under this colour scheme and so are all branches. It's useful if you're looking for simple colour scheme e.g. for {{=A('screenshots using our screenshot tool', _href=URL('education','screenshot_launcher.html'))}}, that doesn't require any further explanation.  </p>
+
+<center><img src= "{{=URL('static','images/Screenshots/Life_spiral_brown.jpg')}}" alt="" ></img></center>
+
+
+
+
+</div>
+
+<div class = "uk-padding" id = "AT_col" style = "display:none">
+<h3>Ancestor's tale</h3>
+
+<p>With a colour scheme to match the front cover of the Ancestor's Tale (2016) book by Richard Dawkins and Yan Wong.  The book uses graphics from OneZoom throughout to illustrate sections of the tree of life. All leaves are shown in the same colour under this scheme.  Pictured is how this colour scheme looks when you select 'Ancestor's Tale' as the page content in settings as well.</p>
+
+
+<center><img src= "{{=URL('static','images/Screenshots/AT_view.png')}}" alt="" ></img></center>
+
+
+
+</div>
+
+
+<script>
+// checking that the theme can be seen here
+if ((typeof onezoom.controller.get_color_theme != "undefined")&&(typeof onezoom.controller.get_color_theme_CBF != "undefined"))
+{
+    let color_theme = onezoom.controller.get_color_theme();
+    let color_theme_CBF = onezoom.controller.get_color_theme_CBF();
+
+    if (color_theme == "IUCN") {
+        document.getElementById("General_col").style.display = "none"
+        if (color_theme_CBF) {
+            document.getElementById("IUCN_CBF_col").style.display = "block"
+        } else {
+            document.getElementById("IUCN_col").style.display = "block"
+        }
+    } else if (color_theme == "popularity") {
+        document.getElementById("General_col").style.display = "none"
+        if (color_theme_CBF) {
+            document.getElementById("popularity_CBF_col").style.display = "block"
+        } else {
+            document.getElementById("popularity_col").style.display = "block"
+        }
+    } else if (color_theme == "AT") {
+        document.getElementById("General_col").style.display = "none"
+        document.getElementById("AT_col").style.display = "block"
+    } else if (color_theme == "natural") {
+        document.getElementById("General_col").style.display = "none"
+        document.getElementById("natural_col").style.display = "block"
+    }
+}
+</script>
