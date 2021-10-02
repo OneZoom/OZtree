@@ -1553,6 +1553,9 @@ def data_sources():
 def how():
     return dict()
 
+def colkey():
+    return dict()
+
 def team():
     return dict()
 

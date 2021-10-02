@@ -751,6 +751,16 @@ function setupUI() {
             }
         });
 
+        $('#colkey-modal')
+        .on('beforeshow', function() {
+            /* to avoid loading all the text on page load, we check here and load it via ajax if necessary */
+            if ($("#colkey-modal .uk-modal-body > .unloaded").length) {
+            var url = '{{=XML(URL("default","colkey.load", vars=(setup_params.get("UI_layer") or {}).get("vars"), scheme=True, host=True))}}';
+            {{if is_testing:}}console.log("Loading url into page: " + url);{{pass}}
+            $("#colkey-modal .uk-modal-body").load(url);
+            }
+            });
+        
     $('#datasources-modal')
         .on('beforeshow', function() {
             /* to avoid loading all the about text on page load, we check here and load it via ajax if necessary */
