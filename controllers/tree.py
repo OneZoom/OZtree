@@ -42,6 +42,9 @@ def wikipedia_OZpage():
 def IUCN_OZpage():
     return dict()
 
+def GBIF_OZpage():
+    return dict()
+
 def pic_info():
     """
     This is the URL that we use to display copyright information about an image, where we pass in the image ID and image source ID.
@@ -285,7 +288,7 @@ def iucn_url(IUCNid):
 
 def gbif_url(GBIFid):
     try:
-        return(["https://www.gbif.org/species/{}".format(int(GBIFid))])
+        return([URL('tree','GBIF_OZpage.html',vars=dict(GBIFid=int(GBIFid))),"https://www.gbif.org/species/{}".format(int(GBIFid))])
     except:
         raise HTTP(400,"No valid GBIF id provided")
 
