@@ -72,7 +72,7 @@
       <div id="leaf">
         <canvas id="leafCanvas" onclick="drawPreview()"></canvas>
         <p id="licenceText"><a target = "_blank">{{=T('More information about this image')}}</a></p>
-        <p class="extra_info">{{=T('*The final leaf may be facing in any direction on the tree, it may also change based on scientific advances.')}}</p>
+        <p class="extra_info">{{=T('*The final leaf may be facing in any direction on the tree, it may also change based on scientific advances. We are using the plain green colour scheme for this illustration. The colour scheme can be changed by users on the tree explorer itself.')}}</p>
         <input type="hidden" id="user_preferred_image_src_input" name='user_preferred_image_src' value='{{=default_image.get("src","") if default_image else ""}}' />
         <input type="hidden" id="user_preferred_image_src_id_input" name='user_preferred_image_src_id' value='{{=default_image.get("src_id","") if default_image else ""}}' />
       </div>
