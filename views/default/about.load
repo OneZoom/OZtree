@@ -52,7 +52,7 @@ OneZoom is a charitable incorporated organisation (non-profit) registered under 
 <h3>Funding bodies</h3>
 
 <p>
-OneZoom needs funding to be able to continue its work.  We are looking to attract the interest of private foundations, research councils, museums and other organisations who we hope will be excited to be involved in OneZoom. If you work for an organisation that is potentially interested in getting involved with further development of OneZoom, please <a href="mailto:mail@onezoom.org">contact us</a>, we would be delighted to hear from you.
+OneZoom needs funding to be able to continue its work.  We are looking to attract the interest of private foundations, research councils, museums and other organisations who we hope will be excited to be involved in OneZoom. If you work for an organisation that is potentially interested in getting involved with further development of OneZoom, please {{=A('contact us', _href="mailto:mail@onezoom.org")}}, we would be delighted to hear from you.
 </p>
 
 <h3>How to cite OneZoom</h3>
