@@ -72,7 +72,7 @@
       <div id="leaf">
         <canvas id="leafCanvas" onclick="drawPreview()"></canvas>
         <p id="licenceText"><a target = "_blank">{{=T('More information about this image')}}</a></p>
-        <p class="extra_info">{{=T('*The final leaf may be facing in any direction on the tree, it may also change based on scientific advances. We are using the plain green colour scheme for this illustration. The colour scheme can be changed by users on the tree explorer itself.')}}</p>
+        <p class="extra_info">{{=T('*The final leaf may be facing in any direction on the tree, it may also change based on scientific advances. This preview uses the plain green colour scheme, but this can be changed by visitors using the tree of life explorer, so might not always appear as it does above.')}}</p>
         <input type="hidden" id="user_preferred_image_src_input" name='user_preferred_image_src' value='{{=default_image.get("src","") if default_image else ""}}' />
         <input type="hidden" id="user_preferred_image_src_id_input" name='user_preferred_image_src_id' value='{{=default_image.get("src_id","") if default_image else ""}}' />
       </div>
@@ -108,8 +108,8 @@
       
         <p class="singlerow extra_info">{{=T('We can use this in correspondance, on our public list of donors, and the information is required if you agree to gift aid your donation (see below)')}}</p>
         
-      <div><label for="user_donor_hide_input">{{=XML(T('We would love to be able to thank you by name and add you to the %s. If you wish to be hidden from this page, tick this box.') % (A(T('list of donors'), _href='/donor_list', _target="blank"),))}}</label><p><input type="checkbox" autocomplete id="user_donor_hide_input" name = "user_donor_hide"/></p></div>
-      <p class="singlerow extra_info">{{=T('Your sponsorship includes a public acknowledgement of your donation. We now acknowledge donors on our tree of life explorer, on our public list of donors, and if you wish you can create a personal page of your sponsorships that you can show to others. Tick this box if you would prefer this sponsorship to be acknowledged on the tree only.')}}</p>
+      <div><label for="user_donor_hide_input">{{=XML(T('Make this an anonymous donation'))}}</label><p><input type="checkbox" autocomplete id="user_donor_hide_input" name = "user_donor_hide"/></p></div>
+<p class="singlerow extra_info">{{=XML(T('Your sponsorship text will appear on the tree as shown above. Additionally, we would love to thank you by name on our %s as well as on your own personal page of sponsored leaves. Tick this box if you would prefer this sponsorship to be acknowledged on the tree only.') % (A(T('public list of donors'), _href='/donor_list', _target="blank"),))}}</p>
       
       <div><label for="allow_contact_input">{{=T('Allow further contact?')}}</label><p><input type="checkbox" autocomplete id="allow_contact_input" name = "allow_contact" /></p></div>
       <p class="singlerow extra_info">{{=XML(T('On rare occasions we may wish to inform you about new / major changes to OneZoom (for more frequent updates, you might also like to %s)') % (A(T('follow us on Twitter'), _href='https://twitter.com/OneZoomTree', _target="_blank"),))}}</p>
