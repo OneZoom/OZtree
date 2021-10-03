@@ -36,8 +36,8 @@ response.files.append(URL('static','css/content_pages.css'))
   <h2 id = "sponsor_title">{{=XML(T('Sponsor %s on the OneZoom Tree of Life') % (the_long_name or T("a species"),))}}</h2>
   <p>{{=T('You can sponsor this leaf for yourself or as a unique gift for someone you know.')}}</p>
 {{if partner_data:}}
-  <p>{{=XML(T('We will acknowledge your donation to the %s and %s by displaying your chosen sponsor’s name on %s') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), A(T(partner_data.get('name')), _href=partner_data.get('url'), _target="_blank"), the_long_name))}}.
-     {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s. %s.') % (int(round(100-partner_data.get('percentage'))), int(round(partner_data.get('percentage'))), T(partner_data.get('name')), T(partner_data.get('details')))  )  }}</p>
+  <p>{{=XML(T('We will acknowledge your donation to the %s and %s by displaying your chosen sponsor’s name on %s') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), A(T(partner_data.get('name','')), _href=partner_data.get('url',''), _target="_blank"), the_long_name))}}.
+     {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s. %s.') % (int(round(100-partner_data.get('percentage',0))), int(round(partner_data.get('percentage',0))), T(partner_data.get('name','')), T(partner_data.get('details','')))  )  }}</p>
 
 {{else:}}
   <p>{{=XML(T('We will acknowledge your donation to the %s by displaying your chosen sponsor’s name on %s. Your donations will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), the_long_name))}}</p>
@@ -96,33 +96,26 @@ var selected_img = image_objects.length - 1;
 var leafImageFile = null; // image file (if null and image_objects exists then image is not loaded yet)
 var leafCol = leaf_draw.natural_theme.leaf;
 leafCol.bg.fill = 'rgba(255,255,255, 0)'; // Don't show the white outline
-    /* can override leafCol after this, e.g.
-     * leafCol.inside.fill  = 'rgb(135,215,90)'; // or could be a function of a node obj
-     * leafCol.outline.fill = 'rgb(70,135,30)';
-     * leafCol.bg.fill      = 'rgba(255,255,255, 0)';
-     *
-     * // relating to the leaf itself (highlighted)
-     * leafCol.inside_hover.fill   = 'rgb(135,215,90)';
-     * leafCol.outline_hover.fill' = 'rgb(70,135,30)';
-     *  
-     * // relating to the sponsorship text part
-     * leafCol.sponsor.fill       = 'rgba(255,255,255,0.4)'; // used if not highlighted
-     * leafCol.sponsor_hover.fill = 'rgb(255,255,255)';
-     *  
-     *  // relating to main text part
-     * leafCol.text.fill : 'rgb(0,0,0)';
-     * leafCol.text_hover.fill ='rgb(0,0,0)';
-     *  
-     *  // copyright symbol colors
-     * leafCol.copyright_hover.fill   = 'rgb(0,0,0)';
-     * leafCol.copyright_hover.stroke =  '';
-     * leafCol.copyright.fill = ;
-     * leafCol.copyright.stroke = ;
-     * leafCol.copyright.text.fill       = 'rgb(135,215,90)'; //copyrightText
-     * leafCol.copyright.text_hover.fill = 'rgb(255,255,255)'; //copyrightTextHighlight
-     */
+    // this is a bit of a hack but it no longer works to grab the style from the main natural_theme because some of the colours are functions that need to be run on the midnode object of the tree so I'm overiding it here with fixed colours.
+    //can override leafCol after this, e.g.
+     leafCol.inside.fill  = 'rgb(135,215,90)'; // or could be a function of a node obj
+     leafCol.outline.fill = 'rgb(70,135,30)';
+     leafCol.bg.fill      = 'rgba(255,255,255, 0)';
+     // relating to the leaf itself (highlighted)
+     leafCol.inside_hover.fill   = 'rgb(135,215,90)';
+     leafCol.outline_hover.fill = 'rgb(70,135,30)';
+     // relating to the sponsorship text part
+     leafCol.sponsor.fill       = 'rgba(255,255,255,0.4)'; // used if not highlighted
+     leafCol.sponsor_hover.fill = 'rgb(255,255,255)';
+     // relating to main text part
+     leafCol.text.fill = 'rgb(0,0,0)';
+     leafCol.text_hover.fill ='rgb(0,0,0)';
+     // copyright symbol colors
+     leafCol.copyright_hover.fill   = 'rgb(0,0,0)';
+     leafCol.copyright.text.fill       = 'rgb(135,215,90)'; //copyrightText
+     leafCol.copyright.text_hover.fill = 'rgb(255,255,255)'; //copyrightTextHighlight
+    
 var sponsor_text_colours = {'base':leafCol.sponsor.fill, 'highlight': leafCol.sponsor_hover.fill}
-
 
 function updateDonorPlaceholder() {
     if ($("#sponsorBy").is(':checked')) {

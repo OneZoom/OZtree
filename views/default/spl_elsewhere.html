@@ -36,6 +36,25 @@
     var sponsorText = OZstrings['Sponsored for a person of your choice'].toUpperCase();
     var extraText = "";
     var leafCol = leaf_draw.natural_theme.leaf;
+    // this is a bit of a hack but it no longer works to grab the style from the main natural_theme because some of the colours are functions that need to be run on the midnode object of the tree so I'm overiding it here with fixed colours.
+    //can override leafCol after this, e.g.
+    leafCol.inside.fill  = 'rgb(135,215,90)'; // or could be a function of a node obj
+    leafCol.outline.fill = 'rgb(70,135,30)';
+    leafCol.bg.fill      = 'rgba(255,255,255, 0)';
+    // relating to the leaf itself (highlighted)
+    leafCol.inside_hover.fill   = 'rgb(135,215,90)';
+    leafCol.outline_hover.fill = 'rgb(70,135,30)';
+    // relating to the sponsorship text part
+    leafCol.sponsor.fill       = 'rgba(255,255,255,0.4)'; // used if not highlighted
+    leafCol.sponsor_hover.fill = 'rgb(255,255,255)';
+    // relating to main text part
+    leafCol.text.fill = 'rgb(0,0,0)';
+    leafCol.text_hover.fill ='rgb(0,0,0)';
+    // copyright symbol colors
+    leafCol.copyright_hover.fill   = 'rgb(0,0,0)';
+    leafCol.copyright.text.fill       = 'rgb(135,215,90)'; //copyrightText
+    leafCol.copyright.text_hover.fill = 'rgb(255,255,255)'; //copyrightTextHighlight
+    
     leafCol.sponsor.fill = leafCol.sponsor_hover.fill; // Highlight the text more
     leafCol.bg.fill = 'rgba(255,255,255, 0)'; // Don't show the white outline
     
