@@ -79,7 +79,7 @@
 
 <p>Please bear in mind, you won't find viruses or pre-historic species like dinosaurs. We hope to provide more information on these groups in future updates. Sill, there's already so much out there you'll be amazed what you can find.</p>
 
-<img src= "{{=URL('static','images/user_guide/settings_search.jpg')}}" alt="">
+<img src= "{{=URL('static','images/user_guide/Settings_search.jpg')}}" alt="">
 
 <p>In the settings menu, you can change the way you're taken to search results.  'Jump to results' will take the tree to place you want instantaneously. 'Fly to results' will automatically zoom you to your destination, which will take longer but allow you to see the context, including the relationship between what you're currently looking at and your search result.</p>
 
