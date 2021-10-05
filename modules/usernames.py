@@ -77,7 +77,7 @@ def find_username(target_row, return_otts=False):
         if username:
             return username, []
     if (
-        (target_row.verified_name is NULL and target_row.verified_kind is NULL)
+        (target_row.verified_name is None and target_row.verified_kind is None)
         and (target_row.user_sponsor_name and target_row.user_sponsor_kind and target_row.user_sponsor_kind.lower() == "by")
     ):
         username = make_username(target_row.user_sponsor_name)
