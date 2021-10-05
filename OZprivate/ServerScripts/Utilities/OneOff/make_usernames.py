@@ -21,7 +21,7 @@ for row in rows:
     data = (row.id, row.verified_kind, row.verified_name, row.e_mail, row.PP_e_mail)
     username = row.username
     if not username:
-        username = find_username(row)
+        username = find_username(row)[0]
         if username:
             db.reservations[row.id] = dict(username=username)
     if not username:
