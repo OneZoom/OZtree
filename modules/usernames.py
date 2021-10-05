@@ -72,11 +72,14 @@ def find_username(target_row, return_otts=False):
         username = make_username(target_row.verified_name)
         if username:
             return username, []
-    if target_row.user_donor_name:
+    if target_row.verified_donor_name is None and target_row.user_donor_name:
         username = make_username(target_row.user_donor_name)
         if username:
             return username, []
-    if target_row.user_sponsor_name and target_row.user_sponsor_kind and target_row.user_sponsor_kind.lower() == "by":
+    if (
+        (target_row.verified_name is NULL and target_row.verified_kind is NULL)
+        and (target_row.user_sponsor_name and target_row.user_sponsor_kind and target_row.user_sponsor_kind.lower() == "by")
+    ):
         username = make_username(target_row.user_sponsor_name)
         if username:
             return username, []
