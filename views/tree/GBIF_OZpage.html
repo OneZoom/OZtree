@@ -8,34 +8,3 @@
 <div id="mapid" style = "height:100%"></div>
 
 </div>
-
-<script>
-    let queryString = window.location.search;
-    let urlParams = new URLSearchParams(queryString);
-    let taxonKey = urlParams.get('taxonKey') || 2436441;
-    
-    // we create our map
-    var mymap = L.map('mapid').setView([0,0], 2);
-    mymap.options.minZoom = 1;
-    mymap.options.maxZoom = 18;
-    
-    //Add a base layer, in this case we use mapbox so we need a mapbox token
-    let YOUR_MAPBOX_TOKEN = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
-    
-    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-                maxZoom: 18,
-                id: 'mapbox/streets-v11',
-                tileSize: 512,
-                zoomOffset: -1,
-                accessToken: YOUR_MAPBOX_TOKEN
-                }).addTo(mymap);
-                
-                // add the species layer from GBIF
-                // documentation can be found here https://www.gbif.org/developer/maps
-                L.tileLayer('https://api.gbif.org/v2/map/occurrence/density/{z}/{x}/{y}@1x.png?srs=EPSG:3857&taxonKey=' + taxonKey + '&bin=hex&hexPerTile=30&style=classic-noborder.poly&squareSize=512', {
-                            attribution: 'Species data via <a href="https://www.gbif.org/species/2436441">GBIF.org</a>',
-                            tileSize: 512,
-                            zoomOffset: -1
-                            }).addTo(mymap);
-    </script>
