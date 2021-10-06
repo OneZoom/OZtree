@@ -55,11 +55,11 @@
 -->
 <h3>Changing the colour scheme</h3>
 
-<img src= "{{=URL('static','images/user_guide/settings_colour.jpg')}}" alt="">
+<img src= "{{=URL('static','images/user_guide/Settings_colour.jpg')}}" alt="">
 
 <p>You can change the colour scheme from the settings menu. Another nice colour scheme on offer shows how popular each species is according to our {{=A('index of species popularity', _href=URL('popularity','index'))}}.
 
-<img src= "{{=URL('static','images/user_guide/pop_col_scheme.jpg')}}" alt="">
+<img src= "{{=URL('static','images/user_guide/Pop_col_scheme.jpg')}}" alt="">
 
 <p> The settings menu also has a tick box for colour blind friendly versions of all colour schemes.</p>
 <center><img src= "{{=URL('static','images/user_guide/IUCN_col_scheme_CBF.jpg')}}" alt=""></img></center>
