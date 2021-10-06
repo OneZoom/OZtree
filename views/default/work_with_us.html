@@ -8,7 +8,7 @@
     
     <p>We welcome collaboration and there are many tried and tested ways that we can work co-operatively with scientists, educators, individuals and organisations around the globe. </p>
     
-    <em>We're a not for profit organisation registered in the UK. Our code is all on a public GitHub repository and we provide a range of public APIs.
+    <em>We're a not for profit organisation registered in the UK. Our code is all on a public GitHub repository, or via Docker image download and we provide a range of public APIs.
        </em>
 </div>
 {{end block}}
@@ -29,7 +29,9 @@
  <a href="{{=URL('static','images/OZblockdiagram.jpg')}}" target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/OZblockdiagram_small.jpg')}}" alt=""></a>
         
         <p>
-        Our code is on <a href=" http://github.com/onezoom/OZtree" target="_blank">a public GitHub repository</a>  and we provide {{=A('public APIs', _href=URL('API','index'))}} for a range of purposes including to provide data from our {{=A('index of species popularity', _href=URL('popularity','index'))}}.  We also welcome contributions from developers who are happy to help make our codebase better by contributing back some improvements.  We've made a {{=A('special page for developers', _href=URL('default','developer'))}}  giving a lot more detail about how to reuse or edit all or part of our codebase. A modular code structure means that different parts of the code can easily be redeveloped or swapped out, including the tree view layout, colour scheme, node and branch styles and rendering engine. </p>
+        Our code is on <a href=" http://github.com/onezoom/OZtree" target="_blank">a public GitHub repository</a>  and we provide {{=A('public APIs', _href=URL('API','index'))}} for a range of purposes including to provide data from our {{=A('index of species popularity', _href=URL('popularity','index'))}}.  We also provide two Docker images of our latest codebase: <a href="https://hub.docker.com/r/onezoom/oztree-complete" target="_blank">oztree-complete</a> contains everything you need to run OneZoom with no live internet connection, <a href="https://hub.docker.com/r/onezoom/oztree" target="_blank">oztree</a> is a download of reduced size that uses the internet to grab images as needed from the OneZoom server. </p>
+        
+        <p>We welcome contributions from developers who are happy to help make our codebase better by contributing back some improvements.  We've made a {{=A('special page for developers', _href=URL('default','developer'))}}  giving a lot more detail about how to reuse or edit all or part of our codebase. A modular code structure means that different parts of the code can easily be redeveloped or swapped out, including the tree view layout, colour scheme, node and branch styles and rendering engine. </p>
         
          <h3>Installing a OneZoom display</h3>
          
