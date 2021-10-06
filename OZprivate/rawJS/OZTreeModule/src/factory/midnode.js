@@ -37,6 +37,7 @@ class Midnode {
     this._picID_src = null;
     this._date = null;
     this._popularity = null;
+    this._is_polytomy = null;
     
     // precalculated parameterss for OneZoom graphics
     this._ott = null;
@@ -104,6 +105,7 @@ class Midnode {
     this._region = null;
     this._date = null;
     this._popularity = null;
+    this._is_polytomy = null;
     this.marked_areas.clear(); // clear all marked areas
   }
     
@@ -115,6 +117,7 @@ class Midnode {
     this.start = start;
     this.end = end;
     calc_richness_of_node(this);
+    calc_polytomyness_of_node(data_repo,this);
     
     if (this.richness_val > 1) {
       // initialise children
@@ -531,6 +534,26 @@ function calc_richness_of_node(node) {
   } else {
     node.richness_val = (end-start+1)/2+1;
   }
+}
+
+function calc_polytomyness_of_node(data_repo,node) {
+    // ****** TODO JAMES ****** ///
+    
+    let start = node.start;
+    let end = node.end;
+    
+    node._is_polytomy = null
+    if (data_repo.raw_data.charAt(end) === '}') {
+        if (data_repo.raw_data.charAt(start) === '{') {
+             node._is_polytomy = true;
+        }
+    } else {
+        if (data_repo.raw_data.charAt(end) === ')') {
+            if (data_repo.raw_data.charAt(start) === '(') {
+                node._is_polytomy = false;
+            }
+        }
+    }
 }
 
 /**

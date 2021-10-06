@@ -1,0 +1,230 @@
+{{response.title='OneZoom: Renew your sponsored items'}}
+{{response.files.append(URL('static', 'OZSponsor/sponsor_leaf.css'))}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{body_restricted_width = True}}{{extend 'uikit_layout.html'}}
+{{import datetime}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+    <h1>This is the private sponsorship renewal page for {{=user_email}}</h1>
+    {{if most_recent and most_recent.username:}}<p>There is also a public page available at <a href="{{=URL("/donor/%s" % most_recent.username)}}">{{=URL("/donor/%s" % most_recent.username, scheme=True, host=True)}}</a> that you can share if you wish.</p>{{pass}}
+</div>
+{{end block}}
+
+<p>
+Thank you for sponsoring on OneZoom. Your donation helped us in our aim to provide easy access to scientific knowledge
+about biodiversity, evolution and conservation, and raise awareness about the variety of life on earth toegther with the
+need to conserve it. You will see that our online tree of life explorer has improved substantially thanks to your donations.
+</p>
+
+<p>
+Leaf sponsorships usually last for 4 years at which point they need to be renewed, we have given most sponsors extra time
+so that they don't have to renew during the height of the COVID crisis. This page will help you to see all your sponsorships
+and renew those that are expiring soon. Scroll down and select what you want to renew, or to do this quickly
+</p>
+
+<form id="sponsor_form" method="post">
+
+  <div style="text-align: center"><ul class="oz-pill leaf-list"><li>
+    <input type="button" id="button_renew_all" value="Select all that are due for renewal soon and proceed" class="uk-button uk-button-link" />
+  </li></ul></div>
+
+  <ul uk-accordion="multiple: true">
+    {{for row_category in all_row_categories:}}
+      {{if len(row_category['rows']) > 0:}}
+        <li class="{{='uk-open' if row_category['is_open'] else ''}}">
+          <a class="uk-accordion-title" href="#"><span class="uk-h3">{{=row_category['title']}}</span></a>
+          <div class="uk-accordion-content"><ul class="uk-list"><li><hr/></li>{{for item in row_category['rows']:}}
+            <li uk-grid class="uk-padding-small uk-child-width-1-5@m uk-flex-middle uk-text-small">
+              {{status = row_category['status'].get(item.OTT_ID, dict(status='available'))}}
+              <div style="text-align:center">
+                {{if item.OTT_ID in images:}}
+                  <a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}" target="_blank">
+                    <span class="img-species leafout leafout-corner"><img class="species" alt=""
+                         src="{{=images[item.OTT_ID].get('url','')}}"
+                         title="{{=' / '.join(s for s in [images[item.OTT_ID].get('rights', ''), images[item.OTT_ID].get('licence', '')] if s)}}" /></span>
+                  </a>
+                {{pass}}
+              </div>
+
+              <div style="text-align:center">
+                  <div>{{=html_names.get(item.OTT_ID, 'Unknown')}}</div>
+                  <div>
+                     Sponsored {{=item['verified_kind']}}
+                     <i class="sponsored-by">{{=item['verified_name']}}</i>
+                  </div>
+                  {{if item.get('verified_more_info', ''):}}<br/><div>{{=item['verified_more_info']}}</div>{{pass}}
+              </div>
+
+              <div>
+                {{if item['sponsorship_ends'] <= datetime.datetime.now():}}
+                  <div>Expired {{=item['sponsorship_ends'].strftime("%e %b, %Y")}}</div>
+                {{else:}}
+                  <div>Sponsored on {{=item['verified_time'].strftime("%e %b, %Y")}}</div>
+                  <div><strong>Expires on {{=item['sponsorship_ends'].strftime("%e %b, %Y")}}</strong></div>
+                {{pass}}
+              </div>
+
+              <div>
+                {{if status['status'].startswith('available') and item.OTT_ID in prices:}}
+                  Renew by donating £{{='{:.0f}'.format(prices[item.OTT_ID]['price'] / 100)}}
+                  {{if prices[item.OTT_ID]['discount']:}}(£{{='{:.0f}'.format(prices[item.OTT_ID]['discount'] / 100)}} discount){{pass}}
+                {{elif item.user_paid:}}
+                  You paid £ {{=item.user_paid}}
+                {{pass}}
+              </div>
+
+              <div class="uk-form-controls">
+                {{if status['status'] == 'sponsored':}}
+                  Now sponsored by {{=status['reservation']['verified_name']}}
+                {{elif status['status'].startswith('available') and item.OTT_ID in prices:}}
+                  <label><input type="checkbox"
+                                class="uk-checkbox"
+                                name="oz_user_donor_hide_{{=item.OTT_ID}}"
+                                {{='checked="checked"' if request.vars.get('oz_user_donor_hide_%d' % item.OTT_ID, item.user_donor_hide) else ''}}
+                                > Hide from <a href="{{=URL('default', 'donor_list.html')}}" target="_blank">donor page</a></input></label>
+                  <br/>
+                  <label class="renew_checkbox">
+                    <input type="checkbox"
+                           class="uk-checkbox {{if row_category['defselect']:}}defselect{{pass}}"
+                           name="oz_renew_{{=item.OTT_ID}}"
+                           value="{{=prices[item.OTT_ID]['price']}}"
+                           autocomplete="off"
+                           {{='checked="checked"' if request.vars.get('oz_renew_%d' % item.OTT_ID, False) else ''}}
+                           data-sciname="{{=sci_names.get(item.OTT_ID, 'Unknown')}}"
+                           > Select to renew</input>
+                  </label>
+                {{elif status['status'].startswith('unverified') or  status['status'] == 'reserved':}}
+                  This is currently reserved for someone else, try again later.
+                {{else:}}
+                  To renew, please <a href="mailto:mail@onezoom.org">write to us</a>
+                {{pass}}
+              </div>
+            </li>
+            <hr />
+          {{pass}}</ul></div>
+        </li>
+      {{pass}}
+    {{pass}}
+  </ul>
+
+  <div id="renewal_payment" {{if float(request.vars.get('amount', 0)) < 0.01:}}style="display: none"{{pass}}>
+  <fieldset>
+    <div>
+      <label for="amount_extra_input">Give an extra donation to onezoom:</label>
+        <p>£<input type="number"
+                step="1"
+                id="amount_extra_input"
+                name="amount_extra"
+                value="{{=request.vars.get('amount_extra', 0)}}"
+                />{{if 'amount_extra' in errors:}}<em class="error_text">{{=errors['amount_extra']}}</em>{{pass}}</p>
+    </div>
+    <div>
+      <label for="amount_input">Your total donation to onezoom:</label>
+        <p>£<input type="number"
+                name="amount"
+                id="amount_input"
+                value="{{=request.vars.get('amount', 0)}}"
+                readonly="readonly"
+                style="border: none; font-size: 120%"
+                />{{if 'amount' in errors:}}<em class="error_text">{{=errors['amount']}}</em>{{pass}}</p>
+    </div>
+    <input type="hidden"
+           name="cmd"
+           value="_donations" />
+    <input type="hidden"
+           name="business"
+           value="mail@onezoom.org" />
+    <input type="hidden"
+           name="item_name"
+           value="Leaf sponsorship renewal (for 0 leaves)" />
+    <input type="hidden"
+           name="item_number"
+           value="" />
+    <input type="hidden"
+           name="currency_code"
+           value="GBP" />
+    <input type="hidden"
+           name="return"
+           value="{{=URL("sponsor_thanks.html", scheme=True, host=True)}}" />
+    <input type="hidden"
+           name="notify_url"
+           value="{{=notify_url}}" />
+  </fieldset>
+
+  {{if most_recent is not None and most_recent.user_giftaid:}}
+    <p>Thank you for agreeing to gift aid all your donations when you sponsored before. Any new donations will also be treated as
+    gift aided, please <a href="mailto:mail@onezoom.org">write to us</a> if you wish to change your gift aid declaration.</p>
+  {{else:}}
+    <p>TODO: Message about not gift-aiding</p>
+  {{pass}}
+
+  <p>By donating to OneZoom you accept the {{=A(T('terms and conditions'),_href="/terms.html",_target="_blank")}}.</p>
+  <div style="text-align: center"><ul class="oz-pill leaf-list"><li>
+    <input id="submit_button" type="submit" value="Donate using PayPal" class="uk-button uk-button-link"/>
+  </li></ul></div>
+
+  </div>
+</form>
+
+<p>You cannot change your sponsorship text from this page, if you want to do that please <a href="mailto:mail@onezoom.org">write to us</a>.</p>
+
+<script>(function () {
+  var form = document.getElementById('sponsor_form'),
+      el_renewal_payment = document.getElementById("renewal_payment");
+
+  form.addEventListener("change", function (e) {
+     var renew_otts = [],
+         renew_scinames = [],
+         renew_price = 0;
+
+     if (e.target.name.startsWith('oz_renew_') || e.target.name == 'amount_extra') {
+         for (let field of form.elements) {
+             if (field.name && field.name.startsWith('oz_renew_') && field.checked) {
+                 // Found a checked renew box, add the price to total
+                 renew_price += parseInt(field.value, 10);
+                 renew_otts.push(parseInt(field.name.split("_")[2], 10));
+                 renew_scinames.push(field.getAttribute('data-sciname'));
+             }
+         }
+         renew_price = (renew_price / 100 + parseInt(form.elements.amount_extra.value, 10)).toFixed(2);
+         el_renewal_payment.style.display = renew_price > 0 ? '' : 'none';
+         form.elements.amount.value = renew_price;
+         form.elements.amount.min = renew_price;
+
+         form.elements.item_name.value = form.elements.item_name.value.replace(
+             /\(.*\)/,
+             "(for " + renew_scinames.join(",") + ")");
+         if (form.elements.item_name.value.length > 127) {
+             // Limit string to keep under paypal restrictions
+             form.elements.item_name.value = form.elements.item_name.value.replace(
+                 /\(.*\)/,
+                 "(for " + renew_scinames.length + " leaves)");
+         }
+         form.elements.item_number.value = renew_otts.join("/");
+         if (form.elements.item_number.value.length > 127) {
+             // Limit string to keep under paypal restrictions
+             form.elements.item_number.value = form.elements.item_number.value.substring(0, 124) + "...";
+         }
+     }
+  });
+  // Make sure form is in-sync on startup
+  form.elements.amount_extra.dispatchEvent(new Event('change', { bubbles: true }));
+
+  form.addEventListener("click", function (e) {
+     if (e.target.id == "button_renew_all") {
+         e.preventDefault();
+         e.stopPropagation();
+         for (let field of e.target.form.elements) {
+             // Check everything with a defselect class
+             if (field.name && field.name.startsWith('oz_renew_')) {
+                 if (field.classList.contains('defselect') && !field.checked) {
+                     field.checked = true;
+                     field.dispatchEvent(new Event('change', { bubbles: true }));
+                 }
+             }
+         }
+         document.getElementById("renewal_payment").scrollIntoView(true);
+     }
+  });
+}());</script>

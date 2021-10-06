@@ -176,9 +176,9 @@ if not args.UPDATE_NODES_ONLY:
                     matched_by_id += 1
                     table_data[ott] = [spp]
         else:
-            #no iucn match in our DB
+            # no iucn match in our DB
             if spp['infra_rank'] is None and spp['population'] is None:
-                #we should really be matching this
+                # we should really be matching this
                 if args.verbosity>2:
                     info("Missing match for {}, so trying to match via scientific name".format(spp['scientific_name']))
                 nm = spp['scientific_name']
@@ -211,23 +211,35 @@ if not args.UPDATE_NODES_ONLY:
     for ott, matches in table_data.items():
         iucn='NE' #the default
         #look for all the categories for this taxon
-        categories = [uppercase_statuses[row['category'].upper()] for row in matches]
-        if len(set(categories))==1: #if there are multiple entries with the same category, we don't care
-            iucn=categories[0]
+        categories = set([uppercase_statuses[row['category'].upper()] for row in matches])
+        if len(categories)==1: #if there are multiple entries with the same category, we don't care
+            iucn=categories.pop()
         else:
             #multiple iucn matches with different iucn statuses. So try matching each by name
             db_curs.execute("SELECT name from `{}` WHERE ott={};".format(args.OTT_leaf_table, int(ott)))
             name = db_curs.fetchone()[0]
             name_matches = [m for m in matches if m['scientific_name'] == name]
             if len(name_matches) == 0:
-                #a very few cases here, usually where the OpenTree uses an alternative genus name. So as a heuristic, match on the epithet
-                name_matches = [m for m in matches if m['scientific_name'].split(" ")[1] == name.split(" ")[1]]
-            categories = [uppercase_statuses[row['category'].upper()] for row in name_matches]
-            if len(set(categories))==1: #if there are multiple entries with the same category, we don't care
-                iucn=categories[0]
+                # a very few cases here, usually where the OpenTree uses an alternative genus name. So as a heuristic,
+                # match on the epithet or on the subspecies name
+                name_matches = [
+                    m for m in matches
+                    if m['scientific_name'].split(" ")[1] == name.split(" ")[1] or m['scientific_name'].split(" ")[-1] == name.split(" ")[1]
+                ]
+            categories = set([uppercase_statuses[row['category'].upper()] for row in name_matches])
+            if len(categories) > 1:
+                # Sometimes we get matches of the species together with a population or subspecies of the species
+                name_matches = [m for m in name_matches if m['population'] is None and m['infra_rank'] is None]
+            categories = set([uppercase_statuses[row['category'].upper()] for row in name_matches])
+            if len(categories)==1: #if there are multiple entries with the same category, we don't care
+                iucn=categories.pop()
                 matches=name_matches
-            else:
-                info("Could not find a unique iucn status code for taxon with ott = {}".format(ott))
+            elif len(categories)>1:
+                info(
+                    f"Could not find a unique iucn status code for taxon with ott = {ott}. "
+                    f"Matches against multiple IUCN names: {[m['scientific_name'] for m in name_matches]}."
+                )
+            # If no match, then treat as not evaluated
         if iucn != 'NE':
             #Save all categories except 'not evaluated', which is the assumed default (for most species)
             sql = "INSERT INTO {0} (ott, iucn, status_code) VALUES ({1}, {1}, {1});".format(args.IUCN_table, subs)

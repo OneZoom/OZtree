@@ -120,6 +120,46 @@
           "wait": 9000
        },
        {
+          "ott": "1034204",
+          "transition_in_visibility": "force_hide",
+          "update_class": {
+             "tour_container": {"style": {"top":"40vh", "left":"30vh"}},
+             "title": "{{=T('Critically endangered')}}",
+             "window_text": "{{=T('Critically endangered species are shown with darker red leaves.  These species could really be gone in the near future unless they get our help.')}}",
+             },
+         "wait": 9000
+       },
+       {
+          "ott": "821973",
+          "transition_in_visibility": "force_hide",
+          "update_class": {
+             "tour_container": {"style": {"top":"40vh", "left":"30vh"}},
+             "title": "{{=T('Green leaves')}}",
+             "window_text": "{{=T('Green leaves are okay for now, they are not under threat of extinction.')}}",
+             },
+          "wait": 9000
+       },
+       {
+          "ott": "568991",
+          "transition_in_visibility": "force_hide",
+          "update_class": {
+                "tour_container": {"style": {"top":"40vh", "left":"30vh"}},
+                "title": "{{=T('Unknown extinction risk')}}",
+                "window_text": "{{=T('Most of the leaves are grey meaning that the extent to which they are under threat from extinction is not formally known.')}}",
+          },
+          "wait": 9000
+       },
+       {
+           "ott": "1062253",
+           "transition_in_visibility": "force_hide",
+           "update_class": {
+                "tour_container": {"style": {"top":"40vh", "left":"30vh"}},
+                "title": "{{=T('Unknown branches')}}",
+                "window_text": "{{=T('Lighter grey branches show small sections of the tree where we had to guess the connections for now because they are not yet known.')}}",
+           },
+           "wait": 9000
+       },
+       {
             "ott": "300553",
             "transition_in_visibility": "show_self",
             "transition_in_wait": 2000,

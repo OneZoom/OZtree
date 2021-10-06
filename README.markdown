@@ -286,6 +286,28 @@ Notes
 * there a question mark over tours information and associated things
 * there are many critical source files in OZ_private, including tree sources.
 
+## Running tests
+
+### Server unit tests
+
+The server unit tests have no additional dependencies. To run, do:
+
+    grunt test-server
+
+### Server Selenium-based functional tests
+
+Make sure required python modules are installed with:
+
+    pip3 install -r tests/requirements.txt
+
+You also need chrome/chromium driver installed with, e.g.:
+
+    apt install chromium-driver
+
+You can then run the tests with:
+
+    grunt test-server-functional
+
 # Documentation
 
 Documentation is partially compiled fomr the source code using Grunt, and lives in `OZprivate/rawJS/OZTreeModule/docs`. Once compiled, it can be viewed online using your web2py server. For example, if you are running web2py on http://127.0.0.1:8000, you should be able to visit [http://127.0.0.1:8000/OZtree/dev/DOCS](http://127.0.0.1:8000/OZtree/dev/DOCS), or (if you have manager access to the OneZoom site) at [http://onezoom.org/dev/DOCS](http://onezoom.org/dev/DOCS).

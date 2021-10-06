@@ -1,0 +1,6 @@
+# pip3 install -r tests/requirements.txt
+nose
+nose-testconfig
+selenium
+requests
+pymysql

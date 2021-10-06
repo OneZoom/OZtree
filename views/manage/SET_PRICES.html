@@ -8,26 +8,47 @@
 Popularity ranges from {{=int(round(pop_min,0))}} to {{=int(round(pop_max,0))}}. As a guide, here are the popularities of a few species:
 
 <ul>
-{{for k,v in example_spp:}}
-<li>{{=k}} = {{=int(round(v,0))}}</li>
+{{for name, val, quant in example_spp:}}
+<li>{{=name}} = {{=f"{val:.0f}"}} (quantile = {{=f"{quant:.2f}"}}%)</li>
 {{pass}}
 </ul>
 <h2>previous pricing structure was:</h2>
 <table><tr>
+<th></th>
 {{for r in previous_prices:}}
 <th>&pound;{{="{:.2f}".format(r.price/100)}} cutoff</th>
 {{pass}}
 </tr><tr>
+<td>upper popularity quantile cutoff</td>
 {{for r in previous_prices:}}
-<td>{{=r.current_cutoff}}</td>
+<td>{{=r.quantile}}</td>
+{{pass}}
+</tr><tr>
+<td>number of species</td>
+{{for r in previous_prices:}}
+<td>{{=("{:,}" if r.n_leaves else "{}").format(r.n_leaves)}}</td>
 {{pass}}
 </tr></table>
 <h2>set cutoffs:</h2>
-{{for p in prices:}}
-<div>&pound;{{="{:.2f}".format(p/100)}} upper popularity cutoff {{=form.custom.widget['max_pop_{}_pence'.format(p)]}}</div>
+<table><tr><th>Band</th><th style="background-color: yellow; border-right: double">Set upper<br/>popularity<br/>quantile (%)</th>
+{{for i, field in enumerate(other_fields):}}
+<th style="border: none; {{if i==0:}}padding-left: 4em;{{pass}}">{{=field.name}}</th>
 {{pass}}
-<div>Anything higher will be &pound;{{="{:.2f}".format(last_price/100)}}.</div>
-Click here to set all the prices in the database: {{=form.custom.submit}}
+</tr>
+{{for b, price in bands.items():}}
+<tr>
+{{  if b != max_band:}}
+<th style="text-align: left">{{=b}} (currently &pound;{{="{:.2f}".format(price/100)}})</th><td style="background-color: yellow; border-right: double">{{=form.custom.widget['_'.join(['quantile', b])]}}</td>
+{{  else:}}
+<th style="text-align: left">{{=b}} (currently &pound;{{="{:.2f}".format(price/100)}})</th><td style="border-right: double">remainder</td>
+{{  pass}}
+{{  for i, field in enumerate(other_fields):}}
+<td style="border: none; {{if i==0:}}padding-left: 4em;{{pass}}">{{=form.custom.widget["_".join([field.name, b])]}}</td>
+{{  pass}}
+{{pass}}
+</tr>
+</table>
+Click here to set all the prices in the database (may take some time): {{=form.custom.submit}}
 {{=form.custom.end}}<h2>Submitted variables</h2>
 {{=BEAUTIFY(request.vars)}}
 </div></div>

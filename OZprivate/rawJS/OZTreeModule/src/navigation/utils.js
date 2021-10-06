@@ -60,6 +60,14 @@ function get_largest_visible_node(node, condition=null) {
   return null;
 }
 
+/**
+ * Parse a DOM location object, defaulting to window.location, and return a state object.
+ */
+function parse_window_location(location = window.location) {
+  let pathinfo = (location.pathname.indexOf("@") === -1) ? null : location.pathname.slice(location.pathname.indexOf("@"));
+  return parse_query(pathinfo, location.search, location.hash);
+}
+
 function parse_query(loc, querystring, hash) {
   let state = {};
   parse_location(state, loc);
@@ -219,4 +227,4 @@ function decode_popup_action(popup_action) {
   }
 }
 
-export { get_largest_visible_node, parse_query, encode_popup_action, decode_popup_action };
+export { get_largest_visible_node, parse_query, parse_window_location, encode_popup_action, decode_popup_action };

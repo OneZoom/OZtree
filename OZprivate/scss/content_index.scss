@@ -6,36 +6,6 @@
     }
 }
 
-img.species, .img-species > img {
-  background: whitesmoke;
-  border-radius: 50%;
-}
-span.img-species {
-  display: inline-block;
-}
-.img-species {
-  position: relative; /* Contain leafout background */
-}
-.img-species.leafout::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background-image: url(../images/oz-logo-leafout-outline.svg);
-  background-repeat: no-repeat;
-  background-position: center 85%;
-  background-size: 30px;
-}
-
-.endangered-species .img-species.leafout::after {
-  right: -10px;
-  background-image: url(../images/oz-logo-leafout-outline-red.svg);
-  background-position: right bottom;
-}
-
-
 /* ********** HP sections ********** */
 
 

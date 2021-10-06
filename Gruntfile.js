@@ -1,7 +1,11 @@
+const sass = require('sass');
+const process = require('process');
+const path = require('path');
+
 partial_install_site = "http://beta.onezoom.org";
 partial_local_install_site = "http://127.0.0.1:8000"; // if you are running a local installation
 preferred_python3 = "python3.7"; // in case you have multiple python3 versions installed
-const sass = require('sass');
+web2py_py = path.join(path.dirname(path.dirname(process.cwd())), 'web2py.py');
 
 module.exports = function (grunt) {
   grunt.initConfig({
@@ -19,6 +23,12 @@ module.exports = function (grunt) {
                 'python3 -c "import gluon.compileapp; gluon.compileapp.compile_application(\''
                 + process.cwd()
                 + '\', skip_failed_views=True)"'
+      },
+      test_server: {
+        command: 'for f in tests/unit/*.py; do echo === $f; ' + preferred_python3 + ' ' + web2py_py + ' -S OZtree -M -e -R applications/OZtree/$f; done'
+      },
+      test_server_functional: {
+        command: 'nosetests3 tests/functional/'
       },
       test: {
         command: 'npm run test'
@@ -155,6 +165,8 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-sass');
 
   grunt.registerTask("test", ["exec:test"]);
+  grunt.registerTask("test-server", ["exec:test_server"]);
+  grunt.registerTask("test-server-functional", ["exec:test_server", "exec:test_server_functional"]);
   grunt.registerTask("css", ["sass"]);
   grunt.registerTask("docs", ["jsdoc2md", "exec:unify_docs"]);
   grunt.registerTask("compile-python", ["exec:compile_python"]);

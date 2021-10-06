@@ -1,8 +1,0 @@
-[Here I collect a variety of obscure eukaryotes that seem to fall as sister groups to the Opisthokonts. OpenTree 6.1 has Collodictyonidae as the only group in "Apusozoa". I place this group in the Amoebozoa instead, as per https://doi.org/10.1073/pnas.1420657112 .
-
-In the Apusozoa, I put Ancyromonadida, Nutomonas, and Planomonadidaeas as per https://doi.org/10.1016/j.ejop.2012.08.007 . The branching order is pretty arbitrary. This will almost certainly need to be revised when new versions of the OpenTree emerge.
-
-note that negative branch lengths signify partial display of branches (signifying uncertainty)
-
-]
-((((Ancyromonadida_ott415970@,Nutomonas_ott971869@),Planomonadidae_ott494997@)Ancyromonadidae:-1,Apusomonadidae_ott575898@:-1):-1,Breviatea_ott5246141@:-1)PossParaphyleticApusozoaPlus__ott671092:-1;

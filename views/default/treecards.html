@@ -34,7 +34,7 @@
 <h2 class="uk-text-center uk-padding-small" >How to send a Tr-eCard</h2>
 <div class="uk-grid-small uk-text-small uk-child-width-1-2@m " uk-grid>
     <div class = "uk-padding uk-padding-remove-top">
-        <p>You first need to choose your species using the tools on this page.  Most species requre a donation of
+        <p>You first need to choose your species using the tools on this page.  Most species require a donation of
 {{for p in prices:}}
   {{if p['quantile']<0.5:}}&pound;{{="{:.2f}".format(p['price_pounds']).replace(".00","")}},
   {{else:}}or &pound;{{="{:.2f}".format(p['price_pounds']).replace(".00","")}} to sponsor

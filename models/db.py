@@ -419,8 +419,9 @@ db.define_table('banned',
 
 # this table handles reservations, ledger and verified in a single table
 # to remove any sensitive information (e.g. before sending to 3rd parties)
-# you should make a local copy and do UPDATE reservations SET user_id=NULL, e_mail=NULL, twitter_name=NULL, allow_contact=NULL, user_sponsor_lang=NULL, user_sponsor_kind=NUll, user_sponsor_name=NULL, user_donor_name=NULL, user_more_info=NULL, user_message_OZ=NULL, user_giftaid=NULL, user_paid=NULL, PP_transaction_code=NULL, PP_e_mail=NULL, PP_first_name=NULL, PP_second_name=NULL, PP_town=NULL, PP_country=NULL, PP_house_and_street=NULL, PP_postcode=NULL, sale_time=NULL, verified_paid=NULL, asking_price=NULL;
-# also make sure not to export expired_reservations
+# you should make a local copy and either remove all rows of the reservations table (preferable) ordo e.g.
+#  UPDATE reservations SET user_id=NULL, username=NULL, e_mail=NULL, twitter_name=NULL, allow_contact=NULL, user_sponsor_lang=NULL, user_sponsor_kind=NUll, user_sponsor_name=NULL, user_donor_name=NULL, user_more_info=NULL, user_message_OZ=NULL, user_giftaid=NULL, user_paid=NULL, PP_transaction_code=NULL, PP_e_mail=NULL, PP_first_name=NULL, PP_second_name=NULL, PP_town=NULL, PP_country=NULL, PP_house_and_street=NULL, PP_postcode=NULL, sale_time=NULL, verified_paid=NULL, asking_price=NULL, admin_comment=NULL, sponsorship_story_level=NULL;
+# also make sure not to export the expired_reservations and wiped_reservations tables.
 db.define_table('reservations',
                 
     Field('OTT_ID', type = 'integer', unique=True, requires=IS_NOT_EMPTY()),
@@ -433,11 +434,30 @@ db.define_table('reservations',
     # these are general useful stats for a page
     Field('last_view', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME()), writable=False),
     Field('reserve_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME()), writable=False),
-    Field('user_registration_id', type = 'text', writable=False), #eventually this will correspond to a number in the registration_id field of the auth_user table (which should be initially filled out using OZfunc/__make_user_code, but for the moment we generate a new UUID for each treeview session
+    Field('user_registration_id', type = 'text', writable=False),
+    # This is created by OZfunc/__make_user_code and used instead of a session cookie so that
+    # when refreshing e.g. a sponsor_leaf page we know that it is the same user trying to sponsor.
+    # Eventually we intend this to correspond to a number in the registration_id field of the
+    # auth_user table but for the moment we generate a new UUID for each treeview session
+    Field('basket_code', type='text', writable=False),
+    # A UUID created by OZfunc/__make_user_code identifying a group of items sent to paypal for
+    # purchase. Used to identify which OTTs have been purchased once confirmation of funds comes
+    # back from paypal, by being encoded in notify_url.
+    Field('prev_reservation_id', type='integer', writable=False, ),
+    # The ID of the previous sponsorship that this replaced (either with an extension or a renewal)
+    # NB: Ideally it'd be type='references expired_reservations.id', but we can't without a circular definition
+    
     # these handle auto reservation of pages
-                             
     Field('user_id', type = 'reference auth_user' , requires=IS_EMPTY_OR(IS_IN_DB(db, 'auth_user.id','%(first_name)s %(last_name)s'))),
-    # points to user table - built in      
+    # points to user table - built in. Is usually NULL because doner need not have a OneZoom login
+    db.auth_user.username.clone(unique=False, requires=None),
+    # Create a "username" field of an identical type to that in auth_user.username.
+    # People can set a username in the reservations table at any point which has to be one
+    # that is not already present in reservations.username (and if it is idential to one
+    # in auth_user.username they should be prompted to log in. If, later, they create
+    # a login, we will always use the reservations.username value.
+    # The reservations.username field is optional but needed if the user is to have a
+    # "public" page of all their sponsorships 
     Field('e_mail', type = 'string', length=200, requires=IS_EMPTY_OR(IS_EMAIL())),
     Field('twitter_name', type = 'text'),
     Field('allow_contact', type = boolean),
@@ -452,10 +472,11 @@ db.define_table('reservations',
     # title of donor (Mr, Mrs, Dr, etc - needed for giftaid). . 
     Field('user_donor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # name of donor (different to user_sponsor_name if sponsored for someone). 
-    Field('user_donor_show', type = boolean),
-    # True if user doesn't mind online acknowledgment (e.g. on donors page). Prob shouldn't use title
+    Field('user_donor_hide', type = boolean),
+    # True if the user explicitly requested we hide acknowledgment on donors page / personal page
+    # False if they didn't check a box, NULL if they haven't been asked yet.
     Field('user_more_info', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(maxsize=30))), 
-    # optional extra info about a person
+    # optional extra sponsorship text which could be shown on the leaf if there's enough space
     Field('user_nondefault_image', type = 'integer'),
     #has the user chosen a non-default image? None if no img or the already downloaded OZ
     # image was chosen, 0 if there was no OZ image but the default EoL image was chosen, 
@@ -473,37 +494,43 @@ db.define_table('reservations',
     Field('user_updated_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME()), writable=False),  
     # need to know when it was last updated to check for user updates         
     Field('user_paid', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
-    # the amount they actually paid in total (I think it would be silly not to give the option to increase the amount)   
+    # The amount (in pounds) the user promised to pay for this OTTID
+    # Set by user before paypal trip, validated to be >= asking_price (See valid_spons).
     Field('user_message_OZ', type = 'text', requires=(IS_LENGTH(maxsize=250))),
     # message for OZ e.g. to show on funding website or to request converstaion about url etc.
+    Field('sponsorship_story', type = 'text', requires=(IS_LENGTH(maxsize=1000))),
+    # The story behind .
+    Field('sponsorship_story_level', type = 'double'),
+    # A hand-curated quality score roughly matching that in `sponsorship_text_level`
+    # (e.g. 3 = completely standard & acceptable, 4 = excellent, 5 = best) - NULL = not reviewed.
     Field('user_giftaid', type = boolean),
     # can we collect gift aid?
                
     # paypal returned information
-    Field('PP_transaction_code', type = 'text'),
-    Field('PP_e_mail', type = 'string', length=200),
+    Field('PP_transaction_code', type = 'text', writable = False),
+    Field('PP_e_mail', type = 'string', length=200, writable = False),
     # another e-mail just in case we need it for verification
-    Field('PP_first_name', type = 'text'),
-    Field('PP_second_name', type = 'text'),
+    Field('PP_first_name', type = 'text', writable = False),
+    Field('PP_second_name', type = 'text', writable = False),
     # name to help with sponsorship text verification
-    Field('PP_town', type = 'text'),
-    Field('PP_country', type = 'text'),
+    Field('PP_town', type = 'text', writable = False),
+    Field('PP_country', type = 'text', writable = False),
     # address to help with further info verification
-    Field('PP_house_and_street', type = 'text'),
-    Field('PP_postcode', type = 'text'),
+    Field('PP_house_and_street', type = 'text', writable = False),
+    Field('PP_postcode', type = 'text', writable = False),
     # save the two above only if they have agreed to give us gift aid
 
-    Field('sale_time', type = 'text'),
+    Field('sale_time', type = 'text', writable = False),
     # seems professional to know when they paid and wise to keep it separate from expiry date
                 
-    # a verified copy of what's in the sponsor table. Can also use this to check if this entry has been sponsored and verified
+    # a verified copy of what's in the sponsor table.
     Field('verified_kind', type = 'string', length=4, requires=IS_EMPTY_OR(IS_IN_SET(['by','for']))),
     # matches 'user_sponsor_kind'
     Field('verified_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30)), widget=SQLFORM.widgets.text.widget), 
     # matches 'user_sponsor_name'
-    Field('verified_donor_title', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30)), widget=SQLFORM.widgets.text.widget),
+    Field('verified_donor_title', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # matches 'user_donor_title'
-    Field('verified_donor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30)), widget=SQLFORM.widgets.text.widget),
+    Field('verified_donor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # matches 'user_donor_name'
     Field('verified_more_info', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(maxsize=30)), widget=SQLFORM.widgets.text.widget), 
     # matches 'user_more_info'
@@ -517,14 +544,13 @@ db.define_table('reservations',
     # field is still filled out, but user_nondefault_image should be 1.
     Field('verified_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
     # if verified_time = NULL then details haven't been verified
-    Field('verified_paid', type = 'text'), 
-    # has then amount paid been matched to paypal e-mail
+    Field('verified_paid', type = 'text', writable = False), 
+    # The amount paypal reported as being paid (as a stringified pounds/pence float) for this OTTID
+    # May be NULL after payment if, e.g. payment received outside paypal, see notes in add_reservation()
     Field('verified_url', type = 'text'),  
     # url for those that agree to have one            
     Field('sponsorship_text_level', type = 'integer'),
     # How generally acceptable is the text (3 = completely standard & acceptable) - NULL=not reviewed
-    Field('live_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
-    # Temporarily reinstate live_time until we transfer the data into emailed_re_sponsorship column, then we can delete it
     Field('tweeted_re_sponsorship', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
     # the time when we emailed them
     Field('emailed_re_sponsorship', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
@@ -545,12 +571,13 @@ db.define_table('reservations',
     # verified_time can be 2 or 3 (or more) times the sponsorship_duration_days
     Field('asking_price', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100)), writable=False), 
     # price in pounds - good idea to hang on to this for accounting purposes and verification the numbers add up later
+    # Set as (ordered_leaves.price / 100) at time of purchase (See valid_spons)
     Field('partner_percentage', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100)), writable=False), 
     # percentage of this donation that is diverted to a OZ partner like Linn Soc (after paypal fees are deducted) 
     Field('partner_name', type = 'string', length=40, writable=False),
     # a standardised name for the partner (or multiple partners if it comes to that - would then assume equal split between partners)
-    Field('partner_paid_on', type = 'datetime', requires = IS_EMPTY_OR(IS_DATETIME())),
-    Field('giftaid_claimed_on', type = 'datetime', requires = IS_EMPTY_OR(IS_DATETIME())),
+    Field('partner_paid_on', type = 'datetime', requires = IS_EMPTY_OR(IS_DATETIME()), writable = False),
+    Field('giftaid_claimed_on', type = 'datetime', requires = IS_EMPTY_OR(IS_DATETIME()), writable = False),
     Field('deactivated', type = 'text'),
     # true if this row in the reservations table has been deliberately deactivated for any reason other than expiry e.g. complaint / species disappears etc.
                        
@@ -559,17 +586,64 @@ db.define_table('reservations',
 #a duplicate of the reservations table to store old reservations. This table need never be sent to 3rd parties
 db.define_table('expired_reservations',
     Field('OTT_ID', type = 'integer', unique=False, requires=IS_NOT_EMPTY()), 
-    Field('was_renewed', type = boolean), 
+    Field('was_renewed', type = boolean),
+    # useful to know if part of the sponsorship time in this reservation is captured in another reservation row
     *[f.clone() for f in db.reservations if f.name != 'OTT_ID' and f.name!='id'],
     format = '%(OTT_ID)s_%(name)s', migrate=is_testing)
+
+# Reservations that we never show anywhere on the site, even historically, but still keep
+# in the DB for our own (financial) records. Reservations can be moved into here by hand
+# and deleted from the other reservations table if requested by a sponsor
+db.define_table('wiped_reservations',
+    *[f.clone() for f in db.expired_reservations if f.name!='id'],
+    format = '%(OTT_ID)s_%(name)s', migrate=is_testing)
+
+# Record donations via. paypal that can't be directly assigned to a node, e.g.
+# * Remainder of transaction after all node costs are met
+# * Remainder if transaction can only pay for OTTs x/y when the basket contains x/y/
+db.define_table('uncategorised_donation',
+    Field('basket_code', type='text', writable=False),
+    # A UUID created by OZfunc/__make_user_code identifying a group of items sent to paypal for
+    # purchase. Used to identify which OTTs have been purchased once confirmation of funds comes
+    # back from paypal, by being encoded in notify_url.
+    Field('sale_time', type = 'text', writable = False),
+    # seems professional to know when they paid and wise to keep it separate from expiry date
+    Field('verified_paid', type = 'text', writable = False), 
+    # The amount paypal reported as being paid (as a stringified pounds/pence float) for this OTTID
+    # May be NULL after payment if, e.g. payment received outside paypal, see notes in add_reservation()
+    Field('user_paid', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
+    # The amount (in pounds) the user promised to pay for this OTTID
+    Field('user_giftaid', type = boolean),
+    # can we collect gift aid?
+    Field('e_mail', type = 'string', length=200, requires=IS_EMPTY_OR(IS_EMAIL())),
+    Field('allow_contact', type = boolean),
+    # in case they don't want to log in to process this.            
+
+    # paypal returned information
+    Field('PP_transaction_code', type = 'text', writable = False),
+    Field('PP_e_mail', type = 'string', length=200, writable = False),
+    # another e-mail just in case we need it for verification
+    Field('PP_first_name', type = 'text', writable = False),
+    Field('PP_second_name', type = 'text', writable = False),
+    # name to help with sponsorship text verification
+    Field('PP_town', type = 'text', writable = False),
+    Field('PP_country', type = 'text', writable = False),
+    # address to help with further info verification
+    Field('PP_house_and_street', type = 'text', writable = False),
+    Field('PP_postcode', type = 'text', writable = False),
+    # save the two above only if they have agreed to give us gift aid
+    format = '%(sale_time)s_%(verified_paid)s')
 
 # this table defines the current pricing cutoff points
 db.define_table('prices',
     Field('price', type = 'integer', unique=True, requires=IS_NOT_EMPTY()),
     Field('perpetuity_price', type = 'integer', requires=IS_NOT_EMPTY()),
     # Map the "normal" 4 year price to the in-perpetuity price
-    Field('current_cutoff', type = 'double'),
+    Field('quantile', type = 'double'),
     Field('n_leaves', type = 'integer'),
+    Field('class_description', type = 'string', length=100),
+    Field('price_description', type = 'string', length=100),
+    # Two text descriptions used in e.g. museum displays, where the price may not be up-to-date
     format = '%(price)s_%(n_leaves)s')
 
 # this table collects data for recently 'visited' nodes (i.e. requested through the API) 

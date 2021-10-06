@@ -210,7 +210,7 @@ def has_linkouts(browser, include_site_internal):
     <a href='/sponsored'></a>
     """
     for tag in browser.find_elements_by_css_selector("[href^='http']"):
-        if tag.tag_name != u'link': #should allow e.g. <link href="styles.css">
+        if tag.tag_name != u'link' and not tag.get_attribute('href').startswith('http://127.0.0.1'): #should allow e.g. <link href="styles.css"> and http://127.0.0.1:..
              return True
     for tag in browser.find_elements_by_css_selector("[href^='//']"):
         if tag.tag_name != u'link': #should allow e.g. <link href="styles.css">

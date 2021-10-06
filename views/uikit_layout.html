@@ -40,7 +40,7 @@
   </head>
   <body class="standalone">
     <!--[if lt IE 8]><p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p><![endif]-->
-    <div class="w2p_flash alert alert-dismissable">{{=response.flash or ''}}</div>
+    {{include 'analytics.html'}}
     
     <!-- Navbar ======================================= -->
 <header class="oz-section bkgd-darkspiral">
@@ -163,7 +163,12 @@
     <!-- Main ========================================= -->
     <!-- Begin page content -->
 
-    <div class="main_content">
+    <div class="main_content {{if globals().get('body_restricted_width', False):}}uk-container{{pass}}">
+        {{if response.flash:}}
+          <div class="uk-alert">
+            {{=response.flash}}
+          </div>
+        {{pass}}
         {{include}}
     </div>
 
@@ -195,10 +200,12 @@
       <div class="uk-width-1-3 uk-width-1-6@m">
         <h3>Quick links</h3>
         <ul>
-          <li><a href="/data_sources.html">Data sources</a></li>
-          <li><a href="/tree_index.html">Legacy trees</a></li>
-          <li><a href="/developer.html">Developer tools</a></li>
+          <li><a href="/introduction.html">Start exploring</a></li>
+          <li><a href="/installations.html">Museum displays</a></li>
+          <li><a href="/work_with_us.html">Work with us</a></li>
           <li><a href="/popularity/index.html">Popularity index</a></li>
+          <li><a href="/sponsor.html">Support our work</a></li>
+
         </ul>
       </div>
 
@@ -220,9 +227,6 @@
       <a href="{{=URL('default','accessibility.html', args='site')}}" target="_blank" class="footlink" title="">{{=T('Accessibility')}}</a>
     </footer>
     {{end}}
-    <!-- Analytics ==================================== -->
-    <script type="text/javascript" src="{{=URL('static','site-specific/google-analytics.js')}}"></script>
-
     <!-- Share ============================y============
     <script src="{{=URL('static','js/share.js',vars=dict(static=URL('static','images')))}}"></script> -->
     {{block page_js}}{{end page_js}}

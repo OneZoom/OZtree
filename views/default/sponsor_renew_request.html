@@ -1,0 +1,13 @@
+{{response.title='OneZoom: Renew your sponsored items'}}
+{{response.files.append(URL('static', 'OZSponsor/sponsor_leaf.css'))}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{body_restricted_width = True}}{{extend 'uikit_layout.html'}}
+{{import datetime}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+    <h1>Request a link to your renewals page</h1>
+</div>
+{{end block}}
+
+{{=form}}

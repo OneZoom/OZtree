@@ -11,6 +11,12 @@ There are a number of duplicate names, esp in the insects, where synonyms have n
 
 Arthropoda_ott632179-XXXX@
 
+For example, Fasciosminthurus quinquefasciatus (ott5008315) is misplaced, so we temporarily use
+
+Arthropoda_ott632179-5008315@
+
+ (https://github.com/OpenTreeOfLife/feedback/issues/526)
+
 
 ==SPIRALIA (as was LOPHOTROCHOZOA, see also "Assembling the Spiralian tree of life")==
 
@@ -49,9 +55,11 @@ That leads to a 'trochozoa' tree like
 
 (((Nemertea,(((Bryozoa,(Entoprocta,Cycliophora))Polyzoa,Phoronida),Brachiopoda)Lophophorata),Annelida),Mollusca)Trochozoa
 
-or with OTTs (and correcting for the misplaced genus Drilus (ott6358744) and Latidae fish genera (ott6362442, ott6362460, ott6362444) in the moluscs (https://github.com/OpenTreeOfLife/feedback/issues/426, https://github.com/OpenTreeOfLife/feedback/issues/418)
+or with OTTs
 
 (((Nemertea_ott445195,(((Bryozoa_ott442934,(Entoprocta_ott362916,Cycliophora_ott41147)Polyzoa),Phoronidae_ott612209),Brachiopoda_ott826261~-612209)Lophophorata),Annelida_ott941620),Mollusca_ott802117)Trochozoa
+
+
 
 ===================Overall tree====================
 
@@ -64,4 +72,4 @@ The Chaetognaths are placed as a outgroup to all other protostomes
 OpenTree v6 onwards has a slighly improved phylogenetic structure for pancrustacea (including insects), so we simply take this from the OpenTree.
 
 from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Animals]
-(((((((Nemertea_ott445195@,(((Bryozoa_ott442934@,(Entoprocta_ott362916@,Cycliophora_ott41147@))Polyzoa,Phoronida_ott612209@),Brachiopoda_ott826261~-612209@)Lophophorata),Annelida_ott941620@),Mollusca_ott802117@)Trochozoa,(Gastrotricha_ott29723@,Platyhelminthes_ott555379@)),(((Rotifera_ott471706@,Acanthocephala_ott49622@)Syndermata,Micrognathozoa_ott435981@),Gnathostomulida_ott242963@)Gnathifera)Spiralia,((((Onychophora_ott1072433@,Arthropoda_ott632179@),Tardigrada_ott111438~-2943021@),(Nematoda_ott395057@,Nematomorpha_ott189836@)),Scalidophora_ott434620@)Ecdysozoa),Chaetognatha_ott570366@)Protostomia;
+(((((((Nemertea_ott445195@,(((Bryozoa_ott442934@,(Entoprocta_ott362916@,Cycliophora_ott41147@))Polyzoa,Phoronida_ott612209@),Brachiopoda_ott826261~-612209@)Lophophorata),Annelida_ott941620@),Mollusca_ott802117@)Trochozoa,(Gastrotricha_ott29723@,Platyhelminthes_ott555379@)),(((Rotifera_ott471706@,Acanthocephala_ott49622@)Syndermata,Micrognathozoa_ott435981@),Gnathostomulida_ott242963@)Gnathifera)Spiralia,((((Onychophora_ott1072433@,Arthropoda_ott632179-5008315@),Tardigrada_ott111438~-2943021@),(Nematoda_ott395057@,Nematomorpha_ott189836@)),Scalidophora_ott434620@)Ecdysozoa),Chaetognatha_ott570366@)Protostomia;

@@ -85,8 +85,8 @@ function _pre_calc(node, angle) {
     node.nextx[other_child] = (1.3*Math.cos(angle))-(((node.bezr)-(partl1*thisratio2))/2.0)*tempcos90pre; // x refernece point for both children
     node.nexty[other_child] = (1.3*Math.sin(angle))-(((node.bezr)-(partl1*thisratio2))/2.0)*tempsin90pre; // y reference point for both children
     
-    node.arcx = node.bezex;
-    node.arcy = node.bezey;
+    node.arcx = node.bezex*1.01;
+    node.arcy = node.bezey*1.01;
     node.arcr = (node.bezr)/2;
     
     if (node.has_child)

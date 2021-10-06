@@ -6,6 +6,8 @@ import config from '../global_config';
 import tree_settings from '../tree_settings';
 import data_repo from '../factory/data_repo';
 import { record_url } from '../navigation/record';
+import { get_id_by_state } from '../navigation/setup_page';
+import { parse_window_location } from '../navigation/utils';
 
 /**
  * @class Controller
@@ -119,19 +121,21 @@ export default function (Controller) {
     if (vis !== tree_settings.vis) {
       let prev = tree_settings.vis
       tree_settings.vis = vis;
-      let self = this
-      if (prev == "polytomy") {
-        record_url();
-        document.location.reload()
-      } else {
-        tree_settings.rebuild_tree(vis, prev, this).then(function () {
-          self.update_form();
-          self.reset();
-          if (!init) {
-            record_url();
-          }
-        });
-      }
+      let self = this;
+
+      // Get pre-rebuild state, so we can restore the rough position by ID
+      let state = parse_window_location();
+
+      tree_settings.rebuild_tree(vis, prev, this).then(function () {
+        self.update_form();
+        self.reset();
+        return get_id_by_state(state);
+      }).then(function (id) {
+        // Move to the ID specified in the old state
+        if (id) {
+          return(self.init_move_to(id, "leap"));
+        }
+      });
     }
   }
   Controller.prototype.get_view_type = function () {
@@ -144,23 +148,45 @@ export default function (Controller) {
    * @param {String} - One of the theme names listed as keys in tree_settings.options.cols
    * @memberof Controller
    */
-  Controller.prototype.change_color_theme = function (color_theme) {
-    tree_settings.cols = color_theme;
+  Controller.prototype.change_color_theme = function (color_theme,colour_blind_friendly_status) {
+      tree_settings.colour_blind_friendly = colour_blind_friendly_status;
+      if (colour_blind_friendly_status) {
+          tree_settings.cols = color_theme + "_CBF";
+      } else {
+          tree_settings.cols = color_theme;
+      }
+    this.trigger_refresh_loop()
   }
+    
   /**
    * Get the name of the current colour theme (one of the property name in tree_settings.options.cols)
    * or undefined if the current theme does not match any of those (i.e. is a bespoke theme)
    * @method get_color_theme
    * @memberof Controller
    */
-  Controller.prototype.get_color_theme = function () {
-    return (tree_settings.cols);
-  }
+    Controller.prototype.get_color_theme = function () {
+       return (tree_settings.cols);
+    }
 
+    /**
+     * Get the name of the current colour theme (one of the property name in tree_settings.options.cols)
+     * or undefined if the current theme does not match any of those (i.e. is a bespoke theme)
+     * @method get_color_theme
+     * @memberof Controller
+     */
+    Controller.prototype.get_color_theme_CBF = function () {
+        if (tree_settings.colour_blind_friendly) {
+            return (true);
+        } else {
+            return (false);
+        }
+    }
+    
   Controller.prototype.set_image_source = function (image_source, init = false) {
     if (data_repo.image_source !== image_source) {
       data_repo.image_source = image_source;
       clear_node_pics(this.root);
+      this.trigger_refresh_loop()
       if (!init) {
         record_url({
           replaceURL: true

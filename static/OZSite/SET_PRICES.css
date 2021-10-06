@@ -5,3 +5,17 @@ td, th {
     border: 1px solid black;
     padding: 0.5em;
 }
+
+th {
+    text-align: center
+}
+
+.integer.form-control {
+    width: 5em;
+}
+.double.form-control {
+    width: 7em;
+}
+.string.form-control {
+    width: 20em;
+}

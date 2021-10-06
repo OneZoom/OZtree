@@ -14,15 +14,19 @@ import {live_area_config} from '../live_area_config';
 
 class NodeLayoutBase {
   get_shapes(node, shapes) {
+      if (!(node._is_polytomy == true)) {
     this.reset_hover_state();
     this.calc_twh(node);
     if (!node.under_signpost) {
       add_mr(get_abs_x(node, node.arcx), get_abs_y(node, node.arcy), get_abs_r(node, node.arcr));
       this.highlight_part_shapes(node, shapes);
-      this.interior_circle_shapes(node, shapes);
+      this.interior_circle_full_shapes(node, shapes);
       this.low_res_shapes(node, shapes);
       this.high_res_shapes(node, shapes);
-    }
+    } //else {
+        //this.interior_circle_shapes(node, shapes);
+    //} // this draws circles with no detail in the further distance - we don't need it any more
+  }
   }
   
   reset_hover_state() {
@@ -37,7 +41,7 @@ class NodeLayoutBase {
   }
   
   high_res_shapes(node, shapes) {
-    if (config.projection.draw_all_details && node.rvar >= config.projection.node_high_res_thres) {
+    if ((config.projection.draw_all_details && node.rvar >= config.projection.node_high_res_thres)) {
       this.high_res_sponsor_shapes(node, shapes);
       this.high_res_image_shapes(node, shapes);
       this.high_res_text_shapes(node, shapes);
@@ -539,8 +543,26 @@ class NodeLayoutBase {
   }
 
   interior_circle_shapes(node, shapes) {
+      if (node.rvar > 10) //config.projection.node_low_res_thres && config.projection.interior_circle_draw;
+      {
+      let arc_shape = ArcShape.create();
+      arc_shape.x = node.xvar + node.rvar * node.arcx;
+      arc_shape.y = node.yvar + node.rvar * node.arcy;
+      arc_shape.r = node.rvar * node.arcr ;
+      arc_shape.circle = true;
+      arc_shape.height = 2;
+      arc_shape.order = "fill_first";
+      arc_shape.do_stroke = false;
+      arc_shape.do_fill = true;
+      arc_shape.fill.color = color_theme.get_color('interior.circle.fill', node);
+      shapes.push(arc_shape);
+      }
+  }
+
+    
+  interior_circle_full_shapes(node, shapes) {
     let condition = node.rvar > config.projection.node_low_res_thres && config.projection.interior_circle_draw;
-    if (!condition) return;
+      if (condition) {          
     let arc_shape = ArcShape.create();
     if (!this.hovered && this.live_area_interior_circle_test(node)) {
       this.hovered = true;
@@ -549,40 +571,23 @@ class NodeLayoutBase {
     }
     arc_shape.x = node.xvar + node.rvar * node.arcx;
     arc_shape.y = node.yvar + node.rvar * node.arcy;
-    arc_shape.r = node.rvar * node.arcr * (1-config.projection.partl2/2.0);
+      arc_shape.r = node.rvar * node.arcr * (1-config.projection.partl2/2.0); 
     arc_shape.circle = true;
     arc_shape.height = 2;
     arc_shape.order = "fill_first";
-    arc_shape.do_stroke = true;
+      arc_shape.do_stroke = true;
     arc_shape.stroke.line_width = node.arcr * config.projection.partl2 * node.rvar;
     arc_shape.stroke.color = color_theme.get_color('interior.circle.stroke', node);
     
-      /*
-       // James - I think this code allows the stroke around an interior circle to be a different colour depending on whether it's a search hit or not. This never happens, which I think is beacuse it's bugged
-       // for now I'm simply removing as this was not such an important feature anyway.
-       // it MIGHT be so that the paths stop neatly at the edge of the circle - james needs to test this still.
-    if (node.has_child) {
-      let is_common_ancestor = true;
-      let length = node.children.length;
-      for (let i=0; i<length; i++) {
-        if (!node.children[i].route_to_search) { // the bug is here, requires all descendents to be marked in order for it to work
-          is_common_ancestor = false;
-          break;
-        }
-      }
-      if (is_common_ancestor) {
-        arc_shape.stroke.color = color_theme.get_color('interior.circle_searchin.stroke', node)  
-      }      
-    }
-       */
     arc_shape.do_fill = true;
     arc_shape.fill.color = color_theme.get_color('interior.circle.fill', node);
     if (this.hovering) {
-      arc_shape.stroke.color = color_theme.get_color('interior.circle_hover.stroke', node);  
+      arc_shape.stroke.color = color_theme.get_color('interior.circle_hover.stroke', node);
       arc_shape.fill.color = color_theme.get_color('interior.circle_hover.fill', node);
     }
     this.hovering = false;
     shapes.push(arc_shape);
+      }
   }
 
   highlight_part_shapes(node, shapes) {

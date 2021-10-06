@@ -12,7 +12,7 @@ The full list of academic references used in these files, as permanent DOI links
 
 <!-- Note that the text below was obtained by
 
-perl -ne 'print "* [$1]($1)\n" if m|(https://doi\S+)|g' include_noAutoOTT/* | sort | uniq
+perl -ne 'print "* [$1]($1)\n" if m|(https://doi[^\s\)\]]+)|g' include_noAutoOTT/* | sort | uniq
 perl -ne 'print "* $1\n" if m|(pers.\s+comm.\s+\S+\s+\S+)|g' include_noAutoOTT/*
 
  -->
@@ -26,7 +26,7 @@ perl -ne 'print "* $1\n" if m|(pers.\s+comm.\s+\S+\s+\S+)|g' include_noAutoOTT/*
 * [https://doi.org/10.1016/j.cub.2009.07.004](https://doi.org/10.1016/j.cub.2009.07.004)
 * [https://doi.org/10.1016/j.cub.2015.06.068](https://doi.org/10.1016/j.cub.2015.06.068)
 * [https://doi.org/10.1016/j.cub.2019.01.068](https://doi.org/10.1016/j.cub.2019.01.068)
-* [https://doi.org/10.1016/j.ejop.2012.08.007](https://doi.org/10.1016/j.ejop.2012.08.007)
+* [https://doi.org/10.1016/j.tree.2019.08.008](https://doi.org/10.1016/j.tree.2019.08.008)
 * [https://doi.org/10.1016/j.ympev.2011.08.028](https://doi.org/10.1016/j.ympev.2011.08.028)
 * [https://doi.org/10.1016/j.ympev.2011.12.012](https://doi.org/10.1016/j.ympev.2011.12.012)
 * [https://doi.org/10.1016/j.ympev.2012.02.033](https://doi.org/10.1016/j.ympev.2012.02.033)
@@ -36,25 +36,28 @@ perl -ne 'print "* $1\n" if m|(pers.\s+comm.\s+\S+\s+\S+)|g' include_noAutoOTT/*
 * [https://doi.org/10.1038/nature14181](https://doi.org/10.1038/nature14181)
 * [https://doi.org/10.1038/nature16520](https://doi.org/10.1038/nature16520)
 * [https://doi.org/10.1038/nature16545](https://doi.org/10.1038/nature16545)
+* [https://doi.org/10.1038/s41467-021-22044-z](https://doi.org/10.1038/s41467-021-22044-z)
 * [https://doi.org/10.1038/s41559-017-0331-3](https://doi.org/10.1038/s41559-017-0331-3)
+* [https://doi.org/10.1038/s41559-018-0644-x](https://doi.org/10.1038/s41559-018-0644-x)
+* [https://doi.org/10.1038/s41586-018-0708-8,](https://doi.org/10.1038/s41586-018-0708-8,)
+* [https://doi.org/10.1038/s41586-018-0708-8](https://doi.org/10.1038/s41586-018-0708-8)
 * [https://doi.org/10.1073/pnas.1105499108](https://doi.org/10.1073/pnas.1105499108)
-* [https://doi.org/10.1073/pnas.1420657112](https://doi.org/10.1073/pnas.1420657112)
 * [https://doi.org/10.1080/14772000.2010.484436](https://doi.org/10.1080/14772000.2010.484436)
 * [https://doi.org/10.1093/gbe/evu031](https://doi.org/10.1093/gbe/evu031)
+* [https://doi.org/10.1093/gbe/evy014](https://doi.org/10.1093/gbe/evy014)
 * [https://doi.org/10.1093/icb/42.3.652](https://doi.org/10.1093/icb/42.3.652)
 * [https://doi.org/10.1093/molbev/msq147](https://doi.org/10.1093/molbev/msq147)
 * [https://doi.org/10.1093/molbev/msu176](https://doi.org/10.1093/molbev/msu176)
 * [https://doi.org/10.1093/sysbio/syr047](https://doi.org/10.1093/sysbio/syr047)
+* [https://doi.org/10.1098/rspb.2013.1755](https://doi.org/10.1098/rspb.2013.1755)
 * [https://doi.org/10.1098/rstb.2007.2233](https://doi.org/10.1098/rstb.2007.2233)
-* [https://doi.org/10.1101/cshperspect.a016147](https://doi.org/10.1101/cshperspect.a016147)
 * [https://doi.org/10.1111/j.1439-0426.2008.01088.x](https://doi.org/10.1111/j.1439-0426.2008.01088.x)
-* [https://doi.org/10.1111/j.1550-7408.2012.00644.x](https://doi.org/10.1111/j.1550-7408.2012.00644.x)
 * [https://doi.org/10.1111/jeu.12401](https://doi.org/10.1111/jeu.12401)
+* [https://doi.org/10.1111/jeu.12691](https://doi.org/10.1111/jeu.12691)
 * [https://doi.org/10.1111/jzs.12035](https://doi.org/10.1111/jzs.12035)
 * [https://doi.org/10.1126/science.1251981](https://doi.org/10.1126/science.1251981)
 * [https://doi.org/10.1186/1471-2148-10-209](https://doi.org/10.1186/1471-2148-10-209)
 * [https://doi.org/10.1186/1471-2148-13-253](https://doi.org/10.1186/1471-2148-13-253)
-* [https://doi.org/10.1186/1741-7007-11-40](https://doi.org/10.1186/1741-7007-11-40)
 * [https://doi.org/10.1186/s12862-015-0446-6](https://doi.org/10.1186/s12862-015-0446-6)
 * [https://doi.org/10.1186/s43008-019-0005-7](https://doi.org/10.1186/s43008-019-0005-7)
 * [https://doi.org/10.1201/B11867-9](https://doi.org/10.1201/B11867-9)

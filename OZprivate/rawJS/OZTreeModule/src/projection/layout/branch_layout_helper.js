@@ -14,7 +14,9 @@ class BranchLayoutBase {
   // this is the main routine that draws the node
   get_shapes(node, shapes) {
     this.get_bezier_shapes(node, shapes, this.get_markings_list(node));
-    if (node.is_interior_node) {
+    if (node.is_interior_node && (! node.has_child)) {
+      // draw this only if we're on the end of an undeveloped branch
+      // hence we'd be an interior branch with no children (yet) as they are not developed
       this.draw_interior_circle(node, shapes);
     }
   }
@@ -84,16 +86,23 @@ class BranchLayoutBase {
    * Draw circle to cover node endings, hiding any gap between branch shapes
    */
   draw_interior_circle(node, shapes) {
-    let arc_shape = ArcShape.create();
-    arc_shape.x = node.xvar + node.rvar * node.arcx;
-    arc_shape.y = node.yvar + node.rvar * node.arcy;
-    arc_shape.r = node.rvar * node.arcr;
-    arc_shape.circle = true;
-    arc_shape.height = -1;
-    arc_shape.do_fill = true;
-    arc_shape.fill.color =  color_theme.get_color('branch.stroke', node);
-    shapes.push(arc_shape);
-  }
+        let arc_shape = ArcShape.create();
+        arc_shape.x = node.xvar + node.rvar * node.arcx;
+        arc_shape.y = node.yvar + node.rvar * node.arcy;
+        arc_shape.r = node.rvar * node.arcr;
+        arc_shape.circle = true;
+        arc_shape.height = 2;
+        arc_shape.order = "fill_first";
+        arc_shape.do_stroke = true;
+        arc_shape.do_fill = true;
+        arc_shape.stroke.line_width = node.arcr * config.projection.partl2 * node.rvar;
+        arc_shape.fill.color =  color_theme.get_color('interior.undeveloped.fill', node);
+        arc_shape.stroke.color = color_theme.get_color('interior.undeveloped.stroke', node);
+        shapes.push(arc_shape);
+        
+    }
+    
+    
 }
 
 export default BranchLayoutBase;
