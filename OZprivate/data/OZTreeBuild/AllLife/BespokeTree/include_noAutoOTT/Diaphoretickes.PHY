@@ -10,7 +10,11 @@ I remove some basal branches in Rhizaria, e.g. (5247609, 5247595, 5247616, 52476
 
 Dates from Strassert et al (2021, https://doi.org/10.1038/s41467-021-22044-z) rounded to 50MY intervals. The Hemimastigophora/Diaphoretickes divergence set at 2100, with the basal divergence here at ~2000
 
+A few clades are wrongly duplicated in plants, e.g. Aliceathrips (ott 6021346; https://github.com/OpenTreeOfLife/feedback/issues/532) so are removed e.g.
+
+Chloroplastida_ott361838~-6021346
+
 ]
 
 
-(((((Alveolata_ott266751@,Stramenopiles_ott266745@):100,Rhizaria_ott6929~-5247609-5247595-5247616-5247604-5247619-5247594-5247620-5247600-5247612@)SAR:150,Telonemia_ott5571514)TSAR:100,(Haptophyta_ott151014@,Centrohelida_ott755852@)Haptista):100,((Cryptophyceae_ott491172-5571514@,Palpitomonas_bilix_ott4739017)Cryptista:150,((Rhodophyceae_ott878953@:100,Picozoa):0,(Glaucophyta_ott664970@:100,Chloroplastida_ott361838@:100):50)Archaeplastida_ott5268475:50):100)Diaphoretickes:100;
+(((((Alveolata_ott266751@,Stramenopiles_ott266745@):100,Rhizaria_ott6929~-5247609-5247595-5247616-5247604-5247619-5247594-5247620-5247600-5247612@)SAR:150,Telonemia_ott5571514)TSAR:100,(Haptophyta_ott151014@,Centrohelida_ott755852@)Haptista):100,((Cryptophyceae_ott491172-5571514@,Palpitomonas_bilix_ott4739017)Cryptista:150,((Rhodophyceae_ott878953@:100,Picozoa):0,(Glaucophyta_ott664970@:100,Chloroplastida_ott361838~-6021346@:100):50)Archaeplastida_ott5268475:50):100)Diaphoretickes:100;
