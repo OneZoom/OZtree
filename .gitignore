@@ -1,4 +1,5 @@
 *.pyc
+RELEASE_INFO
 .DS_Store
 .sass-cache
 progress.log

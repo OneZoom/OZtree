@@ -16,7 +16,7 @@ from sponsorship import (
     sponsorship_config, sponsorable_children_query)
 
 from OZfunc import (
-    nice_species_name, get_common_name, get_common_names,
+    nice_species_name, get_common_name, get_common_names, __release_info,
     language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, add_the,
     otts2ids, nodes_info_from_array, nodes_info_from_string, extract_summary)
 
@@ -1505,7 +1505,7 @@ def pp_process_post():
 """ these empty controllers are for other OneZoom pages"""
 
 def introduction():
-    return dict()
+    return dict(release_info=__release_info())
 
 def work_with_us():
     return dict()
@@ -1542,10 +1542,10 @@ def installations():
     redirect(URL('education', 'installations'))
 
 def developer():
-    return dict()
+    return dict(release_info=__release_info())
 
 def about():
-    return dict()
+    return dict(release_info=__release_info())
 
 def data_sources():
     return dict()
