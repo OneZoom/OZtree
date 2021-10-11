@@ -9,7 +9,9 @@
 
 
 <h3>Our Software</h3>
-<p>OneZoom version 3.5 'chocolate chip starfish' (October 2021)</p>
+<p>OneZoom version {{=release_info[0]}}
+{{=XML("&lsquo;" + release_info[1] + "&rsquo;" if release_info[1] else "")}}
+{{=("(" + release_info[2].strftime("%B %Y") + ")" if release_info[2] else "")}}</p>
 <p>The OneZoom software allows you to explore the tree of life in a completely new way that is similar to viewing a geographical map.  This is done using techniques from a branch of mathematics known as fractal geometry, which enable us to condense the entire tree of life into a single page. OneZoom is so named because all the information is on one page, all you have to do is zoom to reveal further details. </p>
 
 <p><img class="lft_edge" src="/static/images/leaves/Lpic1.png" /></p>

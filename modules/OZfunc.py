@@ -4,6 +4,7 @@ Functions that are defined in controllers and that takes arguments are private.
 Functions defined in controllers and start with ‘__’ [double underscores] are private.
 Functions defined in controllers and having a space after the () and before the ‘:’ are private. 
 """
+from datetime import datetime
 import re
 import os
 import random
@@ -31,6 +32,26 @@ def __check_version(): #this is a private function
             raise IndexError(current.T("there seems to be no data for tree nodes in the database (the `ordered_nodes` table is not filled out)"))
     except Exception as e:
         return str(e)
+
+def __release_info():
+    """
+    Return the release number and name, as stored in the RELEASE_INFO file, which is
+    created automatically when generating the website
+    """
+    ret = [None, None, None]  # tag, name, release date
+    try:
+        with open(os.path.join(current.request.folder, "RELEASE_INFO"), "rt") as file:
+            for i, v in enumerate(file.readlines()):
+                if i == 2:
+                    try:
+                        ret[i] = datetime.fromisoformat(v.strip())
+                    except ValueError:
+                        pass
+                else:
+                    ret[i] = v.strip()
+    except FileNotFoundError:
+        pass
+    return ret
 
 def lang_primary(req):
     language=req.vars.lang or req.env.http_accept_language or 'en'

@@ -24,6 +24,9 @@ module.exports = function (grunt) {
                 + process.cwd()
                 + '\', skip_failed_views=True)"'
       },
+      make_release_info: {
+        command: 'git describe --tags > RELEASE_INFO && python3 OZprivate/ServerScripts/Utilities/get_release_name.py RELEASE_INFO >> RELEASE_INFO'
+      },
       test_server: {
         command: 'for f in tests/unit/*.py; do echo === $f; ' + preferred_python3 + ' ' + web2py_py + ' -S OZtree -M -e -R applications/OZtree/$f; done'
       },
@@ -164,6 +167,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-curl');
   grunt.loadNpmTasks('grunt-sass');
 
+  grunt.registerTask("make_release_info", ["exec:make_release_info"]);
   grunt.registerTask("test", ["exec:test"]);
   grunt.registerTask("test-server", ["exec:test_server"]);
   grunt.registerTask("test-server-functional", ["exec:test_server", "exec:test_server_functional"]);
@@ -174,6 +178,6 @@ module.exports = function (grunt) {
   grunt.registerTask("compile-js_dev", ["exec:compile_js_dev"]);
   grunt.registerTask("partial-install",       ["compile-js", "css", "copy:dev", "curl-dir:get_minlife", "exec:convert_links_to_local"]);
   grunt.registerTask("partial-local-install", ["compile-js", "css", "copy:dev", "curl-dir:get_local_minlife", "exec:convert_links_to_local"]);
-  grunt.registerTask("prod", ["clean", "compile-python", "compile-js", "css", "compress", "copy:prod", "docs"]);
-  grunt.registerTask("dev",  ["clean",               "compile-js_dev", "css", "compress", "copy:dev",  "docs"]);
+  grunt.registerTask("prod", ["clean", "compile-python", "compile-js", "css", "compress", "copy:prod", "make_release_info", "docs"]);
+  grunt.registerTask("dev",  ["clean",               "compile-js_dev", "css", "compress", "copy:dev",  "make_release_info", "docs"]);
 };

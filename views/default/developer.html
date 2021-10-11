@@ -5,7 +5,9 @@
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
     <h1>OneZoom software tools for researchers and developers</h1>
-    <em>Our code is the work of over ten years and is available on a public Github repository. We're still improving our software iteratively and welcome collaboration. The latest release is 'Chocolate chip starfish' (version is 3.5 - October 2021)</em>
+    <em>Our code is the work of over ten years and is available on a public Github repository. We're still improving our software iteratively and welcome collaboration. This website is running OneZoom {{=release_info[0]}}
+{{=XML("&lsquo;" + release_info[1] + "&rsquo;" if release_info[1] else "")}}
+{{=("(released " + release_info[2].strftime("%B %Y") + ")" if release_info[2] else "")}}</em>
 </div>
 {{end block}}
 
