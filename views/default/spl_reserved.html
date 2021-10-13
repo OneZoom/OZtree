@@ -15,4 +15,4 @@
 {{end block}}
 <h2>{{=T('Temporarily reserved')}}</h2>
 <p>{{=XML(T('We are sorry, %s is temporarily reserved for sponsorship by someone else. If you come back in %s minutes it may be available to you.') % (the_long_name, SPAN(int(ceil(1.0/60.0*release_time)),_class="reserve_mins_left")))}}</p>
-<p>{{=T('Only one sponsor per leaf so get your favourite species before someone else does.')}}</p>
+<p>{{=T('Only one sponsor per leaf, so get your favourite species before someone else does.')}}</p>

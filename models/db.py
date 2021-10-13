@@ -546,7 +546,7 @@ db.define_table('reservations',
     # if verified_time = NULL then details haven't been verified
     Field('verified_paid', type = 'text', writable = False), 
     # The amount paypal reported as being paid (as a stringified pounds/pence float) for this OTTID
-    # May be NULL after payment if, e.g. payment received outside paypal, see notes in add_reservation()
+    # May be NULL after payment if, e.g. payment received outside paypal, see notes in get_reservation()
     Field('verified_url', type = 'text'),  
     # url for those that agree to have one            
     Field('sponsorship_text_level', type = 'integer'),
@@ -610,7 +610,7 @@ db.define_table('uncategorised_donation',
     # seems professional to know when they paid and wise to keep it separate from expiry date
     Field('verified_paid', type = 'text', writable = False), 
     # The amount paypal reported as being paid (as a stringified pounds/pence float) for this OTTID
-    # May be NULL after payment if, e.g. payment received outside paypal, see notes in add_reservation()
+    # May be NULL after payment if, e.g. payment received outside paypal, see notes in get_reservation()
     Field('user_paid', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
     # The amount (in pounds) the user promised to pay for this OTTID
     Field('user_giftaid', type = boolean),
