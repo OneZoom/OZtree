@@ -25,9 +25,14 @@ def sponsorship_config():
     except:
         out['unpaid_time_limit'] = 2.0*24.0*60.0*60.0 #seconds
     try:
-        out['sponsorship_renew_discount'] = float(myconf.take('sponsorship.renew_discount'))
+        out['renew_discount'] = float(myconf.take('sponsorship.renew_discount'))
     except:
-        out['sponsorship_renew_discount'] = 0.2
+        out['renew_discount'] = 0.2
+    try:
+        out['maintenance_mins'] = myconf.take('sponsorship.maintenance_mins')
+        out['maintenance_mins'] = int(out['maintenance_mins'])
+    except:
+        out['maintenance_mins'] = 0
     return out
 
 
@@ -126,7 +131,7 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
     """
     db = current.db
     request = current.request
-    sponsorship_renew_discount = sponsorship_config()['sponsorship_renew_discount']
+    sponsorship_renew_discount = sponsorship_config()['renew_discount']
 
     if 'PP_transaction_code' not in basket_fields:
         raise ValueError("basket_fields should at least have PP_transaction_code")
@@ -179,7 +184,7 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             prev_ott = r.OTT_ID
             prev_sponsorship_ends = r.sponsorship_ends
             prev_reservation_id = reservation_expire(r)
-            status, r, _ = add_reservation(prev_ott, basket_code)
+            status, _, r, _ = get_reservation(prev_ott, basket_code)
             assert status == 'available'  # We just expired the old one, this should work
             reservation_add_to_basket(basket_code, r, dict(
                 prev_reservation_id=prev_reservation_id
@@ -245,7 +250,7 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
         db.uncategorised_donation.insert(**fields_to_update)
 
 
-def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False):
+def get_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False):
     """
     Try and add a reservation for OTT_ID_Varin
     - form_reservation_code: Temporary identifier for current user
@@ -254,6 +259,7 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
     Returns
     - status: String describing reservation status, One of
     -         banned / available / available only to user / reserved / sponsored / unverified / unverified waiting for payment
+    - status_param: A parameter associated with the status, e.g. number of mins of maintenance, time until allowed to sponsor
     - reservation_row: row from reservations table
     - leaf_entry: row from ordered_leaves table
     """
@@ -262,10 +268,15 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
     sp_conf = sponsorship_config()
     reservation_time_limit = sp_conf['reservation_time_limit']
     unpaid_time_limit = sp_conf['unpaid_time_limit']
+    maintenance_mins = sp_conf['maintenance_mins']
+
+    reservation_row = None
     allow_sponsorship = sponsorship_enabled()
     # initialise status flag (it will get updated if all is OK)
-    status = ""
-    reservation_row = None
+    status, status_param = "", None
+    maintenance_mode = bool(maintenance_mins)
+    if maintenance_mode:
+        status, status_param = "maintenance", maintenance_mins
     # now search for OTTID in the leaf table
     try:
         leaf_entry = db(db.ordered_leaves.ott == OTT_ID_Varin).select().first()
@@ -275,9 +286,8 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
     if ((not leaf_entry) or             # invalid if not in ordered_leaves
         (leaf_entry.ott is None) or     # invalid if no OTT ID
         (' ' not in leaf_entry.name)):  # invalid if not a sp. name (no space/underscore)
-            status = "invalid" # will override maintenance
-
-    if status == "":  # still need to figure out status, but should be able to get data
+            status, status_param = "invalid", None # will override maintenance
+    else: # should be able to get data
         # we might come into this with a partner set in request.vars (e.g. LinnSoc)
         """
         TO DO & CHECK - Allows specific parts of the tree to be associated with a partner
@@ -300,32 +310,33 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
         """
         # find out if the leaf is banned
         if db(db.banned.ott == OTT_ID_Varin).count() >= 1:
-            status = "banned"
+            status, status_param = "banned", None  # will override maintenance
         # we need to update the reservations table regardless of banned status)
         reservation_query = db(db.reservations.OTT_ID == OTT_ID_Varin)
         reservation_row = reservation_query.select().first()
         if reservation_row is None:
-            # there is no row in the database for this case so add one
-            if (status == ""):
-                status = "available"
-            if status == "available" and allow_sponsorship:
-                db.reservations.insert(
-                    OTT_ID = OTT_ID_Varin,
-                    name=leaf_entry.name,
-                    last_view=request.now,
-                    num_views=1,
-                    reserve_time=request.now,
-                    user_registration_id=form_reservation_code)
-            else:
-                # update with full viewing data but no reservation, even if e.g. banned
-                db.reservations.insert(
-                    OTT_ID = OTT_ID_Varin,
-                    name=leaf_entry.name,
-                    last_view=request.now,
-                    num_views=1)
+            if not maintenance_mode:
+                # there is no row in the database for this case so add one
+                if (status == ""):
+                    status = "available"
+                if status == "available" and allow_sponsorship:
+                    db.reservations.insert(
+                        OTT_ID = OTT_ID_Varin,
+                        name=leaf_entry.name,
+                        last_view=request.now,
+                        num_views=1,
+                        reserve_time=request.now,
+                        user_registration_id=form_reservation_code)
+                else:
+                    # update with full viewing data but no reservation, even if e.g. banned
+                    db.reservations.insert(
+                        OTT_ID = OTT_ID_Varin,
+                        name=leaf_entry.name,
+                        last_view=request.now,
+                        num_views=1)
         else:
             # there is already a row in the database so update if this is the main visit
-            if update_view_count:
+            if update_view_count and not maintenance_mode:
                 reservation_query.update(
                     last_view=request.now,
                     num_views=(reservation_row.num_views or 0)+1,
@@ -347,7 +358,7 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
             # Need to have another option here if verified_time is too long ago - we
             #  should move this to the expired_reservations table and clear it.
             if (ledger_verified_time):
-                status = "sponsored"
+                status = "sponsored"  # will override maintenance
             elif status != "banned":
                 if (ledger_user_name):
                 # something has been filled in
@@ -362,7 +373,7 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
                         # now we check if the time is too great
                         if (timesince < (unpaid_time_limit)):
                             status = "unverified waiting for payment"
-                        else:
+                        elif not maintenance_mode:
                             # We've waited too long and can zap the personal data
                             # previously in the table then set available
                             clear_reservation(OTT_ID_Varin)
@@ -377,13 +388,14 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
                     startTime = reservation_row.reserve_time   
                     endTime = request.now
                     if (startTime == None):
-                        status = "available"
-                        # reserve the leaf because there is no reservetime on record
-                        if allow_sponsorship:
-                            reservation_query.update(
-                                name=leaf_entry.name,
-                                reserve_time=request.now,
-                                user_registration_id=form_reservation_code)
+                        if not maintenance_mode:
+                            status = "available"
+                            # reserve the leaf because there is no reservetime on record
+                            if allow_sponsorship:
+                                reservation_query.update(
+                                    name=leaf_entry.name,
+                                    reserve_time=request.now,
+                                    user_registration_id=form_reservation_code)
                     else:
                         # compare times to figure out if there is a time difference
                         timesince = ((endTime-startTime).total_seconds())
@@ -392,14 +404,15 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
                             # we may be reserved if it wasn't us
                             if(form_reservation_code == reservation_row.user_registration_id):
                                 # it was the same user anyway so reset timer
-                                status = "available only to user"
-                                if allow_sponsorship:
-                                    reservation_query.update(
-                                        name=leaf_entry.name,
-                                        reserve_time=request.now)
+                                if not maintenance_mode:
+                                    status = "available only to user"
+                                    if allow_sponsorship:
+                                        reservation_query.update(
+                                            name=leaf_entry.name,
+                                            reserve_time=request.now)
                             else:
-                                status = "reserved"
-                        else:
+                                status, status_param = "reserved", release_time
+                        elif not maintenance_mode:
                             # it's available still
                             status = "available"
                             # reserve the leaf because there is no reservetime on record
@@ -408,14 +421,16 @@ def add_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
                                     name=leaf_entry.name,
                                     reserve_time = request.now,
                                     user_registration_id = form_reservation_code)
-
         #re-do the query since we might have added the row ID now
         reservation_row = reservation_query.select().first()
-    return status, reservation_row, leaf_entry
+    return status, status_param, reservation_row, leaf_entry
 
-def sponsorable_children_query(target_id, qtype="ott"):
+
+def sponsorable_children_query(target_id, qtype="ott", check_reservations_table=True):
     """
-    A function that returns a web2py query selecting the sponsorable children of this node.
+    A function that returns a web2py query selecting the sponsorable children of a specific
+    node (given by OTT if qtype="ott" or ID if qtype="id".
+    
     Note a slight bug: this includes ones that have been reserved or sponsored but not paid for yet
     TO DO: change javascript so that nodes without an OTT use qtype='id'
     """
@@ -428,14 +443,56 @@ def sponsorable_children_query(target_id, qtype="ott"):
     #nodes without a space in the name are unsponsorable
     query = query & (db.ordered_leaves.name.contains(' ')) 
 
-    #check which have OTTs in the reservations table
-    unavailable = db((db.reservations.verified_time != None))._select(db.reservations.OTT_ID)
-    #the query above ony finds those with a name. We might prefer something like the below, but I can't get it to work
-    #unavailable = db((db.reservations.user_sponsor_name != None) | ((db.reservations.reserve_time != None) & ((request.now - db.reservations.reserve_time).total_seconds() < reservation_time_limit)))._select(db.reservations.OTT_ID)
-    
-    query = query & (~db.ordered_leaves.ott.belongs(unavailable))
-    return(query)
+    if check_reservations_table:
+        #check which have OTTs in the reservations table
+        unavailable = db((db.reservations.verified_time != None))._select(db.reservations.OTT_ID)
+        #the query above ony finds those with a name. We might prefer something like the below, but I can't get it to work
+            #unavailable = db((db.reservations.user_sponsor_name != None) | ((db.reservations.reserve_time != None) & ((request.now - db.reservations.reserve_time).total_seconds() < reservation_time_limit)))._select(db.reservations.OTT_ID)
+        query = query & (~db.ordered_leaves.ott.belongs(unavailable))
 
+    return query
+
+def sponsorable_children(target_id, qtype="ott", limit=None, in_reservations=None):
+    """
+    Return the result of a query to get the sponsorable children (otts) of an internal
+    node.
+    
+    The in_reservations parameter specifies what to do with sponsorable OTTs that are in
+    the reservations table (i.e. not actually sponsored, but with a row in reservations,
+    which can occur if people lick to sponsor but don;t go through with it.
+    If in_reservations is None, return OTTs including those in the reservations table 
+    If in_reservations is True, return OTTs which must be in the reservations table 
+    If in_reservations is False, return OTTs which are not in the reservations table 
+    """
+    db = current.db
+    limitby = None if limit is None else (0, limit)
+    
+    if in_reservations is None:
+        query = sponsorable_children_query(target_id, qtype)
+        return db(query).select(db.ordered_leaves.ott, limitby=limitby)
+    elif not in_reservations:
+        # The reservations table could have a lot of OTT IDs, in which case the default
+        # query, which uses .belongs() will be very slow, so we use a left join instead
+        query = sponsorable_children_query(target_id, qtype, check_reservations_table=False)
+        query = query & (db.reservations.OTT_ID == None)
+        return db(query).select(
+            db.ordered_leaves.ott,
+            left=db.reservations.on(db.ordered_leaves.ott == db.reservations.OTT_ID),
+            limitby=limitby,
+            orderby="NULL",  # Suppress ordering, as otherwise we try to order on a joined index
+        )
+    else:
+        # The reservations table could have a lot of OTT IDs, in which case the default
+        # query, which uses .belongs() will be very slow, so we use a left join instead
+        query = sponsorable_children_query(target_id, qtype, check_reservations_table=False)
+        query = query & (db.reservations.OTT_ID != None)
+        return db(query).select(
+            db.ordered_leaves.ott,
+            left=db.reservations.on(db.ordered_leaves.ott == db.reservations.OTT_ID),
+            limitby=limitby,
+            orderby="NULL",  # Suppress ordering, as otherwise we try to order on a joined index
+        )
+    
 
 def sponsor_renew_hmac_key():
     """Get hmac_key, or error informatively"""
