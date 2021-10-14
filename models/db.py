@@ -201,7 +201,7 @@ db.define_table('ordered_leaves',
     Field('real_parent', type='integer', notnull=True), #index number into ordered_nodes, negative if this is a polytomy
     Field('name', type='string', length=name_length_chars), #this is not genus and species because not everything conforms to that 
     Field('extinction_date', type='double'), #in Ma
-    Field('ott', type = 'integer'),
+    Field('ott', type='integer'),
     Field('wikidata', type='integer'),
     Field('wikipedia_lang_flag', type='integer'), #which language wikipedia articles exist (enwiki=1, dewiki=2, eswiki=4, etc etc: listed in wikiflags in _OZglobals.py)
     Field('eol', type='integer'),
@@ -232,7 +232,7 @@ db.define_table('ordered_nodes',
     Field('leaf_rgt', type='integer', notnull=True),
     Field('name', type='string', length=name_length_chars), #scientific name
     Field('age', type='double'), # in Ma, e.g. chimp/human = 6.0
-    Field('ott', type = 'integer'),
+    Field('ott', type='integer'),
     Field('wikidata', type='integer'),
     Field('wikipedia_lang_flag', type='integer'), #
     Field('eol', type='integer'),
@@ -290,31 +290,31 @@ db.define_table('ordered_nodes',
 # this could be obtained e.g. from EoL or IUCN. Most should be identified by ott, but
 # some taxa have no ott id, so have to be identified (in another table) by name
 db.define_table('vernacular_by_ott',
-    Field('ott', type = 'integer', notnull=True, requires=IS_NOT_EMPTY()), # the opentree id for this taxon
+    Field('ott', type='integer', notnull=True, requires=IS_NOT_EMPTY()), # the opentree id for this taxon
     Field('vernacular', type='string', notnull=True, length=name_length_chars), #in mySQL, need to set this to charset utf8mb4 so that all the weird unicode characters are saved correctly
     Field('lang_primary', type='string', notnull=True, length=3), #the 'primary' 2  or 3 letter 'lang' code for this name (e.g. 'en', 'cmn'). See http://www.w3.org/International/articles/language-tags/
     # can be constructed from sql by 
     #sql> update vernacular_by_ott set lang_primary=substring_index(lang_full,'-',1);
     Field('lang_full', type='string', notnull=True, length=20), #the longer 'lang' code for this name (e.g. 'en-gb, zh-hans, etc'), as lowecase. Should never be >20 chars.
     Field('preferred', type=boolean, notnull=True), #if there are several names for a lang, use this
-    Field('src', type = 'integer', notnull=True), # The source (eol, bespoke, etc)
-    Field('src_id', type = 'integer'), # The sourceid, e.g the EoL page id.
+    Field('src', type='integer', notnull=True), # The source (eol, bespoke, etc)
+    Field('src_id', type='integer'), # The sourceid, e.g the EoL page id.
     #NB sourceid is mainly for traceability. For a proper matching of e.g. eol to OTT, see ordered_leaves
-    Field('updated', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
+    Field('updated', type='datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
     format = '%(ott)s_%(vernacular)s_%(lang)s')
 
 db.define_table('vernacular_by_name',
-    Field('name', type = 'string', notnull=True, length=name_length_chars, requires=IS_NOT_EMPTY()), 
+    Field('name', type='string', notnull=True, length=name_length_chars, requires=IS_NOT_EMPTY()), 
     Field('vernacular', type='string', notnull=True, length=name_length_chars), #in mySQL, need to set this to charset utf8mb4 so that all the weird unicode characters are saved correctly
    Field('lang_primary', type='string', notnull=True, length=3), #the 'primary' 2  or 3 letter 'lang' code for this name (e.g. 'en', 'cmn'). See http://www.w3.org/International/articles/language-tags/
     # can be constructed from sql by 
     #sql> update vernacular_by_ott set lang_primary=substring_index(lang_full,'-',1);
     Field('lang_full', type='string', notnull=True, length=20), #the longer 'lang' code for this name (e.g. 'en-gb, zh-hans, etc'), as lowecase. Should never be >20 chars.
     Field('preferred', type=boolean, notnull=True), #if there are several names for a lang, use this
-    Field('src', type = 'integer', notnull=True), # 1=OneZoom, 2=EoL, 8=onezoom_special (short name). Others could be reserved e.g. for iucn
-    Field('src_id', type = 'integer'), #the sourceid, e.g the EoL page id. 
+    Field('src', type='integer', notnull=True), # 1=OneZoom, 2=EoL, 8=onezoom_special (short name). Others could be reserved e.g. for iucn
+    Field('src_id', type='integer'), #the sourceid, e.g the EoL page id. 
     #NB sourceid is mainly for traceability. For a proper matching of e.g. eol to OTT, see ordered_leaves
-    Field('updated', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
+    Field('updated', type='datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
     format = '%(name)s_%(vernacular)s_%(lang)s')
 
 # tables for image references. These are mostly intended for leaves
@@ -326,21 +326,21 @@ db.define_table('vernacular_by_name',
 # separately, if you want a local store. 
 db.define_table('images_by_ott',
     Field('ott', type='integer', notnull=True, requires=IS_NOT_EMPTY()),
-    Field('src', type = 'integer', notnull=True),
+    Field('src', type='integer', notnull=True),
     # 1=eol, 2=arkive, etc.
 
-    Field('src_id', type = 'integer'),
+    Field('src_id', type='integer'),
     # a unique identifier for this picture (e.g. the EoL data_object_id).
 
-    Field('url', type = 'text'),
+    Field('url', type='text'),
     # the source url for this picture (e.g. http://media.eol.org/content/2015/04/05/06/22039_orig.jpg).
 
-    Field('rating', type = 'integer'), 
+    Field('rating', type='integer'), 
     # an image rating. EOL 5 star ratings are mapped to unsigned 2 byte integers by multiplying by 10,000
     # so that 1 star = 10,000 & 5 star = 50,000, which allows 0-10,000 for bespoke marking of terrible photos
     # and 50,000-65,535 for bespoke marking of amazing photos.
     
-    Field('rating_confidence', type = 'bigint'), 
+    Field('rating_confidence', type='bigint'), 
     # A measure of the confidence in the rating. This measure is dependent on the source. For EoL
     # images, the lowest 5 bytes in the number store the number of votes for each star. and the
     # higher bytes store the total number of votes. This rather specific algorithm allows us to keep the
@@ -349,15 +349,15 @@ db.define_table('images_by_ott',
     # sorting by confidence is equivalent to sorting by number of votes (but with ties broken by number
     # of 5* votes, then 4*, etc etc. Hacky. But clever.
 
-    Field('rights', type = 'text'), #in mySQL, need to set this to charset utf8mb4 so that all the weird unicode characters are saved correctly
+    Field('rights', type='text'), #in mySQL, need to set this to charset utf8mb4 so that all the weird unicode characters are saved correctly
     # e.g. "© Scott Loarie". Can be of long length as we don't need to index this
     
-    Field('licence', type = 'string', length=name_length_chars), #in mySQL, need to set this to charset utf8mb4 so that all the weird unicode characters are saved correctly
+    Field('licence', type='string', length=name_length_chars), #in mySQL, need to set this to charset utf8mb4 so that all the weird unicode characters are saved correctly
     # e.g. "http://creativecommons.org/licenses/by/2.0/". We might need to index this
     
-    Field('updated', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
+    Field('updated', type='datetime', requires=IS_EMPTY_OR(IS_DATETIME())),
 
-    *[Field('{}best_{}'.format(prefix,suffix), type = boolean, notnull=True) for suffix in image_status_labels for prefix in ("","overall_")],
+    *[Field('{}best_{}'.format(prefix,suffix), type=boolean, notnull=True) for suffix in image_status_labels for prefix in ("","overall_")],
     #define fields for each type in image_status_labels, i.e. best_any, best_verified, best_pd. If True, this image is the 
     # best to choose for this src (any=best regardless of type, verified=best that has been verified by an expert, pd=best public domain image
     # also define overall_best_any, overall_best_verified, overall_best_pd, which indicate the best image regardless of src.
@@ -367,26 +367,26 @@ db.define_table('images_by_ott',
 
 db.define_table('images_by_name',
     Field('name', type='string', length=name_length_chars, requires=IS_NOT_EMPTY()), #needs to be of same charset as 'name' in ordered_leaves & nodes
-    Field('src', type = 'integer', notnull=True),
-    Field('src_id', type = 'integer'),
-    Field('url', type = 'text'),
-    Field('rating', type = 'integer'), 
-    Field('rating_confidence', type = 'bigint'), 
-    Field('rights', type = 'text'), #in mySQL, need to set this to charset utf8mb4 so that all the weird unicode characters are saved correctly
-    Field('licence', type = 'string', length=name_length_chars), #in mySQL, need to set this to charset utf8mb4 so that all the weird unicode characters are saved correctly
-    Field('updated', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
-    *[Field('{}best_{}'.format(prefix,suffix), type = boolean, notnull=True) for suffix in image_status_labels for prefix in ("","overall_")],
+    Field('src', type='integer', notnull=True),
+    Field('src_id', type='integer'),
+    Field('url', type='text'),
+    Field('rating', type='integer'), 
+    Field('rating_confidence', type='bigint'), 
+    Field('rights', type='text'), #in mySQL, need to set this to charset utf8mb4 so that all the weird unicode characters are saved correctly
+    Field('licence', type='string', length=name_length_chars), #in mySQL, need to set this to charset utf8mb4 so that all the weird unicode characters are saved correctly
+    Field('updated', type='datetime', requires=IS_EMPTY_OR(IS_DATETIME())),
+    *[Field('{}best_{}'.format(prefix,suffix), type=boolean, notnull=True) for suffix in image_status_labels for prefix in ("","overall_")],
     format = '%(name)s')
 
 #we want to keep track of last updated times for each ott, but can't store this in the 
 #image or vernacular section, because some otts will be checked and have no pictures / names
 db.define_table('eol_updated',
     Field('eol', type='integer', notnull=True, unique=True, requires=IS_NOT_EMPTY()),
-    Field('updated', type = 'datetime', notnull=True, requires= IS_DATETIME()),
+    Field('updated', type='datetime', notnull=True, requires= IS_DATETIME()),
     #Some EoL pages may have moved to a different id, or have been permanently deleted (API calls return "unavailable page id").
     #It is useful to keep track of these for monitoring purposes, e.g. so we can update our mapping in ordered_XX or correct on Wikidata
     #if an eol ID has been deleted rather than moved, we should set this to None / NULL
-    Field('real_eol_id', type = 'integer'),
+    Field('real_eol_id', type='integer'),
     format = '%(eol)s', migrate=is_testing)
 
 # table for IUCN status: this can get updated by a call to the IUCN API
@@ -398,7 +398,7 @@ db.define_table('eol_updated',
 db.define_table('iucn',
     Field('ott', type='integer', unique=True, requires=IS_NOT_EMPTY()),
     Field('iucn', type='integer'), #can be empty if e.g. this is an extinct species not in IUCN
-    Field('status_code', type = 'string', length=10), #LC, VN, etc.
+    Field('status_code', type='string', length=10), #LC, VN, etc.
     format = '%(iucn)s', migrate=is_testing)
 
 # Table for availability of IPNIs in Kew's Plants of the World Online portal (PoWO):
@@ -412,7 +412,7 @@ db.define_table('PoWO',
 
 # this table defines the OTTIDs that are banned from sponsorship
 db.define_table('banned',
-    Field('ott', type = 'integer', notnull=True, requires=IS_NOT_EMPTY()),
+    Field('ott', type='integer', notnull=True, requires=IS_NOT_EMPTY()),
     Field('cname', type='string', length=name_length_chars),     
     #this is simply used to help remember what the OTT_IDs are
     format = '%(ott)s_%(cname)s')
@@ -424,17 +424,17 @@ db.define_table('banned',
 # also make sure not to export the expired_reservations and wiped_reservations tables.
 db.define_table('reservations',
                 
-    Field('OTT_ID', type = 'integer', unique=True, requires=IS_NOT_EMPTY()),
+    Field('OTT_ID', type='integer', unique=True, requires=IS_NOT_EMPTY()),
     # this field is the open tree ID associated with page views and reservations
     Field('name', type='text', writable=False),
     # scientific name (not necessarily genus, species, since some leaves have extra info
     # this is essentially redundant, since the OTT_ID should give us a name, but it is useful to know
     # We set writeable=False because we shouldn't update it via autogenerated forms
-    Field('num_views', type = 'integer', requires=IS_NOT_EMPTY(), writable=False),
+    Field('num_views', type='integer', requires=IS_NOT_EMPTY(), writable=False),
     # these are general useful stats for a page
-    Field('last_view', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME()), writable=False),
-    Field('reserve_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME()), writable=False),
-    Field('user_registration_id', type = 'text', writable=False),
+    Field('last_view', type='datetime', requires= IS_EMPTY_OR(IS_DATETIME()), writable=False),
+    Field('reserve_time', type='datetime', requires= IS_EMPTY_OR(IS_DATETIME()), writable=False),
+    Field('user_registration_id', type='text', writable=False),
     # This is created by OZfunc/__make_user_code and used instead of a session cookie so that
     # when refreshing e.g. a sponsor_leaf page we know that it is the same user trying to sponsor.
     # Eventually we intend this to correspond to a number in the registration_id field of the
@@ -448,7 +448,7 @@ db.define_table('reservations',
     # NB: Ideally it'd be type='references expired_reservations.id', but we can't without a circular definition
     
     # these handle auto reservation of pages
-    Field('user_id', type = 'reference auth_user' , requires=IS_EMPTY_OR(IS_IN_DB(db, 'auth_user.id','%(first_name)s %(last_name)s'))),
+    Field('user_id', type='reference auth_user' , requires=IS_EMPTY_OR(IS_IN_DB(db, 'auth_user.id','%(first_name)s %(last_name)s'))),
     # points to user table - built in. Is usually NULL because doner need not have a OneZoom login
     db.auth_user.username.clone(unique=False, requires=None),
     # Create a "username" field of an identical type to that in auth_user.username.
@@ -458,32 +458,33 @@ db.define_table('reservations',
     # a login, we will always use the reservations.username value.
     # The reservations.username field is optional but needed if the user is to have a
     # "public" page of all their sponsorships 
-    Field('e_mail', type = 'string', length=200, requires=IS_EMPTY_OR(IS_EMAIL())),
-    Field('twitter_name', type = 'text'),
-    Field('allow_contact', type = boolean),
+    Field('e_mail', type='string', length=200, requires=IS_EMPTY_OR(IS_EMAIL())),
+    Field('twitter_name', type='text'),
+    Field('allow_contact', type=boolean, default=False),
     # in case they don't want to log in to process this.            
-    Field('user_sponsor_lang', type = 'string', length=30),
+    Field('user_sponsor_lang', type='string', length=30),
     # in case they don't want to log in to process this.
-    Field('user_sponsor_kind', type = 'string', length=4, requires=IS_EMPTY_OR(IS_IN_SET(['by','for']))),
+    Field('user_sponsor_kind', type='string', length=4, requires=IS_EMPTY_OR(IS_IN_SET(['by','for']))),
     # self explanatory for sponsorship kind 'by' or 'for' a person. If the 
     Field('user_sponsor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # name of person as appears on leaf. Needs to be verified
     Field('user_donor_title', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
+    Field('user_donor_title', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # title of donor (Mr, Mrs, Dr, etc - needed for giftaid). . 
     Field('user_donor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # name of donor (different to user_sponsor_name if sponsored for someone). 
-    Field('user_donor_hide', type = boolean),
+    Field('user_donor_hide', type=boolean, default=False),
     # True if the user explicitly requested we hide acknowledgment on donors page / personal page
     # False if they didn't check a box, NULL if they haven't been asked yet.
     Field('user_more_info', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(maxsize=30))), 
     # optional extra sponsorship text which could be shown on the leaf if there's enough space
-    Field('user_nondefault_image', type = 'integer'),
+    Field('user_nondefault_image', type='integer'),
     #has the user chosen a non-default image? None if no img or the already downloaded OZ
     # image was chosen, 0 if there was no OZ image but the default EoL image was chosen, 
     # or 1 if another image was chosen by the sponsor. Should prob be boolean type instead.
-    Field('user_preferred_image', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))), #old, to be deleted
-    Field('user_preferred_image_src', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(0,1000))),
-    Field('user_preferred_image_src_id', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))),
+    Field('user_preferred_image', type='integer', requires=IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))), #old, to be deleted
+    Field('user_preferred_image_src', type='integer', requires=IS_EMPTY_OR(IS_INT_IN_RANGE(0,1000))),
+    Field('user_preferred_image_src_id', type='integer', requires=IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))),
     # an option for users to recommend an EOL ID as the best image. Should normally be filled
     # for a sponsored image, even if the sponsor hasn't chosen a different image. If they
     # do choose a non default image, user_nondefault_image is set to true, and the
@@ -491,40 +492,40 @@ db.define_table('reservations',
     # on the assumption that this is a nicer image than the
     # default OneZoom one. Otherwise the user_preferred_image_src and src_id values 
     # should be set to the src and src_id values passed in when viewing the sponsor page
-    Field('user_updated_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME()), writable=False),  
+    Field('user_updated_time', type='datetime', requires=IS_EMPTY_OR(IS_DATETIME()), writable=False),  
     # need to know when it was last updated to check for user updates         
-    Field('user_paid', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
+    Field('user_paid', type='double', requires=IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
     # The amount (in pounds) the user promised to pay for this OTTID
     # Set by user before paypal trip, validated to be >= asking_price (See valid_spons).
-    Field('user_message_OZ', type = 'text', requires=(IS_LENGTH(maxsize=250))),
+    Field('user_message_OZ', type='text', requires=(IS_LENGTH(maxsize=250))),
     # message for OZ e.g. to show on funding website or to request converstaion about url etc.
-    Field('sponsorship_story', type = 'text', requires=(IS_LENGTH(maxsize=1000))),
+    Field('sponsorship_story', type='text', requires=(IS_LENGTH(maxsize=1000))),
     # The story behind .
-    Field('sponsorship_story_level', type = 'double'),
+    Field('sponsorship_story_level', type='double'),
     # A hand-curated quality score roughly matching that in `sponsorship_text_level`
     # (e.g. 3 = completely standard & acceptable, 4 = excellent, 5 = best) - NULL = not reviewed.
-    Field('user_giftaid', type = boolean),
+    Field('user_giftaid', type=boolean),
     # can we collect gift aid?
                
     # paypal returned information
-    Field('PP_transaction_code', type = 'text', writable = False),
-    Field('PP_e_mail', type = 'string', length=200, writable = False),
+    Field('PP_transaction_code', type='text', writable=False),
+    Field('PP_e_mail', type='string', length=200, writable=False),
     # another e-mail just in case we need it for verification
-    Field('PP_first_name', type = 'text', writable = False),
-    Field('PP_second_name', type = 'text', writable = False),
+    Field('PP_first_name', type='text', writable=False),
+    Field('PP_second_name', type='text', writable=False),
     # name to help with sponsorship text verification
-    Field('PP_town', type = 'text', writable = False),
-    Field('PP_country', type = 'text', writable = False),
+    Field('PP_town', type='text', writable=False),
+    Field('PP_country', type='text', writable=False),
     # address to help with further info verification
-    Field('PP_house_and_street', type = 'text', writable = False),
-    Field('PP_postcode', type = 'text', writable = False),
+    Field('PP_house_and_street', type='text', writable=False),
+    Field('PP_postcode', type='text', writable=False),
     # save the two above only if they have agreed to give us gift aid
 
-    Field('sale_time', type = 'text', writable = False),
+    Field('sale_time', type='text', writable=False),
     # seems professional to know when they paid and wise to keep it separate from expiry date
                 
     # a verified copy of what's in the sponsor table.
-    Field('verified_kind', type = 'string', length=4, requires=IS_EMPTY_OR(IS_IN_SET(['by','for']))),
+    Field('verified_kind', type='string', length=4, requires=IS_EMPTY_OR(IS_IN_SET(['by','for']))),
     # matches 'user_sponsor_kind'
     Field('verified_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30)), widget=SQLFORM.widgets.text.widget), 
     # matches 'user_sponsor_name'
@@ -534,59 +535,59 @@ db.define_table('reservations',
     # matches 'user_donor_name'
     Field('verified_more_info', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(maxsize=30)), widget=SQLFORM.widgets.text.widget), 
     # matches 'user_more_info'
-    Field('verified_preferred_image', type='integer', requires = IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))), #old, to be deleted
-    Field('verified_preferred_image_src', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(0,1000))),
-    Field('verified_preferred_image_src_id', type='integer', requires= IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))),
+    Field('verified_preferred_image', type='integer', requires=IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))), #old, to be deleted
+    Field('verified_preferred_image_src', type='integer', requires=IS_EMPTY_OR(IS_INT_IN_RANGE(0,1000))),
+    Field('verified_preferred_image_src_id', type='integer', requires=IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))),
     # match 'user_preferred_image_src', and 'user_preferred_image_src_id' or may be 
     # modified by hand by an admin. Can only be null if there was no image 
     # (not even an already-downloaded OneZoom one) when the user sponsored. 
     # If the user picked a non default image, then this 
     # field is still filled out, but user_nondefault_image should be 1.
-    Field('verified_time', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
+    Field('verified_time', type='datetime', requires=IS_EMPTY_OR(IS_DATETIME())),
     # if verified_time = NULL then details haven't been verified
-    Field('verified_paid', type = 'text', writable = False), 
+    Field('verified_paid', type='text', writable=False), 
     # The amount paypal reported as being paid (as a stringified pounds/pence float) for this OTTID
     # May be NULL after payment if, e.g. payment received outside paypal, see notes in get_reservation()
-    Field('verified_url', type = 'text'),  
+    Field('verified_url', type='text'),  
     # url for those that agree to have one            
-    Field('sponsorship_text_level', type = 'integer'),
+    Field('sponsorship_text_level', type='integer'),
     # How generally acceptable is the text (3 = completely standard & acceptable) - NULL=not reviewed
-    Field('tweeted_re_sponsorship', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
+    Field('tweeted_re_sponsorship', type='datetime', requires=IS_EMPTY_OR(IS_DATETIME())),
     # the time when we emailed them
-    Field('emailed_re_sponsorship', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
+    Field('emailed_re_sponsorship', type='datetime', requires=IS_EMPTY_OR(IS_DATETIME())),
     # the time when we emailed them
-    Field('emailed_re_renewal_initial', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
+    Field('emailed_re_renewal_initial', type='datetime', requires=IS_EMPTY_OR(IS_DATETIME())),
     # the first time when we emailed about renewals
-    Field('emailed_re_renewal_final', type = 'datetime', requires= IS_EMPTY_OR(IS_DATETIME())),
+    Field('emailed_re_renewal_final', type='datetime', requires=IS_EMPTY_OR(IS_DATETIME())),
     # the final time when we emailed about renewals
-    Field('restrict_all_contact', type = boolean),
+    Field('restrict_all_contact', type=boolean),
     # Can we contact them about renewals etc, or only about the most urgent stuff
-    Field('admin_comment', type = 'text'),            
+    Field('admin_comment', type='text'),            
     # comments for any purpose edited by us  
-    Field('sponsorship_duration_days',type = 'integer', writable=False),
+    Field('sponsorship_duration_days',type='integer', writable=False),
     # the length in days gained by the most recent donation
-    Field('sponsorship_ends',type = 'datetime', writable=False),
+    Field('sponsorship_ends',type='datetime', writable=False),
     # the expiry date, set during validation. For new sponsorships, this will be the verified_time plus
     # the sponsorship_duration_days. For renewed leaves, the difference between sponsorship_ends and
     # verified_time can be 2 or 3 (or more) times the sponsorship_duration_days
-    Field('asking_price', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100)), writable=False), 
+    Field('asking_price', type='double', requires=IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100)), writable=False), 
     # price in pounds - good idea to hang on to this for accounting purposes and verification the numbers add up later
     # Set as (ordered_leaves.price / 100) at time of purchase (See valid_spons)
-    Field('partner_percentage', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100)), writable=False), 
+    Field('partner_percentage', type='double', requires=IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100)), writable=False), 
     # percentage of this donation that is diverted to a OZ partner like Linn Soc (after paypal fees are deducted) 
-    Field('partner_name', type = 'string', length=40, writable=False),
+    Field('partner_name', type='string', length=40, writable=False),
     # a standardised name for the partner (or multiple partners if it comes to that - would then assume equal split between partners)
-    Field('partner_paid_on', type = 'datetime', requires = IS_EMPTY_OR(IS_DATETIME()), writable = False),
-    Field('giftaid_claimed_on', type = 'datetime', requires = IS_EMPTY_OR(IS_DATETIME()), writable = False),
-    Field('deactivated', type = 'text'),
+    Field('partner_paid_on', type='datetime', requires=IS_EMPTY_OR(IS_DATETIME()), writable=False),
+    Field('giftaid_claimed_on', type='datetime', requires=IS_EMPTY_OR(IS_DATETIME()), writable=False),
+    Field('deactivated', type='text'),
     # true if this row in the reservations table has been deliberately deactivated for any reason other than expiry e.g. complaint / species disappears etc.
                        
     format = '%(OTT_ID)s_%(name)s'),            
 
 #a duplicate of the reservations table to store old reservations. This table need never be sent to 3rd parties
 db.define_table('expired_reservations',
-    Field('OTT_ID', type = 'integer', unique=False, requires=IS_NOT_EMPTY()), 
-    Field('was_renewed', type = boolean),
+    Field('OTT_ID', type='integer', unique=False, requires=IS_NOT_EMPTY()), 
+    Field('was_renewed', type=boolean),
     # useful to know if part of the sponsorship time in this reservation is captured in another reservation row
     *[f.clone() for f in db.reservations if f.name != 'OTT_ID' and f.name!='id'],
     format = '%(OTT_ID)s_%(name)s', migrate=is_testing)
@@ -606,58 +607,58 @@ db.define_table('uncategorised_donation',
     # A UUID created by OZfunc/__make_user_code identifying a group of items sent to paypal for
     # purchase. Used to identify which OTTs have been purchased once confirmation of funds comes
     # back from paypal, by being encoded in notify_url.
-    Field('sale_time', type = 'text', writable = False),
+    Field('sale_time', type='text', writable=False),
     # seems professional to know when they paid and wise to keep it separate from expiry date
-    Field('verified_paid', type = 'text', writable = False), 
+    Field('verified_paid', type='text', writable=False), 
     # The amount paypal reported as being paid (as a stringified pounds/pence float) for this OTTID
     # May be NULL after payment if, e.g. payment received outside paypal, see notes in get_reservation()
-    Field('user_paid', type = 'double', requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
+    Field('user_paid', type='double', requires=IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100))), 
     # The amount (in pounds) the user promised to pay for this OTTID
-    Field('user_giftaid', type = boolean),
+    Field('user_giftaid', type=boolean),
     # can we collect gift aid?
-    Field('e_mail', type = 'string', length=200, requires=IS_EMPTY_OR(IS_EMAIL())),
-    Field('allow_contact', type = boolean),
+    Field('e_mail', type='string', length=200, requires=IS_EMPTY_OR(IS_EMAIL())),
+    Field('allow_contact', type=boolean),
     # in case they don't want to log in to process this.            
 
     # paypal returned information
-    Field('PP_transaction_code', type = 'text', writable = False),
-    Field('PP_e_mail', type = 'string', length=200, writable = False),
+    Field('PP_transaction_code', type='text', writable=False),
+    Field('PP_e_mail', type='string', length=200, writable=False),
     # another e-mail just in case we need it for verification
-    Field('PP_first_name', type = 'text', writable = False),
-    Field('PP_second_name', type = 'text', writable = False),
+    Field('PP_first_name', type='text', writable=False),
+    Field('PP_second_name', type='text', writable=False),
     # name to help with sponsorship text verification
-    Field('PP_town', type = 'text', writable = False),
-    Field('PP_country', type = 'text', writable = False),
+    Field('PP_town', type='text', writable=False),
+    Field('PP_country', type='text', writable=False),
     # address to help with further info verification
-    Field('PP_house_and_street', type = 'text', writable = False),
-    Field('PP_postcode', type = 'text', writable = False),
+    Field('PP_house_and_street', type='text', writable=False),
+    Field('PP_postcode', type='text', writable=False),
     # save the two above only if they have agreed to give us gift aid
     format = '%(sale_time)s_%(verified_paid)s')
 
 # this table defines the current pricing cutoff points
 db.define_table('prices',
-    Field('price', type = 'integer', unique=True, requires=IS_NOT_EMPTY()),
-    Field('perpetuity_price', type = 'integer', requires=IS_NOT_EMPTY()),
+    Field('price', type='integer', unique=True, requires=IS_NOT_EMPTY()),
+    Field('perpetuity_price', type='integer', requires=IS_NOT_EMPTY()),
     # Map the "normal" 4 year price to the in-perpetuity price
-    Field('quantile', type = 'double'),
-    Field('n_leaves', type = 'integer'),
-    Field('class_description', type = 'string', length=100),
-    Field('price_description', type = 'string', length=100),
+    Field('quantile', type='double'),
+    Field('n_leaves', type='integer'),
+    Field('class_description', type='string', length=100),
+    Field('price_description', type='string', length=100),
     # Two text descriptions used in e.g. museum displays, where the price may not be up-to-date
     format = '%(price)s_%(n_leaves)s')
 
 # this table collects data for recently 'visited' nodes (i.e. requested through the API) 
 db.define_table('visit_count',
-    Field('ott', type = 'integer', notnull=True, unique=True),
-    Field('detail_fetch_count', type = 'integer'),
-    Field('search_count', type = 'integer'),
-    Field('leaf_click_count', type = 'integer'),
+    Field('ott', type='integer', notnull=True, unique=True),
+    Field('detail_fetch_count', type='integer'),
+    Field('search_count', type='integer'),
+    Field('leaf_click_count', type='integer'),
     format = '%(ott)s', migrate=is_testing)
 
 # this table collects a list of search terms so we can optimise search
 db.define_table('search_log',
     Field('search_string', type='string', notnull=True, unique=True, length=name_length_chars), #this should be utf8mb4
-    Field('search_count', type = 'integer', notnull=True),
+    Field('search_count', type='integer', notnull=True),
     format = '%(search_string)s', migrate=is_testing)
 
 # This table buffers recently 'visited' EoL taxa (visited through the window popup or via the copyright link)
@@ -679,23 +680,23 @@ db.define_table('search_log',
 #        in advance of a change to the OneZoom tree (when otts may not even exist in the
 #        ordered_leaves / nodes table).
 db.define_table('eol_inspected',
-    Field('ott', type = 'integer'),
+    Field('ott', type='integer'),
     Field('name', type='string', length=name_length_chars), #only used if no OTT
-    Field('eol', type = 'integer'),
+    Field('eol', type='integer'),
     #usually null, otherwise an eol data_object id (if via==eol_inspect_via_flags['image'])
     # or an eol page id (otherwise).
-    Field('via', type = 'integer', notnull=True),
-    Field('inspected', type = 'datetime', notnull=True, requires=IS_DATETIME()),
+    Field('via', type='integer', notnull=True),
+    Field('inspected', type='datetime', notnull=True, requires=IS_DATETIME()),
     format = '%(ott)s_%(name)s', migrate=is_testing)
 
 # this table contains info to provide a list of interesting places to sponsor. 
 db.define_table('sponsor_picks',
-    Field('identifier', type = 'string', unique=True, length=20, notnull=True, comment=(
+    Field('identifier', type='string', unique=True, length=20, notnull=True, comment=(
         "A unique identifier. If a number this refers to an OTT id, but otherwise a "
         "bespoke list whose OTTs are listed in the 'otts field'")),
-    Field('display_order', type = 'integer', unique=True, comment=(
+    Field('display_order', type='integer', unique=True, comment=(
         "What order to display them in on the page. If NULL, this is disabled")),
-    Field('display_flags', type = 'integer', comment=(
+    Field('display_flags', type='integer', comment=(
         "Whether to display this pick in different contexts, with the contexts"
         "as listed in the sponsor_suggestion_flags array. If NULL, alwys use")),
     Field('name', type='text', notnull=True, comment=(
@@ -721,33 +722,33 @@ db.define_table('sponsor_picks',
 
 # this table lists potential OneZoom 'partners' with whom we might share profits
 db.define_table('partners',
-    Field('partner_identifier', type = 'string', unique=True, length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
+    Field('partner_identifier', type='string', unique=True, length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
     Field('name', type='text', notnull=True), #the name, e.g. 'the Linnean Society of London',as in "50% will go to {{name}}" - this may be translated
     Field('url', type='text'), #a url to give people further info about the sponsorship scheme on the partner's web site
     Field('general_url', type='text'), #a url to give people general info about the partner
     Field('logo', type='text'), #a url to a logo, e.g. used on sponsorship page
     Field('small_logo', type='text'), #a url to a small version of their logo (displayed at ~ 100x50 px), e.g. used on the main OneZoom viewer
     Field('details', type='text'), #more info for sponsors, e.g. what the money goes towards. May be translated.
-    Field('percentage', type = 'double', notnull=True),
-    Field('giftaid', type = boolean, notnull=True), #can we collect gift aid?
+    Field('percentage', type='double', notnull=True),
+    Field('giftaid', type=boolean, notnull=True), #can we collect gift aid?
     Field('default_more_info', type='string', length=30), #what appears by default in the sponsorship text, e.g. "supporting the Linnean Society"
     Field('popular_locations_json', type='text'), #a JSON string used to fill the popular species menu (the popular_locations variable passed to treeviewer/layout.html). This is an long array containing elements which are either strings (which give menu headers) or dicts as {"OTT":1234,"en":"English name",...}. No carriage returns or single quotes allowed.
-    Field('allow_own_site', type = boolean), #If True, allow a site like www.onezoom.org/life/partnername/
+    Field('allow_own_site', type=boolean), #If True, allow a site like www.onezoom.org/life/partnername/
     format = '%(name)s', migrate=is_testing)
 
 # this table maps partners to node or leaf OTTs. When sponsorship windows
 # are opened on the main OZ website we check whether the 
 db.define_table('partner_taxa',
-    Field('partner_identifier', type = 'string', length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
+    Field('partner_identifier', type='string', length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
     Field('ott', type='text'), #an ott: on the main OZ site, descendants of these IDs will have this partner set
-    Field('is_leaf', type = boolean, notnull=True), #is this a leaf? Helps us choose whether to look in leaf or node table
-    Field('deactived', type = boolean, notnull=True), #allows us to keep details in the DB but not to do sponsorship. However, it is more efficient to delete them from this table
+    Field('is_leaf', type=boolean, notnull=True), #is this a leaf? Helps us choose whether to look in leaf or node table
+    Field('deactived', type=boolean, notnull=True), #allows us to keep details in the DB but not to do sponsorship. However, it is more efficient to delete them from this table
     format = '%(partner_identifier)s', migrate=is_testing)
 
 #some tables for tours
 #one row per tour, to store e.g. the name of the tour
 db.define_table('tours',
-    Field('identifier', type = 'string', unique=True, length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
+    Field('identifier', type='string', unique=True, length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
     Field('name', type='text', notnull=True), #the name, to go before 'TreeTour', e.g. 'Iridescence' - this may be translated
     Field('description', type='text'), #a description of the tour
     Field('rating', type='double'), #average user rating
@@ -755,31 +756,31 @@ db.define_table('tours',
 
 #the list of stops for each tour: one row per stop, giving ids into the tourstops table
 db.define_table('tourorders',
-    Field('identifier', type = 'string', length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
-    Field('transition', type = 'string', length=20), #the transition to this stop from the previous one
-    Field('node_fullzoom', type = boolean), #when we transition to a node, should we zoom so the node fills the screen? this has no effect when zooming to a leaf.
+    Field('identifier', type='string', length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
+    Field('transition', type='string', length=20), #the transition to this stop from the previous one
+    Field('node_fullzoom', type=boolean), #when we transition to a node, should we zoom so the node fills the screen? this has no effect when zooming to a leaf.
     Field('stop_number', type='integer', notnull=True), #the 0-based order of this stop in the defined tour
     Field('stop_id', type='integer', notnull=True), #the id in the tourstops table corresponding to this tour
     format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
 
 db.define_table('tourstops',
     Field('ott', type='integer', notnull=True), #the ott of this taxon
-    Field('description', type = 'text'), #text to show at this stop
-    Field('video', type = 'string', length=20), #the youtube video number, if there is a video
+    Field('description', type='text'), #text to show at this stop
+    Field('video', type='string', length=20), #the youtube video number, if there is a video
     format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
 
 # These are popular places, tours or other things that a user can use to explore the tree
 # in a more guided way.  E.g. use as a first way into the tree or as suggestions of places
 # to go / things to do once in.
 db.define_table('tree_startpoints',
-    Field('category', type = 'string', length=20, comment=(
+    Field('category', type='string', length=20, comment=(
         "A unique alphanumeric identifier which is used to categorise the startpoints "
         "for example 'homepage_anim' for the list of points visited in the animation on "
         "the home page, 'homepage_main' for the main pictures on the homepage carousel "
         "'homepage_red' for the threatened or endangered species on the homepage. We "
         "might also want to place the popular places menu items in here later, rather "
         "than hardcoding them in the controllers")),
-    Field('partner_identifier', type = 'string', length=20, comment=(
+    Field('partner_identifier', type='string', length=20, comment=(
         "An alphanumeric category which we can use to distinguish partners (e.g."
         "LinnSoc or OTOP) - this should match up with the 'partners' and 'partner_taxa'"
         "tables")),
@@ -788,47 +789,47 @@ db.define_table('tree_startpoints',
         "None) the starting location")),
     Field('image_url', type='text', comment=(
         "Used instead of the default image (allows e.g. non organism images for tours)")),
-    Field('tour_identifier', type = 'string', length=20, comment=(
+    Field('tour_identifier', type='string', length=20, comment=(
         "A string giving a tour name, which will override the ott as the startpoint")),
     format = '%(category)s_%(partner_identifier)s', migrate=is_testing)
 
 # Somewhere to simply store the html for news items
 db.define_table('news',
-    Field('category', type = 'string', length=20), # e.g. 'milestone', 'event', 
-    Field('news_date', type = 'datetime', notnull=True, requires=IS_DATETIME()), #the date of the news
+    Field('category', type='string', length=20), # e.g. 'milestone', 'event', 
+    Field('news_date', type='datetime', notnull=True, requires=IS_DATETIME()), #the date of the news
     Field('html_description', type='text'), # a description of the event
     Field('html_summary', type='text'), # a short description of the event in HTML. If absent then the main HTML should be short enough.
     Field('thumbnail_href', type='text'), # href to a thumbnail of the event 4:3 aspect ratio is best if absent the code will use the category field default jpeg instead.
-    Field('text_date', type = 'text'), # in case we want a bespoke text for the date, e.g. July 30th-31st 2016
+    Field('text_date', type='text'), # in case we want a bespoke text for the date, e.g. July 30th-31st 2016
     format = '%(date)s_%(type)s', migrate=is_testing)
 
 # Somewhere to simply store the endorsement quotes
 db.define_table('quotes',
-    Field('category', type = 'string', length=30), # e.g. 'Scientists', 'Educators', 
+    Field('category', type='string', length=30), # e.g. 'Scientists', 'Educators', 
     Field('html_quote', type='text'), # The endorsement quote (may also contain html)
     Field('quality', type='double'), # A measure of how usable the quote is, e.g. well known person, good quote
-    Field('person', type = 'string',  length=50), #the plain text person's name
-    Field('person_url', type = 'string',  length=100), # a web url for this person
-    Field('html_affiliation', type = 'string',  length=100), # E.g. University of Oxford
+    Field('person', type='string',  length=50), #the plain text person's name
+    Field('person_url', type='string',  length=100), # a web url for this person
+    Field('html_affiliation', type='string',  length=100), # E.g. University of Oxford
     format = '%(person)s_%(category)s', migrate=is_testing)
 
 #a list of API users, added by hand
 db.define_table('API_users',
-    Field('APIkey', type = 'string', length=32, unique=True, notnull=True),
-    Field('API_user_name', type = 'text'), # who this API user is
+    Field('APIkey', type='string', length=32, unique=True, notnull=True),
+    Field('API_user_name', type='text'), # who this API user is
     Field('max_taxa_per_query', type='integer'), #set this to NULL or 0 to deactivate this API user
     Field('max_returns_per_taxon', type='integer'),
     format = '%(APIkey)s', migrate=is_testing)
 
 #a record of the amounts of API use, by user
 db.define_table('API_use',
-    Field('APIkey', type = 'string',  unique=True, length=32), #which key was used
-    Field('API', type = 'string', length=100), #which API was used, e.g. popularity/list
-    Field('start_date', type = 'datetime', notnull=True, requires=IS_DATETIME()), #when we started recording this data
-    Field('end_date', type = 'datetime', requires=IS_DATETIME()), #when we stopped recording this data (if NULL, this is still recording)
-    Field('n_calls', type = 'bigint', default=1), # number of times API called
-    Field('n_taxa', type = 'bigint', default=0), # number of taxa requested (divide by n_calls to get av taxa per call)
-    Field('n_returns', type = 'bigint', default=0), # number of taxa returned (divide by n_calls to get av taxa per call)
+    Field('APIkey', type='string',  unique=True, length=32), #which key was used
+    Field('API', type='string', length=100), #which API was used, e.g. popularity/list
+    Field('start_date', type='datetime', notnull=True, requires=IS_DATETIME()), #when we started recording this data
+    Field('end_date', type='datetime', requires=IS_DATETIME()), #when we stopped recording this data (if NULL, this is still recording)
+    Field('n_calls', type='bigint', default=1), # number of times API called
+    Field('n_taxa', type='bigint', default=0), # number of taxa requested (divide by n_calls to get av taxa per call)
+    Field('n_returns', type='bigint', default=0), # number of taxa returned (divide by n_calls to get av taxa per call)
     format = '%(APIkey)s_%(API)s', migrate=is_testing)
 
 # add extra indexes on OTT_ID etc in tables. Index name (ott_index) is arbitrary 
