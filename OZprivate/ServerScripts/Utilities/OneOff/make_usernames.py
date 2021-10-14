@@ -3,7 +3,7 @@ Run from the OZtree directory as
 python3 ../../web2py.py -S OZtree -M -R applications/OZtree/OZprivate/ServerScripts/Utilities/OneOff/make_usernames.py
 
 After 2 passes, will allocate usernames of remaining unallocated reservations using a
-species name plus year. This is not 
+species name plus year.
 """
 import argparse
 
@@ -23,11 +23,8 @@ for allocate_species_name in [False, True]:
         data = (row.id, row.verified_kind, row.verified_name, row.e_mail, row.PP_e_mail, row.name)
         username = row.username
         if not username:
-            username = find_username(row)[0]
+            username = find_username(row, allocate_species_name=allocate_species_name)[0]
             if username:
-                db.reservations[row.id] = dict(username=username)
-            elif allocate_species_name:
-                username = row.name.replace(" ", "_") + "_" + str(row.verified_time.year)
                 db.reservations[row.id] = dict(username=username)
         if not username:
             assert allocate_species_name == False
