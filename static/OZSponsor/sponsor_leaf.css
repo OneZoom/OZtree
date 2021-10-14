@@ -214,3 +214,15 @@ h3, h4 {
 .shortcuts .leaf-list {
     display: none; /* Hide the "Sponsor a leaf now" button in the footer, as it's confusing when *on* the sponsor leaf page (too near the "donate" button) */
 }
+
+#sponsor_form label.renew_checkbox {
+    line-height: 2rem;
+    font-size: 1rem;
+    font-weight: bold;
+}
+#sponsor_form .uk-accordion-title::before {
+  float: left;
+}
+#sponsor_form strong {
+  color: darkred;
+}

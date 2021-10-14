@@ -7,6 +7,9 @@
 <div class="row-fluid" style="order: {{=(4 if request.args and request.args[0]=='site' else 1)}};">
 <div>
 <h3>Leaf sponsorship</h3>
+
+<img class="lft_edge" src="{{=URL('static','images/leaves/Lpic2.png')}}" />
+
 <p>We’d be delighted if you would consider sponsoring a leaf on the OneZoom Tree of Life. OneZoom is a registered UK charity, and the funds we raise allow us to maintain and improve this tree of life explorer as a resource for everyone. Note that sponsorship text is publically visible on the tree so must be appropriate for this, and also that we aim to keep our scientific information as up to date as possible, which may affect some aspects of your sponsored leaf in the future. We have written the guidelines below to make you aware of how we will manage this; we hope you will find them fair. When sponsoring a leaf on the tree, you must also agree to our data protection and privacy policy, our cookie policy and our general terms of website use.</p>
 </div>
 
@@ -77,13 +80,14 @@
 <div style="order: {{=(1 if request.args and request.args[0]=='site' else 3)}};">
 <div>
 <h3 id = "useterms">Use of the OneZoom website</h3>
-<p>By using the website you are assumed to have agreed to these terms and conditions as well as our cookie policy and our data protection and privacy policy. We are sorry that the terms are quite lengthy, however, we have worked hard to make the terms of use both clear and reasonable. These terms were last updated on 15th October 2020</p>
+<p>By using the website you are assumed to have agreed to these terms and conditions as well as our cookie policy and our data protection and privacy policy. We are sorry that the terms are quite lengthy, however, we have worked hard to make the terms of use both clear and reasonable. These terms were last updated on 24th September 2021</p>
 </div>
 
 <div class="uk-grid-small uk-text-small uk-child-width-1-2@m " uk-grid>
 <div class = "uk-padding uk-padding-remove-top">
 
 <h4>General</h4>
+
 
 <ol>
 
@@ -131,7 +135,7 @@
 
 <ol>
 
-<li>Screenshots from our tree of life explorer may be reused with citation to OneZoom.org. It is your responsibility to check the license for any images appearing within the screenshot, which may also require acknowledgements. You might find our {{=A('Screenshot tool', _href=URL('education','screenshot_launcher.html'))}} useful which has a button to download screenshots from the tree as an SVG. Note there there are also settings to include only images we believe to be in the public domain.</li>
+<li>Screenshots from our tree of life explorer may be reused with citation to OneZoom.org. It is your responsibility to check the license for any images appearing within the screenshot, which may also require acknowledgements. You might find our {{=A('Screenshot tool', _href=URL('education','screenshot_launcher.html'))}} useful which has a button to download screenshots from the tree as an SVG. Note there are also settings to include only images we believe to be in the public domain.</li>
 
 <li>Images found elsewhere on our website may be owned by a third party who has given permission to OneZoom but not granted permission for more general reuse, please do not reuse media from the broader website without checking first.</li>
 <li>Please write to us if you are not sure about image permissions.</li>
@@ -187,6 +191,8 @@ Links within this site to other websites are not covered by this Data Protection
 <h4>Personal data that we collect from you and where it’s collected from</h4>
 
 <h5>Internet Protocol address and session information</h5>
+
+<img class="lft_edge" src="{{=URL('static','images/leaves/Lpic2.png')}}" />
 
 <p>We log users’ Internet Protocol addresses (IP address, a technical standard which allows data to be transmitted between two devices), which are automatically recognised by the webserver (which delivers web pages to a computer, in response to requests from a browser), and session information such as the duration of the visit and the type of browser used.</p>
 
@@ -273,7 +279,7 @@ Links within this site to other websites are not covered by this Data Protection
 
 <p>We may disclose some or all of the information collected from you if required to do so by law or other legally binding obligation.</p>
 
-<h5>On sponsored leaves and our donor page</h5>
+<h5>On sponsored leaves and donor pages</h5>
 
 <ul>
 
@@ -283,7 +289,7 @@ Links within this site to other websites are not covered by this Data Protection
 
 <li>Should the text you entered be deemed inappropriate and we are unable to contact you, we will use the first and last name you have provided to us, as well as your country as sponsorship text on your leaf of the tree.</li>
 
-<li>By keeping the “credit me on the OneZoom donor page” box checked during sponsorship, your  full name and title (which may be different from your sponsorship text) may be publicly visible on our donor page. You may appear here in a category based on the size of your donation.</li>
+<li>By keeping the “credit me on the OneZoom donor page” box checked during sponsorship, your  full name and title (which may be different from your sponsorship text) may be publicly visible on our donor page. You may appear here in a category based on the size of your donation. The same information will also be used to provide you with a bespoke donor page which is similar to our main donor page but lists only the leaves that have been sponsored by you.</li>
 
 </ul>
 
@@ -323,6 +329,8 @@ Links within this site to other websites are not covered by this Data Protection
 
 <li>You can retract your gift aid statement, or request corrections to the data associated with that.</li>
 
+<img class="rgt_edge" src="{{=URL('static','images/leaves/Rpic3.png')}}" />
+
 <li>You can request deletion of all your personal data, or any part of it. If you request deletion of your sponsorship data then your name will no longer appear on the tree as a sponsor, or on our donor page, and the leaf you sponsored will become available for sponsorship again.</li>
 
 <li>If you sponsored a leaf for another person, and they request their name to be removed from the leaf, we will do so. You will then have the opportunity to choose an alternative sponsorship text for your leaf.</li>
@@ -358,7 +366,6 @@ Links within this site to other websites are not covered by this Data Protection
 <li> Published work using the OneZoom API should cite <a href="https://www.biorxiv.org/content/10.1101/2020.10.14.323055v1">"Dynamic visualisation of million-tip trees: the OneZoom project" Yan Wong, James Rosindell (2020)bioRxiv 2020.10.14.323055; doi: https://doi.org/10.1101/2020.10.14.323055</a>
 
 
-
 </li>
 <li>It is our intention to formally publish the preprint in a peer reviewed scientific journal. Please check back here for information on citing this before returning final versions for scientific publications using our popularity index.</li>
 
@@ -370,10 +377,16 @@ Links within this site to other websites are not covered by this Data Protection
 <ul>
 <li>Access to our data via public key API is subject to restrictions and requests to the API may be denied at peak times or if the service is abused.</li>
 <li>Please download the complete dataset instead of using the API if you require the full set of popularity information.</li>
+
+<img class="rgt_edge" src="{{=URL('static','images/leaves/Rpic4.png')}}" />
 <li>Access to our private key API is available on request and permits larger calls than our public key API.</li>
+
 <li>We collect data from private key uses of our API, this is handled in accordance with our Data Protection and Privacy Policy.</li>
 
 </ul>
+
+
+
 </div>
 </div>
 </div>

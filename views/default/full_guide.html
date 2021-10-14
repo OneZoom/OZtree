@@ -1,0 +1,15 @@
+{{response.title='Full OneZoom user guide'}}
+{{extend 'uikit_layout.html'}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+    <h1>Full user guide</h1>
+    <em>Details of how to use all the features of the tree of life explorer</em>
+</div>
+{{end block}}
+
+<div class = "uk-padding">
+    {{include 'default/how.load'}}
+    
+</div>

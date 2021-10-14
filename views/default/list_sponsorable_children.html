@@ -10,7 +10,12 @@
     <ul>
     {{for i,s in enumerate(species):}}
         {{if i==items_per_page: break}}
-        <li><a href="{{=URL('default', 'sponsor_leaf', vars={k:v for d in [request.vars, {'ott':s.ott}] for k,v in d.items()})}}"><i class="taxonomy">{{=s.name.replace('_', ' ')}}</i></a> &mdash; &pound;{{if s.price is None:}}contact us{{else:}}{{="{:.2f}".format(1.0/100.0*s.price)}}{{pass}} or more to sponsor.</li>
+        <li><a href="{{=URL('default', 'sponsor_leaf', vars={k:v for d in [request.vars, {'ott':s.ott}] for k,v in d.items()})}}"><i class="taxonomy">{{=s.name.replace('_', ' ')}}</i></a> &mdash;
+{{if sponsorship_enabled:}}
+ &pound;{{if s.price is None:}}{{T('contact us')}}{{else:}}{{=f"{s.price/100:.2f}"}}{{pass}}{{T('or more to sponsor.')}}
+{{else:}}
+  {{=T(price_levels_pence.get(s.price, "click for sponsorship details"))}}
+{{pass}}</li>
     {{pass}}
     </ul>
     {{if page:}}

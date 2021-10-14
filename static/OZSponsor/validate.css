@@ -11,6 +11,7 @@ div.table {display: table;}
 .table > div:nth-of-type(odd) {
     background: #e0e0e0;
 }
+.table a {color: blue}
 .table >div>*>* {padding: 0.5em 0.3em 0 0.3em; vertical-align: top;}
 .table .DB {font-weight: bold} /* items taken from the DB (user) in bold */
 .table div.ids {min-width: 5em}
@@ -18,7 +19,7 @@ div.table {display: table;}
 .table div.sponsorKind {width: 5em;}
 .table .speciesName {width: 18em;}
 .table .speciesName .API.sci {font-style: italic;}
-.table .speciesName .API.common::before {content: "[EoL VN] ";}
+.table .speciesName .API.common::before {content: "EoL VN: ";}
 .table .vernacularName a {color: inherit}
 .table textarea.form-control { height: 2em; padding: 0.2em;}
 .table .adminComment {padding-top: 0}
@@ -37,12 +38,14 @@ div.table {display: table;}
 .table .donor {width: 12em}
 .table .donor .PayPal::before { content: "PP: ("; }
 .table .donor .PayPal::after { content: ")"; }
-.table .donor .donordetails textarea {width: 74%; display: inline-block}
-.table .donor .donordetails textarea:first-of-type {width: 25%;}
+.table .donor .donordetails input, .table .donor .username input {width: 74%; display: inline-block}
+.table .donor .donordetails input:first-of-type {width: 25%;}
+.table .donor .show {color: green}
+.table .donor .hide {color: red}
 .table .confirm {text-align:center;}
 .table .confirm input {background-color: green; background-image:none; font-weight:normal}
 .table .confirm p {display: inline-block; margin: 0}
-
+.table .username {font-family: monospace; font-style: normal}
 
 button.changeimage, button.noimage {
     border: 0;

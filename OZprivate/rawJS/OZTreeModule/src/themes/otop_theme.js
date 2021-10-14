@@ -111,6 +111,11 @@ const theme = {
       fill: int_text_fill
     },
     
+   undeveloped: {
+   stroke: 'rgba(0,0,0,0)',
+   fill: 'rgba(0,0,0,0)'
+   },
+
     
     'text_hover': {
       stroke: int_text_stroke_hover

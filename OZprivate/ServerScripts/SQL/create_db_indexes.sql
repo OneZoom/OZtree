@@ -83,6 +83,9 @@ CREATE INDEX ott_index           ON vernacular_by_ott (ott, lang_primary, prefer
 DROP   INDEX name_index          ON vernacular_by_name;
 CREATE INDEX name_index          ON vernacular_by_name (name, lang_primary, preferred, src);
 
+DROP   INDEX username_index      ON reservations;
+CREATE INDEX username_index      ON reservations (username)         USING HASH;
+
 DROP   INDEX ott_index           ON reservations;
 CREATE INDEX ott_index           ON reservations (OTT_ID)           USING HASH;
 
@@ -100,6 +103,9 @@ CREATE INDEX user_time_index     ON reservations (user_updated_time);
 
 DROP   INDEX PP_e_mail_index     ON reservations;
 CREATE INDEX PP_e_mail_index     ON reservations (PP_e_mail)        USING HASH;
+
+DROP   INDEX e_mail_index        ON reservations;
+CREATE INDEX e_mail_index        ON reservations (e_mail)        USING HASH;
 
 DROP   INDEX donor_name_index    ON reservations;
 CREATE INDEX donor_name_index    ON reservations (verified_donor_name) USING HASH;

@@ -6,12 +6,13 @@ The rough backbone of the fungal tree from this paper is
 (
   (Fonticulida_ott5247669:800,Nucleariida_ott5247670:800)Cristidiscoidea/Nucleariae(ott5246837):250,
   (
-    (Rozella_ott958913:800,Microsporidia_ott16113:800)Rozellomycota:150,
+    (Rozella_ott958913:800,Microsporidia_ott16113~-7510361-4038752:800)Rozellomycota:150,
     (APHELIDA:900,ALL_OTHERS:900):50
   )Fungi:100
 )Holomycota:70
 
-Here I use the term "Holomycota" (https://en.wikipedia.org/wiki/Holomycota) instead of Nucletmycea
+Here I use the term "Holomycota" (https://en.wikipedia.org/wiki/Holomycota) instead of Nucletmycea, and remove the Hemimastigophora taxa Hemimastix (ott7510361) and Spironema (ott4038752) which are currently (OT 13.4) in microsporidia
+
 
 Note that Tedersoo et al suggest Rozellomycota as a preferential synonym of Cryptomycota
 and Aphelidiomycota as a preferential synonym of Aphelida
@@ -48,5 +49,5 @@ So we can put
 Group2b = ((Mucoromycotina_ott564951,Glomeromycota_ott385878)Mycoromyceta,(Ascomycota_ott439373,Basidiomycota_ott634628,Entorrhizomycota_ott5653719)Dikarya_ott656316)
 
 #from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Fungi]
-((Fonticulida_ott5247669@:800,Nucleariida_ott5247670@:800)Nucleariae:250,((Rozella_ott958913@:800,Microsporidia_ott16113@:800)Rozellomycota:150,(APHELIDA@:900,((Blastocladiomycota_ott469418@:625,(Neocallimastigomycota_ott380931@:575,Monoblepharomycota_ott305126@:575,((Chytridiales_ott319483@:350,Spizellomycetales_ott383212@:350):75,(Rhizophydiales_ott967026@:350,Gromochytriales_ott5384682@:350):75)Chytridiomycota_ott177160:150)Chytridiomyceta:50):200,(((Basidiobolomycota_ott149101@:675,Olpidiomycota_ott5602140@:675):75,(Entomophthoromycota_ott887960@:700,Kickxellomycota_ott759290@:700,Zoopagomycota_ott956400@:700)Zoopagomyceta:50):25,((Mucoromycotina_ott564951@:690,Glomeromycota_ott385878@:690)Mycoromyceta:10,(Ascomycota_ott439373@:650,Basidiomycota_ott634628@:650,Entorrhizomycota_ott5653719@:650)Dikarya_ott656316:50):75):50):75):50)Fungi_ott352914:100
+((Fonticulida_ott5247669@:800,Nucleariida_ott5247670@:800)Nucleariae:250,((Rozella_ott958913@:800,Microsporidia_ott16113~-7510361-4038752@:800)Rozellomycota:150,(APHELIDA@:900,((Blastocladiomycota_ott469418@:625,(Neocallimastigomycota_ott380931@:575,Monoblepharomycota_ott305126@:575,((Chytridiales_ott319483@:350,Spizellomycetales_ott383212@:350):75,(Rhizophydiales_ott967026@:350,Gromochytriales_ott5384682@:350):75)Chytridiomycota_ott177160:150)Chytridiomyceta:50):200,(((Basidiobolomycota_ott149101@:675,Olpidiomycota_ott5602140@:675):75,(Entomophthoromycota_ott887960@:700,Kickxellomycota_ott759290@:700,Zoopagomycota_ott956400@:700)Zoopagomyceta:50):25,((Mucoromycotina_ott564951@:690,Glomeromycota_ott385878@:690)Mycoromyceta:10,(Ascomycota_ott439373@:650,Basidiomycota_ott634628@:650,Entorrhizomycota_ott5653719@:650)Dikarya_ott656316:50):75):50):75):50)Fungi_ott352914:100
 )Holomycota_ott5246132:70;

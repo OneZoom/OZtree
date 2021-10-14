@@ -3,12 +3,14 @@
 {{response.files.append(URL('static', 'OZSponsor/validate.css'))}}
 {{response.files.append(URL('static', 'OZSponsor/EOLqueries.js'))}}
 {{extend 'layout.html'}}
-{{if request.vars.show == 'all':}}
+{{if request.vars.show == 'all' or request.vars.show == 'validated':}}
 <h2>Revalidation page</h2>
 <form method="get">You can also look at this page <a href="?show=unvalidated">showing only taxa that need to be validated</a>, or enter an OTT number <input name="show" type="text" size="8" placeholder="e.g. 872573" value="{{=request.vars.show if (request.vars.show and request.vars.show.isdigit()) else ''}}"> and </input><button type="submit">search for it</button></form>
-{{else:}}
+{{elif not request.vars.show or request.vars.show=="unvalidated":}}
 <h2>Recently sponsored leaves to validate</h2>
-<form method="get">You can also look at this page <a href="?show=all">with *all* taxa shown</a>, or enter an OTT number <input name="show" type="text" size="8" placeholder="e.g. 872573" value="{{=request.vars.show if (request.vars.show and request.vars.show.isdigit()) else ''}}"> and </input><button type="submit">search for it</button></form>
+<form method="get">You can also look at this page <a href="?show=all">with *all* taxa shown</a>, or enter one or more OTT numbers separated by commas <input name="show" type="text" size="8" placeholder="e.g. 872573" value="{{=request.vars.show if (request.vars.show and request.vars.show.isdigit()) else ''}}"> and </input><button type="submit">search for it</button></form>
+{{else:}}
+<h2>List of leaves with validation status</h2>
 {{pass}}
 <p>Where a user chosen image has a red outline, the user has chosen something other than the default image (or the admin has loaded a new image in). To restore the default image, simply close the chosen image which will remove it entirely, reverting to the standard EoL one.</p>
 
@@ -20,7 +22,7 @@
 <div>Scientific name</div>
 <div class='image'>Alt image</div>
 <div class='image'>Chosen image</div>
-<div>Donor</div>
+<div>Donor &amp; <span class="username">username</span></div>
 <div>Sponsor</div>
 <div>More</div>
 <div>Mesg</div>

@@ -8,9 +8,9 @@ The instructions below are primarily intended for creating a full tree of all li
 We assume you are running in a bash shell, so that you can define the following settings before you create a tree, and use them in the scripts below as `${OT_VERSION}` and `${OZ_TREE}`
 
 ```
-OT_VERSION=12_3 #or whatever your OpenTree version is
-OT_TAXONOMY_VERSION=3.2
-OT_TAXONOMY_EXTRA=draft9 #optional - the draft for this version, e.g. for 3.1draft2
+OT_VERSION=13_4 #or whatever your OpenTree version is
+OT_TAXONOMY_VERSION=3.3
+OT_TAXONOMY_EXTRA=draft1 #optional - the draft for this version, e.g. for 3.3draft1
 OZ_TREE=AllLife #a tree directory in data/OZTreeBuild
 THREADS=-T40 #or however many cpus you want to throw at the process (or omit on personal machines)
 ```
@@ -89,7 +89,7 @@ If you already have your own newick tree with open tree ids on it already, and d
 
 	## create the base tree and table data
    
-5. (many hours) This is the long step, although it can benefit from parallel decoding of the wikimedia database dump files, so it can be worth running this on a multiprocessor machine (e.g. with 64 or even 128 cores, setting `${THREADS}` as appropriate). On the basis of the `${OZ_TREE}_full_tree.phy` file, look for ID mappings between different datasets, calculate popularity measures via wikidata/pedia, refine the tree (remove subspecies, randomly break polytomies, remove unifurcations etc), and then create corresponding database tables together with `ordered_tree_XXXXX.nwk`, `ordered_tree_XXXXX.poly` (same file but with polytomies marked with curly braces), and `ordered_tree_XXXXX.date` files (where XXXXX is the version number, usually a timestamp).
+5. (many hours) This is the long step, although it can benefit from parallel decoding of the wikimedia database dump files, so it can be worth running this on a multiprocessor machine (e.g. with 64 or even 128 cores, setting `${THREADS}` as appropriate). On the basis of the `${OZ_TREE}_full_tree.phy` file, look for ID mappings between different datasets, calculate popularity measures via wikidata/pedia, refine the tree (remove subspecies, randomly break polytomies, remove unifurcations etc), and then create corresponding database tables together with `ordered_tree_XXXXX.nwk`, `ordered_tree_XXXXX.poly` (same file but with polytomies marked with curly braces), and `ordered_dates_XXXXX.js` files (where XXXXX is the version number, usually a timestamp).
 
     Additional flags can be given to override the OpenTree taxonomy in specific cases (using `--extra_source_file`), and to exclude certain taxa (e.g. dinosaurs) from the popularity calculations.
 
@@ -148,7 +148,7 @@ If you already have your own newick tree with open tree ids on it already, and d
 	```
 	(note that this both updates the ICUN data in the DB and percolates up interior node info)
 12. (10 mins) If this is a site with sponsorship (only the main OZ site), set the pricing structure using SET_PRICES.html (accessible from the management pages).
-13. (5 mins - this does seem to be necessary for ordered nodes & ordered leaves). Make sure indexes are reset. Look at the commands at the end of db.py for the SQL to do this - they involve logging in to the SQL server (e.g. via Sequel Pro on Mac) and pasting all the drop index and create index commands.
+13. (5 mins - this does seem to be necessary for ordered nodes & ordered leaves). Make sure indexes are reset. Look at `OZprivate/ServerScripts/SQL/create_db_indexes.sql`  for the SQL to do this - this may involve logging in to the SQL server (e.g. via Sequel Pro on Mac) and pasting all the drop index and create index commands.
     
     ## at last
 14. Have a well deserved cup of tea

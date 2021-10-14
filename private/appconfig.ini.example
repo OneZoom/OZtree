@@ -39,6 +39,8 @@ url_base = //images.onezoom.org/
 ;    to enter paypal etc details). If set to anything other than 0/1 or all/none
 ;    this is assumed to be a "role", such as manager, and only
 ;    people logged in with the role can sponsor (for testing purposes)
+;    please note that the OneZoom software license does not permit users of
+;    the code to set allow_sponsorship = 1 under any circumstances
 ; * maintenance_mins: to enable maintenance mode (e.g. when 
 ;    switching beta and production to enable a new website version)
 ;    set to the number of minutes you expect the site to be down
@@ -48,12 +50,23 @@ url_base = //images.onezoom.org/
 ;    user is looking at the sponsor page
 ; * unpaid_time_limit_mins: how long before a sponsored leaf becomes 
 ;    free again if we receive no payment notification
+; * hmac_key: A secret key used to generate signatures for links in renewal e-mails
+;    to prove users used a link from an e-mail we sent.
 allow_sponsorship = 0
 maintenance_mins = 0
 reservation_time_limit_mins = 6
 unpaid_time_limit_mins = 2880
+hmac_key = supersecretstring
 
 [api]
 ;If you want to get data from the Encyclopedia of Life, you need to put your own API key here. 
 ;Fill it in using instructions at http://eol.org/info/api_overview 
 ;eol_api_key = 11111111111
+
+[analytics]
+; * ga_code: The google analytics data stream code you wish to use for tracking
+;        if unset, tracking is off.
+; To get a code, go to Admin -> Select account -> Select property -> "Data streams"
+; -> Add/select "web" stream -> Copy code from "Global site tag (gtag.js)"
+; Will begin with UA- or G-
+;ga_code = G-ABCABCABCA

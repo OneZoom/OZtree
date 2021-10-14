@@ -1,8 +1,8 @@
 {{=form.custom.begin}}
-{{from cgi import escape}}        
+{{from html import escape}}        
         <div class="ids">{{=A("➩ OZ link", _href=URL('default','life/@='+str(vars['OTT_ID']), vars={"init":"jump"}, url_encode=False, extension=False), _target="_blank")}}<ol><li class="DB"><br />{{=A(vars['OTT_ID'], _href="https://tree.opentreeoflife.org/opentree/argus/ottol@{}".format(vars['OTT_ID']), _target='_blank')}}</a></li><li class="API"><br />{{=A(vars['EOL_ID'], _href="http://eol.org/pages/{}".format(vars['EOL_ID']), _target='_blank') if vars['EOL_ID'] else '<none>'}}</li></ol></div>
         
-        <div class="speciesName"><ol><li class="DB"><br />{{=vars['html_name'] or '<none>'}}</li><li class="API sci"><img src="{{=URL('static','images/ajax-loader.gif')}}" title="Waiting for scientific name from API..." alt="Waiting for scientific name from API..." /></li><li class="API common"><a class="vernacularName" href="http://eol.org/pages/{{=vars['EOL_ID']}}/names/common_names" target="_blank"></a></li></ol></div>
+        <div class="speciesName"><ol><li class="DB"><br />{{=vars['html_name'] or '<none>'}}</li><li class="API sci"><img src="{{=URL('static','images/ajax-loader.gif')}}" title="Waiting for scientific name from API..." alt="Waiting for scientific name from API..." /></li><li class="API common"><a class="vernacularName" href="https://eol.org/pages/{{=vars['EOL_ID']}}/names" target="_blank"></a></li></ol></div>
         
         <div class="image API"><!--
             We hide the EOL image ID doID in a 'hidden' div, used to update the database when the form is submitted
@@ -74,7 +74,7 @@
         The close button
         --><button type="button" class="noimage"
             onclick="$('#form_{{=vars['id']}} .admin_may_change').attr('name','admin_changed_image'); $('#form_{{=vars['id']}} .image.DB img').attr('class',''); set_img('{{=URL('static','images/Unselected.jpg')}}', '#form_{{=vars['id']}} .image.DB')">&times;</button></div><input type="hidden" class="admin_may_change" value="1" title="allows us to check if a bespoke image has been set by admin" />
-        <div class="donor"><ol><li class="PayPal">{{=vars['PP_first_name'] or ""}} {{=vars['PP_second_name'] or ""}}, {{=vars['PP_town']}}, {{=vars['PP_country']}}</li><li class="donordetails">{{=form.custom.widget.verified_donor_title}}{{=form.custom.widget.verified_donor_name}}</li></ol></div>
+        <div class="donor"><ol><li class="PayPal">{{=vars['PP_first_name'] or ""}} {{=vars['PP_second_name'] or ""}}, {{=vars['PP_town']}}, {{=vars['PP_country']}}</li><li class="donordetails">{{=form.custom.widget.verified_donor_title}}{{=form.custom.widget.verified_donor_name}}</li><li>{{if other_sponsorship_otts:}}Username match: <q><span class="username">{{=username}}</span></q> <a target="_blank" href="?show={{=','.join([str(o) for o in other_sponsorship_otts])}}">({{=len(other_sponsorship_otts)}} sponsorships)</a>:{{else:}}Generated username:<input type="hidden" name="new_username" value="1" />{{pass}}<span class="username">{{=form.custom.widget.username}}</span>&nbsp;{{if vars['user_donor_hide']:}}<span class="hide">hide</span>{{else:}}<span class="show">show</span>{{pass}}</li></ol></div>
 
         <div class="sponsor"><ol><li>{{=form.custom.widget.verified_kind}}</li><li>{{=form.custom.widget.verified_name}}</li></ol></div>
 
@@ -84,9 +84,9 @@
         <div class="paid">
         {{if vars['asking_price'] is None:}}
         <NA>
-        {{elif (vars['user_paid'] == vars['asking_price']):}}
+        {{elif vars['user_paid'] == vars['asking_price']:}}
         = OK
-        {{elif (vars['user_paid'] > vars['asking_price']):}}
+        {{elif vars['user_paid'] > vars['asking_price']:}}
         <b style="color: green;">+ {{=round(vars['user_paid'] - vars['asking_price'], 2)}}</b><br />
         {{else:}}
         <b style="color: red; font-size: 200%">!!{{=(vars['user_paid'] - vars['asking_price'])}}</b><br />
@@ -101,7 +101,7 @@
         {{pass}}
         </div>
         <div class="confirm">{{=form.custom.submit}}
-        <p>{{if not vars.get('live_time'):}}<input type="checkbox" name="auto_email" title="automatically email this sponsor when the button is clicked" {{if to_be_validated:}}checked="checked"{{pass}}>{{pass}}{{email = escape(vars['e_mail'] or vars['PP_e_mail'] or '')}}<a href="mailto:{{=email}}?Subject=Your%20sponsorship%20of%20{{=escape(vars['name'] or '')}}%20on%20OneZoom"><img src="{{=URL('static','images/email-icon.png')}}" alt="email" title="Compose new email to {{=(email or '<blank addressee>')}}" /></a></p>{{if vars.get('twitter_name'):}}<p>{{if not vars.get('live_time'):}}<input type="checkbox" name="auto_tweet" title="automatically tweet this sponsor when the button is clicked" {{if to_be_validated:}}checked="checked"{{pass}}>{{pass}}<a href="http://twitter.com/home/?status=@{{=vars.get('twitter_name')}}" target="_blank"><img src="{{=URL('static','images/tiny-twitter-icon.png')}}" alt="tweet" title="tweet to this sponsor" /></a></p>{{pass}}</div>
+        <p>{{if not vars.get("emailed_re_sponsorship"):}}<input type="checkbox" name="auto_email" title="automatically email this sponsor when the button is clicked" {{if to_be_validated:}}checked="checked"{{pass}}>{{pass}}{{email = escape(vars['e_mail'] or vars['PP_e_mail'] or '')}}<a href="mailto:{{=email}}?Subject=Your%20sponsorship%20of%20{{=escape(vars['name'] or '')}}%20on%20OneZoom"><img src="{{=URL('static','images/email-icon.png')}}" alt="email" title="Compose new email to {{=(email or '<blank addressee>')}}" /></a></p>{{if vars.get('twitter_name'):}}<p>{{if not vars.get("tweeted_re_sponsorship"):}}<input type="checkbox" name="auto_tweet" title="automatically tweet this sponsor when the button is clicked" {{if to_be_validated:}}checked="checked"{{pass}}>{{pass}}<a href="http://twitter.com/home/?status=@{{=vars.get('twitter_name')}}" target="_blank"><img src="{{=URL('static','images/tiny-twitter-icon.png')}}" alt="tweet" title="tweet to this sponsor" /></a></p>{{pass}}</div>
         <div class="adminComment">{{=form.custom.widget.admin_comment}}
         <script>
         thumb_func = {{=XML(js_thumbnail_url)}}
@@ -109,6 +109,7 @@
         function init_EOL_name_and_image(row_id, taxon_obj) {
             var fm = '#form_'+ row_id
             if (taxon_obj) {
+                console.log(taxon_obj);
                 if (taxon_obj.scientificName) {
                     $(fm + ' .speciesName .API.sci').text(taxon_obj.scientificName)
                 }
@@ -241,10 +242,14 @@
 {{if ('EOL_ID' in vars) and (vars['EOL_ID'] is not None):}}
 
             setDataFromEoLpageID(
+                /* EOLid, on_complete, EoL_key, n_images, include_names, timeout_ms */
                 {{='null' if not vars['EOL_ID'] else vars['EOL_ID']}},
                 function(taxon_obj, err) {
                     init_EOL_name_and_image({{=vars['id']}}, taxon_obj);
-                }, {{=XML('null' if not EoL_API_key else ("'" + str(EoL_API_key) + "'"))}});
+                },
+                {{=XML('null' if not EoL_API_key else ("'" + str(EoL_API_key) + "'"))}},
+                1,
+                true);
 
 {{else:}}
 

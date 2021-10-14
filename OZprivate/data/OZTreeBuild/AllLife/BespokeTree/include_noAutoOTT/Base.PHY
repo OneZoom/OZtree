@@ -1,13 +1,23 @@
 [
-For some vague but believable dates, see Stajich (2009) Current Biology 19:R840 https://doi.org/10.1016/j.cub.2009.07.004 
+== EUKARYOTES ==
 
-Note that I have removed a single leaf called 'Clade_L_ott5247662' which has sneaked in to OTv7 at the root of choanoflagellates)
+The position of various basal Eukaryote groups is often debated. This tree is based on the diagram from "The New Tree of Eukaryotes" by Fabien Burki and colleagues (https://doi.org/10.1016/j.tree.2019.08.008). 
 
-I have spaced out the filasterans & DRIPs by ~100 MY from the divergence between holozoa and holomycota at ~1120 (from Tedersoo et al, 2018 https://doi.org/10.1007/s13225-018-0401-0 ), pushing choanoflagellates to 800 MYA. Dates for the Ministeria/Capsaspora divergence are deep (~ 1/7th of the way from the filozoan root) as per fig 1 from Shalchian-Tabrizi et al 2008 https://doi.org/10.1371/journal.pone.0002098
 
-The position of various basal Eukaryote groups is under flux, see https://doi.org/10.1186/1741-7007-11-40 , https://doi.org/10.1111/j.1550-7408.2012.00644.x and https://doi.org/10.1111/j.1550-7408.2008.00373.x . This tree is based on the diagram from "The Eukaryotic Tree of Life from a Global Phylogenomic Perspective" by Fabien Burki ( https://doi.org/10.1101/cshperspect.a016147 ).
+The main controversy is the placement of the Eukaryotic root. The debate tends to involve the "Excavates", now comprising Discoba, Metamonada, and Malawimonada ( https://doi.org/10.1111/jeu.12691). For example, according to this preprint: https://doi.org/10.1101/2021.04.08.438903,  Discoba) may be sister to the main two eukaryoric groups Diaphoretickes+Hemimastigophora and Amorphea+CRuMs. On the other hand, Derelle (2015, EUBAC tree) follow the "Bikont" classification places Discoba as sister to Diaphoretickes+Hemimastigophora. Until this is resolved, here we simply use the OpenTree definition of Excavata (ott2927065) and roughly following Derelle, set it as sister to Diaphoretickes+Hemimastigophora, but with a branch length of 0, so that it appears as a polytomy.
 
-I place the root of the eukaryotic tree within Excavates as in Derelle (2015, EUBAC tree), by setting most of the excavates on one side, minus Malawimonas (ott935422), Collodictyonidae and Rigifilida (Rigifilida as per Adl https://doi.org/10.1111/j.1550-7408.2012.00644.x ). Since Collodictyonidae and Rigifilida are not in the synth OpenTree, excavates are simply Excavata_ott2927065~-935422
+((Excavata,(Diaphoretickes,Hemimastigophora))Bikonta:0,(Amorphea,CRuMs)Podiata)
+
+Note that currently Hemimastigophora (https://doi.org/10.1038/s41586-018-0708-8) is not properly represented in OpenTree, so we need to create it by hand (genera are Hemimastix, Spironema, Paramastix and Stereonema, grouped into Hemimastigida (ott5273711)
+
+Hemimastix (ott7510361) and Spironema (ott4038752) are currently (OT 13.4) in microsporidia, while Paramastix (ott4801700 with 4 descendant spp) is and Stereonema geiseri is missing completely, so we should have
+
+
+(Hemimastix_ott7510361@,Spironema_ott4038752@,(Paramastix_minuta,Paramastix_conifera,Paramastix_truncata, Paramastix_lata)Paramastix_ott4801700,Stereonema_geiseri)Hemimastigophora_ott5273711
+
+The basal eukaryotic divergence is set to 2150MYA from Strassert et al (2021, https://doi.org/10.1038/s41467-021-22044-z), with the Amorphea/CRuMs divergence at set to 2000MYA (more recent than the Ancyromonad divergence at ~2100MYA)
+
+== "ARCHAEA" ==
 
 For Archaeal paraphyly, see https://doi.org/10.1093/gbe/evu031 (Fig 2b, Fig 3). The position of the Eukaryotes within Archaea is very variable. Here I basically go with Fig 3 (the eocyte hypothesis), but to highlight to controversy I give the RV points number 39a, 39b, 39c.
 
@@ -44,5 +54,11 @@ Euryarchaeota_ott635958~996421-7000000-114216-921413-102415-921398-266344-678209
 TAK groups form Thaumarchaeota and Aigarchaeota (Aigarchaeota comes under Thaumarchaeota in the OTT). In OpenTree v5 this is sister to Thermoplasmata_ott921398). We add Korarchaeota as the sister to this, then 
 TACK is this clade plus the siter group Crenarchaeota (In OpenTree v5 this is sister to Thermococci_ottott921413)
 
+Very rough dates of Archeal evolution from Betts et al (2018; https://doi.org/10.1038/s41559-018-0644-x), with  Asgardarchaeota diverging at 2700 MYA, Crenarchaeota etc at 2800, and other spaced ~ 200MYA apart
+
+== Eubacteria ==
+
+We have little bacterial expertise, and the rooting of the Eubacteria may be problematic, so we simply take the standard OpenTree phylogeny, removing a few taxa such as "Apis mellifera" (ott 5900566) and "Capra hircus" (ott 5251869) which are clearly misleadingly named.
+
 ]
-((((((((((((METAZOA@:150,Choanoflagellida_ott202765~-5247662@:800.0)CollarClade_:100,((Ministeria_vibrans_ott787809,Ministeria_marisola_ott2832559)Ministeria_ott787811:770,Capsaspora_owczarzaki_ott1053060:770)Filasterea:130)Filozoa:100,Ichthyosporea_ott623671@:1000.0)Holozoa:120,HOLOMYCOTA@:1120)Opisthokonta:180,APUS@)Amorphea_minus_amoebozoa_:100,(Amoebozoa_ott1064655~-5246123@:1400.0,((Collodictyonidae_ott4738986@:1400.0,Rigifilida_ott973629@:1400.0),Malawimonas_ott935422@:1400.0):0):0)Amorphea:100,(BIKONTA@:1400,Excavata_ott2927065~-935422@:1400)Diphoda:100)Eukaryota:400,Asgardarchaeota_ott7000000@:1900)LE_clade_:25,(((Crenarchaeota_ott114216@,Thermococci_ott921413@),(Thaumarchaeota_ott102415@,Thermoplasmata_ott921398@)),Korarchaeota_ott266344@)TACK_group)TACKLE_clade_:100,(((Nanoarchaeota_ott678209@,Diapherotrites_ott5205266@),(Aenigmarchaeota_ott4795972@,(Candidatus_Nanosalina_ott296712,Candidatus_Haloredivivus_ott186386,Candidatus_Nanosalinarum_ott296715)Nanohaloarchaeota_ott5351807)),(Micrarchaeum_ott5248238@,Parvarchaeum_ott4796454@))dPANN_group)TACKLED_clade_:100,Euryarchaeota_ott635958~996421-7000000-114216-921413-102415-921398-266344-678209-5205266-4795972-5248234-4796454-5248238-296712-186386-296715@:2125.0)AllArchaeaAndEukaryotes_,Eubacteria_ott844192@)biota_ott93302;
+(((((((Excavata_ott2927065@,(DIAPHORETICKES@,(Hemimastix_ott7510361@,Spironema_ott4038752@,(Paramastix_minuta,Paramastix_conifera,Paramastix_truncata, Paramastix_lata)Paramastix_ott4801700,Stereonema_geiseri)Hemimastigophora):50):0,(AMORPHEA@,CRUMS@)Podiata:150)Eukaryota:550,Asgardarchaeota_ott7000000@)LE_clade_:100,(((Crenarchaeota_ott114216@,Thermococci_ott921413@),(Thaumarchaeota_ott102415@,Thermoplasmata_ott921398@)),Korarchaeota_ott266344@)TACK_group)TACKLE_clade_:200,(((Nanoarchaeota_ott678209@,Diapherotrites_ott5205266@),(Aenigmarchaeota_ott4795972@,(Candidatus_Nanosalina_ott296712,Candidatus_Haloredivivus_ott186386,Candidatus_Nanosalinarum_ott296715)Nanohaloarchaeota_ott5351807)),(Micrarchaeum_ott5248238@,Parvarchaeum_ott4796454@))dPANN_group)TACKLED_clade_:200,Euryarchaeota_ott635958~996421-7000000-114216-921413-102415-921398-266344-678209-5205266-4795972-5248234-4796454-5248238-296712-186386-296715@)AllArchaeaAndEukaryotes_,Eubacteria_ott844192~-5900566-5251869@)biota_ott93302;

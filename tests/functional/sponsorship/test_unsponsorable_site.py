@@ -33,11 +33,11 @@ class TestUnsponsorableSite(SponsorshipTest):
         ott = self.banned_unsponsored_ott()
         prev_n_visits, prev_last_visit, prev_reserve_time = self.visit_data(ott)
         def assert_tests(browser):
-            assert web2py_viewname_contains(browser, "spl_banned")
+            assert web2py_viewname_contains(browser, "spl_elsewhere_not")
             n_visits, last_visit, reserve_time = self.visit_data(ott)
             assert n_visits > prev_n_visits, "number of visits (was {}, now {}) should be augmented in unsponsorable_site mode".format(prev_n_visits, n_visits)
             assert abs(web2py_date_accessed(browser) - last_visit).seconds == 0, "last visit time should be recorded just now, even in unsponsorable_site mode"
-            assert prev_reserve_time == reserve_time, "reserved time should not be recorded for banned species"
+            assert reserve_time is None, "reserved time should not be recorded for banned species"
         SponsorshipTest.test_ott(self, assert_tests, ott)
         
     def test_already_sponsored(self):
@@ -46,14 +46,14 @@ class TestUnsponsorableSite(SponsorshipTest):
         """
         ott = self.sponsored_ott()
         prev_n_visits, prev_last_visit, prev_reserve_time = self.visit_data(ott)
-        time_diff_v = datetime.now() - prev_last_visit
-        time_diff_r = datetime.now() - prev_reserve_time
+        time_diff_v = datetime.now() - (prev_last_visit or datetime.now())
+        time_diff_r = datetime.now() - (prev_reserve_time or datetime.now())
         def assert_tests(browser):
             assert web2py_viewname_contains(browser, "spl_sponsored")
             n_visits, last_visit, reserve_time = self.visit_data(ott)
             assert n_visits > prev_n_visits, "number of visits should be recorded in unsponsorable_site mode"
             assert abs(web2py_date_accessed(browser) - last_visit).seconds == 0, "last visit time should be recorded just now, even in unsponsorable_site mode"
-            assert prev_reserve_time == reserve_time, "reserved time should not be recorded for already sponsored species"
+            assert reserve_time is None, "reserved time should not be recorded for already sponsored species"
         SponsorshipTest.test_ott(self, assert_tests, ott)
         print("(banned but sponsored not implemented) ...", end="", flush=True)
         #SponsorshipTest.test_ott(self, assert_tests, self.banned_sponsored_ott())

@@ -5,8 +5,8 @@
 {{block masthead}}
 <div class="home-heading uk-text-center">
   <h1>Welcome to the OneZoom tree of life explorer...</h1>
-  <p>An interactive map of the evolutionary links between all living things. Discover your favourites, see which species are under threat, and be amazed by the diversity of life on earth.</p>
-  <em>Our tree of life explorer is designed to be easily accessible for everyone; we also provide free educational tools for teachers, software for scientists and interactive exhibits for museums.</em>
+  <p>An interactive map of the evolutionary links between all living things known to science. Discover your favourites, see which species are under threat, and be amazed by the diversity of life on earth.</p>
+  <em>Our tree of life explorer is designed to be easily accessible for everyone. We also provide educational tools for teachers, software for scientists and interactive exhibits for museums. This is a free community resource with no advertising.</em>
 </div>
 {{end block}}
 
@@ -29,7 +29,7 @@
             <li style="top: -1.3rem; right: 10%; width: 7rem; height: 7rem;">{{="{:,}".format(n_species)}} species</li>
             <li style="top: 30%; right: 45%; width: 5.5rem; height: 5.5rem;">{{="{:,}".format(n_images)}} images</li>
           </ul>
-          <div class="oz-card-bottom-right"><a href="/life.html" class="oz-pill pill-leafout" target="_blank">Start exploring</a></div>
+          <div class="oz-card-bottom-right"><a href="/introduction.html" class="oz-pill leaf-list">Find out more</a></div>
         </div>
       </div>
 
@@ -76,6 +76,9 @@
           <a class="uk-position-top-left oz-slider-arrow oz-slider-arrow-left" style="height: 127px" href="#" uk-slider-item="previous"></a>
           <a class="uk-position-top-right oz-slider-arrow oz-slider-arrow-right" style="height: 127px" href="#" uk-slider-item="next"></a>
         </div>
+        
+       <div class="oz-card-bottom-right"><a href="/life.html" class="oz-pill pill-leafout" target="_blank">Start at the origin of life</a></div>
+        
       </div>
       <script>
        function popularplaces_recalc() {
@@ -117,7 +120,7 @@
       </script>
 
     </div>
-  </div>
+    </div>
   <div> <!-- Right column -->
     <div class="uk-card uk-card-default uk-card-small">
       <div class="hp_tour_ui" id="tour_wrapper"></div>
@@ -186,10 +189,12 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   </style>
   <h3 class="uk-card-title">Biodiversity and Conservation...</h3>
   <p>We want to help everyone appreciate biodiversity and the need to conserve it.<br/>
-  <em>Red leaves on our tree of life show species known to be under threat of extinction.</em></p>
+  <em>Red leaves on our tree of life show species known to be under threat of extinction.</em><br/>
+  <span class="green-text"> Green leaves are either okay for now but might be nearly threatened.</span><br/>
+  <span class="grey-text">Most leaves are grey meaning that it's not known how threatened they are.</span></p>
 
   <div class="endangered-species">{{for key in threatened:}}
-    <a href="{{=hrefs[key]}}" title="{{=str(html_names.get(key, '')).capitalize()}}" target="_blank"><span class="img-species leafout"><img class="species" src="{{=images[key]['url']}}" alt="{{=str(html_names.get(key, '')).capitalize()}}" /></span></a>
+    <a href="{{=hrefs[key]}}" title="{{=str(html_names.get(key, '')).capitalize()}}" target="_blank"><span class="img-species leafout leafout-corner"><img class="species" src="{{=images[key]['url']}}" alt="{{=str(html_names.get(key, '')).capitalize()}}" /></span></a>
   {{pass}}</div>
 </div></section>
 
@@ -232,8 +237,8 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   <h3 class="uk-card-title">Become a sponsor...</h3>
 
   <p>
-  OneZoom is a registered non-profit in the UK, all our products are for free. <a href="{{=URL('default', 'donor_list.html')}}">{{=n_total_sponsored}} people like you</a> have helped us by making donations. Their names appear as sponsors on
-    <a href="{{=URL('default', 'sponsored.html')}}">{{=n_sponsored_leaves}} leaves of our tree of life</a>.
+  OneZoom is a registered non-profit in the UK, all our products are available for free. {{if n_total_sponsored > 0:}}<a href="{{=URL('default', 'donor_list.html')}}">{{=n_total_sponsored}} people like you</a> have helped us by making donations. Their names appear as sponsors on
+    <a href="{{=URL('default', 'sponsored.html')}}">{{=n_sponsored_leaves}} leaves of our tree of life</a>.{{pass}}
   </p>
   <p>Only one name per leaf so get your favourite while you can, for yourself or as a gift.</p>
 
@@ -282,7 +287,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
     <a class="uk-position-top-left oz-slider-arrow oz-slider-arrow-left" style="height:65px" href="#" uk-slider-item="previous"></a>
     <a class="uk-position-top-right oz-slider-arrow oz-slider-arrow-right" style="height:65px" href="#" uk-slider-item="next"></a>
   </div>
-  <ul class="oz-pill leaf-list"><li><a href="{{=URL('default', 'sponsor.html')}}">Sponsor a leaf now!</a></li></ul>
+  <ul class="oz-pill leaf-list"><li><a href="//www.onezoom.org/sponsor.html">Sponsor a leaf now!</a></li></ul>
 </div></section>
 
 

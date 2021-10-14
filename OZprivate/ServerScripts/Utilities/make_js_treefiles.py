@@ -60,9 +60,9 @@ def generate_binary_cut_position_map(newick_str, threshold):
   count = 0
   for index, c in enumerate(reversed(newick_str)):
       index = len(newick_str) - index - 1
-      if c is '(' or c is '{':
+      if c == '(' or c == '{':
           count = count-1
-      elif c is ')' or c is '}':
+      elif c == ')' or c == '}':
           count = count + 1
       else:
           raise ValueError("newick str contains non bracket character: " + c)
@@ -115,7 +115,7 @@ def build_cut_position_map(start, end, start_end_arr, count_arr, cut_position_ma
 #Substring's start and end position would be pushed into start_end_arr if its distance is larger than threshold.
 def get_polytomy_substring_pos(start, end, start_end_arr, threshold, newick_str, called_by_self = False):
     res = []
-    if (end <= start or (called_by_self and newick_str[end] is ')')):
+    if (end <= start or (called_by_self and newick_str[end] == ')')):
         res = res + [start, end]
         if ((end - start) > threshold):
             start_end_arr.append(start)
@@ -126,11 +126,11 @@ def get_polytomy_substring_pos(start, end, start_end_arr, threshold, newick_str,
     bracket_count = 0
     for index in reversed(range(start, end+1)):
         c = newick_str[index]
-        if c is ')' or c is '}':
+        if c == ')' or c == '}':
             bracket_count = bracket_count + 1
-        elif c is '(' or c is '{':
+        elif c == '(' or c == '{':
             bracket_count = bracket_count - 1
-            if (bracket_count is 1):
+            if (bracket_count == 1):
                 cut_point = index - 1
                 break
     if (cut_point is not None):

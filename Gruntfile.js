@@ -1,6 +1,11 @@
+const sass = require('sass');
+const process = require('process');
+const path = require('path');
+
 partial_install_site = "http://beta.onezoom.org";
 partial_local_install_site = "http://127.0.0.1:8000"; // if you are running a local installation
 preferred_python3 = "python3.7"; // in case you have multiple python3 versions installed
+web2py_py = path.join(path.dirname(path.dirname(process.cwd())), 'web2py.py');
 
 module.exports = function (grunt) {
   grunt.initConfig({
@@ -18,6 +23,15 @@ module.exports = function (grunt) {
                 'python3 -c "import gluon.compileapp; gluon.compileapp.compile_application(\''
                 + process.cwd()
                 + '\', skip_failed_views=True)"'
+      },
+      make_release_info: {
+        command: 'git describe --tags > RELEASE_INFO && python3 OZprivate/ServerScripts/Utilities/get_release_name.py RELEASE_INFO >> RELEASE_INFO'
+      },
+      test_server: {
+        command: 'for f in tests/unit/*.py; do echo === $f; ' + preferred_python3 + ' ' + web2py_py + ' -S OZtree -M -e -R applications/OZtree/$f; done'
+      },
+      test_server_functional: {
+        command: 'nosetests3 tests/functional/'
       },
       test: {
         command: 'npm run test'
@@ -61,15 +75,21 @@ module.exports = function (grunt) {
         }
       }
     },
-    compass: {
+    sass: {
       // SCSS -> CSS files
+      options: {
+        implementation: sass,
+        sourceMap: true,
+        outputStyle: 'compressed'
+      },
       dist: {
-        options: {
-          sassDir: '<%=pkg.directories.css_src%>',
-          cssDir: '<%=pkg.directories.css_dist%>',
-          environment: 'development',
-          outputStyle: 'compressed'
-        }
+         files: [{
+             expand: true,
+             cwd: '<%=pkg.directories.css_src%>',
+             src: ['*.scss'],
+             ext: '.css',
+             dest: '<%=pkg.directories.css_dist%>'
+         }]
       }
     },
     clean: [
@@ -142,19 +162,22 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks("grunt-exec");
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-compress');
-  grunt.loadNpmTasks('grunt-contrib-compass');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-jsdoc-to-markdown');
   grunt.loadNpmTasks('grunt-curl');
+  grunt.loadNpmTasks('grunt-sass');
 
+  grunt.registerTask("make_release_info", ["exec:make_release_info"]);
   grunt.registerTask("test", ["exec:test"]);
-  grunt.registerTask("css", ["compass"]);
+  grunt.registerTask("test-server", ["exec:test_server"]);
+  grunt.registerTask("test-server-functional", ["exec:test_server", "exec:test_server_functional"]);
+  grunt.registerTask("css", ["sass"]);
   grunt.registerTask("docs", ["jsdoc2md", "exec:unify_docs"]);
   grunt.registerTask("compile-python", ["exec:compile_python"]);
   grunt.registerTask("compile-js", ["exec:compile_js"]);
   grunt.registerTask("compile-js_dev", ["exec:compile_js_dev"]);
-  grunt.registerTask("partial-install",       ["compile-js", "compass", "copy:dev", "curl-dir:get_minlife", "exec:convert_links_to_local"]);
-  grunt.registerTask("partial-local-install", ["compile-js", "compass", "copy:dev", "curl-dir:get_local_minlife", "exec:convert_links_to_local"]);
-  grunt.registerTask("prod", ["clean", "compile-python", "compile-js", "compass", "compress", "copy:prod", "docs"]);
-  grunt.registerTask("dev",  ["clean",               "compile-js_dev", "compass", "compress", "copy:dev",  "docs"]);
+  grunt.registerTask("partial-install",       ["compile-js", "css", "copy:dev", "curl-dir:get_minlife", "exec:convert_links_to_local"]);
+  grunt.registerTask("partial-local-install", ["compile-js", "css", "copy:dev", "curl-dir:get_local_minlife", "exec:convert_links_to_local"]);
+  grunt.registerTask("prod", ["clean", "compile-python", "compile-js", "css", "compress", "copy:prod", "make_release_info", "docs"]);
+  grunt.registerTask("dev",  ["clean",               "compile-js_dev", "css", "compress", "copy:dev",  "make_release_info", "docs"]);
 };

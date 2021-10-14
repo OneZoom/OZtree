@@ -15,10 +15,6 @@ response.meta.description = 'Tree of life explorer'
 response.meta.keywords = 'onezoom, one, zoom, fractal, tree, tree of life, phylogeny, explorer, life, species, biology, earth, deep zoom, big data, encyclopedia, evolution, ecology, sponsor'
 response.meta.generator = 'Web2py Web Framework'
 
-## your http://google.com/analytics id
-response.google_analytics_id = None
-
-
 # videos, 
 
 #OneZoom is committed to heightening awareness about the diversity of life on earth and its evolutionary history. Here you can explore the tree of life in a new way: it's like a map, everything is on one page, all you have to do is use your mouse wheel to zoom in and out.
@@ -35,10 +31,12 @@ response.google_analytics_id = None
 
 response.menu = [
                  (T('For Everyone'), False, None , [ #need to set url_encode=False to avoid web2py quoting the @ sign
-                                            (T('A view of all life'), False, URL('default', 'introduction', url_encode=False)),
+                                            (T('A view of all known life'), False, URL('default', 'introduction', url_encode=False)),
                                             (T('Your name on the tree'), False, URL('default' , 'sponsor.html')),
                                             (T('Send a tr-eCard'), False, URL('default' , 'treecards.html')),
                                             (T('Act for biodiversity'), False, URL('default' , 'otop_intro.html')),
+                                            (T('Full user guide'), False, URL('default' , 'full_guide.html')),
+                                            (T('My sponsorships'), False, URL('default' , 'sponsor_user_manage.html')),
                                             ]),
                 
                  (T('For Education'), False, None , [
@@ -49,11 +47,12 @@ response.menu = [
                                                    ]),
                  
                  (T('For Science'), False, None , [
-                                            (T('Data sources'), False, URL('default' , 'data_sources.html')),
-                                            (T('Legacy trees'), False , URL('default' , 'tree_index.html')),
+                                            (T('Work with us'), False, URL('default' , 'work_with_us.html')),
                                             (T('Developer tools'), False , URL('default' , 'developer.html')),
                                             (T('Popularity index'), False , URL('popularity' , 'index.html')),
                                             (T('Public APIs'), False , URL('API','index.html')),
+                                            (T('Data sources'), False, URL('default' , 'data_sources.html')),
+                                            (T('Legacy trees'), False , URL('default' , 'tree_index.html')),
                                             ]),
                  
                  (T('About us'), False, None , [

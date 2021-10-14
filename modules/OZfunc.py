@@ -4,6 +4,7 @@ Functions that are defined in controllers and that takes arguments are private.
 Functions defined in controllers and start with ‘__’ [double underscores] are private.
 Functions defined in controllers and having a space after the () and before the ‘:’ are private. 
 """
+from datetime import datetime
 import re
 import os
 import random
@@ -32,40 +33,30 @@ def __check_version(): #this is a private function
     except Exception as e:
         return str(e)
 
-def clear_reservation(reservations_table_id):
-    db = current.db
-    keep_fields = ('id', 'OTT_ID', 'num_views', 'last_view')
-    del_fields = {f: None for f in db.reservations.fields if f not in keep_fields}
-    assert len(keep_fields) + len(del_fields) == len(db.reservations.fields)
-    assert reservations_table_id is not None
-    db(db.reservations.OTT_ID == reservations_table_id).update(**del_fields)
+def __release_info():
+    """
+    Return the release number and name, as stored in the RELEASE_INFO file, which is
+    created automatically when generating the website
+    """
+    ret = [None, None, None]  # tag, name, release date
+    try:
+        with open(os.path.join(current.request.folder, "RELEASE_INFO"), "rt") as file:
+            for i, v in enumerate(file.readlines()):
+                if i == 2:
+                    try:
+                        ret[i] = datetime.fromisoformat(v.strip())
+                    except ValueError:
+                        pass
+                else:
+                    ret[i] = v.strip()
+    except FileNotFoundError:
+        pass
+    return ret
 
 def lang_primary(req):
     language=req.vars.lang or req.env.http_accept_language or 'en'
     first_lang = language.split(',')[0]
     return(first_lang.split("-")[0].lower())
-    
-def sponsorable_children_query(target_id, qtype="ott"):
-    """
-    A function that returns a web2py query selecting the sponsorable children of this node.
-    TO DO: change javascript so that nodes without an OTT use qtype='id'
-    """
-    db = current.db
-    query = child_leaf_query(qtype, target_id)
-
-    #nodes without an OTT are unsponsorable
-    query = query & (db.ordered_leaves.ott != None) 
-
-    #nodes without a space in the name are unsponsorable
-    query = query & (db.ordered_leaves.name.contains(' ')) 
-
-    #check which have OTTs in the reservations table
-    unavailable = db((db.reservations.verified_time != None))._select(db.reservations.OTT_ID)
-    #the query above ony finds those with a name. We might prefer something like the below, but I can't get it to work
-    #unavailable = db((db.reservations.user_sponsor_name != None) | ((db.reservations.reserve_time != None) & ((request.now - db.reservations.reserve_time).total_seconds() < reservation_time_limit)))._select(db.reservations.OTT_ID)
-    
-    query = query & (~db.ordered_leaves.ott.belongs(unavailable))
-    return(query)
 
 def child_leaf_query(colname, search_for):
     """Queries the db to get child leaves, and returns the basis for another query """
@@ -454,9 +445,11 @@ def nodes_info_from_string(
     else:
         all_pcols = ["ott", "src_id", "src", "rating"]
     all_rcols = ["OTT_ID", "verified_kind", "verified_name", "verified_more_info", "verified_url"]
-    alt_rtxt = {"verified_name":"'leaf_sponsored'",
-                 "verified_more_info":"''",
-                 "verified_url":"NULL"}
+    alt_rtxt = {
+        "verified_name": "'leaf_sponsored'",
+        "verified_more_info": "''", 
+        "verified_url":"NULL",
+    }
     pic_cols = {nm:index for index,nm in enumerate(all_pcols)} 
     res_cols = {nm:index for index,nm in enumerate(all_rcols)} 
     if len(leafOtts):
@@ -526,7 +519,9 @@ def query_val_to_ints(CommaSepString):
     return [int(id) for id in CommaSepString.split(",") if id.isdigit()]
 
 def otts2ids(ottIntegers):
-    "Pass in an array of ott ints"
+    """
+    Pass in an array of ott ints
+    """
     try:
         db = current.db
         query = db.ordered_nodes.ott.belongs(ottIntegers)
