@@ -108,10 +108,10 @@
       
         <p class="singlerow extra_info">{{=T('We can use this in correspondance, on our public list of donors, and the information is required if you agree to gift aid your donation (see below)')}}</p>
         
-      <div><label for="user_donor_hide_input">{{=XML(T('Make this an anonymous donation'))}}</label><p><input type="checkbox" autocomplete id="user_donor_hide_input" name = "user_donor_hide"/></p></div>
+      <div><label for="reservations_user_donor_hide">{{=XML(T('Make this an anonymous donation'))}}</label><p>{{=form.custom.widget.user_donor_hide}}</p></div>
 <p class="singlerow extra_info">{{=XML(T('Your sponsorship text will appear on the tree as shown above. Additionally, we would love to thank you by name on our %s as well as on your own personal page of sponsored leaves. Tick this box if you would prefer this sponsorship to be acknowledged on the tree only.') % (A(T('public list of donors'), _href='/donor_list', _target="blank"),))}}</p>
       
-      <div><label for="allow_contact_input">{{=T('Allow further contact?')}}</label><p><input type="checkbox" autocomplete id="allow_contact_input" name = "allow_contact" /></p></div>
+      <div><label for="reservations_allow_contact">{{=T('Allow further contact?')}}</label><p>{{=form.custom.widget.allow_contact}}</p></div>
       <p class="singlerow extra_info">{{=XML(T('On rare occasions we may wish to inform you about new / major changes to OneZoom (for more frequent updates, you might also like to %s)') % (A(T('follow us on Twitter'), _href='https://twitter.com/OneZoomTree', _target="_blank"),))}}</p>
       
       <div><label for="user_message_OZ_input">{{=T('Your message to us (optional)')}} </label><p><input type="text" autocomplete="off" id="user_message_OZ_input" name = "user_message_OZ"  size="40"

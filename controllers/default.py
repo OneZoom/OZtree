@@ -325,6 +325,7 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
         user_updated_time
         user_paid
         user_message_OZ
+        user_donor_hide
 
     This function DOES NOT need to update the sponsor or verified info tables because
     these are handled separately. Additionally, e-mail, address and name as well as
@@ -490,8 +491,15 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
                     session=None,
                     formname="main_sponsor_form",
                     dbio=form_data_to_db,
-                    onvalidation=lambda x: valid_spons(x, leaf_entry.name, price, partner_data)):
+                    onvalidation=lambda x: valid_spons(x, leaf_entry.name, price, partner_data)):                    
                 validated = True # indicates to follow the form submission to paypal
+                # Force the user_donor_hide and allow_contact fields to be 0 not NULL
+                # Weirdly we can't do this using the DAL: update(user_donor_hide = 0)
+                # puts NULL rather than 0 in the DB, so we hack it using raw SQL
+                if not form.vars.user_donor_hide:
+                    db.executesql(f"UPDATE reservations SET user_donor_hide = 0 where id = {int(reservation_row.id)}")
+                if not form.vars.allow_contact:
+                    db.executesql(f"UPDATE reservations SET allow_contact = 0 where id = {int(reservation_row.id)}")
             elif form.errors:
                 validated = False
             else:
