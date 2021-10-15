@@ -97,7 +97,9 @@ def find_username(target_row, return_otts=False, allocate_species_name=False):
             sp_name = leaf.first().name
         if not sp_name:
             sp_name = target_row.name
-        sp_name = sp_name.replace(" ", "_") + "_" + str(datetime.datetime.now().year)
+        date = target_row.reserve_time
+        year = date.year() if date else datetime.datetime.now().year
+        sp_name = sp_name.replace(" ", "_") + "_" + str(year)
         username = make_username(sp_name)
         if username:
             return username, []
