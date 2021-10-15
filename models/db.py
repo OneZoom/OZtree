@@ -408,14 +408,14 @@ db.define_table('iucn',
 db.define_table('PoWO',
     Field('ipni', type='string', length=20, unique=True, requires=IS_NOT_EMPTY()), #e.g. 391732-1
     Field('ipni_int', type='integer', unique=True, requires=IS_NOT_EMPTY()), #same but with no hyphen => int
-    format = '%(ipni)s')
+    format = '%(ipni)s', migrate=is_testing)
 
 # this table defines the OTTIDs that are banned from sponsorship
 db.define_table('banned',
     Field('ott', type='integer', notnull=True, requires=IS_NOT_EMPTY()),
     Field('cname', type='string', length=name_length_chars),     
     #this is simply used to help remember what the OTT_IDs are
-    format = '%(ott)s_%(cname)s')
+    format = '%(ott)s_%(cname)s', migrate=is_testing)
 
 # this table handles reservations, ledger and verified in a single table
 # to remove any sensitive information (e.g. before sending to 3rd parties)
@@ -633,7 +633,7 @@ db.define_table('uncategorised_donation',
     Field('PP_house_and_street', type='text', writable=False),
     Field('PP_postcode', type='text', writable=False),
     # save the two above only if they have agreed to give us gift aid
-    format = '%(sale_time)s_%(verified_paid)s')
+    format = '%(sale_time)s_%(verified_paid)s', migrate=is_testing)
 
 # this table defines the current pricing cutoff points
 db.define_table('prices',
@@ -645,7 +645,7 @@ db.define_table('prices',
     Field('class_description', type='string', length=100),
     Field('price_description', type='string', length=100),
     # Two text descriptions used in e.g. museum displays, where the price may not be up-to-date
-    format = '%(price)s_%(n_leaves)s')
+    format = '%(price)s_%(n_leaves)s', migrate=is_testing)
 
 # this table collects data for recently 'visited' nodes (i.e. requested through the API) 
 db.define_table('visit_count',
