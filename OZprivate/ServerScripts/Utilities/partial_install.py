@@ -6,6 +6,7 @@ via a file:/// url (see the top level README file)
 import sys
 import fileinput
 import re
+import os
 import argparse
 
 parser = argparse.ArgumentParser(description=(
@@ -18,22 +19,28 @@ parser.add_argument("filenames", nargs="+")
 args = parser.parse_args()
 
 html = ""
-hashsub = False
+skip_lines = False
 for line in fileinput.input(args.filenames, inplace=True):
     # substitute passed in args
     line = line.replace(args.search, args.replace)
     
+    # <div id="OZ_js_modules"> contains the injected references to the OneZoom javascript
+    # modules. We need to use
+    # the local version, in static/
+    m = re.match('\s*<div id="OZ_js_modules" data-include="([^>]+)">', line)
+    if m:
+        include_path = os.path.join(os.path.dirname(fileinput.filename()), m.group(1))
+        with open(include_path) as include_file:
+            for inc_line in include_file:
+                line += inc_line
+        skip_lines = True
+    elif line.strip() == '</div>':
+        skip_lines = False
+    elif skip_lines:
+        line = ""
+
     # substitute absolute local refs to static files with urls relative to this file
     line = re.sub(r'(src|href)=([\'"])(/\w+)?/static/', r'\1=\2', line)
     line = re.sub(r'(template|template_style)([\'"]?\s*:\s*[\'"])(/\w+)?/static/', r'\1\2', line)
     
-    # <div id="OZ_js_modules"> contains the injected references to the OneZoom javascript
-    # modules, which have a hash, e.g. OZentry.c630ade6e6193fbdb9b8.js . We need to
-    # remove the hash from these references
-    if line.strip() == '<div id="OZ_js_modules">':
-        hashsub=True
-    if hashsub==True:
-        line = re.sub(r'\.\w+\.js', r'.js', line)
-        if line.strip()=='</div>':
-            hashsub=False
     print(line, end="")
