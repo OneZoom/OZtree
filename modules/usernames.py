@@ -1,5 +1,10 @@
+"""
+Module to create usernames (consist of alphabetic chars + digits + underscore + hyphen)
+"""
+
 import string
 import unicodedata
+import datetime
 from gluon import current
 
 def make_username(name):
@@ -9,7 +14,7 @@ def make_username(name):
     db = current.db
     if name is None:
         return None
-    allowed = string.ascii_lowercase + string.ascii_uppercase + string.digits
+    allowed = string.ascii_lowercase + string.ascii_uppercase + string.digits + "_"
     nm = "".join(
         c for c in unicodedata.normalize('NFKD', name).encode("ascii", "ignore").decode()
         if c in allowed)
@@ -21,10 +26,10 @@ def make_username(name):
     i = 1
     while db(db.reservations.username == username).count() > 0:
         i += 1
-        username = nm + f"_{i}"
+        username = nm + f"-{i}"
     return username
 
-def find_username(target_row, return_otts=False):
+def find_username(target_row, return_otts=False, allocate_species_name=False):
     """
     Check if a (possibly unverified) row of the reservations table matches other rows
     with the same username, or if no username, the same email. Return the best matching
@@ -84,4 +89,19 @@ def find_username(target_row, return_otts=False):
         if username:
             return username, []
 
+    if allocate_species_name:
+        # As a last resort, use the species name plus sponsorship year as the username
+        leaf = db(db.ordered_leaves.ott == target_row.OTT_ID).select(db.ordered_leaves.name)
+        sp_name = ""
+        if leaf:
+            sp_name = leaf.first().name
+        if not sp_name:
+            sp_name = target_row.name
+        date = target_row.reserve_time
+        year = date.year if date else datetime.datetime.now().year
+        sp_name = sp_name.replace(" ", "_") + "_" + str(year)
+        username = make_username(sp_name)
+        if username:
+            return username, []
+        
     return None, None

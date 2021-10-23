@@ -218,7 +218,7 @@ def SPONSOR_UPDATE():
     ]
     row_id = request.args[0]
     row = db(db.reservations.id==row_id).select(*[db.reservations[n] for n in read_only_cols+write_to_cols]).first()
-    username, other_sponsorship_otts = find_username(row, return_otts=True)
+    username, other_sponsorship_otts = find_username(row, return_otts=True, allocate_species_name=True)
     read_only = {k:row[k] for k in read_only_cols}
     read_only['percent_crop_expansion'] = percent_crop_expansion
     EOLrow = db(db.ordered_leaves.ott == row['OTT_ID']).select(db.ordered_leaves.eol).first()
