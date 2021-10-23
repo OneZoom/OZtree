@@ -2,7 +2,7 @@ const sass = require('sass');
 const process = require('process');
 const path = require('path');
 
-partial_install_site = "http://beta.onezoom.org";
+partial_install_site = "http://www.onezoom.org";
 partial_local_install_site = "http://127.0.0.1:8000"; // if you are running a local installation
 preferred_python3 = "python3.7"; // in case you have multiple python3 versions installed
 web2py_py = path.join(path.dirname(path.dirname(process.cwd())), 'web2py.py');
@@ -134,11 +134,9 @@ module.exports = function (grunt) {
     },
     'curl-dir': {
         'get_minlife': {
-            //this should be changed to the production URL when live
-            //src:'http://www.onezoom.org/treeviewer/minlife.html/?lang=' + grunt.option('lang') || '',
             src: [
-                partial_install_site + '/treeviewer/minlife.html',
-                partial_install_site + '/treeviewer/minlife_tour.html',
+                partial_install_site + '/treeviewer/minlife.html', // TODO - add language specific option: /?lang=' + (grunt.option('lang') || ''),
+                partial_install_site + '/treeviewer/minlife_tour.html' // TODO - add language specific option:
             ],
             dest:'static',
         },
