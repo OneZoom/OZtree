@@ -202,7 +202,8 @@ def SPONSOR_UPDATE():
         'verified_paid',
         'asking_price',
         'emailed_re_sponsorship',
-        'tweeted_re_sponsorship',     
+        'tweeted_re_sponsorship',
+        'reserve_time',
     ]
     write_to_cols = [
         'username',
