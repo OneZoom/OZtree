@@ -552,11 +552,9 @@ def sponsor_pay():
             # redirect the user to a paypal page that (if completed) triggers paypal to then visit
             # an OZ page, confirming payment: this is called an IPN. Details in pp_process_post.html
             try:
-                paypal_notify_string = (
-                    '&notify_url=' + myconf.take('paypal.notify_url')
-                    + '/pp_process_post.html/' + OTT_ID_str)
+                notify_url = myconf.take('paypal.notify_url') + '/pp_process_post.html'
             except:
-                paypal_notify_string = ''
+                notify_url = URL("pp_process_post.html", scheme=True, host=True)
             redirect(get_paypal_url() + (
                 '/cgi-bin/webscr'
                 '?cmd=_donations'
@@ -569,7 +567,7 @@ def sponsor_pay():
                 '&currency_code=GBP'.format(
                      sp_name=urllib.parse.quote(db_saved.name),
                      ret_url=URL("sponsor_thanks.html", scheme=True, host=True),
-                     notify_string=paypal_notify_string,
+                     notify_string='&notify_url=%s/%s' % (notify_url, OTT_ID_str),
                      amount=urllib.parse.quote('{:.2f}'.format(db_saved.user_paid)))))
         except:
             raise
