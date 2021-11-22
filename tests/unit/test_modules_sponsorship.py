@@ -16,6 +16,7 @@ from gluon.globals import Request
 from sponsorship import (
     get_reservation,
     sponsorship_enabled,
+    reservation_total_counts,
     reservation_add_to_basket,
     reservation_confirm_payment,
     reservation_get_all_expired,
@@ -157,6 +158,22 @@ class TestSponsorship(unittest.TestCase):
         # Make emily a candlestickmaker, now fine
         auth.add_membership(role="ut::candlestickmaker", user_id=user.id)
         self.assertEqual(sponsorship_enabled(), True)
+
+    def test_reservation_total_counts(self):
+        """Can count for the home page"""
+        donors = set(x[0] for x in db.executesql("SELECT PP_e_mail FROM reservations;"))
+        expired_donors = set(x[0] for x in db.executesql("SELECT PP_e_mail FROM expired_reservations;"))
+        # There's *something* in the intersection to make sure we don't count double
+        self.assertTrue(len(donors & expired_donors) > 0)
+        # Check return value against our union
+        self.assertEqual(reservation_total_counts('donors'), len(donors | expired_donors))
+
+        otts = set(x[0] for x in db.executesql("SELECT OTT_ID FROM reservations;"))
+        expired_otts = set(x[0] for x in db.executesql("SELECT OTT_ID FROM expired_reservations;"))
+        # There's *something* in the intersection to make sure we don't count double
+        self.assertTrue(len(otts & expired_otts) > 0)
+        # Check return value against our union
+        self.assertEqual(reservation_total_counts('otts'), len(otts | expired_otts))
 
     def test_get_reservation__invalid(self):
         """Invalid OTT is invalid"""

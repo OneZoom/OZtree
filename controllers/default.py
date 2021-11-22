@@ -10,7 +10,7 @@ from json import dumps
 from collections import OrderedDict
 
 from sponsorship import (
-    sponsorship_enabled, clear_reservation, get_reservation,
+    sponsorship_enabled, reservation_total_counts, clear_reservation, get_reservation,
     reservation_add_to_basket, reservation_confirm_payment, reservation_expire,
     sponsor_renew_url, sponsor_renew_verify_url,
     sponsorship_config, sponsorable_children_query)
@@ -188,8 +188,8 @@ def index():
         ],
         carousel=carousel, anim=anim, threatened=threatened, sponsored=sponsored_rows,
         hrefs=hrefs, images=images, html_names=titles, has_vernacular=has_vernacular, add_the=add_the,
-        n_total_sponsored=db(db.reservations.PP_e_mail != None).count(distinct=db.reservations.PP_e_mail),
-        n_sponsored_leaves=db((db.reservations.verified_time != None) & ((db.reservations.deactivated == None) | (db.reservations.deactivated == ""))).count(),
+        n_total_sponsored=reservation_total_counts('donors'),
+        n_sponsored_leaves=reservation_total_counts('otts'),
         menu_splash_images={
             sub_menu[0]:URL('static', 'images/oz-newssplash-%s.jpg' % sub_menu[0].lower().replace("for ", ""))
             for sub_menu in response.menu

@@ -68,6 +68,33 @@ def sponsorship_enabled():
     return auth.has_membership(role=spons)
 
 
+def reservation_total_counts(count_type):
+    """
+    Total numbers of (count_type), including expired reservations
+
+    count_type: One of 'donors', 'otts'
+    """
+    db = current.db
+
+    if count_type == 'donors':
+        return db.executesql('''
+            SELECT COUNT(*) FROM (
+                    SELECT DISTINCT PP_e_mail FROM reservations
+                UNION DISTINCT
+                    SELECT DISTINCT PP_e_mail FROM expired_reservations
+            ) x
+        ''')[0][0]
+    if count_type == 'otts':
+        return db.executesql('''
+            SELECT COUNT(*) FROM (
+                    SELECT DISTINCT OTT_ID FROM reservations
+                UNION DISTINCT
+                    SELECT DISTINCT OTT_ID FROM expired_reservations
+            ) x
+        ''')[0][0]
+    raise ValueError("Unknown count_type: %s" % count_type)
+
+
 def clear_reservation(reservations_table_id):
     db = current.db
     keep_fields = ('id', 'OTT_ID', 'num_views', 'last_view')

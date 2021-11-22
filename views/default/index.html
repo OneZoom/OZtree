@@ -237,8 +237,11 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   <h3 class="uk-card-title">Become a sponsor...</h3>
 
   <p>
-  OneZoom is a registered non-profit in the UK, all our products are available for free. {{if n_total_sponsored > 0:}}<a href="{{=URL('default', 'donor_list.html')}}">{{=n_total_sponsored}} people like you</a> have helped us by making donations. Their names appear as sponsors on
-    <a href="{{=URL('default', 'sponsored.html')}}">{{=n_sponsored_leaves}} leaves of our tree of life</a>.{{pass}}
+    OneZoom is a registered non-profit in the UK, all our products are available for free.
+    {{if n_total_sponsored > 0:}}
+      <a href="{{=URL('default', 'donor_list.html')}}">{{=n_total_sponsored}} people like you</a> have helped us by making donations.
+      Their names have appeared as sponsors on <a href="{{=URL('default', 'sponsored.html')}}">{{=n_sponsored_leaves}} leaves of our tree of life</a> leaves of our tree of life.
+    {{pass}}
   </p>
   <p>Only one name per leaf so get your favourite while you can, for yourself or as a gift.</p>
 
