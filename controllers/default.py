@@ -1439,6 +1439,7 @@ def pp_process_post():
                                  PP_e_mail = request.vars.get('payer_email'),
                                  verified_paid = paid,
                                  PP_transaction_code = request.vars.get('txn_id'),
+                                 sponsorship_ends = request.now + datetime.timedelta(days=365*4+1),  ## 4 Years
                                  sale_time = request.vars.get('payment_date')
                                 )
             if not updated:
