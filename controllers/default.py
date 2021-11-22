@@ -688,7 +688,7 @@ def sponsor_renew():
     '''list items currently sponsored by a user
     '''
     expiry_soon_date = datetime.datetime.today() + datetime.timedelta(days=90)  # datetime before which expiry will be "soon"
-    sponsorship_renew_discount = sponsorship_config()['sponsorship_renew_discount']
+    sponsorship_renew_discount = sponsorship_config()['renew_discount']
 
     try:
         if sponsor_renew_verify_url(request):
