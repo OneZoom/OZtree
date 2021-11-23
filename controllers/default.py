@@ -677,7 +677,7 @@ def sponsor_renew_request():
     form = FORM(
         LABEL("E-mail"),
         INPUT(_name='email', _class="uk-input uk-margin-bottom", requires=IS_EMAIL()),
-        INPUT(_type='submit', _class="uk-button uk-button-primary"))
+        INPUT(_type='submit', _class="oz-pill pill-leaf"))
     if form.accepts(request.vars, session=None):
         renew_link = sponsor_renew_url(form.vars.email)
         if renew_link is None:
