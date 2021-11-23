@@ -198,6 +198,9 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
         # Fetch latest asking price
         ott_price_pence = db(db.ordered_leaves.ott==r.OTT_ID).select(db.ordered_leaves.price).first().price
 
+        # Fetch any previous row
+        prev_row = db(db.expired_reservations.id == r.prev_reservation_id).select().first() if r.prev_reservation_id else None
+
         if r.verified_time is not None:  # i.e. is this an already paid for node?
             # Apply renewal discount for extension
             ott_price_pence = int(ott_price_pence * (1 - sponsorship_renew_discount))
@@ -235,11 +238,13 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             # NB: This is different to existing paths, but feels a more correct place to set sponsorship_ends
             fields_to_update['sponsorship_duration_days'] = sponsorship_config()['duration_days']
             fields_to_update['sponsorship_ends'] = request.now + datetime.timedelta(days=sponsorship_config()['duration_days'])
+            if prev_row and prev_row.verified_time:
+                # Renewal of expired entry, bump verified_time
+                fields_to_update['verified_time'] = request.now
 
         # If there's a previous row, fill in any missing values using the old entry.
         # Set either as part of an extension above, or as part of a renewal (on paypal-start)
-        if r.prev_reservation_id:
-            prev_row = db(db.expired_reservations.id == r.prev_reservation_id).select().first()
+        if prev_row:
             for k in db.expired_reservations.fields:
                 if (db.expired_reservations[k].writable and
                         k in db.reservations.fields and

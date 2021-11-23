@@ -300,7 +300,8 @@ class TestSponsorship(unittest.TestCase):
         status, param, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
         self.assertEqual(param, None)
-        self.assertEqual(reservation_row.verified_time, expired_r.verified_time)
+        # New row got an updated verified_timeif r.prev_reservation_id:
+        self.assertEqual(reservation_row.verified_time, expired_r.verified_time + datetime.timedelta(days=1))
         self.assertEqual(expired_r.sale_time, '01:01:01 Jan 01, 2001 GMT')
         self.assertEqual(reservation_row.sale_time, '01:01:01 Jan 01, 2002 GMT')
         self.assertEqual(reservation_row.user_sponsor_name, 'Arnold')
