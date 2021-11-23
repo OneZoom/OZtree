@@ -17,6 +17,10 @@ def sponsorship_config():
     myconf = current.globalenv['myconf']
     out = dict()
     try:
+        out['duration_days'] = int(myconf.take('sponsorship.sponsorship_duration_days'))
+    except:
+        out['duration_days'] = 365*4+1  ## 4 years
+    try:
         out['reservation_time_limit'] = float(myconf.take('sponsorship.reservation_time_limit_mins')) * 60.0
     except:
         out['reservation_time_limit'] = 360.0 #seconds
@@ -218,13 +222,13 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             ))
 
             # Bump time to include renewal
-            fields_to_update['sponsorship_duration_days'] = 365*4+1
-            fields_to_update['sponsorship_ends'] = prev_sponsorship_ends + datetime.timedelta(days=365*4+1)  ## 4 Years
+            fields_to_update['sponsorship_duration_days'] = sponsorship_config()['duration_days']
+            fields_to_update['sponsorship_ends'] = prev_sponsorship_ends + datetime.timedelta(days=sponsorship_config()['duration_days'])
 
         else:
             # NB: This is different to existing paths, but feels a more correct place to set sponsorship_ends
-            fields_to_update['sponsorship_duration_days'] = 365*4+1
-            fields_to_update['sponsorship_ends'] = request.now + datetime.timedelta(days=365*4+1)  ## 4 Years
+            fields_to_update['sponsorship_duration_days'] = sponsorship_config()['duration_days']
+            fields_to_update['sponsorship_ends'] = request.now + datetime.timedelta(days=sponsorship_config()['duration_days'])
 
         # If there's a previous row, fill in any missing values using the old entry.
         # Set either as part of an extension above, or as part of a renewal (on paypal-start)

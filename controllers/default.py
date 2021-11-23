@@ -634,7 +634,7 @@ def valid_spons(form, species_name, price_pounds, partner_data):
     form.vars.reserve_time = form.vars.user_updated_time = request.now
     form.vars.user_sponsor_lang = (request.env.http_accept_language or '').lower()
     form.vars.asking_price = price_pounds
-    form.vars.sponsorship_duration_days=365*4+1 ## 4 Years
+    form.vars.sponsorship_duration_days=sponsorship_config()['duration_days']
     form.vars.partner_name=partner_data.get('partner_identifier')
     form.vars.partner_percentage=partner_data.get('percentage')
     
