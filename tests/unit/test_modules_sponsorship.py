@@ -161,15 +161,28 @@ class TestSponsorship(unittest.TestCase):
 
     def test_reservation_total_counts(self):
         """Can count for the home page"""
-        donors = set(x[0] for x in db.executesql("SELECT PP_e_mail FROM reservations;"))
-        expired_donors = set(x[0] for x in db.executesql("SELECT PP_e_mail FROM expired_reservations;"))
+        # Reserve an OTT
+        reserved_ott = util.find_unsponsored_ott(in_reservations=True)
+        status, param, reservation_row, _ = get_reservation(
+            reserved_ott, form_reservation_code="UT::001")
+
+        donors = db.executesql("SELECT username, MAX(verified_time) FROM reservations GROUP BY 1;")
+        expired_donors = set(x[0] for x in db.executesql("SELECT username FROM expired_reservations;"))
+        # At least one non-verified entry to not count
+        self.assertTrue(sum(1 for u, vt in donors if vt is None) > 0)
+        # Ignore it for our count
+        donors = set(u for u, vt in donors if vt is not None)
         # There's *something* in the intersection to make sure we don't count double
         self.assertTrue(len(donors & expired_donors) > 0)
         # Check return value against our union
         self.assertEqual(reservation_total_counts('donors'), len(donors | expired_donors))
 
-        otts = set(x[0] for x in db.executesql("SELECT OTT_ID FROM reservations;"))
+        otts = db.executesql("SELECT OTT_ID, MAX(verified_time) FROM reservations GROUP BY 1;")
         expired_otts = set(x[0] for x in db.executesql("SELECT OTT_ID FROM expired_reservations;"))
+        # At least one non-verified entry to not count
+        self.assertTrue(sum(1 for ott, vt in otts if vt is None) > 0)
+        # Ignore it for our count
+        otts = set(ott for ott, vt in otts if vt is not None)
         # There's *something* in the intersection to make sure we don't count double
         self.assertTrue(len(otts & expired_otts) > 0)
         # Check return value against our union

@@ -83,15 +83,19 @@ def reservation_total_counts(count_type):
     if count_type == 'donors':
         return db.executesql('''
             SELECT COUNT(*) FROM (
-                    SELECT DISTINCT PP_e_mail FROM reservations
+                    SELECT DISTINCT username FROM reservations
+                     WHERE verified_time IS NOT NULL
+                       AND (deactivated IS NULL OR deactivated = '')
                 UNION DISTINCT
-                    SELECT DISTINCT PP_e_mail FROM expired_reservations
+                    SELECT DISTINCT username FROM expired_reservations
             ) x
         ''')[0][0]
     if count_type == 'otts':
         return db.executesql('''
             SELECT COUNT(*) FROM (
                     SELECT DISTINCT OTT_ID FROM reservations
+                     WHERE verified_time IS NOT NULL
+                       AND (deactivated IS NULL OR deactivated = '')
                 UNION DISTINCT
                     SELECT DISTINCT OTT_ID FROM expired_reservations
             ) x
