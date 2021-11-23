@@ -1505,7 +1505,9 @@ def full_guide():
     return dict()
 
 def sponsor_user_manage():
-    return dict()
+    out = dict()
+    out.update(sponsor_renew_request())
+    return out
 
 def otop_intro():
     return dict()
