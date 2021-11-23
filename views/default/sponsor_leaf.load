@@ -154,7 +154,52 @@
         <p>Please notify the charity if you want to cancel this declaration, change your name or home address, or if you no longer pay sufficient tax on your income and/or capital gains.</p>
         <p>If you pay Income Tax at the higher or additional rate and want to receive the additional tax relief due to you, you must include all your Gift Aid donations on your Self-Assessment tax return or ask HM Revenue and Customs to adjust your tax code.</p>
         <p>Gift Aid is reclaimed by the charity from the tax you pay for the current tax year. We will use the name and address from your PayPal receipt for this purpose - please make sure that information is up to date</p>
+
+
+        <div class="singlerow">
+          <label>
+            <input type="radio" name="user_addr_nonuk" data-divid="user_addr_nonuk_off_div" value=""
+              {{=("checked" if not request.vars.user_addr_nonuk else "")}} />
+            <span>{{=XML(T('I am a UK resident'))}}</span>
+          </label>
+          <label>
+            <input type="radio" name="user_addr_nonuk" data-divid="user_addr_nonuk_on_div" value="on"
+              {{=("checked" if request.vars.user_addr_nonuk else "")}} />
+            <span>{{=XML(T('I live outside the UK (but pay tax in the UK)'))}}</span>
+          </label>
+        </div>
+
+        <div id="user_addr_nonuk_off_div" {{if request.vars.user_addr_nonuk:}}style="display: none"{{pass}}>
+          <div>
+          <label for="user_addr_house_input">{{=T('Your house name or number:')}}</label>
+          <p>
+            <input type="text" id="user_addr_house_input" name="user_addr_house" size="40"
+                   value="{{if (request.vars['user_addr_house']) is not None:}}{{=request.vars['user_addr_house']}}{{pass}}" />
+            <em class = "error_text">{{if (form.errors["user_addr_house"]) is not None:}}{{=form.errors["user_addr_house"]}}{{pass}}</em>
+          </p>
+          </div><div>
+          <label for="user_addr_postcode_input">{{=T('Your postcode:')}}</label>
+          <p>
+            <input type="text" id="user_addr_postcode_input" name="user_addr_postcode" size="40"
+                   value="{{if (request.vars['user_addr_postcode']) is not None:}}{{=request.vars['user_addr_postcode']}}{{pass}}" />
+            <em class = "error_text"> {{if (form.errors["user_addr_postcode"]) is not None:}}{{=form.errors["user_addr_postcode"]}}{{pass}}</em>
+          </p>
+          </div>
+        </div>
+        <div id="user_addr_nonuk_on_div" {{if not request.vars.user_addr_nonuk:}}style="display: none"{{pass}}>
+          <div>
+            <label for="user_addr_internationaladdr_input">{{=T('Your full address:')}}</label>
+            <p>
+              <input type="text" id="user_addr_internationaladdr_input" name="user_addr_internationaladdr" size="80"
+                     value="{{if (request.vars['user_addr_internationaladdr']) is not None:}}{{=request.vars['user_addr_internationaladdr']}}{{pass}}" />
+              <em class = "error_text">{{if (form.errors["user_addr_internationaladdr"]) is not None:}}{{=form.errors["user_addr_internationaladdr"]}}{{pass}}</em>
+            </p>
+          </div>
+        </div>
+
+
           
+        <label>
         <p> I agree: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" {{if request.vars.user_giftaid:}}checked{{pass}}/></p>
         
           {{pass}}
@@ -173,6 +218,19 @@
   </div>
 </form>
 
+<script>
+    if (!document.getElementById("sponsor_form").classList.contains('changelistener_registered')) {
+        document.getElementById("sponsor_form").addEventListener('change', function (e) {
+            var elements = e.target.form.elements;
+
+            // Sync div visibility with checkboxes
+            for (var i = 0; i < elements.user_addr_nonuk.length; i++) {
+                document.getElementById(elements.user_addr_nonuk[i].dataset.divid).style.display = elements.user_addr_nonuk[i].checked ? 'block' : 'none';
+            }
+        });
+    }
+    document.getElementById("sponsor_form").classList.add('changelistener_registered');
+</script>
 {{if validated:}}
 <script>
     // simply submit the form without firing the onsubmit handler

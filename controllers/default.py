@@ -480,11 +480,17 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
                     'user_donor_name', 'user_donor_hide', 'user_paid', 'user_message_OZ',
                     'user_nondefault_image', 'user_preferred_image_src',
                     'user_preferred_image_src_id','user_giftaid', 'user_sponsor_lang',
+                    'user_addr_house', 'user_addr_postcode',
                     # writeable=False -> filled out on validation
                     'name', 'reserve_time', 'asking_price', 'user_updated_time',
                     'asking_price', 'user_updated_time', 'sponsorship_duration_days',
                     'partner_name', 'partner_percentage'
                     ],
+                # These fields aren't stored in the database, just make the form work
+                extra_fields=[
+                    Field('user_addr_nonuk'),
+                    Field('user_addr_internationaladdr'),
+                ],
                 deletable = False)
             if form.accepts(
                     request.vars, # use both GET + POST vars: GET vars passed when accessed via LOAD
@@ -610,6 +616,18 @@ def valid_spons(form, species_name, price_pounds, partner_data):
                 form.errors.user_donor_title_name = T("We need your name and title to be able to claim gift aid")
             else:
                 form.errors.user_donor_title_name = T("We need your name to be able to claim gift aid")
+        if form.vars.user_addr_nonuk:
+            # International resident
+            if not (form.vars.user_addr_internationaladdr or "").strip():
+                form.errors.user_addr_internationaladdr = T("We need your address to be able to claim gift aid")
+            # NB: We store the international addr in the house DB field
+            form.vars.user_addr_house = form.vars.user_addr_internationaladdr
+        else:
+            # UK resident
+            if not (form.vars.user_addr_house or "").strip():
+                form.errors.user_addr_house = T("We need your house number to be able to claim gift aid")
+            if not (form.vars.user_addr_postcode or "").strip():
+                form.errors.user_addr_postcode = T("We need your post code to be able to claim gift aid")
 
     # calculate writable=False vars, to insert
     form.vars.name = species_name
