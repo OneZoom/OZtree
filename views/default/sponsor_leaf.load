@@ -144,7 +144,7 @@
   Gift Aid claimed on all my donations in that tax year it is my responsibility to pay any difference.</p>
         <p>Please notify both OneZoom and {{=A(T(partner_data.get('name')), _href=partner_data.get('general_url'),_target="_blank")}} if you want to cancel this declaration, change your name or home address, or if you no longer pay sufficient tax on your income and/or capital gains.</p>
         <p>If you pay Income Tax at the higher or additional rate and want to receive the additional tax relief due to you, you must include all your Gift Aid donations on your Self-Assessment tax return or ask HM Revenue and Customs to adjust your tax code.</p>
-        <p>Gift Aid is reclaimed by OneZoom and {{=T(partner_data.get('name'))}} from the tax you pay for the current tax year. We will use the name and address from your PayPal receipt for this purpose and will share this information with {{=A(T(partner_data.get('name')), _href=partner_data.get('url'),_target="_blank")}} for the purposes of Gift Aid - please make sure that information is up to date.</p>
+        <p>Gift Aid is reclaimed by OneZoom and {{=T(partner_data.get('name'))}} from the tax you pay for the current tax year. We will share your name (from PayPal) and address with {{=A(T(partner_data.get('name')), _href=partner_data.get('url'),_target="_blank")}} for the purposes of Gift Aid - please make sure that information is up to date.</p>
 
         <p> I agree to all the above statements: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" {{if request.vars.user_giftaid:}}checked{{pass}}/></p>
         {{else:}}
@@ -153,7 +153,7 @@
         Gift Aid claimed on all my donations in that tax year it is my responsibility to pay any difference.</p>
         <p>Please notify the charity if you want to cancel this declaration, change your name or home address, or if you no longer pay sufficient tax on your income and/or capital gains.</p>
         <p>If you pay Income Tax at the higher or additional rate and want to receive the additional tax relief due to you, you must include all your Gift Aid donations on your Self-Assessment tax return or ask HM Revenue and Customs to adjust your tax code.</p>
-        <p>Gift Aid is reclaimed by the charity from the tax you pay for the current tax year. We will use the name and address from your PayPal receipt for this purpose - please make sure that information is up to date</p>
+        <p>Gift Aid is reclaimed by the charity from the tax you pay for the current tax year. We will use the name from your PayPal receipt for this purpose - please make sure that information is up to date</p>
 
 
         <div class="singlerow">
