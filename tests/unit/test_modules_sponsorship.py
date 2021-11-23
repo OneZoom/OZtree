@@ -624,6 +624,7 @@ class TestSponsorship(unittest.TestCase):
         ))
 
         # Can't do anything until sponsorship.hmac_key is set
+        util.set_appconfig('sponsorship', 'hmac_key', None)
         with self.assertRaisesRegex(ValueError, r'hmac_key'):
             url = sponsor_renew_url(email='betty@unittest.example.com')
         util.set_appconfig('sponsorship', 'hmac_key', 'secret')
