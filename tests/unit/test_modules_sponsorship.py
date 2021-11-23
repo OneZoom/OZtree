@@ -446,10 +446,14 @@ class TestSponsorship(unittest.TestCase):
         reservation_row.update_record(verified_time=current.request.now)
         status, _, reservation_row, _ = get_reservation(ott1, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
+        self.assertEqual(reservation_row.verified_time, current.request.now.replace(microsecond=0))
         self.assertEqual(reservation_row.sponsorship_duration_days, 365 * 4 + 1)
         self.assertLess(
             reservation_row.sponsorship_ends - current.request.now - datetime.timedelta(days = 365 * 4 + 1),
             datetime.timedelta(minutes=1))
+
+        # Go forward 5 days
+        current.request.now = current.request.now + datetime.timedelta(days=5)
 
         # ...but can add it to a new basket and renew it.
         reservation_add_to_basket('UT::BK002', reservation_row, dict(
@@ -462,12 +466,14 @@ class TestSponsorship(unittest.TestCase):
             sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
 
-        # Go forward 10 days
-        current.request.now = current.request.now + datetime.timedelta(days=10)
+        # Go forward 5 days again
+        current.request.now = current.request.now + datetime.timedelta(days=5)
 
         # Now reserved for 8 years (NB: *not* 8 years, 10 days), with updated details
         status, _, reservation_row, _ = get_reservation(ott1, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')  # NB: Verification status preserved
+        # Verified as soon as we got dosh, *not* the verified time of the previous entry, or now.
+        self.assertEqual(reservation_row.verified_time, current.request.now.replace(microsecond=0) - datetime.timedelta(days=5))
         self.assertEqual(reservation_row.PP_e_mail, 'paypal-new-addr@unittest.example.com')
         self.assertEqual(reservation_row.sponsorship_duration_days, 365 * 4 + 1)  # NB: Duration still 4 years.
         self.assertLess(
