@@ -469,7 +469,6 @@ db.define_table('reservations',
     Field('user_sponsor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # name of person as appears on leaf. Needs to be verified
     Field('user_donor_title', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
-    Field('user_donor_title', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # title of donor (Mr, Mrs, Dr, etc - needed for giftaid). . 
     Field('user_donor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # name of donor (different to user_sponsor_name if sponsored for someone). 
