@@ -1462,15 +1462,6 @@ def pp_process_post():
                                 )
             if not updated:
                 raise NameError('No row updated: some details may already be filled out, or the OTT/name/paid may be invalid')
-            #should only update house/st and postcode if giftaid is true
-            db(reservation_query & 
-               (db.reservations.user_giftaid == True) &
-               (db.reservations.PP_house_and_street == None) &
-               (db.reservations.PP_postcode == None)
-            ).update(
-                PP_house_and_street = request.vars.get('address_street'),
-                PP_postcode = request.vars.get('address_zip')
-            )
         err = None
     except Exception as e:
         err = e
