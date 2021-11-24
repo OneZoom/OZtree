@@ -323,6 +323,44 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
         db.uncategorised_donation.insert(**fields_to_update)
 
 
+def sponsorship_get_leaf_status(OTT_ID_Varin):
+    """
+    Get sponsorship status of a leaf, without trying to reserve or checking that it's reserved
+    Returns
+    - status: String describing reservation status, One of
+    -         maintenance / invalid / banned / "" (i.e. sponsorable)
+    - status_param: A parameter associated with the status, e.g. number of mins of maintenance, time until allowed to sponsor
+    - leaf_entry: row from ordered_leaves table
+    """
+    db = current.db
+    request = current.request
+    sp_conf = sponsorship_config()
+    maintenance_mins = sp_conf['maintenance_mins']
+    maintenance_mode = bool(maintenance_mins)
+
+    status, status_param = "", None
+    if maintenance_mode:
+        status, status_param = "maintenance", maintenance_mins
+
+    # initialise status flag (it will get updated if all is OK)
+    # now search for OTTID in the leaf table
+    try:
+        leaf_entry = db(db.ordered_leaves.ott == OTT_ID_Varin).select().first()
+    except:
+        leaf_entry = None
+
+    if ((not leaf_entry) or             # invalid if not in ordered_leaves
+        (leaf_entry.ott is None) or     # invalid if no OTT ID
+        (' ' not in leaf_entry.name)):  # invalid if not a sp. name (no space/underscore)
+            status, status_param = "invalid", None # will override maintenance
+    else:
+        # find out if the leaf is banned
+        if db(db.banned.ott == OTT_ID_Varin).count() >= 1:
+            status, status_param = "banned", None  # will override maintenance
+
+    return status, status_param, leaf_entry
+
+
 def get_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False):
     """
     Try and add a reservation for OTT_ID_Varin
@@ -342,25 +380,15 @@ def get_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
     reservation_time_limit = sp_conf['reservation_time_limit']
     unpaid_time_limit = sp_conf['unpaid_time_limit']
     maintenance_mins = sp_conf['maintenance_mins']
+    maintenance_mode = bool(maintenance_mins)
 
     reservation_row = None
     allow_sponsorship = sponsorship_enabled()
-    # initialise status flag (it will get updated if all is OK)
-    status, status_param = "", None
-    maintenance_mode = bool(maintenance_mins)
-    if maintenance_mode:
-        status, status_param = "maintenance", maintenance_mins
-    # now search for OTTID in the leaf table
-    try:
-        leaf_entry = db(db.ordered_leaves.ott == OTT_ID_Varin).select().first()
-    except:
-        OTT_ID_Varin = None
-        leaf_entry = {'name': 'invalid'}
-    if ((not leaf_entry) or             # invalid if not in ordered_leaves
-        (leaf_entry.ott is None) or     # invalid if no OTT ID
-        (' ' not in leaf_entry.name)):  # invalid if not a sp. name (no space/underscore)
-            status, status_param = "invalid", None # will override maintenance
-    else: # should be able to get data
+
+    # Get overall leaf status
+    status, status_param, leaf_entry = sponsorship_get_leaf_status(OTT_ID_Varin)
+
+    if leaf_entry: # should be able to get data
         # we might come into this with a partner set in request.vars (e.g. LinnSoc)
         """
         TO DO & CHECK - Allows specific parts of the tree to be associated with a partner
@@ -381,9 +409,6 @@ def get_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
                          (db.ordered_nodes.ott == db.partner.ott).first()
                         ).select(db.partner_taxa.partner_identifier) 
         """
-        # find out if the leaf is banned
-        if db(db.banned.ott == OTT_ID_Varin).count() >= 1:
-            status, status_param = "banned", None  # will override maintenance
         # we need to update the reservations table regardless of banned status)
         reservation_query = db(db.reservations.OTT_ID == OTT_ID_Varin)
         reservation_row = reservation_query.select().first()
