@@ -8,6 +8,7 @@ Note you should make sure prices are set before running tests (manage/SET_PRICES
 import datetime
 import unittest
 import urllib.parse
+import uuid
 
 from applications.OZtree.tests.unit import util
 
@@ -165,6 +166,11 @@ class TestSponsorship(unittest.TestCase):
         reserved_ott = util.find_unsponsored_ott(in_reservations=True)
         status, param, reservation_row, _ = get_reservation(
             reserved_ott, form_reservation_code="UT::001")
+        reservation_add_to_basket('UT::BK001', reservation_row, dict(
+            e_mail='001@unittest.example.com',
+            user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
+            username=uuid.uuid4(),
+        ))
 
         donors = db.executesql("SELECT username, MAX(verified_time) FROM reservations GROUP BY 1;")
         expired_donors = set(x[0] for x in db.executesql("SELECT username FROM expired_reservations;"))
