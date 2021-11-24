@@ -12,8 +12,9 @@ from collections import OrderedDict
 from sponsorship import (
     sponsorship_enabled, reservation_total_counts, clear_reservation, get_reservation,
     reservation_add_to_basket, reservation_confirm_payment, reservation_expire,
-    sponsor_renew_url, sponsor_renew_verify_url,
     sponsorship_expiry_soon_date,
+    sponsorship_email_reminders, sponsor_verify_url,
+    sponsorship_restrict_contact,
     sponsorship_config, sponsorable_children_query)
 
 from OZfunc import (
@@ -680,18 +681,25 @@ def sponsor_renew_request():
         INPUT(_name='email', _class="uk-input uk-margin-bottom", requires=IS_EMAIL()),
         INPUT(_type='submit', _class="oz-pill pill-leaf"))
     if form.accepts(request.vars, session=None):
-        renew_link = sponsor_renew_url(form.vars.email)
-        if renew_link is None:
-            response.flash = 'Unknown e-mail address %s' % form.vars.email
-        elif mail is None:
-            response.flash = 'Now visit: %s (NB: No e-mail configuration in appconfig.ini, so cannot send)' % (
-                renew_link
-            )
+        user_email = form.vars.email
+        user_reminders = sponsorship_email_reminders(user_email).get(user_email, None)
+        if user_reminders is None:
+            response.flash = 'Unknown e-mail address %s' % user_email
         else:
-            if mail.send(
+            user_reminders['common_names'] = get_common_names(
+                user_reminders['unsponsorable'] + user_reminders['not_yet_due'] +
+                user_reminders['initial_reminders'] + user_reminders['final_reminders'],
+                return_nulls=True,
+                lang=user_reminders['user_sponsor_lang'],
+            )
+            email_body = re.sub(r'\n\n+', '\n\n', response.render('sponsor_renew_reminder.txt', user_reminders, escape=False))
+            if mail is None:
+                print(email_body)
+                response.flash = 'NB: No e-mail configuration in appconfig.ini, so cannot send:\n%s' % email_body
+            elif mail.send(
                 to=form.vars.email,
                 subject=T("Renew your onezoom sponsorships"),
-                message="To renew your onezoom sponsorships, visit this URL: %s" % renew_link
+                message=email_body,
             ):
                 response.flash = 'An e-mail has been sent to %s' % form.vars.email
             else:
@@ -701,6 +709,28 @@ def sponsor_renew_request():
     )
 
 
+def sponsor_unsubscribe():
+    """
+    User didn't want any more e-mails
+    """
+    try:
+        if sponsor_verify_url(request):
+            user_email = request.args[0]
+        else:
+            session.flash = "Invalid request for %s" % request.args[0]
+            redirect(URL('sponsor_renew_request'))
+            return(dict())
+    except IndexError:
+        session.flash = "Invalid request: Missing token"
+        redirect(URL('sponsor_renew_request'))
+        return(dict())
+
+    sponsorship_restrict_contact(user_email)
+    session.flash = "You have been unsubscribed from all future e-mails about your sponsorships"
+    redirect(URL('sponsor_renew_request'))
+    return(dict())
+
+
 def sponsor_renew():
     '''list items currently sponsored by a user
     '''
@@ -708,7 +738,7 @@ def sponsor_renew():
     sponsorship_renew_discount = sponsorship_config()['renew_discount']
 
     try:
-        if sponsor_renew_verify_url(request):
+        if sponsor_verify_url(request):
             user_email = request.args[0]
         else:
             session.flash = "Invalid renewal request for %s" % request.args[0]

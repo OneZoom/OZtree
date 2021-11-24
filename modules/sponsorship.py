@@ -1,4 +1,5 @@
 import datetime
+import hashlib
 from gluon import current
 from gluon.utils import web2py_uuid
 
@@ -609,7 +610,7 @@ def sponsorable_children(target_id, qtype="ott", limit=None, in_reservations=Non
         )
     
 
-def sponsor_renew_hmac_key():
+def sponsor_hmac_key():
     """Get hmac_key, or error informatively"""
     myconf = current.globalenv['myconf']
 
@@ -622,27 +623,93 @@ def sponsor_renew_hmac_key():
     return out
 
 
-def sponsor_renew_url(email):
-    """
-    Generate a signed URL to renew e-mail (email), or None for an unknown user
-    """
-    db = current.db
-    URL = current.globalenv['URL']
-
-    if db(db.reservations.e_mail == email).count() == 0 and db(db.expired_reservations.e_mail == email).count() == 0:
-        return None
-
-    return URL(
-        'sponsor_renew.html',
-        args=[email],
-        scheme=True,
-        host=True,
-        hmac_key=sponsor_renew_hmac_key(),
-    )
-
-
-def sponsor_renew_verify_url(request):
+def sponsor_verify_url(request):
     """Verify current request has a valid signature"""
     URL = current.globalenv['URL']
 
-    return URL.verify(request, hmac_key=sponsor_renew_hmac_key())
+    return URL.verify(request, hmac_key=sponsor_hmac_key())
+
+
+def sponsorship_email_reminders(for_email=None):
+    """
+    Get all sponsorships that the donors should be alerted about
+
+    - for_email: Get reminders for a single user. Default all users that didn't say restrict_all_contact
+
+    Returns a per-email dict, with
+    - user_donor_title: Donor title, e.g. "Mr."
+    - user_donor_name: Donor name
+    - intial_reminders: reservation rows that need an initial reminder
+    - final_reminders: reservation rows that need an final reminder
+    - renew_url: Where to go to renew sponsorships
+    - unsubscribe_url: Where to go to rid yourself of renewal messages
+    """
+    request = current.request
+    db = current.db
+    URL = current.globalenv['URL']
+    expiry_soon_date = sponsorship_expiry_soon_date()
+    expiry_critical_date = sponsorship_expiry_soon_date('critical')
+
+    def sponsor_signed_url(page, email):
+        return URL(
+            page,
+            args=[email],
+            scheme=True,
+            host=True,
+            hmac_key=sponsor_hmac_key()
+        )
+
+    query = (db.reservations.verified_time != None) & (db.reservations.PP_transaction_code != None)  # i.e. has been bought
+    if for_email:
+        # Get sponsorships for given user
+        query &= (db.reservations.e_mail == for_email)
+    else:
+        # Get sponsorships for all users we're allowed to contact
+        query &= (db.reservations.restrict_all_contact != None)
+
+    out = {}
+    for r in db(query).select(db.reservations.ALL, orderby="sponsorship_ends"):
+        if r.e_mail not in out:
+            # Add entry if not yet there
+            out[r.e_mail] = dict(
+                user_donor_title=r.user_donor_title,
+                user_donor_name=r.user_donor_name,
+                user_sponsor_lang=r.user_sponsor_lang,
+
+                initial_reminders=[],
+                final_reminders=[],
+                not_yet_due=[],
+                unsponsorable=[],
+
+                send_email=False,
+                renew_url = sponsor_signed_url('sponsor_renew.html', r.e_mail),
+                unsubscribe_url = sponsor_signed_url('sponsor_unsubscribe.html', r.e_mail),
+            )
+
+        status, _, _ = sponsorship_get_leaf_status(r.OTT_ID)
+
+        if status != '':
+            # This item now banned/invalid, shouldn't be sending reminders.
+            out[r.e_mail]['unsponsorable'].append(r.OTT_ID)
+        if r.sponsorship_ends >= expiry_soon_date:
+            # Not yet due, just for information
+            out[r.e_mail]['not_yet_due'].append(r.OTT_ID)
+        elif r.emailed_re_renewal_initial is None:
+            # No initial reminder sent, send one
+            out[r.e_mail]['initial_reminders'].append(r.OTT_ID)
+            out[r.e_mail]['send_email'] = True
+        elif r.sponsorship_ends >= expiry_critical_date:
+            # Initial reminder sent, but not critical yet, log without another e-mail
+            out[r.e_mail]['initial_reminders'].append(r.OTT_ID)
+        elif r.emailed_re_renewal_final is None:
+            # No final reminder sent, send one
+            out[r.e_mail]['final_reminders'].append(r.OTT_ID)
+            out[r.e_mail]['send_email'] = True
+    return out
+
+
+def sponsorship_restrict_contact(user_email):
+    """User doesn't want to be contacted any more"""
+    db = current.db
+
+    db(db.reservations.e_mail == user_email).update(restrict_all_contact=True)
