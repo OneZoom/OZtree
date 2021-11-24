@@ -403,6 +403,128 @@ class TestSponsorship(unittest.TestCase):
         expired_row = db(db.expired_reservations.id == reservation_row1.prev_reservation_id).select().first()
         self.assertEqual(expired_row.giftaid_claimed_on, old_claimed_time)
 
+    def test_reservation_confirm_payment__partner(self):
+        """Buy/renew items with partner percentages"""
+        from partners import partner_definitions, partner_identifiers_to_reservation_name, partner_identifiers_for_reservation_name
+        db.partners.update_or_insert(
+            db.partners.partner_identifier == 'ut:a',
+            partner_identifier='ut:a',
+            name='Unittest partner A',
+            percentage=20,
+        )
+        db.partners.update_or_insert(
+            db.partners.partner_identifier == 'ut:b',
+            partner_identifier='ut:b',
+            name='Unittest partner B',
+            percentage=40,
+        )
+        all_partners = partner_definitions()
+        self.assertTrue(len(all_partners) > 0)  # NB: Need at least one partner for this to work
+        partner_a = all_partners['ut:a']
+        partner_b = all_partners['ut:b']
+
+        # Buy ott1 with partner payment
+        ott1 = util.find_unsponsored_ott()
+        status, _, reservation_row1, _ = get_reservation(ott1, form_reservation_code="UT::001")
+        self.assertEqual(status, 'available')
+        reservation_add_to_basket('UT::BK001', reservation_row1, dict(
+            e_mail='001@unittest.example.com',
+            partner_name=partner_identifiers_to_reservation_name([partner_a.partner_identifier]),
+            user_giftaid=False,
+            user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
+        ))
+        reservation_confirm_payment('UT::BK001', 10000, dict(
+            PP_transaction_code='UT::PP1',
+            PP_house_and_street='PP House',
+            PP_postcode='PO12 3DE',
+            PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
+        ))
+
+        # Can't reserve it since it's unverified (not "sponsored" since we haven't set verified)
+        status, _, reservation_row1, _ = get_reservation(ott1, form_reservation_code="UT::002")
+        self.assertEqual(status, 'unverified')
+        # Partner was set, with percentage
+        self.assertEqual(partner_identifiers_for_reservation_name(reservation_row1.partner_name), [partner_a.partner_identifier])
+        self.assertEqual(reservation_row1.partner_percentage, partner_a.percentage)
+
+        # Validate row, is fully sponsored
+        reservation_row1.update_record(verified_time=current.request.now)
+        status, *_ = get_reservation(ott1, form_reservation_code="UT::002")
+        self.assertEqual(status, 'sponsored')
+
+        # Update the partner A percentage
+        db.partners.update_or_insert(
+            db.partners.partner_identifier == 'ut:a',
+            partner_identifier='ut:a',
+            name='Unittest partner A',
+            percentage=50,
+        )
+
+        # Buy ott1 again, after the partner percentage changed
+        status, _, reservation_row1, _ = get_reservation(ott1, form_reservation_code="UT::002")
+        self.assertEqual(status, 'sponsored')
+        reservation_add_to_basket('UT::BK002', reservation_row1, dict(
+            e_mail='001@unittest.example.com',
+            user_giftaid=True,
+            user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
+        ))
+        reservation_confirm_payment('UT::BK002', 10000, dict(
+            sale_time='01:01:01 Jan 01, 2001 GMT',
+            PP_transaction_code='UT::PP2',
+        ))
+
+        # Percentage for partner updated
+        status, _, reservation_row1, _ = get_reservation(ott1, form_reservation_code="UT::003")
+        self.assertEqual(status, 'sponsored')
+        self.assertEqual(partner_identifiers_for_reservation_name(reservation_row1.partner_name), [partner_a.partner_identifier])
+        self.assertEqual(reservation_row1.partner_percentage, 50.0)
+
+        # update percentage again, expire-and-repurchase
+        db.partners.update_or_insert(
+            db.partners.partner_identifier == 'ut:a',
+            partner_identifier='ut:a',
+            name='Unittest partner A',
+            percentage=70,
+        )
+        expired_r_id = reservation_expire(reservation_row1)
+        status, _, reservation_row1, _ = get_reservation(ott1, form_reservation_code="UT::004")
+        reservation_add_to_basket('UT::BK003', reservation_row1, dict(
+            e_mail='001@unittest.example.com',
+            prev_reservation_id=expired_r_id,
+        ))
+        reservation_confirm_payment('UT::BK003', 10000, dict(
+            sale_time='01:01:01 Jan 01, 2001 GMT',
+            PP_transaction_code='UT::PP3',
+        ))
+        status, _, reservation_row1, _ = get_reservation(ott1, form_reservation_code="UT::005")
+        self.assertEqual(status, 'sponsored')
+        self.assertEqual(partner_identifiers_for_reservation_name(reservation_row1.partner_name), [partner_a.partner_identifier])
+        self.assertEqual(reservation_row1.partner_percentage, 70.0)
+
+        # Buy ott2 with no partner
+        ott2 = util.find_unsponsored_ott()
+        status, _, reservation_row2, _ = get_reservation(ott2, form_reservation_code="UT::006")
+        self.assertEqual(status, 'available')
+        reservation_add_to_basket('UT::BK004', reservation_row2, dict(
+            e_mail='001@unittest.example.com',
+            user_giftaid=True,
+            user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
+        ))
+        reservation_confirm_payment('UT::BK004', 10000, dict(
+            PP_transaction_code='UT::PP2',
+            PP_house_and_street='PP House',
+            PP_postcode='PO12 3DE',
+            PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
+        ))
+
+        # partner details unset
+        status, _, reservation_row2, _ = get_reservation(ott2, form_reservation_code="UT::007")
+        self.assertEqual(partner_identifiers_for_reservation_name(reservation_row2.partner_name), [])
+        self.assertEqual(reservation_row2.partner_percentage, None)
+
+
     def test_reservation_confirm_payment__extension(self):
         """Buy an item twice to extend it"""
 

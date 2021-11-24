@@ -576,9 +576,10 @@ db.define_table('reservations',
     # price in pounds - good idea to hang on to this for accounting purposes and verification the numbers add up later
     # Set as (ordered_leaves.price / 100) at time of purchase (See valid_spons)
     Field('partner_percentage', type='double', requires=IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(0,1e100)), writable=False), 
-    # percentage of this donation that is diverted to a OZ partner like Linn Soc (after paypal fees are deducted) 
+    # percentage of this donation that is diverted to a OZ partner like Linn Soc (after paypal fees are deducted)
+    # If there are multiple partners, set to NaN. Refer to partner table to get percentage
     Field('partner_name', type='string', length=40, writable=False),
-    # a standardised name for the partner (or multiple partners if it comes to that - would then assume equal split between partners)
+    # A comma-separated string of partner_identifier(s)
     Field('partner_paid_on', type='datetime', requires=IS_EMPTY_OR(IS_DATETIME()), writable=False),
     Field('giftaid_claimed_on', type='datetime', requires=IS_EMPTY_OR(IS_DATETIME()), writable=False),
     Field('deactivated', type='text'),

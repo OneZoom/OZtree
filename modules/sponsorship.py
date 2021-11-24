@@ -6,6 +6,8 @@ from OZfunc import (
     child_leaf_query
 )
 
+from .partners import partner_definitions, partner_identifiers_for_reservation_name
+
 """HMAC expiry in seconds, NB: This is when they're rotated, so an HMAC will be valid for 2xHMAC_EXPIRY"""
 SPONSOR_RENEW_HMAC_EXPIRY = 60 * 60 * 24 * 7
 
@@ -187,6 +189,8 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
         # NB: We need to check here too in case all of the OTTs in this basket were unpaid.
         return
 
+    all_partners = None
+
     remaining_paid_pence = total_paid_pence
     for r in basket_rows:
         fields_to_update = basket_fields.copy()
@@ -222,10 +226,12 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             prev_ott = r.OTT_ID
             prev_sponsorship_ends = r.sponsorship_ends
             prev_reservation_id = reservation_expire(r)
+            prev_partner_name = r.partner_name
             status, _, r, _ = get_reservation(prev_ott, basket_code)
             assert status == 'available'  # We just expired the old one, this should work
             reservation_add_to_basket(basket_code, r, dict(
-                prev_reservation_id=prev_reservation_id
+                partner_name=prev_partner_name,
+                prev_reservation_id=prev_reservation_id,
             ))
 
             # Bump time to include renewal
@@ -241,6 +247,8 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             if prev_row and prev_row.verified_time:
                 # Renewal of expired entry, bump verified_time
                 fields_to_update['verified_time'] = request.now
+                if prev_row.partner_name:
+                    fields_to_update['partner_name'] = prev_row.partner_name
 
         # If there's a previous row, fill in any missing values using the old entry.
         # Set either as part of an extension above, or as part of a renewal (on paypal-start)
@@ -251,6 +259,27 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
                         r[k] is None and
                         k not in fields_to_update):
                     fields_to_update[k] = prev_row[k]
+
+        # Fetch percentages of any partners
+        partner_identifiers = partner_identifiers_for_reservation_name(fields_to_update.get('partner_name', r.partner_name))
+        if len(partner_identifiers) > 0:
+            if all_partners is None:
+                # We need the partner definitions, so fetch
+                all_partners = partner_definitions()
+            # NB: Will fall over if there's an undefined partner in the table
+            partner_percentages = [all_partners[p].percentage for p in partner_identifiers]
+        else:
+            partner_percentages = []
+
+        # If this sponsorship has partner(s), include the latest percentage
+        if len(partner_percentages) == 0:
+            # No partners to assign to
+            fields_to_update['partner_percentage'] = None
+        elif len(partner_percentages) == 1:
+            fields_to_update['partner_percentage'] = partner_percentages[0]
+        else:
+            # Multiple partners, we can't represent that, so flag with NaN
+            fields_to_update['partner_percentage'] = float('nan')
 
         # Update DB entry with recalculated asking price
         fields_to_update['asking_price'] = ott_price_pence / 100
