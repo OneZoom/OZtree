@@ -13,6 +13,7 @@ from sponsorship import (
     sponsorship_enabled, reservation_total_counts, clear_reservation, get_reservation,
     reservation_add_to_basket, reservation_confirm_payment, reservation_expire,
     sponsor_renew_url, sponsor_renew_verify_url,
+    sponsorship_expiry_soon_date,
     sponsorship_config, sponsorable_children_query)
 
 from OZfunc import (
@@ -703,7 +704,7 @@ def sponsor_renew_request():
 def sponsor_renew():
     '''list items currently sponsored by a user
     '''
-    expiry_soon_date = datetime.datetime.today() + datetime.timedelta(days=90)  # datetime before which expiry will be "soon"
+    expiry_soon_date = sponsorship_expiry_soon_date()
     sponsorship_renew_discount = sponsorship_config()['renew_discount']
 
     try:

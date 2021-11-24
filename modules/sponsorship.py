@@ -39,7 +39,24 @@ def sponsorship_config():
         out['maintenance_mins'] = int(out['maintenance_mins'])
     except:
         out['maintenance_mins'] = 0
+    try:
+        # Number of days left by which point we consider expiry to be soon
+        out['expiry_soon_days'] = int(myconf('sponsorship.expiry_soon_days'))
+    except:
+        out['expiry_soon_days'] = 90
+    try:
+        # Number of days left by which point we consider expiry to be critical
+        out['expiry_critical_days'] = int(myconf('sponsorship.expiry_critical_days'))
+    except:
+        out['expiry_critical_days'] = 15
     return out
+
+
+def sponsorship_expiry_soon_date(exp_type = 'soon'):
+    """Return datetime before which expiry is considered soon/critical"""
+    request = current.request
+
+    return request.now + datetime.timedelta(days=sponsorship_config()['expiry_%s_days' % exp_type])
 
 
 def sponsorship_enabled():
