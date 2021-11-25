@@ -134,76 +134,9 @@
       <div class="singlerow">{{=T('If you are a UK tax payer please consider making a Gift Aid declaration which will increase the value of your donation by 25% at no cost to you')}}</div>
  
       <button type='button' onclick="document.getElementById('gift_aid').style.display='block'; document.getElementById('user_giftaid_input').checked = true;">{{=T('Click if you are a UK tax payer and agree to Gift Aid')}}</button>
-              <!-- these bits should open up automatically -->
-      <div id = "gift_aid" {{if request.vars.user_giftaid:}}style="display:block"{{pass}}>
-        <h3>{{=T('Gift Aid declaration')}}</h3>
-        <p>{{=T('Thank you for considering Gift Aid. Please share your street address by ticking the box when you make your donation through PayPal, this information is required for us to reclaim gift aid. Please also confirm that you agree to the below Gift Aid declaration.')}}</p>
-        {{if partner_data.get('giftaid'):}}          
-        <p>I want to Gift Aid this donation and any donations I make in the future or have made in the past 4 years to OneZoom and {{=T(partner_data.get('name'))}}</p>
-        <p>I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of
-  Gift Aid claimed on all my donations in that tax year it is my responsibility to pay any difference.</p>
-        <p>Please notify both OneZoom and {{=A(T(partner_data.get('name')), _href=partner_data.get('general_url'),_target="_blank")}} if you want to cancel this declaration, change your name or home address, or if you no longer pay sufficient tax on your income and/or capital gains.</p>
-        <p>If you pay Income Tax at the higher or additional rate and want to receive the additional tax relief due to you, you must include all your Gift Aid donations on your Self-Assessment tax return or ask HM Revenue and Customs to adjust your tax code.</p>
-        <p>Gift Aid is reclaimed by OneZoom and {{=T(partner_data.get('name'))}} from the tax you pay for the current tax year. We will share your name (from PayPal) and address with {{=A(T(partner_data.get('name')), _href=partner_data.get('url'),_target="_blank")}} for the purposes of Gift Aid - please make sure that information is up to date.</p>
+      {{giftaid_partners = [partner_data] if partner_data.get('giftaid') else [] }}
+      {{include 'default/sponsor_giftaid.inc.html'}}
 
-        <p> I agree to all the above statements: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" {{if request.vars.user_giftaid:}}checked{{pass}}/></p>
-        {{else:}}
-        <p>I want to Gift Aid this donation and any donations I make in the future or have made in the past 4 years to OneZoom</p>
-        <p>I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of
-        Gift Aid claimed on all my donations in that tax year it is my responsibility to pay any difference.</p>
-        <p>Please notify the charity if you want to cancel this declaration, change your name or home address, or if you no longer pay sufficient tax on your income and/or capital gains.</p>
-        <p>If you pay Income Tax at the higher or additional rate and want to receive the additional tax relief due to you, you must include all your Gift Aid donations on your Self-Assessment tax return or ask HM Revenue and Customs to adjust your tax code.</p>
-        <p>Gift Aid is reclaimed by the charity from the tax you pay for the current tax year. We will use the name from your PayPal receipt for this purpose - please make sure that information is up to date</p>
-
-
-        <div class="singlerow">
-          <label>
-            <input type="radio" name="user_addr_nonuk" data-divid="user_addr_nonuk_off_div" value=""
-              {{=("checked" if not request.vars.user_addr_nonuk else "")}} />
-            <span>{{=XML(T('I am a UK resident'))}}</span>
-          </label>
-          <label>
-            <input type="radio" name="user_addr_nonuk" data-divid="user_addr_nonuk_on_div" value="on"
-              {{=("checked" if request.vars.user_addr_nonuk else "")}} />
-            <span>{{=XML(T('I live outside the UK (but pay tax in the UK)'))}}</span>
-          </label>
-        </div>
-
-        <div id="user_addr_nonuk_off_div" {{if request.vars.user_addr_nonuk:}}style="display: none"{{pass}}>
-          <div>
-          <label for="user_addr_house_input">{{=T('Your house name or number:')}}</label>
-          <p>
-            <input type="text" id="user_addr_house_input" name="user_addr_house" size="40"
-                   value="{{if (request.vars['user_addr_house']) is not None:}}{{=request.vars['user_addr_house']}}{{pass}}" />
-            <em class = "error_text">{{if (form.errors["user_addr_house"]) is not None:}}{{=form.errors["user_addr_house"]}}{{pass}}</em>
-          </p>
-          </div><div>
-          <label for="user_addr_postcode_input">{{=T('Your postcode:')}}</label>
-          <p>
-            <input type="text" id="user_addr_postcode_input" name="user_addr_postcode" size="40"
-                   value="{{if (request.vars['user_addr_postcode']) is not None:}}{{=request.vars['user_addr_postcode']}}{{pass}}" />
-            <em class = "error_text"> {{if (form.errors["user_addr_postcode"]) is not None:}}{{=form.errors["user_addr_postcode"]}}{{pass}}</em>
-          </p>
-          </div>
-        </div>
-        <div id="user_addr_nonuk_on_div" {{if not request.vars.user_addr_nonuk:}}style="display: none"{{pass}}>
-          <div>
-            <label for="user_addr_internationaladdr_input">{{=T('Your full address:')}}</label>
-            <p>
-              <input type="text" id="user_addr_internationaladdr_input" name="user_addr_internationaladdr" size="80"
-                     value="{{if (request.vars['user_addr_internationaladdr']) is not None:}}{{=request.vars['user_addr_internationaladdr']}}{{pass}}" />
-              <em class = "error_text">{{if (form.errors["user_addr_internationaladdr"]) is not None:}}{{=form.errors["user_addr_internationaladdr"]}}{{pass}}</em>
-            </p>
-          </div>
-        </div>
-
-        <label>
-          <p> I agree: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" {{if request.vars.user_giftaid:}}checked{{pass}}/></p>
-        </label>
-        
-          {{pass}}
-          
-      </div>
       <input type="hidden" id="user_nondefault_image_input" name="user_nondefault_image" value="" />
       <input type="hidden" name="id" value="{{=id}}" />
       <input type="hidden" name="form_reservation_code" value="{{=form_reservation_code}}" />
@@ -216,19 +149,6 @@
   </div>
 </form>
 
-<script>
-    if (!document.getElementById("sponsor_form").classList.contains('changelistener_registered')) {
-        document.getElementById("sponsor_form").addEventListener('change', function (e) {
-            var elements = e.target.form.elements;
-
-            // Sync div visibility with checkboxes
-            for (var i = 0; i < elements.user_addr_nonuk.length; i++) {
-                document.getElementById(elements.user_addr_nonuk[i].dataset.divid).style.display = elements.user_addr_nonuk[i].checked ? 'block' : 'none';
-            }
-        });
-    }
-    document.getElementById("sponsor_form").classList.add('changelistener_registered');
-</script>
 {{if validated:}}
 <script>
     // simply submit the form without firing the onsubmit handler
