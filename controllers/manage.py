@@ -270,27 +270,21 @@ def SPONSOR_UPDATE():
         url_t = "www.onezoom.org/life/@={}".format(ott_t) #build url
         email_t = read_only['e_mail'] or read_only['PP_e_mail'] #default to the email they gave us. If not, use the paypal one
         if request.vars.auto_email and read_only['emailed_re_sponsorship'] is None and email_t:
-            try:
-                if int(myconf.take('smtp.autosend_email')):
-                    #generate email
-                    if mail is None: #should be defined in db.py
-                        response.flash = 'SMTP email configuration is not set up in appconfig.ini'
-                    else:
-                        gen_email = emails(ott_t, binomial_name_t, common_name_t, verified_name_t, email_t, PP_first_name=read_only['PP_first_name'], 
-                            PP_second_name=read_only['PP_second_name'], sponsor_for=(request.vars.verified_kind=='for'))
-                        #for html, see http://web2py.com/books/default/chapter/29/08/emails-and-sms#Combining-text-and-HTML-emails
-                        if mail.send(to=email_t,
-                                     subject=gen_email['mail_subject'],
-                                     message=gen_email['mail_body']):
-                            #update the emailed_re_sponsorship (time when contacted)
-                            db.reservations[row_id]=dict(emailed_re_sponsorship=request.now)
-                        else:
-                            response.flash = "Could not send auto-email to " + email_t
+            mail, reason = OZfunc.get_mailer()
+            if mail is None:
+                response.flash = reason
+            else:
+                gen_email = emails(ott_t, binomial_name_t, common_name_t, verified_name_t, email_t, PP_first_name=read_only['PP_first_name'], 
+                    PP_second_name=read_only['PP_second_name'], sponsor_for=(request.vars.verified_kind=='for'))
+                #for html, see http://web2py.com/books/default/chapter/29/08/emails-and-sms#Combining-text-and-HTML-emails
+                if mail.send(to=email_t,
+                             subject=gen_email['mail_subject'],
+                             message=gen_email['mail_body']):
+                    #update the emailed_re_sponsorship (time when contacted)
+                    db.reservations[row_id]=dict(emailed_re_sponsorship=request.now)
                 else:
-                    raise BaseException()
-            except BaseException: #can't get the myconf.take
-                response.flash = 'Auto-email is turned off. To turn it on, add "autosend_email = 1" to appconfig.ini'
-            
+                    response.flash = "Could not send auto-email to " + email_t
+
         if request.vars.auto_tweet and read_only['tweeted_re_sponsorship'] is None and twittername_t:          
             #set up verification tokens
             #do a tweet

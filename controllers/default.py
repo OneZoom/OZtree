@@ -20,7 +20,7 @@ from sponsorship import (
 from OZfunc import (
     nice_species_name, get_common_name, get_common_names, __release_info,
     language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, add_the,
-    otts2ids, nodes_info_from_array, nodes_info_from_string, extract_summary)
+    otts2ids, nodes_info_from_array, nodes_info_from_string, extract_summary, get_mailer)
 
 
 """ Some settings for sponsorship"""
@@ -37,20 +37,6 @@ def get_paypal_url():
 
 def time_diff(startTime,endTime):
     return (endTime-startTime)
-
-
-def get_mailer():
-    """Returun the mail object if valid, and a string reason if not"""
-    try:
-        autosend = int(myconf.take('smtp.autosend_email'))
-    except BaseException:
-        autosend = 0
-    if mail is None:
-        return None, 'No e-mail configuration in appconfig.ini'
-    if autosend != 1:
-        return None, '''"autosend_email" isn't set to 1 in appconfig.ini'''
-    return mail, None
-
 
 """Standard web2py stuff"""
 

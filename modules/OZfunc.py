@@ -535,3 +535,18 @@ def otts2ids(ottIntegers):
         }
     except:
         return {"nodes": {}, "leaves": {}, "names": {}}
+
+def get_mailer():
+    """Returun the mail object if valid, and a string reason if not"""
+    myconf = current.globalenv['myconf']
+    mail = current.globalenv['mail']
+
+    try:
+        autosend = int(myconf.take('smtp.autosend_email'))
+    except BaseException:
+        autosend = 0
+    if mail is None:
+        return None, 'No e-mail configuration in appconfig.ini'
+    if autosend != 1:
+        return None, '''"autosend_email" isn't set to 1 in appconfig.ini'''
+    return mail, None
