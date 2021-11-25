@@ -37,7 +37,12 @@ response.files.append(URL('static','css/content_pages.css'))
   <p>{{=T('You can sponsor this leaf for yourself or as a unique gift for someone you know.')}}</p>
 {{if partner_data:}}
   <p>{{=XML(T('We will acknowledge your donation to the %s and %s by displaying your chosen sponsor’s name on %s') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), A(T(partner_data.get('name','')), _href=partner_data.get('url',''), _target="_blank"), the_long_name))}}.
-     {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %s%% will go to %s. %s.') % (int(round(100-partner_data.get('percentage',0))), int(round(partner_data.get('percentage',0))), T(partner_data.get('name','')), T(partner_data.get('details','')))  )  }}</p>
+     {{=XML(T('%s%% of the donation we receive will help OneZoom to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. The remaining %d%% will go to %s. %s.') % (
+         int(round(100-partner_data.get('percentage',0))),
+         int(round(partner_data.get('percentage',0))),
+         T(partner_data.get('name') or ''),
+         T(partner_data.get('details') or ''),
+           ))  }}</p>
 
 {{else:}}
   <p>{{=XML(T('We will acknowledge your donation to the %s by displaying your chosen sponsor’s name on %s. Your donations will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.') % (A(T('OneZoom charity'),_href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"), the_long_name))}}</p>
