@@ -24,6 +24,8 @@ from sponsorship import (
     reservation_expire,
     sponsor_hmac_key,
     sponsor_verify_url,
+    sponsorship_email_reminders,
+    sponsorship_restrict_contact,
 )
 
 class TestMaintenance(unittest.TestCase):
@@ -734,9 +736,56 @@ class TestSponsorship(unittest.TestCase):
 
     def test_sponsorship_email_reminders(self):
         # TODO:
+        pass
 
     def test_sponsorship_restrict_contact(self):
-        # TODO:
+        # Buy ott1
+        ott1 = util.find_unsponsored_ott()
+        status, _, reservation_row, _ = get_reservation(ott1, form_reservation_code="UT::001")
+        self.assertEqual(status, 'available')
+        reservation_add_to_basket('UT::BK001', reservation_row, dict(
+            e_mail='betty@unittest.example.com',
+            user_sponsor_name="Betty",  # NB: Have to at least set user_sponsor_name
+        ))
+        reservation_confirm_payment('UT::BK001', 10000, dict(
+            PP_transaction_code='UT::PP1',
+            PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
+        ))
+        reservation_row.update_record(verified_time=current.request.now)
+
+        # Buy ott2 10 days later
+        current.request.now = (current.request.now + datetime.timedelta(days=10))
+        ott2 = util.find_unsponsored_ott()
+        status, _, reservation_row, _ = get_reservation(ott2, form_reservation_code="UT::002")
+        self.assertEqual(status, 'available')
+        reservation_add_to_basket('UT::BK002', reservation_row, dict(
+            e_mail='betty@unittest.example.com',
+            user_sponsor_name="Betty",  # NB: Have to at least set user_sponsor_name
+        ))
+        reservation_confirm_payment('UT::BK002', 10000, dict(
+            PP_transaction_code='UT::PP2',
+            PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 11, 2001 GMT',
+        ))
+        reservation_row.update_record(verified_time=current.request.now)
+
+        # Reservations about to expire
+        current.request.now = (current.request.now + datetime.timedelta(days=(4*365) - 20))
+
+        # Allowed to contact about the expiry
+        reminders = sponsorship_email_reminders()["betty@unittest.example.com"]
+        self.assertEqual(reminders['initial_reminders'], [ott1,ott2])
+        self.assertEqual(reminders['send_email'], True)
+
+        # After restricting contact, we're not
+        sponsorship_restrict_contact("betty@unittest.example.com")
+        self.assertNotIn("betty@unittest.example.com", sponsorship_email_reminders().keys())
+
+        # But can explictly request the e-mail contents
+        reminders = sponsorship_email_reminders("betty@unittest.example.com")["betty@unittest.example.com"]
+        self.assertEqual(reminders['initial_reminders'], [ott1,ott2])
+        self.assertEqual(reminders['send_email'], True)
 
     def test_reservation_get_all_expired(self):
         def gae():

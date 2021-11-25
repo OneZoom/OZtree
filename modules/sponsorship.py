@@ -665,7 +665,7 @@ def sponsorship_email_reminders(for_email=None):
         query &= (db.reservations.e_mail == for_email)
     else:
         # Get sponsorships for all users we're allowed to contact
-        query &= (db.reservations.restrict_all_contact != None)
+        query &= (db.reservations.restrict_all_contact == None)
 
     out = {}
     for r in db(query).select(db.reservations.ALL, orderby="sponsorship_ends"):
