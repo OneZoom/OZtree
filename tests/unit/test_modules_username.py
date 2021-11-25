@@ -173,7 +173,7 @@ class TestUsername(unittest.TestCase):
         ))
         test_row = db(db.reservations.OTT_ID == ott).select(db.reservations.ALL).first()
         username, ids = find_username(test_row)
-        self.assertEqual(username, 'DefinitelyBeckythechicken')
+        self.assertEqual(username, 'DefinitelyBeckythe_chicken')
         self.assertEqual(len(ids), 0)
 
     def test_duplicate_username_construction(self):
@@ -184,13 +184,13 @@ class TestUsername(unittest.TestCase):
         self.assertEqual(status, 'available')
         reservation_add_to_basket(f'UT::BK{ott}', reservation_row, dict(
             e_mail='no_username@unittest.example.com',
-            user_sponsor_name="_Arnold ",  # NB: when NFKD'ed this matches an existing username
+            user_sponsor_name="😀Arnold ",  # NB: when NFKD'ed this matches an existing username
             user_sponsor_kind="by",
             prev_reservation=None,
         ))
         test_row = db(db.reservations.OTT_ID == ott).select(db.reservations.ALL).first()
         username, ids = find_username(test_row)
-        self.assertEqual(username, 'Arnold_2')
+        self.assertEqual(username, 'Arnold-2')
         self.assertEqual(len(ids), 0)
 
 
