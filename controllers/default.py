@@ -38,6 +38,20 @@ def get_paypal_url():
 def time_diff(startTime,endTime):
     return (endTime-startTime)
 
+
+def get_mailer():
+    """Returun the mail object if valid, and a string reason if not"""
+    try:
+        autosend = int(myconf.take('smtp.autosend_email'))
+    except BaseException:
+        autosend = 0
+    if mail is None:
+        return None, 'No e-mail configuration in appconfig.ini'
+    if autosend != 1:
+        return None, '''"autosend_email" isn't set to 1 in appconfig.ini'''
+    return mail, None
+
+
 """Standard web2py stuff"""
 
 def index():
@@ -693,9 +707,14 @@ def sponsor_renew_request():
                 lang=user_reminders['user_sponsor_lang'],
             )
             email_body = re.sub(r'\n\n+', '\n\n', response.render('sponsor_renew_reminder.txt', user_reminders, escape=False))
+
+            mail, reason = get_mailer()
             if mail is None:
                 print(email_body)
-                response.flash = 'NB: No e-mail configuration in appconfig.ini, so cannot send:\n%s' % email_body
+                response.flash = 'NB: %s, so cannot send:\n%s' % (
+                    reason,
+                    email_body,
+                )
             elif mail.send(
                 to=form.vars.email,
                 subject=T("Renew your onezoom sponsorships"),
