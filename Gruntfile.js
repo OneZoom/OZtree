@@ -1,3 +1,4 @@
+const fs = require('fs');
 const sass = require('sass');
 const process = require('process');
 const path = require('path');
@@ -16,7 +17,7 @@ function exec_web2py_script(script_name, init_args) {
             '-S OZtree/default',
             '-M',
             '-e',
-            '-R', 'applications/OZtree/private/' + script_name,
+            '-R', 'applications/OZtree/' + script_name,
             '--args',
             ...(init_args || []),
             ...arguments,
@@ -43,17 +44,26 @@ module.exports = function (grunt) {
       },
       send_sponsorship_emails: {
         cwd: "../../",
-        command: exec_web2py_script("send_sponsorship_emails.py"),
+        command: exec_web2py_script("private/send_sponsorship_emails.py"),
       },
       background_tasks: {
         cwd: "../../",
-        command: exec_web2py_script("background_tasks.py"),
+        command: exec_web2py_script("private/background_tasks.py"),
       },
       make_release_info: {
         command: 'git describe --tags > RELEASE_INFO && python3 OZprivate/ServerScripts/Utilities/get_release_name.py RELEASE_INFO >> RELEASE_INFO'
       },
       test_server: {
-        command: 'for f in tests/unit/*.py; do echo === $f; ' + preferred_python3 + ' ' + web2py_py + ' -S OZtree -M -e -R applications/OZtree/$f; done'
+        command: function () {
+            // Either accept a list of test filenames, or work it out ourselves and run all tests
+            var tests = arguments.length > 0 ? arguments : fs.readdirSync('tests/unit/').filter(function (x) {
+                return x.match('^test_.*\.py');
+            });
+
+            return Array.prototype.map.call(tests, function (test_path) {
+                return exec_web2py_script('tests/unit/' + test_path)();
+            }).join(" && ");
+        }
       },
       test_server_functional: {
         command: 'nosetests3 tests/functional/'
