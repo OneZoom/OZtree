@@ -7,6 +7,23 @@ partial_local_install_site = "http://127.0.0.1:8000"; // if you are running a lo
 preferred_python3 = "python3.7"; // in case you have multiple python3 versions installed
 web2py_py = path.join(path.dirname(path.dirname(process.cwd())), 'web2py.py');
 
+/** Generate a function to execute a web2py script, handing over all arguments */
+function exec_web2py_script(script_name, init_args) {
+    return function () {
+        return [
+            preferred_python3,
+            web2py_py,
+            '-S OZtree/default',
+            '-M',
+            '-e',
+            '-R', 'applications/OZtree/private/' + script_name,
+            '--args',
+            ...(init_args || []),
+            ...arguments,
+        ].join(' ');
+    }
+}
+
 module.exports = function (grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -23,6 +40,10 @@ module.exports = function (grunt) {
                 'python3 -c "import gluon.compileapp; gluon.compileapp.compile_application(\''
                 + process.cwd()
                 + '\', skip_failed_views=True)"'
+      },
+      background_tasks: {
+        cwd: "../../",
+        command: exec_web2py_script("background_tasks.py"),
       },
       make_release_info: {
         command: 'git describe --tags > RELEASE_INFO && python3 OZprivate/ServerScripts/Utilities/get_release_name.py RELEASE_INFO >> RELEASE_INFO'
