@@ -34,7 +34,7 @@ fieldset div p {
     padding: 0.25em;
     }
 
-fieldset div#gift_aid + p {
+fieldset div#gift_aid > p {
     display: block;
 }
 

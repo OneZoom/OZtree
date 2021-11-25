@@ -197,13 +197,11 @@
           </div>
         </div>
 
-
-          
         <label>
-        <p> I agree: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" {{if request.vars.user_giftaid:}}checked{{pass}}/></p>
+          <p> I agree: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" {{if request.vars.user_giftaid:}}checked{{pass}}/></p>
+        </label>
         
           {{pass}}
-                <p> Please note: we will need your name, title and UK street address to process gift aid, so please fill in these fields above. Please also remember to instruct PayPal to share your postal address when making your payment - thank you.</p>
           
       </div>
       <input type="hidden" id="user_nondefault_image_input" name="user_nondefault_image" value="" />
