@@ -668,6 +668,7 @@ def sponsorship_email_reminders(for_email=None):
         query &= (db.reservations.restrict_all_contact == None)
 
     out = {}
+    send_to = set((for_email,)) if for_email else set()
     for r in db(query).select(db.reservations.ALL, orderby="sponsorship_ends"):
         if r.e_mail not in out:
             # Add entry if not yet there
@@ -681,7 +682,6 @@ def sponsorship_email_reminders(for_email=None):
                 not_yet_due=[],
                 unsponsorable=[],
 
-                send_email=False,
                 renew_url = sponsor_signed_url('sponsor_renew.html', r.e_mail),
                 unsubscribe_url = sponsor_signed_url('sponsor_unsubscribe.html', r.e_mail),
             )
@@ -691,21 +691,33 @@ def sponsorship_email_reminders(for_email=None):
         if status != '':
             # This item now banned/invalid, shouldn't be sending reminders.
             out[r.e_mail]['unsponsorable'].append(r.OTT_ID)
-        if r.sponsorship_ends >= expiry_soon_date:
+        elif r.sponsorship_ends >= expiry_soon_date:
             # Not yet due, just for information
             out[r.e_mail]['not_yet_due'].append(r.OTT_ID)
         elif r.emailed_re_renewal_initial is None:
             # No initial reminder sent, send one
             out[r.e_mail]['initial_reminders'].append(r.OTT_ID)
-            out[r.e_mail]['send_email'] = True
+            send_to.add(r.e_mail)
         elif r.sponsorship_ends >= expiry_critical_date:
             # Initial reminder sent, but not critical yet, log without another e-mail
             out[r.e_mail]['initial_reminders'].append(r.OTT_ID)
         elif r.emailed_re_renewal_final is None:
             # No final reminder sent, send one
             out[r.e_mail]['final_reminders'].append(r.OTT_ID)
-            out[r.e_mail]['send_email'] = True
+            send_to.add(r.e_mail)
+
+    # Only return e-mails we should be sending
+    out = dict((k, reminder) for k, reminder in out.items() if k in send_to)
     return out
+
+
+def sponsorship_email_reminders_post(reminder_row):
+    """Log the fact that the e-mails sent so we don't do it again"""
+    db = current.db
+    request = current.request
+
+    db(db.reservations.OTT_ID.belongs(reminder_row['initial_reminders'])).update(emailed_re_renewal_initial=request.now)
+    db(db.reservations.OTT_ID.belongs(reminder_row['final_reminders'])).update(emailed_re_renewal_final=request.now)
 
 
 def sponsorship_restrict_contact(user_email):
