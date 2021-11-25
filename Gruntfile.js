@@ -41,6 +41,10 @@ module.exports = function (grunt) {
                 + process.cwd()
                 + '\', skip_failed_views=True)"'
       },
+      send_sponsorship_emails: {
+        cwd: "../../",
+        command: exec_web2py_script("send_sponsorship_emails.py"),
+      },
       background_tasks: {
         cwd: "../../",
         command: exec_web2py_script("background_tasks.py"),
