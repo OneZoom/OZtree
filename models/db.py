@@ -146,7 +146,14 @@ try:
     mail = auth.settings.mailer
     mail.settings.server = myconf.take('smtp.server')
     mail.settings.sender = myconf.take('smtp.sender')
-    mail.settings.login = myconf.take('smtp.login')
+    try:
+        mail.settings.login = myconf.take('smtp.login')
+    except:
+        pass
+    try:
+        mail.settings.tls = (myconf.take('smtp.tls').lower() == 'true')
+    except:
+        pass
 except:
     mail = None
 
