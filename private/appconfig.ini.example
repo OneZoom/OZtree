@@ -58,12 +58,17 @@ url_base = //images.onezoom.org/
 ; * unpaid_time_limit_mins: how long before a sponsored leaf becomes 
 ;    free again if we receive no payment notification
 ; * hmac_key: A secret key used to generate signatures for links in renewal e-mails
-;    to prove users used a link from an e-mail we sent.
+;    to provide a private page that can only be accessed a link from an e-mail we sent.
+; * sponsorship_duration_days: The default length of time of a sponsorship.
+; * sponsorship_renew_discount: The fraction by which the price of a sponsorship is
+;   reduced when reneing a sponsorship.
 allow_sponsorship = 0
 maintenance_mins = 0
 reservation_time_limit_mins = 6
 unpaid_time_limit_mins = 2880
 hmac_key = supersecretstring
+sponsorship_duration_days = 1461
+sponsorship_renew_discount = 0.2
 
 [api]
 ;If you want to get data from the Encyclopedia of Life, you need to put your own API key here. 
