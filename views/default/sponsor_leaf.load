@@ -136,6 +136,7 @@
       <button type='button' onclick="document.getElementById('gift_aid').style.display='block'; document.getElementById('user_giftaid_input').checked = true;">{{=T('Click if you are a UK tax payer and agree to Gift Aid')}}</button>
       {{giftaid_partners = [partner_data] if partner_data.get('giftaid') else [] }}
       {{include 'default/sponsor_giftaid.inc.html'}}
+      <script>document.getElementById('gift_aid').style.display='none'</script>
 
       <input type="hidden" id="user_nondefault_image_input" name="user_nondefault_image" value="" />
       <input type="hidden" name="id" value="{{=id}}" />
