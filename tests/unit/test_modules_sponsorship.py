@@ -781,6 +781,9 @@ class TestSponsorship(unittest.TestCase):
             out = {}
             for k, r in sponsorship_email_reminders().items():
                 # Check URLs then hide them
+                if k is None:
+                    # Nonsense data in the DB
+                    continue
                 self.assertTrue(urllib.parse.quote(k) in r['renew_url'])
                 del r['renew_url']
                 self.assertTrue(urllib.parse.quote(k) in r['unsubscribe_url'])
@@ -920,7 +923,7 @@ class TestSponsorship(unittest.TestCase):
             # We only care about our unittest entries, there may be other things lurking in the DB
             rows = [
                 r for r in reservation_get_all_expired()
-                if r.e_mail.endswith('@unittest.example.com')
+                if (r.e_mail or '').endswith('@unittest.example.com')
             ]
             return rows
 
