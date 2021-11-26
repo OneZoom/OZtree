@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import re
 from gluon import current
 from gluon.utils import web2py_uuid
 
@@ -158,6 +159,73 @@ def reservation_expire(r):
     expired_id = db.expired_reservations.insert(**expired_r)
     r.delete_record()
     return expired_id
+
+
+def reservation_validate_basket_fields(basket_fields):
+    """
+    Validate any user input in (basket_fields), return a dict of errors if any.
+
+    The contents of basket_fields may be written to e.g. to validate postcodes.
+
+    For mandatory fields, being None is an error, but outright missing means we
+    expected this (e.g. it's a value we're not changing for a renewal)
+    """
+    T = current.globalenv['T']
+
+    def normalise_postcode(input_s):
+        s = input_s.strip().upper()
+        # From https://stackoverflow.com/questions/164979/regex-for-matching-uk-postcodes/51885364#51885364
+        if not re.match(r'^([A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}|GIR ?0A{2})$', s):
+            raise ValueError(input_s)
+        return s
+
+    errors = {}
+    max_chars = 30
+
+    if 'user_sponsor_name' in basket_fields:
+        if not (basket_fields['user_sponsor_name'] or ''):
+            errors['user_sponsor_name'] = T("You must enter some sponsor text")
+        elif len(basket_fields['user_sponsor_name']) > max_chars:
+            errors['user_sponsor_name'] = T("Text too long: max %s characters") % (max_chars, )
+
+        if 'user_donor_name' in basket_fields and \
+                basket_fields.get('user_sponsor_kind') == "by" and \
+                not basket_fields.get('user_donor_name'):
+            basket_fields['user_donor_name'] = basket_fields['user_sponsor_name']
+
+    if 'user_more_info' in basket_fields and len(basket_fields['user_more_info'] or '') > max_chars:
+        errors['user_more_info'] = T("Text too long: max %s characters") % (max_chars, )
+
+    if 'user_sponsor_kind' in basket_fields and basket_fields['user_sponsor_kind'] not in ('by', 'for'):
+        errors['user_sponsor_kind'] = T("Sponsorship can only be 'by' or 'for'")
+
+    if basket_fields.get('user_giftaid'):
+        missing_title = not (basket_fields.get('user_donor_title') or "").strip()
+        if missing_title:
+            errors['user_donor_title_name'] = T("We need your title to be able to claim gift aid")
+        if not (basket_fields.get('user_donor_name') or "").strip():
+            if missing_title:
+                errors['user_donor_title_name'] = T("We need your name and title to be able to claim gift aid")
+            else:
+                errors['user_donor_title_name'] = T("We need your name to be able to claim gift aid")
+        if basket_fields.get('user_addr_nonuk'):
+            # International resident
+            if not (basket_fields.get('user_addr_internationaladdr') or "").strip():
+                errors['user_addr_internationaladdr'] = T("We need your address to be able to claim gift aid")
+            # NB: We store the international addr in the house DB field
+            basket_fields['user_addr_house'] = basket_fields.get('user_addr_internationaladdr')
+        else:
+            # UK resident
+            if not (basket_fields.get('user_addr_house') or "").strip():
+                errors['user_addr_house'] = T("We need your house number to be able to claim gift aid")
+            if not (basket_fields.get('user_addr_postcode') or "").strip():
+                errors['user_addr_postcode'] = T("We need your post code to be able to claim gift aid")
+            else:
+                try:
+                    basket_fields['user_addr_postcode'] = normalise_postcode(basket_fields['user_addr_postcode'])
+                except ValueError:
+                    errors['user_addr_postcode'] = T("Your postcode is not in a recognised format")
+    return errors
 
 
 def reservation_add_to_basket(basket_code, reservation_row, basket_fields):

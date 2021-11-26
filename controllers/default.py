@@ -11,6 +11,7 @@ from collections import OrderedDict
 
 from sponsorship import (
     sponsorship_enabled, reservation_total_counts, clear_reservation, get_reservation,
+    reservation_validate_basket_fields,
     reservation_add_to_basket, reservation_confirm_payment, reservation_expire,
     sponsorship_expiry_soon_date,
     sponsorship_email_reminders, sponsor_verify_url,
@@ -588,48 +589,15 @@ def valid_spons(form, species_name, price_pounds, partner_data):
     """
     Do all this using custom validation as some is quite intricate
     """
-    max_chars = 30
-    # Validate user-input vars
-    if len(form.vars.user_sponsor_name or "") == 0:
-        form.errors.user_sponsor_name = T("You must enter some sponsor text")
-    elif len(form.vars.user_sponsor_name or "") > max_chars:
-        form.errors.user_sponsor_name = T("Text too long: max %s characters") % (max_chars, )
-    if form.vars.user_sponsor_kind == "by" and not form.vars.user_donor_name:
-        form.vars.user_donor_name = form.vars.user_sponsor_name
-
-    if len(form.vars.user_more_info or "") > max_chars:
-        form.errors.user_more_info = T("Text too long: max %s characters") % (max_chars, )
-    
-    if form.vars.user_sponsor_kind not in ['by','for']:
-        form.errors.user_sponsor_kind = T("Sponsorship can only be 'by' or 'for'")
+    # Do general basket_fields validation
+    for k, v in reservation_validate_basket_fields(form.vars).items():
+        setattr(form.errors, k, v)
 
     try:
         if float(form.vars.user_paid) < price_pounds:
             form.errors.user_paid = T("Please donate at least £%s to sponsor this leaf, or you could simply choose another leaf") % ("{:.2f}".format(price_pounds), )
     except:
         form.errors.user_paid = T("Please enter a valid number")
-    
-    if form.vars.user_giftaid:
-        missing_title = not (form.vars.user_donor_title or "").strip()
-        if missing_title:
-            form.errors.user_donor_title_name = T("We need your title to be able to claim gift aid")
-        if not (form.vars.user_donor_name or "").strip():
-            if missing_title:
-                form.errors.user_donor_title_name = T("We need your name and title to be able to claim gift aid")
-            else:
-                form.errors.user_donor_title_name = T("We need your name to be able to claim gift aid")
-        if form.vars.user_addr_nonuk:
-            # International resident
-            if not (form.vars.user_addr_internationaladdr or "").strip():
-                form.errors.user_addr_internationaladdr = T("We need your address to be able to claim gift aid")
-            # NB: We store the international addr in the house DB field
-            form.vars.user_addr_house = form.vars.user_addr_internationaladdr
-        else:
-            # UK resident
-            if not (form.vars.user_addr_house or "").strip():
-                form.errors.user_addr_house = T("We need your house number to be able to claim gift aid")
-            if not (form.vars.user_addr_postcode or "").strip():
-                form.errors.user_addr_postcode = T("We need your post code to be able to claim gift aid")
 
     # calculate writable=False vars, to insert
     form.vars.name = species_name
