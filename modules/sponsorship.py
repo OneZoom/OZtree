@@ -214,6 +214,7 @@ def reservation_validate_basket_fields(basket_fields):
                 errors['user_addr_internationaladdr'] = T("We need your address to be able to claim gift aid")
             # NB: We store the international addr in the house DB field
             basket_fields['user_addr_house'] = basket_fields.get('user_addr_internationaladdr')
+            basket_fields['user_addr_postcode'] = None
         else:
             # UK resident
             if not (basket_fields.get('user_addr_house') or "").strip():
