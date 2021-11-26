@@ -39,7 +39,8 @@ current.request.env.http_host = run_http_host
 current.request.env.http_port = '443'
 current.request.env.wsgi_url_scheme = 'https'
 
-for email, user_reminders in sponsorship_email_reminders().items():
+for username, user_reminders in sponsorship_email_reminders().items():
+    email = user_reminders['email_address']
     verbose("*****************************\n*** Sending e-mail to %s" % email)
     user_reminders['common_names'] = get_common_names(
         user_reminders['unsponsorable'] + user_reminders['not_yet_due'] +

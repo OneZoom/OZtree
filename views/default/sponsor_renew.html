@@ -6,7 +6,7 @@
 
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
-    <h1>This is the private sponsorship renewal page for {{=user_email}}</h1>
+    <h1>This is the private sponsorship renewal page for {{=username}}</h1>
     {{if most_recent and most_recent.username:}}<p>There is also a public page available at <a href="{{=URL("/donor/%s" % most_recent.username)}}">{{=URL("/donor/%s" % most_recent.username, scheme=True, host=True)}}</a> that you can share if you wish.</p>{{pass}}
 </div>
 {{end block}}

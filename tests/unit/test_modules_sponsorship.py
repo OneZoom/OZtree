@@ -29,6 +29,10 @@ from sponsorship import (
     sponsorship_restrict_contact,
 )
 
+from usernames import (
+    find_username,
+)
+
 
 def purchase_reservation(otts = 1, basket_details = None, paypal_details = None, payment_amount = 10000, verify_reservation=True):
     """Go through all the motions required to purchase a reservation"""
@@ -44,7 +48,8 @@ def purchase_reservation(otts = 1, basket_details = None, paypal_details = None,
         paypal_details = {}
     if 'user_sponsor_name' not in basket_details:
         # Have to at least set user_sponsor_name
-        basket_details['user_sponsor_name'] = "User %s" % purchase_uuid
+        basket_details['user_sponsor_name'] = basket_details.get("e_mail", "User %s" % purchase_uuid)
+        basket_details['user_sponsor_kind'] = "by"
     if 'PP_transaction_code' not in paypal_details:
         paypal_details['PP_transaction_code'] = 'UT::PP%s' % purchase_uuid
     if 'PP_e_mail' not in paypal_details:
@@ -61,7 +66,19 @@ def purchase_reservation(otts = 1, basket_details = None, paypal_details = None,
     reservation_rows = db(db.reservations.basket_code == basket_code).select()
     if verify_reservation:
         for reservation_row in reservation_rows:
-            reservation_row.update_record(verified_time=current.request.now)
+            # Add verified options
+            reservation_row.update_record(
+                verified_time=current.request.now,
+                verified_kind=reservation_row.user_sponsor_kind,
+                verified_name=reservation_row.user_sponsor_name,
+                verified_donor_name=reservation_row.user_donor_name,
+            )
+            # Now verified details are set, map username
+            username, _ = find_username(reservation_row)
+            assert username
+            reservation_row.update_record(
+                username=username,
+            )
     return reservation_rows
 
 
@@ -799,20 +816,20 @@ class TestSponsorship(unittest.TestCase):
                     del r['user_donor_name']
                     del r['user_donor_title']
                     del r['user_sponsor_lang']
-                if k.endswith("@unittest.example.com"):
+                if k.endswith("unittestexamplecom"):
                     out[k] = r
             return out
 
         # User 1 & 2 buy some OTTs
-        user_1 = '1_betty@unittest.example.com'
-        user_2 = '2_gelda@unittest.example.com'
-        r1_1 = purchase_reservation(basket_details=dict(e_mail=user_1))[0]
-        r2_1 = purchase_reservation(basket_details=dict(e_mail=user_2))[0]
+        email_1, user_1 = '1_betty@unittest.example.com', '1_bettyunittestexamplecom'
+        email_2, user_2 = '2_gelda@unittest.example.com', '2_geldaunittestexamplecom'
+        r1_1 = purchase_reservation(basket_details=dict(e_mail=email_1))[0]
+        r2_1 = purchase_reservation(basket_details=dict(e_mail=email_2))[0]
         current.request.now = (current.request.now + datetime.timedelta(days=10))
-        r1_2 = purchase_reservation(basket_details=dict(e_mail=user_1))[0]
-        r2_2 = purchase_reservation(basket_details=dict(e_mail=user_2))[0]
+        r1_2 = purchase_reservation(basket_details=dict(e_mail=email_1))[0]
+        r2_2 = purchase_reservation(basket_details=dict(e_mail=email_2))[0]
         current.request.now = (current.request.now + datetime.timedelta(days=10))
-        r1_3 = purchase_reservation(basket_details=dict(e_mail=user_1))[0]
+        r1_3 = purchase_reservation(basket_details=dict(e_mail=email_1))[0]
         # All new, nothing to remind about
         self.assertEqual(all_reminders(), {})
 
@@ -820,10 +837,10 @@ class TestSponsorship(unittest.TestCase):
         current.request.now = (current.request.now + datetime.timedelta(days=(4*365) - 40))
         all_r = all_reminders()
         self.assertEqual(all_r, {
-            user_1: dict(
+            user_1: dict(email_address=email_1,
                 initial_reminders=[r1_1.OTT_ID, r1_2.OTT_ID, r1_3.OTT_ID],
                 final_reminders=[], not_yet_due=[], unsponsorable=[]),
-            user_2: dict(
+            user_2: dict(email_address=email_2,
                 initial_reminders=[r2_1.OTT_ID, r2_2.OTT_ID],
                 final_reminders=[], not_yet_due=[], unsponsorable=[]),
         })
@@ -832,10 +849,10 @@ class TestSponsorship(unittest.TestCase):
         db.banned.insert(ott=r1_1.OTT_ID)
         all_r = all_reminders()
         self.assertEqual(all_r, {
-            user_1: dict(
+            user_1: dict(email_address=email_1,
                 initial_reminders=[r1_2.OTT_ID, r1_3.OTT_ID],
                 final_reminders=[], not_yet_due=[], unsponsorable=[r1_1.OTT_ID]),
-            user_2: dict(
+            user_2: dict(email_address=email_2,
                 initial_reminders=[r2_1.OTT_ID, r2_2.OTT_ID],
                 final_reminders=[], not_yet_due=[], unsponsorable=[]),
         })
@@ -844,7 +861,7 @@ class TestSponsorship(unittest.TestCase):
         sponsorship_email_reminders_post(all_r[user_2])
         all_r = all_reminders()
         self.assertEqual(all_r, {
-            user_1: dict(
+            user_1: dict(email_address=email_1,
                 initial_reminders=[r1_2.OTT_ID, r1_3.OTT_ID],
                 final_reminders=[],
                 not_yet_due=[], unsponsorable=[r1_1.OTT_ID]),
@@ -857,10 +874,10 @@ class TestSponsorship(unittest.TestCase):
 
         # In 10 days time they are due a final reminder, and told about their new purchase
         current.request.now = (current.request.now + datetime.timedelta(days=10))
-        r2_3 = purchase_reservation(basket_details=dict(e_mail=user_2))[0]
+        r2_3 = purchase_reservation(basket_details=dict(e_mail=email_2))[0]
         all_r = all_reminders()
         self.assertEqual(all_r, {
-            user_2: dict(
+            user_2: dict(email_address=email_2,
                 initial_reminders=[r2_2.OTT_ID],
                 final_reminders=[r2_1.OTT_ID],
                 not_yet_due=[r2_3.OTT_ID], unsponsorable=[]),
@@ -874,11 +891,11 @@ class TestSponsorship(unittest.TestCase):
         current.request.now = (current.request.now + datetime.timedelta(days=10))
         all_r = all_reminders()
         self.assertEqual(all_r, {
-            user_1: dict(
+            user_1: dict(email_address=email_1,
                 initial_reminders=[r1_3.OTT_ID],
                 final_reminders=[r1_2.OTT_ID],
                 not_yet_due=[], unsponsorable=[r1_1.OTT_ID]),
-            user_2: dict(
+            user_2: dict(email_address=email_2,
                 initial_reminders=[],
                 final_reminders=[r2_2.OTT_ID],
                 not_yet_due=[r2_3.OTT_ID], unsponsorable=[]),
@@ -886,12 +903,13 @@ class TestSponsorship(unittest.TestCase):
 
     def test_sponsorship_restrict_contact(self):
         # Buy 2 otts
+        user1, email1 = 'bettyunittestexamplecom', 'betty@unittest.example.com'
         r1 = purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))[0]
         current.request.now = (current.request.now + datetime.timedelta(days=10))
         r2 = purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))[0]
 
         # Can explicitly request to see that nothing's due
-        reminders = sponsorship_email_reminders("betty@unittest.example.com")["betty@unittest.example.com"]
+        reminders = sponsorship_email_reminders([user1])[user1]
         self.assertEqual(reminders['initial_reminders'], [])
         self.assertEqual(reminders['final_reminders'], [])
         self.assertEqual(reminders['not_yet_due'], [r1.OTT_ID,r2.OTT_ID])
@@ -901,18 +919,18 @@ class TestSponsorship(unittest.TestCase):
         current.request.now = (current.request.now + datetime.timedelta(days=(4*365) - 20))
 
         # Allowed to contact about the expiry
-        reminders = sponsorship_email_reminders()["betty@unittest.example.com"]
+        reminders = sponsorship_email_reminders()[user1]
         self.assertEqual(reminders['initial_reminders'], [r1.OTT_ID,r2.OTT_ID])
         self.assertEqual(reminders['final_reminders'], [])
         self.assertEqual(reminders['not_yet_due'], [])
         self.assertEqual(reminders['unsponsorable'], [])
 
         # After restricting contact, we're not
-        sponsorship_restrict_contact("betty@unittest.example.com")
-        self.assertNotIn("betty@unittest.example.com", sponsorship_email_reminders().keys())
+        sponsorship_restrict_contact(user1)
+        self.assertNotIn(user1, sponsorship_email_reminders().keys())
 
         # But can explictly request the e-mail contents
-        reminders = sponsorship_email_reminders("betty@unittest.example.com")["betty@unittest.example.com"]
+        reminders = sponsorship_email_reminders([user1])[user1]
         self.assertEqual(reminders['initial_reminders'], [r1.OTT_ID,r2.OTT_ID])
         self.assertEqual(reminders['final_reminders'], [])
         self.assertEqual(reminders['not_yet_due'], [])

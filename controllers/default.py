@@ -19,6 +19,8 @@ from sponsorship import (
     sponsorship_restrict_contact,
     sponsorship_config, sponsorable_children_query)
 
+from usernames import usernames_associated_to_email
+
 from partners import partner_identifiers_for_reservation_name
 
 from OZfunc import (
@@ -653,10 +655,16 @@ def sponsor_renew_request():
         INPUT(_type='submit', _class="oz-pill pill-leaf"))
     if form.accepts(request.vars, session=None):
         user_email = form.vars.email
-        user_reminders = sponsorship_email_reminders(user_email).get(user_email, None)
-        if user_reminders is None:
+        # Get all reminder blocks for usernames associated to this e-mail address
+        usernames = usernames_associated_to_email(user_email)
+        user_reminders = list(sponsorship_email_reminders(usernames).values())
+
+        if len(user_reminders) == 0:
             response.flash = 'Unknown e-mail address %s' % user_email
+        if len(user_reminders) > 1:
+            response.flash = 'Many users associated with e-mail address %s' % user_email
         else:
+            user_reminders = user_reminders[0]
             user_reminders['common_names'] = get_common_names(
                 user_reminders['unsponsorable'] + user_reminders['not_yet_due'] +
                 user_reminders['initial_reminders'] + user_reminders['final_reminders'],
@@ -673,7 +681,7 @@ def sponsor_renew_request():
                     email_body,
                 )
             elif mail.send(
-                to=form.vars.email,
+                to=user_reminders['email_address'],
                 subject=T("Renew your onezoom sponsorships"),
                 message=email_body,
             ):
@@ -691,7 +699,7 @@ def sponsor_unsubscribe():
     """
     try:
         if sponsor_verify_url(request):
-            user_email = request.args[0]
+            username = request.args[0]
         else:
             session.flash = "Invalid request for %s" % request.args[0]
             redirect(URL('sponsor_renew_request'))
@@ -701,7 +709,7 @@ def sponsor_unsubscribe():
         redirect(URL('sponsor_renew_request'))
         return(dict())
 
-    sponsorship_restrict_contact(user_email)
+    sponsorship_restrict_contact(username)
     session.flash = "You have been unsubscribed from all future e-mails about your sponsorships"
     redirect(URL('sponsor_renew_request'))
     return(dict())
@@ -715,7 +723,7 @@ def sponsor_renew():
 
     try:
         if sponsor_verify_url(request):
-            user_email = request.args[0]
+            username = request.args[0]
         else:
             session.flash = "Invalid renewal request for %s" % request.args[0]
             redirect(URL('sponsor_renew_request'))
@@ -744,7 +752,7 @@ def sponsor_renew():
     # Get active, expiring reservations
     active_rows, expiring_rows, rows_by_ott = ([], [], {})
     for r in db(
-                (db.reservations.e_mail == user_email) &
+                (db.reservations.username == username) &
                 (db.reservations.verified_time != None) &
                 (db.reservations.PP_transaction_code != None)  # i.e has been bought
             ).select(
@@ -760,7 +768,7 @@ def sponsor_renew():
     # Get expired reservations, including who now owns it
     expired_rows = []
     expired_statuses = {}
-    for r in db((db.expired_reservations.e_mail == user_email)).select(
+    for r in db((db.expired_reservations.username == username)).select(
                 db.expired_reservations.ALL,
                 orderby="expired_reservations.sponsorship_ends",
             ):
@@ -773,8 +781,8 @@ def sponsor_renew():
         # Try reserving each
         status, _, new_reservation, _ = get_reservation(
             r.OTT_ID,
-            # NB: Use the e-mail address as our form_reservation_code
-            hashlib.sha256(user_email.encode('utf8')).hexdigest(),
+            # NB: Use the username as our form_reservation_code
+            hashlib.sha256(username.encode('utf8')).hexdigest(),
         )
         if status == "maintenance":
             response.view = request.controller + "/spl_maintenance." + request.extension
@@ -937,7 +945,7 @@ def sponsor_renew():
         images=images,
         prices=prices,
         most_recent=most_recent,  # NB: May be None if there's no reservations
-        user_email=user_email,
+        username=username,
         notify_url=notify_url,
         all_partner_data=all_partner_data,
         form=form,
