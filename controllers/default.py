@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # this file is released under public domain and you can use without limitations
+import collections
 import datetime
 import hashlib
 import itertools
@@ -17,6 +18,8 @@ from sponsorship import (
     sponsorship_email_reminders, sponsor_verify_url,
     sponsorship_restrict_contact,
     sponsorship_config, sponsorable_children_query)
+
+from partners import partner_identifiers_for_reservation_name
 
 from OZfunc import (
     nice_species_name, get_common_name, get_common_names, __release_info,
@@ -824,30 +827,73 @@ def sponsor_renew():
                 r.verified_preferred_image_src,
                 r.verified_preferred_image_src_id)}
 
-    # If there's a form submission, validate it
-    errors = {}
-    if 'amount_extra' in request.vars:
-        if int(request.vars['amount_extra']) < 0:
-            errors['amount_extra'] = T("Extra donation can't be negative")
+    # Fetch data for partners so we can use it on the Gift Aid form
+    all_partner_identifiers = set()
+    for r in itertools.chain(active_rows, expiring_rows, expired_rows):
+        # NB: We're not picking out partners that are being bought, but we'd have to replicate the functionality in JS if so
+        all_partner_identifiers.update(partner_identifiers_for_reservation_name(r.partner_name))
+    all_partner_data = db(db.partners.partner_identifier.belongs(all_partner_identifiers)).select()
 
-    if 'amount' in request.vars:
-        calc_amount = int(request.vars['amount_extra']) * 100
-        for k, v in request.vars.items():
+    vars = request.vars
+
+    # Extract details from most recent item if unpopulated
+    if most_recent:
+        if "user_donor_title" not in vars:
+            vars['user_donor_title'] = most_recent.user_donor_title
+        if "user_donor_name" not in vars:
+            vars['user_donor_name'] = most_recent.user_donor_name
+        if "user_addr_nonuk" not in vars:
+            # Gift aid not populated yet
+            vars['user_giftaid'] = most_recent.user_giftaid
+            if not most_recent.user_giftaid:
+                # Not a giftaider, copy nothing
+                pass
+            if most_recent.user_addr_postcode is None and most_recent.user_addr_house is not None:
+                # No postcode --> international user
+                vars['user_addr_nonuk'] = True
+                vars.user_addr_internationaladdr = most_recent.user_addr_house
+            else:
+                # UK giftaider
+                vars['user_addr_nonuk'] = False
+                vars.user_addr_house = most_recent.user_addr_house
+                vars.user_addr_postcode = most_recent.user_addr_postcode
+
+    # De-anonymise details if they're starred
+    if (vars.user_addr_internationaladdr or '').startswith('****'):
+        vars.user_addr_internationaladdr = most_recent.user_addr_house
+    if (vars.user_addr_house or '').startswith('****'):
+        vars.user_addr_house = most_recent.user_addr_house
+    if (vars.user_addr_postcode or '').startswith('****'):
+        vars.user_addr_postcode = most_recent.user_addr_postcode
+
+    # If there's a form submission, validate it
+    # NB: This is highly ugly, but the alternative is making a FORM dynamically
+    #     with the relevant fields, or inventing widgets to support the checkboxes.
+    form = collections.namedtuple("FakeForm", ["vars", "errors"])(
+        vars=vars,
+        errors=reservation_validate_basket_fields(vars),
+    )
+    if 'amount_extra' in form.vars:
+        if int(form.vars['amount_extra']) < 0:
+            form.errors['amount_extra'] = T("Extra donation can't be negative")
+    if 'amount' in form.vars:
+        calc_amount = int(form.vars['amount_extra']) * 100
+        for k, v in form.vars.items():
             if not k.startswith('oz_renew_'):
                 continue
             ott = int(k.split("_", 3)[2])
 
             if ott not in prices:
-                errors[k] = "OTT %d not sponsorable" % ott
+                form.errors[k] = "OTT %d not sponsorable" % ott
             else:
                 calc_amount += prices[ott]['price']
-        if '{:.2f}'.format(calc_amount / 100) != request.vars['amount']:
-            errors['amount'] = T("Total sponsorship amount doesn't match")
+        if '{:.2f}'.format(calc_amount / 100) != form.vars['amount']:
+            form.errors['amount'] = T("Total sponsorship amount doesn't match")
 
     # If got this far without errors, good to submit to paypal
-    if 'cmd' in request.vars and len(errors) == 0:
+    if 'cmd' in form.vars and len(form.errors) == 0 and calc_amount > 0:
         basket_code = notify_url.split('/basket/', 2)[1]
-        for k, v in request.vars.items():
+        for k, v in form.vars.items():
             if not k.startswith('oz_renew_'):
                 continue
             ott = int(k.split("_", 3)[2])
@@ -861,10 +907,21 @@ def sponsor_renew():
                 prev_reservation_id = None
             reservation_add_to_basket(basket_code, reserve_row, dict(
                 # Update user_donor_hide in DB (NB: If field missing, checkbox is unchecked)
-                user_donor_hide=bool(request.vars.get("oz_user_donor_hide_%d" % ott, False)),
-                prev_reservation_id=prev_reservation_id
+                user_donor_hide=bool(form.vars.get("oz_user_donor_hide_%d" % ott, False)),
+                prev_reservation_id=prev_reservation_id,
+                user_giftaid=form.vars.user_giftaid,
+                user_addr_house=form.vars.user_addr_house,
+                user_addr_postcode=form.vars.user_addr_postcode,
             ))
         raise HTTP(307, "Redirect", Location=get_paypal_url() + '/cgi-bin/webscr')
+    else:
+        # Anonymise details if they match most-recent
+        if form.vars.user_addr_internationaladdr and form.vars.user_addr_internationaladdr == most_recent.user_addr_house:
+            form.vars.user_addr_internationaladdr = '*' * 20
+        if form.vars.user_addr_house and form.vars.user_addr_house == most_recent.user_addr_house:
+            form.vars.user_addr_house = '*' * 20
+        if form.vars.user_addr_postcode and form.vars.user_addr_postcode == most_recent.user_addr_postcode:
+            form.vars.user_addr_postcode = '**** ' + most_recent.user_addr_postcode[-3:]
 
     return dict(
         all_row_categories=[
@@ -881,9 +938,9 @@ def sponsor_renew():
         prices=prices,
         most_recent=most_recent,  # NB: May be None if there's no reservations
         user_email=user_email,
-        errors=errors,
         notify_url=notify_url,
-        vars=request.vars,
+        all_partner_data=all_partner_data,
+        form=form,
     )
 
 

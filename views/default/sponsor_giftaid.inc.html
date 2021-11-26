@@ -36,6 +36,7 @@
     <label for="user_addr_house_input">{{=T('Your house name or number:')}}</label>
     <p>
       <input type="text" id="user_addr_house_input" name="user_addr_house" size="40"
+             onfocus="if (event.target.value.startsWith('****')) event.target.value = ''"
              value="{{if (request.vars['user_addr_house']) is not None:}}{{=request.vars['user_addr_house']}}{{pass}}" />
       <em class = "error_text">{{=form.errors.get("user_addr_house") or ""}}</em>
     </p>
@@ -43,6 +44,7 @@
     <label for="user_addr_postcode_input">{{=T('Your postcode:')}}</label>
     <p>
       <input type="text" id="user_addr_postcode_input" name="user_addr_postcode" size="40"
+             onfocus="if (event.target.value.startsWith('****')) event.target.value = ''"
              value="{{if (request.vars['user_addr_postcode']) is not None:}}{{=request.vars['user_addr_postcode']}}{{pass}}" />
       <em class = "error_text">{{=form.errors.get("user_addr_postcode") or ""}}</em>
     </p>
@@ -53,6 +55,7 @@
       <label for="user_addr_internationaladdr_input">{{=T('Your full address:')}}</label>
       <p>
         <input type="text" id="user_addr_internationaladdr_input" name="user_addr_internationaladdr" size="80"
+               onfocus="if (event.target.value.startsWith('****')) event.target.value = ''"
                value="{{if (request.vars['user_addr_internationaladdr']) is not None:}}{{=request.vars['user_addr_internationaladdr']}}{{pass}}" />
         <em class = "error_text">{{=form.errors.get("user_addr_internationaladdr") or ""}}</em>
       </p>
