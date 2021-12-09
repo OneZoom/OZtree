@@ -29,58 +29,6 @@ from sponsorship import (
     sponsorship_restrict_contact,
 )
 
-from usernames import (
-    find_username,
-)
-
-
-def purchase_reservation(otts = 1, basket_details = None, paypal_details = None, payment_amount = 10000, verify_reservation=True):
-    """Go through all the motions required to purchase a reservation"""
-    purchase_uuid = uuid.uuid4()
-    basket_code = 'UT::BK%s' % purchase_uuid
-
-    if isinstance(otts, int):
-        otts = [util.find_unsponsored_ott() for _ in range(otts)]
-
-    if not basket_details:
-        basket_details = {}
-    if not paypal_details:
-        paypal_details = {}
-    if 'user_sponsor_name' not in basket_details:
-        # Have to at least set user_sponsor_name
-        basket_details['user_sponsor_name'] = basket_details.get("e_mail", "User %s" % purchase_uuid)
-        basket_details['user_sponsor_kind'] = "by"
-    if 'PP_transaction_code' not in paypal_details:
-        paypal_details['PP_transaction_code'] = 'UT::PP%s' % purchase_uuid
-    if 'PP_e_mail' not in paypal_details:
-        paypal_details['PP_e_mail'] = "%s@paypal.unittest.example.com" % purchase_uuid
-    if 'sale_time' not in paypal_details:
-        paypal_details['sale_time'] = '01:01:01 Jan 01, 2001 GMT'
-
-    for ott in otts:
-        status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::%s" % purchase_uuid)
-        assert status == 'available'
-        reservation_add_to_basket(basket_code, reservation_row, basket_details)
-    reservation_confirm_payment(basket_code, payment_amount, paypal_details)
-
-    reservation_rows = db(db.reservations.basket_code == basket_code).select()
-    if verify_reservation:
-        for reservation_row in reservation_rows:
-            # Add verified options
-            reservation_row.update_record(
-                verified_time=current.request.now,
-                verified_kind=reservation_row.user_sponsor_kind,
-                verified_name=reservation_row.user_sponsor_name,
-                verified_donor_name=reservation_row.user_donor_name,
-            )
-            # Now verified details are set, map username
-            username, _ = find_username(reservation_row)
-            assert username
-            reservation_row.update_record(
-                username=username,
-            )
-    return reservation_rows
-
 
 class TestMaintenance(unittest.TestCase):
     mins = 10
@@ -823,13 +771,13 @@ class TestSponsorship(unittest.TestCase):
         # User 1 & 2 buy some OTTs
         email_1, user_1 = '1_betty@unittest.example.com', '1_bettyunittestexamplecom'
         email_2, user_2 = '2_gelda@unittest.example.com', '2_geldaunittestexamplecom'
-        r1_1 = purchase_reservation(basket_details=dict(e_mail=email_1))[0]
-        r2_1 = purchase_reservation(basket_details=dict(e_mail=email_2))[0]
+        r1_1 = util.purchase_reservation(basket_details=dict(e_mail=email_1))[0]
+        r2_1 = util.purchase_reservation(basket_details=dict(e_mail=email_2))[0]
         current.request.now = (current.request.now + datetime.timedelta(days=10))
-        r1_2 = purchase_reservation(basket_details=dict(e_mail=email_1))[0]
-        r2_2 = purchase_reservation(basket_details=dict(e_mail=email_2))[0]
+        r1_2 = util.purchase_reservation(basket_details=dict(e_mail=email_1))[0]
+        r2_2 = util.purchase_reservation(basket_details=dict(e_mail=email_2))[0]
         current.request.now = (current.request.now + datetime.timedelta(days=10))
-        r1_3 = purchase_reservation(basket_details=dict(e_mail=email_1))[0]
+        r1_3 = util.purchase_reservation(basket_details=dict(e_mail=email_1))[0]
         # All new, nothing to remind about
         self.assertEqual(all_reminders(), {})
 
@@ -874,7 +822,7 @@ class TestSponsorship(unittest.TestCase):
 
         # In 10 days time they are due a final reminder, and told about their new purchase
         current.request.now = (current.request.now + datetime.timedelta(days=10))
-        r2_3 = purchase_reservation(basket_details=dict(e_mail=email_2))[0]
+        r2_3 = util.purchase_reservation(basket_details=dict(e_mail=email_2))[0]
         all_r = all_reminders()
         self.assertEqual(all_r, {
             user_2: dict(email_address=email_2,
@@ -904,9 +852,9 @@ class TestSponsorship(unittest.TestCase):
     def test_sponsorship_restrict_contact(self):
         # Buy 2 otts
         user1, email1 = 'bettyunittestexamplecom', 'betty@unittest.example.com'
-        r1 = purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))[0]
+        r1 = util.purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))[0]
         current.request.now = (current.request.now + datetime.timedelta(days=10))
-        r2 = purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))[0]
+        r2 = util.purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))[0]
 
         # Can explicitly request to see that nothing's due
         reminders = sponsorship_email_reminders([user1])[user1]

@@ -1,12 +1,14 @@
-from sponsorship import (
-    sponsorable_children,
-)
+import uuid
+
+import sponsorship
+import usernames
 
 from gluon import current
 
+
 def find_unsponsored_otts(count, in_reservations=None):
     db = current.db
-    rows = sponsorable_children(
+    rows = sponsorship.sponsorable_children(
         1,    # 1st node should have all leaves as descendants
         qtype="id",
         limit=count,
@@ -70,3 +72,52 @@ def set_reservation_time_limit_mins(val):
     """Update site config with new value for sponsorship.reservation_time_limit_mins"""
     set_appconfig('sponsorship', 'reservation_time_limit_mins', val)
 
+
+def purchase_reservation(otts = 1, basket_details = None, paypal_details = None, payment_amount = 10000, verify_reservation=True):
+    """Go through all the motions required to purchase a reservation"""
+    db = current.db
+
+    purchase_uuid = uuid.uuid4()
+    basket_code = 'UT::BK%s' % purchase_uuid
+
+    if isinstance(otts, int):
+        otts = [find_unsponsored_ott() for _ in range(otts)]
+
+    if not basket_details:
+        basket_details = {}
+    if not paypal_details:
+        paypal_details = {}
+    if 'user_sponsor_name' not in basket_details:
+        # Have to at least set user_sponsor_name
+        basket_details['user_sponsor_name'] = basket_details.get("e_mail", "User %s" % purchase_uuid)
+        basket_details['user_sponsor_kind'] = "by"
+    if 'PP_transaction_code' not in paypal_details:
+        paypal_details['PP_transaction_code'] = 'UT::PP%s' % purchase_uuid
+    if 'PP_e_mail' not in paypal_details:
+        paypal_details['PP_e_mail'] = "%s@paypal.unittest.example.com" % purchase_uuid
+    if 'sale_time' not in paypal_details:
+        paypal_details['sale_time'] = '01:01:01 Jan 01, 2001 GMT'
+
+    for ott in otts:
+        status, _, reservation_row, _ = sponsorship.get_reservation(ott, form_reservation_code="UT::%s" % purchase_uuid)
+        assert status == 'available'
+        sponsorship.reservation_add_to_basket(basket_code, reservation_row, basket_details)
+    sponsorship.reservation_confirm_payment(basket_code, payment_amount, paypal_details)
+
+    reservation_rows = db(db.reservations.basket_code == basket_code).select()
+    if verify_reservation:
+        for reservation_row in reservation_rows:
+            # Add verified options
+            reservation_row.update_record(
+                verified_time=current.request.now,
+                verified_kind=reservation_row.user_sponsor_kind,
+                verified_name=reservation_row.user_sponsor_name,
+                verified_donor_name=reservation_row.user_donor_name,
+            )
+            # Now verified details are set, map username
+            username, _ = usernames.find_username(reservation_row)
+            assert username
+            reservation_row.update_record(
+                username=username,
+            )
+    return reservation_rows
