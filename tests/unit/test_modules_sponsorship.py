@@ -16,6 +16,7 @@ from gluon.globals import Request
 
 from sponsorship import (
     get_reservation,
+    sponsorship_config,
     sponsorship_enabled,
     reservation_total_counts,
     reservation_add_to_basket,
@@ -67,13 +68,14 @@ class TestMaintenance(unittest.TestCase):
         db.rollback()
         
     def test_maintenance_unsponsored(self):
-        reserved_ott = util.find_unsponsored_ott(in_reservations=True)
-        unreserved_ott = util.find_unsponsored_ott(in_reservations=False)
+        status = 'sponsored'
         status, param, reservation_row, _ = get_reservation(
-            reserved_ott, form_reservation_code="UT::001")
+            self.otts[0], form_reservation_code="UT::001")
         self.assertEqual(status, 'maintenance')
         self.assertEqual(param, self.mins)
         self.assertNotEqual(reservation_row, None)
+
+        unreserved_ott = util.find_unsponsored_ott(in_reservations=False)
         status, param, reservation_row, _ = get_reservation(
             unreserved_ott, form_reservation_code="UT::001")
         self.assertEqual(status, 'maintenance')
@@ -167,10 +169,17 @@ class TestSponsorship(unittest.TestCase):
 
     def test_reservation_total_counts(self):
         """Can count for the home page"""
+        # Purchase an OTT ages ago, which will expire, then 2 new ones
+        util.time_travel(sponsorship_config()['duration_days'] * 3)
+        util.purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))
+        util.time_travel(0)
+        util.purchase_reservation(2, basket_details=dict(e_mail='betty@unittest.example.com'))
+
         # Reserve an OTT
-        reserved_ott = util.find_unsponsored_ott(in_reservations=True)
+        reserved_ott = util.find_unsponsored_ott(in_reservations=False)
         status, param, reservation_row, _ = get_reservation(
             reserved_ott, form_reservation_code="UT::001")
+        self.assertEqual(status, "available")
         reservation_add_to_basket('UT::BK001', reservation_row, dict(
             e_mail='001@unittest.example.com',
             user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
