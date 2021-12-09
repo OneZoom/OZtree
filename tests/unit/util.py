@@ -19,6 +19,7 @@ def time_travel(days=0, expire=True):
 
 def find_unsponsored_otts(count, in_reservations=None):
     db = current.db
+
     rows = sponsorship.sponsorable_children(
         1,    # 1st node should have all leaves as descendants
         qtype="id",
@@ -92,7 +93,7 @@ def purchase_reservation(otts = 1, basket_details = None, paypal_details = None,
     basket_code = 'UT::BK%s' % purchase_uuid
 
     if isinstance(otts, int):
-        otts = [find_unsponsored_ott() for _ in range(otts)]
+        otts = find_unsponsored_otts(otts)
 
     if not basket_details:
         basket_details = {}
