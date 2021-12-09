@@ -73,7 +73,7 @@ def set_reservation_time_limit_mins(val):
     set_appconfig('sponsorship', 'reservation_time_limit_mins', val)
 
 
-def purchase_reservation(otts = 1, basket_details = None, paypal_details = None, payment_amount = 10000, verify_reservation=True):
+def purchase_reservation(otts = 1, basket_details = None, paypal_details = None, payment_amount = 10000, verify=True):
     """Go through all the motions required to purchase a reservation"""
     db = current.db
 
@@ -105,19 +105,24 @@ def purchase_reservation(otts = 1, basket_details = None, paypal_details = None,
     sponsorship.reservation_confirm_payment(basket_code, payment_amount, paypal_details)
 
     reservation_rows = db(db.reservations.basket_code == basket_code).select()
-    if verify_reservation:
+    if verify:
         for reservation_row in reservation_rows:
-            # Add verified options
-            reservation_row.update_record(
-                verified_time=current.request.now,
-                verified_kind=reservation_row.user_sponsor_kind,
-                verified_name=reservation_row.user_sponsor_name,
-                verified_donor_name=reservation_row.user_donor_name,
-            )
-            # Now verified details are set, map username
-            username, _ = usernames.find_username(reservation_row)
-            assert username
-            reservation_row.update_record(
-                username=username,
-            )
+            verify_reservation(reservation_row)
     return reservation_rows
+
+
+def verify_reservation(reservation_row):
+    """Emulate verification logic in controllers/manage.py:SPONSOR_UPDATE"""
+    # Add verified options
+    reservation_row.update_record(
+        verified_time=current.request.now,
+        verified_kind=reservation_row.user_sponsor_kind,
+        verified_name=reservation_row.user_sponsor_name,
+        verified_donor_name=reservation_row.user_donor_name,
+    )
+    # Now verified details are set, map username
+    username, _ = usernames.find_username(reservation_row)
+    assert username
+    reservation_row.update_record(
+        username=username,
+    )
