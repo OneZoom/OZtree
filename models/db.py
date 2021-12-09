@@ -478,7 +478,7 @@ db.define_table('reservations',
     # title of donor (Mr, Mrs, Dr, etc - needed for giftaid). . 
     Field('user_donor_name', type='string', length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=30))),
     # name of donor (different to user_sponsor_name if sponsored for someone). 
-    Field('user_addr_house', type='text', writable=True),
+    Field('user_addr_house', type='text', writable=True, length=40, requires=IS_EMPTY_OR(IS_LENGTH(minsize=1,maxsize=40))),
     # house name or number, or full address for non-UK residents. Needed for giftaid
     Field('user_addr_postcode', type='string', length=10, writable=True),
     # Postcode, or NULL for non-UK residents. Needed for giftaid
