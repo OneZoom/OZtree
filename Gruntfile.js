@@ -50,6 +50,18 @@ module.exports = function (grunt) {
         cwd: "../../",
         command: exec_web2py_script("private/background_tasks.py"),
       },
+      db_fixtures: {
+        command: function () {
+            // Either accept a list of test filenames, or work it out ourselves and run all tests
+            var tests = arguments.length > 0 ? arguments : fs.readdirSync('tests/fixtures/').filter(function (x) {
+                return x.match('^.*\.py');
+            });
+
+            return Array.prototype.map.call(tests, function (test_path) {
+                return exec_web2py_script('tests/fixtures/' + test_path)();
+            }).join(" && ");
+        }
+      },
       make_release_info: {
         command: 'git describe --tags > RELEASE_INFO && python3 OZprivate/ServerScripts/Utilities/get_release_name.py RELEASE_INFO >> RELEASE_INFO'
       },

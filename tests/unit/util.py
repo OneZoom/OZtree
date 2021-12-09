@@ -1,9 +1,20 @@
+import datetime
 import uuid
 
 import sponsorship
 import usernames
 
 from gluon import current
+
+
+def time_travel(days=0, expire=True):
+    """Go back in time (days) days from start of test"""
+    if not current.request.time_travel_now:
+        current.request.time_travel_now = current.request.now
+    current.request.now = current.request.time_travel_now - datetime.timedelta(days=days)
+    if expire:
+        for r in sponsorship.reservation_get_all_expired():
+            sponsorship.reservation_expire(r)
 
 
 def find_unsponsored_otts(count, in_reservations=None):
@@ -73,7 +84,7 @@ def set_reservation_time_limit_mins(val):
     set_appconfig('sponsorship', 'reservation_time_limit_mins', val)
 
 
-def purchase_reservation(otts = 1, basket_details = None, paypal_details = None, payment_amount = 10000, verify=True):
+def purchase_reservation(otts = 1, basket_details = None, paypal_details = None, payment_amount=None, allowed_status=set(('available',)), verify=True):
     """Go through all the motions required to purchase a reservation"""
     db = current.db
 
@@ -98,9 +109,15 @@ def purchase_reservation(otts = 1, basket_details = None, paypal_details = None,
     if 'sale_time' not in paypal_details:
         paypal_details['sale_time'] = '01:01:01 Jan 01, 2001 GMT'
 
+    if payment_amount is None:
+        # Work out payment amount from OTTs
+        sum = db.ordered_leaves.price.sum()
+        payment_amount = db(db.ordered_leaves.ott.belongs(otts)).select(sum).first()[sum]
+
     for ott in otts:
         status, _, reservation_row, _ = sponsorship.get_reservation(ott, form_reservation_code="UT::%s" % purchase_uuid)
-        assert status == 'available'
+        if status not in allowed_status:
+            raise ValueError("OTT %d wasn't available: %s" % (ott, status))
         sponsorship.reservation_add_to_basket(basket_code, reservation_row, basket_details)
     sponsorship.reservation_confirm_payment(basket_code, payment_amount, paypal_details)
 
