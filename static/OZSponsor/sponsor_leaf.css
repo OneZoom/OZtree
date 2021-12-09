@@ -9,10 +9,6 @@ fieldset{
     margin:0px auto;
 }
 
-fieldset div {
-    display: table-row;
-}
-
 fieldset .singlerow {
     display: block;
 }
@@ -23,15 +19,11 @@ fieldset .singlerow label {
 }
 
 fieldset div label {
-    display: table-cell;
     font-weight: normal;
     padding: 0.25em;
-    white-space: nowrap; /* So width:100% below doesn't scrunch */
 }
 
-
 fieldset div p {
-    display: table-cell;
     padding: 0.25em;
     width: 100%;
 }
@@ -42,6 +34,23 @@ fieldset div p textarea {
     resize: none;
     font-family: inherit;
     font-size: inherit;
+}
+
+/* Device wide enough to show labels and fields next to each other */
+@media (min-width: 640px) {
+    fieldset div {
+        display: table-row;
+    }
+
+    fieldset div label {
+        display: table-cell;
+        white-space: nowrap;
+    }
+
+    fieldset div p {
+        display: table-cell;
+        width: 100%;
+    }
 }
 
 fieldset div#gift_aid > p {
