@@ -26,13 +26,23 @@ fieldset div label {
     display: table-cell;
     font-weight: normal;
     padding: 0.25em;
+    white-space: nowrap; /* So width:100% below doesn't scrunch */
 }
 
 
 fieldset div p {
     display: table-cell;
     padding: 0.25em;
-    }
+    width: 100%;
+}
+
+fieldset div p textarea {
+    vertical-align: top;
+    width: 100%;
+    resize: none;
+    font-family: inherit;
+    font-size: inherit;
+}
 
 fieldset div#gift_aid > p {
     display: block;

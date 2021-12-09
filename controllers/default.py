@@ -489,6 +489,7 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
                     'user_nondefault_image', 'user_preferred_image_src',
                     'user_preferred_image_src_id','user_giftaid', 'user_sponsor_lang',
                     'user_addr_house', 'user_addr_postcode',
+                    'sponsorship_story',
                     # writeable=False -> filled out on validation
                     'name', 'reserve_time', 'asking_price', 'user_updated_time',
                     'asking_price', 'user_updated_time', 'sponsorship_duration_days',

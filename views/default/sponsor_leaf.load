@@ -64,8 +64,24 @@
     {{pass}}
     {{pass}}
     </p>
+
+      <div><label for="sponsorship_story_input">{{=T('Sponsorship story (optional): ')}}</label><p>
+        <textarea id="sponsorship_story_textarea"
+            name="sponsorship_story"
+            maxlength=1000
+            style="height: 7rem"
+            >{{=request.vars.get('sponsorship_story') or ''}}</textarea>
+        <em class = "error_text">{{=form.errors.get("sponsorship_story") or ''}}</em>
+      </p></div>
+      <p class="singlerow extra_info">
+        {{=T("Tell us more about why you're sponsoring this species")}}
+      </p>
+
     </fieldset>
   </div>
+
+
+
   <div>
     <h3>{{=T('Preview of your sponsored leaf')}}</h3>
     <div uk-grid class="uk-child-width-1-2@m">
