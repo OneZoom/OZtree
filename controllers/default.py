@@ -661,8 +661,11 @@ def sponsor_renew_request():
         user_reminders = list(sponsorship_email_reminders(usernames).values())
 
         if len(user_reminders) == 0:
-            response.flash = 'Unknown e-mail address %s' % user_email
-        if len(user_reminders) > 1:
+            if is_testing:
+                response.flash = 'Unknown e-mail address %s' % user_email
+            else:
+                response.flash = 'An e-mail has been sent to %s' % form.vars.email
+        elif len(user_reminders) > 1:
             response.flash = 'Many users associated with e-mail address %s' % user_email
         else:
             user_reminders = user_reminders[0]
