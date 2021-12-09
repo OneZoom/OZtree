@@ -32,7 +32,7 @@ class TestSponsorshipSearch(unittest.TestCase):
 
     def test_search_sponsor_noterm(self):
         """No search term returns {}"""
-        out = sponsorship_search.search_sponsor("", "all", "en-GB,en;q=0.9")
+        out = sponsorship_search.search_sponsor("")
         self.assertEqual(out, {})
 
 
