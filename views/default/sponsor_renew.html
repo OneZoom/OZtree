@@ -41,7 +41,8 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                 {{if item.OTT_ID in images:}}
                   <a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}" target="_blank">
                     <span class="img-species leafout leafout-corner"><img class="species" alt=""
-                         src="{{=images[item.OTT_ID].get('url','')}}"
+                         src="{{=images[item.OTT_ID].get('url', URL('static','images/notAvailable.png'))}}"
+                         onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'"
                          title="{{=' / '.join(s for s in [images[item.OTT_ID].get('rights', ''), images[item.OTT_ID].get('licence', '')] if s)}}" /></span>
                   </a>
                 {{pass}}
