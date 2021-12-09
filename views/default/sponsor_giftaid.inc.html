@@ -2,7 +2,9 @@
 
 {{giftaid_anded_names = XML(" and ".join(str(A(T(p['name']), _href=p['general_url'],_target="_blank")) for p in giftaid_partners)) }}
 {{giftaid_and = " and " if giftaid_anded_names else "" }}
-<div id = "gift_aid" {{if request.vars.user_giftaid:}}style="display:block"{{pass}}>
+
+<button id="gift_aid_button" type='button' onclick="toggle_giftaid_visibility(event)">{{=T('Click if you are a UK tax payer and agree to Gift Aid')}}</button>
+<div id="gift_aid" {{if not request.vars.user_giftaid:}}style="display: none"{{pass}}>
   <h3>{{=T('Gift Aid declaration')}}</h3>
   <p>{{=T('Thank you for considering Gift Aid. Please share your street address by ticking the box when you make your donation through PayPal, this information is required for us to reclaim gift aid. Please also confirm that you agree to the below Gift Aid declaration.')}}</p>
 
@@ -63,16 +65,32 @@
   </div>
 
   <div><label>
-    <p> I agree: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" {{if request.vars.user_giftaid:}}checked{{pass}}/></p>
+    <p>
+      I agree:
+      <input type="checkbox"
+          id="user_giftaid_input"
+          name="user_giftaid"
+          onclick="toggle_giftaid_visibility(event)"
+          {{if request.vars.user_giftaid:}}checked{{pass}}/>
+    </p>
   </label></div>
 </div>
 <script>
     function toggle_giftaid_visibility(e) { 
         var elements = e.target.form.elements;
 
+        if (e.target.tagName === "BUTTON") {
+            // Triggered by pressing the button, so implicitly agreeing
+            elements.user_giftaid.checked = true;
+        }
+
+        // Overall gift_aid form should be visible with gift aid state
+        document.getElementById("gift_aid").style.display = elements.user_giftaid.checked ? null : 'none';
+        document.getElementById("gift_aid_button").style.display = !elements.user_giftaid.checked ? null : 'none';
+
         // Sync div visibility with checkboxes
         for (var i = 0; i < elements.user_addr_nonuk.length; i++) {
-            document.getElementById(elements.user_addr_nonuk[i].dataset.divid).style.display = elements.user_addr_nonuk[i].checked ? 'block' : 'none';
+            document.getElementById(elements.user_addr_nonuk[i].dataset.divid).style.display = elements.user_addr_nonuk[i].checked ? null : 'none';
         }
     }
 </script>
