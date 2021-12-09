@@ -52,12 +52,11 @@ def search_sponsor(searchFor, searchType='all', language='en-GB,en;q=0.9', order
     # appears. If the former, we should put up the holding text in alt_txt.
     # We detect this by looking at verified_time (for verified text) or 
     # user_sponsor_kind (for unverified text).
-    # We also need to not return expired or otherwise deactivated leaves
+    # Expired leaves aren't in the reservations table, so won't appear.
 
     #The verified ones
     query = "SELECT * FROM (SELECT " + ",".join(colnames) + " FROM reservations"
     query += " WHERE verified_time IS NOT NULL AND (deactivated IS NULL OR deactivated = '')"
-    query += " AND (DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE())"
     query += " AND " + search_query['verif']
     if order_by_recent:
         query += ' ORDER BY verified_time DESC'
