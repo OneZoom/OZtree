@@ -848,6 +848,7 @@ class TestSponsorship(unittest.TestCase):
         # Send that, nothing more to tell them
         sponsorship_email_reminders_post(all_r[user_2])
         all_r = all_reminders()
+        self.assertEqual(all_r, {})
 
         # In another 10 days time more final reminders are due, but r1_1 stays unsponsorable
         current.request.now = (current.request.now + datetime.timedelta(days=10))
@@ -869,6 +870,9 @@ class TestSponsorship(unittest.TestCase):
         r1 = util.purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))[0]
         current.request.now = (current.request.now + datetime.timedelta(days=10))
         r2 = util.purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))[0]
+
+        # Requesting reminders for no usernames returns nothing
+        self.assertEqual(sponsorship_email_reminders([]), {})
 
         # Can explicitly request to see that nothing's due
         reminders = sponsorship_email_reminders([user1])[user1]

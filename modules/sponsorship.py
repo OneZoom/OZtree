@@ -703,7 +703,7 @@ def sponsor_verify_url(request):
     return URL.verify(request, hmac_key=sponsor_hmac_key())
 
 
-def sponsorship_email_reminders(for_usernames=[]):
+def sponsorship_email_reminders(for_usernames=None):
     """
     Get all sponsorships that the donors should be alerted about
 
@@ -734,15 +734,18 @@ def sponsorship_email_reminders(for_usernames=[]):
         )
 
     query = (db.reservations.verified_time != None) & (db.reservations.PP_transaction_code != None)  # i.e. has been bought
-    if len(for_usernames) > 0:
+    if for_usernames is not None:
         # Get sponsorships for given username
+        if len(for_usernames) == 0:
+            # Getting reminders for no usernames will return nothing
+            return {}
         query &= (db.reservations.username.belongs(for_usernames))
     else:
         # Get sponsorships for all users we're allowed to contact
         query &= (db.reservations.restrict_all_contact == None)
 
     out = {}
-    send_to = set(for_usernames)
+    send_to = set(for_usernames or [])
     for r in db(query).select(db.reservations.ALL, orderby="sponsorship_ends"):
         if r.username not in out:
             # Add entry if not yet there
