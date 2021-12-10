@@ -675,7 +675,7 @@ def sponsor_renew_request():
                 return_nulls=True,
                 lang=user_reminders['user_sponsor_lang'],
             )
-            email_body = re.sub(r'\n\n+', '\n\n', response.render('sponsor_renew_reminder.txt', user_reminders, escape=False))
+            email_body = re.sub(r'\n\n+', '\n\n', response.render('email/sponsor_renew_reminder.txt', user_reminders, escape=False))
 
             mail, reason = get_mailer()
             if mail is None:
