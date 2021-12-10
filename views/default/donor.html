@@ -25,7 +25,7 @@
     <div class="uk-width-1-5@m" style="text-align:center">
         <div>{{=html_names.get(item.OTT_ID, 'Unknown')}}</div>
         <div>
-           Sponsored in {{=item['verified_time'].strftime("%Y")}} {{=item['verified_kind']}}
+           Sponsored in {{=item['reserve_time'].strftime("%Y")}} {{=item['verified_kind']}}
            <i class="sponsored-by">{{=item['verified_name']}}</i>
         </div>
         {{if item.get('verified_more_info', ''):}}<br/><div>{{=item['verified_more_info']}}</div>{{pass}}
