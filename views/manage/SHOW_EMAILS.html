@@ -16,7 +16,7 @@
     <tr><th></th><th>Click each to email</th><th>Click each to view on tree</th><th><details><summary>Pictures used</summary><p>Run this from within OZprivate to download these images<blockquote>echo '{{=XML("<br />".join([s["img_src_id"] for s in data if s]))}}' | ServerScripts/Utilities/getEOL_crops.py --file - --output_dir ../static/FinalOutputs/img/{{=src_flags['onezoom_via_eol']}} -v -f</blockquote></p></details></th></tr>
     {{for s in data:}}<tr{{if s.get('rowflag'):}} class="{{=s['rowflag']}}"{{pass}}>
     <td><input type="checkbox" /></td>
-    <td><a href="mailto:{{=s['email']}}?subject={{=quote(s['mail_subject'])}}&body={{=quote(s['mail_body'])}}">{{=s['email']}}</a></td>
+    <td><a href="mailto:{{=s['email']}}?subject={{=quote(s['subject'])}}&body={{=quote(s['message'])}}">{{=s['email']}}</a></td>
     <td><i><a href="{{=URL('life.html#ott' + str(s['ott']))}}" target="_blank">{{=s['name']}}</a></i></td>
     <td class="{{if s['local_pic'] is not None:}}{{if s['local_pic']:}}downloaded{{else:}}missing{{pass}}{{pass}}"><a href="http://eol.org/data_objects/{{=s['img_src_id']}}" target="_blank">{{=s['img_src_id']}}</a></td>
     <td>{{=s['mesg']}}</td>

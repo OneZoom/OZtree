@@ -278,9 +278,7 @@ def SPONSOR_UPDATE():
                 gen_email = emails(ott_t, binomial_name_t, common_name_t, verified_name_t, email_t, PP_first_name=read_only['PP_first_name'], 
                     PP_second_name=read_only['PP_second_name'], sponsor_for=(request.vars.verified_kind=='for'))
                 #for html, see http://web2py.com/books/default/chapter/29/08/emails-and-sms#Combining-text-and-HTML-emails
-                if mail.send(to=email_t,
-                             subject=gen_email['mail_subject'],
-                             message=gen_email['mail_body']):
+                if mail.send(**gen_email):
                     #update the emailed_re_sponsorship (time when contacted)
                     db.reservations[row_id]=dict(emailed_re_sponsorship=request.now)
                 else:
@@ -530,6 +528,8 @@ def SHOW_EMAILS():
                         local_pic_path(s.user_preferred_image_src, s.user_preferred_image_src_id),
                         str(s.user_preferred_image_src_id)+'.jpg'))
             details.update({
+               'type': 'no_payment',
+               'e_mail': details['to'],
                'ott' : str(s.OTT_ID),
                'name': s.name,
                'cname':cnames.get(s.OTT_ID),
@@ -568,6 +568,8 @@ def SHOW_EMAILS():
                     local_pic_path(s.user_preferred_image_src, s.user_preferred_image_src_id),
                     str(s.user_preferred_image_src_id)+'.jpg'))
         details.update({
+            'type': 'to_verify',
+            'e_mail': details['to'],
             'ott' : str(s.OTT_ID),
             'name': s.name,
             'cname':cnames.get(s.OTT_ID),
@@ -608,6 +610,8 @@ def SHOW_EMAILS():
         else:
             details['local_pic'] = False
         details.update({
+            'type': 'live',
+            'email': details['to'],
             'ott' : str(s.OTT_ID),
             'name': s.name,
             'cname': cnames.get(s.OTT_ID),
@@ -860,19 +864,10 @@ def emails(ott, species_name, common_name, sponsor_name, email, PP_first_name=No
         username = sponsor_name
         for_name = ""
 
-        
-    if email_type=='no_payment':
-        return({'type':'Payment not gone through',
-                'email':email,
-                'mail_subject':'Your OneZoom sponsorship of '+species_name,
-                'mail_body':'Dear {username},\r\n\r\nThank you for visiting OneZoom and filling out the form to sponsor the {species} leaf{for_name}.\r\n\r\nWe noticed that something went wrong and we never received any donation from you on PayPal - you should not have been charged for this. If you would still like to sponsor {species} it may still be available at\r\nhttp://www.onezoom.org/sponsor_leaf?ott={ott}\r\n\r\nIf you’ve had any difficulties with our site or with PayPal, please write to let us know and we’d be very happy to help,\r\n\r\nThank you again for your interest in our tree of life project.\r\n\r\nThe OneZoom team (charity number 1163559)'.format(username=username, ott=ott, species=OZfunc.nice_species_name(species_name, common_name), for_name = for_name)})
-    elif email_type=='to_verify':
-        return({'type':'Paid, require verifying',
-                'email':email,
-                'mail_subject':'Your OneZoom sponsorship of '+ species_name,
-                'mail_body': 'Dear {username},\r\n\r\nThank you so much for your donation to OneZoom. We have received your payment for {the_species}, and are about to verify your sponsorship text. This should only take a few days. We will email you when your sponsorship goes live. \r\n\r\nThe OneZoom Team (UK charity number 1163559)'.format(username=username, ott=ott, the_species=OZfunc.nice_species_name(species_name, common_name, the=True))})              
-    else:
-        return({'type':'Verified on',
-                'email':email,
-                'mail_subject':'Your OneZoom sponsorship of '+ species_name +' has gone live',
-                'mail_body':'Dear {username},\r\n\r\nThank you so much for your donation to OneZoom.  This will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. \r\n\r\nWe are very pleased to be able to tell you that your sponsored leaf, {the_species}, has now appeared on the tree decorated with your sponsorship details. \r\n\r\nIt’s now there for all to see at \r\n\r\nhttp://www.onezoom.org/life/@={ott}\r\n\r\nor, if you’d like to fly through the tree to your sponsored leaf try \r\n\r\nhttp://www.onezoom.org/life/@={ott}?init=zoom\r\n\r\nThere’s also the more obvious link\r\n\r\nonezoom.org/life/@{species_name_with_underscores}\r\n\r\nbut this may be less stable (for example sometimes two very different creatures on the tree share the same scientific name, so you may end up going to the wrong place).\r\n\r\nPlease consider sharing the link with your friends and family!\r\n\r\nWe welcome your feedback and are always keen to find ways to make OneZoom better.\r\n\r\nThank you again for your donation, we hope you enjoy exploring our tree of life. \r\n\r\nThe OneZoom Team (UK charity number 1163559)'.format(username=username, ott=ott, species_name_with_underscores =species_name.replace(" ","_"), the_species=OZfunc.nice_species_name(species_name, common_name, the=True), for_name = for_name)})
+    return ozmail.template_mail(email_type, dict(
+        username=username,
+        ott=ott,
+        species_name=OZfunc.nice_species_name(species_name, common_name),
+        the_species=OZfunc.nice_species_name(species_name, common_name, the=True),
+        for_name=for_name,
+    ), to=email)

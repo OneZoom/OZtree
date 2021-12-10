@@ -1,0 +1,9 @@
+Your OneZoom sponsorship of {{=XML(species_name)}}
+
+Dear {{=XML(username)}},
+
+Thank you so much for your donation to OneZoom. We have received your payment
+for {{=XML(the_species)}}, and are about to verify your sponsorship text. This should
+only take a few days. We will email you when your sponsorship goes live.
+
+The OneZoom Team (UK charity number 1163559)

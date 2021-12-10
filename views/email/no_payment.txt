@@ -1,0 +1,18 @@
+Your OneZoom sponsorship of {{=XML(species_name)}}
+
+Dear {{=XML(username)}},
+
+Thank you for visiting OneZoom and filling out the form to sponsor the {{=XML(species)}} leaf{{=XML(for_name)}}.
+
+We noticed that something went wrong and we never received any donation from
+you on PayPal - you should not have been charged for this. If you would still
+like to sponsor {{=XML(species)}} it may still be available at
+
+  {{=XML(URL("sponsor_leaf", vars=dict(ott=ott)))}}
+
+If you’ve had any difficulties with our site or with PayPal, please write to
+let us know and we’d be very happy to help,
+
+Thank you again for your interest in our tree of life project.
+
+The OneZoom team (charity number 1163559)
