@@ -17,9 +17,11 @@ To renew your sponsorships, visit this URL:
 {{for ott in not_yet_due:}}* {{=XML(common_names[ott])}} ({{=XML(ott)}})
 {{pass}}{{pass}}
 
-{{if len(unsponsorable):}}Thankyou for sponsoring these, but please don't do it again:
+{{if len(unsponsorable):}}Thankyou for sponsoring these species. Contact us if you'd like to discuss renewing:
 {{for ott in unsponsorable:}}* {{=XML(common_names[ott])}} ({{=XML(ott)}})
 {{pass}}{{pass}}
 
 To unsubscribe from any future reminders, visit this URL:
 {{=XML(unsubscribe_url)}}
+
+The OneZoom team (charity number 1163559)
