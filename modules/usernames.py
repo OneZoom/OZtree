@@ -111,11 +111,14 @@ def email_for_username(username):
     """Return the most up to date e-mail address for a given username"""
     db = current.db
 
+    pp_e_mail = None
     for r in db(db.reservations.username == username).iterselect(orderby=~db.reservations.verified_time):
         if r.e_mail:
             return r.e_mail
-        if r.PP_e_mail:
-            return r.PP_e_mail
+        if r.PP_e_mail and not pp_e_mail:
+            pp_e_mail = r.PP_e_mail
+    if pp_e_mail:
+        return pp_e_mail
     raise ValueError("No e-mail address found for username %s" % username)
 
 

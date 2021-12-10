@@ -17,6 +17,7 @@ from sponsorship import (
 
 from usernames import (
     find_username,
+    email_for_username,
 )
 
 class TestUsername(unittest.TestCase):
@@ -193,6 +194,43 @@ class TestUsername(unittest.TestCase):
         self.assertEqual(username, 'Arnold-2')
         self.assertEqual(len(ids), 0)
 
+    def test_email_for_username(self):
+        """Make sure we can always fish out a username"""
+        # User with no e-mail addresses at all, get ValueError
+        util.time_travel(3)
+        r = util.purchase_reservation(basket_details=dict(
+            user_donor_name='Billy-no-email',
+            user_sponsor_name='Billy-no-email',
+        ), paypal_details=dict(PP_e_mail=None))[0]
+        with self.assertRaisesRegex(ValueError, r.username):
+            email_for_username(r.username)
+
+        # Buy one with only a paypal e-mail address, we get that back
+        util.time_travel(2)
+        r_alfred_1 = util.purchase_reservation(basket_details=dict(
+            user_donor_name='Alfred',
+            user_sponsor_name='Alfred',
+        ), paypal_details=dict(PP_e_mail='alfred-pp@unittest.example.com'))[0]
+        self.assertEqual(email_for_username(r_alfred_1.username), 'alfred-pp@unittest.example.com')
+
+        # Same user, provide e-mail address, we get their proper e-mail address
+        util.time_travel(1)
+        r_alfred_2 = util.purchase_reservation(basket_details=dict(
+            e_mail='alfred@unittest.example.com',
+            user_donor_name='Alfred',
+            user_sponsor_name='Alfred',
+        ), paypal_details=dict(PP_e_mail='alfred-pp@unittest.example.com'))[0]
+        self.assertEqual(r_alfred_2.username, r_alfred_1.username)
+        self.assertEqual(email_for_username(r_alfred_1.username), 'alfred@unittest.example.com')
+
+        # Buy another without an e-mail address, we fish out the previous entry rather than getting the PP address
+        util.time_travel(0)
+        r_alfred_3 = util.purchase_reservation(basket_details=dict(
+            user_donor_name='Alfred',
+            user_sponsor_name='Alfred',
+        ), paypal_details=dict(PP_e_mail='alfred-pp@unittest.example.com'))[0]
+        self.assertEqual(r_alfred_3.username, r_alfred_1.username)
+        self.assertEqual(email_for_username(r_alfred_1.username), 'alfred@unittest.example.com')
 
 
 if __name__ == '__main__':
