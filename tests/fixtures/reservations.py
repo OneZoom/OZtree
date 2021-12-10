@@ -67,7 +67,7 @@ util.purchase_reservation([872573, 872577], basket_details=dict(
     user_sponsor_name='F. Banned',
 ), allowed_status=set(('available', 'banned')))
 db(db.ordered_leaves.ott==872573).update(price=old_price)
-util.purchase_reservation([860132, 241848], basket_details=dict(
+util.purchase_reservation([860132, 241848, 4146546, 3655099, 3655078, 3655092, 3655105], basket_details=dict(
     e_mail='agemixture@fixture.example.com',
     user_donor_name='F. Agemixture',
     user_sponsor_name='F. Agemixture',
