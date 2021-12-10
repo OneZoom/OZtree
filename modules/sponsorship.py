@@ -316,6 +316,7 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             prev_sponsorship_ends = r.sponsorship_ends
             prev_reservation_id = reservation_expire(r)
             prev_partner_name = r.partner_name
+            fields_to_update['reserve_time'] = r.reserve_time  # Keep original reserve_time
             status, _, r, _ = get_reservation(prev_ott, basket_code)
             assert status == 'available'  # We just expired the old one, this should work
             reservation_add_to_basket(basket_code, r, dict(
@@ -334,8 +335,9 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             fields_to_update['sponsorship_duration_days'] = sponsorship_config()['duration_days']
             fields_to_update['sponsorship_ends'] = request.now + datetime.timedelta(days=sponsorship_config()['duration_days'])
             if prev_row and prev_row.verified_time:
-                # Renewal of expired entry, bump verified_time
+                # Renewal of expired entry, bump verified_time, keep old reserve time
                 fields_to_update['verified_time'] = request.now
+                fields_to_update['reserve_time'] = prev_row.reserve_time
                 if prev_row.partner_name:
                     fields_to_update['partner_name'] = prev_row.partner_name
 

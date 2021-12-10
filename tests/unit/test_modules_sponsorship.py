@@ -322,6 +322,8 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(param, None)
         # New row got an updated verified_timeif r.prev_reservation_id:
         self.assertEqual(reservation_row.verified_time, expired_r.verified_time + datetime.timedelta(days=1))
+        # Reserve time from previous entry kept
+        self.assertEqual(reservation_row.reserve_time, expired_r.reserve_time)
         self.assertEqual(expired_r.sale_time, '01:01:01 Jan 01, 2001 GMT')
         self.assertEqual(reservation_row.sale_time, '01:01:01 Jan 01, 2002 GMT')
         self.assertEqual(reservation_row.user_sponsor_name, 'Arnold')
@@ -590,6 +592,7 @@ class TestSponsorship(unittest.TestCase):
         status, _, reservation_row, _ = get_reservation(ott1, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
         self.assertEqual(reservation_row.verified_time, current.request.now.replace(microsecond=0))
+        self.assertEqual(reservation_row.reserve_time, current.request.now.replace(microsecond=0))
         self.assertEqual(reservation_row.sponsorship_duration_days, 365 * 4 + 1)
         self.assertLess(
             reservation_row.sponsorship_ends - current.request.now - datetime.timedelta(days = 365 * 4 + 1),
@@ -617,6 +620,8 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(status, 'sponsored')  # NB: Verification status preserved
         # Verified as soon as we got dosh, *not* the verified time of the previous entry, or now.
         self.assertEqual(reservation_row.verified_time, current.request.now.replace(microsecond=0) - datetime.timedelta(days=5))
+        # Reserve time still the previous time
+        self.assertEqual(reservation_row.reserve_time, current.request.now.replace(microsecond=0) - datetime.timedelta(days=10))
         self.assertEqual(reservation_row.PP_e_mail, 'paypal-new-addr@unittest.example.com')
         self.assertEqual(reservation_row.sponsorship_duration_days, 365 * 4 + 1)  # NB: Duration still 4 years.
         self.assertLess(

@@ -440,6 +440,7 @@ db.define_table('reservations',
     # these are general useful stats for a page
     Field('last_view', type='datetime', requires= IS_EMPTY_OR(IS_DATETIME()), writable=False),
     Field('reserve_time', type='datetime', requires= IS_EMPTY_OR(IS_DATETIME()), writable=False),
+    # When entry clicked on by user (and reserved for potential sponsorship). For renewals and expire-repurchase this is the original reserve_time of the previous entry.
     Field('user_registration_id', type='text', writable=False),
     # This is created by OZfunc/__make_user_code and used instead of a session cookie so that
     # when refreshing e.g. a sponsor_leaf page we know that it is the same user trying to sponsor.
