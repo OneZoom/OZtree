@@ -798,6 +798,39 @@ def sponsorship_email_reminders_post(reminder_row):
     db(db.reservations.OTT_ID.belongs(reminder_row['final_reminders'])).update(emailed_re_renewal_final=request.now)
 
 
+def sponsorship_email_thanks():
+    """Get all the usernames that need to be thanked for sponsoring, and details for the template"""
+    query = (db.reservations.verified_time != None) & (db.reservations.PP_transaction_code != None)  # i.e. has been bought
+    query &= (db.reservations.prev_reservation_id != None)  # Don't get involved in first-time sponsorships, SPONSOR_VALIDATE does those
+    query &= (db.reservations.emailed_re_sponsorship == None)  # Don't e-mail users twice
+
+    out = []
+    for r in db(query).select(db.reservations.ALL):
+        if r.username not in out:
+            out[r.username] = dict(
+                username=r.username,
+                email_address=usernames.email_for_username(r.username),
+                user_donor_title=r.user_donor_title,
+                user_donor_name=r.user_donor_name,
+                user_sponsor_lang=r.user_sponsor_lang,
+
+                for_otts=[],
+
+                renew_url = sponsor_signed_url('sponsor_renew.html', r.username),
+                unsubscribe_url = sponsor_signed_url('sponsor_unsubscribe.html', r.username),
+            )
+        out[r.username]['for_otts'].append(r.OTT_ID)
+    return out
+
+
+def sponsorship_email_thanks_post(thanks_row):
+    """Been thanked, don't do it again"""
+    db = current.db
+    request = current.request
+
+    db(db.reservations.OTT_ID.belongs('for_otts')).update(emailed_re_sponsorship=request.now)
+
+
 def sponsorship_restrict_contact(user_name):
     """User doesn't want to be contacted any more"""
     db = current.db
