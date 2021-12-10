@@ -49,8 +49,13 @@ for username, user_reminders in sponsorship_email_reminders().items():
         return_nulls=True,
         lang=user_reminders['user_sponsor_lang'],
     )
-    email_body = re.sub(r'\n\n+', '\n\n', response.render('sponsor_renew_reminder.txt', user_reminders))
-    verbose(email_body)
+    user_reminders['automated'] = True
+    mailargs = ozmail.template_mail(
+        'sponsor_renew_reminder',
+        user_reminders,
+        to=email,
+    )
+    verbose(mailargs['message'])
 
     # Actually try sending
     if run_dryrun:
@@ -59,7 +64,7 @@ for username, user_reminders in sponsorship_email_reminders().items():
         mail, reason = ozmail.get_mailer()
         if not mail:
             raise ValueError(reason)
-        if not mail.send(to=email, subject=T("OneZoom sponsorship reminder"), message=email_body):
+        if not mail.send(**mailargs):
             raise ValueError("Failed to send e-mail")
         # Register as sent
         verbose("    ... Success")

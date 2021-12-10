@@ -1,3 +1,5 @@
+import re
+
 from gluon import current
 
 def get_mailer():
@@ -30,3 +32,17 @@ def get_mailer():
     if autosend != 1:
         return None, '''"autosend_email" isn't set to 1 in appconfig.ini'''
     return mail, None
+
+
+def template_mail(template_name, render_dict, **extra_args):
+    """Template mail.send kwargs from a template file"""
+    response = current.globalenv['response']
+
+    email_body = response.render('email/%s.txt' % template_name, render_dict, escape=False).strip()
+    email_subject, email_body = email_body.split('\n', 1)
+    out = dict(
+        subject=email_subject.strip(),
+        message=re.sub(r'\n\n+', '\n\n', email_body),
+    )
+    out.update(extra_args)
+    return out

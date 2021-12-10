@@ -1,3 +1,5 @@
+{{=XML(T("OneZoom sponsorship reminder" if 'automated' in vars() else "Renew your onezoom sponsorships"))}}
+
 Dear {{=XML(user_donor_title)}}. {{=XML(user_donor_name)}},
 
 To renew your sponsorships, visit this URL:

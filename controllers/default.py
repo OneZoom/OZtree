@@ -676,20 +676,20 @@ def sponsor_renew_request():
                 return_nulls=True,
                 lang=user_reminders['user_sponsor_lang'],
             )
-            email_body = re.sub(r'\n\n+', '\n\n', response.render('email/sponsor_renew_reminder.txt', user_reminders, escape=False))
 
             mail, reason = ozmail.get_mailer()
+            mailargs = ozmail.template_mail(
+                'sponsor_renew_reminder',
+                user_reminders,
+                to=user_reminders['email_address'],
+            )
             if mail is None:
-                print(email_body)
+                print(mailargs['message'])
                 response.flash = 'NB: %s, so cannot send:\n%s' % (
                     reason,
-                    email_body,
+                    mailargs['message'],
                 )
-            elif mail.send(
-                to=user_reminders['email_address'],
-                subject=T("Renew your onezoom sponsorships"),
-                message=email_body,
-            ):
+            elif mail.send(**mailargs):
                 response.flash = 'An e-mail has been sent to %s' % user_identifier
             else:
                 response.flash = 'Could not send e-mail to %s' % user_identifier
