@@ -10,6 +10,7 @@ import urllib.parse
 from json import dumps
 from collections import OrderedDict
 
+import ozmail
 from sponsorship import (
     sponsorship_enabled, reservation_total_counts, clear_reservation, get_reservation,
     reservation_validate_basket_fields,
@@ -26,7 +27,7 @@ from partners import partner_identifiers_for_reservation_name
 from OZfunc import (
     nice_species_name, get_common_name, get_common_names, __release_info,
     language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, add_the,
-    otts2ids, nodes_info_from_array, nodes_info_from_string, extract_summary, get_mailer)
+    otts2ids, nodes_info_from_array, nodes_info_from_string, extract_summary)
 
 
 """ Some settings for sponsorship"""
@@ -677,7 +678,7 @@ def sponsor_renew_request():
             )
             email_body = re.sub(r'\n\n+', '\n\n', response.render('email/sponsor_renew_reminder.txt', user_reminders, escape=False))
 
-            mail, reason = get_mailer()
+            mail, reason = ozmail.get_mailer()
             if mail is None:
                 print(email_body)
                 response.flash = 'NB: %s, so cannot send:\n%s' % (

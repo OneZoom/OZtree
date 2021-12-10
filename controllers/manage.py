@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import ozmail
 import OZfunc
 import warnings
 from usernames import find_username
@@ -270,7 +271,7 @@ def SPONSOR_UPDATE():
         url_t = "www.onezoom.org/life/@={}".format(ott_t) #build url
         email_t = read_only['e_mail'] or read_only['PP_e_mail'] #default to the email they gave us. If not, use the paypal one
         if request.vars.auto_email and read_only['emailed_re_sponsorship'] is None and email_t:
-            mail, reason = OZfunc.get_mailer()
+            mail, reason = ozmail.get_mailer()
             if mail is None:
                 response.flash = reason
             else:

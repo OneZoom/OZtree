@@ -17,11 +17,12 @@ import sys
 
 from gluon.globals import Request
 
+import ozmail
 from sponsorship import (
     sponsorship_email_reminders,
     sponsorship_email_reminders_post,
 )
-from OZfunc import get_common_names, get_mailer
+from OZfunc import get_common_names
 
 run_dryrun = 'dry-run' in sys.argv
 run_verbose = run_dryrun or ('verbose' in sys.argv)
@@ -55,7 +56,7 @@ for username, user_reminders in sponsorship_email_reminders().items():
     if run_dryrun:
         verbose("    ... (dry run)")
     else:
-        mail, reason = get_mailer()
+        mail, reason = ozmail.get_mailer()
         if not mail:
             raise ValueError(reason)
         if not mail.send(to=email, subject=T("OneZoom sponsorship reminder"), message=email_body):
