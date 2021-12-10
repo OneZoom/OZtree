@@ -27,6 +27,10 @@ but this may be less stable (for example sometimes two very different creatures
 on the tree share the same scientific name, so you may end up going to the
 wrong place).
 
+Finally you can see all your donations together on this page:
+
+  {{=URL('default', 'donor.html/%s' % username, scheme=True, host=True)}}
+
 Please consider sharing the link with your friends and family!
 
 We welcome your feedback and are always keen to find ways to make OneZoom better.
