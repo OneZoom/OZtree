@@ -34,6 +34,15 @@ def get_mailer():
     return mail, None
 
 
+def normalize_whitespace(s):
+    s = s.strip()
+    # Only allow one blank line
+    s = re.sub(r'\n{3,}', '\n\n', s)
+    # Remove single newlines, let mail-clients do their own wrapping
+    s = re.sub(r'(?<!\n)\n(?!\n)', ' ', s)
+    return s
+
+
 def template_mail(template_name, render_dict, **extra_args):
     """Template mail.send kwargs from a template file"""
     response = current.globalenv['response']
@@ -42,7 +51,7 @@ def template_mail(template_name, render_dict, **extra_args):
     email_subject, email_body = email_body.split('\n', 1)
     out = dict(
         subject=email_subject.strip(),
-        message=re.sub(r'\n\n+', '\n\n', email_body),
+        message=normalize_whitespace(email_body),
     )
     out.update(extra_args)
     return out
