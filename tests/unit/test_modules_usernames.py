@@ -18,6 +18,7 @@ from sponsorship import (
 from usernames import (
     find_username,
     email_for_username,
+    usernames_associated_to_email,
 )
 
 class TestUsername(unittest.TestCase):
@@ -231,6 +232,48 @@ class TestUsername(unittest.TestCase):
         ), paypal_details=dict(PP_e_mail='alfred-pp@unittest.example.com'))[0]
         self.assertEqual(r_alfred_3.username, r_alfred_1.username)
         self.assertEqual(email_for_username(r_alfred_1.username), 'alfred@unittest.example.com')
+
+    def test_usernames_associated_to_email(self):
+        # Alfred changed their e-mail address to something more formal
+        r = util.purchase_reservation(basket_details=dict(
+            e_mail='alfredo-the-great@unittest.example.com',
+            user_donor_name='Alfred',
+            user_sponsor_name='Alfred',
+        ), paypal_details=dict(PP_e_mail='alfred-pp@unittest.example.com'))[0]
+        u_alfred = r.username
+        r = util.purchase_reservation(basket_details=dict(
+            e_mail='alfred@unittest.example.com',
+            user_donor_name='Alfred',
+            user_sponsor_name='Alfred',
+        ), paypal_details=dict(PP_e_mail='alfred-pp@unittest.example.com'))[0]
+        self.assertEqual(r.username, u_alfred)
+
+        # Betty and Belinda share paypal e-mail addresses for some reason
+        r = util.purchase_reservation(basket_details=dict(
+            e_mail='betty@unittest.example.com',
+            user_donor_name='Betty',
+            user_sponsor_name='Betty',
+        ), paypal_details=dict(PP_e_mail='bb@unittest.example.com'))[0]
+        u_betty = r.username
+        r = util.purchase_reservation(basket_details=dict(
+            e_mail='belinda@unittest.example.com',
+            user_donor_name='Belinda',
+            user_sponsor_name='Belinda',
+        ), paypal_details=dict(PP_e_mail='bb-x@unittest.example.com'))[0]
+        u_belinda = r.username
+        self.assertNotEqual(u_betty, u_belinda)
+
+        # Now we have 2 records with non-matching usernames, an admin changes the PP_e_mail.
+        r.update_record(PP_e_mail='bb@unittest.example.com')
+
+        # All e-mail addresses should return something we expect
+        self.assertEqual(usernames_associated_to_email('nonexistant@unittest.example.com'), ())
+        self.assertEqual(usernames_associated_to_email('alfredo-the-great@unittest.example.com'), (u_alfred,))
+        self.assertEqual(usernames_associated_to_email('alfred@unittest.example.com'), (u_alfred,))
+        self.assertEqual(usernames_associated_to_email('alfred-pp@unittest.example.com'), (u_alfred,))
+        self.assertEqual(usernames_associated_to_email('betty@unittest.example.com'), (u_betty,))
+        self.assertEqual(usernames_associated_to_email('belinda@unittest.example.com'), (u_belinda,))
+        self.assertEqual(usernames_associated_to_email('bb@unittest.example.com'), (u_betty, u_belinda,))
 
 
 if __name__ == '__main__':

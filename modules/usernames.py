@@ -123,13 +123,10 @@ def email_for_username(username):
 
 
 def usernames_associated_to_email(email):
-    """Given an e-mail address, return a list of usernames that have used it"""
+    """Given an e-mail address, return a tuple of usernames that have used it"""
     db = current.db
 
-    return [
-        x['username']
-        for x in db(
-            (db.reservations.e_mail == email) | (db.reservations.PP_e_mail == email)
-        ).select(db.reservations.username)
-        if x['username']
-    ]
+    return tuple(x.username for x in db(
+        (db.reservations.username is not None) &
+        ((db.reservations.e_mail == email) | (db.reservations.PP_e_mail == email))
+    ).select(db.reservations.username, distinct=True))
