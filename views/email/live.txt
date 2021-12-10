@@ -13,11 +13,11 @@ details.
 
 It’s now there for all to see at:
 
-  {{=URL('life/@=%s' % ott, url_encode=False, scheme=True, host=True)}}
+  {{=URL('default', 'life/@=%s' % ott, url_encode=False, scheme=True, host=True)}}
 
 or, if you’d like to fly through the tree to your sponsored leaf try 
 
-  {{=URL('life/@=%s' % ott, vars=dict(init='zoom'), url_encode=False, scheme=True, host=True)}}
+  {{=URL('default', 'life/@=%s' % ott, vars=dict(init='zoom'), url_encode=False, scheme=True, host=True)}}
 
 There’s also the more obvious link
 
