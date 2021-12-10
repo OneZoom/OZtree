@@ -651,22 +651,22 @@ def sponsor_renew_request():
     Request a renewal link emailed to you
     """
     form = FORM(
-        LABEL("E-mail"),
-        INPUT(_name='email', _class="uk-input uk-margin-bottom", requires=IS_EMAIL()),
+        LABEL("E-mail or Username"),
+        INPUT(_name='user_identifier', _class="uk-input uk-margin-bottom"),
         INPUT(_type='submit', _class="oz-pill pill-leaf"))
     if form.accepts(request.vars, session=None):
-        user_email = form.vars.email
+        user_identifier = form.vars.user_identifier.strip()
         # Get all reminder blocks for usernames associated to this e-mail address
-        usernames = usernames_associated_to_email(user_email)
+        usernames = usernames_associated_to_email(user_identifier) if '@' in user_identifier else [user_identifier]
         user_reminders = list(sponsorship_email_reminders(usernames).values())
 
         if len(user_reminders) == 0:
             if is_testing:
-                response.flash = 'Unknown e-mail address %s' % user_email
+                response.flash = 'Unknown e-mail address %s' % user_identifier
             else:
-                response.flash = 'An e-mail has been sent to %s' % form.vars.email
+                response.flash = 'An e-mail has been sent to %s' % user_identifier
         elif len(user_reminders) > 1:
-            response.flash = 'Many users associated with e-mail address %s' % user_email
+            response.flash = 'Many users associated with e-mail address %s' % user_identifier
         else:
             user_reminders = user_reminders[0]
             user_reminders['common_names'] = get_common_names(
@@ -689,9 +689,9 @@ def sponsor_renew_request():
                 subject=T("Renew your onezoom sponsorships"),
                 message=email_body,
             ):
-                response.flash = 'An e-mail has been sent to %s' % form.vars.email
+                response.flash = 'An e-mail has been sent to %s' % user_identifier
             else:
-                response.flash = 'Could not send e-mail to %s' % form.vars.email
+                response.flash = 'Could not send e-mail to %s' % user_identifier
     return dict(
         form=form,
     )
