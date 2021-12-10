@@ -604,19 +604,21 @@ def SHOW_EMAILS():
                 os.path.join(
                     local_pic_path(s.verified_preferred_image_src, s.verified_preferred_image_src_id),
                     str(s.verified_preferred_image_src_id)+'.jpg'))
+        else:
+            details['local_pic'] = False
         details.update({
             'ott' : str(s.OTT_ID),
             'name': s.name,
             'cname': cnames.get(s.OTT_ID),
-               'img_src': str(s.user_preferred_image_src),
-               'img_src_id': str(s.user_preferred_image_src_id),
+            'img_src': str(s.verified_preferred_image_src),
+            'img_src_id': str(s.verified_preferred_image_src_id),
             'mesg': s.user_message_OZ})
         try:
             email_list[details['type'] + " " + s.verified_time.strftime("%A %e %b, %Y")].append(details)
         except:
             email_list[details['type'] + " " + s.verified_time.strftime("%A %e %b, %Y")]=[details]
 
-        imgs.append(s.verified_preferred_image_src, s.verified_preferred_image_src_id)
+        imgs.append([s.verified_preferred_image_src, s.verified_preferred_image_src_id])
     
     onezoom_via_eol_images= [i[1] for i in imgs if i[0]==src_flags['onezoom_via_eol']]
     eol_images = [i[1] for i in imgs if i[0]==src_flags['eol']]
