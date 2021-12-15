@@ -1,0 +1,21 @@
+{{response.title='OneZoom Management: Find renewal URLs'}}
+{{extend 'layout.html'}}
+<h2>A private list of URLs for sponsors to renew</h2>
+<form action="" method="get">
+  <label for="main_id">Usernames or emails (one per line)</label>
+  <br>
+  <textarea name="id" id="main_id">{{try:}}{{=request.vars['id']}}{{except:}}{{pass}}</textarea>
+  <input type="submit" />
+</form>
+{{try:}}
+{{=H1(error)}}
+{{except NameError:}}
+<dl>
+{{for input, url_dict in urls.items():}}
+<dt>{{=input}}</dt>
+{{for username, url in url_dict.items():}}
+<dd><em>{{=username}}</em>: <a href="{{=url}}">{{=url}}</a></dd>
+{{pass}}
+{{pass}}
+</dl>
+{{pass}}
