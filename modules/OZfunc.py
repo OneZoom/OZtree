@@ -91,6 +91,7 @@ def add_the(common, leaf):
     "common tern" -> "the common tern", but 'a nematode' kept as is
     NB: this will be difficult to internationalize with gendered words
     """
+    common = str(common)  # in case we are passed a gluon CAT object or similar
     if common and not re.match(r'[Aa] ', common):
         if leaf:
             return current.T("the ## singular") + common 

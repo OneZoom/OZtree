@@ -346,10 +346,13 @@ def SPONSOR_UPDATE():
                     if DOid:
                         #only save an explicit OneZoom image (by passing in the dataObject ID) if the user  
                         # (or admin, if overridden) has selected something different from the EoL default
-                        image_getter_connection = Popen(EoLQueryPicsNames + ['--eol_image_id', str(int(DOid))], 
-                                                        stdout=PIPE, stderr=STDOUT,
-                                                        stdin=PIPE, 
-                                                        env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()})
+                        image_getter_connection = Popen(
+                            EoLQueryPicsNames + ['--eol_image_id', str(int(DOid))], 
+                            stdout=PIPE, stderr=STDOUT,
+                            stdin=PIPE, 
+                            env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()},
+                            universal_newlines=True,
+                        )
                         #pass in the password via stdin, so it doesn't get shown in the processes
                         ret_text += image_getter_connection.communicate(input='{0}\n'.format(password))[0]
                 #Always update the default EoL image (and common name) using EoLQueryPicsNames.py,
@@ -357,10 +360,13 @@ def SPONSOR_UPDATE():
                 # (this is a hack until EoL V3 images are nicer than eolV2)
                 # Don't pass in the DOid - the script should get that automagically
                 if img_src != src_flags['eol_old']:
-                    image_getter_connection = Popen(EoLQueryPicsNames, 
-                                                    stdout=PIPE, stderr=STDOUT,
-                                                    stdin=PIPE,
-                                                    env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()})
+                    image_getter_connection = Popen(
+                        EoLQueryPicsNames, 
+                        stdout=PIPE, stderr=STDOUT,
+                        stdin=PIPE,
+                        env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()},
+                        universal_newlines=True,
+                    )
                     #pass in the password via stdin, so it doesn't get shown in the processes
                     ret_text += image_getter_connection.communicate(input='{0}\n'.format(password))[0]
                     if ret_text:
