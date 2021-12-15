@@ -528,14 +528,16 @@ def SHOW_EMAILS():
         #we can't use the paypal emails etc because we haven't been paid!
         if s.e_mail:
             details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.user_sponsor_name, s.e_mail, sponsor_for=s.user_sponsor_kind=='for', email_type='no_payment')
-            if s.user_preferred_image_src and s.user_preferred_image_src_id:
+            if s.user_preferred_image_src and s.user_preferred_image_src_id and local_pic is not None:
                 details['local_pic'] = os.path.isfile(
                     os.path.join(
                         local_pic_path(s.user_preferred_image_src, s.user_preferred_image_src_id),
                         str(s.user_preferred_image_src_id)+'.jpg'))
+            else:
+                details['local_pic'] = None
             details.update({
                'type': 'no_payment',
-               'e_mail': details['to'],
+               'email': details['to'],
                'ott' : str(s.OTT_ID),
                'name': s.name,
                'cname':cnames.get(s.OTT_ID),
@@ -568,14 +570,16 @@ def SHOW_EMAILS():
     cnames = OZfunc.get_common_names(otts)
     for s in sponsors:
         details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.user_sponsor_name, s.e_mail or s.PP_e_mail, s.PP_first_name, s.PP_second_name, sponsor_for= (s.user_sponsor_kind=='for'), email_type='to_verify')
-        if s.user_preferred_image_src and s.user_preferred_image_src_id:
+        if s.user_preferred_image_src and s.user_preferred_image_src_id and local_pic is not None:
             details['local_pic'] = os.path.isfile(
                 os.path.join(
                     local_pic_path(s.user_preferred_image_src, s.user_preferred_image_src_id),
                     str(s.user_preferred_image_src_id)+'.jpg'))
+        else:
+            details['local_pic'] = None
         details.update({
             'type': 'to_verify',
-            'e_mail': details['to'],
+            'email': details['to'],
             'ott' : str(s.OTT_ID),
             'name': s.name,
             'cname':cnames.get(s.OTT_ID),
@@ -606,15 +610,15 @@ def SHOW_EMAILS():
     cnames = OZfunc.get_common_names(otts)
     for s in sponsors:
         details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.verified_name, s.e_mail or s.PP_e_mail, s.PP_first_name, s.PP_second_name, sponsor_for= s.verified_kind=='for', email_type='live')
-        if s.verified_preferred_image_src and s.verified_preferred_image_src_id:
-            # do we have a local picture: can't use thumbnail_url() as it might refer to
-            # a remote location (e.g. image.onezoom.org)
+        if s.verified_preferred_image_src and s.verified_preferred_image_src_id and local_pic is not None:
+            # do we have a local picture, or is it missing?
+            # Can't use thumbnail_url() as it might refer to a remote location (e.g. image.onezoom.org)
             details['local_pic'] = os.path.isfile(
                 os.path.join(
                     local_pic_path(s.verified_preferred_image_src, s.verified_preferred_image_src_id),
                     str(s.verified_preferred_image_src_id)+'.jpg'))
         else:
-            details['local_pic'] = False
+            details['local_pic'] = None
         details.update({
             'type': 'live',
             'email': details['to'],
