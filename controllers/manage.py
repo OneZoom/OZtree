@@ -535,7 +535,7 @@ def SHOW_EMAILS():
                         str(s.user_preferred_image_src_id)+'.jpg'))
             details.update({
                'type': 'no_payment',
-               'e_mail': details['to'],
+               'email': details['to'],
                'ott' : str(s.OTT_ID),
                'name': s.name,
                'cname':cnames.get(s.OTT_ID),
@@ -575,7 +575,7 @@ def SHOW_EMAILS():
                     str(s.user_preferred_image_src_id)+'.jpg'))
         details.update({
             'type': 'to_verify',
-            'e_mail': details['to'],
+            'email': details['to'],
             'ott' : str(s.OTT_ID),
             'name': s.name,
             'cname':cnames.get(s.OTT_ID),
