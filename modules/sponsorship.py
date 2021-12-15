@@ -724,8 +724,9 @@ def sponsorship_email_reminders(for_usernames=None):
     expiry_soon_date = sponsorship_expiry_soon_date()
     expiry_critical_date = sponsorship_expiry_soon_date('critical')
 
-    def sponsor_signed_url(page, username):
+    def sponsor_signed_url(page, username, controller='default'):
         return URL(
+            controller,
             page,
             args=[username],
             scheme=True,
