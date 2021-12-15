@@ -61,6 +61,29 @@ var timeout_ms = 10000; //allow 10 secs for wiki pages to load
  */
 
 /**
+ * Replace the "src" attribute value passed in by adding an https: if necessary
+ * and converting relative and absolute local URLs to the full string
+ */
+function replace_src(src_value, https_base, https_origin) {
+    if (src_value.startsWith("//")) {
+        return 'https:' + src_value;
+    }
+    if (src_value.startsWith("./")) {
+        return https_base + src_value.substr(2);
+    }
+    if (src_value.startsWith("/")) {
+        return https_origin + src_value;
+    }
+}
+
+/**
+ * Break up the srcset value by comma+whitespace and run replace_src on each
+ */
+function replace_srcset(srcset_value, https_base, https_origin) {
+    return srcset_value.split(/,\s+/).map(function(s) {return replace_src(s, https_base, https_origin)}).join(", ");
+}
+
+/**
  * Sanitise links and src attributes in an html file, possibly remove all but internal links
  * @function sanitise_links
  * @param {string} html - a Jquery object containing the html which needs sanitizing.
@@ -73,9 +96,14 @@ var timeout_ms = 10000; //allow 10 secs for wiki pages to load
 function sanitise_links(html, restrict_links, base_url) {
   var base_url =  ($('base', html) && $('base', html).attr('href'))?$('base', html).attr('href'):base_url;
   var origin = $('<a>').prop('href', base_url).prop('origin'); //get the host/port etc
-  //sanitize image sources
-  $('[src^="./"]', html).attr('src', function(i,attr) {return base_url + attr.substr(2);});
-  $('[src^="/"]', html).not('[src^="//"]').attr('src', function(i,attr) {return origin + attr;});
+  /* sanitize image sources. Safari doesn't like using non-https urls here, because 
+   * "http://en.wikipedia.org/wiki/" redrects to the https site. So we need to replace
+   * '^http://' or '^//' with 'https://'
+   */
+  https_base = base_url.replace(/^(\/\/|\/\/)/,"https://");
+  https_origin = origin.replace(/^(http:\/\/|\/\/)/,"https://");
+  $('[src]', html).attr('src', function(i, attr) {return replace_src(attr, https_base, https_origin)});
+  $('[srcset]', html).attr('srcset', function(i, attr) {return replace_srcset(attr, https_base, https_origin)});
   //Any internal links need to be re-written to use scrollIntoView(), so that we don't change the URL by adding a hash
   $('[href^="#"]', html).click(function() {document.getElementById($(this).attr('href').substr(1)).scrollIntoView(); return false;});
   if (restrict_links>1) {
