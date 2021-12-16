@@ -3,7 +3,8 @@
 import ozmail
 import OZfunc
 import warnings
-from usernames import find_username
+import usernames
+import sponsorship
 
 @OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
@@ -220,7 +221,7 @@ def SPONSOR_UPDATE():
     ]
     row_id = request.args[0]
     row = db(db.reservations.id==row_id).select(*[db.reservations[n] for n in read_only_cols+write_to_cols]).first()
-    username, other_sponsorship_otts = find_username(row, return_otts=True, allocate_species_name=True)
+    username, other_sponsorship_otts = usernames.find_username(row, return_otts=True, allocate_species_name=True)
     read_only = {k:row[k] for k in read_only_cols}
     read_only['percent_crop_expansion'] = percent_crop_expansion
     EOLrow = db(db.ordered_leaves.ott == row['OTT_ID']).select(db.ordered_leaves.eol).first()
@@ -489,6 +490,47 @@ def LIST_IMAGES():
 
         images[src_name] = rows[(page*items_per_page):(1+(page+1)*items_per_page)]
     return dict(pics=images, time=time(), form=form, page=page, items_per_page=items_per_page, vars=request.vars)
+
+
+@OZfunc.require_https_if_nonlocal()
+@auth.requires_membership(role='manager')
+def SHOW_RENEWAL_PAGE_URLS():
+    """
+    Type in one or more usernames or emails and get back the renewal URL for visiting
+    """
+    ids = []
+    if request.vars.id:
+        if isinstance(request.vars.id, str):
+            ids = request.vars.id.split()
+        else:
+            ids = [id_ for id_item in request.vars.id for id_ in id_item.split()]
+
+    id_map = {}
+    for id_string in ids:
+        if '@' in id_string:
+            for uname in usernames.usernames_associated_to_email(id_string):
+                if uname:
+                    if id_string not in id_map:
+                        id_map[id_string] = []
+                    id_map[id_string].append(uname)
+        else:
+            if db(db.reservations.username == id_string).count():
+                if id_string not in id_map:
+                    id_map[id_string] = []
+                id_map[id_string].append(id_string)
+
+    try:
+        uname_info = sponsorship.sponsorship_email_reminders(
+            [uname for info_for_id in id_map.values() for uname in info_for_id])
+    
+        renew_urls = {
+            k: {uname: uname_info[uname]["renew_url"] for uname in v}
+            for k, v in id_map.items()
+        }
+        return dict(urls = renew_urls)
+    except ValueError as e:
+        return dict(error = str(e))
+
 
 @OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
