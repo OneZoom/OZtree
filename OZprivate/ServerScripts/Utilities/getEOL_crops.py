@@ -74,7 +74,7 @@ def get_credit(json_dict, doID):
         if m:
             rights = EOL_cc_rights_line.sub("", rights)
             licence = form_licence_from_url(m.group(1), doID)
-        logger.debug("RIGHTS for {}: {}".format(doID, json_dict['rights']))
+        logger.debug(f"RIGHTS for {doID}: {rights} ({licence})")
 
     else:
     #must look in agents for person to credit
