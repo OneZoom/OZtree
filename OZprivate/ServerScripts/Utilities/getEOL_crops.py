@@ -68,7 +68,7 @@ def get_credit(json_dict, doID):
     licence = form_licence_from_url(json_dict['license'], doID)
     rights = ""
 
-    if "rights" or "rightsHolder" in json_dict:
+    if ("rights" in json_dict) or ("rightsHolder" in json_dict):
         rights = json_dict.get("rights", json_dict.get("rightsHolder", None))
         m = EOL_cc_rights_line.search(rights)
         if m:
