@@ -68,13 +68,12 @@ def get_credit(json_dict, doID):
     licence = form_licence_from_url(json_dict['license'], doID)
     rights = ""
 
-    if 'rights' in json_dict:
-        m = EOL_cc_rights_line.search(json_dict['rights'])
+    if "rights" or "rightsHolder" in json_dict:
+        rights = json_dict.get("rights", json_dict.get("rightsHolder", None))
+        m = EOL_cc_rights_line.search(rights)
         if m:
-            rights = EOL_cc_rights_line.sub("", json_dict['rights'])
+            rights = EOL_cc_rights_line.sub("", rights)
             licence = form_licence_from_url(m.group(1), doID)
-        else:
-            rights = json_dict['rights']
         logger.debug("RIGHTS for {}: {}".format(doID, json_dict['rights']))
 
     else:
