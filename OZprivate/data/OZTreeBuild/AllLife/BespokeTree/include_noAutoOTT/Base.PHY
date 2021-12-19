@@ -44,19 +44,18 @@ Nanohaloarchaeota is simply Nanosalina (ott296712) +Haloredivivus (ott186386) + 
 
 Parvarchaeum_ott4796454 in 9.1 is nested within Halobacteria (and we can also remove its parent, Deep Sea Hydrothermal Vent Gp 6: ott5248234
 
-That leaves Euryarchaeota as the remaining Archaea minus the rest (including Nanosalina ott296712 and Haloredivivus ott186386, which are separately in the Nanohaloarchaeota). We also remove ott5246115 "Ancient Archeal Group" and ott7001595 "TACK group Archaeon" which not only are not individual
-species but are also currently not sensibly placed.
-
-Euryarchaeota_ott635958~996421-7000000-114216-102415-921398-266344-678209-5205266-4795972-4796454-5248234-5248238-296712-186386-296715-5246115-7001595
-
 (Note that the groups marked with * are also included in this removal, so this will generate a few
 (ignorable) warnings about "Could not find subtree _ottXXXX within tree XXX/996421.nwk"
 
-TAK groups form Thaumarchaeota and Aigarchaeota (Aigarchaeota comes under Thaumarchaeota in the OTT). In OpenTree v5 this is sister to Thermoplasmata_ott921398). We add Korarchaeota as the sister to this, then 
-TACK is this clade plus the sister group Crenarchaeota. Thermococci_ott921413 is wrongly placed as sister to Korarchaeota+Crenarchaeota+Nanoarchaeota, so we remove them
-from TACK which leaves them in the Euryarchaeota, and place the next branch as Nezhaarchaeota+Verstraetearchaeota as per a recent review (https://doi.org/10.1146/annurev-micro-040921-050212)
+TACK groups form Thaumarchaeota_ott102415 and Aigarchaeota (Aigarchaeota comes under Thaumarchaeota in the OTT). In OpenTree v5 this is sister to Thermoplasmata_ott921398). We add Korarchaeota_ott266344 as the sister to this, then 
+TACK is this clade plus the sister group Crenarchaeota. Thermococci_ott921413 is wrongly placed as sister to Korarchaeota+Crenarchaeota+Nanoarchaeota, so we don't include it in TACK which leaves them in the Euryarchaeota, and place the next TACK branch as Nezhaarchaeota+Verstraetearchaeota as per a recent review (https://doi.org/10.1146/annurev-micro-040921-050212)
 
 (((Crenarchaeota_ott114216@,(Thaumarchaeota_ott102415@,Thermoplasmata_ott921398@)),(Nezhaarchaeota_ott7000110@,Verstraetearchaeota_ott5991571@)),Korarchaeota_ott266344@)TACK_group
+
+That leaves Euryarchaeota as the remaining Archaea minus the rest (including Nanosalina ott296712 and Haloredivivus ott186386, which are separately in the Nanohaloarchaeota). We also remove ott5246115 "Ancient Archeal Group" and ott7001595 "TACK group Archaeon" which not only are not individual
+species but are also currently not sensibly placed.
+
+Euryarchaeota_ott635958~996421-7000000-114216-102415-921398-266344-678209-5205266-4795972-4796454-5248234-5248238-296712-186386-296715-5246115-7001595-7000110-5991571
 
 Very rough dates of Archeal evolution from Betts et al (2018; https://doi.org/10.1038/s41559-018-0644-x), with  Asgardarchaeota diverging at 2700 MYA, Crenarchaeota etc at 2800, and other spaced ~ 200MYA apart
 
@@ -65,4 +64,4 @@ Very rough dates of Archeal evolution from Betts et al (2018; https://doi.org/10
 We have little bacterial expertise, and the rooting of the Eubacteria may be problematic, so we simply take the standard OpenTree phylogeny, removing a few "bacterial" taxa such as "Apis mellifera" (ott 5900566), "Capra hircus" (ott 5251869), "Oncorhynchus mykiss" (ott 5256670) which are clearly misleadingly named.
 
 ]
-(((((((Excavata_ott2927065@,(DIAPHORETICKES@,(Hemimastix_ott7510361@,Spironema_ott4038752@,(Paramastix_minuta,Paramastix_conifera,Paramastix_truncata, Paramastix_lata)Paramastix_ott4801700,Stereonema_geiseri)Hemimastigophora):50):0,(AMORPHEA@,CRUMS@)Podiata:150)Eukaryota:550,Asgardarchaeota_ott7000000@)LE_clade_:100,(((Crenarchaeota_ott114216@,(Thaumarchaeota_ott102415@,Thermoplasmata_ott921398@)),(Nezhaarchaeota_ott7000110@,Verstraetearchaeota_ott5991571@)),Korarchaeota_ott266344@)TACK_group)TACKLE_clade_:200,Euryarchaeota_ott635958~996421-7000000-114216-102415-921398-266344-678209-5205266-4795972-5248234-4796454-5248238-296712-186386-296715-5246115-7001595@)ETACKLE_clade_:200,(((Nanoarchaeota_ott678209@,Diapherotrites_ott5205266@),(Aenigmarchaeota_ott4795972@,(Candidatus_Nanosalina_ott296712,Candidatus_Haloredivivus_ott186386,Candidatus_Nanosalinarum_ott296715)Nanohaloarchaeota_ott5351807)),(Micrarchaeum_ott5248238@,Parvarchaeum_ott4796454@))dPANN_group)AllArchaeaAndEukaryotes_,Eubacteria_ott844192~-5900566-5251869-5256670@)biota_ott93302;
+(((((((Excavata_ott2927065@,(DIAPHORETICKES@,(Hemimastix_ott7510361@,Spironema_ott4038752@,(Paramastix_minuta,Paramastix_conifera,Paramastix_truncata, Paramastix_lata)Paramastix_ott4801700,Stereonema_geiseri)Hemimastigophora):50):0,(AMORPHEA@,CRUMS@)Podiata:150)Eukaryota:550,Asgardarchaeota_ott7000000@)LE_clade_:100,(((Crenarchaeota_ott114216@,(Thaumarchaeota_ott102415@,Thermoplasmata_ott921398@)),(Nezhaarchaeota_ott7000110@,Verstraetearchaeota_ott5991571@)),Korarchaeota_ott266344@)TACK_group)TACKLE_clade_:200,Euryarchaeota_ott635958~996421-7000000-114216-102415-921398-266344-678209-5205266-4795972-5248234-4796454-5248238-296712-186386-296715-5246115-7001595-7000110-5991571@)ETACKLE_clade_:200,(((Nanoarchaeota_ott678209@,Diapherotrites_ott5205266@),(Aenigmarchaeota_ott4795972@,(Candidatus_Nanosalina_ott296712,Candidatus_Haloredivivus_ott186386,Candidatus_Nanosalinarum_ott296715)Nanohaloarchaeota_ott5351807)),(Micrarchaeum_ott5248238@,Parvarchaeum_ott4796454@))dPANN_group)AllArchaeaAndEukaryotes_,Eubacteria_ott844192~-5900566-5251869-5256670@)biota_ott93302;
