@@ -203,6 +203,8 @@ def get_file_from_json_struct(data_obj_json_struct, output_dir, fn, thumbnail_si
         #calculate fractions as proportion of square thumbnail
         try:
             initial_thumb_px = float(d['crop_width'])
+            if initial_thumb_px < 1:
+                raise KeyError  # The crop_width is not really a valid value: pretend it wasn't there
             crop_top_fraction = float(d['crop_y'])/initial_thumb_px
             crop_bottom_fraction = (float(d['height']) - float(d['crop_y']) - initial_thumb_px)/initial_thumb_px
             crop_left_fraction = float(d['crop_x'])/initial_thumb_px
