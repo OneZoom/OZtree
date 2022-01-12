@@ -836,7 +836,7 @@ def sponsor_renew():
 
         # If there's a nondefault image, replace with that
         if r.user_nondefault_image:
-            images[r.ott] = {'url':thumbnail_url(
+            images[r.OTT_ID] = {'url':thumbnail_url(
                 r.verified_preferred_image_src,
                 r.verified_preferred_image_src_id)}
 
