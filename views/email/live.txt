@@ -1,6 +1,6 @@
 Your OneZoom sponsorship of {{=XML(species_name)}} has gone live
 
-Dear {{=XML(username)}},
+Dear {{=XML(full_name)}},
 
 Thank you so much for your donation to OneZoom. This will help us in our aim to
 provide easy access to scientific knowledge about biodiversity and evolution,

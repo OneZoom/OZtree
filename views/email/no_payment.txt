@@ -1,6 +1,6 @@
 Your OneZoom sponsorship of {{=XML(species_name)}}
 
-Dear {{=XML(username)}},
+Dear {{=XML(full_name)}},
 
 Thank you for visiting OneZoom and filling out the form to sponsor the {{=XML(species_name)}} leaf{{=XML(for_name)}}.
 

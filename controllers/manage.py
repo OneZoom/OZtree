@@ -88,20 +88,20 @@ def edit_language():
 def SHOW_SPONSOR_SUMS():
     '''list the sponsors by amount
     '''
-    cols = dict(donor_name = "`verified_donor_name`",
-                e_mail = "`e_mail`",
-                pp_name = "CONCAT_WS(' ',`PP_first_name`, `PP_second_name`)",
+    cols = dict(donor_name = db.reservations.verified_donor_name,
+                e_mail = db.reservations.e_mail,
+                username = db.reservations.username,
                 grouped_otts = "GROUP_CONCAT(`OTT_ID`)",
                 sum_paid = "SUM(`user_paid`)",
                 count = db.reservations.id.count()
                 )
-    groupby = "IFNULL(PP_e_mail, id)"
+    groupby = "IFNULL(username, id)"
     if request.vars['group_includes_name']:
         groupby += ", IFNULL(verified_donor_name,id)"
     rows = db(db.reservations.verified_time != None).select(
         cols['donor_name'], 
         cols['e_mail'], 
-        cols['pp_name'], 
+        cols['username'], 
         cols['grouped_otts'], 
         cols['sum_paid'],
         cols['count'],
@@ -266,6 +266,9 @@ def SPONSOR_UPDATE():
         #grab important information
         twittername_t = read_only['twitter_name']
         verified_name_t = request.vars.verified_name
+        username_t = request.vars.username
+        verified_donor_title_t = verified_donor_title=request.vars.get('verified_donor_title'),
+        verified_donor_name_t = verified_donor_name=request.vars.get('verified_donor_name'),
         binomial_name_t = read_only['name']
         common_name_t = read_only['common_name']
         ott_t = read_only['OTT_ID']
@@ -276,8 +279,19 @@ def SPONSOR_UPDATE():
             if mail is None:
                 response.flash = reason
             else:
-                gen_email = emails(ott_t, binomial_name_t, common_name_t, verified_name_t, email_t, PP_first_name=read_only['PP_first_name'], 
-                    PP_second_name=read_only['PP_second_name'], sponsor_for=(request.vars.verified_kind=='for'))
+                gen_email = emails(
+                    username_t,
+                    ott_t,
+                    binomial_name_t,
+                    common_name_t,
+                    verified_name_t,
+                    email_t,
+                    verified_donor_title_t,
+                    verified_donor_name_t,
+                    PP_first_name=read_only['PP_first_name'], 
+                    PP_second_name=read_only['PP_second_name'], 
+                    sponsor_for=(request.vars.verified_kind=='for'),
+                )
                 #for html, see http://web2py.com/books/default/chapter/29/08/emails-and-sms#Combining-text-and-HTML-emails
                 if mail.send(**gen_email):
                     #update the emailed_re_sponsorship (time when contacted)
@@ -545,32 +559,49 @@ def SHOW_EMAILS():
     email_list = OrderedDict()
     
     #first find the sponsors that haven't gone through for some reason.
-    sponsors = db(((db.reservations.e_mail != None) | 
-                   (db.reservations.twitter_name != None)   | 
-                   (db.reservations.allow_contact != None)   | 
-                   (db.reservations.user_sponsor_kind != None)   | 
-                   (db.reservations.user_sponsor_name != None)   | 
-                   (db.reservations.user_paid != None)   | 
-                   (db.reservations.user_more_info != None)) &
-                  ((db.reservations.PP_transaction_code == None) |
-                   (db.reservations.verified_paid == None))).select(db.reservations.e_mail, 
-                                                             db.reservations.user_preferred_image_src,
-                                                             db.reservations.user_preferred_image_src_id,
-                                                             db.reservations.name,
-                                                             db.reservations.user_sponsor_kind,
-                                                             db.reservations.user_sponsor_name,
-                                                             db.reservations.OTT_ID,
-                                                             db.reservations.admin_comment,
-                                                             db.reservations.user_message_OZ,
-                                                             orderby=~db.reservations.reserve_time)
+    sponsors = db(
+        ((db.reservations.e_mail != None) | 
+         (db.reservations.twitter_name != None)   | 
+         (db.reservations.allow_contact != None)   | 
+         (db.reservations.user_sponsor_kind != None)   | 
+         (db.reservations.user_sponsor_name != None)   | 
+         (db.reservations.user_paid != None)   | 
+         (db.reservations.user_more_info != None)) &
+        ((db.reservations.PP_transaction_code == None) |
+         (db.reservations.verified_paid == None))
+        ).select(
+            db.reservations.e_mail, 
+            db.reservations.user_preferred_image_src,
+            db.reservations.user_preferred_image_src_id,
+            db.reservations.username,
+            db.reservations.name,
+            db.reservations.user_donor_title,
+            db.reservations.user_donor_name,
+            db.reservations.user_sponsor_kind,
+            db.reservations.user_sponsor_name,
+            db.reservations.OTT_ID,
+            db.reservations.admin_comment,
+            db.reservations.user_message_OZ,
+            orderby=~db.reservations.reserve_time
+        )
 
     otts = [s.OTT_ID for s in sponsors]                                                         
     cnames = OZfunc.get_common_names(otts)
     for s in sponsors:
         #we can't use the paypal emails etc because we haven't been paid!
         if s.e_mail:
-            details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.user_sponsor_name, s.e_mail, sponsor_for=s.user_sponsor_kind=='for', email_type='no_payment')
-            if s.user_preferred_image_src and s.user_preferred_image_src_id and local_pic is not None:
+            details = emails(
+                s.username, # Probably None because this han't been verified
+                s.OTT_ID,
+                s.name,
+                cnames.get(s.OTT_ID),
+                s.user_sponsor_name,
+                s.e_mail,
+                s.user_donor_title,
+                s.user_donor_name,
+                sponsor_for=s.user_sponsor_kind=='for',
+                email_type='no_payment')
+            if s.user_preferred_image_src and s.user_preferred_image_src_id and local_pic_path is not None:
                 details['local_pic'] = os.path.isfile(
                     os.path.join(
                         local_pic_path(s.user_preferred_image_src, s.user_preferred_image_src_id),
@@ -594,25 +625,45 @@ def SHOW_EMAILS():
             
     imgs = []
     #now look for sponsors that haven't been verified yet
-    sponsors = db((db.reservations.verified_paid != None) & #they have paid through paypal
-                   (db.reservations.verified_paid != '')   & 
-                   (db.reservations.verified_time == None)).select(db.reservations.e_mail, 
-                                                             db.reservations.PP_e_mail,
-                                                             db.reservations.user_preferred_image_src,
-                                                             db.reservations.user_preferred_image_src_id,
-                                                             db.reservations.user_sponsor_name,
-                                                             db.reservations.user_sponsor_kind,
-                                                             db.reservations.name,
-                                                             db.reservations.PP_first_name,
-                                                             db.reservations.PP_second_name,
-                                                             db.reservations.OTT_ID,
-                                                             db.reservations.user_message_OZ,
-                                                             orderby=~db.reservations.reserve_time)
+    sponsors = db(
+        (db.reservations.verified_paid != None) & #they have paid through paypal
+        (db.reservations.verified_paid != '')   & 
+        (db.reservations.verified_time == None)
+    ).select(
+        db.reservations.e_mail,
+        db.reservations.PP_e_mail,
+        db.reservations.user_preferred_image_src,
+        db.reservations.user_preferred_image_src_id,
+        db.reservations.user_sponsor_name,
+        db.reservations.user_sponsor_kind,
+        db.reservations.username,
+        db.reservations.name,
+        db.reservations.user_donor_title,
+        db.reservations.user_donor_name,
+        db.reservations.PP_first_name,
+        db.reservations.PP_second_name,
+        db.reservations.OTT_ID,
+        db.reservations.user_message_OZ,
+        orderby=~db.reservations.reserve_time,
+    )
     otts = [s.OTT_ID for s in sponsors]                                                         
     cnames = OZfunc.get_common_names(otts)
     for s in sponsors:
-        details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.user_sponsor_name, s.e_mail or s.PP_e_mail, s.PP_first_name, s.PP_second_name, sponsor_for= (s.user_sponsor_kind=='for'), email_type='to_verify')
-        if s.user_preferred_image_src and s.user_preferred_image_src_id and local_pic is not None:
+        details = emails(
+            s.username,
+            s.OTT_ID,
+            s.name,
+            cnames.get(s.OTT_ID),
+            s.user_sponsor_name,
+            s.e_mail or s.PP_e_mail,
+            s.user_donor_title,
+            s.user_donor_name,
+            s.PP_first_name,
+            s.PP_second_name,
+            sponsor_for=(s.user_sponsor_kind=='for'),
+            email_type='to_verify',
+        )
+        if s.user_preferred_image_src and s.user_preferred_image_src_id and local_pic_path is not None:
             details['local_pic'] = os.path.isfile(
                 os.path.join(
                     local_pic_path(s.user_preferred_image_src, s.user_preferred_image_src_id),
@@ -635,24 +686,41 @@ def SHOW_EMAILS():
         imgs.append([s.user_preferred_image_src, s.user_preferred_image_src_id])
 
     #now go through each verified_time, by day
-    sponsors = db(db.reservations.verified_time != None).select(db.reservations.e_mail, 
-                                                                db.reservations.PP_e_mail,
-                                                                db.reservations.verified_time,
-                                                                db.reservations.verified_preferred_image_src,
-                                                                db.reservations.verified_preferred_image_src_id,
-                                                                db.reservations.verified_name,
-                                                                db.reservations.verified_kind,
-                                                                db.reservations.name,
-                                                                db.reservations.PP_first_name,
-                                                                db.reservations.PP_second_name,
-                                                                db.reservations.OTT_ID,
-                                                                db.reservations.user_message_OZ,
+    sponsors = db(
+        db.reservations.verified_time != None
+    ).select(
+        db.reservations.e_mail, 
+        db.reservations.PP_e_mail,
+        db.reservations.verified_time,
+        db.reservations.verified_preferred_image_src,
+        db.reservations.verified_preferred_image_src_id,
+        db.reservations.verified_name,
+        db.reservations.verified_kind,
+        db.reservations.name,
+        db.reservations.verified_donor_title,
+        db.reservations.verified_donor_name,
+        db.reservations.PP_first_name,
+        db.reservations.PP_second_name,
+        db.reservations.OTT_ID,
+        db.reservations.user_message_OZ,
                                                                 orderby=~db.reservations.reserve_time)
     otts = [s.OTT_ID for s in sponsors]                                                         
     cnames = OZfunc.get_common_names(otts)
     for s in sponsors:
-        details = emails(s.OTT_ID, s.name, cnames.get(s.OTT_ID), s.verified_name, s.e_mail or s.PP_e_mail, s.PP_first_name, s.PP_second_name, sponsor_for= s.verified_kind=='for', email_type='live')
-        if s.verified_preferred_image_src and s.verified_preferred_image_src_id and local_pic is not None:
+        details = emails(
+            s.OTT_ID,
+            s.name,
+            cnames.get(s.OTT_ID),
+            s.verified_name,
+            s.e_mail or s.PP_e_mail,
+            s.verified_donor_title,
+            s.verified_donor_name,
+            s.PP_first_name,
+            s.PP_second_name,
+            sponsor_for=s.verified_kind=='for',
+            email_type='live',
+        )
+        if s.verified_preferred_image_src and s.verified_preferred_image_src_id and local_pic_path is not None:
             # do we have a local picture, or is it missing?
             # Can't use thumbnail_url() as it might refer to a remote location (e.g. image.onezoom.org)
             details['local_pic'] = os.path.isfile(
@@ -677,8 +745,8 @@ def SHOW_EMAILS():
 
         imgs.append([s.verified_preferred_image_src, s.verified_preferred_image_src_id])
     
-    onezoom_via_eol_images= [i[1] for i in imgs if i[0]==src_flags['onezoom_via_eol']]
-    eol_images = [i[1] for i in imgs if i[0]==src_flags['eol']]
+    onezoom_via_eol_images= [str(i[1]) for i in imgs if i[0]==src_flags['onezoom_via_eol']]
+    eol_images = [str(i[1]) for i in imgs if i[0]==src_flags['eol']]
     contactable_emails = db((db.reservations.allow_contact == True)       &
                             (db.reservations.PP_transaction_code != None) & #requires transaction gone through
                             (db.reservations.verified_time != None)       & #requires verified
@@ -901,23 +969,41 @@ def REIMPORT_TREE_TABLES():
     return dict(leaffile = leaffile, nodefile = nodefile, unsponsoredleaffile=unsponsoredleaffile, status=status, sql_cmds=[sql_cmd1, sql_cmd2, sql_cmd3], ret_text=ret_text)
 
 @OZfunc.require_https_if_nonlocal()
-def emails(ott, species_name, common_name, sponsor_name, email, PP_first_name=None, PP_second_name=None, sponsor_for=False, email_type='live'):
+def emails(
+    username,
+    ott,
+    species_name,
+    common_name,
+    sponsor_name,
+    email,
+    donor_title,
+    donor_name,
+    PP_first_name=None,
+    PP_second_name=None,
+    sponsor_for=False,
+    email_type='live',
+):
     """
     The email texts that we might want to send out
     email_type can be 'no_payment', 'to_verify', or e.g. 'live'
     """
+    for_name = ""
+    full_name = "sponsor"
+    if donor_name:
+        full_name = donor_name
+        if donor_title:
+            full_name = donor_title + ". " + full_name
     if sponsor_for:
         for_name = " for " + sponsor_name
-        if (PP_first_name or PP_second_name):
-            username = " ".join([PP_first_name or "", PP_second_name or ""]).strip()
-        else:
-            username = "sponsor"
+        if full_name == "sponsor" and (PP_first_name or PP_second_name):
+            full_name = " ".join([PP_first_name or "", PP_second_name or ""]).strip()
     else:
-        username = sponsor_name
-        for_name = ""
+        if full_name == "sponsor":
+            full_name = sponsor_name
 
     return ozmail.template_mail(email_type, dict(
         username=username,
+        full_name=full_name,
         ott=ott,
         species_name=OZfunc.nice_species_name(species_name, common_name),
         the_species=OZfunc.nice_species_name(species_name, common_name, the=True),

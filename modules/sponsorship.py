@@ -711,7 +711,8 @@ def sponsorship_email_reminders(for_usernames=None):
 
     Returns a per-username dict, with
     - email_address: The e-mail address to contact them on
-    - user_donor_title: Donor title, e.g. "Mr."
+    - full_name: "{Donor title}. {Donor name}" or if not, look for a "sponsor by" name
+    - pp_name: "{PP firstname} {PP lastname}"
     - user_donor_name: Donor name
     - intial_reminders: reservation rows that need an initial reminder
     - final_reminders: reservation rows that need an final reminder
@@ -752,10 +753,9 @@ def sponsorship_email_reminders(for_usernames=None):
             # Add entry if not yet there
             out[r.username] = dict(
                 email_address = usernames.email_for_username(r.username),
-                user_donor_title=r.user_donor_title,
-                user_donor_name=r.user_donor_name,
+                full_name=None,
+                pp_name=None,
                 user_sponsor_lang=r.user_sponsor_lang,
-
                 initial_reminders=[],
                 final_reminders=[],
                 not_yet_due=[],
@@ -767,6 +767,17 @@ def sponsorship_email_reminders(for_usernames=None):
 
         status, _, _ = sponsorship_get_leaf_status(r.OTT_ID)
 
+        if (r.verified_donor_name):
+            # replace with the most recent
+            out[r.username]["full_name"] = r.verified_donor_name.strip()
+            if (r.verified_donor_title):
+                out[r.username]["full_name"] = r.verified_donor_title + ". " + out[r.username]["full_name"]
+        elif out[r.username]["full_name"] is None and r.verified_kind == "by":
+            # Only use sponsor by as a last resort
+            out[r.username]["full_name"] = r.verified_name
+        if (r.PP_first_name or r.PP_second_name):
+            # replace with the most recent
+            out[r.username]["pp_name"] = f"{r.PP_first_name} {r.PP_second_name}"
         if status != '':
             # This item now banned/invalid, shouldn't be sending reminders.
             out[r.username]['unsponsorable'].append(r.OTT_ID)

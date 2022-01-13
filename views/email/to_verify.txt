@@ -1,6 +1,6 @@
 Your OneZoom sponsorship of {{=XML(species_name)}}
 
-Dear {{=XML(username)}},
+Dear {{=XML(full_name)}},
 
 Thank you so much for your donation to OneZoom. We have received your payment
 for {{=XML(the_species)}}, and are about to verify your sponsorship text. This should

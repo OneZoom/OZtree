@@ -1,6 +1,6 @@
 {{=XML(T("OneZoom sponsorship reminder" if 'automated' in vars() else "Renew your onezoom sponsorships"))}}
 
-Dear {{=XML(user_donor_title)}}. {{=XML(user_donor_name)}},
+Dear {{=XML(full_name || pp_name)}},
 
 To renew your sponsorships, visit this URL:
 {{=XML(renew_url)}}
@@ -13,11 +13,11 @@ To renew your sponsorships, visit this URL:
 {{for ott in initial_reminders:}}* {{=XML(common_names[ott])}} ({{=XML(ott)}})
 {{pass}}{{pass}}
 
-{{if len(not_yet_due):}}Thankyou for sponsoring these species:
+{{if len(not_yet_due):}}Thank you for sponsoring these species:
 {{for ott in not_yet_due:}}* {{=XML(common_names[ott])}} ({{=XML(ott)}})
 {{pass}}{{pass}}
 
-{{if len(unsponsorable):}}Thankyou for sponsoring these species. Contact us if you'd like to discuss renewing:
+{{if len(unsponsorable):}}Thank you for sponsoring these species. Contact us if you'd like to discuss renewing:
 {{for ott in unsponsorable:}}* {{=XML(common_names[ott])}} ({{=XML(ott)}})
 {{pass}}{{pass}}
 

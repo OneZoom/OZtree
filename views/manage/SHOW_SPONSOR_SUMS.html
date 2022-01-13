@@ -4,12 +4,12 @@
   <div class="row-fluid">
     <div class="col-md-12">
 
-    <h2>A list of amounds paid by sponsors, grouped by paypal email</h2>
+    <h2><a href="{{=URL('index')}}">Management</a>: amounts paid by sponsors, grouped by username</h2>
     <p>Highest amounts first, with totals >&pound;150 highlighed in <span style="background-color:#FFCCCC">pink</span>. Donors who have sponsored more than one leaf have <span style="color:red">OTTs in red</span>, and are good candidates for filling out the <q>verified_donor_name</q> field by hand in the db. This can be done by copying and pasting the list of numbers below into an SQL query like <pre>update reservations set verified_donor_name = 'Richard Dawkins' where OTT_ID in (...)</pre></p>
     <p>Try <a href="{{=URL(vars={'group_includes_name':1})}}">this link</a> to additionally group by <q>verified_donor_name</q>, which will split up payments from the same paypal account but which have a different <q>verified_donor_name</q> - this will be equivalent to the display shown on the <a href="{{=URL('default','donor_list')}}">donor_list page</a>. Since <q>verified_donor_name</q> is currently inserted by hand for large value donors, it may be worth splitting up the lower value donors into individual leaf sponsorships so that we don't have to email them to get the donor names.</p>
 <ul>
 {{for person in rows:}}
-<li style="{{=('background-color:#FFCCCC' if person[cols['sum_paid']]>150 else '')}}">&pound;{{=person[cols['sum_paid']]}}: {{=person[cols['donor_name']] or person[cols['e_mail']]}} {{=("(" + person[cols['pp_name']]+")") if person[cols['pp_name']] else ''}}. <span style="color:{{='red' if person[cols['count']]>1 else 'black'}}">OTTs: {{=person[cols['grouped_otts']]}}</span></li>
+<li style="{{=('background-color:#FFCCCC' if person[cols['sum_paid']]>150 else '')}}">&pound;{{=person[cols['sum_paid']]}}: {{=person[cols['donor_name']] or person[cols['e_mail']]}} {{=("(user: " + person[cols['username']]+")") if person[cols['username']] else 'no username'}}. <span style="color:{{='red' if person[cols['count']]>1 else 'black'}}">OTTs: {{=person[cols['grouped_otts']]}}</span></li>
 {{pass}}
 </ul>
 
