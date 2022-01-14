@@ -684,11 +684,8 @@ def sponsor_renew_request():
                 to=user_reminders['email_address'],
             )
             if mail is None:
-                print(mailargs['message'])
-                response.flash = 'NB: %s, so cannot send:\n%s' % (
-                    reason,
-                    mailargs['message'],
-                )
+                response.flash = 'NB: %s, so cannot send email.' % reason
+                
             elif mail.send(**mailargs):
                 response.flash = 'An e-mail has been sent to %s' % user_identifier
             else:
