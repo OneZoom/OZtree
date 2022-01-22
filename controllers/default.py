@@ -17,7 +17,7 @@ from sponsorship import (
     reservation_add_to_basket, reservation_confirm_payment, reservation_expire,
     sponsorship_expiry_soon_date,
     sponsorship_email_reminders, sponsor_verify_url,
-    sponsorship_restrict_contact,
+    sponsorship_restrict_contact, sponsor_renew_request_logic,
     sponsorship_config, sponsorable_children_query)
 
 from usernames import usernames_associated_to_email
@@ -25,7 +25,7 @@ from usernames import usernames_associated_to_email
 from partners import partner_identifiers_for_reservation_name
 
 from OZfunc import (
-    nice_species_name, get_common_name, get_common_names, __release_info,
+    nice_name, nice_name_from_otts, get_common_name, get_common_names, __release_info,
     language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, add_the,
     otts2ids, nodes_info_from_array, nodes_info_from_string, extract_summary)
 
@@ -140,14 +140,14 @@ def index():
             if not text_titles[startpoint_key]:
                 if vn is not None:
                     has_vernacular.add(startpoint_key)
-                text_titles[startpoint_key] = nice_species_name(
+                text_titles[startpoint_key] = nice_name(
                     (titles[ott] if vn is None else None), vn, html=True,
-                    leaf=ott not in st_node_otts, break_line=2)
+                    is_species=ott not in st_node_otts, break_line=2)
         # ... and another for the sponsored items (both common and sci in the string)
         if vn is not None:
             has_vernacular.add(ott)
-        titles[ott] = nice_species_name(
-            titles[ott], vn, html=True, leaf=ott not in st_node_otts, 
+        titles[ott] = nice_name(
+            titles[ott], vn, html=True, is_species=ott not in st_node_otts, 
             first_upper=True, break_line=1)
     titles.update(text_titles)
 
@@ -384,8 +384,8 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
             'status_code',
             None)
 
-        long_name = nice_species_name(leaf_entry.name, common_name, html=True, leaf=True, the=False)
-        the_long_name = nice_species_name(leaf_entry.name, common_name, html=True, leaf=True, the=True)
+        long_name = nice_name(leaf_entry.name, common_name, html=True, is_species=True, the=False)
+        the_long_name = nice_name(leaf_entry.name, common_name, html=True, is_species=True, the=True)
 
         #get the best picture for this ott, if there is one.
         query = (db.images_by_ott.ott == OTT_ID_Varin)
@@ -649,51 +649,20 @@ def sponsor_replace_page():
 
 def sponsor_renew_request():
     """
-    Request a renewal link emailed to you
+    Request a renewal link emailed to you.
     """
     form = FORM(
         LABEL("E-mail or Username"),
         INPUT(_name='user_identifier', _class="uk-input uk-margin-bottom"),
         INPUT(_type='submit', _class="oz-pill pill-leaf"))
     if form.accepts(request.vars, session=None):
-        user_identifier = form.vars.user_identifier.strip()
-        # Get all reminder blocks for usernames associated to this e-mail address
-        usernames = usernames_associated_to_email(user_identifier) if '@' in user_identifier else [user_identifier]
-        user_reminders = list(sponsorship_email_reminders(usernames).values())
-
-        if len(user_reminders) == 0:
-            if is_testing:
-                response.flash = 'Unknown e-mail address %s' % user_identifier
-            else:
-                response.flash = 'An e-mail has been sent to %s' % user_identifier
-        elif len(user_reminders) > 1:
-            response.flash = 'Many users associated with e-mail address %s' % user_identifier
-        else:
-            user_reminders = user_reminders[0]
-            user_reminders['common_names'] = get_common_names(
-                user_reminders['unsponsorable'] + user_reminders['not_yet_due'] +
-                user_reminders['initial_reminders'] + user_reminders['final_reminders'],
-                return_nulls=True,
-                lang=user_reminders['user_sponsor_lang'],
-            )
-
-            mail, reason = ozmail.get_mailer()
-            mailargs = ozmail.template_mail(
-                'sponsor_renew_reminder',
-                user_reminders,
-                to=user_reminders['email_address'],
-            )
-            if mail is None:
-                response.flash = 'NB: %s, so cannot send email.' % reason
-                
-            elif mail.send(**mailargs):
-                response.flash = 'An e-mail has been sent to %s' % user_identifier
-            else:
-                response.flash = 'Could not send e-mail to %s' % user_identifier
+        response.flash = sponsor_renew_request_logic(
+            form.vars.user_identifier.strip(),
+            mailer=ozmail.get_mailer()
+        )
     return dict(
         form=form,
     )
-
 
 def sponsor_unsubscribe():
     """
@@ -941,7 +910,7 @@ def sponsor_renew():
         ],
         sci_names={k:r.name for k, r in rows_by_ott.items()},
         html_names={
-            ott:nice_species_name(rows_by_ott[ott].name, vn, html=True, leaf=True, first_upper=True, break_line=2)
+            ott:nice_name(rows_by_ott[ott].name, vn, html=True, is_species=True, first_upper=True, break_line=2)
             for ott,vn in get_common_names(rows_by_ott.keys(), return_nulls=True).items()
         },
         images=images,
@@ -988,15 +957,14 @@ def sponsored():
         limitby=limitby
         )
 
-    pds=set()
-    sci_names = {r.OTT_ID:r.name for r in curr_rows}
-    html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).items()}
+    pds = set()
+    html_names = nice_name_from_otts([r.OTT_ID for r in curr_rows], leaf_only=True, html=True, first_upper=True, break_line=2)
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
-    default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(sci_names.keys()) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
+    default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(html_names.keys()) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
     #also look at the nondefault images if present - 
     user_images = {}
     for r in curr_rows:
-        if r.user_nondefault_image != 0:
+        if r.user_nondefault_image:
             user_images[r.OTT_ID] = db(
                 (db.images_by_ott.src_id==r.verified_preferred_image_src_id) &
                 (db.images_by_ott.src==r.verified_preferred_image_src)
@@ -1006,8 +974,15 @@ def sponsored():
                     orderby=~db.images_by_ott.src).first()
     if (request.vars.highlight_pd):
         pds.add(None) #ones without a src_id are public doman
-        pds |= set([l['src_id'] for k,l in default_images.items() if l['licence'].endswith(u'\u009C')]) #all pd pics should end with \u009C on the licence
-        pds |= set([l['src_id'] for k,l in user_images.items() if l['licence'].endswith(u'\u009C')]) #all pd pics should end with \u009C on the licence
+        pds |= set(
+            l['src_id']
+            for k, l in default_images.items()
+            if l and l['licence'].endswith(u'\u009C')) #all pd pics should end with \u009C on the licence
+        pds |= set( 
+            l['src_id']
+            for k, l in user_images.items()
+            if l and l['licence'].endswith(u'\u009C') #all pd pics should end with \u009C on the licence
+        )
     return dict(rows=curr_rows, page=page, items_per_page=items_per_page, tot=tot, vars=request.vars, pds=pds, html_names=html_names, user_images=user_images, default_images=default_images)
 
 
@@ -1060,11 +1035,7 @@ def donor():
         page=page,
         items_per_page=items_per_page,
         rows=rows,
-        sci_names={k:r.name for k, r in rows_by_ott.items()},
-        html_names={
-            ott:nice_species_name(rows_by_ott[ott].name, vn, html=True, leaf=True, first_upper=True, break_line=2)
-            for ott,vn in get_common_names(rows_by_ott.keys(), return_nulls=True).items()
-        },
+        html_names=nice_name_from_otts(rows_by_ott.values(), html=True, leaf_only=True, first_upper=True, break_line=2),
         images=images,
         most_recent=most_recent,
         sponsor_status=sponsor_status,
@@ -1102,8 +1073,8 @@ def donor_list():
               db.reservations.verified_more_info,
               groupby=groupby, orderby= sum_paid + " DESC, verified_time, reserve_time",
               limitby=limitby)
-    sci_names = {int(r[grouped_otts]):r.reservations.name for r in curr_rows if r[n_leaves]==1} #only get sci names etc for unary sponsors
-    html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).items()}
+    names_for = [int(r[grouped_otts]) for r in curr_rows if r[n_leaves]==1] #only get names etc for unary sponsors
+    html_names = nice_names_from_otts(names_for, html=True, leaf_only=True, first_upper=True, break_line=2)
     otts = [int(ott) for r in curr_rows for ott in r[grouped_otts].split(",") if r[grouped_otts]]
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
     default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(otts) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
@@ -1295,7 +1266,7 @@ def sponsor_node_price():
                 sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows_with_img})
 
         #now construct the vernacular names
-        html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(otts, return_nulls=True).items()}
+        html_names = {ott:nice_name(sci_names[ott], vn, html=True, is_species=True, first_upper=True) for ott,vn in get_common_names(otts, return_nulls=True).items()}
         return dict(
             otts=otts,
             image_urls=image_urls,
@@ -1396,7 +1367,7 @@ def sponsor_handpicks():
         #Now find the vernacular names for all these species
         all_otts = [ott for price in otts for ott in otts[price]]
         if all_otts:
-            html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(all_otts, return_nulls=True).items()}
+            html_names = {ott:nice_name(sci_names[ott], vn, html=True, is_species=True, first_upper=True) for ott,vn in get_common_names(all_otts, return_nulls=True).items()}
             rows = db(db.reservations.OTT_ID.belongs(all_otts) & (db.reservations.verified_time != None)).select(db.reservations.OTT_ID, db.reservations.verified_kind, db.reservations.verified_name)
             reserved = {r.OTT_ID:[r.verified_kind, r.verified_name] for r in rows}
                     
@@ -1917,7 +1888,7 @@ def text_tree(location_string):
             except:
                 pass
         if i.get('vernacular') or i.get('sciname'):
-            i['htmlname'] = nice_species_name(i.get('sciname'), i.get('vernacular'), html=True, leaf= (id<=0))
+            i['htmlname'] = nice_name(i.get('sciname'), i.get('vernacular'), html=True, is_species=(id<=0))
         else:
             i['htmlname'] = SPAN("unnamed {} {}".format('group' if id>=0 else 'species', abs(id)), _class="unnamed")
         if i['ott'] in iucn:
@@ -2011,20 +1982,20 @@ def life_treasure():
     for row in data['leaves']:
         ott = row[leaf_cols['ott']]
         if ott:
-            formatted_name_by_ott[ott] = nice_species_name(
+            formatted_name_by_ott[ott] = nice_name(
                 scientific=row[leaf_cols['name']],
                 common=vernacular_by_ott.get(ott, None),
                 html=True,
-                leaf=True,
+                is_species=True,
                 first_upper=True)
     for row in data['nodes']:
         ott = row[node_cols['ott']]
         if ott:
-            formatted_name_by_ott[ott] = nice_species_name(
+            formatted_name_by_ott[ott] = nice_name(
                 scientific=row[node_cols['name']],
                 common=vernacular_by_ott.get(ott, None),
                 html=True,
-                leaf=False,
+                is_species=False,
                 first_upper=True)
 
     

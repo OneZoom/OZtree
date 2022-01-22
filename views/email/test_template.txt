@@ -1,0 +1,5 @@
+Test template
+
+This is an example of a template file, mainly for use in unit testing. If interpreted as an email, the first line is taken as the subject (so here, 'subject: "Test template"')
+
+You can use web2py template syntax in this file, e.g. {{try:}}{{=test_value}}{{except:}}No `test_value` parameter passed{{pass}}

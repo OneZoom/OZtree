@@ -4,11 +4,12 @@ import re
 from gluon import current
 from gluon.utils import web2py_uuid
 
+import ozmail
+import usernames
 from OZfunc import (
-    child_leaf_query
+    child_leaf_query, nice_name_from_otts
 )
 
-import usernames
 
 from .partners import partner_definitions, partner_identifiers_for_reservation_name
 
@@ -713,9 +714,10 @@ def sponsorship_email_reminders(for_usernames=None):
     - email_address: The e-mail address to contact them on
     - full_name: "{Donor title}. {Donor name}" or if not, look for a "sponsor by" name
     - pp_name: "{PP firstname} {PP lastname}"
-    - user_donor_name: Donor name
-    - intial_reminders: reservation rows that need an initial reminder
-    - final_reminders: reservation rows that need an final reminder
+    - inital_reminders: reservation OTT_IDs that need an initial reminder
+    - final_reminders: reservation OTT_IDs that need an final reminder
+    - not_yet_due: reservation OTT_IDs that are not due for renewal
+    - unsponsorable: reservation OTT_IDs that need bespoke treatment for renewal
     - renew_url: Where to go to renew sponsorships
     - unsubscribe_url: Where to go to rid yourself of renewal messages
     """
@@ -800,6 +802,59 @@ def sponsorship_email_reminders(for_usernames=None):
     out = dict((k, reminder) for k, reminder in out.items() if k in send_to)
     return out
 
+def sponsor_renew_request_logic(user_identifier, mailer=None, reveal_private_data=False, automated=False):
+    """
+    Manage the logic of emailing a renewal request, returning a message to flash up. In some
+    management pages, reveal_private_data can be set to True, in which case the info returned
+    can contain private data such as email addresses from the DB or HMAC hashed keys.
+    If mailer is not None then an email should be sent, if the email address is in the db,
+    but should be sent to an admin address if the site is in testing mode.
+    
+    render_dict gives extra render variables to pass to the email template.
+    """
+    # Get all reminder blocks for usernames associated to this e-mail address
+    unames = usernames.usernames_associated_to_email(user_identifier) if '@' in user_identifier else [user_identifier]
+    try:
+        user_reminders = list(sponsorship_email_reminders(unames).values())
+    except ValueError:
+        user_reminders = []
+    info = ''
+    if not reveal_private_data:
+        info = 'If the user %s exists in our database, we will send them an email' % user_identifier
+    if len(user_reminders) == 0:
+        if reveal_private_data:
+            if not unames:
+                info = 'Unknown email %s' % user_identifier
+            else:
+                info = 'Unknown user %s' % user_identifier
+    elif len(user_reminders) > 1:
+        if reveal_private_data:
+            info = 'Many users associated with e-mail address %s' % user_identifier
+    else:
+        user_reminders = user_reminders[0]
+        user_reminders['nice_names'] = nice_name_from_otts(
+            user_reminders['unsponsorable'] + user_reminders['not_yet_due'] +
+            user_reminders['initial_reminders'] + user_reminders['final_reminders'],
+            leaf_only=True, html=False, first_upper=True)
+        user_reminders['automated'] = automated
+        email = user_reminders['email_address']
+        mailargs = ozmail.template_mail('sponsor_renew_reminder', user_reminders, to=email)
+        if mailer is not None:
+            mail, reason = mailer
+            if mail is None:
+                if info:
+                    info += ' (NB: %s, so cannot send email)' % reason
+                else:
+                    info = '%s, so cannot send email' % reason
+            else:
+                # Should send to the admin address if is_testing == True
+                mail.send(**mailargs)
+        elif reveal_private_data:
+            info = "The following mail should be sent to %s:\n%s" % (
+                mailargs['to'] or "the email defined in appconfig.ini/smtp.sender",
+                mailargs['message'],
+            )
+    return info
 
 def sponsorship_email_reminders_post(reminder_row):
     """Log the fact that the e-mails sent so we don't do it again"""

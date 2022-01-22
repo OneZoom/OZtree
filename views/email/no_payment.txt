@@ -2,7 +2,7 @@ Your OneZoom sponsorship of {{=XML(species_name)}}
 
 Dear {{=XML(full_name)}},
 
-Thank you for visiting OneZoom and filling out the form to sponsor the {{=XML(species_name)}} leaf{{=XML(for_name)}}.
+Thank you for visiting OneZoom and filling out the form to sponsor {{=XML(the_nice_name)}}.
 
 We noticed that something went wrong and we never received any donation from
 you on PayPal - you should not have been charged for this. If you would still

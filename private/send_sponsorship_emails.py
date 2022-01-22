@@ -22,7 +22,7 @@ from sponsorship import (
     sponsorship_email_reminders,
     sponsorship_email_reminders_post,
 )
-from OZfunc import get_common_names
+from OZfunc import nice_name_from_otts
 
 run_dryrun = 'dry-run' in sys.argv
 run_verbose = run_dryrun or ('verbose' in sys.argv)
@@ -43,11 +43,11 @@ current.request.env.wsgi_url_scheme = 'https'
 for username, user_reminders in sponsorship_email_reminders().items():
     email = user_reminders['email_address']
     verbose("*****************************\n*** Sending e-mail to %s" % email)
-    user_reminders['common_names'] = get_common_names(
+    user_reminders['nice_names'] = nice_name_from_otts(
         user_reminders['unsponsorable'] + user_reminders['not_yet_due'] +
         user_reminders['initial_reminders'] + user_reminders['final_reminders'],
-        return_nulls=True,
-        lang=user_reminders['user_sponsor_lang'],
+        lang=user_reminders['user_sponsor_lang'], leaf_only=True,
+        html=False, first_upper=True,
     )
     user_reminders['automated'] = True
     mailargs = ozmail.template_mail(

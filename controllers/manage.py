@@ -231,8 +231,8 @@ def SPONSOR_UPDATE():
         read_only['EOL_ID'] = None
     read_only['common_name'] = OZfunc.get_common_name(
         read_only['OTT_ID'], lang=read_only['user_sponsor_lang'])
-    read_only['html_name'] = OZfunc.nice_species_name(
-        read_only['name'], read_only['common_name'], html=True, leaf=True, break_line=2)
+    read_only['html_name'] = OZfunc.nice_name(
+        read_only['name'], read_only['common_name'], html=True, is_species=True, break_line=2)
     # Only stick variables in the form that will be updated by the verified page
     try:
         EoL_API_key = myconf.take('api.eol_api_key')
@@ -307,13 +307,15 @@ def SPONSOR_UPDATE():
                 twitter = Twython(myconf.take('twitter.consumer_key'), myconf.take('twitter.consumer_secret'), myconf.take('twitter.access_key'), myconf.take('twitter.access_secret'))
                 tweet = 'Thank you @{} for sponsoring {} on OneZoom. See it at {}'.format(
                     twittername_t,
-                    OZfunc.nice_species_name(binomial_name_t, common_name_t, the=True),
-                    url_t)
+                    OZfunc.nice_name(binomial_name_t, common_name_t, the=True),
+                    url_t,
+                )
                 if len(tweet) > 140:
                     tweet = 'Thank you @{} for sponsoring {} on OneZoom. See it at {}'.format(
                         twittername_t,
-                        OZfunc.nice_species_name(binomial_name_t),
-                        url_t)
+                        OZfunc.nice_name(binomial_name_t),
+                        url_t,
+                    )
                     if len(tweet) > 140:
                         tweet = 'Thank you @{} for sponsoring {} on OneZoom'.format(twittername_t, binomial_name_t)
                     
@@ -508,9 +510,10 @@ def LIST_IMAGES():
 
 @OZfunc.require_https_if_nonlocal()
 @auth.requires_membership(role='manager')
-def SHOW_RENEWAL_PAGE_URLS():
+def SHOW_RENEWAL_INFO():
     """
     Type in one or more usernames or emails and get back the renewal URL for visiting
+    plus the email that would be sent
     """
     ids = []
     if request.vars.id:
@@ -520,7 +523,9 @@ def SHOW_RENEWAL_PAGE_URLS():
             ids = [id_ for id_item in request.vars.id for id_ in id_item.split()]
 
     id_map = {}
+    info = []
     for id_string in ids:
+        info.append(sponsorship.sponsor_renew_request_logic(id_string, reveal_private_data=True))
         if '@' in id_string:
             for uname in usernames.usernames_associated_to_email(id_string):
                 if uname:
@@ -541,6 +546,9 @@ def SHOW_RENEWAL_PAGE_URLS():
             k: {uname: uname_info[uname]["renew_url"] for uname in v}
             for k, v in id_map.items()
         }
+        if info:
+            response.flash = "Email information:\n" + "\n\n".join(info)
+
         return dict(urls = renew_urls)
     except ValueError as e:
         return dict(error = str(e))
@@ -1005,7 +1013,8 @@ def emails(
         username=username,
         full_name=full_name,
         ott=ott,
-        species_name=OZfunc.nice_species_name(species_name, common_name),
-        the_species=OZfunc.nice_species_name(species_name, common_name, the=True),
+        species_name=species_name,
+        nice_name=OZfunc.nice_name(species_name, common_name),
+        the_nice_name=OZfunc.nice_name(species_name, common_name, the=True),
         for_name=for_name,
     ), to=email)

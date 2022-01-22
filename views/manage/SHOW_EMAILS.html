@@ -2,7 +2,7 @@
 {{response.files.append(URL('static', 'OZSponsor/SHOW_EMAILS.css'))}}
 {{extend 'layout.html'}}
 {{from urllib.parse import quote}}
-<h2>A list of sponsors at various stages, to email</h2>
+<h2><a href="{{=URL('index')}}">Management</a>: list sponsors at various stages, to email</h2>
 <p>Most recent first. Images that are absent from the OneZoom site are shown in <span class="missing">yellow</span>. Items where payment has not gone through may simply be so recently sponsored that payment has not yet been emailed, or may have been reserved by admin. Ones with no admin comment are in <span class="no_admin">pink</span> - these may need attention.</p><p>The verification page is <a href="{{=URL('SPONSOR_VALIDATE')}}">here</a>.</p>
 <ul>
 {{for summary,data in email_list.items():}}

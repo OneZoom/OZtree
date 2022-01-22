@@ -64,13 +64,21 @@ def clear_unittest_sponsors():
 
 
 def set_appconfig(section, key, val):
-    """Update site config (section).(key) = (val)"""
+    """Update site config (section).(key) = (val). If val is None, delete"""
     myconf = current.globalenv['myconf']
-    myconf[section][key] = str(val)
+    if val is None:
+        if key in myconf[section]:
+            del myconf[section][key]
+    else:
+        myconf[section][key] = str(val)
     full_key = ".".join((section, key))
     if full_key in myconf.int_cache:
         del myconf.int_cache[full_key]
 
+
+def set_is_testing(val):
+    """Update the global var is_testing"""
+    current.globalenv['is_testing'] = val
 
 def set_allow_sponsorship(val):
     """Update site config with new value for sponsorship.allow_sponsorship"""
@@ -84,6 +92,21 @@ def set_reservation_time_limit_mins(val):
     """Update site config with new value for sponsorship.reservation_time_limit_mins"""
     set_appconfig('sponsorship', 'reservation_time_limit_mins', val)
 
+def set_smtp(sender='me@example.com', autosend_email=1):
+    """
+    Update site config with new value for smtp server, sender, and autosend_email.
+    If sender is None, delete the server
+    If autosend_email=0, then the normal ozmail.get_mailer() function will return None
+    """
+    if sender is None:
+        set_appconfig('smtp', 'server', None)
+        set_appconfig('smtp', 'sender', None)
+        set_appconfig('smtp', 'autosend_email', autosend_email)
+    else:
+        if not 'server' in current.globalenv['myconf']['smtp'] or current.globalenv['myconf']['smtp']['server'] is None:
+            set_appconfig('smtp', 'server', 'localhost:2500')
+        set_appconfig('smtp', 'sender', sender)
+        set_appconfig('smtp', 'autosend_email', autosend_email)
 
 def purchase_reservation(otts = 1, basket_details = None, paypal_details = None, payment_amount=None, allowed_status=set(('available',)), verify=True):
     """Go through all the motions required to purchase a reservation"""

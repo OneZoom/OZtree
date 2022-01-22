@@ -100,7 +100,7 @@ def add_the(common, leaf):
     else:
         return common
 
-def nice_species_name(scientific=None, common=None, the=False, html=False, leaf=False, first_upper=False, break_line=None):
+def nice_name(scientific=None, common=None, the=False, html=False, is_species=False, first_upper=False, break_line=None):
     """
     Constructs a nice species name, with common name in there too.
     If leaf=True, add a 'species' tag to the scientific name
@@ -114,12 +114,12 @@ def nice_species_name(scientific=None, common=None, the=False, html=False, leaf=
     species_nicename = (scientific or '').replace('_',' ').strip()
     common = (common or '').strip()
     if the:
-        common = add_the(common, leaf)
+        common = add_the(common, is_species)
     if first_upper:
         common = common.capitalize()
     if html:
         if species_nicename:
-            if leaf: #species in italics
+            if is_species: #species in italics
                 species_nicename = I(species_nicename, _class=" ".join(["taxonomy", "species"]))
             else:
                 species_nicename = SPAN(species_nicename, _class="taxonomy")
@@ -243,7 +243,23 @@ def get_common_name(ott, name=None, lang=None, include_unpreferred=False):
             if vernacular is None or vernacular[1] < rscore:
                 vernacular = [r.vernacular, rscore]
         return vernacular[0] if vernacular else None
-    
+
+
+def nice_name_from_otts(otts, lang=None, leaf_only=False, **kwargs):
+    """
+    Get the nice species names (combining scientific and nice vernacular names) from
+    a set of OTTs
+    """
+    db = current.db
+    vn = get_common_names(otts, return_nulls=True, lang=lang)
+    nice = {}
+    for r in db(db.ordered_leaves.ott.belongs(otts)).select(db.ordered_leaves.ott, db.ordered_leaves.name):
+        nice[r.ott] = nice_name(r.name, vn[r.ott], is_species=True, **kwargs)
+    if not leaf_only:  # This is simply an optimization
+        for r in db(db.ordered_nodes.ott.belongs(identifiers)).select(db.ordered_nodes.ott, db.ordered_nodes.name):
+            nice[r.ott] = nice_name(r.name, vn[r.ott], is_species=False, **kwargs)
+    return nice
+
 def language(two_letter):
     return current.OZglobals['conversion_table'].get(two_letter)
 

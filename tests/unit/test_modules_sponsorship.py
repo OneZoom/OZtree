@@ -28,6 +28,7 @@ from sponsorship import (
     sponsorship_email_reminders,
     sponsorship_email_reminders_post,
     sponsorship_restrict_contact,
+    sponsor_renew_request_logic,
 )
 
 
@@ -337,10 +338,18 @@ class TestSponsorship(unittest.TestCase):
             reservation_confirm_payment("UT::invalid", 1000, dict())
 
         with self.assertRaisesRegex(ValueError, r'sale_time'):
-            reservation_confirm_payment("UT::invalid", 1000, dict(PP_transaction_code='UT::001'))
+            reservation_confirm_payment(
+                "UT::invalid",
+                1000,
+                dict(PP_transaction_code='UT::001'),
+            )
 
         with self.assertRaisesRegex(ValueError, r'basket_code UT::invalid'):
-            reservation_confirm_payment("UT::invalid", 1000, dict(PP_transaction_code='UT::001', sale_time='01:01:01 Jan 01, 2001 GMT'))
+            reservation_confirm_payment(
+                "UT::invalid",
+                1000,
+                dict(PP_transaction_code='UT::001', sale_time='01:01:01 Jan 01, 2001 GMT'),
+            )
 
     def test_reservation_confirm_payment__giftaid(self):
         """Buy a single item with giftaid on/off"""
@@ -775,8 +784,8 @@ class TestSponsorship(unittest.TestCase):
                     del r['not_yet_due']
                     del r['unsponsorable']
                 else:
-                    del r['user_donor_name']
-                    del r['user_donor_title']
+                    del r['full_name']
+                    del r['pp_name']
                     del r['user_sponsor_lang']
                 if k.endswith("unittestexamplecom"):
                     out[k] = r
@@ -867,9 +876,9 @@ class TestSponsorship(unittest.TestCase):
     def test_sponsorship_restrict_contact(self):
         # Buy 2 otts
         user1, email1 = 'bettyunittestexamplecom', 'betty@unittest.example.com'
-        r1 = util.purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))[0]
+        r1 = util.purchase_reservation(basket_details=dict(e_mail=email1))[0]
         current.request.now = (current.request.now + datetime.timedelta(days=10))
-        r2 = util.purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))[0]
+        r2 = util.purchase_reservation(basket_details=dict(e_mail=email1))[0]
 
         # Requesting reminders for no usernames returns nothing
         self.assertEqual(sponsorship_email_reminders([]), {})
@@ -973,11 +982,127 @@ class TestSponsorship(unittest.TestCase):
         status, *_ = get_reservation(ott, form_reservation_code="UT::003")
         self.assertEqual(status, 'available')
 
+class SimpleMailMock:
+    """A simple class to replace the ozmail.mailer instance for testing"""
+    def __init__(self, validate_to, validate_subject_contains, validate_message_contains):
+        self.to = validate_to
+        self.subject_contains = validate_subject_contains
+        self.message_contains = validate_message_contains
+    def send(self, **kwargs):
+        if self.to and self.to != kwargs["to"]:
+            raise ValueError(f'{kwargs["to"]} does not match {self.to} in `to:` field')
+        if self.subject_contains and self.subject_contains not in kwargs["subject"]:
+            raise ValueError(f'{kwargs["subject"]} does not contain {self.subject_contains} in `subject:` field')
+        if self.message_contains and self.message_contains not in kwargs["message"]:
+            raise ValueError("message: field does not contain " + self.message_contains)
 
+class TestSponsorRenewRequestLogic(TestSponsorship):
+    good_email = "good_email@unittest.example.com"
+    admin_email = "admin@unittest.example.com"
+    flash_text = "If the user %s exists in our database"
+
+    dummy_mail = SimpleMailMock(None, None, None)  # this always validates on `send`
+
+    validate_user_mail = SimpleMailMock(
+        good_email,
+        "Renew your OneZoom sponsorships",  # used when user has requested a renewal link
+        "To renew your sponsorships", 
+    )
+
+    validate_auto_mail = SimpleMailMock(
+        good_email,
+        "OneZoom sponsorship reminder",  # text when "automated" set (cron job)
+        "To renew your sponsorships",
+    )
+
+    validate_admin_mail = SimpleMailMock(
+        admin_email,
+        "Renew your OneZoom sponsorships",  # used when user has requested a renewal link
+        "To renew your sponsorships", 
+    )
+
+
+    def test_production_user_logic(self):
+        # Will only attempt to send emails in the normal way if is_tasting==False and smtp set up
+        util.set_is_testing(False)
+        util.set_smtp(sender=self.admin_email)
+        mailer = (self.validate_user_mail, "Mock mailer for a user-requested renewal req")
+        # Add emails to DB
+        good_r = util.purchase_reservation(basket_details=dict(e_mail=self.good_email))[0]
+        bad_r = util.purchase_reservation(basket_details=dict(e_mail="bad@unittest.example.com"))[0]
+
+        # Logic will work, but mock mailer won't match, so should raise an error
+        self.assertRaisesRegex(ValueError, "to:", sponsor_renew_request_logic, bad_r.username, mailer)
+        # Logic will work, and mock mailer matches
+        info = sponsor_renew_request_logic(self.good_email, mailer)
+        self.assertTrue(self.flash_text % self.good_email in info)
+        info = sponsor_renew_request_logic(good_r.username, mailer)
+        self.assertTrue(self.flash_text % good_r.username in info)
+        self.assertFalse(self.good_email in info)  # Should not reveal the private email if username passed
+        data = sponsorship_email_reminders(for_usernames=[good_r.username])
+        self.assertTrue(good_r.username in data)
+        self.assertTrue('renew_url' in data[good_r.username])
+        self.assertFalse(data[good_r.username]['renew_url'] in info) 
+
+        # Same flash test even if user does not exist in DB
+        for non_existing in ("ut::non_existing_user", "no_user@unittest.example.com"):
+            mailer = (self.dummy_mail, "Mailer that always passes validation")
+            info = sponsor_renew_request_logic(non_existing, mailer)
+            self.assertTrue(self.flash_text % non_existing in info)
+
+    def test_production_auto_logic(self):
+        util.set_is_testing(False)
+        util.set_smtp(sender=self.admin_email)
+        auto_mailer = (self.validate_auto_mail, "Mock mailer for an auto renewal req, e.g. from cron")
+        good_r = util.purchase_reservation(basket_details=dict(e_mail=self.good_email))[0]
+        info = sponsor_renew_request_logic(good_r.username, auto_mailer, automated=True)
+        self.assertTrue(self.flash_text % good_r.username in info)
+    
+    def test_management_reveal_private(self):
+        # The management pages show what would have been sent (revealing private data),
+        # but shouldn't actually send the email, as they do not pass a mailer
+        util.set_is_testing(False)
+        util.set_smtp(sender=self.admin_email)
+        good_r = util.purchase_reservation(basket_details=dict(e_mail=self.good_email))[0]
+        mailer = (None, "No mailer provided")
+        info = sponsor_renew_request_logic(good_r.username, None, reveal_private_data=True)
+        data = sponsorship_email_reminders(for_usernames=[good_r.username])
+        self.assertTrue(good_r.username in data)
+        self.assertTrue('renew_url' in data[good_r.username])
+        renew_url = data[good_r.username]['renew_url'] 
+        self.assertTrue('email_address' in data[good_r.username])
+        email_address = data[good_r.username]['email_address'] 
+
+
+        self.assertTrue(info.startswith("The following mail should be sent to"))
+        self.assertTrue(email_address in info)
+        self.assertTrue(renew_url in info)  # This is private data
+        
+        
+    def test_sponsor_renew_request_logic_testing(self):
+        """
+        In testing mode, send to admin
+        """
+        util.set_is_testing(True)
+        util.set_smtp(sender=self.admin_email)
+        good_r = util.purchase_reservation(basket_details=dict(e_mail=self.good_email))[0]
+        user_mailer = (self.validate_user_mail, "Validate admin email")
+        admin_mailer = (self.validate_admin_mail, "Validate admin email")
+        self.assertRaisesRegex(ValueError, "to:", sponsor_renew_request_logic, good_r.username, user_mailer)
+        info = sponsor_renew_request_logic(good_r.username, mailer=admin_mailer)
+        self.assertTrue(self.flash_text % good_r.username in info)
+        self.assertFalse(self.flash_text % self.good_email in info)  # Still don't flash up email
+        data = sponsorship_email_reminders(for_usernames=[good_r.username])
+        self.assertTrue(good_r.username in data)
+        self.assertTrue('renew_url' in data[good_r.username])
+        self.assertFalse(data[good_r.username]['renew_url'] in info) 
+        
+    
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     
-    suite.addTest(unittest.makeSuite(TestSponsorship))
-    suite.addTest(unittest.makeSuite(TestMaintenance))
+    #suite.addTest(unittest.makeSuite(TestSponsorship))
+    #suite.addTest(unittest.makeSuite(TestMaintenance))
+    suite.addTest(unittest.makeSuite(TestSponsorRenewRequestLogic))
     unittest.TextTestRunner(verbosity=2).run(suite)
 

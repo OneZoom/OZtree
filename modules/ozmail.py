@@ -43,15 +43,24 @@ def normalize_whitespace(s):
     return s
 
 
-def template_mail(template_name, render_dict, **extra_args):
-    """Template mail.send kwargs from a template file"""
+def template_mail(template_name, render_dict, to, **extra_args):
+    """Template mail.send kwargs from a template file. If is_testing is true"""
     response = current.globalenv['response']
-
+    is_testing = current.globalenv['is_testing']
+    myconf = current.globalenv['myconf']
+    
     email_body = response.render('email/%s.txt' % template_name, render_dict, escape=False).strip()
     email_subject, email_body = email_body.split('\n', 1)
+    if is_testing:
+        email_subject = "Test email intended for " + str(to) + " re: " + email_subject
+        try:
+            to = myconf.take('smtp.sender')
+        except:
+            to = None
     out = dict(
         subject=email_subject.strip(),
         message=normalize_whitespace(email_body),
+        to=to,
     )
     out.update(extra_args)
     return out

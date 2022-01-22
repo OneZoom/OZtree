@@ -8,7 +8,7 @@ and raise awareness about the variety of life on earth together with the need
 to conserve it.
 
 We are very pleased to be able to tell you that your sponsored leaf,
-{{=XML(the_species)}}, has now appeared on the tree decorated with your sponsorship
+{{=XML(the_nice_name)}}, has now appeared on the tree decorated with your sponsorship
 details.
 
 It’s now there for all to see at:
