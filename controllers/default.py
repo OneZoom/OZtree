@@ -7,6 +7,7 @@ import itertools
 import re
 import random
 import urllib.parse
+import urllib.request
 from json import dumps
 from collections import OrderedDict
 
