@@ -8,7 +8,7 @@ import re
 import random
 import urllib.parse
 import urllib.request
-from json import dumps
+import json
 from collections import OrderedDict
 
 import ozmail
@@ -413,9 +413,9 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
         response.view = request.controller + "/spl_banned." + request.extension
         return dict(
             species_name    = leaf_entry.name,
-            js_species_name = dumps(leaf_entry.name),
+            js_species_name = json.dumps(leaf_entry.name),
             common_name     = common_name,
-            js_common_name  = dumps(common_name.capitalize() if common_name else None),
+            js_common_name  = json.dumps(common_name.capitalize() if common_name else None),
             long_name       = long_name,
             default_image   = default_image,
             user_image      = user_image,
@@ -428,8 +428,8 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
             response.view = request.controller + "/spl_elsewhere_not." + request.extension
         return dict(
             species_name    = leaf_entry.name,
-            js_species_name = dumps(leaf_entry.name),
-            js_common_name  = dumps(common_name.capitalize() if common_name else None),
+            js_species_name = json.dumps(leaf_entry.name),
+            js_common_name  = json.dumps(common_name.capitalize() if common_name else None),
             the_long_name   = the_long_name,
             iucn_code       = iucn_code,
             default_image   = default_image,
@@ -443,9 +443,9 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
         response.view = request.controller + "/spl_sponsored." + request.extension
         return dict(
             species_name      = leaf_entry.name,
-            js_species_name   = dumps(leaf_entry.name),
+            js_species_name   = json.dumps(leaf_entry.name),
             common_name       = common_name,
-            js_common_name    = dumps(common_name.capitalize() if common_name else None),
+            js_common_name    = json.dumps(common_name.capitalize() if common_name else None),
             long_name         = long_name,
             iucn_code         = iucn_code,
             default_image     = default_image,
@@ -533,9 +533,9 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
             OTT_ID                = OTT_ID_Varin,
             EOL_ID                = leaf_entry.get('eol', -1),
             species_name          = leaf_entry.name,
-            js_species_name       = dumps(leaf_entry.name),
+            js_species_name       = json.dumps(leaf_entry.name),
             common_name           = common_name,
-            js_common_name        = dumps(common_name.capitalize() if common_name else None),
+            js_common_name        = json.dumps(common_name.capitalize() if common_name else None),
             the_long_name         = the_long_name,
             iucn_code             = iucn_code,
             price                 = 0.01*float(leaf_entry.price),
@@ -1512,7 +1512,6 @@ def pp_process_post():
         if myconf.take('paypal.save_to_tmp_file_dir'):
             import os
             import time
-            from json import dumps
             
             with open(
                 os.path.join(
@@ -1528,7 +1527,7 @@ def pp_process_post():
                     import traceback
                     out['__oz_error'] = str(err)
                     out['__oz_traceback'] = traceback.format_exception(None, err, err.__traceback__)
-                json_file.write(dumps(out))
+                json_file.write(json.dumps(out, indent=2))
     except:
         pass
     if err:
