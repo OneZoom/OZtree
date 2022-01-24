@@ -1509,30 +1509,27 @@ def pp_process_post():
         err = None
     except Exception as e:
         err = e
-    try:
-        if myconf.take('paypal.save_to_tmp_file_dir'):
-            import os
-            import time
-            
-            with open(
-                os.path.join(
-                    myconf.take('paypal.save_to_tmp_file_dir'),
-                    "{}{}_paypal_OTT{}_{}.json".format(
-                        "PP_" if err is None else "PP_ERROR_",
-                        "".join([char if char.isalnum() else "_" for char in request.env.http_host]),
-                        '_'.join(request.args),
-                        int(round(time.time() * 1000)))),
-                    "w") as json_file:
-                out = request.vars.copy()
-                request.body.seek(0)
-                out['__request_body'] = request.body.read().decode('utf-8')
-                if err:
-                    import traceback
-                    out['__oz_error'] = str(err)
-                    out['__oz_traceback'] = traceback.format_exception(None, err, err.__traceback__)
-                json_file.write(json.dumps(out, indent=2))
-    except:
-        pass
+    if myconf.take('paypal.save_to_tmp_file_dir'):
+        import os
+        import time
+
+        with open(
+            os.path.join(
+                myconf.take('paypal.save_to_tmp_file_dir'),
+                "{}{}_paypal_OTT{}_{}.json".format(
+                    "PP_" if err is None else "PP_ERROR_",
+                    "".join([char if char.isalnum() else "_" for char in request.env.http_host]),
+                    '_'.join(request.args),
+                    int(round(time.time() * 1000)))),
+                "w") as json_file:
+            out = request.vars.copy()
+            request.body.seek(0)
+            out['__request_body'] = request.body.read().decode('utf-8')
+            if err:
+                import traceback
+                out['__oz_error'] = str(err)
+                out['__oz_traceback'] = traceback.format_exception(None, err, err.__traceback__)
+            json_file.write(json.dumps(out, indent=2))
     if err:
         raise HTTP(400, err) #should flag up to PP that there is a problem with this transaction
     else:
