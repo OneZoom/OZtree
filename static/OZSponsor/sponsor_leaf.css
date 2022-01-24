@@ -9,10 +9,6 @@ fieldset{
     margin:0px auto;
 }
 
-fieldset div {
-    display: table-row;
-}
-
 fieldset .singlerow {
     display: block;
 }
@@ -23,18 +19,41 @@ fieldset .singlerow label {
 }
 
 fieldset div label {
-    display: table-cell;
     font-weight: normal;
     padding: 0.25em;
 }
 
-
 fieldset div p {
-    display: table-cell;
     padding: 0.25em;
+    width: 100%;
+}
+
+fieldset div p textarea {
+    vertical-align: top;
+    width: 100%;
+    resize: none;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+/* Device wide enough to show labels and fields next to each other */
+@media (min-width: 640px) {
+    fieldset div {
+        display: table-row;
     }
 
-fieldset div#gift_aid p {
+    fieldset div label {
+        display: table-cell;
+        white-space: nowrap;
+    }
+
+    fieldset div p {
+        display: table-cell;
+        width: 100%;
+    }
+}
+
+fieldset div#gift_aid > p {
     display: block;
 }
 
@@ -172,7 +191,6 @@ h3, h4 {
 }
 
 #gift_aid {
-    display: none;
     padding: 1em;
     background-color: rgb(200,200,200);
     

@@ -1,22 +1,32 @@
 # -*- coding: utf-8 -*-
 # this file is released under public domain and you can use without limitations
+import collections
 import datetime
 import hashlib
 import itertools
 import re
 import random
 import urllib.parse
-from json import dumps
+import urllib.request
+import json
 from collections import OrderedDict
 
+import ozmail
 from sponsorship import (
-    sponsorship_enabled, clear_reservation, get_reservation,
+    sponsorship_enabled, reservation_total_counts, clear_reservation, get_reservation,
+    reservation_validate_basket_fields,
     reservation_add_to_basket, reservation_confirm_payment, reservation_expire,
-    sponsor_renew_url, sponsor_renew_verify_url,
+    sponsorship_expiry_soon_date,
+    sponsorship_email_reminders, sponsor_verify_url,
+    sponsorship_restrict_contact, sponsor_renew_request_logic,
     sponsorship_config, sponsorable_children_query)
 
+from usernames import usernames_associated_to_email
+
+from partners import partner_identifiers_for_reservation_name
+
 from OZfunc import (
-    nice_species_name, get_common_name, get_common_names, __release_info,
+    nice_name, nice_name_from_otts, get_common_name, get_common_names, __release_info,
     language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, add_the,
     otts2ids, nodes_info_from_array, nodes_info_from_string, extract_summary)
 
@@ -131,14 +141,14 @@ def index():
             if not text_titles[startpoint_key]:
                 if vn is not None:
                     has_vernacular.add(startpoint_key)
-                text_titles[startpoint_key] = nice_species_name(
+                text_titles[startpoint_key] = nice_name(
                     (titles[ott] if vn is None else None), vn, html=True,
-                    leaf=ott not in st_node_otts, break_line=2)
+                    is_species=ott not in st_node_otts, break_line=2)
         # ... and another for the sponsored items (both common and sci in the string)
         if vn is not None:
             has_vernacular.add(ott)
-        titles[ott] = nice_species_name(
-            titles[ott], vn, html=True, leaf=ott not in st_node_otts, 
+        titles[ott] = nice_name(
+            titles[ott], vn, html=True, is_species=ott not in st_node_otts, 
             first_upper=True, break_line=1)
     titles.update(text_titles)
 
@@ -188,8 +198,8 @@ def index():
         ],
         carousel=carousel, anim=anim, threatened=threatened, sponsored=sponsored_rows,
         hrefs=hrefs, images=images, html_names=titles, has_vernacular=has_vernacular, add_the=add_the,
-        n_total_sponsored=db(db.reservations.PP_e_mail != None).count(distinct=db.reservations.PP_e_mail),
-        n_sponsored_leaves=db((db.reservations.verified_time != None) & ((db.reservations.deactivated == None) | (db.reservations.deactivated == ""))).count(),
+        n_total_sponsored=reservation_total_counts('donors'),
+        n_sponsored_leaves=reservation_total_counts('otts'),
         menu_splash_images={
             sub_menu[0]:URL('static', 'images/oz-newssplash-%s.jpg' % sub_menu[0].lower().replace("for ", ""))
             for sub_menu in response.menu
@@ -375,8 +385,8 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
             'status_code',
             None)
 
-        long_name = nice_species_name(leaf_entry.name, common_name, html=True, leaf=True, the=False)
-        the_long_name = nice_species_name(leaf_entry.name, common_name, html=True, leaf=True, the=True)
+        long_name = nice_name(leaf_entry.name, common_name, html=True, is_species=True, the=False)
+        the_long_name = nice_name(leaf_entry.name, common_name, html=True, is_species=True, the=True)
 
         #get the best picture for this ott, if there is one.
         query = (db.images_by_ott.ott == OTT_ID_Varin)
@@ -403,9 +413,9 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
         response.view = request.controller + "/spl_banned." + request.extension
         return dict(
             species_name    = leaf_entry.name,
-            js_species_name = dumps(leaf_entry.name),
+            js_species_name = json.dumps(leaf_entry.name),
             common_name     = common_name,
-            js_common_name  = dumps(common_name.capitalize() if common_name else None),
+            js_common_name  = json.dumps(common_name.capitalize() if common_name else None),
             long_name       = long_name,
             default_image   = default_image,
             user_image      = user_image,
@@ -418,8 +428,8 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
             response.view = request.controller + "/spl_elsewhere_not." + request.extension
         return dict(
             species_name    = leaf_entry.name,
-            js_species_name = dumps(leaf_entry.name),
-            js_common_name  = dumps(common_name.capitalize() if common_name else None),
+            js_species_name = json.dumps(leaf_entry.name),
+            js_common_name  = json.dumps(common_name.capitalize() if common_name else None),
             the_long_name   = the_long_name,
             iucn_code       = iucn_code,
             default_image   = default_image,
@@ -433,9 +443,9 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
         response.view = request.controller + "/spl_sponsored." + request.extension
         return dict(
             species_name      = leaf_entry.name,
-            js_species_name   = dumps(leaf_entry.name),
+            js_species_name   = json.dumps(leaf_entry.name),
             common_name       = common_name,
-            js_common_name    = dumps(common_name.capitalize() if common_name else None),
+            js_common_name    = json.dumps(common_name.capitalize() if common_name else None),
             long_name         = long_name,
             iucn_code         = iucn_code,
             default_image     = default_image,
@@ -480,11 +490,18 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
                     'user_donor_name', 'user_donor_hide', 'user_paid', 'user_message_OZ',
                     'user_nondefault_image', 'user_preferred_image_src',
                     'user_preferred_image_src_id','user_giftaid', 'user_sponsor_lang',
+                    'user_addr_house', 'user_addr_postcode',
+                    'sponsorship_story',
                     # writeable=False -> filled out on validation
                     'name', 'reserve_time', 'asking_price', 'user_updated_time',
                     'asking_price', 'user_updated_time', 'sponsorship_duration_days',
                     'partner_name', 'partner_percentage'
                     ],
+                # These fields aren't stored in the database, just make the form work
+                extra_fields=[
+                    Field('user_addr_nonuk'),
+                    Field('user_addr_internationaladdr'),
+                ],
                 deletable = False)
             if form.accepts(
                     request.vars, # use both GET + POST vars: GET vars passed when accessed via LOAD
@@ -516,9 +533,9 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
             OTT_ID                = OTT_ID_Varin,
             EOL_ID                = leaf_entry.get('eol', -1),
             species_name          = leaf_entry.name,
-            js_species_name       = dumps(leaf_entry.name),
+            js_species_name       = json.dumps(leaf_entry.name),
             common_name           = common_name,
-            js_common_name        = dumps(common_name.capitalize() if common_name else None),
+            js_common_name        = json.dumps(common_name.capitalize() if common_name else None),
             the_long_name         = the_long_name,
             iucn_code             = iucn_code,
             price                 = 0.01*float(leaf_entry.price),
@@ -552,11 +569,9 @@ def sponsor_pay():
             # redirect the user to a paypal page that (if completed) triggers paypal to then visit
             # an OZ page, confirming payment: this is called an IPN. Details in pp_process_post.html
             try:
-                paypal_notify_string = (
-                    '&notify_url=' + myconf.take('paypal.notify_url')
-                    + '/pp_process_post.html/' + OTT_ID_str)
+                notify_url = myconf.take('paypal.notify_url') + '/pp_process_post.html'
             except:
-                paypal_notify_string = ''
+                notify_url = URL("pp_process_post.html", scheme=True, host=True)
             redirect(get_paypal_url() + (
                 '/cgi-bin/webscr'
                 '?cmd=_donations'
@@ -569,7 +584,7 @@ def sponsor_pay():
                 '&currency_code=GBP'.format(
                      sp_name=urllib.parse.quote(db_saved.name),
                      ret_url=URL("sponsor_thanks.html", scheme=True, host=True),
-                     notify_string=paypal_notify_string,
+                     notify_string='&notify_url=%s/%s' % (notify_url, OTT_ID_str),
                      amount=urllib.parse.quote('{:.2f}'.format(db_saved.user_paid)))))
         except:
             raise
@@ -582,43 +597,22 @@ def valid_spons(form, species_name, price_pounds, partner_data):
     """
     Do all this using custom validation as some is quite intricate
     """
-    max_chars = 30
-    # Validate user-input vars
-    if len(form.vars.user_sponsor_name or "") == 0:
-        form.errors.user_sponsor_name = T("You must enter some sponsor text")
-    elif len(form.vars.user_sponsor_name or "") > max_chars:
-        form.errors.user_sponsor_name = T("Text too long: max %s characters") % (max_chars, )
-    if form.vars.user_sponsor_kind == "by" and not form.vars.user_donor_name:
-        form.vars.user_donor_name = form.vars.user_sponsor_name
-
-    if len(form.vars.user_more_info or "") > max_chars:
-        form.errors.user_more_info = T("Text too long: max %s characters") % (max_chars, )
-    
-    if form.vars.user_sponsor_kind not in ['by','for']:
-        form.errors.user_sponsor_kind = T("Sponsorship can only be 'by' or 'for'")
+    # Do general basket_fields validation
+    for k, v in reservation_validate_basket_fields(form.vars).items():
+        setattr(form.errors, k, v)
 
     try:
         if float(form.vars.user_paid) < price_pounds:
             form.errors.user_paid = T("Please donate at least £%s to sponsor this leaf, or you could simply choose another leaf") % ("{:.2f}".format(price_pounds), )
     except:
         form.errors.user_paid = T("Please enter a valid number")
-    
-    if form.vars.user_giftaid:
-        missing_title = not (form.vars.user_donor_title or "").strip()
-        if missing_title:
-            form.errors.user_donor_title_name = T("We need your title to be able to claim gift aid")
-        if not (form.vars.user_donor_name or "").strip():
-            if missing_title:
-                form.errors.user_donor_title_name = T("We need your name and title to be able to claim gift aid")
-            else:
-                form.errors.user_donor_title_name = T("We need your name to be able to claim gift aid")
 
     # calculate writable=False vars, to insert
     form.vars.name = species_name
     form.vars.reserve_time = form.vars.user_updated_time = request.now
     form.vars.user_sponsor_lang = (request.env.http_accept_language or '').lower()
     form.vars.asking_price = price_pounds
-    form.vars.sponsorship_duration_days=365*4+1 ## 4 Years
+    form.vars.sponsorship_duration_days=sponsorship_config()['duration_days']
     form.vars.partner_name=partner_data.get('partner_identifier')
     form.vars.partner_percentage=partner_data.get('percentage')
     
@@ -656,43 +650,52 @@ def sponsor_replace_page():
 
 def sponsor_renew_request():
     """
-    Request a renewal link emailed to you
+    Request a renewal link emailed to you.
     """
     form = FORM(
-        LABEL("E-mail"),
-        INPUT(_name='email', _class="uk-input uk-margin-bottom", requires=IS_EMAIL()),
-        INPUT(_type='submit', _class="uk-button uk-button-primary"))
+        LABEL("E-mail or Username"),
+        INPUT(_name='user_identifier', _class="uk-input uk-margin-bottom"),
+        INPUT(_type='submit', _class="oz-pill pill-leaf"))
     if form.accepts(request.vars, session=None):
-        renew_link = sponsor_renew_url(form.vars.email)
-        if renew_link is None:
-            response.flash = 'Unknown e-mail address %s' % form.vars.email
-        elif mail is None:
-            response.flash = 'Now visit: %s (NB: No e-mail configuration in appconfig.ini, so cannot send)' % (
-                renew_link
-            )
-        else:
-            if mail.send(
-                to=form.vars.email,
-                subject=T("Renew your onezoom sponsorships"),
-                message="To renew your onezoom sponsorships, visit this URL: %s" % renew_link
-            ):
-                response.flash = 'An e-mail has been sent to %s' % form.vars.email
-            else:
-                response.flash = 'Could not send e-mail to %s' % form.vars.email
+        response.flash = sponsor_renew_request_logic(
+            form.vars.user_identifier.strip(),
+            mailer=ozmail.get_mailer()
+        )
     return dict(
         form=form,
     )
+
+def sponsor_unsubscribe():
+    """
+    User didn't want any more e-mails
+    """
+    try:
+        if sponsor_verify_url(request):
+            username = request.args[0]
+        else:
+            session.flash = "Invalid request for %s" % request.args[0]
+            redirect(URL('sponsor_renew_request'))
+            return(dict())
+    except IndexError:
+        session.flash = "Invalid request: Missing token"
+        redirect(URL('sponsor_renew_request'))
+        return(dict())
+
+    sponsorship_restrict_contact(username)
+    session.flash = "You have been unsubscribed from all future e-mails about your sponsorships"
+    redirect(URL('sponsor_renew_request'))
+    return(dict())
 
 
 def sponsor_renew():
     '''list items currently sponsored by a user
     '''
-    expiry_soon_date = datetime.datetime.today() + datetime.timedelta(days=90)  # datetime before which expiry will be "soon"
-    sponsorship_renew_discount = sponsorship_config()['sponsorship_renew_discount']
+    expiry_soon_date = sponsorship_expiry_soon_date()
+    sponsorship_renew_discount = sponsorship_config()['renew_discount']
 
     try:
-        if sponsor_renew_verify_url(request):
-            user_email = request.args[0]
+        if sponsor_verify_url(request):
+            username = request.args[0]
         else:
             session.flash = "Invalid renewal request for %s" % request.args[0]
             redirect(URL('sponsor_renew_request'))
@@ -721,7 +724,7 @@ def sponsor_renew():
     # Get active, expiring reservations
     active_rows, expiring_rows, rows_by_ott = ([], [], {})
     for r in db(
-                (db.reservations.e_mail == user_email) &
+                (db.reservations.username == username) &
                 (db.reservations.verified_time != None) &
                 (db.reservations.PP_transaction_code != None)  # i.e has been bought
             ).select(
@@ -737,7 +740,7 @@ def sponsor_renew():
     # Get expired reservations, including who now owns it
     expired_rows = []
     expired_statuses = {}
-    for r in db((db.expired_reservations.e_mail == user_email)).select(
+    for r in db((db.expired_reservations.username == username)).select(
                 db.expired_reservations.ALL,
                 orderby="expired_reservations.sponsorship_ends",
             ):
@@ -750,8 +753,8 @@ def sponsor_renew():
         # Try reserving each
         status, _, new_reservation, _ = get_reservation(
             r.OTT_ID,
-            # NB: Use the e-mail address as our form_reservation_code
-            hashlib.sha256(user_email.encode('utf8')).hexdigest(),
+            # NB: Use the username as our form_reservation_code
+            hashlib.sha256(username.encode('utf8')).hexdigest(),
         )
         if status == "maintenance":
             response.view = request.controller + "/spl_maintenance." + request.extension
@@ -800,34 +803,77 @@ def sponsor_renew():
 
         # If there's a nondefault image, replace with that
         if r.user_nondefault_image:
-            images[r.ott] = {'url':thumbnail_url(
+            images[r.OTT_ID] = {'url':thumbnail_url(
                 r.verified_preferred_image_src,
                 r.verified_preferred_image_src_id)}
 
-    # If there's a form submission, validate it
-    errors = {}
-    if 'amount_extra' in request.vars:
-        if int(request.vars['amount_extra']) < 0:
-            errors['amount_extra'] = T("Extra donation can't be negative")
+    # Fetch data for partners so we can use it on the Gift Aid form
+    all_partner_identifiers = set()
+    for r in itertools.chain(active_rows, expiring_rows, expired_rows):
+        # NB: We're not picking out partners that are being bought, but we'd have to replicate the functionality in JS if so
+        all_partner_identifiers.update(partner_identifiers_for_reservation_name(r.partner_name))
+    all_partner_data = db(db.partners.partner_identifier.belongs(all_partner_identifiers)).select()
 
-    if 'amount' in request.vars:
-        calc_amount = int(request.vars['amount_extra']) * 100
-        for k, v in request.vars.items():
+    vars = request.vars
+
+    # Extract details from most recent item if unpopulated
+    if most_recent:
+        if "user_donor_title" not in vars:
+            vars['user_donor_title'] = most_recent.user_donor_title
+        if "user_donor_name" not in vars:
+            vars['user_donor_name'] = most_recent.user_donor_name
+        if "user_addr_nonuk" not in vars:
+            # Gift aid not populated yet
+            vars['user_giftaid'] = most_recent.user_giftaid
+            if not most_recent.user_giftaid:
+                # Not a giftaider, copy nothing
+                pass
+            if most_recent.user_addr_postcode is None and most_recent.user_addr_house is not None:
+                # No postcode --> international user
+                vars['user_addr_nonuk'] = True
+                vars.user_addr_internationaladdr = most_recent.user_addr_house
+            else:
+                # UK giftaider
+                vars['user_addr_nonuk'] = False
+                vars.user_addr_house = most_recent.user_addr_house
+                vars.user_addr_postcode = most_recent.user_addr_postcode
+
+    # De-anonymise details if they're starred
+    if (vars.user_addr_internationaladdr or '').startswith('****'):
+        vars.user_addr_internationaladdr = most_recent.user_addr_house
+    if (vars.user_addr_house or '').startswith('****'):
+        vars.user_addr_house = most_recent.user_addr_house
+    if (vars.user_addr_postcode or '').startswith('****'):
+        vars.user_addr_postcode = most_recent.user_addr_postcode
+
+    # If there's a form submission, validate it
+    # NB: This is highly ugly, but the alternative is making a FORM dynamically
+    #     with the relevant fields, or inventing widgets to support the checkboxes.
+    form = collections.namedtuple("FakeForm", ["vars", "errors"])(
+        vars=vars,
+        errors=reservation_validate_basket_fields(vars),
+    )
+    if 'amount_extra' in form.vars:
+        if int(form.vars['amount_extra']) < 0:
+            form.errors['amount_extra'] = T("Extra donation can't be negative")
+    if 'amount' in form.vars:
+        calc_amount = int(form.vars['amount_extra']) * 100
+        for k, v in form.vars.items():
             if not k.startswith('oz_renew_'):
                 continue
             ott = int(k.split("_", 3)[2])
 
             if ott not in prices:
-                errors[k] = "OTT %d not sponsorable" % ott
+                form.errors[k] = "OTT %d not sponsorable" % ott
             else:
                 calc_amount += prices[ott]['price']
-        if '{:.2f}'.format(calc_amount / 100) != request.vars['amount']:
-            errors['amount'] = T("Total sponsorship amount doesn't match")
+        if '{:.2f}'.format(calc_amount / 100) != form.vars['amount']:
+            form.errors['amount'] = T("Total sponsorship amount doesn't match")
 
     # If got this far without errors, good to submit to paypal
-    if 'cmd' in request.vars and len(errors) == 0:
+    if 'cmd' in form.vars and len(form.errors) == 0 and calc_amount > 0:
         basket_code = notify_url.split('/basket/', 2)[1]
-        for k, v in request.vars.items():
+        for k, v in form.vars.items():
             if not k.startswith('oz_renew_'):
                 continue
             ott = int(k.split("_", 3)[2])
@@ -841,10 +887,21 @@ def sponsor_renew():
                 prev_reservation_id = None
             reservation_add_to_basket(basket_code, reserve_row, dict(
                 # Update user_donor_hide in DB (NB: If field missing, checkbox is unchecked)
-                user_donor_hide=bool(request.vars.get("oz_user_donor_hide_%d" % ott, False)),
-                prev_reservation_id=prev_reservation_id
+                user_donor_hide=bool(form.vars.get("oz_user_donor_hide_%d" % ott, False)),
+                prev_reservation_id=prev_reservation_id,
+                user_giftaid=form.vars.user_giftaid,
+                user_addr_house=form.vars.user_addr_house,
+                user_addr_postcode=form.vars.user_addr_postcode,
             ))
         raise HTTP(307, "Redirect", Location=get_paypal_url() + '/cgi-bin/webscr')
+    else:
+        # Anonymise details if they match most-recent
+        if form.vars.user_addr_internationaladdr and form.vars.user_addr_internationaladdr == most_recent.user_addr_house:
+            form.vars.user_addr_internationaladdr = '*' * 20
+        if form.vars.user_addr_house and form.vars.user_addr_house == most_recent.user_addr_house:
+            form.vars.user_addr_house = '*' * 20
+        if form.vars.user_addr_postcode and form.vars.user_addr_postcode == most_recent.user_addr_postcode:
+            form.vars.user_addr_postcode = '**** ' + most_recent.user_addr_postcode[-3:]
 
     return dict(
         all_row_categories=[
@@ -854,16 +911,16 @@ def sponsor_renew():
         ],
         sci_names={k:r.name for k, r in rows_by_ott.items()},
         html_names={
-            ott:nice_species_name(rows_by_ott[ott].name, vn, html=True, leaf=True, first_upper=True, break_line=2)
+            ott:nice_name(rows_by_ott[ott].name, vn, html=True, is_species=True, first_upper=True, break_line=2)
             for ott,vn in get_common_names(rows_by_ott.keys(), return_nulls=True).items()
         },
         images=images,
         prices=prices,
         most_recent=most_recent,  # NB: May be None if there's no reservations
-        user_email=user_email,
-        errors=errors,
+        username=username,
         notify_url=notify_url,
-        vars=request.vars,
+        all_partner_data=all_partner_data,
+        form=form,
     )
 
 
@@ -901,15 +958,14 @@ def sponsored():
         limitby=limitby
         )
 
-    pds=set()
-    sci_names = {r.OTT_ID:r.name for r in curr_rows}
-    html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).items()}
+    pds = set()
+    html_names = nice_name_from_otts([r.OTT_ID for r in curr_rows], leaf_only=True, html=True, first_upper=True, break_line=2)
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
-    default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(sci_names.keys()) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
+    default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(html_names.keys()) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
     #also look at the nondefault images if present - 
     user_images = {}
     for r in curr_rows:
-        if r.user_nondefault_image != 0:
+        if r.user_nondefault_image:
             user_images[r.OTT_ID] = db(
                 (db.images_by_ott.src_id==r.verified_preferred_image_src_id) &
                 (db.images_by_ott.src==r.verified_preferred_image_src)
@@ -919,8 +975,15 @@ def sponsored():
                     orderby=~db.images_by_ott.src).first()
     if (request.vars.highlight_pd):
         pds.add(None) #ones without a src_id are public doman
-        pds |= set([l['src_id'] for k,l in default_images.items() if l['licence'].endswith(u'\u009C')]) #all pd pics should end with \u009C on the licence
-        pds |= set([l['src_id'] for k,l in user_images.items() if l['licence'].endswith(u'\u009C')]) #all pd pics should end with \u009C on the licence
+        pds |= set(
+            l['src_id']
+            for k, l in default_images.items()
+            if l and l['licence'].endswith(u'\u009C')) #all pd pics should end with \u009C on the licence
+        pds |= set( 
+            l['src_id']
+            for k, l in user_images.items()
+            if l and l['licence'].endswith(u'\u009C') #all pd pics should end with \u009C on the licence
+        )
     return dict(rows=curr_rows, page=page, items_per_page=items_per_page, tot=tot, vars=request.vars, pds=pds, html_names=html_names, user_images=user_images, default_images=default_images)
 
 
@@ -973,11 +1036,7 @@ def donor():
         page=page,
         items_per_page=items_per_page,
         rows=rows,
-        sci_names={k:r.name for k, r in rows_by_ott.items()},
-        html_names={
-            ott:nice_species_name(rows_by_ott[ott].name, vn, html=True, leaf=True, first_upper=True, break_line=2)
-            for ott,vn in get_common_names(rows_by_ott.keys(), return_nulls=True).items()
-        },
+        html_names=nice_name_from_otts(rows_by_ott.values(), html=True, leaf_only=True, first_upper=True, break_line=2),
         images=images,
         most_recent=most_recent,
         sponsor_status=sponsor_status,
@@ -1015,8 +1074,8 @@ def donor_list():
               db.reservations.verified_more_info,
               groupby=groupby, orderby= sum_paid + " DESC, verified_time, reserve_time",
               limitby=limitby)
-    sci_names = {int(r[grouped_otts]):r.reservations.name for r in curr_rows if r[n_leaves]==1} #only get sci names etc for unary sponsors
-    html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True, break_line=2) for ott,vn in get_common_names(sci_names.keys(), return_nulls=True).items()}
+    names_for = [int(r[grouped_otts]) for r in curr_rows if r[n_leaves]==1] #only get names etc for unary sponsors
+    html_names = nice_names_from_otts(names_for, html=True, leaf_only=True, first_upper=True, break_line=2)
     otts = [int(ott) for r in curr_rows for ott in r[grouped_otts].split(",") if r[grouped_otts]]
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
     default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(otts) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
@@ -1208,7 +1267,7 @@ def sponsor_node_price():
                 sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows_with_img})
 
         #now construct the vernacular names
-        html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(otts, return_nulls=True).items()}
+        html_names = {ott:nice_name(sci_names[ott], vn, html=True, is_species=True, first_upper=True) for ott,vn in get_common_names(otts, return_nulls=True).items()}
         return dict(
             otts=otts,
             image_urls=image_urls,
@@ -1309,7 +1368,7 @@ def sponsor_handpicks():
         #Now find the vernacular names for all these species
         all_otts = [ott for price in otts for ott in otts[price]]
         if all_otts:
-            html_names = {ott:nice_species_name(sci_names[ott], vn, html=True, leaf=True, first_upper=True) for ott,vn in get_common_names(all_otts, return_nulls=True).items()}
+            html_names = {ott:nice_name(sci_names[ott], vn, html=True, is_species=True, first_upper=True) for ott,vn in get_common_names(all_otts, return_nulls=True).items()}
             rows = db(db.reservations.OTT_ID.belongs(all_otts) & (db.reservations.verified_time != None)).select(db.reservations.OTT_ID, db.reservations.verified_kind, db.reservations.verified_name)
             reserved = {r.OTT_ID:[r.verified_kind, r.verified_name] for r in rows}
                     
@@ -1384,7 +1443,8 @@ def pp_process_post():
         paypal_url = get_paypal_url().replace('//www', '//ipnpb')
         paypal_resp = urllib.request.urlopen(urllib.request.Request(
             paypal_url + '/cgi-bin/webscr',
-            data=("cmd=_notify-validate&" + urllib.parse.urlencode(request.post_vars)).encode(),
+            # NB: Web2Py guarantees that the request body has been rewound for us
+            b"cmd=_notify-validate&" + request.body.read(),
             headers={
                 'content-type': 'application/x-www-form-urlencoded',
             }))
@@ -1441,45 +1501,35 @@ def pp_process_post():
                                  PP_e_mail = request.vars.get('payer_email'),
                                  verified_paid = paid,
                                  PP_transaction_code = request.vars.get('txn_id'),
+                                 sponsorship_ends = request.now + datetime.timedelta(days=365*4+1),  ## 4 Years
                                  sale_time = request.vars.get('payment_date')
                                 )
             if not updated:
                 raise NameError('No row updated: some details may already be filled out, or the OTT/name/paid may be invalid')
-            #should only update house/st and postcode if giftaid is true
-            db(reservation_query & 
-               (db.reservations.user_giftaid == True) &
-               (db.reservations.PP_house_and_street == None) &
-               (db.reservations.PP_postcode == None)
-            ).update(
-                PP_house_and_street = request.vars.get('address_street'),
-                PP_postcode = request.vars.get('address_zip')
-            )
         err = None
     except Exception as e:
         err = e
-    try:
-        if myconf.take('paypal.save_to_tmp_file_dir'):
-            import os
-            import time
-            from json import dumps
-            
-            with open(
-                os.path.join(
-                    myconf.take('paypal.save_to_tmp_file_dir'),
-                    "{}{}_paypal_OTT{}_{}.json".format(
-                        "PP_" if err is None else "PP_ERROR_",
-                        "".join([char if char.isalnum() else "_" for char in request.env.http_host]),
-                        '_'.join(request.args),
-                        int(round(time.time() * 1000)))),
-                    "w") as json_file:
-                out = request.vars.copy()
-                if err:
-                    import traceback
-                    out['__oz_error'] = str(err)
-                    out['__oz_traceback'] = traceback.format_exception(None, err, err.__traceback__)
-                json_file.write(dumps(out))
-    except:
-        pass
+    if myconf.take('paypal.save_to_tmp_file_dir'):
+        import os
+        import time
+
+        with open(
+            os.path.join(
+                myconf.take('paypal.save_to_tmp_file_dir'),
+                "{}{}_paypal_OTT{}_{}.json".format(
+                    "PP_" if err is None else "PP_ERROR_",
+                    "".join([char if char.isalnum() else "_" for char in request.env.http_host]),
+                    '_'.join(request.args),
+                    int(round(time.time() * 1000)))),
+                "w") as json_file:
+            out = request.vars.copy()
+            request.body.seek(0)
+            out['__request_body'] = request.body.read().decode('utf-8')
+            if err:
+                import traceback
+                out['__oz_error'] = str(err)
+                out['__oz_traceback'] = traceback.format_exception(None, err, err.__traceback__)
+            json_file.write(json.dumps(out, indent=2))
     if err:
         raise HTTP(400, err) #should flag up to PP that there is a problem with this transaction
     else:
@@ -1497,7 +1547,9 @@ def full_guide():
     return dict()
 
 def sponsor_user_manage():
-    return dict()
+    out = dict()
+    out.update(sponsor_renew_request())
+    return out
 
 def otop_intro():
     return dict()
@@ -1836,7 +1888,7 @@ def text_tree(location_string):
             except:
                 pass
         if i.get('vernacular') or i.get('sciname'):
-            i['htmlname'] = nice_species_name(i.get('sciname'), i.get('vernacular'), html=True, leaf= (id<=0))
+            i['htmlname'] = nice_name(i.get('sciname'), i.get('vernacular'), html=True, is_species=(id<=0))
         else:
             i['htmlname'] = SPAN("unnamed {} {}".format('group' if id>=0 else 'species', abs(id)), _class="unnamed")
         if i['ott'] in iucn:
@@ -1930,20 +1982,20 @@ def life_treasure():
     for row in data['leaves']:
         ott = row[leaf_cols['ott']]
         if ott:
-            formatted_name_by_ott[ott] = nice_species_name(
+            formatted_name_by_ott[ott] = nice_name(
                 scientific=row[leaf_cols['name']],
                 common=vernacular_by_ott.get(ott, None),
                 html=True,
-                leaf=True,
+                is_species=True,
                 first_upper=True)
     for row in data['nodes']:
         ott = row[node_cols['ott']]
         if ott:
-            formatted_name_by_ott[ott] = nice_species_name(
+            formatted_name_by_ott[ott] = nice_name(
                 scientific=row[node_cols['name']],
                 common=vernacular_by_ott.get(ott, None),
                 html=True,
-                leaf=False,
+                is_species=False,
                 first_upper=True)
 
     

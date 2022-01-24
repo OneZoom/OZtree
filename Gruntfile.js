@@ -1,11 +1,29 @@
+const fs = require('fs');
 const sass = require('sass');
 const process = require('process');
 const path = require('path');
 
-partial_install_site = "http://beta.onezoom.org";
+partial_install_site = "http://www.onezoom.org";
 partial_local_install_site = "http://127.0.0.1:8000"; // if you are running a local installation
 preferred_python3 = "python3.7"; // in case you have multiple python3 versions installed
 web2py_py = path.join(path.dirname(path.dirname(process.cwd())), 'web2py.py');
+
+/** Generate a function to execute a web2py script, handing over all arguments */
+function exec_web2py_script(script_name, init_args) {
+    return function () {
+        return [
+            preferred_python3,
+            web2py_py,
+            '-S OZtree/default',
+            '-M',
+            '-e',
+            '-R', 'applications/OZtree/' + script_name,
+            '--args',
+            ...(init_args || []),
+            ...arguments,
+        ].join(' ');
+    }
+}
 
 module.exports = function (grunt) {
   grunt.initConfig({
@@ -24,11 +42,40 @@ module.exports = function (grunt) {
                 + process.cwd()
                 + '\', skip_failed_views=True)"'
       },
+      send_sponsorship_emails: {
+        cwd: "../../",
+        command: exec_web2py_script("private/send_sponsorship_emails.py"),
+      },
+      background_tasks: {
+        cwd: "../../",
+        command: exec_web2py_script("private/background_tasks.py"),
+      },
+      db_fixtures: {
+        command: function () {
+            // Either accept a list of test filenames, or work it out ourselves and run all tests
+            var tests = arguments.length > 0 ? arguments : fs.readdirSync('tests/fixtures/').filter(function (x) {
+                return x.match('^.*\.py');
+            });
+
+            return Array.prototype.map.call(tests, function (test_path) {
+                return exec_web2py_script('tests/fixtures/' + test_path)();
+            }).join(" && ");
+        }
+      },
       make_release_info: {
         command: 'git describe --tags > RELEASE_INFO && python3 OZprivate/ServerScripts/Utilities/get_release_name.py RELEASE_INFO >> RELEASE_INFO'
       },
       test_server: {
-        command: 'for f in tests/unit/*.py; do echo === $f; ' + preferred_python3 + ' ' + web2py_py + ' -S OZtree -M -e -R applications/OZtree/$f; done'
+        command: function () {
+            // Either accept a list of test filenames, or work it out ourselves and run all tests
+            var tests = arguments.length > 0 ? arguments : fs.readdirSync('tests/unit/').filter(function (x) {
+                return x.match('^test_.*\.py');
+            });
+
+            return Array.prototype.map.call(tests, function (test_path) {
+                return exec_web2py_script('tests/unit/' + test_path)();
+            }).join(" && ");
+        }
       },
       test_server_functional: {
         command: 'nosetests3 tests/functional/'
@@ -134,11 +181,9 @@ module.exports = function (grunt) {
     },
     'curl-dir': {
         'get_minlife': {
-            //this should be changed to the production URL when live
-            //src:'http://www.onezoom.org/treeviewer/minlife.html/?lang=' + grunt.option('lang') || '',
             src: [
-                partial_install_site + '/treeviewer/minlife.html',
-                partial_install_site + '/treeviewer/minlife_tour.html',
+                partial_install_site + '/treeviewer/minlife.html', // TODO - add language specific option: /?lang=' + (grunt.option('lang') || ''),
+                partial_install_site + '/treeviewer/minlife_tour.html' // TODO - add language specific option:
             ],
             dest:'static',
         },

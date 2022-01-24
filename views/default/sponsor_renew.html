@@ -6,7 +6,7 @@
 
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
-    <h1>This is the private sponsorship renewal page for {{=user_email}}</h1>
+    <h1>This is the private sponsorship renewal page for {{=username}}</h1>
     {{if most_recent and most_recent.username:}}<p>There is also a public page available at <a href="{{=URL("/donor/%s" % most_recent.username)}}">{{=URL("/donor/%s" % most_recent.username, scheme=True, host=True)}}</a> that you can share if you wish.</p>{{pass}}
 </div>
 {{end block}}
@@ -41,7 +41,8 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                 {{if item.OTT_ID in images:}}
                   <a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}" target="_blank">
                     <span class="img-species leafout leafout-corner"><img class="species" alt=""
-                         src="{{=images[item.OTT_ID].get('url','')}}"
+                         src="{{=images[item.OTT_ID].get('url', URL('static','images/notAvailable.png'))}}"
+                         onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'"
                          title="{{=' / '.join(s for s in [images[item.OTT_ID].get('rights', ''), images[item.OTT_ID].get('licence', '')] if s)}}" /></span>
                   </a>
                 {{pass}}
@@ -117,7 +118,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                 id="amount_extra_input"
                 name="amount_extra"
                 value="{{=request.vars.get('amount_extra', 0)}}"
-                />{{if 'amount_extra' in errors:}}<em class="error_text">{{=errors['amount_extra']}}</em>{{pass}}</p>
+                /><em class="error_text">{{=form.errors.get('amount_extra') or ''}}</em></p>
     </div>
     <div>
       <label for="amount_input">Your total donation to onezoom:</label>
@@ -127,7 +128,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                 value="{{=request.vars.get('amount', 0)}}"
                 readonly="readonly"
                 style="border: none; font-size: 120%"
-                />{{if 'amount' in errors:}}<em class="error_text">{{=errors['amount']}}</em>{{pass}}</p>
+                /><em class="error_text">{{=form.errors.get('amount') or ''}}</em></p>
     </div>
     <input type="hidden"
            name="cmd"
@@ -152,17 +153,25 @@ and renew those that are expiring soon. Scroll down and select what you want to 
            value="{{=notify_url}}" />
   </fieldset>
 
-  {{if most_recent is not None and most_recent.user_giftaid:}}
-    <p>Thank you for agreeing to gift aid all your donations when you sponsored before. Any new donations will also be treated as
-    gift aided, please <a href="mailto:mail@onezoom.org">write to us</a> if you wish to change your gift aid declaration.</p>
-  {{else:}}
-    <p>TODO: Message about not gift-aiding</p>
-  {{pass}}
+  <fieldset>
+    <label for="user_donor_name_input">{{=T('Your title and name:')}}</label><p>
+    <select name="user_donor_title" autocomplete="honorific-prefix" id="user_donor_title_input">
+      {{for v in ['   ', 'Mr', 'Mrs', 'Miss', 'Ms', 'Mx', 'Dr', 'Prof', 'Rev', 'Sir', 'Lord', 'Lady']:}}
+        <option value="{{=T(v)}}" {{='selected' if (request.vars['user_donor_title'] == v) else ''}}>{{=T(v)}}</option>
+      {{pass}}
+    </select>
+    <input type="text" autocomplete="name" id="user_donor_name_input" name = "user_donor_name" size="40"
+        value="{{if (request.vars['user_donor_name']) is not None:}}{{=request.vars['user_donor_name']}}{{pass}}" /> </p>
+    <em class="error_text">{{=form.errors.get("user_donor_title_name") or ""}}</em></p>
 
-  <p>By donating to OneZoom you accept the {{=A(T('terms and conditions'),_href="/terms.html",_target="_blank")}}.</p>
-  <div style="text-align: center"><ul class="oz-pill leaf-list"><li>
-    <input id="submit_button" type="submit" value="Donate using PayPal" class="uk-button uk-button-link"/>
-  </li></ul></div>
+    {{giftaid_partners = all_partner_data}}
+    {{include 'default/sponsor_giftaid.inc.html'}}
+
+    <p>By donating to OneZoom you accept the {{=A(T('terms and conditions'),_href="/terms.html",_target="_blank")}}.</p>
+    <div style="text-align: center"><ul class="oz-pill leaf-list"><li>
+      <input id="submit_button" type="submit" value="Donate using PayPal" class="uk-button uk-button-link"/>
+    </li></ul></div>
+  </fieldset>
 
   </div>
 </form>

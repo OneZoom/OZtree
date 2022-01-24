@@ -97,9 +97,36 @@ def find_username(target_row, return_otts=False, allocate_species_name=False):
             sp_name = leaf.first().name
         if not sp_name:
             sp_name = target_row.name
-        sp_name = sp_name.replace(" ", "_") + "_" + str(datetime.datetime.now().year)
+        date = target_row.reserve_time
+        year = date.year if date else datetime.datetime.now().year
+        sp_name = sp_name.replace(" ", "_") + "_" + str(year)
         username = make_username(sp_name)
         if username:
             return username, []
         
     return None, None
+
+
+def email_for_username(username):
+    """Return the most up to date e-mail address for a given username"""
+    db = current.db
+
+    pp_e_mail = None
+    for r in db(db.reservations.username == username).iterselect(orderby=~db.reservations.verified_time):
+        if r.e_mail:
+            return r.e_mail
+        if r.PP_e_mail and not pp_e_mail:
+            pp_e_mail = r.PP_e_mail
+    if pp_e_mail:
+        return pp_e_mail
+    raise ValueError("No e-mail address found for username %s" % username)
+
+
+def usernames_associated_to_email(email):
+    """Given an e-mail address, return a tuple of usernames that have used it"""
+    db = current.db
+
+    return tuple(x.username for x in db(
+        (db.reservations.username is not None) &
+        ((db.reservations.e_mail == email) | (db.reservations.PP_e_mail == email))
+    ).select(db.reservations.username, distinct=True))
