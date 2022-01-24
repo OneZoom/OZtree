@@ -1036,7 +1036,7 @@ def donor():
         page=page,
         items_per_page=items_per_page,
         rows=rows,
-        html_names=nice_name_from_otts(rows_by_ott.values(), html=True, leaf_only=True, first_upper=True, break_line=2),
+        html_names=nice_name_from_otts(rows_by_ott.keys(), html=True, leaf_only=True, first_upper=True, break_line=2),
         images=images,
         most_recent=most_recent,
         sponsor_status=sponsor_status,
