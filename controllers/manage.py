@@ -267,8 +267,8 @@ def SPONSOR_UPDATE():
         twittername_t = read_only['twitter_name']
         verified_name_t = request.vars.verified_name
         username_t = request.vars.username
-        verified_donor_title_t = verified_donor_title=request.vars.get('verified_donor_title'),
-        verified_donor_name_t = verified_donor_name=request.vars.get('verified_donor_name'),
+        verified_donor_title_t = request.vars.get('verified_donor_title')
+        verified_donor_name_t = request.vars.get('verified_donor_name')
         binomial_name_t = read_only['name']
         common_name_t = read_only['common_name']
         ott_t = read_only['OTT_ID']
