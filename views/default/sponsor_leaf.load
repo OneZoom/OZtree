@@ -2,21 +2,21 @@
     <!-- {{include 'embed.js' # in case this load component is called via AJAX - js not needed in this case}} -->
     {{form_target = "_blank" # paypal opens in new frame}}
     <script>
-      after_successful_submit = function() {
-        setTimeout(function() {
-          location.replace("{{=XML(URL('default', 'sponsor_replace_page.html', vars={'ott':OTT_ID}))}}")},
-          1000)};
+      document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById('sponsor_form').addEventListener('submit', function () {
+          setTimeout(function() {
+            location.replace("{{=XML(URL('default', 'sponsor_replace_page.html', vars={'ott':OTT_ID}))}}")},
+            1000);
+        });
+      });
     </script>
 {{else:}}
     {{form_target = "_self" # paypal opens in same window}}
-    <script>
-      after_successful_submit = function() {};
-    </script>
 {{pass}}
 
 <form id="sponsor_form" method="post" target="{{=form_target}}"
   action="{{='sponsor_pay.html?ott=' + str(int(OTT_ID))}}"
-  onsubmit="validate_form_via_ajax_reload($(this).serializeArray()); return false;">
+  >
 
   <div>
     <h3>{{=T('Type the name of the person you want to appear on the leaf')}}</h3>
@@ -164,14 +164,6 @@
   </div>
 </form>
 
-{{if validated:}}
-<script>
-    // simply submit the form without firing the onsubmit handler
-    var form = document.getElementById("sponsor_form");
-    $(form).prop("onsubmit", null).off("submit"); // just to make sure
-    after_successful_submit();
-    form.submit();
-</script>
-{{elif validated is False:}}
+{{if validated is False:}}
 <script>UIkit.modal.alert("{{=T('Please check the errors shown in red')}}")</script>
 {{pass}}
