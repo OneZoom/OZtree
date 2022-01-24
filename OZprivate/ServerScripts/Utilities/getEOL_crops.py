@@ -68,14 +68,13 @@ def get_credit(json_dict, doID):
     licence = form_licence_from_url(json_dict['license'], doID)
     rights = ""
 
-    if 'rights' in json_dict:
-        m = EOL_cc_rights_line.search(json_dict['rights'])
+    if ("rights" in json_dict) or ("rightsHolder" in json_dict):
+        rights = json_dict.get("rights", json_dict.get("rightsHolder", None))
+        m = EOL_cc_rights_line.search(rights)
         if m:
-            rights = EOL_cc_rights_line.sub("", json_dict['rights'])
+            rights = EOL_cc_rights_line.sub("", rights)
             licence = form_licence_from_url(m.group(1), doID)
-        else:
-            rights = json_dict['rights']
-        logger.debug("RIGHTS for {}: {}".format(doID, json_dict['rights']))
+        logger.debug(f"RIGHTS for {doID}: {rights} ({licence})")
 
     else:
     #must look in agents for person to credit
@@ -203,6 +202,8 @@ def get_file_from_json_struct(data_obj_json_struct, output_dir, fn, thumbnail_si
         #calculate fractions as proportion of square thumbnail
         try:
             initial_thumb_px = float(d['crop_width'])
+            if initial_thumb_px < 1:
+                raise KeyError  # The crop_width is not really a valid value: pretend it wasn't there
             crop_top_fraction = float(d['crop_y'])/initial_thumb_px
             crop_bottom_fraction = (float(d['height']) - float(d['crop_y']) - initial_thumb_px)/initial_thumb_px
             crop_left_fraction = float(d['crop_x'])/initial_thumb_px

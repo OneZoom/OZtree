@@ -18,8 +18,10 @@
 <dl>
 <dt><a href="{{=URL('SPONSOR_VALIDATE')}}">Validate new sponsor texts</a></dt>
     <dd>By default this will only show up rows in the reservations table that have sale_time != None and have something set in verified_time or  verified_kind or verified_name or verified_more_info or verified_preferred_image</dd>
+<dt><a href="{{=URL('SHOW_RENEWAL_INFO')}}">Find a URL for sponsor renewal pages</a></dt>
+    <dd>This will return the HMAC key for a username or email, giving access to the private donor page</dd>
 <dt><a href="{{=URL('SHOW_EMAILS')}}">Useful list of sponsor emails</a></dt>
-    <dd>shows sponsorships listed by validated_time, to paste into an email client</dd>
+    <dd>shows sponsorships listed by validated_time, useful e.g. to paste into an email client</dd>
 <dt><a href="{{=URL('SHOW_SPONSOR_SUMS')}}">Summary of total donations by each sponsor</a></dt>
     <dd>To look at our high-value donors</dd>
 

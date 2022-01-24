@@ -23,7 +23,7 @@ def index():
 def test():
     """
     Pass in an OTT and get a list of the popularity ratings of the parents plus 
-    a wikidata identifiers, so that we can query the current valuse using the wiki APIs
+    a wikidata identifiers, so that we can query the current values using the wiki APIs
     
     Uses a stored procedure in the DB like this:
     
@@ -65,6 +65,9 @@ def test():
     DELIMITER ;
 
     """
+    session.forget(response)
+    response.headers["Access-Control-Allow-Origin"] = '*'
+
     if request.vars.key:
         API_user = db(db.API_users.APIkey == request.vars.key).select(db.API_users.API_user_name).first()
     else:
@@ -135,6 +138,8 @@ def list():
     
     If no otts, or invalid otts are given, return {"error":XXX} and set HTTP return to 400
     """
+    session.forget(response)
+    response.headers["Access-Control-Allow-Origin"] = '*'
     
     #set the default view to JSON, if there is no file extension (override web2py default of .html)
     if "." not in request.env.path_info.split('/')[2]:

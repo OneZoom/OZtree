@@ -1,0 +1,27 @@
+{{=XML(T("OneZoom sponsorship reminder" if automated else "Renew your OneZoom sponsorships"))}}
+
+Dear {{=XML(full_name or pp_name)}},
+
+To renew your sponsorships, visit this URL:
+{{=XML(renew_url)}}
+
+{{if len(final_reminders):}}These are your final reminders for these species:
+{{for ott in final_reminders:}}* {{=XML(nice_names[ott])}}
+{{pass}}{{pass}}
+
+{{if len(initial_reminders):}}These species are now due for renewal:
+{{for ott in initial_reminders:}}* {{=XML(nice_names[ott])}}
+{{pass}}{{pass}}
+
+{{if len(not_yet_due):}}Thank you for sponsoring these species:
+{{for ott in not_yet_due:}}* {{=XML(nice_names[ott])}}
+{{pass}}{{pass}}
+
+{{if len(unsponsorable):}}Thank you for sponsoring these species. Contact us if you'd like to discuss renewing:
+{{for ott in unsponsorable:}}* {{=XML(nice_names[ott])}}
+{{pass}}{{pass}}
+
+To unsubscribe from any future reminders, visit this URL:
+{{=XML(unsubscribe_url)}}
+
+The OneZoom team (charity number 1163559)

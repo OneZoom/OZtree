@@ -1,0 +1,40 @@
+Your OneZoom sponsorship of {{=XML(species_name)}} has gone live
+
+Dear {{=XML(full_name)}},
+
+Thank you so much for your donation to OneZoom. This will help us in our aim to
+provide easy access to scientific knowledge about biodiversity and evolution,
+and raise awareness about the variety of life on earth together with the need
+to conserve it.
+
+We are very pleased to be able to tell you that your sponsored leaf,
+{{=XML(the_nice_name)}}, has now appeared on the tree decorated with your sponsorship
+details.
+
+It’s now there for all to see at:
+
+  {{=URL('default', 'life/@=%s' % ott, url_encode=False, scheme=True, host=True)}}
+
+or, if you’d like to fly through the tree to your sponsored leaf try 
+
+  {{=URL('default', 'life/@=%s' % ott, vars=dict(init='zoom'), url_encode=False, scheme=True, host=True)}}
+
+There’s also the more obvious link
+
+  onezoom.org/life/@{{=XML(species_name.replace(" ","_"))}}
+
+but this may be less stable (for example sometimes two very different creatures
+on the tree share the same scientific name, so you may end up going to the
+wrong place).
+
+Finally you can see all your donations together on this page:
+
+  {{=URL('default', 'donor.html/%s' % username, scheme=True, host=True)}}
+
+Please consider sharing the link with your friends and family!
+
+We welcome your feedback and are always keen to find ways to make OneZoom better.
+
+Thank you again for your donation, we hope you enjoy exploring our tree of life. 
+
+The OneZoom Team (UK charity number 1163559)

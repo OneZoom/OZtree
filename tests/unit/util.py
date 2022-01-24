@@ -1,12 +1,26 @@
-from sponsorship import (
-    sponsorable_children,
-)
+import datetime
+import uuid
+
+import sponsorship
+import usernames
 
 from gluon import current
 
+
+def time_travel(days=0, expire=True):
+    """Go back in time (days) days from start of test"""
+    if not current.request.time_travel_now:
+        current.request.time_travel_now = current.request.now
+    current.request.now = current.request.time_travel_now - datetime.timedelta(days=days)
+    if expire:
+        for r in sponsorship.reservation_get_all_expired():
+            sponsorship.reservation_expire(r)
+
+
 def find_unsponsored_otts(count, in_reservations=None):
     db = current.db
-    rows = sponsorable_children(
+
+    rows = sponsorship.sponsorable_children(
         1,    # 1st node should have all leaves as descendants
         qtype="id",
         limit=count,
@@ -50,13 +64,21 @@ def clear_unittest_sponsors():
 
 
 def set_appconfig(section, key, val):
-    """Update site config (section).(key) = (val)"""
+    """Update site config (section).(key) = (val). If val is None, delete"""
     myconf = current.globalenv['myconf']
-    myconf[section][key] = str(val)
+    if val is None:
+        if key in myconf[section]:
+            del myconf[section][key]
+    else:
+        myconf[section][key] = str(val)
     full_key = ".".join((section, key))
     if full_key in myconf.int_cache:
         del myconf.int_cache[full_key]
 
+
+def set_is_testing(val):
+    """Update the global var is_testing"""
+    current.globalenv['is_testing'] = val
 
 def set_allow_sponsorship(val):
     """Update site config with new value for sponsorship.allow_sponsorship"""
@@ -70,3 +92,78 @@ def set_reservation_time_limit_mins(val):
     """Update site config with new value for sponsorship.reservation_time_limit_mins"""
     set_appconfig('sponsorship', 'reservation_time_limit_mins', val)
 
+def set_smtp(sender='me@example.com', autosend_email=1):
+    """
+    Update site config with new value for smtp server, sender, and autosend_email.
+    If sender is None, delete the server
+    If autosend_email=0, then the normal ozmail.get_mailer() function will return None
+    """
+    if sender is None:
+        set_appconfig('smtp', 'server', None)
+        set_appconfig('smtp', 'sender', None)
+        set_appconfig('smtp', 'autosend_email', autosend_email)
+    else:
+        if not 'server' in current.globalenv['myconf']['smtp'] or current.globalenv['myconf']['smtp']['server'] is None:
+            set_appconfig('smtp', 'server', 'localhost:2500')
+        set_appconfig('smtp', 'sender', sender)
+        set_appconfig('smtp', 'autosend_email', autosend_email)
+
+def purchase_reservation(otts = 1, basket_details = None, paypal_details = None, payment_amount=None, allowed_status=set(('available',)), verify=True):
+    """Go through all the motions required to purchase a reservation"""
+    db = current.db
+
+    purchase_uuid = uuid.uuid4()
+    basket_code = 'UT::BK%s' % purchase_uuid
+
+    if isinstance(otts, int):
+        otts = find_unsponsored_otts(otts)
+
+    if not basket_details:
+        basket_details = {}
+    if not paypal_details:
+        paypal_details = {}
+    if 'user_sponsor_name' not in basket_details:
+        # Have to at least set user_sponsor_name
+        basket_details['user_sponsor_name'] = basket_details.get("e_mail", "User %s" % purchase_uuid)
+        basket_details['user_sponsor_kind'] = "by"
+    if 'PP_transaction_code' not in paypal_details:
+        paypal_details['PP_transaction_code'] = 'UT::PP%s' % purchase_uuid
+    if 'PP_e_mail' not in paypal_details:
+        paypal_details['PP_e_mail'] = "%s@paypal.unittest.example.com" % purchase_uuid
+    if 'sale_time' not in paypal_details:
+        paypal_details['sale_time'] = '01:01:01 Jan 01, 2001 GMT'
+
+    if payment_amount is None:
+        # Work out payment amount from OTTs
+        sum = db.ordered_leaves.price.sum()
+        payment_amount = db(db.ordered_leaves.ott.belongs(otts)).select(sum).first()[sum]
+
+    for ott in otts:
+        status, _, reservation_row, _ = sponsorship.get_reservation(ott, form_reservation_code="UT::%s" % purchase_uuid)
+        if status not in allowed_status:
+            raise ValueError("OTT %d wasn't available: %s" % (ott, status))
+        sponsorship.reservation_add_to_basket(basket_code, reservation_row, basket_details)
+    sponsorship.reservation_confirm_payment(basket_code, payment_amount, paypal_details)
+
+    reservation_rows = db(db.reservations.basket_code == basket_code).select()
+    if verify:
+        for reservation_row in reservation_rows:
+            verify_reservation(reservation_row)
+    return reservation_rows
+
+
+def verify_reservation(reservation_row):
+    """Emulate verification logic in controllers/manage.py:SPONSOR_UPDATE"""
+    # Add verified options
+    reservation_row.update_record(
+        verified_time=current.request.now,
+        verified_kind=reservation_row.user_sponsor_kind,
+        verified_name=reservation_row.user_sponsor_name,
+        verified_donor_name=reservation_row.user_donor_name,
+    )
+    # Now verified details are set, map username
+    username, _ = usernames.find_username(reservation_row)
+    assert username
+    reservation_row.update_record(
+        username=username,
+    )

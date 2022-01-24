@@ -296,6 +296,10 @@ The server unit tests have no additional dependencies. To run, do:
 
     grunt test-server
 
+To run individual tests, do:
+
+    grunt exec:test_server:test_modules_username.py
+
 ### Server Selenium-based functional tests
 
 Make sure required python modules are installed with:

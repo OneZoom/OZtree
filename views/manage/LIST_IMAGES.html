@@ -14,7 +14,7 @@ function showframe(doID) {
     <iframe id="edit_frame" src="http://eol.org"><p>You need a browser that supports iframes</p></iframe>
     end</div>
 
-    <h2>A list of the thumbnail images saved to the database</h2>
+    <h2><a href="{{=URL('index')}}">Management</a>:: thumbnail images saved to the database</h2>
 {{=form}}
 {{for src, images in pics.items():}}
 {{if len(images):}}

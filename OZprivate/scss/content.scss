@@ -367,6 +367,7 @@ ul.leaf-list {
 }
 
 
+input.oz-pill { border: none; }
 .oz-pill {
   @extend %oz-background-dark;
 
@@ -387,6 +388,14 @@ ul.leaf-list {
     background-position: 97% center;
     background-size: 1.5rem;
     padding-right: calc(1.5rem + 1rem); /* Add icon size to normal padding */
+  }
+
+  &.pill-leaf {
+    background-image: url(../images/oz-leaf-greenfg.svg);
+    background-repeat: no-repeat;
+    background-position: 0.7rem center;
+    background-size: 1.5rem;
+    padding-left: calc(1.5rem + 1rem); /* Add icon size to normal padding */
   }
 
   &.with-splash {
