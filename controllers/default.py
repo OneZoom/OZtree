@@ -1443,7 +1443,8 @@ def pp_process_post():
         paypal_url = get_paypal_url().replace('//www', '//ipnpb')
         paypal_resp = urllib.request.urlopen(urllib.request.Request(
             paypal_url + '/cgi-bin/webscr',
-            data=("cmd=_notify-validate&" + urllib.parse.urlencode(request.post_vars)).encode(),
+            # NB: Web2Py guarantees that the request body has been rewound for us
+            b"cmd=_notify-validate&" + request.body.read(),
             headers={
                 'content-type': 'application/x-www-form-urlencoded',
             }))
