@@ -317,7 +317,7 @@ function initImages() {
             // Only 1 image: can't choose, so store image src_id to pass on in the form
             document.getElementById('user_preferred_image_src_input').value = image_objects[0].src;
             document.getElementById('user_preferred_image_src_id_input').value = image_objects[0].src_id;
-            document.getElementById('user_nondefault_image').value = image_objects[0].already_downloaded?"":"0";
+            document.getElementById('user_nondefault_image_input').value = image_objects[0].already_downloaded?"":"0";
         } else {
             //There are at least 2 images, so change the page layout to add image selection
             $('#leaf').after($('<div>', {id:"select_pictures"}).append('<fieldset><legend>{{=T("Choose your preferred picture")}}</legend><ul></ul></fieldset>'));
