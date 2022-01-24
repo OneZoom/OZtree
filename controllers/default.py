@@ -1524,6 +1524,8 @@ def pp_process_post():
                         int(round(time.time() * 1000)))),
                     "w") as json_file:
                 out = request.vars.copy()
+                request.body.seek(0)
+                out['__request_body'] = request.body.read().decode('utf-8')
                 if err:
                     import traceback
                     out['__oz_error'] = str(err)
