@@ -36,6 +36,10 @@ def sponsorship_config():
     except:
         out['unpaid_time_limit'] = 2.0*24.0*60.0*60.0 #seconds
     try:
+        out['slow_payment_time_limit'] = float(myconf.take('sponsorship.slow_payment_limit_mins')) * 60.0
+    except:
+        out['slow_payment_time_limit'] = 1 * 60.0 #seconds
+    try:
         out['renew_discount'] = float(myconf.take('sponsorship.renew_discount'))
     except:
         out['renew_discount'] = 0.2
@@ -461,7 +465,8 @@ def get_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
 
     Returns
     - status: String describing reservation status, One of
-    -         banned / available / available only to user / reserved / sponsored / unverified / unverified waiting for payment
+              banned / available / available only to user / reserved / sponsored /
+              unverified / unverified waiting for payment / unverified waiting for slow payment
     - status_param: A parameter associated with the status, e.g. number of mins of maintenance, time until allowed to sponsor
     - reservation_row: row from reservations table
     - leaf_entry: row from ordered_leaves table
@@ -561,8 +566,10 @@ def get_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
                         endTime = request.now
                         timesince = ((endTime-startTime).total_seconds())
                         # now we check if the time is too great
-                        if (timesince < (unpaid_time_limit)):
+                        if (timesince < (sp_conf['slow_payment_time_limit'])):
                             status = "unverified waiting for payment"
+                        elif (timesince < (unpaid_time_limit)):
+                            status = "unverified waiting for slow payment"
                         elif not maintenance_mode:
                             # We've waited too long and can zap the personal data
                             # previously in the table then set available

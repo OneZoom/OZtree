@@ -466,7 +466,7 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
             verified_more_info= reservation_row.verified_more_info)
 
     if status.startswith("unverified"):
-        if status == "unverified waiting for payment":
+        if status == "unverified waiting for payment" or status == "unverified waiting for slow payment":
             unpaid_time_limit = sponsorship_config()['unpaid_time_limit']
             response.view = request.controller + "/spl_waitpay." + request.extension    
             return dict(
