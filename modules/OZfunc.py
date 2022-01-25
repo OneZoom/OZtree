@@ -256,7 +256,7 @@ def nice_name_from_otts(otts, lang=None, leaf_only=False, **kwargs):
     for r in db(db.ordered_leaves.ott.belongs(otts)).select(db.ordered_leaves.ott, db.ordered_leaves.name):
         nice[r.ott] = nice_name(r.name, vn[r.ott], is_species=True, **kwargs)
     if not leaf_only:  # This is simply an optimization
-        for r in db(db.ordered_nodes.ott.belongs(identifiers)).select(db.ordered_nodes.ott, db.ordered_nodes.name):
+        for r in db(db.ordered_nodes.ott.belongs(otts)).select(db.ordered_nodes.ott, db.ordered_nodes.name):
             nice[r.ott] = nice_name(r.name, vn[r.ott], is_species=False, **kwargs)
     return nice
 
