@@ -470,6 +470,17 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
             unpaid_time_limit = sponsorship_config()['unpaid_time_limit']
             response.view = request.controller + "/spl_waitpay." + request.extension    
             return dict(
+                # i.e. if retry set too, trigger another payment attempt
+                validated=(request.vars.get('retry') == 'yes'),
+                payment_retry_url=URL("sponsor_pay", scheme=True, host=True, vars=dict(
+                    ott=OTT_ID_Varin,
+                    form_reservation_code=form_reservation_code,
+                    retry='yes',
+                )),
+                status=status,
+                form_reservation_code=form_reservation_code,
+                OTT_ID=OTT_ID_Varin,
+                user_paid=reservation_row.user_paid,
                 species_name=leaf_entry.name,
                 the_long_name=the_long_name,
                 unpaid_time_limit_hours= int(unpaid_time_limit/60.0/60.0))
@@ -571,7 +582,10 @@ def sponsor_pay():
     Actually save the payment details in the db, and then redirect to a payments system, 
     e.g. paypal
     """
-    result = sponsor_leaf_check(use_form_data=True, form_data_to_db=True)
+    result = sponsor_leaf_check(
+        # Only try to repopulate the form if we have one
+        use_form_data=(request.env.request_method == 'POST'),
+        form_data_to_db=(request.env.request_method == 'POST'))
     if not result.get('validated', None):
         # Keep trying to validate, using the sponsor_leaf views
         return result
@@ -584,6 +598,10 @@ def sponsor_pay():
         "item_name": "Donation to OneZoom (%s)" % result['species_name'],
         "item_number": "leaf sponsorship - %s" % result['species_name'],
         "return": URL("sponsor_thanks.html", scheme=True, host=True),
+        "cancel_return": URL("sponsor_pay.html", scheme=True, host=True, vars=dict(
+            ott=result['OTT_ID'],
+            form_reservation_code=result['form_reservation_code'],
+        )),
         "notify_url": get_paypal_notify_url(result['OTT_ID']),
         "amount": '{:.2f}'.format(result['user_paid']),
         "currency_code": "GBP",
