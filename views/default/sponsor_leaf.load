@@ -89,8 +89,8 @@
         <canvas id="leafCanvas" onclick="drawPreview()"></canvas>
         <p id="licenceText"><a target = "_blank">{{=T('More information about this image')}}</a></p>
         <p class="extra_info">{{=T('*The final leaf may be facing in any direction on the tree, it may also change based on scientific advances. This preview uses the plain green colour scheme, but this can be changed by visitors using the tree of life explorer, so might not always appear as it does above.')}}</p>
-        <input type="hidden" id="user_preferred_image_src_input" name='user_preferred_image_src' value='{{=default_image.get("src","") if default_image else ""}}' />
-        <input type="hidden" id="user_preferred_image_src_id_input" name='user_preferred_image_src_id' value='{{=default_image.get("src_id","") if default_image else ""}}' />
+        <input type="hidden" id="user_preferred_image_src_input" name='user_preferred_image_src' value='{{=request.vars.get('user_preferred_image_src') or (default_image.get("src","") if default_image else "")}}' />
+        <input type="hidden" id="user_preferred_image_src_id_input" name='user_preferred_image_src_id' value='{{=request.vars.get('user_preferred_image_src_id') or (default_image.get("src_id","") if default_image else "")}}' />
       </div>
     </div>
   </div>
@@ -152,7 +152,7 @@
       {{giftaid_partners = [partner_data] if partner_data.get('giftaid') else [] }}
       {{include 'default/sponsor_giftaid.inc.html'}}
 
-      <input type="hidden" id="user_nondefault_image_input" name="user_nondefault_image" value="" />
+      <input type="hidden" id="user_nondefault_image_input" name="user_nondefault_image" value="{{=request.vars.get('user_nondefault_image_input') or "0"}}" />
       <input type="hidden" name="id" value="{{=id}}" />
       <input type="hidden" name="form_reservation_code" value="{{=form_reservation_code}}" />
       <input type="hidden" name="_formname" value="main_sponsor_form" />

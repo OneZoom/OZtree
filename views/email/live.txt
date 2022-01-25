@@ -13,15 +13,15 @@ details.
 
 It’s now there for all to see at:
 
-  {{=URL('default', 'life/@=%s' % ott, url_encode=False, scheme=True, host=True)}}
+  https://onezoom.org/life/@={{=ott}}
 
 or, if you’d like to fly through the tree to your sponsored leaf try 
 
-  {{=URL('default', 'life/@=%s' % ott, vars=dict(init='zoom'), url_encode=False, scheme=True, host=True)}}
+  https://onezoom.org/life/@={{=ott}}?init=zoom
 
 There’s also the more obvious link
 
-  onezoom.org/life/@{{=XML(species_name.replace(" ","_"))}}
+  https://onezoom.org/life/@{{=XML(species_name.replace(" ","_"))}}
 
 but this may be less stable (for example sometimes two very different creatures
 on the tree share the same scientific name, so you may end up going to the

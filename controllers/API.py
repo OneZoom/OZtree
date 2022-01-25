@@ -180,7 +180,7 @@ def search_init():
     try:
         tidy_latin = request.vars.name.replace("_", " ")
         query = db.ordered_leaves.name == tidy_latin
-        name_ids = set([r.id for r in db(query).select(db.ordered_leaves.id)])
+        name_ids = set([-r.id for r in db(query).select(db.ordered_leaves.id)])
         query = db.ordered_nodes.name == request.vars.name
         name_ids.update([r.id for r in db(query).select(db.ordered_nodes.id)])
     

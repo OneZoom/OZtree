@@ -492,7 +492,6 @@ db.define_table('reservations',
     #has the user chosen a non-default image? None if no img or the already downloaded OZ
     # image was chosen, 0 if there was no OZ image but the default EoL image was chosen, 
     # or 1 if another image was chosen by the sponsor. Should prob be boolean type instead.
-    Field('user_preferred_image', type='integer', requires=IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))), #old, to be deleted
     Field('user_preferred_image_src', type='integer', requires=IS_EMPTY_OR(IS_INT_IN_RANGE(0,1000))),
     Field('user_preferred_image_src_id', type='integer', requires=IS_EMPTY_OR(IS_INT_IN_RANGE(-1e100,1e100))),
     # an option for users to recommend an EOL ID as the best image. Should normally be filled

@@ -228,9 +228,10 @@ class SearchManager {
                   let id = temp_ott_id_map[ott];
                   let searchScore = (record[4] == type)?1:0;
                   // give a low score, but higher if you asked for "for" and got "for or asked for "by" and got "by"
+                  let tidy_latin = (latinName && (!latinName.startsWith("_")) && (!latinName.endsWith("_"))) ? latinName.split("_").join(" ") : null; 
+                  let tidy_common = vernacular ? capitalizeFirstLetter(vernacular) : null; // ready for printing in UI
                   
-                  let row = [vernacular, latinName, id, searchScore];
-        
+                  let row = [tidy_common, tidy_latin, id, searchScore];
                   let additional_info = {info_type: "Sponsorship Info", text: null};
                   let prefix = "";
                   if (record[4] && record[4] !== "null") prefix = OZstrings["Sponsored " + record[4]] + " ";
@@ -244,7 +245,7 @@ class SearchManager {
                       additional_info.text = capitalizeFirstLetter(record[3]);
                       row.push(additional_info);
                   }
-        
+                  row.pinpoint = '@' + (tidy_latin || '').replace(/ /g, '_') + '=' + ott;
                   newRes.push(row);
               }
           }

@@ -28,7 +28,7 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
     function compile_names(record) {
         var is_leaf = record[2] < 0;
         if (record[0] && record[1]) {
-            return "<p>" + add_link(record[0], record) + "</p>" + "(" + (is_leaf?"<i>"+record[1]+"</i>":record[1]) + ")";
+            return "<p>" + add_link(record[0], record) + "</p>" + "(" + (is_leaf?"<i>"+add_link(record[1], record)+"</i>":add_link(record[1], record)) + ")";
         } else if (record[0]) {
             return "<p>" + add_link(record[0], record) + "</p>";
         } else if (record[1]) {
@@ -36,7 +36,8 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
         }
     }
 
-    function compile_sponsorship(record) {
+    function compile_extra(record) {
+        // Add extra info to the html version of the record (extra vernaculars or sponsorships)
         if (record.length >= 5 && record[4] && record[4].info_type == "Sponsorship Info") {
             return '<p class="sponsorship-info">' + record[4].text + "</p>";
         } else if (record.length >= 5 && record[4] && record[4].info_type == "Extra Vernacular") {
@@ -86,7 +87,7 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
                  sponsored=true;
                  }
                  var tempHTML = compile_names(result);
-                 tempHTML += compile_sponsorship(result);
+                 tempHTML += compile_extra(result);
                  $(".search_hits", dropdown).append(
                                                     $('<dd></dd>')
                                                     .html(tempHTML)
