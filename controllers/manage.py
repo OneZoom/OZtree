@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import re
+import subprocess
 
 import ozmail
 import OZfunc
@@ -335,14 +337,13 @@ def SPONSOR_UPDATE():
         form.element(_type='submit').update(_style='background-color: #999999; background-image:none; font-size: 1.6em;')
         form.element(_type='submit').update(_value='↻')
         
-        img_src = db.reservations[row_id].verified_preferred_image_src
-        if img_src in [src_flags['onezoom_via_eol'], src_flags['eol']] or request.vars.admin_changed_image:
+        img_src_t = request.vars.get('verified_preferred_image_src')
+        if img_src_t:
+            img_src_t = int(img_src_t)
+        if img_src_t in [src_flags['onezoom_via_eol'], src_flags['eol'], src_flags['eol_old']] or request.vars.admin_changed_image:
             # We have asked for an image from EoL- use EoLQueryPicsNames to download
             # it and simultanously add it to the database (perhaps as a bespoke image)
-            try:
-                import re
-                from subprocess import Popen, PIPE, STDOUT
-                
+            try:                
                 ret_text = ""
                 ott = db.reservations[row_id].get('OTT_ID')
                 # Since the EoLQueryPicsNames script runs as the web user, it should not have
@@ -356,41 +357,44 @@ def SPONSOR_UPDATE():
                 EoLQueryPicsNames = [os.path.join(request.folder,'OZprivate','ServerScripts','Utilities','EoLQueryPicsNames.py'),
                                      '--database', db_conn_string,
                                      '--add_percent', str(percent_crop_expansion),
-                                     '-v', '--opentree_id', str(int(ott))]
-                if img_src == src_flags['onezoom_via_eol'] or request.vars.admin_changed_image:
+                                     '-v', '--script', '--opentree_id', str(int(ott))]
+                if img_src_t == src_flags['onezoom_via_eol'] or request.vars.admin_changed_image:
                     #this is a specific user-chosen image: we will save it as a "onezoom_via_eol" image
-                    DOid = db.reservations[row_id].verified_preferred_image_src_id
+                    DOid = request.vars.get('verified_preferred_image_src_id')
                     if DOid:
                         #only save an explicit OneZoom image (by passing in the dataObject ID) if the user  
                         # (or admin, if overridden) has selected something different from the EoL default
-                        image_getter_connection = Popen(
-                            EoLQueryPicsNames + ['--eol_image_id', str(int(DOid))], 
-                            stdout=PIPE, stderr=STDOUT,
-                            stdin=PIPE, 
+                        image_getter = subprocess.run(
+                            EoLQueryPicsNames + ['--eol_image_id', str(int(DOid))],
+                            timeout=60, # seconds
+                            input=f'{password}\n', #pass in pw via stdin, so it doesn't get shown in the processes
+                            capture_output=True, 
                             env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()},
                             universal_newlines=True,
                         )
-                        #pass in the password via stdin, so it doesn't get shown in the processes
-                        ret_text += image_getter_connection.communicate(input='{0}\n'.format(password))[0]
+                        ret_text = image_getter.stderr + image_getter.stdout
+                        if ret_text:
+                            form.element(_type='submit').update(_title=ret_text)
                 #Always update the default EoL image (and common name) using EoLQueryPicsNames.py,
                 # unless (for the time being) this is an eol_old image, in which case leave it
                 # (this is a hack until EoL V3 images are nicer than eolV2)
                 # Don't pass in the DOid - the script should get that automagically
-                if img_src != src_flags['eol_old']:
-                    image_getter_connection = Popen(
+                if img_src_t != src_flags['eol_old']:
+                    image_getter_connection = subprocess.run(
                         EoLQueryPicsNames, 
-                        stdout=PIPE, stderr=STDOUT,
-                        stdin=PIPE,
+                        timeout=60, # seconds
+                        input=f'{password}\n', #pass in pw via stdin, so it doesn't get shown in the processes
+                        capture_output=True, 
                         env={"PATH": "/bin:/usr/bin:/usr/local/bin","PWD":os.getcwd()},
                         universal_newlines=True,
                     )
                     #pass in the password via stdin, so it doesn't get shown in the processes
-                    ret_text += image_getter_connection.communicate(input='{0}\n'.format(password))[0]
+                    ret_text = image_getter.stderr + image_getter.stdout
                     if ret_text:
                         form.element(_type='submit').update(_title=ret_text)
-                    
+                # Get the newly changed row
+                row = db(db.reservations.id==row_id).select(*[db.reservations[n] for n in read_only_cols+write_to_cols]).first()
             except:
-                raise
                 try:
                     response.flash = "could not download image ({}). Try running \n{}".format(ret_text, " ".join(EoLQueryPicsNames))
                 except:
@@ -926,7 +930,6 @@ def REIMPORT_TREE_TABLES():
     
     import os
     from shutil import copyfile
-    from subprocess import check_output, STDOUT
     # this function will read in the csv files to update the leaf and node tables in the database (large tables)
     response.flash = "Loading in huge datasets"
     status='OK'
@@ -952,12 +955,14 @@ def REIMPORT_TREE_TABLES():
             
             sqlfile = nodefile+'.mySQL'
             copyfile(nodefile, sqlfile)
-            ret_text.append(check_output(['perl', '-pi', '-e', r's/,(?=(,|\n))/,\\N/g', sqlfile], stderr=STDOUT))
+            ret_text.append(subprocess.check_output(
+                ['perl', '-pi', '-e', r's/,(?=(,|\n))/,\\N/g', sqlfile], stderr=subprocess.STDOUT))
             sql_cmd2 = "LOAD DATA LOCAL INFILE '{}' REPLACE INTO TABLE `ordered_nodes` FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES ({});".format(sqlfile, nf.readline.rstrip())
     
             sqlfile = leaffile+'.mySQL'
             copyfile(leaffile, sqlfile)
-            ret_text.append(check_output(['perl', '-pi', '-e', r's/,(?=(,|\n))/,\\N/g', sqlfile], stderr=STDOUT))
+            ret_text.append(subprocess.check_output(
+                ['perl', '-pi', '-e', r's/,(?=(,|\n))/,\\N/g', sqlfile], stderr=subprocess.STDOUT))
             sql_cmd3 = "LOAD DATA LOCAL INFILE '{}' REPLACE INTO TABLE `ordered_leaves` FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES ({});".format(sqlfile, lf.readline.rstrip())
 
 
