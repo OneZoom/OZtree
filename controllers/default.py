@@ -41,6 +41,17 @@ def get_paypal_url():
     except:
         return 'https://www.sandbox.paypal.com'
 
+
+def get_paypal_notify_url(postfix=""):
+    """Return a valid PayPal IPN url (i.e. the URL they poke when payment successful)"""
+    try:
+        notify_url = myconf.take('paypal.notify_url') + '/pp_process_post.html'
+    except:
+        notify_url = URL("pp_process_post.html", scheme=True, host=True)
+    if postfix:
+        notify_url += "/%s" % postfix
+    return notify_url
+
 """ generally useful functions """
 
 def time_diff(startTime,endTime):
@@ -561,36 +572,26 @@ def sponsor_pay():
     if not result.get('validated', None):
         # Keep trying to validate, using the sponsor_leaf views
         return result
-    else:
-        # Jump out to paypal
-        db_saved = result['form'].vars
-        OTT_ID_str = str(int(result['OTT_ID'])) # this is the only field not in the form
-        try:
-            # redirect the user to a paypal page that (if completed) triggers paypal to then visit
-            # an OZ page, confirming payment: this is called an IPN. Details in pp_process_post.html
-            try:
-                notify_url = myconf.take('paypal.notify_url') + '/pp_process_post.html'
-            except:
-                notify_url = URL("pp_process_post.html", scheme=True, host=True)
-            redirect(get_paypal_url() + (
-                '/cgi-bin/webscr'
-                '?cmd=_donations'
-                '&business=mail@onezoom.org'
-                '&item_name=Donation+to+OneZoom+({sp_name})'
-                '&item_number=leaf+sponsorship+-+{sp_name}'
-                '&return={ret_url}'
-                '{notify_string}'
-                '&amount={amount}'
-                '&currency_code=GBP'.format(
-                     sp_name=urllib.parse.quote(db_saved.name),
-                     ret_url=URL("sponsor_thanks.html", scheme=True, host=True),
-                     notify_string='&notify_url=%s/%s' % (notify_url, OTT_ID_str),
-                     amount=urllib.parse.quote('{:.2f}'.format(db_saved.user_paid)))))
-        except:
-            raise
-            error="we couldn't find your leaf sponsorship information."
-            response.view = request.controller + "/sponsor_pay." + request.extension
-            return(dict(error=error, ott=request.vars.get('ott') or '<no available ID>'))
+
+    # Make sure the fields we need are available
+    db_saved = result['form'].vars
+    if not hasattr(db_saved, 'name') or not hasattr(db_saved, 'user_paid'):
+        error = "we couldn't find your leaf sponsorship information."
+        response.view = request.controller + "/sponsor_pay." + request.extension
+        return(dict(error=error, ott=request.vars.get('ott') or '<no available ID>'))
+
+    # redirect the user to a paypal page that (if completed) triggers paypal to then visit
+    # an OZ page, confirming payment: this is called an IPN. Details in pp_process_post.html
+    redirect(get_paypal_url() + '/cgi-bin/webscr?' + urllib.parse.urlencode({
+        "cmd": "_donations",
+        "business": 'mail@onezoom.org',
+        "item_name": "Donation to OneZoom (%s)" % db_saved.name,
+        "item_number": "leaf sponsorship - %s" % db_saved.name,
+        "return": URL("sponsor_thanks.html", scheme=True, host=True),
+        "notify_url": get_paypal_notify_url(result['OTT_ID']),
+        "amount": '{:.2f}'.format(db_saved.user_paid),
+        "currency_code": "GBP",
+    }))
 
 
 def valid_spons(form, species_name, price_pounds, partner_data):
@@ -715,11 +716,7 @@ def sponsor_renew():
         if '/basket/' not in notify_url:
             raise ValueError("Invalid notify_url: %s" % notify_url)
     else:
-        try:
-            notify_url = myconf.take('paypal.notify_url') + '/pp_process_post.html'
-        except:
-            notify_url = URL("pp_process_post.html", scheme=True, host=True)
-        notify_url += '/basket/%s' % __make_user_code()
+        notify_url = get_paypal_notify_url('basket/%s' % __make_user_code())
 
     # Get active, expiring reservations
     active_rows, expiring_rows, rows_by_ott = ([], [], {})
