@@ -528,6 +528,8 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
                     db.executesql(f"UPDATE reservations SET user_donor_hide = 0 where id = {int(reservation_row.id)}")
                 if not form.vars.allow_contact:
                     db.executesql(f"UPDATE reservations SET allow_contact = 0 where id = {int(reservation_row.id)}")
+                # Make sure our copy of the reservation row is up-to-date (so we can get user_paid later)
+                reservation_row = db.reservations(reservation_row.id)
             elif form.errors:
                 validated = False
             else:
@@ -555,6 +557,7 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
             percent_crop_expansion= percent_crop_expansion,
             partner_data          = partner_data,
             EoL_API_key           = EoL_API_key,
+            user_paid             = reservation_row.user_paid,
             max_global_price      = max_global_price,
             min_global_price      = min_global_price)
         
@@ -573,23 +576,16 @@ def sponsor_pay():
         # Keep trying to validate, using the sponsor_leaf views
         return result
 
-    # Make sure the fields we need are available
-    db_saved = result['form'].vars
-    if not hasattr(db_saved, 'name') or not hasattr(db_saved, 'user_paid'):
-        error = "we couldn't find your leaf sponsorship information."
-        response.view = request.controller + "/sponsor_pay." + request.extension
-        return(dict(error=error, ott=request.vars.get('ott') or '<no available ID>'))
-
     # redirect the user to a paypal page that (if completed) triggers paypal to then visit
     # an OZ page, confirming payment: this is called an IPN. Details in pp_process_post.html
     redirect(get_paypal_url() + '/cgi-bin/webscr?' + urllib.parse.urlencode({
         "cmd": "_donations",
         "business": 'mail@onezoom.org',
-        "item_name": "Donation to OneZoom (%s)" % db_saved.name,
-        "item_number": "leaf sponsorship - %s" % db_saved.name,
+        "item_name": "Donation to OneZoom (%s)" % result['species_name'],
+        "item_number": "leaf sponsorship - %s" % result['species_name'],
         "return": URL("sponsor_thanks.html", scheme=True, host=True),
         "notify_url": get_paypal_notify_url(result['OTT_ID']),
-        "amount": '{:.2f}'.format(db_saved.user_paid),
+        "amount": '{:.2f}'.format(result['user_paid']),
         "currency_code": "GBP",
     }))
 
