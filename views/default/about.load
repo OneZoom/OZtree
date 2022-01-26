@@ -66,11 +66,13 @@ OneZoom needs funding to be able to continue its work.  We are looking to attrac
 
 <p>We also appreciate citations of our scientific publications about OneZoom development</p>
 
-<p> "Dynamic visualisation of million-tip trees: the OneZoom project" Yan Wong, James Rosindell (2020)bioRxiv 2020.10.14.323055 doi: {{=A('10.1101/2020.10.14.323055',_href="https://doi.org/10.1101/2020.10.14.323055")}}
+<ul>
+<li>Yan Wong and James Rosindell (2021) <i>Dynamic visualisation of million-tip trees: the OneZoom project.</i> Methods in Ecology and Evolution <b>00</b>: 1–11. doi: {{=A("10.1111/2041-210X.13766",_href="https://doi.org/10.1111/2041-210X.13766")}}</li>
 
-<p> {{=A("OneZoom: A Fractal Explorer for the Tree of Life. PLoS Biol 10(10): e1001406.(2012)",_href="https://doi.org/10.1371/journal.pbio.1001406", _target="_blank")}} by James Rosindell and Luke Harmon.</p>
+<li>James Rosindell and Yan Wong (2018) <i>Biodiversity, the Tree of Life, and Science Communication</i> in Phylogenetic Diversity eds. Rosa A. Scherson and Daniel P Faith</li>
 
-<p> "Biodiversity, the Tree of Life, and Science Communication" by James Rosindell and Yan Wong in Phylogenetic Diversity (2018) eds. Rosa A. Scherson and Daniel P Faith</p>
+<li>James Rosindell and Luke Harmon (2012) <i>OneZoom: A Fractal Explorer for the Tree of Life.</i> PLoS Biology <b>10</b>: e1001406. doi: {{=A("10.1371/journal.pbio.1001406" ,_href="https://doi.org/10.1371/journal.pbio.1001406")}}</li>
+</ul>
 
 <h3>Other references</h3>
 
