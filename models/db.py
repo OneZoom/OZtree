@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os.path
+import img
 
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
@@ -45,8 +46,6 @@ else:
     myconf = AppConfig() #faster to read once and never re-update
     T.is_writable = False
 
-## thumbnail_url is a python function to return the url to get a thumbnail picture
-## we also need to define a javascript equivalent for use on the client side
 try:
     thumb_base_url = myconf.take('images.url_base')
     if thumb_base_url.startswith("//"):
@@ -54,13 +53,8 @@ try:
         thumb_base_url = request.env.wsgi_url_scheme + ":" + thumb_base_url
     local_pic_path = None
 except:
-    thumb_base_url = URL('static','FinalOutputs/img', scheme=True, host=True, extension=False)+"/"
-    local_pic_path = lambda src, src_id: os.path.join(
-        request.folder,'static','FinalOutputs','img', str(src), str(src_id)[-3:])
-
-def thumbnail_url(src, src_id, preferred_px=150, square=True):
-    return "{}{}/{}/{}.jpg".format(thumb_base_url, src, str(src_id)[-3:],src_id)
-js_thumbnail_url = 'function(src, src_id, preferred_px, square) {return "%s" + src + "/" + src_id.toString().slice(-3) + "/" + src_id + ".jpg";}' % (thumb_base_url, )
+    thumb_base_url = URL(*img.local_web2py, scheme=True, host=True, extension=False)+"/"
+    local_pic_path = lambda s, s_id: os.path.join(request.folder, img.local_path, img.thumb_path(s, s_id))
 
 name_length_chars = 190 ##max length for a species name is 190 chars (allows indexing. NB: max OTT name is 108 chars)
 

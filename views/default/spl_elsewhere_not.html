@@ -6,7 +6,7 @@
 {{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
 
 {{include '../static/OZTreeModule/dist/OZ_leaf_draw.html'}}
-
+{{import img}}
 {{block masthead}}
 {{if 'embed' not in request.vars:}}
 <div class="home-heading uk-text-center uk-padding-small">
@@ -76,7 +76,7 @@ double-check by visiting the leaf on our main site at
 
     {{if default_image:}}
         var leafImageFile = new Image();
-        leafImageFile.src = "{{=thumbnail_url(default_image.src,default_image.src_id)}}"
+        leafImageFile.src = "{{=img.thumb_url(thumb_base_url, default_image.src, default_image.src_id)}}"
         leafImageFile.onload = function() {
             $('#licenceText').show();
             drawPreview(leafContext, leafImageFile);

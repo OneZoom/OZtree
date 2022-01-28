@@ -29,7 +29,7 @@ from OZfunc import (
     nice_name, nice_name_from_otts, get_common_name, get_common_names, __release_info,
     language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, add_the,
     otts2ids, nodes_info_from_array, nodes_info_from_string, extract_summary)
-
+import img
 
 """ Some settings for sponsorship"""
 def get_paypal_url():
@@ -161,7 +161,7 @@ def index():
             db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id):
         key = startpoints_ott_map.get(r.ott, None) or st_leaf_for_node_otts.get(r.ott, None)
         if key not in images:
-            images[key] = {'url':thumbnail_url(r.src, r.src_id)}
+            images[key] = {'url': img.thumb_url(thumb_base_url, r.src, r.src_id)}
     # Sponsored images
     for r in db(
             (db.images_by_ott.ott.belongs(spon_leaf_otts)) & (db.images_by_ott.overall_best_any==1)
@@ -170,11 +170,15 @@ def index():
             db.images_by_ott.rights, db.images_by_ott.licence):
         reservations_row = sponsored_by_ott[r.ott]
         if reservations_row.user_nondefault_image:
-            images[r.ott] = {'url':thumbnail_url(
+            images[r.ott] = {'url': img.thumb_url(
+                thumb_base_url,
                 reservations_row.verified_preferred_image_src,
                 reservations_row.verified_preferred_image_src_id)}
         else:
-            images[r.ott] = {'url':thumbnail_url(r.src, r.src_id), 'rights':r.rights, 'licence': r.licence.split('(')[0]}
+            images[r.ott] = {
+                'url': img.thumb_url(thumb_base_url, r.src, r.src_id),
+                'rights':r.rights,
+                'licence': r.licence.split('(')[0]}
     blank = {'url': URL('static','images/noImage_transparent.png')}
     for key in titles.keys():
         if key not in images:
@@ -773,7 +777,10 @@ def sponsor_renew():
         ).select(
             db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
             db.images_by_ott.rights, db.images_by_ott.licence):
-        images[r.ott] = {'url':thumbnail_url(r.src, r.src_id), 'rights':r.rights, 'licence': r.licence.split('(')[0]}
+        images[r.ott] = {
+            'url': img.thumb_url(thumb_base_url, r.src, r.src_id),
+            'rights':r.rights,
+            'licence': r.licence.split('(')[0]}
 
     prices = {}
     for r in db(db.ordered_leaves.ott.belongs(rows_by_ott.keys())).select(
@@ -803,7 +810,8 @@ def sponsor_renew():
 
         # If there's a nondefault image, replace with that
         if r.user_nondefault_image:
-            images[r.OTT_ID] = {'url':thumbnail_url(
+            images[r.OTT_ID] = {'url': img.thumb_url(
+                thumb_base_url,
                 r.verified_preferred_image_src,
                 r.verified_preferred_image_src_id)}
 
@@ -1028,7 +1036,11 @@ def donor():
         ).select(
             db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
             db.images_by_ott.rights, db.images_by_ott.licence):
-        images[r.ott] = {'url':thumbnail_url(r.src, r.src_id), 'rights':r.rights, 'licence': r.licence.split('(')[0]}
+        images[r.ott] = {
+            'url': img.thumb_url(thumb_base_url, r.src, r.src_id),
+            'rights':r.rights,
+            'licence': r.licence.split('(')[0],
+        }
 
     return dict(
         args=request.args,
@@ -1124,7 +1136,7 @@ def sponsor_picks(sponsor_suggestion=None):
             except:
                 val['vars']={}
             if not row.thumb_url and row.thumb_src is not None:
-                val['thumb_url']=thumbnail_url(row.thumb_src,row.thumb_src_id)
+                val['thumb_url']=img.thumb_url(thumb_base_url, row.thumb_src,row.thumb_src_id)
             if row.identifier.isdigit():
                 val['vars']['ott'] = row.identifier = int(row.identifier)
                 val['page'] = 'sponsor_node'
@@ -1207,8 +1219,9 @@ def sponsor_node_price():
             sci_names = {
                 r.ordered_leaves.ott: r.ordered_leaves.name for r in rows_with_img}
             image_urls = {
-                r.ordered_leaves.ott: thumbnail_url(
-                    r.images_by_ott.src, r.images_by_ott.src_id) for r in rows_with_img}
+                r.ordered_leaves.ott: img.thumb_url(thumb_base_url, r.images_by_ott.src, r.images_by_ott.src_id)
+                for r in rows_with_img
+            }
             image_attributions = {
                 r.ordered_leaves.ott: (' / '.join(
                     [t for t in [r.images_by_ott.rights, r.images_by_ott.licence] if t]))
@@ -1261,7 +1274,10 @@ def sponsor_node_price():
                     join = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
                     limitby=(start, start+extra_needed), 
                     orderby = "images_by_ott.rating ASC")
-                image_urls = {species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows_with_img}
+                image_urls = {
+                    species.ordered_leaves.ott: img.thumb_url(thumb_base_url, species.images_by_ott.src, species.images_by_ott.src_id)
+                    for species in rows_with_img
+                }
                 image_attributions = {species.ordered_leaves.ott:(' / '.join([t for t in [species.images_by_ott.rights, species.images_by_ott.licence] if t])) for species in rows_with_img}
                 otts.extend([species.ordered_leaves.ott for species in rows_with_img])
                 sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows_with_img})
@@ -1362,7 +1378,11 @@ def sponsor_handpicks():
                                left = db.images_by_ott.on(db.images_by_ott.ott == db.ordered_leaves.ott),
                                orderby = orderby)
             otts[price_pounds] = [r.ordered_leaves.ott for r in rows]
-            image_urls.update({species.ordered_leaves.ott:thumbnail_url(species.images_by_ott.src, species.images_by_ott.src_id) for species in rows if species.images_by_ott.src})
+            image_urls.update({
+                species.ordered_leaves.ott: img.thumb_url(thumb_base_url, species.images_by_ott.src, species.images_by_ott.src_id)
+                for species in rows
+                if species.images_by_ott.src
+            })
             sci_names.update({species.ordered_leaves.ott:species.ordered_leaves.name for species in rows})
 
         #Now find the vernacular names for all these species
@@ -1583,7 +1603,7 @@ def about():
     return dict(release_info=__release_info())
 
 def data_sources():
-    return dict()
+    return dict(img_url = lambda src, src_id: img.thumb_url(thumb_base_url, src, src_id))
 
 def how():
     return dict()
