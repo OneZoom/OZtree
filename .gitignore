@@ -5,6 +5,7 @@ RELEASE_INFO
 progress.log
 
 private/*.ini
+private/*.ini.bak
 OZprivate/ServerScripts/TaxonMappingAndPopularity/testlist
 OZprivate/data/YanTree/generate_tree.lock
 OZprivate/data/YanTree/generate_tree.out
