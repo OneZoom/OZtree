@@ -345,7 +345,11 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
     these are handled separately. Additionally, e-mail, address and name as well as
     receipt should be captured from Paypal
     """
-    OTT_ID_Varin = int(request.vars.get('ott'))
+    try:
+        OTT_ID_Varin = int(request.vars.get('ott'))
+    except (TypeError, ValueError):
+        raise HTTP(400, "Error: invalid ott parameter")
+
     if (request.vars.get('form_reservation_code')):
         form_reservation_code = request.vars.form_reservation_code
     else:
@@ -441,7 +445,7 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
 
     # From here on we assume we have a reservation row
     if reservation_row is None:
-        raise HTTP(400,"Error: row is not defined. Please try reloading the page")
+        raise HTTP(400, "Error: row is not defined. Please try reloading the page")
 
     if status == "sponsored":
         response.view = request.controller + "/spl_sponsored." + request.extension
@@ -591,7 +595,6 @@ def sponsor_pay():
                      notify_string='&notify_url=%s/%s' % (notify_url, OTT_ID_str),
                      amount=urllib.parse.quote('{:.2f}'.format(db_saved.user_paid)))))
         except:
-            raise
             error="we couldn't find your leaf sponsorship information."
             response.view = request.controller + "/sponsor_pay." + request.extension
             return(dict(error=error, ott=request.vars.get('ott') or '<no available ID>'))
@@ -1313,7 +1316,7 @@ def sponsor_node():
             query = sponsorable_children_query(ott, qtype="ott")
             common_name = get_common_name(ott)
         else:
-            raise
+            raise HTTP(400, "No ott or id given")
         #'partner' should match a partner_identifier listed in the db.partners table.
         if request.vars.partner:
             partner = db(db.partners.partner_identifier == request.vars.partner).select().first() #this could be null
