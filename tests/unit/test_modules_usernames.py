@@ -273,7 +273,7 @@ class TestUsername(unittest.TestCase):
         self.assertEqual(usernames_associated_to_email('alfred-pp@unittest.example.com'), (u_alfred,))
         self.assertEqual(usernames_associated_to_email('betty@unittest.example.com'), (u_betty,))
         self.assertEqual(usernames_associated_to_email('belinda@unittest.example.com'), (u_belinda,))
-        self.assertEqual(usernames_associated_to_email('bb@unittest.example.com'), (u_betty, u_belinda,))
+        self.assertEqual(set(usernames_associated_to_email('bb@unittest.example.com')), {u_betty, u_belinda,})
 
 
 if __name__ == '__main__':
