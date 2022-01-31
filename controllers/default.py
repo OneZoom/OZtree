@@ -1075,7 +1075,7 @@ def donor_list():
               groupby=groupby, orderby= sum_paid + " DESC, verified_time, reserve_time",
               limitby=limitby)
     names_for = [int(r[grouped_otts]) for r in curr_rows if r[n_leaves]==1] #only get names etc for unary sponsors
-    html_names = nice_names_from_otts(names_for, html=True, leaf_only=True, first_upper=True, break_line=2)
+    html_names = nice_name_from_otts(names_for, html=True, leaf_only=True, first_upper=True, break_line=2)
     otts = [int(ott) for r in curr_rows for ott in r[grouped_otts].split(",") if r[grouped_otts]]
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
     default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(otts) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
