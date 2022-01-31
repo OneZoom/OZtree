@@ -3,7 +3,7 @@
     response.files.append(URL('static','css/content_pages.css'))
 }}
 {{extend 'uikit_layout.html'}}
-
+{{import img}}
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
   <h1>Species sponsored recently{{if request.vars.search_mesg == 'AT16':}} through the <a href="http://ancestorstrail.org.uk">Ancestor&rsquo;s Trail</a>{{pass}}</h1>
@@ -14,14 +14,14 @@
 {{if tot:}}<h5>Total amount so far = &pound;{{=tot}}</h5>{{pass}}
 <ol class="sponsored_list">{{for i,item in enumerate(rows):}}{{if i==items_per_page: break}}
     <li>
-        <figure>{{img = user_images.get(item['OTT_ID']) or default_images.get(item['OTT_ID'])}}
+        <figure>{{image = user_images.get(item['OTT_ID']) or default_images.get(item['OTT_ID'])}}
             <figure>
                 <figcaption>{{=(html_names[item['OTT_ID']])}}</figcaption>
                 <a href="{{=URL('life/@=' + str(item['OTT_ID']), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life"
-{{if img:}}
-    src="{{=thumbnail_url(img.get('src'), img.get('src_id'))}}"
-    title="{{=' / '.join([t for t in [img.rights, img.licence] if t]).replace('"',"'")}}"
-    class="{{if img.get('src_id') in pds:}}pd{{pass}}"
+{{if image:}}
+    src="{{=img.thumb_url(thumb_base_url, image.get('src'), image.get('src_id'))}}"
+    title="{{=' / '.join([t for t in [image.rights, image.licence] if t]).replace('"',"'")}}"
+    class="{{if image.get('src_id') in pds:}}pd{{pass}}"
 {{else:}}
     src="{{=URL('static','images/noImage_transparent.png')}}"
     class="nopic {{if None in pds:}}pd{{pass}}"

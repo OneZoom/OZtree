@@ -1,3 +1,4 @@
+{{import img}}
 {{=form.custom.begin}}
 {{from html import escape}}        
         <div class="ids">{{=A("➩ OZ link", _href=URL('default','life/@='+str(vars['OTT_ID']), vars={"init":"jump"}, url_encode=False, extension=False), _target="_blank")}}<ol><li class="DB"><br />{{=A(vars['OTT_ID'], _href="https://tree.opentreeoflife.org/opentree/argus/ottol@{}".format(vars['OTT_ID']), _target='_blank')}}</a></li><li class="API"><br />{{=A(vars['EOL_ID'], _href="http://eol.org/pages/{}".format(vars['EOL_ID']), _target='_blank') if vars['EOL_ID'] else '<none>'}}</li></ol></div>
@@ -104,7 +105,7 @@
         <p>{{if not vars.get("emailed_re_sponsorship"):}}<input type="checkbox" name="auto_email" title="automatically email this sponsor when the button is clicked" {{if to_be_validated:}}checked="checked"{{pass}}>{{pass}}{{email = escape(vars['e_mail'] or vars['PP_e_mail'] or '')}}<a href="mailto:{{=email}}?Subject=Your%20sponsorship%20of%20{{=escape(vars['name'] or '')}}%20on%20OneZoom"><img src="{{=URL('static','images/email-icon.png')}}" alt="email" title="Compose new email to {{=(email or '<blank addressee>')}}" /></a></p>{{if vars.get('twitter_name'):}}<p>{{if not vars.get("tweeted_re_sponsorship"):}}<input type="checkbox" name="auto_tweet" title="automatically tweet this sponsor when the button is clicked" {{if to_be_validated:}}checked="checked"{{pass}}>{{pass}}<a href="http://twitter.com/home/?status=@{{=vars.get('twitter_name')}}" target="_blank"><img src="{{=URL('static','images/tiny-twitter-icon.png')}}" alt="tweet" title="tweet to this sponsor" /></a></p>{{pass}}</div>
         <div class="adminComment">{{=form.custom.widget.admin_comment}}
         <script>
-        thumb_func = {{=XML(js_thumbnail_url)}}
+        thumb_func = {{=XML(img.js_thumb_url(thumb_base_url))}}
         
         function init_EOL_name_and_image(row_id, taxon_obj) {
             var fm = '#form_'+ row_id
@@ -142,17 +143,17 @@
             $(class_spec + ' a').attr('href',href || '');
         }
 
-        function set_img_from_data_obj(img, class_spec, src) {
-            /* img should be an object: adjust the variables contained in the jquery 'class_spec' */
-            var doID = img.dataObjectVersionID;
-            var url =  img.url;
+        function set_img_from_data_obj(image, class_spec, src) {
+            /* image should be an object: adjust the variables contained in the jquery 'class_spec' */
+            var doID = image.dataObjectVersionID;
+            var url =  image.url;
             if (doID && url) {
                 $(class_spec + ' [name="verified_preferred_image_src"]').val(src); //set the hidden fields
                 $(class_spec + ' [name="verified_preferred_image_src_id"]').val(doID);
                 $(class_spec + ' a').attr('href','http://eol.org/media/' + doID) 
                 $(class_spec + ' img').css("background-image","url('"+ url +"')") //set the img src
-                if (img.height && img.width && img.crop_width) {
-                    crop_vals = crop_frac(img, {{=vars['percent_crop_expansion']}})
+                if (image.height && image.width && image.crop_width) {
+                    crop_vals = crop_frac(image, {{=vars['percent_crop_expansion']}})
                     res_px = $(class_spec + ' img').width()
                     $(class_spec + ' img').css("backgroundSize", crop_vals[0]*res_px + "px")
                     $(class_spec + ' img').css("backgroundPosition", (crop_vals[1]*res_px)+"px " + (crop_vals[2]*res_px)+"px")

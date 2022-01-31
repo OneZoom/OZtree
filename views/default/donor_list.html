@@ -1,7 +1,7 @@
 {{response.title='OneZoom: Donors'}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
 {{extend 'uikit_layout.html'}}
-
+{{import img}}
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
     <h1>The OneZoom charity would like to thank the following generous donors</h1>
@@ -25,11 +25,11 @@
 {{  if donor[otts_col_name]:}}
                 <ul>
 {{   for OTT in donor[otts_col_name].split(","):}}
-{{    img = user_images.get(int(OTT)) or default_images.get(int(OTT))}}
-{{    if img:}}
+{{    image = user_images.get(int(OTT)) or default_images.get(int(OTT))}}
+{{    if image:}}
                 <li><a href="{{=URL('life/@=' + str(OTT), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life"
-    src="{{=thumbnail_url(img.get('src'),img.get('src_id'))}}"
-    title="{{=' / '.join([t for t in [img.rights, img.licence] if t]).replace('"',"'")}}" /></a></li>
+    src="{{=img.thumb_url(thumb_base_url, image.get('src'), image.get('src_id'))}}"
+    title="{{=' / '.join([t for t in [image.rights, image.licence] if t]).replace('"',"'")}}" /></a></li>
 {{    pass}}
 {{   pass}}
                 </ul>
@@ -37,10 +37,10 @@
 {{ else:}}
 {{  OTT = int(donor[otts_col_name])}}
                 <a href="{{=URL('life/@=' + str(OTT), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life"
-{{  img = user_images.get(OTT) or default_images.get(OTT)}}
-{{  if img:}}
-    src="{{=thumbnail_url(img.get('src'),img.get('src_id'))}}"
-    title="{{=' / '.join([t for t in [img.rights, img.licence] if t]).replace('"',"'")}}"
+{{  image = user_images.get(OTT) or default_images.get(OTT)}}
+{{  if image:}}
+    src="{{=img.thumb_url(thumb_base_url, image.get('src'),image.get('src_id'))}}"
+    title="{{=' / '.join([t for t in [image.rights, image.licence] if t]).replace('"',"'")}}"
 {{  else:}}
     src="{{=URL('static','images/noImage_transparent.png')}}"
 {{  pass}} />
