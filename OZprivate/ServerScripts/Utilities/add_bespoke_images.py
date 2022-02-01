@@ -17,8 +17,9 @@ import json
 import logging
 import operator
 import os
-import subprocess
 import shutil
+import stat
+import subprocess
 import sys
 import re
 import urllib.request
@@ -53,10 +54,12 @@ class Images:
         """
         pd = False
         fn = os.path.basename(path)
-        m = re.match(r"(\d*)[_ ]*(ott_?(\d+))?[_ ]*(.+)\.jpe?g$", fn, re.IGNORECASE)
+        m = re.match(r"(\d*)[_ ]*(ott_?(\d+))?[_ ]*(.*)\.jpe?g$", fn, re.IGNORECASE)
         if not m:
-            raise ValueError(f"File {filename} does not match the expected pattern")
+            raise ValueError(f"File {fn} does not match the expected pattern")
         rating, ott, name = m.group(1), m.group(3), m.group(4)
+        if not name and not ott:
+            raise ValueError("Could not find either a name or ott number for {fn}")
         name = name.replace("_", " ")
         # Look in IPTC IIM data
         iptc = IPTCInfo(path, force=True)
@@ -75,7 +78,7 @@ class Images:
         credit = iptc["credit"] or None
         image = Img(
             path=path,
-            name=name,
+            name=name or str(ott),  # helps with sort order
             ott=int(ott) if ott else None,
             rating=int(rating) if rating else int(default_rating),
             rights=credit.decode() if credit else None,
@@ -84,7 +87,10 @@ class Images:
             pd=pd,
         )
         logger.debug(f"Found {image}")
-        self.image_list[context][name] = image
+        if image.ott:
+            self.image_list[None][ott] = image
+        else:
+            self.image_list[context][name] = image
     
         
     def find_otts(self):
@@ -150,8 +156,12 @@ class Images:
             ott = image.ott
             src_id = min_src_id + i
             save_to = os.path.join(img_dir, img.thumb_path(src, src_id))
+            filename = img.thumb_url(img_dir, src, src_id)
+            assert os.path.dirname(filename) == save_to
             os.makedirs(save_to, exist_ok=True)
-            shutil.copy(image.path, img.thumb_url(img_dir, src, src_id))
+            shutil.copy(image.path, filename)
+            st = os.stat(filename)
+            os.chmod(filename, st.st_mode | stat.S_IROTH) # Ensure everyone can read it
             # Now do DB manipulations
             best_cols = ["best_any", "best_verified"]
             if image.pd:
@@ -331,7 +341,10 @@ if __name__ == "__main__":
         "--default_rating",
         type=int,
         default=25000,
-        help="The default rating to give each image, if not specified in the filename."
+        help=(
+            "The default rating to give each image, if not specified in the filename. " +
+            "Ratings go from 0 to 50000, with 25000 being the normal (unrated) value."
+        )
     )
     parser.add_argument(
         "--database",
