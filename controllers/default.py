@@ -595,6 +595,7 @@ def sponsor_pay():
                      notify_string='&notify_url=%s/%s' % (notify_url, OTT_ID_str),
                      amount=urllib.parse.quote('{:.2f}'.format(db_saved.user_paid)))))
         except:
+            raise
             error="we couldn't find your leaf sponsorship information."
             response.view = request.controller + "/sponsor_pay." + request.extension
             return(dict(error=error, ott=request.vars.get('ott') or '<no available ID>'))
