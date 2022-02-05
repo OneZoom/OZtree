@@ -1088,11 +1088,15 @@ def donor_list():
               db.reservations.verified_kind,
               db.reservations.verified_name,
               db.reservations.verified_more_info,
-              groupby=groupby, orderby= sum_paid + " DESC, verified_time, reserve_time",
+              groupby=groupby, orderby=sum_paid + " DESC, verified_time, reserve_time",
               limitby=limitby)
-    names_for = [int(r[grouped_otts]) for r in curr_rows if r[n_leaves]==1] #only get names etc for unary sponsors
+    for r in curr_rows:
+        # Only show max 50 sponsored species, to avoid clogging page and also because of
+        # a low default group_concat_max_len which will restrict the number of otts anyway
+        r['otts'] = [int(ott) for i, ott in enumerate(r[grouped_otts].split(",")) if i < 50]
+    names_for = [r['otts'][0] for r in curr_rows if r[n_leaves]==1] #only get names etc for unary sponsors
     html_names = nice_name_from_otts(names_for, html=True, leaf_only=True, first_upper=True, break_line=2)
-    otts = [int(ott) for r in curr_rows for ott in r[grouped_otts].split(",") if r[grouped_otts]]
+    otts = [ott for r in curr_rows for ott in r['otts']]
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
     default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(otts) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
     #also look at the nondefault images if present
@@ -1106,7 +1110,7 @@ def donor_list():
                     db.images_by_ott.rights, db.images_by_ott.licence).first()
                 if row:
                     user_images[row.ott] = row
-    return dict(rows=curr_rows, n_col_name=n_leaves, otts_col_name=grouped_otts, paid_col_name=sum_paid, page=page, items_per_page=items_per_page, vars=request.vars, html_names=html_names, user_images=user_images, default_images=default_images)
+    return dict(rows=curr_rows, n_col_name=n_leaves, otts_col_name='otts', paid_col_name=sum_paid, page=page, items_per_page=items_per_page, vars=request.vars, html_names=html_names, user_images=user_images, default_images=default_images)
 
 
 
