@@ -1091,9 +1091,10 @@ def donor_list():
               groupby=groupby, orderby=sum_paid + " DESC, verified_time, reserve_time",
               limitby=limitby)
     for r in curr_rows:
-        # Only show max 50 sponsored species, to avoid clogging page and also because of
+        # Only show max 75 sponsored species, to avoid clogging page and also because of
         # a low default group_concat_max_len which will restrict the number of otts anyway
-        r['otts'] = [int(ott) for i, ott in enumerate(r[grouped_otts].split(",")) if i < 50]
+        # (note, the number shown may be < 75 as ones without images are not thumbnailed)
+        r['otts'] = [int(ott) for i, ott in enumerate(r[grouped_otts].split(",")) if i < 75]
     names_for = [r['otts'][0] for r in curr_rows if r[n_leaves]==1] #only get names etc for unary sponsors
     html_names = nice_name_from_otts(names_for, html=True, leaf_only=True, first_upper=True, break_line=2)
     otts = [ott for r in curr_rows for ott in r['otts']]
