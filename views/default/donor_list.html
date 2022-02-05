@@ -24,8 +24,8 @@
                 <p class="donor">{{=donor.reservations.verified_donor_name}}</p>
 {{  if donor[otts_col_name]:}}
                 <ul>
-{{   for OTT in donor[otts_col_name].split(","):}}
-{{    image = user_images.get(int(OTT)) or default_images.get(int(OTT))}}
+{{   for OTT in donor[otts_col_name]:}}
+{{    image = user_images.get(OTT) or default_images.get(OTT)}}
 {{    if image:}}
                 <li><a href="{{=URL('life/@=' + str(OTT), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life"
     src="{{=img.thumb_url(thumb_base_url, image.get('src'), image.get('src_id'))}}"
@@ -35,7 +35,7 @@
                 </ul>
 {{  pass}}
 {{ else:}}
-{{  OTT = int(donor[otts_col_name])}}
+{{  OTT = donor[otts_col_name][0]}}
                 <a href="{{=URL('life/@=' + str(OTT), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life"
 {{  image = user_images.get(OTT) or default_images.get(OTT)}}
 {{  if image:}}
