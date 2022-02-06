@@ -6,11 +6,12 @@ Run with::
 import unittest
 from inspect import getmembers, isfunction, getfullargspec
 
-import applications.OZtree.controllers.default as default
-from applications.OZtree.tests.unit import util
-
 from gluon.globals import Request, Session
 from gluon.http import HTTP  # This is the error code
+
+import applications.OZtree.controllers.default as default
+from applications.OZtree.tests.unit import util
+import img
 
 def dummy(*args, **kwargs):
     "Pass-through function used e.g. to replace built-in 'redirect'"
@@ -35,7 +36,10 @@ class TestControllersDefault(unittest.TestCase):
         default.T = current.globalenv['T']
         default.HTTP = current.globalenv['HTTP']
         default.sponsor_suggestion_flags = current.globalenv['sponsor_suggestion_flags']
-        default.thumb_base_url = current.globalenv['myconf'].take('images.url_base')
+        try:
+            default.thumb_base_url = current.globalenv['myconf'].take('images.url_base')
+        except:
+            default.thumb_base_url = "//" + img.local_path
         default.redirect = dummy
         # Define all the globals in _OZglobals
         

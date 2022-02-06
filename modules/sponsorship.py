@@ -10,7 +10,6 @@ from OZfunc import (
     child_leaf_query, nice_name_from_otts
 )
 
-
 from .partners import partner_definitions, partner_identifiers_for_reservation_name
 
 """HMAC expiry in seconds, NB: This is when they're rotated, so an HMAC will be valid for 2xHMAC_EXPIRY"""
@@ -291,6 +290,8 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
 
         # Fetch latest asking price
         ott_price_pence = db(db.ordered_leaves.ott==r.OTT_ID).select(db.ordered_leaves.price).first().price
+        if ott_price_pence is None:
+            ott_price_pence = float('inf')
 
         # Fetch any previous row
         prev_row = db(db.expired_reservations.id == r.prev_reservation_id).select().first() if r.prev_reservation_id else None
@@ -373,8 +374,9 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             # Multiple partners, we can't represent that, so flag with NaN
             fields_to_update['partner_percentage'] = float('nan')
 
+        price_float = None if ott_price_pence == float('inf') else (ott_price_pence / 100)
         # Update DB entry with recalculated asking price
-        fields_to_update['asking_price'] = ott_price_pence / 100
+        fields_to_update['asking_price'] = price_float
 
         if remaining_paid_pence >= ott_price_pence:
             # Can pay for this node, so do so.
@@ -382,8 +384,8 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             # NB: Strictly speaking user_paid is "What they promised to pay", and should
             # have been set before the paypal trip. But with a basket of items we don't divvy up
             # their donation until now.
-            fields_to_update['user_paid'] = ott_price_pence / 100
-            fields_to_update['verified_paid'] = '{:.2f}'.format(ott_price_pence / 100)
+            fields_to_update['user_paid'] = price_float
+            fields_to_update['verified_paid'] = None if price_float is None else '{:.2f}'.format(price_float) 
         else:
             # Can't pay for this node, but make all other changes
             fields_to_update['user_paid'] = None
