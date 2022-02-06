@@ -1076,7 +1076,9 @@ def donor_list():
     donor_rows = []
     max_groupby = 75  # The max number of sponsorships per username
     for r in db(
-        ((db.reservations.user_donor_hide == None) | (db.reservations.user_donor_hide == False)) &
+        # We can't do user_donor_hide == False as this is converted to IS NULL by web2py
+        # (bug?), so we do user_donor_hide != True
+        ((db.reservations.user_donor_hide == None) | (db.reservations.user_donor_hide != True)) &
         (db.reservations.verified_time != None) &
         (db.reservations.username != None)
     ).select(

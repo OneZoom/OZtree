@@ -115,8 +115,10 @@ def donor_name_for_username(username, include_hidden=False):
     else:
         query = (
             (db.reservations.username == username)
-            # Need to check both False (0) and None (NULL) in SQL
-            & ((db.reservations.user_donor_hide == False) | (db.reservations.user_donor_hide == None))
+            # Need to check both False (0) and None (NULL) in SQL. Note we can't do 
+            # user_donor_hide == False as this is converted to IS NULL by web2py
+            # (bug?), so we do user_donor_hide != True
+            & ((db.reservations.user_donor_hide == None) | (db.reservations.user_donor_hide != True))
         )
     for r in db(query).select(
         db.reservations.verified_donor_title,
