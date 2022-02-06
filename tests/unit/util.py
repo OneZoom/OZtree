@@ -17,32 +17,36 @@ def time_travel(days=0, expire=True):
             sponsorship.reservation_expire(r)
 
 
-def find_unsponsored_otts(count, in_reservations=None):
+def find_unsponsored_otts(count, in_reservations=None, allow_banned=False):
+    """
+    If allow_banned==True
+    """
     db = current.db
 
     rows = sponsorship.sponsorable_children(
         1,    # 1st node should have all leaves as descendants
         qtype="id",
-        limit=count,
+        limit=count * 2, # get twice as many as required, in case some are banned
         in_reservations=in_reservations)
-    prices = {}
-    for r in db(db.ordered_leaves.ott.belongs([r.ott for r in rows])).select(
-        db.ordered_leaves.ott,
-        db.ordered_leaves.price,
-        db.banned.ott,
-    ):
-        prices[r.ordered_leaves.ott] = r
-
+    banned = {r.ott for r in db().iterselect(db.banned.ott)} if allow_banned else set()
+    otts = [
+        r.ott
+        for r in db(db.ordered_leaves.ott.belongs([r.ott for r in rows])).select(
+            db.ordered_leaves.ott,
+            db.ordered_leaves.price,
+        )
+        if allow_banned or (r.ott not in banned and r.price)
+    ]
     if len(rows) < count:
         raise ValueError("Can't find available OTTs")
-    rows = [r for r in rows if r.ott in prices and prices[r.ott].ordered_leaves.price > 0]
-    if len(rows) < count:
-        raise ValueError("Rows don't have associated prices set, visit /manage/SET_PRICES/")
-    return [r.ott for r in rows]
+    if len(otts) < count:
+        raise ValueError("Rows may not have associated prices set, visit /manage/SET_PRICES/")
+    return otts[:count]
 
 
-def find_unsponsored_ott(in_reservations=None):
-    return find_unsponsored_otts(1, in_reservations=in_reservations)[0]
+def find_unsponsored_ott(in_reservations=None, allow_banned=False):
+    return find_unsponsored_otts(
+        1, in_reservations=in_reservations, allow_banned=allow_banned)[0]
 
 def clear_unittest_sponsors():
     """
@@ -109,7 +113,11 @@ def set_smtp(sender='me@example.com', autosend_email=1):
         set_appconfig('smtp', 'autosend_email', autosend_email)
 
 def purchase_reservation(otts = 1, basket_details = None, paypal_details = None, payment_amount=None, allowed_status=set(('available',)), verify=True):
-    """Go through all the motions required to purchase a reservation"""
+    """
+    Go through all the motions required to purchase a reservation.
+    otts can be an integer, in which case some sponsorable otts are chosen at random,
+    or a list of ott ids.
+    """
     db = current.db
 
     purchase_uuid = uuid.uuid4()
@@ -137,6 +145,9 @@ def purchase_reservation(otts = 1, basket_details = None, paypal_details = None,
         # Work out payment amount from OTTs
         sum = db.ordered_leaves.price.sum()
         payment_amount = db(db.ordered_leaves.ott.belongs(otts)).select(sum).first()[sum]
+        if payment_amount is None:
+            # This must have included banned or unpriced species
+            payment_amount = float('inf')  # still allow it to be bought
 
     for ott in otts:
         status, _, reservation_row, _ = sponsorship.get_reservation(ott, form_reservation_code="UT::%s" % purchase_uuid)
