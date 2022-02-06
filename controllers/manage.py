@@ -4,6 +4,7 @@ import subprocess
 
 import ozmail
 import OZfunc
+import img
 import warnings
 import usernames
 import sponsorship
@@ -635,7 +636,7 @@ def SHOW_EMAILS():
             except:
                 email_list[details['type']]=[details]
             
-    imgs = []
+    images = []
     #now look for sponsors that haven't been verified yet
     sponsors = db(
         (db.reservations.verified_paid != None) & #they have paid through paypal
@@ -695,7 +696,7 @@ def SHOW_EMAILS():
             email_list[details['type']].append(details)
         except:
             email_list[details['type']]=[details]
-        imgs.append([s.user_preferred_image_src, s.user_preferred_image_src_id])
+        images.append([s.user_preferred_image_src, s.user_preferred_image_src_id])
 
     #now go through each verified_time, by day
     sponsors = db(
@@ -734,11 +735,8 @@ def SHOW_EMAILS():
         )
         if s.verified_preferred_image_src and s.verified_preferred_image_src_id and local_pic_path is not None:
             # do we have a local picture, or is it missing?
-            # Can't use thumbnail_url() as it might refer to a remote location (e.g. image.onezoom.org)
-            details['local_pic'] = os.path.isfile(
-                os.path.join(
-                    local_pic_path(s.verified_preferred_image_src, s.verified_preferred_image_src_id),
-                    str(s.verified_preferred_image_src_id)+'.jpg'))
+            details['local_pic'] = os.path.isfile(img.thumb_url(
+                img.local_path, s.verified_preferred_image_src, s.verified_preferred_image_src_id))
         else:
             details['local_pic'] = None
         details.update({
@@ -755,10 +753,10 @@ def SHOW_EMAILS():
         except:
             email_list[details['type'] + " " + s.verified_time.strftime("%A %e %b, %Y")]=[details]
 
-        imgs.append([s.verified_preferred_image_src, s.verified_preferred_image_src_id])
+        images.append([s.verified_preferred_image_src, s.verified_preferred_image_src_id])
     
-    onezoom_via_eol_images= [str(i[1]) for i in imgs if i[0]==src_flags['onezoom_via_eol']]
-    eol_images = [str(i[1]) for i in imgs if i[0]==src_flags['eol']]
+    onezoom_via_eol_images= [str(i[1]) for i in images if i[0]==src_flags['onezoom_via_eol']]
+    eol_images = [str(i[1]) for i in images if i[0]==src_flags['eol']]
     contactable_emails = db((db.reservations.allow_contact == True)       &
                             (db.reservations.PP_transaction_code != None) & #requires transaction gone through
                             (db.reservations.verified_time != None)       & #requires verified

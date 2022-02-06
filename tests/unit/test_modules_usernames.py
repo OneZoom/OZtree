@@ -19,6 +19,7 @@ from usernames import (
     find_username,
     email_for_username,
     usernames_associated_to_email,
+    donor_name_for_username,
 )
 
 class TestUsername(unittest.TestCase):
@@ -31,7 +32,7 @@ class TestUsername(unittest.TestCase):
         self.assertEqual(sponsorship_enabled(), True)
         
         # Set up some existing sponsorships
-        ott = util.find_unsponsored_ott()
+        ott = util.find_unsponsored_ott(allow_banned=True)
         status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::001")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK001', reservation_row, dict(
@@ -47,7 +48,7 @@ class TestUsername(unittest.TestCase):
         ))
         reservation_row.update_record(verified_time=current.request.now)
 
-        ott = util.find_unsponsored_ott()
+        ott = util.find_unsponsored_ott(allow_banned=True)
         status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::002")
         self.assertEqual(status, 'available')
         reservation_add_to_basket('UT::BK002', reservation_row, dict(
@@ -72,7 +73,7 @@ class TestUsername(unittest.TestCase):
     def test_with_username(self):
         """Should return the existing username, even if the email matches another or this has not been verified"""
         # Buy ott, validate
-        otts = util.find_unsponsored_otts(2)
+        otts = util.find_unsponsored_otts(2, allow_banned=True)
         added_rows = []
         for ott, e_mail in zip(
             otts,
@@ -101,8 +102,64 @@ class TestUsername(unittest.TestCase):
             self.assertEqual(len(otts), len(added_rows))
             self.assertEqual(set(r.OTT_ID for r in added_rows), set(otts))
 
+    def test_donor_name(self):
+        """
+        Should return the most recent valid donor name, unless asked to be hidden
+        """
+        otts = util.find_unsponsored_otts(5, allow_banned=True)
+        email = "donor_test@unittest.example.com"
+        # Buy ott with donor name 4 days ago, and validate
+        util.time_travel(4)
+        r = util.purchase_reservation(
+            otts[0:1], basket_details=dict(
+                user_donor_name='Old name', user_sponsor_name='One', e_mail=email
+        ), paypal_details=dict(PP_e_mail=email))[0]
+        username = r.username
+
+        # Buy ott with new donor name 3 days ago, and validate
+        util.time_travel(3)
+        r = util.purchase_reservation(
+            otts[1:2], basket_details=dict(
+                user_donor_name='New name', user_sponsor_name='Two', e_mail=email
+        ), paypal_details=dict(PP_e_mail=email))[0]
+        self.assertEqual(username, r.username)  # Emails were same, so username should be
+        #raise ValueError(r)
+        # Buy ott, validate with no donor name 2 days ago
+        util.time_travel(2)
+        r = util.purchase_reservation(
+            otts[2:3], basket_details=dict(
+                user_sponsor_name='Three',
+        ), paypal_details=dict(PP_e_mail=email))[0]
+        self.assertEqual(username, r.username)  # Emails were same, so username should be
+        
+        # Buy ott, validate with new donor name 1 day ago but flag as hidden
+        util.time_travel(1)
+        r = util.purchase_reservation(
+            otts[3:4], basket_details=dict(
+                user_donor_name='Hidden name', user_sponsor_name='Four', e_mail=email,
+                user_donor_hide=True,
+        ), paypal_details=dict(PP_e_mail=email))[0]
+        self.assertEqual(username, r.username)  # Emails were same, so username should be
+
+        util.time_travel(0)
+        # Buy ott now, but don't pay yet
+        status, _, reservation_row, _ = get_reservation(
+            otts[4], form_reservation_code=f"UT::{otts[4]}")
+        reservation_add_to_basket(f'UT::BK{otts[4]}', reservation_row, dict(
+            e_mail=email,
+            user_sponsor_name="Five",
+            user_donor_name="Reserved name",
+            prev_reservation=None,
+        ))
+
+        title, dname = donor_name_for_username(username)
+        self.assertEqual(dname, "New name")
+        title, dname = donor_name_for_username(username, include_hidden=True)
+        self.assertEqual(dname, "Hidden name")
+        
+
     def test_no_guess(self):
-        ott = util.find_unsponsored_ott()
+        ott = util.find_unsponsored_ott(allow_banned=True)
         status, _, reservation_row, _ = get_reservation(ott, form_reservation_code=f"UT::{ott}")
         self.assertEqual(status, 'available')
         reservation_add_to_basket(f'UT::BK{ott}', reservation_row, dict(
@@ -125,7 +182,7 @@ class TestUsername(unittest.TestCase):
             ('verified_name', "Becky the chicken 3"),
             ('verified_donor_name', "Becky the chicken 4"),
         ]
-        otts = util.find_unsponsored_otts(len(fields)*2)
+        otts = util.find_unsponsored_otts(len(fields)*2, allow_banned=True)
         for max_field in range(len(fields)):
             params = dict(prev_reservation=None, user_sponsor_kind='by')
             if fields[max_field][0].startswith("verified"):
@@ -147,7 +204,7 @@ class TestUsername(unittest.TestCase):
     def test_matching_email_with_username(self):
         """Should return the username of the matching email"""
         # Buy ott, validate
-        ott = util.find_unsponsored_ott()
+        ott = util.find_unsponsored_ott(allow_banned=True)
         status, _, reservation_row, _ = get_reservation(ott, form_reservation_code=f"UT::{ott}")
         self.assertEqual(status, 'available')
         reservation_add_to_basket(f'UT::BK{ott}', reservation_row, dict(
@@ -164,7 +221,7 @@ class TestUsername(unittest.TestCase):
     def test_matching_email_without_username(self):
         """Should return the constructed username, as the matching email has no username"""
         # Buy ott, validate
-        ott = util.find_unsponsored_ott()
+        ott = util.find_unsponsored_ott(allow_banned=True)
         status, _, reservation_row, _ = get_reservation(ott, form_reservation_code=f"UT::{ott}")
         self.assertEqual(status, 'available')
         reservation_add_to_basket(f'UT::BK{ott}', reservation_row, dict(
@@ -181,7 +238,7 @@ class TestUsername(unittest.TestCase):
     def test_duplicate_username_construction(self):
         """Should return a unique username"""
         # Buy ott, validate
-        ott = util.find_unsponsored_ott()
+        ott = util.find_unsponsored_ott(allow_banned=True)
         status, _, reservation_row, _ = get_reservation(ott, form_reservation_code=f"UT::{ott}")
         self.assertEqual(status, 'available')
         reservation_add_to_basket(f'UT::BK{ott}', reservation_row, dict(
@@ -197,9 +254,12 @@ class TestUsername(unittest.TestCase):
 
     def test_email_for_username(self):
         """Make sure we can always fish out a username"""
+        otts = util.find_unsponsored_otts(4, allow_banned=True)
+
         # User with no e-mail addresses at all, get ValueError
         util.time_travel(3)
-        r = util.purchase_reservation(basket_details=dict(
+        r = util.purchase_reservation(
+            otts[0:1], basket_details=dict(
             user_donor_name='Billy-no-email',
             user_sponsor_name='Billy-no-email',
         ), paypal_details=dict(PP_e_mail=None))[0]
@@ -208,7 +268,7 @@ class TestUsername(unittest.TestCase):
 
         # Buy one with only a paypal e-mail address, we get that back
         util.time_travel(2)
-        r_alfred_1 = util.purchase_reservation(basket_details=dict(
+        r_alfred_1 = util.purchase_reservation(otts[1:2], basket_details=dict(
             user_donor_name='Alfred',
             user_sponsor_name='Alfred',
         ), paypal_details=dict(PP_e_mail='alfred-pp@unittest.example.com'))[0]
@@ -216,7 +276,7 @@ class TestUsername(unittest.TestCase):
 
         # Same user, provide e-mail address, we get their proper e-mail address
         util.time_travel(1)
-        r_alfred_2 = util.purchase_reservation(basket_details=dict(
+        r_alfred_2 = util.purchase_reservation(otts[2:3], basket_details=dict(
             e_mail='alfred@unittest.example.com',
             user_donor_name='Alfred',
             user_sponsor_name='Alfred',
@@ -226,7 +286,7 @@ class TestUsername(unittest.TestCase):
 
         # Buy another without an e-mail address, we fish out the previous entry rather than getting the PP address
         util.time_travel(0)
-        r_alfred_3 = util.purchase_reservation(basket_details=dict(
+        r_alfred_3 = util.purchase_reservation(otts[3:4], basket_details=dict(
             user_donor_name='Alfred',
             user_sponsor_name='Alfred',
         ), paypal_details=dict(PP_e_mail='alfred-pp@unittest.example.com'))[0]
@@ -235,13 +295,15 @@ class TestUsername(unittest.TestCase):
 
     def test_usernames_associated_to_email(self):
         # Alfred changed their e-mail address to something more formal
-        r = util.purchase_reservation(basket_details=dict(
+        otts = util.find_unsponsored_otts(4, allow_banned=True)
+        
+        r = util.purchase_reservation(otts[0:1], basket_details=dict(
             e_mail='alfredo-the-great@unittest.example.com',
             user_donor_name='Alfred',
             user_sponsor_name='Alfred',
         ), paypal_details=dict(PP_e_mail='alfred-pp@unittest.example.com'))[0]
         u_alfred = r.username
-        r = util.purchase_reservation(basket_details=dict(
+        r = util.purchase_reservation(otts[1:2], basket_details=dict(
             e_mail='alfred@unittest.example.com',
             user_donor_name='Alfred',
             user_sponsor_name='Alfred',
@@ -249,13 +311,13 @@ class TestUsername(unittest.TestCase):
         self.assertEqual(r.username, u_alfred)
 
         # Betty and Belinda share paypal e-mail addresses for some reason
-        r = util.purchase_reservation(basket_details=dict(
+        r = util.purchase_reservation(otts[2:3], basket_details=dict(
             e_mail='betty@unittest.example.com',
             user_donor_name='Betty',
             user_sponsor_name='Betty',
         ), paypal_details=dict(PP_e_mail='bb@unittest.example.com'))[0]
         u_betty = r.username
-        r = util.purchase_reservation(basket_details=dict(
+        r = util.purchase_reservation(otts[3:4], basket_details=dict(
             e_mail='belinda@unittest.example.com',
             user_donor_name='Belinda',
             user_sponsor_name='Belinda',
@@ -273,7 +335,7 @@ class TestUsername(unittest.TestCase):
         self.assertEqual(usernames_associated_to_email('alfred-pp@unittest.example.com'), (u_alfred,))
         self.assertEqual(usernames_associated_to_email('betty@unittest.example.com'), (u_betty,))
         self.assertEqual(usernames_associated_to_email('belinda@unittest.example.com'), (u_belinda,))
-        self.assertEqual(usernames_associated_to_email('bb@unittest.example.com'), (u_betty, u_belinda,))
+        self.assertEqual(set(usernames_associated_to_email('bb@unittest.example.com')), {u_betty, u_belinda,})
 
 
 if __name__ == '__main__':

@@ -1101,8 +1101,8 @@ class TestSponsorRenewRequestLogic(TestSponsorship):
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     
-    #suite.addTest(unittest.makeSuite(TestSponsorship))
-    #suite.addTest(unittest.makeSuite(TestMaintenance))
+    suite.addTest(unittest.makeSuite(TestSponsorship))
+    suite.addTest(unittest.makeSuite(TestMaintenance))
     suite.addTest(unittest.makeSuite(TestSponsorRenewRequestLogic))
     unittest.TextTestRunner(verbosity=2).run(suite)
 

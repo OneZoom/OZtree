@@ -1,5 +1,6 @@
 import datetime
 from OZfunc import nice_name_from_otts
+import img
 
 def wikipedia_OZpage():
     """
@@ -110,7 +111,11 @@ def pic_info():
         # could be an image by name
         row = db((db.images_by_name.src_id == src_id) & (db.images_by_name.src == src)).select(db.images_by_name.src, db.images_by_name.src_id, db.images_by_name.url, db.images_by_name.rights, db.images_by_name.licence).first()
     if row:
-        return dict(image=row, url_override=url)
+        return dict(
+            image=row,
+            url_override=url,
+            image_url=img.thumb_url(thumb_base_url, row.src, row.src_id)
+        )
     else:
         raise HTTP(400,"No such image")
 

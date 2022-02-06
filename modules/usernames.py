@@ -107,12 +107,37 @@ def find_username(target_row, return_otts=False, allocate_species_name=False):
     return None, None
 
 
+def donor_name_for_username(username, include_hidden=False):
+    """Return a verified_donor_title and verified_donor_name for the username"""
+    db = current.db
+    if include_hidden:
+        query = (db.reservations.username == username)
+    else:
+        query = (
+            (db.reservations.username == username)
+            # Need to check both False (0) and None (NULL) in SQL. Note we can't do 
+            # user_donor_hide == False as this is converted to IS NULL by web2py
+            # (bug?), so we do user_donor_hide != True
+            & ((db.reservations.user_donor_hide == None) | (db.reservations.user_donor_hide != True))
+        )
+    for r in db(query).select(
+        db.reservations.verified_donor_title,
+        db.reservations.verified_donor_name,
+        orderby=~db.reservations.verified_time,
+    ):
+        if r.verified_donor_name:
+            return r.verified_donor_title, r.verified_donor_name
+    return None, None
+
 def email_for_username(username):
     """Return the most up to date e-mail address for a given username"""
     db = current.db
-
     pp_e_mail = None
-    for r in db(db.reservations.username == username).iterselect(orderby=~db.reservations.verified_time):
+    for r in db(db.reservations.username == username).iterselect(
+        db.reservations.e_mail,
+        db.reservations.PP_e_mail,
+        orderby=~db.reservations.verified_time
+    ):
         if r.e_mail:
             return r.e_mail
         if r.PP_e_mail and not pp_e_mail:

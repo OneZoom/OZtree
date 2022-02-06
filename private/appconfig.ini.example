@@ -1,6 +1,6 @@
 ; App configuration
 
-; db configuration - using MySQL and the default web2py connector, we need to add 
+; db configuration - using MySQL and the default web2py connector, we need to add
 ;  ?set_encoding=utf8mb4 to the end of the string to cope with adding all e.g. chinese
 ;  characters etc into the database (e.g. for vernacular names)
 [db]
@@ -48,20 +48,20 @@ url_base = //images.onezoom.org/
 ;    people logged in with the role can sponsor (for testing purposes)
 ;    please note that the OneZoom software license does not permit users of
 ;    the code to set allow_sponsorship = 1 under any circumstances
-; * maintenance_mins: to enable maintenance mode (e.g. when 
+; * maintenance_mins: to enable maintenance mode (e.g. when
 ;    switching beta and production to enable a new website version)
 ;    set to the number of minutes you expect the site to be down
-;    note that if is_testing=False then you will probably need to 
+;    note that if is_testing=False then you will probably need to
 ;    restart the server for changes to this to take effect
-; * reservation_time_limit_mins: how long to reserve a leaf while a 
+; * reservation_time_limit_mins: how long to reserve a leaf while a
 ;    user is looking at the sponsor page
-; * unpaid_time_limit_mins: how long before a sponsored leaf becomes 
+; * unpaid_time_limit_mins: how long before a sponsored leaf becomes
 ;    free again if we receive no payment notification
 ; * hmac_key: A secret key used to generate signatures for links in renewal e-mails
 ;    to provide a private page that can only be accessed a link from an e-mail we sent.
 ; * sponsorship_duration_days: The default length of time of a sponsorship.
 ; * sponsorship_renew_discount: The fraction by which the price of a sponsorship is
-;   reduced when reneing a sponsorship.
+;   reduced when renewing a sponsorship.
 allow_sponsorship = 0
 maintenance_mins = 0
 reservation_time_limit_mins = 6
@@ -71,8 +71,8 @@ sponsorship_duration_days = 1461
 sponsorship_renew_discount = 0.2
 
 [api]
-;If you want to get data from the Encyclopedia of Life, you need to put your own API key here. 
-;Fill it in using instructions at http://eol.org/info/api_overview 
+;If you want to get data from the Encyclopedia of Life, you need to put your own API key here.
+;Fill it in using instructions at http://eol.org/info/api_overview
 ;eol_api_key = 11111111111
 
 [analytics]

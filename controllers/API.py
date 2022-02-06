@@ -4,6 +4,7 @@ import re
 from numbers import Number
 
 import OZfunc
+import img
 import sponsorship_search
 """
 This contains the API functions - node_details, image_details, search_names, and search_sponsors. search_node also exists, which is a combination of search_names and search_sponsors.
@@ -745,7 +746,7 @@ def node_images():
     for p in results['leafPic']:
         pics[p[pic_cols['ott']]] = [
             None,
-            thumbnail_url(p[pic_cols['src']], p[pic_cols['src_id']]),
+            img.thumb_url(thumb_base_url, p[pic_cols['src']], p[pic_cols['src_id']]),
             p[pic_cols['rights']],
             p[pic_cols['licence']],
             p[pic_cols['rating']],
