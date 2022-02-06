@@ -12,20 +12,20 @@
 <div>
     <div>
         <ol class="blank">
-{{cutoffs, cutoff_index = [1000000,1000,150,0], 0}}
-{{for i,donor in enumerate(rows):}}{{if i==items_per_page: break}}
-{{ if rows[i][paid_col_name] <= cutoffs[cutoff_index] and (i<=0 or rows[i-1][paid_col_name]> cutoffs[cutoff_index]):}}
-{{  while ((rows[i][paid_col_name] or 0.1) <= cutoffs[cutoff_index]): cutoff_index+=1}}
+{{cutoff_index = 0}}
+{{for i, row in enumerate(donor_rows):}}{{if i==items_per_page: break}}
+{{ if row["sum_paid"] <= cutoffs[cutoff_index] and (i<=0 or donor_rows[i-1]["sum_paid"]> cutoffs[cutoff_index]):}}
+{{  while ((row["sum_paid"] or 0.1) <= cutoffs[cutoff_index]): cutoff_index+=1}}
         </ol>
         <ol class="donor_list cutoff_gt{{=cutoffs[cutoff_index]}}">
 {{ pass}}
             <li>
-{{ if donor[n_col_name] > 1:}}
-                <p class="donor">{{=donor.reservations.verified_donor_name}}</p>
-{{  if donor[otts_col_name]:}}
+{{ if row["num_sponsorships"] > 1:}}
+                <p class="donor">{{=row["donor_name"]}}</p>
+{{  if row["use_otts"]:}}
                 <ul>
-{{   for OTT in donor[otts_col_name]:}}
-{{    image = user_images.get(OTT) or default_images.get(OTT)}}
+{{   for OTT in row["use_otts"]:}}
+{{    image = images.get(OTT)}}
 {{    if image:}}
                 <li><a href="{{=URL('life/@=' + str(OTT), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life"
     src="{{=img.thumb_url(thumb_base_url, image.get('src'), image.get('src_id'))}}"
@@ -35,9 +35,9 @@
                 </ul>
 {{  pass}}
 {{ else:}}
-{{  OTT = donor[otts_col_name][0]}}
+{{  OTT = row["use_otts"][0]}}
                 <a href="{{=URL('life/@=' + str(OTT), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life"
-{{  image = user_images.get(OTT) or default_images.get(OTT)}}
+{{  image = images.get(OTT)}}
 {{  if image:}}
     src="{{=img.thumb_url(thumb_base_url, image.get('src'),image.get('src_id'))}}"
     title="{{=' / '.join([t for t in [image.rights, image.licence] if t]).replace('"',"'")}}"
@@ -45,14 +45,14 @@
     src="{{=URL('static','images/noImage_transparent.png')}}"
 {{  pass}} />
 </a>
-                <p>Sponsored {{=donor.reservations.verified_kind}}<br /><strong>{{=donor.reservations.verified_name}}</strong></p>
+                <p>Sponsored {{=row["verified_kind"]}}<br /><strong>{{=row["verified_name"]}}</strong></p>
 {{ pass}}
             </li>
 {{pass}}
         </ol>
 {{if page:}}{{=A(XML('&lt;&nbsp;previous&nbsp;'+str(items_per_page)+'..'),_href=URL(args=[page-1], vars=vars),_class='hefty')}}{{pass}}
-{{if len(rows)>items_per_page:}}{{=A(XML('..next&nbsp;'+str(items_per_page)+'&nbsp;&gt;'),_href=URL(args=[page+1], vars=vars),_class='hefty')}}{{pass}}
+{{if len(donor_rows)>items_per_page:}}{{=A(XML('..next&nbsp;'+str(items_per_page)+'&nbsp;&gt;'),_href=URL(args=[page+1], vars=vars),_class='hefty')}}{{pass}}
 <hr />
-<div class="donor_foot">Particular thanks to our gold donors whose contributions total over £1000, and silver donors who have contributed over £150 in total.</div>
+<div class="donor_foot">Particular thanks to our gold donors whose contributions total over £{{=cutoffs[1]}}, and silver donors who have contributed over £{{=cutoffs[2]}} in total.</div>
     </div>
 </div>

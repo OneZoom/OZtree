@@ -21,7 +21,7 @@ from sponsorship import (
     sponsorship_restrict_contact, sponsor_renew_request_logic,
     sponsorship_config, sponsorable_children_query)
 
-from usernames import usernames_associated_to_email
+from usernames import usernames_associated_to_email, donor_name_for_username
 
 from partners import partner_identifiers_for_reservation_name
 
@@ -1068,50 +1068,89 @@ def donor_list():
     grouped_img_src = "GROUP_CONCAT(if(`user_nondefault_image`,`verified_preferred_image_src`,NULL))"
     grouped_img_src_id = "GROUP_CONCAT(if(`user_nondefault_image`,`verified_preferred_image_src_id`,NULL))"
     grouped_otts = "GROUP_CONCAT(`OTT_ID`)"
+    grouped_donor_names = "GROUP_CONCAT(`verified_donor_name`)"
     sum_paid = "COALESCE(SUM(`user_paid`),0)"
     n_leaves = "COUNT(1)"
-    groupby = "IFNULL(verified_donor_name,id)"
+    groupby = "username"
     limitby=(page*items_per_page,(page+1)*items_per_page+1)
-    curr_rows = db(
-        ((db.reservations.user_donor_hide == None) | (db.reservations.user_donor_hide != True)) &
-        (db.reservations.verified_time != None)
+    donor_rows = []
+    max_groupby = 75  # The max number of sponsorships per username
+    for r in db(
+        ((db.reservations.user_donor_hide == None) | (db.reservations.user_donor_hide == False)) &
+        (db.reservations.verified_time != None) &
+        (db.reservations.username != None)
     ).select(
               grouped_img_src,
               grouped_img_src_id,
-              grouped_otts, 
+              grouped_otts,
+              grouped_donor_names,
               sum_paid,
               n_leaves,
               db.reservations.verified_donor_name,
-              #the following fields are only of use for single displayed donors
-              db.reservations.name,
               db.reservations.user_nondefault_image,
+              db.reservations.username,
+              #the following fields are only of use for single displayed donors
               db.reservations.verified_kind,
               db.reservations.verified_name,
               db.reservations.verified_more_info,
               groupby=groupby, orderby=sum_paid + " DESC, verified_time, reserve_time",
-              limitby=limitby)
-    for r in curr_rows:
+              limitby=limitby,
+    ):
         # Only show max 75 sponsored species, to avoid clogging page and also because of
         # a low default group_concat_max_len which will restrict the number of otts anyway
         # (note, the number shown may be < 75 as ones without images are not thumbnailed)
-        r['otts'] = [int(ott) for i, ott in enumerate(r[grouped_otts].split(",")) if i < 75]
-    names_for = [r['otts'][0] for r in curr_rows if r[n_leaves]==1] #only get names etc for unary sponsors
+        _, donor_name = donor_name_for_username(r.reservations.username)
+        if donor_name:
+            num_sponsorships = r[n_leaves]
+            ott_enum = enumerate(r[grouped_otts].split(","))
+            img_src_enum = enumerate((r[grouped_img_src] or '').split(","))
+            img_src_id_enum = enumerate((r[grouped_img_src_id] or '').split(","))
+            donor_rows.append({
+                "donor_name": donor_name,
+                "use_otts": [int(ott) for i, ott in ott_enum if i < max_groupby],
+                "num_sponsorships": num_sponsorships,
+                "img_srcs": [x for i, x in img_src_enum if i < max_groupby],
+                "img_src_ids": [x for i, x in img_src_id_enum if i < max_groupby],
+                "sum_paid": r[sum_paid],
+                "verified_kind": r.reservations.verified_kind if num_sponsorships == 1 else None,
+                "verified_name": r.reservations.verified_name if num_sponsorships == 1 else None,
+                "verified_more_info": r.reservations.verified_name if num_sponsorships == 1 else None,
+            })
+    names_for = [r['use_otts'][0] for r in donor_rows if r["num_sponsorships"] == 1]
     html_names = nice_name_from_otts(names_for, html=True, leaf_only=True, first_upper=True, break_line=2)
-    otts = [ott for r in curr_rows for ott in r['otts']]
+    otts = [ott for r in donor_rows for ott in r['use_otts']]
     #store the default image info (e.g. to get thumbnails, attribute correctly etc)
-    default_images = {r.ott:r for r in db(db.images_by_ott.ott.belongs(otts) & (db.images_by_ott.overall_best_any==1)).select(db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,  db.images_by_ott.rights, db.images_by_ott.licence, orderby=~db.images_by_ott.src)}
+    images = {
+        r.ott:r
+        for r in db(
+            db.images_by_ott.ott.belongs(otts) & (db.images_by_ott.overall_best_any==1)
+        ).select(
+            db.images_by_ott.ott,
+            db.images_by_ott.src,
+            db.images_by_ott.src_id,
+            db.images_by_ott.rights,
+            db.images_by_ott.licence,
+            orderby=~db.images_by_ott.src
+        )
+    }
     #also look at the nondefault images if present
-    user_images = {}
-    for r in curr_rows:
-        for img_src, img_src_id in zip(
-            (r[grouped_img_src] or '').split(","), (r[grouped_img_src_id] or '').split(",")):
+    for r in donor_rows:
+        for ott, img_src, img_src_id in zip(r["use_otts"], r["img_srcs"], r["img_src_ids"]):
             if img_src is not None and img_src_id is not None:
                 row = db((db.images_by_ott.src == img_src) & (db.images_by_ott.src_id == img_src_id)).select(
                     db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id, 
                     db.images_by_ott.rights, db.images_by_ott.licence).first()
                 if row:
-                    user_images[row.ott] = row
-    return dict(rows=curr_rows, n_col_name=n_leaves, otts_col_name='otts', paid_col_name=sum_paid, page=page, items_per_page=items_per_page, vars=request.vars, html_names=html_names, user_images=user_images, default_images=default_images)
+                    images[row.ott] = row
+    return dict(
+        donor_rows=donor_rows,
+        images=images,
+        page=page,
+        items_per_page=items_per_page,
+        vars=request.vars,
+        html_names=html_names,
+        cutoffs=[1000000,1000,150,0], # define gold, silver, and bronze sponsors
+    )
 
 
 
