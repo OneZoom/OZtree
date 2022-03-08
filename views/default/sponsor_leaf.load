@@ -2,21 +2,21 @@
     <!-- {{include 'embed.js' # in case this load component is called via AJAX - js not needed in this case}} -->
     {{form_target = "_blank" # paypal opens in new frame}}
     <script>
-      after_successful_submit = function() {
-        setTimeout(function() {
-          location.replace("{{=XML(URL('default', 'sponsor_replace_page.html', vars={'ott':OTT_ID}))}}")},
-          1000)};
+      document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById('sponsor_form').addEventListener('submit', function () {
+          setTimeout(function() {
+            location.replace("{{=XML(URL('default', 'sponsor_replace_page.html', vars={'ott':OTT_ID}))}}")},
+            1000);
+        });
+      });
     </script>
 {{else:}}
     {{form_target = "_self" # paypal opens in same window}}
-    <script>
-      after_successful_submit = function() {};
-    </script>
 {{pass}}
 
 <form id="sponsor_form" method="post" target="{{=form_target}}"
   action="{{='sponsor_pay.html?ott=' + str(int(OTT_ID))}}"
-  onsubmit="validate_form_via_ajax_reload($(this).serializeArray()); return false;">
+  >
 
   <div>
     <h3>{{=T('Type the name of the person you want to appear on the leaf')}}</h3>
@@ -64,8 +64,24 @@
     {{pass}}
     {{pass}}
     </p>
+
+      <div><label for="sponsorship_story_input">{{=T('Sponsorship story (optional): ')}}</label><p>
+        <textarea id="sponsorship_story_textarea"
+            name="sponsorship_story"
+            maxlength=1000
+            style="height: 7rem"
+            >{{=request.vars.get('sponsorship_story') or ''}}</textarea>
+        <em class = "error_text">{{=form.errors.get("sponsorship_story") or ''}}</em>
+      </p></div>
+      <p class="singlerow extra_info">
+        {{=T("Tell us more about why you're sponsoring this species")}}
+      </p>
+
     </fieldset>
   </div>
+
+
+
   <div>
     <h3>{{=T('Preview of your sponsored leaf')}}</h3>
     <div uk-grid class="uk-child-width-1-2@m">
@@ -73,8 +89,8 @@
         <canvas id="leafCanvas" onclick="drawPreview()"></canvas>
         <p id="licenceText"><a target = "_blank">{{=T('More information about this image')}}</a></p>
         <p class="extra_info">{{=T('*The final leaf may be facing in any direction on the tree, it may also change based on scientific advances. This preview uses the plain green colour scheme, but this can be changed by visitors using the tree of life explorer, so might not always appear as it does above.')}}</p>
-        <input type="hidden" id="user_preferred_image_src_input" name='user_preferred_image_src' value='{{=default_image.get("src","") if default_image else ""}}' />
-        <input type="hidden" id="user_preferred_image_src_id_input" name='user_preferred_image_src_id' value='{{=default_image.get("src_id","") if default_image else ""}}' />
+        <input type="hidden" id="user_preferred_image_src_input" name='user_preferred_image_src' value='{{=request.vars.get('user_preferred_image_src') or (default_image.get("src","") if default_image else "")}}' />
+        <input type="hidden" id="user_preferred_image_src_id_input" name='user_preferred_image_src_id' value='{{=request.vars.get('user_preferred_image_src_id') or (default_image.get("src_id","") if default_image else "")}}' />
       </div>
     </div>
   </div>
@@ -108,7 +124,16 @@
       
         <p class="singlerow extra_info">{{=T('We can use this in correspondance, on our public list of donors, and the information is required if you agree to gift aid your donation (see below)')}}</p>
         
-      <div><label for="reservations_user_donor_hide">{{=XML(T('Make this an anonymous donation'))}}</label><p>{{=form.custom.widget.user_donor_hide}}</p></div>
+      <div class="singlerow">
+        <label>
+          <input type="radio" name="user_donor_hide" value="on" {{=("checked" if request.vars.user_donor_hide else "")}} />
+          <span>{{=XML(T('Make this an anonymous donation'))}}</span>
+        </label>
+        <label>
+          <input type="radio" name="user_donor_hide" value="" {{=("checked" if not request.vars.user_donor_hide else "")}} />
+          <span>{{=XML(T('Include my name on the public list of donors'))}}</span>
+        </label>
+      </div>
 <p class="singlerow extra_info">{{=XML(T('Your sponsorship text will appear on the tree as shown above. Additionally, we would love to thank you by name on our %s as well as on your own personal page of sponsored leaves. Tick this box if you would prefer this sponsorship to be acknowledged on the tree only.') % (A(T('public list of donors'), _href='/donor_list', _target="blank"),))}}</p>
       
       <div><label for="reservations_allow_contact">{{=T('Allow further contact?')}}</label><p>{{=form.custom.widget.allow_contact}}</p></div>
@@ -124,35 +149,10 @@
       <div class="singlerow">{{=XML(T('OneZoom is %s in the UK.') % (A('registered charity number 1163559', _href="//www.onezoom.org/static/images/RegistrationCertificate.jpg", _target="_blank"),))}}</div>
       <div class="singlerow">{{=T('If you are a UK tax payer please consider making a Gift Aid declaration which will increase the value of your donation by 25% at no cost to you')}}</div>
  
-      <button type='button' onclick="document.getElementById('gift_aid').style.display='block'; document.getElementById('user_giftaid_input').checked = true;">{{=T('Click if you are a UK tax payer and agree to Gift Aid')}}</button>
-              <!-- these bits should open up automatically -->
-      <div id = "gift_aid" {{if request.vars.user_giftaid:}}style="display:block"{{pass}}>
-        <h3>{{=T('Gift Aid declaration')}}</h3>
-        <p>{{=T('Thank you for considering Gift Aid. Please share your street address by ticking the box when you make your donation through PayPal, this information is required for us to reclaim gift aid. Please also confirm that you agree to the below Gift Aid declaration.')}}</p>
-        {{if partner_data.get('giftaid'):}}          
-        <p>I want to Gift Aid this donation and any donations I make in the future or have made in the past 4 years to OneZoom and {{=T(partner_data.get('name'))}}</p>
-        <p>I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of
-  Gift Aid claimed on all my donations in that tax year it is my responsibility to pay any difference.</p>
-        <p>Please notify both OneZoom and {{=A(T(partner_data.get('name')), _href=partner_data.get('general_url'),_target="_blank")}} if you want to cancel this declaration, change your name or home address, or if you no longer pay sufficient tax on your income and/or capital gains.</p>
-        <p>If you pay Income Tax at the higher or additional rate and want to receive the additional tax relief due to you, you must include all your Gift Aid donations on your Self-Assessment tax return or ask HM Revenue and Customs to adjust your tax code.</p>
-        <p>Gift Aid is reclaimed by OneZoom and {{=T(partner_data.get('name'))}} from the tax you pay for the current tax year. We will use the name and address from your PayPal receipt for this purpose and will share this information with {{=A(T(partner_data.get('name')), _href=partner_data.get('url'),_target="_blank")}} for the purposes of Gift Aid - please make sure that information is up to date.</p>
+      {{giftaid_partners = [partner_data] if partner_data.get('giftaid') else [] }}
+      {{include 'default/sponsor_giftaid.inc.html'}}
 
-        <p> I agree to all the above statements: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" {{if request.vars.user_giftaid:}}checked{{pass}}/></p>
-        {{else:}}
-        <p>I want to Gift Aid this donation and any donations I make in the future or have made in the past 4 years to OneZoom</p>
-        <p>I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of
-        Gift Aid claimed on all my donations in that tax year it is my responsibility to pay any difference.</p>
-        <p>Please notify the charity if you want to cancel this declaration, change your name or home address, or if you no longer pay sufficient tax on your income and/or capital gains.</p>
-        <p>If you pay Income Tax at the higher or additional rate and want to receive the additional tax relief due to you, you must include all your Gift Aid donations on your Self-Assessment tax return or ask HM Revenue and Customs to adjust your tax code.</p>
-        <p>Gift Aid is reclaimed by the charity from the tax you pay for the current tax year. We will use the name and address from your PayPal receipt for this purpose - please make sure that information is up to date</p>
-          
-        <p> I agree: <input type="checkbox" id="user_giftaid_input" name = "user_giftaid" {{if request.vars.user_giftaid:}}checked{{pass}}/></p>
-        
-          {{pass}}
-                <p> Please note: we will need your name, title and UK street address to process gift aid, so please fill in these fields above. Please also remember to instruct PayPal to share your postal address when making your payment - thank you.</p>
-          
-      </div>
-      <input type="hidden" id="user_nondefault_image_input" name="user_nondefault_image" value="" />
+      <input type="hidden" id="user_nondefault_image_input" name="user_nondefault_image" value="{{=request.vars.get('user_nondefault_image_input') or "0"}}" />
       <input type="hidden" name="id" value="{{=id}}" />
       <input type="hidden" name="form_reservation_code" value="{{=form_reservation_code}}" />
       <input type="hidden" name="_formname" value="main_sponsor_form" />
@@ -164,14 +164,6 @@
   </div>
 </form>
 
-{{if validated:}}
-<script>
-    // simply submit the form without firing the onsubmit handler
-    var form = document.getElementById("sponsor_form");
-    $(form).prop("onsubmit", null).off("submit"); // just to make sure
-    after_successful_submit();
-    form.submit();
-</script>
-{{elif validated is False:}}
+{{if validated is False:}}
 <script>UIkit.modal.alert("{{=T('Please check the errors shown in red')}}")</script>
 {{pass}}

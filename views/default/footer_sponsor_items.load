@@ -1,5 +1,6 @@
 {{# Hardcoded for a set of nodes so that this footer never hits the DB }}
 {{# Display a different combination of 3 pics on different days }}
+{{import img}}
 {{num_displayed, data = 3, [
 (81461, "Birds", 99, 2007015),
 (16033, "Marsupials", 99, 27118722),
@@ -26,5 +27,5 @@
     {{pic_index.add(rng % len(data))}}
 {{pass}}
 {{for p in pic_index:}}
-<a href="/life/@={{=data[p][0]}}?pop=osn_&init=jump" target="_blank"><img class="species" alt="{{=data[p][1]}}" src="{{=thumbnail_url(data[p][2], data[p][3])}}" /></a>
+<a href="/life/@={{=data[p][0]}}?pop=osn_&init=jump" target="_blank"><img class="species" alt="{{=data[p][1]}}" src="{{=img.thumb_url(thumb_base_url, data[p][2], data[p][3])}}" /></a>
 {{pass}}

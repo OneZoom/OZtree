@@ -6,8 +6,7 @@ Runs all background tasks for OneZoom in a single process.
 
 You can trigger a single run for development with::
 
-    python3 $(dirname $(dirname $(readlink -f .)))/web2py.py -S OZtree -M -e \
-        -R applications/OZtree/private/background_tasks.py --args --single
+    grunt exec:background_tasks:--single:--verbose
 """
 import time
 import sys

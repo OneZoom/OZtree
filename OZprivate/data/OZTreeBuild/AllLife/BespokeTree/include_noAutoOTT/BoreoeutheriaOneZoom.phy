@@ -1,6 +1,9 @@
-[Trees from Bininda-Emonds https://doi.org/10.1038/nature05634 , but with Cetartiodactyla placed as basal to the bat/horse/carnivore divergences, as in Reis, M. dos, Inoue, J., Hasegawa, M., et al. (2012) Phylogenomic datasets provide both precision and accuracy in estimating the timescale of placental mammal phylogeny. Proceedings of the Royal Society B: Biological Sciences 279: 3491–3500. https://doi.org/10.1098/rspb.2012.0683
+[
+NOTE - this is not the tree used in OneZoom - use the "_altered" version instead
 
- OneZoom documentation. Primate & colugo trees have been extracted
+Trees from Bininda-Emonds https://doi.org/10.1038/nature05634 , but with Cetartiodactyla placed as basal to the bat/horse/carnivore divergences, as in Reis, M. dos, Inoue, J., Hasegawa, M., et al. (2012) Phylogenomic datasets provide both precision and accuracy in estimating the timescale of placental mammal phylogeny. Proceedings of the Royal Society B: Biological Sciences 279: 3491–3500. https://doi.org/10.1098/rspb.2012.0683
+
+OneZoom documentation: Primate & colugo trees have been extracted. 
 
 Entire thing rescaled by pathd8 to set concestor dates of C12 (base) = 85Ma, C11 = 75Ma, C10 = 70, C9=70, and some within laurasiathere dates as follows:
 

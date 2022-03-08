@@ -1,10 +1,74 @@
-{{response.title='OneZoom GBIF species occurrence page'}}
-{{extend 'embed.html'}}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GBIF map for {{=sci_name}}</title>
+  <meta name="description" content="Taxon map page taken from https://api.gbif.org/v2/map/demo.html">
+  <meta charset="utf-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge{{=not request.is_local and ',chrome=1' or ''}}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /><!-- do we need "user-scalable=no" ? -->
+  <link rel="icon" href="https://tile.gbif.org/3857/omt/0/0/0@1x.png?style=gbif-classic"/>
+  <link rel="stylesheet" href="https://tile.gbif.org/ui/ol.css" type="text/css">
+  <script src="https://tile.gbif.org/ui/ol.js"></script>
+  <style>
+    h3 {
+        text-align: center;    
+    }
+    html, body, #map {
+      height: 100%;
+      padding: 0;
+      margin: 0;
+      background-color: black;
+      color: grey;
+    }
+    a {
+      color: lightblue;        
+    }
+  </style>
+</head>
+<body>
+<h3>Occurrence map for {{=nice_name}} from {{=A("GBIF", _href="//www.gbif.org/", _target="_blank")}}</h3>
+<div id="map"></div>
+<script>
+  var pixel_ratio = parseInt(window.devicePixelRatio) || 1;
 
-<div class="main_content">
+  var tile_grid_16 = ol.tilegrid.createXYZ({
+    minZoom: 0,
+    maxZoom: 16,
+    tileSize: 512,
+  });
 
-<center><h3> Species Occurrence map</h3></center>
+  var layers = [];
 
-<div id="mapid" style = "height:100%"></div>
+  var base_raster_style = 'gbif-classic';
+  layers.push(new ol.layer.Tile({
+    source: new ol.source.TileImage({
+      projection: 'EPSG:3857',
+      tileGrid: tile_grid_16,
+      tilePixelRatio: pixel_ratio,
+      url: 'https://tile.gbif.org/3857/omt/{z}/{x}/{y}@'+pixel_ratio+'x.png?style='+base_raster_style,
+      wrapX: true
+    })
+  }));
 
-</div>
+  layers.push(new ol.layer.Tile({
+    source: new ol.source.TileImage({
+      projection: 'EPSG:3857',
+      tileGrid: tile_grid_16,
+      tilePixelRatio: pixel_ratio,
+      url: 'https://api.gbif.org/v2/map/occurrence/density/{z}/{x}/{y}@'+pixel_ratio+'x.png?srs=EPSG:3857&style=classic.poly&bin=hex&hexPerTile=117&taxonKey={{=gbif_id}}',
+      wrapX: true
+    })
+  }));
+
+  var map = new ol.Map({
+    layers: layers,
+    target: 'map',
+    view: new ol.View({
+      center: [0, 0],
+      zoom: 3
+    }),
+  });
+</script>
+<script src="https://api.gbif.org/v2/map/keepState.js"></script>
+</body>
+</html>

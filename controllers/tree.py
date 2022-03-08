@@ -1,4 +1,6 @@
 import datetime
+from OZfunc import nice_name_from_otts
+import img
 
 def wikipedia_OZpage():
     """
@@ -8,7 +10,7 @@ def wikipedia_OZpage():
     
     Call as tree/wikipedia_OZpage?Q=1234,wlang=en,name=Species%20name,leaf=1
     
-    If no 'name' is given, then do not default to looking up the name if there is no
+    If no 'name' is given, then do not default to looking up the name if there is no Qid
     """
     try:
         wikilang = request.vars.wlang
@@ -43,7 +45,34 @@ def IUCN_OZpage():
     return dict()
 
 def GBIF_OZpage():
-    return dict()
+    """
+    This creates a page on the local website that uses javascript to request map data
+    from GBIF (most of the layout is taken from the GBIF v2 map API demo pages, at 
+    https://api.gbif.org/v2/map/demo.html.
+    
+    Call as tree/GBIF_OZpage?gbif=1234,leaf=1
+    
+    If no 'name' is given, then do not default to looking up the name if there is no gbif ID
+    """
+    try:
+        is_leaf = int(request.vars.leaf)
+        gbif_id = int(request.vars.gbif)
+        if is_leaf:
+            row = db.ordered_leaves(gbif=gbif_id)
+            if not row:
+                raise LookupError("No such GBIF id ({}) in the OneZoom leaves table".format(gbif_id))
+        else:
+            row = db.ordered_nodes(gbif=gbif_id)
+            if not row:
+                raise LookupError("No such GBIF id ({}) in the OneZoom nodes table".format(gbif_id))
+        nice_names = nice_name_from_otts([row.ott], html=True, the=True, leaf_only=is_leaf)
+        nice_name = nice_names.get(row.ott, "<i>" + row.name + "</i>" if is_leaf else row.name)
+        return dict(gbif_id=str(gbif_id), sci_name=row.name, nice_name=nice_name)
+    except (ValueError, TypeError):
+        raise HTTP(400,"No valid GBIF id, or leaf status (0 or 1) provided")
+    except LookupError as e:
+        raise HTTP(400,e)
+    
 
 def pic_info():
     """
@@ -82,7 +111,11 @@ def pic_info():
         # could be an image by name
         row = db((db.images_by_name.src_id == src_id) & (db.images_by_name.src == src)).select(db.images_by_name.src, db.images_by_name.src_id, db.images_by_name.url, db.images_by_name.rights, db.images_by_name.licence).first()
     if row:
-        return dict(image=row, url_override=url)
+        return dict(
+            image=row,
+            url_override=url,
+            image_url=img.thumb_url(thumb_base_url, row.src, row.src_id)
+        )
     else:
         raise HTTP(400,"No such image")
 
@@ -144,7 +177,7 @@ def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
             if row.iucn.iucn:
                 urls['iucn'] = iucn_url(row.iucn.iucn)
             if row[core_table].gbif:
-                urls['gbif'] = gbif_url(row[core_table].gbif)
+                urls['gbif'] = gbif_url(row[core_table].gbif, is_leaf)
             if row[core_table].ipni:
                 urls['powo'] = powo_url(row[core_table].ipni) #would alter here if ipni availability calculated on the fly
         if sponsorship_urls: #always return a sponsorship url, even if e.g. invalid or ott missing
@@ -286,10 +319,13 @@ def iucn_url(IUCNid):
     except:
         raise HTTP(400,"No valid IUCN id provided")
 
-def gbif_url(GBIFid):
+def gbif_url(GBIFid, is_leaf):
     try:
-        return(["https://www.gbif.org/species/{}".format(int(GBIFid))])
-        #return([URL('tree','GBIF_OZpage.html',vars=dict(GBIFid=int(GBIFid))),"https://www.gbif.org/species/{}".format(int(GBIFid))])
+        var = {'embed':request.vars.embed} if 'embed' in request.vars else {}
+        return [
+            URL('tree','GBIF_OZpage', vars=dict(gbif=int(GBIFid), leaf=1 if is_leaf else 0, **var), scheme=True, host=True, extension=False),
+            "//www.gbif.org/species/" + str(int(GBIFid)),
+        ]
     except:
         raise HTTP(400,"No valid GBIF id provided")
 
@@ -301,12 +337,12 @@ def powo_url(IPNIid):
     try:
         IPNIs = IPNIid.split("-")
         #powo only has an http site
-        return(["http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[0]), int(IPNIs[1]))])
+        return ["http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[0]), int(IPNIs[1]))]
     except AttributeError:
         try:
             IPNIs = str(int(IPNIid))
             #powo only has an http site
-            return(["http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[:-1]), int(IPNIs[-1:]))])
+            return ["http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{}-{}".format(int(IPNIs[:-1]), int(IPNIs[-1:]))]
         except:
             raise          
     except:
@@ -314,7 +350,7 @@ def powo_url(IPNIid):
 
 def ncbi_url(NCBIid):
     try:
-        return(["//www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={}".format(int(NCBIid))])
+        return ["//www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={}".format(int(NCBIid))]
     except:
         raise HTTP(400,"No valid NCBI id provided")
 
@@ -325,7 +361,7 @@ def eol_url(EOLid, OTTid):
     so we can check if images or common names may have been updated.
     """
     try:
-        return([URL('tree','eol_page_ID', args=[int(EOLid), int(OTTid)], scheme=True, host=True), "//eol.org/pages/{}".format(int(EOLid))])
+        return [URL('tree','eol_page_ID', args=[int(EOLid), int(OTTid)], scheme=True, host=True), "//eol.org/pages/{}".format(int(EOLid))]
     except:
         raise HTTP(400,"No valid EOL id provided")
 
@@ -352,7 +388,7 @@ def wikipedia_urls(Qid, wikipedia_lang_flag, requested_wikilang, is_leaf, name, 
             except:
                 pass #e.g. if flag == ''
             #no wikipedia page is expected in this lang: the linkout button should go to the wikidata page
-            return([OZ_wikipage, "//www.wikidata.org/wiki/Q{}#sitelinks-wikipedia".format(int(Qid))])
+            return [OZ_wikipage, "//www.wikidata.org/wiki/Q{}#sitelinks-wikipedia".format(int(Qid))]
     except:
         pass
     raise HTTP(400,"No valid language or wikidata Q id provided")

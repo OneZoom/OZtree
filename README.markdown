@@ -1,6 +1,6 @@
 This README file contains instructions for installing a private copy of OneZoom, either the tree explorer or the entire website. For gory details on running a *public* OneZoom server, see [README_SERVER.markdown](README_SERVER.markdown). Details of how to customize the OneZoom javascript viewer, along with information about the OneZoom APIs, are available by following the instructions below, then opening the compiled markdown file (at `OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown` or if you are running your own private OneZoom web server, at /dev/DOCS - for example, https://127.0.0.1:8000/dev/DOCS). 
 
-If you simply want to run a local copy of OneZoom, but not customise it yourself, we recommend using our [Docker image](https://hub.docker.com/r/onezoom/oztree-complete). The rest of this README provides details for compiling and running a OneZoom instance (something that is done under the hood when [creating the docker image](https://github.com/OneZoom/OZtree-docker)).
+If you simply want to run a local copy of OneZoom, but not modify the code yourself, we recommend using our [Docker image](https://hub.docker.com/r/onezoom/oztree-complete). The rest of this README provides details for compiling and running a OneZoom instance (something that is done under the hood when [creating the docker image](https://github.com/OneZoom/OZtree-docker)).
 
 # OneZoom setup
 
@@ -295,6 +295,10 @@ Notes
 The server unit tests have no additional dependencies. To run, do:
 
     grunt test-server
+
+To run individual tests, do:
+
+    grunt exec:test_server:test_modules_username.py
 
 ### Server Selenium-based functional tests
 

@@ -4,6 +4,7 @@
 }}
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
+{{import img}}
 
 {{block masthead}}
 {{if 'embed' not in request.vars:}}
@@ -24,13 +25,13 @@
     <ul>
     <li>
     <figure>
-        {{img = user_image or default_image}}
+        {{image = user_image or default_image}}
         <figure>
             <figcaption>{{=XML(long_name)}}</figcaption>
             <img alt="{{=T('Image of %s') % (species_name)}}"
-            {{if img:}}
-            src="{{=thumbnail_url(img.src, img.src_id)}}"
-            title="{{=' / '.join([t for t in [img.rights, img.licence] if t]).replace('"',"'")}}"
+            {{if image:}}
+            src="{{=img.thumb_url(thumb_base_url, image.src, image.src_id)}}"
+            title="{{=' / '.join([t for t in [image.rights, image.licence] if t]).replace('"',"'")}}"
             {{else:}}
             src="{{=URL('static','images/noImage_transparent.png')}}"
             {{pass}} />
