@@ -758,7 +758,7 @@ db.define_table('tours',
 db.define_table('tourorders',
     Field('identifier', type='string', length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
     Field('transition', type='string', length=20), #the transition to this stop from the previous one
-    Field('node_fullzoom', type=boolean), #when we transition to a node, should we zoom so the node fills the screen? this has no effect when zooming to a leaf.
+    Field('node_fullzoom', type=boolean), #when we transition to a node, should we zoom so the node fills the screen? this has no effect when zooming to a leaf. Note this should maybe be moved to be part of tourstops because it is conceptually part of a stop to properly define the place on the tree.
     Field('stop_number', type='integer', notnull=True), #the 0-based order of this stop in the defined tour
     Field('stop_id', type='integer', notnull=True), #the id in the tourstops table corresponding to this tour
     format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
