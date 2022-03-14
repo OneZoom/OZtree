@@ -467,10 +467,9 @@ def search_for_sponsor():
         #remove initial punctuation, e.g. we might have been passed in 
         searchType = request.vars.type or 'all'
         defaultImages = True if (request.vars.get('default_images')) else False
-        order = True if (request.vars.get('sorted')) else False
         limit=request.vars.get('limit')
         start =request.vars.get('start') or 0
-        return sponsorship_search.search_sponsor(searchFor, searchType, language, order, limit, start, defaultImages)
+        return sponsorship_search.search_sponsor(searchFor, searchType, language, limit, start, defaultImages)
     except:
         if is_testing:
             raise
