@@ -14,10 +14,9 @@ export function reset_global_button_action() {
 
 export function click_on_button_cb(controller) {
   /* requires the global function open_linkouts to have been defined */
+  // NB: global_button_actions are defined in src/projection/live_area_config.js
   if (global_button_action.action =="leap") {
     controller.leap_to(global_button_action.data);
-  } else if (global_button_action.action =="fly") {
-    controller.fly_straight_to(global_button_action.data);
   } else if (global_button_action.action =="fly_node") {
     controller.fly_straight_to(global_button_action.data, true);
   } else if (global_button_action.action =="tap2zoom") {
