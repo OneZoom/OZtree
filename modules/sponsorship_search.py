@@ -21,63 +21,33 @@ def search_sponsor(searchFor, searchType='all', language='en-GB,en;q=0.9', order
     colnames = [
         'OTT_ID', 'name', 'verified_name', 'verified_more_info', 'verified_kind',
         'verified_url', 'verified_preferred_image_src', 'verified_preferred_image_src_id']
-    alt_txt = {"verified_name":T("This leaf has been sponsored", language=language),
-               "verified_more_info":T("text awaiting confirmation", language=language),
-               "verified_kind": "",
-               "verified_preferred_image_src": None,
-               "verified_preferred_image_src_id": None,
-               "verified_url": None}
-    alt_colnames = [(("'"+alt_txt[c]+"'" if alt_txt[c] else "NULL") + " AS " + c) if c in alt_txt else c for c in colnames]     
     colname_map = {nm:index for index,nm in enumerate(colnames)}
-    search_query = {'verif':"", 'unverif':""}
+    search_queries = [
+        "verified_time IS NOT NULL",
+        "(deactivated IS NULL OR deactivated = '')",
+    ]
     search_terms = []
 
     if searchType != "all":
-        search_query['verif'] = "verified_kind = " + db.placeholder
-        search_query['unverif'] = "user_sponsor_kind = " + db.placeholder
+        search_queries.append("verified_kind = " + db.placeholder)
         search_terms.append(searchType)
 
     for word in ["%"+w+"%" for w in searchFor if w]:
-        if search_terms:
-            search_query['verif'] += " AND "
-            search_query['unverif'] += " AND "
-        search_query['verif'] += ("(verified_name like " + db.placeholder + 
+        search_queries.append("(verified_name like " + db.placeholder + 
             " or verified_more_info like " + db.placeholder + ")")
-        search_query['unverif'] += ("(user_sponsor_name like " + db.placeholder +
-            " or user_more_info like " + db.placeholder + ")")
         search_terms.extend([word, word])
 
-    # The logic here is complex. We might wish to allow people to search either 
-    # for their entered text if not yet verified, or their verified text once it
-    # appears. If the former, we should put up the holding text in alt_txt.
-    # We detect this by looking at verified_time (for verified text) or 
-    # user_sponsor_kind (for unverified text).
-    # Expired leaves aren't in the reservations table, so won't appear.
-
-    #The verified ones
-    query = "SELECT * FROM (SELECT " + ",".join(colnames) + " FROM reservations"
-    query += " WHERE verified_time IS NOT NULL AND (deactivated IS NULL OR deactivated = '')"
-    query += " AND " + search_query['verif']
+    query = "SELECT " + ",".join(colnames) + " FROM reservations"
+    query += " WHERE " + " AND ".join(search_queries)
     if order_by_recent:
         query += ' ORDER BY verified_time DESC'
-    query += ") AS t1"
-
-    query += " UNION ALL "
-
-    query += "SELECT * FROM (SELECT " + ",".join(alt_colnames) + " FROM reservations"
-    query += " WHERE verified_time IS NULL AND user_sponsor_kind IS NOT NULL AND user_sponsor_kind != ''"
-    query += " AND (deactivated IS NULL OR deactivated = '')"
-    query += " AND " + search_query['unverif']
-    if order_by_recent:
-        query += ' ORDER BY user_updated_time DESC'
-    query += ") AS t2"
 
     if limit:
         query += ' LIMIT ' + str(int(limit))
         if start:
             query += ' OFFSET ' + str(int(start))
 
-    reservations = db.executesql(query, search_terms + search_terms)
+    reservations = db.executesql(query, search_terms)
 
     reservationsOttArray = []
     for row in reservations:

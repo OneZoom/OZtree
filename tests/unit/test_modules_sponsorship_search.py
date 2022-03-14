@@ -51,6 +51,28 @@ class TestSponsorshipSearch(unittest.TestCase):
         out = sponsorship_search.search_sponsor("")
         self.assertEqual(out, {})
 
+    def test_search_sponsor_unverified(self):
+        """Unverified items don't show up in search"""
+        search_term = str(uuid.uuid4())  # Something unique to search for
+        user1, email1 = 'bettyunittestexamplecom', 'betty@unittest.example.com'
+
+        r1 = util.purchase_reservation(basket_details=dict(
+            e_mail=email1,
+            user_donor_name=user1,
+            user_sponsor_name=search_term,
+            user_sponsor_kind='by',
+        ))[0]
+        r2 = util.purchase_reservation(basket_details=dict(
+            e_mail=email1,
+            user_donor_name=user1,
+            user_sponsor_name=search_term,
+            user_sponsor_kind='by',
+        ), verify=False)[0]
+        self.assertEqual(
+            [r['OTT_ID'] for r in parsed_ss(search_term)],
+            [r1.OTT_ID]
+        )
+
     def test_search_sponsor_expire(self):
         """Expired leaves don't show up"""
         search_term = str(uuid.uuid4())  # Something unique to search for
