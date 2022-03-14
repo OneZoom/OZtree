@@ -273,7 +273,7 @@ function callbackAPIcomplete(data, flagsIn)
 
             if ((image_objects.length > 0) &&
                 (EoL_srcs.indexOf(image_objects[0].src) > -1) &&
-                (image_objects[0].src_id == o.dataObjectVersionID.toString())) {
+                (image_objects[0].src_id == APIimg.dataObjectVersionID.toString())) {
                 // This image is duplicate of image_objects[0], ignore
                 continue;
             }
