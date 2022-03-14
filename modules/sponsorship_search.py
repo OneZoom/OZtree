@@ -3,6 +3,7 @@ from gluon import current
 import OZfunc
 
 
+# - searchType: One of "for" (for someone else) / "by" (for themselves) / "all" (either, default)
 def search_sponsor(searchFor, searchType='all', language='en-GB,en;q=0.9', order_by_recent=None, limit=None, start=0, defaultImages=False):
     myconf = current.globalenv['myconf']
     T = current.globalenv['T']
