@@ -213,10 +213,14 @@ function closeAndLeap(event, OZIDin, original_searchbox) {
 
 
 function load_tab(tab_content) {
-  if (! tab_content.children().last().hasClass('popup-content')) {
+  var ifrm;
+
+  if (tab_content.children().last().hasClass('popup-content')) {
+      ifrm = tab_content.children().last().children('iframe')[0];
+  } else {
       $('.iframe-loading-info',tab_content).show();
       {{if is_testing:}}console.log("trying to create iframe with src = " + tab_content.attr('data-src'));{{pass}}
-      var ifrm = document.createElement("iframe");
+      ifrm = document.createElement("iframe");
       ifrm.setAttribute('src', tab_content.attr('data-src'));
       ifrm.addEventListener('load', function() {
         {{if is_testing:}}console.log("Hiding iframe loading info");{{pass}}
@@ -226,6 +230,9 @@ function load_tab(tab_content) {
       //add iframe inside a div wrapper
       tab_content.append($('<div>', {'class':'popup-content iframe-container'}).append(ifrm));
   }
+  // Give iframe a chance to attach to the page, then focus it, so pgup/dn work
+  // for the wikipedia tab (e.g.)
+  window.setTimeout(function() { ifrm.focus(); }, 0);
 }
 
 /* Add a set of species (e.g. popular species) to a target list, 
