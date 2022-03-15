@@ -172,9 +172,14 @@ class TestSponsorship(unittest.TestCase):
         """Can count for the home page"""
         # Purchase an OTT ages ago, which will expire, then 2 new ones
         util.time_travel(sponsorship_config()['duration_days'] * 3)
-        util.purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))
+        reservations_old = util.purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))
         util.time_travel(0)
-        util.purchase_reservation(2, basket_details=dict(e_mail='betty@unittest.example.com'))
+        reservations_newer = util.purchase_reservation(2, basket_details=dict(e_mail='betty@unittest.example.com'))
+
+        # Re-purchase the now expired OTT
+        reservations_renewed = util.purchase_reservation(
+            [reservations_old[0].OTT_ID],
+            basket_details=dict(e_mail='betty@unittest.example.com'))
 
         # Reserve an OTT
         reserved_ott = util.find_unsponsored_ott(in_reservations=False)
@@ -200,12 +205,17 @@ class TestSponsorship(unittest.TestCase):
 
         otts = db.executesql("SELECT OTT_ID, MAX(verified_time) FROM reservations GROUP BY 1;")
         expired_otts = set(x[0] for x in db.executesql("SELECT OTT_ID FROM expired_reservations;"))
-        # At least one non-verified entry to not count
-        self.assertTrue(sum(1 for ott, vt in otts if vt is None) > 0)
+        # Our reserved, non-verified entry is in OTTs
+        self.assertIn((reserved_ott, None), otts)
         # Ignore it for our count
         otts = set(ott for ott, vt in otts if vt is not None)
-        # There's *something* in the intersection to make sure we don't count double
-        self.assertTrue(len(otts & expired_otts) > 0)
+        # The newer purchases are also in OTTs
+        for r in reservations_newer:
+            self.assertIn(r.OTT_ID, otts)
+        # The re-purchased OTT appears in both lists
+        self.assertIn(
+            reservations_renewed[0].OTT_ID,
+            otts & expired_otts)
         # Check return value against our union
         self.assertEqual(reservation_total_counts('otts'), len(otts | expired_otts))
 
