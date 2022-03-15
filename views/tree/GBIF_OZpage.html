@@ -13,16 +13,21 @@
     h3 {
         text-align: center;    
     }
-    html, body, #map {
+    h3 a {
+      color: lightblue;
+    }
+    html, body {
       height: 100%;
       padding: 0;
       margin: 0;
       background-color: black;
       color: grey;
     }
-    a {
-      color: lightblue;        
+    body {
+      display: flex;
+      flex-direction: column;
     }
+    #map { flex-grow: 1; }
   </style>
 </head>
 <body>
