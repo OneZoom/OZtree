@@ -33,7 +33,7 @@ test('pre_calc', function (t) {
     t.ok(almostEqual(root.bezr, 0.55));
     t.ok(almostEqual(root.arca, 4.71238898038469));
     t.ok(almostEqual(root.arcx, 0));
-    t.ok(almostEqual(root.arcy, -1));
+    t.ok(almostEqual(root.arcy, -1.01));
     t.ok(almostEqual(root.arcr, 0.275));
 
     t.ok(almostEqual(root.children[0].bezc1x, -3.0114265552803764e-17));
