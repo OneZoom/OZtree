@@ -80,6 +80,10 @@ class TestControllersDefault(unittest.TestCase):
                     f()
 
 if __name__ == '__main__':
+    import sys
+
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestControllersDefault))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    if not result.wasSuccessful():
+        sys.exit(1)

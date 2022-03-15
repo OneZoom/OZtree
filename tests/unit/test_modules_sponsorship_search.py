@@ -169,7 +169,10 @@ class TestSponsorshipSearch(unittest.TestCase):
         self.assertEqual(parsed_ss(search_term), [])
 
 if __name__ == '__main__':
-    suite = unittest.TestSuite()
+    import sys
 
+    suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestSponsorshipSearch))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    if not result.wasSuccessful():
+        sys.exit(1)

@@ -1099,10 +1099,12 @@ class TestSponsorRenewRequestLogic(TestSponsorship):
         
     
 if __name__ == '__main__':
+    import sys
+
     suite = unittest.TestSuite()
-    
     suite.addTest(unittest.makeSuite(TestSponsorship))
     suite.addTest(unittest.makeSuite(TestMaintenance))
     suite.addTest(unittest.makeSuite(TestSponsorRenewRequestLogic))
-    unittest.TextTestRunner(verbosity=2).run(suite)
-
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    if not result.wasSuccessful():
+        sys.exit(1)
