@@ -578,6 +578,7 @@ class TestSponsorship(unittest.TestCase):
         reservation_add_to_basket('UT::BK001', reservation_row, dict(
             e_mail='001@unittest.example.com',
             user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
+            user_donor_name="Gertrude",
         ))
         reservation_confirm_payment('UT::BK001', 10000, dict(
             PP_transaction_code='UT::PP1',
@@ -609,9 +610,10 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(reservation_row.PP_e_mail, 'paypal@unittest.example.com')
 
         # Validate row, is fully sponsored for 4 years
-        reservation_row.update_record(verified_time=current.request.now)
+        util.verify_reservation(reservation_row)
         status, _, reservation_row, _ = get_reservation(ott1, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
+        self.assertEqual(reservation_row.verified_donor_name, "Gertrude")
         self.assertEqual(reservation_row.verified_time, current.request.now.replace(microsecond=0))
         self.assertEqual(reservation_row.reserve_time, current.request.now.replace(microsecond=0))
         self.assertEqual(reservation_row.sponsorship_duration_days, 365 * 4 + 1)
@@ -648,6 +650,9 @@ class TestSponsorship(unittest.TestCase):
         self.assertLess(
             reservation_row.sponsorship_ends - current.request.now - datetime.timedelta(days = 365 * 8 + 1),
             datetime.timedelta(minutes=1))
+        # Other writable details copied over
+        self.assertEqual(reservation_row.user_donor_name, "Gertrude")
+        self.assertEqual(reservation_row.verified_donor_name, "Gertrude")
 
         # The asking price dropped, as it's a renewal
         self.assertEqual(reservation_row.asking_price, orig_asking_price * (1 - 0.2))
