@@ -272,7 +272,7 @@ class TestSponsorship(unittest.TestCase):
         reservation_add_to_basket('UT::BK001', reservation_row, dict(
             e_mail='001@unittest.example.com',
             user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
-            verified_name="Definitely Arnold",
+            user_donor_name="Emily",
             prev_reservation=None,
         ))
         reservation_confirm_payment('UT::BK001', 10000, dict(
@@ -280,9 +280,10 @@ class TestSponsorship(unittest.TestCase):
             PP_e_mail='paypal@unittest.example.com',
             sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
-        reservation_row.update_record(verified_time=current.request.now)
+        util.verify_reservation(reservation_row, verified_name="Definitely Arnold")
         status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
+        self.assertEqual(reservation_row.verified_donor_name, "Emily")
 
         # Expire the reservation
         expired_r_id = reservation_expire(reservation_row)
@@ -341,6 +342,7 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(reservation_row.verified_name, 'Definitely Arnold')
         self.assertEqual(reservation_row.PP_e_mail, 'paypal@unittest.example.com')
         self.assertEqual(reservation_row.PP_transaction_code, 'UT::PP2')
+        self.assertEqual(reservation_row.verified_donor_name, "Emily")
 
     def test_reservation_confirm_payment__invalid(self):
         """Unknown baskets are an error"""
