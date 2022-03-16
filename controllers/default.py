@@ -1582,10 +1582,12 @@ def pp_process_post():
     if myconf.take('paypal.save_to_tmp_file_dir'):
         import os
         import time
+        error_dir = myconf.take('paypal.save_to_tmp_file_dir')
+        os.makedirs(error_dir, exist_ok=True)
 
         with open(
             os.path.join(
-                myconf.take('paypal.save_to_tmp_file_dir'),
+                error_dir,
                 "{}{}_paypal_OTT{}_{}.json".format(
                     "PP_" if err is None else "PP_ERROR_",
                     "".join([char if char.isalnum() else "_" for char in request.env.http_host]),
