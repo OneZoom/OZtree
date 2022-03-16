@@ -43,12 +43,16 @@ class PolytomyHorizonCalc {
     node.hymax = max(node.sy, node.ey) + node.branch_width/2;
     node.hymin = min(node.sy, node.ey) - node.branch_width/2;
 
-    //expand the bounding box to include the arc if necessary // 1.305 = 0.9*1.45 is to allow for leaves with points that stick out from their main circle
-    node.hxmax = max(node.hxmax, node.arcx+node.arcr*1.305);
-    node.hxmin = min(node.hxmin, node.arcx-node.arcr*1.305);
-    node.hymax = max(node.hymax, node.arcy+node.arcr*1.305);
-    node.hymin = min(node.hymin, node.arcy-node.arcr*1.305);
-  
+    // Get radius of parent interior node in terms of our rvar
+    var parent_arcr = !node.upnode ? 0 : node.upnode.arcr * node.upnode.rvar / node.rvar;
+
+    // Expand bounding box to include the parent interior node at one end, the arc + current node at the other
+    // NB: 1.305 = 0.9*1.45 is to allow for leaves with points that stick out from their main circle
+    node.hxmax = max(node.hxmax + parent_arcr, node.arcx+node.arcr*1.305);
+    node.hxmin = min(node.hxmin - parent_arcr, node.arcx-node.arcr*1.305);
+    node.hymax = max(node.hymax + parent_arcr, node.arcy+node.arcr*1.305);
+    node.hymin = min(node.hymin - parent_arcr, node.arcy-node.arcr*1.305);
+
     // set the graphics bounding box before the horizon is expanded for children
     node.gxmax = node.hxmax;
     node.gxmin = node.hxmin;
