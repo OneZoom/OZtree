@@ -8,7 +8,7 @@ import os.path
 
 class TestViewerLoading(FunctionalTest):
     """
-    Test whether the embedding functions work
+    Test whether the viewer loading functions work
     """
     @classmethod
     def setUpClass(self):

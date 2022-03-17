@@ -113,8 +113,8 @@ var server_urls = {
   tourstop_page: "http://beta.onezoom.org/tourstop.load",
 
   
-  OZ_leaf_json_url_func: function(ott, lang) {return("http://beta.onezoom.org/tree/leaf_linkouts.json/...OTT...?embed=1&lang=...LANG...".replace('...OTT...', (ott || '').toString() || "").replace('...LANG...', lang || ''))},
-  OZ_node_json_url_func: function(id, lang) {return("http://beta.onezoom.org/tree/node_linkouts.json/...ID...?embed=1&lang=...LANG...".replace('...ID...', id.toString() || "").replace('...LANG...', lang || ''))},
+  OZ_leaf_json_url_func: function(ott, lang) {return("http://beta.onezoom.org/tree/leaf_linkouts.json/...OTT...?popup=1&lang=...LANG...".replace('...OTT...', (ott || '').toString() || "").replace('...LANG...', lang || ''))},
+  OZ_node_json_url_func: function(id, lang) {return("http://beta.onezoom.org/tree/node_linkouts.json/...ID...?popup=1&lang=...LANG...".replace('...ID...', id.toString() || "").replace('...LANG...', lang || ''))},
 };
   </script>
 
@@ -151,7 +151,7 @@ var server_urls = {
     };
     
     globals.UI_callbacks.openCopyright = function(pic_src, pic_fn) {
-      var load_url = "http://beta.onezoom.org/tree/pic_info.html/...PICSRC.../...PICFN...?embed=1".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
+      var load_url = "http://beta.onezoom.org/tree/pic_info.html/...PICSRC.../...PICFN...?popup=1".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
       var link_url = "http://beta.onezoom.org/tree/pic_info/...PICSRC.../...PICFN...?redirect=1".replace('...PICSRC...', pic_src || "").replace('...PICFN...', pic_fn || "");
       $("#imageinfo-modal .popup-content .iframe-loading-info").show();
       $("#imageinfo-modal .popup-content .no-loading-info").hide();

@@ -1352,7 +1352,7 @@ def sponsor_node_price():
 def sponsor_node():
     """
     This picks <max> leaves per price band, and removes already sponsored leaves from the search    
-    By default ranks by popularity. We pass on any request.vars so that we can use embed, form_reservation_code, etc.
+    By default ranks by popularity. We pass on any request.vars so that we can use popup, form_reservation_code, etc.
     """
     try:
         if request.vars.get('id'):

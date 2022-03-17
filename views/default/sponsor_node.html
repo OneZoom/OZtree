@@ -2,10 +2,10 @@
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{response.files.insert(0,URL('static','js/web2py.js')) #To allow =LOAD(ajax=True) to work}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
-{{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
+{{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}
 
 {{block masthead}}
-{{if 'embed' not in request.vars:}}
+{{if 'popup' not in request.vars:}}
 <div class="home-heading uk-text-center uk-padding-small">
   <h1>Sponsorship suggestions</h1>
 </div>
@@ -39,6 +39,6 @@
 {{pass}}
 </div>
 
-{{if not request.vars.embed:}}
+{{if not request.vars.popup:}}
 <p>{{=XML(T("If you fancy something different, you can %s, or simply %s and see what you like.") % (A(T('check out some of our suggestions'), _href=URL('default','sponsor')), A("browse the tree of life", _href=URL('default','life'))))}}</p>
 {{pass}}

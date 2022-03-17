@@ -3,10 +3,10 @@
     response.files.append(URL('static', 'OZSponsor/sponsor_replace_page.css'))
     response.files.append(URL('static', 'css/content_pages.css'))
 }}
-{{extend 'embed.html' # This is only ever shown embedded}}
+{{extend 'popup.html' # This is only ever shown popup-ed}}
 
 {{block masthead}}
-{{if 'embed' not in request.vars:}}
+{{if 'popup' not in request.vars:}}
 <div class="home-heading uk-text-center uk-padding-small">
   <h1>Leaf sponsorship</h1>
 </div>

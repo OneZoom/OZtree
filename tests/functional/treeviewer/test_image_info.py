@@ -33,7 +33,7 @@ class title_contains(object):
 
 class TestImageInfo(FunctionalTest):
     """
-    Test whether the embedding functions work
+    Test whether the image information pages work
     """
     @classmethod
     def setUpClass(self):

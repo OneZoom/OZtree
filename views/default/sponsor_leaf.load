@@ -1,5 +1,5 @@
-{{if request.vars.get('embed'):}}
-    <!-- {{include 'embed.js' # in case this load component is called via AJAX - js not needed in this case}} -->
+{{if request.vars.get('popup'):}}
+    <!-- {{include 'popup.js' # in case this load component is called via AJAX - js not needed in this case}} -->
     {{form_target = "_blank" # paypal opens in new frame}}
     <script>
       document.addEventListener("DOMContentLoaded", function () {
@@ -94,8 +94,8 @@
       </div>
     </div>
   </div>
-  {{if 'embed' not in request.vars and not partner_data:}}
-  <!-- don't want possibility for these link outs if embedding or if there is a partner involved as they will not keep the user in the partner tree -->
+  {{if 'popup' not in request.vars and not partner_data:}}
+  <!-- don't want possibility for these link outs if popupding or if there is a partner involved as they will not keep the user in the partner tree -->
   <div class="subleaf">
     <p>{{=XML(T('If you fancy something different, you can %s, or simply %s and see what you like.') % (A(T('search for other available species'), _href=URL('default','sponsor')),A(T('browse the tree of life'),_href=URL('default','life.html', scheme=True, host=True))))}}</p>
   </div>
@@ -160,7 +160,7 @@
       <input type="hidden" name="partner" value="{{=partner_data.get('partner_identifier') or ''}}" />
       {{pass}}
     </fieldset>
-    <p class="submit_donate">{{=XML(T('Accept %s and <input id="submit_button" type="submit" value = "Donate"/> using PayPal') % (A(T('terms'),_href="/terms.html",_target="_blank"), ))}}{{if request.vars.get('embed'):}} <span>{{=T('(opens in a new window)')}}</span>{{pass}}.</p>
+    <p class="submit_donate">{{=XML(T('Accept %s and <input id="submit_button" type="submit" value = "Donate"/> using PayPal') % (A(T('terms'),_href="/terms.html",_target="_blank"), ))}}{{if request.vars.get('popup'):}} <span>{{=T('(opens in a new window)')}}</span>{{pass}}.</p>
   </div>
 </form>
 

@@ -8,7 +8,7 @@
 #                        Tabs (if they exist) will be shown in this order when popping up linkouts to other pages.
 # UI_layer->vars->links Can be 'none' for no links, 'newtab' for all links (except the OZ logo) in new tab, or 'default' (or unset) to leave.
 # popups->vars          Passed to pic_info.load, about.load, how.load, data_sources.load, and the 
-#                        internal linkouts urls. You will usually want to define 'embed':1 or 'embed':3. 
+#                        internal linkouts urls. You will usually want to define 'popup':1 or 'popup':3. 
 # partner               (Optional): if it matches a partner_identifier in the partners table, we will automatically fill out 
 #                        the popups and UI_layer params to make an automatically created sponsorship site
 # locations_json        Partners can provide their own json string of locations to use, but if not is provided
@@ -25,7 +25,7 @@ setup_params = {
     } 
   },   
   'popups':{
-    'vars':{'embed':3, 'no_sponsoring':1}, #don't need to keep track of reservation_code
+    'vars':{'popup':3, 'no_sponsoring':1}, #don't need to keep track of reservation_code
   },
   'partner':page_info.get('partner'),
   'locations_json':('[' 
@@ -44,7 +44,7 @@ setup_params = {
       ']')
 }
 }}
-{{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
+{{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
 <!-- bespoke css file for museum display -->
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree_MD.css')}}" />
 <script type="text/javascript">
