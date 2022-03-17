@@ -108,7 +108,6 @@ class TreeSettings {
       vis: this.options.vis.spiral,
     }
       
-    this.colour_blind_friendly = false
     this._ssaver_inactive_duration_seconds = 600 * 1000 //600 seconds
   }
 
@@ -171,12 +170,8 @@ class TreeSettings {
 
   get cols() {
     for (let k of Object.keys(this.options.cols)) {
-      if (this.options.cols[k] == this.current.cols) {
-          if (this.colour_blind_friendly && (k.slice(k.length-4, k.length))=="_CBF") {
-              // remove the _CBF from the end as only the first part is expected to be returned
-              return k.slice(0, k.length-4);
-          } else {
-              return k;}
+      if (this.options.cols[k] === this.current.cols) {
+          return k;
       }
     }
     return undefined;

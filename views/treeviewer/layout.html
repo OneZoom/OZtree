@@ -557,11 +557,15 @@ function setupUI() {
     //$('input[name="colourtype"]').change(function() {onezoom.controller.change_color_theme(this.value)});
     $('input[name="searchmode"]').change(function () { onezoom.controller.set_search_jump_mode(this.value) });
     
-    $('input[name="CBF"]').change(function () { onezoom.controller.change_color_theme($('select#colourtype').val(),$('input[name="CBF"]').is(':checked')); });
+    $('input[name="CBF"]').change(function () { onezoom.controller.change_color_theme(
+        $('select#colourtype').val() + ($('input[name="CBF"]').is(':checked') ? "_CBF" : "")
+    ); });
     
     $('select#treeshape').change(function() {onezoom.controller.change_view_type(this.value)});
     
-    $('select#colourtype').change(function() { onezoom.controller.change_color_theme(this.value,$('input[name="CBF"]').is(':checked')) });
+    $('select#colourtype').change(function() { onezoom.controller.change_color_theme(
+        $('select#colourtype').val() + ($('input[name="CBF"]').is(':checked') ? "_CBF" : "")
+    ); });
     
     $('select#language').change(function() {
         //reset the OZ strings to the new language
@@ -591,7 +595,9 @@ function setupUI() {
       .on('show', function() {
        $('input[name=imgsource]').val([onezoom.controller.get_image_source()]);
           $('select#treeshape').val([onezoom.controller.get_view_type()]);
-       $('select#colourtype').val([onezoom.controller.get_color_theme()]);
+       var color_theme = onezoom.controller.get_color_theme();
+       $('select#colourtype').val([color_theme.replace(/_CBF$/, '')]);
+       $('input[name="CBF"]')[0].checked = /_CBF/.test(color_theme);
        $('select#language').val(onezoom.controller.get_language());
        $('input[name=searchmode]').val([onezoom.controller.get_search_jump_mode()]);
     });
