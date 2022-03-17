@@ -167,7 +167,7 @@ function get_params(options) {
     }
   }
   // Preserve all custom parts of current querystring
-  (config.custom_querystring_params || []).concat(['ssaver']).map(function (part_name) {
+  (config.custom_querystring_params || []).concat(['ssaver', 'initmark']).map(function (part_name) {
     var m = window.location.search.match(new RegExp('(^|&|\\?)' + part_name + '=[^&]+', 'g'));
     (m || []).map(function (part) {
       querystring.push(part.replace(/^[&?]/, ''));

@@ -88,6 +88,9 @@ function setup_page_by_state(state) {
 
   controller.close_all();
 
+  // Perform initial marking if asked
+  if (state.initmark) get_ott_to_id_by_api(state.initmark).then(id => controller.mark_area(id));
+
   let promise = state.home_ott_id ? get_ott_to_id_by_api(state.home_ott_id) : Promise.resolve()
 
   promise

@@ -158,6 +158,9 @@ function parse_querystring(state, querystring) {
     } else if (/^cols=/.test(querystring[i])) {
       // User wants a given colour scheme
       state.cols = querystring[i].substring(querystring[i].indexOf("=") + 1);
+    } else if (/^initmark=/.test(querystring[i])) {
+      // User wants an initial marking
+      state.initmark = parseInt(querystring[i].substring(querystring[i].indexOf("=") + 1));
     }
   }
 }
