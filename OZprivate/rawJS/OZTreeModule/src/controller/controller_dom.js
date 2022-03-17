@@ -150,6 +150,7 @@ export default function (Controller) {
    */
   Controller.prototype.change_color_theme = function (color_theme, init = false) {
       tree_settings.cols = color_theme;
+      if (!init) record_url({ replaceURL: true }, true);
       this.trigger_refresh_loop();
   }
     
