@@ -129,10 +129,6 @@ function get_pinpoint(node) {
 
 function get_params(options) {
   let querystring = [];
-  if (config.default_setting) {
-    //if we set some defaults in the original page, make sure we echo them here
-    querystring.push(config.default_setting)
-  }
 
   if (!tree_settings.is_default_vis()) {
     let vis_string = tree_settings.vis;
