@@ -445,7 +445,7 @@ $(document).on("setupUI", function() {
 <div class="logo uk-navbar-item"><a href="/" id="OZ-logo"><img src="images/oz-logo-1line-mono-dark.svg" /></a></div>
 
 <div class="uk-navbar-item" id="searchnav">
-  <div id="search-basic">
+  <div class="search-basic">
     <div class="searchbox uk-search uk-search-default" id="search_form_basic">
       <div class="searchinput"><div class="icon-beside-input">
           <button   class="spinner" uk-spinner="ratio:0.5"></button>
@@ -1221,7 +1221,7 @@ function setupUI() {
         event.preventDefault();
       })
     
-    $('#search-basic .searchinput input')
+    $('#searchnav .search-basic .searchinput input')
       .keyup(function(event) {
         var search_term = this.value;
         var searchbox = $(this).closest('.searchbox');
@@ -1248,7 +1248,7 @@ function setupUI() {
                                                 function(original_string, actual_search, results) {
                                                 search_ui.searchPopulate(searchbox, original_string, results, function(event, OZid) {
                                                     event.preventDefault();  // Don't follow links
-                                                    closeAndLeap(event, OZid, $('#search-basic'));
+                                                    closeAndLeap(event, OZid, $('#searchnav .search-basic'));
                                                 })
                                                 },
                                                 delay_ms,
@@ -1270,7 +1270,7 @@ function setupUI() {
         }
       });
     
-    $('#search-basic .search_dropdown')
+    $('#searchnav .search-basic .search_dropdown')
         .on('show', function(event) {
             //have to recalc the max height here as we need to dynamically work out the dropbox posn
             $(event.currentTarget).css("max-height", "calc(100vh - 5px - " + $(event.currentTarget).offset().top + "px)");
@@ -1383,8 +1383,8 @@ function setupUI() {
         event.stopPropagation();
     });
 
-    setup_location_list($('#search-basic .popular_species'), locations_json, 
-        function(event, OZid) {closeAndLeap(event, OZid, $('#search-basic'))});
+    setup_location_list($('#searchnav .search-basic .popular_species'), locations_json, 
+        function(event, OZid) {closeAndLeap(event, OZid, $('#searchnav .search-basic'))});
 
     var existing_searchresults = onezoom.controller.list_all_marked().filter(function(id_col) {return !isNaN(id_col[0])});
     if (existing_searchresults.length) {

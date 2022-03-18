@@ -3,8 +3,8 @@
 
 {{if not request.vars.no_oz_logo:}}<div class="logo uk-navbar-item">{{#The logo *never* opens a new tab (but it can be removed)}}{{=no_tab_A(IMG(_src=URL('static','images/oz-logo-1line-mono-dark.svg')), _href=URL('default','index', extension=False), _id="OZ-logo")}}</div>{{pass}}
 {{if request.vars.partner_logo:}}<div class="logo uk-navbar-item">{{if request.vars.partner_url:}}{{=A(IMG(_src=request.vars.partner_logo), _href=request.vars.partner_url)}}{{else:}}{{=SPAN(IMG(_src=request.vars.partner_logo))}}{{pass}}</div>{{pass}}
-<div class="uk-navbar-item" id="searchnav">
-  <div id="search-basic">
+<div class="uk-navbar-item search-nav" id="searchnav">
+  <div class="search-basic">
     <div class="searchbox uk-search uk-search-default" id="search_form_basic">
       <div class="searchinput"><div class="icon-beside-input">
           <button   class="spinner" uk-spinner="ratio:0.5"></button>

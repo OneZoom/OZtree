@@ -1,4 +1,4 @@
-#advanced_search_toggle, #searchnav {
+#advanced_search_toggle, .search-nav {
     float: right;
 }
 
@@ -6,48 +6,48 @@
     background-color: blue;
 }
 
-#searchnav {
+.search-nav {
     padding: 0;
 }
 
-#searchnav button {
+.search-nav button {
     color: #999;
     border-color: #999;
 }
 
-#searchnav button:hover {
+.search-nav button:hover {
     color: #666;
     border-color: #666;
 }
 
 
-#searchnav .searchbox {
+.search-nav .searchbox {
     width: auto;
     background-color: white;
     border: 1px solid #DDD;
     border-radius: 5px;
 }
 
-#searchnav .searchbox, #add_searchbox, #common_ancestor_button {
+.search-nav .searchbox, #add_searchbox, #common_ancestor_button {
     margin: 0.25rem;
 }
 
-#searchnav .search_dropdown {
+.search-nav .search_dropdown {
     width: 100%;
     border: 1px solid #eee;
     max-height: calc(100vh - 4rem);
     overflow-y: auto;
 }
 
-#searchnav .searchinput {
+.search-nav .searchinput {
     display:inline-block;
 }
 
-#searchnav .searchbox button {
+.search-nav .searchbox button {
     margin: 0 2px;
 }
 
-#searchnav .searchbox input {
+.search-nav .searchbox input {
     box-sizing: border-box;
     width: 16rem;
     border: 0;
@@ -56,21 +56,21 @@
 
 }
 
-#searchnav #search-advanced .searchinput, #searchnav #search-advanced .searchresult {
+.search-nav #search-advanced .searchinput, .search-nav #search-advanced .searchresult {
     border-right: 1px solid #DDD;
 }
 
-#searchnav .searchbox .remove-searchbox {
+.search-nav .searchbox .remove-searchbox {
     box-sizing: content-box;
 }
 
-#searchnav .icon-beside-input {
+.search-nav .icon-beside-input {
     display: inline-block;
     width: 2rem;
     text-align: center;
 }
 
-#searchnav .searchbox .icon-beside-input .spinner {
+.search-nav .searchbox .icon-beside-input .spinner {
     position: absolute;
     margin: 0.3em 0.6em;
     display: none;
@@ -82,31 +82,31 @@
     display:none;
 }
 
-#searchnav #search-advanced,
-#searchnav.advanced_mode #search-basic,
-#searchnav .icon-beside-input .spinner,
-#searchnav #search-advanced .searchresult {
+.search-nav #search-advanced,
+.search-nav.advanced_mode .search-basic,
+.search-nav .icon-beside-input .spinner,
+.search-nav #search-advanced .searchresult {
     display:none;
 }
 
-#searchnav.advanced_mode #search-advanced, 
-#searchnav #search-basic, 
-#searchnav .waiting_for_search_result .icon-beside-input .spinner,
-#searchnav #search-advanced .result_displayed_in_box .searchresult {
+.search-nav.advanced_mode #search-advanced, 
+.search-nav .search-basic, 
+.search-nav .waiting_for_search_result .icon-beside-input .spinner,
+.search-nav #search-advanced .result_displayed_in_box .searchresult {
     display:block;
 }
 
-#searchnav .waiting_for_search_result .icon-beside-input .main-icon,
-#searchnav #search-advanced .result_displayed_in_box .searchinput {
+.search-nav .waiting_for_search_result .icon-beside-input .main-icon,
+.search-nav #search-advanced .result_displayed_in_box .searchinput {
     visibility: hidden;
 }
 
-#searchnav .icon-beside-input main-icon,
-#searchnav #search-advanced .input {
+.search-nav .icon-beside-input main-icon,
+.search-nav #search-advanced .input {
     visibility: visible;
 }
 
-#searchnav #search-basic .searchinput {
+.search-nav .search-basic .searchinput {
     white-space: nowrap;
 }
 
@@ -151,27 +151,27 @@ ul#searchboxes {
 
 /* Dropdown for search results */
 
-#searchnav .search_dropdown {
+.search-nav .search_dropdown {
     padding: 1rem;
     text-align: center;
 }
 
-#searchnav .search_dropdown .no_results {
+.search-nav .search_dropdown .no_results {
     display: none;
 }
 
-#searchnav .search_dropdown dl {
+.search-nav .search_dropdown dl {
     list-style-type: none;
     margin:0;
     padding: 0;
 }
 
-#searchnav.search_dropdown dt {
+.search-nav.search_dropdown dt {
     color: #444;
     font-weight: bold;
 }
 
-#searchnav .search_dropdown dd {
+.search-nav .search_dropdown dd {
     color: #444;
 
     &.leafout {
@@ -190,7 +190,7 @@ ul#searchboxes {
     }
 }
 
-#searchnav .search_dropdown dd:hover, #searchnav .search_dropdown dd p:hover {
+.search-nav .search_dropdown dd:hover, .search-nav .search_dropdown dd p:hover {
     color: black;
 }
 
@@ -198,18 +198,18 @@ ul#searchboxes {
     text-transform:capitalize;
 }
 
-#searchnav .search_dropdown dd p {
+.search-nav .search_dropdown dd p {
     font-size: 110%;
     margin:0;
     line-height:1.1em;
 }
 
-#searchnav .search_dropdown dd p.sponsorship-info {
+.search-nav .search_dropdown dd p.sponsorship-info {
     font-size: 100%;
     margin:0;
 }
 
-#searchnav .search_dropdown dd p.extra-info {
+.search-nav .search_dropdown dd p.extra-info {
     font-size: 90%;
     margin:0;
 }
@@ -217,7 +217,7 @@ ul#searchboxes {
 
 /** Dividing lines in the search results **/
 
-#searchnav .search_dropdown dd:before {
+.search-nav .search_dropdown dd:before {
     /* lines between results */
     content: "";
     display: block;
@@ -227,13 +227,13 @@ ul#searchboxes {
     background: #ddd;
 }
 
-#searchnav .search_dropdown dt.sponsorhits {
+.search-nav .search_dropdown dt.sponsorhits {
     /* line above "sponsor" results */
     margin-top: 1em;
     padding-top: 1em;
     border-top: 1px solid black;
 }
-#searchnav .search_dropdown dt + dd:before {
+.search-nav .search_dropdown dt + dd:before {
     /* line below each subtitle */
     content: "";
     display: block;
@@ -245,10 +245,10 @@ ul#searchboxes {
 
 /* On miniscule screens, only display search box on click */
 @media screen and (max-width: 490px) {
-    #searchnav #search-basic .searchbox input {
+    .search-nav .search-basic .searchbox input {
         width: calc(100vw - 3rem);
     }
-    #searchnav #search-basic .searchinput:not(.uk-open) .uk-search-input:not(:focus) {
+    .search-nav .search-basic .searchinput:not(.uk-open) .uk-search-input:not(:focus) {
         /* Hide simple search box until it's selected */
         padding: 0;
         width: 0;
