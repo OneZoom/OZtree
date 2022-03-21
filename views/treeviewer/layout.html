@@ -94,6 +94,10 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
     /* called as soon as a request to open a linkouts window is made */
     globals.UI_callbacks.openLinkouts = function() {
       {{if is_testing:}}console.log("OneZoom internal JS has been asked to open tabs");{{pass}}
+      if (document.body.classList.contains('within-iframe')) {
+          window.open(("" + window.location).replace(/\#.*$/, ''), '_blank');
+          return;
+      }
       $('#external-modal .no-tab-data').hide();
       $('#external-modal .external-content').hide();
       $('#external-modal .tab-loading-info').show();
@@ -103,6 +107,11 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
     
     /* called when the API returns with details about contents of the linkouts window */
     globals.UI_callbacks.populateLinkouts = function(responseJSON, initialSelected) {
+      if (document.body.classList.contains('within-iframe')) {
+          console.log("Not populating linkout tabs, since we'll open in a new window");
+          return;
+      }
+
         console.log("populating linkout tabs with API data from", responseJSON);
       {{if is_testing:}}console.log("populating linkout tabs with API data from", responseJSON);{{pass}}
       if (initialSelected) {
