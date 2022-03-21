@@ -28,8 +28,7 @@ class MouseInteractor {
     canvas.onkeydown = this.key_down.bind(this);
     canvas.onkeyup = this.key_up.bind(this);
     if (canvas.addEventListener) {
-      canvas.addEventListener('mousewheel', this.mouse_wheel.bind(this), false);
-      canvas.addEventListener('DOMMouseScroll', this.mouse_wheel.bind(this), false);
+      canvas.addEventListener('wheel', this.mouse_wheel.bind(this), false);
       canvas.addEventListener('dblclick', this.mouse_dblclick.bind(this), false);
     } else if (canvas.attachEvent) {
       canvas.attachEvent('onmousewheel', this.mouse_wheel.bind(this));
