@@ -184,6 +184,15 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
   </noscript>
 </head>
 <body id = "wholebody" style="user-select:none; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select:none; -ms-user-select:none;" unselectable = "on" class="loading tree-viewer">
+<script>
+    /* Test whether document is within iframe, note in body class */
+    try {
+        document.body.classList.toggle('within-iframe', window.self !== window.top);
+    } catch (e) {
+        document.body.classList.toggle('within-iframe', true);
+    }
+</script>
+
     {{include 'analytics.html'}}
     <!-- main body of document - canvas, then rest of UI elements in a single div -->
   <canvas id="OneZoomCanvasID" tabindex="1">{{include 'treeviewer/life_text.load'}}</canvas>
@@ -528,6 +537,14 @@ function setupUI() {
     /* make sure we can't zoom on UI items */
     $("#UI").on("touchstart touchmove touchend", preventTouchZoom);
     $("[uk-modal]").on("touchstart touchmove touchend", preventTouchZoom);
+
+    $("#UI #OZ-logo").click(function (e) {
+        if (document.body.classList.contains('within-iframe')) {
+            /* In an iframe, open current page in new window */
+            e.preventDefault();
+            window.open(("" + window.location).replace(/\#.*$/, ''), '_blank');
+        }
+    });
 
     $('#outButton .icon-container')
         .click(function(){onezoom.controller.button_zoom_up()});
