@@ -896,6 +896,17 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             if (e.ctrlKey) return;
 
             e.stopImmediatePropagation();
+            if (!window.ctrl_prompt) {
+                window.ctrl_prompt = $('<div style="position: fixed; bottom: 1%; right: 1%; padding: 0.1rem 0.5rem; border: 2px solid red; color: red; box-shadow: 2px 2px 0px red; transition: opacity 0.5s; opacity: 0">Ctrl+<i>scroll</i></div>')[0];
+                $('#UI').append(window.ctrl_prompt);
+            }
+
+            window.ctrl_prompt.style.opacity = 1;
+
+            if (window.ctrl_prompt.cp_timer) clearTimeout(window.ctrl_prompt.cp_timer);
+            window.ctrl_prompt.cp_timer = setTimeout(function() {
+                window.ctrl_prompt.style.opacity = 0;
+            }, 600);
         });
         document.getElementById('OneZoomCanvasID').addEventListener('touchmove', function (e) {
             // If more than 1 finger, allow treeviewer to continue
