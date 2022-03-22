@@ -256,7 +256,7 @@ ul#searchboxes {
     }
 }
 
-body.within-iframe {
+body.interactivity-cooperative, body.interactivity-none {
     /* Iframe'ed OneZoom has no search */
     #searchnav, #advanced_search_toggle {display: none;}
 }
