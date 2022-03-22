@@ -64,11 +64,7 @@
       <label><span class="uk-form-label">Colour scheme</span>
       <div class="uk-form-controls">
         <select name="cols" class="uk-select">
-          <!-- TODO: Include to reduce duplication from views/treeviewer/UI_layer.load -->
-          <option value="IUCN" selected>{{=T('Extinction risk')}}</option>
-          <option value="popularity">{{=T('Species popularity')}}</option>
-          <option value="natural">{{=T('Plain green, brown')}}</option>
-          <option value="AT">{{=T('Ancestor\'s tale')}}</option>
+          {{include 'settings_values/cols.load'}}
         </select>
       </div>
       </label>
