@@ -157,10 +157,6 @@ const theme = {
   },
     
   leaf: {
-    bg: {
-      fill: 'rgba(255,255,255, 0.8)'
-    },
-    
     'outline_hover': {
       fill: 'rgb(0,50,0)'
     },

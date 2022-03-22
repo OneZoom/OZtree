@@ -888,6 +888,22 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
     this allows us to access e.g. onezoom.controller, onezoom.config, etc (defined in OZentry.js)
      **/
     {{if is_testing:}}console.log("Starting OneZoom viewer");{{pass}}
+
+    // NB: This has to be registered before the treeviewer, so we can filter events
+    if (document.body.classList.contains('within-iframe')) {
+        document.getElementById('OneZoomCanvasID').addEventListener('wheel', function (e) {
+            // If ctrl held down, allow treeviewer to continue
+            if (e.ctrlKey) return;
+
+            e.stopImmediatePropagation();
+        });
+        document.getElementById('OneZoomCanvasID').addEventListener('touchmove', function (e) {
+            // If more than 1 finger, allow treeviewer to continue
+            if (event.targetTouches.length >= 2) return;
+
+            e.stopImmediatePropagation();
+        });
+    }
     
     setup_onezoom()
 

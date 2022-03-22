@@ -100,8 +100,7 @@ class LeafLayoutBase {
       arc_shape.r = node.rvar * node.arcr * 0.92;
       arc_shape.circle = true;
       arc_shape.height = 2;
-      arc_shape.do_fill = true;
-      arc_shape.fill.color = color_theme.get_color("leaf.bg.fill", node);
+      arc_shape.do_fill = 'erase';
       shapes.push(arc_shape);
       
     this.circularLeafBase(this.get_leaf_x(node), this.get_leaf_y(node),this.get_leaf_radius(node)*0.9,0,node,shapes)
@@ -497,8 +496,7 @@ class LeafLayoutBase {
       arc_shape.y = y;
       arc_shape.r = r* 1.038;
       arc_shape.circle = true;
-      arc_shape.do_fill = true;
-      arc_shape.fill.color = color_theme.get_color("leaf.bg.fill", node);
+      arc_shape.do_fill = 'erase';
       arc_shape.height = 2;
       shapes.push(arc_shape);
     }
