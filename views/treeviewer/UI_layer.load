@@ -179,16 +179,8 @@ unchecked>
 
       <li class="uk-nav-header langswitch">{{=T("Language")}}</li>
       <li class="langswitch"><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1] if browser_language else None,)}}">
-        <option value="">{{=T('Browser default')}}</option>
-        <optgroup label="{{=T('Translated')}}">
-          <option value="en">English</option>
-          <option value="fr">Français</option>
-          <option value="sv">Svenska</option>
-        </optgroup>
-        <optgroup label="{{=T('Not yet translated')}}">
-          <option value="zh">中文</option>
-        </optgroup>
-        </select></li>
+        {{include 'settings_values/lang.load'}}
+      </select></li>
 
 <li class="uk-nav-header treeswitch">{{=T('Page Content')}}</li>
 <li class="treeswitch"><select id="treepage" class="uk-select uk-form-small">
