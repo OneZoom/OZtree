@@ -174,11 +174,7 @@ unchecked>
 
 <li class="uk-nav-header">{{=T('Visualisation Shape')}}</li>
 <li class="treeswitch"><select id="treeshape" class="uk-select uk-form-small">
-<option value="spiral"> {{=T('Spiral')}}</option>
-<option value="polytomy"> {{=T('Polytomy')}} </option>
-<option value="natural"> {{=T('Natural')}} </option>
-<option value="fern"> {{=T('Fern')}}</label> </option>
-<option value="balanced"> {{=T('Balanced')}} </option>
+  {{include 'settings_values/vis.load'}}
 </select></li>
 
       <li class="uk-nav-header langswitch">{{=T("Language")}}</li>
