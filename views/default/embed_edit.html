@@ -72,9 +72,7 @@
       <label><span class="uk-form-label">Interactivity level</span>
       <div class="uk-form-controls">
         <select name="interactivity" class="uk-select">
-          <option value="cooperative" selected>Co-operative</option>
-          <option value="none">No interaction allowed</option>
-          <option value="full">Full onezoom viewer</option>
+          {{include 'settings_values/interactivity.load'}}
         </select>
       </div>
       </label>
