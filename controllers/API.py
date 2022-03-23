@@ -558,7 +558,7 @@ def getOTT():
     try:
         for s in sources:
             if s in request.vars:
-                if isinstance(request.vars[s], basestring) or isinstance(request.vars[s], Number):
+                if isinstance(request.vars[s], str) or isinstance(request.vars[s], Number):
                     id_list = [int(request.vars[s])] #put it in an array anyway
                 else:
                     id_list = [int(id) for id in request.vars[s]]
