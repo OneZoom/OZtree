@@ -43,6 +43,12 @@ document.addEventListener("DOMContentLoaded", function() {
         ].forEach(function (n) {
             this.addEventListener(n, function (e) { e.stopImmediatePropagation(); });
         }, document.getElementById('OneZoomCanvasID'));
+
+        document.getElementById('OZ-logo').addEventListener('click', function (e) {
+            /* Open current page in new window */
+            e.preventDefault();
+            window.open(("" + window.location).replace(/\#.*$/, '').replace(/\/life_noninteractive/, '/life'), '_blank');
+        });
 })
 </script>
 {{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
