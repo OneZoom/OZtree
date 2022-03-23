@@ -15,6 +15,17 @@
     <div class="uk-child-width-2-3@m">
       <h3>Configure OneZoom</h3>
 
+      <input type="hidden" name="_origin" value="" />
+
+      <label><span class="uk-form-label">Page variant</span>
+      <div class="uk-form-controls">
+        <select name="_pathname" class="uk-select">
+          <option value="/life/">Default</option>
+          <option value="/life_noninteractive/">Non-interactive view</option>
+        </select>
+      </div>
+      </label>
+
       <label for="input_url_search">Search for your starting location</label>
       <div class="search-nav" style="float: none"><div class="search-basic">
         <div class="searchbox uk-search uk-search-default">
@@ -23,7 +34,7 @@
               <button   class="main-icon" uk-icon="icon: search"></button>
             </div>
             <input id="input_url_search" class="uk-search-input" type="search" placeholder="{{=T('Search all life...')}}" />
-            <input type="hidden" name="_path" value="" />
+            <input type="hidden" name="_pinpoint" value="" />
           </div>
           <div uk-dropdown="pos: bottom-left; offset: 1" class="search_dropdown selectable uk-overflow-auto">
             <div class="no_results">{{=T("No results found")}}</div>
@@ -81,14 +92,6 @@
       <div class="uk-form-controls">
         <select name="cols" class="uk-select">
           {{include 'settings_values/cols.load'}}
-        </select>
-      </div>
-      </label>
-
-      <label><span class="uk-form-label">Interactivity level</span>
-      <div class="uk-form-controls">
-        <select name="interactivity" class="uk-select">
-          {{include 'settings_values/interactivity.load'}}
         </select>
       </div>
       </label>
@@ -164,8 +167,8 @@
                         // Populate search input with current item, so it's more obvious what's selected
                         search_input.val(given_name);
 
-                        if (hidden_el.name === '_path') {
-                            hidden_el.value = event.target.getAttribute('href');
+                        if (hidden_el.name === '_pinpoint') {
+                            hidden_el.value =  event.target.getAttribute('href').replace(/^.*\//, '');
                         } else if (hidden_el.name === 'initmark') {
                             hidden_el.value = event.target.getAttribute('href').replace(/^.*\=/, '');
                         } else {
@@ -191,7 +194,10 @@
 
     form_embed_edit.addEventListener('change', function (e) {
         // Turn form content back into URL
-        var url = form_embed_edit.elements['_path'].value + '?' + $(this).serializeArray().filter(function (x) {
+        var url =
+                form_embed_edit.elements['_origin'].value +
+                form_embed_edit.elements['_pathname'].value +
+                form_embed_edit.elements['_pinpoint'].value + '?' + $(this).serializeArray().filter(function (x) {
             // Ignore _path, anything with empty value
             return x.name && x.name[0] !== '_' && x.value;
         }).map(function(x) {
@@ -206,25 +212,25 @@
 }());
 
 (function() {
-    function url_to_location(url) {
-        var x = document.createElement('A');
-        x.href = url;
-        return x;
-    }
-
     // On startup, bootstrap by populating preview fields from hidden form URL
     var form_embed_edit = document.getElementById('form_embed_edit'),
-        url = document.getElementById('form_embed_email').elements.url.value,
+        loc = document.createElement('A'),
         m;
 
-    m = url.split('?');
-    form_embed_edit.elements['_path'].value = m[0];
-    (m[1] || '').split(/\&/).forEach(function(part) {
+    // Use DOM to parse incoming URL
+    loc.href = document.getElementById('form_embed_email').elements.url.value;
+
+    $(form_embed_edit.elements['_origin']).val(loc.origin);
+    m = loc.pathname.split(/(@.*)/);
+    $(form_embed_edit.elements['_pathname']).val(m[0].replace(/\/?$/, '/'));
+    $(form_embed_edit.elements['_pinpoint']).val(m[1] || '');
+    loc.search.replace(/^\?/, '').split(/\&/).forEach(function(part) {
         var parts = part.split(/\=/);
         if (parts[0]) {
             $(form_embed_edit.elements[decodeURIComponent(parts[0])]).val(decodeURIComponent(parts[1]));
         }
     });
+
     form_embed_edit.dispatchEvent(new Event('change'));
 }());
 </script>
