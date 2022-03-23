@@ -2019,6 +2019,13 @@ def life():
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return treeview_info()
 
+def life_noninteractive():
+    """
+    OneZoom app with all interaction disabled
+    """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+    return treeview_info()
+
 def life_MD():
     """
     Temporarily redirect for darwin & dinos exhibit

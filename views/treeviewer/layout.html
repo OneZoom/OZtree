@@ -921,15 +921,6 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
 
             e.stopImmediatePropagation();
         });
-    } else if (document.body.classList.contains('interactivity-none')) {
-        [
-            'mousedown', 'mouseup', 'mousemove', 'mouseover',
-            'keydown', 'keyup',
-            'wheel', 'dblclick',
-            'touchstart', 'touchmove', 'touchend',
-        ].forEach(function (n) {
-            this.addEventListener(n, function (e) { e.stopImmediatePropagation(); });
-        }, document.getElementById('OneZoomCanvasID'));
     }
     
     setup_onezoom()

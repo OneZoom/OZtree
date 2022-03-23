@@ -1,0 +1,48 @@
+{{
+setup_params = {
+  'UI_layer': {
+    'page':'UI_layer.load', 
+    'vars':{
+      'tabs':'default',
+      'links':'newtab',
+    }
+  },
+  'popups': {
+    'vars':{'popup':1, 'form_reservation_code': form_reservation_code} },
+  'partner':page_info.get('partner'),
+  'locations_json':('[' 
+      '"Popular places",' 
+      '{"OTT":244265},'  #Mammals - should get looked up automatically: this also allows the correct language to be used
+      '{"OTT":770315},'  #Human - ditto
+      '{"OTT":81461},'   #Birds
+      '{"OTT":991547},'  #Frogs and toads
+      '{"OTT":801601},'  #Vertebrates
+      '{"OTT":1062253},' #Insects
+      '{"OTT":691846},'  #Animals
+      '{"OTT":361838},'  #Green plants
+      '{"OTT":99252},'   #Flowering plants
+      '{"OTT":1012685, "en":"Mushrooms"},' #the default OZ english name is bad for menus here, so we replace it
+      '{"OTT":304358}'   #Complex life (eukaryotes)
+      ']'
+    )
+  }
+}}
+<style>
+/* Disable all controls */
+#controlButtons > * { display: none !important; }
+#searchnav, #advanced_search_toggle { display: none; }
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function() { 
+        /* Add event listeners that defeat the tree viewer's */
+        [
+            'mousedown', 'mouseup', 'mousemove', 'mouseover',
+            'keydown', 'keyup',
+            'wheel', 'dblclick',
+            'touchstart', 'touchmove', 'touchend',
+        ].forEach(function (n) {
+            this.addEventListener(n, function (e) { e.stopImmediatePropagation(); });
+        }, document.getElementById('OneZoomCanvasID'));
+})
+</script>
+{{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
