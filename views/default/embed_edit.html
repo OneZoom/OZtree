@@ -62,6 +62,14 @@
         <button id="button_clear_initmark" class="uk-button" disabled>Clear highlight</button>
       </div></div>
 
+      <label><span class="uk-form-label">{{=T('Image sources')}}</span>
+      <div class="uk-form-controls">
+        <select name="img" class="uk-select">
+          {{include 'settings_values/img.load'}}
+        </select>
+      </div>
+      </label>
+
       <label><span class="uk-form-label">{{=T('Language')}}</span>
       <div class="uk-form-controls">
         <select name="lang" class="uk-select">
