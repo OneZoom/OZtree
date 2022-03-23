@@ -99,7 +99,13 @@
       <label><span class="uk-form-label">Colour scheme</span>
       <div class="uk-form-controls">
         <select name="cols" class="uk-select">
-          {{include 'settings_values/cols.load'}}
+          <optgroup label="{{=T('Colour By')}}">
+            {{include 'settings_values/cols.load'}}
+          </optgroup>
+          <optgroup label="{{=T('Colour blind friendly')}}">
+            <option value="IUCN_CBF" selected>{{=T('Extinction risk')}} (CBF)</option>
+            <option value="popularity_CBF">{{=T('Species popularity')}} (CBF)</option>
+          </optgroup>
         </select>
       </div>
       </label>
