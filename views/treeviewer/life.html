@@ -61,6 +61,21 @@ body.within-iframe #controlButtons > li a {
     border-top: none !important;
     border-bottom: none !important;
 }
+#UI > .iframe-interact-prompt {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0.5rem 1rem;
+
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: white;
+
+    pointer-events: none;
+    transition: opacity 0.5s;
+    opacity: 0;
+}
 </style>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -71,7 +86,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             e.stopImmediatePropagation();
             if (!window.ctrl_prompt) {
-                window.ctrl_prompt = $('<div style="position: fixed; bottom: 1%; right: 1%; padding: 0.1rem 0.5rem; border: 2px solid red; color: red; box-shadow: 2px 2px 0px red; transition: opacity 0.5s; opacity: 0">Ctrl+<i>scroll</i></div>')[0];
+                window.ctrl_prompt = $('<div class="iframe-interact-prompt">{{=T("Press control, then scroll to zoom")}}</div>')[0];
                 $('#UI').append(window.ctrl_prompt);
             }
 
