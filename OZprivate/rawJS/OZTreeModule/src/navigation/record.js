@@ -164,7 +164,7 @@ function get_params(options) {
     querystring.push("pop=" + encode_popup_action(options.record_popup.action) + "_" + options.record_popup.data);
   }
   // Preserve all custom parts of current querystring
-  (config.custom_querystring_params || []).concat(['ssaver', 'initmark']).map(function (part_name) {
+  (config.custom_querystring_params || []).concat(['ssaver', 'init', 'initmark']).map(function (part_name) {
     var m = window.location.search.match(new RegExp('(^|&|\\?)' + part_name + '=[^&]+', 'g'));
     (m || []).map(function (part) {
       querystring.push(part.replace(/^[&?]/, ''));
