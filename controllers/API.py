@@ -553,7 +553,7 @@ def getOTT():
     """
     session.forget(response)
     response.headers["Access-Control-Allow-Origin"] = '*'
-    sources = ["eol", "ncbi", "iucn"]
+    sources = ["eol", "gbif", "ncbi", "iucn"]
     data = {}
     try:
         for s in sources:
