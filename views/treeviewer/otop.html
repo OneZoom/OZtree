@@ -30,7 +30,6 @@ setup_params = {
       },
       'links':'newtab',
       'no_external_links': True,
-      'hide_control_settings': True,
     }
   },
   'popups': {
@@ -77,6 +76,8 @@ setup_params = {
 {{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree-dark.css')}}" />
 <style>
+#controlButtons #settingsButton { display: none; }
+
 body {
   background: #120a15;
 }

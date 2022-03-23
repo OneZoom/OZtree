@@ -30,7 +30,6 @@ setup_params = {
       },
       'links':'none',
       'no_external_links': True,
-      'hide_control_settings': True,
     }
   },
   'popups': {
@@ -78,6 +77,8 @@ setup_params = {
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree_MD.css')}}" />
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree-dark.css')}}" />
 <style>
+#controlButtons #settingsButton { display: none; }
+
 body {
   background: #120a15;
 }

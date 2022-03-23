@@ -18,7 +18,6 @@ setup_params = {
     'vars':{
       'tabs':['wiki', 'ozspons'], 
       'links':'none',
-      'hide_control_settings': True,
     } 
   },   
   'popups':{
@@ -42,6 +41,14 @@ setup_params = {
 }
 }}
 {{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
+<style>
+#controlButtons #singleInfoButton,
+#controlButtons #hideControlsButton,
+#controlButtons #howToUseButton { display: block; }
+
+#controlButtons #multipleInfoButton,
+#controlButtons #settingsButton { display: none; }
+</style>
 <!-- bespoke css file for museum display -->
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree_MD.css')}}" />
 <script type="text/javascript">

@@ -129,8 +129,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
       <li><a href="#terms-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Terms of use')}}</a></li>
     </ul>
   </div>
-  {{if not request.vars.get('hide_control_settings', False):}}
-  <li>
+  <li id="settingsButton">
       <div class='icon-container'>
         <a uk-tooltip="pos: right" title="{{=T('Settings')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: settings"></a>
       </div>
@@ -193,7 +192,6 @@ unchecked>
     </ul>
   </form>
   </li>
-  {{pass}}
 </ul>
 <div id="error-modal" class="uk-modal-container" uk-modal>
     <div class="uk-modal-dialog uk-modal-body">
