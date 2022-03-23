@@ -12,6 +12,7 @@ import json
 from collections import OrderedDict
 
 import ozmail
+from embed import embedize_url
 from sponsorship import (
     sponsorship_enabled, reservation_total_counts, clear_reservation, get_reservation,
     reservation_validate_basket_fields,
@@ -1622,7 +1623,7 @@ def embed_edit():
             response.flash = '%s, so cannot send email' % reason
         else:
             mailargs = ozmail.template_mail('embed_code', dict(
-                url=form.vars.url,
+                url=embedize_url(form.vars.url, form.vars.email),
             ), to=form.vars.email)
             mail.send(**mailargs)
             response.flash = "E-mail with embed code sent"

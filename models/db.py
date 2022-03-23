@@ -835,6 +835,15 @@ db.define_table('API_use',
     Field('n_returns', type='bigint', default=0), # number of taxa returned (divide by n_calls to get av taxa per call)
     format = '%(APIkey)s_%(API)s', migrate=is_testing)
 
+# Record of embed keys and who uses them
+db.define_table('embed_key',
+    Field('e_mail', type='string', length=200, unique=True, notnull=True, requires=IS_EMAIL()),
+    # E-mail address associated with uuid_key
+    Field('code', type='text', notnull=True),
+    # Key used publicly in embedkey querystring
+    Field('created', 'datetime', default=request.now),
+)
+
 # add extra indexes on OTT_ID etc in tables. Index name (ott_index) is arbitrary 
 # http://stackoverflow.com/questions/4601138/what-is-the-significance-of-the-index-name-when-creating-an-index-in-mysql
 if db._uri.startswith("sqlite://"):
