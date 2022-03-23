@@ -94,10 +94,6 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
     /* called as soon as a request to open a linkouts window is made */
     globals.UI_callbacks.openLinkouts = function() {
       {{if is_testing:}}console.log("OneZoom internal JS has been asked to open tabs");{{pass}}
-      if (document.body.classList.contains('interactivity-cooperative')) {
-          window.open(("" + window.location).replace(/\#.*$/, ''), '_blank');
-          return;
-      }
       $('#external-modal .no-tab-data').hide();
       $('#external-modal .external-content').hide();
       $('#external-modal .tab-loading-info').show();
@@ -107,11 +103,6 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
     
     /* called when the API returns with details about contents of the linkouts window */
     globals.UI_callbacks.populateLinkouts = function(responseJSON, initialSelected) {
-      if (document.body.classList.contains('interactivity-cooperative')) {
-          console.log("Not populating linkout tabs, since we'll open in a new window");
-          return;
-      }
-
         console.log("populating linkout tabs with API data from", responseJSON);
       {{if is_testing:}}console.log("populating linkout tabs with API data from", responseJSON);{{pass}}
       if (initialSelected) {
@@ -195,17 +186,12 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
 <body id = "wholebody" style="user-select:none; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select:none; -ms-user-select:none;" unselectable = "on" class="loading tree-viewer">
 <script>
 (function() {
-    var interactivity = location.search.match(/(?:\&|\?)interactivity=([^&]+)/);
-
     /* Test whether document is within iframe, note in body class */
     try {
         document.body.classList.toggle('within-iframe', window.self !== window.top);
     } catch (e) {
         document.body.classList.toggle('within-iframe', true);
     }
-
-    if (!interactivity) interactivity = document.body.classList.contains('within-iframe') ? 'cooperative' : 'full';
-    document.body.classList.add('interactivity-' + interactivity[1]);
 }());
 </script>
 
@@ -554,14 +540,6 @@ function setupUI() {
     $("#UI").on("touchstart touchmove touchend", preventTouchZoom);
     $("[uk-modal]").on("touchstart touchmove touchend", preventTouchZoom);
 
-    $("#UI #OZ-logo").click(function (e) {
-        if (document.body.classList.contains('within-iframe')) {
-            /* In an iframe, open current page in new window */
-            e.preventDefault();
-            window.open(("" + window.location).replace(/\#.*$/, ''), '_blank');
-        }
-    });
-
     $('#outButton .icon-container')
         .click(function(){onezoom.controller.button_zoom_up()});
     $('#inButton .icon-container')
@@ -896,33 +874,6 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
      **/
     {{if is_testing:}}console.log("Starting OneZoom viewer");{{pass}}
 
-    // NB: This has to be registered before the treeviewer, so we can filter events
-    if (document.body.classList.contains('interactivity-cooperative')) {
-        document.getElementById('OneZoomCanvasID').addEventListener('wheel', function (e) {
-            // If ctrl held down, allow treeviewer to continue
-            if (e.ctrlKey) return;
-
-            e.stopImmediatePropagation();
-            if (!window.ctrl_prompt) {
-                window.ctrl_prompt = $('<div style="position: fixed; bottom: 1%; right: 1%; padding: 0.1rem 0.5rem; border: 2px solid red; color: red; box-shadow: 2px 2px 0px red; transition: opacity 0.5s; opacity: 0">Ctrl+<i>scroll</i></div>')[0];
-                $('#UI').append(window.ctrl_prompt);
-            }
-
-            window.ctrl_prompt.style.opacity = 1;
-
-            if (window.ctrl_prompt.cp_timer) clearTimeout(window.ctrl_prompt.cp_timer);
-            window.ctrl_prompt.cp_timer = setTimeout(function() {
-                window.ctrl_prompt.style.opacity = 0;
-            }, 600);
-        });
-        document.getElementById('OneZoomCanvasID').addEventListener('touchmove', function (e) {
-            // If more than 1 finger, allow treeviewer to continue
-            if (event.targetTouches.length >= 2) return;
-
-            e.stopImmediatePropagation();
-        });
-    }
-    
     setup_onezoom()
 
     function setup_onezoom() {  

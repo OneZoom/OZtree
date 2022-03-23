@@ -464,23 +464,3 @@ iframe {
         display: None;
     }
 }
-
-/* In iframes, stick to just zoom buttons until too small for that too */
-body.within-iframe {
-    #controlButtons > * {
-        display: none;
-    }
-
-    /* Disable all dividers */
-    #controlButtons > li a {
-        border-top: none !important;
-        border-bottom: none !important;
-    }
-
-    &.interactivity-cooperative, &.interactivity-full {
-        #controlButtons > #inButton,
-        #controlButtons > #outButton {
-            display: list-item !important;
-        }
-    }
-}

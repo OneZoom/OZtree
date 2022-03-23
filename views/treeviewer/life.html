@@ -44,3 +44,63 @@ setup_params = {
 {{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
 <!-- could include bespoke css file here using <link rel="stylesheet" /> -->
 <!-- could define js variables (specifically: pagetitle_func, tree_config, screensaver_config, tutorial_config) within <script> tags here -->
+<style>
+/* Iframe'ed OneZoom has no search */
+body.within-iframe #searchnav,
+body.within-iframe #advanced_search_toggle { display: none; }
+
+/* In iframes, stick to just zoom buttons until too small for that too */
+body.within-iframe #controlButtons > #locationButton,
+body.within-iframe #controlButtons > #multipleInfoButton,
+body.within-iframe #controlButtons > #settingsButton { display: none; }
+body.within-iframe #controlButtons > #inButton,
+body.within-iframe #controlButtons > #outButton { display: block !important; }
+
+/* Disable all dividers */
+body.within-iframe #controlButtons > li a {
+    border-top: none !important;
+    border-bottom: none !important;
+}
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (document.body.classList.contains('within-iframe')) {
+        document.getElementById('OneZoomCanvasID').addEventListener('wheel', function (e) {
+            // If ctrl held down, allow treeviewer to continue
+            if (e.ctrlKey) return;
+
+            e.stopImmediatePropagation();
+            if (!window.ctrl_prompt) {
+                window.ctrl_prompt = $('<div style="position: fixed; bottom: 1%; right: 1%; padding: 0.1rem 0.5rem; border: 2px solid red; color: red; box-shadow: 2px 2px 0px red; transition: opacity 0.5s; opacity: 0">Ctrl+<i>scroll</i></div>')[0];
+                $('#UI').append(window.ctrl_prompt);
+            }
+
+            window.ctrl_prompt.style.opacity = 1;
+
+            if (window.ctrl_prompt.cp_timer) clearTimeout(window.ctrl_prompt.cp_timer);
+            window.ctrl_prompt.cp_timer = setTimeout(function() {
+                window.ctrl_prompt.style.opacity = 0;
+            }, 600);
+        });
+        document.getElementById('OneZoomCanvasID').addEventListener('touchmove', function (e) {
+            // If more than 1 finger, allow treeviewer to continue
+            if (event.targetTouches.length >= 2) return;
+
+            e.stopImmediatePropagation();
+        });
+        document.getElementById('OZ-logo').addEventListener('click', function (e) {
+            /* In an iframe, open current page in new window */
+            e.preventDefault();
+            window.open(("" + window.location).replace(/\#.*$/, ''), '_blank');
+        });
+
+        /* Linkouts open in a new window */
+        globals.UI_callbacks.openLinkouts = function() {
+            window.open(("" + window.location).replace(/\#.*$/, ''), '_blank');
+        };
+        globals.UI_callbacks.populateLinkouts = function(responseJSON, initialSelected) {
+            console.log("Not populating linkout tabs, since we'll open in a new window");
+        };
+    }
+});
+</script>
