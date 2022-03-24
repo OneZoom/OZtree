@@ -558,7 +558,7 @@ def getOTT():
     data = {'errors': []}
 
     for s in sources:
-        if s not in request.vars:
+        if not request.vars.get(s, False):
             continue
         id_list = request.vars[s]
         if isinstance(id_list, str) or isinstance(id_list, Number):
