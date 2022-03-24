@@ -1636,6 +1636,46 @@ def embed_edit():
         form=form,
     )
 
+""" Controllers for language file export """
+
+def lang_export():
+    import gluon.languages
+
+    def get_lang(lang):
+        if re.search('[^a-z0-9_\-]', lang):
+            raise ValueError("Invalid language %s" % lang)
+        return gluon.languages.read_dict(os.path.join(os.path.dirname(T.language_file), '%s.py' % lang))
+
+    def to_po(lang_dict):
+        def po_line(preamble, s):
+            s = s.replace("\\", "\\\\")
+            s = s.replace("\r", "\\r")
+            s = s.replace("\t", "\\t")
+            s = s.replace("\n", "\\n")
+            s = s.replace('"', '\\"')
+            return '%s "%s"' % (preamble, s)
+        out = []
+        for lang_in, lang_out in lang_dict.items():
+            if lang_in.startswith('!lang'):
+                continue
+            if lang_out == lang_in.replace("@markmin\x01", ""):
+                lang_out = ""
+            out.append("")
+            out.append(po_line("msgid", lang_in))
+            out.append(po_line("msgstr", lang_out))
+        return "\n".join(out)
+
+    export_lang = request.vars.lang
+    if not export_lang:
+        return dict(
+            possible_languages= T.get_possible_languages_info().keys(),
+        )
+
+    response.headers['Content-Type'] = 'text/x-gettext-translation;charset=utf-8'
+    response.headers['Content-Disposition'] = 'attachment; filename="onezoom-%s.po"' % export_lang
+    return dict(output=to_po(get_lang(export_lang)))
+
+
 """ these empty controllers are for other OneZoom pages"""
 
 def introduction():
