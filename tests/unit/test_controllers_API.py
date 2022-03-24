@@ -74,18 +74,21 @@ class TestControllersAPI(unittest.TestCase):
         leaves = db((db.ordered_leaves.gbif != None) & (db.ordered_leaves.name != None)).select(orderby='ott', limitby=(0,3))
         nodes = db((db.ordered_nodes.gbif != None) & (db.ordered_nodes.name != None)).select(orderby='ott', limitby=(0,3))
         self.assertEqual(getOTT(gbif=[-1, leaves[1].gbif, leaves[2].gbif, nodes[0].gbif]), {'data': {'gbif': {
-            # NB: invalid value, node value ignored
+            # NB: invalid value ignored
             leaves[1].gbif : leaves[1].ott,
             leaves[2].gbif : leaves[2].ott,
+            nodes[0].gbif : nodes[0].ott,
         }}, 'errors': []})
 
         # Mixed query
         eol_leaves = db((db.ordered_leaves.eol != None) & (db.ordered_leaves.name != None)).select(orderby='ott', limitby=(0,3))
-        self.assertEqual(getOTT(gbif=[leaves[1].gbif, leaves[0].gbif], eol=[eol_leaves[0].eol]), {'data': {'gbif': {
+        eol_nodes = db((db.ordered_nodes.eol != None) & (db.ordered_nodes.name != None)).select(orderby='ott', limitby=(0,3))
+        self.assertEqual(getOTT(gbif=[leaves[1].gbif, leaves[0].gbif], eol=[eol_leaves[0].eol, eol_nodes[0].eol]), {'data': {'gbif': {
             leaves[0].gbif : leaves[0].ott,
             leaves[1].gbif : leaves[1].ott,
         }, 'eol': {
             eol_leaves[0].eol : eol_leaves[0].ott,
+            eol_nodes[0].eol : eol_nodes[0].ott,
         }}, 'errors': []})
 
 if __name__ == '__main__':
