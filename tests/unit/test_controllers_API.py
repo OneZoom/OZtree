@@ -91,6 +91,22 @@ class TestControllersAPI(unittest.TestCase):
             eol_nodes[0].eol : eol_nodes[0].ott,
         }, 'errors': []})
 
+        # NCBI query
+        ncbi_leaves = db((db.ordered_leaves.ncbi != None) & (db.ordered_leaves.name != None)).select(orderby='ott', limitby=(0,3))
+        ncbi_nodes = db((db.ordered_nodes.ncbi != None) & (db.ordered_nodes.name != None)).select(orderby='ott', limitby=(0,3))
+        self.assertEqual(getOTT(ncbi=[ncbi_leaves[0].ncbi, ncbi_nodes[0].ncbi]), { 'ncbi': {
+            ncbi_leaves[0].ncbi : ncbi_leaves[0].ott,
+            ncbi_nodes[0].ncbi : ncbi_nodes[0].ott,
+        }, 'errors': []})
+
+        # IUCN query
+        iucn_leaves = db((db.ordered_leaves.iucn != None) & (db.ordered_leaves.name != None)).select(orderby='ott', limitby=(0,3))
+        # NB: No such thing as IUCN nodes
+        self.assertEqual(getOTT(iucn=[iucn_leaves[0].iucn]), { 'iucn': {
+            iucn_leaves[0].iucn : iucn_leaves[0].ott,
+        }, 'errors': []})
+
+
 if __name__ == '__main__':
     import sys
 

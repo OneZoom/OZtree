@@ -571,7 +571,10 @@ def getOTT():
             continue
 
         leaf_rows = db(db.ordered_leaves[s].belongs(id_list)).select(db.ordered_leaves[s], db.ordered_leaves.ott)
-        node_rows = db(db.ordered_nodes[s].belongs(id_list)).select(db.ordered_nodes[s], db.ordered_nodes.ott)
+        if s == 'iucn':
+            node_rows = ()
+        else:
+            node_rows = db(db.ordered_nodes[s].belongs(id_list)).select(db.ordered_nodes[s], db.ordered_nodes.ott)
         data[s] = {r[s]:r.ott for r in itertools.chain(leaf_rows, node_rows)}
     return data
 
