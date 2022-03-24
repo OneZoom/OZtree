@@ -11,6 +11,17 @@ from applications.OZtree.tests.unit import util
 from gluon.globals import Request, Session
 
 
+def api_to_fn(endpoint):
+    """Wrap endpoint to turn back into a python function"""
+    def fn(**kwargs):
+        current.request = Request(dict())
+        for (k, v) in kwargs.items():
+            current.request.vars[k] = v
+        API.request = current.request
+        return endpoint()
+    return fn
+
+
 class TestControllersAPI(unittest.TestCase):
     maxDiff = None
 
@@ -26,14 +37,7 @@ class TestControllersAPI(unittest.TestCase):
 
     def test_search_init(self):
         """Search for arbitary node/name combinations"""
-        def search_init(ott=None, name=None):
-            # Add arguments as vars
-            current.request = Request(dict())
-            current.request.vars.ott = ott
-            if name:
-                current.request.vars.name = name
-            API.request = current.request
-            return API.search_init()
+        search_init = api_to_fn(API.search_init)
 
         # Get an arbitary leaf & node
         leaf = db((db.ordered_leaves.ott != None) & (db.ordered_leaves.name != None)).select(orderby='ott', limitby=(0,1))[0]
@@ -52,6 +56,37 @@ class TestControllersAPI(unittest.TestCase):
         self.assertEqual(search_init(name=node.name), {'ids': [node.id]})
         self.assertEqual(search_init(ott=node.ott, name=node.name), {'ids': [node.id]})
 
+    def test_getOTT(self):
+        """Can fetch OTT names in variety of forms"""
+        getOTT = api_to_fn(API.getOTT)
+
+        # Nothing in = nothing out
+        self.assertEqual(getOTT(), {'data': {}, 'errors': []})
+
+        # String in = error out, if valid key
+        self.assertEqual(getOTT(aardvark='camel'), {'data': {}, 'errors': []})
+        self.assertEqual(getOTT(eol='camel'), {'data': None, 'errors': ['Some of the passed-in ids could not be converted to numbers']})
+
+        # Invalid number gets no hits
+        self.assertEqual(getOTT(eol=-1), {'data': {'eol': {}}, 'errors': []})
+
+        # get leaf/node, can only search for leaves
+        leaves = db((db.ordered_leaves.gbif != None) & (db.ordered_leaves.name != None)).select(orderby='ott', limitby=(0,3))
+        nodes = db((db.ordered_nodes.gbif != None) & (db.ordered_nodes.name != None)).select(orderby='ott', limitby=(0,3))
+        self.assertEqual(getOTT(gbif=[-1, leaves[1].gbif, leaves[2].gbif, nodes[0].gbif]), {'data': {'gbif': {
+            # NB: invalid value, node value ignored
+            leaves[1].gbif : leaves[1].ott,
+            leaves[2].gbif : leaves[2].ott,
+        }}, 'errors': []})
+
+        # Mixed query
+        eol_leaves = db((db.ordered_leaves.eol != None) & (db.ordered_leaves.name != None)).select(orderby='ott', limitby=(0,3))
+        self.assertEqual(getOTT(gbif=[leaves[1].gbif, leaves[0].gbif], eol=[eol_leaves[0].eol]), {'data': {'gbif': {
+            leaves[0].gbif : leaves[0].ott,
+            leaves[1].gbif : leaves[1].ott,
+        }, 'eol': {
+            eol_leaves[0].eol : eol_leaves[0].ott,
+        }}, 'errors': []})
 
 if __name__ == '__main__':
     import sys
