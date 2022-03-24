@@ -1608,6 +1608,11 @@ def pp_process_post():
     else:
         return(dict(vars=request.vars, args=request.args))
 
+"""Controllers related to OneZoom embedding functionality"""
+
+def embed_instructions():
+    return dict()
+
 def embed_edit():
     form = FORM(
         LABEL("E-mail address"),
