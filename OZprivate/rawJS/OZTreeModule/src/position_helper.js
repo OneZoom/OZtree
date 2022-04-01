@@ -135,70 +135,6 @@ function get_xyr_target(node, x2,y2,r2,into_node) {
   }
 }
 
-function move(node, xtargmin,xtargmax,ytargmin,ytargmax) {
-  if (node.targeted) {
-    node.graphref = true;
-    let child_targeted = false;
-    let length = node.children.length;
-    for (let i=0; i<length; i++) {
-      let child = node.children[i];
-      if (child.targeted && !child_targeted) {
-        child_targeted = true;
-        move(child, xtargmin,xtargmax,ytargmin,ytargmax);
-      }      
-    }
-
-    if (!child_targeted) {      
-      setxyr3r(node, 40,tree_state.widthres-40,40,tree_state.heightres-40);
-      setxyr3r(node, 40,tree_state.widthres-40,40,tree_state.heightres-40);
-    }
-  }
-}
-
-function setxyr3r(node, xtargmin,xtargmax,ytargmin,ytargmax) {
-  tree_state.ws = 1;
-  tree_state.xp = tree_state.widthres/2;
-  tree_state.yp = tree_state.heightres;
-  let x = tree_state.xp;
-  let y = tree_state.yp;
-  let r = 220*tree_state.ws;
-  
-  let vxmax;
-  let vxmin;
-  let vymax;
-  let vymin;
-  if (node.has_child) {
-    [vxmax, vxmin, vymax, vymin] = get_v_horizon_by_child(node, x, y, r);
-  } else {
-    [vxmax, vxmin, vymax, vymin] = get_v_horizon_by_arc(node, 1, x, y, r);
-  }
-  
-  let ywsmult = ((ytargmax-ytargmin)/(vymax-vymin));//propmove;
-  // the number we need to multply ws by to get the right size for a vertical fit
-  let xwsmult = ((xtargmax-xtargmin)/(vxmax-vxmin));//propmove;
-  // the number we need to multply ws by to get the right size for a horizontal fit
-  let wsmult;
-  if (ywsmult > xwsmult)
-  {
-    // we use xwsmult - the smaller
-    wsmult = xwsmult;
-  }
-  else
-  {
-    // we use ywsmult - the smaller
-    wsmult = ywsmult;
-  }
-  
-  tree_state.xp += (((xtargmax+xtargmin)/2.0)-((vxmax+vxmin)/2.0));//*((1-(1/wsmult))/(1-(Math.pow((1/wsmult),propmove))));
-  tree_state.yp += (((ytargmax+ytargmin)/2.0)-((vymax+vymin)/2.0));//*((1-(1/wsmult))/(1-(Math.pow((1/wsmult),propmove))));
-  
-  tree_state.ws = tree_state.ws*wsmult;
-  tree_state.xp = (xtargmax+xtargmin)/2 + (tree_state.xp-(xtargmax+xtargmin)/2)*wsmult;
-  tree_state.yp = (ytargmax+ytargmin)/2 + (tree_state.yp-(ytargmax+ytargmin)/2)*wsmult;
-}
-
-
-
 function deanchor(node) {
   if (node.graphref) {
     let length = node.children.length;
@@ -282,13 +218,6 @@ function clear_target(node) {
   }
 }
 
-function perform_actual_leap(controller) {
-  deanchor(controller.root);
-  move(controller.root, 40, tree_state.widthres-40, 65, tree_state.heightres-40);  
-  controller.re_calc();
-  controller.trigger_refresh_loop();
-}
-
 /**
  * Fly to targeted node
  *
@@ -298,7 +227,7 @@ function perform_actual_leap(controller) {
  * @param {boolean} into_node Set this to 'true' to end up zoomed so the interior node fills the screen, rather than
  * the wider-angle viewpoint that to show the entire tree structure descended from that node.
  * @param {func} speed is optional, and gives the relative speed compared to the globally set
- *   animation speed (greater than 1 gives faster animations, less than one gives slower)
+ *   animation speed (greater than 1 gives faster animations, less than one gives slower, Infinity is a leap)
  * @param {func} accel_type is optional, and gives the acceleration type ('accel', 'decel' or 'linear' (default)
  * @param {func} finalize_func is optional, and gives a function to call at the end of the zoom
  * @param {func} abrupt_func is optional, and gives a function to call when fly is abrupted
@@ -320,6 +249,21 @@ function perform_actual_fly(controller, into_node, speed=1, accel_type="linear",
       finalize_func()
     }
     return false;
+  } else if (speed === Infinity) {
+    // Infinite speed, i.e. leap straight to destination
+    pan_zoom(1, 1);
+    controller.re_calc();
+    controller.reanchor();
+    if (more_flying_needed) {
+      perform_actual_fly(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
+      return true;
+    }
+    controller.trigger_refresh_loop();
+    tree_state.flying = false;
+    if (typeof finalize_func === "function") {
+      finalize_func()
+    }
+    return true;
   } else {
     length_intro = Math.abs(Math.log(r_mult))*global_anim_speed;      
     num_intro_steps = Math.max(Math.floor(length_intro),12)/speed;
@@ -499,4 +443,4 @@ function set_anim_speed(val) {
   global_anim_speed = val;
 }
 
-export {deanchor, reanchor, reanchor_at_node, target_by_code, clear_target, perform_actual_leap, perform_actual_fly, get_anim_speed, set_anim_speed};
+export {deanchor, reanchor, reanchor_at_node, target_by_code, clear_target, perform_actual_fly, get_anim_speed, set_anim_speed};

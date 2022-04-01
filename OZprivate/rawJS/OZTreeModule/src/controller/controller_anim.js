@@ -128,22 +128,29 @@ export default function (Controller) {
    *        dest_OZid > 0 means an interior_node (metacode == dest_OZid)
    * @param {object} position (optional) an object or array of the form [xp, yp, ws] or
    *    {'xp': xp, 'yp': yp, 'ws': ws} where xp, yp, ws are numeric
+   * @param {boolean} into_node Set this to 'true' to end up zoomed so the interior node
+   *     fills the screen, rather than the wider-angle viewpoint that
+   *     shows the entire tree structure descended from that node.
    */   
-  Controller.prototype.leap_to = function(dest_OZid, position=null) {
-    return new Promise((resolve) => {
-      tree_state.flying = false;
-      if (position && (typeof(position) === 'object')) {
+  Controller.prototype.leap_to = function(dest_OZid, position=null, into_node=false) {
+    tree_state.flying = false;
+
+    if (position && (typeof(position) === 'object')) {
+      return new Promise((resolve) => {
         tree_state.xp = position.xp || position[0] || 0
         tree_state.yp = position.yp || position[1] || 0
         tree_state.ws = position.ws || position[2] || 1
         this.develop_and_reanchor_to(dest_OZid);
         this.re_calc();
         this.trigger_refresh_loop();
-      } else {
-        this.develop_branch_to(dest_OZid);
-        position_helper.perform_actual_leap(this);
-      }
-      resolve()
+        resolve()
+      });
+    }
+
+    this.develop_branch_to(dest_OZid);
+    return new Promise((resolve, reject) => {
+      position_helper.perform_actual_fly(
+        this, into_node, Infinity, 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
     })
   }
   
