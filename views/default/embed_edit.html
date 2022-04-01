@@ -181,7 +181,7 @@
                         var href = $(event.target).closest('a').attr('href');
 
                         // Populate search input with current item, so it's more obvious what's selected
-                        search_input.val(given_name);
+                        search_input.val($(event.target).closest('dd').text());
 
                         if (hidden_el.name === '_pinpoint') {
                             hidden_el.value = href.replace(/^.*\//, '');
