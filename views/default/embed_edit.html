@@ -178,15 +178,16 @@
                     search_ui.searchPopulate(searchbox, original_string, results, function (event, OZIDin, given_name, sciname) {
                         event.preventDefault();  // Don't follow links
                         var hidden_el = searchbox.find('input[type=hidden]')[0];
+                        var href = $(event.target).closest('a').attr('href');
 
                         // Populate search input with current item, so it's more obvious what's selected
                         search_input.val(given_name);
 
                         if (hidden_el.name === '_pinpoint') {
-                            hidden_el.value =  event.target.getAttribute('href').replace(/^.*\//, '');
-                            form_embed_edit.elements['otthome'].value = event.target.getAttribute('href').replace(/^.*\=/, '');
+                            hidden_el.value = href.replace(/^.*\//, '');
+                            form_embed_edit.elements['otthome'].value = href.replace(/^.*\=/, '');
                         } else if (hidden_el.name === 'initmark') {
-                            hidden_el.value = event.target.getAttribute('href').replace(/^.*\=/, '');
+                            hidden_el.value = href.replace(/^.*\=/, '');
                         } else {
                             throw new Error("Unknown hidden element name" + hidden_el);
                         }
