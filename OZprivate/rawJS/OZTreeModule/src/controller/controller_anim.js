@@ -210,7 +210,7 @@ export default function (Controller) {
             src_OZid, dest_OZid,
             into_node=false, speed=1, accel_type="parabolic", finalize_func=null) {
         var p = new Promise(function (resolve) {
-            document.body.classList.add('loading');
+            config.ui.loadingMessage(true);
             window.setTimeout(resolve, 200);
         }.bind(this));
 
@@ -266,7 +266,7 @@ export default function (Controller) {
                 this.develop_branch_to(src_OZid),
                 this.develop_branch_to(dest_OZid)
             );
-            document.body.classList.remove('loading');
+            config.ui.loadingMessage(false);
             return flight_path;
         }.bind(this));
 
@@ -310,7 +310,7 @@ export default function (Controller) {
         // Finished!
         p = p.then(finalize_func);
         p = p.catch(function (e) {
-            document.body.classList.remove('loading');
+            config.ui.loadingMessage(false);
             throw e;
         })
 
