@@ -79,4 +79,22 @@ setup_params = {
             return false;
         }
     };
+
+document.body.addEventListener('keydown', function (e) {
+    if (event.keyCode == 17) {  // Ctrl
+        window.old_sensitivity = onezoom.config.sensitivity;
+        onezoom.config.sensitivity = 0.99;
+        onezoom.config.anim.zoom_sensitivity = 0.99;
+        document.querySelector('#inButton svg').style.width = '0.77rem';
+        document.querySelector('#outButton svg').style.width = '0.77rem';
+    }
+});
+document.body.addEventListener('keyup', function (e) {
+    if (event.keyCode == 17) {  // Ctrl
+        onezoom.config.sensitivity = window.old_sensitivity;
+        onezoom.config.anim.zoom_sensitivity = window.old_sensitivity;
+        document.querySelector('#inButton svg').style.width = '';
+        document.querySelector('#outButton svg').style.width = '';
+    }
+});
 </script>

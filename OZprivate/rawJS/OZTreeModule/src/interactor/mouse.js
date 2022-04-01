@@ -10,7 +10,6 @@ class MouseInteractor {
     this.mouseY = null;
     this.clicking = false;
     this.scrolling = false;
-    this.sensitivity = config.sensitivity;
     this.timeLastScroll = null;
   }
   
@@ -62,7 +61,7 @@ class MouseInteractor {
     var canvas = this.canvas
     let delta = ('wheelDelta' in event) ? event.wheelDelta : -event.detail/2;
     // 0.84 is sensitivity
-    let temp_sensitivity = this.sensitivity;
+    let temp_sensitivity = config.sensitivity;
     let timeNow =(new Date().getTime())
     if(this.timeLastScroll && (timeNow - this.timeLastScroll)<40) {
       temp_sensitivity = Math.pow(temp_sensitivity,((timeNow - this.timeLastScroll)/40))
