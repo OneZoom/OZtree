@@ -6,7 +6,7 @@ import config from '../global_config';
 import tree_settings from '../tree_settings';
 import data_repo from '../factory/data_repo';
 import { record_url } from '../navigation/record';
-import { get_id_by_state } from '../navigation/setup_page';
+import { get_largest_visible_node } from '../navigation/utils';
 import { parse_window_location } from '../navigation/utils';
 
 /**
@@ -124,20 +124,14 @@ export default function (Controller) {
       let self = this;
 
       // Get pre-rebuild state, so we can restore the rough position by ID
-      let state = parse_window_location();
+      // Get largest node, use this to restore position
+      let n = get_largest_visible_node(this.root);
+      let prev_ozid = n.is_leaf ? -n.metacode : n.metacode;
 
       tree_settings.rebuild_tree(vis, prev, this).then(function () {
         self.update_form();
-        self.reset();
-        return get_id_by_state(state);
-      }).then(function (id) {
-        // Move to the ID specified in the old state
-        if (id) {
-          return(self.init_move_to(id, "leap"));
-        } else if (!init) {
-          controller.trigger_refresh_loop();
-        }
-      });
+        if (!init) return(self.init_move_to(prev_ozid, "leap"));
+      }.bind(this));
     }
   }
   Controller.prototype.get_view_type = function () {
