@@ -332,6 +332,7 @@ export default function (Controller) {
    *    -- "zoom"
    *    -- "leap" (or any other non-empty string, since this is the last branch)
    *    -- { xp: .., yp: .., ws: ..} (if so, leap straight to this position)
+   *    Strings can be postfixed with "_into", in which case we zoom into that node
    * Note that "pzoom" is treated as "zoom" if the targeted node is too close to the root.
    * This is because "pzoom" zooms by a fixed amount, meaning that from a close node it 
    * would results in the tree being zoomed from a very small view.
@@ -339,27 +340,31 @@ export default function (Controller) {
    * Return a promise for when the animation is finished
    */
   Controller.prototype.init_move_to = function (dest_OZid, init) {
-    var n;
+    var n, into_node;
 
-    if (!init) init = "pzoom";
-
-    if (!isNaN(init.xp)) {
+    if (init && !isNaN(init.xp)) {
+      // Leap to position
       return this.leap_to(dest_OZid, init);
     }
 
+    // Break up init into init/into_node
+    init = (init || "pzoom").split("_");
+    into_node = init[1] === 'into';
+    init = init[0];
+
     if (init == "zoom") {
-      return this.fly_on_tree_to(this.root.metacode, dest_OZid);
+      return this.fly_on_tree_to(this.root.metacode, dest_OZid, into_node=into_node);
     }
 
     if (init == "pzoom") {
       // Leap to node
-      return this.leap_to(dest_OZid)
+      return this.leap_to(dest_OZid, into_node=into_node)
         .then(() => {
           // Zoom out marginally
           // TODO: This will refuse to go back further than a given point, but that's much futher back than before
           this.zoomout(tree_state.widthres / 2, tree_state.heightres / 2, 0.1, true);
           // Fly back in again
-          return this.fly_on_tree_to(null, dest_OZid);
+          return this.fly_on_tree_to(null, dest_OZid, into_node=into_node);
         })
     }
 
@@ -369,7 +374,7 @@ export default function (Controller) {
     n = this.develop_branch_to(dest_OZid);
     position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
     return get_details_of_nodes_in_view_during_fly(this.root).then(function () {
-        return this.leap_to(dest_OZid, init);
+        return this.leap_to(dest_OZid, init, into_node=into_node);
     }.bind(this));
   };
   
