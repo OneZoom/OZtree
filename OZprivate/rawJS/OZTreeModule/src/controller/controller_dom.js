@@ -134,6 +134,8 @@ export default function (Controller) {
         // Move to the ID specified in the old state
         if (id) {
           return(self.init_move_to(id, "leap"));
+        } else if (!init) {
+          controller.trigger_refresh_loop();
         }
       });
     }
@@ -150,8 +152,10 @@ export default function (Controller) {
    */
   Controller.prototype.change_color_theme = function (color_theme, init = false) {
       tree_settings.cols = color_theme;
-      if (!init) record_url({ replaceURL: true }, true);
-      this.trigger_refresh_loop();
+      if (!init) {
+          record_url({ replaceURL: true }, true);
+          this.trigger_refresh_loop();
+      }
   }
     
   /**
