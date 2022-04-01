@@ -131,11 +131,9 @@ function setup_page_by_state(state) {
     }
     //TODO: separate out promise reject and error handling.
     console.error("Failed to setup_page_by_state:", error);
-    controller.reset();
     const ozId = data_repo.ott_id_map[config.home_ott_id]
-    if (ozId) {
-      controller.init_move_to(ozId)
-    } else if (state.ott) {
+    controller.init_move_to(ozId ? ozId : controller.root.metacode);  // NB: root is always a node, so ozID positive
+    if (!ozId && state.ott) {
       if (typeof config.ui.badOTT !== 'function') {
         alert('Developer error: you need to define a UI function named badOTT that takes a bad OTT and pings up an error page')
       } else {

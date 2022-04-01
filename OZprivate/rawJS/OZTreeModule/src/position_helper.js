@@ -499,4 +499,4 @@ function set_anim_speed(val) {
   global_anim_speed = val;
 }
 
-export {move, setxyr3r, deanchor, reanchor, reanchor_at_node, target_by_code, clear_target, perform_actual_leap, perform_actual_fly, get_anim_speed, set_anim_speed};
+export {deanchor, reanchor, reanchor_at_node, target_by_code, clear_target, perform_actual_leap, perform_actual_fly, get_anim_speed, set_anim_speed};

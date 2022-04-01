@@ -336,7 +336,6 @@ export default function (Controller) {
 
     if (!init) init = "pzoom";
 
-    this.reset();
     if (!isNaN(init.xp)) {
       return this.leap_to(dest_OZid, init);
     }
