@@ -252,6 +252,38 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(status, 'available')
         self.assertEqual(param, None)
 
+    def test_get_reservation__slow(self):
+        """Slow payments have their own status"""
+        util.set_allow_sponsorship(1)
+        self.assertEqual(sponsorship_enabled(), True)
+        ott = util.find_unsponsored_ott()
+
+        # Start to buy OTT
+        status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::001")
+        self.assertEqual(status, 'available')
+        reservation_add_to_basket('UT::BK001', reservation_row, dict(
+            e_mail='001@unittest.example.com',
+            user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
+            verified_name="Definitely Arnold",
+            prev_reservation=None,
+        ))
+
+        # We get told that we're waiting for funds, with any reservation code
+        status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::001")
+        self.assertEqual(status, 'unverified waiting for payment')
+        status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::002")
+        self.assertEqual(status, 'unverified waiting for payment')
+
+        # Wait 12 mins, we get told we're slow
+        current.request.now = (current.request.now + datetime.timedelta(minutes=12))
+        status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::001")
+        self.assertEqual(status, 'unverified waiting for slow payment')
+
+        # Wait 2 days, expired
+        current.request.now = (current.request.now + datetime.timedelta(days=2))
+        status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::001")
+        self.assertEqual(status, 'available')
+
     def test_get_reservation__renew_expired(self):
         """Can renew an expired row"""
 
@@ -294,7 +326,7 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(status, 'reserved')
 
         # Move ahead in time, to prove which times are different
-        current.request.now = (current.request.now + datetime.timedelta(days=1))
+        current.request.now = (current.request.now + datetime.timedelta(seconds=5))
 
         # Can buy it again, referencing old reservation
         reservation_add_to_basket('UT::BK002', reservation_row, dict(
@@ -322,7 +354,7 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(status, 'sponsored')
         self.assertEqual(param, None)
         # New row got an updated verified_timeif r.prev_reservation_id:
-        self.assertEqual(reservation_row.verified_time, expired_r.verified_time + datetime.timedelta(days=1))
+        self.assertEqual(reservation_row.verified_time, expired_r.verified_time + datetime.timedelta(seconds=5))
         # Reserve time from previous entry kept
         self.assertEqual(reservation_row.reserve_time, expired_r.reserve_time)
         self.assertEqual(expired_r.sale_time, '01:01:01 Jan 01, 2001 GMT')

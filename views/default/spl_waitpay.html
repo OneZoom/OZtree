@@ -13,5 +13,23 @@
 {{pass}}
 {{end block}}
 <h2>{{=T('Reserved pending donation receipt')}}</h2>
-<p>{{=XML(T('This leaf, %s, has been reserved and is waiting to be matched to a donation. If you are the person who reserved it you might wish to return to this page later to see if the status has progressed to <q>awaiting admin check</q>, as it does sometimes take a while for payments to be processed and posted.  If you suspect something went wrong at the PayPal stage please %s to resolve it. After %s hours this leaf will become available again unless it is matched to a donation.') % (the_long_name, A(T('contact us'),_href="mailto:mail@onezoom.org"), unpaid_time_limit_hours))}}</p>
-<p>{{=T('Only one sponsor per leaf, so get your favourite species before someone else does.')}}</p>
+
+<p>
+  {{=XML(T('This leaf, %s, has been reserved and is waiting to be matched to a donation.', the_long_name))}}
+</p>
+
+<p>
+  {{if status == "unverified waiting for payment":}}
+    {{=XML(T('If you have already donated you might wish to return to this page later to see if the status has progressed to <q>awaiting admin check</q>, as it does sometimes take a while for payments to be processed and posted.'))}}
+  {{elif status == "unverified waiting for slow payment":}}
+    {{=XML(T('We are still waiting to hear back from PayPal. If you think you need to, you can %s, or please %s to resolve it.') % (
+      A(T('try paying again here'), _href=payment_retry_url),
+      A(T('contact us'),_href='mailto:mail@onezoom.org'),
+    ))}}
+  {{pass}}
+</p>
+
+<p>
+  {{=T('After %s hours this leaf will become available again unless it is matched to a donation.') % (unpaid_time_limit_hours,)}}
+  {{=T('Only one sponsor per leaf, so get your favourite species before someone else does.')}}</p>
+</p>

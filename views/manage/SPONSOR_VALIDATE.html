@@ -8,7 +8,7 @@
 <form method="get">You can also look at this page <a href="?show=unvalidated">showing only taxa that need to be validated</a>, or enter an OTT number <input name="show" type="text" size="8" placeholder="e.g. 872573" value="{{=request.vars.show if (request.vars.show and request.vars.show.isdigit()) else ''}}"> and </input><button type="submit">search for it</button></form>
 {{elif not request.vars.show or request.vars.show=="unvalidated":}}
 <h2><a href="{{=URL('index')}}">Management</a>: recently sponsored leaves to validate</h2>
-<form method="get">You can also look at this page <a href="?show=all">with *all* taxa shown</a>, or enter one or more OTT numbers separated by commas <input name="show" type="text" size="8" placeholder="e.g. 872573" value="{{=request.vars.show if (request.vars.show and request.vars.show.isdigit()) else ''}}"> and </input><button type="submit">search for it</button></form>
+<form method="get">You can also look at this page <a href="?show=all">with *all* taxa shown</a>, <a href="?show=unpaid">with taxa awaiting payment</a>, or enter one or more OTT numbers separated by commas <input name="show" type="text" size="8" placeholder="e.g. 872573" value="{{=request.vars.show if (request.vars.show and request.vars.show.isdigit()) else ''}}"> and </input><button type="submit">search for it</button></form>
 {{else:}}
 <h2><a href="{{=URL('index')}}">Management</a>: list of leaves with validation status</h2>
 {{pass}}
