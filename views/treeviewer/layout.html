@@ -541,7 +541,14 @@ function setupUI() {
     $("[uk-modal]").on("touchstart touchmove touchend", preventTouchZoom);
 
     $('#outButton .icon-container')
-        .click(function(){onezoom.controller.button_zoom_up()});
+        .click(function(){
+            if (document.getElementById('outButton').classList.contains('no-tree-follow')) {
+                // E.g. for fine-grained zoom-out, where following tree doesn't make sense
+                onezoom.controller.button_zoom_out()
+            } else {
+                onezoom.controller.button_zoom_up()
+            }
+        });
     $('#inButton .icon-container')
         .click(function(){onezoom.controller.button_zoom_in()});
     $('#resetButton .icon-container')

@@ -87,6 +87,7 @@ document.body.addEventListener('keydown', function (e) {
         onezoom.config.anim.zoom_sensitivity = 0.99;
         document.querySelector('#inButton svg').style.width = '0.77rem';
         document.querySelector('#outButton svg').style.width = '0.77rem';
+        document.getElementById('outButton').classList.add('no-tree-follow');
     }
 });
 document.body.addEventListener('keyup', function (e) {
@@ -95,6 +96,7 @@ document.body.addEventListener('keyup', function (e) {
         onezoom.config.anim.zoom_sensitivity = window.old_sensitivity;
         document.querySelector('#inButton svg').style.width = '';
         document.querySelector('#outButton svg').style.width = '';
+        document.getElementById('outButton').classList.remove('no-tree-follow');
     }
 });
 </script>
