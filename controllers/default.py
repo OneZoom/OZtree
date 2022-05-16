@@ -12,6 +12,7 @@ import json
 from collections import OrderedDict
 
 import ozmail
+from embed import embedize_url
 from sponsorship import (
     sponsorship_enabled, reservation_total_counts, clear_reservation, get_reservation,
     reservation_validate_basket_fields,
@@ -1363,7 +1364,7 @@ def sponsor_node_price():
 def sponsor_node():
     """
     This picks <max> leaves per price band, and removes already sponsored leaves from the search    
-    By default ranks by popularity. We pass on any request.vars so that we can use embed, form_reservation_code, etc.
+    By default ranks by popularity. We pass on any request.vars so that we can use popup, form_reservation_code, etc.
     """
     try:
         if request.vars.get('id'):
@@ -1593,10 +1594,12 @@ def pp_process_post():
     if myconf.take('paypal.save_to_tmp_file_dir'):
         import os
         import time
+        error_dir = myconf.take('paypal.save_to_tmp_file_dir')
+        os.makedirs(error_dir, exist_ok=True)
 
         with open(
             os.path.join(
-                myconf.take('paypal.save_to_tmp_file_dir'),
+                error_dir,
                 "{}{}_paypal_OTT{}_{}.json".format(
                     "PP_" if err is None else "PP_ERROR_",
                     "".join([char if char.isalnum() else "_" for char in request.env.http_host]),
@@ -1615,6 +1618,74 @@ def pp_process_post():
         raise HTTP(400, err) #should flag up to PP that there is a problem with this transaction
     else:
         return(dict(vars=request.vars, args=request.args))
+
+"""Controllers related to OneZoom embedding functionality"""
+
+def embed_instructions():
+    return dict()
+
+def embed_edit():
+    form = FORM(
+        LABEL("E-mail address"),
+        INPUT(_type='email', requires=[IS_NOT_EMPTY(), IS_EMAIL()], _name='email', _class="uk-input uk-margin-bottom"),
+        INPUT(_type='hidden', _name='url', _value=URL('life', scheme=True, host=True)),
+        INPUT(_type='submit', _value="Send e-mail", _class="oz-pill pill-leaf"),
+        _id="form_embed_email",
+    )
+
+    if form.accepts(request.vars, session=None, keepvalues=True):
+        mail, reason=ozmail.get_mailer()
+        if mail is None:
+            response.flash = '%s, so cannot send email' % reason
+        else:
+            mailargs = ozmail.template_mail('embed_code', dict(
+                url=embedize_url(form.vars.url, form.vars.email),
+            ), to=form.vars.email)
+            mail.send(**mailargs)
+            response.flash = "E-mail with embed code sent"
+    return dict(
+        form=form,
+    )
+
+""" Controllers for language file export """
+
+def lang_export():
+    import gluon.languages
+
+    def get_lang(lang):
+        if re.search('[^a-z0-9_\-]', lang):
+            raise ValueError("Invalid language %s" % lang)
+        return gluon.languages.read_dict(os.path.join(os.path.dirname(T.language_file), '%s.py' % lang))
+
+    def to_po(lang_dict):
+        def po_line(preamble, s):
+            s = s.replace("\\", "\\\\")
+            s = s.replace("\r", "\\r")
+            s = s.replace("\t", "\\t")
+            s = s.replace("\n", "\\n")
+            s = s.replace('"', '\\"')
+            return '%s "%s"' % (preamble, s)
+        out = []
+        for lang_in, lang_out in lang_dict.items():
+            if lang_in.startswith('!lang'):
+                continue
+            if lang_out == lang_in.replace("@markmin\x01", ""):
+                lang_out = ""
+            out.append("")
+            out.append(po_line("msgid", lang_in))
+            out.append(po_line("msgstr", lang_out))
+        return "\n".join(out)
+
+    export_lang = request.vars.lang
+    if not export_lang:
+        return dict(
+            possible_languages= T.get_possible_languages_info().keys(),
+        )
+
+    response.headers['Content-Type'] = 'text/x-gettext-translation;charset=utf-8'
+    response.headers['Content-Disposition'] = 'attachment; filename="onezoom-%s.po"' % export_lang
+    return dict(output=to_po(get_lang(export_lang)))
+
 
 """ these empty controllers are for other OneZoom pages"""
 
@@ -2001,6 +2072,13 @@ def treeview_info(has_text_tree=True):
 def life():
     """
     The standard OneZoom app
+    """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+    return treeview_info()
+
+def life_noninteractive():
+    """
+    OneZoom app with all interaction disabled
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return treeview_info()

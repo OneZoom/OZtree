@@ -77,16 +77,16 @@ def GBIF_OZpage():
 def pic_info():
     """
     This is the URL that we use to display copyright information about an image, where we pass in the image ID and image source ID.
-    Within the tree viewer, this is always loaded into an iframe, but the embed status determines which iframe to load.
-    When embed >= 3 we want to always use our own image info page, but for embed <3 we could potentially use
+    Within the tree viewer, this is always loaded into an iframe, but the popup status determines which iframe to load.
+    When popup >= 3 we want to always use our own image info page, but for popup <3 we could potentially use
     an alternative. When called from a jump out link, this will have redirect=1 set
     """
     try:
         src = int(request.args[0])  
         src_id = int(request.args[1])
-        embed = int(request.vars.embed) if 'embed' in request.vars else None
+        popup = int(request.vars.popup) if 'popup' in request.vars else None
     except:
-        raise HTTP(400,"No valid ids or embed parameter provided")
+        raise HTTP(400,"No valid ids or popup parameter provided")
     
     param =  inv_src_flags[src] + "_jumpout_url"
     try:
@@ -99,7 +99,7 @@ def pic_info():
         url = URL('tree','eol_old_dataobject_ID', vars=request.vars, scheme=True, host=True)
 
     else:
-        if url is not None and (embed is None or embed < 3):
+        if url is not None and (popup is None or popup < 3):
             redirect(url.format(src=src, src_id=src_id))
     
     #override old eol URLs that don't work any more
@@ -135,7 +135,7 @@ def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
     
     if any url lists are empty, there is no data for that tab (and it can be hidden). If there is a second url,
     e.g. 'ozspons':[url6a, url6b], then the second url is used as the go to action for the 'link out' form button. 
-    This can be useful to remove embed information, go to the original wikipage, etc. Any third value in the list
+    This can be useful to remove popup information, go to the original wikipage, etc. Any third value in the list
     gives the json passed in the form 'post' request, e.g. {'form_session_id':'blah-blah'} which allows us to pass
     a session id to the leaf sponsorship stuff
     """
@@ -198,8 +198,8 @@ def leaf_linkouts():
 
     sponsorship_urls = [
         URL("default","sponsor_leaf", vars=vars, scheme=True, host=True, extension=False),
-        #remove the embed functionality when popping out to a new window
-        URL("default","sponsor_leaf", vars={k:v for k,v in vars.items() if k not in ('embed', 'form_reservation_code')}, scheme=True, host=True, extension=False)
+        #remove the popup functionality when popping out to a new window
+        URL("default","sponsor_leaf", vars={k:v for k,v in vars.items() if k not in ('popup', 'form_reservation_code')}, scheme=True, host=True, extension=False)
     ]
     if request.vars.form_reservation_code:
         #pass on the reservation code if possible
@@ -221,8 +221,8 @@ def node_linkouts():
         dict(errors=['Sorry, there was an error getting your node data:', str(e)], ott=None, data={}, name="error")
     sponsorship_urls = [
         URL("default", "sponsor_node", vars=vars, scheme=True, host=True, extension=False),
-        #remove the embed functionality when popping out to a new window
-        URL("default","sponsor_node", vars={k:v for k,v in vars.items() if k not in ('embed', 'form_reservation_code')}, scheme=True, host=True, extension=False)
+        #remove the popup functionality when popping out to a new window
+        URL("default","sponsor_node", vars={k:v for k,v in vars.items() if k not in ('popup', 'form_reservation_code')}, scheme=True, host=True, extension=False)
     ]
     if request.vars.form_reservation_code:
         #pass on the session if possible
@@ -290,7 +290,7 @@ def eol_old_dataobject_ID():
     """
     return {}  
 
-# LINKOUT FUNCTIONS: these all return urls used in the popups to embed other resources
+# LINKOUT FUNCTIONS: these all return urls used in the popups to popup other resources
 # They should all return an array with at least one element (the url used for iframes). If
 # there are further elements, they give the URL (and POST params) used for the link out
 # button
@@ -321,7 +321,7 @@ def iucn_url(IUCNid):
 
 def gbif_url(GBIFid, is_leaf):
     try:
-        var = {'embed':request.vars.embed} if 'embed' in request.vars else {}
+        var = {'popup':request.vars.popup} if 'popup' in request.vars else {}
         return [
             URL('tree','GBIF_OZpage', vars=dict(gbif=int(GBIFid), leaf=1 if is_leaf else 0, **var), scheme=True, host=True, extension=False),
             "//www.gbif.org/species/" + str(int(GBIFid)),
@@ -379,7 +379,7 @@ def wikipedia_urls(Qid, wikipedia_lang_flag, requested_wikilang, is_leaf, name, 
     try:
         if requested_wikilang.isalnum():
             name = name if allow_namesearch else ""
-            var = {'embed':request.vars.embed} if 'embed' in request.vars else {}
+            var = {'popup':request.vars.popup} if 'popup' in request.vars else {}
             OZ_wikipage = URL('tree','wikipedia_OZpage', vars=dict(Q=int(Qid), wlang=requested_wikilang, name=name, leaf=1 if is_leaf else 0, **var), scheme=True, host=True, extension = False)
             try:
                 if (int(wikipedia_lang_flag) & int(2**wikiflags[requested_wikilang])):

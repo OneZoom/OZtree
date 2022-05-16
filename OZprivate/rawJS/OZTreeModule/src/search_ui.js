@@ -28,7 +28,7 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
     function compile_names(record) {
         var is_leaf = record[2] < 0;
         if (record[0] && record[1]) {
-            return "<p>" + add_link(record[0], record) + "</p>" + "(" + (is_leaf?"<i>"+add_link(record[1], record)+"</i>":add_link(record[1], record)) + ")";
+            return "<p>" + add_link(record[0], record) + "</p>" + " (" + (is_leaf?"<i>"+add_link(record[1], record)+"</i>":add_link(record[1], record)) + ")";
         } else if (record[0]) {
             return "<p>" + add_link(record[0], record) + "</p>";
         } else if (record[1]) {

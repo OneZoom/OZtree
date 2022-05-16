@@ -5,7 +5,7 @@
 #                       Tabs (if they exist) will be shown in this order when popping up linkouts to other pages.
 #UI_layer->vars->links Can be 'none' for no links, 'newtab' for all links in new tab, or 'default' (or unset) to leave
 #popups->vars          Passed to pic_info.load, about.load, how.load, data_sources.load, and the 
-#                       internal linkouts urls. You will usually want to define 'embed':1 or 'embed':3.
+#                       internal linkouts urls. You will usually want to define 'popup':1 or 'popup':3.
 #                       It's also sensible to set 'form_reservation_code' to a UID so that re-opening sponsor tabs remembers who you are
 #partner               (Optional): if it matches a partner_identifier in the partners table, we will automatically fill out 
 #                       the popups and UI_layer params to make am automatically created sponsorship site
@@ -17,10 +17,10 @@ setup_params = {
     'vars':{'tabs':'default', 'links':'newtab'}, 
   },
   'popups': {
-    'vars':{'embed':1, 'form_reservation_code': form_reservation_code},
+    'vars':{'popup':1, 'form_reservation_code': form_reservation_code},
   },
 }
 }}
-{{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
+{{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
 <!-- could include bespoke css file here -->
 <!-- could define js variables (specifically: pagetitle_func, tree_config, screensaver_config, tutorial_config) within <script> tags here -->

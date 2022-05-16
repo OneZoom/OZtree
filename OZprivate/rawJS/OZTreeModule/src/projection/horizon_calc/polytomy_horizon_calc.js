@@ -36,6 +36,18 @@ class PolytomyHorizonCalc {
     return changed;
   }
   calc_horizon(node) {
+    // Calculate parent's arcr based on our own.
+    function parent_arcr(node) {
+      if (!node.upnode) return 0;
+
+      // NB: node.upnode.arcr can't be relied on at this point, so derive from nextr
+      for (let i = 0; i < node.upnode.children.length; i++) {
+        if (node.upnode.children[i] === node) {
+          return node.arcr / node.upnode.nextr[i];
+        }
+      }
+    }
+
     // find the bounding box for the polytomy branch.
     node.hxmax = max(node.sx, node.ex) + node.branch_width/2;
     node.hxmin = min(node.sx, node.ex) - node.branch_width/2;
@@ -43,12 +55,14 @@ class PolytomyHorizonCalc {
     node.hymax = max(node.sy, node.ey) + node.branch_width/2;
     node.hymin = min(node.sy, node.ey) - node.branch_width/2;
 
-    //expand the bounding box to include the arc if necessary // 1.305 = 0.9*1.45 is to allow for leaves with points that stick out from their main circle
-    node.hxmax = max(node.hxmax, node.arcx+node.arcr*1.305);
-    node.hxmin = min(node.hxmin, node.arcx-node.arcr*1.305);
-    node.hymax = max(node.hymax, node.arcy+node.arcr*1.305);
-    node.hymin = min(node.hymin, node.arcy-node.arcr*1.305);
-  
+    // Expand bounding box to include the parent interior node at one end, the arc + current node at the other
+    // NB: 1.305 = 0.9*1.45 is to allow for leaves with points that stick out from their main circle
+    var parent_arcr = parent_arcr(node);
+    node.hxmax = max(node.hxmax + parent_arcr, node.arcx+node.arcr*1.305);
+    node.hxmin = min(node.hxmin - parent_arcr, node.arcx-node.arcr*1.305);
+    node.hymax = max(node.hymax + parent_arcr, node.arcy+node.arcr*1.305);
+    node.hymin = min(node.hymin - parent_arcr, node.arcy-node.arcr*1.305);
+
     // set the graphics bounding box before the horizon is expanded for children
     node.gxmax = node.hxmax;
     node.gxmin = node.hxmin;

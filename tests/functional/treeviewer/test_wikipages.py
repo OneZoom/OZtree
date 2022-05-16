@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Test the embedding of wikipedia or wikidata information
+Test the popup-ing of wikipedia or wikidata information
 """
 import sys
 import os.path
@@ -23,7 +23,7 @@ from _OZglobals import wikiflags
 
 class TestWikipages(FunctionalTest):
     """
-    Tests the embedded wikipedia / wikidata pages, which are the most commonly viewed
+    Tests the popup-ed wikipedia / wikidata pages, which are the most commonly viewed
     """
     @classmethod
     def setUpClass(self):

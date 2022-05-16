@@ -4,7 +4,7 @@ setup_params = {
     'page':'UI_layer.load', 
     'vars':{'tabs':'default'} }, 
    'popups': {
-    'vars':{'embed':1} }, #definitely don't encode 'form_reservation_code' as this will be permanently stored in the html
+    'vars':{'popup':1} }, #definitely don't encode 'form_reservation_code' as this will be permanently stored in the html
   'locations_json':('[' 
       '"Popular places",' 
       '{"OTT":244265},'  #Mammals - should get looked up automatically: this also allows the correct language to be used
@@ -22,7 +22,7 @@ setup_params = {
   }
 }}
 
-{{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
+{{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
 <!-- since this should be possible to run without a server, remove the ability to switch languages/pages -->
 <style>
 ul#controlButtons #tourButton {display: block;}

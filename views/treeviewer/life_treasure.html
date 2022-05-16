@@ -6,10 +6,8 @@
 #UI_layer->vars->links Can be 'none' for no links, 'newtab' for all links (except the OZ logo) in new tab, or 'default' (or unset) to leave.
 #UI_layer->vars->no_external_links
 #                      If true, hide any links to external pages (e.g. opening wikipedia pages in a new tab)
-#UI_layer->vars->hide_control_settings
-#                      If true, hide the settings menu
 #popups->vars          Passed to pic_info.load, about.load, how.load, data_sources.load, and the 
-#                       internal linkouts urls. You will usually want to define 'embed':1 or 'embed':3 (see embed.html). 
+#                       internal linkouts urls. You will usually want to define 'popup':1 or 'popup':3 (see popup.html). 
 #                       It's also sensible to set 'form_reservation_code' to a UID so that re-opening sponsor tabs remembers who you are
 #partner               (Optional): if it matches a partner_identifier in the partners table, we will automatically fill out 
 #                       the popups and UI_layer params to make am automatically created sponsorship site
@@ -24,7 +22,7 @@ setup_params = {
     'page':'UI_layer.load', 
     'vars':{'tabs':'default', 'links':'newtab'} },
   'popups': {
-    'vars':{'embed':1, 'form_reservation_code': form_reservation_code} },
+    'vars':{'popup':1, 'form_reservation_code': form_reservation_code} },
   'partner':page_info.get('partner'),
   'locations_json':('[' 
       '"Popular places",' 
@@ -43,7 +41,7 @@ setup_params = {
     )
   }
 }}
-{{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
+{{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
 <!-- bespoke css file for treasure hunt -->
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree_treasure.css')}}" />
 <div id="treasure_list">

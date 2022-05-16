@@ -12,7 +12,7 @@ from ..functional_tests import FunctionalTest, make_temp_minlife_file, remove_te
 
 class TestViewerAvailability(FunctionalTest):
     """
-    Test whether the embedding functions work
+    Test treeviewer loading
     """
     
     @classmethod

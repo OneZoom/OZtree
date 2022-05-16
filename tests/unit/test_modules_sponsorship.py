@@ -172,9 +172,14 @@ class TestSponsorship(unittest.TestCase):
         """Can count for the home page"""
         # Purchase an OTT ages ago, which will expire, then 2 new ones
         util.time_travel(sponsorship_config()['duration_days'] * 3)
-        util.purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))
+        reservations_old = util.purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))
         util.time_travel(0)
-        util.purchase_reservation(2, basket_details=dict(e_mail='betty@unittest.example.com'))
+        reservations_newer = util.purchase_reservation(2, basket_details=dict(e_mail='betty@unittest.example.com'))
+
+        # Re-purchase the now expired OTT
+        reservations_renewed = util.purchase_reservation(
+            [reservations_old[0].OTT_ID],
+            basket_details=dict(e_mail='betty@unittest.example.com'))
 
         # Reserve an OTT
         reserved_ott = util.find_unsponsored_ott(in_reservations=False)
@@ -200,12 +205,17 @@ class TestSponsorship(unittest.TestCase):
 
         otts = db.executesql("SELECT OTT_ID, MAX(verified_time) FROM reservations GROUP BY 1;")
         expired_otts = set(x[0] for x in db.executesql("SELECT OTT_ID FROM expired_reservations;"))
-        # At least one non-verified entry to not count
-        self.assertTrue(sum(1 for ott, vt in otts if vt is None) > 0)
+        # Our reserved, non-verified entry is in OTTs
+        self.assertIn((reserved_ott, None), otts)
         # Ignore it for our count
         otts = set(ott for ott, vt in otts if vt is not None)
-        # There's *something* in the intersection to make sure we don't count double
-        self.assertTrue(len(otts & expired_otts) > 0)
+        # The newer purchases are also in OTTs
+        for r in reservations_newer:
+            self.assertIn(r.OTT_ID, otts)
+        # The re-purchased OTT appears in both lists
+        self.assertIn(
+            reservations_renewed[0].OTT_ID,
+            otts & expired_otts)
         # Check return value against our union
         self.assertEqual(reservation_total_counts('otts'), len(otts | expired_otts))
 
@@ -294,7 +304,7 @@ class TestSponsorship(unittest.TestCase):
         reservation_add_to_basket('UT::BK001', reservation_row, dict(
             e_mail='001@unittest.example.com',
             user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
-            verified_name="Definitely Arnold",
+            user_donor_name="Emily",
             prev_reservation=None,
         ))
         reservation_confirm_payment('UT::BK001', 10000, dict(
@@ -302,9 +312,10 @@ class TestSponsorship(unittest.TestCase):
             PP_e_mail='paypal@unittest.example.com',
             sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
-        reservation_row.update_record(verified_time=current.request.now)
+        util.verify_reservation(reservation_row, verified_name="Definitely Arnold")
         status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
+        self.assertEqual(reservation_row.verified_donor_name, "Emily")
 
         # Expire the reservation
         expired_r_id = reservation_expire(reservation_row)
@@ -363,6 +374,7 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(reservation_row.verified_name, 'Definitely Arnold')
         self.assertEqual(reservation_row.PP_e_mail, 'paypal@unittest.example.com')
         self.assertEqual(reservation_row.PP_transaction_code, 'UT::PP2')
+        self.assertEqual(reservation_row.verified_donor_name, "Emily")
 
     def test_reservation_confirm_payment__invalid(self):
         """Unknown baskets are an error"""
@@ -598,6 +610,7 @@ class TestSponsorship(unittest.TestCase):
         reservation_add_to_basket('UT::BK001', reservation_row, dict(
             e_mail='001@unittest.example.com',
             user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
+            user_donor_name="Gertrude",
         ))
         reservation_confirm_payment('UT::BK001', 10000, dict(
             PP_transaction_code='UT::PP1',
@@ -629,9 +642,10 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(reservation_row.PP_e_mail, 'paypal@unittest.example.com')
 
         # Validate row, is fully sponsored for 4 years
-        reservation_row.update_record(verified_time=current.request.now)
+        util.verify_reservation(reservation_row)
         status, _, reservation_row, _ = get_reservation(ott1, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
+        self.assertEqual(reservation_row.verified_donor_name, "Gertrude")
         self.assertEqual(reservation_row.verified_time, current.request.now.replace(microsecond=0))
         self.assertEqual(reservation_row.reserve_time, current.request.now.replace(microsecond=0))
         self.assertEqual(reservation_row.sponsorship_duration_days, 365 * 4 + 1)
@@ -668,6 +682,9 @@ class TestSponsorship(unittest.TestCase):
         self.assertLess(
             reservation_row.sponsorship_ends - current.request.now - datetime.timedelta(days = 365 * 8 + 1),
             datetime.timedelta(minutes=1))
+        # Other writable details copied over
+        self.assertEqual(reservation_row.user_donor_name, "Gertrude")
+        self.assertEqual(reservation_row.verified_donor_name, "Gertrude")
 
         # The asking price dropped, as it's a renewal
         self.assertEqual(reservation_row.asking_price, orig_asking_price * (1 - 0.2))
@@ -1131,10 +1148,12 @@ class TestSponsorRenewRequestLogic(TestSponsorship):
         
     
 if __name__ == '__main__':
+    import sys
+
     suite = unittest.TestSuite()
-    
     suite.addTest(unittest.makeSuite(TestSponsorship))
     suite.addTest(unittest.makeSuite(TestMaintenance))
     suite.addTest(unittest.makeSuite(TestSponsorRenewRequestLogic))
-    unittest.TextTestRunner(verbosity=2).run(suite)
-
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    if not result.wasSuccessful():
+        sys.exit(1)

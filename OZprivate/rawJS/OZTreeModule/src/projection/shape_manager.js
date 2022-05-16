@@ -3,6 +3,7 @@ import config from '../global_config';
 import {ArrayPool} from '../util/index';
 import {reset_mr} from './move_restriction';
 import BezierShape from './shapes/bezier_shape';
+import TextShape from './shapes/text_shape';
 
 let visible_nodes = new ArrayPool(1300);
 let signpost_nodes = new ArrayPool(100);
@@ -18,7 +19,7 @@ function get_shapes(node, shapes) {
   let length = visible_nodes.length;
   for (let i=length-1; i>=0; i--) {
     get_shapes_of_node(visible_nodes.get(i), shapes);
-    //draw_bounding_box(visible_nodes.get(i), shapes);
+    draw_bounding_box(visible_nodes.get(i), shapes);
   }
   length = signpost_nodes.length;
   for (let i=0; i<length; i++) {
@@ -32,22 +33,66 @@ function get_shapes(node, shapes) {
 /**
  * Debug helper: Draw all bounding boxes.
  *
- * Enable in get_shapes() to use
+ * To enable, set onezoom.config.debug_bounding_box, e.g. in developer console:
+ * onezoom.config.debug_bounding_box = 0x01
+ * onezoom.config.debug_bounding_box = (node => node.latin_name == 'Thermoproteaceae' ? 0x03 : 0)
+ *
+ * Value is a bitmask of options, or function returning bitmask:
+ *  0x01 - Bounding box text label
+ *  0x02 - Draw bounding box for node+parent
+ *  0x04 - Outer bounding box including children
  */
 function draw_bounding_box(node, shapes) {
-  var s = BezierShape.create();
-  s.sx = s.sy = s.ex = s.ey = null;
-  s.path_points.push(['move', node.xvar + node.rvar * node.hxmin, node.yvar + node.rvar * node.hymin]);
-  s.path_points.push(['line', node.xvar + node.rvar * node.hxmin, node.yvar + node.rvar * node.hymax]);
-  s.path_points.push(['line', node.xvar + node.rvar * node.hxmax, node.yvar + node.rvar * node.hymax]);
-  s.path_points.push(['line', node.xvar + node.rvar * node.hxmax, node.yvar + node.rvar * node.hymin]);
-  s.path_points.push(['line', node.xvar + node.rvar * node.hxmin, node.yvar + node.rvar * node.hymin]);
-  s.do_stroke = true;
-  s.stroke.line_width = 1;
-  s.height = 0;
-  s.stroke.color = 'hsl(' + Math.sin(node.metacode) * 360 + ', 100%, 50%)';
+  var s, debug = config.debug_bounding_box || 0;
 
-  shapes.push(s);
+  // If set to a function, evaluate for current node
+  if (typeof debug === 'function') debug = debug(node);
+
+  if (debug & 0x04) { // Bounding box including children
+    s = BezierShape.create();
+    s.sx = s.sy = s.ex = s.ey = null;
+    s.path_points.push(['move', node.xvar + node.rvar * node.hxmin, node.yvar + node.rvar * node.hymin]);
+    s.path_points.push(['line', node.xvar + node.rvar * node.hxmin, node.yvar + node.rvar * node.hymax]);
+    s.path_points.push(['line', node.xvar + node.rvar * node.hxmax, node.yvar + node.rvar * node.hymax]);
+    s.path_points.push(['line', node.xvar + node.rvar * node.hxmax, node.yvar + node.rvar * node.hymin]);
+    s.path_points.push(['line', node.xvar + node.rvar * node.hxmin, node.yvar + node.rvar * node.hymin]);
+    s.do_stroke = true;
+    s.stroke.line_width = 1;
+    s.height = 0;
+    s.stroke.color = 'hsl(' + Math.sin(node.metacode) * 360 + ', 100%, 60%)';
+    shapes.push(s);
+  }
+
+  if (debug & 0x2) { // Bounding box for node + parent
+    s = TextShape.create();
+    s.text = "" + node.latin_name;
+    s.width = (node.xvar + node.rvar * node.gxmax) - (node.xvar + node.rvar * node.gxmin);
+    s.height = 5;
+    s.x = node.xvar + node.rvar * node.gxmin + (s.width / 2);
+    s.y = node.yvar + node.rvar * node.gymin + s.height;
+    s.defpt = 10;
+    s.line = 2;
+    s.do_stroke = true;
+    s.stroke = { line_width: 1, color: 'black' };
+    s.do_fill = true;
+    s.fill = {color: 'hsl(' + Math.sin(node.metacode) * 360 + ', 100%, 80%)'};
+    shapes.push(s);
+  }
+
+  if (debug & 0x1) { // Bounding box text label
+    s = BezierShape.create();
+    s.sx = s.sy = s.ex = s.ey = null;
+    s.path_points.push(['move', node.xvar + node.rvar * node.gxmin, node.yvar + node.rvar * node.gymin]);
+    s.path_points.push(['line', node.xvar + node.rvar * node.gxmin, node.yvar + node.rvar * node.gymax]);
+    s.path_points.push(['line', node.xvar + node.rvar * node.gxmax, node.yvar + node.rvar * node.gymax]);
+    s.path_points.push(['line', node.xvar + node.rvar * node.gxmax, node.yvar + node.rvar * node.gymin]);
+    s.path_points.push(['line', node.xvar + node.rvar * node.gxmin, node.yvar + node.rvar * node.gymin]);
+    s.do_stroke = true;
+    s.stroke.line_width = 1;
+    s.height = 0;
+    s.stroke.color = 'hsl(' + Math.sin(node.metacode) * 360 + ', 100%, 80%)';
+    shapes.push(s);
+  }
 }
 
 function height_comparator(a, b) {

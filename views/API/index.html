@@ -190,5 +190,47 @@ r.images[r.taxa["244265"].otts[2]][r.headers.url]</pre> The headers for each ima
 </form>
 
  </div>
+ <div class = "uk-padding">
+        
+<h3>URL: <code><a name="API/getOTT">API/getOTT</a></code></h3>
+<p>An API to get the corresponding Open Tree IDs for a variety of identifiers</p>
+
+<h4>Parameters</h4>
+<dl>
+ <dt>Optional</dt>
+ <dd>
+  <dl class="parameters">
+   <dt><code>eol</code></dt><dd>Find corresponding OTTs for <a href="https://eol.org/">EoL</a> ids (to specify multiple IDs, include the parameter multiple times).</dd>
+   <dt><code>gbif</code></dt><dd>Find corresponding OTTs for <a href="https://www.gbif.org/">GBIF</a> ids (to specify multiple IDs, include the parameter multiple times).</dd>
+   <dt><code>ncbi</code></dt><dd>Find corresponding OTTs for <a href="https://www.ncbi.nlm.nih.gov/">NCBI</a> ids (to specify multiple IDs, include the parameter multiple times).</dd>
+   <dt><code>iucn</code></dt><dd>Find corresponding OTTs for <a href="https://www.iucn.org/">IUCN</a> ids (to specify multiple IDs, include the parameter multiple times).</dd>
+  </dl>
+ </dd>
+</dl>
+
+<h4>Return values</h4>
+In the absence of error, the returned JSON object contains the following properties:
+<dl class="parameters">
+<dt><code>eol</code><dt><dd>A map of input EoL ids to OTT ids.</dd>
+<dt><code>gbif</code><dt><dd>A map of input GBIF ids to OTT ids.</dd>
+<dt><code>ncbi</code><dt><dd>A map of input NCBI ids to OTT ids.</dd>
+<dt><code>iucn</code><dt><dd>A map of input IUCN ids to OTT ids.</dd>
+</dl>
+
+
+<h4>Test this API</h4>
+<form action="{{=URL('getOTT.json')}}" method="get" >
+<ul class="parameters">
+<li><label>EoL:  <input type="number" name="eol" value="" /></label></li>
+<li><label>GBIF: <input type="number" name="gbif" value="" /></label></li>
+<li><label>NCBI: <input type="number" name="ncbi" value="" /></label></li>
+<li><label>IUCN: <input type="number" name="iucn" value="" /></label></li>
+</ul>
+<input type="submit" value="Try it!">
+</dl>
+</form>
+
+
+ </div>
 </div>
 

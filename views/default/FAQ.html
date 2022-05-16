@@ -1,6 +1,6 @@
 {{response.title='OneZoom: Frequently Asked Questions'}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
-{{extend ('embed.html' if 'embed' in request.vars else 'uikit_layout.html')}}
+{{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}
 
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">

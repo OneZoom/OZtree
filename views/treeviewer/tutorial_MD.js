@@ -217,7 +217,7 @@
                         tourstop.tour.onezoom.config.ui.openLinkouts();
                         tourstop.tour.onezoom.config.ui.populateLinkouts(
                             {"data":{
-                                "wiki": ["/tree/wikipedia_OZpage?Q=181537&embed=3&leaf=0&name=Amniota&wlang=en"]},
+                                "wiki": ["/tree/wikipedia_OZpage?Q=181537&popup=3&leaf=0&name=Amniota&wlang=en"]},
                              "name": "Amniota",
                              "ott": 229560,})
                     }, 6000)

@@ -5,7 +5,7 @@
   <script src="{{=URL('static','uikit-3/js/uikit.min.js')}}"></script>
   <link rel="stylesheet" href="{{=URL('static','uikit-3/css/uikit.min.css')}}" />
   <link rel="stylesheet" href="{{=URL('static','css/content.css')}}" type="text/css" />
-  <link rel="stylesheet" href="{{=URL('static','css/embed.css')}}" type="text/css" />
+  <link rel="stylesheet" href="{{=URL('static','css/popup.css')}}" type="text/css" />
   <link rel="shortcut icon" href="{{=URL('static', 'favicon.ico')}}" type="image/x-icon" />
   <link rel="apple-touch-icon" href="{{=URL('static','favicon.png')}}">
   <style>h2 {margin-top: 0}</style>
@@ -14,7 +14,7 @@
     response.include_files()
 }}
   <script>
-  {{include 'embed.js'}}
+  {{include 'popup.js'}}
   var OZstrings={{include 'treeviewer/js_strings.json'}};
   </script>
     <meta charset="utf-8">
@@ -41,7 +41,7 @@
         <![endif]-->
     {{block head}}{{end}}
   </head>
-  <body class="embedded">
+  <body class="popuped">
     {{include 'analytics.html'}}
     {{block masthead}}{{end}}
     {{include}}

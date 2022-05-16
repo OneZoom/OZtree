@@ -21,20 +21,20 @@
 <title>{{=T('OneZoom wikipedia page')}}</title>
 <head>
   <script type="text/javascript" src="{{=URL('static','js/jquery.min.js')}}"></script>
-  <script>{{include 'embed.js' # ban zooming, right click if necessary, etc.}}</script>
+  <script>{{include 'popup.js' # ban zooming, right click if necessary, etc.}}</script>
 </head>
 <body>
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
-{{  #note that embedding a remote page and removing links etc is trickier than if it is our own web2py page
+{{  #note that popup-ing a remote page and removing links etc is trickier than if it is our own web2py page
     #as we can't override the URL and A helpers. Instead, we parse the html using Jquery and replace links. 
     #There are no links apart from ones within the page (e.g. to #anchor_refs) that can be considered 
-    #"relative" to OneZoom. Also note that if embedding, all links should open in a new tab. 
+    #"relative" to OneZoom. Also note that if popup-ing, all links should open in a new tab. 
     #How we do this should be controlled by the remove_links param
     try:
-        embed = int(request.vars.embed)
-        if embed == 0:
+        popup = int(request.vars.popup)
+        if popup == 0:
            restrict_links = 0 #all links left
-        elif embed <=2:
+        elif popup <=2:
             restrict_links = 1 #external links open in tabs
         else:
             restrict_links = 2 #external links banned

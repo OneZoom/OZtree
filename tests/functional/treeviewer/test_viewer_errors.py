@@ -13,16 +13,16 @@ from ..functional_tests import FunctionalTest
 
 class TestViewerErrors(FunctionalTest):
     """
-    Test whether the embedding functions work
+    Can't nest viewer in viewer
     """
     @classmethod
     def setUpClass(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
         super().setUpClass()
 
-    def test_viewer_embedded(self):
+    def test_viewer_popuped(self):
         """
-        Do we get the proper error page if we accidentally embed a viewer within another viewer
+        Do we get the proper error page if we accidentally popup a viewer within another viewer
         """
-        self.browser.get(base_url + 'life?embed=3')
+        self.browser.get(base_url + 'life?popup=3')
         assert self.element_by_id_exists('stop_recursion')

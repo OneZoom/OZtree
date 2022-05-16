@@ -153,7 +153,6 @@ function setup(
         //Jump or fly to a place in the tree marked by the url when the page loads.
         setup_loading_page()
         oz.controller.find_proper_initial_threshold()
-        oz.controller.trigger_refresh_loop()
         //listen to user mouse, touch, icon click, window resize and user navigation events.
         oz.controller.bind_listener()
         //start garbage collection of tree to keep the size of the tree in memory reasonable

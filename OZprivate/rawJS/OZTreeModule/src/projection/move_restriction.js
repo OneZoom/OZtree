@@ -10,7 +10,6 @@ let maxfromedgex;
 let maxfromedgey;
 let maxfromedgexs;
 let maxfromedgeys;
-let sensitivity = config.sensitivity;
 
 /**
  * Whenever window size changes, the following variables would be changed as well.
@@ -77,10 +76,10 @@ function if_ok_zoom(x,y,r) {
   
 
   // figure out thresholds for all 4 edges based on mouse position
-  let maxaroundl = maxfromedgexs + ((1-sensitivity)*tree_state.button_x);
-  let maxaroundr = maxfromedgexs + ((1-sensitivity)*(tree_state.widthres-tree_state.button_x));
-  let maxaroundu = maxfromedgeys + ((1-sensitivity)*tree_state.button_y);
-  let maxaroundd =  maxfromedgeys + ((1-sensitivity)*(tree_state.heightres-tree_state.button_y));
+  let maxaroundl = maxfromedgexs + ((1-config.sensitivity)*tree_state.button_x);
+  let maxaroundr = maxfromedgexs + ((1-config.sensitivity)*(tree_state.widthres-tree_state.button_x));
+  let maxaroundu = maxfromedgeys + ((1-config.sensitivity)*tree_state.button_y);
+  let maxaroundd =  maxfromedgeys + ((1-config.sensitivity)*(tree_state.heightres-tree_state.button_y));
   
   
   if (circle_in_range(x,r,maxaroundl,tree_state.widthres-maxaroundr) && circle_in_range(y,r,maxaroundu,tree_state.heightres-maxaroundd)) {
