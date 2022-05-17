@@ -748,30 +748,6 @@ db.define_table('partner_taxa',
     Field('deactived', type=boolean, notnull=True), #allows us to keep details in the DB but not to do sponsorship. However, it is more efficient to delete them from this table
     format = '%(partner_identifier)s', migrate=is_testing)
 
-#some tables for tours
-#one row per tour, to store e.g. the name of the tour
-db.define_table('tours',
-    Field('identifier', type='string', unique=True, length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
-    Field('name', type='text', notnull=True), #the name, to go before 'TreeTour', e.g. 'Iridescence' - this may be translated
-    Field('description', type='text'), #a description of the tour
-    Field('rating', type='double'), #average user rating
-    format = '%(identifier)s', migrate=is_testing)
-
-#the list of stops for each tour: one row per stop, giving ids into the tourstops table
-db.define_table('tourorders',
-    Field('identifier', type='string', length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
-    Field('transition', type='string', length=20), #the transition to this stop from the previous one
-    Field('node_fullzoom', type=boolean), #when we transition to a node, should we zoom so the node fills the screen? this has no effect when zooming to a leaf. Note this should maybe be moved to be part of tourstops because it is conceptually part of a stop to properly define the place on the tree.
-    Field('stop_number', type='integer', notnull=True), #the 0-based order of this stop in the defined tour
-    Field('stop_id', type='integer', notnull=True), #the id in the tourstops table corresponding to this tour
-    format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
-
-db.define_table('tourstops',
-    Field('ott', type='integer', notnull=True), #the ott of this taxon
-    Field('description', type='text'), #text to show at this stop
-    Field('video', type='string', length=20), #the youtube video number, if there is a video
-    format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
-
 # These are popular places, tours or other things that a user can use to explore the tree
 # in a more guided way.  E.g. use as a first way into the tree or as suggestions of places
 # to go / things to do once in.
