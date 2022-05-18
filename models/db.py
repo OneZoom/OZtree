@@ -753,10 +753,45 @@ db.define_table('partner_taxa',
 db.define_table('tour',
     Field('identifier', type='string', unique=True, length=20, notnull=True),  # Identifier for tour, used in URLs, e.g.
     Field('lang', type='string', notnull=True, length=3), #the 'primary' 2  or 3 letter 'lang' code for this name (e.g. 'en', 'cmn'). See http://www.w3.org/International/articles/language-tags/
+    Field('author', type='text', notnull=True, default=''),  # Author of tour
     Field('title', type='text', notnull=True, default=''),  # Title for tour for listings
     Field('description', type='text', notnull=True, default=''),  # Description for tour for listings
-    Field('template_file', type='string', notnull=True),  # Template used for this tour, e.g. 'tour_template', assumed to be avaiable in '/static/tour'
+    Field('keywords', type='list:string', default=[]),  # Arbitary keywords, e.g. 'education', '11--16' (age)
+    Field('created', 'datetime', default=request.now),
+    Field('updated', 'datetime', default=request.now, update=request.now),
+    Field('views', 'integer', notnull=True, default=0),
     format='%(identifier)s', migrate=is_testing)
+
+# Tourstops within a tour
+db.define_table('tourstop',
+    Field('ott', type='integer', notnull=False),  # The OTT this tourstop points at. NULL => return to start
+    Field('target_pos', type='string', notnull=False,
+        filter_in=lambda obj: json.dumps(obj),
+        filter_out=lambda txt: json.loads(txt)),  # Final position relative to OTT (NULL, '"max"' or {xp:..,yp:..,zp:..})
+    Field('author', type='text', notnull=True, default=''),  # Author of tourstop (doesn't necessarily match tour in case of remix)
+    Field('transition_in', type='string', notnull=True, requires=IS_IN_SET(('fly', 'leap', 'fly_straight'))),  # Transition to use when flying to stop
+    Field('transition_in_visibility', type='string', notnull=False),  # When to show tourstop
+    Field('transition_in_wait', type='integer', notnull=False),  # How long to wait before entering into transition
+    Field('fly_in_speed', type='double', notnull=False, default=1),  # Speed relative to global_anim_speed
+    Field('stop_wait', type='integer', notnull=False),  # How long to wait at this stop (null => wait until "next" is pressed)
+    Field('stop_wait_after_backward', type='integer', notnull=False),  # How long to wait if entered by going back
+    Field('template_file', type='string', notnull=True),  # Template used for this tour, e.g. 'tour_template', assumed to be avaiable in '/static/tour'
+    Field('template_data', type='text', notnull=True,
+        filter_in=lambda obj: json.dumps(obj),
+        filter_out=lambda txt: json.loads(txt)),  # JSON template data for tourstop
+    Field('lang', type='string', notnull=True, length=3), #the 'primary' 2  or 3 letter 'lang' code for this name (e.g. 'en', 'cmn'). See http://www.w3.org/International/articles/language-tags/
+    Field('checked_by', type='string'),  # Who has checked the validity of this data?
+    Field('checked_updated', 'datetime', default=None),  # When did they do it?
+    Field('created', 'datetime', default=request.now),
+    Field('updated', 'datetime', default=request.now, update=request.now),
+    format='%(id)d_%(ott)d', migrate=is_testing)
+
+# Many:many table linking tours and stops
+db.define_table('tourorder',
+    Field('tour', db.tour),
+    Field('tourstop', db.tourstop),
+    Field('ord', type='integer', notnull=True),  # The position of this tourstop in the tour
+    format='%(ord)d', migrate=is_testing)
 
 # Derived table, stores all text contained in tour(stops) for each language
 db.define_table('tourtext',
@@ -764,25 +799,6 @@ db.define_table('tourtext',
     Field('lang', type='string', notnull=True, length=3),  # the 'primary' 2  or 3 letter 'lang' code for this name (e.g. 'en', 'cmn'). See http://www.w3.org/International/articles/language-tags/
     Field('concatenated_text', type='text'),  # Plain text version of all tourstops
     format='%(tour.identifier)s:%(lang_primary)s', migrate=is_testing)
-
-# Tourstops within a tour
-db.define_table('tourstop',
-    Field('tour', db.tour),
-    Field('ord', type='integer', notnull=True),  # The position of this tourstop in the tour
-    Field('ott', type='integer', notnull=False),  # The OTT this tourstop points at. NULL => return to start
-    Field('target_pos', type='string', notnull=False,
-        filter_in=lambda obj: json.dumps(obj),
-        filter_out=lambda txt: json.loads(txt)),  # Final position relative to OTT (NULL, '"max"' or {xp:..,yp:..,zp:..})
-    Field('transition_in', type='string', notnull=True, requires=IS_IN_SET(('fly', 'leap', 'fly_straight'))),  # Transition to use when flying to stop
-    Field('transition_in_visibility', type='string', notnull=False),  # When to show tourstop
-    Field('transition_in_wait', type='integer', notnull=False),  # How long to wait before entering into transition
-    Field('fly_in_speed', type='double', notnull=False, default=1),  # Speed relative to global_anim_speed
-    Field('stop_wait', type='integer', notnull=False),  # How long to wait at this stop (null => wait until "next" is pressed)
-    Field('stop_wait_after_backward', type='integer', notnull=False),  # How long to wait if entered by going back
-    Field('template_data', type='text', notnull=True,
-        filter_in=lambda obj: json.dumps(obj),
-        filter_out=lambda txt: json.loads(txt)),  # JSON template data for tourstop
-    format='%(tour.identifier)s:%(ord)d_%(ott)d', migrate=is_testing)
 
 # These are popular places, tours or other things that a user can use to explore the tree
 # in a more guided way.  E.g. use as a first way into the tree or as suggestions of places
