@@ -757,6 +757,7 @@ db.define_table('tour',
     Field('title', type='text', notnull=True, default=''),  # Title for tour for listings
     Field('description', type='text', notnull=True, default=''),  # Description for tour for listings
     Field('keywords', type='list:string', default=[]),  # Arbitary keywords, e.g. 'education', '11--16' (age)
+    Field('visible_in_search', 'boolean', notnull=True, default=True),  # Available in search results?
     Field('created', 'datetime', default=request.now),
     Field('updated', 'datetime', default=request.now, update=request.now),
     Field('views', 'integer', notnull=True, default=0),
@@ -782,6 +783,7 @@ db.define_table('tourstop',
     Field('lang', type='string', notnull=True, length=3), #the 'primary' 2  or 3 letter 'lang' code for this name (e.g. 'en', 'cmn'). See http://www.w3.org/International/articles/language-tags/
     Field('checked_by', type='string'),  # Who has checked the validity of this data?
     Field('checked_updated', 'datetime', default=None),  # When did they do it?
+    Field('visible_in_search', 'boolean', notnull=True, default=True),  # Available in search results?
     Field('created', 'datetime', default=request.now),
     Field('updated', 'datetime', default=request.now, update=request.now),
     format='%(id)d_%(ott)d', migrate=is_testing)
