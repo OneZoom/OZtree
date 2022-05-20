@@ -767,6 +767,7 @@ db.define_table('tour',
 # Tourstops within a tour
 db.define_table('tourstop',
     Field('ott', type='integer', notnull=False),  # The OTT this tourstop points at. NULL => return to start
+    Field('secondary_ott', type='integer', notnull=True),  # A second OTT when targeting a common ancestor
     Field('qs_opts', type='string', notnull=False, default='')  # QS-style options to apply to modify tourstop, e.g. into_node=true&initmark=...
     Field('author', type='text', notnull=True, default=''),  # Author of tourstop (doesn't necessarily match tour in case of remix)
     Field('transition_in', type='string', notnull=True, requires=IS_IN_SET(('fly', 'leap', 'fly_straight'))),  # Transition to use when flying to stop
