@@ -18,12 +18,12 @@ For full installation, you will additionally need to install web2py, and ensure 
 
 To create trees, you will need python and perl, along with a number of libraries, as listed below.
 
-### Required packages
+### Required packages (you will need these even if you're not creating trees)
 The OneZoom codebase uses the following software (licenses for each listed in braces). The first three are programming languages which may well already be installed on your computer.
 
 * [Python](https://www.python.org) (assumed version 3.7) with the following libraries installed:
 	* mysql-connector-python
-	* pymysql
+	* pymysql (needed even if not creating trees)
 	* piexif
 	* requests
 	* Dendropy
