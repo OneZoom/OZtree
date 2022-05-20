@@ -754,6 +754,7 @@ db.define_table('tour',
     Field('identifier', type='string', unique=True, length=20, notnull=True),  # Identifier for tour, used in URLs, e.g.
     Field('lang', type='string', notnull=True, length=3), #the 'primary' 2  or 3 letter 'lang' code for this name (e.g. 'en', 'cmn'). See http://www.w3.org/International/articles/language-tags/
     Field('author', type='text', notnull=True, default=''),  # Author of tour
+    Field('image_url', type='string'),  # URL to image used when displaying in e.g. popular places
     Field('title', type='text', notnull=True, default=''),  # Title for tour for listings
     Field('description', type='text', notnull=True, default=''),  # Description for tour for listings
     Field('keywords', type='list:string', default=[]),  # Arbitary keywords, e.g. 'education', '11--16' (age)
