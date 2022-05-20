@@ -6,7 +6,7 @@
 <button id="gift_aid_button" type='button' onclick="toggle_giftaid_visibility(event)">{{=T('Click if you are a UK tax payer and agree to Gift Aid')}}</button>
 <div id="gift_aid" {{if not request.vars.user_giftaid:}}style="display: none"{{pass}}>
   <h3>{{=T('Gift Aid declaration')}}</h3>
-  <p>{{=T('Thank you for considering Gift Aid. Please share your street address by ticking the box when you make your donation through PayPal, this information is required for us to reclaim gift aid. Please also confirm that you agree to the below Gift Aid declaration.')}}</p>
+  <p>{{=T('Thank you for considering Gift Aid. Please confirm that you agree to the below Gift Aid declaration.')}}</p>
 
   <p>I want to Gift Aid this donation and any donations I make in the future or have made in the past 4 years to OneZoom {{=giftaid_and}}{{=giftaid_anded_names}}</p>
   <p>I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of
@@ -15,7 +15,6 @@
   <p>If you pay Income Tax at the higher or additional rate and want to receive the additional tax relief due to you, you must include all your Gift Aid donations on your Self-Assessment tax return or ask HM Revenue and Customs to adjust your tax code.</p>
   <p>Gift Aid is reclaimed by OneZoom {{=giftaid_and}}{{=giftaid_anded_names}} from the tax you pay for the current tax year.
   {{if giftaid_and:}}We will share your name (from PayPal) and address with {{=giftaid_anded_names}} for the purposes of Gift Aid
-  {{else:}}Gift Aid is reclaimed by the charity from the tax you pay for the current tax year. We will use the name from your PayPal receipt for this purpose
   {{pass}} - please make sure that information is up to date.</p>
 
   <div class="singlerow">
