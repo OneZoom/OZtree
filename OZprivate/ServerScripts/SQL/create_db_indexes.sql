@@ -310,6 +310,3 @@ CREATE FULLTEXT INDEX name_fulltext_index ON ordered_nodes (name);
 
 DROP            INDEX name_fulltext_index ON ordered_leaves;
 CREATE FULLTEXT INDEX name_fulltext_index ON ordered_leaves (name);
-
-DROP            INDEX tourtext_concatenated_text ON tourtext;
-CREATE FULLTEXT INDEX tourtext_concatenated_text ON tourtext (concatenated_text);

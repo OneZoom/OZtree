@@ -794,13 +794,6 @@ db.define_table('tourorder',
     Field('ord', type='integer', notnull=True),  # The position of this tourstop in the tour
     format='%(ord)d', migrate=is_testing)
 
-# Derived table, stores all text contained in tour(stops) for each language
-db.define_table('tourtext',
-    Field('tour', db.tour),
-    Field('lang', type='string', notnull=True, length=3),  # the 'primary' 2  or 3 letter 'lang' code for this name (e.g. 'en', 'cmn'). See http://www.w3.org/International/articles/language-tags/
-    Field('concatenated_text', type='text'),  # Plain text version of all tourstops
-    format='%(tour.identifier)s:%(lang_primary)s', migrate=is_testing)
-
 # These are popular places, tours or other things that a user can use to explore the tree
 # in a more guided way.  E.g. use as a first way into the tree or as suggestions of places
 # to go / things to do once in.
