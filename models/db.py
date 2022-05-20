@@ -767,9 +767,7 @@ db.define_table('tour',
 # Tourstops within a tour
 db.define_table('tourstop',
     Field('ott', type='integer', notnull=False),  # The OTT this tourstop points at. NULL => return to start
-    Field('target_pos', type='string', notnull=False,
-        filter_in=lambda obj: json.dumps(obj),
-        filter_out=lambda txt: json.loads(txt)),  # Final position relative to OTT (NULL, '"max"' or {xp:..,yp:..,zp:..})
+    Field('qs_opts', type='string', notnull=False, default='')  # QS-style options to apply to modify tourstop, e.g. into_node=true&initmark=...
     Field('author', type='text', notnull=True, default=''),  # Author of tourstop (doesn't necessarily match tour in case of remix)
     Field('transition_in', type='string', notnull=True, requires=IS_IN_SET(('fly', 'leap', 'fly_straight'))),  # Transition to use when flying to stop
     Field('fly_in_speed', type='double', notnull=False, default=1),  # Speed relative to global_anim_speed
