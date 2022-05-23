@@ -610,7 +610,11 @@ class TestSponsorship(unittest.TestCase):
         reservation_add_to_basket('UT::BK001', reservation_row, dict(
             e_mail='001@unittest.example.com',
             user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
+            user_sponsor_kind="For",
             user_donor_name="Gertrude",
+            verified_sponsor_name="Arnold",
+            verified_kind="For",
+            verified_donor_name="Gertrude",
         ))
         reservation_confirm_payment('UT::BK001', 10000, dict(
             PP_transaction_code='UT::PP1',
@@ -645,7 +649,12 @@ class TestSponsorship(unittest.TestCase):
         util.verify_reservation(reservation_row)
         status, _, reservation_row, _ = get_reservation(ott1, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
+        self.assertEqual(reservation_row.user_sponsor_name, "Arnold")
+        self.assertEqual(reservation_row.verified_name, "Arnold")
+        self.assertEqual(reservation_row.user_donor_name, "Gertrude")
         self.assertEqual(reservation_row.verified_donor_name, "Gertrude")
+        self.assertEqual(reservation_row.user_sponsor_kind, "For")
+        self.assertEqual(reservation_row.verified_kind, "For")
         self.assertEqual(reservation_row.verified_time, current.request.now.replace(microsecond=0))
         self.assertEqual(reservation_row.reserve_time, current.request.now.replace(microsecond=0))
         self.assertEqual(reservation_row.sponsorship_duration_days, 365 * 4 + 1)
