@@ -898,7 +898,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             window.tree_date);
 
         onezoom.add_hook('on_tree_loaded', () => {
-            onezoom.tutorial.setup_setting(
+            if (onezoom.tutorial) onezoom.tutorial.setup_setting(
                 globals['tutorial_config'], 'tutorial',
                 globals.UI_callbacks.closeAll, // before the tutorial runs, close modals etc.
                 null, // nothing on tutorial end
@@ -908,7 +908,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
                 )})
         /* The screensaver is a type of tour with a different calling signature */
         onezoom.add_hook('on_tree_loaded', () => {
-            onezoom.screensaver.setup_setting(
+            if (onezoom.screensaver) onezoom.screensaver.setup_setting(
                 // screensaver_config may only be defined for some displays
                 window.globals['screensaver_config'], 'screensaver',
                 globals.UI_callbacks.closeAll, // before the screensaver runs, close modals etc.
