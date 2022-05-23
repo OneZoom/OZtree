@@ -763,6 +763,7 @@ def sponsorship_email_reminders(for_usernames=None):
                 email_address = usernames.email_for_username(r.username),
                 full_name=None,
                 pp_name=None,
+                username=r.username,
                 user_sponsor_lang=r.user_sponsor_lang,
                 initial_reminders=[],
                 final_reminders=[],

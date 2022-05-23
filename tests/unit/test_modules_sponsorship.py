@@ -857,10 +857,10 @@ class TestSponsorship(unittest.TestCase):
         current.request.now = (current.request.now + datetime.timedelta(days=(4*365) - 40))
         all_r = all_reminders()
         self.assertEqual(all_r, {
-            user_1: dict(email_address=email_1,
+            user_1: dict(username=user_1, email_address=email_1,
                 initial_reminders=[r1_1.OTT_ID, r1_2.OTT_ID, r1_3.OTT_ID],
                 final_reminders=[], not_yet_due=[], unsponsorable=[]),
-            user_2: dict(email_address=email_2,
+            user_2: dict(username=user_2, email_address=email_2,
                 initial_reminders=[r2_1.OTT_ID, r2_2.OTT_ID],
                 final_reminders=[], not_yet_due=[], unsponsorable=[]),
         })
@@ -869,10 +869,10 @@ class TestSponsorship(unittest.TestCase):
         db.banned.insert(ott=r1_1.OTT_ID)
         all_r = all_reminders()
         self.assertEqual(all_r, {
-            user_1: dict(email_address=email_1,
+            user_1: dict(username=user_1, email_address=email_1,
                 initial_reminders=[r1_2.OTT_ID, r1_3.OTT_ID],
                 final_reminders=[], not_yet_due=[], unsponsorable=[r1_1.OTT_ID]),
-            user_2: dict(email_address=email_2,
+            user_2: dict(username=user_2, email_address=email_2,
                 initial_reminders=[r2_1.OTT_ID, r2_2.OTT_ID],
                 final_reminders=[], not_yet_due=[], unsponsorable=[]),
         })
@@ -881,7 +881,7 @@ class TestSponsorship(unittest.TestCase):
         sponsorship_email_reminders_post(all_r[user_2])
         all_r = all_reminders()
         self.assertEqual(all_r, {
-            user_1: dict(email_address=email_1,
+            user_1: dict(username=user_1, email_address=email_1,
                 initial_reminders=[r1_2.OTT_ID, r1_3.OTT_ID],
                 final_reminders=[],
                 not_yet_due=[], unsponsorable=[r1_1.OTT_ID]),
@@ -897,7 +897,7 @@ class TestSponsorship(unittest.TestCase):
         r2_3 = util.purchase_reservation(basket_details=dict(e_mail=email_2))[0]
         all_r = all_reminders()
         self.assertEqual(all_r, {
-            user_2: dict(email_address=email_2,
+            user_2: dict(username=user_2, email_address=email_2,
                 initial_reminders=[r2_2.OTT_ID],
                 final_reminders=[r2_1.OTT_ID],
                 not_yet_due=[r2_3.OTT_ID], unsponsorable=[]),
@@ -912,11 +912,11 @@ class TestSponsorship(unittest.TestCase):
         current.request.now = (current.request.now + datetime.timedelta(days=10))
         all_r = all_reminders()
         self.assertEqual(all_r, {
-            user_1: dict(email_address=email_1,
+            user_1: dict(username=user_1, email_address=email_1,
                 initial_reminders=[r1_3.OTT_ID],
                 final_reminders=[r1_2.OTT_ID],
                 not_yet_due=[], unsponsorable=[r1_1.OTT_ID]),
-            user_2: dict(email_address=email_2,
+            user_2: dict(username=user_2, email_address=email_2,
                 initial_reminders=[],
                 final_reminders=[r2_2.OTT_ID],
                 not_yet_due=[r2_3.OTT_ID], unsponsorable=[]),
