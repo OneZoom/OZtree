@@ -432,26 +432,7 @@ class Tour {
         console.log("Error: no current tourstop")
         return
     }
-    if (tourstop.state === TourStopClass.INACTIVE) {
-        console.log("Error: tried to goto_next on an inactive stop")
-        return
-    }
-    if (tourstop.state !== TourStopClass.ARRIVED) {
-        // We are in a transition
-        if (tourstop.setting.transition_in !== "show_self") {
-            // We are showing the previous stop or nothing at all
-            //console.log("User pressed forward when transitioning with current stop not shown")
-            this.curr_stop().skip_transition()
-        } else {
-            // We are showing the current stop
-            //console.log("User pressed forward when transitioning with current stop shown")
-            this.curr_stop().skip_transition()
-        }
-    } else {
-        // We are at the tourstop and have finished transitions
-        //console.log("User pressed forward at current stop")
-        this.goto_next()
-    }
+    tourstop.skip()
   }
 
   user_backward() {

@@ -1,10 +1,12 @@
 import tree_state from '../tree_state'
 
-//Tour Stop States
-const INACTIVE = 'TOURSTOP_INACTIVE'
-const TRANSITION_WAIT = 'TOURSTOP_T_WAIT'
-const TRANSITION_MOVE = 'TOURSTOP_T_MOVE'
-const ARRIVED = 'TOURSTOP_ARRIVED'
+//Tour Stop State classes
+const tsstate = {
+  INACTIVE: 'tsstate-inactive',  // Tourstop hidden
+  TRANSITION_IN_WAIT: 'tsstate-transition_in_wait',  // Pre-transition wait
+  TRANSITION_IN: 'tsstate-transition_in',  // Transitioning into tourstop
+  ACTIVE_WAIT: 'tsstate-active_wait',  // Arrived at tourstop, waiting for user input / timer
+};
 
 const delay = (delayTime) => {
   return new Promise((resolve) => {
@@ -15,18 +17,13 @@ const delay = (delayTime) => {
 }
 
 class TourStopClass {
-  // Export the constants
-  static get INACTIVE() {return INACTIVE}
-  static get TRANSITION_WAIT() {return TRANSITION_WAIT}
-  static get TRANSITION_MOVE() {return TRANSITION_MOVE}
-  static get ARRIVED() {return ARRIVED}
-
   constructor(tour, container) {
     this.tour = tour
     this.controller = this.tour.onezoom.controller
     this.data_repo = this.tour.onezoom.data_repo
+    this.container = container
     this.goto_next_timer = null
-    this.state = INACTIVE
+    this.state = tsstate.INACTIVE
     /* If we set tree_state.flying = false, we stop the flight and resolve the promise.
      * This normally causes arrival at a stop, but sometimes we don't want to (e.g.
      * if we are pausing or force-exiting the tourstop. Setting block_arrival solves this
@@ -34,7 +31,6 @@ class TourStopClass {
     this.block_arrival = false
     this.direction = 'forward'
     this.container_appended = true
-    this.container = container
 
     // Extract all settings from data attributes
     this.setting = { exec: {} };
@@ -91,7 +87,7 @@ class TourStopClass {
     clearTimeout(this.goto_next_timer)
     this.block_arrival = true
     tree_state.flying = false
-    this.state = INACTIVE
+    this.state = tsstate.INACTIVE
     this.execute("on_exit")
     // Don't need to hide this stop: it might carry on being shown during next transition
   }
@@ -138,7 +134,7 @@ class TourStopClass {
 
   arrive_at_tourstop() {
     this.tour.clear_callback_timers()
-    if (this.state === INACTIVE) {
+    if (this.state === tsstate.INACTIVE) {
       return
     }
     // Show the tour stop *after* firing the function, in case we want the function do
@@ -148,20 +144,28 @@ class TourStopClass {
     if (stop_just_shown) {
        this.execute("on_show")
     }
-    this.state = ARRIVED
+    this.state = tsstate.ACTIVE_WAIT
     this.direction = 'forward'
     this.wait_and_goto_next()
   }    
 
   /**
-   * Called when user presses next during a transition 
+   * Called when user presses next, skip to either end of transition or next stop
    */
-  skip_transition() {
-    tree_state.flying = false
-    // leap (this should cancel any exiting flight)
-    this.controller.leap_to(this.OZid, this.setting.pos)
-    // We do not need to call arrive_at_tourstop as this should be called when the
-    // transition promise is resolved
+  skip() {
+    if (this.state === tsstate.INACTIVE) {
+      throw new Error("Tried to goto_next on an inactive stop")
+    } else if (this.state === tsstate.ACTIVE_WAIT) {
+      // Ready to go to next stop, so go
+      this.tour.goto_next()
+    } else {
+      // In transition_in[_wait], skip transition
+      tree_state.flying = false
+      // leap (this should cancel any exiting flight)
+      this.controller.leap_to(this.OZid, this.setting.pos)
+      // We do not need to call arrive_at_tourstop as this should be called when the
+      // transition promise is resolved
+    }
   }
 
   /**
@@ -171,7 +175,7 @@ class TourStopClass {
    */
   pause() {
     this.tour.clear_callback_timers() // don't bother pausing these, just cancel them
-    // We would like to get the time elapsed if we at waiting to move on from ARRIVED
+    // We would like to get the time elapsed if we at waiting to move on from ACTIVE_WAIT
     // but there is no obvious way to get it
     clearTimeout(this.goto_next_timer)
 
@@ -180,7 +184,7 @@ class TourStopClass {
   }
 
   resume() {
-    if ((this.state === INACTIVE) || (this.state === ARRIVED)) {
+    if ((this.state === tsstate.INACTIVE) || (this.state === tsstate.ACTIVE_WAIT)) {
       // Not in a transition, so jump back to the tourstop location (in case user has
       // moved the tree) and continue - it would be weird to fly on a path that wasn't 
       /// part of the tour - so jump back to the last place when you were on the tour
@@ -196,7 +200,7 @@ class TourStopClass {
   }
 
   throw_error_if_already_exited() {
-      if (this.state === INACTIVE) {
+      if (this.state === tsstate.INACTIVE) {
         throw new Error("Tourstop has already exited")
       }
   }
@@ -254,8 +258,8 @@ class TourStopClass {
        * Don't wait if tourstop is entered by going backwards (otherwise user might feel the app is stuck)
        * Don't wait if we are already in a transition animation (e.g. if we paused halfway through)
        */
-      if (this.state !== TRANSITION_MOVE) {
-        this.state = TRANSITION_WAIT
+      if (this.state !== tsstate.TRANSITION_IN) {
+        this.state = tsstate.TRANSITION_IN_WAIT
         const transition_in_wait = this.setting.transition_in_wait
         if (typeof transition_in_wait === 'number' && this.direction !== 'backward') {
           promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
@@ -269,7 +273,7 @@ class TourStopClass {
         /* Leap */
         promise = promise
           .then(() => {
-              this.state = TRANSITION_MOVE
+              this.state = tsstate.TRANSITION_IN
               this.throw_error_if_already_exited()
               return this.controller.leap_to(this.OZid, this.setting.pos)
            })
@@ -283,7 +287,7 @@ class TourStopClass {
             /* Fly-straight: this is an unusual thing to want to do */
             promise = promise
               .then(() => {
-                this.state = TRANSITION_MOVE
+                this.state = tsstate.TRANSITION_IN
                 this.throw_error_if_already_exited()
                 return this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
               })
@@ -292,7 +296,7 @@ class TourStopClass {
             /* Fly normally - if interrupted we reject() and require clicking "skip" */
             promise = promise
               .then(() => {
-                this.state = TRANSITION_MOVE
+                this.state = tsstate.TRANSITION_IN
                 this.throw_error_if_already_exited()
                 return this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
               })
