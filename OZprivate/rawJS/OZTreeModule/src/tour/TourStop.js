@@ -79,6 +79,21 @@ class TourStopClass {
     }
   }
 
+  get state() {
+    return this._state || tsstate.INACTIVE;
+  }
+  set state(new_state) {
+    this._state = new_state;
+
+    // Update container state based on our state
+    for (const k in tsstate) {
+        this.container.removeClass(tsstate[k])
+    }
+    this.container.addClass(this._state)
+
+    return this._state;
+  }
+
   /**
    * Exit current stop
    */
