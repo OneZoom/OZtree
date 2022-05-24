@@ -14,6 +14,14 @@ class Tour {
     this.started = false
     this.name = null
     this.callback_timers = [] // To store any timers that are fired off by callbacks, so they can be cancelled if necessary
+
+    this.wrapper_id = 'tour_wrapper';
+    this.div_wrapper = document.getElementById(this.wrapper_id);
+    if (!this.div_wrapper) {
+      console.error(
+        'Expected to have a tour container with id:' + this.wrapper_id + ', but none found'
+      )
+    }
   }
 
   /**
@@ -69,22 +77,11 @@ class Tour {
     this.ready_callback = ready_callback
     this.interaction_hooks = {} // when we add interaction hooks, we store the ids here so we can remove them later
 
-    this.wrapper_id = 'tour_wrapper'  // TODO: This should be unique?
-    this.exit_confirm_class = 'exit_confirm'
-    this.exit_cancel_class = 'exit_cancel'
-    /* the following 3 classes should probably belong to the tourstop instead */
-    this.forward_class = 'tour_forward'
-    this.backward_class = 'tour_backward'
-    this.play_class = 'tour_play'
-    this.pause_class = 'tour_pause'
-    this.resume_class = 'tour_resume'
-    this.exit_class = 'tour_exit'
     /* some default settings */
     this.hide_tourstop_style = {"display": "none"}
     this.show_tourstop_style = {"display": "block"}
 
     this.tour_loaded = new Promise((resolve) => this.resolve_tour_loaded = resolve);
-
 
     if (tour_setting instanceof window.Text) {
       // HTML TextObject (i.e. the content of a script tag), render that as our tour
@@ -99,23 +96,15 @@ class Tour {
    * Add the tour HTML to our page and configure ourselves accordingly
    */
   load_tour_from_string(tour_html_string) {
-    let div_wrapper = document.getElementById(this.wrapper_id);
-
-    if (!div_wrapper) {
-      console.error(
-        'Expected to have a tour container with id:' + this.wrapper_id + ', but none found'
-      )
-    }
-
     let tour_div = $(tour_html_string);
-    tour_div.appendTo(div_wrapper)
+    tour_div.appendTo(this.div_wrapper)
 
     this.tourstop_array = [].map.call(tour_div[0].querySelectorAll(':scope > .container'), (div_tourstop) => {
       let ts = new TourStopClass(this, $(div_tourstop));
       this.bind_template_ui_event(ts);
       return ts;
     });
-    this.exit_confirm_popup = tour_div.children('.' + this.exit_confirm_class)
+    this.exit_confirm_popup = tour_div.children('.exit_confirm')
     this.exit_confirm_popup.hide();
 
     this.load_ott_id_conversion_map(this.ready_callback)
@@ -473,27 +462,27 @@ class Tour {
    * Bind previous, next, pause, play, exit button event
    */
   bind_template_ui_event(tourstop) {
-    tourstop.container.find('.' + this.forward_class).click(() => {
+    tourstop.container.find('.tour_forward').click(() => {
       this.user_forward()
     })
 
-    tourstop.container.find('.' + this.backward_class).click(() => {
+    tourstop.container.find('.tour_backward').click(() => {
       this.user_backward()
     })
 
-    tourstop.container.find('.' + this.play_class).click(() => {
+    tourstop.container.find('.tour_play').click(() => {
       this.user_play()
     })
 
-    tourstop.container.find('.' + this.pause_class).click(() => {
+    tourstop.container.find('.tour_pause').click(() => {
       this.user_pause()
     })
 
-    tourstop.container.find('.' + this.resume_class).click(() => {
+    tourstop.container.find('.tour_resume').click(() => {
       this.user_resume()
     })
 
-    tourstop.container.find('.' + this.exit_class).click(() => {
+    tourstop.container.find('.tour_exit').click(() => {
       this.user_exit()
     })
   }
@@ -502,11 +491,11 @@ class Tour {
    * Bind exit or hide exit confirm events on the buttons of exit confirm popup
    */
   bind_exit_confirm_event() {
-    this.exit_confirm_popup.find('.' + this.exit_confirm_class).click(() => {
+    this.exit_confirm_popup.find('.exit_confirm').click(() => {
       this.user_exit()
       this.exit_confirm_popup.hide()
     })
-    this.exit_confirm_popup.find('.' + this.exit_cancel_class).click(() => {
+    this.exit_confirm_popup.find('.exit_cancel').click(() => {
       this.user_resume()
       this.exit_confirm_popup.hide()
     })
