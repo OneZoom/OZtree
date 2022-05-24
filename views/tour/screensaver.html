@@ -1,0 +1,11 @@
+<div class="tour {{=request.function}}">
+{{for ott in screensaver_otts:}}
+  <div class='container'
+       data-ott="{{=ott}}"
+       data-fly_in_speed="0.1"
+       data-wait="1000"
+       style="display: none"
+       >
+  </div>
+{{pass}}
+</div>

@@ -131,9 +131,6 @@
     {{include 'treeviewer/dynamic_scripts.html' }}
     {{include 'treeviewer/server_urls.html' }}
       <script>
-animation_config = {{include 'treeviewer/homepage_animation.js'}}
-      </script>
-      <script>
 $(document).ready(function() {    /* Mainly a place to attach JS event handlers */
     // Set up some global variables
     /** CREATE A ONEZOOM INSTANCE
@@ -157,7 +154,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
         window.onezoom.add_hook('on_tree_loaded', () => {
             /* we use the 'screensaver' tour to provide a constant animation */
             onezoom.screensaver.setup_setting(
-                animation_config,
+                '/tour/homepage_animation',
                 'homepage_animation',
                 null, // nothing before the screensaver runs
                 true, // loop back and forth
