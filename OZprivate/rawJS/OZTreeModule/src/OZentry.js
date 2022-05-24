@@ -122,7 +122,6 @@ function setup(
   oz.search_manager = search_manager;
   // TO DO - use data_repo passed in to the entry function, so we don't need to include it in the initial JS
   oz.search_manager.add_data_repo(oz.data_repo);
-  oz.tutorial = oz.utils.new_tour(oz)
   oz.screensaver = new Screensaver(oz)
   oz.add_hook = add_hook;
 

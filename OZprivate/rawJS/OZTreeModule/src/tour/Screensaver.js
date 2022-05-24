@@ -26,11 +26,8 @@ class Screensaver extends Tour {
    * The primary parameters that structure the tour are in the settings_object, including
    * details of the stops, paths to html templates, etc.
    *
-   * @param {Object} tour_setting An object containing pre-specified elements giving 
-   *    parameters of the tour and details of the tour stops. The object properties may
-   *    include "general", "tourstop" and "tourstop_shared". "tourstop" should be an
-   *    array describing each tour stop, with an ott and other properties specified.
-   *    For an example, run the .example() method of this object.
+   * @param {String} tour_setting A string specifying where to fetch the tour document from
+   *    or TextContent node containing a tour HTML string
    * @param {String} name A unique name for this tour for help in indentification. This
    *    name is added as a class to each tourstop. If null, the name is automatically set
    *    to tour_1, tour_2, etc.
@@ -98,7 +95,6 @@ class Screensaver extends Tour {
     }
     this.curr_step++
     this.curr_stop().play_from_start('forward')
-    this.set_ui_content()
   }
 
   /**
@@ -106,7 +102,7 @@ class Screensaver extends Tour {
    * Start after 'auto_activate_after' length of inactivity
    */
   set_auto_start() {
-    if (!this.setting || (this.inactive_duration === null)) {
+    if (this.tourstop_array.length === 0 || (this.inactive_duration === null)) {
         return
     }
     if (this.inactive_duration == 0) {

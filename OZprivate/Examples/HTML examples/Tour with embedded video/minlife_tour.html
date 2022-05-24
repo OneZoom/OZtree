@@ -1120,7 +1120,7 @@ function setupUI() {
     
     $('#controlButtons #howToUseButton .icon-container')
         .click(function () {
-            onezoom.tutorial.start()  //activate tutorial
+            window.oz_tutorial.start()  //activate tutorial
         })
 
     $('input[name="imgsource"]').change(function() {onezoom.controller.set_image_source(this.value)});
@@ -1433,7 +1433,8 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             window.tree_date);
 
         onezoom.add_hook('on_tree_loaded', () => {
-            onezoom.tutorial.setup_setting(
+            window.oz_tutorial = onezoom.utils.new_tour(onezoom)
+            window.oz_tutorial.setup_setting(
                 globals['tutorial_config'], 'tutorial',
                 globals.UI_callbacks.closeAll, // before the tutorial runs, close modals etc.
                 null, // nothing on tutorial end

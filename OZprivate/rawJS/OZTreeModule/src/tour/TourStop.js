@@ -21,11 +21,10 @@ class TourStopClass {
   static get TRANSITION_MOVE() {return TRANSITION_MOVE}
   static get ARRIVED() {return ARRIVED}
 
-  constructor(tour, setting) {
+  constructor(tour, container) {
     this.tour = tour
     this.controller = this.tour.onezoom.controller
     this.data_repo = this.tour.onezoom.data_repo
-    this.setting = setting
     this.goto_next_timer = null
     this.state = INACTIVE
     /* If we set tree_state.flying = false, we stop the flight and resolve the promise.
@@ -34,11 +33,37 @@ class TourStopClass {
      */ 
     this.block_arrival = false
     this.direction = 'forward'
-    this.template_loaded = $.Deferred() // Allows us to fire off something once all templates have loaded
-    this.container_appended = false
+    this.container_appended = true
+    this.container = container
 
-    //Container is set when tour.setup_setting is called
-    this.container = null
+    // Extract all settings from data attributes
+    this.setting = { exec: {} };
+    [].forEach.call(this.container[0].attributes, (attr) => {
+      if (!/^data-/.test(attr.name)) return;
+      let name = attr.name.replace(/^data-/, ''), val = attr.value;
+
+      // Convert parameter datatypes
+      switch(name) {
+        case "transition_in_wait":
+        case "wait":
+          val = parseInt(val);
+          break;
+        case "fly_in_speed":
+          val = parseFloat(val);
+          break;
+        case "show_tourstop_style":
+        case "hide_tourstop_style":
+          val = JSON.parse(val);
+          break;
+      }
+      // Wire up exec functions
+      this.setting.exec['on_start'] = this.container[0].exec_on_start;
+      this.setting.exec['on_show'] = this.container[0].exec_on_show;
+      this.setting.exec['on_exit'] = this.container[0].exec_on_exit;
+
+      this.setting[name] = val;
+    });
+    this.hide()
   }
 
   /**
@@ -193,10 +218,6 @@ class TourStopClass {
                 this.tour.callback_timers.push(timers)
             }
           }
-      } else {
-          console.log(
-              "Cannot run whatever is defined in `exec." + exec_when + "`" +
-              " This may be because your settings are in JSON not javascript format")
       }
     }
   }
@@ -206,7 +227,7 @@ class TourStopClass {
    */
   play_from_start(direction) {
     if (window.is_testing) console.log(Date().toString() + ": playing tourstop " +
-        (this.setting.update_class.title || this.tour.curr_step) + " - " + direction)
+        this.tour.curr_step + " - " + direction)
     this.execute("on_start")
     if (this.setting.transition_in_visibility === "force_hide") {
       this.tour.hide_and_show_stops(null, true) // block interaction from stopping tour

@@ -1,0 +1,23 @@
+<div class="tour {{=request.function}}">
+{{for key in anim:}}{{if key.isdigit():}}
+  <div class='container tourstop'
+       data-ott="{{=key}}"
+       data-transition_in_visibility="show_self"
+       data-fly_in_speed="1.7"
+       data-wait="7500"
+       data-hide_tourstop_style='{ "remove_class": "active" }'
+       data-show_tourstop_style='{ "add_class": "active" }'
+       >
+    <div><a class="linkout oz-pill pill-leafout"
+            href="{{=hrefs.get(key, '')}}"
+            target="_blank"
+            >{{=T('Explore')}} {{name=html_names.get(key, '')}}{{=XML(add_the(name, False) if has_vernacular else name)}}</a></div>
+    <div class="tour-controls">
+      <a href="javascript:void(0)" class="tour_backward"><img src="{{=URL('static','images/oz-leftarrow-darkbg.svg')}}" alt="prev" width="35" height="35" /></a>
+      <a href="javascript:void(0)" class="tour_play"><img src="{{=URL('static','images/oz-playarrow-darkbg.svg')}}" alt="play" width="35" height="35" /></a>
+      <a href="javascript:void(0)" class="tour_pause"><img src="{{=URL('static','images/oz-pausearrow-darkbg.svg')}}" alt="pause" width="35" height="35" /></a>
+      <a href="javascript:void(0)" class="tour_forward"><img src="{{=URL('static','images/oz-rightarrow-darkbg.svg')}}" alt="next" width="35" height="35" /></a>
+    </div>
+  </div>
+{{pass}}{{pass}}
+</div>
