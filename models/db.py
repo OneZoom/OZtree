@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os.path
 import img
+import json
 
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
@@ -748,29 +749,50 @@ db.define_table('partner_taxa',
     Field('deactived', type=boolean, notnull=True), #allows us to keep details in the DB but not to do sponsorship. However, it is more efficient to delete them from this table
     format = '%(partner_identifier)s', migrate=is_testing)
 
-#some tables for tours
-#one row per tour, to store e.g. the name of the tour
-db.define_table('tours',
-    Field('identifier', type='string', unique=True, length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
-    Field('name', type='text', notnull=True), #the name, to go before 'TreeTour', e.g. 'Iridescence' - this may be translated
-    Field('description', type='text'), #a description of the tour
-    Field('rating', type='double'), #average user rating
-    format = '%(identifier)s', migrate=is_testing)
+# Root for all tours
+db.define_table('tour',
+    Field('identifier', type='string', unique=True, length=20, notnull=True),  # Identifier for tour, used in URLs, e.g.
+    Field('lang', type='string', notnull=True, length=3), #the 'primary' 2  or 3 letter 'lang' code for this name (e.g. 'en', 'cmn'). See http://www.w3.org/International/articles/language-tags/
+    Field('author', type='text', notnull=True, default=''),  # Author of tour
+    Field('image_url', type='string'),  # URL to image used when displaying in e.g. popular places
+    Field('title', type='text', notnull=True, default=''),  # Title for tour for listings
+    Field('description', type='text', notnull=True, default=''),  # Description for tour for listings
+    Field('keywords', type='list:string', default=[]),  # Arbitary keywords, e.g. 'education', '11--16' (age)
+    Field('visible_in_search', 'boolean', notnull=True, default=True),  # Available in text search results or nearby tours search
+    Field('created', 'datetime', default=request.now),
+    Field('updated', 'datetime', default=request.now, update=request.now),
+    Field('views', 'integer', notnull=True, default=0),
+    format='%(identifier)s', migrate=is_testing)
 
-#the list of stops for each tour: one row per stop, giving ids into the tourstops table
-db.define_table('tourorders',
-    Field('identifier', type='string', length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
-    Field('transition', type='string', length=20), #the transition to this stop from the previous one
-    Field('node_fullzoom', type=boolean), #when we transition to a node, should we zoom so the node fills the screen? this has no effect when zooming to a leaf. Note this should maybe be moved to be part of tourstops because it is conceptually part of a stop to properly define the place on the tree.
-    Field('stop_number', type='integer', notnull=True), #the 0-based order of this stop in the defined tour
-    Field('stop_id', type='integer', notnull=True), #the id in the tourstops table corresponding to this tour
-    format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
+# Tourstops within a tour
+db.define_table('tourstop',
+    Field('ott', type='integer', notnull=False),  # The OTT this tourstop points at. NULL => return to start
+    Field('secondary_ott', type='integer', notnull=True),  # A second OTT when targeting a common ancestor
+    Field('qs_opts', type='string', notnull=False, default=''),  # QS-style options to apply to modify tourstop, e.g. into_node=true&initmark=...
+    Field('author', type='text', notnull=True, default=''),  # Author of tourstop (doesn't necessarily match tour in case of remix)
+    Field('transition_in', type='string', notnull=True, requires=IS_IN_SET(('fly', 'leap', 'fly_straight'))),  # Transition to use when flying to stop
+    Field('fly_in_speed', type='double', notnull=False, default=1),  # Speed relative to global_anim_speed
+    Field('transition_in_wait', type='integer', notnull=False),  # How long to wait before entering into transition
+    Field('stop_wait', type='integer', notnull=False),  # How long to wait at this stop (null => wait until "next" is pressed)
+    Field('stop_wait_after_backward', type='integer', notnull=False),  # How long to wait if entered by going back
+    Field('template_file', type='string', notnull=True),  # Template used for this tour, e.g. 'tour_template', assumed to be avaiable in '/static/tour'
+    Field('template_data', type='text', notnull=True,
+        filter_in=lambda obj: json.dumps(obj),
+        filter_out=lambda txt: json.loads(txt)),  # JSON template data for tourstop
+    Field('lang', type='string', notnull=True, length=3), #the 'primary' 2  or 3 letter 'lang' code for this name (e.g. 'en', 'cmn'). See http://www.w3.org/International/articles/language-tags/
+    Field('checked_by', type='string'),  # Who has checked the validity of this data?
+    Field('checked_updated', 'datetime', default=None),  # When did they do it?
+    Field('visible_in_search', 'boolean', notnull=True, default=True),  # Available in tourstop-search for remixing a tour?
+    Field('created', 'datetime', default=request.now),
+    Field('updated', 'datetime', default=request.now, update=request.now),
+    format='%(id)d_%(ott)d', migrate=is_testing)
 
-db.define_table('tourstops',
-    Field('ott', type='integer', notnull=True), #the ott of this taxon
-    Field('description', type='text'), #text to show at this stop
-    Field('video', type='string', length=20), #the youtube video number, if there is a video
-    format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
+# Many:many table linking tours and stops
+db.define_table('tourorder',
+    Field('tour', db.tour),
+    Field('tourstop', db.tourstop),
+    Field('ord', type='integer', notnull=True),  # The position of this tourstop in the tour
+    format='%(ord)d', migrate=is_testing)
 
 # These are popular places, tours or other things that a user can use to explore the tree
 # in a more guided way.  E.g. use as a first way into the tree or as suggestions of places
