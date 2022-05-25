@@ -125,6 +125,10 @@ class Tour {
       let ts = new TourStopClass(this, $(div_tourstop));
       return ts;
     });
+    if (this.tourstop_array.length > 0) {
+      this.tourstop_array[0].container.addClass('ts-first')
+      this.tourstop_array[this.tourstop_array.length - 1].container.addClass('ts-last')
+    }
     this.exit_confirm_popup = this.container.children('.exit_confirm')
     this.exit_confirm_popup.hide();
 

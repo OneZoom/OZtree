@@ -27,4 +27,8 @@
     /* tour_resume buttons only visible the tour is paused */
     .tour_resume { display: none }
     &.tstate-paused .tour_resume { display: initial }
+
+    /* tour_backward & tour_forward don't make sense at beginning / end */
+    > .container.ts-first .tour_backward { display: none }
+    > .container.ts-last .tour_forward { display: none }
 }
