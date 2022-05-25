@@ -61,12 +61,11 @@ var pagetitle_func = function(nm) {return (nm)?("OneZoom restricted: "+ nm):"One
     {{ include "tour/tourstop/footer.html" }}
   </div>
 
-  <div class="container tour_container"
+  <!-- NB: visible-transition_in means this tourstop is visible in transition_in, as well as active_wait (by default) -->
+  <div class="container tour_container visible-transition_in"
        data-ott="81461"
        comment-fly_in_speed="speed relative to the global_anim_speed, set via controller.set_anim_speed()"
        data-fly_in_speed="2"
-       comment-transition_in_visibility="Should we show the tourstop on arrival (default), during transition-in ('show_self'), or force no tourstops to be shown during transition in ('force_hide'). If the default then the previous stop is likely to carry on being shown during transition, unless it has chosen to hide itself"
-       data-transition_in_visibility="show_self"
        comment-transition_in_wait="how long to wait (e.g. after showing self) before entering into the transition, in milliseconds."
        data-transition_in_wait="1000"
        data-wait="3000"
@@ -112,7 +111,6 @@ $(document).on("setupOneZoom", function(event, onezoom_object) {
             null, // nothing on tutorial end
             null, // nothing on premature exit
             null, // allow interaction to pause the tutorial
-            function() {$(".tour_resume").show()} // if interaction, show the resume button
             )});
 });
 

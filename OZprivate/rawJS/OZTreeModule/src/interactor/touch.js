@@ -20,10 +20,7 @@ class TouchInteractor {
     canvas.addEventListener("touchend", this.touch_end.bind(this), false);
   }
   touch_start(event) {
-    call_hook('touch_start')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('touch_start')) return;
 
     this.controller.close_all();
     event.preventDefault();
@@ -42,10 +39,7 @@ class TouchInteractor {
   }
   
   touch_move(event) {
-    call_hook('touch_move')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('touch_move')) return;
 
     event.preventDefault();    
     event.stopPropagation();
@@ -87,10 +81,7 @@ class TouchInteractor {
   }
   
   touch_end(event) {
-    call_hook('touch_end')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('touch_end')) return;
     
     event.preventDefault();    
     event.stopPropagation();
