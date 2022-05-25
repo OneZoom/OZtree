@@ -114,6 +114,8 @@ class Tour {
   }
 
   add_canvas_interaction_callbacks() {
+    let fn;
+
     /** 
      * Add hooks called when the user interacts with the onezoom canvas
      */
@@ -123,46 +125,43 @@ class Tour {
       /**
        * Default behaviour: pause tour on interaction
        */
-      Interaction_Action_Arr.forEach(action_name => {
-        if (window.is_testing) console.log("Adding hook for " + action_name)
-        this.interaction_hooks[action_name] = add_hook(action_name, () => {
-            if (typeof this.interaction_callback === 'function') {
-                this.interaction_callback()
-            }
-            this.user_pause()
-        })
-      })
-    } else {
+      fn = () => this.user_pause()
+    } else if (this.interaction === 'exit') {
       /**
-       * Exit tour after interaction if setting.interaction.effect equals 'exit'
+       * Exit tour after interaction
        */
-      if (this.interaction === 'exit' ||
-          this.interaction === 'exit_after_confirmation') {
-        Interaction_Action_Arr.forEach(action_name => {
-          if (window.is_testing) console.log("Adding hook for " + action_name)
-          this.interaction_hooks[action_name] = add_hook(action_name, () => {
-            if (window.is_testing) console.log("Action detected with interaction = " + this.interaction + ", exiting")
-            if (typeof this.interaction_callback === 'function') {
-                this.interaction_callback()
-            }
-            if (this.interaction === 'exit') {
-              this.user_exit()
-            } else if (this.exit_confirm_popup) {
-              this.user_pause()
-              this.exit_confirm_popup.show()
-            }
-          })
-        })
-      } else {
-        if (typeof this.interaction_callback === 'function') {
-          Interaction_Action_Arr.forEach(action_name => {
-            this.interaction_hooks[action_name] = add_hook(action_name, () => {
-              this.interaction_callback()
-            })
-          })
-        }
+      fn = () => this.user_exit()
+    } else if (this.interaction === 'exit_after_confirmation') {
+      /**
+       * Exit tour after interaction & confirmation
+       */
+      fn = () => { this.user_pause() ; this.exit_confirm_popup.show() }
+    } else if (this.interaction === 'block') {
+      /**
+       * Block: Stop any other interaction happening
+       * (NB: any custom interaction will happen first)
+       */
+      fn = () => false
+    } else if (this.interaction === 'block_on_flight') {
+      /**
+       * Block during flight, otherwise pause tour
+       */
+      fn = () => {
+          if (tree_state.flying) return false;
+          this.user_pause()
       }
+    } else {
+      throw new Error("Unknown value of interaction setting: " + this.interaction)
     }
+
+    if (window.is_testing) console.log("Adding canvas hooks")
+    Interaction_Action_Arr.forEach(action_name => {
+        if (typeof this.interaction_callback === 'function') {
+            // Add the user's interaction callback as well
+            this.interaction_hooks[action_name + '_custom'] = add_hook(action_name, this.interaction_callback)
+        }
+        this.interaction_hooks[action_name] = add_hook(action_name, fn)
+    })
   }
 
   remove_canvas_interaction_callbacks() {
@@ -195,12 +194,6 @@ class Tour {
         this.start_callback()
       }
 
-      /**
-       * disable interaction - it should be restored immediately the first stop is shown
-       * or on exit, but for the moment we should not allow the tour to be interrupted
-       * as there may otherwise be no indication that we are on a tour
-       */
-      this.block_user_interaction_if_required()
       // RUN!
       this.curr_stop().play_from_start('forward')
     })
@@ -225,7 +218,6 @@ class Tour {
     this.curr_step = 0
     this.prev_step = null
     this.remove_canvas_interaction_callbacks()
-    tree_state.disable_interaction = false
   }
 
 
@@ -296,41 +288,6 @@ class Tour {
 
   prev_stop() {
     return this.tourstop_array[Math.abs(this.prev_step)]
-  }
-
-  /**
-   * Block any user interaction in cases where it would normally be allowed: i.e. when
-   * tour.interaction equals 'null' or default. In other cases, user interaction during a
-   * tour is trapped and handled sensibly
-   */
-  block_user_interaction_if_required() {
-    if (this.interaction && 
-      (this.interaction === 'exit' || 
-      this.interaction === 'exit_after_confirmation')) {
-        //Do nothing
-    } else {
-      //console.log("Blocking interaction")
-      // Setting tree_state.disable_interaction doesn't disable callbacks: we need to do
-      // that explicitly
-      this.remove_canvas_interaction_callbacks()
-      tree_state.disable_interaction = true
-    }
-  }
-
-  /**
-   * Recover user interaction after block_user_interaction_if_required()
-   */
-  restore_user_interaction_if_required() {
-    if (this.interaction &&
-      (this.interaction === 'block' ||
-      this.interaction === 'exit' ||
-      this.interaction === 'exit_after_confirmation')) {
-      //Do nothing
-    } else {
-      //console.log("Enabling interaction")
-      this.add_canvas_interaction_callbacks()
-      tree_state.disable_interaction = false
-    }
   }
 
   /**
