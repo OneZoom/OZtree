@@ -5,6 +5,13 @@ import { add_hook, remove_hook } from '../util';
 let tour_id = 1
 const Interaction_Action_Arr = ['mouse_down', 'mouse_wheel', 'touch_start', 'touch_move', 'touch_end']
 
+//Tour State classes
+const tstate = {
+  INACTIVE: 'tstate-inactive',
+  PLAYING: 'tstate-playing',
+  PAUSED: 'tstate-paused',
+};
+
 class Tour {
   constructor(onezoom) {
     this.tour_id = tour_id++
@@ -14,6 +21,7 @@ class Tour {
     this.tourstop_array = []
     this.started = false
     this.name = null
+    this.state = tstate.INACTIVE;
     this.callback_timers = [] // To store any timers that are fired off by callbacks, so they can be cancelled if necessary
 
     this.wrapper_id = 'tour_wrapper';
@@ -34,6 +42,18 @@ class Tour {
     // TODO:
   }
 
+  get state() {
+    return this._state || tstate.INACTIVE;
+  }
+  set state(new_state) {
+    this._state = new_state;
+
+    // Update container state based on our state
+    // NB: Do this atomically so we don't generate mutation noise
+    if (this.container) this.container[0].className = this.container[0].className.replace(/ tstate-(\w+)|$/, ' ' + this._state);
+
+    return this._state;
+  }
 
   /**
    * Create tour stops based on a settings object (which could be parsed from JSON)
@@ -196,6 +216,7 @@ class Tour {
       }
 
       // RUN!
+      this.state = tstate.PLAYING
       this.curr_stop().play_from_start('forward')
     })
   }
@@ -208,6 +229,7 @@ class Tour {
       this.curr_stop().exit()
     }
     if (this.prev_stop()) this.prev_stop().exit()
+    this.state = tstate.INACTIVE
     //disable tour stylesheet
     $('#tour_style_' + this.tour_id).attr('disabled', 'disabled')
     $('#tour_exit_confirm_style_' + this.tour_id).attr('disabled', 'disabled')
@@ -317,6 +339,7 @@ class Tour {
     if (this.started && this.curr_stop()) {
       if (window.is_testing) console.log("User paused")
       this.remove_canvas_interaction_callbacks() // Don't trigger any more pauses
+      this.state = tstate.PAUSED
       this.curr_stop().pause()
     }
   }
@@ -328,6 +351,7 @@ class Tour {
     if (this.started && this.curr_stop()) {
       if (window.is_testing) console.log("User resumed")
       this.add_canvas_interaction_callbacks() // Allow interactions to trigger pauses again
+      this.state = tstate.PLAYING
       this.curr_stop().resume()
     }
   }
