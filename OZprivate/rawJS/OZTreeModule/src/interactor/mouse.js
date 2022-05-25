@@ -35,10 +35,7 @@ class MouseInteractor {
   }
   
   mouse_dblclick(event) {
-    call_hook('mouse_dblclick')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('mouse_dblclick')) return;
     
     tree_state.flying = false;
     set_mouse_position(this, event);
@@ -50,10 +47,7 @@ class MouseInteractor {
   }
   
   mouse_wheel(event) {
-    call_hook('mouse_wheel')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('mouse_wheel')) return;
 
     tree_state.flying = false;
     event.preventDefault();
@@ -86,10 +80,7 @@ class MouseInteractor {
   }
   
   mouse_down(event) {
-    call_hook('mouse_down')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('mouse_down')) return;
 
     tree_state.flying = false;
     set_mouse_position(this, event);
@@ -101,10 +92,7 @@ class MouseInteractor {
   }
   
   mouse_move(event) {
-    call_hook('mouse_move')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('mouse_move')) return;
 
     if (tree_state.mouse_hold) {
       let new_mouse_x = event.clientX - this.canvas.offsetLeft;
@@ -124,10 +112,7 @@ class MouseInteractor {
   }
   
   mouse_up(event) {
-    call_hook('mouse_up')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('mouse_up')) return;
 
     /**
      * It's important to call record_url_delayed before controller.click. 
