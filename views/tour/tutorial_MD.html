@@ -1,6 +1,6 @@
 <div class="tour tutorial_MD {{=request.function}}">
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'tour/tutorial_template.css')}}" />
-  <div class="container tour_container"
+  <div class="container tour_container visible-transition_out"
        data-ott="93302"
        data-transition_in="fly"
        data-fly_in_speed="2"
@@ -25,10 +25,9 @@
     {{ include "tour/tourstop/footer.html" }}
   </div>
 
-  <div class="container tour_container"
+  <div class="container tour_container visible-transition_in"
        data-ott="351685"
        data-transition_in="fly_straight"
-       data-transition_in_visibility="show_self"
        data-transition_in_wait="1000"
        data-fly_in_speed="0.25"
        data-wait="2000"
@@ -48,10 +47,9 @@
     {{ include "tour/tourstop/footer.html" }}
   </div>
 
-  <div class="container tour_container"
+  <div class="container tour_container visible-transition_in"
        data-ott="913935"
        data-fly_in_speed="0.3"
-       data-transition_in_visibility="show_self"
        data-transition_in_wait="1000"
        data-wait="2000"
        style="top: 200px; left: 350px"
@@ -71,7 +69,6 @@
 
   <div class="container tour_container"
        data-ott="532117"
-       data-transition_in_visibility="force_hide"
        data-wait="9000"
        style="top: 40vh; left: 30vh"
        >
@@ -84,7 +81,6 @@
 
   <div class="container tour_container"
        data-ott="1034204"
-       data-transition_in_visibility="force_hide"
        data-wait="9000"
        style="top: 40vh; left: 30vh"
        >
@@ -97,7 +93,6 @@
 
   <div class="container tour_container"
        data-ott="821973"
-       data-transition_in_visibility="force_hide"
        data-wait="9000"
        style="top: 40vh; left: 30vh"
        >
@@ -110,7 +105,6 @@
 
   <div class="container tour_container"
        data-ott="568991"
-       data-transition_in_visibility="force_hide"
        data-wait="9000"
        style="top: 40vh; left: 30vh"
        >
@@ -123,7 +117,6 @@
 
   <div class="container tour_container"
        data-ott="1062253"
-       data-transition_in_visibility="force_hide"
        data-wait="9000"
        style="top: 40vh; left: 30vh"
        >
@@ -134,9 +127,8 @@
     {{ include "tour/tourstop/footer.html" }}
   </div>
 
-  <div class="container tour_container"
+  <div class="container tour_container visible-transition_in"
        data-ott="300553"
-       data-transition_in_visibility="show_self"
        data-transition_in_wait="2000"
        data-wait="3000"
        style="top: 90px; left: auto; right: 300px"
@@ -155,7 +147,6 @@
   <div class="container tour_container"
        data-ott="237343"
        data-pos="max"
-       data-transition_in_visibility="force_hide"
        data-transition_in="fly_straight"
        data-fly_in_speed="0.4"
        data-wait="8000"
@@ -173,7 +164,6 @@
 
   <div class="container tour_container"
        data-ott="229560"
-       data-transition_in_visibility="force_hide"
        data-pos="max"
        data-wait="15000"
        style="bottom: 50%; top: auto; left: auto; right: 70%"
@@ -188,26 +178,29 @@
     </div>
   </div>
   <script>
-    document.querySelector(".tutorial_MD > .container[data-ott='229560']").exec_on_start = function (tourstop) {
-        // Special for the tutorial only: open up a window after a short pause, then close again
-        setTimeout(() => {
-            $("#tour_wrapper .outsidebox").hide()
-            tourstop.tour.onezoom.config.ui.openLinkouts();
-            tourstop.tour.onezoom.config.ui.populateLinkouts(
-                {"data":{
-                    "wiki": ["/tree/wikipedia_OZpage?Q=181537&popup=3&leaf=0&name=Amniota&wlang=en"]},
-                 "name": "Amniota",
-                 "ott": 229560,})
-        }, 6000)
-    };
-    document.querySelector(".tutorial_MD > .container[data-ott='229560']").exec_on_exit = function (tourstop) {
-        tourstop.tour.onezoom.config.ui.closeAll()
-    };
+    loading_tour.tourstop_observer(
+        document.querySelector(".tutorial_MD > .container[data-ott='229560']"),
+        ['tsstate-active_wait'],
+        function (tour) {
+            // Special for the tutorial only: open up a window after a short pause, then close again
+            setTimeout(() => {
+                $("#tour_wrapper .outsidebox").hide()
+                tour.onezoom.config.ui.openLinkouts();
+                tour.onezoom.config.ui.populateLinkouts(
+                    {"data":{
+                        "wiki": ["/tree/wikipedia_OZpage?Q=181537&popup=3&leaf=0&name=Amniota&wlang=en"]},
+                     "name": "Amniota",
+                     "ott": 229560,})
+            }, 6000)
+        }, function (tour) {
+            // Switching out of active, hide popup
+            tour.onezoom.config.ui.closeAll()
+        }
+    )
   </script>
     
-  <div class="container tour_container"
+  <div class="container tour_container visible-transition_in"
        data-ott="99252"
-       data-transition_in_visibility="show_self"
        data-fly_in_speed="0.4"
        data-transition_in_wait="1000"
        data-wait="2000"
@@ -224,19 +217,21 @@
     </div>
   </div>
   <script>
-    document.querySelector(".tutorial_MD > .container[data-ott='99252']").exec_on_start = function (tourstop) {
-      tourstop.controller.mark_area(tourstop.data_repo.ott_id_map[229560]) //prev stop
-      tourstop.controller.mark_area(tourstop.data_repo.ott_id_map[99252])  //plants
-    };
-    document.querySelector(".tutorial_MD > .container[data-ott='99252']").exec_on_exit = function (tourstop) {
-      tourstop.controller.clear_all_marked_areas()
-    };
+    loading_tour.tourstop_observer(
+        document.querySelector(".tutorial_MD > .container[data-ott='99252']"),
+        ['tsstate-transition_in', 'tsstate-active_wait'],
+        function (tour) {
+            tour.onezoom.controller.mark_area(tour.onezoom.data_repo.ott_id_map[229560]) //prev stop
+            tour.onezoom.controller.mark_area(tour.onezoom.data_repo.ott_id_map[99252])  //plants
+        }, function (tour) {
+            tour.onezoom.controller.clear_all_marked_areas()
+        }
+    )
   </script> 
 
   <!-- NB: No OTT, so return to start -->
-  <div class="container tour_container"
+  <div class="container tour_container visible-transition_in"
        data-ott=""
-       data-transition_in_visibility="show_self"
        style="top: 10px; left: auto; right: 530px"
        >
     <div class='window_text' style="top: 10px; left: auto; right: 530px">

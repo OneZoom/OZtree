@@ -49,10 +49,6 @@ class TourStopClass {
         case "fly_in_speed":
           val = parseFloat(val);
           break;
-        case "show_tourstop_style":
-        case "hide_tourstop_style":
-          val = JSON.parse(val);
-          break;
       }
       // Wire up exec functions
       this.setting.exec['on_start'] = this.container[0].exec_on_start;
@@ -61,7 +57,6 @@ class TourStopClass {
 
       this.setting[name] = val;
     });
-    this.hide()
   }
 
   /**
@@ -88,10 +83,8 @@ class TourStopClass {
     this._state = new_state;
 
     // Update container state based on our state
-    for (const k in tsstate) {
-        this.container.removeClass(tsstate[k])
-    }
-    this.container.addClass(this._state)
+    // NB: Do this atomically so we don't generate mutation noise
+    this.container[0].className = this.container[0].className.replace(/ tsstate-(\w+)|$/, ' ' + this._state);
 
     return this._state;
   }
@@ -106,48 +99,6 @@ class TourStopClass {
     tree_state.flying = false
     if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.INACTIVE
     this.state = tsstate.INACTIVE
-    this.execute("on_exit")
-    // Don't need to hide this stop: it might carry on being shown during next transition
-  }
-
-  hide() {
-    let style = this.setting.hide_tourstop_style || this.tour.hide_tourstop_style;
-
-    if (!this.container) {
-      return
-    }
-
-    if (style.add_class) {
-      this.container.addClass(style.add_class)
-    } else if (style.remove_class) {
-      this.container.removeClass(style.remove_class)
-    } else {
-      this.container.css(style)
-    }
-  }
-
-  show() {
-    let style = this.setting.show_tourstop_style || this.tour.show_tourstop_style;
-
-    if (!this.container) {
-      return
-    }
-
-    if (style.add_class) {
-      this.container.addClass(style.add_class)
-    } else if (style.remove_class) {
-      this.container.removeClass(style.remove_class)
-    } else {
-      this.container.css(style)
-    }
-  }
-
-  shown() {
-    if (this.container) {
-      let requirements = this.setting.show_tourstop_style || this.tour.show_tourstop_style
-      return Object.entries(requirements).every((k, v) => {return this.container.css(k) === v})
-    }
-    return false
   }
 
   arrive_at_tourstop() {
@@ -158,10 +109,6 @@ class TourStopClass {
     // Show the tour stop *after* firing the function, in case we want the function do
     // do anything first (which could including showing the stop)
     if (window.is_testing) console.log("Arrived at tourstop: force hiding all other stops")
-    var stop_just_shown = this.tour.hide_and_show_stops(this.container)
-    if (stop_just_shown) {
-       this.execute("on_show")
-    }
     if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.INACTIVE
     this.state = tsstate.ACTIVE_WAIT
     this.direction = 'forward'
@@ -224,40 +171,12 @@ class TourStopClass {
       }
   }
 
-  execute(exec_when) {
-    if (typeof this.setting.exec === "object") {
-      if (typeof this.setting.exec[exec_when] === "function") {
-      /* This can only happen when the settings are passed as a javascript object,
-       * not as JSON. This (deliberately) restricts scriptability to hard-coded
-       * functions, not anything stored in the tours database. It allows non-user
-       * tours like the tutorial to interact programmatically with the OneZoom viewer
-       */
-          if (window.is_testing) console.log("Executing a function prior to transition")
-          var timers = this.setting.exec[exec_when](this)
-          if (timers) {
-            if (timers.length) {
-                this.tour.callback_timers.push(...timers)
-            } else {
-                this.tour.callback_timers.push(timers)
-            }
-          }
-      }
-    }
-  }
-
   /**
    * Play current tour stop from the start
    */
   play_from_start(direction) {
     if (window.is_testing) console.log(Date().toString() + ": playing tourstop " +
         this.tour.curr_step + " - " + direction)
-    this.execute("on_start")
-    if (this.setting.transition_in_visibility === "force_hide") {
-      this.tour.hide_and_show_stops(null, true) // block interaction from stopping tour
-    } else if (this.setting.transition_in_visibility === "show_self") {
-      this.tour.hide_and_show_stops(this.container)
-      this.execute("on_show")
-    }
     this.play(direction)
   }
   

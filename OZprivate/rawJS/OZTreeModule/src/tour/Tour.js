@@ -79,10 +79,6 @@ class Tour {
     this.ready_callback = ready_callback
     this.interaction_hooks = {} // when we add interaction hooks, we store the ids here so we can remove them later
 
-    /* some default settings */
-    this.hide_tourstop_style = {"display": "none"}
-    this.show_tourstop_style = {"display": "block"}
-
     this.tour_loaded = new Promise((resolve) => this.resolve_tour_loaded = resolve);
 
     if (tour_setting instanceof window.Text) {
@@ -98,8 +94,11 @@ class Tour {
    * Add the tour HTML to our page and configure ourselves accordingly
    */
   load_tour_from_string(tour_html_string) {
+    var old_loading_tour = window.loading_tour;
+    window.loading_tour = this;
     let tour_div = $(tour_html_string);
     tour_div.appendTo(this.div_wrapper)
+    window.loading_tour = old_loading_tour;
 
     this.tourstop_array = [].map.call(tour_div[0].querySelectorAll(':scope > .container'), (div_tourstop) => {
       let ts = new TourStopClass(this, $(div_tourstop));
@@ -214,8 +213,6 @@ class Tour {
     if (this.curr_stop()) {
       this.curr_stop().exit()
     }
-    this.hide_and_show_stops()
-
     if (this.prev_stop()) this.prev_stop().exit()
     //disable tour stylesheet
     $('#tour_style_' + this.tour_id).attr('disabled', 'disabled')
@@ -268,42 +265,6 @@ class Tour {
     }
 
     this.curr_stop().play_from_start('backward')
-  }
-
-  /*
-   * Hide all the stops (optionally, except one, which will be shown)
-   * this function also takes care of user interaction which (in the deafult case of this.interaction == null) should only be allowed when a stop is shown.
-   * hence other parts of the code will potentially have disallowed interaction where here needs to be allowed if a stop is being shown.
-   *
-   * @param {Object} keep_shown The JQuery object to show or keep shown, or null if 
-   *    all stops should be hidden
-   * @param {boolean} block_user_interaction_if_required If all stops are
-   *    hidden and we risks hiding all the control buttons too, which means that we could
-   *    accidentally pause the tour via an interaction, and we would have no idea
-   *    that we are still in a tour. To avoid this, we can specify 'true' here, which
-   *    bans interaction if it would normally pause or exit the tour.
-   * @return {boolean} true if keep_shown stop was previously hidden, and is now revealed; false
-   *     if keep_shown stop was already showing, or null if no keep_shown stop given
-   */
-  hide_and_show_stops(keep_shown=null, block_user_interaction_if_required=false) {
-    let keep_shown_was_hidden = null
-    if (block_user_interaction_if_required) {
-      this.block_user_interaction_if_required()
-    }
-    this.tourstop_array.forEach((tourstop) => {
-      if (tourstop.container == keep_shown) {
-        this.restore_user_interaction_if_required()
-        if (tourstop.shown()) {
-          keep_shown_was_hidden = false
-        } else {
-          tourstop.show()
-          keep_shown_was_hidden = true
-        }
-      } else {
-        tourstop.hide()
-      }
-    })
-    return keep_shown_was_hidden
   }
 
   /**
@@ -488,6 +449,29 @@ class Tour {
       this.user_resume()
       this.exit_confirm_popup.hide()
     })
+  }
+
+  /**
+   * Generate a mutation observer listening for (class_to_notify) being
+   * added / removed
+   */
+  tourstop_observer(target_el, class_to_notify, add_fn, remove_fn) {
+    const active_re = new RegExp(class_to_notify.map((s) => '(?:^| )' + s + '(?:$| )').join("|"))
+
+    const mo = new MutationObserver((mutationList, observer) => {
+      for(const mutation of mutationList) {
+        const cur_active = !!mutation.target.className.match(active_re)
+        const old_active = !!mutation.oldValue.match(active_re)
+
+        if (cur_active && !old_active && add_fn) {
+          add_fn(this, mutation.target)
+        } else if (!cur_active && old_active && remove_fn) {
+          remove_fn(this, mutation.target)
+        }
+      }
+    })
+    mo.observe(target_el, { attributes: true, attributeOldValue: true, attributeFilter: ['class'] })
+    return mo
   }
 }
 

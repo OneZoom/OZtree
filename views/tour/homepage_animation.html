@@ -1,12 +1,9 @@
 <div class="tour {{=request.function}}">
 {{for key in anim:}}{{if key.isdigit():}}
-  <div class='container tourstop'
+  <div class='container tourstop visible-transition_in'
        data-ott="{{=key}}"
-       data-transition_in_visibility="show_self"
        data-fly_in_speed="1.7"
        data-wait="7500"
-       data-hide_tourstop_style='{ "remove_class": "active" }'
-       data-show_tourstop_style='{ "add_class": "active" }'
        >
     <div><a class="linkout oz-pill pill-leafout"
             href="{{=hrefs.get(key, '')}}"
