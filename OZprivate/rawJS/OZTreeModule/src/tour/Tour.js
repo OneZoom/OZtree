@@ -70,6 +70,7 @@ class Tour {
     this.tourstop_array = []
     this.curr_step = 0
     this.prev_step = null
+    this.container = null
 
     this.start_callback = start_callback !== undefined ? start_callback : onezoom.config.ui.closeAll()
     this.end_callback = end_callback
@@ -96,18 +97,18 @@ class Tour {
   load_tour_from_string(tour_html_string) {
     var old_loading_tour = window.loading_tour;
     window.loading_tour = this;
-    let tour_div = $(tour_html_string);
-    tour_div.appendTo(this.div_wrapper)
+    this.container = $(tour_html_string);
+    this.container.appendTo(this.div_wrapper)
     window.loading_tour = old_loading_tour;
 
-    this.tourstop_array = [].map.call(tour_div[0].querySelectorAll(':scope > .container'), (div_tourstop) => {
+    this.tourstop_array = [].map.call(this.container[0].querySelectorAll(':scope > .container'), (div_tourstop) => {
       let ts = new TourStopClass(this, $(div_tourstop));
-      this.bind_template_ui_event(ts);
       return ts;
     });
-    this.exit_confirm_popup = tour_div.children('.exit_confirm')
+    this.exit_confirm_popup = this.container.children('.exit_confirm')
     this.exit_confirm_popup.hide();
 
+    this.bind_ui_events();
     this.load_ott_id_conversion_map(this.ready_callback)
     this.resolve_tour_loaded()
     if (window.is_testing) console.log("Loaded tour")
@@ -368,43 +369,25 @@ class Tour {
   /**
    * Bind previous, next, pause, play, exit button event
    */
-  bind_template_ui_event(tourstop) {
-    tourstop.container.find('.tour_forward').click(() => {
-      this.user_forward()
-    })
+  bind_ui_events() {
+    this.container.click((e) => {
+      var target = $(e.target).closest('.tour_forward,.tour_backward,.tour_play,.tour_pause,.tour_resume,.tour_exit,.exit_confirm,.exit_cancel');
 
-    tourstop.container.find('.tour_backward').click(() => {
-      this.user_backward()
-    })
-
-    tourstop.container.find('.tour_play').click(() => {
-      this.user_play()
-    })
-
-    tourstop.container.find('.tour_pause').click(() => {
-      this.user_pause()
-    })
-
-    tourstop.container.find('.tour_resume').click(() => {
-      this.user_resume()
-    })
-
-    tourstop.container.find('.tour_exit').click(() => {
-      this.user_exit()
-    })
-  }
-
-  /**
-   * Bind exit or hide exit confirm events on the buttons of exit confirm popup
-   */
-  bind_exit_confirm_event() {
-    this.exit_confirm_popup.find('.exit_confirm').click(() => {
-      this.user_exit()
-      this.exit_confirm_popup.hide()
-    })
-    this.exit_confirm_popup.find('.exit_cancel').click(() => {
-      this.user_resume()
-      this.exit_confirm_popup.hide()
+      if (target.length === 0) return;
+      if (target.hasClass('tour_forward')) return this.user_forward()
+      if (target.hasClass('tour_backward')) return this.user_backward()
+      if (target.hasClass('tour_play')) return this.user_play()
+      if (target.hasClass('tour_pause')) return this.user_pause()
+      if (target.hasClass('tour_resume')) return this.user_resume()
+      if (target.hasClass('tour_exit')) return this.user_exit()
+      if (target.hasClass('exit_confirm')) {
+        this.exit_confirm_popup.hide()
+        return this.user_exit()
+      }
+      if (target.hasClass('exit_cancel')) {
+        this.exit_confirm_popup.hide()
+        return this.user_resume()
+      }
     })
   }
 
