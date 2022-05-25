@@ -20,7 +20,6 @@ class Tour {
     this.prev_step = null
     this.tourstop_array = []
     this.started = false
-    this.name = null
     this.state = tstate.INACTIVE;
     this.callback_timers = [] // To store any timers that are fired off by callbacks, so they can be cancelled if necessary
 
@@ -64,9 +63,6 @@ class Tour {
    *
    * @param {String} tour_setting A string specifying where to fetch the tour document from,
    *    or TextContent node containing a tour HTML string
-   * @param {String} name A unique name for this tour for help in indentification. This
-   *    name is added as a class to each tourstop. If null, the name is automatically set
-   *    to tour_1, tour_2, etc.
    * @param {function} start_callback A function to run before the tour starts, defaults
    *    to onezoom.config.ui.closeAll().
    * @param {function} end_callback A function to run at the natural end of the tour 
@@ -83,9 +79,8 @@ class Tour {
    * @param {function} ready_callback Function to call when the tour is ready to go (in
    *    particular, we have the mappings from OTT-> onezoom IDs ready
    */
-  setup_setting(tour_setting, name, start_callback, end_callback, exit_callback,
+  setup_setting(tour_setting, start_callback, end_callback, exit_callback,
                 interaction, interaction_callback, ready_callback) {
-    this.name = name || "tour_" + tour_id
     if (!tour_setting) {return}
     this.tourstop_array = []
     this.curr_step = 0
@@ -120,6 +115,9 @@ class Tour {
     this.container = $(tour_html_string);
     this.container.appendTo(this.div_wrapper)
     window.loading_tour = old_loading_tour;
+
+    // Join classes to make up a descriptive name
+    this.name = this.container[0].className.replace(/\s+/g, '__')
 
     this.tourstop_array = [].map.call(this.container[0].querySelectorAll(':scope > .container'), (div_tourstop) => {
       let ts = new TourStopClass(this, $(div_tourstop));

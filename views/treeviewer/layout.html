@@ -900,7 +900,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
         onezoom.add_hook('on_tree_loaded', () => {
             window.oz_tutorial = onezoom.utils.new_tour(onezoom)
             window.oz_tutorial.setup_setting(
-                globals['tutorial_config'], 'tutorial',
+                globals['tutorial_config'],
                 globals.UI_callbacks.closeAll, // before the tutorial runs, close modals etc.
                 null, // nothing on tutorial end
                 null, // nothing on premature exit

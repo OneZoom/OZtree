@@ -28,9 +28,6 @@ class Screensaver extends Tour {
    *
    * @param {String} tour_setting A string specifying where to fetch the tour document from
    *    or TextContent node containing a tour HTML string
-   * @param {String} name A unique name for this tour for help in indentification. This
-   *    name is added as a class to each tourstop. If null, the name is automatically set
-   *    to tour_1, tour_2, etc.
    * @param {function} start_callback A function to run before the tour starts
    * @param {boolean} loop_back_forth we go 1->2->3->1->2->3 or 1->2->3->2->1->2->3
    * @param {function} exit_callback A function to run at if the tour is exited prematurely
@@ -46,7 +43,7 @@ class Screensaver extends Tour {
    * @param {int} autostart_after_ms The number of milliseconds after which to activate.
    *    If undefined or null, use the 'ssaver' value from the URL
    */
-  setup_setting(tour_setting, name, start_callback, loop_back_forth, exit_callback,
+  setup_setting(tour_setting, start_callback, loop_back_forth, exit_callback,
                 interaction, interaction_callback, autostart_after_ms) {
     this.auto_activate_timer = null
     this.loop_back_forth = loop_back_forth
@@ -55,7 +52,7 @@ class Screensaver extends Tour {
         // Default for a screensaver is to exit on interaction
         interaction = "exit"
     }
-    super.setup_setting(tour_setting, name, start_callback, null, exit_callback,
+    super.setup_setting(tour_setting, start_callback, null, exit_callback,
                         interaction, interaction_callback, () => {this.set_auto_start()})
   }
   

@@ -106,7 +106,7 @@ $(document).on("setupOneZoom", function(event, onezoom_object) {
     onezoom_object.tour = onezoom_object.utils.new_tour(onezoom_object);
     onezoom_object.add_hook('on_tree_loaded', () => {
         onezoom_object.tour.setup_setting(
-            document.getElementById('tour_config').firstChild, 'main_tour',
+            document.getElementById('tour_config').firstChild,
             globals.UI_callbacks.closeAll, // before the tutorial runs, close modals etc.
             null, // nothing on tutorial end
             null, // nothing on premature exit
