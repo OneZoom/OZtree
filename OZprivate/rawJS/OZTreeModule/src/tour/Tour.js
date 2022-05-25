@@ -207,9 +207,6 @@ class Tour {
     return this.tour_loaded.then(() => {
       // Reset, should also set curr_step to 0
       this.clear()
-      //Enable tour style
-      $('#tour_style_' + this.tour_id).removeAttr('disabled')
-      $('#tour_exit_confirm_style_' + this.tour_id).removeAttr('disabled')
     
       this.started = true
       this.add_canvas_interaction_callbacks()
@@ -234,9 +231,6 @@ class Tour {
     }
     if (this.prev_stop()) this.prev_stop().exit()
     this.state = tstate.INACTIVE
-    //disable tour stylesheet
-    $('#tour_style_' + this.tour_id).attr('disabled', 'disabled')
-    $('#tour_exit_confirm_style_' + this.tour_id).attr('disabled', 'disabled')
 
     //should have option to remove DOM objects here. See https://github.com/OneZoom/OZtree/issues/199
 
