@@ -10,6 +10,7 @@ class Tour {
     this.tour_id = tour_id++
     this.onezoom = onezoom // enabling access to controller
     this.curr_step = 0
+    this.prev_step = null
     this.tourstop_array = []
     this.started = false
     this.name = null
@@ -68,6 +69,7 @@ class Tour {
     if (!tour_setting) {return}
     this.tourstop_array = []
     this.curr_step = 0
+    this.prev_step = null
 
     this.start_callback = start_callback !== undefined ? start_callback : onezoom.config.ui.closeAll()
     this.end_callback = end_callback
@@ -214,6 +216,7 @@ class Tour {
     }
     this.hide_and_show_stops()
 
+    if (this.prev_stop()) this.prev_stop().exit()
     //disable tour stylesheet
     $('#tour_style_' + this.tour_id).attr('disabled', 'disabled')
     $('#tour_exit_confirm_style_' + this.tour_id).attr('disabled', 'disabled')
@@ -223,6 +226,7 @@ class Tour {
     //hide tour
     this.started = false
     this.curr_step = 0
+    this.prev_step = null
     this.remove_canvas_interaction_callbacks()
     tree_state.disable_interaction = false
   }
@@ -244,7 +248,7 @@ class Tour {
       this.clear()
       return
     }
-    this.curr_step++
+    this.prev_step = this.curr_step++
     this.curr_stop().play_from_start('forward')
   }
 
@@ -260,7 +264,7 @@ class Tour {
     }
 
     if (this.curr_step > 0) {
-      this.curr_step--
+      this.prev_step = this.curr_step--
     }
 
     this.curr_stop().play_from_start('backward')
@@ -327,6 +331,10 @@ class Tour {
   curr_stop() {
     // Converting negative numbers to positive allows back & forth looping
     return this.tourstop_array[Math.abs(this.curr_step)]
+  }
+
+  prev_stop() {
+    return this.tourstop_array[Math.abs(this.prev_step)]
   }
 
   /**

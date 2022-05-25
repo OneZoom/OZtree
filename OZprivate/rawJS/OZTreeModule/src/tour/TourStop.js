@@ -5,6 +5,8 @@ const tsstate = {
   INACTIVE: 'tsstate-inactive',  // Tourstop hidden
   TRANSITION_IN_WAIT: 'tsstate-transition_in_wait',  // Pre-transition wait
   TRANSITION_IN: 'tsstate-transition_in',  // Transitioning into tourstop
+  TRANSITION_OUT_WAIT: 'tsstate-transition_out_wait',  // Pre-transition wait
+  TRANSITION_OUT: 'tsstate-transition_out',  // Transitioning into *following* tourstop
   ACTIVE_WAIT: 'tsstate-active_wait',  // Arrived at tourstop, waiting for user input / timer
 };
 
@@ -102,6 +104,7 @@ class TourStopClass {
     clearTimeout(this.goto_next_timer)
     this.block_arrival = true
     tree_state.flying = false
+    if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.INACTIVE
     this.state = tsstate.INACTIVE
     this.execute("on_exit")
     // Don't need to hide this stop: it might carry on being shown during next transition
@@ -159,6 +162,7 @@ class TourStopClass {
     if (stop_just_shown) {
        this.execute("on_show")
     }
+    if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.INACTIVE
     this.state = tsstate.ACTIVE_WAIT
     this.direction = 'forward'
     this.wait_and_goto_next()
@@ -275,6 +279,7 @@ class TourStopClass {
        */
       if (this.state !== tsstate.TRANSITION_IN) {
         this.state = tsstate.TRANSITION_IN_WAIT
+        if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.TRANSITION_OUT_WAIT
         const transition_in_wait = this.setting.transition_in_wait
         if (typeof transition_in_wait === 'number' && this.direction !== 'backward') {
           promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
@@ -289,6 +294,7 @@ class TourStopClass {
         promise = promise
           .then(() => {
               this.state = tsstate.TRANSITION_IN
+              if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.TRANSITION_OUT
               this.throw_error_if_already_exited()
               return this.controller.leap_to(this.OZid, this.setting.pos)
            })
@@ -303,6 +309,7 @@ class TourStopClass {
             promise = promise
               .then(() => {
                 this.state = tsstate.TRANSITION_IN
+                if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.TRANSITION_OUT
                 this.throw_error_if_already_exited()
                 return this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
               })
@@ -312,6 +319,7 @@ class TourStopClass {
             promise = promise
               .then(() => {
                 this.state = tsstate.TRANSITION_IN
+                if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.TRANSITION_OUT
                 this.throw_error_if_already_exited()
                 return this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
               })
