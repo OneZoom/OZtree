@@ -23,5 +23,8 @@
     > .container.tsstate-active_wait.visible-active_wait {
       visibility: visible;
     }
-    
+
+    /* tour_resume buttons only visible the tour is paused */
+    .tour_resume { display: none }
+    &.tstate-paused .tour_resume { display: initial }
 }
