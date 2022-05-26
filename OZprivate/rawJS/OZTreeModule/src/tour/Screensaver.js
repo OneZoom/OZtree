@@ -12,10 +12,10 @@ class Screensaver extends Tour {
    */
 
   get inactive_duration() {
-    if (this.autostart_after_ms == null) {
+    if (this.autostart_after_seconds == null) {
         return tree_settings.ssaver_inactive_duration_seconds
     } else {
-        return this.autostart_after_ms * 1000
+        return this.autostart_after_seconds
     }
   }
 
@@ -40,14 +40,14 @@ class Screensaver extends Tour {
    * @param {function} interaction_callback function to call when the user interacts with
    *    the onezoom instance, e.g. by moving the mouse on screen, e.g. to activate a resume 
    *    button if the tour is set to pause on interaction
-   * @param {int} autostart_after_ms The number of milliseconds after which to activate.
+   * @param {int} autostart_after_seconds The number of seconds after which to activate.
    *    If undefined or null, use the 'ssaver' value from the URL
    */
   setup_setting(tour_setting, start_callback, loop_back_forth, exit_callback,
-                interaction, interaction_callback, autostart_after_ms) {
+                interaction, interaction_callback, autostart_after_seconds) {
     this.auto_activate_timer = null
     this.loop_back_forth = loop_back_forth
-    this.autostart_after_ms = autostart_after_ms
+    this.autostart_after_seconds = autostart_after_seconds
     if (typeof(interaction) === "undefined") {
         // Default for a screensaver is to exit on interaction
         interaction = "exit"
@@ -99,14 +99,7 @@ class Screensaver extends Tour {
    * Start after 'auto_activate_after' length of inactivity
    */
   set_auto_start() {
-    if (this.tourstop_array.length === 0 || (this.inactive_duration === null)) {
-        return
-    }
-    if (this.inactive_duration == 0) {
-        this.start()
-        return
-    }
-    const get_inactive_duration = () => {
+    const get_tree_inactive_duration = () => {
       const now = new Date()
       const last_active_at = tree_state.last_active_at
       const last_render_at = tree_state.last_render_at
@@ -118,40 +111,43 @@ class Screensaver extends Tour {
       return Math.min(duration_after_last_activate, duration_after_last_render)
     }
 
-    if (typeof this.inactive_duration === "number") {
-      const auto_activate_after = parseInt(this.inactive_duration)
-
-      if (isNaN(auto_activate_after) || auto_activate_after === 0) {
+    if (this.tourstop_array.length === 0) {
         return
-      }
-      /**
-       * Time left before start the tour
-       * If condition test failed, then reset wait time to full length.
-       */
-
-      /**
-       * If the app is inactive for a long period, wait for would be less than 0
-       * To prevent setTimeout being activated frequently, 
-       * set a minimum waiting time to be 3 seconds when wait_for is less than 0
-       */
-      let wait_for = auto_activate_after - get_inactive_duration()
-      wait_for = wait_for < 0 ? 3000 : wait_for
-
-      console.log("Wait for = " + wait_for + " (" + auto_activate_after + " - " + get_inactive_duration() + ")")
-      this.auto_activate_timer = setTimeout(() => {
-        if (get_inactive_duration() >= auto_activate_after && !this.started) {
-          /**
-           * If the tree is inactive for at least 'auto_activate_after' ms, then start the tour
-           */
-          this.start()
-        } else {
-          /**
-           * Otherwise, reset auto start
-           */
-          this.set_auto_start()
-        }
-      }, wait_for)
     }
+    const auto_activate_after_ms = parseInt(this.inactive_duration) * 1000;
+    if (isNaN(auto_activate_after_ms)) return;  // this.inactive_duration (probably) null
+    
+    if (auto_activate_after_ms === 0) {
+        this.start()
+        return
+    }
+    /**
+     * Time left before start the tour
+     * If condition test failed, then reset wait time to full length.
+     */
+
+    /**
+     * If the app is inactive for a long period, wait for would be less than 0
+     * To prevent setTimeout being activated frequently, 
+     * set a minimum waiting time to be 3 seconds when wait_for is less than 0
+     */
+    let wait_for = auto_activate_after_ms - get_tree_inactive_duration()
+    wait_for = wait_for < 0 ? 3000 : wait_for
+
+    console.log("Wait for = " + wait_for + " (" + auto_activate_after_ms + " - " + get_tree_inactive_duration() + ")")
+    this.auto_activate_timer = setTimeout(() => {
+      if (get_tree_inactive_duration() >= auto_activate_after_ms && !this.started) {
+        /**
+         * If the tree is inactive for at least 'auto_activate_after_ms', then start the tour
+         */
+        this.start()
+      } else {
+        /**
+         * Otherwise, reset auto start
+         */
+        this.set_auto_start()
+      }
+    }, wait_for)
   }
 }
 

@@ -83,7 +83,7 @@ function setup_page_by_state(state) {
   if (state.search_jump_mode) controller.set_search_jump_mode(state.search_jump_mode)
   if (state.title) document.title = unescape(state.title);
   if (state.home_ott_id) config.home_ott_id = state.home_ott_id
-  if (state.screen_saver_inactive_duration) tree_settings.ssaver_inactive_duration_seconds = state.screen_saver_inactive_duration * 1000
+  if (state.ssaver_inactive_duration_seconds) tree_settings.ssaver_inactive_duration_seconds = state.ssaver_inactive_duration_seconds
   if (state.cols) controller.change_color_theme(state.cols, true)
 
   controller.close_all();
