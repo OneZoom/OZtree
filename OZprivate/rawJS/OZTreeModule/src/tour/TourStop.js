@@ -61,18 +61,18 @@ class TourStopClass {
 
   /**
    * Find the OZid for this stop from this.setting.ott, or use the rough_initial_loc if
-   * ott is falsey
+   * ott is 0, return undefined if otherwise falsey
    */
   get OZid() {
-    if (this.setting.ott) {
-      if (this.data_repo.ott_id_map.hasOwnProperty(this.setting.ott)) {
-        return this.data_repo.ott_id_map[this.setting.ott]
-      } else {
-        console.error('OTT to OZid map for ott: ' + this.setting.ott + ' not fetched')
-        return undefined
-      }
-    } else {
+    if (parseInt(this.setting.ott) === 0) {
       return this.tour.rough_initial_loc
+    } else if (!this.setting.ott) { // i.e. null/undefined
+      return undefined
+    } else if (this.data_repo.ott_id_map.hasOwnProperty(this.setting.ott)) {
+      return this.data_repo.ott_id_map[this.setting.ott]
+    } else {
+      console.error('OTT to OZid map for ott: ' + this.setting.ott + ' not fetched')
+      return undefined
     }
   }
 
@@ -128,7 +128,7 @@ class TourStopClass {
       // In transition_in[_wait], skip transition
       tree_state.flying = false
       // leap (this should cancel any exiting flight)
-      this.controller.leap_to(this.OZid, this.setting.pos)
+      if (this.OZid) this.controller.leap_to(this.OZid, this.setting.pos)
       // We do not need to call arrive_at_tourstop as this should be called when the
       // transition promise is resolved
     }
@@ -154,7 +154,7 @@ class TourStopClass {
       // Not in a transition, so jump back to the tourstop location (in case user has
       // moved the tree) and continue - it would be weird to fly on a path that wasn't 
       /// part of the tour - so jump back to the last place when you were on the tour
-      this.controller.leap_to(this.OZid, this.setting.pos)
+      if (this.OZid) this.controller.leap_to(this.OZid, this.setting.pos)
       // We should really only have to wait for the remaining time at this stop, but
       // that's tricky, so we wait again from the beginning. - the tour was already in
       // flight / transition an so it's appropriate to continue that to the destination.
@@ -208,7 +208,9 @@ class TourStopClass {
       /**
        * Perform flight or leap
        */
-      if (this.setting.transition_in === 'leap' || this.direction === 'backward') {
+      if (!this.OZid) {
+        /* No transition, just load tourstop */
+      } else if (this.setting.transition_in === 'leap' || this.direction === 'backward') {
         /* Leap */
         promise = promise
           .then(() => {
