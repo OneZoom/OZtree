@@ -10,9 +10,9 @@ let timer = null;
 
 add_hook("flying_finish", record_url_delayed);
 
-function record_url_delayed() {
+function record_url_delayed(options, force) {
   clearTimeout(timer);
-  timer = setTimeout(record_url, 300);
+  timer = setTimeout(record_url.bind(this, options, force), 300);
 }
 
 /**
