@@ -197,12 +197,13 @@ class Tour {
    * Start tour
    */
   start() {
-    if (this.tourstop_array.length == 0) {
-        alert("This tour has no tourstops")
-        return
-    }
     // Make sure we only start when the tour has loaded
     return this.tour_loaded.then(() => {
+      if (this.tourstop_array.length == 0) {
+          alert("This tour has no tourstops")
+          return
+      }
+
       // Reset, should also set curr_step to 0
       this.clear()
     
