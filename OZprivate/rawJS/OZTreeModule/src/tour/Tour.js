@@ -19,7 +19,6 @@ class Tour {
     this.curr_step = 0
     this.prev_step = null
     this.tourstop_array = []
-    this.started = false
     this.state = tstate.INACTIVE;
     this.callback_timers = [] // To store any timers that are fired off by callbacks, so they can be cancelled if necessary
 
@@ -206,7 +205,6 @@ class Tour {
       // Reset, should also set curr_step to 0
       this.clear()
     
-      this.started = true
       this.add_canvas_interaction_callbacks()
       this.rough_initial_loc = this.onezoom.utils.largest_visible_node()
       if (window.is_testing) console.log("Tour `" + this.name + "` started")
@@ -231,7 +229,6 @@ class Tour {
     this.state = tstate.INACTIVE
 
     //hide tour
-    this.started = false
     this.curr_step = 0
     this.prev_step = null
     this.remove_canvas_interaction_callbacks()
@@ -251,7 +248,7 @@ class Tour {
    * Go to the next tour stop immediately
    */  
   goto_next() {
-    if (!this.started) {
+    if (this.state === tstate.INACTIVE) {
       return
     }
     this.curr_stop().exit()   
@@ -271,7 +268,7 @@ class Tour {
    * Go to previous tour stop
    */
   goto_prev() {
-    if (!this.started) {
+    if (this.state === tstate.INACTIVE) {
       return
     }
     if (this.curr_stop()) {
@@ -328,7 +325,7 @@ class Tour {
    * Play tour - initiated by user
    */
   user_play() {
-    if (this.started) {
+    if (this.state !== tstate.INACTIVE) {
       this.user_resume()
     } else {
       this.start()
@@ -339,7 +336,7 @@ class Tour {
    * Pause tour
    */
   user_pause() {
-    if (this.started && this.curr_stop()) {
+    if (this.state !== tstate.INACTIVE && this.curr_stop()) {
       if (window.is_testing) console.log("User paused")
       this.remove_canvas_interaction_callbacks() // Don't trigger any more pauses
       this.state = tstate.PAUSED
@@ -351,7 +348,7 @@ class Tour {
    * Resume paused tour stop
    */
   user_resume() {
-    if (this.started && this.curr_stop()) {
+    if (this.state !== tstate.INACTIVE && this.curr_stop()) {
       if (window.is_testing) console.log("User resumed")
       this.add_canvas_interaction_callbacks() // Allow interactions to trigger pauses again
       this.state = tstate.PLAYING
@@ -379,7 +376,7 @@ class Tour {
     this.clear_callback_timers()
     clearTimeout(this.goto_next_timer)
     
-    if (!this.started) {
+    if (this.state === tstate.INACTIVE) {
         user_play()
     }
     if (!tourstop) {
