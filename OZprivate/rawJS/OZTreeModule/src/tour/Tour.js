@@ -230,8 +230,6 @@ class Tour {
     if (this.prev_stop()) this.prev_stop().exit()
     this.state = tstate.INACTIVE
 
-    //should have option to remove DOM objects here. See https://github.com/OneZoom/OZtree/issues/199
-
     //hide tour
     this.started = false
     this.curr_step = 0
@@ -239,6 +237,15 @@ class Tour {
     this.remove_canvas_interaction_callbacks()
   }
 
+  /**
+   * Remove tour from DOM, ready to be thrown away
+   */
+  remove() {
+    this.clear()
+
+    this.tourstop_array = []
+    if (this.container) this.container.remove()
+  }
 
   /**
    * Go to the next tour stop immediately

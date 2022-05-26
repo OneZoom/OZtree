@@ -9,7 +9,7 @@ export default function (Controller) {
   Controller.prototype.tour_start = function (tour_setting) {
     if (!this._tour || this._tour.tour_setting !== tour_setting) {
       if (this._tour) {
-        this._tour.clear()
+        this._tour.remove()
       }
       this._tour = new Tour(this.public_oz)
       this._tour.setup_setting(
@@ -29,7 +29,7 @@ export default function (Controller) {
 
   Controller.prototype.set_screensaver = function (tour_setting, timeout, interaction) {
     if (this._screensaver) {
-      this._screensaver.clear()
+      this._screensaver.remove()
     }
     this._screensaver = new Screensaver(this.public_oz)
     this._screensaver.setup_setting(
