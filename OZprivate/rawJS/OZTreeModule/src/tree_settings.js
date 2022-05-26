@@ -108,7 +108,7 @@ class TreeSettings {
       vis: this.options.vis.spiral,
     }
       
-    this._ssaver_inactive_duration_seconds = 600 * 1000 //600 seconds
+    this._ssaver_inactive_duration_seconds = 600
   }
 
   //private method used internally

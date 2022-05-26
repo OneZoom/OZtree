@@ -102,22 +102,10 @@ var pagetitle_func = function(nm) {return (nm)?("OneZoom restricted: "+ nm):"One
 // Until we finalise the UI for tours, define tours as happening when we click the
 // "#tourButton", and inject tthe tour object into the onezoom object dynamically.
 
-$(document).on("setupOneZoom", function(event, onezoom_object) {
-    onezoom_object.tour = onezoom_object.utils.new_tour(onezoom_object);
-    onezoom_object.add_hook('on_tree_loaded', () => {
-        onezoom_object.tour.setup_setting(
-            document.getElementById('tour_config').firstChild, 'main_tour',
-            globals.UI_callbacks.closeAll, // before the tutorial runs, close modals etc.
-            null, // nothing on tutorial end
-            null, // nothing on premature exit
-            null, // allow interaction to pause the tutorial
-            )});
-});
-
 $(document).on("setupUI", function() {
     $('#controlButtons #tourButton .icon-container')
         .click(function () {
-            onezoom.tour.start()  //activate tutorial
+            onezoom.controller.tour_start(document.getElementById('tour_config').firstChild)
         })
 
 });

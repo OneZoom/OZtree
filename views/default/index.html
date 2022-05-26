@@ -153,16 +153,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             window.tree_date);
         window.onezoom.add_hook('on_tree_loaded', () => {
             /* we use the 'screensaver' tour to provide a constant animation */
-            onezoom.screensaver.setup_setting(
-                '/tour/homepage_animation',
-                'homepage_animation',
-                null, // nothing before the screensaver runs
-                true, // loop back and forth
-                null, // nothing on exit
-                "block", // disable interaction with the tree
-                null, // do not provide an interaction callback
-                0, // start immediately
-                ); 
+            onezoom.controller.set_screensaver('/tour/homepage_animation', 0, 'block')
         })
     }
 })

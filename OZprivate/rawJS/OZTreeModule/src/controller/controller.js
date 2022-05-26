@@ -7,6 +7,7 @@ import install_controller_loc from './controller_loc';
 import install_controller_search from './controller_search';
 import install_controller_anim from './controller_anim';
 import install_controller_interactor from './controller_interactor';
+import install_controller_tour from './controller_tour';
 import {reset_global_button_action} from '../button_manager';
 import get_interactor from '../interactor/interactor';
 import * as renderer from '../render/renderer';
@@ -189,6 +190,7 @@ install_controller_search(Controller);
 install_controller_dom(Controller);
 install_controller_anim(Controller);
 install_controller_interactor(Controller);
+install_controller_tour(Controller);
 
 
 let controller;

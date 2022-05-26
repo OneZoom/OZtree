@@ -19,8 +19,6 @@ class Tour {
     this.curr_step = 0
     this.prev_step = null
     this.tourstop_array = []
-    this.started = false
-    this.name = null
     this.state = tstate.INACTIVE;
     this.callback_timers = [] // To store any timers that are fired off by callbacks, so they can be cancelled if necessary
 
@@ -56,6 +54,18 @@ class Tour {
   }
 
   /**
+   * If the tour is active, return the current tour_setting URL
+   * otherwise, return null
+   */
+  get_active_setting() {
+    if (this._state === tstate.INACTIVE) return null
+    if (typeof this.tour_setting === 'string') {
+        return this.tour_setting + "@" + this.curr_step
+    }
+    return this.tour_setting
+  }
+
+  /**
    * Create tour stops based on a settings object (which could be parsed from JSON)
    * All arguments are optional, although if tour_setting is empty, the tour is treated
    * as inactive.
@@ -64,11 +74,7 @@ class Tour {
    *
    * @param {String} tour_setting A string specifying where to fetch the tour document from,
    *    or TextContent node containing a tour HTML string
-   * @param {String} name A unique name for this tour for help in indentification. This
-   *    name is added as a class to each tourstop. If null, the name is automatically set
-   *    to tour_1, tour_2, etc.
-   * @param {function} start_callback A function to run before the tour starts, defaults
-   *    to onezoom.config.ui.closeAll().
+   * @param {function} start_callback A function to run before the tour starts
    * @param {function} end_callback A function to run at the natural end of the tour 
    * @param {function} exit_callback A function to run at if the tour is exited prematurely
    * @param {String} interaction What to do when the user interacts with the onezoom
@@ -83,16 +89,16 @@ class Tour {
    * @param {function} ready_callback Function to call when the tour is ready to go (in
    *    particular, we have the mappings from OTT-> onezoom IDs ready
    */
-  setup_setting(tour_setting, name, start_callback, end_callback, exit_callback,
+  setup_setting(tour_setting, start_callback, end_callback, exit_callback,
                 interaction, interaction_callback, ready_callback) {
-    this.name = name || "tour_" + tour_id
     if (!tour_setting) {return}
+    this.tour_setting = tour_setting
     this.tourstop_array = []
     this.curr_step = 0
     this.prev_step = null
     this.container = null
 
-    this.start_callback = start_callback !== undefined ? start_callback : onezoom.config.ui.closeAll()
+    this.start_callback = start_callback
     this.end_callback = end_callback
     this.exit_callback = exit_callback
     this.interaction = interaction
@@ -100,26 +106,35 @@ class Tour {
     this.ready_callback = ready_callback
     this.interaction_hooks = {} // when we add interaction hooks, we store the ids here so we can remove them later
 
-    this.tour_loaded = new Promise((resolve) => this.resolve_tour_loaded = resolve);
+    this.tour_loaded = new Promise((resolve) => this.resolve_tour_loaded = resolve).then(this.ready_callback);
 
     if (tour_setting instanceof window.Text) {
       // HTML TextObject (i.e. the content of a script tag), render that as our tour
       this.load_tour_from_string(tour_setting.textContent);
     } else {
       // Assume URL, fetch and render
-      return $.ajax({ url: tour_setting, dataType: "html", success: this.load_tour_from_string.bind(this) });
+      let tour_start_step = null
+      let m = tour_setting.match(/(.*?)@([0-9]+$)/)
+      if (m) {
+        this.tour_setting = tour_setting = m[1]
+        tour_start_step = parseInt(m[2])
+      }
+      return $.ajax({ url: tour_setting, dataType: "html", success: (s) => this.load_tour_from_string(s, tour_start_step) });
     }
   }
 
   /**
    * Add the tour HTML to our page and configure ourselves accordingly
    */
-  load_tour_from_string(tour_html_string) {
+  load_tour_from_string(tour_html_string, tour_start_step) {
     var old_loading_tour = window.loading_tour;
     window.loading_tour = this;
     this.container = $(tour_html_string);
     this.container.appendTo(this.div_wrapper)
     window.loading_tour = old_loading_tour;
+
+    // Join classes to make up a descriptive name
+    this.name = this.container[0].className.replace(/\s+/g, '__')
 
     this.tourstop_array = [].map.call(this.container[0].querySelectorAll(':scope > .container'), (div_tourstop) => {
       let ts = new TourStopClass(this, $(div_tourstop));
@@ -132,9 +147,11 @@ class Tour {
     this.exit_confirm_popup = this.container.children('.exit_confirm')
     this.exit_confirm_popup.hide();
 
+    // Reset tour to the desired step, or start
+    this.clear(tour_start_step)
+
     this.bind_ui_events();
-    this.load_ott_id_conversion_map(this.ready_callback)
-    this.resolve_tour_loaded()
+    this.load_ott_id_conversion_map(this.resolve_tour_loaded)
     if (window.is_testing) console.log("Loaded tour")
   }
 
@@ -199,16 +216,13 @@ class Tour {
    * Start tour
    */
   start() {
-    if (this.tourstop_array.length == 0) {
-        alert("This tour has no tourstops")
-        return
-    }
     // Make sure we only start when the tour has loaded
     return this.tour_loaded.then(() => {
-      // Reset, should also set curr_step to 0
-      this.clear()
-    
-      this.started = true
+      if (this.tourstop_array.length == 0) {
+          alert("This tour has no tourstops")
+          return
+      }
+
       this.add_canvas_interaction_callbacks()
       this.rough_initial_loc = this.onezoom.utils.largest_visible_node()
       if (window.is_testing) console.log("Tour `" + this.name + "` started")
@@ -223,30 +237,36 @@ class Tour {
   }
 
   /**
-   * Clear tour
+   * Clear tour, reset to start_step (or first step if not specified)
    */
-  clear() {
+  clear(start_step) {
     if (this.curr_stop()) {
       this.curr_stop().exit()
     }
     if (this.prev_stop()) this.prev_stop().exit()
     this.state = tstate.INACTIVE
 
-    //should have option to remove DOM objects here. See https://github.com/OneZoom/OZtree/issues/199
-
     //hide tour
-    this.started = false
-    this.curr_step = 0
+    this.curr_step = start_step || 0
     this.prev_step = null
     this.remove_canvas_interaction_callbacks()
   }
 
+  /**
+   * Remove tour from DOM, ready to be thrown away
+   */
+  remove() {
+    this.clear()
+
+    this.tourstop_array = []
+    if (this.container) this.container.remove()
+  }
 
   /**
    * Go to the next tour stop immediately
    */  
   goto_next() {
-    if (!this.started) {
+    if (this.state === tstate.INACTIVE) {
       return
     }
     this.curr_stop().exit()   
@@ -266,7 +286,7 @@ class Tour {
    * Go to previous tour stop
    */
   goto_prev() {
-    if (!this.started) {
+    if (this.state === tstate.INACTIVE) {
       return
     }
     if (this.curr_stop()) {
@@ -304,11 +324,12 @@ class Tour {
 
   curr_stop() {
     // Converting negative numbers to positive allows back & forth looping
-    return this.tourstop_array[Math.abs(this.curr_step)]
+    // NB: Math.abs(null) === 0, so have to check first
+    return this.curr_step === null ? null : this.tourstop_array[Math.abs(this.curr_step)]
   }
 
   prev_stop() {
-    return this.tourstop_array[Math.abs(this.prev_step)]
+    return this.prev_step === null ? null : this.tourstop_array[Math.abs(this.prev_step)]
   }
 
   /**
@@ -323,9 +344,10 @@ class Tour {
    * Play tour - initiated by user
    */
   user_play() {
-    if (this.started) {
+    if (this.state !== tstate.INACTIVE) {
       this.user_resume()
     } else {
+      this.clear()
       this.start()
     }
   }
@@ -334,7 +356,7 @@ class Tour {
    * Pause tour
    */
   user_pause() {
-    if (this.started && this.curr_stop()) {
+    if (this.state !== tstate.INACTIVE && this.curr_stop()) {
       if (window.is_testing) console.log("User paused")
       this.remove_canvas_interaction_callbacks() // Don't trigger any more pauses
       this.state = tstate.PAUSED
@@ -346,7 +368,7 @@ class Tour {
    * Resume paused tour stop
    */
   user_resume() {
-    if (this.started && this.curr_stop()) {
+    if (this.state !== tstate.INACTIVE && this.curr_stop()) {
       if (window.is_testing) console.log("User resumed")
       this.add_canvas_interaction_callbacks() // Allow interactions to trigger pauses again
       this.state = tstate.PLAYING
@@ -374,7 +396,7 @@ class Tour {
     this.clear_callback_timers()
     clearTimeout(this.goto_next_timer)
     
-    if (!this.started) {
+    if (this.state === tstate.INACTIVE) {
         user_play()
     }
     if (!tourstop) {
