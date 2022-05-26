@@ -63,8 +63,7 @@ class Tour {
    *
    * @param {String} tour_setting A string specifying where to fetch the tour document from,
    *    or TextContent node containing a tour HTML string
-   * @param {function} start_callback A function to run before the tour starts, defaults
-   *    to onezoom.config.ui.closeAll().
+   * @param {function} start_callback A function to run before the tour starts
    * @param {function} end_callback A function to run at the natural end of the tour 
    * @param {function} exit_callback A function to run at if the tour is exited prematurely
    * @param {String} interaction What to do when the user interacts with the onezoom
@@ -82,12 +81,13 @@ class Tour {
   setup_setting(tour_setting, start_callback, end_callback, exit_callback,
                 interaction, interaction_callback, ready_callback) {
     if (!tour_setting) {return}
+    this.tour_setting = tour_setting
     this.tourstop_array = []
     this.curr_step = 0
     this.prev_step = null
     this.container = null
 
-    this.start_callback = start_callback !== undefined ? start_callback : onezoom.config.ui.closeAll()
+    this.start_callback = start_callback
     this.end_callback = end_callback
     this.exit_callback = exit_callback
     this.interaction = interaction

@@ -15,8 +15,6 @@ import config from './global_config';
 import tree_state from './tree_state';
 import data_repo from './factory/data_repo';
 import tree_settings from './tree_settings';
-import Tour from './tour/Tour'
-import Screensaver from './tour/Screensaver'
 /**
  * Creates the main object that is exported to the browser. 
  * @todo This should possibly be separated so that 
@@ -86,7 +84,6 @@ function setup(
       'number_convert': number_convert,
       'view_richness': view_richness,
       'process_taxon_list': process_taxon_list,
-      'new_tour': (self) => {return new Tour(self)} // so we can create new tours
     }};
 
   if (canvasID) {
@@ -118,11 +115,11 @@ function setup(
     oz.data_repo = null;
   }
 
+  oz.controller.public_oz = oz;  // Let the controller get at the public interface
   oz.config = config;
   oz.search_manager = search_manager;
   // TO DO - use data_repo passed in to the entry function, so we don't need to include it in the initial JS
   oz.search_manager.add_data_repo(oz.data_repo);
-  oz.screensaver = new Screensaver(oz)
   oz.add_hook = add_hook;
 
   // use setTimeout so that loading screen is displayed before build tree starts.

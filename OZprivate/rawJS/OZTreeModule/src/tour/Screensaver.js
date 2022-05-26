@@ -1,24 +1,7 @@
 import Tour from './Tour'
 import tree_state from '../tree_state';
-import tree_settings from '../tree_settings';
 
 class Screensaver extends Tour {
-  /* A screensaver is identical to a Tour except that we autostart after a
-   * user-determined amount of time (if null, this is taken from
-   * 'ssaver_inactive_duration_seconds' which is derived from the ssaver URL parameter).
-   * The "end_callback" parameter is replaced with "loop_back_forth", and the default
-   * interaction mode is "exit". An additional final parameter specifies the time
-   * after which the screen saver is autostarted
-   */
-
-  get inactive_duration() {
-    if (this.autostart_after_seconds == null) {
-        return tree_settings.ssaver_inactive_duration_seconds
-    } else {
-        return this.autostart_after_seconds
-    }
-  }
-
   /**
    * Create screensaver stops based on a settings object.
    * All arguments are optional, although if tour_setting is empty, the tour is treated
@@ -41,13 +24,14 @@ class Screensaver extends Tour {
    *    the onezoom instance, e.g. by moving the mouse on screen, e.g. to activate a resume 
    *    button if the tour is set to pause on interaction
    * @param {int} autostart_after_seconds The number of seconds after which to activate.
-   *    If undefined or null, use the 'ssaver' value from the URL
+   *    If undefined or null, don't configure a screensaver
    */
   setup_setting(tour_setting, start_callback, loop_back_forth, exit_callback,
                 interaction, interaction_callback, autostart_after_seconds) {
     this.auto_activate_timer = null
     this.loop_back_forth = loop_back_forth
     this.autostart_after_seconds = autostart_after_seconds
+    if (typeof this.autostart_after_seconds !== 'number') return;
     if (typeof(interaction) === "undefined") {
         // Default for a screensaver is to exit on interaction
         interaction = "exit"
@@ -115,8 +99,7 @@ class Screensaver extends Tour {
     if (this.tourstop_array.length === 0) {
         return
     }
-    const auto_activate_after_ms = parseInt(this.inactive_duration) * 1000;
-    if (isNaN(auto_activate_after_ms)) return;  // this.inactive_duration (probably) null
+    const auto_activate_after_ms = this.autostart_after_seconds * 1000;
     
     if (auto_activate_after_ms === 0) {
         this.start()
