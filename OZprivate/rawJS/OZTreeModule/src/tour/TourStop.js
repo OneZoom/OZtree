@@ -217,7 +217,7 @@ class TourStopClass {
               this.throw_error_if_already_exited()
               return this.controller.leap_to(this.OZid, this.setting.pos)
            })
-          .catch(() => {})
+          .catch((e) => { console.error("Failed to Leap to tourstop", e) })
       } else {
           /* Flight */
           let into_node = this.setting.pos === 'max'
@@ -232,7 +232,7 @@ class TourStopClass {
                 this.throw_error_if_already_exited()
                 return this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
               })
-              .catch(() => {})
+              .catch((e) => { console.error("Failed to Leap to tourstop", e) })
           } else {
             /* Fly normally - if interrupted we reject() and require clicking "skip" */
             promise = promise
@@ -242,19 +242,18 @@ class TourStopClass {
                 this.throw_error_if_already_exited()
                 return this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
               })
-              .catch(() => {})
+              .catch((e) => { console.error("Failed to Leap to tourstop", e) })
           }
       }
-      promise
+      promise = promise
         .then(() => {
+          this.transition_promise_active = null
           if (this.block_arrival) {
             this.block_arrival = false
           } else {
             this.arrive_at_tourstop()
           }
-          this.transition_promise_active = null
         })
-        .catch(() => {this.transition_promise_active = null})
     }
   }
 
