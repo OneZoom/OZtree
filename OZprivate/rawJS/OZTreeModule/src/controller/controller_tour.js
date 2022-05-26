@@ -9,8 +9,7 @@ export default function (Controller) {
 
   /** Return the tour_setting for the currently active tour setting, or null */
   Controller.prototype.tour_active_setting = function () {
-    if (!this._tour || this._tour.state === 'tstate-inactive') return null
-    return this._tour.tour_setting
+    return this._tour ? this._tour.get_active_setting() : null
   }
 
   Controller.prototype.tour_start = function (tour_setting) {

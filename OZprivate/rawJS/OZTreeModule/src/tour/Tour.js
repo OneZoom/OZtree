@@ -54,6 +54,18 @@ class Tour {
   }
 
   /**
+   * If the tour is active, return the current tour_setting URL
+   * otherwise, return null
+   */
+  get_active_setting() {
+    if (this._state === tstate.INACTIVE) return null
+    if (typeof this.tour_setting === 'string') {
+        return this.tour_setting + "@" + this.curr_step
+    }
+    return this.tour_setting
+  }
+
+  /**
    * Create tour stops based on a settings object (which could be parsed from JSON)
    * All arguments are optional, although if tour_setting is empty, the tour is treated
    * as inactive.
@@ -101,14 +113,20 @@ class Tour {
       this.load_tour_from_string(tour_setting.textContent);
     } else {
       // Assume URL, fetch and render
-      return $.ajax({ url: tour_setting, dataType: "html", success: this.load_tour_from_string.bind(this) });
+      let tour_start_step = null
+      let m = tour_setting.match(/(.*?)@([0-9]+$)/)
+      if (m) {
+        this.tour_setting = tour_setting = m[1]
+        tour_start_step = parseInt(m[2])
+      }
+      return $.ajax({ url: tour_setting, dataType: "html", success: (s) => this.load_tour_from_string(s, tour_start_step) });
     }
   }
 
   /**
    * Add the tour HTML to our page and configure ourselves accordingly
    */
-  load_tour_from_string(tour_html_string) {
+  load_tour_from_string(tour_html_string, tour_start_step) {
     var old_loading_tour = window.loading_tour;
     window.loading_tour = this;
     this.container = $(tour_html_string);
@@ -129,8 +147,8 @@ class Tour {
     this.exit_confirm_popup = this.container.children('.exit_confirm')
     this.exit_confirm_popup.hide();
 
-    // Reset tour to the start
-    this.clear()
+    // Reset tour to the desired step, or start
+    this.clear(tour_start_step)
 
     this.bind_ui_events();
     this.load_ott_id_conversion_map(this.resolve_tour_loaded)
