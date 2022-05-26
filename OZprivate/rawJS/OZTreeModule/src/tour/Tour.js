@@ -129,6 +129,9 @@ class Tour {
     this.exit_confirm_popup = this.container.children('.exit_confirm')
     this.exit_confirm_popup.hide();
 
+    // Reset tour to the start
+    this.clear()
+
     this.bind_ui_events();
     this.load_ott_id_conversion_map(this.resolve_tour_loaded)
     if (window.is_testing) console.log("Loaded tour")
@@ -202,9 +205,6 @@ class Tour {
           return
       }
 
-      // Reset, should also set curr_step to 0
-      this.clear()
-    
       this.add_canvas_interaction_callbacks()
       this.rough_initial_loc = this.onezoom.utils.largest_visible_node()
       if (window.is_testing) console.log("Tour `" + this.name + "` started")
@@ -219,9 +219,9 @@ class Tour {
   }
 
   /**
-   * Clear tour
+   * Clear tour, reset to start_step (or first step if not specified)
    */
-  clear() {
+  clear(start_step) {
     if (this.curr_stop()) {
       this.curr_stop().exit()
     }
@@ -229,7 +229,7 @@ class Tour {
     this.state = tstate.INACTIVE
 
     //hide tour
-    this.curr_step = 0
+    this.curr_step = start_step || 0
     this.prev_step = null
     this.remove_canvas_interaction_callbacks()
   }
@@ -306,11 +306,12 @@ class Tour {
 
   curr_stop() {
     // Converting negative numbers to positive allows back & forth looping
-    return this.tourstop_array[Math.abs(this.curr_step)]
+    // NB: Math.abs(null) === 0, so have to check first
+    return this.curr_step === null ? null : this.tourstop_array[Math.abs(this.curr_step)]
   }
 
   prev_stop() {
-    return this.tourstop_array[Math.abs(this.prev_step)]
+    return this.prev_step === null ? null : this.tourstop_array[Math.abs(this.prev_step)]
   }
 
   /**
@@ -328,6 +329,7 @@ class Tour {
     if (this.state !== tstate.INACTIVE) {
       this.user_resume()
     } else {
+      this.clear()
       this.start()
     }
   }
