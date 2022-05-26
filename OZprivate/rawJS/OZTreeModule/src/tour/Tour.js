@@ -95,7 +95,7 @@ class Tour {
     this.ready_callback = ready_callback
     this.interaction_hooks = {} // when we add interaction hooks, we store the ids here so we can remove them later
 
-    this.tour_loaded = new Promise((resolve) => this.resolve_tour_loaded = resolve);
+    this.tour_loaded = new Promise((resolve) => this.resolve_tour_loaded = resolve).then(this.ready_callback);
 
     if (tour_setting instanceof window.Text) {
       // HTML TextObject (i.e. the content of a script tag), render that as our tour
@@ -131,8 +131,7 @@ class Tour {
     this.exit_confirm_popup.hide();
 
     this.bind_ui_events();
-    this.load_ott_id_conversion_map(this.ready_callback)
-    this.resolve_tour_loaded()
+    this.load_ott_id_conversion_map(this.resolve_tour_loaded)
     if (window.is_testing) console.log("Loaded tour")
   }
 
