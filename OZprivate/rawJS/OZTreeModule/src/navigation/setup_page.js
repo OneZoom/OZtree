@@ -101,8 +101,11 @@ function setup_page_by_state(state) {
         // If there's somewhere to move to, do that.
         return controller.init_move_to(id, state.xp !== undefined ? state : state.init);
     }
-  })
-  .then(function () {
+  }).then(function () {
+    // Start a tour if present
+    if (state.tour_setting) controller.tour_start(state.tour_setting)
+
+  }).then(function () {
     //open popup dialog if exists.
     if (state.tap_action && (state.tap_ott_or_id || state.ott)) {
       global_button_action.action = state.tap_action;

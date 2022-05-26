@@ -161,6 +161,9 @@ function parse_querystring(state, querystring) {
     } else if (/^initmark=/.test(querystring[i])) {
       // User wants an initial marking
       state.initmark = parseInt(querystring[i].substring(querystring[i].indexOf("=") + 1));
+    } else if (/^tour=/.test(querystring[i])) {
+      // User wants a tour
+      state.tour_setting = decodeURIComponent(querystring[i].substring(querystring[i].indexOf("=") + 1));
     }
   }
 }

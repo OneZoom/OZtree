@@ -129,6 +129,7 @@ function get_pinpoint(node) {
 
 function get_params(options) {
   let querystring = [];
+  let controller = get_controller();
 
   if (!tree_settings.is_default_vis()) {
     let vis_string = tree_settings.vis;
@@ -142,6 +143,11 @@ function get_params(options) {
     if (cols_string) {
       querystring.push("cols=" + encodeURIComponent(cols_string));
     } //else could be undefined if we since changed components of the colours
+  }
+
+  let tour_setting = controller.tour_active_setting()
+  if (tour_setting && typeof tour_setting === 'string') {
+    querystring.push("tour=" + encodeURIComponent(tour_setting))
   }
 
   if (config.lang) {
