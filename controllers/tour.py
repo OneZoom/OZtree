@@ -95,7 +95,7 @@ def screensaver():
     )
 
 
-def custom():
+def data():
     """Fetch generic tour name from database"""
     if len(request.args) < 1:
         raise ValueError("Expect a tour identifier at the end of the URL")
