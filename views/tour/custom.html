@@ -1,0 +1,54 @@
+{{
+ts_classes = (  # CSS classes that can be added to template_data as boolean properties
+    'visible-transition_in',
+    'visible-transition_in_wait',
+    'visible-transition_out',
+    'visible-transition_out_wait',
+    'visible-active_wait',
+    'hidden-active_wait',
+)
+
+tour_props = (  # Data properties that can be added to tour data
+    ('author', False),
+    ('title', True),
+    ('description', True),
+    ('image_url', False),
+    ('keywords', False),
+)
+
+ts_props = (  # Data properties that can be added to tourstop data
+    'ott',
+    'qs_opts',
+    'transition_in',
+    'fly_in_speed',
+    'transition_in_wait',
+    'wait',
+    'wait_after_backward',
+)
+
+ts_fields = (  # HTML fields that can be added to container
+    ('title', 'h2'),
+    ('window_text', 'div'),
+    ('author', 'div'),
+    ('checked_by', 'div'),
+)
+}}
+{{T.set_current_languages((tour['lang'],))}}
+<div class="tour tour-{{=request.function}} {{=tour_identifier}}"
+       {{for prop, tlated in tour_props:}}{{if tour.get(prop):}}data-{{=prop}}="{{=T(tour[prop]) if tlated else tour[prop]}}"
+       {{pass}}{{pass}}>
+  <link rel="stylesheet" type="text/css" href="{{=URL('static', 'tour/tour_template.css')}}" />
+{{for ts in tour['tourstops']:}}
+  {{tdata = ts['template_data']}}
+  {{if tdata.get('class', '') and not tdata['class'].isalnum():}}<script>alert('Invalid characters in class')</script>{{pass}}
+  {{T.set_current_languages((ts['lang'],))}}
+  <div class="container tour_container {{=tdata.get('class', '')}} {{=" ".join(c for c in ts_classes if c in tdata)}}"
+       {{for prop in ts_props:}}{{if ts.get(prop):}}data-{{=prop}}="{{=ts[prop]}}"
+       {{pass}}{{pass}}>
+    {{for k, tag in ts_fields:}}{{if tdata.get(k, ''):}}
+    <{{=tag}} class="{{=k}}">{{=T(tdata[k])}}</{{=tag}}>{{pass}}{{pass}}
+
+    {{ include "tour/tourstop/footer.html" }}
+  </div>
+{{pass}}
+</div>

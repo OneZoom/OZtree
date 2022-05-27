@@ -93,3 +93,64 @@ def screensaver():
     return dict(
         screensaver_otts=[991547, 81461, 99252, 770315],
     )
+
+
+def custom():
+    """Fetch generic tour name from database"""
+    if len(request.args) < 1:
+        raise ValueError("Expect a tour identifier at the end of the URL")
+    tour_identifier = request.args[0]
+
+    # tour<->tourorder<->tourstop relation
+    tour_tourorder = db((db.tour.id == db.tourorder.tour) & (db.tourstop.id == db.tourorder.tourstop))
+
+    if request.env.request_method == 'PUT':
+        # Need to be logged in before you can create tours
+        auth.basic()
+        if not auth.user:
+            return HTTP(403)
+        if len(request.vars.get('tourstops', [])) == 0:
+            raise ValueError("Must have at least one tourstop")
+
+        # Upsert the tour data
+        db.tour.update_or_insert(
+            db.tour.identifier == tour_identifier,
+            identifier=tour_identifier,
+            lang=request.vars.get('lang', 'en'),
+            author=request.vars.get('author'),
+            image_url=request.vars.get('image_url'),
+            title=request.vars.get('title'),
+            description=request.vars.get('description'),
+            keywords=request.vars.get('keywords'),
+        )
+        tour_id = db.tour(db.tour.identifier == tour_identifier).id
+
+        # Delete existing tourstops
+        tourorder = tour_tourorder(db.tour == tour_id).select(orderby=db.tourorder.ord)
+        for to in tourorder:
+            db(db.tourstop.id == to.tourstop.id).delete()
+        db(db.tourorder.tour == tour_id).delete()
+
+        # Insert, flattening any shared data
+        ts_shared = request.vars.get('tourstop_shared', {})
+        print(tour_id)
+        for i, ts in enumerate(request.vars['tourstops']):
+            tourstop_id = db.tourstop.insert(**{**ts_shared, **ts})
+            db.tourorder.insert(tour=tour_id, tourstop=tourstop_id, ord=i + 1)
+
+    # Fetch tour from DB
+    tourorder = tour_tourorder(db.tour.identifier == tour_identifier).select(orderby=db.tourorder.ord)
+    if len(tourorder) == 0:
+        raise HTTP(404)
+
+    # Reconstitute tour JSON
+    def munge_tourstop(ts):
+        if ts.secondary_ott:
+            ts.ott = "%d..%d" % (ts.ott, ts.secondary_ott)
+        return ts
+    tour = tourorder[0].tour
+    tour['tourstops'] = [munge_tourstop(to.tourstop) for to in tourorder]
+    return dict(
+        tour_identifier=tour_identifier,
+        tour=tour,
+    )

@@ -156,6 +156,7 @@ except:
 auth.settings.registration_requires_verification = False
 auth.settings.registration_requires_approval = False
 auth.settings.reset_password_requires_verification = True
+auth.settings.allow_basic_login = True
 
 ##restrict site to only logged in users
 ## https://groups.google.com/forum/#!topic/web2py/0j92-sPp4bc
