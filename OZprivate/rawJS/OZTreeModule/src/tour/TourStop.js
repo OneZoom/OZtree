@@ -222,7 +222,8 @@ class TourStopClass {
           .catch((e) => { console.error("Failed to Leap to tourstop", e) })
       } else {
           /* Flight */
-          let into_node = this.setting.pos === 'max'
+          // NB: Temporarily munge out into_node until there's better support: https://github.com/OneZoom/OZtree/issues/541
+          let into_node = this.setting.qs_opts.indexOf('into_node=max') > -1
           let speed = this.setting.fly_in_speed || 1
           
           if (this.setting.transition_in === 'fly_straight') {
