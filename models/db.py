@@ -773,8 +773,8 @@ db.define_table('tourstop',
     Field('transition_in', type='string', notnull=True, requires=IS_IN_SET(('fly', 'leap', 'fly_straight'))),  # Transition to use when flying to stop
     Field('fly_in_speed', type='double', notnull=False, default=1),  # Speed relative to global_anim_speed
     Field('transition_in_wait', type='integer', notnull=False),  # How long to wait before entering into transition
-    Field('stop_wait', type='integer', notnull=False),  # How long to wait at this stop (null => wait until "next" is pressed)
-    Field('stop_wait_after_backward', type='integer', notnull=False),  # How long to wait if entered by going back
+    Field('stop_wait', rname='wait', type='integer', notnull=False),  # How long to wait at this stop (null => wait until "next" is pressed)
+    Field('stop_wait_after_backward', rname='wait_after_backward', type='integer', notnull=False),  # How long to wait if entered by going back
     Field('template_file', type='string', notnull=True),  # Template used for this tour, e.g. 'tour_template', assumed to be avaiable in '/static/tour'
     Field('template_data', type='text', notnull=True,
         filter_in=lambda obj: json.dumps(obj),
