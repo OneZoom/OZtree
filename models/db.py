@@ -767,6 +767,9 @@ db.define_table('tour',
 
 # Tourstops within a tour
 db.define_table('tourstop',
+    Field('tour', db.tour),
+    Field('identifier', type='string', notnull=True),  # Unique identifier for tourstop, for establishing symlinks
+    Field('ord', type='integer', notnull=True),  # The position of this tourstop in the tour
     Field('ott', type='integer', notnull=False),  # The OTT this tourstop points at. NULL => return to start
     Field('secondary_ott', type='integer', notnull=True),  # A second OTT when targeting a common ancestor
     Field('qs_opts', type='string', notnull=False, default=''),  # QS-style options to apply to modify tourstop, e.g. into_node=true&initmark=...
@@ -785,14 +788,16 @@ db.define_table('tourstop',
     Field('visible_in_search', 'boolean', notnull=True, default=True),  # Available in tourstop-search for remixing a tour?
     Field('created', 'datetime', default=request.now),
     Field('updated', 'datetime', default=request.now, update=request.now),
-    format='%(id)d_%(ott)d', migrate=is_testing)
+    format='%(ott)d_%(identifier)s', migrate=is_testing)
 
-# Many:many table linking tours and stops
-db.define_table('tourorder',
+# Symlinks to other tourstops in another tour, a full tour will combine both tours and tourstops
+db.define_table('tourstop_symlink',
     Field('tour', db.tour),
     Field('tourstop', db.tourstop),
     Field('ord', type='integer', notnull=True),  # The position of this tourstop in the tour
-    format='%(ord)d', migrate=is_testing)
+    Field('created', 'datetime', default=request.now),
+    Field('updated', 'datetime', default=request.now, update=request.now),
+    format='%(id)d_%(identifier)s', migrate=is_testing)
 
 # These are popular places, tours or other things that a user can use to explore the tree
 # in a more guided way.  E.g. use as a first way into the tree or as suggestions of places

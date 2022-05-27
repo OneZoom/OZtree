@@ -101,9 +101,6 @@ def data():
         raise ValueError("Expect a tour identifier at the end of the URL")
     tour_identifier = request.args[0]
 
-    # tour<->tourorder<->tourstop relation
-    tour_tourorder = db((db.tour.id == db.tourorder.tour) & (db.tourstop.id == db.tourorder.tourstop))
-
     if request.env.request_method == 'PUT':
         # Need to be logged in before you can create tours
         auth.basic()
@@ -111,6 +108,12 @@ def data():
             return HTTP(403)
         if len(request.vars.get('tourstops', [])) == 0:
             raise ValueError("Must have at least one tourstop")
+
+        # Check that tourstop identifiers are unique within the tour
+        # TODO: Ideally we'd make a DB constraint for this, but is beyond the abilities of PyDAL
+        ts_identifiers = set(ts['identifier'] for ts in request.vars['tourstops'])
+        if len(ts_identifiers) != len(request.vars['tourstops']):
+            raise ValueError("All tourstops should have a unique identifier")
 
         # Upsert the tour data
         db.tour.update_or_insert(
@@ -125,31 +128,40 @@ def data():
         )
         tour_id = db.tour(db.tour.identifier == tour_identifier).id
 
-        # Delete existing tourstops
-        tourorder = tour_tourorder(db.tour == tour_id).select(orderby=db.tourorder.ord)
-        for to in tourorder:
-            db(db.tourstop.id == to.tourstop.id).delete()
-        db(db.tourorder.tour == tour_id).delete()
+        # Remove any no-longer extant tourstops
+        db(db.tourstop.tour == tour_id & ~db.tourstop.identifier.belongs(ts_identifiers)).delete()
 
-        # Insert, flattening any shared data
+        # Upsert each tourstop
         ts_shared = request.vars.get('tourstop_shared', {})
-        print(tour_id)
         for i, ts in enumerate(request.vars['tourstops']):
-            tourstop_id = db.tourstop.insert(**{**ts_shared, **ts})
-            db.tourorder.insert(tour=tour_id, tourstop=tourstop_id, ord=i + 1)
+            ts = { **ts_shared, **ts, "tour": tour_id, "ord": i + 1 }  # Combine with shared data, references
+            if 'symlink' in ts:
+                raise ValueError("TODO: Insert a symlink tourstop with ord i + 1")
+            else:
+                db.tourstop.update_or_insert(
+                    (db.tourstop.tour == tour_id) & (db.tourstop.identifier == ts['identifier']),
+                    **ts,
+                )
 
     # Fetch tour from DB
-    tourorder = tour_tourorder(db.tour.identifier == tour_identifier).select(orderby=db.tourorder.ord)
-    if len(tourorder) == 0:
+    tour = db(db.tour.identifier == tour_identifier).select()
+    if len(tour) < 1:
         raise HTTP(404)
+    tour = tour[0]
+
+    # Fetch associated tourstops
+    tourstops = tour.tourstop.select(orderby=db.tourstop.ord)
+    tourstop_symlinks = tour.tourstop_symlink.select(orderby=db.tourstop.ord)
+
+    if len(tourstop_symlinks) > 0:
+        raise ValueError("TODO: Combine 2 lists of tourstops according to ord")
 
     # Reconstitute tour JSON
     def munge_tourstop(ts):
         if ts.secondary_ott:
             ts.ott = "%d..%d" % (ts.ott, ts.secondary_ott)
         return ts
-    tour = tourorder[0].tour
-    tour['tourstops'] = [munge_tourstop(to.tourstop) for to in tourorder]
+    tour['tourstops'] = [munge_tourstop(t) for t in tourstops]
     return dict(
         tour_identifier=tour_identifier,
         tour=tour,
