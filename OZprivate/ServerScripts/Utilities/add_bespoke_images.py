@@ -59,7 +59,7 @@ class Images:
             raise ValueError(f"File {fn} does not match the expected pattern")
         rating, ott, name = m.group(1), m.group(3), m.group(4)
         if not name and not ott:
-            raise ValueError("Could not find either a name or ott number for {fn}")
+            raise ValueError(f"Could not find either a name or ott number for {fn}")
         name = name.replace("_", " ")
         # Look in IPTC IIM data
         iptc = IPTCInfo(path, force=True)
