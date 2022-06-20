@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import re
 import subprocess
 
@@ -144,6 +145,7 @@ def SPONSOR_VALIDATE():
         items_per_page=10
     
     limitby=(page*items_per_page,(page+1)*items_per_page+1)
+    sp_conf = sponsorship.sponsorship_config()
 
     query = None
     if request.vars.show == 'validated':
@@ -157,6 +159,12 @@ def SPONSOR_VALIDATE():
                 ))
     elif request.vars.show == 'all':
         query = (db.reservations.PP_transaction_code != None)
+    elif request.vars.show == 'unpaid':
+        # Replicate conditions for "unverified waiting for payment" in get_reservation()
+        cutoff = request.now - datetime.timedelta(seconds=sp_conf['unpaid_time_limit'])
+        query = ((db.reservations.PP_transaction_code == None) &
+                (db.reservations.user_sponsor_name != None) &
+                (db.reservations.reserve_time > cutoff))
     elif request.vars.show == 'unvalidated':
         pass
     elif isinstance(request.vars.show, str):

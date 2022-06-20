@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import config from '../global_config';
 
 let waiting_queue = [];
@@ -13,7 +12,7 @@ let MAX_CONCURRENT_REQUEST = config.api.max_concurrent_request;
 let process = function(params) {
   processing_requests++;
   let method = params.method ? params.method : "get";
-  $.ajax({
+  window.jQuery.ajax({
     url: params.url,
     method: method,
     data: params.data,

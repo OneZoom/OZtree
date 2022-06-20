@@ -50,8 +50,8 @@ class SponsorshipTest(FunctionalTest):
 
         self.urls={
             'web2py': lambda ott: base_url + 'sponsor_leaf?ott={}'.format(ott), #sponsorship link from web2py directly
-            'web2py_md_spons': lambda ott: base_url + 'sponsor_leaf?ott={}&embed=3'.format(ott), #like the museum display only allow sponsorship (not ideal, 
-            'web2py_nolinks': lambda ott: base_url + 'sponsor_leaf?ott={}&embed=4'.format(ott), #sponsorship links from web2py no links directly
+            'web2py_md_spons': lambda ott: base_url + 'sponsor_leaf?ott={}&popup=3'.format(ott), #like the museum display only allow sponsorship (not ideal, 
+            'web2py_nolinks': lambda ott: base_url + 'sponsor_leaf?ott={}&popup=4'.format(ott), #sponsorship links from web2py no links directly
             # the next two use the linkouts_url function to convert the stringified js function to a python output
             'treeviewer': lambda ott: linkouts_url(self.browser, js_get_life_link, ott, "ozspons"), #sponsorship links from js function in viewer
             'treeviewer_md': lambda ott: linkouts_url(self.browser, js_get_md_link, ott, "ozspons"), #sponsorship links from js function in MD viewer

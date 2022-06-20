@@ -1,0 +1,4 @@
+<option value="IUCN" selected>{{=T('Extinction risk')}}</option>
+<option value="popularity">{{=T('Species popularity')}}</option>
+<option value="natural">{{=T('Plain green, brown')}}</option>
+<option value="AT">{{=T('Ancestor\'s tale')}}</option>

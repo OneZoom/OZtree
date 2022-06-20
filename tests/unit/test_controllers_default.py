@@ -6,6 +6,7 @@ Run with::
 import unittest
 from inspect import getmembers, isfunction, getfullargspec
 
+import gluon.validators
 from gluon.globals import Request, Session
 from gluon.http import HTTP  # This is the error code
 
@@ -21,6 +22,10 @@ class TestControllersDefault(unittest.TestCase):
     maxDiff = None
 
     def setUp(self):
+        # Copy gluon validators into default, e.g. IS_NOT_EMPTY / IS_EMAIL
+        for n in gluon.validators.__all__:
+            setattr(default, n, getattr(gluon.validators, n))
+
         # Poke session / DB / request into API's namespace
         default.session = current.session
         default.db = current.db
@@ -80,6 +85,10 @@ class TestControllersDefault(unittest.TestCase):
                     f()
 
 if __name__ == '__main__':
+    import sys
+
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestControllersDefault))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    if not result.wasSuccessful():
+        sys.exit(1)

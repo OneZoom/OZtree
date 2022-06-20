@@ -13,16 +13,21 @@
     h3 {
         text-align: center;    
     }
-    html, body, #map {
+    h3 a {
+      color: lightblue;
+    }
+    html, body {
       height: 100%;
       padding: 0;
       margin: 0;
       background-color: black;
       color: grey;
     }
-    a {
-      color: lightblue;        
+    body {
+      display: flex;
+      flex-direction: column;
     }
+    #map { flex-grow: 1; }
   </style>
 </head>
 <body>
@@ -42,20 +47,27 @@
   var base_raster_style = 'gbif-classic';
   layers.push(new ol.layer.Tile({
     source: new ol.source.TileImage({
+      // https://tile.gbif.org/ui/
       projection: 'EPSG:3857',
       tileGrid: tile_grid_16,
       tilePixelRatio: pixel_ratio,
       url: 'https://tile.gbif.org/3857/omt/{z}/{x}/{y}@'+pixel_ratio+'x.png?style='+base_raster_style,
+      attributions: [
+          '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors</a>',
+          '&copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a>'
+      ],
       wrapX: true
     })
   }));
 
   layers.push(new ol.layer.Tile({
     source: new ol.source.TileImage({
+      // https://www.gbif.org/developer/maps
       projection: 'EPSG:3857',
       tileGrid: tile_grid_16,
       tilePixelRatio: pixel_ratio,
       url: 'https://api.gbif.org/v2/map/occurrence/density/{z}/{x}/{y}@'+pixel_ratio+'x.png?srs=EPSG:3857&style=classic.poly&bin=hex&hexPerTile=117&taxonKey={{=gbif_id}}',
+      attributions: '<a href="/citation-guidelines" target="_blank">GBIF</a>',
       wrapX: true
     })
   }));
@@ -67,6 +79,7 @@
       center: [0, 0],
       zoom: 3
     }),
+    controls: ol.control.defaults({ attributionOptions: { collapsible: false }}),
   });
 </script>
 <script src="https://api.gbif.org/v2/map/keepState.js"></script>

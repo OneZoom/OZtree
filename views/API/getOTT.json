@@ -1,0 +1,10 @@
+{{
+try:
+    from json import dumps
+    response.write(dumps(response._vars, separators=(',',':')), escape=False)
+    # enable CORS, so that e.g. the Ancestor's Tale site can access the API on OneZoom.org
+    response.headers['Access-Control-Allow-Methods'] = "POST, GET, OPTIONS"
+    response.headers['Content-Type'] = 'application/json'
+except:
+    raise HTTP(405,'no json')
+}}

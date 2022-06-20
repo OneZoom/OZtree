@@ -75,8 +75,6 @@ config.api = {
 
 config.lang = ''; //two letter language code. If empty, try to use the browser default, which will need to be passed in by the server (not visible to js)
 
-config.default_setting = ''; //a place to save the default settings string passed in via the URL (anything starting d_)
-
 config.custom_querystring_params = []; // If a project requires extra querystring params, set them here so they are preserved when URLs are modified
 
 config.ui = {

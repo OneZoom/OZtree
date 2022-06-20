@@ -1,0 +1,20 @@
+{{response.title='OneZoom embed editor'}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{extend 'uikit_layout.html'}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+    <h1>Export OneZoom translation files</h1>
+</div>
+{{end block}}
+
+<p>Thank you for considering helping us with the translation of One Zoom. Click
+one of the links below to download the existing translations for a language.
+When done please <a href="mailto:mail@onezoom.org">e-mail back to us</a> so we
+can incorporate your work in the OneZoom website.</p>
+
+<h3>Available languages</h3>
+
+<ul>
+  {{for l in possible_languages:}}<li><a href="{{=URL('lang_export.po', vars=dict(lang=l))}}">{{=l}}</a></li>{{pass}}
+</ul>

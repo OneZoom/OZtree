@@ -45,7 +45,6 @@ class Controller {
     data_repo.setup(data_obj);
     this.factory.build_tree();    
     this.update_form();
-    this.reset();
   }
   /**
    * onpopstate listens to browser history navigation. The popupstate callback would navigate the tree view according to url.
@@ -67,10 +66,7 @@ class Controller {
     this.projection.re_calc(this.root, tree_state.xp, tree_state.yp, tree_state.ws);
   }
   reset() {
-    position_helper.deanchor(this.root);
-    this.root.graphref = true;
-    position_helper.setxyr3r(this.root, 40, tree_state.widthres-40, 40, tree_state.heightres-40);
-    this.re_calc();
+    return this.leap_to(this.root.metacode);  // NB: root is always a node, so ozID positive
   }
   draw_loading() {
     config.ui.loadingMessage(true);

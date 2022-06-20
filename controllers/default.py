@@ -12,6 +12,7 @@ import json
 from collections import OrderedDict
 
 import ozmail
+from embed import embedize_url
 from sponsorship import (
     sponsorship_enabled, reservation_total_counts, clear_reservation, get_reservation,
     reservation_validate_basket_fields,
@@ -40,6 +41,17 @@ def get_paypal_url():
         return url
     except:
         return 'https://www.sandbox.paypal.com'
+
+
+def get_paypal_notify_url(postfix=""):
+    """Return a valid PayPal IPN url (i.e. the URL they poke when payment successful)"""
+    try:
+        notify_url = myconf.take('paypal.notify_url') + '/pp_process_post.html'
+    except:
+        notify_url = URL("pp_process_post.html", scheme=True, host=True)
+    if postfix:
+        notify_url += "/%s" % postfix
+    return notify_url
 
 """ generally useful functions """
 
@@ -463,10 +475,21 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
             verified_more_info= reservation_row.verified_more_info)
 
     if status.startswith("unverified"):
-        if status == "unverified waiting for payment":
+        if status == "unverified waiting for payment" or status == "unverified waiting for slow payment":
             unpaid_time_limit = sponsorship_config()['unpaid_time_limit']
             response.view = request.controller + "/spl_waitpay." + request.extension    
             return dict(
+                # i.e. if retry set too, trigger another payment attempt
+                validated=(request.vars.get('retry') == 'yes'),
+                payment_retry_url=URL("sponsor_pay", scheme=True, host=True, vars=dict(
+                    ott=OTT_ID_Varin,
+                    form_reservation_code=form_reservation_code,
+                    retry='yes',
+                )),
+                status=status,
+                form_reservation_code=form_reservation_code,
+                OTT_ID=OTT_ID_Varin,
+                user_paid=reservation_row.user_paid,
                 species_name=leaf_entry.name,
                 the_long_name=the_long_name,
                 unpaid_time_limit_hours= int(unpaid_time_limit/60.0/60.0))
@@ -525,6 +548,8 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
                     db.executesql(f"UPDATE reservations SET user_donor_hide = 0 where id = {int(reservation_row.id)}")
                 if not form.vars.allow_contact:
                     db.executesql(f"UPDATE reservations SET allow_contact = 0 where id = {int(reservation_row.id)}")
+                # Make sure our copy of the reservation row is up-to-date (so we can get user_paid later)
+                reservation_row = db.reservations(reservation_row.id)
             elif form.errors:
                 validated = False
             else:
@@ -552,6 +577,7 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
             percent_crop_expansion= percent_crop_expansion,
             partner_data          = partner_data,
             EoL_API_key           = EoL_API_key,
+            user_paid             = reservation_row.user_paid,
             max_global_price      = max_global_price,
             min_global_price      = min_global_price)
         
@@ -565,40 +591,30 @@ def sponsor_pay():
     Actually save the payment details in the db, and then redirect to a payments system, 
     e.g. paypal
     """
-    result = sponsor_leaf_check(use_form_data=True, form_data_to_db=True)
+    result = sponsor_leaf_check(
+        # Only try to repopulate the form if we have one
+        use_form_data=(request.env.request_method == 'POST'),
+        form_data_to_db=(request.env.request_method == 'POST'))
     if not result.get('validated', None):
         # Keep trying to validate, using the sponsor_leaf views
         return result
-    else:
-        # Jump out to paypal
-        db_saved = result['form'].vars
-        OTT_ID_str = str(int(result['OTT_ID'])) # this is the only field not in the form
-        try:
-            # redirect the user to a paypal page that (if completed) triggers paypal to then visit
-            # an OZ page, confirming payment: this is called an IPN. Details in pp_process_post.html
-            try:
-                notify_url = myconf.take('paypal.notify_url') + '/pp_process_post.html'
-            except:
-                notify_url = URL("pp_process_post.html", scheme=True, host=True)
-            redirect(get_paypal_url() + (
-                '/cgi-bin/webscr'
-                '?cmd=_donations'
-                '&business=mail@onezoom.org'
-                '&item_name=Donation+to+OneZoom+({sp_name})'
-                '&item_number=leaf+sponsorship+-+{sp_name}'
-                '&return={ret_url}'
-                '{notify_string}'
-                '&amount={amount}'
-                '&currency_code=GBP'.format(
-                     sp_name=urllib.parse.quote(db_saved.name),
-                     ret_url=URL("sponsor_thanks.html", scheme=True, host=True),
-                     notify_string='&notify_url=%s/%s' % (notify_url, OTT_ID_str),
-                     amount=urllib.parse.quote('{:.2f}'.format(db_saved.user_paid)))))
-        except:
-            raise
-            error="we couldn't find your leaf sponsorship information."
-            response.view = request.controller + "/sponsor_pay." + request.extension
-            return(dict(error=error, ott=request.vars.get('ott') or '<no available ID>'))
+
+    # redirect the user to a paypal page that (if completed) triggers paypal to then visit
+    # an OZ page, confirming payment: this is called an IPN. Details in pp_process_post.html
+    redirect(get_paypal_url() + '/cgi-bin/webscr?' + urllib.parse.urlencode({
+        "cmd": "_donations",
+        "business": 'mail@onezoom.org',
+        "item_name": "Donation to OneZoom (%s)" % result['species_name'],
+        "item_number": "leaf sponsorship - %s" % result['species_name'],
+        "return": URL("sponsor_thanks.html", scheme=True, host=True),
+        "cancel_return": URL("sponsor_pay.html", scheme=True, host=True, vars=dict(
+            ott=result['OTT_ID'],
+            form_reservation_code=result['form_reservation_code'],
+        )),
+        "notify_url": get_paypal_notify_url(result['OTT_ID']),
+        "amount": '{:.2f}'.format(result['user_paid']),
+        "currency_code": "GBP",
+    }))
 
 
 def valid_spons(form, species_name, price_pounds, partner_data):
@@ -723,11 +739,7 @@ def sponsor_renew():
         if '/basket/' not in notify_url:
             raise ValueError("Invalid notify_url: %s" % notify_url)
     else:
-        try:
-            notify_url = myconf.take('paypal.notify_url') + '/pp_process_post.html'
-        except:
-            notify_url = URL("pp_process_post.html", scheme=True, host=True)
-        notify_url += '/basket/%s' % __make_user_code()
+        notify_url = get_paypal_notify_url('basket/%s' % __make_user_code())
 
     # Get active, expiring reservations
     active_rows, expiring_rows, rows_by_ott = ([], [], {})
@@ -1352,7 +1364,7 @@ def sponsor_node_price():
 def sponsor_node():
     """
     This picks <max> leaves per price band, and removes already sponsored leaves from the search    
-    By default ranks by popularity. We pass on any request.vars so that we can use embed, form_reservation_code, etc.
+    By default ranks by popularity. We pass on any request.vars so that we can use popup, form_reservation_code, etc.
     """
     try:
         if request.vars.get('id'):
@@ -1582,10 +1594,12 @@ def pp_process_post():
     if myconf.take('paypal.save_to_tmp_file_dir'):
         import os
         import time
+        error_dir = myconf.take('paypal.save_to_tmp_file_dir')
+        os.makedirs(error_dir, exist_ok=True)
 
         with open(
             os.path.join(
-                myconf.take('paypal.save_to_tmp_file_dir'),
+                error_dir,
                 "{}{}_paypal_OTT{}_{}.json".format(
                     "PP_" if err is None else "PP_ERROR_",
                     "".join([char if char.isalnum() else "_" for char in request.env.http_host]),
@@ -1604,6 +1618,74 @@ def pp_process_post():
         raise HTTP(400, err) #should flag up to PP that there is a problem with this transaction
     else:
         return(dict(vars=request.vars, args=request.args))
+
+"""Controllers related to OneZoom embedding functionality"""
+
+def embed_instructions():
+    return dict()
+
+def embed_edit():
+    form = FORM(
+        LABEL("E-mail address"),
+        INPUT(_type='email', requires=[IS_NOT_EMPTY(), IS_EMAIL()], _name='email', _class="uk-input uk-margin-bottom"),
+        INPUT(_type='hidden', _name='url', _value=URL('life', scheme=True, host=True)),
+        INPUT(_type='submit', _value="Send e-mail", _class="oz-pill pill-leaf"),
+        _id="form_embed_email",
+    )
+
+    if form.accepts(request.vars, session=None, keepvalues=True):
+        mail, reason=ozmail.get_mailer()
+        if mail is None:
+            response.flash = '%s, so cannot send email' % reason
+        else:
+            mailargs = ozmail.template_mail('embed_code', dict(
+                url=embedize_url(form.vars.url, form.vars.email),
+            ), to=form.vars.email)
+            mail.send(**mailargs)
+            response.flash = "E-mail with embed code sent"
+    return dict(
+        form=form,
+    )
+
+""" Controllers for language file export """
+
+def lang_export():
+    import gluon.languages
+
+    def get_lang(lang):
+        if re.search('[^a-z0-9_\-]', lang):
+            raise ValueError("Invalid language %s" % lang)
+        return gluon.languages.read_dict(os.path.join(os.path.dirname(T.language_file), '%s.py' % lang))
+
+    def to_po(lang_dict):
+        def po_line(preamble, s):
+            s = s.replace("\\", "\\\\")
+            s = s.replace("\r", "\\r")
+            s = s.replace("\t", "\\t")
+            s = s.replace("\n", "\\n")
+            s = s.replace('"', '\\"')
+            return '%s "%s"' % (preamble, s)
+        out = []
+        for lang_in, lang_out in lang_dict.items():
+            if lang_in.startswith('!lang'):
+                continue
+            if lang_out == lang_in.replace("@markmin\x01", ""):
+                lang_out = ""
+            out.append("")
+            out.append(po_line("msgid", lang_in))
+            out.append(po_line("msgstr", lang_out))
+        return "\n".join(out)
+
+    export_lang = request.vars.lang
+    if not export_lang:
+        return dict(
+            possible_languages= T.get_possible_languages_info().keys(),
+        )
+
+    response.headers['Content-Type'] = 'text/x-gettext-translation;charset=utf-8'
+    response.headers['Content-Disposition'] = 'attachment; filename="onezoom-%s.po"' % export_lang
+    return dict(output=to_po(get_lang(export_lang)))
+
 
 """ these empty controllers are for other OneZoom pages"""
 
@@ -1990,6 +2072,13 @@ def treeview_info(has_text_tree=True):
 def life():
     """
     The standard OneZoom app
+    """
+    response.view = "treeviewer" + "/" + request.function + "." + request.extension
+    return treeview_info()
+
+def life_noninteractive():
+    """
+    OneZoom app with all interaction disabled
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return treeview_info()

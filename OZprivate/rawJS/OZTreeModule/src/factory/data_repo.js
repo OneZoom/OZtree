@@ -131,7 +131,7 @@ class DataRepo {
     parse_ordered_leaves(this, res.leaves, node_details_api);
     parse_ordered_nodes(this, res.nodes, node_details_api);
     parse_iucn(this, res.leafIucn);
-    parse_pics(this, res.leafPic, pic_src_order, node_details_api);
+    parse_pics(this, res.leaves, res.leafPic, pic_src_order, node_details_api);
     parse_vernacular_by_ott(this, res.vernacular_by_ott);
     parse_vernacular_by_name(this, res.vernacular_by_name);
     parse_sponsorship(this, res.reservations, node_details_api);
@@ -302,7 +302,7 @@ function parse_iucn(data_repo, iucn) {
   }
 }
 
-function parse_pics(data_repo, pics, order, node_details) {
+function parse_pics(data_repo, leaves, pics, order, node_details) {
   /* Here we have a set of pictures for otts. We have up to one pic per ott/source_id (OZ, Eol, Kew, LinnSoc etc.) combo
      So there could be more than one pic per species if a species has e.g. an Eol, a OneZoom, and a LinnSoc image 
      
@@ -314,14 +314,15 @@ function parse_pics(data_repo, pics, order, node_details) {
      know how to resolve this without providing new database columns containing e.g. 
      Linn-Soc-specific signpost recommendations (something that we may need to do eventually)
      */
-  for (let i=0; i<pics.length; i++) {
-    let ott = pics[i][node_details.pic_cols["ott"]];
-    let id = -data_repo.ott_id_map[ott];
+
+  // For each potential leaf, clear any stored image first (in case this leaf no longer has an image)
+  for (let i=0; i<leaves.length; i++) {
+    let id = leaves[i][node_details.leaf_cols["id"]];
     if (!data_repo.metadata.leaf_meta[id]) data_repo.metadata.leaf_meta[id] = new Array(data_repo.leaf_col_len);
     let pic_entry = data_repo.metadata.leaf_meta[id];
-    pic_entry[data_repo.mc_key_l["picID_src"]]    = pics[i][node_details.pic_cols["src"]].toString();
-    pic_entry[data_repo.mc_key_l["picID"]]        = pics[i][node_details.pic_cols["src_id"]].toString();
-    pic_entry[data_repo.mc_key_l["picID_rating"]] = pics[i][node_details.pic_cols["rating"]];
+    pic_entry[data_repo.mc_key_l["picID_src"]]    = null;
+    pic_entry[data_repo.mc_key_l["picID"]]        = null;
+    pic_entry[data_repo.mc_key_l["picID_rating"]] = null;
     /** 
      * this attribute is fetched by image_details api call. 
      * set credit to null to force it being fetched by image_details API call. 
@@ -329,6 +330,16 @@ function parse_pics(data_repo, pics, order, node_details) {
      * might refer to previous image source.
      */
     pic_entry[data_repo.mc_key_l["picID_credit"]] = null;
+  }
+
+  // Add all found images back
+  for (let i=0; i<pics.length; i++) {
+    let ott = pics[i][node_details.pic_cols["ott"]];
+    let id = -data_repo.ott_id_map[ott];
+    let pic_entry = data_repo.metadata.leaf_meta[id];
+    pic_entry[data_repo.mc_key_l["picID_src"]]    = pics[i][node_details.pic_cols["src"]].toString();
+    pic_entry[data_repo.mc_key_l["picID"]]        = pics[i][node_details.pic_cols["src_id"]].toString();
+    pic_entry[data_repo.mc_key_l["picID_rating"]] = pics[i][node_details.pic_cols["rating"]];
   }
 }
 

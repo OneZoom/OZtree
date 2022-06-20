@@ -184,6 +184,17 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
   </noscript>
 </head>
 <body id = "wholebody" style="user-select:none; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select:none; -ms-user-select:none;" unselectable = "on" class="loading tree-viewer">
+<script>
+(function() {
+    /* Test whether document is within iframe, note in body class */
+    try {
+        document.body.classList.toggle('within-iframe', window.self !== window.top);
+    } catch (e) {
+        document.body.classList.toggle('within-iframe', true);
+    }
+}());
+</script>
+
     {{include 'analytics.html'}}
     <!-- main body of document - canvas, then rest of UI elements in a single div -->
   <canvas id="OneZoomCanvasID" tabindex="1">{{include 'treeviewer/life_text.load'}}</canvas>
@@ -213,10 +224,14 @@ function closeAndLeap(event, OZIDin, original_searchbox) {
 
 
 function load_tab(tab_content) {
-  if (! tab_content.children().last().hasClass('popup-content')) {
+  var ifrm;
+
+  if (tab_content.children().last().hasClass('popup-content')) {
+      ifrm = tab_content.children().last().children('iframe')[0];
+  } else {
       $('.iframe-loading-info',tab_content).show();
       {{if is_testing:}}console.log("trying to create iframe with src = " + tab_content.attr('data-src'));{{pass}}
-      var ifrm = document.createElement("iframe");
+      ifrm = document.createElement("iframe");
       ifrm.setAttribute('src', tab_content.attr('data-src'));
       ifrm.addEventListener('load', function() {
         {{if is_testing:}}console.log("Hiding iframe loading info");{{pass}}
@@ -226,6 +241,9 @@ function load_tab(tab_content) {
       //add iframe inside a div wrapper
       tab_content.append($('<div>', {'class':'popup-content iframe-container'}).append(ifrm));
   }
+  // Give iframe a chance to attach to the page, then focus it, so pgup/dn work
+  // for the wikipedia tab (e.g.)
+  window.setTimeout(function() { ifrm.focus(); }, 0);
 }
 
 /* Add a set of species (e.g. popular species) to a target list, 
@@ -523,7 +541,14 @@ function setupUI() {
     $("[uk-modal]").on("touchstart touchmove touchend", preventTouchZoom);
 
     $('#outButton .icon-container')
-        .click(function(){onezoom.controller.button_zoom_up()});
+        .click(function(){
+            if (document.getElementById('outButton').classList.contains('no-tree-follow')) {
+                // E.g. for fine-grained zoom-out, where following tree doesn't make sense
+                onezoom.controller.button_zoom_out()
+            } else {
+                onezoom.controller.button_zoom_up()
+            }
+        });
     $('#inButton .icon-container')
         .click(function(){onezoom.controller.button_zoom_in()});
     $('#resetButton .icon-container')
@@ -550,11 +575,15 @@ function setupUI() {
     //$('input[name="colourtype"]').change(function() {onezoom.controller.change_color_theme(this.value)});
     $('input[name="searchmode"]').change(function () { onezoom.controller.set_search_jump_mode(this.value) });
     
-    $('input[name="CBF"]').change(function () { onezoom.controller.change_color_theme($('select#colourtype').val(),$('input[name="CBF"]').is(':checked')); });
+    $('input[name="CBF"]').change(function () { onezoom.controller.change_color_theme(
+        $('select#colourtype').val() + ($('input[name="CBF"]').is(':checked') ? "_CBF" : "")
+    ); });
     
     $('select#treeshape').change(function() {onezoom.controller.change_view_type(this.value)});
     
-    $('select#colourtype').change(function() { onezoom.controller.change_color_theme(this.value,$('input[name="CBF"]').is(':checked')) });
+    $('select#colourtype').change(function() { onezoom.controller.change_color_theme(
+        $('select#colourtype').val() + ($('input[name="CBF"]').is(':checked') ? "_CBF" : "")
+    ); });
     
     $('select#language').change(function() {
         //reset the OZ strings to the new language
@@ -584,7 +613,9 @@ function setupUI() {
       .on('show', function() {
        $('input[name=imgsource]').val([onezoom.controller.get_image_source()]);
           $('select#treeshape').val([onezoom.controller.get_view_type()]);
-       $('select#colourtype').val([onezoom.controller.get_color_theme()]);
+       var color_theme = onezoom.controller.get_color_theme();
+       $('select#colourtype').val([color_theme.replace(/_CBF$/, '')]);
+       $('input[name="CBF"]')[0].checked = /_CBF/.test(color_theme);
        $('select#language').val(onezoom.controller.get_language());
        $('input[name=searchmode]').val([onezoom.controller.get_search_jump_mode()]);
     });
@@ -650,7 +681,7 @@ function setupUI() {
         event.preventDefault();
       })
     
-    $('#search-basic .searchinput input')
+    $('#searchnav .search-basic .searchinput input')
       .keyup(function(event) {
         var search_term = this.value;
         var searchbox = $(this).closest('.searchbox');
@@ -677,7 +708,7 @@ function setupUI() {
                                                 function(original_string, actual_search, results) {
                                                 search_ui.searchPopulate(searchbox, original_string, results, function(event, OZid) {
                                                     event.preventDefault();  // Don't follow links
-                                                    closeAndLeap(event, OZid, $('#search-basic'));
+                                                    closeAndLeap(event, OZid, $('#searchnav .search-basic'));
                                                 })
                                                 },
                                                 delay_ms,
@@ -699,7 +730,7 @@ function setupUI() {
         }
       });
     
-    $('#search-basic .search_dropdown')
+    $('#searchnav .search-basic .search_dropdown')
         .on('show', function(event) {
             //have to recalc the max height here as we need to dynamically work out the dropbox posn
             $(event.currentTarget).css("max-height", "calc(100vh - 5px - " + $(event.currentTarget).offset().top + "px)");
@@ -817,8 +848,8 @@ function setupUI() {
         event.stopPropagation();
     });
 
-    setup_location_list($('#search-basic .popular_species'), locations_json, 
-        function(event, OZid) {closeAndLeap(event, OZid, $('#search-basic'))});
+    setup_location_list($('#searchnav .search-basic .popular_species'), locations_json, 
+        function(event, OZid) {closeAndLeap(event, OZid, $('#searchnav .search-basic'))});
 
     var existing_searchresults = onezoom.controller.list_all_marked().filter(function(id_col) {return !isNaN(id_col[0])});
     if (existing_searchresults.length) {
@@ -849,7 +880,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
     this allows us to access e.g. onezoom.controller, onezoom.config, etc (defined in OZentry.js)
      **/
     {{if is_testing:}}console.log("Starting OneZoom viewer");{{pass}}
-    
+
     setup_onezoom()
 
     function setup_onezoom() {  
@@ -867,7 +898,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             window.tree_date);
 
         onezoom.add_hook('on_tree_loaded', () => {
-            onezoom.tutorial.setup_setting(
+            if (onezoom.tutorial) onezoom.tutorial.setup_setting(
                 globals['tutorial_config'], 'tutorial',
                 globals.UI_callbacks.closeAll, // before the tutorial runs, close modals etc.
                 null, // nothing on tutorial end
@@ -877,7 +908,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
                 )})
         /* The screensaver is a type of tour with a different calling signature */
         onezoom.add_hook('on_tree_loaded', () => {
-            onezoom.screensaver.setup_setting(
+            if (onezoom.screensaver) onezoom.screensaver.setup_setting(
                 // screensaver_config may only be defined for some displays
                 window.globals['screensaver_config'], 'screensaver',
                 globals.UI_callbacks.closeAll, // before the screensaver runs, close modals etc.

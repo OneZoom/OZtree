@@ -77,31 +77,18 @@
 
 <script>
 // checking that the theme can be seen here
-if ((typeof onezoom.controller.get_color_theme != "undefined")&&(typeof onezoom.controller.get_color_theme_CBF != "undefined"))
+if (typeof onezoom.controller.get_color_theme != "undefined")
 {
-    let color_theme = onezoom.controller.get_color_theme();
-    let color_theme_CBF = onezoom.controller.get_color_theme_CBF();
+    var theme_div = document.getElementById(onezoom.controller.get_color_theme() + '_col');
 
-    if (color_theme == "IUCN") {
+    if (!theme_div) {
+        // Try looking for a non-CBF version, e.g. natural / AT
+        theme_div = document.getElementById(onezoom.controller.get_color_theme().replace(/_CBF$/, '') + '_col');
+    }
+
+    if (theme_div) {
         document.getElementById("General_col").style.display = "none"
-        if (color_theme_CBF) {
-            document.getElementById("IUCN_CBF_col").style.display = "block"
-        } else {
-            document.getElementById("IUCN_col").style.display = "block"
-        }
-    } else if (color_theme == "popularity") {
-        document.getElementById("General_col").style.display = "none"
-        if (color_theme_CBF) {
-            document.getElementById("popularity_CBF_col").style.display = "block"
-        } else {
-            document.getElementById("popularity_col").style.display = "block"
-        }
-    } else if (color_theme == "AT") {
-        document.getElementById("General_col").style.display = "none"
-        document.getElementById("AT_col").style.display = "block"
-    } else if (color_theme == "natural") {
-        document.getElementById("General_col").style.display = "none"
-        document.getElementById("natural_col").style.display = "block"
+        theme_div.style.display = "block"
     }
 }
 </script>

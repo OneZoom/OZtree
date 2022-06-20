@@ -1,8 +1,8 @@
 /* UIkit-skin scss file for OneZoom. Author: Yan Wong for OneZoom CIO. License: MIT */
 @import "search_ui.scss";
 
-body {
-    background-color: white;
+html {
+    background: none;
 }
 
 h2 {
@@ -139,10 +139,6 @@ body.loading #UI #loading_spinner {
     border-top: 1px solid #DDD
 }
 
-#controlButtons #singleInfoButton {
-    display:none;
-}
-
 #controlButtons #multipleInfoButton a, 
 #controlButtons #singleInfoButton a, 
 #controlButtons #hideControlsButton a, 
@@ -150,15 +146,13 @@ body.loading #UI #loading_spinner {
     border-top: 1px solid #DDD;
 }
 
-/* hide any "expert-mode" buttons */
-#controlButtons #screenshotButton
-{
-    display: none;
-}
-
 /* Hide label text on the right of buttons */
 #controlButtons .button-label {
     display: none;
+}
+
+#controlButtons #singleInfoButton {
+    display:none;
 }
 
 /* Hide hide/show control button, how to use button, tour button, etc */
@@ -168,6 +162,17 @@ body.loading #UI #loading_spinner {
 #controlButtons #tourButton,
 {
     display: none;
+}
+/* hide any "expert-mode" buttons */
+#controlButtons #screenshotButton
+{
+    display: none;
+}
+
+/* Toggle show/hide buttons if enabled */
+ul#controlButtons.button-label-hidden {
+    #showControlsButton { display: block; }
+    #hideControlsButton { display: none; }
 }
 
 #locationDropdown {

@@ -1,6 +1,6 @@
 import get_controller from '../controller/controller';
 import tree_settings from '../tree_settings';
-import { global_button_action, is_popup_state } from '../button_manager';
+import { global_button_action } from '../button_manager';
 import { get_largest_visible_node, parse_window_location, parse_query, encode_popup_action } from './utils';
 import { add_hook } from '../util/index';
 import config from '../global_config';
@@ -25,7 +25,7 @@ function record_url_delayed() {
  * Only record url if current pin node is the different from previous pin node or popup dialog close or open.
  * Also do not record file:/// links (not allowed for security reasons)
  * @param {Object} options It could contain the following properties:
- * record_popup: if true then check if global_button_action is live area.
+ * record_popup: Contents of global_button_action, if a popup window should be open
  */
 function record_url(options, force) {
   let controller = get_controller();
@@ -129,10 +129,6 @@ function get_pinpoint(node) {
 
 function get_params(options) {
   let querystring = [];
-  if (config.default_setting) {
-    //if we set some defaults in the original page, make sure we echo them here
-    querystring.push(config.default_setting)
-  }
 
   if (!tree_settings.is_default_vis()) {
     let vis_string = tree_settings.vis;
@@ -165,13 +161,10 @@ function get_params(options) {
   }
 
   if (options.record_popup) {
-    let popup_state = get_popup_state();
-    if (popup_state) {
-      querystring.push("pop=" + encode_popup_action(popup_state[0]) + "_" + popup_state[1]);
-    }
+    querystring.push("pop=" + encode_popup_action(options.record_popup.action) + "_" + options.record_popup.data);
   }
   // Preserve all custom parts of current querystring
-  (config.custom_querystring_params || []).concat(['ssaver']).map(function (part_name) {
+  (config.custom_querystring_params || []).concat(['ssaver', 'init', 'initmark']).map(function (part_name) {
     var m = window.location.search.match(new RegExp('(^|&|\\?)' + part_name + '=[^&]+', 'g'));
     (m || []).map(function (part) {
       querystring.push(part.replace(/^[&?]/, ''));
@@ -184,16 +177,6 @@ function get_params(options) {
   return querystring;
 }
 
-function get_popup_state() {
-  if (global_button_action) {
-    let action = global_button_action.action;
-    if (is_popup_state()) {
-      return [global_button_action.action, global_button_action.data];
-    }
-  }
-  return null;
-}
-
 function get_current_state(node, title, options) {
   let state = {};
   let pos = get_pos_if_reanchor(node);
@@ -204,11 +187,8 @@ function get_current_state(node, title, options) {
   state.vis_type = tree_settings.vis;
   if (title) state.title = title;
   if (options.record_popup) {
-    let popup_state = get_popup_state();
-    if (popup_state) {
-      state.tap_action = popup_state[0];
-      state.tap_ott_or_id = popup_state[1];
-    }
+    state.tap_action = options.record_popup.action;
+    state.tap_ott_or_id = options.record_popup.data;
   }
   return state;
 }
