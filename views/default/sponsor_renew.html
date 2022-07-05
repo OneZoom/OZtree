@@ -83,7 +83,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                                 class="uk-checkbox"
                                 name="oz_user_donor_hide_{{=item.OTT_ID}}"
                                 {{='checked="checked"' if request.vars.get('oz_user_donor_hide_%d' % item.OTT_ID, item.user_donor_hide) else ''}}
-                                > Hide from <a href="{{=URL('default', 'donor_list.html')}}" target="_blank">donor page</a></input></label>
+                                > Hide from <a href="{{=URL('/donor/%s' % most_recent.username)}}" target="_blank">donor pages</a></input></label>
                   <br/>
                   <label class="renew_checkbox">
                     <input type="checkbox"
