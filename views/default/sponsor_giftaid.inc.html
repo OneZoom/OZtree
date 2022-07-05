@@ -3,7 +3,6 @@
 {{giftaid_anded_names = XML(" and ".join(str(A(T(p['name']), _href=p['general_url'],_target="_blank")) for p in giftaid_partners)) }}
 {{giftaid_and = " and " if giftaid_anded_names else "" }}
 {{try:}}{{giftaid_previously_agreed = giftaid_recorded}}{{except:}}{{giftaid_previously_agreed = False}}{{pass}}
-
 {{if not giftaid_previously_agreed:}}
 <button id="gift_aid_button" type='button' onclick="toggle_giftaid_visibility(event)">{{=T('Click if you are a UK tax payer and agree to Gift Aid')}}</button>
 {{pass}}
@@ -15,7 +14,10 @@
      {{=XML(T('If you wish to retract your previous gift aid statement just %s.') % A(T("contact us"), _href="mailto:mail@onezoom.org"))}}
   </p>
   {{else:}}
-  <p>{{=T('Thank you for agreeing to gift aid your donation. Please check the statement below and fill out the necessary details. If you didn‘t intend to gift aid, you can untick the box at the end')}}</p>
+  <p>{{=T('Thank you for agreeing to gift aid your donation. Please check the statement below and fill out the necessary details. If you didn’t intend to gift aid, you can untick the box at the end')}}</p>
+  {{pass}}
+  {{if giftaid_anded_names:}}
+  <p>{{=T('You have previously sponsored with a joint donation that was shared between OneZoom and one (or more) of our collaborator organisations. Hence the declaration we have on file below will include our collaborator’s names as well, even if your current donation is not one that would be shared.')}}</p>
   {{pass}}
   <p>I want to Gift Aid this donation and any donations I make in the future or have made in the past 4 years to OneZoom {{=giftaid_and}}{{=giftaid_anded_names}}</p>
   <p>I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of
