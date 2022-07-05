@@ -51,7 +51,7 @@
              maxlength="40"
              onfocus="if (event.target.value.startsWith('****')) event.target.value = ''"
              onblur="if (event.target.value == '') event.target.value = '{{=request.vars.get('user_addr_house', '')}}'"
-             value="{{request.vars.get('user_addr_house', '')}}" />
+             value="{{=request.vars.get('user_addr_house', '')}}" />
       <em class = "error_text">{{=form.errors.get("user_addr_house") or ""}}</em>
     </p>
     </div><div>
