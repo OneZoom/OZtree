@@ -749,7 +749,7 @@ def sponsor_renew():
                 (db.reservations.PP_transaction_code != None)  # i.e has been bought
             ).select(
                 db.reservations.ALL,
-                orderby="sponsorship_ends",
+                orderby=db.reservations.sponsorship_ends,
             ):
         rows_by_ott[r.OTT_ID] = r
         if r.sponsorship_ends >= expiry_soon_date:
@@ -762,7 +762,7 @@ def sponsor_renew():
     expired_statuses = {}
     for r in db((db.expired_reservations.username == username)).select(
                 db.expired_reservations.ALL,
-                orderby="expired_reservations.sponsorship_ends",
+                orderby=~db.expired_reservations.sponsorship_ends,
             ):
         if r.OTT_ID in rows_by_ott:
             # Already have a row for this one, no need to create another
@@ -819,10 +819,14 @@ def sponsor_renew():
             )
 
     most_recent = None
-    for r in itertools.chain(active_rows, expiring_rows, expired_rows):
+    giftaid_recorded = False
+    all_partner_identifiers = set()  # Fetch data for partners so we can use it on the Gift Aid form
+    for r in itertools.chain(reversed(active_rows), reversed(expiring_rows), expired_rows):
         # Use most_recent to derive global user details, e.g. name, gift aid status.
         if most_recent is None:
             most_recent = r
+        if r.user_giftaid:
+            giftaid_recorded = True  # if any have been giftaided, we consider all to be so
 
         # If there's a nondefault image, replace with that
         if r.user_nondefault_image:
@@ -831,11 +835,9 @@ def sponsor_renew():
                 r.verified_preferred_image_src,
                 r.verified_preferred_image_src_id)}
 
-    # Fetch data for partners so we can use it on the Gift Aid form
-    all_partner_identifiers = set()
-    for r in itertools.chain(active_rows, expiring_rows, expired_rows):
         # NB: We're not picking out partners that are being bought, but we'd have to replicate the functionality in JS if so
         all_partner_identifiers.update(partner_identifiers_for_reservation_name(r.partner_name))
+        
     all_partner_data = db(db.partners.partner_identifier.belongs(all_partner_identifiers)).select()
 
     vars = request.vars
@@ -848,8 +850,8 @@ def sponsor_renew():
             vars['user_donor_name'] = most_recent.verified_donor_name
         if "user_addr_nonuk" not in vars:
             # Gift aid not populated yet
-            vars['user_giftaid'] = most_recent.user_giftaid
-            if not most_recent.user_giftaid:
+            vars['user_giftaid'] = giftaid_recorded
+            if not giftaid_recorded:
                 # Not a giftaider, copy nothing
                 pass
             if most_recent.user_addr_postcode is None and most_recent.user_addr_house is not None:
@@ -945,6 +947,7 @@ def sponsor_renew():
         notify_url=notify_url,
         all_partner_data=all_partner_data,
         form=form,
+        giftaid_recorded=giftaid_recorded,
     )
 
 
