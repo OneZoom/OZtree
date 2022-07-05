@@ -843,9 +843,9 @@ def sponsor_renew():
     # Extract details from most recent item if unpopulated
     if most_recent:
         if "user_donor_title" not in vars:
-            vars['user_donor_title'] = most_recent.user_donor_title
+            vars['user_donor_title'] = most_recent.verified_donor_title
         if "user_donor_name" not in vars:
-            vars['user_donor_name'] = most_recent.user_donor_name
+            vars['user_donor_name'] = most_recent.verified_donor_name
         if "user_addr_nonuk" not in vars:
             # Gift aid not populated yet
             vars['user_giftaid'] = most_recent.user_giftaid
