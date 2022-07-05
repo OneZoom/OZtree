@@ -157,7 +157,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
     {{giftaid_partners = all_partner_data}}
     {{include 'default/sponsor_giftaid.inc.html'}}
 
-    <label for="user_donor_name_input">{{=T('Your title and name:')}}</label><p>
+    <p><label for="user_donor_name_input">{{=T('Your title and name:')}}</label>
     <select name="user_donor_title" autocomplete="honorific-prefix" id="user_donor_title_input">
       {{for v in ['   ', 'Mr', 'Mrs', 'Miss', 'Ms', 'Mx', 'Dr', 'Prof', 'Rev', 'Sir', 'Lord', 'Lady']:}}
         <option value="{{=T(v)}}" {{='selected' if (request.vars['user_donor_title'] == v) else ''}}>{{=T(v)}}</option>
