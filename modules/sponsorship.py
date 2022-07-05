@@ -822,9 +822,9 @@ def sponsor_renew_request_logic(user_identifier, mailer=None, reveal_private_dat
     # Get all reminder blocks for usernames associated to this e-mail address
     unames = usernames.usernames_associated_to_email(user_identifier) if '@' in user_identifier else [user_identifier]
     try:
-        user_reminders = list(sponsorship_email_reminders(unames).values())
+        user_reminders = sponsorship_email_reminders(unames)
     except ValueError:
-        user_reminders = []
+        user_reminders = {}
     info = ''
     if not reveal_private_data:
         info = 'If the user %s exists in our database, we will send them an email' % user_identifier
@@ -838,7 +838,8 @@ def sponsor_renew_request_logic(user_identifier, mailer=None, reveal_private_dat
         if reveal_private_data:
             info = 'Many users associated with e-mail address %s' % user_identifier
     else:
-        user_reminders = user_reminders[0]
+        username, user_reminders = next(iter(user_reminders.items()))
+        user_reminders['username'] = username
         user_reminders['nice_names'] = nice_name_from_otts(
             user_reminders['unsponsorable'] + user_reminders['not_yet_due'] +
             user_reminders['initial_reminders'] + user_reminders['final_reminders'],
