@@ -2,12 +2,16 @@
 
 {{giftaid_anded_names = XML(" and ".join(str(A(T(p['name']), _href=p['general_url'],_target="_blank")) for p in giftaid_partners)) }}
 {{giftaid_and = " and " if giftaid_anded_names else "" }}
+{{try:}}{{giftaid_previously_agreed = giftaid_recorded}}{{except:}}{{giftaid_previously_agreed = False}}{{pass}}
 
 <button id="gift_aid_button" type='button' onclick="toggle_giftaid_visibility(event)">{{=T('Click if you are a UK tax payer and agree to Gift Aid')}}</button>
 <div id="gift_aid" {{if not request.vars.user_giftaid:}}style="display: none"{{pass}}>
   <h3>{{=T('Gift Aid declaration')}}</h3>
-  <p>{{=T('Thank you for considering Gift Aid. Please confirm that you agree to the below Gift Aid declaration.')}}</p>
-
+  {{if giftaid_previously_agreed:}}
+  <p>{{=T('Our records show that you have previously agreed to gift aid your donations. Thank you for this and for your previous donations. Please check your details and if necessary re-enter the information required.')}}</p>
+  {{else:}}
+  <p>{{=T('Thank you for agreeing to gift aid your donation. Please check the statement below and fill out the necessary details. If you didn‘t intend to gift aid, you can untick the box at the end')}}</p>
+  {{pass}}
   <p>I want to Gift Aid this donation and any donations I make in the future or have made in the past 4 years to OneZoom {{=giftaid_and}}{{=giftaid_anded_names}}</p>
   <p>I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of
   Gift Aid claimed on all my donations in that tax year it is my responsibility to pay any difference.</p>
@@ -66,14 +70,20 @@
   </div>
 
   <div><label>
-    <p>
+  
+      <p>
       I agree:
       <input type="checkbox"
+          {{if giftaid_previously_agreed:}}readonly="readonly"{{pass}}
           id="user_giftaid_input"
           name="user_giftaid"
           onclick="toggle_giftaid_visibility(event)"
           {{if request.vars.user_giftaid:}}checked{{pass}}/>
-    </p>
+      {{if giftaid_previously_agreed:}}
+          {{=T('(If you wish to retract your previous gift aid statement just contact us by e-mail)')}}
+      {{pass}}
+      </p>
+  {{pass}}
   </label></div>
 </div>
 <script>
