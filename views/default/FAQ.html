@@ -1,7 +1,8 @@
 {{response.title='OneZoom: Frequently Asked Questions'}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
 {{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}
-
+{{from OZfunc import fmt_pounds}}
+    
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
     <h1>Frequently asked questions</h1>
@@ -75,7 +76,7 @@
   </li>
     <li>
         <a class="uk-accordion-title" href="#">Q: Why is sponsorship of this leaf expensive or cheap?</a>
-        <div class="uk-accordion-content">A: The minimum donation amount required to sponsor different leaves is informed by {{=A("a measure of popularity",_href="/popularity/index.html")}} that we've developed for this project.  As far as we are aware no-one else has built a popularity ranking for all species of life on earth before, so there are bound to be some teething troubles. We know there are some bargains out there if you search for them - the plants are particularly undervalued and there are some lovely ones out there in the £{{='{:.0f}'.format(second_cheapest_price_pence/100.0) if (float(second_cheapest_price_pence)/100).is_integer() else '{:.2f}'.format(second_cheapest_price_pence/100.0)}} donation category.</div>
+        <div class="uk-accordion-content">A: The minimum donation amount required to sponsor different leaves is informed by {{=A("a measure of popularity",_href="/popularity/index.html")}} that we've developed for this project.  As far as we are aware no-one else has built a popularity ranking for all species of life on earth before, so there are bound to be some teething troubles. We know there are some bargains out there if you search for them - the plants are particularly undervalued and there are some lovely ones out there in the {{=fmt_pounds(pence=second_cheapest_price_pence)}} donation category.</div>
     </li>
      </ul>
 <a href = "{{=URL('static','images/gallery/highres/One_Zoom_Science_Uncovered.jpg')}}"  target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/One_Zoom_Science_Uncovered_small.jpg')}}" alt=""></a>

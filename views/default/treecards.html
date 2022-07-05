@@ -1,7 +1,7 @@
 {{response.title='OneZoom: Search for a species to sponsor'}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
 {{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}
-
+{{from OZfunc import fmt_pounds}}
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
     <h1 class="full-title">Surprise someone with a Tr-eCard</h1>
@@ -36,11 +36,11 @@
     <div class = "uk-padding uk-padding-remove-top">
         <p>You first need to choose your species using the tools on this page.  Most species require a donation of
 {{for p in prices:}}
-  {{if p['quantile']<0.5:}}&pound;{{="{:.2f}".format(p['price_pounds']).replace(".00","")}},
-  {{else:}}or &pound;{{="{:.2f}".format(p['price_pounds']).replace(".00","")}} to sponsor
+  {{if p['quantile']<0.5:}}{{=fmt_pounds(p['price_pounds'])}},
+  {{else:}}or {{=fmt_pounds(p['price_pounds'])}} to sponsor
   {{break}}
   {{pass}}
-  (roughly {{="{:.1g}".format((prices[-1]['quantile']-prices[-2]['quantile']) * 100)}}% are in the top bracket of &pound;{{="{:.2f}".format(prices[-1]['price_pounds']).replace(".00","")}}).
+  (roughly {{="{:.1g}".format((prices[-1]['quantile']-prices[-2]['quantile']) * 100)}}% are in the top bracket of {{=fmt_pounds(prices[-1]['price_pounds'])}}).
 With over two million leaves, there's something for everyone.</p>
         <p>If you find your species whilst exploring the tree, zoom in and click on it to bring up a menu; one of the options will be to sponsor.  You can also find your species from the menus on this page, clicking on it will take you straight to the sponsorship form.  Once you get to the sponsorship form just follow the instructions.</p>
         <p>Your text will need to be verified to appear on the public tree, once this has been done you will receive an e-mail with a link.  You can then send this on to the recipient of your Tr-eCard</p>

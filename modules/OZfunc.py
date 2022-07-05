@@ -549,6 +549,7 @@ def nodes_info_from_string(
 def query_val_to_ints(CommaSepString):
     return [int(id) for id in CommaSepString.split(",") if id.isdigit()]
 
+
 def otts2ids(ottIntegers):
     """
     Pass in an array of ott ints
@@ -566,3 +567,8 @@ def otts2ids(ottIntegers):
         }
     except:
         return {"nodes": {}, "leaves": {}, "names": {}}
+
+def fmt_pounds(pounds=0, pence=0):
+    p = pence / 100 + pounds
+    return '£{:.0f}'.format(p) if float(p).is_integer() else '£{:.2f}'.format(p)
+
