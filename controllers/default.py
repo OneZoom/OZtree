@@ -29,7 +29,7 @@ from partners import partner_identifiers_for_reservation_name
 from OZfunc import (
     nice_name, nice_name_from_otts, get_common_name, get_common_names, __release_info,
     language, __make_user_code, raise_incorrect_url, require_https_if_nonlocal, add_the,
-    otts2ids, nodes_info_from_array, nodes_info_from_string, extract_summary)
+    otts2ids, nodes_info_from_array, nodes_info_from_string, extract_summary, fmt_pounds)
 import img
 
 """ Some settings for sponsorship"""
@@ -627,7 +627,7 @@ def valid_spons(form, species_name, price_pounds, partner_data):
 
     try:
         if float(form.vars.user_paid) < price_pounds:
-            form.errors.user_paid = T("Please donate at least £%s to sponsor this leaf, or you could simply choose another leaf") % ("{:.2f}".format(price_pounds), )
+            form.errors.user_paid = T("Please donate at least %s to sponsor this leaf, or you could simply choose another leaf") % (fmt_pounds(price_pounds), )
     except:
         form.errors.user_paid = T("Please enter a valid number")
 

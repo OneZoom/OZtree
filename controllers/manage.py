@@ -863,13 +863,13 @@ def SET_PRICES():
             cnt=queries[band].update(price=price)
             num=queries[band].count()
             revenue += num*price/100
-            output.append(f"£{price/100}: {num:>8} species ({100*num/n_leaves:.2f}%) - {cnt} changed")
+            output.append(f"{OZfunc.fmt_pounds(pence=price)}: {num:>8} species ({100*num/n_leaves:.2f}%) - {cnt} changed")
             output.append(BR())
 
             
         response.flash = DIV(
             f"SET THE FOLLOWING DEFAULT PRICE STRUCTURE for {n_leaves} species:", BR(),PRE(*output), 
-            f". Total revenue: {revenue}!\nNow overriding the following special exclusions (and setting banned):", BR(),
+            f"Total revenue: {fmt_pounds(revenue)}!\nNow overriding the following special exclusions (and setting banned):", BR(),
             f"{bespoke_spp}"
         )
 

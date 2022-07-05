@@ -1,3 +1,4 @@
+{{from OZfunc import fmt_pounds}}
 {{if request.vars.get('popup'):}}
     <!-- {{include 'popup.js' # in case this load component is called via AJAX - js not needed in this case}} -->
     {{form_target = "_blank" # paypal opens in new frame}}
@@ -43,13 +44,12 @@
     
     </p>
     
-    <div><label for="user_paid_input">{{=T('Your donation amount (£%s or greater for this leaf):') % ('{:.2f}'.format(price))}} </label><p>£<input type="number" step="0.01" id="user_paid_input" name = "user_paid"
-        value="{{if (request.vars['user_paid']) is not None:}}{{=request.vars['user_paid']}}{{else:}}{{='{:.2f}'.format(price).replace('.00','')}}{{pass}}" />
+    <div><label for="user_paid_input">{{=T('Your donation amount (%s or greater for this leaf):') % (fmt_pounds(price))}} </label><p>£<input type="number" step="0.01" id="user_paid_input" name = "user_paid"
+        value="{{if (request.vars['user_paid']) is not None:}}{{=request.vars['user_paid']}}{{else:}}{{=fmt_pounds(price)}}{{pass}}" />
         <em class = "error_text"> {{if (form.errors["user_paid"]) is not None:}}{{=form.errors["user_paid"]}}{{pass}} </em></p></div>
     <p class="singlerow extra_info">
-    {{=T('The minimum donation required for other leaves ranges from from £%s to £%s depending on popularity. ') % (
-        "{:.2f}".format(min_global_price).replace(".00", ""),
-        "{:.2f}".format(max_global_price).replace(".00", ""))}}
+    {{=T('The minimum donation required for other leaves ranges from from %s to %s depending on popularity. ') % (
+        fmt_pounds(min_global_price), fmt_pounds(max_global_price))}}
     
     <!-- show alternative if leaf is possibly too expensive-->
     {{if price>25:}}

@@ -3,7 +3,7 @@
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
 {{body_restricted_width = True}}{{extend 'uikit_layout.html'}}
 {{import datetime}}
-
+{{from OZfunc import fmt_pounds}}
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
     <h1>This is the private sponsorship renewal page for {{=username}}</h1>
@@ -68,10 +68,10 @@ and renew those that are expiring soon. Scroll down and select what you want to 
 
               <div>
                 {{if status['status'].startswith('available') and item.OTT_ID in prices:}}
-                  Renew by donating £{{='{:.0f}'.format(prices[item.OTT_ID]['price'] / 100)}}
-                  {{if prices[item.OTT_ID]['discount']:}}(£{{='{:.0f}'.format(prices[item.OTT_ID]['discount'] / 100)}} discount){{pass}}
+                  Renew by donating {{=fmt_pounds(pence=prices[item.OTT_ID]['price'])}}
+                  {{if prices[item.OTT_ID]['discount']:}}({{=fmt_pounds(pence=prices[item.OTT_ID]['discount'])}} discount){{pass}}
                 {{elif item.user_paid:}}
-                  You paid £ {{=item.user_paid}}
+                  You paid {{=fmt_pounds(pounds=item.user_paid)}}
                 {{pass}}
               </div>
 

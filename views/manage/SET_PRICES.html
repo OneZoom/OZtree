@@ -1,6 +1,7 @@
 {{response.title='OneZoom: Set prices'}}
 {{response.files.append(URL('static', 'OZSite/SET_PRICES.css'))}}
 {{extend 'layout.html'}}
+{{from OZfunc import fmt_pounds}}
 <div class="row-fluid">
   <div class="col-md-12">
 <h1>Set the prices from the pre-calculated popularities</h1>
@@ -16,7 +17,7 @@ Popularity ranges from {{=int(round(pop_min,0))}} to {{=int(round(pop_max,0))}}.
 <table><tr>
 <th></th>
 {{for r in previous_prices:}}
-<th>&pound;{{="{:.2f}".format(r.price/100)}} cutoff</th>
+<th>{{=fmt_pounds(pence=r.price)}} cutoff</th>
 {{pass}}
 </tr><tr>
 <td>upper popularity quantile cutoff</td>
@@ -38,9 +39,9 @@ Popularity ranges from {{=int(round(pop_min,0))}} to {{=int(round(pop_max,0))}}.
 {{for b, price in bands.items():}}
 <tr>
 {{  if b != max_band:}}
-<th style="text-align: left">{{=b}} (currently &pound;{{="{:.2f}".format(price/100)}})</th><td style="background-color: yellow; border-right: double">{{=form.custom.widget['_'.join(['quantile', b])]}}</td>
+<th style="text-align: left">{{=b}} (currently {{=fmt_pounds(pence=price)}})</th><td style="background-color: yellow; border-right: double">{{=form.custom.widget['_'.join(['quantile', b])]}}</td>
 {{  else:}}
-<th style="text-align: left">{{=b}} (currently &pound;{{="{:.2f}".format(price/100)}})</th><td style="border-right: double">remainder</td>
+<th style="text-align: left">{{=b}} (currently {{=fmt_pounds(pence=price)}})</th><td style="border-right: double">remainder</td>
 {{  pass}}
 {{  for i, field in enumerate(other_fields):}}
 <td style="border: none; {{if i==0:}}padding-left: 4em;{{pass}}">{{=form.custom.widget["_".join([field.name, b])]}}</td>
