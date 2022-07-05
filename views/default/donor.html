@@ -7,7 +7,7 @@
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
     <h1>Sponsorship page for {{=most_recent.verified_donor_name or most_recent.username}}</h1>
-    {{if sponsor_status:}}<p>{{=most_recent.verified_donor_name or most_recent.username}} is a <span>{{=sponsor_status}}</span> sponsor</p>{{pass}}
+    {{if sponsor_status:}}<p>{{=most_recent.verified_donor_name or most_recent.username}} is <a href="{{=URL('/donor_list')}}"><span>{{=sponsor_status}}</span> sponsor</a></p>{{pass}}
 </div>
 {{end block}}
 
