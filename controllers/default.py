@@ -859,7 +859,7 @@ def sponsor_renew():
             if most_recent_addr.user_addr_postcode is None and most_recent_addr.user_addr_house is not None:
                 # No postcode --> international user
                 vars['user_addr_nonuk'] = True
-                vars.user_addr_internationaladdr = most_recent.user_addr_house
+                vars.user_addr_internationaladdr = most_recent_addr.user_addr_house
             else:
                 # UK giftaider
                 vars.user_addr_house = most_recent_addr.user_addr_house
