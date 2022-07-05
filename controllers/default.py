@@ -818,13 +818,16 @@ def sponsor_renew():
                 discount=r.ordered_leaves.price - int(r.ordered_leaves.price * (1 - sponsorship_renew_discount)),
             )
 
-    most_recent = None
+    most_recent_name = None
+    most_recent_addr = None
     giftaid_recorded = False
     all_partner_identifiers = set()  # Fetch data for partners so we can use it on the Gift Aid form
     for r in itertools.chain(reversed(active_rows), reversed(expiring_rows), expired_rows):
         # Use most_recent to derive global user details, e.g. name, gift aid status.
-        if most_recent is None:
-            most_recent = r
+        if most_recent_name is None and r.verified_donor_name:
+            most_recent_name = r
+        if most_recent_addr is None and r.user_addr_house:
+            most_recent_addr = r
         if r.user_giftaid:
             giftaid_recorded = True  # if any have been giftaided, we consider all to be so
 
@@ -839,38 +842,37 @@ def sponsor_renew():
         all_partner_identifiers.update(partner_identifiers_for_reservation_name(r.partner_name))
         
     all_partner_data = db(db.partners.partner_identifier.belongs(all_partner_identifiers)).select()
-
     vars = request.vars
 
     # Extract details from most recent item if unpopulated
-    if most_recent:
+    if most_recent_name:
         if "user_donor_title" not in vars:
-            vars['user_donor_title'] = most_recent.verified_donor_title
+            vars['user_donor_title'] = most_recent_name.verified_donor_title
         if "user_donor_name" not in vars:
-            vars['user_donor_name'] = most_recent.verified_donor_name
-        if "user_addr_nonuk" not in vars:
-            # Gift aid not populated yet
-            vars['user_giftaid'] = giftaid_recorded
-            if not giftaid_recorded:
-                # Not a giftaider, copy nothing
-                pass
-            if most_recent.user_addr_postcode is None and most_recent.user_addr_house is not None:
+            vars['user_donor_name'] = most_recent_name.verified_donor_name
+    
+    if "user_addr_nonuk" not in vars:  # This is the first time we have loaded the page
+        # Gift aid not populated yet
+        vars['user_giftaid'] = giftaid_recorded
+        vars['user_addr_nonuk'] = False
+        if giftaid_recorded and most_recent_addr:
+            if most_recent_addr.user_addr_postcode is None and most_recent_addr.user_addr_house is not None:
                 # No postcode --> international user
                 vars['user_addr_nonuk'] = True
                 vars.user_addr_internationaladdr = most_recent.user_addr_house
             else:
                 # UK giftaider
-                vars['user_addr_nonuk'] = False
-                vars.user_addr_house = most_recent.user_addr_house
-                vars.user_addr_postcode = most_recent.user_addr_postcode
+                vars.user_addr_house = most_recent_addr.user_addr_house
+                vars.user_addr_postcode = most_recent_addr.user_addr_postcode
 
     # De-anonymise details if they're starred
-    if (vars.user_addr_internationaladdr or '').startswith('****'):
-        vars.user_addr_internationaladdr = most_recent.user_addr_house
-    if (vars.user_addr_house or '').startswith('****'):
-        vars.user_addr_house = most_recent.user_addr_house
-    if (vars.user_addr_postcode or '').startswith('****'):
-        vars.user_addr_postcode = most_recent.user_addr_postcode
+    if most_recent_addr is not None:
+        if (vars.user_addr_internationaladdr or '').startswith('****'):
+            vars.user_addr_internationaladdr = most_recent_addr.user_addr_house
+        if (vars.user_addr_house or '').startswith('****'):
+            vars.user_addr_house = most_recent_addr.user_addr_house
+        if (vars.user_addr_postcode or '').startswith('****'):
+            vars.user_addr_postcode = most_recent_addr.user_addr_postcode
 
     # If there's a form submission, validate it
     # NB: This is highly ugly, but the alternative is making a FORM dynamically
@@ -922,12 +924,13 @@ def sponsor_renew():
         raise HTTP(307, "Redirect", Location=get_paypal_url() + '/cgi-bin/webscr')
     else:
         # Anonymise details if they match most-recent
-        if form.vars.user_addr_internationaladdr and form.vars.user_addr_internationaladdr == most_recent.user_addr_house:
-            form.vars.user_addr_internationaladdr = '*' * 20
-        if form.vars.user_addr_house and form.vars.user_addr_house == most_recent.user_addr_house:
-            form.vars.user_addr_house = '*' * 20
-        if form.vars.user_addr_postcode and form.vars.user_addr_postcode == most_recent.user_addr_postcode:
-            form.vars.user_addr_postcode = '**** ' + most_recent.user_addr_postcode[-3:]
+        if most_recent_addr:
+            if form.vars.user_addr_internationaladdr and form.vars.user_addr_internationaladdr == most_recent_addr.user_addr_house:
+                form.vars.user_addr_internationaladdr = '*' * 20
+            if form.vars.user_addr_house and form.vars.user_addr_house == most_recent_addr.user_addr_house:
+                form.vars.user_addr_house = '*' * 20
+            if form.vars.user_addr_postcode and form.vars.user_addr_postcode == most_recent_addr.user_addr_postcode:
+                form.vars.user_addr_postcode = '**** ' + most_recent_addr.user_addr_postcode[-3:]
 
     return dict(
         all_row_categories=[
@@ -942,7 +945,8 @@ def sponsor_renew():
         },
         images=images,
         prices=prices,
-        most_recent=most_recent,  # NB: May be None if there's no reservations
+        most_recent_name=most_recent_name,  # NB: May be None if there's no reservations
+        most_recent_addr=most_recent_addr,  # NB: May be None if there's no reservations
         username=username,
         notify_url=notify_url,
         all_partner_data=all_partner_data,
