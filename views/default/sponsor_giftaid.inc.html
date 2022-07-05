@@ -50,7 +50,8 @@
       <input type="text" id="user_addr_house_input" name="user_addr_house" size="40"
              maxlength="40"
              onfocus="if (event.target.value.startsWith('****')) event.target.value = ''"
-             value="{{if (request.vars['user_addr_house']) is not None:}}{{=request.vars['user_addr_house']}}{{pass}}" />
+             onblur="if (event.target.value == '') event.target.value = '{{request.vars.get('user_addr_house', '')}}'"
+             value="{{request.vars.get('user_addr_house', '')}}" />
       <em class = "error_text">{{=form.errors.get("user_addr_house") or ""}}</em>
     </p>
     </div><div>
@@ -58,7 +59,8 @@
     <p>
       <input type="text" id="user_addr_postcode_input" name="user_addr_postcode" size="40"
              onfocus="if (event.target.value.startsWith('****')) event.target.value = ''"
-             value="{{if (request.vars['user_addr_postcode']) is not None:}}{{=request.vars['user_addr_postcode']}}{{pass}}" />
+             onblur="if (event.target.value == '') event.target.value = '{{=request.vars.get('user_addr_postcode', '')}}'"
+             value="{{=request.vars.get('user_addr_postcode', '')}}" />
       <em class = "error_text">{{=form.errors.get("user_addr_postcode") or ""}}</em>
     </p>
     </div>
@@ -70,7 +72,8 @@
         <input type="text" id="user_addr_internationaladdr_input" name="user_addr_internationaladdr" size="80"
                maxlength="40"
                onfocus="if (event.target.value.startsWith('****')) event.target.value = ''"
-               value="{{if (request.vars['user_addr_internationaladdr']) is not None:}}{{=request.vars['user_addr_internationaladdr']}}{{pass}}" />
+               onblur="if (event.target.value == '') event.target.value = '{{request.vars.get('user_addr_internationaladdr', '')}}'"
+               value="{{=request.vars.get('user_addr_internationaladdr', '')}}" />
         <em class = "error_text">{{=form.errors.get("user_addr_internationaladdr") or ""}}</em>
       </p>
     </div>
