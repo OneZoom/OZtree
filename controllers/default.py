@@ -22,7 +22,7 @@ from sponsorship import (
     sponsorship_restrict_contact, sponsor_renew_request_logic,
     sponsorship_config, sponsorable_children_query)
 
-from usernames import usernames_associated_to_email, donor_name_for_username
+from usernames import donor_name_for_username
 
 from partners import partner_identifiers_for_reservation_name
 

@@ -546,11 +546,13 @@ def SHOW_RENEWAL_INFO():
                         id_map[id_string] = []
                     id_map[id_string].append(uname)
         else:
-            if db(db.reservations.username == id_string).count():
-                if id_string not in id_map:
-                    id_map[id_string] = []
-                id_map[id_string].append(id_string)
-
+            for row in db(db.reservations.username == id_string).iterselect(
+                db.reservations.username
+            ):
+                if row.username == id_string:  # Check case, as SQL is case insensitive
+                    if id_string not in id_map:
+                        id_map[id_string] = []
+                    id_map[id_string].append(id_string)
     try:
         uname_info = sponsorship.sponsorship_email_reminders(
             [uname for info_for_id in id_map.values() for uname in info_for_id])
