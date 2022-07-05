@@ -710,7 +710,8 @@ def SHOW_EMAILS():
     sponsors = db(
         db.reservations.verified_time != None
     ).select(
-        db.reservations.e_mail, 
+        db.reservations.username,
+        db.reservations.e_mail,
         db.reservations.PP_e_mail,
         db.reservations.verified_time,
         db.reservations.verified_preferred_image_src,
@@ -724,11 +725,12 @@ def SHOW_EMAILS():
         db.reservations.PP_second_name,
         db.reservations.OTT_ID,
         db.reservations.user_message_OZ,
-                                                                orderby=~db.reservations.reserve_time)
+        orderby=~db.reservations.reserve_time)
     otts = [s.OTT_ID for s in sponsors]                                                         
     cnames = OZfunc.get_common_names(otts)
     for s in sponsors:
         details = emails(
+            s.username,
             s.OTT_ID,
             s.name,
             cnames.get(s.OTT_ID),
