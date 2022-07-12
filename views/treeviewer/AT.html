@@ -5,7 +5,7 @@ setup_params = {
     'page':'UI_layer.load', 
     'vars':{'tabs':'default'} }, 
    'popups': {
-    'vars':{'embed':1, 'form_reservation_code': form_reservation_code} },
+    'vars':{'popup':1, 'form_reservation_code': form_reservation_code} },
    'locations_json':('[' 
         '"Rendezvous points",' 
         '{"OTT": 312031, "":2},'
@@ -22,7 +22,7 @@ setup_params = {
   }
 }}
 
-{{extend ('treeviewer/layout_embedded_viewer.html' if request.vars.embed else 'treeviewer/layout.html')}}
+{{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
 <title>OneZoom Tree of Life Explorer, text page for {{=page_info['title_name']}}</title>
 <!-- could include bespoke css file here -->
 <script type="text/javascript">

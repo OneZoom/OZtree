@@ -163,7 +163,7 @@ def purchase_reservation(otts = 1, basket_details = None, paypal_details = None,
     return reservation_rows
 
 
-def verify_reservation(reservation_row):
+def verify_reservation(reservation_row, **kwargs):
     """Emulate verification logic in controllers/manage.py:SPONSOR_UPDATE"""
     # Add verified options
     reservation_row.update_record(
@@ -177,4 +177,5 @@ def verify_reservation(reservation_row):
     assert username
     reservation_row.update_record(
         username=username,
+        **kwargs,
     )

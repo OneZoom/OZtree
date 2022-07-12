@@ -1,10 +1,11 @@
+{{from OZfunc import fmt_pounds}}
 {{if len(otts):}}
 {{max_items = int(request.vars.n or 0)}}
 {{start_item = int(request.vars.start or 0)}}    
 {{vars=request.vars}}
 {{if price_pence:}}
 {{  if sponsorship_enabled:}}
-<h3>{{=T('Leaves requiring a minimum donation of £%s') % (f'{price_pence/100:.{0 if (price_pence/100).is_integer() else 2}f}' ,)}}</h3>
+<h3>{{=T('Leaves requiring a minimum donation of %s') % (fmt_pounds(pence=price_pence),)}}</h3>
 {{  else:}}
 {{    descriptions = price_levels_pence.get(price_pence, ("Sponsorable species", "click to see how to sponsor"))}}
 <h3>{{=descriptions[0]}} ({{=descriptions[1]}})</h3>

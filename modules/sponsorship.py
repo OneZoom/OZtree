@@ -35,6 +35,10 @@ def sponsorship_config():
     except:
         out['unpaid_time_limit'] = 2.0*24.0*60.0*60.0 #seconds
     try:
+        out['slow_payment_time_limit'] = float(myconf.take('sponsorship.slow_payment_limit_mins')) * 60.0
+    except:
+        out['slow_payment_time_limit'] = 1 * 60.0 #seconds
+    try:
         out['renew_discount'] = float(myconf.take('sponsorship.renew_discount'))
     except:
         out['renew_discount'] = 0.2
@@ -313,25 +317,22 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
                 )).strip())
                 continue
 
-            # Remove old reservation and make a new one.
-            prev_ott = r.OTT_ID
-            prev_sponsorship_ends = r.sponsorship_ends
-            prev_reservation_id = reservation_expire(r)
-            prev_partner_name = r.partner_name
-            fields_to_update['reserve_time'] = r.reserve_time  # Keep original reserve_time
-            status, _, r, _ = get_reservation(prev_ott, basket_code)
+            # Renwal: Remove old reservation and make a new one.
+            prev_row = db(db.expired_reservations.id == reservation_expire(r)).select().first()
+            status, _, r, _ = get_reservation(prev_row.OTT_ID, basket_code)
             assert status == 'available'  # We just expired the old one, this should work
             reservation_add_to_basket(basket_code, r, dict(
-                partner_name=prev_partner_name,
-                prev_reservation_id=prev_reservation_id,
+                partner_name=prev_row.partner_name,
+                prev_reservation_id=prev_row.id,
             ))
 
             # Bump time to include renewal
             fields_to_update['sponsorship_duration_days'] = sponsorship_config()['duration_days']
-            fields_to_update['sponsorship_ends'] = prev_sponsorship_ends + datetime.timedelta(days=sponsorship_config()['duration_days'])
+            fields_to_update['sponsorship_ends'] = prev_row.sponsorship_ends + datetime.timedelta(days=sponsorship_config()['duration_days'])
 
             # Text was verified previously, so we can automatically verify this entry
             fields_to_update['verified_time'] = request.now
+            fields_to_update['reserve_time'] = prev_row.reserve_time  # Keep original reserve_time
         else:
             # NB: This is different to existing paths, but feels a more correct place to set sponsorship_ends
             fields_to_update['sponsorship_duration_days'] = sponsorship_config()['duration_days']
@@ -463,7 +464,8 @@ def get_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
 
     Returns
     - status: String describing reservation status, One of
-    -         banned / available / available only to user / reserved / sponsored / unverified / unverified waiting for payment
+              banned / available / available only to user / reserved / sponsored /
+              unverified / unverified waiting for payment / unverified waiting for slow payment
     - status_param: A parameter associated with the status, e.g. number of mins of maintenance, time until allowed to sponsor
     - reservation_row: row from reservations table
     - leaf_entry: row from ordered_leaves table
@@ -563,8 +565,10 @@ def get_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
                         endTime = request.now
                         timesince = ((endTime-startTime).total_seconds())
                         # now we check if the time is too great
-                        if (timesince < (unpaid_time_limit)):
+                        if (timesince < (sp_conf['slow_payment_time_limit'])):
                             status = "unverified waiting for payment"
+                        elif (timesince < (unpaid_time_limit)):
+                            status = "unverified waiting for slow payment"
                         elif not maintenance_mode:
                             # We've waited too long and can zap the personal data
                             # previously in the table then set available
@@ -759,6 +763,7 @@ def sponsorship_email_reminders(for_usernames=None):
                 email_address = usernames.email_for_username(r.username),
                 full_name=None,
                 pp_name=None,
+                username=r.username,
                 user_sponsor_lang=r.user_sponsor_lang,
                 initial_reminders=[],
                 final_reminders=[],
@@ -817,9 +822,9 @@ def sponsor_renew_request_logic(user_identifier, mailer=None, reveal_private_dat
     # Get all reminder blocks for usernames associated to this e-mail address
     unames = usernames.usernames_associated_to_email(user_identifier) if '@' in user_identifier else [user_identifier]
     try:
-        user_reminders = list(sponsorship_email_reminders(unames).values())
+        user_reminders = sponsorship_email_reminders(unames)
     except ValueError:
-        user_reminders = []
+        user_reminders = {}
     info = ''
     if not reveal_private_data:
         info = 'If the user %s exists in our database, we will send them an email' % user_identifier
@@ -833,7 +838,8 @@ def sponsor_renew_request_logic(user_identifier, mailer=None, reveal_private_dat
         if reveal_private_data:
             info = 'Many users associated with e-mail address %s' % user_identifier
     else:
-        user_reminders = user_reminders[0]
+        username, user_reminders = next(iter(user_reminders.items()))
+        user_reminders['username'] = username
         user_reminders['nice_names'] = nice_name_from_otts(
             user_reminders['unsponsorable'] + user_reminders['not_yet_due'] +
             user_reminders['initial_reminders'] + user_reminders['final_reminders'],

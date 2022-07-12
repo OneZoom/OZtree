@@ -1,0 +1,47 @@
+{{response.title='OneZoom embed editor'}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{extend 'uikit_layout.html'}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+    <h1>Embed OneZoom in your website</h1>
+    <p>Configure a OneZoom embeddable widget for your website</p>
+</div>
+{{end block}}
+
+<h2>Embed a customised OneZoom tree in your website</h2>
+
+<p>Without downloading or installing any software you can still use our embed
+and link tool if you want to embed custom versions of a tree that's already on
+OneZoom. After selecting the settings you want the page will e-mail you a short
+piece of code that you can copy any paste into your website to give you a
+OneZoom visualisation.</p>
+
+<p>The <a href="{{=URL('embed_edit')}}">embed editor can be accessed here</a>.</p>
+
+<h2>Bulk-embedding OneZoom in many pages</h2>
+
+<p>If embedding in many pages, it may be useful to check that a species / node
+exists before importing the entirety of OneZoom. To do this you can use the <a
+href="{{=URL('API', 'index')}}#API/getOTT">getOTT</a> API that finds a matching OTT
+identifier if available. Once you have an OTT you can load OneZoom using the an
+embed URL as generated using the <a href="{{=URL('embed_edit')}}">embed
+editor</a>.</p>
+
+<p><a href="{{=URL('API', 'index')}}#API/getOTT">getOTT</a> can search by several
+different identifiers. For example, the code below will search based on a GBIF
+ID and, if available in OneZoom, update the iframe to load the OneZoom tree.</p>
+
+<pre>
+const oz_origin = 'https://onezoom.org';
+const oz_embed_url = ott => `${oz_origin}/life/@${ott}?otthome=${ott}&embedkey=...`;
+
+// Fetch a GBIF ID from the URL
+let gbif_code = parseInt(window.location.search.match(/gbif=([0-9]+)/)[1]);
+
+window.fetch(`${oz_origin}/API/getOTT.json?gbif=${gbif_code}`).then(x=>x.json()).then(function (data) {
+    let ott = data.gbif[gbif_code];
+
+    document.getElementById('oz_iframe').src = ott ? oz_embed_url(ott) : '';
+});
+</pre>

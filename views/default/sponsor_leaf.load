@@ -1,5 +1,6 @@
-{{if request.vars.get('embed'):}}
-    <!-- {{include 'embed.js' # in case this load component is called via AJAX - js not needed in this case}} -->
+{{from OZfunc import fmt_pounds}}
+{{if request.vars.get('popup'):}}
+    <!-- {{include 'popup.js' # in case this load component is called via AJAX - js not needed in this case}} -->
     {{form_target = "_blank" # paypal opens in new frame}}
     <script>
       document.addEventListener("DOMContentLoaded", function () {
@@ -43,13 +44,12 @@
     
     </p>
     
-    <div><label for="user_paid_input">{{=T('Your donation amount (£%s or greater for this leaf):') % ('{:.2f}'.format(price))}} </label><p>£<input type="number" step="0.01" id="user_paid_input" name = "user_paid"
-        value="{{if (request.vars['user_paid']) is not None:}}{{=request.vars['user_paid']}}{{else:}}{{='{:.2f}'.format(price).replace('.00','')}}{{pass}}" />
+    <div><label for="user_paid_input">{{=T('Your donation amount (%s or greater for this leaf):') % (fmt_pounds(price))}} </label><p>£<input type="number" step="0.01" id="user_paid_input" name = "user_paid"
+        value="{{if (request.vars['user_paid']) is not None:}}{{=request.vars['user_paid']}}{{else:}}{{=fmt_pounds(price)}}{{pass}}" />
         <em class = "error_text"> {{if (form.errors["user_paid"]) is not None:}}{{=form.errors["user_paid"]}}{{pass}} </em></p></div>
     <p class="singlerow extra_info">
-    {{=T('The minimum donation required for other leaves ranges from from £%s to £%s depending on popularity. ') % (
-        "{:.2f}".format(min_global_price).replace(".00", ""),
-        "{:.2f}".format(max_global_price).replace(".00", ""))}}
+    {{=T('The minimum donation required for other leaves ranges from from %s to %s depending on popularity. ') % (
+        fmt_pounds(min_global_price), fmt_pounds(max_global_price))}}
     
     <!-- show alternative if leaf is possibly too expensive-->
     {{if price>25:}}
@@ -94,8 +94,8 @@
       </div>
     </div>
   </div>
-  {{if 'embed' not in request.vars and not partner_data:}}
-  <!-- don't want possibility for these link outs if embedding or if there is a partner involved as they will not keep the user in the partner tree -->
+  {{if 'popup' not in request.vars and not partner_data:}}
+  <!-- don't want possibility for these link outs if popupding or if there is a partner involved as they will not keep the user in the partner tree -->
   <div class="subleaf">
     <p>{{=XML(T('If you fancy something different, you can %s, or simply %s and see what you like.') % (A(T('search for other available species'), _href=URL('default','sponsor')),A(T('browse the tree of life'),_href=URL('default','life.html', scheme=True, host=True))))}}</p>
   </div>
@@ -160,7 +160,7 @@
       <input type="hidden" name="partner" value="{{=partner_data.get('partner_identifier') or ''}}" />
       {{pass}}
     </fieldset>
-    <p class="submit_donate">{{=XML(T('Accept %s and <input id="submit_button" type="submit" value = "Donate"/> using PayPal') % (A(T('terms'),_href="/terms.html",_target="_blank"), ))}}{{if request.vars.get('embed'):}} <span>{{=T('(opens in a new window)')}}</span>{{pass}}.</p>
+    <p class="submit_donate">{{=XML(T('Accept %s and <input id="submit_button" type="submit" value = "Donate"/> using PayPal') % (A(T('terms'),_href="/terms.html",_target="_blank"), ))}}{{if request.vars.get('popup'):}} <span>{{=T('(opens in a new window)')}}</span>{{pass}}.</p>
   </div>
 </form>
 

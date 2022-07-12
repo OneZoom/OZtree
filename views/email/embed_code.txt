@@ -1,0 +1,9 @@
+{{=XML(T("OneZoom embed code"))}}
+
+To embed OneZoom into your website, copy-paste the following code:
+
+<iframe style="border: 1px solid black; padding: 2px; width: 600px; height: 400px" src="{{=XML(url)}}"></iframe>
+
+Thank you for your interest in using OneZoom
+
+OneZoom Team (charity number 1163559)

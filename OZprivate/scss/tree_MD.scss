@@ -51,19 +51,6 @@ ul#controlButtons #infoDropdown {
   display: none !important;
 }
 
-ul#controlButtons #hideControlsButton, ul#controlButtons #howToUseButton {
-  display: block;
-}
-
-ul#controlButtons.button-label-hidden #showControlsButton {
-    display: block;
-}
-
-ul#controlButtons.button-label-hidden #hideControlsButton {
-    display: none;
-}
-
-
 #controlButtons .button-label.top-border {
     border-top: 1px solid #ddd;
 }

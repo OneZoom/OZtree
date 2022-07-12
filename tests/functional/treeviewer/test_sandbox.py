@@ -19,7 +19,7 @@ from _OZglobals import wikiflags
 
 class TestSandbox(FunctionalTest):
     """
-    Test whether the embedding functions work
+    Test wikipedia sandbox functionality
     """
     @classmethod
     def setUpClass(self):

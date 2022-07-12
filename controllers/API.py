@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import itertools
 import sys
 import re
 from numbers import Number
@@ -467,10 +468,9 @@ def search_for_sponsor():
         #remove initial punctuation, e.g. we might have been passed in 
         searchType = request.vars.type or 'all'
         defaultImages = True if (request.vars.get('default_images')) else False
-        order = True if (request.vars.get('sorted')) else False
         limit=request.vars.get('limit')
         start =request.vars.get('start') or 0
-        return sponsorship_search.search_sponsor(searchFor, searchType, language, order, limit, start, defaultImages)
+        return sponsorship_search.search_sponsor(searchFor, searchType, language, limit, start, defaultImages)
     except:
         if is_testing:
             raise
@@ -554,21 +554,29 @@ def getOTT():
     """
     session.forget(response)
     response.headers["Access-Control-Allow-Origin"] = '*'
-    sources = ["eol", "ncbi", "iucn"]
-    data = {}
-    try:
-        for s in sources:
-            if s in request.vars:
-                if isinstance(request.vars[s], basestring) or isinstance(request.vars[s], Number):
-                    id_list = [int(request.vars[s])] #put it in an array anyway
-                else:
-                    id_list = [int(id) for id in request.vars[s]]
-                response.flash = id_list
-                rows = db(db.ordered_leaves[s].belongs(id_list)).select(db.ordered_leaves[s], db.ordered_leaves.ott)
-                data[s] = {r[s]:r.ott for r in rows}
-        return(dict(data=data, errors=[]))
-    except ValueError:
-        return(dict(data=None, errors=["Some of the passed-in ids could not be converted to numbers"]))
+    sources = ["eol", "gbif", "ncbi", "iucn"]
+    data = {'errors': []}
+
+    for s in sources:
+        if not request.vars.get(s, False):
+            continue
+        id_list = request.vars[s]
+        if isinstance(id_list, str) or isinstance(id_list, Number):
+            id_list = [id_list]  # Wrap single item in list
+        try:
+            id_list = [int(id) for id in id_list]
+        except ValueError:
+            data[s] = {}
+            data['errors'].append("%s could not be converted to int" % s)
+            continue
+
+        leaf_rows = db(db.ordered_leaves[s].belongs(id_list)).select(db.ordered_leaves[s], db.ordered_leaves.ott)
+        if s == 'iucn':
+            node_rows = ()
+        else:
+            node_rows = db(db.ordered_nodes[s].belongs(id_list)).select(db.ordered_nodes[s], db.ordered_nodes.ott)
+        data[s] = {r[s]:r.ott for r in itertools.chain(leaf_rows, node_rows)}
+    return data
 
 def children_of_OTT():
     """ Return a set of terminal nodes for this OTT taxon: easily done using the nested set representation. The URL is of the form

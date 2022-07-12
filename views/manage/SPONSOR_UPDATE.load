@@ -1,4 +1,5 @@
 {{import img}}
+{{from OZfunc import fmt_pounds}}
 {{=form.custom.begin}}
 {{from html import escape}}        
         <div class="ids">{{=A("➩ OZ link", _href=URL('default','life/@='+str(vars['OTT_ID']), vars={"init":"jump"}, url_encode=False, extension=False), _target="_blank")}}<ol><li class="DB"><br />{{=A(vars['OTT_ID'], _href="https://tree.opentreeoflife.org/opentree/argus/ottol@{}".format(vars['OTT_ID']), _target='_blank')}}</a></li><li class="API"><br />{{=A(vars['EOL_ID'], _href="http://eol.org/pages/{}".format(vars['EOL_ID']), _target='_blank') if vars['EOL_ID'] else '<none>'}}</li></ol></div>
@@ -92,10 +93,10 @@
         {{else:}}
         <b style="color: red; font-size: 200%">!!{{=(vars['user_paid'] - vars['asking_price'])}}</b><br />
         {{pass}}
-        <em>&pound;{{=vars['user_paid']}}</em>
+        <em>{{=fmt_pounds(vars['user_paid'])}}</em>
         {{try:}}
             {{if (round(float(vars['verified_paid']),2) != round(vars['user_paid'],2)):}}
-            <br /><b style="color: red; font-size: 200%">!!Hack attempt!!<br />PP=&pound;{{=vars['verified_paid']}}</b>        
+            <br /><b style="color: red; font-size: 200%">!!Hack attempt!!<br />PP={{=fmt_pounds(vars['verified_paid'])}}</b>        
             {{pass}}
         {{except (ValueError, TypeError):}}
             Waiting payment

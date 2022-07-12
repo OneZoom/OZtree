@@ -31,7 +31,12 @@ function follow_path(context, shape) {
 }
 
 function fill(context, shape) {
-  if (shape.do_fill) {
+  if (shape.do_fill == 'erase') {
+    let prev = context.globalCompositeOperation;
+    context.globalCompositeOperation = 'destination-out';
+    context.fill();
+    context.globalCompositeOperation = prev;
+  } else if (shape.do_fill) {
     if (shape.fill.color.from) {
         // { from: (color at centre), start: (optional: inner radius of solid color), to: (optional: color at edge, or transparent) }
         let gradient = context.createRadialGradient(

@@ -80,7 +80,7 @@ module.exports = function (grunt) {
       test_server_functional: {
         command: 'nosetests3 tests/functional/'
       },
-      test: {
+      test_client: {
         command: 'npm run test'
       },
       compile_js: {
@@ -213,7 +213,8 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-sass');
 
   grunt.registerTask("make_release_info", ["exec:make_release_info"]);
-  grunt.registerTask("test", ["exec:test"]);
+  grunt.registerTask("test", ["exec:test_server", "exec:test_client"]);
+  grunt.registerTask("test-client", ["exec:test_client"]);
   grunt.registerTask("test-server", ["exec:test_server"]);
   grunt.registerTask("test-server-functional", ["exec:test_server", "exec:test_server_functional"]);
   grunt.registerTask("css", ["sass"]);

@@ -226,9 +226,11 @@ db.define_table('ordered_leaves',
 # set notation. This should correspond to line 434 and 455 of CSV_base_table_creator.py which creates the data:
 # "ott","lft","rgt","name","popularity","eol","wikidata"
 db.define_table('ordered_nodes',
-    Field('parent', type='integer', notnull=True), #next 13 cols are indices into the ordered_nodes (first 3) and ordered_leaves tables (remaining 10)
-    Field('real_parent', type='integer', notnull=True), #real parent, before polytomy breaking, negative if this is a polytomy
-    Field('node_rgt', type='integer', notnull=True), #we might want to consider making these references rather than indexes, to enforce dependency
+    # Next 13 cols are indices into the ordered_nodes (first 3) and ordered_leaves tables (remaining 10)
+    # we might want to consider making these references rather than indexes, to enforce dependency
+    Field('parent', type='integer', notnull=True),
+    Field('real_parent', type='integer', notnull=True), # Real parent, before polytomy breaking, negative if this is a polytomy
+    Field('node_rgt', type='integer', notnull=True), # The highest node ID in the subtree defined by this node
     Field('leaf_lft', type='integer', notnull=True),
     Field('leaf_rgt', type='integer', notnull=True),
     Field('name', type='string', length=name_length_chars), #scientific name
@@ -761,7 +763,7 @@ db.define_table('tours',
 db.define_table('tourorders',
     Field('identifier', type='string', length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
     Field('transition', type='string', length=20), #the transition to this stop from the previous one
-    Field('node_fullzoom', type=boolean), #when we transition to a node, should we zoom so the node fills the screen? this has no effect when zooming to a leaf.
+    Field('node_fullzoom', type=boolean), #when we transition to a node, should we zoom so the node fills the screen? this has no effect when zooming to a leaf. Note this should maybe be moved to be part of tourstops because it is conceptually part of a stop to properly define the place on the tree.
     Field('stop_number', type='integer', notnull=True), #the 0-based order of this stop in the defined tour
     Field('stop_id', type='integer', notnull=True), #the id in the tourstops table corresponding to this tour
     format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
@@ -834,6 +836,15 @@ db.define_table('API_use',
     Field('n_taxa', type='bigint', default=0), # number of taxa requested (divide by n_calls to get av taxa per call)
     Field('n_returns', type='bigint', default=0), # number of taxa returned (divide by n_calls to get av taxa per call)
     format = '%(APIkey)s_%(API)s', migrate=is_testing)
+
+# Record of embed keys and who uses them
+db.define_table('embed_key',
+    Field('e_mail', type='string', length=200, unique=True, notnull=True, requires=IS_EMAIL()),
+    # E-mail address associated with uuid_key
+    Field('code', type='text', notnull=True),
+    # Key used publicly in embedkey querystring
+    Field('created', 'datetime', default=request.now),
+)
 
 # add extra indexes on OTT_ID etc in tables. Index name (ott_index) is arbitrary 
 # http://stackoverflow.com/questions/4601138/what-is-the-significance-of-the-index-name-when-creating-an-index-in-mysql

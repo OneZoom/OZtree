@@ -7,10 +7,10 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <link rel="shortcut icon" href="{{=URL('static', 'favicon.ico')}}" type="image/ico" />
-  <title>OneZoom embedded viewer</title>
+  <title>OneZoom popup-ed viewer</title>
   {{include}}
 </head>
 <body>
-<!-- Shouldn't embed a viewer within another: e.g. if accidentally called within an iframe of another viewer instance, otherwise we get recursive nesting of viewers -->
+<!-- Shouldn't popup a viewer within another: e.g. if accidentally called within an iframe of another viewer instance, otherwise we get recursive nesting of viewers -->
 <div id="stop_recursion">{{=T('Please close this popup window to return to the OneZoom tree viewer')}}</div>
 </body></html>

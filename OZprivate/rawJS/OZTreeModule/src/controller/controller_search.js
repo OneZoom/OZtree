@@ -1,6 +1,5 @@
 /* add features to the OZ controller so that search can interact with the OZ vizualization */
 import tree_state from '../tree_state';
-import * as position_helper from '../position_helper';
 import api_manager from '../api/api_manager'; //for pop species - can eventually be deleted
 import {record_url} from '../navigation/record';
 import {color_theme} from '../themes/color_theme';
@@ -169,66 +168,6 @@ export default function (Controller) {
         }
         record_url();
     }
-    
-    // legacy functions that are no longer needed (I think so leave commented out for now)
-    
-    /*
-
-    //This function clears highlights on the bezier curve to the search result.
-    Controller.prototype.clear_route_to_search = function() {
-        _clear_route_to_search(this.root);
-    }
-     
-     Controller.prototype.get_shared_ancestor = function(ancestors1, ancestors2) {
-     let index = get_index_of_shared_ancestor(ancestors1, ancestors2);
-     return(ancestors1[index].metacode);
-     }
-     
-     Controller.prototype.get_common_ancestor = function(hit1_id, hit2_id) {
-     return(this.get_shared_ancestor(this.get_ancestors(hit1_id),this.get_ancestors(hit2_id)));
-     }
-     
-     Controller.prototype.turn_off_search_highlight = function() {
-     tree_state.search_highlight = false;
-     this.clear_route_to_search();
-     }
-     
-     Controller.prototype.turn_on_search_highlight = function(src, dest) {
-     tree_state.search_highlight = true;
-     if ((src != null && dest == null) || (src == null && dest != null)) {
-     let ancestors = get_targeted_nodes(this.root, []);
-     mark_route_to_search_res(ancestors);
-     } else if (src != null && dest != null) {
-     position_helper.target_by_code(this.root, src);
-     let ancestorsOfNode1 = get_targeted_nodes(this.root, []);
-     mark_route_to_search_res(ancestorsOfNode1, 'search_hit1');
-     
-     position_helper.target_by_code(this.root, dest);
-     let ancestorsOfNode2 = get_targeted_nodes(this.root, []);
-     mark_route_to_search_res(ancestorsOfNode2, 'search_hit2');
-     }
-     }
-     
-     //Mark search route from common ancestor to the hits, then jump to common ancestor.
-     Controller.prototype.show_common_ancestor = function(hit1_id, hit2_id) {
-     let ancestorsOfNode1=this.get_ancestors(hit1_id)
-     let ancestorsOfNode2=this.get_ancestors(hit2_id)
-     let common_ancestor =this.get_shared_ancestor(ancestorsOfNode1,ancestorsOfNode2);
-     
-     this.clear_route_to_search();
-     if (tree_state.search_highlight) {
-     mark_route_to_search_res(ancestorsOfNode1, 'search_hit1');
-     mark_route_to_search_res(ancestorsOfNode2, 'search_hit2');
-     }
-     
-     position_helper.clear_target(this.root);
-     position_helper.target_by_code(this.root, common_ancestor);
-     position_helper.perform_actual_leap(this);
-     record_url();
-     }
-     
-    */
-
 } // end of controller exported
 
 /**

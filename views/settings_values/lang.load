@@ -1,0 +1,9 @@
+<option value="">{{=T('Browser default')}}</option>
+<optgroup label="{{=T('Translated')}}">
+  <option value="en">English</option>
+  <option value="fr">Français</option>
+  <option value="sv">Svenska</option>
+</optgroup>
+<optgroup label="{{=T('Not yet translated')}}">
+  <option value="zh">中文</option>
+</optgroup>

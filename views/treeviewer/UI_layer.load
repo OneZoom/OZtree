@@ -1,10 +1,10 @@
 {{include 'link_modifier.html'}}
 <!-- This contains all the overlay on top of the OneZoom canvas. It can be reloaded in different languages -->
 
-{{if not request.vars.no_oz_logo:}}<div class="logo uk-navbar-item">{{#The logo *never* opens a new tab (but it can be removed)}}{{=no_tab_A(IMG(_src=URL('static','images/oz-logo-1line-mono-dark.svg')), _href=URL('default','index', extension=False), _id="OZ-logo")}}</div>{{pass}}
+{{if not request.vars.no_oz_logo:}}<div class="logo uk-navbar-item">{{#The logo *never* opens a new tab (but it can be removed)}}{{=no_tab_A(IMG(_src=URL('static','images/oz-logo-1line-mono-dark.svg')), _href=URL('default','index', extension=False), _id="OZ-logo")}}&nbsp;</div>{{pass}}
 {{if request.vars.partner_logo:}}<div class="logo uk-navbar-item">{{if request.vars.partner_url:}}{{=A(IMG(_src=request.vars.partner_logo), _href=request.vars.partner_url)}}{{else:}}{{=SPAN(IMG(_src=request.vars.partner_logo))}}{{pass}}</div>{{pass}}
-<div class="uk-navbar-item" id="searchnav">
-  <div id="search-basic">
+<div class="uk-navbar-item search-nav" id="searchnav">
+  <div class="search-basic">
     <div class="searchbox uk-search uk-search-default" id="search_form_basic">
       <div class="searchinput"><div class="icon-beside-input">
           <button   class="spinner" uk-spinner="ratio:0.5"></button>
@@ -129,8 +129,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
       <li><a href="#terms-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Terms of use')}}</a></li>
     </ul>
   </div>
-  {{if not request.vars.get('hide_control_settings', False):}}
-  <li>
+  <li id="settingsButton">
       <div class='icon-container'>
         <a uk-tooltip="pos: right" title="{{=T('Settings')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: settings"></a>
       </div>
@@ -165,11 +164,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
 <li class="uk-nav-header">{{=T("Colour By")}}</li>
 
 <li class="colourswitch"><select id="colourtype" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a colour palette for the tree')}}">
-<option value="IUCN">{{=T('Extinction risk')}}</option>
-<option value="popularity">{{=T('Species popularity')}}</option>
-<option value="natural">{{=T('Plain green, brown')}}</option>
-<option value="AT">{{=T('Ancestor\'s tale')}}</option>
-</optgroup>
+  {{include 'settings_values/cols.load'}}
 </select></li>
 
 <input type="checkbox" id="CBF" name="CBF"
@@ -178,25 +173,13 @@ unchecked>
 
 <li class="uk-nav-header">{{=T('Visualisation Shape')}}</li>
 <li class="treeswitch"><select id="treeshape" class="uk-select uk-form-small">
-<option value="spiral"> {{=T('Spiral')}}</option>
-<option value="polytomy"> {{=T('Polytomy')}} </option>
-<option value="natural"> {{=T('Natural')}} </option>
-<option value="fern"> {{=T('Fern')}}</label> </option>
-<option value="balanced"> {{=T('Balanced')}} </option>
+  {{include 'settings_values/vis.load'}}
 </select></li>
 
       <li class="uk-nav-header langswitch">{{=T("Language")}}</li>
       <li class="langswitch"><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1] if browser_language else None,)}}">
-        <option value="">{{=T('Browser default')}}</option>
-        <optgroup label="{{=T('Translated')}}">
-          <option value="en">English</option>
-          <option value="fr">Français</option>
-          <option value="sv">Svenska</option>
-        </optgroup>
-        <optgroup label="{{=T('Not yet translated')}}">
-          <option value="zh">中文</option>
-        </optgroup>
-        </select></li>
+        {{include 'settings_values/lang.load'}}
+      </select></li>
 
 <li class="uk-nav-header treeswitch">{{=T('Page Content')}}</li>
 <li class="treeswitch"><select id="treepage" class="uk-select uk-form-small">
@@ -209,7 +192,6 @@ unchecked>
     </ul>
   </form>
   </li>
-  {{pass}}
 </ul>
 <div id="error-modal" class="uk-modal-container" uk-modal>
     <div class="uk-modal-dialog uk-modal-body">

@@ -6,8 +6,8 @@
 
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
-    <h1>Sponsorship page for {{=most_recent.user_donor_name or most_recent.username}}</h1>
-    {{if sponsor_status:}}<p>{{=most_recent.user_donor_name or most_recent.username}} is a <span>{{=sponsor_status}}</span> sponsor</p>{{pass}}
+    <h1>Sponsorship page for {{=most_recent.verified_donor_name or most_recent.username}}</h1>
+    {{if sponsor_status:}}<p>{{=most_recent.verified_donor_name or most_recent.username}} is <a href="{{=URL('default', 'donor_list.html')}}"><span>{{=sponsor_status}}</span> sponsor</a></p>{{pass}}
 </div>
 {{end block}}
 
@@ -25,7 +25,7 @@
 
         <div>{{=html_names.get(item.OTT_ID, 'Unknown')}}</div>
         <div>
-           Sponsored in {{=item['reserve_time'].strftime("%Y")}} {{=item['verified_kind']}}
+           Sponsored in {{=item['verified_time'].strftime("%Y")}} {{=item['verified_kind']}}
            <i class="sponsored-by">{{=item['verified_name']}}</i>
         </div>
         {{if item.get('verified_more_info', ''):}}<br/><div>{{=item['verified_more_info']}}</div>{{pass}}
@@ -52,7 +52,7 @@
         <div><a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}"
                 target="_blank">{{=html_names.get(item.OTT_ID, 'Unknown')}}</a></div>
         <div>
-           Sponsored in {{=item['reserve_time'].strftime("%Y")}} {{=item['verified_kind']}}
+           Sponsored in {{=item['verified_time'].strftime("%Y")}} {{=item['verified_kind']}}
            <i class="sponsored-by">{{=item['verified_name']}}</i>
         </div>
         {{if item.get('verified_more_info', ''):}}<br/><div>{{=item['verified_more_info']}}</div>{{pass}}
@@ -65,7 +65,7 @@
         <div><a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}"
                 target="_blank">{{=html_names.get(item.OTT_ID, 'Unknown')}}</a></div>
         <div>
-           Sponsored in {{=item['reserve_time'].strftime("%Y")}} {{=item['verified_kind']}}
+           Sponsored in {{=item['verified_time'].strftime("%Y")}} {{=item['verified_kind']}}
            <i class="sponsored-by">{{=item['verified_name']}}</i>
         </div>
         {{if item.get('verified_more_info', ''):}}<br/><div>{{=item['verified_more_info']}}</div>{{pass}}

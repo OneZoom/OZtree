@@ -84,8 +84,12 @@ function setup_page_by_state(state) {
   if (state.title) document.title = unescape(state.title);
   if (state.home_ott_id) config.home_ott_id = state.home_ott_id
   if (state.screen_saver_inactive_duration) tree_settings.ssaver_inactive_duration_seconds = state.screen_saver_inactive_duration * 1000
+  if (state.cols) controller.change_color_theme(state.cols, true)
 
   controller.close_all();
+
+  // Perform initial marking if asked
+  if (state.initmark) get_ott_to_id_by_api(state.initmark).then(id => controller.mark_area(id));
 
   let promise = state.home_ott_id ? get_ott_to_id_by_api(state.home_ott_id) : Promise.resolve()
 
@@ -127,11 +131,9 @@ function setup_page_by_state(state) {
     }
     //TODO: separate out promise reject and error handling.
     console.error("Failed to setup_page_by_state:", error);
-    controller.reset();
     const ozId = data_repo.ott_id_map[config.home_ott_id]
-    if (ozId) {
-      controller.init_move_to(ozId)
-    } else if (state.ott) {
+    controller.init_move_to(ozId ? ozId : controller.root.metacode);  // NB: root is always a node, so ozID positive
+    if (!ozId && state.ott) {
       if (typeof config.ui.badOTT !== 'function') {
         alert('Developer error: you need to define a UI function named badOTT that takes a bad OTT and pings up an error page')
       } else {

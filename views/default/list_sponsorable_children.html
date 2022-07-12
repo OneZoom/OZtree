@@ -1,6 +1,6 @@
 {{response.title='OneZoom: Alphabetical list of children'}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
-{{extend 'embed.html' if request.vars.get('embed') else 'uikit_layout.html'}}
+{{extend 'popup.html' if request.vars.get('popup') else 'uikit_layout.html'}}
 {{if len(species)==0:}} 
     <h2 class="uk-container-center">Sorry, no results found.</h2>
 {{else:}}

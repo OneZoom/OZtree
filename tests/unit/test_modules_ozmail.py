@@ -51,7 +51,10 @@ class TestOzMail(unittest.TestCase):
         self.assertEqual(mailargs["to"], "admin@example.com")
 
 if __name__ == '__main__':
-    suite = unittest.TestSuite()
+    import sys
 
+    suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestOzMail))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    if not result.wasSuccessful():
+        sys.exit(1)

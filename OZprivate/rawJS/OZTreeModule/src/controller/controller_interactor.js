@@ -91,16 +91,14 @@ export default function (Controller) {
   Controller.prototype.click = function() {
     this.close_all();
     if (is_popup_state()) {
+      // NB: Record both states first, then run callback, so UI can get a URL with the popup applied
+      //     (to open in a new window, e.g.)
       record_url();
-    }
-    
-    click_on_button_cb(this); 
-    
-    if (is_popup_state()) {
-      record_url({record_popup: true});
+      record_url({record_popup: global_button_action});
     } else if (global_button_action.action === "leap") {
       record_url();
     }
+    click_on_button_cb(this);
   }
   
   /**
