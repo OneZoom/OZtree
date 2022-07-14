@@ -7,6 +7,8 @@ let int_text_fill = 'rgb(0,0,0)';
 let int_sponsor_fill_hover = 'rgb(255,255,255)';
 let int_sponsor_fill = 'rgb(227,200,115)';
 
+let white = 'rgb(255,255,255)';
+
 function leafcolor1(node) {
   if (node.extra_leaf_info) {
     return 'rgb(0,0,255)';
@@ -157,6 +159,11 @@ const theme = {
   },
     
   leaf: {
+
+    bg: {
+      fill: white,
+    },
+
     'outline_hover': {
       fill: 'rgb(0,50,0)'
     },
