@@ -413,6 +413,11 @@ const theme = {
   },
     
   leaf: {
+
+    bg: {
+      fill: white,
+    },
+    
     'outline_hover': {
       fill: outline_highlight
     },
