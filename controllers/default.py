@@ -16,7 +16,7 @@ from embed import embedize_url
 from sponsorship import (
     sponsorship_enabled, reservation_total_counts, clear_reservation, get_reservation,
     reservation_validate_basket_fields,
-    reservation_add_to_basket, reservation_confirm_payment, reservation_expire,
+    reservation_add_to_basket, reservation_confirm_payment,
     sponsorship_expiry_soon_date,
     sponsorship_email_reminders, sponsor_verify_url,
     sponsorship_restrict_contact, sponsor_renew_request_logic,
