@@ -25,7 +25,7 @@
 {{else:}}
     src="{{=URL('static','images/noImage_transparent.png')}}"
     class="nopic {{if None in pds:}}pd{{pass}}"
-{{pass}} />
+{{pass}} width="150" />
                </a>
            </figure>
        <figcaption>Sponsored {{=item['verified_kind']}}<br /><strong>{{=item['verified_name']}}</strong><br />{{=item['verified_more_info'] or ''}}</figcaption></figure>
