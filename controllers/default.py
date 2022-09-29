@@ -1092,13 +1092,15 @@ def donor_list():
     groupby = "username"
     limitby=(page*items_per_page,(page+1)*items_per_page+1)
     donor_rows = []
+    n_items = 0
     max_groupby = 75  # The max number of sponsorships per username
     for r in db(
         # We can't do user_donor_hide == False as this is converted to IS NULL by web2py
         # (bug?), so we do user_donor_hide != True
         ((db.reservations.user_donor_hide == None) | (db.reservations.user_donor_hide != True)) &
         (db.reservations.verified_time != None) &
-        (db.reservations.username != None)
+        (db.reservations.username != None) &
+        (db.reservations.verified_donor_name != None)
     ).select(
               grouped_img_src,
               grouped_img_src_id,
@@ -1120,6 +1122,7 @@ def donor_list():
         # a low default group_concat_max_len which will restrict the number of otts anyway
         # (note, the number shown may be < 75 as ones without images are not thumbnailed)
         _, donor_name = donor_name_for_username(r.reservations.username)
+        n_items += 1
         if donor_name:
             num_sponsorships = r[n_leaves]
             ott_enum = enumerate(r[grouped_otts].split(","))
@@ -1163,6 +1166,7 @@ def donor_list():
                 if row:
                     images[row.ott] = row
     return dict(
+        n_items=n_items,
         donor_rows=donor_rows,
         images=images,
         page=page,
