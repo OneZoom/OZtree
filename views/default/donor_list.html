@@ -44,7 +44,7 @@
     title="{{=' / '.join([t for t in [image.rights, image.licence] if t]).replace('"',"'")}}"
 {{  else:}}
     src="{{=URL('static','images/noImage_transparent.png')}}"
-{{  pass}} />
+{{  pass}} width="150" />
 </a>
                 <p>Sponsored {{=row["verified_kind"]}}<br /><strong>{{=row["verified_name"]}}</strong></p>
 {{ pass}}
@@ -52,7 +52,7 @@
 {{pass}}
         </ol>
 {{if page:}}{{=A(XML('&lt;&nbsp;previous&nbsp;'+str(items_per_page)+'..'),_href=URL(args=[page-1], vars=vars),_class='hefty')}}{{pass}}
-{{if len(donor_rows)>items_per_page:}}{{=A(XML('..next&nbsp;'+str(items_per_page)+'&nbsp;&gt;'),_href=URL(args=[page+1], vars=vars),_class='hefty')}}{{pass}}
+{{if n_items > items_per_page:}}{{=A(XML('..next&nbsp;'+str(items_per_page)+'&nbsp;&gt;'),_href=URL(args=[page+1], vars=vars),_class='hefty')}}{{pass}}
 <hr />
 <div class="donor_foot">Particular thanks to our gold donors whose contributions total over {{=fmt_pounds(cutoffs[1])}}, and silver donors who have contributed over {{=fmt_pounds(cutoffs[2])}} in total.</div>
     </div>
