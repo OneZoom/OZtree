@@ -317,7 +317,7 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
                 )).strip())
                 continue
 
-            # Renwal: Remove old reservation and make a new one.
+            # Renewal: Remove old reservation and make a new one.
             prev_row = db(db.expired_reservations.id == reservation_expire(r)).select().first()
             status, _, r, _ = get_reservation(prev_row.OTT_ID, basket_code)
             assert status == 'available'  # We just expired the old one, this should work
@@ -333,6 +333,8 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             # Text was verified previously, so we can automatically verify this entry
             fields_to_update['verified_time'] = request.now
             fields_to_update['reserve_time'] = prev_row.reserve_time  # Keep original reserve_time
+            # Verification normally involves allocating a username, so we must set this too
+            fields_to_update['username'] = prev_row.username
         else:
             # NB: This is different to existing paths, but feels a more correct place to set sponsorship_ends
             fields_to_update['sponsorship_duration_days'] = sponsorship_config()['duration_days']
