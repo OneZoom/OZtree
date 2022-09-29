@@ -1081,8 +1081,7 @@ def donor():
 def donor_list():
     '''list donors by name. Check manage/SHOW_SPONSOR_SUMS.html to see what names to add.
     '''
-    if len(request.args): page=int(request.args[0])
-    else: page=0
+    page=int(request.args[0]) if len(request.args) else 0
     items_per_page=20
     grouped_img_src = "GROUP_CONCAT(if(`user_nondefault_image`,`verified_preferred_image_src`,NULL))"
     grouped_img_src_id = "GROUP_CONCAT(if(`user_nondefault_image`,`verified_preferred_image_src_id`,NULL))"
