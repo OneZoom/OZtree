@@ -5,6 +5,23 @@ import sponsorship
 import usernames
 
 from gluon import current
+from gluon.globals import Request
+
+
+def call_controller(module, endpoint, vars={}):
+    """Set up a semi-sane request environment, call a controller endpoint"""
+    # Create request for given params
+    current.request = Request(dict())
+    for (k, v) in vars.items():
+        current.request.vars[k] = v
+
+    # Poke session / DB / request into module's namespace
+    module.session = current.session
+    module.db = current.db
+    module.request = current.request
+    module.response = current.response
+
+    return getattr(module, endpoint)()
 
 
 def time_travel(days=0, expire=True):
