@@ -106,11 +106,15 @@ class Tour {
     this.ready_callback = ready_callback
     this.interaction_hooks = {} // when we add interaction hooks, we store the ids here so we can remove them later
 
-    this.tour_loaded = new Promise((resolve) => this.resolve_tour_loaded = resolve).then(this.ready_callback);
+    var resolve_tour_loaded;
+    this.tour_loaded = new Promise((resolve) => resolve_tour_loaded = resolve).then(() => {
+      if (window.is_testing) console.log("Loaded tour")
+      return this.ready_callback();
+    });
 
     if (tour_setting instanceof window.Text) {
       // HTML TextObject (i.e. the content of a script tag), render that as our tour
-      this.load_tour_from_string(tour_setting.textContent);
+      return this.load_tour_from_string(tour_setting.textContent).then(resolve_tour_loaded);
     } else {
       // Assume URL, fetch and render
       let tour_start_step = null
@@ -119,7 +123,9 @@ class Tour {
         this.tour_setting = tour_setting = m[1]
         tour_start_step = parseInt(m[2])
       }
-      return $.ajax({ url: tour_setting, dataType: "html", success: (s) => this.load_tour_from_string(s, tour_start_step) });
+      return $.ajax({ url: tour_setting, dataType: "html", success: (s) => {
+        return this.load_tour_from_string(s, tour_start_step).then(resolve_tour_loaded);
+      }});
     }
   }
 
@@ -151,8 +157,27 @@ class Tour {
     this.clear(tour_start_step)
 
     this.bind_ui_events();
-    this.load_ott_id_conversion_map(this.resolve_tour_loaded)
-    if (window.is_testing) console.log("Loaded tour")
+
+    // Fetch ott -> id conversion map
+    const ott_id_set = new Set();
+    this.tourstop_array.forEach(tourstop => {
+      if (tourstop.setting.ott && !isNaN(tourstop.setting.ott)) {
+          ott_id_set.add(tourstop.setting.ott)
+      }
+    });
+
+    const ott_id_array = [];
+    for (let ott_id of ott_id_set.values()) {
+      ott_id_array.push({ OTT: ott_id })
+    };
+
+    return new Promise((resolve) => {
+      this.onezoom.utils.process_taxon_list(
+        JSON.stringify(ott_id_array),
+        null, null,
+        resolve
+      )
+    });
   }
 
   add_canvas_interaction_callbacks() {
@@ -298,28 +323,6 @@ class Tour {
     }
 
     this.curr_stop().play_from_start('backward')
-  }
-
-  /**
-   * Fetch ott -> id conversion map
-   */
-  load_ott_id_conversion_map(ready_callback) {
-    const ott_id_set = new Set()
-    this.tourstop_array.forEach(tourstop => {
-      if (tourstop.setting.ott && !isNaN(tourstop.setting.ott)) {
-          ott_id_set.add(tourstop.setting.ott)
-      }
-    })
-    const ott_id_array = []
-    for (let ott_id of ott_id_set.values()) {
-      ott_id_array.push({ OTT: ott_id })
-    }
-
-    this.onezoom.utils.process_taxon_list(
-      JSON.stringify(ott_id_array),
-      null, null,
-      ready_callback
-    )
   }
 
   curr_stop() {
