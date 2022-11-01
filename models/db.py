@@ -797,7 +797,7 @@ db.define_table('tourstop_symlink',
     Field('ord', type='integer', notnull=True),  # The position of this tourstop in the tour
     Field('created', 'datetime', default=request.now),
     Field('updated', 'datetime', default=request.now, update=request.now),
-    format='%(id)d_%(identifier)s', migrate=is_testing)
+    format='%(tour)d_%(ord)d', migrate=is_testing)
 
 # These are popular places, tours or other things that a user can use to explore the tree
 # in a more guided way.  E.g. use as a first way into the tree or as suggestions of places
