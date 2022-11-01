@@ -29,6 +29,23 @@ class TestControllersTour(unittest.TestCase):
         return out['tour']
 
     def tour_put(self, tour_identifier, tour_body):
+        # Fill in tour defaults
+        if 'title' not in tour_body:
+            tour_body['title'] = 'A unit test tour %s' % tour_identifier,
+        if 'description' not in tour_body:
+            tour_body['description'] = 'A default description'
+        if 'author' not in tour_body:
+            tour_body['author'] = 'UT::Author'
+        if isinstance(tour_body.get('tourstops', None), int):
+            tour_body['tourstops'] = [dict(
+                ott=ott,
+                identifier="ott%d" % ott,
+                template_data=dict(title="Tour %s OTT %d" % (
+                    tour_identifier,
+                    ott
+                )),
+            ) for ott in util.find_unsponsored_otts(tour_body['tourstops'])]
+
         out = util.call_controller(
             tour,
             'data',
@@ -172,6 +189,95 @@ class TestControllersTour(unittest.TestCase):
             [ts['ott'] for ts in t2['tourstops']],
             [otts[5], otts[5]],
         )
+
+    def test_data_symlinks(self):
+        """Can we symlink tours from one to another?"""
+        # Insert 2 tours
+        t = self.tour_put('UT::TOUR', dict(tourstops=3))
+        orig_ts = t['tourstops']
+        t2 = self.tour_put('UT::TOUR2', dict(tourstops=3))
+        orig_ts2 = t2['tourstops']
+
+        # Symlinks point at own tour by default
+        t2 = self.tour_put('UT::TOUR2', dict(tourstops=[
+            t2['tourstops'][0],
+            t2['tourstops'][1],
+            dict(
+                symlink_tourstop=t2['tourstops'][2]['identifier'],
+            ),
+            t2['tourstops'][2],
+        ]))
+        self.assertEqual([ts['ott'] for ts in t2['tourstops']], [
+            orig_ts2[0]['ott'],
+            orig_ts2[1]['ott'],
+            orig_ts2[2]['ott'],
+            orig_ts2[2]['ott'],
+        ])
+
+        # Dangling symlinks are noticed
+        with self.assertRaisesRegex(HTTP, r'400'):
+            t2 = self.tour_put('UT::TOUR2', dict(tourstops=[
+                t2['tourstops'][0],
+                t2['tourstops'][1],
+                dict(
+                    symlink_tourstop='parrotparrot',
+                ),
+                t2['tourstops'][2],
+            ]))
+
+        # Add symlink to first tour
+        t2 = self.tour_put('UT::TOUR2', dict(tourstops=[
+            orig_ts2[0],
+            orig_ts2[1],
+            dict(
+                symlink_tour="UT::TOUR",
+                symlink_tourstop=t['tourstops'][0]['identifier'],
+            ),
+            orig_ts2[2],
+        ]))
+        # t2 has OTTs in the order we expect
+        self.assertEqual([ts['ott'] for ts in t2['tourstops']], [
+            orig_ts2[0]['ott'],
+            orig_ts2[1]['ott'],
+            orig_ts[0]['ott'],
+            orig_ts2[2]['ott'],
+        ])
+        # Title inherited from symlink target
+        self.assertEqual(
+            t2['tourstops'][2]['template_data']['title'],
+            orig_ts[0]['template_data']['title'],
+        )
+
+        # Can move symlink
+        t2 = self.tour_put('UT::TOUR2', dict(tourstops=[
+            orig_ts2[0],
+            orig_ts2[1],
+            orig_ts2[2],
+            dict(
+                symlink_tour="UT::TOUR",
+                symlink_tourstop=t['tourstops'][0]['identifier'],
+            ),
+        ]))
+        self.assertEqual([ts['ott'] for ts in t2['tourstops']], [
+            orig_ts2[0]['ott'],
+            orig_ts2[1]['ott'],
+            orig_ts2[2]['ott'],
+            orig_ts[0]['ott'],
+        ])
+
+        # Removing from t cascades & removes from t2
+        t = self.tour_put('UT::TOUR', dict(tourstops=[
+            orig_ts[1],
+        ]))
+        self.assertEqual([ts['ott'] for ts in t['tourstops']], [
+            orig_ts[1]['ott'],
+        ])
+        t2 = self.tour_get('UT::TOUR2')
+        self.assertEqual([ts['ott'] for ts in t2['tourstops']], [
+            orig_ts2[0]['ott'],
+            orig_ts2[1]['ott'],
+            orig_ts2[2]['ott'],
+        ])
 
 if __name__ == '__main__':
     import sys

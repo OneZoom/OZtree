@@ -133,15 +133,45 @@ def data():
 
         # Upsert each tourstop
         ts_shared = request.vars.get('tourstop_shared', {})
+        tss_targets = {}
         for i, ts in enumerate(request.vars['tourstops']):
-            ts = { **ts_shared, **ts, "tour": tour_id, "ord": i + 1 }  # Combine with shared data, references
-            if 'symlink' in ts:
-                raise ValueError("TODO: Insert a symlink tourstop with ord i + 1")
+            ts = { "template_data": {}, **ts_shared, **ts, "tour": tour_id, "ord": i + 1 }  # Combine with shared data, references
+            if 'symlink_tourstop' in ts:
+                if 'symlink_tour' not in ts:
+                    ts['symlink_tour'] = tour_identifier
+                tss_targets[ts['ord']] = ts
             else:
                 db.tourstop.update_or_insert(
                     (db.tourstop.tour == tour_id) & (db.tourstop.identifier == ts['identifier']),
                     **ts,
                 )
+
+        # Resolve tss_target dicts to DB entries, now they should be in the database
+        for ord in tss_targets.keys():
+            target_ts = db(
+                (db.tourstop.tour == db.tour.id) &
+                (db.tour.identifier == tss_targets[ord]['symlink_tour']) &
+                (db.tourstop.identifier == tss_targets[ord]['symlink_tourstop'])).select().first()
+            if target_ts is None:
+                raise HTTP(400, "Unknown tourstop %s in tour %s" % (
+                    tss_targets[ord]['symlink_tourstop'],
+                    tss_targets[ord]['symlink_tour'],
+                ))
+            tss_targets[ord] = target_ts.tourstop
+
+        # Upsert each tourstop_symlink
+        for tss in db(db.tourstop_symlink.tour == tour_id).select(db.tourstop_symlink.ALL):
+            if tss.ord in tss_targets:
+                if tss.tourstop.id != tss_targets[tss.ord].id:
+                    # Same ord, new location, update record
+                    tss.update_record(tourstop=tss_targets[tss.ord].id)
+                del tss_targets[tss.ord]
+            else:
+                # A no-longer-used symlink, remove it.
+                tss.delete_record()
+        # Insert any remaining symlinks
+        for ord, ts_target in tss_targets.items():
+            db.tourstop_symlink.insert(tour=tour_id, tourstop=ts_target, ord=ord)
 
     # Fetch tour from DB
     tour = db(db.tour.identifier == tour_identifier).select()
@@ -149,19 +179,22 @@ def data():
         raise HTTP(404)
     tour = tour[0]
 
-    # Fetch associated tourstops
-    tourstops = tour.tourstop.select(orderby=db.tourstop.ord)
-    tourstop_symlinks = tour.tourstop_symlink.select(orderby=db.tourstop.ord)
-
-    if len(tourstop_symlinks) > 0:
-        raise ValueError("TODO: Combine 2 lists of tourstops according to ord")
-
-    # Reconstitute tour JSON
     def munge_tourstop(ts):
         if ts.secondary_ott:
             ts.ott = "%d..%d" % (ts.ott, ts.secondary_ott)
         return ts
-    tour['tourstops'] = [munge_tourstop(t) for t in tourstops]
+
+    # Combine lists of associated tourstops, add to tour object
+    tourstops = {}
+    for ts in tour.tourstop.select():
+        tourstops[ts.ord] = ts
+    for tss in tour.tourstop_symlink.select():
+        # TODO: Check tss.tourstop exists
+        tourstops[tss.ord] = tss.tourstop
+    # TODO: Sorting numerically?
+    tour['tourstops'] = [munge_tourstop(tourstops[ord]) for ord in sorted(tourstops.keys())]
+
+    # Reconstitute tour JSON
     return dict(
         tour_identifier=tour_identifier,
         tour=tour,
