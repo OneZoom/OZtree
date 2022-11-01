@@ -98,22 +98,22 @@ def screensaver():
 def data():
     """Fetch generic tour name from database"""
     if len(request.args) < 1:
-        raise ValueError("Expect a tour identifier at the end of the URL")
+        raise HTTP(400, "Expect a tour identifier at the end of the URL")
     tour_identifier = request.args[0]
 
     if request.env.request_method == 'PUT':
         # Need to be logged in before you can create tours
         auth.basic()
         if not auth.user:
-            return HTTP(403)
+            raise HTTP(403)
         if len(request.vars.get('tourstops', [])) == 0:
-            raise ValueError("Must have at least one tourstop")
+            raise HTTP(400, "Must have at least one tourstop")
 
         # Check that tourstop identifiers are unique within the tour
         # TODO: Ideally we'd make a DB constraint for this, but is beyond the abilities of PyDAL
-        ts_identifiers = set(ts['identifier'] for ts in request.vars['tourstops'])
-        if len(ts_identifiers) != len(request.vars['tourstops']):
-            raise ValueError("All tourstops should have a unique identifier")
+        ts_identifiers = [ts['identifier'] for ts in request.vars['tourstops'] if 'symlink_tourstop' not in ts]
+        if len(ts_identifiers) != len(set(ts_identifiers)):
+            raise HTTP(400, "All tourstops should have a unique identifier")
 
         # Upsert the tour data
         db.tour.update_or_insert(
