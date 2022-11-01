@@ -195,9 +195,7 @@ def data():
     for ts in tour.tourstop.select():
         tourstops[ts.ord] = ts
     for tss in tour.tourstop_symlink.select():
-        # TODO: Check tss.tourstop exists
         tourstops[tss.ord] = tss.tourstop
-    # TODO: Sorting numerically?
     tour['tourstops'] = [munge_tourstop(tourstops[ord]) for ord in sorted(tourstops.keys())]
 
     # Reconstitute tour JSON
