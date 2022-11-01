@@ -172,9 +172,11 @@ class TestSponsorship(unittest.TestCase):
         """Can count for the home page"""
         # Purchase an OTT ages ago, which will expire, then 2 new ones
         util.time_travel(sponsorship_config()['duration_days'] * 3)
-        reservations_old = util.purchase_reservation(basket_details=dict(e_mail='betty@unittest.example.com'))
+        # Get unsponsored OTTs in one go, to ensure they don't overlap
+        otts = util.find_unsponsored_otts(3)
+        reservations_old = util.purchase_reservation(otts[0:2], basket_details=dict(e_mail='betty@unittest.example.com'))
         util.time_travel(0)
-        reservations_newer = util.purchase_reservation(2, basket_details=dict(e_mail='betty@unittest.example.com'))
+        reservations_newer = util.purchase_reservation(otts[2:], basket_details=dict(e_mail='betty@unittest.example.com'))
 
         # Re-purchase the now expired OTT
         reservations_renewed = util.purchase_reservation(

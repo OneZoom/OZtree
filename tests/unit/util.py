@@ -1,5 +1,6 @@
 import datetime
 import uuid
+import random
 
 import sponsorship
 import usernames
@@ -70,7 +71,7 @@ def find_unsponsored_otts(count, in_reservations=None, allow_banned=False):
         raise ValueError("Can't find available OTTs")
     if len(otts) < count:
         raise ValueError("Rows may not have associated prices set, visit /manage/SET_PRICES/")
-    return otts[:count]
+    return random.sample(otts, count)
 
 
 def find_unsponsored_ott(in_reservations=None, allow_banned=False):
