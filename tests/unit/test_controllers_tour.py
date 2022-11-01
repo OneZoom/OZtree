@@ -87,7 +87,70 @@ class TestControllersTour(unittest.TestCase):
             [ts['ott'] for ts in t['tourstops']],
             [otts[0], otts[5]],
         )
+        t_alt = self.tour_put('UT::TOUR-ALT', dict(
+            title="An alternative unit test tour",
+            description="An alternative tour that won't be fetched at the same time",
+            author="UT::Author",
+            tourstops=[
+                dict(
+                    # NB: Share an identifier, which is fine
+                    ott=otts[0],
+                    identifier="ott0",
+                    template_data=dict(title="We still start in the same place"),
+                ),
+                dict(
+                    ott=otts[9],
+                    identifier="ott9",
+                ),
+            ],
+        ))
+        self.assertEqual(t_alt['title'], "An alternative unit test tour")
+        self.assertEqual(t_alt['description'], "An alternative tour that won't be fetched at the same time")
+        self.assertEqual(t_alt['author'], "UT::Author")
+        self.assertEqual(
+            [ts['ott'] for ts in t_alt['tourstops']],
+            [otts[0], otts[9]],
+        )
+        # Tourstops aren't shared between tours, even though the identifier matches
+        self.assertNotEqual(t_alt['tourstops'][0]['id'], t['tourstops'][0]['id'])
 
+        # Can fetch back tours by name
+        self.assertEqual(t, self.tour_get('UT::TOUR'))
+        self.assertEqual(t_alt, self.tour_get('UT::TOUR-ALT'))
+
+        # Updating tour will re-use existing tourstops where possible
+        t2 = self.tour_put('UT::TOUR', dict(
+            title="A unit test tour",
+            description="It's a nice tour",
+            author="UT::Author",
+            tourstops=[
+                dict(
+                    # Change metadata, keep existing entry
+                    ott=otts[0],
+                    identifier="ott0",
+                    template_data=dict(title="The first tourstop"),
+                ),
+                dict(
+                    # The OTT matches, but is a different identifier, so gets a new entry
+                    ott=otts[5],
+                    identifier="ott5first",
+                ),
+                dict(
+                    # Recycling identifier in a new location, keeps existing entry
+                    ott=otts[5],
+                    identifier="ott5",
+                ),
+            ],
+        ))
+        self.assertEqual(
+            [ts['ott'] for ts in t2['tourstops']],
+            [otts[0], otts[5], otts[5]],
+        )
+        self.assertEqual([ts['id'] for ts in t2['tourstops']], [
+            t['tourstops'][0]['id'],  # Same ID as before
+            t2['tourstops'][1]['id'],  # New tourstop
+            t['tourstops'][1]['id'],  # Same ID as before, in a different location
+        ])
 
 
 if __name__ == '__main__':
