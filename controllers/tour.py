@@ -129,7 +129,7 @@ def data():
         tour_id = db.tour(db.tour.identifier == tour_identifier).id
 
         # Remove any no-longer extant tourstops
-        db(db.tourstop.tour == tour_id & ~db.tourstop.identifier.belongs(ts_identifiers)).delete()
+        db((db.tourstop.tour == tour_id) & ~db.tourstop.identifier.belongs(ts_identifiers)).delete()
 
         # Upsert each tourstop
         ts_shared = request.vars.get('tourstop_shared', {})

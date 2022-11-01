@@ -152,6 +152,26 @@ class TestControllersTour(unittest.TestCase):
             t['tourstops'][1]['id'],  # Same ID as before, in a different location
         ])
 
+        # Can remove tourstops by getting rid of reference to them
+        t2 = self.tour_put('UT::TOUR', dict(
+            title="A unit test tour",
+            description="It's a nice tour",
+            author="UT::Author",
+            tourstops=[
+                dict(
+                    ott=otts[5],
+                    identifier="ott5first",
+                ),
+                dict(
+                    ott=otts[5],
+                    identifier="ott5",
+                ),
+            ],
+        ))
+        self.assertEqual(
+            [ts['ott'] for ts in t2['tourstops']],
+            [otts[5], otts[5]],
+        )
 
 if __name__ == '__main__':
     import sys
