@@ -77,6 +77,14 @@ class TestControllersTour(unittest.TestCase):
                 title="A Unit test tour",
             ))
 
+        # Missing author also alerted
+        with self.assertRaisesRegex(HTTP, r'400'):
+            out = self.tour_put('UT::TOUR', dict(
+                title="A Unit test tour",
+                author=None,
+                tourstops=1,
+            ))
+
     def test_data_storerestore(self):
         """Can we store/restore tours in the database?"""
         otts = util.find_unsponsored_otts(10)
