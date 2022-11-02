@@ -35,7 +35,7 @@ class TourStopClass {
     this.container_appended = true
 
     // Extract all settings from data attributes
-    this.setting = { exec: {} };
+    this.setting = { exec: {}, qs_opts: '' };
     [].forEach.call(this.container[0].attributes, (attr) => {
       if (!/^data-/.test(attr.name)) return;
       let name = attr.name.replace(/^data-/, ''), val = attr.value;
