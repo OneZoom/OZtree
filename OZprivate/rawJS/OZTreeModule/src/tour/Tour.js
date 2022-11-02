@@ -98,12 +98,12 @@ class Tour {
     this.prev_step = null
     this.container = null
 
-    this.start_callback = start_callback
-    this.end_callback = end_callback
-    this.exit_callback = exit_callback
+    this.start_callback = start_callback || (() => {});
+    this.end_callback = end_callback || (() => {});
+    this.exit_callback = exit_callback || (() => {});
     this.interaction = interaction
-    this.interaction_callback = interaction_callback
-    this.ready_callback = ready_callback
+    this.interaction_callback = interaction_callback || (() => {});
+    this.ready_callback = ready_callback || (() => {});
     this.interaction_hooks = {} // when we add interaction hooks, we store the ids here so we can remove them later
 
     var resolve_tour_loaded;
@@ -140,7 +140,7 @@ class Tour {
     window.loading_tour = old_loading_tour;
 
     // Join classes to make up a descriptive name
-    this.name = this.container[0].className.replace(/\s+/g, '__')
+    this.name = (this.container[0].className || '').replace(/\s+/g, '__')
 
     this.tourstop_array = [].map.call(this.container[0].querySelectorAll(':scope > .container'), (div_tourstop) => {
       let ts = new TourStopClass(this, $(div_tourstop));
