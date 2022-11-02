@@ -1,4 +1,5 @@
 {{
+from applications.OZtree.modules.embed import media_embed
 ts_classes = (  # CSS classes that can be added to template_data as boolean properties
     'visible-transition_in',
     'visible-transition_in_wait',
@@ -47,6 +48,9 @@ ts_fields = (  # HTML fields that can be added to container
        {{pass}}{{pass}}>
     {{for k, tag in ts_fields:}}{{if tdata.get(k, ''):}}
     <{{=tag}} class="{{=k}}">{{=T(tdata[k])}}</{{=tag}}>{{pass}}{{pass}}
+    {{if len(tdata.get('media', [])) > 0:}}<div class="media">{{for url in tdata['media']:}}
+      {{=XML(media_embed(url))}}
+    {{pass}}</div>{{pass}}
 
     {{ include "tour/tourstop/footer.html" }}
   </div>

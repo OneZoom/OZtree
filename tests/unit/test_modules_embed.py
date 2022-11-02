@@ -6,6 +6,7 @@ import re
 import unittest
 
 from gluon.globals import Request
+from gluon.http import HTTP
 
 from applications.OZtree.tests.unit import util
 
@@ -13,6 +14,8 @@ import embed
 
 
 class TestEmbed(unittest.TestCase):
+    maxDiff = None
+
     def test_embedize_url(self):
         def extract_key(u):
             return re.search(r'embedkey=([a-z\-0-9]+)', u).group(1)
@@ -37,6 +40,43 @@ class TestEmbed(unittest.TestCase):
             extract_key(embed.embedize_url('http://moo.com', 'betty@unittest.example.com')),
         )
 
+    def test_media_embed(self):
+        def media_embed(url):
+            out = embed.media_embed(url)
+            return re.split('\s+', out, flags=re.MULTILINE)
+
+        with self.assertRaisesRegex(HTTP, '400'):
+            media_embed('https://www.wibble.com/some_image.jpg')
+
+        self.assertEqual(media_embed('https://www.youtube.com/embed/12345'), [
+            '<iframe',
+            'class="embed-youtube"',
+            'type="text/html"',
+            'src="https://www.youtube.com/embed/12345?autoplay=1&origin=None://127.0.0.1:8000"',
+            'frameborder="0"',
+            '></iframe>',
+        ])
+
+        self.assertEqual(media_embed('https://player.vimeo.com/video/12345'), [
+            '<iframe',
+            'class="embed-vimeo"',
+            'src="https://player.vimeo.com/video/12345"',
+            'frameborder="0"',
+            'allow="autoplay;',
+            'fullscreen"',
+            'allowfullscreen',
+            '></iframe>',
+        ])
+
+        self.assertEqual(media_embed('https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif'), [
+            '<a',
+            'class="embed-wikimedia"',
+            'title="Rose_of_Jericho.gif"',
+            'href="https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif"><img',
+            'src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Rose_of_Jericho.gif"',
+            'alt="Rose_of_Jericho.gif"',
+            '/></a>',
+        ])
 
 if __name__ == '__main__':
     import sys
