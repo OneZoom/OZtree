@@ -179,7 +179,7 @@
   </div>
   <script>
     loading_tour.tourstop_observer(
-        document.querySelector(".tutorial_MD > .container[data-ott='229560']"),
+        "*[data-ott='229560']",
         ['tsstate-active_wait'],
         function (tour) {
             // Special for the tutorial only: open up a window after a short pause, then close again
@@ -218,7 +218,7 @@
   </div>
   <script>
     loading_tour.tourstop_observer(
-        document.querySelector(".tutorial_MD > .container[data-ott='99252']"),
+        "*[data-ott='99252']",
         ['tsstate-transition_in', 'tsstate-active_wait'],
         function (tour) {
             tour.onezoom.controller.mark_area(tour.onezoom.data_repo.ott_id_map[229560]) //prev stop

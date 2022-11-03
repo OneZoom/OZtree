@@ -442,10 +442,10 @@ class Tour {
    * Generate a mutation observer listening for (class_to_notify) being
    * added / removed
    */
-  tourstop_observer(target_el, class_to_notify, add_fn, remove_fn) {
+  tourstop_observer(target_sel, class_to_notify, add_fn, remove_fn) {
     const active_re = new RegExp(class_to_notify.map((s) => '(?:^| )' + s + '(?:$| )').join("|"))
 
-    const mo = new MutationObserver((mutationList, observer) => {
+    const mo = new window.MutationObserver((mutationList, observer) => {
       for(const mutation of mutationList) {
         const cur_active = !!mutation.target.className.match(active_re)
         const old_active = !!mutation.oldValue.match(active_re)
@@ -457,8 +457,12 @@ class Tour {
         }
       }
     })
-    mo.observe(target_el, { attributes: true, attributeOldValue: true, attributeFilter: ['class'] })
-    return mo
+    const opts = { attributes: true, attributeOldValue: true, attributeFilter: ['class'] };
+
+    // For all tourstops selected by target_sel, add our observer
+    this.container[0].querySelectorAll(':scope > ' + target_sel).forEach((el_ts) => {
+      mo.observe(el_ts, opts);
+    });
   }
 }
 
