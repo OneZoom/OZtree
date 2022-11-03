@@ -35,7 +35,7 @@ def media_embed(url):
         return """<iframe
             class="embed-youtube"
             type="text/html"
-            src="{url}?autoplay=1&origin={origin}"
+            src="{url}?enablejsapi=1&origin={origin}"
             frameborder="0"
         ></iframe>""".format(
             url=url,

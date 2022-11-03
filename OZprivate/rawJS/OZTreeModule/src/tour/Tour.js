@@ -1,3 +1,4 @@
+import handler_youtube from './HandlerYoutube';
 import TourStopClass from './TourStop'
 import tree_state from '../tree_state';
 import { add_hook, remove_hook } from '../util';
@@ -179,6 +180,7 @@ class Tour {
           resolve
         )
       }),
+      handler_youtube(this),
     ]);
   }
 
