@@ -156,28 +156,30 @@ class Tour {
     // Reset tour to the desired step, or start
     this.clear(tour_start_step)
 
-    this.bind_ui_events();
+    // Attach all plugins to tour, loaded when everything is finished
+    return Promise.all([
+      this.bind_ui_events(),
+      new Promise((resolve) => {
+        // Fetch ott -> id conversion map
+        const ott_id_set = new Set();
+        this.tourstop_array.forEach(tourstop => {
+          if (tourstop.setting.ott && !isNaN(tourstop.setting.ott)) {
+              ott_id_set.add(tourstop.setting.ott)
+          }
+        });
 
-    // Fetch ott -> id conversion map
-    const ott_id_set = new Set();
-    this.tourstop_array.forEach(tourstop => {
-      if (tourstop.setting.ott && !isNaN(tourstop.setting.ott)) {
-          ott_id_set.add(tourstop.setting.ott)
-      }
-    });
+        const ott_id_array = [];
+        for (let ott_id of ott_id_set.values()) {
+          ott_id_array.push({ OTT: ott_id })
+        };
 
-    const ott_id_array = [];
-    for (let ott_id of ott_id_set.values()) {
-      ott_id_array.push({ OTT: ott_id })
-    };
-
-    return new Promise((resolve) => {
-      this.onezoom.utils.process_taxon_list(
-        JSON.stringify(ott_id_array),
-        null, null,
-        resolve
-      )
-    });
+        this.onezoom.utils.process_taxon_list(
+          JSON.stringify(ott_id_array),
+          null, null,
+          resolve
+        )
+      }),
+    ]);
   }
 
   add_canvas_interaction_callbacks() {
