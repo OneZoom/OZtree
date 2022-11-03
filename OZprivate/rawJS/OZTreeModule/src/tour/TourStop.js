@@ -94,7 +94,8 @@ class TourStopClass {
    */
   exit() {
     this.tour.clear_callback_timers()
-    clearTimeout(this.goto_next_timer)
+    // Remove any lingering wait for user interaction, since it would have happened now
+    this.container[0].classList.remove('block-manual');
     this.block_arrival = true
     tree_state.flying = false
     if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.INACTIVE
@@ -110,9 +111,9 @@ class TourStopClass {
     // do anything first (which could including showing the stop)
     if (window.is_testing) console.log("Arrived at tourstop: force hiding all other stops")
     if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.INACTIVE
+    this.arm_wait_timer();
     this.state = tsstate.ACTIVE_WAIT
     this.direction = 'forward'
-    this.wait_and_goto_next()
   }    
 
   /**
@@ -123,7 +124,7 @@ class TourStopClass {
       throw new Error("Tried to goto_next on an inactive stop")
     } else if (this.state === tsstate.ACTIVE_WAIT) {
       // Ready to go to next stop, so go
-      this.tour.goto_next()
+      this.tour.goto_next()  // NB: This will ignore any active blocks (plugins will need to clean up after themselves)
     } else {
       // In transition_in[_wait], skip transition
       tree_state.flying = false
@@ -135,7 +136,7 @@ class TourStopClass {
   }
 
   /**
-   * 1. Reset timeout, which when triggered would otherwise leap to next tour stop
+   * 1, Block any advancement from the current tourstop
    * 2. Stop fly animation, but ensure it doesn't cause tourstop arrival. Resuming
    *    will start the animation again, from the new location.
    */
@@ -143,7 +144,7 @@ class TourStopClass {
     this.tour.clear_callback_timers() // don't bother pausing these, just cancel them
     // We would like to get the time elapsed if we at waiting to move on from ACTIVE_WAIT
     // but there is no obvious way to get it
-    clearTimeout(this.goto_next_timer)
+    this.container[0].classList.add('block-tourpaused');
 
     this.block_arrival = true
     tree_state.flying = false
@@ -158,7 +159,8 @@ class TourStopClass {
       // We should really only have to wait for the remaining time at this stop, but
       // that's tricky, so we wait again from the beginning. - the tour was already in
       // flight / transition an so it's appropriate to continue that to the destination.
-      this.wait_and_goto_next()
+      this.arm_wait_timer();
+      this.container[0].classList.remove('block-tourpaused');
     } else {
       this.play('forward')
     }
@@ -260,28 +262,23 @@ class TourStopClass {
     }
   }
 
-  /**
-   * If has numeric wait_time, then execute next after wait_time,
-   * otherwise wait for user click next/prev
-   */
-  wait_and_goto_next() {
+  /** Arm this tourstop's wait timer, or wait for user interaction */
+  arm_wait_timer() {
     const wait_time = this.get_wait_time()
 
-    const timer_tick = () => {
-      if (this.controller.is_tree_visible()) {
-        // Tree is ready to go, so go there
-        this.tour.goto_next();
-      } else {
-        // Tree not visible, so wait some more
-        this.goto_next_timer = setTimeout(timer_tick, wait_time);
-      }
-    };
-
-    if (typeof wait_time === 'number') {
-      clearTimeout(this.goto_next_timer)
-      if (window.is_testing) console.log("Setting timer for " + wait_time + "milliseconds")
-      this.goto_next_timer = setTimeout(timer_tick, wait_time);
+    if (typeof wait_time !== 'number') {
+      // No wait time, so blocking waiting for user instead.
+      this.container[0].classList.add('block-manual');
+      return
     }
+
+    // Add a block that we'll then remove in (wait_time) ms
+    this.container[0].classList.add('block-timer');
+    clearTimeout(this.goto_next_timer)
+    if (window.is_testing) console.log("Setting timer for " + wait_time + "milliseconds")
+    this.goto_next_timer = setTimeout(() => {
+      this.container[0].classList.remove('block-timer');
+    }, wait_time);
   }
 
   get_wait_time() {

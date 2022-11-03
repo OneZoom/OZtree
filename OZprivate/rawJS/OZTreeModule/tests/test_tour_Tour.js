@@ -190,7 +190,7 @@ test('tour.flight', function (test) {
     // Waiting at first tourstop
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-playing">',
-      '<div class="container tsstate-active_wait ts-first" data-ott="91101"><h2>Tour stop 1</h2></div>',
+      '<div class="container tsstate-active_wait ts-first block-manual" data-ott="91101"><h2>Tour stop 1</h2></div>',
       '<div class="container tsstate-inactive" data-ott="92202" data-wait="5000"><h2>Tour stop 2</h2></div>',
       '<div class="container tsstate-inactive ts-last" data-ott="93303"><h2>Tour stop 3</h2></div>',
       '</div>',
@@ -217,7 +217,7 @@ test('tour.flight', function (test) {
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-playing">',
       '<div class="container tsstate-inactive ts-first" data-ott="91101"><h2>Tour stop 1</h2></div>',
-      '<div class="container tsstate-active_wait" data-ott="92202" data-wait="5000"><h2>Tour stop 2</h2></div>',
+      '<div class="container tsstate-active_wait block-timer" data-ott="92202" data-wait="5000"><h2>Tour stop 2</h2></div>',
       '<div class="container tsstate-inactive ts-last" data-ott="93303"><h2>Tour stop 3</h2></div>',
       '</div>',
     ]);
@@ -246,7 +246,7 @@ test('tour.flight', function (test) {
       '<div class="tour tstate-playing">',
       '<div class="container tsstate-inactive ts-first" data-ott="91101"><h2>Tour stop 1</h2></div>',
       '<div class="container tsstate-inactive" data-ott="92202" data-wait="5000"><h2>Tour stop 2</h2></div>',
-      '<div class="container tsstate-active_wait ts-last" data-ott="93303"><h2>Tour stop 3</h2></div>',
+      '<div class="container tsstate-active_wait ts-last block-manual" data-ott="93303"><h2>Tour stop 3</h2></div>',
       '</div>',
     ]);
     // No timer set, waiting for interaction
@@ -261,6 +261,148 @@ test('tour.flight', function (test) {
       '<div class="container tsstate-inactive ts-first" data-ott="91101"><h2>Tour stop 1</h2></div>',
       '<div class="container tsstate-inactive" data-ott="92202" data-wait="5000"><h2>Tour stop 2</h2></div>',
       '<div class="container tsstate-inactive ts-last" data-ott="93303"><h2>Tour stop 3</h2></div>',
+      '</div>',
+    ]);
+
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
+test('tour:block-hiddentab', function (test) {
+  var t = setup_tour(test, `<div class="tour">
+    <div class="container" data-ott="91101" data-wait="5000">t1</div>
+    <div class="container" data-ott="92202" data-wait="5000">t2</div>
+  </div>`, null, false);
+
+  return t.tour.start().then(function () {
+    // Fly to first node
+    test.deepEqual(t.log, [
+      ['process_taxon_list', [91101, 92202]],
+      ['ready_callback'],
+      ['start_callback'],
+      ['fly_on_tree_to', [null, 1000, false, 1]],
+    ]);
+    t.finish_flight();
+    return t.wait_for_tourstop_class(0, 'tsstate-active_wait');
+
+  }).then(function () {
+    // Waiting at first tourstop with timer
+    test.deepEqual(t.tour_html(), [
+      '<div class="tour tstate-playing">',
+      '<div class="container tsstate-active_wait ts-first block-timer" data-ott="91101" data-wait="5000">t1</div>',
+      '<div class="container tsstate-inactive ts-last" data-ott="92202" data-wait="5000">t2</div>',
+      '</div>',
+    ]);
+    // Trigger visibility change
+    Object.defineProperty(t.window.document, "visibilityState", {
+      configurable: true,
+      get: function() { return "hidden"; }
+    });
+    t.window.document.dispatchEvent(new t.window.CustomEvent('visibilitychange'));
+
+    // Trigger timer manually, won't start transition though
+    triggerTimeout(t.tour.curr_stop().goto_next_timer);
+
+    return; // NB: block-hiddentab should already be set by now
+
+  }).then(function () {
+    // Still waiting at first tourstop, now with block-hiddentab
+    test.deepEqual(t.tour_html(), [
+      '<div class="tour tstate-playing">',
+      '<div class="container tsstate-active_wait ts-first block-hiddentab" data-ott="91101" data-wait="5000">t1</div>',
+      '<div class="container tsstate-inactive ts-last block-hiddentab" data-ott="92202" data-wait="5000">t2</div>',
+      '</div>',
+    ]);
+    // Trigger visibility change, should now advance to next tourstop
+    Object.defineProperty(t.window.document, "visibilityState", {
+      configurable: true,
+      get: function() { return "visible"; }
+    });
+    t.window.document.dispatchEvent(new t.window.CustomEvent('visibilitychange'));
+
+    return t.wait_for_tourstop_class(1, 'tsstate-transition_in');
+  }).then(function () {
+    t.finish_flight();
+    return t.wait_for_tourstop_class(1, 'tsstate-active_wait');
+
+  }).then(function () {
+    // Moved to tourstop 2
+    test.deepEqual(t.tour_html(), [
+      '<div class="tour tstate-playing">',
+      '<div class="container tsstate-inactive ts-first" data-ott="91101" data-wait="5000">t1</div>',
+      '<div class="container tsstate-active_wait ts-last block-timer" data-ott="92202" data-wait="5000">t2</div>',
+      '</div>',
+    ]);
+
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
+test('tour:block-tourpaused', function (test) {
+  var t = setup_tour(test, `<div class="tour">
+    <div class="container" data-ott="91101" data-wait="5000">t1</div>
+    <div class="container" data-ott="92202" data-wait="5000">t2</div>
+  </div>`, null, false);
+
+  return t.tour.start().then(function () {
+    // Fly to first node
+    test.deepEqual(t.log, [
+      ['process_taxon_list', [91101, 92202]],
+      ['ready_callback'],
+      ['start_callback'],
+      ['fly_on_tree_to', [null, 1000, false, 1]],
+    ]);
+    t.finish_flight();
+    return t.wait_for_tourstop_class(0, 'tsstate-active_wait');
+
+  }).then(function () {
+    // Waiting at first tourstop with timer
+    test.deepEqual(t.tour_html(), [
+      '<div class="tour tstate-playing">',
+      '<div class="container tsstate-active_wait ts-first block-timer" data-ott="91101" data-wait="5000">t1</div>',
+      '<div class="container tsstate-inactive ts-last" data-ott="92202" data-wait="5000">t2</div>',
+      '</div>',
+    ]);
+    // Pause tour
+    t.tour.user_pause()
+
+    // Trigger timer manually, won't start transition though
+    triggerTimeout(t.tour.curr_stop().goto_next_timer);
+
+    return; // NB: block-tourpaused should already be set by now
+
+  }).then(function () {
+    // Paused at first tourstop, timer expired but blocked anyway
+    test.deepEqual(t.tour_html(), [
+      '<div class="tour tstate-paused">',
+      '<div class="container tsstate-active_wait ts-first block-tourpaused" data-ott="91101" data-wait="5000">t1</div>',
+      '<div class="container tsstate-inactive ts-last" data-ott="92202" data-wait="5000">t2</div>',
+      '</div>',
+    ]);
+    // Resume tour, we head to next tourstop
+    t.tour.user_resume();
+
+    return t.wait_for_tourstop_class(1, 'tsstate-transition_in');
+  }).then(function () {
+    t.finish_flight();
+    return t.wait_for_tourstop_class(1, 'tsstate-active_wait');
+
+  }).then(function () {
+    // Moved to tourstop 2
+    test.deepEqual(t.tour_html(), [
+      '<div class="tour tstate-playing">',
+      '<div class="container tsstate-inactive ts-first" data-ott="91101" data-wait="5000">t1</div>',
+      '<div class="container tsstate-active_wait ts-last block-timer" data-ott="92202" data-wait="5000">t2</div>',
       '</div>',
     ]);
 
