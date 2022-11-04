@@ -52,7 +52,7 @@ class TestEmbed(unittest.TestCase):
             '<iframe',
             'class="embed-youtube"',
             'type="text/html"',
-            'src="https://www.youtube.com/embed/12345?enablejsapi=1&origin=None://127.0.0.1:8000"',
+            'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
             'frameborder="0"',
             '></iframe>',
         ])
