@@ -1,3 +1,4 @@
+import handler_vimeo from './HandlerVimeo';
 import handler_youtube from './HandlerYoutube';
 import TourStopClass from './TourStop'
 import tree_state from '../tree_state';
@@ -180,6 +181,7 @@ class Tour {
           resolve
         )
       }),
+      handler_vimeo(this),
       handler_youtube(this),
     ]);
   }
