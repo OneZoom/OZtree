@@ -33,10 +33,14 @@ function handler(tour) {
       events: {
         onReady: resolve,
         onStateChange: function (event) {
-          event.target.getIframe().el_tourstop.classList.toggle(
-            'block-youtubeplaying',
-            event.data != YT.PlayerState.ENDED,
-          );
+          const el = event.target.getIframe().el_tourstop;
+
+          if (event.data == YT.PlayerState.ENDED) {
+            el.classList.remove('block-youtubeplaying');
+          } else if (event.data == YT.PlayerState.PLAYING) {
+            el.classList.add('block-youtubeplaying');
+          }
+          // NB; Ignore other events, particularly UNSTARTED since this happens after end
         },
       },
     }))));
