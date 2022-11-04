@@ -66,4 +66,16 @@ def media_embed(url):
             url=url,
         )
 
+    m = re.fullmatch(r'https://commons.wikimedia.org/wiki/File:(.+\.(ogg|mp3))', url)
+    if m:
+        # TODO: There's a dedicated audio player embed we should probably use. The purpose here
+        #       is more to demonstrate HTML audio than wikipedia commons in particular.
+        return """<audio class="embed-audio" controls
+          src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{name}"
+          ></audio><a href="{url}" title="title">(c)</a>""".format(
+            title=m.group(1),
+            name=m.group(1),
+            url=url,
+        )
+
     raise HTTP(400, "Unknown embed URL %s" % url)

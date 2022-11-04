@@ -78,6 +78,16 @@ class TestEmbed(unittest.TestCase):
             '/></a>',
         ])
 
+        self.assertEqual(media_embed('https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg'), [
+            '<audio',
+            'class="embed-audio"',
+            'controls',
+            'src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Turdus_philomelos.ogg"',
+            '></audio><a',
+            'href="https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg"',
+            'title="title">(c)</a>',
+        ])
+
 if __name__ == '__main__':
     import sys
 

@@ -1,3 +1,4 @@
+import handler_htmlaudio from './HandlerHtmlAudio';
 import handler_vimeo from './HandlerVimeo';
 import handler_youtube from './HandlerYoutube';
 import TourStopClass from './TourStop'
@@ -181,6 +182,7 @@ class Tour {
           resolve
         )
       }),
+      handler_htmlaudio(this),
       handler_vimeo(this),
       handler_youtube(this),
     ]);
