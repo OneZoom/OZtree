@@ -43,7 +43,7 @@ class TourStopClass {
       // Convert parameter datatypes
       switch(name) {
         case "transition_in_wait":
-        case "wait":
+        case "stop_wait":
           val = parseInt(val);
           break;
         case "fly_in_speed":
@@ -284,11 +284,11 @@ class TourStopClass {
   get_wait_time() {
     if (
       this.direction === 'backward' &&
-      this.setting.hasOwnProperty('wait_after_backward')
+      this.setting.hasOwnProperty('stop_wait_after_backward')
     ) {
-      return this.setting.wait_after_backward
+      return this.setting.stop_wait_after_backward
     } else {
-      return this.setting.wait //null means stay here until user interation
+      return this.setting.stop_wait //null means stay here until user interation
     }
   }
 }

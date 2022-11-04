@@ -39,8 +39,8 @@ var pagetitle_func = function(nm) {return (nm)?("OneZoom restricted: "+ nm):"One
 
   <div class="container tour_container"
        data-ott="991547"
-       data-wait="6000"
-       data-wait_after_backward="0"
+       data-stop_wait="6000"
+       data-stop_wait_after_backward="0"
        >
     <h2 class="title">OneZoom Demo Tour</h2>
     <div class='window_text'>Slide 1</div>
@@ -53,7 +53,7 @@ var pagetitle_func = function(nm) {return (nm)?("OneZoom restricted: "+ nm):"One
        comment-transition_in="can be 'fly' (default), 'leap', or 'fly_straight' (rare)"
        data-transition_in="leap"
        comment-wait="set 'wait" to null to require pressing "next" to continue"
-       data-wait=""
+       data-stop_wait=""
        >
     <h2 class="title">OneZoom Demo Tour</h2>
     <div class='window_text gray_background'>Slide 2 with style change</div>
@@ -68,7 +68,7 @@ var pagetitle_func = function(nm) {return (nm)?("OneZoom restricted: "+ nm):"One
        data-fly_in_speed="2"
        comment-transition_in_wait="how long to wait (e.g. after showing self) before entering into the transition, in milliseconds."
        data-transition_in_wait="1000"
-       data-wait="3000"
+       data-stop_wait="3000"
        comment-style="hide everything"
        style="visibility: hidden"
        >
@@ -78,7 +78,7 @@ var pagetitle_func = function(nm) {return (nm)?("OneZoom restricted: "+ nm):"One
        data-ott="81461"
        comment-pos="pos alters the final position. 'max' ==> the transition ends up with the internal node filling the screen"
        data-pos="max"
-       data-wait="1000"
+       data-stop_wait="1000"
        >
     <h2 class="title">OneZoom Demo Tour</h2>
     <div class='window_text'>Slide 4</div>
@@ -88,7 +88,7 @@ var pagetitle_func = function(nm) {return (nm)?("OneZoom restricted: "+ nm):"One
   <div class="container tour_container"
        comment-ott="Zero OTT means return to the (rough) starting position"
        data-ott="0"
-       data-wait="3000"
+       data-stop_wait="3000"
        >
     <h2 class="title">The End</h2>
     {{ include "tour/tourstop/footer.html" }}
