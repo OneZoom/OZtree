@@ -6,7 +6,7 @@ import tree_state from '../tree_state';
 import { add_hook, remove_hook } from '../util';
 
 let tour_id = 1
-const Interaction_Action_Arr = ['mouse_down', 'mouse_wheel', 'touch_start', 'touch_move', 'touch_end']
+const Interaction_Action_Arr = ['mouse_down', 'mouse_wheel', 'touch_start', 'touch_move', 'touch_end', 'window_size_change']
 
 //Tour State classes
 const tstate = {

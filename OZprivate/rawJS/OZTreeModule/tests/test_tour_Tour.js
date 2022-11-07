@@ -5,6 +5,7 @@ import test from 'tape';
 var jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 import { UserInterruptError } from '../src/errors';
+import { call_hook } from '../src/util';
 
 import config from '../src/global_config';
 
@@ -454,7 +455,41 @@ test('tour:block-tourpaused', function (test) {
       '<div class="container tsstate-transition_in ts-last" data-ott="92202" data-stop_wait="5000">t2</div>',
       '</div>'
     ]);
+    // Pause tour by triggering interaction hook, wait for promise to settle
+    call_hook('window_size_change');
+    return new Promise(function (resolve) {
+      setTimeout(() => {
+        resolve();
+      }, 100)
+    });
 
+  }).then(function () {
+    // The flight was cancelled again
+    test.deepEqual(t.log.slice(-4), [
+      [ 'flight-interrupted', 1001 ],
+      [ 'fly_on_tree_to', [ null, 1001, false, 1 ] ],
+      [ 'interaction_callback', undefined ],
+      [ 'flight-interrupted', 1001 ],
+    ]);
+    test.deepEqual(t.oz.resolve_flight, null);
+
+    // In tstate-paused, still transitioning
+    test.deepEqual(t.tour_html(), [
+      '<div class="tour tstate-paused">',
+      '<div class="container tsstate-transition_out ts-first" data-ott="91101" data-stop_wait="5000">t1</div>',
+      '<div class="container tsstate-transition_in ts-last block-tourpaused" data-ott="92202" data-stop_wait="5000">t2</div>',
+      '</div>'
+    ]);
+
+    // Resume tour
+    t.tour.user_resume();
+    return new Promise(function (resolve) {
+      setTimeout(() => {
+        resolve();
+      }, 100)
+    });
+
+  }).then(function () {
     t.finish_flight();
     return t.wait_for_tourstop_class(1, 'tsstate-active_wait');
 
