@@ -163,12 +163,6 @@ class TourStopClass {
 
   }
 
-  throw_error_if_already_exited() {
-      if (this.state === tsstate.INACTIVE) {
-        throw new Error("Tourstop has already exited")
-      }
-  }
-
   /**
    * Play current tour stop from the start
    */
@@ -213,7 +207,6 @@ class TourStopClass {
           .then(() => {
               this.state = tsstate.TRANSITION_IN
               if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.TRANSITION_OUT
-              this.throw_error_if_already_exited()
               return this.controller.leap_to(this.OZid, this.setting.pos)
            })
       } else {
@@ -228,7 +221,6 @@ class TourStopClass {
               .then(() => {
                 this.state = tsstate.TRANSITION_IN
                 if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.TRANSITION_OUT
-                this.throw_error_if_already_exited()
                 return this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
               })
           } else {
@@ -237,7 +229,6 @@ class TourStopClass {
               .then(() => {
                 this.state = tsstate.TRANSITION_IN
                 if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.TRANSITION_OUT
-                this.throw_error_if_already_exited()
                 return this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
               })
           }
