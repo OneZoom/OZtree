@@ -96,6 +96,7 @@ class TourStopClass {
     this.tour.clear_callback_timers()
     // Remove any lingering wait for user interaction, since it would have happened now
     this.container[0].classList.remove('block-manual');
+    this.container[0].classList.remove('block-tourpaused');
     this.block_arrival = true
     tree_state.flying = false
     if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.INACTIVE
@@ -151,6 +152,7 @@ class TourStopClass {
   }
 
   resume() {
+    this.container[0].classList.remove('block-tourpaused');
     if ((this.state === tsstate.INACTIVE) || (this.state === tsstate.ACTIVE_WAIT)) {
       // Not in a transition, so jump back to the tourstop location (in case user has
       // moved the tree) and continue - it would be weird to fly on a path that wasn't 
@@ -160,7 +162,6 @@ class TourStopClass {
       // that's tricky, so we wait again from the beginning. - the tour was already in
       // flight / transition an so it's appropriate to continue that to the destination.
       this.arm_wait_timer();
-      this.container[0].classList.remove('block-tourpaused');
     } else {
       this.play('forward')
     }
