@@ -1,3 +1,4 @@
+import { UserInterruptError } from '../errors';
 
 //Tour Stop State classes
 const tsstate = {
@@ -25,11 +26,6 @@ class TourStopClass {
     this.container = container
     this.goto_next_timer = null
     this.state = tsstate.INACTIVE
-    /* If we set tree_state.flying = false, we stop the flight and resolve the promise.
-     * This normally causes arrival at a stop, but sometimes we don't want to (e.g.
-     * if we are pausing or force-exiting the tourstop. Setting block_arrival solves this
-     */ 
-    this.block_arrival = false
     this.direction = 'forward'
     this.container_appended = true
 
@@ -96,7 +92,6 @@ class TourStopClass {
     // Remove any lingering wait for user interaction, since it would have happened now
     this.container[0].classList.remove('block-manual');
     this.container[0].classList.remove('block-tourpaused');
-    this.block_arrival = true
     this.controller.cancel_flight();
     if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.INACTIVE
     this.state = tsstate.INACTIVE
@@ -104,6 +99,8 @@ class TourStopClass {
 
   arrive_at_tourstop() {
     this.tour.clear_callback_timers()
+    // Tour (probably) exited mid-transition, consider any lingering flight promise-chains
+    // cancelled.
     if (this.state === tsstate.INACTIVE) {
       return
     }
@@ -146,7 +143,6 @@ class TourStopClass {
     // but there is no obvious way to get it
     this.container[0].classList.add('block-tourpaused');
 
-    this.block_arrival = true
     this.controller.cancel_flight();
   }
 
@@ -188,7 +184,6 @@ class TourStopClass {
    * If wait time is not present, then listen to UI event for next action
    */
   play(direction) {
-    this.block_arrival = false // Make sure we can arrive at the stop
     this.direction = direction
     if (!this.transition_promise_active) { // when first called transition_promise_active will be undefined and hence this statement will evaluate as true
       this.transition_promise_active = true
@@ -221,7 +216,6 @@ class TourStopClass {
               this.throw_error_if_already_exited()
               return this.controller.leap_to(this.OZid, this.setting.pos)
            })
-          .catch((e) => { console.error("Failed to Leap to tourstop", e) })
       } else {
           /* Flight */
           // NB: Temporarily munge out into_node until there's better support: https://github.com/OneZoom/OZtree/issues/541
@@ -237,7 +231,6 @@ class TourStopClass {
                 this.throw_error_if_already_exited()
                 return this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
               })
-              .catch((e) => { console.error("Failed to Leap to tourstop", e) })
           } else {
             /* Fly normally - if interrupted we reject() and require clicking "skip" */
             promise = promise
@@ -247,18 +240,24 @@ class TourStopClass {
                 this.throw_error_if_already_exited()
                 return this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
               })
-              .catch((e) => { console.error("Failed to Leap to tourstop", e) })
           }
       }
       promise = promise
         .then(() => {
           this.transition_promise_active = null
-          if (this.block_arrival) {
-            this.block_arrival = false
+          this.arrive_at_tourstop()
+        })
+        .catch((e) => {
+          this.transition_promise_active = null
+          if (e instanceof UserInterruptError) {
+            // Flight interrupted (e.g. by pause). Skip over arrive_at_tourstop()
+            if (window.is_testing) console.log("Flight interrupted", e)
           } else {
-            this.arrive_at_tourstop()
+            throw e;
           }
         })
+    } else {
+      if (window.is_testing) console.warn("Attempt to start a transition whilst another is active");
     }
   }
 

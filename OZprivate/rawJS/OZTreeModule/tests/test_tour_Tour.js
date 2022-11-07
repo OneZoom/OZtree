@@ -4,6 +4,7 @@
 import test from 'tape';
 var jsdom = require('jsdom');
 const { JSDOM } = jsdom;
+import { UserInterruptError } from '../src/errors';
 
 import config from '../src/global_config';
 
@@ -53,14 +54,22 @@ function setup_tour(test, s, interaction = null, verbose_test = false) {
 
     controller: {
       is_tree_visible: () => true,
+      cancel_flight: function () {
+        if (fake_oz.resolve_flight) fake_oz.resolve_flight(true);
+      },
       fly_on_tree_to: function (unused, ozid) {
         log.push(["fly_on_tree_to", Array.from(arguments)]);
 
         // Wait for test to "resolve" the flight, then continue
         return new Promise(function (resolve) {
           fake_oz.resolve_flight = resolve;
-        }).then(() => {
+        }).then((cancelled) => {
           fake_oz.resolve_flight = null;
+          if (cancelled) {
+            // Pretend to be interrupted, don't make it to node
+            log.push(["flight-interrupted", ozid])
+            throw new UserInterruptError('Fly is interrupted');
+          }
           fake_oz.cur_node = ozid;
         });
       },
@@ -113,9 +122,9 @@ function setup_tour(test, s, interaction = null, verbose_test = false) {
       }
     });
   });
-  class_observer.wait_for_tourstop_class = function (ts_idx, class_name) {
-    var el_ts = dom.window.document.querySelectorAll('.tour > .container')[ts_idx];
-    if (!el_ts) throw new Error("Couldn't find TourStop " + ts_idx);
+  class_observer.wait_for_class = function (selector, class_name) {
+    var el_ts = dom.window.document.querySelector(selector);
+    if (!el_ts) throw new Error("Couldn't find " + selector);
 
     return new Promise((resolve) => {
       el_ts.expecting = { class_name: class_name, resolve: resolve };
@@ -134,7 +143,12 @@ function setup_tour(test, s, interaction = null, verbose_test = false) {
       var tw = dom.window.document.getElementById('tour_wrapper');
       return tw.innerHTML.replace(/^\s+/, '').split(/\n\s+/);
     },
-    wait_for_tourstop_class: class_observer.wait_for_tourstop_class.bind(class_observer),
+    wait_for_tourstop_class: function (ts_idx, class_name) {
+      return class_observer.wait_for_class('.tour > .container:nth-of-type(' + (ts_idx + 1) + ')', class_name)
+    },
+    wait_for_tour_class: function (class_name) {
+      return class_observer.wait_for_class('.tour', class_name)
+    },
     finish_flight: function () {
       fake_oz.resolve_flight();
     }
@@ -394,6 +408,53 @@ test('tour:block-tourpaused', function (test) {
 
     return t.wait_for_tourstop_class(1, 'tsstate-transition_in');
   }).then(function () {
+    // Now transitioning to next tourstop
+    test.deepEqual(t.tour_html(), [
+      '<div class="tour tstate-playing">',
+      '<div class="container tsstate-transition_out ts-first" data-ott="91101" data-stop_wait="5000">t1</div>',
+      '<div class="container tsstate-transition_in ts-last" data-ott="92202" data-stop_wait="5000">t2</div>',
+      '</div>'
+    ]);
+    // Pause tour again
+    t.tour.user_pause()
+
+    return t.wait_for_tourstop_class(1, 'block-tourpaused');
+  }).then(function () {
+    // The flight was cancelled
+    test.deepEqual(t.log.slice(-2), [
+      [ 'fly_on_tree_to', [ null, 1001, false, 1 ] ],
+      [ 'flight-interrupted', 1001 ],
+    ]);
+    test.deepEqual(t.oz.resolve_flight, null);
+
+    // In tstate-paused, still transitioning
+    test.deepEqual(t.tour_html(), [
+      '<div class="tour tstate-paused">',
+      '<div class="container tsstate-transition_out ts-first" data-ott="91101" data-stop_wait="5000">t1</div>',
+      '<div class="container tsstate-transition_in ts-last block-tourpaused" data-ott="92202" data-stop_wait="5000">t2</div>',
+      '</div>'
+    ]);
+
+    // Wait for now-broken flight promise to settle, then try again
+    return new Promise(function (resolve) {
+      setTimeout(() => {
+        t.tour.user_resume();
+        resolve();
+      }, 100)
+    });
+  }).then(function () {
+    // Transitioning to tourstop again
+    test.deepEqual(t.log.slice(-2), [
+      [ 'flight-interrupted', 1001 ],
+      [ 'fly_on_tree_to', [ null, 1001, false, 1 ] ],
+    ]);
+    test.deepEqual(t.tour_html(), [
+      '<div class="tour tstate-playing">',
+      '<div class="container tsstate-transition_out ts-first" data-ott="91101" data-stop_wait="5000">t1</div>',
+      '<div class="container tsstate-transition_in ts-last" data-ott="92202" data-stop_wait="5000">t2</div>',
+      '</div>'
+    ]);
+
     t.finish_flight();
     return t.wait_for_tourstop_class(1, 'tsstate-active_wait');
 
