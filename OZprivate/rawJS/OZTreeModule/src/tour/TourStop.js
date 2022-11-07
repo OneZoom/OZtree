@@ -1,4 +1,3 @@
-import tree_state from '../tree_state'
 
 //Tour Stop State classes
 const tsstate = {
@@ -98,7 +97,7 @@ class TourStopClass {
     this.container[0].classList.remove('block-manual');
     this.container[0].classList.remove('block-tourpaused');
     this.block_arrival = true
-    tree_state.flying = false
+    this.controller.cancel_flight();
     if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.INACTIVE
     this.state = tsstate.INACTIVE
   }
@@ -128,7 +127,7 @@ class TourStopClass {
       this.tour.goto_next()  // NB: This will ignore any active blocks (plugins will need to clean up after themselves)
     } else {
       // In transition_in[_wait], skip transition
-      tree_state.flying = false
+      this.controller.cancel_flight();
       // leap (this should cancel any exiting flight)
       if (this.OZid) this.controller.leap_to(this.OZid, this.setting.pos)
       // We do not need to call arrive_at_tourstop as this should be called when the
@@ -148,7 +147,7 @@ class TourStopClass {
     this.container[0].classList.add('block-tourpaused');
 
     this.block_arrival = true
-    tree_state.flying = false
+    this.controller.cancel_flight();
   }
 
   resume() {

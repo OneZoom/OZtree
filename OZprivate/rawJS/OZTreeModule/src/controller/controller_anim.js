@@ -113,6 +113,14 @@ function get_details_of_nodes_in_view_during_fly(root) {
  */
 export default function (Controller) {
   /**
+   * Cancel any in-progress flight. The promise the flight returns will be
+   * rejected with UserInterruptError
+   */
+  Controller.prototype.cancel_flight = function () {
+    tree_state.flying = false;
+  };
+
+  /**
    * Leap directly to a new OneZoom node id in the tree. If a position is given, it
    * should be of the form [xp, yp, ws] or {'xp': xp, 'yp': yp, 'ws': ws}
    *

@@ -125,7 +125,7 @@ class Controller {
           this.widthres = this.canvas.width = this.canvas.clientWidth;
           this.heightres = this.canvas.height = this.canvas.clientHeight;
           // we are setting 1px on canvas = 1px on screen (client)
-          tree_state.flying = false; // cancel animation
+          this.cancel_flight();
           this.re_calc();
           this.renderer.setup_canvas(this.canvas);
           tree_state.setup_canvas(this.canvas);

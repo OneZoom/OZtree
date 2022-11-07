@@ -37,7 +37,7 @@ class MouseInteractor {
   mouse_dblclick(event) {
     if (!call_hook('mouse_dblclick')) return;
     
-    tree_state.flying = false;
+    this.controller.cancel_flight();
     set_mouse_position(this, event);
     tree_state.mouse_hold = false;
     this.clicking = false;
@@ -49,7 +49,7 @@ class MouseInteractor {
   mouse_wheel(event) {
     if (!call_hook('mouse_wheel')) return;
 
-    tree_state.flying = false;
+    this.controller.cancel_flight();
     event.preventDefault();
     event.stopPropagation();
     var canvas = this.canvas
@@ -82,7 +82,7 @@ class MouseInteractor {
   mouse_down(event) {
     if (!call_hook('mouse_down')) return;
 
-    tree_state.flying = false;
+    this.controller.cancel_flight();
     set_mouse_position(this, event);
     this.clicking = true;
     tree_state.mouse_hold = true;

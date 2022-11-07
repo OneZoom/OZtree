@@ -25,7 +25,7 @@ class TouchInteractor {
     this.controller.close_all();
     event.preventDefault();
     event.stopPropagation();
-    tree_state.flying = false;
+    this.controller.cancel_flight();
     set_finger_position(this, event);
     tree_state.touch_hold = true;
     if(event.targetTouches.length >= 2) {
