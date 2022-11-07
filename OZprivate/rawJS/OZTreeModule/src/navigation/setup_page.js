@@ -2,7 +2,7 @@ import { parse_window_location, parse_query } from './utils';
 import data_repo from '../factory/data_repo';
 import api_manager from '../api/api_manager';
 import get_controller from '../controller/controller';
-import { UserInterruptError } from '../controller/controller_anim';
+import { UserInterruptError } from '../errors';
 import tree_state from '../tree_state';
 import { global_button_action, click_on_button_cb } from '../button_manager';
 import config from '../global_config';

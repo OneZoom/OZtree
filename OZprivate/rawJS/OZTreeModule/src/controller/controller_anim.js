@@ -4,13 +4,7 @@ import {get_largest_visible_node} from '../navigation/utils';
 import data_repo from '../factory/data_repo';
 import * as position_helper from '../position_helper';
 import config from '../global_config';
-
-export class UserInterruptError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "UserInterruptError";
-  }
-}
+import { UserInterruptError } from '../errors';
 
 /**
  * This function collects nodes and leaves which are on or near the main branch in the fly animation,
