@@ -2,7 +2,7 @@ import { parse_window_location, parse_query } from './utils';
 import data_repo from '../factory/data_repo';
 import api_manager from '../api/api_manager';
 import get_controller from '../controller/controller';
-import UserInterruptError from '../controller/controller_anim';
+import { UserInterruptError } from '../controller/controller_anim';
 import tree_state from '../tree_state';
 import { global_button_action, click_on_button_cb } from '../button_manager';
 import config from '../global_config';
@@ -127,12 +127,11 @@ function setup_page_by_state(state) {
   })
   .catch(function (error) {
     tree_state.url_parsed = true;
-    // Temporary hack around  https://github.com/OneZoom/OZtree/issues/231#issuecomment-617719250  
-    if ((error instanceof UserInterruptError) ||
-        (error.name === "UserInterruptError")) { // instanceof doesn't always work in bable 6
-            return true;
+    if (error instanceof UserInterruptError) {
+        // The flight was cancelled by the user, not an actual issue
+        if (window.is_testing) console.log("Flight cancelled", error)
+        return true;
     }
-    //TODO: separate out promise reject and error handling.
     console.error("Failed to setup_page_by_state:", error);
     const ozId = data_repo.ott_id_map[config.home_ott_id]
     controller.init_move_to(ozId ? ozId : controller.root.metacode);  // NB: root is always a node, so ozID positive

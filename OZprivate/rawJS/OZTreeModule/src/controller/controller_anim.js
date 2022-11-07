@@ -5,7 +5,7 @@ import data_repo from '../factory/data_repo';
 import * as position_helper from '../position_helper';
 import config from '../global_config';
 
-class UserInterruptError extends Error {
+export class UserInterruptError extends Error {
   constructor(message) {
     super(message);
     this.name = "UserInterruptError";
