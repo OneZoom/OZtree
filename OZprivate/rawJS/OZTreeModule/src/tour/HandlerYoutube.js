@@ -1,5 +1,6 @@
 /**
  * Support youtube videos in tourstops
+ * https://developers.google.com/youtube/iframe_api_reference
  */
 function handler(tour) {
   const el_yts = Array.from(tour.container[0].querySelectorAll(":scope iframe.embed-youtube"));
