@@ -129,6 +129,10 @@ function setup_tour(test, s, interaction = null, verbose_test = false) {
 
     return new Promise((resolve) => {
       el_ts.expecting = { class_name: class_name, resolve: resolve };
+      if (el_ts.classList.contains(class_name)) {
+        // Already there, resolve now
+        return resolve()
+      }
       class_observer.observe(el_ts, { attributes: true, attributeFilter: ["class"], attributeOldValue: true });
     });
   };

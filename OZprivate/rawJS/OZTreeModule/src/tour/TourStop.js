@@ -3,9 +3,7 @@ import { UserInterruptError } from '../errors';
 //Tour Stop State classes
 const tsstate = {
   INACTIVE: 'tsstate-inactive',  // Tourstop hidden
-  TRANSITION_IN_WAIT: 'tsstate-transition_in_wait',  // Pre-transition wait
   TRANSITION_IN: 'tsstate-transition_in',  // Transitioning into tourstop
-  TRANSITION_OUT_WAIT: 'tsstate-transition_out_wait',  // Pre-transition wait
   TRANSITION_OUT: 'tsstate-transition_out',  // Transitioning into *following* tourstop
   ACTIVE_WAIT: 'tsstate-active_wait',  // Arrived at tourstop, waiting for user input / timer
 };
@@ -188,8 +186,9 @@ class TourStopClass {
        * Don't wait if we are already in a transition animation (e.g. if we paused halfway through)
        */
       if (this.state !== tsstate.TRANSITION_IN) {
-        this.state = tsstate.TRANSITION_IN_WAIT
-        if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.TRANSITION_OUT_WAIT
+        this.state = tsstate.TRANSITION_IN
+        if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.TRANSITION_OUT
+
         const transition_in_wait = this.setting.transition_in_wait
         if (typeof transition_in_wait === 'number' && this.direction !== 'backward') {
           promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
@@ -205,8 +204,6 @@ class TourStopClass {
         /* Leap */
         promise = promise
           .then(() => {
-              this.state = tsstate.TRANSITION_IN
-              if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.TRANSITION_OUT
               return this.controller.leap_to(this.OZid, this.setting.pos)
            })
       } else {
@@ -219,16 +216,12 @@ class TourStopClass {
             /* Fly-straight: this is an unusual thing to want to do */
             promise = promise
               .then(() => {
-                this.state = tsstate.TRANSITION_IN
-                if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.TRANSITION_OUT
                 return this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
               })
           } else {
             /* Fly normally - if interrupted we reject() and require clicking "skip" */
             promise = promise
               .then(() => {
-                this.state = tsstate.TRANSITION_IN
-                if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.TRANSITION_OUT
                 return this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
               })
           }
