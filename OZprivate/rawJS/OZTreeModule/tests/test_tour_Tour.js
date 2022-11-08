@@ -77,6 +77,9 @@ function setup_tour(test, s, interaction = null, verbose_test = false) {
       leap_to: function (ozid) {
         log.push(["leap_to", Array.from(arguments)]);
 
+        // Cancel any previous flight
+        if (fake_oz.resolve_flight) fake_oz.controller.cancel_flight();
+
         // Wait for test to "resolve" the flight, then continue
         return new Promise(function (resolve) {
           fake_oz.resolve_flight = resolve;
@@ -514,6 +517,56 @@ test('tour:block-tourpaused', function (test) {
     test.end();
   })
 });
+
+test('tour:user_forward', function (test) {
+  var t = setup_tour(test, `<div class="tour">
+    <div class="container" data-ott="91101" data-stop_wait="5000">t1</div>
+    <div class="container" data-ott="92202" data-stop_wait="5000">t2</div>
+  </div>`, null, false);
+
+  return t.tour.start().then(function () {
+    // Fly to first node
+    test.deepEqual(t.log, [
+      ['process_taxon_list', [91101, 92202]],
+      ['ready_callback'],
+      ['start_callback'],
+      ['fly_on_tree_to', [null, 1000, false, 1]],
+    ]);
+    // Skip over flight
+    t.tour.user_forward();
+    return new Promise(resolve => setTimeout(resolve, 3000));
+    //return t.wait_for_tourstop_class(0, 'tsstate-active_wait');
+
+  }).then(function () {
+    // Waiting at first tourstop with timer
+    test.deepEqual(t.tour_html(), [
+      '<div class="tour tstate-playing">',
+      '<div class="container tsstate-active_wait ts-first block-timer" data-ott="91101" data-stop_wait="5000">t1</div>',
+      '<div class="container tsstate-inactive ts-last" data-ott="92202" data-stop_wait="5000">t2</div>',
+      '</div>',
+    ]);
+    // Skip over timer
+    t.tour.user_forward();
+
+    return t.wait_for_tourstop_class(1, 'tsstate-transition_in');
+  }).then(function () {
+    // Now transitioning to next tourstop
+    test.deepEqual(t.tour_html(), [
+      '<div class="tour tstate-playing">',
+      '<div class="container tsstate-transition_out ts-first" data-ott="91101" data-stop_wait="5000">t1</div>',
+      '<div class="container tsstate-transition_in ts-last" data-ott="92202" data-stop_wait="5000">t2</div>',
+      '</div>'
+    ]);
+
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
 
 test.onFinish(function() {
   // NB: Something data_repo includes in is holding node open.

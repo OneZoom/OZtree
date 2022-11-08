@@ -233,13 +233,13 @@ class TourStopClass {
         })
         .catch((e) => {
           this.transition_promise_active = null
-          // Make sure tour is paused on flight failure. In ~all cases it will
-          // already be paused (e.g. after an interaction), but if the flight is
-          // cancelled without it being an interaction we'd get stuck in a
-          // never-ending flight without.
-          this.tour.user_pause()
-
-          if (e instanceof UserInterruptError) {
+          if (this.state === tsstate.TRANSITION_IN && this.tour.state !== 'tstate-paused') {
+            // We shouldn't get here, as any interactions should have paused the tour
+            // then stopped the flight. But just in case we do pause, to put tour in
+            // a recoverable state.
+            console.warn("Flight stopped unexpectedly, pausing tour", e)
+            this.tour.user_pause()
+          } else if (e instanceof UserInterruptError) {
             // Flight interrupted (e.g. by pause). Skip over arrive_at_tourstop()
             if (window.is_testing) console.log("Flight interrupted", e)
           } else {
