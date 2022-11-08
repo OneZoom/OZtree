@@ -200,7 +200,7 @@ test('tour.flight', function (test) {
     // Playing, waiting for zoom to head to first node
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-playing">',
-      '<div class="container tsstate-transition_in ts-first" data-ott="91101"><h2>Tour stop 1</h2></div>',
+      '<div class="container tsstate-transition_in ts-first block-flight" data-ott="91101"><h2>Tour stop 1</h2></div>',
       '<div class="container tsstate-inactive" data-ott="92202" data-stop_wait="5000"><h2>Tour stop 2</h2></div>',
       '<div class="container tsstate-inactive ts-last" data-ott="93303"><h2>Tour stop 3</h2></div>',
       '</div>',
@@ -226,13 +226,16 @@ test('tour.flight', function (test) {
     // Flying to next tourstop, transition_out for previous
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-playing">',
-      '<div class="container tsstate-transition_out ts-first" data-ott="91101"><h2>Tour stop 1</h2></div>',
-      '<div class="container tsstate-transition_in" data-ott="92202" data-stop_wait="5000"><h2>Tour stop 2</h2></div>',
+      '<div class="container tsstate-transition_out ts-first block-trans-flight" data-ott="91101"><h2>Tour stop 1</h2></div>',
+      '<div class="container tsstate-transition_in block-flight" data-ott="92202" data-stop_wait="5000"><h2>Tour stop 2</h2></div>',
       '<div class="container tsstate-inactive ts-last" data-ott="93303"><h2>Tour stop 3</h2></div>',
       '</div>'
     ]);
     t.finish_flight();
-    return t.wait_for_tourstop_class(1, 'tsstate-active_wait');
+    return Promise.all([
+      t.wait_for_tourstop_class(0, 'tsstate-inactive'),
+      t.wait_for_tourstop_class(1, 'tsstate-active_wait'),
+    ]);
 
   }).then(function () {
     // Waiting at second tourstop
@@ -255,12 +258,15 @@ test('tour.flight', function (test) {
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-playing">',
       '<div class="container tsstate-inactive ts-first" data-ott="91101"><h2>Tour stop 1</h2></div>',
-      '<div class="container tsstate-transition_out" data-ott="92202" data-stop_wait="5000"><h2>Tour stop 2</h2></div>',
-      '<div class="container tsstate-transition_in ts-last" data-ott="93303"><h2>Tour stop 3</h2></div>',
+      '<div class="container tsstate-transition_out block-trans-flight" data-ott="92202" data-stop_wait="5000"><h2>Tour stop 2</h2></div>',
+      '<div class="container tsstate-transition_in ts-last block-flight" data-ott="93303"><h2>Tour stop 3</h2></div>',
       '</div>'
     ]);
     t.finish_flight();
-    return t.wait_for_tourstop_class(2, 'tsstate-active_wait');
+    return Promise.all([
+      t.wait_for_tourstop_class(1, 'tsstate-inactive'),
+      t.wait_for_tourstop_class(2, 'tsstate-active_wait'),
+    ]);
 
   }).then(function () {
     // Waiting at final tourstop
@@ -350,7 +356,10 @@ test('tour:block-hiddentab', function (test) {
     return t.wait_for_tourstop_class(1, 'tsstate-transition_in');
   }).then(function () {
     t.finish_flight();
-    return t.wait_for_tourstop_class(1, 'tsstate-active_wait');
+    return Promise.all([
+      t.wait_for_tourstop_class(0, 'tsstate-inactive'),
+      t.wait_for_tourstop_class(1, 'tsstate-active_wait'),
+    ])
 
   }).then(function () {
     // Moved to tourstop 2
@@ -419,8 +428,8 @@ test('tour:block-tourpaused', function (test) {
     // Now transitioning to next tourstop
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-playing">',
-      '<div class="container tsstate-transition_out ts-first" data-ott="91101" data-stop_wait="5000">t1</div>',
-      '<div class="container tsstate-transition_in ts-last" data-ott="92202" data-stop_wait="5000">t2</div>',
+      '<div class="container tsstate-transition_out ts-first block-trans-flight" data-ott="91101" data-stop_wait="5000">t1</div>',
+      '<div class="container tsstate-transition_in ts-last block-flight" data-ott="92202" data-stop_wait="5000">t2</div>',
       '</div>'
     ]);
     // Pause tour again
@@ -438,12 +447,12 @@ test('tour:block-tourpaused', function (test) {
     // In tstate-paused, still transitioning
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-paused">',
-      '<div class="container tsstate-transition_out ts-first" data-ott="91101" data-stop_wait="5000">t1</div>',
-      '<div class="container tsstate-transition_in ts-last block-tourpaused" data-ott="92202" data-stop_wait="5000">t2</div>',
+      '<div class="container tsstate-transition_out ts-first block-trans-flight block-trans-tourpaused" data-ott="91101" data-stop_wait="5000">t1</div>',
+      '<div class="container tsstate-transition_in ts-last block-flight block-tourpaused" data-ott="92202" data-stop_wait="5000">t2</div>',
       '</div>'
     ]);
 
-    // Wait for now-broken flight promise to settle, then try again
+    // Wait for now-broken flight promise to settle, then try resuming
     return new Promise(function (resolve) {
       setTimeout(() => {
         t.tour.user_resume();
@@ -458,8 +467,8 @@ test('tour:block-tourpaused', function (test) {
     ]);
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-playing">',
-      '<div class="container tsstate-transition_out ts-first" data-ott="91101" data-stop_wait="5000">t1</div>',
-      '<div class="container tsstate-transition_in ts-last" data-ott="92202" data-stop_wait="5000">t2</div>',
+      '<div class="container tsstate-transition_out ts-first block-trans-flight" data-ott="91101" data-stop_wait="5000">t1</div>',
+      '<div class="container tsstate-transition_in ts-last block-flight" data-ott="92202" data-stop_wait="5000">t2</div>',
       '</div>'
     ]);
     // Pause tour by triggering interaction hook, wait for promise to settle
@@ -483,7 +492,7 @@ test('tour:block-tourpaused', function (test) {
     // In tstate-paused, still transitioning
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-paused">',
-      '<div class="container tsstate-transition_out ts-first" data-ott="91101" data-stop_wait="5000">t1</div>',
+      '<div class="container tsstate-transition_out ts-first block-trans-tourpaused" data-ott="91101" data-stop_wait="5000">t1</div>',
       '<div class="container tsstate-transition_in ts-last block-tourpaused" data-ott="92202" data-stop_wait="5000">t2</div>',
       '</div>'
     ]);
@@ -553,8 +562,8 @@ test('tour:user_forward', function (test) {
     // Now transitioning to next tourstop
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-playing">',
-      '<div class="container tsstate-transition_out ts-first" data-ott="91101" data-stop_wait="5000">t1</div>',
-      '<div class="container tsstate-transition_in ts-last" data-ott="92202" data-stop_wait="5000">t2</div>',
+      '<div class="container tsstate-transition_out ts-first block-trans-flight" data-ott="91101" data-stop_wait="5000">t1</div>',
+      '<div class="container tsstate-transition_in ts-last block-flight" data-ott="92202" data-stop_wait="5000">t2</div>',
       '</div>'
     ]);
 

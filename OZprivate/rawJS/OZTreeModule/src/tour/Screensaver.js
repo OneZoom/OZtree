@@ -65,7 +65,7 @@ class Screensaver extends Tour {
     if (!this.started) {
       return
     }
-    this.curr_stop().exit()
+    this.curr_stop().leave()
     this.prev_step = this.curr_step
     if (this.curr_step === this.tourstop_array.length - 1) {
       // end of tour: loop

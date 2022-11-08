@@ -302,7 +302,8 @@ class Tour {
     if (this.state === tstate.INACTIVE) {
       return
     }
-    this.curr_stop().exit()   
+    // Leave current stop
+    this.curr_stop().leave();
     if (this.curr_step === this.tourstop_array.length - 1) {
       // end of tour, exit gracefully
       if (typeof this.end_callback === 'function') {
@@ -413,7 +414,7 @@ class Tour {
         console.log("Error: no current tourstop")
         return
     }
-    tourstop.skip()
+    tourstop.advance()
   }
 
   user_backward() {

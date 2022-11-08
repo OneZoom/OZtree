@@ -54,6 +54,17 @@ class TourStopClass {
     });
   }
 
+  /**
+   * If transitioning, find the stop that we're transitioning from/to
+   * otherwise (or if it doesn't exist return null
+   */
+  transition_pair_stop() {
+    const curr_stop = this.tour.curr_stop();
+    if (!curr_stop) return null;
+
+    return curr_stop !== this ? curr_stop : this.tour.prev_stop();
+  }
+
   block_toggle(block_name, condition) {
     if (condition === undefined) {
       this.block_toggle(block_name, !this.blocks.has(block_name))
@@ -66,25 +77,39 @@ class TourStopClass {
 
   /**
    * Add a new block to this tourstop, to prevent the current state being
-   * left automatically. Your block can be overriden by the user with skip(),
+   * left automatically. Your block can be overriden by the user with advance(),
    * in which case it will be removed automatically.
    */
-  block_add(block_name) {
+  block_add(block_name, recursing) {
     this.container[0].classList.add('block-' + block_name);
     this.blocks.add(block_name)
+
+    if (!recursing && (this.state === tsstate.TRANSITION_IN || this.state === tsstate.TRANSITION_OUT)) {
+      // Also block the other half of the transition
+      const other_stop = this.transition_pair_stop();
+      if (other_stop) other_stop.block_add('trans-' + block_name, true)
+    }
   }
 
   /**
    * Remove an existing block from tourstop progression. If none left,
    * advance to the next stage
    */
-  block_remove(block_name) {
+  block_remove(block_name, recursing) {
     if (this.blocks.size === 0) {
       // Nothing to do, don't re-trigger final block removal
       return;
     }
     this.container[0].classList.remove('block-' + block_name);
     this.blocks.delete(block_name)
+
+    if (!recursing) {
+      // Also unblock the other half of the transition
+      // NB: Do this first before advancing ours, since otherwise
+      //     this.transition_pair_stop() will be null
+      const other_stop = this.transition_pair_stop();
+      if (other_stop) other_stop.block_remove('trans-' + block_name, true)
+    }
 
     // If we've removed the last block, move on
     if (this.blocks.size === 0) {
@@ -146,8 +171,36 @@ class TourStopClass {
     this.block_remove('manual');
     this.block_remove('tourpaused');
     this.controller.cancel_flight();
-    if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.INACTIVE
     this.state = tsstate.INACTIVE
+  }
+
+  /**
+   * Either all blocks on the current state have expired, or the user has pressed
+   * "skip". Move to next state.
+   */
+  advance() {
+    if (this.state === tsstate.INACTIVE) {
+      // Do nothing. An explicit play() should trigger this
+    } else if (this.state === tsstate.TRANSITION_IN) {
+      // Transition-in has finished, made it to tourstop
+      this.arrive_at_tourstop();
+    } else if (this.state === tsstate.ACTIVE_WAIT) {
+      // Ask tour to move to next stop
+      // NB: goto_next will then call leave() for this stop
+      this.tour.goto_next();
+    } else if (this.state === tsstate.TRANSITION_OUT) {
+      this.exit();
+    }
+  }
+
+  /**
+   * Leave the current stop
+   */
+  leave() {
+    // If already leaving, don't try and leave again
+    if (this.state !== tsstate.TRANSITION_OUT) {
+      this.state = tsstate.TRANSITION_OUT;
+    }
   }
 
   arrive_at_tourstop() {
@@ -164,26 +217,10 @@ class TourStopClass {
     // Show the tour stop *after* firing the function, in case we want the function do
     // do anything first (which could including showing the stop)
     if (window.is_testing) console.log("Arrived at tourstop: force hiding all other stops")
-    if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.INACTIVE
     this.state = tsstate.ACTIVE_WAIT
     this.arm_wait_timer();
     this.direction = 'forward'
   }    
-
-  /**
-   * Called when user presses next, skip to either end of transition or next stop
-   */
-  skip() {
-    if (this.state === tsstate.INACTIVE) {
-      throw new Error("Tried to goto_next on an inactive stop")
-    } else if (this.state === tsstate.ACTIVE_WAIT) {
-      // Ready to go to next stop, so go
-      this.tour.goto_next()  // NB: This will ignore any active blocks (plugins will need to clean up after themselves)
-    } else {
-      // Arrive right now, skipping any flight
-      this.arrive_at_tourstop()
-    }
-  }
 
   /**
    * 1, Block any advancement from the current tourstop
@@ -200,7 +237,6 @@ class TourStopClass {
   }
 
   resume() {
-    this.block_remove('tourpaused');
     if ((this.state === tsstate.INACTIVE) || (this.state === tsstate.ACTIVE_WAIT)) {
       // Not in a transition, so jump back to the tourstop location (in case user has
       // moved the tree) and continue - it would be weird to fly on a path that wasn't 
@@ -213,6 +249,7 @@ class TourStopClass {
     } else {
       this.play('forward')
     }
+    this.block_remove('tourpaused');
 
   }
 
@@ -242,13 +279,14 @@ class TourStopClass {
        */
       if (this.state !== tsstate.TRANSITION_IN) {
         this.state = tsstate.TRANSITION_IN
-        if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.TRANSITION_OUT
 
         const transition_in_wait = this.setting.transition_in_wait
         if (typeof transition_in_wait === 'number' && this.direction !== 'backward') {
           promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
         }
       }
+      // NB: Set block regardless, so a pause/resume gets caught before the flight ends
+      this.block_add('flight')
     
       /**
        * Perform flight or leap
@@ -284,10 +322,11 @@ class TourStopClass {
       promise = promise
         .then(() => {
           this.transition_promise_active = null
-          this.arrive_at_tourstop()
+          this.block_remove('flight')
         })
         .catch((e) => {
           this.transition_promise_active = null
+          this.block_remove('flight')
           if (this.state === tsstate.TRANSITION_IN && this.tour.state !== 'tstate-paused') {
             // We shouldn't get here, as any interactions should have paused the tour
             // then stopped the flight. But just in case we do pause, to put tour in
