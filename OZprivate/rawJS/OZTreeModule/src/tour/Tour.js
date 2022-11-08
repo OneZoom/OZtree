@@ -405,7 +405,6 @@ class Tour {
   user_forward() {
     let tourstop = this.curr_stop()
     this.clear_callback_timers()
-    clearTimeout(this.goto_next_timer)
     
     if (this.state === tstate.INACTIVE) {
         user_play()
