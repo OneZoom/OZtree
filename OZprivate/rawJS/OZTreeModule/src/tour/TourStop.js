@@ -18,10 +18,12 @@ const delay = (delayTime) => {
 
 class TourStopClass {
   constructor(tour, container) {
+    this.blocks = new Set()
     this.tour = tour
     this.controller = this.tour.onezoom.controller
     this.data_repo = this.tour.onezoom.data_repo
     this.container = container
+    container[0].tourstop = this  // Add a link back from the DOM element to the class
     this.goto_next_timer = null
     this.state = tsstate.INACTIVE
     this.direction = 'forward'
@@ -52,6 +54,56 @@ class TourStopClass {
     });
   }
 
+  block_toggle(block_name, condition) {
+    if (condition === undefined) {
+      this.block_toggle(block_name, !this.blocks.has(block_name))
+    } else if (condition){
+      this.block_add(block_name)
+    } else {
+      this.block_remove(block_name)
+    }
+  }
+
+  /**
+   * Add a new block to this tourstop, to prevent the current state being
+   * left automatically. Your block can be overriden by the user with skip(),
+   * in which case it will be removed automatically.
+   */
+  block_add(block_name) {
+    this.container[0].classList.add('block-' + block_name);
+    this.blocks.add(block_name)
+  }
+
+  /**
+   * Remove an existing block from tourstop progression. If none left,
+   * advance to the next stage
+   */
+  block_remove(block_name) {
+    if (this.blocks.size === 0) {
+      // Nothing to do, don't re-trigger final block removal
+      return;
+    }
+    this.container[0].classList.remove('block-' + block_name);
+    this.blocks.delete(block_name)
+
+    // If we've removed the last block, move on
+    if (this.blocks.size === 0) {
+      if (this.state === tsstate.ACTIVE_WAIT) {
+        // NB: Do this in next tick, give other promise a chance first.
+        //     This is probably a test timing bug more than a genuine requirement.
+        setTimeout(() => this.tour.goto_next(), 0);
+      }
+    }
+  }
+
+  /**
+   * Clear all blocks on a tourstop, e.g. when a new state is reached
+   */
+  block_clear() {
+    this.blocks.forEach((x) => this.container[0].classList.remove('block-' + x));
+    this.blocks.clear();
+  }
+
   /**
    * Find the OZid for this stop from this.setting.ott, or use the rough_initial_loc if
    * ott is 0, return undefined if otherwise falsey
@@ -79,6 +131,9 @@ class TourStopClass {
     // NB: Do this atomically so we don't generate mutation noise
     this.container[0].className = this.container[0].className.replace(/ tsstate-(\w+)|$/, ' ' + this._state);
 
+    // Any lingering blocks from previous state don't apply to this state
+    this.block_clear();
+
     return this._state;
   }
 
@@ -88,8 +143,8 @@ class TourStopClass {
   exit() {
     this.tour.clear_callback_timers()
     // Remove any lingering wait for user interaction, since it would have happened now
-    this.container[0].classList.remove('block-manual');
-    this.container[0].classList.remove('block-tourpaused');
+    this.block_remove('manual');
+    this.block_remove('tourpaused');
     this.controller.cancel_flight();
     if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.INACTIVE
     this.state = tsstate.INACTIVE
@@ -102,12 +157,16 @@ class TourStopClass {
     if (this.state === tsstate.INACTIVE) {
       return
     }
+    // leap if not already at our tourstop (e.g. if user skipped over flight)
+    // NB: This will break the flight promise chain with UserInterruptError
+    if (this.OZid) this.controller.leap_to(this.OZid, this.setting.pos)
+
     // Show the tour stop *after* firing the function, in case we want the function do
     // do anything first (which could including showing the stop)
     if (window.is_testing) console.log("Arrived at tourstop: force hiding all other stops")
     if (this.tour.prev_stop()) this.tour.prev_stop().state = tsstate.INACTIVE
-    this.arm_wait_timer();
     this.state = tsstate.ACTIVE_WAIT
+    this.arm_wait_timer();
     this.direction = 'forward'
   }    
 
@@ -121,12 +180,8 @@ class TourStopClass {
       // Ready to go to next stop, so go
       this.tour.goto_next()  // NB: This will ignore any active blocks (plugins will need to clean up after themselves)
     } else {
-      // In transition_in[_wait], skip transition
-      this.controller.cancel_flight();
-      // leap (this should cancel any exiting flight)
-      if (this.OZid) this.controller.leap_to(this.OZid, this.setting.pos)
-      // We do not need to call arrive_at_tourstop as this should be called when the
-      // transition promise is resolved
+      // Arrive right now, skipping any flight
+      this.arrive_at_tourstop()
     }
   }
 
@@ -139,13 +194,13 @@ class TourStopClass {
     this.tour.clear_callback_timers() // don't bother pausing these, just cancel them
     // We would like to get the time elapsed if we at waiting to move on from ACTIVE_WAIT
     // but there is no obvious way to get it
-    this.container[0].classList.add('block-tourpaused');
+    this.block_add('tourpaused');
 
     this.controller.cancel_flight();
   }
 
   resume() {
-    this.container[0].classList.remove('block-tourpaused');
+    this.block_remove('tourpaused');
     if ((this.state === tsstate.INACTIVE) || (this.state === tsstate.ACTIVE_WAIT)) {
       // Not in a transition, so jump back to the tourstop location (in case user has
       // moved the tree) and continue - it would be weird to fly on a path that wasn't 
@@ -257,16 +312,16 @@ class TourStopClass {
 
     if (typeof wait_time !== 'number') {
       // No wait time, so blocking waiting for user instead.
-      this.container[0].classList.add('block-manual');
+      this.block_add('manual');
       return
     }
 
     // Add a block that we'll then remove in (wait_time) ms
-    this.container[0].classList.add('block-timer');
+    this.block_add('timer');
     clearTimeout(this.goto_next_timer)
     if (window.is_testing) console.log("Setting timer for " + wait_time + "milliseconds")
     this.goto_next_timer = setTimeout(() => {
-      this.container[0].classList.remove('block-timer');
+      this.block_remove('timer');
     }, wait_time);
   }
 

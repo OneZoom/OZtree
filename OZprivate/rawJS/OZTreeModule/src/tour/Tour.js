@@ -449,35 +449,11 @@ class Tour {
     // Listen to document level visibility (read: inactive tab), translate to tourstop blocks
     const onVisibilityChange = (e) => {
       this.tourstop_array.forEach((ts) => {
-        ts.container[0].classList.toggle(
-            'block-hiddentab',
-            document.visibilityState !== 'visible',
-        );
+        ts.block_toggle('hiddentab', document.visibilityState !== 'visible');
       });
     };
     document.removeEventListener('visibilitychange', onVisibilityChange);
     document.addEventListener('visibilitychange', onVisibilityChange);
-
-    // For all tourstops, automatically move on when all blocks are removed.
-    // block-* classes are added to indicate the tour shouldn't advance from the
-    // current active-wait tourstop, e.g.
-    // * block-timer: Waiting for timer to expire
-    // * block-hiddentab The tab isn't exposed, so no point advancing
-    // Additional block classes can be added to e.g. make sure a video finishes playing.
-    this.tourstop_observer(
-      // For all tourstops
-      "*",
-      // Check if any classes of the form block-* are set
-      ['block-\\w+'],
-      // Nothing to do when first block is added
-      undefined,
-      // All blocks removed, if this was an active tourstop then we should be moving on
-      function (tour, ts_container) {
-        if (ts_container.classList.contains('tsstate-active_wait')) {
-          tour.goto_next();
-        }
-      },
-    );
   }
 
   /**

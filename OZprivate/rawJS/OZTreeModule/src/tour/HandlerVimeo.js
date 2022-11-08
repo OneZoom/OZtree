@@ -43,10 +43,10 @@ function handler(tour) {
     return el_videos.forEach((el_video) => {
       el_video.vimeoplayer = new Vimeo.Player(el_video);
       el_video.vimeoplayer.on('play', function (data) {
-        this.element.el_tourstop.classList.add('block-vimeoplaying');
+        this.element.el_tourstop.tourstop.block_add('vimeoplaying');
       });
       el_video.vimeoplayer.on('ended', function (data) {
-        this.element.el_tourstop.classList.remove('block-vimeoplaying');
+        this.element.el_tourstop.tourstop.block_remove('vimeoplaying');
       });
     })
   }).then(() => {
