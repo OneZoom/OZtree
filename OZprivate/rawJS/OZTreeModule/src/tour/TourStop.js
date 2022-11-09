@@ -45,10 +45,6 @@ class TourStopClass {
           val = parseFloat(val);
           break;
       }
-      // Wire up exec functions
-      this.setting.exec['on_start'] = this.container[0].exec_on_start;
-      this.setting.exec['on_show'] = this.container[0].exec_on_show;
-      this.setting.exec['on_exit'] = this.container[0].exec_on_exit;
 
       this.setting[name] = val;
     });
