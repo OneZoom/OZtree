@@ -120,7 +120,12 @@ test('tour.flight', function (test) {
     ], "Waiting at final tourstop");
     test.deepEqual(t.tour.curr_stop().goto_next_timer, null, "No timer set, waiting for interaction")
     t.tour.user_forward();
-    return t.wait_for_tourstop_class(2, 'tsstate-inactive');
+    return Promise.all([
+      t.wait_for_tour_class('tstate-inactive'),
+      t.wait_for_tourstop_class(0, 'tsstate-inactive'),
+      t.wait_for_tourstop_class(1, 'tsstate-inactive'),
+      t.wait_for_tourstop_class(2, 'tsstate-inactive'),
+    ])
 
   }).then(function () {
     test.deepEqual(t.tour_html(), [
@@ -382,8 +387,11 @@ test('tour:user_forward', function (test) {
     ], "Fly to first node (logs)");
     // Skip over flight
     t.tour.user_forward();
-    return new Promise(resolve => setTimeout(resolve, 3000));
-    //return t.wait_for_tourstop_class(0, 'tsstate-active_wait');
+
+    return Promise.all([
+      t.wait_for_tourstop_class(0, 'tsstate-active_wait'),
+      t.wait_for_tourstop_class(1, 'tsstate-inactive'),
+    ]);
 
   }).then(function () {
     test.deepEqual(t.tour_html(), [
@@ -403,6 +411,34 @@ test('tour:user_forward', function (test) {
       '<div class="container tsstate-transition_in ts-last block-flight" data-ott="92202" data-stop_wait="5000">t2</div>',
       '</div>'
     ], "Now transitioning to next tourstop");
+
+    t.tour.user_pause();
+    return Promise.all([
+      t.wait_for_tour_class("tstate-paused"),
+      t.oz.flight_promise,  // NB: We don't resolve the flight, just wait for it to cancel
+    ]);
+  }).then(function () {
+    test.deepEqual(t.tour_html(), [
+      '<div class="tour tstate-paused">',
+      '<div class="container tsstate-transition_out ts-first block-trans-tourpaused" data-ott="91101" data-stop_wait="5000">t1</div>',
+      '<div class="container tsstate-transition_in ts-last block-tourpaused" data-ott="92202" data-stop_wait="5000">t2</div>',
+      '</div>'
+    ], "Paused during transition");
+
+    // Go forward, should both skip over flight and unpause
+    t.tour.user_forward();
+    return Promise.all([
+      t.wait_for_tour_class("tstate-playing"),
+      t.wait_for_tourstop_class(0, 'tsstate-inactive'),
+      t.wait_for_tourstop_class(1, 'tsstate-active_wait'),
+    ]);
+  }).then(function () {
+    test.deepEqual(t.tour_html(), [
+      '<div class="tour tstate-playing">',
+      '<div class="container tsstate-inactive ts-first" data-ott="91101" data-stop_wait="5000">t1</div>',
+      '<div class="container tsstate-active_wait ts-last block-timer" data-ott="92202" data-stop_wait="5000">t2</div>',
+      '</div>'
+    ], "Resumed, at next tourstop");
 
   }).then(function () {
     test.end();

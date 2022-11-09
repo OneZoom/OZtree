@@ -52,6 +52,13 @@ class Tour {
     // NB: Do this atomically so we don't generate mutation noise
     if (this.container) this.container[0].className = this.container[0].className.replace(/ tstate-(\w+)|$/, ' ' + this._state);
 
+    // When playing we should be able to block interaction
+    if (new_state === tstate.PLAYING) {
+      this.add_canvas_interaction_callbacks()
+    } else {
+      this.remove_canvas_interaction_callbacks()
+    }
+
     return this._state;
   }
 
@@ -241,6 +248,7 @@ class Tour {
   remove_canvas_interaction_callbacks() {
     for (let action_name in this.interaction_hooks) {
       remove_hook(action_name, this.interaction_hooks[action_name])
+      delete this.interaction_hooks[action_name];
     }
   }
 
@@ -255,7 +263,7 @@ class Tour {
           return
       }
 
-      this.add_canvas_interaction_callbacks()
+      this.state = tstate.PLAYING
       this.rough_initial_loc = this.onezoom.utils.largest_visible_node()
       if (window.is_testing) console.log("Tour `" + this.name + "` started")
       if (typeof this.start_callback === 'function') {
@@ -263,7 +271,6 @@ class Tour {
       }
 
       // RUN!
-      this.state = tstate.PLAYING
       this.curr_stop().play_from_start('forward')
     })
   }
@@ -281,7 +288,6 @@ class Tour {
     //hide tour
     this.curr_step = start_step || 0
     this.prev_step = null
-    this.remove_canvas_interaction_callbacks()
   }
 
   /**
@@ -312,6 +318,7 @@ class Tour {
       return
     }
     this.prev_step = this.curr_step++
+    this.state = tstate.PLAYING  // NB: Cancel any paused state
     this.curr_stop().play_from_start('forward')
   }
 
@@ -330,6 +337,7 @@ class Tour {
       this.prev_step = this.curr_step--
     }
 
+    this.state = tstate.PLAYING  // NB: Cancel any paused state
     this.curr_stop().play_from_start('backward')
   }
 
@@ -361,7 +369,6 @@ class Tour {
   user_pause() {
     if (this.state !== tstate.INACTIVE && this.curr_stop()) {
       if (window.is_testing) console.log("User paused")
-      this.remove_canvas_interaction_callbacks() // Don't trigger any more pauses
       this.state = tstate.PAUSED
       this.curr_stop().pause()
     }
@@ -373,7 +380,6 @@ class Tour {
   user_resume() {
     if (this.state !== tstate.INACTIVE && this.curr_stop()) {
       if (window.is_testing) console.log("User resumed")
-      this.add_canvas_interaction_callbacks() // Allow interactions to trigger pauses again
       this.state = tstate.PLAYING
       this.curr_stop().resume()
     }
@@ -395,16 +401,11 @@ class Tour {
    * and accompany table for details
    */
   user_forward() {
-    let tourstop = this.curr_stop()
+    // Results of any advance() will cancel any pause
+    this.state = tstate.PLAYING;
 
-    if (this.state === tstate.INACTIVE) {
-        user_play()
-    }
-    if (!tourstop) {
-        console.log("Error: no current tourstop")
-        return
-    }
-    tourstop.advance()
+    // NB: advance will then call goto_next() if required
+    this.curr_stop().advance()
   }
 
   user_backward() {

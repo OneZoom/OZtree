@@ -76,6 +76,7 @@ class Screensaver extends Tour {
       }
     }
     this.curr_step++
+    this.state = tstate.PLAYING  // NB: Cancel any paused state
     this.curr_stop().play_from_start('forward')
   }
 

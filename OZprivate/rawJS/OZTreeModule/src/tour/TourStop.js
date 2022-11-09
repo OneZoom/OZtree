@@ -194,6 +194,8 @@ class TourStopClass {
   }
 
   arrive_at_tourstop() {
+    const other_stop = this.transition_pair_stop();
+
     // Tour (probably) exited mid-transition, consider any lingering flight promise-chains
     // cancelled.
     if (this.state === tsstate.INACTIVE) {
@@ -209,6 +211,10 @@ class TourStopClass {
     this.state = tsstate.ACTIVE_WAIT
     this.arm_wait_timer();
     this.direction = 'forward'
+
+    // Make sure other half to transition has left
+    // Ideally it will of it's own accord, but user_forward() may have left blocks behind
+    if (other_stop) other_stop.state = tsstate.INACTIVE;
   }    
 
   /**
