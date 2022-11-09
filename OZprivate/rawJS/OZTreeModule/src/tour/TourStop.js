@@ -162,7 +162,6 @@ class TourStopClass {
    * Exit current stop
    */
   exit() {
-    this.tour.clear_callback_timers()
     // TODO: Ideally we sent cancel events for flights & timers on state change
     // but for now at least cancel any flights.
     this.controller.cancel_flight();
@@ -199,7 +198,6 @@ class TourStopClass {
   }
 
   arrive_at_tourstop() {
-    this.tour.clear_callback_timers()
     // Tour (probably) exited mid-transition, consider any lingering flight promise-chains
     // cancelled.
     if (this.state === tsstate.INACTIVE) {
@@ -223,7 +221,6 @@ class TourStopClass {
    *    will start the animation again, from the new location.
    */
   pause() {
-    this.tour.clear_callback_timers() // don't bother pausing these, just cancel them
     // We would like to get the time elapsed if we at waiting to move on from ACTIVE_WAIT
     // but there is no obvious way to get it
     this.block_add('tourpaused');

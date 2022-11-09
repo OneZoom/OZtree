@@ -23,7 +23,6 @@ class Tour {
     this.prev_step = null
     this.tourstop_array = []
     this.state = tstate.INACTIVE;
-    this.callback_timers = [] // To store any timers that are fired off by callbacks, so they can be cancelled if necessary
 
     this.wrapper_id = 'tour_wrapper';
     this.div_wrapper = document.getElementById(this.wrapper_id);
@@ -345,14 +344,6 @@ class Tour {
   }
 
   /**
-   * Clear callback timers
-   */
-  clear_callback_timers() {
-    this.callback_timers.forEach((timer) => clearTimeout(timer))
-    this.callback_timers = []
-  }
-
-  /**
    * Play tour - initiated by user
    */
   user_play() {
@@ -405,8 +396,7 @@ class Tour {
    */
   user_forward() {
     let tourstop = this.curr_stop()
-    this.clear_callback_timers()
-    
+
     if (this.state === tstate.INACTIVE) {
         user_play()
     }
