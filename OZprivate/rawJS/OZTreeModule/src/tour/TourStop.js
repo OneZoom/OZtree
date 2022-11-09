@@ -113,11 +113,7 @@ class TourStopClass {
 
     // If we've removed the last block, move on
     if (this.blocks.size === 0) {
-      if (this.state === tsstate.ACTIVE_WAIT) {
-        // NB: Do this in next tick, give other promise a chance first.
-        //     This is probably a test timing bug more than a genuine requirement.
-        setTimeout(() => this.tour.goto_next(), 0);
-      }
+      this.advance();
     }
   }
 
@@ -259,6 +255,9 @@ class TourStopClass {
   play_from_start(direction) {
     if (window.is_testing) console.log(Date().toString() + ": playing tourstop " +
         this.tour.curr_step + " - " + direction)
+    // NB: Switch to inactive to remove any dregs of a previous transition
+    //     cancelled by goto_prev() calling exit. Maybe it should be happening there?
+    this.exit()
     this.play(direction)
   }
   
@@ -269,80 +268,70 @@ class TourStopClass {
    */
   play(direction) {
     this.direction = direction
-    if (!this.transition_promise_active) { // when first called transition_promise_active will be undefined and hence this statement will evaluate as true
-      this.transition_promise_active = true
-      let promise = Promise.resolve()
-      
+
+    // NB: Set block regardless, so a pause/resume gets caught before the flight ends
+    this.block_add('preflight')
+
+    // Wait for any previous flight to be cancelled and it's promise settled
+    return this.controller.cancel_flight().then(() => {
       /* Wait before the transition animation, but only in certain circumstances.
        * Don't wait if tourstop is entered by going backwards (otherwise user might feel the app is stuck)
        * Don't wait if we are already in a transition animation (e.g. if we paused halfway through)
        */
       if (this.state !== tsstate.TRANSITION_IN) {
         this.state = tsstate.TRANSITION_IN
+        this.block_add('flight')  // NB: Changing state will remove the flight block, re-add it
 
         const transition_in_wait = this.setting.transition_in_wait
         if (typeof transition_in_wait === 'number' && this.direction !== 'backward') {
-          promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
+          return delay(transition_in_wait);
         }
+      } else {
+        // Flight now refers to "our" flight
+        this.block_add('flight')
+        this.block_remove('preflight')
       }
-      // NB: Set block regardless, so a pause/resume gets caught before the flight ends
-      this.block_add('flight')
-    
-      /**
-       * Perform flight or leap
-       */
+    }).then(() => {
       if (!this.OZid) {
         /* No transition, just load tourstop */
-      } else if (this.setting.transition_in === 'leap' || this.direction === 'backward') {
-        /* Leap */
-        promise = promise
-          .then(() => {
-              return this.controller.leap_to(this.OZid, this.setting.pos)
-           })
-      } else {
-          /* Flight */
-          // NB: Temporarily munge out into_node until there's better support: https://github.com/OneZoom/OZtree/issues/541
-          let into_node = this.setting.qs_opts.indexOf('into_node=max') > -1
-          let speed = this.setting.fly_in_speed || 1
-          
-          if (this.setting.transition_in === 'fly_straight') {
-            /* Fly-straight: this is an unusual thing to want to do */
-            promise = promise
-              .then(() => {
-                return this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
-              })
-          } else {
-            /* Fly normally - if interrupted we reject() and require clicking "skip" */
-            promise = promise
-              .then(() => {
-                return this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
-              })
-          }
+        return;
       }
-      promise = promise
-        .then(() => {
-          this.transition_promise_active = null
-          this.block_remove('flight')
-        })
-        .catch((e) => {
-          this.transition_promise_active = null
-          this.block_remove('flight')
-          if (this.state === tsstate.TRANSITION_IN && this.tour.state !== 'tstate-paused') {
-            // We shouldn't get here, as any interactions should have paused the tour
-            // then stopped the flight. But just in case we do pause, to put tour in
-            // a recoverable state.
-            console.warn("Flight stopped unexpectedly, pausing tour", e)
-            this.tour.user_pause()
-          } else if (e instanceof UserInterruptError) {
-            // Flight interrupted (e.g. by pause). Skip over arrive_at_tourstop()
-            if (window.is_testing) console.log("Flight interrupted", e)
-          } else {
-            throw e;
-          }
-        })
-    } else {
-      if (window.is_testing) console.warn("Attempt to start a transition whilst another is active");
-    }
+
+      if (this.setting.transition_in === 'leap' || this.direction === 'backward') {
+        /* Leap */
+        return this.controller.leap_to(this.OZid, this.setting.pos)
+      }
+
+      /* Flight */
+      // NB: Temporarily munge out into_node until there's better support: https://github.com/OneZoom/OZtree/issues/541
+      let into_node = this.setting.qs_opts.indexOf('into_node=max') > -1
+      let speed = this.setting.fly_in_speed || 1
+          
+      if (this.setting.transition_in === 'fly_straight') {
+        /* Fly-straight: this is an unusual thing to want to do */
+        return this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
+      }
+      /* Fly normally - if interrupted we reject() and require clicking "skip" */
+      return this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
+
+    }).catch((e) => {
+      if (this.state === tsstate.TRANSITION_IN && this.tour.state !== 'tstate-paused') {
+        // We shouldn't get here, as any interactions should have paused the tour
+        // then stopped the flight. But just in case we do pause, to put tour in
+        // a recoverable state.
+        console.warn("Flight stopped unexpectedly, pausing tour", e)
+        this.tour.user_pause()
+      } else if (e instanceof UserInterruptError) {
+        // Flight interrupted (e.g. by pause).
+        if (window.is_testing) console.log("Flight to " + this.OZid + " interrupted", e)
+      } else {
+        throw e;
+      }
+
+    }).finally(() => {
+      // Remove block now flight is finished, one way or another
+      this.block_remove('flight')
+    })
   }
 
   /** Arm this tourstop's wait timer, or wait for user interaction */

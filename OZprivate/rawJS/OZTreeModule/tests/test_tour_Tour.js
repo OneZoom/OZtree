@@ -49,6 +49,18 @@ function setup_tour(test, s, interaction = null, verbose_test = false) {
   global.$ = require('../../../../static/js/jquery.js');
   global.window.jQuery = global.$;
 
+  function flight_promise(p) {
+    fake_oz.flight_promise = p.finally(function () {
+      fake_oz.flight_promise = undefined;
+    }).catch(function (e) {
+      // Eat any errors here, so we don't accidentally cause unhandled promises
+      if (!(e instanceof UserInterruptError)) {
+        console.warn("Cancelled flight failed", e)
+      }
+    });
+    return p;
+  }
+
   const fake_oz = {
     cur_node: 1,
     resolve_flight: null,
@@ -57,12 +69,16 @@ function setup_tour(test, s, interaction = null, verbose_test = false) {
       is_tree_visible: () => true,
       cancel_flight: function () {
         if (fake_oz.resolve_flight) fake_oz.resolve_flight(true);
+        return (fake_oz.flight_promise || Promise.resolve()).catch(function (e) {
+          if (e instanceof UserInterruptError) return;
+          console.warn("Cancelled flight failed", e);
+        });
       },
       fly_on_tree_to: function (unused, ozid) {
         log.push(["fly_on_tree_to", Array.from(arguments)]);
 
         // Wait for test to "resolve" the flight, then continue
-        return new Promise(function (resolve) {
+        return flight_promise(new Promise(function (resolve) {
           fake_oz.resolve_flight = resolve;
         }).then((cancelled) => {
           fake_oz.resolve_flight = null;
@@ -72,7 +88,7 @@ function setup_tour(test, s, interaction = null, verbose_test = false) {
             throw new UserInterruptError('Fly is interrupted');
           }
           fake_oz.cur_node = ozid;
-        });
+        }));
       },
       leap_to: function (ozid) {
         log.push(["leap_to", Array.from(arguments)]);
@@ -81,12 +97,12 @@ function setup_tour(test, s, interaction = null, verbose_test = false) {
         if (fake_oz.resolve_flight) fake_oz.controller.cancel_flight();
 
         // Wait for test to "resolve" the flight, then continue
-        return new Promise(function (resolve) {
+        return flight_promise(new Promise(function (resolve) {
           fake_oz.resolve_flight = resolve;
         }).then(() => {
           fake_oz.resolve_flight = null;
           fake_oz.cur_node = ozid;
-        });
+        }));
       },
     },
     data_repo: { ott_id_map: {} },
@@ -191,6 +207,8 @@ test('tour.flight', function (test) {
   </div>`, null, false);
 
   return t.tour.start().then(function () {
+    return t.wait_for_tourstop_class(0, 'tsstate-transition_in');
+  }).then(function () {
     test.deepEqual(t.log, [
       ['process_taxon_list', [91101, 92202, 93303]],
       ['ready_callback'],
@@ -218,7 +236,10 @@ test('tour.flight', function (test) {
     ], "Waiting at first tourstop");
     test.deepEqual(t.tour.curr_stop().goto_next_timer, null, "No timer set, waiting for interaction")
     t.tour.user_forward();
-    return t.wait_for_tourstop_class(1, 'tsstate-transition_in');
+    return Promise.all([
+      t.wait_for_tourstop_class(0, 'tsstate-transition_out'),
+      t.wait_for_tourstop_class(1, 'tsstate-transition_in'),
+    ]);
 
   }).then(function () {
     test.deepEqual(t.tour_html(), [
@@ -299,6 +320,8 @@ test('tour:block-hiddentab', function (test) {
   </div>`, null, false);
 
   return t.tour.start().then(function () {
+    return t.wait_for_tourstop_class(0, 'tsstate-transition_in');
+  }).then(function () {
     test.deepEqual(t.log, [
       ['process_taxon_list', [91101, 92202]],
       ['ready_callback'],
@@ -373,6 +396,8 @@ test('tour:block-tourpaused', function (test) {
   </div>`, null, false);
 
   return t.tour.start().then(function () {
+    return t.wait_for_tourstop_class(0, 'tsstate-transition_in');
+  }).then(function () {
     test.deepEqual(t.log, [
       ['process_taxon_list', [91101, 92202]],
       ['ready_callback'],
@@ -433,13 +458,22 @@ test('tour:block-tourpaused', function (test) {
       '</div>'
     ], "In tstate-paused, still transitioning");
 
-    // Wait for now-broken flight promise to settle, then try resuming
+    // Wait for now-broken flight promise to settle
+    return t.oz.flight_promise;
+
+  }).then(function () {
+    // Resume tour, wait for flight to start back up
+    t.tour.user_resume();
+
     return new Promise(function (resolve) {
-      setTimeout(() => {
-        t.tour.user_resume();
-        resolve();
-      }, 100)
+      var int = setInterval(() => {
+        if (t.oz.resolve_flight !== null) {
+          clearInterval(int);
+          resolve();
+        }
+      }, 10);
     });
+    return new Promise(resolve => setTimeout(resolve, 1000));
   }).then(function () {
     test.deepEqual(t.log.slice(-2), [
       [ 'flight-interrupted', 1001 ],

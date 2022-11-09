@@ -108,16 +108,38 @@ function get_details_of_nodes_in_view_during_fly(root) {
   });
 }
 
+/** Collect a promise into tree_state, clear it once done */
+function flight_promise(p) {
+  tree_state.flight_promise = p.finally(() => {
+    tree_state.flight_promise = undefined;
+  }).catch((e) => {
+    // Eat any errors. We don't care at this point, this branch of the promise
+    // chain is just to make sure we've finished, but without we get unhandled
+    // rejection warnings
+    if (!(e instanceof UserInterruptError)) {
+      console.warn("Cancelled flight failed", e)
+    }
+  });
+  return tree_state.flight_promise;
+}
+
 /**
  * Part of Controller class. It contains functions to perform animations.
  */
 export default function (Controller) {
   /**
    * Cancel any in-progress flight. The promise the flight returns will be
-   * rejected with UserInterruptError
+   * rejected with UserInterruptError. A flight cannot be immediately re-scheduled,
+   * as we will not fully cancel until after the next frame.
+   *
+   * Returns promise which will resolve once flights are ready to happen again
    */
   Controller.prototype.cancel_flight = function () {
+    // NB: The flight will *not* be cancelled immediately. perform_fly_b2()
+    //     will notice on next setTimeout() and shut itself down, after
+    //     which it's safe to start new flights.
     tree_state.flying = false;
+    return tree_state.flight_promise || Promise.resolve();
   };
 
   /**
@@ -150,10 +172,10 @@ export default function (Controller) {
     }
 
     this.develop_branch_to(dest_OZid);
-    return new Promise((resolve, reject) => {
+    return flight_promise(new Promise((resolve, reject) => {
       position_helper.perform_actual_fly(
         this, into_node, Infinity, 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
-    })
+    }))
   }
   
   /**
@@ -181,10 +203,10 @@ export default function (Controller) {
     tree_state.flying = false;
     this.develop_branch_to(dest_OZid);
 
-    return new Promise((resolve, reject) => {
+    return flight_promise(new Promise((resolve, reject) => {
       position_helper.perform_actual_fly(
         this, into_node, speed, accel_type || 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
-    })
+    }))
   }
     
     
@@ -323,7 +345,7 @@ export default function (Controller) {
             throw e;
         })
 
-        return p;
+        return flight_promise(p);
     };
 
   /**
