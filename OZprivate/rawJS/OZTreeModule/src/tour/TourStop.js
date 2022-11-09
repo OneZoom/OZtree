@@ -163,9 +163,8 @@ class TourStopClass {
    */
   exit() {
     this.tour.clear_callback_timers()
-    // Remove any lingering wait for user interaction, since it would have happened now
-    this.block_remove('manual');
-    this.block_remove('tourpaused');
+    // TODO: Ideally we sent cancel events for flights & timers on state change
+    // but for now at least cancel any flights.
     this.controller.cancel_flight();
     this.state = tsstate.INACTIVE
   }
