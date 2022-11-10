@@ -43,10 +43,16 @@ function handler(tour) {
     return el_videos.forEach((el_video) => {
       el_video.vimeoplayer = new Vimeo.Player(el_video);
       el_video.vimeoplayer.on('play', function (data) {
-        this.element.el_tourstop.tourstop.block_add('vimeoplaying');
+        const tourstop = this.element.el_tourstop.tourstop;
+        const block_name = this.element.src;
+
+        tourstop.block_add(block_name);
       });
       el_video.vimeoplayer.on('ended', function (data) {
-        this.element.el_tourstop.tourstop.block_remove('vimeoplaying');
+        const tourstop = this.element.el_tourstop.tourstop;
+        const block_name = this.element.src;
+        
+        tourstop.block_remove(block_name);
       });
     })
   }).then(() => {

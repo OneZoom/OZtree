@@ -34,12 +34,14 @@ function handler(tour) {
       events: {
         onReady: resolve,
         onStateChange: function (event) {
-          const tourstop = event.target.getIframe().el_tourstop.tourstop;
+          const iframe = event.target.getIframe();
+          const block_name = iframe.src;
+          const tourstop = iframe.el_tourstop.tourstop;
 
           if (event.data == YT.PlayerState.ENDED) {
-            tourstop.block_remove('youtubeplaying');
+            tourstop.block_remove(block_name);
           } else if (event.data == YT.PlayerState.PLAYING) {
-            tourstop.block_add('youtubeplaying');
+            tourstop.block_add(block_name);
           }
           // NB; Ignore other events, particularly UNSTARTED since this happens after end
         },

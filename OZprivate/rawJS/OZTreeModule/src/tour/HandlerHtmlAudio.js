@@ -18,10 +18,14 @@ function handler(tour) {
     // Attach events to block progression when playing
     return el_audios.forEach((el) => {
       el.addEventListener('play', (e) => {
-        event.target.el_tourstop.tourstop.block_add('httpaudioplaying');
+        const block_name = event.target.src;
+
+        event.target.el_tourstop.tourstop.block_add(block_name);
       });
       el.addEventListener('ended', (e) => {
-        event.target.el_tourstop.tourstop.block_remove('httpaudioplaying');
+        const block_name = event.target.src;
+
+        event.target.el_tourstop.tourstop.block_remove(block_name);
       });
     })
   }).then(() => {
