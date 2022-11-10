@@ -29,7 +29,7 @@ test('tour.start:notourstops', function (test) {
 test('tour.flight', function (test) {
   var t = setup_tour(test, `<div class="tour">
     <div class="container" data-ott="91101"><h2>Tour stop 1</h2></div>
-    <div class="container" data-ott="92202" data-stop_wait="5000"><h2>Tour stop 2</h2></div>
+    <div class="container" data-ott="92202" data-stop_wait="5000" data-fly_in_speed="4" data-qs_opts="into_node=max"><h2>Tour stop 2</h2></div>
     <div class="container" data-ott="93303"><h2>Tour stop 3</h2></div>
   </div>`, null, false);
 
@@ -46,7 +46,7 @@ test('tour.flight', function (test) {
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-playing">',
       '<div class="container tsstate-transition_in ts-first block-flight" data-ott="91101"><h2>Tour stop 1</h2></div>',
-      '<div class="container tsstate-inactive" data-ott="92202" data-stop_wait="5000"><h2>Tour stop 2</h2></div>',
+      '<div class="container tsstate-inactive" data-ott="92202" data-stop_wait="5000" data-fly_in_speed="4" data-qs_opts="into_node=max"><h2>Tour stop 2</h2></div>',
       '<div class="container tsstate-inactive ts-last" data-ott="93303"><h2>Tour stop 3</h2></div>',
       '</div>',
     ], "Now flying (HTML)");
@@ -54,10 +54,14 @@ test('tour.flight', function (test) {
     return t.wait_for_tourstop_class(0, 'tsstate-active_wait');
 
   }).then(function () {
+    test.deepEqual(t.log.slice(-2), [
+      ['fly_on_tree_to', [ null, 1000, false, 1 ]],
+      ['leap_to', [ 1000, undefined, false ]],
+    ], "Arrived at tourstop, lept to location to be sure");
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-playing">',
       '<div class="container tsstate-active_wait ts-first block-manual" data-ott="91101"><h2>Tour stop 1</h2></div>',
-      '<div class="container tsstate-inactive" data-ott="92202" data-stop_wait="5000"><h2>Tour stop 2</h2></div>',
+      '<div class="container tsstate-inactive" data-ott="92202" data-stop_wait="5000" data-fly_in_speed="4" data-qs_opts="into_node=max"><h2>Tour stop 2</h2></div>',
       '<div class="container tsstate-inactive ts-last" data-ott="93303"><h2>Tour stop 3</h2></div>',
       '</div>',
     ], "Waiting at first tourstop");
@@ -69,10 +73,14 @@ test('tour.flight', function (test) {
     ]);
 
   }).then(function () {
+    test.deepEqual(t.log.slice(-2), [
+      ['leap_to', [ 1000, undefined, false ]],
+      ['fly_on_tree_to', [ null, 1001, true, 4 ]],
+    ], "Flying to next tourstop, included custom flight params");
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-playing">',
       '<div class="container tsstate-transition_out ts-first block-trans-flight" data-ott="91101"><h2>Tour stop 1</h2></div>',
-      '<div class="container tsstate-transition_in block-flight" data-ott="92202" data-stop_wait="5000"><h2>Tour stop 2</h2></div>',
+      '<div class="container tsstate-transition_in block-flight" data-ott="92202" data-stop_wait="5000" data-fly_in_speed="4" data-qs_opts="into_node=max"><h2>Tour stop 2</h2></div>',
       '<div class="container tsstate-inactive ts-last" data-ott="93303"><h2>Tour stop 3</h2></div>',
       '</div>'
     ], "Flying to next tourstop, transition_out for previous");
@@ -83,10 +91,14 @@ test('tour.flight', function (test) {
     ]);
 
   }).then(function () {
+    test.deepEqual(t.log.slice(-2), [
+      ['fly_on_tree_to', [ null, 1001, true, 4 ]],
+      ['leap_to', [ 1001, undefined, true ]],
+    ], "Arrived at next tourstop, included custom flight params");
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-playing">',
       '<div class="container tsstate-inactive ts-first" data-ott="91101"><h2>Tour stop 1</h2></div>',
-      '<div class="container tsstate-active_wait block-timer" data-ott="92202" data-stop_wait="5000"><h2>Tour stop 2</h2></div>',
+      '<div class="container tsstate-active_wait block-timer" data-ott="92202" data-stop_wait="5000" data-fly_in_speed="4" data-qs_opts="into_node=max"><h2>Tour stop 2</h2></div>',
       '<div class="container tsstate-inactive ts-last" data-ott="93303"><h2>Tour stop 3</h2></div>',
       '</div>',
     ], "Waiting at second tourstop");
@@ -100,7 +112,7 @@ test('tour.flight', function (test) {
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-playing">',
       '<div class="container tsstate-inactive ts-first" data-ott="91101"><h2>Tour stop 1</h2></div>',
-      '<div class="container tsstate-transition_out block-trans-flight" data-ott="92202" data-stop_wait="5000"><h2>Tour stop 2</h2></div>',
+      '<div class="container tsstate-transition_out block-trans-flight" data-ott="92202" data-stop_wait="5000" data-fly_in_speed="4" data-qs_opts="into_node=max"><h2>Tour stop 2</h2></div>',
       '<div class="container tsstate-transition_in ts-last block-flight" data-ott="93303"><h2>Tour stop 3</h2></div>',
       '</div>'
     ], "Flying to next tourstop, transition_out for previous");
@@ -114,7 +126,7 @@ test('tour.flight', function (test) {
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-playing">',
       '<div class="container tsstate-inactive ts-first" data-ott="91101"><h2>Tour stop 1</h2></div>',
-      '<div class="container tsstate-inactive" data-ott="92202" data-stop_wait="5000"><h2>Tour stop 2</h2></div>',
+      '<div class="container tsstate-inactive" data-ott="92202" data-stop_wait="5000" data-fly_in_speed="4" data-qs_opts="into_node=max"><h2>Tour stop 2</h2></div>',
       '<div class="container tsstate-active_wait ts-last block-manual" data-ott="93303"><h2>Tour stop 3</h2></div>',
       '</div>',
     ], "Waiting at final tourstop");
@@ -131,7 +143,7 @@ test('tour.flight', function (test) {
     test.deepEqual(t.tour_html(), [
       '<div class="tour tstate-inactive">',
       '<div class="container tsstate-inactive ts-first" data-ott="91101"><h2>Tour stop 1</h2></div>',
-      '<div class="container tsstate-inactive" data-ott="92202" data-stop_wait="5000"><h2>Tour stop 2</h2></div>',
+      '<div class="container tsstate-inactive" data-ott="92202" data-stop_wait="5000" data-fly_in_speed="4" data-qs_opts="into_node=max"><h2>Tour stop 2</h2></div>',
       '<div class="container tsstate-inactive ts-last" data-ott="93303"><h2>Tour stop 3</h2></div>',
       '</div>',
     ], "All done, tour stopped");

@@ -48,6 +48,9 @@ class TourStopClass {
 
       this.setting[name] = val;
     });
+    // NB: Temporarily munge out into_node until there's better support: https://github.com/OneZoom/OZtree/issues/541
+    this.setting.fly_into_node = this.setting.qs_opts.indexOf('into_node=max') > -1
+    this.setting.fly_in_speed = this.setting.fly_in_speed || 1;
   }
 
   /**
@@ -206,7 +209,7 @@ class TourStopClass {
     }
     // leap if not already at our tourstop (e.g. if user skipped over flight)
     // NB: This will break the flight promise chain with UserInterruptError
-    if (this.OZid) this.controller.leap_to(this.OZid, this.setting.pos)
+    if (this.OZid) this.controller.leap_to(this.OZid, this.setting.pos, this.setting.fly_into_node)
 
     this.state = tsstate.ACTIVE_WAIT
     this.arm_wait_timer();
@@ -231,16 +234,13 @@ class TourStopClass {
   }
 
   resume() {
-    if ((this.state === tsstate.INACTIVE) || (this.state === tsstate.ACTIVE_WAIT)) {
+    if (this.state === tsstate.ACTIVE_WAIT) {
       // Not in a transition, so jump back to the tourstop location (in case user has
       // moved the tree) and continue - it would be weird to fly on a path that wasn't 
       /// part of the tour - so jump back to the last place when you were on the tour
-      if (this.OZid) this.controller.leap_to(this.OZid, this.setting.pos)
-      // We should really only have to wait for the remaining time at this stop, but
-      // that's tricky, so we wait again from the beginning. - the tour was already in
-      // flight / transition an so it's appropriate to continue that to the destination.
-      this.arm_wait_timer();
+      this.arrive_at_tourstop();
     } else {
+      // Either already in a transition or inactive, restart the transition
       this.play('forward')
     }
     this.block_remove('tourpaused');
@@ -299,20 +299,16 @@ class TourStopClass {
 
       if (this.setting.transition_in === 'leap' || this.direction === 'backward') {
         /* Leap */
-        return this.controller.leap_to(this.OZid, this.setting.pos)
+        return this.controller.leap_to(this.OZid, this.setting.pos, this.setting.fly_into_node)
       }
 
       /* Flight */
-      // NB: Temporarily munge out into_node until there's better support: https://github.com/OneZoom/OZtree/issues/541
-      let into_node = this.setting.qs_opts.indexOf('into_node=max') > -1
-      let speed = this.setting.fly_in_speed || 1
-          
       if (this.setting.transition_in === 'fly_straight') {
         /* Fly-straight: this is an unusual thing to want to do */
-        return this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
+        return this.controller.fly_straight_to(this.OZid, this.setting.fly_into_node, this.setting.fly_in_speed, 'linear')
       }
       /* Fly normally - if interrupted we reject() and require clicking "skip" */
-      return this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
+      return this.controller.fly_on_tree_to(null, this.OZid, this.setting.fly_into_node, this.setting.fly_in_speed)
 
     }).catch((e) => {
       if (this.state === tsstate.TRANSITION_IN && this.tour.state !== 'tstate-paused') {
