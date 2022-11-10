@@ -183,7 +183,12 @@
         ['tsstate-active_wait'],
         function (tour) {
             // Special for the tutorial only: open up a window after a short pause, then close again
-            setTimeout(() => {
+            clearTimeout(tour.observer_229560_timeout)
+            tour.observer_229560_timeout = setTimeout(() => {
+                if (tour.state === 'tstate-paused') {
+                    // Don't pop-up if the tour is paused
+                    return
+                }
                 $("#tour_wrapper .outsidebox").hide()
                 tour.onezoom.config.ui.openLinkouts();
                 tour.onezoom.config.ui.populateLinkouts(
@@ -193,8 +198,9 @@
                      "ott": 229560,})
             }, 6000)
         }, function (tour) {
-            // Switching out of active, hide popup
+            // Switching out of active, hide popup, don't show it if about to
             tour.onezoom.config.ui.closeAll()
+            clearTimeout(tour.observer_229560_timeout)
         }
     )
   </script>
