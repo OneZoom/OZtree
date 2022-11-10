@@ -5,23 +5,23 @@
     }
 
     /* Default to visible for active wait, allow it to be overriden */
-    > .container.tsstate-active_wait {
+    > .container[data-state=tsstate-active_wait] {
       visibility: visible;
     }
-    > .container.tsstate-active_wait.hidden-active_wait {
+    > .container[data-state=tsstate-active_wait].hidden-active_wait {
       visibility: hidden;
     }
 
     /* Allow visibility to be added with additional classes */
-    > .container.tsstate-transition_in.visible-transition_in,
-    > .container.tsstate-transition_out.visible-transition_out,
-    > .container.tsstate-active_wait.visible-active_wait {
+    > .container[data-state=tsstate-transition_in].visible-transition_in,
+    > .container[data-state=tsstate-transition_out].visible-transition_out,
+    > .container[data-state=tsstate-active_wait].visible-active_wait {
       visibility: visible;
     }
 
     /* tour_resume buttons only visible the tour is paused */
     .tour_resume { display: none }
-    &.tstate-paused .tour_resume { display: initial }
+    &[data-state=tstate-paused] .tour_resume { display: initial }
 
     /* tour_backward & tour_forward don't make sense at beginning / end */
     > .container.ts-first .tour_backward { display: none }

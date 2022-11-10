@@ -49,8 +49,7 @@ class Tour {
     this._state = new_state;
 
     // Update container state based on our state
-    // NB: Do this atomically so we don't generate mutation noise
-    if (this.container) this.container[0].className = this.container[0].className.replace(/ tstate-(\w+)|$/, ' ' + this._state);
+    if (this.container) this.container[0].setAttribute('data-state', this._state);
 
     // When playing we should be able to block interaction
     if (new_state === tstate.PLAYING) {

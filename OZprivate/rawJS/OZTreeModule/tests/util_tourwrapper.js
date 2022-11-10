@@ -118,27 +118,27 @@ export function setup_tour(test, s, interaction = null, verbose_test = false) {
     callback_to_log('ready_callback'),
   )
 
-  // Common observer to wait for class changes
-  const class_observer = new dom.window.MutationObserver((mutation_list) => {
+  // Common observer to wait for state changes
+  const state_observer = new dom.window.MutationObserver((mutation_list) => {
     mutation_list.forEach((mutation) => {
       const el = mutation.target;
 
-      if (el.classList.contains(el.expecting.class_name)) {
+      if (el.getAttribute('data-state') === el.expecting.state) {
         el.expecting.resolve();
       }
     });
   });
-  class_observer.wait_for_class = function (selector, class_name) {
+  state_observer.wait_for_state = function (selector, state) {
     var el_ts = dom.window.document.querySelector(selector);
     if (!el_ts) throw new Error("Couldn't find " + selector);
 
     return new Promise((resolve) => {
-      el_ts.expecting = { class_name: class_name, resolve: resolve };
-      if (el_ts.classList.contains(class_name)) {
+      el_ts.expecting = { state: state, resolve: resolve };
+      if (el_ts.getAttribute('data-state') === el_ts.expecting.state) {
         // Already there, resolve now
         return resolve()
       }
-      class_observer.observe(el_ts, { attributes: true, attributeFilter: ["class"], attributeOldValue: true });
+      state_observer.observe(el_ts, { attributes: true, attributeFilter: ["data-state"], attributeOldValue: true });
     });
   };
 
@@ -153,11 +153,11 @@ export function setup_tour(test, s, interaction = null, verbose_test = false) {
       var tw = dom.window.document.getElementById('tour_wrapper');
       return tw.innerHTML.replace(/^\s+/, '').split(/\n\s+/);
     },
-    wait_for_tourstop_class: function (ts_idx, class_name) {
-      return class_observer.wait_for_class('.tour > .container:nth-of-type(' + (ts_idx + 1) + ')', class_name)
+    wait_for_tourstop_state: function (ts_idx, state) {
+      return state_observer.wait_for_state('.tour > .container:nth-of-type(' + (ts_idx + 1) + ')', state)
     },
-    wait_for_tour_class: function (class_name) {
-      return class_observer.wait_for_class('.tour', class_name)
+    wait_for_tour_state: function (state) {
+      return state_observer.wait_for_state('.tour', state)
     },
     finish_flight: function () {
       fake_oz.resolve_flight();

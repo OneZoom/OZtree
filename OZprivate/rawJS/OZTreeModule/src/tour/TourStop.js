@@ -151,8 +151,7 @@ class TourStopClass {
     this._state = new_state;
 
     // Update container state based on our state
-    // NB: Do this atomically so we don't generate mutation noise
-    this.container[0].className = this.container[0].className.replace(/ tsstate-(\w+)|$/, ' ' + this._state);
+    this.container[0].setAttribute('data-state', this._state);
 
     // Any lingering blocks from previous state don't apply to this state
     this.block_clear();
