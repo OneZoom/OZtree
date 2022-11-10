@@ -1,3 +1,4 @@
+import html
 import re
 import urllib.request
 
@@ -26,9 +27,15 @@ def embedize_url(url, email):
     ))
 
 
-def media_embed(url):
+def media_embed(url, **kwargs):
     """Generate media embed code for given URL"""
     request = current.request
+
+    # Join together extra element data
+    element_data = ' '.join('data-%s="%s"' % (
+        key,
+        html.escape(value),
+    ) for key, value in kwargs.items())
 
     m = re.fullmatch(r'https://www.youtube.com/embed/(.+)', url)
     if m:
@@ -37,9 +44,11 @@ def media_embed(url):
             type="text/html"
             src="{url}?enablejsapi=1&playsinline=1&origin={origin}"
             frameborder="0"
+            {element_data}
         ></iframe>""".format(
             url=url,
             origin='%s://%s' % (request.env.wsgi_url_scheme, request.env.http_host),
+            element_data=element_data,
         )
 
     m = re.fullmatch(r'https://player.vimeo.com/video/(.+)', url)
@@ -50,20 +59,23 @@ def media_embed(url):
             frameborder="0"
             allow="autoplay; fullscreen"
             allowfullscreen
+            {element_data}
         ></iframe>""".format(
             url=url,
+            element_data=element_data,
         )
 
     m = re.fullmatch(r'https://commons.wikimedia.org/wiki/File:(.+\.(gif|jpg|jpeg|png|svg))', url)
     if m:
         # TODO: Fetch & cache image metadata,
-        return """<a class="embed-wikimedia" title="{title}" href="{url}"><img
+        return """<a class="embed-wikimedia" title="{title}" href="{url}" {element_data}><img
           src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{name}"
           alt="{name}"
         /></a>""".format(
             title=m.group(1),
             name=m.group(1),
             url=url,
+            element_data=element_data,
         )
 
     m = re.fullmatch(r'https://commons.wikimedia.org/wiki/File:(.+\.(ogg|mp3))', url)
@@ -72,10 +84,12 @@ def media_embed(url):
         #       is more to demonstrate HTML audio than wikipedia commons in particular.
         return """<audio class="embed-audio" controls
           src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{name}"
+          {element_data}
           ></audio><a href="{url}" title="title">(c)</a>""".format(
             title=m.group(1),
             name=m.group(1),
             url=url,
+            element_data=element_data,
         )
 
     raise HTTP(400, "Unknown embed URL %s" % url)

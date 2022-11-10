@@ -41,8 +41,8 @@ class TestEmbed(unittest.TestCase):
         )
 
     def test_media_embed(self):
-        def media_embed(url):
-            out = embed.media_embed(url)
+        def media_embed(url, **kwargs):
+            out = embed.media_embed(url, **kwargs)
             return re.split('\s+', out, flags=re.MULTILINE)
 
         with self.assertRaisesRegex(HTTP, '400'):
@@ -54,6 +54,16 @@ class TestEmbed(unittest.TestCase):
             'type="text/html"',
             'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
             'frameborder="0"',
+            '></iframe>',
+        ])
+        self.assertEqual(media_embed('https://www.youtube.com/embed/12345', ts_autoplay="tsstate-active_wait", camel='"yes"'), [
+            '<iframe',
+            'class="embed-youtube"',
+            'type="text/html"',
+            'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
+            'frameborder="0"',
+            'data-ts_autoplay="tsstate-active_wait"',
+            'data-camel="&quot;yes&quot;"',
             '></iframe>',
         ])
 
@@ -72,7 +82,8 @@ class TestEmbed(unittest.TestCase):
             '<a',
             'class="embed-wikimedia"',
             'title="Rose_of_Jericho.gif"',
-            'href="https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif"><img',
+            'href="https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif"',
+            '><img',
             'src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Rose_of_Jericho.gif"',
             'alt="Rose_of_Jericho.gif"',
             '/></a>',
