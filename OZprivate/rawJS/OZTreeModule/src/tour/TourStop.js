@@ -77,6 +77,7 @@ class TourStopClass {
    * in which case it will be removed automatically.
    */
   block_add(block_name, recursing) {
+    if (window.tour_trace) console.log("[BLOCK " + this.setting.ott + " " + this.state + " (" + Array.from(this.blocks) +")] Adding " + block_name)
     this.container[0].classList.add('block-' + block_name);
     this.blocks.add(block_name)
 
@@ -92,6 +93,7 @@ class TourStopClass {
    * advance to the next stage
    */
   block_remove(block_name, recursing) {
+    if (window.tour_trace) console.log("[BLOCK " + this.setting.ott + " " + this.state + " (" + Array.from(this.blocks) +")] Removing " + block_name)
     if (this.blocks.size === 0) {
       // Nothing to do, don't re-trigger final block removal
       return;
@@ -142,6 +144,7 @@ class TourStopClass {
     return this._state || tsstate.INACTIVE;
   }
   set state(new_state) {
+    if (window.tour_trace) console.log("[STATE " + (this.setting || {}).ott + "] " + this.state + " -> " + new_state);
     this._state = new_state;
 
     // Update container state based on our state
@@ -205,9 +208,6 @@ class TourStopClass {
     // NB: This will break the flight promise chain with UserInterruptError
     if (this.OZid) this.controller.leap_to(this.OZid, this.setting.pos)
 
-    // Show the tour stop *after* firing the function, in case we want the function do
-    // do anything first (which could including showing the stop)
-    if (window.is_testing) console.log("Arrived at tourstop: force hiding all other stops")
     this.state = tsstate.ACTIVE_WAIT
     this.arm_wait_timer();
     this.direction = 'forward'
@@ -268,6 +268,7 @@ class TourStopClass {
     this.direction = direction
 
     // NB: Set block regardless, so a pause/resume gets caught before the flight ends
+    if (window.tour_trace) console.log("[FLIGHT " + this.setting.ott + "] Preflight")
     this.block_add('preflight')
 
     // Wait for any previous flight to be cancelled and it's promise settled
@@ -290,6 +291,7 @@ class TourStopClass {
         this.block_remove('preflight')
       }
     }).then(() => {
+      if (window.tour_trace) console.log("[FLIGHT " + this.setting.ott + "] Start")
       if (!this.OZid) {
         /* No transition, just load tourstop */
         return;
@@ -329,6 +331,8 @@ class TourStopClass {
     }).finally(() => {
       // Remove block now flight is finished, one way or another
       this.block_remove('flight')
+      this.block_remove('preflight')
+      if (window.tour_trace) console.log("[FLIGHT " + this.setting.ott + "] End")
     })
   }
 

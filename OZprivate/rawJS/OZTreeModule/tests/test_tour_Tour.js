@@ -1,5 +1,5 @@
 /**
-  * Usage: npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/test_tour_Tour.js
+  * Usage: TOUR_DEBUG=1 npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/test_tour_Tour.js
   */
 import test from 'tape';
 import { call_hook } from '../src/util';

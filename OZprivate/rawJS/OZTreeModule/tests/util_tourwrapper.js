@@ -26,8 +26,10 @@ export function setup_tour(test, s, interaction = null, verbose_test = false) {
 </html>`);
   test.teardown(function () { dom.window.close() });
 
+  verbose_test = verbose_test || process.env.TOUR_DEBUG;
   global.window = dom.window;
   global.window.is_testing = verbose_test;
+  global.window.tour_trace = verbose_test;
   global.document = dom.window.document;
   global.alert = callback_to_log('alert');
   global.$ = require('../../../../static/js/jquery.js');
