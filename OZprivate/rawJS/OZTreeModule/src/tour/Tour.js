@@ -448,25 +448,26 @@ class Tour {
   }
 
   /**
-   * Generate a mutation observer listening for (class_to_notify) being
-   * added / removed
+   * Listen for tourstops matched by CSS selector (target_sel), when
+   * the enter one of the states in (expected_states), add_fn is called.
+   * When they leave (expected_states), remove_fn is called.
    */
-  tourstop_observer(target_sel, class_to_notify, add_fn, remove_fn) {
-    const active_re = new RegExp(class_to_notify.map((s) => '(?:^| )' + s + '(?:$| )').join("|"))
+  tourstop_observer(target_sel, expected_states, add_fn, remove_fn) {
 
+    expected_states = new Set(expected_states)
     const mo = new window.MutationObserver((mutationList, observer) => {
       for(const mutation of mutationList) {
-        const cur_active = !!mutation.target.className.match(active_re)
-        const old_active = !!mutation.oldValue.match(active_re)
+        const cur_active = expected_states.has(mutation.target.getAttribute(opts.attributeFilter[0]))
+        const old_active = expected_states.has(mutation.oldValue)
 
         if (cur_active && !old_active && add_fn) {
-          add_fn(this, mutation.target)
+          add_fn(this, mutation.target.tourstop, mutation.target)
         } else if (!cur_active && old_active && remove_fn) {
-          remove_fn(this, mutation.target)
+          remove_fn(this, mutation.target.tourstop, mutation.target)
         }
       }
     })
-    const opts = { attributes: true, attributeOldValue: true, attributeFilter: ['class'] };
+    const opts = { attributes: true, attributeOldValue: true, attributeFilter: ['data-state'] };
 
     // For all tourstops selected by target_sel, add our observer
     this.container[0].querySelectorAll(':scope > ' + target_sel).forEach((el_ts) => {

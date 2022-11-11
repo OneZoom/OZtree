@@ -52,13 +52,13 @@ function handler(tour) {
     tour.tourstop_observer(
       ".contains-youtube",
       ['tsstate-active_wait'],
-      function (tour, el_ts) {
+      function (tour, tourstop, el_ts) {
         // Start video playing,
         el_ts.querySelectorAll(":scope iframe.embed-youtube").forEach((el_yt) => {
           window.YT.get(el_yt.id).playVideo();
         });
       },
-      function (tour, el_ts) {
+      function (tour, tourstop, el_ts) {
         // Leaving tourstop, stop any video
         el_ts.querySelectorAll(":scope iframe.embed-youtube").forEach((el_yt) => {
           window.YT.get(el_yt.id).stopVideo();

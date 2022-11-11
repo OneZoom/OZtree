@@ -60,13 +60,13 @@ function handler(tour) {
     tour.tourstop_observer(
       ".contains-vimeo",
       ['tsstate-active_wait'],
-      function (tour, el_ts) {
+      function (tour, tourstop, el_ts) {
         // Start video playing,
         el_ts.querySelectorAll(":scope iframe.embed-vimeo").forEach((el_video) => {
           el_video.vimeoplayer.play();
         });
       },
-      function (tour, el_ts) {
+      function (tour, tourstop, el_ts) {
         // Leaving tourstop, stop any video & rewind
         el_ts.querySelectorAll(":scope iframe.embed-vimeo").forEach((el_video) => {
           el_video.vimeoplayer.pause();

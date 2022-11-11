@@ -33,13 +33,13 @@ function handler(tour) {
     tour.tourstop_observer(
       ".contains-httpaudio",
       ['tsstate-active_wait'],
-      function (tour, el_ts) {
+      function (tour, tourstop, el_ts) {
         // Start playing
         el_ts.querySelectorAll(":scope audio").forEach((el) => {
           el.play();
         });
       },
-      function (tour, el_ts) {
+      function (tour, tourstop, el_ts) {
         // Leaving tourstop, stop & rewind
         el_ts.querySelectorAll(":scope audio").forEach((el) => {
           el.pause();
