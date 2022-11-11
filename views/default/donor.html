@@ -17,9 +17,9 @@
         <div class="uk-margin-small-bottom">
           <a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}" target="_blank">
             <span class="img-species leafout leafout-corner"><img class="species" alt=""
-                    src="{{=images[item.OTT_ID].get('url','')}}"
+                    src="{{=images.get(item.OTT_ID, {}).get('url','')}}"
                 onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'"
-                  title="{{=' / '.join(s for s in [images[item.OTT_ID].get('rights', ''), images[item.OTT_ID].get('licence', '')] if s)}}" /></span>
+                  title="{{=' / '.join(s for s in [images.get(item.OTT_ID, {}).get('rights', ''), images.get(item.OTT_ID, {}).get('licence', '')] if s)}}" /></span>
           </a>
         </div>
 
@@ -37,31 +37,20 @@
   </li>
 {{pass}}</ul>
 
-<!-- No story but image -->
-<ul uk-grid class="uk-list uk-child-width-1-2@s uk-child-width-1-5@m">{{for item in (r for r in rows if not r.sponsorship_story and r.OTT_ID in images):}}
+<!-- No story -->
+<ul uk-grid class="uk-list uk-child-width-1-2@s uk-child-width-1-5@m">{{for item in (r for r in rows if not r.sponsorship_story):}}
     <li class="uk-margin-remove-top" style="text-align:center">
         <div class="uk-margin-small-bottom">
           <a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}" target="_blank">
             <span class="img-species leafout leafout-corner"><img class="species" alt=""
-                    src="{{=images[item.OTT_ID].get('url','')}}"
+                    src="{{=images.get(item.OTT_ID, {}).get('url','')}}"
+                  {{# NB: images/notAvailable.png is too small, so force scale }}
+                  width="150" height="150"
                 onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'"
-                  title="{{=' / '.join(s for s in [images[item.OTT_ID].get('rights', ''), images[item.OTT_ID].get('licence', '')] if s)}}" /></span>
+                  title="{{=' / '.join(s for s in [images.get(item.OTT_ID, {}).get('rights', ''), images.get(item.OTT_ID, {}).get('licence', '')] if s)}}" /></span>
           </a>
         </div>
 
-        <div><a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}"
-                target="_blank">{{=html_names.get(item.OTT_ID, 'Unknown')}}</a></div>
-        <div>
-           Sponsored in {{=item['verified_time'].strftime("%Y")}} {{=item['verified_kind']}}
-           <i class="sponsored-by">{{=item['verified_name']}}</i>
-        </div>
-        {{if item.get('verified_more_info', ''):}}<br/><div>{{=item['verified_more_info']}}</div>{{pass}}
-    </li>
-{{pass}}</ul>
-
-<!-- No image or story -->
-<ul uk-grid class="uk-list uk-child-width-1-2@s uk-child-width-1-5@m">{{for item in (r for r in rows if not r.sponsorship_story and r.OTT_ID not in images):}}
-    <li class="uk-margin-remove-top" style="text-align:center">
         <div><a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}"
                 target="_blank">{{=html_names.get(item.OTT_ID, 'Unknown')}}</a></div>
         <div>
