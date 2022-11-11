@@ -1,6 +1,7 @@
 {{
     response.title='OneZoom: '+T('thanks')
     response.files.append(URL('static', 'css/content_pages.css'))
+    renew = request.vars.get('renew', False)
 }}
 {{extend 'uikit_layout.html'}}
 
@@ -9,7 +10,16 @@
     <h1>{{=T('Thank you')}}</h1>
 </div>
 {{end block}}
-<h2>{{=T('Thank you for your donation to OneZoom')}}</h2>
-<p>{{=T('This will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.')}}</p>
-<p>{{=T('We will be in touch soon by e-mail, we expect that in normal circumstances it will only take a few days to add your sponsorship details to the public tree.')}}</p>
+
+{{if renew:}}
+  <h2>{{=T('Thank you for continuing to support OneZoom by renewing your sponsorship')}}</h2>
+
+  <p>{{=T('Your donations help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.')}}</p>
+{{else:}}
+  <h2>{{=T('Thank you for your donation to OneZoom')}}</h2>
+
+  <p>{{=T('This will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.')}}</p>
+  <p>{{=T('We will be in touch soon by e-mail, we expect that in normal circumstances it will only take a few days to add your sponsorship details to the public tree.')}}</p>
+{{pass}}
+
 <a href="index.html">{{=T('Continue to OneZoom main page')}}</a>

@@ -147,7 +147,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
            value="GBP" />
     <input type="hidden"
            name="return"
-           value="{{=URL("sponsor_thanks.html", scheme=True, host=True)}}" />
+           value="{{=URL("sponsor_thanks.html", vars=dict(renew='y'),scheme=True, host=True)}}" />
     <input type="hidden"
            name="notify_url"
            value="{{=notify_url}}" />
