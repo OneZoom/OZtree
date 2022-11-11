@@ -12,6 +12,8 @@ function handler(tour) {
   el_videos.forEach((el_video) => {
     el_video.el_tourstop = el_video.closest('.tour > .container');
     el_video.el_tourstop.classList.add('contains-vimeo');
+    // Split attribute into array, filter off empty entries (i.e. when attribute itself is empty)
+    el_video.autoplay_states = (el_video.getAttribute('data-ts_autoplay') || '').split(" ").filter(x => x);
   });
 
   return new Promise((resolve) => {
@@ -46,7 +48,9 @@ function handler(tour) {
         const tourstop = this.element.el_tourstop.tourstop;
         const block_name = this.element.src;
 
-        tourstop.block_add(block_name);
+        if (tourstop.state === el_video.autoplay_states.slice(-1)[0]) {
+          tourstop.block_add(block_name);
+        }
       });
       el_video.vimeoplayer.on('ended', function (data) {
         const tourstop = this.element.el_tourstop.tourstop;
@@ -57,23 +61,26 @@ function handler(tour) {
     })
   }).then(() => {
     // Attach observers for any autoplaying video
-    tour.tourstop_observer(
-      ".contains-vimeo",
-      ['tsstate-active_wait'],
-      function (tour, tourstop, el_ts) {
-        // Start video playing,
-        el_ts.querySelectorAll(":scope iframe.embed-vimeo").forEach((el_video) => {
-          el_video.vimeoplayer.play();
-        });
-      },
-      function (tour, tourstop, el_ts) {
-        // Leaving tourstop, stop any video & rewind
-        el_ts.querySelectorAll(":scope iframe.embed-vimeo").forEach((el_video) => {
-          el_video.vimeoplayer.pause();
-          el_video.vimeoplayer.setCurrentTime(0);
-        });
-      },
-    );
+    tour.tourstop_observer('.contains-vimeo', '*', (tour, tourstop, el_ts) => {
+      el_ts.querySelectorAll(":scope iframe.embed-vimeo").forEach((el) => {
+        if (window.getComputedStyle(el_ts).visibility !== 'visible') {
+          // Shouldn't ever play whilst invisible
+          el.vimeoplayer.pause();
+          el.vimeoplayer.setCurrentTime(0);
+        } else if (el.autoplay_states.indexOf(tourstop.state) > -1) {
+          el.vimeoplayer.play();
+
+          // Check to see if final block should be added
+          if (tourstop.state === el.autoplay_states.slice(-1)[0]) {
+            el.vimeoplayer.getPaused().then((paused) => {
+              const block_name = el.src;
+
+              if (!paused) tourstop.block_add(block_name);
+            });
+          }
+        }
+      });
+    });
   });
 }
 

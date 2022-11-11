@@ -451,23 +451,38 @@ class Tour {
    * Listen for tourstops matched by CSS selector (target_sel), when
    * the enter one of the states in (expected_states), add_fn is called.
    * When they leave (expected_states), remove_fn is called.
+   *
+   * expected_states can also be "*", in which case add_fn is called for
+   * every state change
    */
   tourstop_observer(target_sel, expected_states, add_fn, remove_fn) {
-
-    expected_states = new Set(expected_states)
-    const mo = new window.MutationObserver((mutationList, observer) => {
-      for(const mutation of mutationList) {
-        const cur_active = expected_states.has(mutation.target.getAttribute(opts.attributeFilter[0]))
-        const old_active = expected_states.has(mutation.oldValue)
-
-        if (cur_active && !old_active && add_fn) {
-          add_fn(this, mutation.target.tourstop, mutation.target)
-        } else if (!cur_active && old_active && remove_fn) {
-          remove_fn(this, mutation.target.tourstop, mutation.target)
-        }
-      }
-    })
+    var mo;
     const opts = { attributes: true, attributeOldValue: true, attributeFilter: ['data-state'] };
+
+    if (expected_states === "*") {
+      // Special observer that just fires on every state-change
+      if (remove_fn) throw new Error("remove_fn should not be supplied when listening to every state");
+
+      mo = new window.MutationObserver((mutationList, observer) => {
+        for(const mutation of mutationList) {
+          add_fn(this, mutation.target.tourstop, mutation.target);
+        }
+      });
+    } else {
+      expected_states = new Set(expected_states)
+      mo = new window.MutationObserver((mutationList, observer) => {
+        for(const mutation of mutationList) {
+          const cur_active = expected_states.has(mutation.target.getAttribute(opts.attributeFilter[0]))
+          const old_active = expected_states.has(mutation.oldValue)
+
+          if (cur_active && !old_active && add_fn) {
+            add_fn(this, mutation.target.tourstop, mutation.target)
+          } else if (!cur_active && old_active && remove_fn) {
+            remove_fn(this, mutation.target.tourstop, mutation.target)
+          }
+        }
+      })
+    }
 
     // For all tourstops selected by target_sel, add our observer
     this.container[0].querySelectorAll(':scope > ' + target_sel).forEach((el_ts) => {
