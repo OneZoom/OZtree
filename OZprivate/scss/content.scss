@@ -402,6 +402,10 @@ input.oz-pill { border: none; }
     position: relative;
   }
 
+  &.pill-light {
+    @extend %oz-background-light;
+  }
+
   .oz-pill-splash {
     position: absolute;
     top: 0;

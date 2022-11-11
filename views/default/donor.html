@@ -11,9 +11,9 @@
 </div>
 {{end block}}
 
-<ul class="uk-list">{{for item in (r for r in rows if r.sponsorship_story):}}
+<ul class="uk-list">{{for item in (r for r in rows + rows + rows if r.sponsorship_story):}}
   <li uk-grid class="uk-padding-small uk-flex-middle">
-    <div class="uk-width-1-5@m" style="text-align:center">
+    <div class="uk-width-1-5@m oz-pill pill-light" style="text-align:center">
         <div class="uk-margin-small-bottom">
           <a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}" target="_blank">
             <span class="img-species leafout leafout-corner"><img class="species" alt=""
@@ -38,8 +38,8 @@
 {{pass}}</ul>
 
 <!-- No story -->
-<ul uk-grid class="uk-list uk-child-width-1-2@s uk-child-width-1-5@m">{{for item in (r for r in rows if not r.sponsorship_story):}}
-    <li class="uk-margin-remove-top" style="text-align:center">
+<ul uk-grid class="uk-grid-small uk-child-width-1-2@s uk-child-width-1-5@m">{{for item in (r for r in rows + rows + rows + rows + rows if not r.sponsorship_story):}}
+    <li class="oz-pill pill-light" style="text-align:center ; margin-right: 15px">
         <div class="uk-margin-small-bottom">
           <a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}" target="_blank">
             <span class="img-species leafout leafout-corner"><img class="species" alt=""
