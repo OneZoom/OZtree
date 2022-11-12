@@ -156,6 +156,15 @@ class TourStopClass {
     // Any lingering blocks from previous state don't apply to this state
     this.block_clear();
 
+    // If transitioning in, inform the previous stop it's transitioning out
+    if (this.state === tsstate.TRANSITION_IN) {
+      // NB: We need to make sure this happens after our state-change, as the
+      //     previous stop may raise blocks which need to be mirrored to our
+      //     transition-in state, not the previous inactive state (and thrown
+      //     away).
+      if (this.tour.prev_stop()) this.tour.prev_stop().leave();
+    }
+
     return this._state;
   }
 
