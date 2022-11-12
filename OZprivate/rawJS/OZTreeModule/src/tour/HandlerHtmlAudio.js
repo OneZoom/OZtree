@@ -12,17 +12,23 @@ function handler(tour) {
   el_audios.forEach((el) => {
     el.el_tourstop = el.closest('.tour > .container');
     el.el_tourstop.classList.add('contains-httpaudio');
+    // Split attribute into array, filter off empty entries (i.e. when attribute itself is empty)
+    el.autoplay_states = (el.getAttribute('data-ts_autoplay') || '').split(" ").filter(x => x);
   });
 
   return Promise.resolve().then(() => {
     // Attach events to block progression when playing
     return el_audios.forEach((el) => {
       el.addEventListener('play', (e) => {
+        const tourstop = e.target.el_tourstop.tourstop;
         const block_name = event.target.src;
 
-        event.target.el_tourstop.tourstop.block_add(block_name);
+        if (tourstop.state === el.autoplay_states.slice(-1)[0]) {
+          event.target.el_tourstop.tourstop.block_add(block_name);
+        }
       });
       el.addEventListener('ended', (e) => {
+        const tourstop = e.target.el_tourstop.tourstop;
         const block_name = event.target.src;
 
         event.target.el_tourstop.tourstop.block_remove(block_name);
@@ -30,23 +36,22 @@ function handler(tour) {
     })
   }).then(() => {
     // Attach observers for any autoplaying audio
-    tour.tourstop_observer(
-      ".contains-httpaudio",
-      ['tsstate-active_wait'],
-      function (tour, tourstop, el_ts) {
-        // Start playing
-        el_ts.querySelectorAll(":scope audio").forEach((el) => {
-          el.play();
-        });
-      },
-      function (tour, tourstop, el_ts) {
-        // Leaving tourstop, stop & rewind
-        el_ts.querySelectorAll(":scope audio").forEach((el) => {
+    tour.tourstop_observer('.contains-httpaudio', '*', (tour, tourstop, el_ts) => {
+      el_ts.querySelectorAll(":scope audio").forEach((el) => {
+        if (window.getComputedStyle(el_ts).visibility !== 'visible') {
+          // Shouldn't ever play whilst invisible
           el.pause();
           el.currentTime = 0;
-        });
-      },
-    );
+        } else if (el.autoplay_states.indexOf(tourstop.state) > -1) {
+          el.play();
+
+          // Check to see if final block should be added
+          if (tourstop.state === el.autoplay_states.slice(-1)[0]) {
+            if (!el.paused) tourstop.block_add(el.src);
+          }
+        }
+      });
+    });
   });
 }
 
