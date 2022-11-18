@@ -54,7 +54,7 @@
     "tape": "^4.13.2",
     "terser-webpack-plugin": "^1.4.3",
     "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "webpack-cli": "^3.3.12"
   },
   "dependencies": {
     "grunt-sass": "^3.1.0",
