@@ -128,7 +128,7 @@ So a major step when installing OneZoom is:
 3. 	Once mysql is installed, you will need to set a root password, and create a database for web2py to use. See http://dev.mysql.com/doc/refman/5.7/en/default-privileges.html. So once mysqld is running, you need to log in to the sql server with the root name and password (if you are using the command line, log in using `mysql -u root -p`), and issue the following SQL commands (the text after the `mysql>` prompt) to create a database for web2py to use: feel free to use a different *'passwd'*.
 
 	```
-	mysql> create database OneZoom
+	mysql> create database OneZoom;
 		Query OK, 1 row affected (0.09 sec)
 	
 	mysql> CREATE USER 'oz'@'localhost' IDENTIFIED BY 'passwd';
@@ -232,7 +232,7 @@ Once tables are created, and everything is working, you can set `is_testing = Fa
 
 `models` stores the python back end server code.
 
-`static` stores all static files including images, css, and compiled js. Files which are output by various server processes are stored in `FinalOutputs`. This includes very large numbers of thumbnail images (stored in `FinalOutputs/pics`) and static data files such as the tree topology and the tree cut positions (stored in `FinalOutputs/data`). The OZTreeModule folder contains the compiled verson of most of the core OneZoom code. `static/OZLegacy` contains most of the old trees.
+`static` stores all static files including images, css, and compiled js. Files which are output by various server processes are stored in `FinalOutputs`. This includes very large numbers of thumbnail images (stored in `FinalOutputs/pics`) and static data files such as the tree topology and the tree cut positions (stored in `FinalOutputs/data`). The OZTreeModule folder contains the compiled version of most of the core OneZoom code. `static/OZLegacy` contains most of the old trees.
 
 `views` is where all the html is stored - it's OK to just use raw html in here if no server side functions are needed for that particular page.
 
@@ -249,13 +249,13 @@ Once tables are created, and everything is working, you can set `is_testing = Fa
 
 ### Creating auth users & groups
 
-Web2py uses an `auth_` based system, which has tables for users, roles, and a mapping table assigning rols to users. This can be edited through the web interface: assuming you are running a temporary version of web2py on localhost, you can access the admin pages through http://127.0.0.1:8000/admin/design/OneZoom, which will require you to enter the temporary administrator password ('pass', above) that you used in the web2py startup command. The database tables can be seen at the url http://127.0.0.1:8000/OZtree/appadmin. You need to click to edit the `db.auth_user` table, from where you can click to add a "New Record", and submit a first name, last name, email, username, and password. You then need to go back to the appadmin page and create a "manager" role by adding a New Record to `db.auth_group` table (you can type anything in the description box). Finally, you need to create a New Record in the `db.auth_membership` table, and assign the "manager" group ID to your user ID in the resulting page.
+Web2py uses an `auth_` based system, which has tables for users, roles, and a mapping table assigning roles to users. This can be edited through the web interface: assuming you are running a temporary version of web2py on localhost, you can access the admin pages through http://127.0.0.1:8000/admin/design/OZtree, which will require you to enter the temporary administrator password ('pass', above) that you used in the web2py startup command. The database tables can be seen at the url http://127.0.0.1:8000/OZtree/appadmin. You need to click to edit the `db.auth_user` table, from where you can click to add a "New Record", and submit a first name, last name, email, username, and password. You then need to go back to the appadmin page and create a "manager" role by adding a New Record to `db.auth_group` table (you can type anything in the description box). Finally, you need to create a New Record in the `db.auth_membership` table, and assign the "manager" group ID to your user ID in the resulting page.
 
 ### Other tables
 
 The main bulk of the data returned from the API is stored in the rest of the tables in the database, as detailed below. To get the API and the rest of the website working, you will have to obtain a database dump of the OneZoom tables by emailing the normal OneZoom address. If you are loading new data on top of old, it is a good idea to truncate all the non-auth tables before loading data.
 
-Note that mySQL stupidly has a resticted version of the unicode character set, so fields that could contain e.g. chinese characters  need to be set to utf8mb4 (which is not the default). These are the `vernacular` field in the `vernacular_by_ott` and `vernacular_by_name` tables, the `rights` field in the `images_by_ott` and `images_by_name` tables, and the following fields in the `reservations` table: `e_mail`, `twitter_name`, `user_sponsor_name`, `user_donor_name` `user_more_info`, `user_message_OZ`, `verified_sponsor_name`, `verified_donor_name` `verified_more_info`. When we send you the tables, they should contain `create` syntax which makes sure the tables are correctly defined, but it may be worth checking too.
+Note that mySQL stupidly has a restricted version of the unicode character set, so fields that could contain e.g. chinese characters  need to be set to utf8mb4 (which is not the default). These are the `vernacular` field in the `vernacular_by_ott` and `vernacular_by_name` tables, the `rights` field in the `images_by_ott` and `images_by_name` tables, and the following fields in the `reservations` table: `e_mail`, `twitter_name`, `user_sponsor_name`, `user_donor_name` `user_more_info`, `user_message_OZ`, `verified_sponsor_name`, `verified_donor_name` `verified_more_info`. When we send you the tables, they should contain `create` syntax which makes sure the tables are correctly defined, but it may be worth checking too.
 
 ### Optimising tables (IMPORTANT)
 
@@ -273,7 +273,7 @@ OneZoom data list - this is data that's not stored anywhere else outside OneZoom
 2. Banned is ours and is important but could be recreated
 3. eol_inspected is ours but is not important at all so could be lost and we wouldn't care
 4. eol_updated is ours but is not critical
-5. images_by_name and images_by_ott - entries put in by us where src=1 are ours and are *semi critical* because they include things like special images of sponsors etc. also includes hacked ratings and hacked picutres in general.
+5. images_by_name and images_by_ott - entries put in by us where src=1 are ours and are *semi critical* because they include things like special images of sponsors etc. also includes hacked ratings and hacked pictures in general.
 6. IUCN - not ours at all
 7. leaves_in_unsponsored_tree - now not used any more can be deleted
 8. Ordered leaves and ordered nodes - can be recreated, but include derived products like popularity, matched IDs and Yan's curation of the tree. This can be regenerated any time provided our codebase and algorithms are fine
@@ -285,7 +285,7 @@ OneZoom data list - this is data that's not stored anywhere else outside OneZoom
 
 Notes
 
-* there a question mark over tours information and associated things
+* there is a question mark over tours information and associated things
 * there are many critical source files in OZ_private, including tree sources.
 
 ## Running tests
@@ -316,7 +316,7 @@ You can then run the tests with:
 
 # Documentation
 
-Documentation is partially compiled fomr the source code using Grunt, and lives in `OZprivate/rawJS/OZTreeModule/docs`. Once compiled, it can be viewed online using your web2py server. For example, if you are running web2py on http://127.0.0.1:8000, you should be able to visit [http://127.0.0.1:8000/OZtree/dev/DOCS](http://127.0.0.1:8000/OZtree/dev/DOCS), or (if you have manager access to the OneZoom site) at [http://onezoom.org/dev/DOCS](http://onezoom.org/dev/DOCS).
+Documentation is partially compiled from the source code using Grunt, and lives in `OZprivate/rawJS/OZTreeModule/docs`. Once compiled, it can be viewed online using your web2py server. For example, if you are running web2py on http://127.0.0.1:8000, you should be able to visit [http://127.0.0.1:8000/OZtree/dev/DOCS](http://127.0.0.1:8000/OZtree/dev/DOCS), or (if you have manager access to the OneZoom site) at [http://onezoom.org/dev/DOCS](http://onezoom.org/dev/DOCS).
 
 # Keeping OneZoom updated
 
