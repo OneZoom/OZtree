@@ -219,7 +219,7 @@ When web2py is run, it will print instructions telling how to shut down the web2
 
 **If this is a new installation** you should now visit `http://127.0.0.1:8000/OZtree/default/` or `https://127.0.0.1:8000/OZtree/default/` to force web2py to create database tables. To load data into the tables, see "Loading Data", below.
 
-Also, if you want to make OneZoom the default application, make a copy of the routes.py file in the folder labelled `_MOVE_CONTENTS_TO_WEB2PY_DIR` and place it in the top level web2py directory (see `_MOVE_CONTENTS_TO_WEB2PY_DIR/README.markdown`).
+Also, if you want to make OneZoom the default application, make a copy of the routes.py file in the folder labelled `_COPY_CONTENTS_TO_WEB2PY_DIR` and place it in the top level web2py directory (see `_COPY_CONTENTS_TO_WEB2PY_DIR/README.markdown`).
 
 Once tables are created, and everything is working, you can set `is_testing = False` in `models/db.py` and `migrate=0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
 
