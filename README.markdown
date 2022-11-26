@@ -344,7 +344,7 @@ If you wish to make sure your OneZoom data is up-to-date, there are a few steps 
 # Customising OneZoom
 A few suggestions about ways to customize OneZoom
 
-### Easy customization posibilities
+### Easy customization possibilities
 
 * Change the colour schemes: the code in `rawJS/OZTreeModule/src/themes` gives examples of how to create new colour schemes for branches, leaves, etc of the tree. They can be gathered together into themes (including different leaf styles, default fractal views etc) by adding to the code in `rawJS/OZTreeModule/src/tree_settings.js`.
 
