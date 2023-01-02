@@ -34,7 +34,7 @@
     "@babel/core": "^7.9.0",
     "@babel/preset-env": "^7.9.0",
     "almost-equal": "^1.1.0",
-    "babel-loader": "^8.1.0",
+    "babel-loader": "^8.3.0",
     "babel-polyfill": "^6.26.0",
     "babel-tape-runner": "^3.0.0",
     "babelify": "^10.0.0",
@@ -50,11 +50,11 @@
     "grunt-curl": "^2.5.1",
     "grunt-exec": "^3.0.0",
     "grunt-jsdoc-to-markdown": "^5.0.0",
-    "html-webpack-plugin": "^4.0.2",
+    "html-webpack-plugin": "^5.5.0",
     "tape": "^4.13.2",
-    "terser-webpack-plugin": "^1.4.3",
-    "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "terser-webpack-plugin": "^5.3.6",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
   },
   "dependencies": {
     "grunt-sass": "^3.1.0",
