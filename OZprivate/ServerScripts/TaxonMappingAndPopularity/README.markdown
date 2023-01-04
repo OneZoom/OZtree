@@ -18,7 +18,7 @@ __File downloads__
 
 Numbers 1. and 2. can be downloaded from the Open Tree of Life, and instructions for getting them are [here](../../data/OpenTree/README.markdown) (note that in OneZoom we don't use the plain OpenTree newick file, but instead a [bespoke Newick file](../TreeBuild/README.markdown)).
 
-Number 3. can be downloaded from the [EoL OpenData site](https://opendata.eol.org/dataset/identifiers-csv-gz)
+Number 3. can be downloaded from the [EoL OpenData site](https://opendata.eol.org/dataset/identifier-map)
 
 Number 4. can be downloaded as `latest-all.json.bz2` from http://dumps.wikimedia.org/wikidatawiki/entities/
 
