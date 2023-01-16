@@ -2,6 +2,7 @@
 RELEASE_INFO
 .DS_Store
 .sass-cache
+.vscode
 progress.log
 
 private/*.ini
