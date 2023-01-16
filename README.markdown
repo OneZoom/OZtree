@@ -253,7 +253,35 @@ Web2py uses an `auth_` based system, which has tables for users, roles, and a ma
 
 ### Other tables
 
-The main bulk of the data returned from the API is stored in the rest of the tables in the database, as detailed below. To get the API and the rest of the website working, you will have to obtain a database dump of the OneZoom tables by emailing the normal OneZoom address. If you are loading new data on top of old, it is a good idea to truncate all the non-auth tables before loading data.
+The main bulk of the data returned from the API is stored in the rest of the tables in the database, as detailed below. To get the API and the rest of the website working, you will have to obtain a database dump of the OneZoom tables. You can either do this by emailing mail@onezoom.org, or getting it from a Docker setup of OZTree. If you are loading new data on top of old, it is a good idea to truncate all the non-auth tables before loading data.
+
+You can use the following steps to fill up the tables based on a Docker setup. Start by following the [Docker instructions](https://hub.docker.com/r/onezoom/oztree-complete), including the 'Saving the image' section. Then, run these commands one by one:
+
+```sh
+# start by stopping/deleting any OZTree container instance that may still be running (your container name may be different):
+docker stop oztree
+
+# Create a folder on your local machine to hold the dump
+mkdir ~/dbdump
+
+# Run a new OZTree Docker container instance, mounting your local folder
+docker run -d -p 8080:80 --name oztree --mount type=bind,source="$(pwd)"/dbdump,target=/dbdump onezoom/oztree-complete-with-iucn
+
+# Start a shell in the container
+docker exec -it oztree /bin/bash
+
+# Dump the container's database into your mounted local folder. This is fairly fast. The resulting file is ~1GB.
+mysqldump OneZoom > /dbdump/ozdb.sql
+
+# Exit the running OZTree container. We're done with it now, so feel free to delete it.
+exit
+
+# Now import the dump into your local OneZoom database (you may need to pass -u & -p based on your MySql configuration)
+# WARNING: this is an extremely long step that can take over an hour with no indication of progress!
+sudo mysql OneZoom < ~/dbdump/ozdb.sql
+
+# You're done, and your local database should be fully populated. Feel free to delete the dump file /dbdump/ozdb.sql
+```
 
 Note that mySQL stupidly has a restricted version of the unicode character set, so fields that could contain e.g. chinese characters  need to be set to utf8mb4 (which is not the default). These are the `vernacular` field in the `vernacular_by_ott` and `vernacular_by_name` tables, the `rights` field in the `images_by_ott` and `images_by_name` tables, and the following fields in the `reservations` table: `e_mail`, `twitter_name`, `user_sponsor_name`, `user_donor_name` `user_more_info`, `user_message_OZ`, `verified_sponsor_name`, `verified_donor_name` `verified_more_info`. When we send you the tables, they should contain `create` syntax which makes sure the tables are correctly defined, but it may be worth checking too.
 
