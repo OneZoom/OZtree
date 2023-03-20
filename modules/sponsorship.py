@@ -771,7 +771,6 @@ def sponsorship_email_reminders(for_usernames=None):
                 final_reminders=[],
                 not_yet_due=[],
                 unsponsorable=[],
-
                 renew_url = sponsor_signed_url('sponsor_renew.html', r.username),
                 unsubscribe_url = sponsor_signed_url('sponsor_unsubscribe.html', r.username),
             )
@@ -786,26 +785,27 @@ def sponsorship_email_reminders(for_usernames=None):
         elif out[r.username]["full_name"] is None and r.verified_kind == "by":
             # Only use sponsor by as a last resort
             out[r.username]["full_name"] = r.verified_name
+
         if (r.PP_first_name or r.PP_second_name):
             # replace with the most recent
             out[r.username]["pp_name"] = f"{r.PP_first_name} {r.PP_second_name}"
+
         if status != '':
             # This item now banned/invalid, shouldn't be sending reminders.
             out[r.username]['unsponsorable'].append(r.OTT_ID)
         elif r.sponsorship_ends >= expiry_soon_date:
-            # Not yet due, just for information
+            # sponsorship ends happens past the point we consider it soon
             out[r.username]['not_yet_due'].append(r.OTT_ID)
-        elif r.emailed_re_renewal_initial is None:
-            # No initial reminder sent, send one
-            out[r.username]['initial_reminders'].append(r.OTT_ID)
-            send_to.add(r.username)
         elif r.sponsorship_ends >= expiry_critical_date:
-            # Initial reminder sent, but not critical yet, log without another e-mail
+            # Sponsorship soon, but not critical yet.
             out[r.username]['initial_reminders'].append(r.OTT_ID)
-        elif r.emailed_re_renewal_final is None:
-            # No final reminder sent, send one
+            if r.emailed_re_renewal_initial is None:
+                send_to.add(r.username)
+        else:
+            # Sponsorship now critical
             out[r.username]['final_reminders'].append(r.OTT_ID)
-            send_to.add(r.username)
+            if r.emailed_re_renewal_final is None:
+                send_to.add(r.username)
 
     # Only return e-mails we should be sending
     out = dict((k, reminder) for k, reminder in out.items() if k in send_to)

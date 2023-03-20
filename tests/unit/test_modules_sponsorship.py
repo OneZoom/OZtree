@@ -927,9 +927,16 @@ class TestSponsorship(unittest.TestCase):
                 not_yet_due=[], unsponsorable=[r1_1.OTT_ID]),
             user_2: dict(username=user_2, email_address=email_2,
                 initial_reminders=[],
-                final_reminders=[r2_2.OTT_ID],
+                # NB: r2_1.OTT_ID hasn't expired, so still "final"
+                final_reminders=[r2_1.OTT_ID, r2_2.OTT_ID],
                 not_yet_due=[r2_3.OTT_ID], unsponsorable=[]),
         })
+
+        # Send that, nothing more to tell them
+        sponsorship_email_reminders_post(all_r[user_1])
+        sponsorship_email_reminders_post(all_r[user_2])
+        all_r = all_reminders()
+        self.assertEqual(all_r, {})
 
     def test_sponsorship_restrict_contact(self):
         # Buy 2 otts
@@ -953,8 +960,8 @@ class TestSponsorship(unittest.TestCase):
 
         # Allowed to contact about the expiry
         reminders = sponsorship_email_reminders()[user1]
-        self.assertEqual(reminders['initial_reminders'], [r1.OTT_ID,r2.OTT_ID])
-        self.assertEqual(reminders['final_reminders'], [])
+        self.assertEqual(reminders['initial_reminders'], [r2.OTT_ID])
+        self.assertEqual(reminders['final_reminders'], [r1.OTT_ID])
         self.assertEqual(reminders['not_yet_due'], [])
         self.assertEqual(reminders['unsponsorable'], [])
 
@@ -964,8 +971,8 @@ class TestSponsorship(unittest.TestCase):
 
         # But can explictly request the e-mail contents
         reminders = sponsorship_email_reminders([user1])[user1]
-        self.assertEqual(reminders['initial_reminders'], [r1.OTT_ID,r2.OTT_ID])
-        self.assertEqual(reminders['final_reminders'], [])
+        self.assertEqual(reminders['initial_reminders'], [r2.OTT_ID])
+        self.assertEqual(reminders['final_reminders'], [r1.OTT_ID])
         self.assertEqual(reminders['not_yet_due'], [])
         self.assertEqual(reminders['unsponsorable'], [])
 
