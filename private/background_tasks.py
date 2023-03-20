@@ -44,6 +44,10 @@ def verbose(s):
 # Regenerate request for current time
 current.request = Request(dict())
 
+# Application directory
+current.request.folder = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
+current.request.application = os.path.basename(current.request.folder)
+
 # Bodge request to be able to generate valid URLs
 current.request.env.http_host = run_http_host
 current.request.env.http_port = '443'
