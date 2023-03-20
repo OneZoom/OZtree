@@ -9,13 +9,15 @@ Runs all background tasks for OneZoom in a single process:
 
 Usage::
 
-    grunt exec:background_tasks:(instance hostname, eg: 'onezoom.org')[:dry-run][:verbose]
+    grunt exec:background_tasks:(instance hostname, eg: 'onezoom.org')[:dry-run][:log-email][:verbose]
 
 * ``(instance hostname)`` provides the public hostname to use in links within e-mails
 * ``dry-run`` will only report what will be done, no e-mails or database modifications will be made
+* ``log-email`` will log mail to files, but database modifications *will* be made
 * ``verbose`` will print out what is being done to stdout.
 
 """
+import os.path
 import time
 import sys
 
@@ -32,8 +34,9 @@ from OZfunc import nice_name_from_otts
 
 run_dryrun = 'dry-run' in sys.argv
 run_verbose = run_dryrun or ('verbose' in sys.argv)
+run_logemail = 'log-email' in sys.argv
 if len(sys.argv) < 2:
-    print("Usage: grunt exec:background_tasks:(instance hostname)[:dry-run][:verbose]", file=sys.stderr)
+    print("Usage: grunt exec:background_tasks:(instance hostname)[:dry-run][:log-email][:verbose]", file=sys.stderr)
     exit(1)
 run_http_host = sys.argv[1]
 
@@ -54,7 +57,8 @@ current.request.env.http_port = '443'
 current.request.env.wsgi_url_scheme = 'https'
 
 # Configure the mailer
-mail, reason = ozmail.get_mailer()
+mailer_args = dict(server='logging') if run_logemail else dict()
+mail, reason = ozmail.get_mailer(**mailer_args)
 if not mail:
     raise ValueError(reason)
 
