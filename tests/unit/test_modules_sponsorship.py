@@ -767,7 +767,7 @@ class TestSponsorship(unittest.TestCase):
         def all_reminders(user_details = False):
             """Filter out non-unittest e-mail addresses"""
             out = {}
-            for k, r in sponsorship_email_reminders().items():
+            for (k, r) in sponsorship_email_reminders():
                 # Check URLs then hide them
                 if k is None:
                     # Nonsense data in the DB
@@ -943,10 +943,10 @@ class TestSponsorship(unittest.TestCase):
         r2 = util.purchase_reservation(basket_details=dict(e_mail=email1))[0]
 
         # Requesting reminders for no usernames returns nothing
-        self.assertEqual(sponsorship_email_reminders([]), {})
+        self.assertEqual(list(sponsorship_email_reminders([])), [])
 
         # Can explicitly request to see that nothing's due
-        reminders = sponsorship_email_reminders([user1])[user1]
+        reminders = {k:r for (k, r) in sponsorship_email_reminders()}[user1]
         self.assertEqual(reminders['initial_reminders'], [])
         self.assertEqual(reminders['final_reminders'], [])
         self.assertEqual(reminders['not_yet_due'], [r1.OTT_ID,r2.OTT_ID])
@@ -956,7 +956,7 @@ class TestSponsorship(unittest.TestCase):
         current.request.now = (current.request.now + datetime.timedelta(days=(4*365) - 30))
 
         # Allowed to contact about the expiry
-        reminders = sponsorship_email_reminders()[user1]
+        reminders = {k:r for (k, r) in sponsorship_email_reminders()}[user1]
         self.assertEqual(reminders['initial_reminders'], [r2.OTT_ID])
         self.assertEqual(reminders['final_reminders'], [r1.OTT_ID])
         self.assertEqual(reminders['not_yet_due'], [])
@@ -964,10 +964,10 @@ class TestSponsorship(unittest.TestCase):
 
         # After restricting contact, we're not
         sponsorship_restrict_contact(user1)
-        self.assertNotIn(user1, sponsorship_email_reminders().keys())
+        self.assertNotIn(user1, set(k for (k, v) in sponsorship_email_reminders()))
 
         # But can explictly request the e-mail contents
-        reminders = sponsorship_email_reminders([user1])[user1]
+        reminders = {k:r for (k, r) in sponsorship_email_reminders([user1])}[user1]
         self.assertEqual(reminders['initial_reminders'], [r2.OTT_ID])
         self.assertEqual(reminders['final_reminders'], [r1.OTT_ID])
         self.assertEqual(reminders['not_yet_due'], [])
@@ -1101,7 +1101,7 @@ class TestSponsorRenewRequestLogic(TestSponsorship):
         info = sponsor_renew_request_logic(good_r.username, mailer)
         self.assertTrue(self.flash_text % good_r.username in info)
         self.assertFalse(self.good_email in info)  # Should not reveal the private email if username passed
-        data = sponsorship_email_reminders(for_usernames=[good_r.username])
+        data = {k:r for (k, r) in sponsorship_email_reminders(for_usernames=[good_r.username])}
         self.assertTrue(good_r.username in data)
         self.assertTrue('renew_url' in data[good_r.username])
         self.assertFalse(data[good_r.username]['renew_url'] in info) 
@@ -1128,7 +1128,7 @@ class TestSponsorRenewRequestLogic(TestSponsorship):
         good_r = util.purchase_reservation(basket_details=dict(e_mail=self.good_email))[0]
         mailer = (None, "No mailer provided")
         info = sponsor_renew_request_logic(good_r.username, None, reveal_private_data=True)
-        data = sponsorship_email_reminders(for_usernames=[good_r.username])
+        data = {k:r for (k, r) in sponsorship_email_reminders(for_usernames=[good_r.username])}
         self.assertTrue(good_r.username in data)
         self.assertTrue('renew_url' in data[good_r.username])
         renew_url = data[good_r.username]['renew_url'] 
@@ -1154,7 +1154,7 @@ class TestSponsorRenewRequestLogic(TestSponsorship):
         info = sponsor_renew_request_logic(good_r.username, mailer=admin_mailer)
         self.assertTrue(self.flash_text % good_r.username in info)
         self.assertFalse(self.flash_text % self.good_email in info)  # Still don't flash up email
-        data = sponsorship_email_reminders(for_usernames=[good_r.username])
+        data = {k:r for (k, r) in sponsorship_email_reminders(for_usernames=[good_r.username])}
         self.assertTrue(good_r.username in data)
         self.assertTrue('renew_url' in data[good_r.username])
         self.assertFalse(data[good_r.username]['renew_url'] in info) 
