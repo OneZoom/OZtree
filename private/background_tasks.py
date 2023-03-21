@@ -62,7 +62,7 @@ mail, reason = ozmail.get_mailer(**mailer_args)
 if not mail:
     raise ValueError(reason)
 
-for username, user_reminders in sponsorship_email_reminders().items():
+for (username, user_reminders) in sponsorship_email_reminders():
     email = user_reminders['email_address']
     verbose("-" * 80)
     verbose("* Sending e-mail to %s" % email)
