@@ -52,7 +52,12 @@ def sponsorship_config():
         # Number of days left by which point we consider expiry to be critical
         out['expiry_critical_days'] = int(myconf('sponsorship.expiry_critical_days'))
     except:
-        out['expiry_critical_days'] = 15
+        out['expiry_critical_days'] = 30
+    try:
+        # Number of days after expiry_(x)_days after which we send e-mails
+        out['expiry_hysteresis'] = int(myconf('sponsorship.expiry_hysteresis'))
+    except:
+        out['expiry_hysteresis'] = 15
     return out
 
 
@@ -727,7 +732,9 @@ def sponsorship_email_reminders(for_usernames=None):
     db = current.db
     URL = current.globalenv['URL']
     expiry_soon_date = sponsorship_expiry_soon_date()
+    expiry_soon_trigger = expiry_soon_date - datetime.timedelta(days=sponsorship_config()['expiry_hysteresis'])
     expiry_critical_date = sponsorship_expiry_soon_date('critical')
+    expiry_critical_trigger = expiry_critical_date - datetime.timedelta(days=sponsorship_config()['expiry_hysteresis'])
 
     def sponsor_signed_url(page, username, controller='default'):
         return URL(
@@ -761,7 +768,10 @@ def sponsorship_email_reminders(for_usernames=None):
                 pp_name=None,
                 user_sponsor_lang=r.user_sponsor_lang,
                 initial_reminders=[],
+                initial_triggers=[],
                 final_reminders=[],
+                final_triggers=[],
+                days_left={},
                 not_yet_due=[],
                 unsponsorable=[],
                 renew_url = sponsor_signed_url('sponsor_renew.html', r.username),
@@ -786,19 +796,25 @@ def sponsorship_email_reminders(for_usernames=None):
         if status != '':
             # This item now banned/invalid, shouldn't be sending reminders.
             out[r.username]['unsponsorable'].append(r.OTT_ID)
-        elif r.sponsorship_ends >= expiry_soon_date:
-            # sponsorship ends happens past the point we consider it soon
-            out[r.username]['not_yet_due'].append(r.OTT_ID)
-        elif r.sponsorship_ends >= expiry_critical_date:
-            # Sponsorship soon, but not critical yet.
+        elif r.sponsorship_ends <= expiry_critical_date:
+            # Expiry critical
+            out[r.username]['final_reminders'].append(r.OTT_ID)
+            out[r.username]['days_left'][r.OTT_ID] = (r.sponsorship_ends - request.now).days
+            if r.emailed_re_renewal_final is None and r.sponsorship_ends <= expiry_critical_trigger:
+                # Below e-mail trigger date, send e-mail
+                out[r.username]['final_triggers'].append(r.OTT_ID)
+                send_to.add(r.username)
+        elif r.sponsorship_ends <= expiry_soon_date:
+            # Expiry soon
             out[r.username]['initial_reminders'].append(r.OTT_ID)
-            if r.emailed_re_renewal_initial is None:
+            out[r.username]['days_left'][r.OTT_ID] = (r.sponsorship_ends - request.now).days
+            if r.emailed_re_renewal_initial is None and r.sponsorship_ends <= expiry_soon_trigger:
+                # Below e-mail trigger date, send e-mail
+                out[r.username]['initial_triggers'].append(r.OTT_ID)
                 send_to.add(r.username)
         else:
-            # Sponsorship now critical
-            out[r.username]['final_reminders'].append(r.OTT_ID)
-            if r.emailed_re_renewal_final is None:
-                send_to.add(r.username)
+            # sponsorship ends happens past the point we consider it soon
+            out[r.username]['not_yet_due'].append(r.OTT_ID)
 
     # Only return e-mails we should be sending
     out = dict((k, reminder) for k, reminder in out.items() if k in send_to)
