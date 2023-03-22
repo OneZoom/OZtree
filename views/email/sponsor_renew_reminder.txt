@@ -7,15 +7,12 @@ provide easy access to scientific knowledge about biodiversity and evolution,
 and raise awareness about the variety of life on earth together with the need
 to conserve it. 
 
-you can see all your donations together on this page:
+{{if len(final_reminders) + len(initial_reminders) > 0:}}
+We're sending this e-mail because some of your sponsorships are due for renewal 
+if you wish you sponsorship text to remain on the tree. 
+{{pass}}
 
-{{=URL('default', 'donor.html/%s' % username, scheme=True, host=True)}}
-
-You may like to share the link with your friends and family!
-
-All sponsorships are for a 4 year duration.
-
-To renew your sponsorships that may be expiring soon, please visit this URL:
+To renew your sponsorships please visit this URL:
 {{=XML(renew_url)}}
 
 {{if len(final_reminders):}}These are your final reminders for these species:
@@ -33,6 +30,12 @@ To renew your sponsorships that may be expiring soon, please visit this URL:
 {{if len(unsponsorable):}}Thank you for sponsoring these species. Contact us if you'd like to discuss renewing:
 {{for ott in unsponsorable:}}* {{=XML(nice_names[ott])}}
 {{pass}}{{pass}}
+
+All sponsorships are for a 4 year duration. You can see all your donations together on this page:
+
+{{=URL('default', 'donor.html/%s' % username, scheme=True, host=True)}}
+
+You may like to share the link with your friends and family!
 
 To unsubscribe from any future reminders, visit this URL:
 {{=XML(unsubscribe_url)}}
