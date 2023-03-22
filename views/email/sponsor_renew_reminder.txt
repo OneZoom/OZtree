@@ -17,7 +17,10 @@ To renew your sponsorships please visit this URL:
 
 {{if len(final_reminders):}}These are your final reminders for these species:
 {{for ott in final_reminders:}}
-* {{=XML(nice_names[ott])}}
+* {{=XML(nice_names[ott])}} -
+{{if days_left[ott] > 1:}}{{=days_left[ott]}} days left
+{{elif days_left[ott] == 1:}}final day to renew!
+{{else:}}now expired, but might not be too late to renew{{pass}}
 {{pass}}{{pass}}
 
 {{if len(initial_reminders):}}These species are now due for renewal:

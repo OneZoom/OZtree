@@ -58,11 +58,12 @@ class TestBackgroundTasks(unittest.TestCase):
         db.rollback()
 
     def run_background_tasks(self, *args):
-        return subprocess.check_output(('grunt', ':'.join((
+        out = subprocess.check_output(('grunt', ':'.join((
             'exec',
             'background_tasks',
             'ut-onezoom-host',
         ) + args)), cwd=web2py_app_dir, encoding='utf8')
+        return out
 
     def test_background_reminder_emails(self):
         db = current.db
@@ -74,7 +75,7 @@ class TestBackgroundTasks(unittest.TestCase):
         r1_1 = util.purchase_reservation(basket_details=dict(e_mail=email_1))[0]
         r2_1 = util.purchase_reservation(basket_details=dict(e_mail=email_2))[0]
 
-        current.request.now = (current.request.now + datetime.timedelta(days=10))
+        current.request.now = (current.request.now + datetime.timedelta(days=2))
         r1_2 = util.purchase_reservation(basket_details=dict(e_mail=email_1))[0]
         r2_2 = util.purchase_reservation(basket_details=dict(e_mail=email_2))[0]
 
@@ -85,9 +86,10 @@ class TestBackgroundTasks(unittest.TestCase):
         # In dry-run mode we don't do anything, so can re-run
         out = self.run_background_tasks('dry-run')
         self.assertIn('Dear 1_betty@unittest.example.com', out)
-        self.assertIn('* %s' % nice_name_from_ott(r1_1.OTT_ID), out)
-        self.assertIn('* %s' % nice_name_from_ott(r1_2.OTT_ID), out)
-        self.assertIn('* %s' % nice_name_from_ott(r1_3.OTT_ID), out)
+        # NB: Check the days_left matches what we expect
+        self.assertIn('* %s - now expired' % nice_name_from_ott(r1_1.OTT_ID), out)
+        self.assertIn('* %s - final' % nice_name_from_ott(r1_2.OTT_ID), out)
+        self.assertIn('* %s - 11 days' % nice_name_from_ott(r1_3.OTT_ID), out)
         self.assertIn('Dear 2_gelda@unittest.example.com', out)
         self.assertIn('* %s' % nice_name_from_ott(r2_1.OTT_ID), out)
         self.assertIn('* %s' % nice_name_from_ott(r2_2.OTT_ID), out)
