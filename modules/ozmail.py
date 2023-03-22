@@ -24,15 +24,16 @@ def get_mailer(**override_settings):
             setattr(mail.settings, k, v)
     except:
         mail = None
-
-    try:
-        autosend = int(myconf.take('smtp.autosend_email'))
-    except BaseException:
-        autosend = 0
     if mail is None:
         return None, 'No e-mail configuration in appconfig.ini'
-    if autosend != 1:
-        return None, '''"autosend_email" isn't set to 1 in appconfig.ini'''
+
+    if mail.settings.server != 'logging':
+        try:
+            autosend = int(myconf.take('smtp.autosend_email'))
+        except BaseException:
+            autosend = 0
+        if autosend != 1:
+            return None, '''"autosend_email" isn't set to 1 in appconfig.ini'''
     return mail, None
 
 

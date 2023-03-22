@@ -28,6 +28,12 @@ class TestOzMail(unittest.TestCase):
         self.assertNotEqual(mail, None)
         self.assertEqual(reason, None)
 
+        # autosend_email=0, server='logging' is fine
+        util.set_smtp(sender="admin@example.com", autosend_email=0)
+        util.set_appconfig('smtp', 'server', 'logging')
+        mail, reason = ozmail.get_mailer()
+        self.assertNotEqual(mail, None)
+
     def test_normalize_whitespace(self):
         self.assertEqual(
             ozmail.normalize_whitespace("\n\nHello there!\n\n\n\n\nWhat a\nlovely day\nfor\nan email.\n\nBest regards,\n"),
