@@ -228,9 +228,11 @@ db.define_table('ordered_leaves',
 # set notation. This should correspond to line 434 and 455 of CSV_base_table_creator.py which creates the data:
 # "ott","lft","rgt","name","popularity","eol","wikidata"
 db.define_table('ordered_nodes',
-    Field('parent', type='integer', notnull=True), #next 13 cols are indices into the ordered_nodes (first 3) and ordered_leaves tables (remaining 10)
-    Field('real_parent', type='integer', notnull=True), #real parent, before polytomy breaking, negative if this is a polytomy
-    Field('node_rgt', type='integer', notnull=True), #we might want to consider making these references rather than indexes, to enforce dependency
+    # Next 13 cols are indices into the ordered_nodes (first 3) and ordered_leaves tables (remaining 10)
+    # we might want to consider making these references rather than indexes, to enforce dependency
+    Field('parent', type='integer', notnull=True),
+    Field('real_parent', type='integer', notnull=True), # Real parent, before polytomy breaking, negative if this is a polytomy
+    Field('node_rgt', type='integer', notnull=True), # The highest node ID in the subtree defined by this node
     Field('leaf_lft', type='integer', notnull=True),
     Field('leaf_rgt', type='integer', notnull=True),
     Field('name', type='string', length=name_length_chars), #scientific name

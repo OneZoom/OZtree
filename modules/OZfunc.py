@@ -248,16 +248,30 @@ def get_common_name(ott, name=None, lang=None, include_unpreferred=False):
 def nice_name_from_otts(otts, lang=None, leaf_only=False, **kwargs):
     """
     Get the nice species names (combining scientific and nice vernacular names) from
-    a set of OTTs
+    a set of OTTs. If the OTT is not in the tree, look for it in reservations
     """
     db = current.db
     vn = get_common_names(otts, return_nulls=True, lang=lang)
-    nice = {}
+    nice = {ott: None for ott in otts}
     for r in db(db.ordered_leaves.ott.belongs(otts)).select(db.ordered_leaves.ott, db.ordered_leaves.name):
         nice[r.ott] = nice_name(r.name, vn[r.ott], is_species=True, **kwargs)
     if not leaf_only:  # This is simply an optimization
         for r in db(db.ordered_nodes.ott.belongs(otts)).select(db.ordered_nodes.ott, db.ordered_nodes.name):
             nice[r.ott] = nice_name(r.name, vn[r.ott], is_species=False, **kwargs)
+    # Find names even if missing from the tree
+    missing = [ott for ott, name in nice.items() if name is None]
+    if len(missing) == 0:
+        return nice
+    for r in db(db.reservations.OTT_ID.belongs(missing)).select(db.reservations.OTT_ID, db.reservations.name):
+        nice[r.OTT_ID] = nice_name(r.name, vn[r.OTT_ID], is_species=True, **kwargs)
+    missing = [ott for ott, name in nice.items() if name is None]
+    if len(missing) == 0:
+        return nice
+    for r in db(db.expired_reservations.OTT_ID.belongs(missing)).select(db.expired_reservations.OTT_ID, db.expired_reservations.name):
+        nice[r.OTT_ID] = nice_name(r.name, vn[r.OTT_ID], is_species=True, **kwargs)
+    for ott in nice.keys():
+        if nice[ott] is None:
+            nice[ott] = "Unknown"
     return nice
 
 def language(two_letter):
@@ -535,6 +549,7 @@ def nodes_info_from_string(
 def query_val_to_ints(CommaSepString):
     return [int(id) for id in CommaSepString.split(",") if id.isdigit()]
 
+
 def otts2ids(ottIntegers):
     """
     Pass in an array of ott ints
@@ -552,3 +567,8 @@ def otts2ids(ottIntegers):
         }
     except:
         return {"nodes": {}, "leaves": {}, "names": {}}
+
+def fmt_pounds(pounds=0, pence=0):
+    p = pence / 100 + pounds
+    return '£{:.0f}'.format(p) if float(p).is_integer() else '£{:.2f}'.format(p)
+

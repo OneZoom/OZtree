@@ -827,19 +827,23 @@ def add_pagesize_for_titles(wiki_title_ptrs, wikipedia_SQL_filename):
     looks through the sql insertion file for page sizes. This file has extremely long lines with each csv entry
     brace-delimited within a line, e.g.
     
-    INSERT INTO `page` VALUES (10,0,'AccessibleComputing','',0,1,0,0.33167112649574004,'20150924002226','20150924010543',631144794,69,'wikitext'),(12,0,'Anarchism','',5252,0,0,0.786172332974311,'20151002214722','20151002214722',683845221,177800,'wikitext')
+    INSERT INTO `page` VALUES (45286,0,'Bonobo',0,0,0.7789633346525611,'20221229182135','20230101050331',1129925767,107184,'wikitext',NULL),(15133411,3,'Chimpanzee',0,0,0.850488449808,'20221102052637','20221102054547',1036955110,8862,'wikitext',NULL)
     
     The second entry (column 2) within each brace gives the namespace (we need namespace=0 for 'normal' pages).
-    Column 3 gives the title (in unicode).
-    The page length is in Column 11
-    
+    Column 3 gives the title (in unicode). e.g. 'Bonobo' in the first example
+    The page length is in Column 10. e.g. 107184 in the first example
+
     Note that titles have had spaces replaced with underscores
+
+    See https://www.mediawiki.org/wiki/Manual:Page_table for a full description of all entries. Note that when
+    using the latest dump version, entries marked as deprecated won't be present (e.g. page_counter)
+    
     """
     used = 0
     #the column numbers for each datum are specified in the SQL file, and hardcoded here.
     page_table_namespace_column = 2
     page_table_title_column = 3
-    page_table_pagelen_column = 11
+    page_table_pagelen_column = 10
     #use csv reader as it copes well e.g. with escaped SQL quotes in fields etc.
     with gzip.open(wikipedia_SQL_filename, 'rt', encoding='utf-8') as file:
         pagelen_file = csv.reader(file, quotechar='\'',doublequote=True)

@@ -3,11 +3,11 @@
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
 {{body_restricted_width = True}}{{extend 'uikit_layout.html'}}
 {{import datetime}}
-
+{{from OZfunc import fmt_pounds}}
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
     <h1>This is the private sponsorship renewal page for {{=username}}</h1>
-    {{if most_recent and most_recent.username:}}<p>There is also a public page available at <a href="{{=URL("/donor/%s" % most_recent.username)}}">{{=URL("/donor/%s" % most_recent.username, scheme=True, host=True)}}</a> that you can share if you wish.</p>{{pass}}
+    <p>There is also a public page available at <a href="{{=URL("/donor/%s" % username)}}">{{=URL("/donor/%s" % username, scheme=True, host=True)}}</a> that you can share if you wish.</p>
 </div>
 {{end block}}
 
@@ -68,10 +68,10 @@ and renew those that are expiring soon. Scroll down and select what you want to 
 
               <div>
                 {{if status['status'].startswith('available') and item.OTT_ID in prices:}}
-                  Renew by donating £{{='{:.0f}'.format(prices[item.OTT_ID]['price'] / 100)}}
-                  {{if prices[item.OTT_ID]['discount']:}}(£{{='{:.0f}'.format(prices[item.OTT_ID]['discount'] / 100)}} discount){{pass}}
+                  Renew by donating {{=fmt_pounds(pence=prices[item.OTT_ID]['price'])}}
+                  {{if prices[item.OTT_ID]['discount']:}}({{=fmt_pounds(pence=prices[item.OTT_ID]['discount'])}} discount){{pass}}
                 {{elif item.user_paid:}}
-                  You paid £ {{=item.user_paid}}
+                  You paid {{=fmt_pounds(pounds=item.user_paid)}}
                 {{pass}}
               </div>
 
@@ -83,7 +83,7 @@ and renew those that are expiring soon. Scroll down and select what you want to 
                                 class="uk-checkbox"
                                 name="oz_user_donor_hide_{{=item.OTT_ID}}"
                                 {{='checked="checked"' if request.vars.get('oz_user_donor_hide_%d' % item.OTT_ID, item.user_donor_hide) else ''}}
-                                > Hide from <a href="{{=URL('default', 'donor_list.html')}}" target="_blank">donor page</a></input></label>
+                                > Hide from <a href="{{=URL('/donor/%s' % username)}}" target="_blank">donor pages</a></input></label>
                   <br/>
                   <label class="renew_checkbox">
                     <input type="checkbox"
@@ -154,7 +154,10 @@ and renew those that are expiring soon. Scroll down and select what you want to 
   </fieldset>
 
   <fieldset>
-    <label for="user_donor_name_input">{{=T('Your title and name:')}}</label><p>
+    {{giftaid_partners = all_partner_data}}
+    {{include 'default/sponsor_giftaid.inc.html'}}
+
+    <p><label for="user_donor_name_input">{{=T('Your title and name:')}}</label>
     <select name="user_donor_title" autocomplete="honorific-prefix" id="user_donor_title_input">
       {{for v in ['   ', 'Mr', 'Mrs', 'Miss', 'Ms', 'Mx', 'Dr', 'Prof', 'Rev', 'Sir', 'Lord', 'Lady']:}}
         <option value="{{=T(v)}}" {{='selected' if (request.vars['user_donor_title'] == v) else ''}}>{{=T(v)}}</option>
@@ -164,12 +167,9 @@ and renew those that are expiring soon. Scroll down and select what you want to 
         value="{{if (request.vars['user_donor_name']) is not None:}}{{=request.vars['user_donor_name']}}{{pass}}" /> </p>
     <em class="error_text">{{=form.errors.get("user_donor_title_name") or ""}}</em></p>
 
-    {{giftaid_partners = all_partner_data}}
-    {{include 'default/sponsor_giftaid.inc.html'}}
-
     <p>By donating to OneZoom you accept the {{=A(T('terms and conditions'),_href="/terms.html",_target="_blank")}}.</p>
     <div style="text-align: center"><ul class="oz-pill leaf-list"><li>
-      <input id="submit_button" type="submit" value="Donate using PayPal" class="uk-button uk-button-link"/>
+      <input id="submit_button" type="submit" value="Accept terms and donate using PayPal" class="uk-button uk-button-link"/>
     </li></ul></div>
   </fieldset>
 

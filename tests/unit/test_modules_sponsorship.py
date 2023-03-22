@@ -827,7 +827,7 @@ class TestSponsorship(unittest.TestCase):
         def all_reminders(user_details = False):
             """Filter out non-unittest e-mail addresses"""
             out = {}
-            for k, r in sponsorship_email_reminders().items():
+            for (k, r) in sponsorship_email_reminders():
                 # Check URLs then hide them
                 if k is None:
                     # Nonsense data in the DB
@@ -851,29 +851,46 @@ class TestSponsorship(unittest.TestCase):
                     out[k] = r
             return out
 
+        expiry_time = current.request.now + datetime.timedelta(days=4*365)
         # User 1 & 2 buy some OTTs
         email_1, user_1 = '1_betty@unittest.example.com', '1_bettyunittestexamplecom'
         email_2, user_2 = '2_gelda@unittest.example.com', '2_geldaunittestexamplecom'
+        current.request.now = expiry_time - datetime.timedelta(days=4*365 + 40)
         r1_1 = util.purchase_reservation(basket_details=dict(e_mail=email_1))[0]
         r2_1 = util.purchase_reservation(basket_details=dict(e_mail=email_2))[0]
-        current.request.now = (current.request.now + datetime.timedelta(days=10))
+        current.request.now = expiry_time - datetime.timedelta(days=4*365 + 20)
         r1_2 = util.purchase_reservation(basket_details=dict(e_mail=email_1))[0]
         r2_2 = util.purchase_reservation(basket_details=dict(e_mail=email_2))[0]
-        current.request.now = (current.request.now + datetime.timedelta(days=10))
+        current.request.now = expiry_time - datetime.timedelta(days=4*365 + 0)
         r1_3 = util.purchase_reservation(basket_details=dict(e_mail=email_1))[0]
         # All new, nothing to remind about
         self.assertEqual(all_reminders(), {})
 
         # Move forward in time, reservations about to expire
-        current.request.now = (current.request.now + datetime.timedelta(days=(4*365) - 40))
+        current.request.now = expiry_time - datetime.timedelta(days=80)
         all_r = all_reminders()
         self.assertEqual(all_r, {
             user_1: dict(username=user_1, email_address=email_1,
                 initial_reminders=[r1_1.OTT_ID, r1_2.OTT_ID, r1_3.OTT_ID],
-                final_reminders=[], not_yet_due=[], unsponsorable=[]),
+                initial_triggers=[r1_1.OTT_ID, r1_2.OTT_ID],
+                final_reminders=[],
+                final_triggers=[],
+                days_left={
+                    r1_1.OTT_ID: 40,
+                    r1_2.OTT_ID: 60,
+                    r1_3.OTT_ID: 80,
+                },
+                not_yet_due=[], unsponsorable=[]),
             user_2: dict(username=user_2, email_address=email_2,
                 initial_reminders=[r2_1.OTT_ID, r2_2.OTT_ID],
-                final_reminders=[], not_yet_due=[], unsponsorable=[]),
+                initial_triggers=[r2_1.OTT_ID, r2_2.OTT_ID],
+                final_reminders=[],
+                final_triggers=[],
+                days_left={
+                    r2_1.OTT_ID: 40,
+                    r2_2.OTT_ID: 60,
+                },
+                not_yet_due=[], unsponsorable=[]),
         })
 
         # Ban one of user_1's OTTs
@@ -882,10 +899,24 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(all_r, {
             user_1: dict(username=user_1, email_address=email_1,
                 initial_reminders=[r1_2.OTT_ID, r1_3.OTT_ID],
-                final_reminders=[], not_yet_due=[], unsponsorable=[r1_1.OTT_ID]),
+                initial_triggers=[r1_2.OTT_ID],
+                final_reminders=[],
+                final_triggers=[],
+                days_left={
+                    r1_2.OTT_ID: 60,
+                    r1_3.OTT_ID: 80,
+                },
+                not_yet_due=[], unsponsorable=[r1_1.OTT_ID]),
             user_2: dict(username=user_2, email_address=email_2,
                 initial_reminders=[r2_1.OTT_ID, r2_2.OTT_ID],
-                final_reminders=[], not_yet_due=[], unsponsorable=[]),
+                initial_triggers=[r2_1.OTT_ID, r2_2.OTT_ID],
+                final_reminders=[],
+                final_triggers=[],
+                days_left={
+                    r2_1.OTT_ID: 40,
+                    r2_2.OTT_ID: 60,
+                },
+                not_yet_due=[], unsponsorable=[]),
         })
 
         # Send e-mails for user_2, nothing more to tell them, but still told about user_1
@@ -894,7 +925,13 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(all_r, {
             user_1: dict(username=user_1, email_address=email_1,
                 initial_reminders=[r1_2.OTT_ID, r1_3.OTT_ID],
+                initial_triggers=[r1_2.OTT_ID],
                 final_reminders=[],
+                final_triggers=[],
+                days_left={
+                    r1_2.OTT_ID: 60,
+                    r1_3.OTT_ID: 80,
+                },
                 not_yet_due=[], unsponsorable=[r1_1.OTT_ID]),
         })
 
@@ -903,14 +940,20 @@ class TestSponsorship(unittest.TestCase):
         all_r = all_reminders()
         self.assertEqual(all_r, {})
 
-        # In 10 days time they are due a final reminder, and told about their new purchase
-        current.request.now = (current.request.now + datetime.timedelta(days=10))
+        # Now r2_1 is due a final reminder, and told about their new purchase
+        current.request.now = expiry_time - datetime.timedelta(days=51)
         r2_3 = util.purchase_reservation(basket_details=dict(e_mail=email_2))[0]
         all_r = all_reminders()
         self.assertEqual(all_r, {
             user_2: dict(username=user_2, email_address=email_2,
                 initial_reminders=[r2_2.OTT_ID],
+                initial_triggers=[],
                 final_reminders=[r2_1.OTT_ID],
+                final_triggers=[r2_1.OTT_ID],
+                days_left={
+                    r2_1.OTT_ID: 11,
+                    r2_2.OTT_ID: 31,
+                },
                 not_yet_due=[r2_3.OTT_ID], unsponsorable=[]),
         })
 
@@ -919,19 +962,38 @@ class TestSponsorship(unittest.TestCase):
         all_r = all_reminders()
         self.assertEqual(all_r, {})
 
-        # In another 10 days time more final reminders are due, but r1_1 stays unsponsorable
-        current.request.now = (current.request.now + datetime.timedelta(days=10))
+        # Hit critical for r1_2/r2_2, final reminders due, but r1_1 stays unsponsorable
+        current.request.now = expiry_time - datetime.timedelta(days=20 + 15 - 1)
         all_r = all_reminders()
         self.assertEqual(all_r, {
             user_1: dict(username=user_1, email_address=email_1,
                 initial_reminders=[r1_3.OTT_ID],
+                initial_triggers=[],
                 final_reminders=[r1_2.OTT_ID],
+                final_triggers=[r1_2.OTT_ID],
+                days_left={
+                    r1_3.OTT_ID: 34,
+                    r1_2.OTT_ID: 14,
+                },
                 not_yet_due=[], unsponsorable=[r1_1.OTT_ID]),
             user_2: dict(username=user_2, email_address=email_2,
                 initial_reminders=[],
-                final_reminders=[r2_2.OTT_ID],
+                initial_triggers=[],
+                # NB: r2_1.OTT_ID hasn't expired, so still "final"
+                final_reminders=[r2_1.OTT_ID, r2_2.OTT_ID],
+                final_triggers=[r2_2.OTT_ID],
+                days_left={
+                    r2_1.OTT_ID: -6,
+                    r2_2.OTT_ID: 14,
+                },
                 not_yet_due=[r2_3.OTT_ID], unsponsorable=[]),
         })
+
+        # Send that, nothing more to tell them
+        sponsorship_email_reminders_post(all_r[user_1])
+        sponsorship_email_reminders_post(all_r[user_2])
+        all_r = all_reminders()
+        self.assertEqual(all_r, {})
 
     def test_sponsorship_restrict_contact(self):
         # Buy 2 otts
@@ -941,33 +1003,33 @@ class TestSponsorship(unittest.TestCase):
         r2 = util.purchase_reservation(basket_details=dict(e_mail=email1))[0]
 
         # Requesting reminders for no usernames returns nothing
-        self.assertEqual(sponsorship_email_reminders([]), {})
+        self.assertEqual(list(sponsorship_email_reminders([])), [])
 
         # Can explicitly request to see that nothing's due
-        reminders = sponsorship_email_reminders([user1])[user1]
+        reminders = {k:r for (k, r) in sponsorship_email_reminders([user1])}[user1]
         self.assertEqual(reminders['initial_reminders'], [])
         self.assertEqual(reminders['final_reminders'], [])
         self.assertEqual(reminders['not_yet_due'], [r1.OTT_ID,r2.OTT_ID])
         self.assertEqual(reminders['unsponsorable'], [])
 
         # Move forward in time, reservations about to expire
-        current.request.now = (current.request.now + datetime.timedelta(days=(4*365) - 20))
+        current.request.now = (current.request.now + datetime.timedelta(days=(4*365) - 30))
 
         # Allowed to contact about the expiry
-        reminders = sponsorship_email_reminders()[user1]
-        self.assertEqual(reminders['initial_reminders'], [r1.OTT_ID,r2.OTT_ID])
-        self.assertEqual(reminders['final_reminders'], [])
+        reminders = {k:r for (k, r) in sponsorship_email_reminders()}[user1]
+        self.assertEqual(reminders['initial_reminders'], [r2.OTT_ID])
+        self.assertEqual(reminders['final_reminders'], [r1.OTT_ID])
         self.assertEqual(reminders['not_yet_due'], [])
         self.assertEqual(reminders['unsponsorable'], [])
 
         # After restricting contact, we're not
         sponsorship_restrict_contact(user1)
-        self.assertNotIn(user1, sponsorship_email_reminders().keys())
+        self.assertNotIn(user1, set(k for (k, v) in sponsorship_email_reminders()))
 
         # But can explictly request the e-mail contents
-        reminders = sponsorship_email_reminders([user1])[user1]
-        self.assertEqual(reminders['initial_reminders'], [r1.OTT_ID,r2.OTT_ID])
-        self.assertEqual(reminders['final_reminders'], [])
+        reminders = {k:r for (k, r) in sponsorship_email_reminders([user1])}[user1]
+        self.assertEqual(reminders['initial_reminders'], [r2.OTT_ID])
+        self.assertEqual(reminders['final_reminders'], [r1.OTT_ID])
         self.assertEqual(reminders['not_yet_due'], [])
         self.assertEqual(reminders['unsponsorable'], [])
 
@@ -1099,7 +1161,7 @@ class TestSponsorRenewRequestLogic(TestSponsorship):
         info = sponsor_renew_request_logic(good_r.username, mailer)
         self.assertTrue(self.flash_text % good_r.username in info)
         self.assertFalse(self.good_email in info)  # Should not reveal the private email if username passed
-        data = sponsorship_email_reminders(for_usernames=[good_r.username])
+        data = {k:r for (k, r) in sponsorship_email_reminders(for_usernames=[good_r.username])}
         self.assertTrue(good_r.username in data)
         self.assertTrue('renew_url' in data[good_r.username])
         self.assertFalse(data[good_r.username]['renew_url'] in info) 
@@ -1126,7 +1188,7 @@ class TestSponsorRenewRequestLogic(TestSponsorship):
         good_r = util.purchase_reservation(basket_details=dict(e_mail=self.good_email))[0]
         mailer = (None, "No mailer provided")
         info = sponsor_renew_request_logic(good_r.username, None, reveal_private_data=True)
-        data = sponsorship_email_reminders(for_usernames=[good_r.username])
+        data = {k:r for (k, r) in sponsorship_email_reminders(for_usernames=[good_r.username])}
         self.assertTrue(good_r.username in data)
         self.assertTrue('renew_url' in data[good_r.username])
         renew_url = data[good_r.username]['renew_url'] 
@@ -1152,7 +1214,7 @@ class TestSponsorRenewRequestLogic(TestSponsorship):
         info = sponsor_renew_request_logic(good_r.username, mailer=admin_mailer)
         self.assertTrue(self.flash_text % good_r.username in info)
         self.assertFalse(self.flash_text % self.good_email in info)  # Still don't flash up email
-        data = sponsorship_email_reminders(for_usernames=[good_r.username])
+        data = {k:r for (k, r) in sponsorship_email_reminders(for_usernames=[good_r.username])}
         self.assertTrue(good_r.username in data)
         self.assertTrue('renew_url' in data[good_r.username])
         self.assertFalse(data[good_r.username]['renew_url'] in info) 
@@ -1161,6 +1223,8 @@ class TestSponsorRenewRequestLogic(TestSponsorship):
 if __name__ == '__main__':
     import sys
 
+    if current.globalenv['is_testing'] != True:
+        raise RuntimeError("Do not run tests in production environments, ensure is_testing = True")
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestSponsorship))
     suite.addTest(unittest.makeSuite(TestMaintenance))

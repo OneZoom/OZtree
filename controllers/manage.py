@@ -546,14 +546,17 @@ def SHOW_RENEWAL_INFO():
                         id_map[id_string] = []
                     id_map[id_string].append(uname)
         else:
-            if db(db.reservations.username == id_string).count():
-                if id_string not in id_map:
-                    id_map[id_string] = []
-                id_map[id_string].append(id_string)
-
+            for row in db(db.reservations.username == id_string).iterselect(
+                db.reservations.username
+            ):
+                if row.username == id_string:  # Check case, as SQL is case insensitive
+                    if id_string not in id_map:
+                        id_map[id_string] = []
+                    id_map[id_string].append(id_string)
     try:
-        uname_info = sponsorship.sponsorship_email_reminders(
-            [uname for info_for_id in id_map.values() for uname in info_for_id])
+        uname_info = {
+            k:r for (k, r) in sponsorship.sponsorship_email_reminders(
+                [uname for info_for_id in id_map.values() for uname in info_for_id])}
     
         renew_urls = {
             k: {uname: uname_info[uname]["renew_url"] for uname in v}
@@ -710,7 +713,8 @@ def SHOW_EMAILS():
     sponsors = db(
         db.reservations.verified_time != None
     ).select(
-        db.reservations.e_mail, 
+        db.reservations.username,
+        db.reservations.e_mail,
         db.reservations.PP_e_mail,
         db.reservations.verified_time,
         db.reservations.verified_preferred_image_src,
@@ -724,11 +728,12 @@ def SHOW_EMAILS():
         db.reservations.PP_second_name,
         db.reservations.OTT_ID,
         db.reservations.user_message_OZ,
-                                                                orderby=~db.reservations.reserve_time)
+        orderby=~db.reservations.reserve_time)
     otts = [s.OTT_ID for s in sponsors]                                                         
     cnames = OZfunc.get_common_names(otts)
     for s in sponsors:
         details = emails(
+            s.username,
             s.OTT_ID,
             s.name,
             cnames.get(s.OTT_ID),
@@ -859,13 +864,13 @@ def SET_PRICES():
             cnt=queries[band].update(price=price)
             num=queries[band].count()
             revenue += num*price/100
-            output.append(f"£{price/100}: {num:>8} species ({100*num/n_leaves:.2f}%) - {cnt} changed")
+            output.append(f"{OZfunc.fmt_pounds(pence=price)}: {num:>8} species ({100*num/n_leaves:.2f}%) - {cnt} changed")
             output.append(BR())
 
             
         response.flash = DIV(
             f"SET THE FOLLOWING DEFAULT PRICE STRUCTURE for {n_leaves} species:", BR(),PRE(*output), 
-            f". Total revenue: {revenue}!\nNow overriding the following special exclusions (and setting banned):", BR(),
+            f"Total revenue: {fmt_pounds(revenue)}!\nNow overriding the following special exclusions (and setting banned):", BR(),
             f"{bespoke_spp}"
         )
 

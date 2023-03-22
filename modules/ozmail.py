@@ -2,7 +2,7 @@ import re
 
 from gluon import current
 
-def get_mailer():
+def get_mailer(**override_settings):
     """Return a tuple of a valid mail object or none, and if none a string reason"""
     auth = current.globalenv['auth']
     myconf = current.globalenv['myconf']
@@ -20,6 +20,8 @@ def get_mailer():
             mail.settings.tls = (myconf.take('smtp.tls').lower() == 'true')
         except:
             pass
+        for k, v in override_settings.items():
+            setattr(mail.settings, k, v)
     except:
         mail = None
 

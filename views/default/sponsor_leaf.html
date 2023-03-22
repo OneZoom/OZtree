@@ -89,12 +89,11 @@ image_objects.push({
 {{pass}}
 var leafImageFile = null; // image file (if null and image_objects exists then image is not loaded yet)
 var leafCol = leaf_draw.natural_theme.leaf;
-leafCol.bg.fill = 'rgba(255,255,255, 0)'; // Don't show the white outline
     // this is a bit of a hack but it no longer works to grab the style from the main natural_theme because some of the colours are functions that need to be run on the midnode object of the tree so I'm overiding it here with fixed colours.
     //can override leafCol after this, e.g.
      leafCol.inside.fill  = 'rgb(135,215,90)'; // or could be a function of a node obj
      leafCol.outline.fill = 'rgb(70,135,30)';
-     leafCol.bg.fill      = 'rgba(255,255,255, 0)';
+     leafCol.bg.fill      = 'rgba(255,255,255, 0)'; // Don't show the white outline
      // relating to the leaf itself (highlighted)
      leafCol.inside_hover.fill   = 'rgb(135,215,90)';
      leafCol.outline_hover.fill = 'rgb(70,135,30)';

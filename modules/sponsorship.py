@@ -56,7 +56,12 @@ def sponsorship_config():
         # Number of days left by which point we consider expiry to be critical
         out['expiry_critical_days'] = int(myconf('sponsorship.expiry_critical_days'))
     except:
-        out['expiry_critical_days'] = 15
+        out['expiry_critical_days'] = 30
+    try:
+        # Number of days after expiry_(x)_days after which we send e-mails
+        out['expiry_hysteresis'] = int(myconf('sponsorship.expiry_hysteresis'))
+    except:
+        out['expiry_hysteresis'] = 15
     return out
 
 
@@ -317,7 +322,7 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
                 )).strip())
                 continue
 
-            # Renwal: Remove old reservation and make a new one.
+            # Renewal: Remove old reservation and make a new one.
             prev_row = db(db.expired_reservations.id == reservation_expire(r)).select().first()
             status, _, r, _ = get_reservation(prev_row.OTT_ID, basket_code)
             assert status == 'available'  # We just expired the old one, this should work
@@ -333,6 +338,8 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
             # Text was verified previously, so we can automatically verify this entry
             fields_to_update['verified_time'] = request.now
             fields_to_update['reserve_time'] = prev_row.reserve_time  # Keep original reserve_time
+            # Verification normally involves allocating a username, so we must set this too
+            fields_to_update['username'] = prev_row.username
         else:
             # NB: This is different to existing paths, but feels a more correct place to set sponsorship_ends
             fields_to_update['sponsorship_duration_days'] = sponsorship_config()['duration_days']
@@ -716,7 +723,7 @@ def sponsorship_email_reminders(for_usernames=None):
 
     - for_usernames: Get reminders for given usernames. Default all users that didn't say restrict_all_contact
 
-    Returns a per-username dict, with
+    Yields (username, dict) for each username that needs reminding, with:
     - email_address: The e-mail address to contact them on
     - full_name: "{Donor title}. {Donor name}" or if not, look for a "sponsor by" name
     - pp_name: "{PP firstname} {PP lastname}"
@@ -731,7 +738,9 @@ def sponsorship_email_reminders(for_usernames=None):
     db = current.db
     URL = current.globalenv['URL']
     expiry_soon_date = sponsorship_expiry_soon_date()
+    expiry_soon_trigger = expiry_soon_date - datetime.timedelta(days=sponsorship_config()['expiry_hysteresis'])
     expiry_critical_date = sponsorship_expiry_soon_date('critical')
+    expiry_critical_trigger = expiry_critical_date - datetime.timedelta(days=sponsorship_config()['expiry_hysteresis'])
 
     def sponsor_signed_url(page, username, controller='default'):
         return URL(
@@ -748,66 +757,81 @@ def sponsorship_email_reminders(for_usernames=None):
         # Get sponsorships for given username
         if len(for_usernames) == 0:
             # Getting reminders for no usernames will return nothing
-            return {}
+            return
         query &= (db.reservations.username.belongs(for_usernames))
     else:
         # Get sponsorships for all users we're allowed to contact
         query &= (db.reservations.restrict_all_contact == None)
 
+    for_usernames = set(for_usernames or [])
+    cur_username = None
     out = {}
-    send_to = set(for_usernames or [])
-    for r in db(query).select(db.reservations.ALL, orderby="sponsorship_ends"):
-        if r.username not in out:
-            # Add entry if not yet there
-            out[r.username] = dict(
+    send_to = False
+    for r in db(query).select(db.reservations.ALL, orderby=db.reservations.username|db.reservations.sponsorship_ends):
+        if r.username != cur_username:
+            if send_to:
+                yield (cur_username, out)
+            # Start new user entry
+            cur_username = r.username
+            out = dict(
                 email_address = usernames.email_for_username(r.username),
                 full_name=None,
                 pp_name=None,
                 username=r.username,
                 user_sponsor_lang=r.user_sponsor_lang,
                 initial_reminders=[],
+                initial_triggers=[],
                 final_reminders=[],
+                final_triggers=[],
+                days_left={},
                 not_yet_due=[],
                 unsponsorable=[],
-
                 renew_url = sponsor_signed_url('sponsor_renew.html', r.username),
                 unsubscribe_url = sponsor_signed_url('sponsor_unsubscribe.html', r.username),
             )
+            send_to = r.username in for_usernames
 
         status, _, _ = sponsorship_get_leaf_status(r.OTT_ID)
 
         if (r.verified_donor_name):
             # replace with the most recent
-            out[r.username]["full_name"] = r.verified_donor_name.strip()
+            out["full_name"] = r.verified_donor_name.strip()
             if (r.verified_donor_title):
-                out[r.username]["full_name"] = r.verified_donor_title + ". " + out[r.username]["full_name"]
-        elif out[r.username]["full_name"] is None and r.verified_kind == "by":
+                out["full_name"] = r.verified_donor_title + ". " + out["full_name"]
+        elif out["full_name"] is None and r.verified_kind == "by":
             # Only use sponsor by as a last resort
-            out[r.username]["full_name"] = r.verified_name
+            out["full_name"] = r.verified_name
+
         if (r.PP_first_name or r.PP_second_name):
             # replace with the most recent
-            out[r.username]["pp_name"] = f"{r.PP_first_name} {r.PP_second_name}"
+            out["pp_name"] = f"{r.PP_first_name} {r.PP_second_name}"
+
         if status != '':
             # This item now banned/invalid, shouldn't be sending reminders.
-            out[r.username]['unsponsorable'].append(r.OTT_ID)
-        elif r.sponsorship_ends >= expiry_soon_date:
-            # Not yet due, just for information
-            out[r.username]['not_yet_due'].append(r.OTT_ID)
-        elif r.emailed_re_renewal_initial is None:
-            # No initial reminder sent, send one
-            out[r.username]['initial_reminders'].append(r.OTT_ID)
-            send_to.add(r.username)
-        elif r.sponsorship_ends >= expiry_critical_date:
-            # Initial reminder sent, but not critical yet, log without another e-mail
-            out[r.username]['initial_reminders'].append(r.OTT_ID)
-        elif r.emailed_re_renewal_final is None:
-            # No final reminder sent, send one
-            out[r.username]['final_reminders'].append(r.OTT_ID)
-            send_to.add(r.username)
+            out['unsponsorable'].append(r.OTT_ID)
+        elif r.sponsorship_ends <= expiry_critical_date:
+            # Expiry critical
+            out['final_reminders'].append(r.OTT_ID)
+            out['days_left'][r.OTT_ID] = (r.sponsorship_ends - request.now).days
+            if r.emailed_re_renewal_final is None and r.sponsorship_ends <= expiry_critical_trigger:
+                # Below e-mail trigger date, send e-mail
+                out['final_triggers'].append(r.OTT_ID)
+                send_to = True
+        elif r.sponsorship_ends <= expiry_soon_date:
+            # Expiry soon
+            out['initial_reminders'].append(r.OTT_ID)
+            out['days_left'][r.OTT_ID] = (r.sponsorship_ends - request.now).days
+            if r.emailed_re_renewal_initial is None and r.sponsorship_ends <= expiry_soon_trigger:
+                # Below e-mail trigger date, send e-mail
+                out['initial_triggers'].append(r.OTT_ID)
+                send_to = True
+        else:
+            # sponsorship ends happens past the point we consider it soon
+            out['not_yet_due'].append(r.OTT_ID)
 
-    # Only return e-mails we should be sending
-    out = dict((k, reminder) for k, reminder in out.items() if k in send_to)
-    return out
+    # Yield final entry
+    if send_to:
+        yield (cur_username, out)
 
 def sponsor_renew_request_logic(user_identifier, mailer=None, reveal_private_data=False, automated=False):
     """
@@ -822,9 +846,9 @@ def sponsor_renew_request_logic(user_identifier, mailer=None, reveal_private_dat
     # Get all reminder blocks for usernames associated to this e-mail address
     unames = usernames.usernames_associated_to_email(user_identifier) if '@' in user_identifier else [user_identifier]
     try:
-        user_reminders = list(sponsorship_email_reminders(unames).values())
+        user_reminders = {k:v for (k, v) in sponsorship_email_reminders(unames)}
     except ValueError:
-        user_reminders = []
+        user_reminders = {}
     info = ''
     if not reveal_private_data:
         info = 'If the user %s exists in our database, we will send them an email' % user_identifier
@@ -838,7 +862,8 @@ def sponsor_renew_request_logic(user_identifier, mailer=None, reveal_private_dat
         if reveal_private_data:
             info = 'Many users associated with e-mail address %s' % user_identifier
     else:
-        user_reminders = user_reminders[0]
+        username, user_reminders = next(iter(user_reminders.items()))
+        user_reminders['username'] = username
         user_reminders['nice_names'] = nice_name_from_otts(
             user_reminders['unsponsorable'] + user_reminders['not_yet_due'] +
             user_reminders['initial_reminders'] + user_reminders['final_reminders'],
