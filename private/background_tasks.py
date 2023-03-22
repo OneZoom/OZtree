@@ -57,10 +57,14 @@ current.request.env.http_port = '443'
 current.request.env.wsgi_url_scheme = 'https'
 
 # Configure the mailer
-mailer_args = dict(server='logging') if run_logemail else dict()
-mail, reason = ozmail.get_mailer(**mailer_args)
-if not mail:
-    raise ValueError(reason)
+if run_dryrun:
+    # Don't setup mailer (which may be disabled), since we won't use it
+    mail = None
+else:
+    mailer_args = dict(server='logging') if run_logemail else dict()
+    mail, reason = ozmail.get_mailer(**mailer_args)
+    if not mail:
+        raise ValueError(reason)
 
 for (username, user_reminders) in sponsorship_email_reminders():
     email = user_reminders['email_address']
