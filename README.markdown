@@ -320,6 +320,9 @@ Notes
 
 ### Server unit tests
 
+**NB:** The server tests are not sandboxed, so have the potential to delete database data.
+On run on a personal instance where data loss does not matter.
+
 The server unit tests have no additional dependencies. To run, do:
 
     grunt test-server
@@ -327,6 +330,12 @@ The server unit tests have no additional dependencies. To run, do:
 To run individual tests, do:
 
     grunt exec:test_server:test_modules_username.py
+
+### Client unit tests
+
+The client unit tests have no additional dependencies. To run, do:
+
+    grunt test-client
 
 ### Server Selenium-based functional tests
 

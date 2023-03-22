@@ -87,6 +87,8 @@ class TestControllersDefault(unittest.TestCase):
 if __name__ == '__main__':
     import sys
 
+    if current.globalenv['is_testing'] != True:
+        raise RuntimeError("Do not run tests in production environments, ensure is_testing = True")
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestControllersDefault))
     result = unittest.TextTestRunner(verbosity=2).run(suite)
