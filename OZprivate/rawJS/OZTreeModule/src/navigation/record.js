@@ -28,8 +28,6 @@ function record_url_delayed(options, force) {
  * record_popup: Contents of global_button_action, if a popup window should be open
  */
 function record_url(options, force) {
-  let controller = get_controller();
-
   clearTimeout(timer);
 
   if (config.disable_record_url) {
@@ -40,9 +38,7 @@ function record_url(options, force) {
   options = options || {};
   let node_with_ott = get_largest_visible_node_with_ott(controller.root);
   if (!node_with_ott) return;
-  let node_with_name = get_largest_visible_node_with_name(controller.root);
 
-  let title = get_title(node_with_name, node_with_ott);
   let hash = get_position_hash(node_with_ott);
   let loc = get_pinpoint(node_with_ott);
   let querystring = get_params(options);
@@ -51,11 +47,11 @@ function record_url(options, force) {
   } else if (window.location.protocol != "file:") {
     let url = loc + querystring + hash;
     if (options.replaceURL) {
-      window.history.replaceState(null, title, window.location.origin + pathname_exclude_append() + "/" + url);
+      window.history.replaceState(null, "", window.location.origin + pathname_exclude_append() + "/" + url);
     } else {
-      window.history.pushState(null, title, window.location.origin + pathname_exclude_append() + "/" + url);
+      window.history.pushState(null, "", window.location.origin + pathname_exclude_append() + "/" + url);
     }
-    document.title = unescape(title);
+    document.title = unescape(get_title());
   }
 }
 
@@ -90,12 +86,6 @@ function get_largest_visible_node_with_ott(node) {
   });
 }
 
-function get_largest_visible_node_with_name(node) {
-  return get_largest_visible_node(node, function (node) {
-    return node.cname || node.latin_name;
-  });
-}
-
 /**
  * Get new xp, yp and ws if the view reanchors on node.
  * Note xp, yp and ws won't change and the view won't actually reanchor after this function.
@@ -107,17 +97,13 @@ function get_pos_if_reanchor(node) {
   return [xp, yp, ws];
 }
 
-function get_title(node_with_name, node_with_ott) {
-  /* TO DO - account for other views, e.g. linn soc, that should have different <title> attributes */
-  if (node_with_name) {
-    return config.title_func(node_with_name.cname ? node_with_name.cname : node_with_name.latin_name);
-  } else if (node_with_ott.cname) {
-    return config.title_func(node_with_ott.cname);
-  } else if (node_with_ott.latin_name) {
-    return config.title_func(node_with_ott.latin_name);
-  } else {
-    return config.title_func();
-  }
+function get_title() {
+  let controller = get_controller();
+  let node_with_name = get_largest_visible_node(controller.root, (node) => !!(node.cname || node.latin_name));
+
+  if (!node_with_name) return config.title_func();
+  if (node_with_name.cname) return config.title_func(node_with_name.cname);
+  return config.title_func(node_with_name.latin_name);
 }
 
 function get_position_hash(node) {
