@@ -1,10 +1,40 @@
 import datetime
 import uuid
+import random
 
 import sponsorship
 import usernames
 
 from gluon import current
+from gluon.globals import Request
+
+
+def call_controller(module, endpoint, vars={}, args=[], method=None, username=None):
+    """Set up a semi-sane request environment, call a controller endpoint"""
+    # Create request for given params
+    current.request = Request(dict())
+    for (k, v) in vars.items():
+        current.request.vars[k] = v
+    current.request.args = args
+    if method:
+        current.request.env.request_method = method
+
+    class FakeAuth():
+        """Fake enough of of the auth API"""
+        def basic(self):
+            # NB: Do this in the basic call to ensure it happens
+            self.user = username
+    current.globalenv['auth'] = FakeAuth()
+
+    # Poke session / DB / request into module's namespace
+    module.session = current.session
+    module.db = current.db
+    module.request = current.request
+    module.response = current.response
+    module.auth = current.globalenv['auth']
+    module.HTTP = current.globalenv['HTTP']
+
+    return getattr(module, endpoint)()
 
 
 def time_travel(days=0, expire=True):
@@ -41,7 +71,7 @@ def find_unsponsored_otts(count, in_reservations=None, allow_banned=False):
         raise ValueError("Can't find available OTTs")
     if len(otts) < count:
         raise ValueError("Rows may not have associated prices set, visit /manage/SET_PRICES/")
-    return otts[:count]
+    return random.sample(otts, count)
 
 
 def find_unsponsored_ott(in_reservations=None, allow_banned=False):
@@ -65,6 +95,15 @@ def clear_unittest_sponsors():
     db(
         db.uncategorised_donation.basket_code.startswith('UT::') |
         db.uncategorised_donation.e_mail.endswith('@unittest.example.com')).delete()
+
+
+def clear_unittest_tours():
+    """
+    Tours with identifiers starting with UT:: are assumed to be unit test tours
+    and should be deleted
+    """
+    db = current.db
+    db(db.tour.identifier.startswith('UT::')).delete()
 
 
 def set_appconfig(section, key, val):

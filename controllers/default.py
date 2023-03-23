@@ -2107,7 +2107,6 @@ def lifeMD():
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return dict(
-        screensaver_otts=[991547, 81461, 99252, 770315],
         **treeview_info(has_text_tree=False))
     
 def life_MDtouch():

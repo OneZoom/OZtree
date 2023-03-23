@@ -8,36 +8,17 @@ import unittest
 import applications.OZtree.controllers.API as API
 from applications.OZtree.tests.unit import util
 
-from gluon.globals import Request, Session
-
-
-def api_to_fn(endpoint):
-    """Wrap endpoint to turn back into a python function"""
-    def fn(**kwargs):
-        current.request = Request(dict())
-        for (k, v) in kwargs.items():
-            current.request.vars[k] = v
-        API.request = current.request
-        return endpoint()
-    return fn
-
 
 class TestControllersAPI(unittest.TestCase):
     maxDiff = None
-
-    def setUp(self):
-        # Poke session / DB / request into API's namespace
-        API.session = current.session
-        API.db = current.db
-        API.request = current.request
-        API.response = current.response
 
     def tearDown(self):
         db.rollback()
 
     def test_search_init(self):
         """Search for arbitary node/name combinations"""
-        search_init = api_to_fn(API.search_init)
+        def search_init(**kwargs):
+            return util.call_controller(API, 'search_init', vars=kwargs)
 
         # Get an arbitary leaf & node
         leaf = db((db.ordered_leaves.ott != None) & (db.ordered_leaves.name != None)).select(orderby='ott', limitby=(0,1))[0]
@@ -58,7 +39,8 @@ class TestControllersAPI(unittest.TestCase):
 
     def test_getOTT(self):
         """Can fetch OTT names in variety of forms"""
-        getOTT = api_to_fn(API.getOTT)
+        def getOTT(**kwargs):
+            return util.call_controller(API, 'getOTT', vars=kwargs)
 
         # Nothing in = nothing out
         self.assertEqual(getOTT(), {'errors': []})

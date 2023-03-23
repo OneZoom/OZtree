@@ -2,7 +2,7 @@ import { parse_window_location, parse_query } from './utils';
 import data_repo from '../factory/data_repo';
 import api_manager from '../api/api_manager';
 import get_controller from '../controller/controller';
-import UserInterruptError from '../controller/controller_anim';
+import { UserInterruptError } from '../errors';
 import tree_state from '../tree_state';
 import { global_button_action, click_on_button_cb } from '../button_manager';
 import config from '../global_config';
@@ -83,7 +83,7 @@ function setup_page_by_state(state) {
   if (state.search_jump_mode) controller.set_search_jump_mode(state.search_jump_mode)
   if (state.title) document.title = unescape(state.title);
   if (state.home_ott_id) config.home_ott_id = state.home_ott_id
-  if (state.screen_saver_inactive_duration) tree_settings.ssaver_inactive_duration_seconds = state.screen_saver_inactive_duration * 1000
+  if (state.ssaver_inactive_duration_seconds) tree_settings.ssaver_inactive_duration_seconds = state.ssaver_inactive_duration_seconds
   if (state.cols) controller.change_color_theme(state.cols, true)
 
   controller.close_all();
@@ -101,8 +101,11 @@ function setup_page_by_state(state) {
         // If there's somewhere to move to, do that.
         return controller.init_move_to(id, state.xp !== undefined ? state : state.init);
     }
-  })
-  .then(function () {
+  }).then(function () {
+    // Start a tour if present
+    if (state.tour_setting) controller.tour_start(state.tour_setting)
+
+  }).then(function () {
     //open popup dialog if exists.
     if (state.tap_action && (state.tap_ott_or_id || state.ott)) {
       global_button_action.action = state.tap_action;
@@ -124,12 +127,11 @@ function setup_page_by_state(state) {
   })
   .catch(function (error) {
     tree_state.url_parsed = true;
-    // Temporary hack around  https://github.com/OneZoom/OZtree/issues/231#issuecomment-617719250  
-    if ((error instanceof UserInterruptError) ||
-        (error.name === "UserInterruptError")) { // instanceof doesn't always work in bable 6
-            return true;
+    if (error instanceof UserInterruptError) {
+        // The flight was cancelled by the user, not an actual issue
+        if (window.is_testing) console.log("Flight cancelled", error)
+        return true;
     }
-    //TODO: separate out promise reject and error handling.
     console.error("Failed to setup_page_by_state:", error);
     const ozId = data_repo.ott_id_map[config.home_ott_id]
     controller.init_move_to(ozId ? ozId : controller.root.metacode);  // NB: root is always a node, so ozID positive

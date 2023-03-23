@@ -153,14 +153,17 @@ function parse_querystring(state, querystring) {
       state.home_ott_id = home_ott_id;
     } else if (/^ssaver=/.test(querystring[i])) {
       //if the user wants a specific language: not the one given by the browser
-      let screen_saver_inactive_duration = querystring[i].substring(querystring[i].indexOf("=") + 1);
-      state.screen_saver_inactive_duration = screen_saver_inactive_duration;
+      let ssaver_inactive_duration_seconds = querystring[i].substring(querystring[i].indexOf("=") + 1);
+      state.ssaver_inactive_duration_seconds = ssaver_inactive_duration_seconds;
     } else if (/^cols=/.test(querystring[i])) {
       // User wants a given colour scheme
       state.cols = querystring[i].substring(querystring[i].indexOf("=") + 1);
     } else if (/^initmark=/.test(querystring[i])) {
       // User wants an initial marking
       state.initmark = parseInt(querystring[i].substring(querystring[i].indexOf("=") + 1));
+    } else if (/^tour=/.test(querystring[i])) {
+      // User wants a tour
+      state.tour_setting = decodeURIComponent(querystring[i].substring(querystring[i].indexOf("=") + 1));
     }
   }
 }
