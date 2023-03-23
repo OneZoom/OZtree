@@ -1,7 +1,7 @@
 import get_controller from '../controller/controller';
 import tree_settings from '../tree_settings';
 import { global_button_action } from '../button_manager';
-import { get_largest_visible_node, parse_window_location, parse_query, encode_popup_action } from './utils';
+import { get_largest_visible_node, parse_window_location, encode_popup_action } from './utils';
 import { add_hook } from '../util/index';
 import config from '../global_config';
 import data_repo from '../factory/data_repo';
@@ -67,7 +67,11 @@ function record_url(options, force) {
  */
 function current_view_near_previous_view(loc, querystring, hash) {
   let previous_state = parse_window_location();
-  let current_state = parse_query(loc, querystring, hash);
+  let current_state = parse_window_location({
+    pathname: loc,
+    search: querystring,
+    hash: hash,
+  });
   if (current_state === null && previous_state !== null) return false;
   else if (current_state !== null && previous_state === null) return false;
   else if (current_state === null && previous_state === null) return true;

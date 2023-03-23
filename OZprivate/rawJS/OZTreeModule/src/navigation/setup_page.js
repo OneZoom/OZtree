@@ -1,4 +1,4 @@
-import { parse_window_location, parse_query } from './utils';
+import { parse_window_location } from './utils';
 import data_repo from '../factory/data_repo';
 import api_manager from '../api/api_manager';
 import get_controller from '../controller/controller';
