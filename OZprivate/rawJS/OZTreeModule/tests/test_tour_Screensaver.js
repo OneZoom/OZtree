@@ -6,6 +6,74 @@ import { call_hook } from '../src/util';
 import { setup_screensaver } from './util_tourwrapper';
 import { getTimeoutValue, triggerTimeout } from './util_timeout';
 
+test('screensaver.autostart_after_seconds', function (test) {
+  // Make sure screensavers setup a timer to start/stop
+  var t = setup_screensaver(test, `<div class="tour">
+    <div class="container" data-ott="91101" data-stop_wait="1000"><h2>Tour stop 1</h2></div>
+    <div class="container" data-ott="92202" data-stop_wait="2000"><h2>Tour stop 2</h2></div>
+    <div class="container" data-ott="93303" data-stop_wait="3000"><h2>Tour stop 3</h2></div>
+  </div>`, 'block', false);
+
+  return Promise.resolve().then(function () {
+    return t.wait_for_tourstop_state(0, 'tsstate-inactive');
+  }).then(function () {
+    test.deepEqual(t.tour_states(), [
+      'tstate-inactive',
+      'tsstate-inactive',
+      'tsstate-inactive',
+      'tsstate-inactive',
+    ], "Stopped (tour_states)");
+    test.ok(Math.abs(getTimeoutValue(t.tour.auto_activate_timer) - 60000 < 1000), "auto_activate_timer configured, armed, allowing for ~500ms setup-time")
+    t.set_tree_state_inactivity_seconds(35)
+    triggerTimeout(t.tour.auto_activate_timer)
+    return new Promise((resolve) => setTimeout(resolve, 100));
+
+  }).then(function () {
+    test.deepEqual(t.tour_states(), [
+      'tstate-inactive',
+      'tsstate-inactive',
+      'tsstate-inactive',
+      'tsstate-inactive',
+    ], "Still stopped, since get_tree_inactive_duration didn't advance (tour_states)");
+    test.ok(Math.abs(getTimeoutValue(t.tour.auto_activate_timer) - (60000 - 35000) < 100), "auto_activate_timer configured, armed, allowing for our 35 secs inactivity")
+    t.set_tree_state_inactivity_seconds(66)
+    triggerTimeout(t.tour.auto_activate_timer)
+    return Promise.all([
+      t.wait_for_tourstop_state(0, 'tsstate-transition_in'),
+    ]);
+
+  }).then(function () {
+    test.deepEqual(t.tour_states(), [
+      'tstate-playing',
+      'tsstate-transition_in',
+      'tsstate-inactive',
+      'tsstate-inactive',
+    ], "Enough time passed, tour started (tour_states)");
+    test.deepEqual(getTimeoutValue(t.tour.auto_activate_timer), null, "auto_activate_timer intactve")
+    t.set_tree_state_inactivity_seconds(22)
+    t.tour.clear()
+    return Promise.all([
+      t.wait_for_tourstop_state(0, 'tsstate-inactive'),
+    ]);
+
+  }).then(function () {
+    test.deepEqual(t.tour_states(), [
+      'tstate-inactive',
+      'tsstate-inactive',
+      'tsstate-inactive',
+      'tsstate-inactive',
+    ], "Stopped again after clearing (tour_states)");
+    test.ok(Math.abs(getTimeoutValue(t.tour.auto_activate_timer) - (60000 - 22000) < 100), "auto_activate_timer configured, armed, allowing for our 22 secs inactivity")
+
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
 test('screensaver.loop_back_forth', function (test) {
   // Make sure screensavers loop back and forth
   var t = setup_screensaver(test, `<div class="tour">

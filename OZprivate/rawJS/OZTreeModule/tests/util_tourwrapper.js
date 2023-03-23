@@ -6,6 +6,7 @@ import config from '../src/global_config';
 
 import Tour from '../src/tour/Tour';
 import Screensaver from '../src/tour/Screensaver';
+import tree_state from '../src/tree_state';
 
 // record_url won't work with our fake onezoom
 config.disable_record_url = true;
@@ -123,7 +124,7 @@ export function setup_tour(test, s, interaction = null, verbose_test = false) {
       callback_to_log('exit_callback'),
       interaction.replace(/^screensaver__/, ''),
       callback_to_log('interaction_callback'),
-      6000,  // autostart_after_seconds
+      60,  // autostart_after_seconds
     )
   } else {
     tour = new Tour(fake_oz);
@@ -184,6 +185,10 @@ export function setup_tour(test, s, interaction = null, verbose_test = false) {
     },
     wait_for_tour_state: function (state) {
       return state_observer.wait_for_state('.tour', state)
+    },
+    set_tree_state_inactivity_seconds: function (secs) {
+      tree_state.last_active_at = new Date(new Date().getTime() - secs*1000)
+      tree_state.last_render_at = tree_state.last_active_at;
     },
     finish_flight: function () {
       fake_oz.resolve_flight();
