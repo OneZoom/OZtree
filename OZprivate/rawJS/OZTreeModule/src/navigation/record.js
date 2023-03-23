@@ -49,7 +49,6 @@ function record_url(options, force) {
   if (current_view_near_previous_view(loc, querystring, hash) && !(force)) {
     return;
   } else if (window.location.protocol != "file:") {
-    let state = get_current_state(node_with_ott, title, options);
     let url = loc + querystring + hash;
     if (options.replaceURL) {
       window.history.replaceState(null, title, window.location.origin + pathname_exclude_append() + "/" + url);
@@ -185,22 +184,6 @@ function get_params(options) {
     querystring = "?" + querystring;
   }
   return querystring;
-}
-
-function get_current_state(node, title, options) {
-  let state = {};
-  let pos = get_pos_if_reanchor(node);
-  state.xp = pos[0].toFixed(0);
-  state.yp = pos[1].toFixed(0);
-  state.ws = pos[2].toFixed(4);
-  state.ott = node.ott;
-  state.vis_type = tree_settings.vis;
-  if (title) state.title = title;
-  if (options.record_popup) {
-    state.tap_action = options.record_popup.action;
-    state.tap_ott_or_id = options.record_popup.data;
-  }
-  return state;
 }
 
 /**
