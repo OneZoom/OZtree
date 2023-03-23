@@ -5,9 +5,15 @@ import { UserInterruptError } from '../src/errors';
 import config from '../src/global_config';
 
 import Tour from '../src/tour/Tour';
+import Screensaver from '../src/tour/Screensaver';
 
 // record_url won't work with our fake onezoom
 config.disable_record_url = true;
+
+export function setup_screensaver(test, s, interaction = 'exit', verbose_test = false) {
+    // Internally bodge interaction to also hold the fact we want a screensaver
+    return setup_tour(test, s, 'screensaver__' + interaction, verbose_test)
+}
 
 export function setup_tour(test, s, interaction = null, verbose_test = false) {
   let log = [];
@@ -107,16 +113,30 @@ export function setup_tour(test, s, interaction = null, verbose_test = false) {
     }
   };
 
-  let tour = new Tour(fake_oz);
-  tour.setup_setting(
-    new dom.window.Text(s),  // NB: Skips URL fetching and renders from DOM node
-    callback_to_log('start_callback'),
-    callback_to_log('end_callback'),
-    callback_to_log('exit_callback'),
-    interaction,
-    callback_to_log('interaction_callback'),
-    callback_to_log('ready_callback'),
-  )
+  let tour;
+  if (interaction && interaction.startsWith('screensaver__')) {
+    tour = new Screensaver(fake_oz);
+    tour.setup_setting(
+      new dom.window.Text(s),  // NB: Skips URL fetching and renders from DOM node
+      callback_to_log('start_callback'),
+      true,  // loop_back_forth
+      callback_to_log('exit_callback'),
+      interaction.replace(/^screensaver__/, ''),
+      callback_to_log('interaction_callback'),
+      6000,  // autostart_after_seconds
+    )
+  } else {
+    tour = new Tour(fake_oz);
+    tour.setup_setting(
+      new dom.window.Text(s),  // NB: Skips URL fetching and renders from DOM node
+      callback_to_log('start_callback'),
+      callback_to_log('end_callback'),
+      callback_to_log('exit_callback'),
+      interaction,
+      callback_to_log('interaction_callback'),
+      callback_to_log('ready_callback'),
+    )
+  }
 
   // Common observer to wait for state changes
   const state_observer = new dom.window.MutationObserver((mutation_list) => {
@@ -152,6 +172,12 @@ export function setup_tour(test, s, interaction = null, verbose_test = false) {
       // Return tour HTML broken up into array
       var tw = dom.window.document.getElementById('tour_wrapper');
       return tw.innerHTML.replace(/^\s+/, '').split(/\n\s+/);
+    },
+    tour_states: function () {
+      // Return state of tour & all tourstops
+      return this.tour_html().map(function (str) {
+        return (/data-state="([^"]+)"/.exec(str) || [null, null])[1]
+      }).filter((x) => x !== null)
     },
     wait_for_tourstop_state: function (ts_idx, state) {
       return state_observer.wait_for_state('.tour > .container:nth-of-type(' + (ts_idx + 1) + ')', state)

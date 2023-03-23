@@ -300,14 +300,25 @@ class Tour {
   }
 
   /**
+   * Index of tourstop considered "next", or null to stop
+   * overridden by Screensaver to create a looping tour
+   */
+  next_tourstop() {
+    if (this.curr_step === this.tourstop_array.length - 1) {
+      return null
+    }
+    return this.curr_step + 1;
+  }
+
+  /**
    * Go to the next tour stop immediately
    */  
   goto_next() {
     if (this.state === tstate.INACTIVE) {
       return
     }
-    // Leave current stop
-    if (this.curr_step === this.tourstop_array.length - 1) {
+    let next_ts = this.next_tourstop();
+    if (next_ts === null) {
       // end of tour, exit gracefully
       if (typeof this.end_callback === 'function') {
           this.end_callback()
@@ -315,7 +326,8 @@ class Tour {
       this.clear()
       return
     }
-    this.prev_step = this.curr_step++
+    this.prev_step = this.curr_step
+    this.curr_step = next_ts
     this.state = tstate.PLAYING  // NB: Cancel any paused state
     this.curr_stop().play_from_start('forward')
   }

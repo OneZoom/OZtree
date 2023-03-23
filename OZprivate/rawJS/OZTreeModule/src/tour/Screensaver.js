@@ -43,7 +43,7 @@ class Screensaver extends Tour {
   start() {
     //clear any residual timers before starting
     clearTimeout(this.auto_activate_timer)
-    super.start()
+    return super.start()
   }
   
   clear() {
@@ -57,27 +57,16 @@ class Screensaver extends Tour {
     // automatically start screensaver timing again after exit
     this.set_auto_start()
   }
-  
+
   /**
-   * Activate next stop but never exit
+   * Go around all tourstops in a loop, never exit
    */
-  goto_next() {
-    if (!this.started) {
-      return
-    }
-    this.curr_stop().leave()
-    this.prev_step = this.curr_step
+  next_tourstop() {
     if (this.curr_step === this.tourstop_array.length - 1) {
-      // end of tour: loop
-      if (this.loop_back_forth) {
-          this.curr_step = -(this.tourstop_array.length - 1)
-      } else {
-          this.curr_step = -1
-      }
+      // For loop_back_forth, set curr_step negative so "+ 1" goes backwards
+      return this.loop_back_forth ? -(this.tourstop_array.length - 2) : 0;
     }
-    this.curr_step++
-    this.state = tstate.PLAYING  // NB: Cancel any paused state
-    this.curr_stop().play_from_start('forward')
+    return this.curr_step + 1;
   }
 
   /**
