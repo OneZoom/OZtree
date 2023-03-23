@@ -7,7 +7,6 @@ import tree_settings from '../tree_settings';
 import data_repo from '../factory/data_repo';
 import { record_url } from '../navigation/record';
 import { get_largest_visible_node } from '../navigation/utils';
-import { parse_window_location } from '../navigation/utils';
 
 /**
  * @class Controller
