@@ -106,9 +106,8 @@ class TreeSettings {
       },
       midnode: LifeMidnode,
       vis: this.options.vis.spiral,
+      ssaver_inactive_duration_seconds: 600,
     }
-      
-    this._ssaver_inactive_duration_seconds = 600
   }
 
   //private method used internally
@@ -132,7 +131,11 @@ class TreeSettings {
   }
 
   get ssaver_inactive_duration_seconds() {
-    return this._ssaver_inactive_duration_seconds
+    if (this.current.hasOwnProperty('ssaver_inactive_duration_seconds')) {
+      return this.current.ssaver_inactive_duration_seconds
+    } else {
+      this.default.ssaver_inactive_duration_seconds
+    }
   }
 
   set ssaver_inactive_duration_seconds(value) {
@@ -140,8 +143,12 @@ class TreeSettings {
     if (isNaN(valueInt) || valueInt <= 0) {
       throw new Error('screen saver inactive duration should be a number and greater than 0')
     } else {
-      this._ssaver_inactive_duration_seconds = valueInt
+      this.current.ssaver_inactive_duration_seconds = valueInt
     }
+  }
+
+  is_default_ssaver_inactive_duration_seconds() {
+    return this.ssaver_inactive_duration_seconds === this.default.ssaver_inactive_duration_seconds;
   }
 
   get vis() {
