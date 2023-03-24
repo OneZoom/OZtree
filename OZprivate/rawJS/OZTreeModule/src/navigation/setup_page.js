@@ -7,7 +7,7 @@ import tree_state from '../tree_state';
 import { global_button_action, click_on_button_cb } from '../button_manager';
 import config from '../global_config';
 import tree_settings from '../tree_settings';
-import { get_largest_visible_node } from './utils';
+import { get_largest_visible_node, parse_url_base } from './utils';
 
 /**
  * This function is fired when user navigates the history.
@@ -157,13 +157,7 @@ function tree_current_state_obj({record_popup = null}) {
   let state = {};
 
   //find the base path, without the /@Homo_sapiens bit, if it exists
-  //note that window.location.pathname does not include ?a=b and #foobar parts
-  let index = window.location.pathname.indexOf("@");
-  if (index === -1) {
-    state.url_base = window.location.origin + window.location.pathname.replace(/\/*$/, "/");
-  } else {
-    state.url_base = window.location.origin + window.location.pathname.substring(0, index).replace(/\/*$/, "/");
-  }
+  state.url_base = parse_url_base(window.location);
 
   // Choose one with an OTT by preference
   let node = get_largest_visible_node(controller.root, (node) => !!node.ott) || get_largest_visible_node(controller.root);

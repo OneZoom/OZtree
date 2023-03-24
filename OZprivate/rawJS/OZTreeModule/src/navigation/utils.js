@@ -1,5 +1,4 @@
 import tree_state from '../tree_state';
-import data_repo from '../factory/data_repo';
 
 /**
  * Get largest visible node on the screen which meets the condition.
@@ -64,7 +63,7 @@ function get_largest_visible_node(node, condition=null) {
  * Parse a DOM location object, defaulting to window.location, and return a state object.
  */
 function parse_window_location(location = window.location) {
-  let state = {};
+  let state = { url_base: parse_url_base(location) };
   parse_location(state, location.pathname.indexOf("@") === -1 ? null : location.pathname.slice(location.pathname.indexOf("@")));
   parse_querystring(state, location.search);
   parse_hash(state, location.hash);
@@ -76,6 +75,20 @@ function parse_window_location(location = window.location) {
  */
 function deparse_state(state) {
   return new URL(state.url_base + deparse_location(state) + deparse_querystring(state) + deparse_hash(state));
+}
+
+/**
+ * Parse the URL base from a location object
+ */
+function parse_url_base(location) {
+  //find the base path, without the /@Homo_sapiens bit, if it exists
+  //note that location.pathname does not include ?a=b and #foobar parts
+  let index = location.pathname.indexOf("@");
+  if (index === -1) {
+    return location.origin + location.pathname.replace(/\/*$/, "/");
+  } else {
+    return location.origin + location.pathname.substring(0, index).replace(/\/*$/, "/");
+  }
 }
 
 //Object, String
@@ -196,7 +209,9 @@ function deparse_querystring(state) {
   if (state.custom_querystring) {
     for (let k in state.custom_querystring) sp.set(k, state.custom_querystring[k]);
   }
-  return '?' + sp.toString();
+
+  let out = sp.toString();
+  return out ? '?' + out : out;
 }
 
 //Object, String
@@ -272,4 +287,4 @@ function decode_popup_action(popup_action) {
   }
 }
 
-export { get_largest_visible_node, parse_window_location, deparse_state };
+export { get_largest_visible_node, parse_window_location, deparse_state, parse_url_base };
