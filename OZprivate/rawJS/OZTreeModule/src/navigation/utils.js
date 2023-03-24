@@ -71,6 +71,13 @@ function parse_window_location(location = window.location) {
   return state;
 }
 
+/**
+ * Turn a state object back into a location
+ */
+function deparse_state(state) {
+  return new URL(state.url_base + deparse_location(state) + deparse_querystring(state) + deparse_hash(state));
+}
+
 //Object, String
 //This function parses the location string, then store the result in state object.
 //The string could be null or undefined or empty. 
@@ -92,6 +99,14 @@ function parse_location(state, loc) {
     state.latin_name = parts[0];
   }
   if (parts.length > 1 && !isNaN(parseInt(parts[1]))) state.ott = parseInt(parts[1]);
+}
+
+function deparse_location(state) {
+  return [
+    "@",
+    state.latin_name ? state.latin_name.split(" ").join("_") : "",
+    state.ott ? "=" + state.ott : "",
+  ].join("")
 }
 
 /**
@@ -163,6 +178,27 @@ function parse_querystring(state, querystring) {
   }
 }
 
+function deparse_querystring(state) {
+  var sp = new URLSearchParams("");
+
+  if (state.tap_action) sp.set('pop', encode_popup_action(state.tap_action) + "_" + state.tap_ott_or_id);
+  if (state.vis_type) sp.set('vis', state.vis_type);
+  if (state.init) sp.set('init', state.init);
+  if (state.lang) sp.set('lang', state.lang);
+  if (state.image_source) sp.set('img', state.image_source);
+  if (state.search_jump_mode) sp.set('anim', state.search_jump_mode);
+  if (state.home_ott_id) sp.set('otthome', state.home_ott_id);
+  if (state.ssaver_inactive_duration_seconds) sp.set('ssaver', state.ssaver_inactive_duration_seconds);
+  if (state.cols) sp.set('cols', state.cols);
+  if (state.initmark) sp.set('initmark', state.initmark);
+  if (state.tour_setting) sp.set('tour', state.tour_setting);
+
+  if (state.custom_querystring) {
+    for (let k in state.custom_querystring) sp.set(k, state.custom_querystring[k]);
+  }
+  return '?' + sp.toString();
+}
+
 //Object, String
 //This function parse the hash string, then store the result in state object.
 //String is one of --
@@ -199,6 +235,11 @@ function parse_hash(state, hash) {
   }
 }
 
+function deparse_hash(state) {
+  if (!state.xp || !state.yp || !state.ws) return "";
+  return "#x" + state.xp.toFixed(0) + ",y" + state.yp.toFixed(0) + ",w" + state.ws.toFixed(4);
+}
+
 function encode_popup_action(popup_action) {
   if (popup_action == "ow_leaf") {
     return 'ol';
@@ -231,4 +272,4 @@ function decode_popup_action(popup_action) {
   }
 }
 
-export { get_largest_visible_node, parse_window_location, encode_popup_action, decode_popup_action };
+export { get_largest_visible_node, parse_window_location, deparse_state };

@@ -7,6 +7,7 @@ import tree_state from '../tree_state';
 import { global_button_action, click_on_button_cb } from '../button_manager';
 import config from '../global_config';
 import tree_settings from '../tree_settings';
+import { get_largest_visible_node } from './utils';
 
 /**
  * This function is fired when user navigates the history.
@@ -146,6 +147,67 @@ function setup_page_by_state(state) {
   });
 }
 
+/**
+ * Return a "state" object representing the current tree view,
+ * as parsed by setup_page_by_state()
+ */
+function tree_current_state_obj({record_popup = null}) {
+  let controller = get_controller();
+  var win_sp = new URLSearchParams(window.location.search);
+  let state = {};
 
-export { get_id_by_state, popupstate, setup_loading_page };
+  //find the base path, without the /@Homo_sapiens bit, if it exists
+  //note that window.location.pathname does not include ?a=b and #foobar parts
+  let index = window.location.pathname.indexOf("@");
+  if (index === -1) {
+    state.url_base = window.location.origin + window.location.pathname.replace(/\/*$/, "/");
+  } else {
+    state.url_base = window.location.origin + window.location.pathname.substring(0, index).replace(/\/*$/, "/");
+  }
+
+  // Choose one with an OTT by preference
+  let node = get_largest_visible_node(controller.root, (node) => !!node.ott) || get_largest_visible_node(controller.root);
+
+  // ----- Pinpoint / path
+  state.ott = node.ott
+  state.latin_name = node.latin_name
+
+  // ----- Position hash
+  state.xp = node.xvar;
+  state.yp = node.yvar;
+  state.ws = node.rvar / 220;
+
+  // ----- Query-string
+  if (!tree_settings.is_default_vis()) state.vis_type = tree_settings.vis;
+  // NB tree_settings.cols could be undefined if we since changed components of the colours
+  if (!tree_settings.is_default_cols() && tree_settings.cols) state.cols = tree_settings.cols
+
+  let tour_setting = controller.tour_active_setting();
+  if (tour_setting && typeof tour_setting === 'string') state.tour_setting = tour_setting
+
+  if (config.lang) state.lang = config.lang;
+  if (data_repo.image_source !== 'best_any') state.image_source = data_repo.image_source;
+  if (controller.get_search_jump_mode() !== 'flight') state.search_jump_mode = controller.get_search_jump_mode();
+  if (config.home_ott_id) state.home_ott_id = config.home_ott_id
+  if (record_popup) {
+    state.tap_action = record_popup.action;
+    state.tap_ott_or_id = record_popup.data;
+  }
+  if (!tree_settings.is_default_ssaver_inactive_duration_seconds()) state.ssaver_inactive_duration_seconds = tree_settings.ssaver_inactive_duration_seconds
+
+  // init/initmark aren't stored anywhere, pull them out of existing URL
+  if (win_sp.get('init')) state.init = win_sp.get('init');
+  if (win_sp.get('initmark')) state.initmark = win_sp.get('initmark');
+
+  // Preserve all custom parts of current querystring
+  state.custom_querystring = {};
+  (config.custom_querystring_params || []).forEach(function (part_name) {
+    state.custom_querystring[part_name] = win_sp.getAll(part_name);
+  });
+
+  return state;
+}
+
+
+export { get_id_by_state, popupstate, setup_loading_page, tree_current_state_obj };
 
