@@ -11,25 +11,25 @@ test('parse_window_location', function (t) {
 
     t.deepEqual(pwl("http://onezoom.example.com/life/@Myzopoda_aurita?pop=ol_6794"), {
         url_base: 'http://onezoom.example.com/life/',
-        latin_name: 'Myzopoda_aurita',
+        pinpoint: '@Myzopoda_aurita',
         tap_action: 'ow_leaf',
         tap_ott_or_id: 6794,
-    }, "Extracted latin name, no OTT, pop-up action")
+    }, "Pinpoint with latin name & OTT, pop-up action")
 
     t.deepEqual(pwl("http://onezoom.example.com/life/@Myzopoda_aurita=6794"), {
         url_base: 'http://onezoom.example.com/life/',
-        latin_name: 'Myzopoda_aurita',
-        ott: 6794,
-    }, "Extracted latin name & OTT")
+        pinpoint: '@Myzopoda_aurita=6794',
+    }, "Pinpoint with latin name & OTT")
 
     t.deepEqual(pwl("http://onezoom.example.com/life/@=6794"), {
         url_base: 'http://onezoom.example.com/life/',
-        ott: 6794,
-    }, "Extracted only OTT")
+        pinpoint: '@=6794',
+    }, "Pinpoint with OTT")
 
     t.deepEqual(pwl("http://onezoom.example.com/life/"), {
         url_base: 'http://onezoom.example.com/life/',
-    }, "Extracted no OTT target")
+        pinpoint: null,
+    }, "No pinpoint")
 
     t.end();
 });

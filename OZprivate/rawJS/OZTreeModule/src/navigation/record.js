@@ -36,7 +36,7 @@ function record_url(options, force) {
   options = options || {};
   let current_state = tree_current_state_obj({record_popup: options.record_popup});
   // No OTT found to anchor the URL on, don't record
-  if (!current_state.ott) return
+  if (!current_state.pinpoint) return
 
   if (current_view_near_previous_view(current_state) && !(force)) {
     return;
@@ -61,7 +61,7 @@ function current_view_near_previous_view(current_state) {
   else if (current_state !== null && previous_state === null) return false;
   else if (current_state === null && previous_state === null) return true;
   else if (current_state.vis_type !== previous_state.vis_type) return false;
-  else if (current_state.ott === previous_state.ott) {
+  else if (current_state.pinpoint === previous_state.pinpoint) {
     //If no tap window open and position not changed a lot, do not record current position into history.
     if (!current_state.tap_ott_or_id && !previous_state.tap_ott_or_id) return true;
     //If opened tap is same as previous, do not record current position into history.

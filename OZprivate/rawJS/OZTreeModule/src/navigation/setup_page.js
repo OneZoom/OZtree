@@ -1,6 +1,5 @@
 import { parse_window_location } from './utils';
 import data_repo from '../factory/data_repo';
-import api_manager from '../api/api_manager';
 import get_controller from '../controller/controller';
 import { UserInterruptError } from '../errors';
 import tree_state from '../tree_state';
@@ -8,6 +7,7 @@ import { global_button_action, click_on_button_cb } from '../button_manager';
 import config from '../global_config';
 import tree_settings from '../tree_settings';
 import { get_largest_visible_node, parse_url_base } from './utils';
+import { resolve_pinpoints, node_to_pinpoint } from './pinpoint';
 
 /**
  * This function is fired when user navigates the history.
@@ -26,56 +26,6 @@ function setup_loading_page() {
   setup_page_by_state(state);
 }
 
-/**
- * State contains those informations which could help to find metacode of the pinpoint node:
- * -- ott
- * -- latin_name
- * This function first try to find metacode by looking at local storage. If the metacode is not found, then try to search the server.
- * @return {Promise} return a promise which would turn to resolve if the metacode is found, otherwise resolve as undefined (i.e. nowhere to go)
- */
-function get_id_by_state(state) {
-  if (!state) {
-    return Promise.reject(new Error('Expect to get state, but pass in undefined'));
-  } else if (state.node_id) {
-    return Promise.resolve(state.node_id);
-  } else if (state.ott && data_repo.ott_id_map[state.ott]) {
-    return Promise.resolve(data_repo.ott_id_map[state.ott]);
-  } else if (state.latin_name && data_repo.name_id_map[state.latin_name]) {
-    return Promise.resolve(data_repo.name_id_map[state.latin_name]);
-  } else if (state.ott || state.latin_name) {
-    return get_ott_to_id_by_api(state.ott, state.latin_name)
-  } else {
-    // Neither ott or latin name is found in state, so nowhere to go
-    return Promise.resolve(undefined);
-  }
-}
-
-function get_ott_to_id_by_api(ott, latin_name) {
-  return new Promise(function(resolve, reject) {
-    let data = {}
-    if (ott) data.ott = ott
-    if (latin_name) data.name = latin_name
-    let params = {
-      data: data,
-      success: function (res) {
-        if (res.ids && res.ids.length) {
-          if (ott) {
-            data_repo.ott_id_map[ott] = res.ids[0]
-            data_repo.id_ott_map[res.ids[0]] = ott
-          }
-          resolve(res.ids[0]);
-        } else {
-          reject();
-        }
-      },
-      error: function (res) {
-        reject(res);
-      }
-    };
-    api_manager.search_init(params);
-  })
-}
-
 function setup_page_by_state(state) {
   let controller = get_controller();
   if (state.vis_type) controller.change_view_type(state.vis_type, true);
@@ -90,13 +40,14 @@ function setup_page_by_state(state) {
   controller.close_all();
 
   // Perform initial marking if asked
-  if (state.initmark) get_ott_to_id_by_api(state.initmark).then(id => controller.mark_area(id));
+  if (state.initmark) resolve_pinpoints(state.initmark).then(pp => controller.mark_area(pp.ozid));
 
-  let promise = state.home_ott_id ? get_ott_to_id_by_api(state.home_ott_id) : Promise.resolve()
+  let promise = state.home_ott_id ? resolve_pinpoints(state.home_ott_id).then(pp => pp.ozid) : Promise.resolve()
 
   promise
-  .then(() => {return get_id_by_state(state)})
-  .then(function (id) {
+  .then(() => state.pinpoint ? resolve_pinpoints(state.pinpoint) : {})
+  .then(function (pp) {
+    let id = pp.ozid;
     tree_state.url_parsed = true;
     if (id !== undefined) {
         // If there's somewhere to move to, do that.
@@ -163,8 +114,7 @@ function tree_current_state_obj({record_popup = null}) {
   let node = get_largest_visible_node(controller.root, (node) => !!node.ott) || get_largest_visible_node(controller.root);
 
   // ----- Pinpoint / path
-  state.ott = node.ott
-  state.latin_name = node.latin_name
+  state.pinpoint = node_to_pinpoint(node)
 
   // ----- Position hash
   state.xp = node.xvar;
@@ -203,5 +153,5 @@ function tree_current_state_obj({record_popup = null}) {
 }
 
 
-export { get_id_by_state, popupstate, setup_loading_page, tree_current_state_obj };
+export { popupstate, setup_loading_page, tree_current_state_obj };
 

@@ -63,8 +63,9 @@ function get_largest_visible_node(node, condition=null) {
  * Parse a DOM location object, defaulting to window.location, and return a state object.
  */
 function parse_window_location(location = window.location) {
-  let state = { url_base: parse_url_base(location) };
-  parse_location(state, location.pathname.indexOf("@") === -1 ? null : location.pathname.slice(location.pathname.indexOf("@")));
+  let state = {};
+  state.url_base = parse_url_base(location);
+  parse_pathname(state, location.pathname);
   parse_querystring(state, location.search);
   parse_hash(state, location.hash);
   return state;
@@ -74,7 +75,7 @@ function parse_window_location(location = window.location) {
  * Turn a state object back into a location
  */
 function deparse_state(state) {
-  return new URL(state.url_base + deparse_location(state) + deparse_querystring(state) + deparse_hash(state));
+  return new URL(deparse_pathname(state) + deparse_querystring(state) + deparse_hash(state));
 }
 
 /**
@@ -91,35 +92,14 @@ function parse_url_base(location) {
   }
 }
 
-//Object, String
-//This function parses the location string, then store the result in state object.
-//The string could be null or undefined or empty. 
-//Otherwise it starts with "@". Followed by a name or '=ott' or both. If name is present, the '=' can remain even without ott.
-//Examples:
-//  "@name=1234", "@name", "@name=", "@=1234"
-//can also allow "@5678" which refers to a specific node_id (NOT ott)
-function parse_location(state, loc) {
-  if (!loc || loc.length === 0) return;
-  loc = loc.substring(1);
-  let parts = loc.split("=");
-  if (parts.length === 1) {
-    if (isNaN(parseInt(parts[0]))) {
-      state.latin_name = parts[0];
-    } else {
-      state.node_id = parseInt(parts[0]);
-    }
-  } else if (parts[0].length > 0) {
-    state.latin_name = parts[0];
-  }
-  if (parts.length > 1 && !isNaN(parseInt(parts[1]))) state.ott = parseInt(parts[1]);
+// Pull pinpoint out of pathname, e.g. @Eukaryota=304358
+function parse_pathname(state, pathname) {
+    state.pinpoint = pathname.indexOf("@") === -1 ? null : pathname.slice(pathname.indexOf("@"));
 }
 
-function deparse_location(state) {
-  return [
-    "@",
-    state.latin_name ? state.latin_name.split(" ").join("_") : "",
-    state.ott ? "=" + state.ott : "",
-  ].join("")
+/// pathname should equal pinpoint
+function deparse_pathname(state) {
+    return state.url_base + state.pinpoint;
 }
 
 /**
