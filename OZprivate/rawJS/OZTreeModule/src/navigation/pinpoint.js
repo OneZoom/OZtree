@@ -9,7 +9,6 @@ import data_repo from '../factory/data_repo';
  * ``@name``: Where name is a latin name
  * ``@name=12345``: Where name is a latin name, 12345 an OTT
  * ``@=12345``: Where 12345 is an OTT
- * ``@2040``: Where 2040 is a leaf / node OZid
  * If required, API lookups will be made to fill in an gaps in local knowledge.
  *
  * @param pinpoint_or_pinpoints A pinpoint string or list of pinpoint strings
@@ -32,10 +31,10 @@ export function resolve_pinpoints(pinpoint_or_pinpoints) {
 
     let parts = pinpoint.split("=");
     if (parts.length === 1) {
+      // NB: "@12345" used to be OZid. We've stopped doing that, but keep the NaN check
+      //     so we don't interpret "@12345" as a latin_name
       if (isNaN(parseInt(parts[0]))) {
         out.latin_name = parts[0];
-      } else {
-        out.ozid = parseInt(parts[0]);
       }
     } else if (parts[0].length > 0) {
       out.latin_name = parts[0];
@@ -83,7 +82,7 @@ export function resolve_pinpoints(pinpoint_or_pinpoints) {
   * Return a pinpoint string pointing at (node)
   */
 export function node_to_pinpoint(node) {
-  if (!node.ott && !node.latin_name) return '@' + node.id
+  if (!node.ott && !node.latin_name) return null;
   return [
     "@",
     node.latin_name ? node.latin_name.split(" ").join("_") : "",
