@@ -14,7 +14,7 @@ import data_repo from '../factory/data_repo'
  * @param {Function} header_callback - the 1-param UI function [f(label)] to call on a header string, e.g. adding it to a list
  * @param {Function} completed_callback - a function [f()] to call once the taxa have been processed and the data_repo filled
  */
-export default function (taxon_json, taxon_callback, header_callback, completed_callback) {
+export default function process_taxon_list(taxon_json, taxon_callback, header_callback, completed_callback) {
   if (taxon_json) {
     let taxon_list = JSON.parse(taxon_json);
     if (taxon_list && taxon_list.length) {
