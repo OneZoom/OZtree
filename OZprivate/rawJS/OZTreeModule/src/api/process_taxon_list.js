@@ -1,7 +1,7 @@
 /* A function that takes in a list of headers and OTT/names and maps two callback functions onto the list,
  * one for a header line and one for a taxon line */
 
-import api_manager from './api_manager'; //for api_manager.ott2id_arry()
+import api_manager from './api_manager'; //for api_manager.get_ids_by_ott_array()
 import data_repo from '../factory/data_repo'
 
 /**
@@ -36,7 +36,7 @@ export default function (taxon_json, taxon_callback, header_callback, completed_
             taxa[i].vernacular = taxa[i][xhr.lang] || taxa[i][xhr.lang.split('-', 1)] || taxa[i][""] || xhr[taxa[i].OTT.toString()]
           }
           //call the main processing function
-          api_manager.ott2id_arry({
+          api_manager.get_ids_by_ott_array({
             data: {
               ott_array: otts
             },
