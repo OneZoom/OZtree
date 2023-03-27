@@ -18,7 +18,6 @@ class Factory {
    */
   build_tree() {
     this.root = Midnode.create();
-    window.xxx = this.root;
     this.root.init(0, data_repo.raw_data.length-1, 1, 1, null, 20);
   }
   
