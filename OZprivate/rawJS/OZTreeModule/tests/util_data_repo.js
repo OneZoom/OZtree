@@ -43,3 +43,16 @@ export function populate_data_repo(tree_serial = '1507729427') {
     }
   });
 }
+
+/**
+  * Find an OZid that matches given conditions
+  */
+export function get_ozid({leaf = false, node = false, nonexistant = false}) {
+  var candidates = Object.keys(data_repo.id_ott_map);
+
+  if (nonexistant) candidates = [999999999, -999999999]
+  if (leaf) candidates = candidates.filter((x) => x < 0)
+  if (node) candidates = candidates.filter((x) => x >= 0)
+
+  return parseInt(candidates[Math.floor(Math.random() * (candidates.length - 1))]);
+}
