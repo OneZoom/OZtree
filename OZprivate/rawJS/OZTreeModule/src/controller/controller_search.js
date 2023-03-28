@@ -166,7 +166,7 @@ export default function (Controller) {
         } else {
             this.leap_to(dest_OZid);
         }
-        record_url();
+        record_url(this);
     }
 } // end of controller exported
 

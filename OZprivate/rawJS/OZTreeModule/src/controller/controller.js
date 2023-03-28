@@ -14,7 +14,8 @@ import * as renderer from '../render/renderer';
 import get_projection from '../projection/projection';
 import {get_factory} from '../factory/factory';
 import { setup_page_by_location } from '../navigation/setup_page';
-import {call_hook} from '../util/index';
+import { record_url_delayed } from '../navigation/record';
+import { add_hook, call_hook} from '../util/index';
 import data_repo from '../factory/data_repo';
 
 /**
@@ -29,6 +30,9 @@ class Controller {
     this.factory = get_factory();
     this.interactor.add_controller(this);
     this.renderer.add_controller(this);
+
+    // Set-up the record_url-after-flight hook, wiring up the controller
+    add_hook("flying_finish", record_url_delayed.bind(null, this));
   }
   
   rebuild_tree() {

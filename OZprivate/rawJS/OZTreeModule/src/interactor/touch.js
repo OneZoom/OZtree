@@ -94,7 +94,7 @@ class TouchInteractor {
        * On the other hand, if call record_url_delayed before controller.click, when controller.click calls record_url, since 
        * record_url would clear timer set by record_url_delayed function, only one record_url would be called as a result.
        */
-      record_url_delayed();
+      record_url_delayed(this.controller);
       tree_state.touch_hold = false;
       if (this.clicking) {
         this.controller.click();

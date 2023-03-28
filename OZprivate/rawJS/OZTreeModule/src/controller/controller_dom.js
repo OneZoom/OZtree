@@ -93,7 +93,7 @@ export default function (Controller) {
         tree_settings.change_language(lang, this, data_repo);
       } finally {
         if (!init) {
-          record_url({
+          record_url(this, {
             replaceURL: true
           }, true);
         }
@@ -146,7 +146,7 @@ export default function (Controller) {
   Controller.prototype.change_color_theme = function (color_theme, init = false) {
       tree_settings.cols = color_theme;
       if (!init) {
-          record_url({ replaceURL: true }, true);
+          record_url(this, { replaceURL: true }, true);
           this.trigger_refresh_loop();
       }
   }
@@ -167,7 +167,7 @@ export default function (Controller) {
       clear_node_pics(this.root);
       this.trigger_refresh_loop()
       if (!init) {
-        record_url({
+        record_url(this, {
           replaceURL: true
         }, true)
       }
@@ -178,7 +178,7 @@ export default function (Controller) {
     if (config.search_jump_mode !== search_jump_mode) {
       config.search_jump_mode = search_jump_mode;
       if (!init) {
-        record_url({
+        record_url(this, {
           replaceURL: true
         }, true)
       }

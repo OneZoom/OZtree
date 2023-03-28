@@ -1,16 +1,12 @@
-import get_controller from '../controller/controller';
 import { tree_current_state_obj } from './setup_page';
 import { get_largest_visible_node, parse_window_location, deparse_state } from './utils';
-import { add_hook } from '../util/index';
 import config from '../global_config';
 
 let timer = null;
 
-add_hook("flying_finish", record_url_delayed);
-
-function record_url_delayed(options, force) {
+function record_url_delayed(controller, options, force) {
   clearTimeout(timer);
-  timer = setTimeout(record_url.bind(this, options, force), 300);
+  timer = setTimeout(record_url.bind(this, controller, options, force), 300);
 }
 
 /**
@@ -25,9 +21,8 @@ function record_url_delayed(options, force) {
  * @param {Object} options It could contain the following properties:
  * record_popup: Contents of global_button_action, if a popup window should be open
  */
-function record_url(options, force) {
+function record_url(controller, options, force) {
   clearTimeout(timer);
-  let controller = get_controller();
 
   if (config.disable_record_url) {
     // In an embedded view, e.g. Don't modify the page URL
@@ -47,7 +42,7 @@ function record_url(options, force) {
     } else {
       window.history.pushState(null, "", deparse_state(current_state).href);
     }
-    document.title = unescape(get_title());
+    document.title = unescape(get_title(controller));
   }
 }
 
@@ -71,8 +66,7 @@ function current_view_near_previous_view(current_state) {
   return false;
 }
 
-function get_title() {
-  let controller = get_controller();
+function get_title(controller) {
   let node_with_name = get_largest_visible_node(controller.root, (node) => !!(node.cname || node.latin_name));
 
   if (!node_with_name) return config.title_func();

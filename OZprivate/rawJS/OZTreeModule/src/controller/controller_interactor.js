@@ -93,10 +93,10 @@ export default function (Controller) {
     if (is_popup_state()) {
       // NB: Record both states first, then run callback, so UI can get a URL with the popup applied
       //     (to open in a new window, e.g.)
-      record_url();
-      record_url({record_popup: global_button_action});
+      record_url(this);
+      record_url(this, {record_popup: global_button_action});
     } else if (global_button_action.action === "leap") {
-      record_url();
+      record_url(this);
     }
     click_on_button_cb(this);
   }
