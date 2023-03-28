@@ -38,14 +38,14 @@ functionality. At the moment, a single file is created, called OZentry.js
  *  3. Write your own "theme" object and pass it here e.g. use default_viz_settings = {colours:my_theme_object}
  *  4. Use an existing theme and modify it by passing additional parameters here, as described in tree_settings.set_default()
  *     e.g. use default_viz_settings = {cols:'natural', 'cols.branch.stroke':'rgb(190,0,0)'}
- * @param {string} condensed_newick - A 'condensed Newick' string, e.g. as defined in completetree_XXXXX.js 
+ * @param {string} rawData A 'condensed Newick' string, e.g. as defined in completetree_XXXXX.js
  * (condensed Newick is a ladderized-ascending binary newick tree with all characters except braces removed, 
  * and curly braces substituted where a bifurcation only exists order to randomly resolve polytomies.
  * @param {Object} metadata - *** To document ...
- * @param {Object} dichotomy_cut_position_map_json_string - *** To document ...
- * @param {Object} polytomy_cut_position_map_json_string - *** To document ...
- * @param {Object} cut_thresholds - *** To document ... 
- * @param {Object} tree_dates - *** To document ...
+ * @param {Object} cut_position_map_json_str dichotomy cut map from the tree-build-generated cut_position_map.js
+ * @param {Object} polytomy_cut_position_map_json_str polytomy cut map from the tree-build-generated cut_position_map.js
+ * @param {Object} cut_threshold - Threshold used when generating (and defined in) cut_position_map.js
+ * @param {Object} tree_date - Date stcture from the tree-build-generated dates.js
  * @return {Object} a OneZoom object which exposes OneZoom objects and functions to the user. In particular, .data_repo contains a DataRepo object, and .controller contains a Controller object.
  */
 function setup(
@@ -54,12 +54,12 @@ function setup(
   pagetitle_function,
   canvasID,
   default_viz_settings,
-  condensed_newick,
+  rawData,
   metadata,
-  dichotomy_cut_position_map_json_string,
-  polytomy_cut_position_map_json_string,
-  cut_thresholds,
-  tree_dates) {
+  cut_position_map_json_str,
+  polytomy_cut_position_map_json_str,
+  cut_threshold,
+  tree_date) {
   // Set the server-specific URLs for API calls
   api_manager.set_urls(server_urls);
   // Set the URL for images
@@ -128,22 +128,13 @@ function setup(
   setTimeout(() => {
     if (oz.controller) {
         //start fetching metadata for the tree, using global variables that have been defined in files 
-        //10000 is cut threshold for cut_position_map_json_str
-        //TODO: It shouldn't be hard coded.
-        // the cut map file should eventually contain the information of what it's for. cut_map_json is a 
-        // stringified json object which maps node position in rawData to its cut position of its children in rawData
-    
-        //10000 should be replaced with the threshold used to generate cut_position_map.js. If the string of a node in ]
-        //rawData is shorter than cut_threshold, then there is no need to find its cut position and add it in cut_map_json.
-        let cut_threshold = window.cut_threshold || 10000;
-        let tree_date = window.tree_date || "{}";
         let data_obj = {
-          raw_data: condensed_newick,
-          cut_map: JSON.parse(dichotomy_cut_position_map_json_string || "{}"),
-          poly_cut_map: JSON.parse(polytomy_cut_position_map_json_string || "{}"),
+          raw_data: rawData,
+          cut_map: JSON.parse(cut_position_map_json_str || "{}"),
+          poly_cut_map: JSON.parse(polytomy_cut_position_map_json_str || "{}"),
           metadata: metadata,
-          cut_threshold: cut_thresholds || 10000,
-          tree_date: tree_dates || "{}"
+          cut_threshold: cut_threshold || 10000,
+          tree_date: tree_date || "{}"
         }
 
         oz.controller.build_tree(data_obj)
