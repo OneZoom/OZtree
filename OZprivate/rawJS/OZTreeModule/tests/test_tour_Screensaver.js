@@ -23,6 +23,7 @@ test('screensaver.autostart_after_seconds', function (test) {
       'tsstate-inactive',
       'tsstate-inactive',
     ], "Stopped (tour_states)");
+  }).then(function () {  // NB: Give set_auto_start() an extra chance to settle
     test.ok(Math.abs(getTimeoutValue(t.tour.auto_activate_timer) - 60000 < 1000), "auto_activate_timer configured, armed, allowing for ~500ms setup-time")
     t.set_tree_state_inactivity_seconds(35)
     triggerTimeout(t.tour.auto_activate_timer)

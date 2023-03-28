@@ -4,6 +4,7 @@ import handler_youtube from './HandlerYoutube';
 import TourStopClass from './TourStop'
 import tree_state from '../tree_state';
 import { add_hook, remove_hook } from '../util';
+import { resolve_pinpoints } from '../navigation/pinpoint';
 
 let tour_id = 1
 const Interaction_Action_Arr = ['mouse_down', 'mouse_wheel', 'touch_start', 'touch_move', 'touch_end', 'window_size_change']
@@ -23,6 +24,7 @@ class Tour {
     this.prev_step = null
     this.tourstop_array = []
     this.state = tstate.INACTIVE;
+    this.pinpoint_to_ozid = {}
 
     this.wrapper_id = 'tour_wrapper';
     this.div_wrapper = document.getElementById(this.wrapper_id);
@@ -164,28 +166,20 @@ class Tour {
     // Reset tour to the desired step, or start
     this.clear(tour_start_step)
 
+    // Reset OTT/pinpoint to OZid map
+    this.tourstop_array.forEach(tourstop => {
+      if (tourstop.setting.ott && !isNaN(tourstop.setting.ott) && tourstop.setting.ott > 0) {
+        this.pinpoint_to_ozid[tourstop.setting.ott] = null;
+      }
+    });
+
     // Attach all plugins to tour, loaded when everything is finished
     return Promise.all([
       this.bind_ui_events(),
-      new Promise((resolve) => {
-        // Fetch ott -> id conversion map
-        const ott_id_set = new Set();
-        this.tourstop_array.forEach(tourstop => {
-          if (tourstop.setting.ott && !isNaN(tourstop.setting.ott)) {
-              ott_id_set.add(tourstop.setting.ott)
-          }
+      resolve_pinpoints(Object.keys(this.pinpoint_to_ozid)).then((pps) => {
+        pps.forEach((pp) => {
+          this.pinpoint_to_ozid[pp.pinpoint] = pp.ozid;
         });
-
-        const ott_id_array = [];
-        for (let ott_id of ott_id_set.values()) {
-          ott_id_array.push({ OTT: ott_id })
-        };
-
-        this.onezoom.utils.process_taxon_list(
-          JSON.stringify(ott_id_array),
-          null, null,
-          resolve
-        )
       }),
       handler_htmlaudio(this),
       handler_vimeo(this),

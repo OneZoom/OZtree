@@ -12,7 +12,6 @@ test('tour.start:notourstops', function (test) {
 
   return t.tour.start().then(function () {
     test.deepEqual(t.log, [
-      ['process_taxon_list', []],
       ['ready_callback'],
       ['alert', 'This tour has no tourstops'],
     ]);
@@ -37,10 +36,9 @@ test('tour.flight', function (test) {
     return t.wait_for_tourstop_state(0, 'tsstate-transition_in');
   }).then(function () {
     test.deepEqual(t.log, [
-      ['process_taxon_list', [91101, 92202, 93303]],
       ['ready_callback'],
       ['start_callback'],
-      ['fly_on_tree_to', [null, 1000, false, 1]],
+      ['fly_on_tree_to', [null, 1101, false, 1]],
     ], "Now flying (log entries)");
     // Playing, waiting for zoom to head to first node
     test.deepEqual(t.tour_html(), [
@@ -55,8 +53,8 @@ test('tour.flight', function (test) {
 
   }).then(function () {
     test.deepEqual(t.log.slice(-2), [
-      ['fly_on_tree_to', [ null, 1000, false, 1 ]],
-      ['leap_to', [ 1000, undefined, false ]],
+      ['fly_on_tree_to', [ null, 1101, false, 1 ]],
+      ['leap_to', [ 1101, undefined, false ]],
     ], "Arrived at tourstop, lept to location to be sure");
     test.deepEqual(t.tour_html(), [
       '<div class="tour" data-state="tstate-playing">',
@@ -74,8 +72,8 @@ test('tour.flight', function (test) {
 
   }).then(function () {
     test.deepEqual(t.log.slice(-2), [
-      ['leap_to', [ 1000, undefined, false ]],
-      ['fly_on_tree_to', [ null, 1001, true, 4 ]],
+      ['leap_to', [ 1101, undefined, false ]],
+      ['fly_on_tree_to', [ null, 2202, true, 4 ]],
     ], "Flying to next tourstop, included custom flight params");
     test.deepEqual(t.tour_html(), [
       '<div class="tour" data-state="tstate-playing">',
@@ -92,8 +90,8 @@ test('tour.flight', function (test) {
 
   }).then(function () {
     test.deepEqual(t.log.slice(-2), [
-      ['fly_on_tree_to', [ null, 1001, true, 4 ]],
-      ['leap_to', [ 1001, undefined, true ]],
+      ['fly_on_tree_to', [ null, 2202, true, 4 ]],
+      ['leap_to', [ 2202, undefined, true ]],
     ], "Arrived at next tourstop, included custom flight params");
     test.deepEqual(t.tour_html(), [
       '<div class="tour" data-state="tstate-playing">',
@@ -167,10 +165,9 @@ test('tour:block-hiddentab', function (test) {
     return t.wait_for_tourstop_state(0, 'tsstate-transition_in');
   }).then(function () {
     test.deepEqual(t.log, [
-      ['process_taxon_list', [91101, 92202]],
       ['ready_callback'],
       ['start_callback'],
-      ['fly_on_tree_to', [null, 1000, false, 1]],
+      ['fly_on_tree_to', [null, 1101, false, 1]],
     ], "Fly to first node");
     t.finish_flight();
     return t.wait_for_tourstop_state(0, 'tsstate-active_wait');
@@ -243,10 +240,9 @@ test('tour:block-tourpaused', function (test) {
     return t.wait_for_tourstop_state(0, 'tsstate-transition_in');
   }).then(function () {
     test.deepEqual(t.log, [
-      ['process_taxon_list', [91101, 92202]],
       ['ready_callback'],
       ['start_callback'],
-      ['fly_on_tree_to', [null, 1000, false, 1]],
+      ['fly_on_tree_to', [null, 1101, false, 1]],
     ], "Fly to first node");
     t.finish_flight();
     return t.wait_for_tourstop_state(0, 'tsstate-active_wait');
@@ -290,8 +286,8 @@ test('tour:block-tourpaused', function (test) {
     return t.wait_for_tour_state('tstate-paused');
   }).then(function () {
     test.deepEqual(t.log.slice(-2), [
-      [ 'fly_on_tree_to', [ null, 1001, false, 1 ] ],
-      [ 'flight-interrupted', 1001 ],
+      [ 'fly_on_tree_to', [ null, 2202, false, 1 ] ],
+      [ 'flight-interrupted', 2202 ],
     ], "The flight was cancelled");
     test.deepEqual(t.oz.resolve_flight, null, "The flight was cancelled, flight promise now cleared");
 
@@ -320,8 +316,8 @@ test('tour:block-tourpaused', function (test) {
     return new Promise(resolve => setTimeout(resolve, 1000));
   }).then(function () {
     test.deepEqual(t.log.slice(-2), [
-      [ 'flight-interrupted', 1001 ],
-      [ 'fly_on_tree_to', [ null, 1001, false, 1 ] ],
+      [ 'flight-interrupted', 2202 ],
+      [ 'fly_on_tree_to', [ null, 2202, false, 1 ] ],
     ], "Transitioning to tourstop again (logs)");
     test.deepEqual(t.tour_html(), [
       '<div class="tour" data-state="tstate-playing">',
@@ -339,10 +335,10 @@ test('tour:block-tourpaused', function (test) {
 
   }).then(function () {
     test.deepEqual(t.log.slice(-4), [
-      [ 'flight-interrupted', 1001 ],
-      [ 'fly_on_tree_to', [ null, 1001, false, 1 ] ],
+      [ 'flight-interrupted', 2202 ],
+      [ 'fly_on_tree_to', [ null, 2202, false, 1 ] ],
       [ 'interaction_callback', undefined ],
-      [ 'flight-interrupted', 1001 ],
+      [ 'flight-interrupted', 2202 ],
     ], "The flight was cancelled again (logs)");
     test.deepEqual(t.oz.resolve_flight, null);
 
@@ -392,10 +388,9 @@ test('tour:user_forward', function (test) {
     return t.wait_for_tourstop_state(0, 'tsstate-transition_in');
   }).then(function () {
     test.deepEqual(t.log, [
-      ['process_taxon_list', [91101, 92202]],
       ['ready_callback'],
       ['start_callback'],
-      ['fly_on_tree_to', [null, 1000, false, 1]],
+      ['fly_on_tree_to', [null, 1101, false, 1]],
     ], "Fly to first node (logs)");
     // Skip over flight
     t.tour.user_forward();
