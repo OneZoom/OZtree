@@ -128,7 +128,6 @@ export default function (Controller) {
       let prev_ozid = n.is_leaf ? -n.metacode : n.metacode;
 
       tree_settings.rebuild_tree(vis, prev, this).then(function () {
-        self.update_form();
         if (!init) return(self.init_move_to(prev_ozid, "leap"));
       }.bind(this));
     }

@@ -128,16 +128,16 @@ function setup(
   setTimeout(() => {
     if (oz.controller) {
         //start fetching metadata for the tree, using global variables that have been defined in files 
-        let data_obj = {
+        data_repo.setup({
           raw_data: rawData,
           cut_map: JSON.parse(cut_position_map_json_str || "{}"),
           poly_cut_map: JSON.parse(polytomy_cut_position_map_json_str || "{}"),
           metadata: metadata,
           cut_threshold: cut_threshold || 10000,
           tree_date: tree_date || "{}"
-        }
+        })
+        oz.controller.rebuild_tree()
 
-        oz.controller.build_tree(data_obj)
         //Jump or fly to a place in the tree marked by the url when the page loads.
         setup_page_by_location(oz.controller)
         oz.controller.find_proper_initial_threshold()

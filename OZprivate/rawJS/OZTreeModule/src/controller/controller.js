@@ -35,22 +35,18 @@ class Controller {
     add_hook("flying_finish", record_url_delayed.bind(null, this));
   }
   
+  /**
+   * (re)build tree, on init or tree-change.
+   * Assumes that the data_repo has already been set-up with data_repo.setup()
+   */
   rebuild_tree() {
     this.factory.build_tree();
+
+    this.projection.pre_calc(this.root, true);
+    this.projection.calc_horizon(this.root);
+    this.projection.re_calc(this.root, tree_state.xp, tree_state.yp, tree_state.ws);
   }
   
-  /**
-   * Builds the initial tree
-   * @param {data_obj} an object of the form {raw_data: xxx, }
-   *   xxx is the raw_data newick data which represents the topology of the tree. For example: '(())'
-   * @param {String} cut_map_json a stringified json object which maps node position in rawData to its cut position of its children in rawData
-   * @param {Object} metadata metadata of leaves and nodes.
-   */
-  build_tree(data_obj) {
-    data_repo.setup(data_obj);
-    this.factory.build_tree();    
-    this.update_form();
-  }
   /**
    * onpopstate listens to browser history navigation. The popupstate callback would navigate the tree view according to url.
    */
@@ -64,11 +60,6 @@ class Controller {
     canvas.height = canvas.clientHeight;
     this.renderer.setup_canvas(canvas);
     tree_state.setup_canvas(canvas);
-  }
-  update_form() {
-    this.projection.pre_calc(this.root, true);
-    this.projection.calc_horizon(this.root);
-    this.projection.re_calc(this.root, tree_state.xp, tree_state.yp, tree_state.ws);
   }
   reset() {
     return this.leap_to(this.root.metacode);  // NB: root is always a node, so ozID positive
