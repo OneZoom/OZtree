@@ -37,7 +37,6 @@ import Polytomy2SignpostLayout from './projection/layout/polytomy2/signpost_layo
 import Polytomy2BranchLayout from './projection/layout/polytomy2/branch_layout';
 
 import * as themes from './themes'
-import get_controller from './controller/controller';
 import config from './global_config';
 
 export let pic_src_order;
