@@ -87,10 +87,11 @@ function setup(
     }};
 
   if (canvasID) {
-    tree_settings.set_default(default_viz_settings); // implements the config for that tree.
-    api_manager.start();
-
     let controller = get_controller();
+
+    tree_settings.set_default(default_viz_settings); // implements the config for that tree.
+    api_manager.start(controller);
+
     controller.setup_canvas(document.getElementById(canvasID));
     controller.draw_loading();
 
@@ -108,7 +109,7 @@ function setup(
     }
   } else {
     // Page with no canvas: no point having either a controller or a data_repo
-    api_manager.start();
+    api_manager.start(null);
     oz.tree_settings = null;
     oz.controller = null;
     oz.tree_state = null;

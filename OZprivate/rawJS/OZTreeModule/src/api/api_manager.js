@@ -26,10 +26,10 @@ class APIManager {
   /** Starts the API queue, collecting API requests and making intermittent API calls to 
    * record the places visited on the tree
    */
-  start() {
-    visit_count_api.start();   
-    node_details_api.start(); 
-    image_details_api.start();
+  start(controller) {
+    visit_count_api.start(controller);
+    node_details_api.start(controller);
+    image_details_api.start(controller);
   }
 
   
