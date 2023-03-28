@@ -1,6 +1,5 @@
 import { parse_window_location } from './utils';
 import data_repo from '../factory/data_repo';
-import get_controller from '../controller/controller';
 import { UserInterruptError } from '../errors';
 import tree_state from '../tree_state';
 import { global_button_action, click_on_button_cb } from '../button_manager';
@@ -10,24 +9,14 @@ import { get_largest_visible_node, parse_url_base } from './utils';
 import { resolve_pinpoints, node_to_pinpoint } from './pinpoint';
 
 /**
- * This function is fired when user navigates the history.
- * State can be fetched either by event.state or parsing url.
+ * Convert window.location into a state object and configure the treeviewer to match
  */
-function popupstate(event) {
+function setup_page_by_location(controller) {
   let state = parse_window_location();
-  setup_page_by_state(state);
+  return setup_page_by_state(controller, state);
 }
 
-/**
- * This function is fired when the page loads and the tree is built. This function would jump or fly the tree according to url.
- */
-function setup_loading_page() {
-  let state = parse_window_location();
-  setup_page_by_state(state);
-}
-
-function setup_page_by_state(state) {
-  let controller = get_controller();
+function setup_page_by_state(controller, state) {
   if (state.vis_type) controller.change_view_type(state.vis_type, true);
   if (state.image_source) controller.set_image_source(state.image_source, true)
   if (state.lang) controller.set_language(state.lang, true)
@@ -102,8 +91,7 @@ function setup_page_by_state(state) {
  * Return a "state" object representing the current tree view,
  * as parsed by setup_page_by_state()
  */
-function tree_current_state_obj({record_popup = null}) {
-  let controller = get_controller();
+function tree_current_state_obj(controller, {record_popup = null}) {
   var win_sp = new URLSearchParams(window.location.search);
   let state = {};
 
@@ -153,5 +141,5 @@ function tree_current_state_obj({record_popup = null}) {
 }
 
 
-export { popupstate, setup_loading_page, tree_current_state_obj };
+export { setup_page_by_location, tree_current_state_obj };
 

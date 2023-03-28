@@ -13,7 +13,7 @@ import get_interactor from '../interactor/interactor';
 import * as renderer from '../render/renderer';
 import get_projection from '../projection/projection';
 import {get_factory} from '../factory/factory';
-import {popupstate} from '../navigation/setup_page';
+import { setup_page_by_location } from '../navigation/setup_page';
 import {call_hook} from '../util/index';
 import data_repo from '../factory/data_repo';
 
@@ -52,7 +52,7 @@ class Controller {
    */
   bind_listener() {
     this.interactor.bind_listener(this.canvas);
-    window.onpopstate = popupstate;
+    window.onpopstate = setup_page_by_location.bind(null, this);
   }
   setup_canvas(canvas) {
     this.canvas = canvas;

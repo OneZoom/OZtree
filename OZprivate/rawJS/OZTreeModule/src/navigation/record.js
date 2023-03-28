@@ -27,6 +27,7 @@ function record_url_delayed(options, force) {
  */
 function record_url(options, force) {
   clearTimeout(timer);
+  let controller = get_controller();
 
   if (config.disable_record_url) {
     // In an embedded view, e.g. Don't modify the page URL
@@ -34,7 +35,7 @@ function record_url(options, force) {
   }
 
   options = options || {};
-  let current_state = tree_current_state_obj({record_popup: options.record_popup});
+  let current_state = tree_current_state_obj(controller, {record_popup: options.record_popup});
   // No OTT found to anchor the URL on, don't record
   if (!current_state.pinpoint) return
 

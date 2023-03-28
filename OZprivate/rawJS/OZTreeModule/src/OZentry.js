@@ -9,7 +9,7 @@ import process_taxon_list from './api/process_taxon_list';
 import { init as garbage_collection_start } from './factory/garbage_collection';
 import { spec_num_full, number_convert, view_richness } from './factory/utils'
 import { add_hook, call_hook } from './util/index';
-import { setup_loading_page } from './navigation/setup_page';
+import { setup_page_by_location } from './navigation/setup_page';
 import { get_largest_visible_node } from './navigation/utils';
 import config from './global_config';
 import tree_state from './tree_state';
@@ -148,7 +148,7 @@ function setup(
 
         oz.controller.build_tree(data_obj)
         //Jump or fly to a place in the tree marked by the url when the page loads.
-        setup_loading_page()
+        setup_page_by_location(oz.controller)
         oz.controller.find_proper_initial_threshold()
         //listen to user mouse, touch, icon click, window resize and user navigation events.
         oz.controller.bind_listener()
