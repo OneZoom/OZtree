@@ -1,18 +1,16 @@
 /**
   * Usage: npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/test_factory_factory.js
   */
-import { get_factory, set_factory_midnode } from '../src/factory/factory'
-import LifeMidnode from '../src/factory/life_midnode';
-import { populate_data_repo, get_ozid } from './util_data_repo'
+import { get_ozid } from './util_data_repo'
+import { populate_factory } from './util_factory'
 import test from 'tape';
 
 test('dynamic_loading_by_metacode', function (test) {
   var factory;
 
-  return populate_data_repo().then(() => {
-    factory = get_factory();
-    set_factory_midnode(LifeMidnode);
-    factory.build_tree();
+  return populate_factory().then((f) => {
+    // Init data_repo & factory
+    factory = f;
 
  }).then(() => {
     // Interior node
