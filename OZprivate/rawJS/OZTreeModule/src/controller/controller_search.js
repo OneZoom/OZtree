@@ -24,7 +24,7 @@ export default function (Controller) {
         } else {
             if (typeof area_code !== 'number') throw new Error("area_code should be numeric");
         }
-        this.develop_branch_to(OZid_to_mark);
+        this.develop_branch_to_and_target(OZid_to_mark);
         // this marks a target down the tree to the new node and clears all previous targets.
         // the idea of this is to enable easy flight or marking of what was just targeted.
         // now we will need to convert the target marks to marked area

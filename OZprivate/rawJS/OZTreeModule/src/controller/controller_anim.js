@@ -171,7 +171,7 @@ export default function (Controller) {
       });
     }
 
-    this.develop_branch_to(dest_OZid);
+    this.develop_branch_to_and_target(dest_OZid);
     return flight_promise(new Promise((resolve, reject) => {
       position_helper.perform_actual_fly(
         this, into_node, Infinity, 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
@@ -201,7 +201,7 @@ export default function (Controller) {
   Controller.prototype.fly_straight_to = function(
         dest_OZid, into_node, speed=1, accel_type='linear') {
     tree_state.flying = false;
-    this.develop_branch_to(dest_OZid);
+    this.develop_branch_to_and_target(dest_OZid);
 
     return flight_promise(new Promise((resolve, reject) => {
       position_helper.perform_actual_fly(
@@ -294,8 +294,8 @@ export default function (Controller) {
 
         p = p.then(function () {
             var flight_path = get_flight_path(
-                this.develop_branch_to(src_OZid),
-                this.develop_branch_to(dest_OZid)
+                this.develop_branch_to_and_target(src_OZid),
+                this.develop_branch_to_and_target(dest_OZid)
             );
             config.ui.loadingMessage(false);
             return flight_path;
@@ -395,7 +395,7 @@ export default function (Controller) {
     // init == "leap"
     // NB: leap_to won't fetch details, we do it ourselves
     position_helper.clear_target(this.root);
-    n = this.develop_branch_to(dest_OZid);
+    n = this.develop_branch_to_and_target(dest_OZid);
     position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
     return get_details_of_nodes_in_view_during_fly(this.root).then(function () {
         return this.leap_to(dest_OZid, init, into_node=into_node);
@@ -408,7 +408,7 @@ export default function (Controller) {
    *    OZid < 0, leaf(metacode == -OZid),
    *    OZid > 0, interior_node(metacode == OZid)
    */
-  Controller.prototype.develop_branch_to = function(OZid) {
+  Controller.prototype.develop_branch_to_and_target = function(OZid) {
     let root = this.root;
     let selected_node = this.factory.dynamic_loading_by_metacode(OZid);
     this.projection.pre_calc(root);
