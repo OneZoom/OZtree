@@ -100,7 +100,13 @@ function reanchor_and_dynamic_load_tree() {
   if (need_reanchor()) {
     controller.reanchor();
   }
-  controller.dynamic_loading()  
+  let developed_nodes = controller.factory.dynamic_loading(); // this returns the ancestor of the new nodes not the new nodes themselves.
+  for (let i=0; i<developed_nodes.length; i++) {
+    let node = developed_nodes[i];
+    controller.projection.pre_calc(node);
+    controller.projection.calc_horizon(node);
+  }
+  controller.projection.update_parent_horizon(developed_nodes);
   controller.re_calc();
 }
 

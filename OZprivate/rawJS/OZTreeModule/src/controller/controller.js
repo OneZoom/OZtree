@@ -158,20 +158,6 @@ class Controller {
   reanchor() {
     position_helper.reanchor(this.root);
   }
-  /**
-   * @return {boolean} return true if the tree has more developed nodes after this function call.
-   * developed_nodes contains most close ancestor of the nodes which have just been developed.
-   */
-  dynamic_loading() {
-    let developed_nodes = this.factory.dynamic_loading(); // this returns the ancestor of the new nodes not the new nodes themselves.
-    for (let i=0; i<developed_nodes.length; i++) {
-      let node = developed_nodes[i];
-      this.projection.pre_calc(node);
-      this.projection.calc_horizon(node);
-    }
-    this.projection.update_parent_horizon(developed_nodes);
-    return developed_nodes && developed_nodes.length > 0;
-  }
   get root() {
     return this.factory.get_root();
   }
