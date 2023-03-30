@@ -31,6 +31,12 @@ test('parse_window_location', function (t) {
         pinpoint: null,
     }, "No pinpoint")
 
+    t.deepEqual(pwl("http://onezoom.example.com/life/@Myzopoda_aurita?initmark=%40_ancestor%3D983483-3600795"), {
+        url_base: 'http://onezoom.example.com/life/',
+        pinpoint: '@Myzopoda_aurita',
+        initmark: '@_ancestor=983483-3600795',
+    }, "Pinpoint with latin name & OTT, common-ancestor initmark")
+
     t.end();
 });
 
@@ -48,6 +54,7 @@ test('deparse_state', function (t) {
     test_url_match("http://onezoom.example.com/life/@Myzopoda_aurita?pop=ol_6794");
     test_url_match("http://onezoom.example.com/life/@Myzopoda_aurita");
     test_url_match("http://onezoom.example.com/life/@=6794#x1402,y364,w1.4013");
+    test_url_match("http://onezoom.example.com/life/@Myzopoda_aurita?initmark=%40_ancestor%3D983483-3600795");
 
     t.end();
 });
