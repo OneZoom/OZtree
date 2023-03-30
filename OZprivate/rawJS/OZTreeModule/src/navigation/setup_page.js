@@ -31,11 +31,7 @@ function setup_page_by_state(controller, state) {
   // Perform initial marking if asked
   if (state.initmark) resolve_pinpoints(state.initmark).then(pp => controller.mark_area(pp.ozid));
 
-  let promise = state.home_ott_id ? resolve_pinpoints(state.home_ott_id).then(pp => pp.ozid) : Promise.resolve()
-
-  promise
-  .then(() => state.pinpoint ? resolve_pinpoints(state.pinpoint) : {})
-  .then(function (pp) {
+  return resolve_pinpoints(state.pinpoint).then(function (pp) {
     let id = pp.ozid;
     tree_state.url_parsed = true;
     if (id !== undefined) {
@@ -74,16 +70,14 @@ function setup_page_by_state(controller, state) {
         return true;
     }
     console.error("Failed to setup_page_by_state:", error);
-    const ozId = data_repo.ott_id_map[config.home_ott_id]
-    controller.init_move_to(ozId ? ozId : controller.root.metacode);  // NB: root is always a node, so ozID positive
-    if (!ozId && state.ott) {
+    if (state.pinpoint) {
       if (typeof config.ui.badOTT !== 'function') {
         alert('Developer error: you need to define a UI function named badOTT that takes a bad OTT and pings up an error page')
       } else {
-        config.ui.badOTT(state.ott);
+        config.ui.badOTT(error);
       }
     }
-    // throw error;
+    return controller.return_to_otthome();
   });
 }
 

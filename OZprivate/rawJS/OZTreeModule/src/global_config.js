@@ -35,7 +35,7 @@ config.generation_at_searched_node = 9;
  */
 config.search_jump_mode = "flight";
 
-/** @property {number} home_ott_id - default focusing place when reset
+/** @property {string} home_ott_id - default pinpoint to head to when "Reset view" pressed
  */
 config.home_ott_id = null
 

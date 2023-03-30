@@ -2,6 +2,7 @@
 import tree_state from '../tree_state';
 import api_manager from '../api/api_manager'; //for pop species - can eventually be deleted
 import {record_url} from '../navigation/record';
+import { resolve_pinpoints } from '../navigation/pinpoint.js';
 import {color_theme} from '../themes/color_theme';
 import config from '../global_config';
 
@@ -168,6 +169,16 @@ export default function (Controller) {
         }
         record_url(this);
     }
+
+    /**
+     * Move to the node identified by config.home_ott_id, or all life
+     */
+    Controller.prototype.return_to_otthome = function() {
+        return resolve_pinpoints(config.home_ott_id).then((pp) => {
+            return this.leap_to(pp.ozid);
+        });
+    }
+
 } // end of controller exported
 
 /**

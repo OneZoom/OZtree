@@ -50,12 +50,7 @@ export default function (Controller) {
    * @memberof Controller
    */
   Controller.prototype.button_reset = function () {
-    const dest_OZid = data_repo.ott_id_map[config.home_ott_id]
-    if (dest_OZid) {
-      this.leap_to(dest_OZid);
-    } else {
-      this.reset();
-    }
+    return this.return_to_otthome();
   }
 
   /**
