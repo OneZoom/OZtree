@@ -42,8 +42,7 @@ class Controller {
   rebuild_tree() {
     this.factory.build_tree();
 
-    this.projection.pre_calc(this.root, true);
-    this.projection.calc_horizon(this.root);
+    this.dynamic_load_and_calc(this.root.ozid);
     this.re_calc();
   }
   
@@ -150,6 +149,39 @@ class Controller {
     this._refresh_timeout = 0;
     window.cancelAnimationFrame(this.refresh_timer);
     this.refresh_timer = null;
+  }
+
+  /**
+   * Load new midnodes, either aiming at a target OZid or 'visible' for nodes currently in view
+   */
+  dynamic_load_and_calc(target_OZid = null, { generation_at_searched_node = 0, generation_on_subbranch = 0 } = {}) {
+    var node, precalc_from;
+
+    if (target_OZid === 'visible') {
+      node = this.factory.dynamic_loading_by_visibility();
+      precalc_from = node;
+      // If nothing to develop, return
+      if (!node) return;
+    } else {
+      node = this.factory.dynamic_loading_by_metacode(target_OZid);
+      // NB: _by_visibility returns the last existant node, _by_metacode returns the target node
+      //     (which may not have existed). Ideally we should know both here.
+      //     As we've no idea what the last existant node was, assume root.
+      precalc_from = this.root;
+    }
+
+    // Develop upwards and outwards
+    node.develop_children(generation_at_searched_node);
+    if (generation_on_subbranch > 0) {
+      node.develop_branches(generation_on_subbranch);
+      precalc_from = this.root;
+    }
+
+    this.projection.pre_calc(precalc_from, precalc_from.upnode === null);
+    this.projection.calc_horizon(precalc_from)
+    this.projection.update_parent_horizon(precalc_from)
+
+    return node;
   }
 
   /**

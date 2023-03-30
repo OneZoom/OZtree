@@ -163,8 +163,26 @@ class Midnode {
       }
     }
   }
-  
-  
+
+  /**
+   * Develop offshoots from the path from this node to the root
+   * @param depth The depth to develop offshoot's children
+   */
+  develop_branches(depth) {
+    // Hit root, nothing more to do
+    if (!this.upnode) return;
+
+    // For all sibling nodes, develop their children by depth
+    for (let i=0; i<this.upnode.full_children_length; i++) {
+      if (this.upnode.children[i] !== this) {
+        this.upnode.children[i].develop_children(depth)
+      }
+    }
+
+    // recurse towards root
+    this.upnode.develop_branches(depth)
+  }
+
   /**
    * Get cut index for children of node. 
    * If node string length < cut_threshold, then force search the cut index,

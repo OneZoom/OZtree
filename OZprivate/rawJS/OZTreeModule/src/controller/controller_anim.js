@@ -164,7 +164,12 @@ export default function (Controller) {
         tree_state.xp = position.xp || position[0] || 0
         tree_state.yp = position.yp || position[1] || 0
         tree_state.ws = position.ws || position[2] || 1
-        this.develop_and_reanchor_to(dest_OZid);
+
+        let anchor_node = this.dynamic_load_and_calc(dest_OZid, {
+          generation_at_searched_node: config.generation_at_searched_node
+        });
+        position_helper.deanchor(this.root);
+        position_helper.reanchor_at_node(anchor_node);
         this.re_calc();
         this.trigger_refresh_loop();
         resolve()
@@ -410,9 +415,10 @@ export default function (Controller) {
    */
   Controller.prototype.develop_branch_to_and_target = function(OZid) {
     let root = this.root;
-    let selected_node = this.factory.dynamic_loading_by_metacode(OZid);
-    this.projection.pre_calc(root);
-    this.projection.calc_horizon(root);
+    let selected_node = this.dynamic_load_and_calc(OZid, {
+      generation_at_searched_node: config.generation_at_searched_node,
+      generation_on_subbranch: config.generation_on_subbranch_during_fly,
+    });
     position_helper.clear_target(root);
     position_helper.target_by_code(root, OZid);
     return selected_node;
@@ -474,20 +480,5 @@ export default function (Controller) {
       console.error(error);
       tree_state.flying = false;
     }
-  }
-  
-  /**
-   * develop the tree to the node specified by OZid, then reanchor at this node.
-   * @param {integer} OZid
-   *    OZid < 0, leaf(metacode == -OZid),
-   *    OZid > 0, interior_node(metacode == OZid)
-   */
-  Controller.prototype.develop_and_reanchor_to = function(OZid) {
-    let root = this.root;
-    let anchor_node = this.factory.dynamic_loading_by_metacode(OZid);
-    this.projection.pre_calc(root, true)
-    this.projection.calc_horizon(root);
-    position_helper.deanchor(root);
-    position_helper.reanchor_at_node(anchor_node);
   }
 }
