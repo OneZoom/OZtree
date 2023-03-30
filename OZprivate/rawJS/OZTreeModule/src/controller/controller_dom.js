@@ -120,7 +120,7 @@ export default function (Controller) {
       // Get pre-rebuild state, so we can restore the rough position by ID
       // Get largest node, use this to restore position
       let n = get_largest_visible_node(this.root);
-      let prev_ozid = n.is_leaf ? -n.metacode : n.metacode;
+      let prev_ozid = n.ozid;
 
       tree_settings.rebuild_tree(vis, prev, this).then(function () {
         if (!init) return(self.init_move_to(prev_ozid, "leap"));

@@ -51,14 +51,14 @@ live_area_config.interior_image = {
 live_area_config.signpost = {
   register_button_event: function(node) {
     global_button_action.action = "tap2zoom";
-    global_button_action.data = node.is_leaf ? -node.metacode : node.metacode;
+    global_button_action.data = node.ozid;
   }
 }
 
 live_area_config.leaf_low_res_leafbase = {
   register_button_event: function(node) {
     global_button_action.action = "tap2zoom";
-    global_button_action.data = node.is_leaf ? -node.metacode : node.metacode;
+    global_button_action.data = node.ozid;
   }
 }
 

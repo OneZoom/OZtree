@@ -254,27 +254,22 @@ export default function (Controller) {
         function get_flight_path(node_start, node_end) {
             var n, visited_nodes = {};
 
-            // Leaf and interior metacodes aren't unique, treat leaves as negative;
-            function to_id(n) {
-                return n.is_leaf ? -n.metacode : n.metacode;
-            }
-
             // Mark each node in heirarchy as visited
             n = node_end;
             while (n) {
-                visited_nodes[to_id(n)] = true;
+                visited_nodes[n.ozid] = true;
                 n = n.upnode;
             }
 
             // Find first matching node from the first item
             n = node_start;
-            if (visited_nodes[to_id(n)]) {
+            if (visited_nodes[n.ozid]) {
                 // We're just zooming in, don't bother with intermediate node
                 return [node_end];
             }
             while (n) {
-                if (visited_nodes[to_id(n)]) {
-                    if (to_id(node_end) === to_id(n)) {
+                if (visited_nodes[n.ozid]) {
+                    if (node_end.ozid === n.ozid) {
                         // Zooming out;
                         return [node_end];
                     }
@@ -289,7 +284,7 @@ export default function (Controller) {
         if (src_OZid == null) {
             // Find largest visible node: use this as our starting point
             let top_node = get_largest_visible_node(this.root, function(node) { return node.ott; }) || this.root;
-            src_OZid = (top_node.is_leaf? -1 : 1) * top_node.metacode;
+            src_OZid = top_node.ozid;
         } else {
             // Move to start location
             p = p.then(function () {
@@ -314,7 +309,7 @@ export default function (Controller) {
                 // NB: Ideally we'd parallelise this, but the interface doesn't allow it yet.
                 flight_p = flight_p.then(function () {
                     position_helper.clear_target(this.root);
-                    position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
+                    position_helper.target_by_code(this.root, n.ozid);
                     return get_details_of_nodes_in_view_during_fly(this.root);
                 }.bind(this));
             }.bind(this));
@@ -333,7 +328,7 @@ export default function (Controller) {
                 flight_p = flight_p.then(function () {
                     return new Promise(function (resolve, reject) {
                         position_helper.clear_target(this.root);
-                        position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
+                        position_helper.target_by_code(this.root, n.ozid);
                         position_helper.perform_actual_fly(
                           this, (accel_func === 'decel') ? into_node : false, speed, accel_func, resolve, () => reject(new UserInterruptError('Fly is interrupted')));
                     }.bind(this));
@@ -401,7 +396,7 @@ export default function (Controller) {
     // NB: leap_to won't fetch details, we do it ourselves
     position_helper.clear_target(this.root);
     n = this.develop_branch_to_and_target(dest_OZid);
-    position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
+    position_helper.target_by_code(this.root, n.ozid);
     return get_details_of_nodes_in_view_during_fly(this.root).then(function () {
         return this.leap_to(dest_OZid, init, into_node=into_node);
     }.bind(this));
