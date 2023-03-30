@@ -1570,19 +1570,19 @@ class TestSponsorRenewRequestLogic(TestSponsorship):
     validate_user_mail = SimpleMailMock(
         good_email,
         "Renew your OneZoom sponsorships",  # used when user has requested a renewal link
-        "To renew your sponsorships", 
+        "To renew your sponsored species",
     )
 
     validate_auto_mail = SimpleMailMock(
         good_email,
         "OneZoom sponsorship reminder",  # text when "automated" set (cron job)
-        "To renew your sponsorships",
+        "To renew your sponsored species",
     )
 
     validate_admin_mail = SimpleMailMock(
         admin_email,
         "Renew your OneZoom sponsorships",  # used when user has requested a renewal link
-        "To renew your sponsorships", 
+        "To renew your sponsored species",
     )
 
     def test_production_user_logic(self):
