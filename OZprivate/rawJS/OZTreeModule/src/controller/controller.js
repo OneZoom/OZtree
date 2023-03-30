@@ -44,7 +44,7 @@ class Controller {
 
     this.projection.pre_calc(this.root, true);
     this.projection.calc_horizon(this.root);
-    this.projection.re_calc(this.root, tree_state.xp, tree_state.yp, tree_state.ws);
+    this.re_calc();
   }
   
   /**
@@ -152,6 +152,9 @@ class Controller {
     this.refresh_timer = null;
   }
 
+  /**
+   * Recalculate all positions, e.g. after a tree move
+   */
   re_calc() {
     this.projection.re_calc(this.root, tree_state.xp, tree_state.yp, tree_state.ws);
   }
