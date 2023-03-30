@@ -97,6 +97,7 @@ function release_shapes(shapes) {
 }
 
 function reanchor_and_dynamic_load_tree() {
+  if (tree_state.flying) return;
   if (need_reanchor()) {
     controller.reanchor();
   }

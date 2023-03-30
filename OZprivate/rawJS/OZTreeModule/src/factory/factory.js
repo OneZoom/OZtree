@@ -1,5 +1,4 @@
 import data_repo from './data_repo';
-import tree_state from '../tree_state';
 import config from '../global_config';
 
 let Midnode;
@@ -30,7 +29,6 @@ class Factory {
    * @return {Array} This returns an array of nodes which are interior nodes and which existed before this function call and their descendants are created by this function call.
    */
   dynamic_loading() {
-    if (tree_state.flying) return [];
     let developed_node_arr = [];
     _create_undeveloped_nodes(this.root, developed_node_arr);
     return developed_node_arr;
