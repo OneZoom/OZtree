@@ -55,6 +55,33 @@ class Factory {
       node = next_hop(OZid, node, config.generation_on_subbranch_during_fly);
     }
   }
+
+  dynamic_load_to_common_ancestor(OZids) {
+    let node = this.root;
+    let next_node, first_next_node;
+    if (OZids.length === 0) throw new Error("Cannot find common ancestor of nothing")
+
+    while (true) {
+      if (OZids.filter((OZid) => node.ozid !== OZid).length === 0) {
+        // All OZids match the current node. i.e. got handed a set of identical OZids (or just one)
+        if (node.is_interior_node) node.develop_children(config.generation_at_searched_node);
+        return node;
+      }
+
+      for (let i = 0; i < OZids.length; i++) {
+        next_node = next_hop(OZids[i], node, config.generation_on_subbranch_during_fly);
+        if (i === 0) {
+          // Save the first one to compare to
+          first_next_node = next_node;
+        } else if (next_node.ozid !== first_next_node.ozid) {
+          // One of the next nodes is different, so node is the common ancestor
+          if (node.is_interior_node) node.develop_children(config.generation_at_searched_node);
+          return node;
+        }
+      }
+      node = first_next_node;
+    }
+  }
 }
 
 /**

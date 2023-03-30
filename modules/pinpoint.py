@@ -24,6 +24,11 @@ def resolve_pinpoint_to_row(pinpoint):
             tidy_latin = parts[0].replace("_", " ")
             node_query = db.ordered_nodes.name == tidy_latin
             leaf_query = db.ordered_leaves.name == tidy_latin
+        elif parts[0] == '_ancestor':
+            sub_pinpoints = [int(x) for x in parts[1].split('-')]
+            # NB: Cheat and just return the left branch, don't do the lookup yet
+            node_query = db.ordered_nodes.ott == sub_pinpoints[0]
+            leaf_query = db.ordered_leaves.ott == sub_pinpoints[0]
         else: # Regular @[latin]=[OTT] form, search for either.
             tidy_latin = parts[0].replace("_", " ")
             node_query = (db.ordered_nodes.name == tidy_latin) | (db.ordered_nodes.ott == int(parts[1]))

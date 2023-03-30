@@ -1,4 +1,5 @@
 import api_manager from '../api/api_manager';
+import { get_factory } from '../factory/factory'
 import data_repo from '../factory/data_repo';
 
 /**
@@ -9,6 +10,7 @@ import data_repo from '../factory/data_repo';
  * ``@name``: Where name is a latin name
  * ``@name=12345``: Where name is a latin name, 12345 an OTT
  * ``@=12345``: Where 12345 is an OTT
+ * ``@_ancestor=1234-6789``: Where 1234-6789 are OTTs
  * If required, API lookups will be made to fill in an gaps in local knowledge.
  *
  * @param pinpoint_or_pinpoints A pinpoint string or list of pinpoint strings
@@ -16,7 +18,7 @@ import data_repo from '../factory/data_repo';
  */
 export function resolve_pinpoints(pinpoint_or_pinpoints) {
   let pinpoints = Array.isArray(pinpoint_or_pinpoints) ? pinpoint_or_pinpoints : [pinpoint_or_pinpoints];
-  let lookups = [];
+  let extra_lookups = [];
 
   // Turn pinpoint strings into objects of parts
   pinpoints = pinpoints.map((pinpoint) => {
@@ -36,13 +38,23 @@ export function resolve_pinpoints(pinpoint_or_pinpoints) {
       if (isNaN(parseInt(parts[0]))) {
         out.latin_name = parts[0];
       }
-    } else if (parts[0].length > 0) {
-      out.latin_name = parts[0];
+    } else if (parts[0] === '_ancestor') {
+      // Common-ancestor lookup, add extra lookups to list of things to get
+      out.sub_pinpoints = parts[1].split('-').map((sub_ott) => {
+        let sub_pp = { ott: parseInt(sub_ott) };
+        extra_lookups.push(sub_pp);
+        return sub_pp;
+      });
+      // Temporary label so we don't try to lookup this node
+      out.ozid = 'common_ancestor';
+    } else {
+      // Regular @[latin]=[OTT] form
+      if (parts[0].length > 0) out.latin_name = parts[0];
+      if (!isNaN(parseInt(parts[1]))) out.ott = parseInt(parts[1]);
     }
-    if (parts.length > 1 && !isNaN(parseInt(parts[1]))) out.ott = parseInt(parts[1]);
 
     return out;
-  });
+  }).concat(extra_lookups);
 
   // Try local lookups first using data_repo
   pinpoints.forEach((p) => {
@@ -73,8 +85,16 @@ export function resolve_pinpoints(pinpoint_or_pinpoints) {
       }
     });
   }))).then(function () {
+    pinpoints.forEach((p) => {
+      if (p.ozid === 'common_ancestor') {
+        // For any common ancestors, look up their target node now their targets are identified
+        // NB: Loading is wasteful, here, but OTOH it's what any user will immediately do
+        p.ozid = (get_factory().dynamic_load_to_common_ancestor(p.sub_pinpoints.map((x) => x.ozid))).ozid;
+      }
+    });
+
     // Assume modifications were done in-place, return array / first-item matching input
-    return Array.isArray(pinpoint_or_pinpoints) ? pinpoints : pinpoints[0];
+    return Array.isArray(pinpoint_or_pinpoints) ? pinpoints.slice(0, pinpoint_or_pinpoints.length) : pinpoints[0];
   });
 }
 
