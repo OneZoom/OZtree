@@ -32,76 +32,10 @@ export default function (Controller) {
         if (!(this.root.marked_areas.has(area_code)))
         {
             // it is not so we need to choose a color
-            if (mark_color)
-            {
-                // color was defined by the user
-                config.marked_area_color_map.push([area_code,mark_color]);
-            }
-            else
-            {
-                // color needs to be automatically defined
-                let existing_color_use_tally = [];
-                // how many times have colours been used (want to minimise repeats)
-                let existing_color_min_distance = [];
-                // how far (as a minimum) from the end of the map was this colour last used
-                // we want to use colours that weren't just used
-                let length = config.marked_area_color_map.length;
-                // calculate how many elements in color map?
-                let num_colors_in_pallette = Object.keys(color_theme.theme.branch.marked_area_pallette).length
-                // calculate how many colors available in pallette?
-                for (let i=0; i<num_colors_in_pallette; i++) {
-                    existing_color_use_tally.push(0);
-                    existing_color_min_distance.push(length+1);
-                    // setup the arrays with zeros
-                }
-                // double loop to populate the arrays
-                for (let i=0; i<length; i++) {
-                    for (let j=0; j<(num_colors_in_pallette); j++) {
-                        // looping over all possible colors and all used colors
-                        let color =  color_theme.get_color('branch.marked_area_pallette.' + j , this.root);
-                        // find out what color was used in the colour pallette
-                        if (color == config.marked_area_color_map[i][1]) {
-                            // the color is a match
-                            existing_color_use_tally[j] = existing_color_use_tally[j] + 1;
-                            // measure distance from end and put that in the array
-                            let distance_from_end = (length-i-1);
-                            if (existing_color_min_distance[j] > distance_from_end)
-                            {
-                                existing_color_min_distance[j] = distance_from_end;
-                            }
-                        }
-                    }
-                }
-                // look to see if any colors are unused
-                let color_done = false;
-                for (let i=0; i<existing_color_use_tally.length; i++) {
-                    if (existing_color_use_tally[i] == 0)
-                    {
-                        // color is unused so use it
-                        mark_color = color_theme.get_color('branch.marked_area_pallette.' + i , this.root);
-                        config.marked_area_color_map.push([area_code, mark_color]);
-                        color_done = true;
-                        break;
-                    }
-                }
-                if (color_done == false)
-                {
-                    // we need to choose the color furthest from the end
-                    let max_min_distance = 0 ;
-                    // maximum of the min distance tally
-                    let max_min_distance_index = length -1;
-                    for (let i=0; i<existing_color_min_distance.length; i++) {
-                        // loop through all to select choice
-                        if (existing_color_min_distance[i] > max_min_distance)
-                        {
-                            max_min_distance_index = i;
-                            max_min_distance = existing_color_min_distance[i];
-                        }
-                    }
-                    mark_color = color_theme.get_color('branch.marked_area_pallette.' + max_min_distance_index , this.root);
-                    config.marked_area_color_map.push([area_code, mark_color]);
-                }
-            }
+            config.marked_area_color_map.push([
+              area_code,
+              mark_color || color_theme.pick_marked_area_color(config.marked_area_color_map.map((x) => x[1]), this.root)
+            ]);
         }
         
         mark_area_from_targeted_node(this.root,area_code);
