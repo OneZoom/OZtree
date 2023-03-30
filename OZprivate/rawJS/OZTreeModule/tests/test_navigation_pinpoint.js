@@ -18,10 +18,12 @@ test('resolve_pinpoints:ott', function (test) {
  }).then(() => {
     // Resolve multiple pinpoints
     return resolve_pinpoints([
+      null,
       '@=988790',
       988790,  // NB: Numeric not string
       '824869',
     ]).then((pps) => test.deepEqual(pps, [
+      { pinpoint: null, ozid: 1 },  // Empty pinpoints are assumed to be root
       { pinpoint: '@=988790', ott: 988790, ozid: 836250 },
       { pinpoint: 988790, ott: 988790, ozid: 836250 },
       { pinpoint: '824869', ott: 824869, ozid: 836247 },
@@ -47,8 +49,8 @@ test('resolve_pinpoints:common_ancestor', function (test) {
     return resolve_pinpoints('@_ancestor=988790-824869').then((pp) => test.deepEqual(pp, {
       pinpoint: '@_ancestor=988790-824869',
       sub_pinpoints: [
-        { ott: 988790, ozid: 836250 },
-        { ott: 824869, ozid: 836247 },
+        { pinpoint: '988790', ott: 988790, ozid: 836250 },
+        { pinpoint: '824869', ott: 824869, ozid: 836247 },
       ],
       ozid: 836237,
     }, "@_ancestor=988790-824869"));

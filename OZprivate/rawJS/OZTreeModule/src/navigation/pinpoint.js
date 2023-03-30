@@ -24,6 +24,12 @@ export function resolve_pinpoints(pinpoint_or_pinpoints) {
   pinpoints = pinpoints.map((pinpoint) => {
     let out = { pinpoint: pinpoint };
 
+    // null/empty pinpoint is the root node
+    if (!pinpoint) {
+      out['ozid'] = 1;
+      return out;
+    }
+
     // Doesn't start with @? Treat as OTT & return early
     if (typeof pinpoint !== 'string' || !pinpoint.startsWith('@')) {
       out['ott'] = parseInt(pinpoint)
@@ -41,7 +47,7 @@ export function resolve_pinpoints(pinpoint_or_pinpoints) {
     } else if (parts[0] === '_ancestor') {
       // Common-ancestor lookup, add extra lookups to list of things to get
       out.sub_pinpoints = parts[1].split('-').map((sub_ott) => {
-        let sub_pp = { ott: parseInt(sub_ott) };
+        let sub_pp = { pinpoint: sub_ott, ott: parseInt(sub_ott) };
         extra_lookups.push(sub_pp);
         return sub_pp;
       });
@@ -62,7 +68,7 @@ export function resolve_pinpoints(pinpoint_or_pinpoints) {
   })
 
   // Make a separate API call for each node without an ID, fill in details
-  return Promise.all(pinpoints.filter((p) => !p.ozid).map((p) => new Promise(function(resolve, reject) {
+  return Promise.all(pinpoints.filter((p) => !p.ozid && (p.ott || p.latin_name)).map((p) => new Promise(function(resolve, reject) {
     let data = {}
     if (p.ott) data.ott = p.ott
     if (p.latin_name) data.name = p.latin_name
@@ -77,11 +83,12 @@ export function resolve_pinpoints(pinpoint_or_pinpoints) {
           p.ozid = res.ids[0]
           resolve(p);
         } else {
-          reject();
+          // If we can't get an ozid at this point, it's broken
+          reject("Invalid pinpoint: " + p.pinpoint);
         }
       },
       error: function (res) {
-        reject(res);
+        reject("Failed to talk to server: " + res);
       }
     });
   }))).then(function () {
