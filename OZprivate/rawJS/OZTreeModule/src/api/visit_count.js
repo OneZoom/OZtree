@@ -38,7 +38,7 @@ function record_click_count(ott) {
   }
 }
 
-function start() {
+function start(controller) {
   visit_count_map.interval = config.api.update_visit_count_interval, //increased from 2min to 4min to reduce potential database lock possiblity.
   visit_count_map.upload_num_threshold = config.api.update_visit_count_upload_num_threshold //Only upload if there are over this number of nodes in these count maps.
   reset_send_statistic();

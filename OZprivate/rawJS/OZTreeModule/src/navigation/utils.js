@@ -1,5 +1,4 @@
 import tree_state from '../tree_state';
-import data_repo from '../factory/data_repo';
 
 /**
  * Get largest visible node on the screen which meets the condition.
@@ -64,39 +63,43 @@ function get_largest_visible_node(node, condition=null) {
  * Parse a DOM location object, defaulting to window.location, and return a state object.
  */
 function parse_window_location(location = window.location) {
-  let pathinfo = (location.pathname.indexOf("@") === -1) ? null : location.pathname.slice(location.pathname.indexOf("@"));
-  return parse_query(pathinfo, location.search, location.hash);
-}
-
-function parse_query(loc, querystring, hash) {
   let state = {};
-  parse_location(state, loc);
-  parse_querystring(state, querystring);
-  parse_hash(state, hash);
+  state.url_base = parse_url_base(location);
+  parse_pathname(state, location.pathname);
+  parse_querystring(state, location.search);
+  parse_hash(state, location.hash);
   return state;
 }
 
-//Object, String
-//This function parses the location string, then store the result in state object.
-//The string could be null or undefined or empty. 
-//Otherwise it starts with "@". Followed by a name or '=ott' or both. If name is present, the '=' can remain even without ott.
-//Examples:
-//  "@name=1234", "@name", "@name=", "@=1234"
-//can also allow "@5678" which refers to a specific node_id (NOT ott)
-function parse_location(state, loc) {
-  if (!loc || loc.length === 0) return;
-  loc = loc.substring(1);
-  let parts = loc.split("=");
-  if (parts.length === 1) {
-    if (isNaN(parseInt(parts[0]))) {
-      state.latin_name = parts[0];
-    } else {
-      state.node_id = parseInt(parts[0]);
-    }
-  } else if (parts[0].length > 0) {
-    state.latin_name = parts[0];
+/**
+ * Turn a state object back into a location
+ */
+function deparse_state(state) {
+  return new URL(deparse_pathname(state) + deparse_querystring(state) + deparse_hash(state));
+}
+
+/**
+ * Parse the URL base from a location object
+ */
+function parse_url_base(location) {
+  //find the base path, without the /@Homo_sapiens bit, if it exists
+  //note that location.pathname does not include ?a=b and #foobar parts
+  let index = location.pathname.indexOf("@");
+  if (index === -1) {
+    return location.origin + location.pathname.replace(/\/*$/, "/");
+  } else {
+    return location.origin + location.pathname.substring(0, index).replace(/\/*$/, "/");
   }
-  if (parts.length > 1 && !isNaN(parseInt(parts[1]))) state.ott = parseInt(parts[1]);
+}
+
+// Pull pinpoint out of pathname, e.g. @Eukaryota=304358
+function parse_pathname(state, pathname) {
+    state.pinpoint = pathname.indexOf("@") === -1 ? null : pathname.slice(pathname.indexOf("@"));
+}
+
+/// pathname should equal pinpoint
+function deparse_pathname(state) {
+    return state.url_base + state.pinpoint;
 }
 
 /**
@@ -148,9 +151,8 @@ function parse_querystring(state, querystring) {
       let search_jump_mode = querystring[i].substring(querystring[i].indexOf("=") + 1);
       state.search_jump_mode = search_jump_mode;
     } else if (/^otthome=/.test(querystring[i])) {
-      //if the user wants a specific language: not the one given by the browser
-      let home_ott_id = querystring[i].substring(querystring[i].indexOf("=") + 1);
-      state.home_ott_id = home_ott_id;
+      // The location that "reset view" will head to
+      state.home_ott_id = decodeURIComponent(querystring[i].substring(querystring[i].indexOf("=") + 1));
     } else if (/^ssaver=/.test(querystring[i])) {
       //if the user wants a specific language: not the one given by the browser
       let ssaver_inactive_duration_seconds = querystring[i].substring(querystring[i].indexOf("=") + 1);
@@ -160,12 +162,35 @@ function parse_querystring(state, querystring) {
       state.cols = querystring[i].substring(querystring[i].indexOf("=") + 1);
     } else if (/^initmark=/.test(querystring[i])) {
       // User wants an initial marking
-      state.initmark = parseInt(querystring[i].substring(querystring[i].indexOf("=") + 1));
+      state.initmark = decodeURIComponent(querystring[i].substring(querystring[i].indexOf("=") + 1));
     } else if (/^tour=/.test(querystring[i])) {
       // User wants a tour
       state.tour_setting = decodeURIComponent(querystring[i].substring(querystring[i].indexOf("=") + 1));
     }
   }
+}
+
+function deparse_querystring(state) {
+  var sp = new URLSearchParams("");
+
+  if (state.tap_action) sp.set('pop', encode_popup_action(state.tap_action) + "_" + state.tap_ott_or_id);
+  if (state.vis_type) sp.set('vis', state.vis_type);
+  if (state.init) sp.set('init', state.init);
+  if (state.lang) sp.set('lang', state.lang);
+  if (state.image_source) sp.set('img', state.image_source);
+  if (state.search_jump_mode) sp.set('anim', state.search_jump_mode);
+  if (state.home_ott_id) sp.set('otthome', state.home_ott_id);
+  if (state.ssaver_inactive_duration_seconds) sp.set('ssaver', state.ssaver_inactive_duration_seconds);
+  if (state.cols) sp.set('cols', state.cols);
+  if (state.initmark) sp.set('initmark', state.initmark);
+  if (state.tour_setting) sp.set('tour', state.tour_setting);
+
+  if (state.custom_querystring) {
+    for (let k in state.custom_querystring) sp.set(k, state.custom_querystring[k]);
+  }
+
+  let out = sp.toString();
+  return out ? '?' + out : out;
 }
 
 //Object, String
@@ -204,6 +229,11 @@ function parse_hash(state, hash) {
   }
 }
 
+function deparse_hash(state) {
+  if (!state.xp || !state.yp || !state.ws) return "";
+  return "#x" + state.xp.toFixed(0) + ",y" + state.yp.toFixed(0) + ",w" + state.ws.toFixed(4);
+}
+
 function encode_popup_action(popup_action) {
   if (popup_action == "ow_leaf") {
     return 'ol';
@@ -236,4 +266,4 @@ function decode_popup_action(popup_action) {
   }
 }
 
-export { get_largest_visible_node, parse_query, parse_window_location, encode_popup_action, decode_popup_action };
+export { get_largest_visible_node, parse_window_location, deparse_state, parse_url_base };

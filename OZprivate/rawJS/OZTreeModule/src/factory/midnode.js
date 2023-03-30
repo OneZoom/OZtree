@@ -268,6 +268,13 @@ class Midnode {
     this._detail_fetched = false;
   }
   
+  /**
+   * Returns the OZid
+   * i.e. negative metacode for leaf, positive metacode for interior node
+   */
+  get ozid() {
+    return (this.is_leaf ? -1 : 1) * this.metacode
+  }
   get is_leaf() {
     return this.type === "leafNode";
   }

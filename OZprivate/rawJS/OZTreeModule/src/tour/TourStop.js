@@ -135,8 +135,8 @@ class TourStopClass {
       return this.tour.rough_initial_loc
     } else if (!this.setting.ott) { // i.e. null/undefined
       return undefined
-    } else if (this.data_repo.ott_id_map.hasOwnProperty(this.setting.ott)) {
-      return this.data_repo.ott_id_map[this.setting.ott]
+    } else if (this.tour.pinpoint_to_ozid[this.setting.ott]) {
+      return this.tour.pinpoint_to_ozid[this.setting.ott];
     } else {
       console.error('OTT to OZid map for ott: ' + this.setting.ott + ' not fetched')
       return undefined

@@ -7,6 +7,7 @@ import config from '../src/global_config';
 import Tour from '../src/tour/Tour';
 import Screensaver from '../src/tour/Screensaver';
 import tree_state from '../src/tree_state';
+import data_repo from '../src/factory/data_repo';
 
 // record_url won't work with our fake onezoom
 config.disable_record_url = true;
@@ -98,21 +99,15 @@ export function setup_tour(test, s, interaction = null, verbose_test = false) {
         }));
       },
     },
-    data_repo: { ott_id_map: {} },
     utils : {
-      process_taxon_list: function (ott_id_array_json, unused, unused_2, resolve) {
-          // Convert [{ OTT: x }, ...] to a list of OTTs.
-          var otts = JSON.parse(ott_id_array_json).map((x) => parseInt(x.OTT));
-
-          fake_oz.data_repo.ott_id_map = {};
-          otts.forEach((ott, id) => { fake_oz.data_repo.ott_id_map[ott] = 1000 + id });
-          log.push(["process_taxon_list", otts]);
-
-          resolve();
-      },
       largest_visible_node: function () { return fake_oz.cur_node; },
     }
   };
+
+  // Populate data repo so we don't try and poke the API
+  for (let i = 91100; i < 93399; i++) {
+      data_repo.ott_id_map[i] = i - 90000;
+  }
 
   let tour;
   if (interaction && interaction.startsWith('screensaver__')) {

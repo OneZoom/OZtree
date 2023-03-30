@@ -7,7 +7,6 @@ import tree_settings from '../tree_settings';
 import data_repo from '../factory/data_repo';
 import { record_url } from '../navigation/record';
 import { get_largest_visible_node } from '../navigation/utils';
-import { parse_window_location } from '../navigation/utils';
 
 /**
  * @class Controller
@@ -51,12 +50,7 @@ export default function (Controller) {
    * @memberof Controller
    */
   Controller.prototype.button_reset = function () {
-    const dest_OZid = data_repo.ott_id_map[config.home_ott_id]
-    if (dest_OZid) {
-      this.leap_to(dest_OZid);
-    } else {
-      this.reset();
-    }
+    return this.return_to_otthome();
   }
 
   /**
@@ -94,7 +88,7 @@ export default function (Controller) {
         tree_settings.change_language(lang, this, data_repo);
       } finally {
         if (!init) {
-          record_url({
+          record_url(this, {
             replaceURL: true
           }, true);
         }
@@ -129,7 +123,6 @@ export default function (Controller) {
       let prev_ozid = n.is_leaf ? -n.metacode : n.metacode;
 
       tree_settings.rebuild_tree(vis, prev, this).then(function () {
-        self.update_form();
         if (!init) return(self.init_move_to(prev_ozid, "leap"));
       }.bind(this));
     }
@@ -147,7 +140,7 @@ export default function (Controller) {
   Controller.prototype.change_color_theme = function (color_theme, init = false) {
       tree_settings.cols = color_theme;
       if (!init) {
-          record_url({ replaceURL: true }, true);
+          record_url(this, { replaceURL: true }, true);
           this.trigger_refresh_loop();
       }
   }
@@ -168,7 +161,7 @@ export default function (Controller) {
       clear_node_pics(this.root);
       this.trigger_refresh_loop()
       if (!init) {
-        record_url({
+        record_url(this, {
           replaceURL: true
         }, true)
       }
@@ -179,7 +172,7 @@ export default function (Controller) {
     if (config.search_jump_mode !== search_jump_mode) {
       config.search_jump_mode = search_jump_mode;
       if (!init) {
-        record_url({
+        record_url(this, {
           replaceURL: true
         }, true)
       }

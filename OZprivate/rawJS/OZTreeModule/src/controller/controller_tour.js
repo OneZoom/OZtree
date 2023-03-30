@@ -23,12 +23,12 @@ export default function (Controller) {
           () => {  // On startup, stop screensaver and close pop-ups
               if (this._screensaver) this._screensaver.clear()
               config.ui.closeAll()
-              record_url_delayed({ replaceURL: true }, true)
+              record_url_delayed(this, { replaceURL: true }, true)
           },
           null,
           () => {  // On shutdown, restart any screensaver
               if (this._screensaver) this._screensaver.set_auto_start()
-              record_url({ replaceURL: true }, true)
+              record_url(this, { replaceURL: true }, true)
           },
       )
     }

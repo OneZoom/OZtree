@@ -12,7 +12,7 @@ class APIManager {
   
   /** Set the urls that will be used when calling the API.
    *  @params {Object.<string, string>} server_urls - a set of urls for the OneZoom API. 
-   * Names for each url can be one of 'search_api', 'search_sponsor_api', 'ott2id_arry_api',
+   * Names for each url can be one of 'search_api', 'search_sponsor_api', 'get_ids_by_ott_array_api',
    * 'otts2vns_api', 'search_init_api', 'node_details_api', 
    */
   set_urls(server_urls) {
@@ -26,10 +26,10 @@ class APIManager {
   /** Starts the API queue, collecting API requests and making intermittent API calls to 
    * record the places visited on the tree
    */
-  start() {
-    visit_count_api.start();   
-    node_details_api.start(); 
-    image_details_api.start();
+  start(controller) {
+    visit_count_api.start(controller);
+    node_details_api.start(controller);
+    image_details_api.start(controller);
   }
 
   
@@ -55,8 +55,8 @@ class APIManager {
        '\n(search_sponsor_api was not set in config.api).' +
        '\nPlease email mail@onezoom.org and let us know.')
   }
-  ott2id_arry(params) {
-    params.url = config.api.ott2id_arry_api;
+  get_ids_by_ott_array(params) {
+    params.url = config.api.get_ids_by_ott_array_api;
     api_wrapper(params);
   }
   otts2vns(params) {

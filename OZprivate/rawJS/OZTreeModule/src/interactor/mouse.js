@@ -65,7 +65,7 @@ class MouseInteractor {
     set_mouse_position(this, event);
         
     if (Math.abs(delta - 0) > 0.05) {
-      record_url_delayed();
+      record_url_delayed(this.controller);
       /* set cursor to zoom-in or zoom-out, but set it to go back to default if we haven't scolled for a while */
       if (this.cursor_animator) clearInterval(this.cursor_animator);
       this.cursor_animator = setTimeout(function(){canvas.style.cursor='default';}, 250);
@@ -122,7 +122,7 @@ class MouseInteractor {
      * On the other hand, if call record_url_delayed before controller.click, when controller.click calls record_url, since 
      * record_url would clear timer set by record_url_delayed function, only one record_url would be called as a result.
      */
-    record_url_delayed();
+    record_url_delayed(this.controller);
     if (this.cursor_animator) clearInterval(this.cursor_animator);
     this.canvas.style.cursor='default';
     if (this.clicking) {
