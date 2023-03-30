@@ -21,6 +21,7 @@ from sponsorship import (
     sponsorship_email_reminders, sponsor_verify_url,
     sponsorship_restrict_contact, sponsor_renew_request_logic,
     sponsorship_config, sponsorable_children_query)
+from pinpoint import resolve_pinpoint_to_row
 
 from usernames import donor_name_for_username
 
@@ -1907,72 +1908,33 @@ def life_text():
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return dict(page_info = {'tree': text_tree(remove_location_arg(request.args))})
 
-def text_tree(location_string):
+def text_tree(pinpoint_string):
     """
     A text representation. NB: The 'normal' pages also have the text-only data embedded in them, for SEO reasons
+
+    pinpoint_string is an '@(name)=(value)' string as defined in src/navigation/pinpoint.js,
+    e.g. '@Haematomyzus_elephantis=283963'
     """
-    #target_string must consist only of chars that are allowed in web2py arg
+    # pinpoint_string must consist only of chars that are allowed in web2py arg
     # array (i.e. in the path: see http://stackoverflow.com/questions/7279198
     # this by default restricts it to re.match(r'([\w@ -]|(?<=[\w@ -])[.=])*')
-    #So we use @ as a separator between species and prepend a letter to the 
-    #ott number to indicate extra use for this species (e.g. whether to remove it)
-    #e.g. @Hominidae=770311@Homo_sapiens=d770315@Gorilla_beringei=d351685
-    # The target string is contained in the location_string, copied from args[-1]
-    # which has all the string up to the '?' or '#'
-    #we have to use both the name and the ott number to get the list of species. 
-    #NB: both name or ott could have multiple matches.
-
-    base_ott=base_name=''
     try:
-        taxa=location_string.split("@")[1:]
-        for t in taxa:
-            if t and re.search("=[a-z]", t)==None: #take the first one that doesn't have an ott = [letter]1234
-                base_name, sep, base_ott = t.partition("=")
-                if base_ott:
-                    base_ott = int(base_ott)
-    except:
+        base_row, base_taxa_are_leaves = resolve_pinpoint_to_row(pinpoint_string)
+    except Exception as e:
         #ignore all parsing errors and just show the root
-        pass
-    
-    base_taxa_are_leaves = None
-    base_rows = []
-    #ott takes priority: if we have an ott, use that, and ignore the rest. We don't care if the name doesn't match
-    if base_ott: 
-        base_rows = db(db.ordered_nodes.ott == base_ott).select(db.ordered_nodes.ALL)     #by default, look at nodes first
-        if len(base_rows):
-            base_taxa_are_leaves = False
-        else:
-            base_rows = db(db.ordered_leaves.ott == base_ott).select(db.ordered_leaves.ALL)
-            if len(base_rows):
-                base_taxa_are_leaves = True
-    #if there is no ott, or it doesn't match try matching on the name instead.
-    if len(base_rows)==0 and base_name:
-        try:
-            row_id = int(base_name) #only works if we have a name which is a positive or negative number - which indicates a row number to use
-            response.meta.robots = 'noindex, follow' #don't index this page: it has no ott or name!
-            if row_id < 0:
-                base_rows = db(db.ordered_leaves.id == -row_id).select(db.ordered_leaves.ALL)
-                base_taxa_are_leaves = True
-            elif row_id > 0:
-                base_rows = db(db.ordered_nodes.id == row_id).select(db.ordered_nodes.ALL)
-                base_taxa_are_leaves = False
-                
-        except:
-            base_rows = db(db.ordered_nodes.name == base_name).select(db.ordered_nodes.ALL)
-            if len(base_rows):
-                base_taxa_are_leaves = False
-            else:
-                base_rows = db(db.ordered_leaves.name == base_name).select(db.ordered_leaves.ALL)
-                if len(base_rows):
-                    base_taxa_are_leaves = True
-    if len(base_rows)==0:
-        base_rows = db(db.ordered_nodes.parent < 1).select(db.ordered_nodes.ALL) #this should always match the root
+        base_row = None
+        base_taxa_are_leaves = False
+        if is_testing:
+            raise e
+    if not base_row:
+        response.meta.robots = 'noindex, follow'  # Don't index this page, this hasn't sucessfully targeted anything
+        base_row = db(db.ordered_nodes.parent < 1).select(db.ordered_nodes.ALL).first() #this should always match the root
         base_taxa_are_leaves=False
 
     #we construct a nested heirarchy, and an 'info' dictionary, indexed by id (negative for leaves)
     bases = {}
     info = {}
-    for row in base_rows:
+    for row in [base_row]:
         if row.real_parent != 0:
             data = db(db.ordered_nodes.id == abs(row.real_parent)).select(db.ordered_nodes.ALL).first()
             if data:
