@@ -85,27 +85,7 @@ class Factory {
  * @param {Midnode} node to start at (read: factory.root)
  */
 function next_hop(OZid, node) {
-  let develop_child_index = null;
-
-  // Try and find the next hop towards OZid
-  if (node.is_leaf) {
-    // No point trying to find children of a leaf node
-  } else if (OZid < 0) {
-    //all_children_length is the length of children regardless they are developed or not.
-    for (let index=0; index<node.full_children_length; index++) {
-      if (node.child_leaf_meta_start[index] <= -OZid && node.child_leaf_meta_end[index] >= -OZid) {
-        develop_child_index = index;
-        break;
-      }
-    }
-  } else {
-    for (let index=0; index<node.full_children_length; index++) {
-      if (node.child_node_meta_start[index] <= OZid && node.child_node_meta_end[index] >= OZid) {
-        develop_child_index = index;
-        break;
-      }
-    }
-  }
+  let develop_child_index = node.child_index_towards(OZid);
 
   if (develop_child_index !== null) {
     // Found the next child in the tree, develop all immediate children & recurse in

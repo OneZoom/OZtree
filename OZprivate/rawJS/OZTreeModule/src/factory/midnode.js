@@ -184,6 +184,34 @@ class Midnode {
   }
 
   /**
+   * Return the index of the child descending towards OZid, or null if not a descendant
+   *
+   * Children do not have to be developed for this to work
+   */
+  child_index_towards(OZid) {
+    if (this.is_leaf) {
+      // No point trying to find children of a leaf node
+      return null
+    }
+    if (OZid < 0) {
+      // full_children_length is the length of children regardless they are developed or not.
+      for (let index=0; index<this.full_children_length; index++) {
+        if (this.child_leaf_meta_start[index] <= -OZid && this.child_leaf_meta_end[index] >= -OZid) {
+          return index;
+        }
+      }
+    } else {
+      for (let index=0; index<this.full_children_length; index++) {
+        if (this.child_node_meta_start[index] <= OZid && this.child_node_meta_end[index] >= OZid) {
+          return index;
+        }
+      }
+    }
+    // Nothing found
+    return null;
+  }
+
+  /**
    * Get cut index for children of node. 
    * If node string length < cut_threshold, then force search the cut index,
    * otherwise look up cut_map.
