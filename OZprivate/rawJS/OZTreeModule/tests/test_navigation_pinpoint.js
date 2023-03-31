@@ -52,7 +52,7 @@ test('resolve_pinpoints:common_ancestor', function (test) {
         { pinpoint: '988790', ott: 988790, ozid: 836250 },
         { pinpoint: '824869', ott: 824869, ozid: 836247 },
       ],
-      ozid: 836237,
+      ozid: 836246,
     }, "@_ancestor=988790-824869"));
 
   }).then(function () {
