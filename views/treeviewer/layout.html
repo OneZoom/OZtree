@@ -210,7 +210,7 @@ var locations_json = '{{=XML(setup_params.get("locations_json") or "[]")}}';
     global_config.js. These refer to items in the viewer_UI file */
 
 
-function closeAndLeap(event, OZIDin, original_searchbox) {
+function closeAndLeap(event, dest, original_searchbox, input_type) {
     //TODO: add hit in search count.
     // add_hit_in_search_count(OZIDin);
     var dropdown = $(".search_dropdown", original_searchbox)
@@ -219,7 +219,7 @@ function closeAndLeap(event, OZIDin, original_searchbox) {
             globals.UI_callbacks.closeAll();
         }
     }
-    if (OZIDin) onezoom.controller.default_move_to(OZIDin);
+    if (dest) onezoom.controller.default_move_to(dest, input_type || 'ozid');
 }
 
 
@@ -384,7 +384,18 @@ function UI_reset_marked(searchbox, result, event) {
     var colour = onezoom.controller.mark_area(OZIDin);
     load_into_searchbox(searchbox, result, colour);
     {{if is_testing:}}console.log("Marking " + OZIDin + " with " + colour);{{pass}}
-    closeAndLeap(event, onezoom.controller.get_ancestor_of_marked(), searchbox);
+    UI_move_to_common_ancestor(event);
+}
+
+function UI_move_to_common_ancestor(searchbox, event) {
+    // Find all current advanced-search results, less than 2 do nothing
+    var results = $('#search-advanced #searchboxes .searchresult').map(function () {
+      return [$(this).data('result')]
+    }).get().filter(function (x) { return x !== undefined });
+    if (results.length < 2) return;
+
+    var pinpoints = results.map(function (x) { return x.pinpoint; });
+    closeAndLeap(event, pinpoints, $('#search-advanced #searchboxes'), 'ancestor');
 }
 
 function UI_reset_marked_via_event(event, result) {
@@ -761,11 +772,8 @@ function setupUI() {
         });
     $('#common_ancestor_button')
         .click(function(event) {
-            var OZid = onezoom.controller.get_ancestor_of_marked();
-            if (OZid !== null) {
-                closeAndLeap(event, OZid);
-            }
             event.preventDefault();
+            UI_move_to_common_ancestor(event);
         });
         
     /*** MODALS ***/

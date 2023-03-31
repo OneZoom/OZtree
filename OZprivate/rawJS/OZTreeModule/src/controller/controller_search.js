@@ -87,21 +87,36 @@ export default function (Controller) {
      */
     Controller.prototype.list_all_marked = function() {
         return config.marked_area_color_map;
-        
     }
     
     /**
-     * A higher level function, which moves to the given OneZoom (*not* OTT) ID using
+     * A higher level function, which moves to the given location using
      * whatever move method is defined as the default (in config.search_jump_mode).
-     * @param dest_OZid the OZid of the place we want to jump to
+     * @param dest Where we want to go to
+     * @param input_type How is (dest) defined? 'ozid', 'pinpoint', 'ancestor' (dest is a list of pinpoints) or 'ott'
      */
-    Controller.prototype.default_move_to = function(dest_OZid) {
-        if (config.search_jump_mode === 'flight') {
-            this.fly_on_tree_to(null, dest_OZid);
+    Controller.prototype.default_move_to = function(dest, input_type) {
+        var p;
+
+        if (input_type === 'ozid') {
+          p = Promise.resolve({ozid: dest});
+        } else if (input_type === 'pinpoint' || input_type === 'ott') {
+          p = resolve_pinpoints(dest);
+        } else if (input_type === 'ancestor') {
+          p = resolve_pinpoints(dest).then((pinpoints) => {
+            // After resolving pinpoints, find the common ancestor and use that
+            // NB: This returns a node, not a pinpoint object. But has an ozid property just the same
+            return this.factory.dynamic_load_to_common_ancestor(pinpoints.map((x) => x.ozid));
+          });
         } else {
-            this.leap_to(dest_OZid);
+          throw new Error("Unknown input_type: " + input_type)
         }
-        record_url(this);
+
+        if (config.search_jump_mode === 'flight') {
+            return p.then((pp) => this.fly_on_tree_to(null, pp.ozid));
+        } else {
+            return p.then((pp) => this.leap_to(null, pp.ozid));
+        }
     }
 
     /**
