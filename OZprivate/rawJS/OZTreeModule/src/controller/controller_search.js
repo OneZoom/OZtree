@@ -19,30 +19,24 @@ export default function (Controller) {
     Controller.prototype.mark_area = function(OZid_to_mark,area_code,mark_color) {
         if (! area_code)
         {
-            area_code = OZid_to_mark;
+            area_code = parseInt(OZid_to_mark);
             // use the OneZoom id as the area_code if one has not been entered
         } else {
             if (typeof area_code !== 'number') throw new Error("area_code should be numeric");
         }
-        this.develop_branch_to_and_target(OZid_to_mark);
-        // this marks a target down the tree to the new node and clears all previous targets.
-        // the idea of this is to enable easy flight or marking of what was just targeted.
-        // now we will need to convert the target marks to marked area
-        // first check of the area_code is already in use
-        if (!(this.root.marked_areas.has(area_code)))
-        {
-            // it is not so we need to choose a color
-            config.marked_area_color_map.push([
-              area_code,
-              mark_color || color_theme.pick_marked_area_color(config.marked_area_color_map.map((x) => x[1]), this.root)
-            ]);
-        }
+
+        // Remove any previous map and add a new one
+        config.marked_area_color_map = config.marked_area_color_map.filter((m) => m.area_code !== area_code);
+        config.marked_area_color_map.push({
+          area_code: area_code,
+          color: mark_color || color_theme.pick_marked_area_color(config.marked_area_color_map.map((x) => x.color), this.root),
+          ozid: OZid_to_mark,
+        });
         
-        mark_area_from_targeted_node(this.root,area_code);
-        // Trigger a redraw to make sure marked areas are painted
+        // Re-calc all nodes so changes are reflected
+        this.dynamic_load_and_calc(this.root.ozid)
         this.trigger_refresh_loop();
-        // this will ripple down adding the area target
-        return(mark_color)
+        return(config.marked_area_color_map[config.marked_area_color_map.length - 1].color)
     }
     
     /**
@@ -51,18 +45,10 @@ export default function (Controller) {
      */
     Controller.prototype.unmark_area = function(area_code) {
         if (typeof area_code !== 'number') throw new Error("area_code should be numeric");
-        unmark_area_from_code(this.root,area_code);
-        // this will ripple down adding the area target
-        // now need to cut from the color_map
-        let length = config.marked_area_color_map.length; // how many elements?
-        for (let i=0; i<length; i++) {
-            if (config.marked_area_color_map[i][0] == area_code)
-            {
-                config.marked_area_color_map.splice(i,1)
-                break;
-            }
-        }
-        // Trigger a redraw to make sure marked areas aren't painted
+        config.marked_area_color_map = config.marked_area_color_map.filter((m) => m.area_code !== area_code);
+
+        // Re-calc all nodes so changes are reflected
+        this.dynamic_load_and_calc(this.root.ozid)
         this.trigger_refresh_loop();
     }
     
@@ -70,16 +56,11 @@ export default function (Controller) {
      * Remove all marked areas
      */
     Controller.prototype.clear_all_marked_areas = function() {
-        unmark_all_areas(this.root); // call the iterative function to do the clearing
-        // now reset all the color pallette parts
         config.marked_area_color_map = [];
-    }
-    
-    /**
-     * Find common ancestor of all marked areasn as an OZid
-     */
-    Controller.prototype.get_ancestor_of_marked = function() {
-        return return_ancestor_of_all_marked_area(this.root); // call the iterative function to do the clearing
+
+        // Re-calc all nodes so changes are reflected
+        this.dynamic_load_and_calc(this.root.ozid)
+        this.trigger_refresh_loop();
     }
     
     /**
@@ -129,110 +110,3 @@ export default function (Controller) {
     }
 
 } // end of controller exported
-
-/**
- * @private
- * Mark area based on the targeted node
- * @param node is the node we're rippling down from - normally root, but it calls itself with child nodes
- * @param area_code is the code we want to mark the area with
- */
-function mark_area_from_targeted_node(node, area_code) {
-    if (node.targeted)
-    {
-        node.marked_areas.add(area_code); // add marked area to marked_areas set
-        let length = node.children.length; // how many children?
-        for (let i=0; i<length; i++) {
-            // loop over all children
-            let child = node.children[i];
-            mark_area_from_targeted_node(child, area_code); // iterate
-        }
-    }
-}
-
-/**
- * @private
- * Unmark area based on an area_code
- * @param node is the node we're rippling down from - normally root, but it calls itself with child nodes
- * @param area_code is the code we want to unmark, it's assumed that area ia a path down from root
- */
-function unmark_area_from_code(node, area_code) {
-    if (node.marked_areas.has(area_code))
-    {
-        node.marked_areas.delete(area_code); // delete the marked area from marked_areas set
-        let length = node.children.length; // how many children?
-        for (let i=0; i<length; i++) {
-            // loop over all children
-            let child = node.children[i];
-            unmark_area_from_code(child, area_code); // iterate
-        }
-    }
-}
-
-/**
- * @private
- * Unmark all areas in marked_areas
- * @param node is the node we're rippling down from - normally root, but it calls itself with child nodes
- */
-function unmark_all_areas(node) {
-    if (node.marked_areas.size > 0)
-    {
-        node.marked_areas.clear(); // clear all marked areas
-        let length = node.children.length; // how many children?
-        for (let i=0; i<length; i++) {
-            // loop over all children
-            let child = node.children[i];
-            unmark_all_areas(child); // iterate
-        }
-    }
-}
-
-/**
- * @private
- * Get ancestor of all marked areas
- * @param node is the node we're rippling down from - normally root, but it calls itself with child nodes
- */
-function return_ancestor_of_all_marked_area(node) {
-    if (node.marked_areas.size > 0)
-    {
-        let length = node.children.length; // how many children in total?
-        let num_children_with_marked = 0; // this will store number of children with at least one marked area (if this is > 1 then this is the MRCA)
-        let max_marked_areas_in_children = 0; // this will store maximum number of marked areas expressed in any child (if this is != number marked here then this is the MRCA)
-        let child_index; // this will store the index of the last child with marked areas
-        if (length == 0)
-        {
-            return (-node.metacode); // this is a leaf so return self but with a - flag
-        }
-        else
-        {
-            for (let i=0; i<length; i++) {
-                // loop over all children
-                let child = node.children[i];
-                if (child.marked_areas.size > 0)
-                {
-                    num_children_with_marked ++;
-                    if (child.marked_areas.size > max_marked_areas_in_children)
-                    {
-                        max_marked_areas_in_children = child.marked_areas.size;
-                    }
-                    child_index = i;
-                }
-            }
-            // the test is whether more than 1 child has any entries in its marked areas set
-            // if it does then this is the common ancestor, otherwise find the one child that has entries and ripple down to that.
-            if ((num_children_with_marked != 1)||(max_marked_areas_in_children != node.marked_areas.size))
-            {
-                return (node.metacode); // this is the common ancestor (or at least the best choice) and metacode is the OZid
-            }
-            else
-            {
-                // only one child has marked areas hence ripple down - since there was only one, this will be stored in child index
-                let child = node.children[child_index];
-                return return_ancestor_of_all_marked_area(child);
-            }
-        }
-    }
-    else
-    {
-        return null; // there are no marked areas
-    }
-}

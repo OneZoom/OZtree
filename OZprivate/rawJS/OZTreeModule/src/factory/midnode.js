@@ -75,7 +75,7 @@ class Midnode {
     
     this.full_children_length = 0;
       
-    this.marked_areas = new Set();
+    this.markings = [];
   }
   static create(obj) {
     return this.obj_pool.get();
@@ -106,7 +106,7 @@ class Midnode {
     this._date = null;
     this._popularity = null;
     this._is_polytomy = null;
-    this.marked_areas.clear(); // clear all marked areas
+    this.markings = [];
   }
     
   // called initially with

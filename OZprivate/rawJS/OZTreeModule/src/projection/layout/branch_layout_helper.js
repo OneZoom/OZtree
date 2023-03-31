@@ -31,27 +31,10 @@ class BranchLayoutBase {
    */
   get_markings_list(node) {
       // define an array to contain all the color markings we need
-      let markings_list = [];
-      
-      // how many possible marked areas are there
-      for (let i=0; i<config.marked_area_color_map.length; i++) {
-          // area_id for that color
-          let area_id = config.marked_area_color_map[i][0];
-          // is this marked
-          if(node.marked_areas.has(area_id))
-          {
-              // we need to mark this color
-              markings_list.push({strokeStyle: config.marked_area_color_map[i][1]});
-          }
-      }
-
-      // Annotate markings_list with width proportion
-      let num_markings = markings_list.length;
-      for (let i=0; i < num_markings; i++) {
-          markings_list[i].widthProportion = num_markings === 1 ? 0.7 : (num_markings-i)/(num_markings+1.0);
-      }
-
-      return markings_list;
+      return node.markings.map((m, i) => ({
+          strokeStyle: m.color,
+          widthProportion: node.markings.length === 1 ? 0.7 : (node.markings.length-i)/(node.markings.length+1.0),
+      }));
   }
 
   set_bezier_shape(shape, node, markings_list) {
