@@ -180,13 +180,14 @@ class SearchManager {
                     sciname = ret[node_details_api.node_cols["name"]];
                 }
                 let vernacular = vernacular_mapping[ott] || vernacular_mapping[sciname] || undefined;
-                callback(
-                    id, 
-                    ott,
+                // Recreate a compile_searchbox_data() format
+                let result = [
+                    vernacular,
                     (sciname && !sciname.endsWith("_"))?sciname:undefined,
-                    vernacular
-                    //TODO here - implement extra params
-                    )
+                    id,
+                ];
+                result.pinpoint = '@' + (result[1] || '').replace(/ /g, '_') + '=' + ott
+                callback(result)
             }
         }
       }
@@ -274,6 +275,7 @@ class SearchManager {
   /**
    * @private
    * Prepares a set of data including hit quality for searches of node (either leaf or interior node)
+   * @return [common_name, sciname, ozid, score, [, extra_vernacular], pinpoint = "@latin=ott"]
    */
   compile_searchbox_data(toSearchFor, lang, record, cols, is_leaf) {
     // uses search match and pluralize

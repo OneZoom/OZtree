@@ -92,11 +92,8 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
                                                     $('<dd></dd>')
                                                     .html(tempHTML)
                                                     .click(function(event) {
-                                                           var OZid = result[2];
-                                                           var given_name = result[0];
-                                                           var sciname = result[1];
-                                                           click_callback_id_name(event, result[2], result[0], result[1]);})
-                                                    );
+                                                           click_callback_id_name(event, result)
+                                                    }));
                  })
         }
         UIkit.dropdown(dropdown).show();
