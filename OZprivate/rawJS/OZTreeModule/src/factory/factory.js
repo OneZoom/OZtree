@@ -63,7 +63,8 @@ class Factory {
       }
 
       for (let i = 0; i < OZids.length; i++) {
-        next_node = next_hop(OZids[i], node);
+        // If we're already at our end node, stop (e.g. Mammals<->Human)
+        next_node = OZids[i] !== node.ozid ? next_hop(OZids[i], node) : node;
         if (i === 0) {
           // Save the first one to compare to
           first_next_node = next_node;
