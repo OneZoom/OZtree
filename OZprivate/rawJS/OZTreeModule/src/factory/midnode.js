@@ -136,11 +136,6 @@ class Midnode {
     
   update_attribute() {
     this._detail_fetched = true;
-    if (this.is_leaf) {
-      update_leaf_attribute();
-    } else {
-      update_node_attribute();
-    }
   }
   
   /**
@@ -570,14 +565,6 @@ class Midnode {
   }
 }
 
-function update_node_attribute() {
-  // console.log("update node attribute");
-}
-
-function update_leaf_attribute() {
-  // console.log("update leaf attribute");
-}
-
 function calc_richness_of_node(node) {
   let start = node.start, end = node.end;
   if (start >= end || isNaN(start) || isNaN(end) || start === null || end === null || start === undefined || end === undefined) {
@@ -618,33 +605,5 @@ function get_bracket_offset(prev_end, next_start) {
   }
   return offset_count;
 }
-
-/**
- * Define getter and setter for Midnode.position attributes. 
- * Hence, instead of writing 'node.position.hxmax = node.position.gxmax + node.position.xvar ....', you can write 'node.hxmax = node.gxmax + node.xvar * ...'
- */
-// let position_accessor_defined = false;
-// if (!position_accessor_defined) {
-//   position_accessor_defined = true;
-//   []
-//   .concat(["arca", "arcr", "arcx", "arcy"])
-//   .concat(["bezc1x", "bezc1y", "bezc2x", "bezc2y", "bezex", "bezey", "bezr", "bezsx", "bezsy"])
-//   .concat(["dvar", "gvar"])
-//   .concat(["gxmin", "gxmax", "gymin", "gymax"])
-//   .concat(["hxmin", "hxmax", "hymin", "hymax"])
-//   .concat(["nextr", "nextx", "nexty"])
-//   .concat(["xvar", "yvar", "rvar"])
-//   .concat(["targeted", "route_to_search", "graphref", "dir"])
-//   .forEach(function(key) {
-//     Object.defineProperty(Midnode.prototype, key, {
-//       get: function() {
-//         return this.position[key];
-//       },
-//       set: function(val) {
-//         this.position[key] = val;
-//       }  
-//     });
-//   });
-// }
 
 export default Midnode;
