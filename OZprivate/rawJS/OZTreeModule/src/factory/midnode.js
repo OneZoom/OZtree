@@ -314,6 +314,9 @@ class Midnode {
   get ozid() {
     return (this.is_leaf ? -1 : 1) * this.metacode
   }
+  get is_root() {
+    return !this.upnode;
+  }
   get is_leaf() {
     return this.type === "leafNode";
   }

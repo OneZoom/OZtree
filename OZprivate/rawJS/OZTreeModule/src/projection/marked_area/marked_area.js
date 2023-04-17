@@ -3,7 +3,7 @@ export function marked_area(node, area_map) {
   if (!node.has_child) return;
 
   // If we're the root, do our own marked areas
-  if (!node.upnode) {
+  if (node.is_root) {
     node.markings = [];
     for (let i = 0; i < area_map.length; i++) {
       node.markings.push(area_map[i]);
