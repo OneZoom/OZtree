@@ -55,19 +55,19 @@ class Factory {
     let node = this.root;
     let next_node, first_next_node;
     if (OZids.length === 0) throw new Error("Cannot find common ancestor of nothing")
+    OZids = Array.from(new Set(OZids))  // Remove duplicates by converting to Set & back
 
     while (true) {
-      if (OZids.filter((OZid) => node.ozid !== OZid).length === 0) {
-        // All OZids match the current node. i.e. got handed a set of identical OZids (or just one)
-        return node;
-      }
-
       for (let i = 0; i < OZids.length; i++) {
         // If we're already at our end node, stop (e.g. Mammals<->Human)
         next_node = OZids[i] !== node.ozid ? next_hop(OZids[i], node) : node;
         if (i === 0) {
           // Save the first one to compare to
           first_next_node = next_node;
+          if (OZids.length === 1 && OZids[i] === node.ozid) {
+            // Only given one unique node, once we find it return it.
+            return node;
+          }
         } else if (next_node.ozid !== first_next_node.ozid) {
           // One of the next nodes is different, so node is the common ancestor
           return node;
