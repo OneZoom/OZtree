@@ -75,7 +75,7 @@ class Midnode {
     
     this.full_children_length = 0;
       
-    this.marked_areas = new Set();
+    this.markings = [];
   }
   static create(obj) {
     return this.obj_pool.get();
@@ -106,7 +106,7 @@ class Midnode {
     this._date = null;
     this._popularity = null;
     this._is_polytomy = null;
-    this.marked_areas.clear(); // clear all marked areas
+    this.markings = [];
   }
     
   // called initially with
@@ -163,8 +163,54 @@ class Midnode {
       }
     }
   }
-  
-  
+
+  /**
+   * Develop offshoots from the path from this node to the root
+   * @param depth The depth to develop offshoot's children
+   */
+  develop_branches(depth) {
+    // Hit root, nothing more to do
+    if (!this.upnode) return;
+
+    // For all sibling nodes, develop their children by depth
+    for (let i=0; i<this.upnode.full_children_length; i++) {
+      if (this.upnode.children[i] !== this) {
+        this.upnode.children[i].develop_children(depth)
+      }
+    }
+
+    // recurse towards root
+    this.upnode.develop_branches(depth)
+  }
+
+  /**
+   * Return the index of the child descending towards OZid, or null if not a descendant
+   *
+   * Children do not have to be developed for this to work
+   */
+  child_index_towards(OZid) {
+    if (this.is_leaf) {
+      // No point trying to find children of a leaf node
+      return null
+    }
+    if (OZid < 0) {
+      // full_children_length is the length of children regardless they are developed or not.
+      for (let index=0; index<this.full_children_length; index++) {
+        if (this.child_leaf_meta_start[index] <= -OZid && this.child_leaf_meta_end[index] >= -OZid) {
+          return index;
+        }
+      }
+    } else {
+      for (let index=0; index<this.full_children_length; index++) {
+        if (this.child_node_meta_start[index] <= OZid && this.child_node_meta_end[index] >= OZid) {
+          return index;
+        }
+      }
+    }
+    // Nothing found
+    return null;
+  }
+
   /**
    * Get cut index for children of node. 
    * If node string length < cut_threshold, then force search the cut index,

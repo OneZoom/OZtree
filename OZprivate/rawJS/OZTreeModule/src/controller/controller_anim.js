@@ -164,14 +164,19 @@ export default function (Controller) {
         tree_state.xp = position.xp || position[0] || 0
         tree_state.yp = position.yp || position[1] || 0
         tree_state.ws = position.ws || position[2] || 1
-        this.develop_and_reanchor_to(dest_OZid);
+
+        let anchor_node = this.dynamic_load_and_calc(dest_OZid, {
+          generation_at_searched_node: config.generation_at_searched_node
+        });
+        position_helper.deanchor(this.root);
+        position_helper.reanchor_at_node(anchor_node);
         this.re_calc();
         this.trigger_refresh_loop();
         resolve()
       });
     }
 
-    this.develop_branch_to(dest_OZid);
+    this.develop_branch_to_and_target(dest_OZid);
     return flight_promise(new Promise((resolve, reject) => {
       position_helper.perform_actual_fly(
         this, into_node, Infinity, 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
@@ -201,7 +206,7 @@ export default function (Controller) {
   Controller.prototype.fly_straight_to = function(
         dest_OZid, into_node, speed=1, accel_type='linear') {
     tree_state.flying = false;
-    this.develop_branch_to(dest_OZid);
+    this.develop_branch_to_and_target(dest_OZid);
 
     return flight_promise(new Promise((resolve, reject) => {
       position_helper.perform_actual_fly(
@@ -249,27 +254,22 @@ export default function (Controller) {
         function get_flight_path(node_start, node_end) {
             var n, visited_nodes = {};
 
-            // Leaf and interior metacodes aren't unique, treat leaves as negative;
-            function to_id(n) {
-                return n.is_leaf ? -n.metacode : n.metacode;
-            }
-
             // Mark each node in heirarchy as visited
             n = node_end;
             while (n) {
-                visited_nodes[to_id(n)] = true;
+                visited_nodes[n.ozid] = true;
                 n = n.upnode;
             }
 
             // Find first matching node from the first item
             n = node_start;
-            if (visited_nodes[to_id(n)]) {
+            if (visited_nodes[n.ozid]) {
                 // We're just zooming in, don't bother with intermediate node
                 return [node_end];
             }
             while (n) {
-                if (visited_nodes[to_id(n)]) {
-                    if (to_id(node_end) === to_id(n)) {
+                if (visited_nodes[n.ozid]) {
+                    if (node_end.ozid === n.ozid) {
                         // Zooming out;
                         return [node_end];
                     }
@@ -284,7 +284,7 @@ export default function (Controller) {
         if (src_OZid == null) {
             // Find largest visible node: use this as our starting point
             let top_node = get_largest_visible_node(this.root, function(node) { return node.ott; }) || this.root;
-            src_OZid = (top_node.is_leaf? -1 : 1) * top_node.metacode;
+            src_OZid = top_node.ozid;
         } else {
             // Move to start location
             p = p.then(function () {
@@ -294,8 +294,8 @@ export default function (Controller) {
 
         p = p.then(function () {
             var flight_path = get_flight_path(
-                this.develop_branch_to(src_OZid),
-                this.develop_branch_to(dest_OZid)
+                this.develop_branch_to_and_target(src_OZid),
+                this.develop_branch_to_and_target(dest_OZid)
             );
             config.ui.loadingMessage(false);
             return flight_path;
@@ -309,7 +309,7 @@ export default function (Controller) {
                 // NB: Ideally we'd parallelise this, but the interface doesn't allow it yet.
                 flight_p = flight_p.then(function () {
                     position_helper.clear_target(this.root);
-                    position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
+                    position_helper.target_by_code(this.root, n.ozid);
                     return get_details_of_nodes_in_view_during_fly(this.root);
                 }.bind(this));
             }.bind(this));
@@ -328,7 +328,7 @@ export default function (Controller) {
                 flight_p = flight_p.then(function () {
                     return new Promise(function (resolve, reject) {
                         position_helper.clear_target(this.root);
-                        position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
+                        position_helper.target_by_code(this.root, n.ozid);
                         position_helper.perform_actual_fly(
                           this, (accel_func === 'decel') ? into_node : false, speed, accel_func, resolve, () => reject(new UserInterruptError('Fly is interrupted')));
                     }.bind(this));
@@ -395,8 +395,8 @@ export default function (Controller) {
     // init == "leap"
     // NB: leap_to won't fetch details, we do it ourselves
     position_helper.clear_target(this.root);
-    n = this.develop_branch_to(dest_OZid);
-    position_helper.target_by_code(this.root, (n.is_leaf ? -1 : 1) * n.metacode);
+    n = this.develop_branch_to_and_target(dest_OZid);
+    position_helper.target_by_code(this.root, n.ozid);
     return get_details_of_nodes_in_view_during_fly(this.root).then(function () {
         return this.leap_to(dest_OZid, init, into_node=into_node);
     }.bind(this));
@@ -408,11 +408,12 @@ export default function (Controller) {
    *    OZid < 0, leaf(metacode == -OZid),
    *    OZid > 0, interior_node(metacode == OZid)
    */
-  Controller.prototype.develop_branch_to = function(OZid) {
+  Controller.prototype.develop_branch_to_and_target = function(OZid) {
     let root = this.root;
-    let selected_node = this.factory.dynamic_loading_by_metacode(OZid);
-    this.projection.pre_calc(root);
-    this.projection.calc_horizon(root);
+    let selected_node = this.dynamic_load_and_calc(OZid, {
+      generation_at_searched_node: config.generation_at_searched_node,
+      generation_on_subbranch: config.generation_on_subbranch_during_fly,
+    });
     position_helper.clear_target(root);
     position_helper.target_by_code(root, OZid);
     return selected_node;
@@ -474,20 +475,5 @@ export default function (Controller) {
       console.error(error);
       tree_state.flying = false;
     }
-  }
-  
-  /**
-   * develop the tree to the node specified by OZid, then reanchor at this node.
-   * @param {integer} OZid
-   *    OZid < 0, leaf(metacode == -OZid),
-   *    OZid > 0, interior_node(metacode == OZid)
-   */
-  Controller.prototype.develop_and_reanchor_to = function(OZid) {
-    let root = this.root;
-    let anchor_node = this.factory.dynamic_loading_by_metacode(OZid);
-    this.projection.pre_calc(root, true)
-    this.projection.calc_horizon(root);
-    position_helper.deanchor(root);
-    position_helper.reanchor_at_node(anchor_node);
   }
 }

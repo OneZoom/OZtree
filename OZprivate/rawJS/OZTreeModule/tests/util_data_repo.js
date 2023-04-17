@@ -8,7 +8,7 @@ import data_repo from '../src/factory/data_repo';
   * Return promise that data_repo is setup and ready to query
   * @param tree_serial String The postfix for files in static/FinalOutputs/data/
   */
-export function populate_data_repo(tree_serial = '1507729427') {
+export function populate_data_repo(tree_serial = '25589581') {
   return new Promise((resolve) => {
     // NB: We use JSDOM because the generated files don't export their contents, so wouldn't
     //     be accessible if we require()d them.

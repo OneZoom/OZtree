@@ -42,9 +42,8 @@ class Controller {
   rebuild_tree() {
     this.factory.build_tree();
 
-    this.projection.pre_calc(this.root, true);
-    this.projection.calc_horizon(this.root);
-    this.projection.re_calc(this.root, tree_state.xp, tree_state.yp, tree_state.ws);
+    this.dynamic_load_and_calc(this.root.ozid);
+    this.re_calc();
   }
   
   /**
@@ -152,25 +151,48 @@ class Controller {
     this.refresh_timer = null;
   }
 
+  /**
+   * Load new midnodes, either aiming at a target OZid or 'visible' for nodes currently in view
+   */
+  dynamic_load_and_calc(target_OZid = null, { generation_at_searched_node = 0, generation_on_subbranch = 0 } = {}) {
+    var node, precalc_from;
+
+    if (target_OZid === 'visible') {
+      node = this.factory.dynamic_loading_by_visibility();
+      precalc_from = node;
+      // If nothing to develop, return
+      if (!node) return;
+    } else {
+      node = this.factory.dynamic_loading_by_metacode(target_OZid);
+      // NB: _by_visibility returns the last existant node, _by_metacode returns the target node
+      //     (which may not have existed). Ideally we should know both here.
+      //     As we've no idea what the last existant node was, assume root.
+      precalc_from = this.root;
+    }
+
+    // Develop upwards and outwards
+    node.develop_children(generation_at_searched_node);
+    if (generation_on_subbranch > 0) {
+      node.develop_branches(generation_on_subbranch);
+      precalc_from = this.root;
+    }
+
+    this.projection.pre_calc(precalc_from, precalc_from.upnode === null);
+    this.projection.calc_horizon(precalc_from)
+    this.projection.update_parent_horizon(precalc_from)
+    this.projection.marked_area(precalc_from, config.marked_area_color_map)
+
+    return node;
+  }
+
+  /**
+   * Recalculate all positions, e.g. after a tree move
+   */
   re_calc() {
     this.projection.re_calc(this.root, tree_state.xp, tree_state.yp, tree_state.ws);
   }
   reanchor() {
     position_helper.reanchor(this.root);
-  }
-  /**
-   * @return {boolean} return true if the tree has more developed nodes after this function call.
-   * developed_nodes contains most close ancestor of the nodes which have just been developed.
-   */
-  dynamic_loading() {
-    let developed_nodes = this.factory.dynamic_loading(); // this returns the ancestor of the new nodes not the new nodes themselves.
-    for (let i=0; i<developed_nodes.length; i++) {
-      let node = developed_nodes[i];
-      this.projection.pre_calc(node);
-      this.projection.calc_horizon(node);
-    }
-    this.projection.update_parent_horizon(developed_nodes);
-    return developed_nodes && developed_nodes.length > 0;
   }
   get root() {
     return this.factory.get_root();

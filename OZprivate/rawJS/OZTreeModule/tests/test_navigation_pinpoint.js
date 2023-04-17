@@ -52,8 +52,19 @@ test('resolve_pinpoints:common_ancestor', function (test) {
         { pinpoint: '988790', ott: 988790, ozid: 836250 },
         { pinpoint: '824869', ott: 824869, ozid: 836247 },
       ],
-      ozid: 836237,
+      ozid: 836246,
     }, "@_ancestor=988790-824869"));
+
+  }).then(function () {
+    // Ancestor of a node below another is the first node
+    return resolve_pinpoints('@_ancestor=244265-48401').then((pp) => test.deepEqual(pp, {
+      pinpoint: '@_ancestor=244265-48401',
+      sub_pinpoints: [
+        { pinpoint: '244265', ott: 244265, ozid: 834744 },  // Mammals
+        { pinpoint: '48401', ott: 48401, ozid: -836261 },  // Fijian monkey-faced bat (Mirimiri acrodonta)
+      ],
+      ozid: 834744,  // NB: The common ancestor is still mammals
+    }, "@_ancestor=244265-48401"));
 
   }).then(function () {
     test.end();

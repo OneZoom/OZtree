@@ -10,7 +10,7 @@ import data_repo from '../factory/data_repo'
  * @param {String} taxon_json - a JSON string specifying an array, each item of which is a string (treated as a header) or an object containing
  * an 'OTT' property and any number of optional text labels to use, keyed by language. For example taxon_list could be 
  * ['header text',{'OTT':1234,'en':'name to use},{...]
- * @param {Function} taxon_callback - the 4-param UI function [f(ott, used_name, sciname, OZid)] to call on a header string, e.g. adding it to a list
+ * @param {Function} taxon_callback - the 1-param UI function [f(result)] to call on a header string, e.g. adding it to a list, result is a compile_searchbox_data() structure
  * @param {Function} header_callback - the 1-param UI function [f(label)] to call on a header string, e.g. adding it to a list
  * @param {Function} completed_callback - a function [f()] to call once the taxa have been processed and the data_repo filled
  */
@@ -51,8 +51,15 @@ export default function process_taxon_list(taxon_json, taxon_callback, header_ca
                   }
                 } else {
                   if (typeof taxon_callback === "function") {
+                      // Recreate a compile_searchbox_data() format
                       let ott = taxon_list[i].OTT.toString();
-                      taxon_callback(ott, taxon_list[i].vernacular, scinames[ott], ott_id_map[ott]);
+                      var result = [
+                        taxon_list[i].vernacular,
+                        scinames[ott],
+                        ott_id_map[ott],
+                      ];
+                      result.pinpoint = '@' + (scinames[ott] || '').replace(/ /g, '_') + '=' + ott;
+                      taxon_callback(ott, result);
                   }
                 }
               }
