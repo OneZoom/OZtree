@@ -42,7 +42,7 @@ class Controller {
   rebuild_tree() {
     this.factory.build_tree();
 
-    this.dynamic_load_and_calc(this.root.ozid);
+    this.dynamic_load_and_calc(this.root.ozid, { generation_at_searched_node: 20 });
     this.re_calc();
   }
   

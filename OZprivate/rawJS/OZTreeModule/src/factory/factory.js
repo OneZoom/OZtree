@@ -12,11 +12,11 @@ class Factory {
   }
   
   /**
-   * Builds the initial tree
+   * Builds the root node, called by controller.rebuild_tree()
    */
   build_tree() {
     this.root = Midnode.create();
-    this.root.init(0, data_repo.raw_data.length-1, 1, 1, null, 20);
+    this.root.init(0, data_repo.raw_data.length-1, 1, 1, null, 0);
   }
   
   get_root() {
