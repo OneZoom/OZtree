@@ -17,7 +17,6 @@ function setup_page_by_location(controller) {
 }
 
 function setup_page_by_state(controller, state) {
-  if (state.vis_type) controller.change_view_type(state.vis_type, true);
   if (state.image_source) controller.set_image_source(state.image_source, true)
   if (state.lang) controller.set_language(state.lang, true)
   if (state.search_jump_mode) controller.set_search_jump_mode(state.search_jump_mode)
@@ -28,10 +27,20 @@ function setup_page_by_state(controller, state) {
 
   controller.close_all();
 
-  // Perform initial marking if asked
-  if (state.initmark) resolve_pinpoints(state.initmark).then(pp => controller.mark_area(pp.ozid));
-
-  return resolve_pinpoints(state.pinpoint).then(function (pp) {
+  var p = Promise.resolve();
+  if (state.vis_type) {
+    // Change view type (implicitly rebuilding tree)
+    p = controller.change_view_type(state.vis_type, true);
+  } else {
+    // Do initial build of default tree
+    controller.rebuild_tree();
+  }
+  return p.then(function () {
+    // Perform initial marking if asked
+    if (state.initmark) resolve_pinpoints(state.initmark).then(pp => controller.mark_area(pp.ozid));
+  }).then(function () {
+      return resolve_pinpoints(state.pinpoint);
+  }).then(function (pp) {
     let id = pp.ozid;
     tree_state.url_parsed = true;
     if (id !== undefined) {
