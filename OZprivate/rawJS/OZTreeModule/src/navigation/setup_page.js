@@ -94,6 +94,8 @@ function tree_current_state_obj(controller, {record_popup = null}) {
 
   // Choose one with an OTT by preference
   let node = get_largest_visible_node(controller.root, (node) => !!node.ott) || get_largest_visible_node(controller.root);
+  // NB: Still possible to find nothing, e.g. with a manually tampered URL that positions xp/wp/ws at an empty point in the tree
+  if (!node) return {};
 
   // ----- Pinpoint / path
   state.pinpoint = node_to_pinpoint(node)
