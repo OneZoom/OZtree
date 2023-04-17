@@ -145,12 +145,10 @@ class Midnode {
   
   /**
    * Develop children of this node recursively, down to (depths) below next child
-   *
-   * @param apart_from Don't develop the children off this index
    */
-  develop_children(default_depth, apart_from) {
+  develop_children(default_depth) {
     for (let i=0; i<this.full_children_length; i++) {
-      let depth = i === apart_from ? 0 : default_depth;
+      let depth = default_depth;
 
       if (this.children[i]) {
         // This child already exists, give it the chance to develop it's own children
