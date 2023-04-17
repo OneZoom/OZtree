@@ -15,9 +15,9 @@ class PolytomyPreCalc {
     else return this._viewtype;
   }
     
-  pre_calc(node, from_root) {
-    let angle = from_root ? Math.PI*(3/2) : node.arca;
-    if (from_root) {
+  pre_calc(node) {
+    let angle = node.is_root ? Math.PI*(3/2) : node.arca;
+    if (node.is_root) {
       // Control points on top of start/end, i.e. line should be straight
       node.bezex = node.bezc2x = Math.cos(angle);
       node.bezey = node.bezc2y = Math.sin(angle);

@@ -8,10 +8,10 @@ class SpiralPreCalc {
     if (!this._viewtype) throw new Error("viewtype not defined in SpiralPreCalc.");
     else return this._viewtype;
   }
-  pre_calc(node, from_root) {
-    let angle = from_root ? Math.PI*(3/2) : node.arca;
+  pre_calc(node) {
+    let angle = node.is_root ? Math.PI*(3/2) : node.arca;
     let partl1 = 0.55;
-    if (from_root) {
+    if (node.is_root) {
       node.bezsx =  0;
       node.bezsy =  0; // start y position
       node.bezex =  0; // end x position

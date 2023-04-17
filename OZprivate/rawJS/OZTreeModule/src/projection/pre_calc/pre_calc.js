@@ -19,8 +19,8 @@ function set_pre_calculator(viewtype) {
   throw new Error(viewtype + " viewtype is not defined in projection/pre_calc/pre_calc.js");
 }
 
-function pre_calc(node, from_root) {
-  pre_calculator.pre_calc(node, from_root);
+function pre_calc(node) {
+  pre_calculator.pre_calc(node);
 }
 
 export {pre_calc, set_pre_calculator};

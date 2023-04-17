@@ -6,8 +6,8 @@ import data_repo from '../factory/data_repo';
 import { marked_area as _marked_area } from './marked_area/marked_area';
 
 class Projection {
-  pre_calc(node, from_root) {
-    _pre_calc(node, from_root);
+  pre_calc(node) {
+    _pre_calc(node);
   }
   calc_horizon(node) {
     _calc_horizon(node);

@@ -8,11 +8,11 @@ class FernPreCalc {
     if (!this._viewtype) throw new Error("viewtype not defined in FernPreCalc.");
     else return this._viewtype;
   }
-  pre_calc(node, from_root) {
-    let angle = from_root ? Math.PI*(3/2-0.05) : node.arca;
+  pre_calc(node) {
+    let angle = node.is_root ? Math.PI*(3/2-0.05) : node.arca;
     let dir = typeof node.dir === 'undefined' ? true : node.dir;
     let partl1 = 0.55;
-    if (from_root) {
+    if (node.is_root) {
       node.bezsx = -Math.sin(Math.PI*0.05);
       node.bezsy = 0; // start y position
       node.bezex = -Math.sin(Math.PI*0.05); // end x position
