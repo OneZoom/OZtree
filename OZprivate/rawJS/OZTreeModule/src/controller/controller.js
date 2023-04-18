@@ -180,7 +180,7 @@ class Controller {
     this.projection.pre_calc(precalc_from);
     this.projection.calc_horizon(precalc_from)
     this.projection.update_parent_horizon(precalc_from)
-    this.projection.marked_area(precalc_from, config.marked_area_color_map)
+    this.projection.highlight_apply(precalc_from, config.marked_area_color_map)
 
     return node;
   }
