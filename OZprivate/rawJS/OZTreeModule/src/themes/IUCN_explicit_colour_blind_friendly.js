@@ -287,7 +287,7 @@ const theme = {
   branch: {
     stroke: branch_colour,
   
-  // this pallette stores colours that are mapped to marked areas in config.marked_area_color_map
+  // this pallette stores colours that are mapped to highlights
   marked_area_pallette: {
       '0': pastel_blue,
       '1': pastel_red,
