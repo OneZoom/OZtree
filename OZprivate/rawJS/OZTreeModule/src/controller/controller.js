@@ -3,6 +3,7 @@ import * as position_helper from '../position_helper';
 import config from '../global_config';
 import tree_state from '../tree_state';
 import install_controller_dom from './controller_dom';
+import install_controller_highlight from './controller_highlight';
 import install_controller_loc from './controller_loc';
 import install_controller_search from './controller_search';
 import install_controller_anim from './controller_anim';
@@ -180,7 +181,7 @@ class Controller {
     this.projection.pre_calc(precalc_from);
     this.projection.calc_horizon(precalc_from)
     this.projection.update_parent_horizon(precalc_from)
-    this.projection.highlight_apply(precalc_from, config.marked_area_color_map)
+    this.projection.highlight_propogate(precalc_from)
 
     return node;
   }
@@ -205,6 +206,7 @@ class Controller {
 install_controller_loc(Controller);
 install_controller_search(Controller);
 install_controller_dom(Controller);
+install_controller_highlight(Controller);
 install_controller_anim(Controller);
 install_controller_interactor(Controller);
 install_controller_tour(Controller);

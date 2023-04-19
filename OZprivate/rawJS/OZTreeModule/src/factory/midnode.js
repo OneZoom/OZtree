@@ -74,8 +74,6 @@ class Midnode {
     this.child_end_pos = new Array(config.factory.child_num);
     
     this.full_children_length = 0;
-      
-    this.markings = [];
   }
   static create(obj) {
     return this.obj_pool.get();
@@ -106,7 +104,7 @@ class Midnode {
     this._date = null;
     this._popularity = null;
     this._is_polytomy = null;
-    this.markings = [];
+    delete this.highlight_status;
   }
     
   // called initially with
