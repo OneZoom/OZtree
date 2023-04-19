@@ -127,7 +127,7 @@ class DataRepo {
   
   update_metadata(res) {
     this.populate_id_ott_map(res);
-    this.populate_id_name_map(res);
+    this.populate_name_id_map(res);
     parse_ordered_leaves(this, res.leaves, node_details_api);
     parse_ordered_nodes(this, res.nodes, node_details_api);
     parse_iucn(this, res.leafIucn);
@@ -227,7 +227,7 @@ class DataRepo {
     }
   }
   
-  populate_id_name_map(res) {
+  populate_name_id_map(res) {
     let nodes = res.nodes;
     let leaves = res.leaves;
     for (let i=0; i<nodes.length; i++) {
