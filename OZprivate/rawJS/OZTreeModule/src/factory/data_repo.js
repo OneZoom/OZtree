@@ -245,6 +245,33 @@ class DataRepo {
       }
     }
   }
+
+  /**
+   * NB: Only used in unit tests, not how it generally gets populated, see
+   * parse_vernacular_by_ott(), SearchManager.compile_searchbox_data()
+   */
+  populate_ott_name_map(res) {
+    let nodes = res.nodes;
+    let leaves = res.leaves;
+    for (let i=0; i<nodes.length; i++) {
+      let ott = nodes[i][node_details_api.node_cols["ott"]];
+      if (ott) {
+        this.ott_name_map[ott] = [
+          nodes[i][node_details_api.node_cols["name"]],
+          undefined,  // NB: Leave this for parse_vernacular_by_ott()
+        ];
+      }
+    }
+    for (let i=0; i<leaves.length; i++) {
+      let ott = leaves[i][node_details_api.leaf_cols["ott"]];
+      if (ott) {
+        this.ott_name_map[ott] = [
+          leaves[i][node_details_api.leaf_cols["name"]],
+          undefined,  // NB: Leave this for parse_vernacular_by_ott()
+        ];
+      }
+    }
+  }
 }
   
   
