@@ -36,8 +36,8 @@ function setup_page_by_state(controller, state) {
     controller.rebuild_tree();
   }
   return p.then(function () {
-    // Perform initial marking if asked
-    if (state.initmark) resolve_pinpoints(state.initmark).then(pp => controller.mark_area(pp.ozid));
+    // Perform initial highlighting if asked
+    return controller.highlight_replace(state.highlights);
   }).then(function () {
       return resolve_pinpoints(state.pinpoint);
   }).then(function (pp) {
@@ -132,9 +132,11 @@ function tree_current_state_obj(controller, {record_popup = null}) {
   }
   if (!tree_settings.is_default_ssaver_inactive_duration_seconds()) state.ssaver_inactive_duration_seconds = tree_settings.ssaver_inactive_duration_seconds
 
-  // init/initmark aren't stored anywhere, pull them out of existing URL
+  state.highlights = controller.highlight_list();
+  if (state.highlights.length === 0) delete state.highlights;
+
+  // init isn't stored anywhere, pull them out of existing URL
   if (win_sp.get('init')) state.init = win_sp.get('init');
-  if (win_sp.get('initmark')) state.initmark = win_sp.get('initmark');
 
   // Preserve all custom parts of current querystring
   state.custom_querystring = {};
