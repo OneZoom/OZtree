@@ -43,6 +43,21 @@ test('resolve_pinpoints:ott', function (test) {
   })
 });
 
+test('resolve_pinpoints:ozid', function (test) {
+  return populate_data_repo().then(() => {
+    return test_pinpoint(test, '@_ozid=836250', {
+      ozid: 836250,
+    });
+
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
 test('resolve_pinpoints:common_ancestor', function (test) {
   var factory;
   return populate_factory().then((f) => {
