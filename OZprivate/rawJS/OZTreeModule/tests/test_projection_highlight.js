@@ -50,6 +50,16 @@ test('resolve_highlights', function (test) {
     ]));
 
   }).then(function () {
+    // Pick colours out of highlight
+    return resolve_highlights([
+      'path:blue@_ozid=1234',
+      'fan:pink@_ozid=123',
+    ], fake_picker).then((highlights) => test.deepEqual(highlights, [
+      { str: 'path:blue@_ozid=1234', type: 'path', color: 'blue', pinpoints: [ '@_ozid=1', '@_ozid=1234' ], ozids: [ 1, 1234 ] },
+      { str: 'fan:pink@_ozid=123', type: 'fan', color: 'pink', pinpoints: [ '@_ozid=123' ], ozids: [ 123 ] },
+    ]));
+
+  }).then(function () {
     test.end();
   }).catch(function (err) {
     console.log(err.stack);

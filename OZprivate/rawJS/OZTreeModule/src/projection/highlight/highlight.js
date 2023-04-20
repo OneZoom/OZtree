@@ -46,7 +46,7 @@ export function resolve_highlights(highlights, color_picker) {
       h = highlights[i];
     }
 
-    let m = h.str.match(/(?<type>path|fan):(?<color>^@)*(?<pinpoints>.*)/);
+    let m = h.str.match(/(?<type>path|fan):(?<color>[^@]+)*(?<pinpoints>.*)/);
     if (!m) throw new Error("Unparsable highlight: '" + h.str + "'");
 
     h.type = h.type || m.groups.type;
