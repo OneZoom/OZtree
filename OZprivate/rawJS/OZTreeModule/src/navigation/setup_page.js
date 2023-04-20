@@ -1,4 +1,4 @@
-import { parse_window_location } from './utils';
+import { parse_state } from './utils';
 import data_repo from '../factory/data_repo';
 import { UserInterruptError } from '../errors';
 import tree_state from '../tree_state';
@@ -12,7 +12,7 @@ import { resolve_pinpoints, node_to_pinpoint } from './pinpoint';
  * Convert window.location into a state object and configure the treeviewer to match
  */
 function setup_page_by_location(controller) {
-  let state = parse_window_location();
+  let state = parse_state(window.location);
   return setup_page_by_state(controller, state);
 }
 

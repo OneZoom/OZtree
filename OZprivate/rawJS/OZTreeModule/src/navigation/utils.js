@@ -61,11 +61,39 @@ function get_largest_visible_node(node, condition=null) {
 }
 
 /**
- * Parse a DOM location object, defaulting to window.location, and return a state object.
+ * Parse location into a state object. Location can be one of:
+ * * A (window.)location or URL object
+ * * A querystring beginning with ?
+ * * A string parsable as URL
+ * * A state object already
+ * @return state object ready for setup_page_by_state()
  */
-function parse_window_location(location = window.location) {
+function parse_state(location) {
+  if (typeof location === 'string' && location.startsWith('?')) {
+    // If location is stringy and starts with ?, it's a query-string
+    return parse_window_location({ search: location });
+  }
+  if (typeof location === 'string') {
+    // Otherwise parse as URL before setting it up
+    return parse_window_location(new URL(location));
+  }
+  if (typeof location !== 'object') {
+    throw new Error("Cannot parse objects of type " + typeof location)
+  }
+  if ((global.Location && location instanceof Location) || location instanceof URL) {
+    // Parse Location/URL objects
+    return parse_window_location(location);
+  }
+  // All else fails, assume it's a state object already
+  return location
+}
+
+/**
+ * Parse a DOM location object and return a state object.
+ */
+function parse_window_location(location) {
   let state = {};
-  state.url_base = parse_url_base(location);
+  if (location.pathname) state.url_base = parse_url_base(location);
   parse_pathname(state, location.pathname);
   parse_querystring(state, location.search);
   parse_hash(state, location.hash);
@@ -95,6 +123,7 @@ function parse_url_base(location) {
 
 // Pull pinpoint out of pathname, e.g. @Eukaryota=304358
 function parse_pathname(state, pathname) {
+    if (!pathname) return;
     state.pinpoint = pathname.indexOf("@") === -1 ? null : pathname.slice(pathname.indexOf("@"));
 }
 
@@ -116,8 +145,8 @@ function deparse_pathname(state) {
  *   Example:  ?part1&part2&part3.
  */
 function parse_querystring(state, querystring) {
-  if ((typeof querystring !== 'string') || !querystring.startsWith('?')) return;
-  querystring = querystring.substring(1).split("&"); //knock off initial '?'
+  if (typeof querystring !== 'string') return;
+  querystring = querystring.replace(/^\?/, '').split("&"); //knock off initial '?'
   for (let i = 0; i < querystring.length; i++) {
     if (/^pop=/.test(querystring[i])) {
       let tap_params = querystring[i].substring(querystring[i].indexOf("=") + 1).split("_");
@@ -272,4 +301,4 @@ function decode_popup_action(popup_action) {
   }
 }
 
-export { get_largest_visible_node, parse_window_location, deparse_state, parse_url_base };
+export { get_largest_visible_node, parse_state, deparse_state, parse_url_base };

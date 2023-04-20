@@ -1,5 +1,5 @@
 import { tree_current_state_obj } from './setup_page';
-import { get_largest_visible_node, parse_window_location, deparse_state } from './utils';
+import { get_largest_visible_node, parse_state, deparse_state } from './utils';
 import config from '../global_config';
 
 let timer = null;
@@ -52,7 +52,7 @@ function record_url(controller, options, force) {
  * -- both view has no popup window or both view have the same popup window (same means its context are based on same ott)
  */
 function current_view_near_previous_view(current_state) {
-  let previous_state = parse_window_location();
+  let previous_state = parse_state(window.location);
   if (current_state === null && previous_state !== null) return false;
   else if (current_state !== null && previous_state === null) return false;
   else if (current_state === null && previous_state === null) return true;
