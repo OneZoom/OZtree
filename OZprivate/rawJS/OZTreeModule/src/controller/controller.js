@@ -5,6 +5,7 @@ import tree_state from '../tree_state';
 import install_controller_dom from './controller_dom';
 import install_controller_highlight from './controller_highlight';
 import install_controller_loc from './controller_loc';
+import install_controller_navigation from './controller_navigation';
 import install_controller_search from './controller_search';
 import install_controller_anim from './controller_anim';
 import install_controller_interactor from './controller_interactor';
@@ -204,6 +205,7 @@ class Controller {
  * In order to keep the controller file small, I split its prototypes in several files and call the following functions to add these prototypes on Controller.
  */
 install_controller_loc(Controller);
+install_controller_navigation(Controller);
 install_controller_search(Controller);
 install_controller_dom(Controller);
 install_controller_highlight(Controller);
