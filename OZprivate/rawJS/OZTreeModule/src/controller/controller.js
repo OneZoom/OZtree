@@ -15,7 +15,6 @@ import get_interactor from '../interactor/interactor';
 import * as renderer from '../render/renderer';
 import get_projection from '../projection/projection';
 import {get_factory} from '../factory/factory';
-import { setup_page_by_location } from '../navigation/setup_page';
 import { record_url_delayed } from '../navigation/record';
 import { add_hook, call_hook} from '../util/index';
 import data_repo from '../factory/data_repo';
@@ -53,7 +52,7 @@ class Controller {
    */
   bind_listener() {
     this.interactor.bind_listener(this.canvas);
-    window.onpopstate = setup_page_by_location.bind(null, this);
+    window.onpopstate = this.set_treestate.bind(this);
   }
   setup_canvas(canvas) {
     this.canvas = canvas;

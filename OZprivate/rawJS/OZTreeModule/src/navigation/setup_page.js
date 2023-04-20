@@ -1,4 +1,3 @@
-import { parse_state } from './utils';
 import data_repo from '../factory/data_repo';
 import { UserInterruptError } from '../errors';
 import tree_state from '../tree_state';
@@ -7,14 +6,6 @@ import config from '../global_config';
 import tree_settings from '../tree_settings';
 import { get_largest_visible_node, parse_url_base } from './utils';
 import { resolve_pinpoints, node_to_pinpoint } from './pinpoint';
-
-/**
- * Convert window.location into a state object and configure the treeviewer to match
- */
-function setup_page_by_location(controller) {
-  let state = parse_state(window.location);
-  return setup_page_by_state(controller, state);
-}
 
 function setup_page_by_state(controller, state) {
   var init = !tree_state.url_parsed;
@@ -149,5 +140,5 @@ function tree_current_state_obj(controller, {record_popup = null}) {
 }
 
 
-export { setup_page_by_location, tree_current_state_obj };
+export { setup_page_by_state, tree_current_state_obj };
 

@@ -4,11 +4,25 @@
 import config from '../global_config';
 import data_repo from '../factory/data_repo';
 import { record_url } from '../navigation/record';
-import { get_largest_visible_node } from '../navigation/utils';
+import { parse_state, get_largest_visible_node } from '../navigation/utils';
+import { setup_page_by_state } from '../navigation/setup_page';
 import tree_settings from '../tree_settings';
 import tree_state from '../tree_state';
 
 export default function (Controller) {
+  /**
+   * Configure the treeviewer based on either:
+   * * The current page URL (by default)
+   * * A Location/URL object
+   * * A URL string
+   * * A querystring (starting with '?')
+   * * A state object as accepted by setup_page_by_state()
+   * @return Promise for when work is finished
+   */
+  Controller.prototype.set_treestate = function (location) {
+    return setup_page_by_state(this, parse_state(location || window.location));
+  }
+
   /**
    * Set the language used in the tree display. This should also change the 
    * language for results requested through the API.
