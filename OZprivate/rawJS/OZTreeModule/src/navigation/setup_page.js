@@ -17,29 +17,30 @@ function setup_page_by_location(controller) {
 }
 
 function setup_page_by_state(controller, state) {
-  if (state.image_source) controller.set_image_source(state.image_source, true)
-  if (state.lang) controller.set_language(state.lang, true)
-  if (state.search_jump_mode) controller.set_search_jump_mode(state.search_jump_mode)
+  var init = !tree_state.url_parsed;
+  if (state.image_source) controller.set_image_source(state.image_source, init)
+  if (state.lang) controller.set_language(state.lang, init)
+  if (state.search_jump_mode) controller.set_search_jump_mode(state.search_jump_mode, init)
   if (state.title) document.title = unescape(state.title);
   if (state.home_ott_id) config.home_ott_id = state.home_ott_id
   if (state.ssaver_inactive_duration_seconds) tree_settings.ssaver_inactive_duration_seconds = state.ssaver_inactive_duration_seconds
-  if (state.cols) controller.change_color_theme(state.cols, true)
+  if (state.cols) controller.change_color_theme(state.cols, init)
 
   controller.close_all();
 
   var p = Promise.resolve();
   if (state.vis_type) {
     // Change view type (implicitly rebuilding tree)
-    p = controller.change_view_type(state.vis_type, true);
+    p = controller.change_view_type(state.vis_type, init);
   } else {
     // Do initial build of default tree
-    controller.rebuild_tree();
+    if (init) controller.rebuild_tree();
   }
   return p.then(function () {
     // Perform initial highlighting if asked
     return controller.highlight_replace(state.highlights);
   }).then(function () {
-      return resolve_pinpoints(state.pinpoint);
+      return state.pinpoint ? resolve_pinpoints(state.pinpoint) : {};
   }).then(function (pp) {
     let id = pp.ozid;
     tree_state.url_parsed = true;
