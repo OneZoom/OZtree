@@ -198,6 +198,8 @@ function parse_querystring(state, querystring) {
       // User wants a highlight marking
       if (!state.highlights) state.highlights = [];
       state.highlights.push(decodeURIComponent(querystring[i].substring(querystring[i].indexOf("=") + 1)));
+      // Remove empty highlights, so we can use "?highlights=" to trigger clearing of highlights
+      if (!state.highlights[state.highlights.length - 1]) state.highlights.pop();
     } else if (/^tour=/.test(querystring[i])) {
       // User wants a tour
       state.tour_setting = decodeURIComponent(querystring[i].substring(querystring[i].indexOf("=") + 1));

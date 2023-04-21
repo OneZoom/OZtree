@@ -60,6 +60,13 @@ test('parse_state', function (t) {
         home_ott_id: '@aves',
     }, "Can parse an already-parsed state object");
 
+    t.deepEqual(parse_state("?highlight="), {
+        highlights: [ ],
+    }, "'highlight=' generates an empty highlight array (to clear highlights");
+
+    t.deepEqual(parse_state("?"), {
+    }, "A single question mark generates a do-nothing state");
+
     t.end();
 });
 

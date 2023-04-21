@@ -29,7 +29,7 @@ function setup_page_by_state(controller, state) {
   }
   return p.then(function () {
     // Perform initial highlighting if asked
-    return controller.highlight_replace(state.highlights);
+    return state.hasOwnProperty('highlights') ? controller.highlight_replace(state.highlights) : null;
   }).then(function () {
       return state.pinpoint ? resolve_pinpoints(state.pinpoint) : {};
   }).then(function (pp) {
