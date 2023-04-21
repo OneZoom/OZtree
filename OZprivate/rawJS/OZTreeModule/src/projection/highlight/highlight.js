@@ -163,10 +163,15 @@ export function highlight_propogate(node) {
 }
 
 /**
- * Return active highlight objects for (node)
+ * Return active highlight objects for (node), collapse consecutive uses of the same colour
  */
 export function highlights_for(node) {
   var highlights = current_highlights();
 
-  return highlights.filter((x, i) => node.highlight_status[i] === ACTIVE);
+  return (highlights
+         // Only active highlights
+         .filter((x, i) => node.highlight_status[i] === ACTIVE)
+         // Only nodes where colour is different
+         .filter((x, i, ar) => i === 0 || ar[i - 1].color !== x.color)
+         );
 }

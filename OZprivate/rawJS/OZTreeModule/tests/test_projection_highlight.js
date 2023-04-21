@@ -168,6 +168,65 @@ test('update_highlights', function (test) {
 });
 
 
+test('highlights_for', function (test) {
+  var nodes = {};
+
+  return populate_factory().then((factory) => {
+    // Gather some test points
+    return resolve_pinpoints([
+      '@biota=93302',
+    ]).then((pps) => pps.forEach((pp) => {
+        nodes[pp.latin_name] = factory.dynamic_loading_by_metacode(pp.ozid)
+    }));
+
+  }).then(function () {
+    return resolve_highlights([
+      'path:rgb(1)@dobsonia_moluccensis=1032365',
+      'path:rgb(1)@pteropus=813030',
+      'path:rgb(1)@acerodon=635024',
+      'path:rgb(2)@pteropus_vampyrus=448935',
+      'path:rgb(3)@chiroptera=574724',
+      'path:rgb(2)@pteropus_lylei=630309',
+    ], fake_picker).then((hs) => highlight_update(nodes.biota, hs)).then(() => {
+      function hf(highlight_status) {
+        return highlights_for({ highlight_status: highlight_status.split("") }).map((h) => h.str);
+      }
+
+      test.deepEqual(hf('aaaaaa'), [
+        'path:rgb(1)@dobsonia_moluccensis=1032365',
+        'path:rgb(2)@pteropus_vampyrus=448935',
+        'path:rgb(3)@chiroptera=574724',
+        'path:rgb(2)@pteropus_lylei=630309',
+      ], "All colours active, second/third entry not included as colour matches");
+
+      test.deepEqual(hf('paappp'), [
+        'path:rgb(1)@pteropus=813030',
+      ], "Disable first, second present but not third");
+
+      test.deepEqual(hf('ppaaaa'), [
+        'path:rgb(1)@acerodon=635024',
+        'path:rgb(2)@pteropus_vampyrus=448935',
+        'path:rgb(3)@chiroptera=574724',
+        'path:rgb(2)@pteropus_lylei=630309',
+      ], "Disable first/second, third present");
+
+      // NB: I don't think this is ideal behaviour, ideally we'd consider these different
+      //     but the logic to do that is too complicated for a hot path such as this.
+      test.deepEqual(hf('ppaapa'), [
+        'path:rgb(1)@acerodon=635024',
+        'path:rgb(2)@pteropus_vampyrus=448935',
+      ], "Disable rgb(3), collapse non-consecutive rgb(2)'s");
+    });
+
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
 
 test.onFinish(function() {
   // NB: Something data_repo includes in is holding node open.
