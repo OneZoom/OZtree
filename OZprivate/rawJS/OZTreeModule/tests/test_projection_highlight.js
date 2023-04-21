@@ -7,7 +7,11 @@ import { populate_data_repo, get_ozid } from './util_data_repo.js'
 import { populate_factory } from './util_factory'
 import test from 'tape';
 
-function fake_picker(x) { return x.map((str) => str.replace(/.*:/, '')).join(",") + ":" + x.length; }
+function fake_picker(x) {
+  // Named colours are only valid if integer
+  if (typeof x === 'string') return (isFinite(parseInt(x, 10)) ? 'color(' + x + ')' : undefined);
+  return x.map((str) => str.replace(/.*:/, '')).join(",") + ":" + x.length;
+}
 
 function test_highlights_for(test, node, highlight_strs) {
   test.deepEqual(
@@ -54,9 +58,11 @@ test('resolve_highlights', function (test) {
     return resolve_highlights([
       'path:blue@_ozid=1234',
       'fan:pink@_ozid=123',
+      'fan:4@_ozid=9090',
     ], fake_picker).then((highlights) => test.deepEqual(highlights, [
       { str: 'path:blue@_ozid=1234', type: 'path', color: 'blue', pinpoints: [ '@_ozid=1', '@_ozid=1234' ], ozids: [ 1, 1234 ] },
       { str: 'fan:pink@_ozid=123', type: 'fan', color: 'pink', pinpoints: [ '@_ozid=123' ], ozids: [ 123 ] },
+      { str: 'fan:4@_ozid=9090', type: 'fan', color: 'color(4)', pinpoints: [ '@_ozid=9090' ], ozids: [ 9090 ] },
     ]));
 
   }).then(function () {

@@ -15,7 +15,7 @@
  * A highlight object contains:
  * * "str": The original highlight string, e.g. ``path:@Mammalia``
  * * "type": The type portion of the highlight string, e.g. ``path``
- * * "color": The color from the highlight string, or the assigned color, e.g. ``rgb(0,0,0)``
+ * * "color": The color from the highlight string, the name of a colour in the colour scheme, or the assigned color, e.g. ``rgb(0,0,0)``
  * * "pinpoints": The pinpoints from the highlight string, split into an array, e.g. ``["@Mammalia"]``
  * * "ozids": Array of numeric OZids matching each pinpoint, e.g. ``[12345]``
  *
@@ -50,7 +50,8 @@ export function resolve_highlights(highlights, color_picker) {
     if (!m) throw new Error("Unparsable highlight: '" + h.str + "'");
 
     h.type = h.type || m.groups.type;
-    h.color = h.color || m.groups.color;  // NB: Preserve assigned colours
+    // NB: Preserve assigned colours, give the color picker a chance to resolve the color
+    h.color = h.color || color_picker(m.groups.color || '') || m.groups.color;
     h.pinpoints = h.pinpoints || m.groups.pinpoints.split(/(?=@)/);
 
     if (h.type === 'path' && h.pinpoints.length === 1) {
