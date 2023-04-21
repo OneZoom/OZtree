@@ -11,6 +11,7 @@ import tree_state from '../tree_state';
  * @param Largest node that matches condition, or null if none found
  */
 function get_largest_visible_node(node, condition=null) {
+  if (!node) return null;  // Trying to record_url() before the tree is setup
   let condition_satisfy = !condition || condition(node);
 
   function get_area_in_screen(node) {
