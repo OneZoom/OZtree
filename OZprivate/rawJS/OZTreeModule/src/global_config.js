@@ -121,11 +121,6 @@ config.gc = {
   detach_level: 2,
 }
 
-config.marked_area_color_map = []
-// this will store all the colour map for all marked areas in the tree
-// it could later be edited by special functions or by the end users, but for now we'll automatically manage addition and subtraction from the array
-// the array defines the order and colour of drawing paths to marked areas
-
 config.projection = {
   partl2: 0.1,
   interior_circle_draw: true,

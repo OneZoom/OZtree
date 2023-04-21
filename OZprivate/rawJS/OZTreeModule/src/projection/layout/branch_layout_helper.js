@@ -5,6 +5,7 @@ import PathShape from '../shapes/path_shape';
 import LineToShape from '../shapes/line_to_shape';
 import MoveToShape from '../shapes/move_to_shape';
 import config from '../../global_config';
+import { highlights_for } from '../highlight/highlight.js';
 
 const THIN = true;
 const NORMAL = false;
@@ -31,9 +32,9 @@ class BranchLayoutBase {
    */
   get_markings_list(node) {
       // define an array to contain all the color markings we need
-      return node.markings.map((m, i) => ({
+      return highlights_for(node).map((m, i, ar) => ({
           strokeStyle: m.color,
-          widthProportion: node.markings.length === 1 ? 0.7 : (node.markings.length-i)/(node.markings.length+1.0),
+          widthProportion: ar.length === 1 ? 0.7 : (ar.length-i)/(ar.length+1.0),
       }));
   }
 

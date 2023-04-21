@@ -119,13 +119,13 @@ export default function (Controller) {
 
       // Get pre-rebuild state, so we can restore the rough position by ID
       // Get largest node, use this to restore position
-      let n = get_largest_visible_node(this.root);
-      let prev_ozid = n.ozid;
+      let n = !init ? get_largest_visible_node(this.root) : null;
 
-      tree_settings.rebuild_tree(vis, prev, this).then(function () {
-        if (!init) return(self.init_move_to(prev_ozid, "leap"));
+      return tree_settings.rebuild_tree(vis, prev, this).then(function () {
+        if (!init) return(self.init_move_to(n.ozid, "leap"));
       }.bind(this));
     }
+    return Promise.resolve();
   }
   Controller.prototype.get_view_type = function () {
     return (tree_settings.vis);

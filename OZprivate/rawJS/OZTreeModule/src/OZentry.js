@@ -136,11 +136,11 @@ function setup(
           cut_threshold: cut_threshold || 10000,
           tree_date: tree_date || "{}"
         })
-        oz.controller.rebuild_tree()
 
         //Jump or fly to a place in the tree marked by the url when the page loads.
-        setup_page_by_location(oz.controller)
-        oz.controller.find_proper_initial_threshold()
+        setup_page_by_location(oz.controller).then(function () {
+          oz.controller.find_proper_initial_threshold()
+        });
         //listen to user mouse, touch, icon click, window resize and user navigation events.
         oz.controller.bind_listener()
         //start garbage collection of tree to keep the size of the tree in memory reasonable

@@ -15,17 +15,17 @@ class PolytomyPreCalc {
     else return this._viewtype;
   }
     
-  pre_calc(node, from_root) {
-    let angle = from_root ? Math.PI*(3/2) : node.arca;
-    if (from_root) {
+  pre_calc(node) {
+    if (node.is_root) {
       // Control points on top of start/end, i.e. line should be straight
-      node.bezex = node.bezc2x = Math.cos(angle);
-      node.bezey = node.bezc2y = Math.sin(angle);
+      node.arca = Math.PI*(3/2);
+      node.bezex = node.bezc2x = Math.cos(node.arca);
+      node.bezey = node.bezc2y = Math.sin(node.arca);
       node.bezsx = node.bezc1x = 0;
       node.bezsy = node.bezc1y = -0.4;
       node.bezr = 0.02;
     }
-    _pre_calc(node, angle);
+    _pre_calc(node);
   }
     
   setup() {
@@ -34,8 +34,7 @@ class PolytomyPreCalc {
     
 }
 
-function _pre_calc(node, angle) {
-  node.arca = angle;
+function _pre_calc(node) {
   node.arcx = node.bezex;
   node.arcy = node.bezey;
   // James
@@ -91,11 +90,12 @@ function _pre_calc(node, angle) {
 
       node.children[i].bezex = node.children[i].bezc2x = Math.cos(child_angle) * (distance)/newscale;
       node.children[i].bezey = node.children[i].bezc2y =  Math.sin(child_angle) * (distance)/newscale;
+      node.children[i].arca = child_angle;
 
       node.children[i].bezsx = node.children[i].bezc1x =  0; // same position as the node itself.
       node.children[i].bezsy = node.children[i].bezc1y =  0; // this is where it connects to the parent.
       node.children[i].bezr = node.bezr;
-      _pre_calc(node.children[i], child_angle);
+      _pre_calc(node.children[i]);
     }
   } else {
       node.arcr = 0.75;

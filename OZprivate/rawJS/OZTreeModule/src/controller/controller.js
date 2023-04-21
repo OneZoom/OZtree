@@ -3,6 +3,7 @@ import * as position_helper from '../position_helper';
 import config from '../global_config';
 import tree_state from '../tree_state';
 import install_controller_dom from './controller_dom';
+import install_controller_highlight from './controller_highlight';
 import install_controller_loc from './controller_loc';
 import install_controller_search from './controller_search';
 import install_controller_anim from './controller_anim';
@@ -42,7 +43,7 @@ class Controller {
   rebuild_tree() {
     this.factory.build_tree();
 
-    this.dynamic_load_and_calc(this.root.ozid);
+    this.dynamic_load_and_calc(this.root.ozid, { generation_at_searched_node: 20 });
     this.re_calc();
   }
   
@@ -177,10 +178,10 @@ class Controller {
       precalc_from = this.root;
     }
 
-    this.projection.pre_calc(precalc_from, precalc_from.upnode === null);
+    this.projection.pre_calc(precalc_from);
     this.projection.calc_horizon(precalc_from)
     this.projection.update_parent_horizon(precalc_from)
-    this.projection.marked_area(precalc_from, config.marked_area_color_map)
+    this.projection.highlight_propogate(precalc_from)
 
     return node;
   }
@@ -205,6 +206,7 @@ class Controller {
 install_controller_loc(Controller);
 install_controller_search(Controller);
 install_controller_dom(Controller);
+install_controller_highlight(Controller);
 install_controller_anim(Controller);
 install_controller_interactor(Controller);
 install_controller_tour(Controller);

@@ -6,6 +6,11 @@ import { populate_data_repo } from './util_data_repo.js'
 import { populate_factory } from './util_factory'
 import test from 'tape';
 
+function test_pinpoint(test, input, output) {
+  output.pinpoint = input;
+  return resolve_pinpoints(input).then((pp) => test.deepEqual(pp, output, input));
+}
+
 test('resolve_pinpoints:ott', function (test) {
   return populate_data_repo().then(() => {
     // Resolve single pinpoint
@@ -38,6 +43,21 @@ test('resolve_pinpoints:ott', function (test) {
   })
 });
 
+test('resolve_pinpoints:ozid', function (test) {
+  return populate_data_repo().then(() => {
+    return test_pinpoint(test, '@_ozid=836250', {
+      ozid: 836250,
+    });
+
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
 test('resolve_pinpoints:common_ancestor', function (test) {
   var factory;
   return populate_factory().then((f) => {
@@ -45,26 +65,23 @@ test('resolve_pinpoints:common_ancestor', function (test) {
     factory = f;
 
   }).then(function () {
-    // Resolve single pinpoint
-    return resolve_pinpoints('@_ancestor=988790-824869').then((pp) => test.deepEqual(pp, {
-      pinpoint: '@_ancestor=988790-824869',
+    return test_pinpoint(test, '@_ancestor=988790-824869', {
       sub_pinpoints: [
         { pinpoint: '988790', ott: 988790, ozid: 836250 },
         { pinpoint: '824869', ott: 824869, ozid: 836247 },
       ],
       ozid: 836246,
-    }, "@_ancestor=988790-824869"));
+    });
 
   }).then(function () {
     // Ancestor of a node below another is the first node
-    return resolve_pinpoints('@_ancestor=244265-48401').then((pp) => test.deepEqual(pp, {
-      pinpoint: '@_ancestor=244265-48401',
+    return test_pinpoint(test, '@_ancestor=244265-48401', {
       sub_pinpoints: [
         { pinpoint: '244265', ott: 244265, ozid: 834744 },  // Mammals
         { pinpoint: '48401', ott: 48401, ozid: -836261 },  // Fijian monkey-faced bat (Mirimiri acrodonta)
       ],
       ozid: 834744,  // NB: The common ancestor is still mammals
-    }, "@_ancestor=244265-48401"));
+    });
 
   }).then(function () {
     test.end();

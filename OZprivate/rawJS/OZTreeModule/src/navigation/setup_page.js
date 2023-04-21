@@ -17,7 +17,6 @@ function setup_page_by_location(controller) {
 }
 
 function setup_page_by_state(controller, state) {
-  if (state.vis_type) controller.change_view_type(state.vis_type, true);
   if (state.image_source) controller.set_image_source(state.image_source, true)
   if (state.lang) controller.set_language(state.lang, true)
   if (state.search_jump_mode) controller.set_search_jump_mode(state.search_jump_mode)
@@ -28,10 +27,20 @@ function setup_page_by_state(controller, state) {
 
   controller.close_all();
 
-  // Perform initial marking if asked
-  if (state.initmark) resolve_pinpoints(state.initmark).then(pp => controller.mark_area(pp.ozid));
-
-  return resolve_pinpoints(state.pinpoint).then(function (pp) {
+  var p = Promise.resolve();
+  if (state.vis_type) {
+    // Change view type (implicitly rebuilding tree)
+    p = controller.change_view_type(state.vis_type, true);
+  } else {
+    // Do initial build of default tree
+    controller.rebuild_tree();
+  }
+  return p.then(function () {
+    // Perform initial highlighting if asked
+    return controller.highlight_replace(state.highlights);
+  }).then(function () {
+      return resolve_pinpoints(state.pinpoint);
+  }).then(function (pp) {
     let id = pp.ozid;
     tree_state.url_parsed = true;
     if (id !== undefined) {
@@ -94,6 +103,8 @@ function tree_current_state_obj(controller, {record_popup = null}) {
 
   // Choose one with an OTT by preference
   let node = get_largest_visible_node(controller.root, (node) => !!node.ott) || get_largest_visible_node(controller.root);
+  // NB: Still possible to find nothing, e.g. with a manually tampered URL that positions xp/wp/ws at an empty point in the tree
+  if (!node) return {};
 
   // ----- Pinpoint / path
   state.pinpoint = node_to_pinpoint(node)
@@ -121,9 +132,11 @@ function tree_current_state_obj(controller, {record_popup = null}) {
   }
   if (!tree_settings.is_default_ssaver_inactive_duration_seconds()) state.ssaver_inactive_duration_seconds = tree_settings.ssaver_inactive_duration_seconds
 
-  // init/initmark aren't stored anywhere, pull them out of existing URL
+  state.highlights = controller.highlight_list();
+  if (state.highlights.length === 0) delete state.highlights;
+
+  // init isn't stored anywhere, pull them out of existing URL
   if (win_sp.get('init')) state.init = win_sp.get('init');
-  if (win_sp.get('initmark')) state.initmark = win_sp.get('initmark');
 
   // Preserve all custom parts of current querystring
   state.custom_querystring = {};

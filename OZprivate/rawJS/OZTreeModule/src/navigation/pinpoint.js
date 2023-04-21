@@ -11,10 +11,11 @@ import data_repo from '../factory/data_repo';
  * ``@name=12345``: Where name is a latin name, 12345 an OTT
  * ``@=12345``: Where 12345 is an OTT
  * ``@_ancestor=1234-6789``: Where 1234-6789 are OTTs
+ * ``@_ozid=123456``: Where 123456 is an OZid / metacode
  * If required, API lookups will be made to fill in an gaps in local knowledge.
  *
  * @param pinpoint_or_pinpoints A pinpoint string or list of pinpoint strings
- * @return {Promise} Resolves to an OZid or list of OZids, depending on what was handed in
+ * @return {Promise} Resolves to a pinpoint dict or list of pinpoint dicts, depending on what was handed in
  */
 export function resolve_pinpoints(pinpoint_or_pinpoints) {
   let pinpoints = Array.isArray(pinpoint_or_pinpoints) ? pinpoint_or_pinpoints : [pinpoint_or_pinpoints];
@@ -44,6 +45,9 @@ export function resolve_pinpoints(pinpoint_or_pinpoints) {
       if (isNaN(parseInt(parts[0]))) {
         out.latin_name = parts[0];
       }
+    } else if (parts[0] === '_ozid') {
+      // Raw OZID
+      out.ozid = parseInt(parts[1], 10);
     } else if (parts[0] === '_ancestor') {
       // Common-ancestor lookup, add extra lookups to list of things to get
       out.sub_pinpoints = parts[1].split('-').map((sub_ott) => {

@@ -887,6 +887,8 @@ function setupUI() {
         }
         //must look up the names & values via the API
         onezoom.search_manager.lookup_nodes(ids, function(result) {
+           // Reconstitute compile_searchbox_data() format
+           var OZIDin = result[2];
            add_advanced_searchbox(result, colours[OZIDin]);
         },'best_pd');
         toggleAdvancedSearch(true);

@@ -37,7 +37,8 @@ export function populate_data_repo(tree_serial = '25589581') {
       });
 
       // Add some dummy data so we can look up some IDs / OTTs, captured output from node_details
-      data_repo.populate_id_ott_map(node_details_fruit_bat);
+      data_repo.update_metadata(node_details_fruit_bat);
+      // NB: We also mark these nodes as detail_fetched in util_factory
 
       resolve(data_repo);
     }

@@ -161,8 +161,13 @@ function parse_querystring(state, querystring) {
       // User wants a given colour scheme
       state.cols = querystring[i].substring(querystring[i].indexOf("=") + 1);
     } else if (/^initmark=/.test(querystring[i])) {
-      // User wants an initial marking
-      state.initmark = decodeURIComponent(querystring[i].substring(querystring[i].indexOf("=") + 1));
+      // Decode initmark parameter for backward compatibility
+      if (!state.highlights) state.highlights = [];
+      state.highlights.push('path:@_ozid=' + decodeURIComponent(querystring[i].substring(querystring[i].indexOf("=") + 1)));
+    } else if (/^highlight=/.test(querystring[i])) {
+      // User wants a highlight marking
+      if (!state.highlights) state.highlights = [];
+      state.highlights.push(decodeURIComponent(querystring[i].substring(querystring[i].indexOf("=") + 1)));
     } else if (/^tour=/.test(querystring[i])) {
       // User wants a tour
       state.tour_setting = decodeURIComponent(querystring[i].substring(querystring[i].indexOf("=") + 1));
@@ -182,7 +187,7 @@ function deparse_querystring(state) {
   if (state.home_ott_id) sp.set('otthome', state.home_ott_id);
   if (state.ssaver_inactive_duration_seconds) sp.set('ssaver', state.ssaver_inactive_duration_seconds);
   if (state.cols) sp.set('cols', state.cols);
-  if (state.initmark) sp.set('initmark', state.initmark);
+  (state.highlights || []).forEach((x) => sp.append('highlight', x));
   if (state.tour_setting) sp.set('tour', state.tour_setting);
 
   if (state.custom_querystring) {

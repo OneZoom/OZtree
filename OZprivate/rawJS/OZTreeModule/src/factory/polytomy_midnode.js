@@ -39,8 +39,8 @@ class PolytomyMidnode extends Midnode {
   }
 
   // Override: For every 5 children, decrease depth to search by an extra point
-  develop_children(depth, apart_from) {
-    super.develop_children(Math.max(0, depth - Math.floor(this.full_children_length / 5) ), apart_from);
+  develop_children(depth) {
+    super.develop_children(Math.max(0, depth - Math.floor(this.full_children_length / 5) ));
   }
 
 }

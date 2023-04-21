@@ -21,5 +21,8 @@ test('pick_marked_area_color', function (t) {
         'hsl(0, 100%, 100%)',
     ], null), 'hsl(1, 100%, 100%)', "Wrapped, picked second colour");
 
+    t.deepEqual(color_theme.pick_marked_area_color('2', null), 'hsl(2, 100%, 100%)', "Picked colour by name");
+    t.deepEqual(color_theme.pick_marked_area_color('99', null), undefined, "Unknown colour name");
+
     t.end();
 });

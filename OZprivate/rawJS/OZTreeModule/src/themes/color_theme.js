@@ -15,7 +15,7 @@ class ColorTheme {
    * inside before returning. If the color already has an alpha channel this
    * will override anything the code provides.
    */
-  get_color(name, node, alpha) {
+  get_color(name, node, alpha, missing_okay = false) {
     //name here is like 'interior.text.stroke' or 'branch.stroke' .....
     let color = resolve(this.theme, name);
     if (!alpha) {
@@ -24,23 +24,32 @@ class ColorTheme {
     
     if (typeof color === "function") {
       return color(node, alpha);
-    } else if (typeof color === "string") {
+    }
+    if (typeof color === "string") {
       if (alpha !== 1) {
         // Add alpha to end of any rgb() or hsl() color
         color = color.replace(/(rgb|hsl)\((.*)\)/, "$1a($2," + alpha + ")");
       }
       return color;
-    } else {
-      throw new Error(`Can't find color ${name}. Please make sure that you've defined ${name}`);
     }
+    if (missing_okay) {
+      return undefined;
+    }
+    throw new Error(`Can't find color ${name}. Please make sure that you've defined ${name}`);
   }
 
   /**
    * Pick a new colour from the branch.marked_area_pallette, based on what's already selected
-   * @param existing_colors Array Array of currently used HTML colour specs, e.g: ['rgb(...)', 'rgb(...)']
+   * @param existing_colors Array/String Either
+   *                        Array of currently used HTML colour specs, e.g: ['rgb(...)', 'rgb(...)']
+   *                        Name of color from color scheme
    * @param node Midnode A node to hand to get_color()
    */
   pick_marked_area_color(existing_colors, node) {
+    if (typeof existing_colors === 'string') {
+      // Handed a string, assume it's a name in the pallete
+      return this.get_color('branch.marked_area_pallette.' + existing_colors , node, undefined, true)
+    }
     // color needs to be automatically defined
     let existing_color_use_tally = [];
     // how many times have colours been used (want to minimise repeats)
