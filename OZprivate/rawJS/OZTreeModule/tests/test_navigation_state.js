@@ -1,7 +1,7 @@
 /**
-  * Usage: npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/test_navigation_utils.js
+  * Usage: npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/test_navigation_state.js
   */
-import { parse_state, deparse_state } from '../src/navigation/utils.js';
+import { parse_state, deparse_state } from '../src/navigation/state.js';
 import test from 'tape';
 
 test('parse_state', function (t) {

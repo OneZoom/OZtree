@@ -1,5 +1,6 @@
 import { tree_current_state_obj } from './setup_page';
-import { get_largest_visible_node, parse_state, deparse_state } from './utils';
+import { get_largest_visible_node } from './utils';
+import { parse_state, deparse_state } from './state';
 import config from '../global_config';
 
 let timer = null;

@@ -4,7 +4,8 @@
 import config from '../global_config';
 import data_repo from '../factory/data_repo';
 import { record_url } from '../navigation/record';
-import { parse_state, get_largest_visible_node } from '../navigation/utils';
+import { parse_state } from '../navigation/state';
+import { get_largest_visible_node } from '../navigation/utils';
 import { setup_page_by_state } from '../navigation/setup_page';
 import tree_settings from '../tree_settings';
 import tree_state from '../tree_state';

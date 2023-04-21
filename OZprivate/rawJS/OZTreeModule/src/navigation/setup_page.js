@@ -4,7 +4,8 @@ import tree_state from '../tree_state';
 import { global_button_action, click_on_button_cb } from '../button_manager';
 import config from '../global_config';
 import tree_settings from '../tree_settings';
-import { get_largest_visible_node, parse_url_base } from './utils';
+import { parse_url_base } from './state';
+import { get_largest_visible_node } from './utils';
 import { resolve_pinpoints, node_to_pinpoint } from './pinpoint';
 
 function setup_page_by_state(controller, state) {
