@@ -1,6 +1,6 @@
-import handler_htmlaudio from './HandlerHtmlAudio';
-import handler_vimeo from './HandlerVimeo';
-import handler_youtube from './HandlerYoutube';
+import handler_htmlaudio from './handler/HtmlAudio';
+import handler_vimeo from './handler/Vimeo';
+import handler_youtube from './handler/Youtube';
 import TourStopClass from './TourStop'
 import tree_state from '../tree_state';
 import { add_hook, remove_hook } from '../util';
