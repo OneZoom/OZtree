@@ -1,4 +1,3 @@
-import { parse_window_location } from './utils';
 import data_repo from '../factory/data_repo';
 import { UserInterruptError } from '../errors';
 import tree_state from '../tree_state';
@@ -8,38 +7,31 @@ import tree_settings from '../tree_settings';
 import { get_largest_visible_node, parse_url_base } from './utils';
 import { resolve_pinpoints, node_to_pinpoint } from './pinpoint';
 
-/**
- * Convert window.location into a state object and configure the treeviewer to match
- */
-function setup_page_by_location(controller) {
-  let state = parse_window_location();
-  return setup_page_by_state(controller, state);
-}
-
 function setup_page_by_state(controller, state) {
-  if (state.image_source) controller.set_image_source(state.image_source, true)
-  if (state.lang) controller.set_language(state.lang, true)
-  if (state.search_jump_mode) controller.set_search_jump_mode(state.search_jump_mode)
-  if (state.title) document.title = unescape(state.title);
-  if (state.home_ott_id) config.home_ott_id = state.home_ott_id
-  if (state.ssaver_inactive_duration_seconds) tree_settings.ssaver_inactive_duration_seconds = state.ssaver_inactive_duration_seconds
-  if (state.cols) controller.change_color_theme(state.cols, true)
+  var init = !tree_state.url_parsed;
+  if (state.hasOwnProperty('image_source')) controller.set_image_source(state.image_source, init)
+  if (state.hasOwnProperty('lang')) controller.set_language(state.lang, init)
+  if (state.hasOwnProperty('search_jump_mode')) controller.set_search_jump_mode(state.search_jump_mode, init)
+  if (state.hasOwnProperty('title')) document.title = unescape(state.title);
+  if (state.hasOwnProperty('home_ott_id')) config.home_ott_id = state.home_ott_id || null;
+  if (state.hasOwnProperty('ssaver_inactive_duration_seconds')) tree_settings.ssaver_inactive_duration_seconds = state.ssaver_inactive_duration_seconds || tree_settings.default.ssaver_inactive_duration_seconds
+  if (state.hasOwnProperty('cols')) controller.change_color_theme(state.cols, init)
 
   controller.close_all();
 
   var p = Promise.resolve();
-  if (state.vis_type) {
+  if (state.hasOwnProperty('vis_type')) {
     // Change view type (implicitly rebuilding tree)
-    p = controller.change_view_type(state.vis_type, true);
+    p = controller.change_view_type(state.vis_type, init);
   } else {
     // Do initial build of default tree
-    controller.rebuild_tree();
+    if (init) controller.rebuild_tree();
   }
   return p.then(function () {
     // Perform initial highlighting if asked
-    return controller.highlight_replace(state.highlights);
+    return state.hasOwnProperty('highlights') ? controller.highlight_replace(state.highlights) : null;
   }).then(function () {
-      return resolve_pinpoints(state.pinpoint);
+      return state.pinpoint ? resolve_pinpoints(state.pinpoint) : {};
   }).then(function (pp) {
     let id = pp.ozid;
     tree_state.url_parsed = true;
@@ -135,8 +127,7 @@ function tree_current_state_obj(controller, {record_popup = null}) {
   state.highlights = controller.highlight_list();
   if (state.highlights.length === 0) delete state.highlights;
 
-  // init isn't stored anywhere, pull them out of existing URL
-  if (win_sp.get('init')) state.init = win_sp.get('init');
+  // NB: We don't preserve the 'init' parameter here, so on first record_url it will dissappear.
 
   // Preserve all custom parts of current querystring
   state.custom_querystring = {};
@@ -148,5 +139,5 @@ function tree_current_state_obj(controller, {record_popup = null}) {
 }
 
 
-export { setup_page_by_location, tree_current_state_obj };
+export { setup_page_by_state, tree_current_state_obj };
 

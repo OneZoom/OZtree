@@ -1,12 +1,12 @@
 /**
   * Usage: npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/test_navigation_utils.js
   */
-import { parse_window_location, deparse_state } from '../src/navigation/utils.js';
+import { parse_state, deparse_state } from '../src/navigation/utils.js';
 import test from 'tape';
 
-test('parse_window_location', function (t) {
+test('parse_state', function (t) {
     function pwl(href) {
-        return parse_window_location(new URL(href));
+        return parse_state(new URL(href));
     }
 
     t.deepEqual(pwl("http://onezoom.example.com/life/@Myzopoda_aurita?pop=ol_6794"), {
@@ -43,6 +43,30 @@ test('parse_window_location', function (t) {
         highlights: ['fan:@biota', 'path:@_ozid=12345', 'fan:@mammalia'],
     }, "initmark included in highlights")
 
+    t.deepEqual(parse_state("http://onezoom.example.com/life/@Myzopoda_aurita?pop=ol_6794"), {
+        url_base: 'http://onezoom.example.com/life/',
+        pinpoint: '@Myzopoda_aurita',
+        tap_action: 'ow_leaf',
+        tap_ott_or_id: 6794,
+    }, "Can parse URL directly")
+
+    t.deepEqual(parse_state("?highlight=path:@biota&otthome=@aves"), {
+        highlights: [ 'path:@biota' ],
+        home_ott_id: '@aves',
+    }, "Can parse just a querystring by handing in a fake location object");
+
+    t.deepEqual(parse_state(parse_state("?highlight=path:@biota&otthome=@aves")), {
+        highlights: [ 'path:@biota' ],
+        home_ott_id: '@aves',
+    }, "Can parse an already-parsed state object");
+
+    t.deepEqual(parse_state("?highlight="), {
+        highlights: [ ],
+    }, "'highlight=' generates an empty highlight array (to clear highlights");
+
+    t.deepEqual(parse_state("?"), {
+    }, "A single question mark generates a do-nothing state");
+
     t.end();
 });
 
@@ -50,7 +74,7 @@ test('parse_window_location', function (t) {
 test('deparse_state', function (t) {
     function test_url_match(url, expected_href = url, message = expected_href + " unchanged") {
         t.deepEqual(
-            deparse_state(parse_window_location(new URL(url))).href,
+            deparse_state(parse_state(new URL(url))).href,
             expected_href,
             message,
         );

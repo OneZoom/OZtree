@@ -293,7 +293,7 @@ class TreeSettings {
     if (data_repo) {
       data_repo.clear_cached_vernaculars();
     }
-    if (controller) {
+    if (controller && controller.root) {
       refetch_node_details(controller.root); //empty caches to replace language-specific info (e.g. vernacular names)
     }
   }

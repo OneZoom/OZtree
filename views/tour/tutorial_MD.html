@@ -210,6 +210,7 @@ from applications.OZtree.modules.embed import media_embed
     
   <div class="container tour_container visible-transition_in"
        data-ott="99252"
+       data-qs_opts="highlight=path:@=229560&highlight=path:@=99252"
        data-fly_in_speed="0.4"
        data-transition_in_wait="1000"
        data-stop_wait="2000"
@@ -225,18 +226,6 @@ from applications.OZtree.modules.embed import media_embed
       <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44.766 33.871' height='128.016' width='169.194'><defs><marker id='a' orient='auto' overflow='visible'><path d='M-10.69-4.437L1.328-.017-10.69 4.401c1.92-2.61 1.909-6.18 0-8.84z' fill='#da0000' fill-rule='evenodd' stroke='#da0000' stroke-width='.6875' stroke-linejoin='round'/></marker></defs><path d='M155.575 132.45c26.598-.303 7.408-19.793 42.81-31.955' fill='none' stroke='#da0000' stroke-width='1.223' marker-end='url(#a)' transform='translate(-155.568 -99.19)'/></svg>
     </div>
   </div>
-  <script>
-    loading_tour.tourstop_observer(
-        "*[data-ott='99252']",
-        ['tsstate-transition_in', 'tsstate-active_wait'],
-        function (tour) {
-            tour.onezoom.controller.mark_area(tour.onezoom.data_repo.ott_id_map[229560]) //prev stop
-            tour.onezoom.controller.mark_area(tour.onezoom.data_repo.ott_id_map[99252])  //plants
-        }, function (tour) {
-            tour.onezoom.controller.clear_all_marked_areas()
-        }
-    )
-  </script> 
 
   <!-- NB: OTT 0 means return to start -->
   <div class="container tour_container visible-transition_in"

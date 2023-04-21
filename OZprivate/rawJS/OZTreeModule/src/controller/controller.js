@@ -5,6 +5,7 @@ import tree_state from '../tree_state';
 import install_controller_dom from './controller_dom';
 import install_controller_highlight from './controller_highlight';
 import install_controller_loc from './controller_loc';
+import install_controller_navigation from './controller_navigation';
 import install_controller_search from './controller_search';
 import install_controller_anim from './controller_anim';
 import install_controller_interactor from './controller_interactor';
@@ -14,7 +15,6 @@ import get_interactor from '../interactor/interactor';
 import * as renderer from '../render/renderer';
 import get_projection from '../projection/projection';
 import {get_factory} from '../factory/factory';
-import { setup_page_by_location } from '../navigation/setup_page';
 import { record_url_delayed } from '../navigation/record';
 import { add_hook, call_hook} from '../util/index';
 import data_repo from '../factory/data_repo';
@@ -52,7 +52,7 @@ class Controller {
    */
   bind_listener() {
     this.interactor.bind_listener(this.canvas);
-    window.onpopstate = setup_page_by_location.bind(null, this);
+    window.onpopstate = this.set_treestate.bind(this);
   }
   setup_canvas(canvas) {
     this.canvas = canvas;
@@ -204,6 +204,7 @@ class Controller {
  * In order to keep the controller file small, I split its prototypes in several files and call the following functions to add these prototypes on Controller.
  */
 install_controller_loc(Controller);
+install_controller_navigation(Controller);
 install_controller_search(Controller);
 install_controller_dom(Controller);
 install_controller_highlight(Controller);

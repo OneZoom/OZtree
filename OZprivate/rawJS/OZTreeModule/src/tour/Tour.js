@@ -1,6 +1,7 @@
-import handler_htmlaudio from './HandlerHtmlAudio';
-import handler_vimeo from './HandlerVimeo';
-import handler_youtube from './HandlerYoutube';
+import handler_htmlaudio from './handler/HtmlAudio';
+import handler_qsopts from './handler/QsOpts';
+import handler_vimeo from './handler/Vimeo';
+import handler_youtube from './handler/Youtube';
 import TourStopClass from './TourStop'
 import tree_state from '../tree_state';
 import { add_hook, remove_hook } from '../util';
@@ -182,6 +183,7 @@ class Tour {
         });
       }),
       handler_htmlaudio(this),
+      handler_qsopts(this),
       handler_vimeo(this),
       handler_youtube(this),
     ]);
@@ -476,14 +478,20 @@ class Tour {
     } else {
       expected_states = new Set(expected_states)
       mo = new window.MutationObserver((mutationList, observer) => {
-        for(const mutation of mutationList) {
+        if (remove_fn) for(const mutation of mutationList) {
           const cur_active = expected_states.has(mutation.target.getAttribute(opts.attributeFilter[0]))
           const old_active = expected_states.has(mutation.oldValue)
 
-          if (cur_active && !old_active && add_fn) {
-            add_fn(this, mutation.target.tourstop, mutation.target)
-          } else if (!cur_active && old_active && remove_fn) {
+          if (!cur_active && old_active) {
             remove_fn(this, mutation.target.tourstop, mutation.target)
+          }
+        }
+        if (add_fn) for(const mutation of mutationList) {
+          const cur_active = expected_states.has(mutation.target.getAttribute(opts.attributeFilter[0]))
+          const old_active = expected_states.has(mutation.oldValue)
+
+          if (cur_active && !old_active) {
+            add_fn(this, mutation.target.tourstop, mutation.target)
           }
         }
       })
