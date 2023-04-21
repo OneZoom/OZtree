@@ -1,4 +1,38 @@
 /**
+ * OneZoom URL Parsing
+ *
+ * Functions to parse a *URL string* to/from a *state object*
+ *
+ * A OneZoom *URL string* is of the form:
+ *
+ *     /life/@biota=93302?cols=AT&...#x123...
+ *
+ * Where:
+ * * ``/life/`` is the treeviewer page used
+ * * ``@biota=93302`` is the pinpoint the treeviewer is focusing on,
+ *   see {@link navigation/pinpoint#resolve_pinpoints} for more detail on the format.
+ * * ``?cols=AT&..`` is the querystring *treestate*, see below
+ * * ``#x123`` is fine-grained adjustment of where the focal node should be on-screen.
+ *
+ * The treestate querystring can contain any of the following parts, joined by ``&``:
+ * * ``pop``: Trigger a UI popup, a string of the form "(tab)-(OTT)" e.g. ``pop=ol_417950``
+ * * ``vis``: The tree visualisation style, e.g. ``vis=polytomy``
+ * * ``init``: The manner in which to head to the initial node, see {@link controller/controller_anim#init_move_to}, e.g. ``init=pzoom``
+ * * ``lang``: A 2-letter ISO 639-1 language code, e.g. ``lang=en``
+ * * ``img``: Image source, 'best_verified', 'best_pd', or 'best_any', e.g. ``img=best_pd``
+ * * ``anim``: How to navigate to search results, ``anim=jump`` or ``anim=flight``
+ * * ``otthome``: The "home" pinpoint, i.e. where you go on clicking reset, e.g. ``otthome=@aves``
+ * * ``ssaver``: Screensaver inactive duration in seconds, e.g. ``ssaver=60``
+ * * ``highlight``: Highlight strings to apply to a tree, can be used multiple times. See {@link projection/highlight/highlight}, e.g. ``highlight=path:@aves&highlight=path:@mammalia``
+ * * ``tour``: A tour URL to play, e.g. ``tour=/tour/data.html/superpowers``
+ *
+ * The following parameters are deprecated:
+ * * ``initmark``: Equivalent to ``highlight=path:_ozid=(x)``
+ *
+ * @module navigation/state
+ */
+
+/**
  * Parse location into a state object. Location can be one of:
  * * A (window.)location or URL object
  * * A querystring beginning with ?
