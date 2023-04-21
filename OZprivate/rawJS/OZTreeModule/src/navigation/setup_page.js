@@ -9,18 +9,18 @@ import { resolve_pinpoints, node_to_pinpoint } from './pinpoint';
 
 function setup_page_by_state(controller, state) {
   var init = !tree_state.url_parsed;
-  if (state.image_source) controller.set_image_source(state.image_source, init)
-  if (state.lang) controller.set_language(state.lang, init)
-  if (state.search_jump_mode) controller.set_search_jump_mode(state.search_jump_mode, init)
-  if (state.title) document.title = unescape(state.title);
-  if (state.home_ott_id) config.home_ott_id = state.home_ott_id
-  if (state.ssaver_inactive_duration_seconds) tree_settings.ssaver_inactive_duration_seconds = state.ssaver_inactive_duration_seconds
-  if (state.cols) controller.change_color_theme(state.cols, init)
+  if (state.hasOwnProperty('image_source')) controller.set_image_source(state.image_source, init)
+  if (state.hasOwnProperty('lang')) controller.set_language(state.lang, init)
+  if (state.hasOwnProperty('search_jump_mode')) controller.set_search_jump_mode(state.search_jump_mode, init)
+  if (state.hasOwnProperty('title')) document.title = unescape(state.title);
+  if (state.hasOwnProperty('home_ott_id')) config.home_ott_id = state.home_ott_id || null;
+  if (state.hasOwnProperty('ssaver_inactive_duration_seconds')) tree_settings.ssaver_inactive_duration_seconds = state.ssaver_inactive_duration_seconds || tree_settings.default.ssaver_inactive_duration_seconds
+  if (state.hasOwnProperty('cols')) controller.change_color_theme(state.cols, init)
 
   controller.close_all();
 
   var p = Promise.resolve();
-  if (state.vis_type) {
+  if (state.hasOwnProperty('vis_type')) {
     // Change view type (implicitly rebuilding tree)
     p = controller.change_view_type(state.vis_type, init);
   } else {

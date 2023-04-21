@@ -32,6 +32,7 @@ export default function (Controller) {
    *   or the 2-letter code with a region appended (e.g. 'en-GB')
    */
   Controller.prototype.set_language = function (lang, init = false) {
+    if (!lang) lang = '';
     if (lang !== config.lang) {
       try {
         tree_settings.change_language(lang, this, data_repo);
@@ -86,7 +87,7 @@ export default function (Controller) {
    * @memberof Controller
    */
   Controller.prototype.change_color_theme = function (color_theme, init = false) {
-      tree_settings.cols = color_theme;
+      tree_settings.cols = color_theme || tree_settings.default.cols;
       if (!init) {
           record_url(this, { replaceURL: true }, true);
           this.trigger_refresh_loop();
@@ -109,6 +110,9 @@ export default function (Controller) {
         clear_node_pics(node.children[i]);
       }
     }
+
+    // NB: Hard code default from data_repo, since after first call it's lost.
+    if (!image_source) image_source = "best_any";
     if (data_repo.image_source !== image_source) {
       data_repo.image_source = image_source;
       clear_node_pics(this.root);
@@ -125,6 +129,8 @@ export default function (Controller) {
   }
 
   Controller.prototype.set_search_jump_mode = function (search_jump_mode, init = false) {
+    // NB: Hard code default from config, since after first call it's lost.
+    if (!search_jump_mode) search_jump_mode = "flight";
     if (config.search_jump_mode !== search_jump_mode) {
       config.search_jump_mode = search_jump_mode;
       if (!init) {
