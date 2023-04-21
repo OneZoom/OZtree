@@ -103,6 +103,12 @@ export default function (Controller) {
   }
 
   Controller.prototype.set_image_source = function (image_source, init = false) {
+    function clear_node_pics(node) {
+      node.clear_pics();
+      for (let i = 0; i < node.children.length; i++) {
+        clear_node_pics(node.children[i]);
+      }
+    }
     if (data_repo.image_source !== image_source) {
       data_repo.image_source = image_source;
       clear_node_pics(this.root);

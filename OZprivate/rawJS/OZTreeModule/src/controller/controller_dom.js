@@ -116,10 +116,3 @@ function get_child_loc(node) {
     return childlocs[0];
   }
 }
-
-function clear_node_pics(node) {
-  node.clear_pics();
-  for (let i = 0; i < node.children.length; i++) {
-    clear_node_pics(node.children[i]);
-  }
-}
