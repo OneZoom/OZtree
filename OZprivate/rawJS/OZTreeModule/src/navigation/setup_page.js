@@ -127,8 +127,7 @@ function tree_current_state_obj(controller, {record_popup = null}) {
   state.highlights = controller.highlight_list();
   if (state.highlights.length === 0) delete state.highlights;
 
-  // init isn't stored anywhere, pull them out of existing URL
-  if (win_sp.get('init')) state.init = win_sp.get('init');
+  // NB: We don't preserve the 'init' parameter here, so on first record_url it will dissappear.
 
   // Preserve all custom parts of current querystring
   state.custom_querystring = {};
