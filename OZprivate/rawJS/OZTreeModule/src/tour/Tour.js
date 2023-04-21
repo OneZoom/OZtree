@@ -1,4 +1,5 @@
 import handler_htmlaudio from './handler/HtmlAudio';
+import handler_qsopts from './handler/QsOpts';
 import handler_vimeo from './handler/Vimeo';
 import handler_youtube from './handler/Youtube';
 import TourStopClass from './TourStop'
@@ -182,6 +183,7 @@ class Tour {
         });
       }),
       handler_htmlaudio(this),
+      handler_qsopts(this),
       handler_vimeo(this),
       handler_youtube(this),
     ]);

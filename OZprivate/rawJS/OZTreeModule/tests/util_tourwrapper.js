@@ -98,6 +98,9 @@ export function setup_tour(test, s, interaction = null, verbose_test = false) {
           fake_oz.cur_node = ozid;
         }));
       },
+      set_treestate: function (treestate) {
+        fake_oz.treestate = treestate;
+      },
     },
     utils : {
       largest_visible_node: function () { return fake_oz.cur_node; },
