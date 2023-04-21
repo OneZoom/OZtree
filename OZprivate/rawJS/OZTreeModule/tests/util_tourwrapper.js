@@ -58,6 +58,7 @@ export function setup_tour(test, s, interaction = null, verbose_test = false) {
   const fake_oz = {
     cur_node: 1,
     resolve_flight: null,
+    treestate: '',
 
     controller: {
       is_tree_visible: () => true,
@@ -99,6 +100,7 @@ export function setup_tour(test, s, interaction = null, verbose_test = false) {
         }));
       },
       set_treestate: function (treestate) {
+        log.push(["set_treestate:", treestate]);
         fake_oz.treestate = treestate;
       },
     },

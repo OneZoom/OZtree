@@ -478,14 +478,20 @@ class Tour {
     } else {
       expected_states = new Set(expected_states)
       mo = new window.MutationObserver((mutationList, observer) => {
-        for(const mutation of mutationList) {
+        if (remove_fn) for(const mutation of mutationList) {
           const cur_active = expected_states.has(mutation.target.getAttribute(opts.attributeFilter[0]))
           const old_active = expected_states.has(mutation.oldValue)
 
-          if (cur_active && !old_active && add_fn) {
-            add_fn(this, mutation.target.tourstop, mutation.target)
-          } else if (!cur_active && old_active && remove_fn) {
+          if (!cur_active && old_active) {
             remove_fn(this, mutation.target.tourstop, mutation.target)
+          }
+        }
+        if (add_fn) for(const mutation of mutationList) {
+          const cur_active = expected_states.has(mutation.target.getAttribute(opts.attributeFilter[0]))
+          const old_active = expected_states.has(mutation.oldValue)
+
+          if (cur_active && !old_active) {
+            add_fn(this, mutation.target.tourstop, mutation.target)
           }
         }
       })

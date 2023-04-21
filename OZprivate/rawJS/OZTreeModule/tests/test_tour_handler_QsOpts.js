@@ -4,6 +4,8 @@
 import handler_qsopts from '../src/tour/handler/QsOpts.js';
 import test from 'tape';
 
+import { setup_tour } from './util_tourwrapper';
+
 function fake_tour() {
   var fake_tour = { states: [], onezoom: { controller: { } } };
 
@@ -69,4 +71,104 @@ test('handler_qsopts', function (test) {
     test.fail(err);
     test.end();
   })
+});
+
+test('handler_qsopts:event_ordering', function (test) {
+  var t = setup_tour(test, `<div class="tour">
+    <div class="container" data-ott="91101" data-qs_opts="cols=AT"><h2>Tour stop 1</h2></div>
+    <div class="container" data-ott="92202" data-qs_opts="cols=AT"><h2>Tour stop 2</h2></div>
+    <div class="container" data-ott="93303" data-qs_opts="cols=XT"><h2>Tour stop 3</h2></div>
+  </div>`, 'block', false);
+
+  return t.tour.start().then(function () {
+    return t.wait_for_tourstop_state(0, 'tsstate-transition_in');
+  }).then(function () {
+    test.deepEqual(t.log, [
+      ['ready_callback'],
+      ['start_callback'],
+      [ 'set_treestate:', '?cols=AT' ],
+      ['fly_on_tree_to', [null, 1101, false, 1]],
+    ], "Now flying, activated AT (log entries)");
+    t.finish_flight();
+    return t.wait_for_tourstop_state(0, 'tsstate-active_wait');
+
+  }).then(function () {
+    test.deepEqual(t.log, [
+      [ 'ready_callback' ], [ 'start_callback' ],
+      [ 'set_treestate:', '?cols=AT' ],
+      [ 'fly_on_tree_to', [ null, 1101, false, 1 ] ],
+      [ 'leap_to', [ 1101, undefined, false ] ],
+    ], "At first stop, activated AT (log entries)");
+    test.deepEqual(t.tour.onezoom.treestate, '?cols=AT');
+    t.tour.user_forward();
+    return Promise.all([
+      t.wait_for_tourstop_state(0, 'tsstate-transition_out'),
+      t.wait_for_tourstop_state(1, 'tsstate-transition_in'),
+    ]).then(() => t.finish_flight()).then(() => t.wait_for_tourstop_state(1, 'tsstate-active_wait'));
+
+  }).then(function () {
+    test.deepEqual(t.log, [
+      [ 'ready_callback' ], [ 'start_callback' ],
+      [ 'set_treestate:', '?cols=AT' ],
+      [ 'fly_on_tree_to', [ null, 1101, false, 1 ] ],
+      [ 'leap_to', [ 1101, undefined, false ] ],
+      [ 'set_treestate:', '?cols=' ], [ 'set_treestate:', '?cols=AT' ],
+      [ 'fly_on_tree_to', [ null, 2202, false, 1 ] ],
+      [ 'leap_to', [ 2202, undefined, false ] ],
+    ], "At second stop, deactivated *then* reactivated AT (log entries)");
+    test.deepEqual(t.tour.onezoom.treestate, '?cols=AT');
+    t.tour.user_forward();
+    return Promise.all([
+      t.wait_for_tourstop_state(1, 'tsstate-transition_out'),
+      t.wait_for_tourstop_state(2, 'tsstate-transition_in'),
+    ]).then(() => t.finish_flight()).then(() => t.wait_for_tourstop_state(2, 'tsstate-active_wait'));
+
+  }).then(function () {
+    test.deepEqual(t.log, [
+      [ 'ready_callback' ], [ 'start_callback' ],
+      [ 'set_treestate:', '?cols=AT' ],
+      [ 'fly_on_tree_to', [ null, 1101, false, 1 ] ],
+      [ 'leap_to', [ 1101, undefined, false ] ],
+      [ 'set_treestate:', '?cols=' ], [ 'set_treestate:', '?cols=AT' ],
+      [ 'fly_on_tree_to', [ null, 2202, false, 1 ] ],
+      [ 'leap_to', [ 2202, undefined, false ] ],
+      [ 'set_treestate:', '?cols=' ], [ 'set_treestate:', '?cols=XT' ],
+      [ 'fly_on_tree_to', [ null, 3303, false, 1 ] ],
+      [ 'leap_to', [ 3303, undefined, false ] ],
+    ], "At third stop, deactivated *then* activated XT (log entries)");
+    test.deepEqual(t.tour.onezoom.treestate, '?cols=XT');
+    t.tour.user_exit();
+    return t.wait_for_tourstop_state(2, 'tsstate-inactive');
+
+  }).then(function () {
+    test.deepEqual(t.log, [
+      [ 'ready_callback' ], [ 'start_callback' ],
+      [ 'set_treestate:', '?cols=AT' ],
+      [ 'fly_on_tree_to', [ null, 1101, false, 1 ] ],
+      [ 'leap_to', [ 1101, undefined, false ] ],
+      [ 'set_treestate:', '?cols=' ], [ 'set_treestate:', '?cols=AT' ],
+      [ 'fly_on_tree_to', [ null, 2202, false, 1 ] ],
+      [ 'leap_to', [ 2202, undefined, false ] ],
+      [ 'set_treestate:', '?cols=' ], [ 'set_treestate:', '?cols=XT' ],
+      [ 'fly_on_tree_to', [ null, 3303, false, 1 ] ],
+      [ 'leap_to', [ 3303, undefined, false ] ],
+      [ 'exit_callback' ],
+      [ 'set_treestate:', '?cols=' ],
+    ], "Tour stopped, state restored");
+    test.deepEqual(t.tour.onezoom.treestate, '?cols=');
+
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
+
+test.onFinish(function() {
+  // NB: Something data_repo includes in is holding node open.
+  //     Can't find it so force our tests to end.
+  process.exit(0)
 });
