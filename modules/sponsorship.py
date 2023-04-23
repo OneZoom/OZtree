@@ -56,7 +56,7 @@ def sponsorship_config():
         # Number of days left by which point we consider expiry to be critical
         out['expiry_critical_days'] = int(myconf.take('sponsorship.expiry_critical_days'))
     except:
-        out['expiry_critical_days'] = 10
+        out['expiry_critical_days'] = 15
     try:
         # Number of days after expiry_(x)_days after which we send e-mails
         out['expiry_hysteresis'] = int(myconf.take('sponsorship.expiry_hysteresis'))
