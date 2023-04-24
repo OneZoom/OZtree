@@ -1071,6 +1071,20 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(days_left(user_1, days=0, hours=-1)[r1.OTT_ID], -1, test_msg(r1))
         self.assertEqual(days_left(user_1, days=-1, hours=-1)[r1.OTT_ID], -2, test_msg(r1))
 
+    def test_sponsorship_email_reminders_null_sponsorship_ends(self):
+        """NULL sponsorship_ends ==> permanently sponsored"""
+        db = current.db
+
+        expiry_time = current.request.now + datetime.timedelta(days=10*365)
+        # Buy an OTT, bodge it to not have an expiry
+        email_1, user_1 = '1_betty@unittest.example.com', '1_bettyunittestexamplecom'
+        current.request.now = expiry_time - datetime.timedelta(days=sponsorship_config()['duration_days'])
+        r1 = util.purchase_reservation(basket_details=dict(e_mail=email_1))[0]
+        r1.update_record(sponsorship_ends=None)
+
+        out = next(sponsorship_email_reminders([user_1]))[1]
+        self.assertEqual(out['unsponsorable'], [r1.OTT_ID])
+
     def test_reservation_get_all_expired(self):
         def gae():
             # We only care about our unittest entries, there may be other things lurking in the DB

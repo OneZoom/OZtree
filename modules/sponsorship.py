@@ -816,6 +816,9 @@ def sponsorship_email_reminders(for_usernames=None):
         if status != '':
             # This item now banned/invalid, shouldn't be sending reminders.
             out['unsponsorable'].append(r.OTT_ID)
+        elif r.sponsorship_ends is None:
+            # NULL sponsorship_ends ==> doesn't ever expire
+            out['unsponsorable'].append(r.OTT_ID)
         elif r.sponsorship_ends <= expiry_critical_date:
             # Expiry critical
             out['final_reminders'].append(r.OTT_ID)
