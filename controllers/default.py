@@ -953,6 +953,7 @@ def sponsor_renew():
         all_partner_data=all_partner_data,
         form=form,
         giftaid_recorded=giftaid_recorded,
+        show_donor_link=(len(active_rows) > 0 or len(expiring_rows) > 0),
     )
 
 

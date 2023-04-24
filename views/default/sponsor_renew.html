@@ -7,7 +7,7 @@
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
     <h1>This is the private sponsorship renewal page for {{=username}}</h1>
-    <p>There is also a public page available at <a href="{{=URL("/donor/%s" % username)}}">{{=URL("/donor/%s" % username, scheme=True, host=True)}}</a> that you can share if you wish.</p>
+    {{if show_donor_link:}}<p>There is also a public page available at <a href="{{=URL("/donor/%s" % username)}}">{{=URL("/donor/%s" % username, scheme=True, host=True)}}</a> that you can share if you wish.</p>{{pass}}
 </div>
 {{end block}}
 

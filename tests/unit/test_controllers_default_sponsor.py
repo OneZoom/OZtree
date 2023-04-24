@@ -51,11 +51,13 @@ class ControllersDefaultSponsorInfo(unittest.TestCase):
         current.request.get_vars._signature = sponsor_signed_url('sponsor_renew.html', user_1).split('_signature=')[1]
         out = default.sponsor_renew()
         self.assertEqual(out['username'], user_1)
+        self.assertEqual(out['show_donor_link'], False)  # Don't show donor link without sponsorships
 
         # Buy some OTTs
         current.request.now = expiry_time - datetime.timedelta(days=sponsorship_config()['duration_days'])
         rs = util.purchase_reservation(3, basket_details=dict(e_mail=email_1), verify=True)
         out = default.sponsor_renew()
+        self.assertEqual(out['show_donor_link'], True)  # Do show donor link with sponsorships
         self.assertEqual(str(out['all_row_categories'][0]['title']), 'Active sponsorships')
         self.assertEqual([r.OTT_ID for r in out['all_row_categories'][0]['rows']], [r.OTT_ID for r in rs])
         self.assertEqual([r.OTT_ID for r in out['all_row_categories'][1]['rows']], [])
@@ -64,6 +66,7 @@ class ControllersDefaultSponsorInfo(unittest.TestCase):
         # OTTs expiring soon
         current.request.now = expiry_time - datetime.timedelta(days=1)
         out = default.sponsor_renew()
+        self.assertEqual(out['show_donor_link'], True)  # Do show donor link with sponsorships
         self.assertEqual([r.OTT_ID for r in out['all_row_categories'][0]['rows']], [])
         self.assertEqual(str(out['all_row_categories'][1]['title']), 'Sponsorships expiring soon')
         self.assertEqual([r.OTT_ID for r in out['all_row_categories'][1]['rows']], [r.OTT_ID for r in rs])
@@ -74,6 +77,7 @@ class ControllersDefaultSponsorInfo(unittest.TestCase):
         for r in rs:
             reservation_expire(r)
         out = default.sponsor_renew()
+        self.assertEqual(out['show_donor_link'], False)  # Don't show donor link without sponsorships
         self.assertEqual([r.OTT_ID for r in out['all_row_categories'][0]['rows']], [])
         self.assertEqual([r.OTT_ID for r in out['all_row_categories'][1]['rows']], [])
         self.assertEqual(str(out['all_row_categories'][2]['title']), 'Expired sponsorships')
