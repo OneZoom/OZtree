@@ -752,6 +752,13 @@ def sponsorship_email_reminders(for_usernames=None):
             hmac_key=sponsor_hmac_key()
         )
 
+    def days_left(ends_dt, now_dt):
+        out = (r.sponsorship_ends - request.now).days
+        if out == 0 and ends_dt > now_dt:
+            # "Not quite expired"
+            out = 0.5
+        return out
+
     query = (db.reservations.verified_time != None) & (db.reservations.PP_transaction_code != None)  # i.e. has been bought
     if for_usernames is not None:
         # Get sponsorships for given username
@@ -812,7 +819,7 @@ def sponsorship_email_reminders(for_usernames=None):
         elif r.sponsorship_ends <= expiry_critical_date:
             # Expiry critical
             out['final_reminders'].append(r.OTT_ID)
-            out['days_left'][r.OTT_ID] = (r.sponsorship_ends - request.now).days
+            out['days_left'][r.OTT_ID] = days_left(r.sponsorship_ends, request.now)
             if r.emailed_re_renewal_final is None and r.sponsorship_ends <= expiry_critical_trigger:
                 # Below e-mail trigger date, send e-mail
                 out['final_triggers'].append(r.OTT_ID)
@@ -820,7 +827,7 @@ def sponsorship_email_reminders(for_usernames=None):
         elif r.sponsorship_ends <= expiry_soon_date:
             # Expiry soon
             out['initial_reminders'].append(r.OTT_ID)
-            out['days_left'][r.OTT_ID] = (r.sponsorship_ends - request.now).days
+            out['days_left'][r.OTT_ID] = days_left(r.sponsorship_ends, request.now)
             if r.emailed_re_renewal_initial is None and r.sponsorship_ends <= expiry_soon_trigger:
                 # Below e-mail trigger date, send e-mail
                 out['initial_triggers'].append(r.OTT_ID)

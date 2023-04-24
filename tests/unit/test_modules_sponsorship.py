@@ -1040,6 +1040,37 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(reminders['not_yet_due'], [])
         self.assertEqual(reminders['unsponsorable'], [])
 
+    def test_sponsorship_email_reminders_days_left(self):
+        db = current.db
+
+        expiry_time = current.request.now + datetime.timedelta(days=10*365)
+        # Buy an OTT
+        email_1, user_1 = '1_betty@unittest.example.com', '1_bettyunittestexamplecom'
+        current.request.now = expiry_time - datetime.timedelta(days=sponsorship_config()['duration_days'])
+        r1 = util.purchase_reservation(basket_details=dict(e_mail=email_1))[0]
+
+        def days_left(user, **kwargs):
+            current.request.now = expiry_time - datetime.timedelta(**kwargs)
+            r = next(sponsorship_email_reminders([user]))
+            self.assertEqual(r[0], user)
+            return r[1]['days_left']
+
+        def test_msg(r):
+            return " vs ".join((str(r.sponsorship_ends), str(current.request.now)))
+
+        # Check either side of 5 days, should be +/- 1
+        self.assertEqual(days_left(user_1, days=5, hours=1)[r1.OTT_ID], 5, test_msg(r1))
+        self.assertEqual(days_left(user_1, days=5, hours=0)[r1.OTT_ID], 4, test_msg(r1))
+        self.assertEqual(days_left(user_1, days=5, hours=-1)[r1.OTT_ID], 4, test_msg(r1))
+
+        # As a special case, should get "less than 1" before expiry hits (we don't care how much by)
+        self.assertEqual(days_left(user_1, days=1, hours=1)[r1.OTT_ID], 1, test_msg(r1))
+        self.assertEqual(days_left(user_1, days=0, hours=20)[r1.OTT_ID], 0.5, test_msg(r1))
+        self.assertEqual(days_left(user_1, days=0, hours=1)[r1.OTT_ID], 0.5, test_msg(r1))
+        self.assertEqual(days_left(user_1, days=0, hours=0)[r1.OTT_ID], -1, test_msg(r1))
+        self.assertEqual(days_left(user_1, days=0, hours=-1)[r1.OTT_ID], -1, test_msg(r1))
+        self.assertEqual(days_left(user_1, days=-1, hours=-1)[r1.OTT_ID], -2, test_msg(r1))
+
     def test_reservation_get_all_expired(self):
         def gae():
             # We only care about our unittest entries, there may be other things lurking in the DB
