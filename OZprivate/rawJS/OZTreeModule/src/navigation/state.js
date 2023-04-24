@@ -26,6 +26,10 @@
  * * ``highlight``: Highlight strings to apply to a tree, can be used multiple times. See {@link projection/highlight/highlight}, e.g. ``highlight=path:@aves&highlight=path:@mammalia``
  * * ``tour``: A tour URL to play, e.g. ``tour=/tour/data.html/superpowers``
  *
+ * As well as in the browser URL, querystring parameters can be used with set_treestate, e.g.
+ *
+ *     onezoom.controller.set_treestate('?cols=AT');
+ *
  * The following parameters are deprecated:
  * * ``initmark``: Equivalent to ``highlight=path:_ozid=(x)``
  *
