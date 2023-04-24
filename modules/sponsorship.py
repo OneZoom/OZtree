@@ -710,6 +710,19 @@ def sponsor_hmac_key():
     return out
 
 
+def sponsor_signed_url(page, username, controller='default'):
+    URL = current.globalenv['URL']
+
+    return URL(
+        controller,
+        page,
+        args=[username],
+        scheme=True,
+        host=True,
+        hmac_key=sponsor_hmac_key()
+        )
+
+
 def sponsor_verify_url(request):
     """Verify current request has a valid signature"""
     URL = current.globalenv['URL']
@@ -736,21 +749,10 @@ def sponsorship_email_reminders(for_usernames=None):
     """
     request = current.request
     db = current.db
-    URL = current.globalenv['URL']
     expiry_soon_date = sponsorship_expiry_soon_date()
     expiry_soon_trigger = expiry_soon_date - datetime.timedelta(days=sponsorship_config()['expiry_hysteresis'])
     expiry_critical_date = sponsorship_expiry_soon_date('critical')
     expiry_critical_trigger = expiry_critical_date - datetime.timedelta(days=sponsorship_config()['expiry_hysteresis'])
-
-    def sponsor_signed_url(page, username, controller='default'):
-        return URL(
-            controller,
-            page,
-            args=[username],
-            scheme=True,
-            host=True,
-            hmac_key=sponsor_hmac_key()
-        )
 
     def days_left(ends_dt, now_dt):
         out = (r.sponsorship_ends - request.now).days
