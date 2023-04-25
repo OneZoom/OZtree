@@ -116,7 +116,7 @@ export default function (Controller) {
     if (!image_source) image_source = "best_any";
     if (data_repo.image_source !== image_source) {
       data_repo.image_source = image_source;
-      clear_node_pics(this.root);
+      if (this.root) clear_node_pics(this.root);
       this.trigger_refresh_loop()
       if (!init) {
         record_url(this, {
