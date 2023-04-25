@@ -1,6 +1,67 @@
 # -*- coding: utf-8 -*-
 """
-Endpoints relating to editing Tours
+OneZoom Tour endpoints
+======================
+
+This controller contains endpoints to produce HTML for the tour engine.
+See src/tour/Tour.js for more information about the engine, and what is possible in the HTML.
+
+OneZoom JSON tour definition
+----------------------------
+
+A OneZoom tour can be defined as JSON, to then be inserted / fetched into the database via. ``/tour/data.html``.
+
+A library of tour documents is available at https://github.com/OneZoom/tours.
+
+The document is structured as follows::
+
+    {
+        "title": "Tour title",
+        "description": "Tour description",
+        "author": "OneZoom",
+        "tourstop_shared": { ...common tourstop definitions... }
+        "tourstops": [
+            {
+                "identifier": "tourstop_a",
+                "ott": "566397",
+                "template_data": { ...unique tourstop definitions... },
+            }, {
+            }
+        ],
+    }
+
+Both ``template_data`` and ``tourstop_shared`` can have the same content;
+``tourstop_shared`` is merged into every ``template_data`` section. Possible options are:
+
+title
+    Title of tourstop, included at top of pop-up.
+window_text
+    Body text of tourstop.
+comment
+    Ignored comment section, for tour authors.
+visible-transition_in / visible-transition_out / hidden-active_wait
+    If ``true``, the tourstop pop-up will be visible when transitioning into / away from of the tourstop OTT.
+ott
+    The OTT that this tourstop heads to.
+qs_opts
+    Tree state to apply when visiting this tourstop, e.g. colour-scheme or highlights. See ``src/navigation/state.js``.
+transition_in
+    The type of transition to use when navigating to ``ott``. Either ``leap``, ``fly_straight`` or ``flight``.
+fly_in_speed
+    Relative flight speed to global setting, default is 1
+transition_in_wait
+    Delay start of flight, in milliseconds. Defaults to 0
+stop_wait
+    Wait at tourstop for (stop_wait) milliseconds, then automatically move on. By default wait for user to press "next"
+media
+    An array of media_embed strings as defined by :py:meth:`modules.embed.media_embed`, for example::
+
+        media: [
+            "https://www.youtube.com/embed/ayOmAJwCMlM",
+            "https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif",
+        ],
+
+    Any media will autoplay when arriving at the tourstop, and stop when leaving.
 """
 from pymysql.err import IntegrityError
 
