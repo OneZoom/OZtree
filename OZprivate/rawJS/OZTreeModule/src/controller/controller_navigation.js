@@ -62,20 +62,27 @@ export default function (Controller) {
    * @memberof Controller
    */
   Controller.prototype.change_view_type = function (vis, init = false) {
-    if (vis !== tree_settings.vis) {
-      let prev = tree_settings.vis
-      tree_settings.vis = vis;
-      let self = this;
+    if (!vis) vis = tree_settings.default.vis;
 
-      // Get pre-rebuild state, so we can restore the rough position by ID
-      // Get largest node, use this to restore position
-      let n = !init ? get_largest_visible_node(this.root) : null;
+    // If nothing to do, return now
+    if (vis === tree_settings.vis && !init) return Promise.resolve();
 
-      return tree_settings.rebuild_tree(vis, prev, this).then(function () {
-        if (!init) return(self.init_move_to(n.ozid, "leap"));
-      }.bind(this));
+    // Change tree-state, noting previous
+    let prev = tree_settings.vis
+    tree_settings.vis = vis;
+
+    // On init, just build the tree, the rest of setup_page_by_state will set location
+    if (init) {
+        return tree_settings.rebuild_tree(vis, prev, this);
     }
-    return Promise.resolve();
+
+    // Get pre-rebuild state, so we can restore the rough position by ID
+    // Get largest node, use this to restore position
+    let n = get_largest_visible_node(this.root);
+
+    return tree_settings.rebuild_tree(vis, prev, this).then(() => {
+      return this.init_move_to(n.ozid, "leap");
+    });
   }
   Controller.prototype.get_view_type = function () {
     return (tree_settings.vis);

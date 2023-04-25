@@ -20,15 +20,9 @@ function setup_page_by_state(controller, state) {
 
   controller.close_all();
 
-  var p = Promise.resolve();
-  if (state.hasOwnProperty('vis_type')) {
-    // Change view type (implicitly rebuilding tree)
-    p = controller.change_view_type(state.vis_type, init);
-  } else {
-    // Do initial build of default tree
-    if (init) controller.rebuild_tree();
-  }
-  return p.then(function () {
+  // Change view type
+  // NB: In doing so, we implicitly rebuild the tree, which needs to happen regardless on init
+  return controller.change_view_type(state.vis_type, init).then(function () {
     // Perform initial highlighting if asked
     return state.hasOwnProperty('highlights') ? controller.highlight_replace(state.highlights) : null;
   }).then(function () {
