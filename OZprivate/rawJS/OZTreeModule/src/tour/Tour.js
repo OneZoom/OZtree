@@ -1,5 +1,6 @@
 import handler_htmlaudio from './handler/HtmlAudio';
 import handler_qsopts from './handler/QsOpts';
+import handler_uievents from './handler/UIEvents';
 import handler_vimeo from './handler/Vimeo';
 import handler_youtube from './handler/Youtube';
 import TourStopClass from './TourStop'
@@ -176,7 +177,7 @@ class Tour {
 
     // Attach all plugins to tour, loaded when everything is finished
     return Promise.all([
-      this.bind_ui_events(),
+      handler_uievents(this),
       resolve_pinpoints(Object.keys(this.pinpoint_to_ozid)).then((pps) => {
         pps.forEach((pp) => {
           this.pinpoint_to_ozid[pp.pinpoint] = pp.ozid;
@@ -416,42 +417,6 @@ class Tour {
 
   user_backward() {
     this.goto_prev()
-  }
-
-  /**
-   * Bind previous, next, pause, play, exit button event
-   */
-  bind_ui_events() {
-    const document = this.container[0].ownerDocument;
-
-    this.container.click((e) => {
-      var target = $(e.target).closest('.tour_forward,.tour_backward,.tour_play,.tour_pause,.tour_resume,.tour_exit,.exit_confirm,.exit_cancel');
-
-      if (target.length === 0) return;
-      if (target.hasClass('tour_forward')) return this.user_forward()
-      if (target.hasClass('tour_backward')) return this.user_backward()
-      if (target.hasClass('tour_play')) return this.user_play()
-      if (target.hasClass('tour_pause')) return this.user_pause()
-      if (target.hasClass('tour_resume')) return this.user_resume()
-      if (target.hasClass('tour_exit')) return this.user_exit()
-      if (target.hasClass('exit_confirm')) {
-        this.exit_confirm_popup.hide()
-        return this.user_exit()
-      }
-      if (target.hasClass('exit_cancel')) {
-        this.exit_confirm_popup.hide()
-        return this.user_resume()
-      }
-    })
-
-    // Listen to document level visibility (read: inactive tab), translate to tourstop blocks
-    const onVisibilityChange = (e) => {
-      this.tourstop_array.forEach((ts) => {
-        ts.block_toggle('hiddentab', document.visibilityState !== 'visible');
-      });
-    };
-    document.removeEventListener('visibilitychange', onVisibilityChange);
-    document.addEventListener('visibilitychange', onVisibilityChange);
   }
 
   /**
