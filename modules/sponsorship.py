@@ -710,6 +710,19 @@ def sponsor_hmac_key():
     return out
 
 
+def sponsor_signed_url(page, username, controller='default'):
+    URL = current.globalenv['URL']
+
+    return URL(
+        controller,
+        page,
+        args=[username],
+        scheme=True,
+        host=True,
+        hmac_key=sponsor_hmac_key()
+        )
+
+
 def sponsor_verify_url(request):
     """Verify current request has a valid signature"""
     URL = current.globalenv['URL']
@@ -736,21 +749,17 @@ def sponsorship_email_reminders(for_usernames=None):
     """
     request = current.request
     db = current.db
-    URL = current.globalenv['URL']
     expiry_soon_date = sponsorship_expiry_soon_date()
     expiry_soon_trigger = expiry_soon_date - datetime.timedelta(days=sponsorship_config()['expiry_hysteresis'])
     expiry_critical_date = sponsorship_expiry_soon_date('critical')
     expiry_critical_trigger = expiry_critical_date - datetime.timedelta(days=sponsorship_config()['expiry_hysteresis'])
 
-    def sponsor_signed_url(page, username, controller='default'):
-        return URL(
-            controller,
-            page,
-            args=[username],
-            scheme=True,
-            host=True,
-            hmac_key=sponsor_hmac_key()
-        )
+    def days_left(ends_dt, now_dt):
+        out = (r.sponsorship_ends - request.now).days
+        if out == 0 and ends_dt > now_dt:
+            # "Not quite expired"
+            out = 0.5
+        return out
 
     query = (db.reservations.verified_time != None) & (db.reservations.PP_transaction_code != None)  # i.e. has been bought
     if for_usernames is not None:
@@ -809,10 +818,13 @@ def sponsorship_email_reminders(for_usernames=None):
         if status != '':
             # This item now banned/invalid, shouldn't be sending reminders.
             out['unsponsorable'].append(r.OTT_ID)
+        elif r.sponsorship_ends is None:
+            # NULL sponsorship_ends ==> doesn't ever expire
+            out['unsponsorable'].append(r.OTT_ID)
         elif r.sponsorship_ends <= expiry_critical_date:
             # Expiry critical
             out['final_reminders'].append(r.OTT_ID)
-            out['days_left'][r.OTT_ID] = (r.sponsorship_ends - request.now).days
+            out['days_left'][r.OTT_ID] = days_left(r.sponsorship_ends, request.now)
             if r.emailed_re_renewal_final is None and r.sponsorship_ends <= expiry_critical_trigger:
                 # Below e-mail trigger date, send e-mail
                 out['final_triggers'].append(r.OTT_ID)
@@ -820,7 +832,7 @@ def sponsorship_email_reminders(for_usernames=None):
         elif r.sponsorship_ends <= expiry_soon_date:
             # Expiry soon
             out['initial_reminders'].append(r.OTT_ID)
-            out['days_left'][r.OTT_ID] = (r.sponsorship_ends - request.now).days
+            out['days_left'][r.OTT_ID] = days_left(r.sponsorship_ends, request.now)
             if r.emailed_re_renewal_initial is None and r.sponsorship_ends <= expiry_soon_trigger:
                 # Below e-mail trigger date, send e-mail
                 out['initial_triggers'].append(r.OTT_ID)

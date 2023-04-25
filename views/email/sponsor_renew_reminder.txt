@@ -21,7 +21,7 @@ To renew your sponsored species please visit this URL:
 {{for ott in final_reminders:}}
 * {{=XML(nice_names[ott])}} -
 {{if days_left[ott] > 1:}}{{=days_left[ott]}} days left
-{{elif days_left[ott] == 1:}}final day to renew!
+{{elif days_left[ott] > 0:}}final day to renew!
 {{else:}}now expired, but might not be too late to renew{{pass}}
 {{pass}}{{pass}}
 

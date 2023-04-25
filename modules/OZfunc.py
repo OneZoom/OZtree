@@ -476,11 +476,6 @@ def nodes_info_from_string(
     else:
         all_pcols = ["ott", "src_id", "src", "rating"]
     all_rcols = ["OTT_ID", "verified_kind", "verified_name", "verified_more_info", "verified_url"]
-    alt_rtxt = {
-        "verified_name": "'leaf_sponsored'",
-        "verified_more_info": "''", 
-        "verified_url":"NULL",
-    }
     pic_cols = {nm:index for index,nm in enumerate(all_pcols)} 
     res_cols = {nm:index for index,nm in enumerate(all_rcols)} 
     if len(leafOtts):
@@ -497,16 +492,12 @@ def nodes_info_from_string(
             sql = query6.format(otts=ott_ids)
             iucn_query_res = db.executesql(sql)
         if include_sponsorship:
-            query7 = "SELECT "
-            # A very complicated query here, use alternative text if this is not an active
-            # node (waiting verification or expired)
-            query7 += ",".join(
-                ["IF(active,{0},{1}) as {0}".format(nm, alt_rtxt[nm]) 
-                    if nm in alt_rtxt else nm for nm in all_rcols])
-            query7 += (
-                " FROM (SELECT "
+            query7 = (
+                "SELECT "
                 + ",".join(all_rcols)
-                + ",(DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE()) AS active FROM reservations"
+                + " FROM (SELECT "
+                + ",".join(all_rcols)
+                + " FROM reservations"
                 + " WHERE OTT_ID in ({otts})"
                 +  " AND verified_time IS NOT NULL"
                 +  " AND (deactivated IS NULL OR deactivated = '')"

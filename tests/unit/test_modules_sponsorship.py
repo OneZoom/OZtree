@@ -851,23 +851,30 @@ class TestSponsorship(unittest.TestCase):
                     out[k] = r
             return out
 
-        expiry_time = current.request.now + datetime.timedelta(days=4*365)
+        # NB: These tests make assumptions about thresholds, fix them to keep tests working
+        if 'sponsorship' not in current.globalenv['myconf']:
+            current.globalenv['myconf']['sponsorship'] = {}
+        current.globalenv['myconf']['sponsorship']['expiry_soon_days'] = 90
+        current.globalenv['myconf']['sponsorship']['expiry_critical_days'] = 30
+        current.globalenv['myconf']['sponsorship']['expiry_hysteresis'] = 15
+
+        expiry_time = current.request.now + datetime.timedelta(days=10*365)
         # User 1 & 2 buy some OTTs
         email_1, user_1 = '1_betty@unittest.example.com', '1_bettyunittestexamplecom'
         email_2, user_2 = '2_gelda@unittest.example.com', '2_geldaunittestexamplecom'
-        current.request.now = expiry_time - datetime.timedelta(days=4*365 + 40)
+        current.request.now = expiry_time - datetime.timedelta(days=sponsorship_config()['duration_days'] + 40)
         r1_1 = util.purchase_reservation(basket_details=dict(e_mail=email_1))[0]
         r2_1 = util.purchase_reservation(basket_details=dict(e_mail=email_2))[0]
-        current.request.now = expiry_time - datetime.timedelta(days=4*365 + 20)
+        current.request.now = expiry_time - datetime.timedelta(days=sponsorship_config()['duration_days'] + 20)
         r1_2 = util.purchase_reservation(basket_details=dict(e_mail=email_1))[0]
         r2_2 = util.purchase_reservation(basket_details=dict(e_mail=email_2))[0]
-        current.request.now = expiry_time - datetime.timedelta(days=4*365 + 0)
+        current.request.now = expiry_time - datetime.timedelta(days=sponsorship_config()['duration_days'] + 0)
         r1_3 = util.purchase_reservation(basket_details=dict(e_mail=email_1))[0]
         # All new, nothing to remind about
         self.assertEqual(all_reminders(), {})
 
         # Move forward in time, reservations about to expire
-        current.request.now = expiry_time - datetime.timedelta(days=80)
+        current.request.now = expiry_time - datetime.timedelta(days=81)
         all_r = all_reminders()
         self.assertEqual(all_r, {
             user_1: dict(username=user_1, email_address=email_1,
@@ -941,7 +948,7 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(all_r, {})
 
         # Now r2_1 is due a final reminder, and told about their new purchase
-        current.request.now = expiry_time - datetime.timedelta(days=51)
+        current.request.now = expiry_time - datetime.timedelta(days=52)
         r2_3 = util.purchase_reservation(basket_details=dict(e_mail=email_2))[0]
         all_r = all_reminders()
         self.assertEqual(all_r, {
@@ -963,7 +970,7 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(all_r, {})
 
         # Hit critical for r1_2/r2_2, final reminders due, but r1_1 stays unsponsorable
-        current.request.now = expiry_time - datetime.timedelta(days=20 + 15 - 1)
+        current.request.now = expiry_time - datetime.timedelta(days=20 + 15)
         all_r = all_reminders()
         self.assertEqual(all_r, {
             user_1: dict(username=user_1, email_address=email_1,
@@ -1013,7 +1020,7 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(reminders['unsponsorable'], [])
 
         # Move forward in time, reservations about to expire
-        current.request.now = (current.request.now + datetime.timedelta(days=(4*365) - 30))
+        current.request.now = (current.request.now + datetime.timedelta(days=sponsorship_config()['duration_days'] - 31))
 
         # Allowed to contact about the expiry
         reminders = {k:r for (k, r) in sponsorship_email_reminders()}[user1]
@@ -1032,6 +1039,51 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(reminders['final_reminders'], [r1.OTT_ID])
         self.assertEqual(reminders['not_yet_due'], [])
         self.assertEqual(reminders['unsponsorable'], [])
+
+    def test_sponsorship_email_reminders_days_left(self):
+        db = current.db
+
+        expiry_time = current.request.now + datetime.timedelta(days=10*365)
+        # Buy an OTT
+        email_1, user_1 = '1_betty@unittest.example.com', '1_bettyunittestexamplecom'
+        current.request.now = expiry_time - datetime.timedelta(days=sponsorship_config()['duration_days'])
+        r1 = util.purchase_reservation(basket_details=dict(e_mail=email_1))[0]
+
+        def days_left(user, **kwargs):
+            current.request.now = expiry_time - datetime.timedelta(**kwargs)
+            r = next(sponsorship_email_reminders([user]))
+            self.assertEqual(r[0], user)
+            return r[1]['days_left']
+
+        def test_msg(r):
+            return " vs ".join((str(r.sponsorship_ends), str(current.request.now)))
+
+        # Check either side of 5 days, should be +/- 1
+        self.assertEqual(days_left(user_1, days=5, hours=1)[r1.OTT_ID], 5, test_msg(r1))
+        self.assertEqual(days_left(user_1, days=5, hours=0)[r1.OTT_ID], 4, test_msg(r1))
+        self.assertEqual(days_left(user_1, days=5, hours=-1)[r1.OTT_ID], 4, test_msg(r1))
+
+        # As a special case, should get "less than 1" before expiry hits (we don't care how much by)
+        self.assertEqual(days_left(user_1, days=1, hours=1)[r1.OTT_ID], 1, test_msg(r1))
+        self.assertEqual(days_left(user_1, days=0, hours=20)[r1.OTT_ID], 0.5, test_msg(r1))
+        self.assertEqual(days_left(user_1, days=0, hours=1)[r1.OTT_ID], 0.5, test_msg(r1))
+        self.assertEqual(days_left(user_1, days=0, hours=0)[r1.OTT_ID], -1, test_msg(r1))
+        self.assertEqual(days_left(user_1, days=0, hours=-1)[r1.OTT_ID], -1, test_msg(r1))
+        self.assertEqual(days_left(user_1, days=-1, hours=-1)[r1.OTT_ID], -2, test_msg(r1))
+
+    def test_sponsorship_email_reminders_null_sponsorship_ends(self):
+        """NULL sponsorship_ends ==> permanently sponsored"""
+        db = current.db
+
+        expiry_time = current.request.now + datetime.timedelta(days=10*365)
+        # Buy an OTT, bodge it to not have an expiry
+        email_1, user_1 = '1_betty@unittest.example.com', '1_bettyunittestexamplecom'
+        current.request.now = expiry_time - datetime.timedelta(days=sponsorship_config()['duration_days'])
+        r1 = util.purchase_reservation(basket_details=dict(e_mail=email_1))[0]
+        r1.update_record(sponsorship_ends=None)
+
+        out = next(sponsorship_email_reminders([user_1]))[1]
+        self.assertEqual(out['unsponsorable'], [r1.OTT_ID])
 
     def test_reservation_get_all_expired(self):
         def gae():
