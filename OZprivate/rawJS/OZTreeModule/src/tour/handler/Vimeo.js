@@ -1,6 +1,14 @@
 /**
- * Support Vimeo videos in tourstops
- * https://developer.vimeo.com/player/sdk/basics
+ * Add autoplay functionality for Vimeo video in tourstops.
+ *
+ * Designed to be used with ``applications.OZtree.modules.embed:media_embed``, i.e.
+ *
+ *     {{from applications.OZtree.modules.embed import media_embed}}
+ *     <div class="tour">
+ *       <div class="container">{{=XML(media_embed(url, ts_autoplay='tsstate-active_wait'))}}</div>
+ *     </div>
+ *
+ * See {@link https://developer.vimeo.com/player/sdk/basics}
  */
 function handler(tour) {
   const el_videos = Array.from(tour.container[0].querySelectorAll(":scope iframe.embed-vimeo"));

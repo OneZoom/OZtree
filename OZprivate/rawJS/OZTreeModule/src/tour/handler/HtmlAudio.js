@@ -1,6 +1,14 @@
 /**
- * Support HTML audio in tourstops
- * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio
+ * Add autoplay functionality for HTML audio in tourstops.
+ *
+ * Designed to be used with ``applications.OZtree.modules.embed:media_embed``, i.e.
+ *
+ *     {{from applications.OZtree.modules.embed import media_embed}}
+ *     <div class="tour">
+ *       <div class="container">{{=XML(media_embed(url, ts_autoplay='tsstate-active_wait'))}}</div>
+ *     </div>
+ *
+ * See {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio}
  */
 function handler(tour) {
   const el_audios = Array.from(tour.container[0].querySelectorAll(":scope audio"));

@@ -1,6 +1,14 @@
 /**
- * Support youtube videos in tourstops
- * https://developers.google.com/youtube/iframe_api_reference
+ * Add autoplay functionality for YouTube video in tourstops.
+ *
+ * Designed to be used with ``applications.OZtree.modules.embed:media_embed``, i.e.
+ *
+ *     {{from applications.OZtree.modules.embed import media_embed}}
+ *     <div class="tour">
+ *       <div class="container">{{=XML(media_embed(url, ts_autoplay='tsstate-active_wait'))}}</div>
+ *     </div>
+ *
+ * See {https://developers.google.com/youtube/iframe_api_reference}
  */
 function handler(tour) {
   const el_yts = Array.from(tour.container[0].querySelectorAll(":scope iframe.embed-youtube"));

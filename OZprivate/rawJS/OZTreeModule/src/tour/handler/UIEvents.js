@@ -1,5 +1,30 @@
 /**
- * Bind previous, next, pause, play, exit button event
+ * Bind button events based on CSS classes, pause tree when hidden
+ *
+ * This handler enables behavioural CSS classes to control the tour, for example:
+ *
+ *     <div class="tour">
+ *       <div class="container" data-ott="770315">
+ *         ... Tour stop HTML ...
+ *         <div class='footer'>
+ *           <span class='button tour_backward'>← {{=T('Previous')}}</span>
+ *           <span class='button tour_resume'>{{=T('Resume tutorial')}}</span>
+ *           <span class='button tour_exit'>{{=T('Exit tutorial')}}</span>
+ *           <span class='button tour_forward'>{{=T('Skip')}} →</span>
+ *         </div>
+ *       </div>
+ *     </div>
+ *
+ * On clicking ``tour_backward`` / ``tour_forward``, the tour will go backwards/forwards.
+ * On clicking ``tour_exit``, the tour will close.
+ *
+ * When the tour is paused (e.g. as a result of user interaction) the ``tour_resume`` button will be visible,
+ * clicking it will resume the tour.
+ *
+ * Note that these buttons have to be added to every tourstop. A template include,
+ * ``{{ include "tour/tourstop/footer.html" }}`` exists to make this easier.
+ *
+ * When the document is on a hidden tab, a block will be added to tourstops, so we do not advance from the current tourstop.
  */
 function handler(tour) {
   const document = tour.container[0].ownerDocument;
