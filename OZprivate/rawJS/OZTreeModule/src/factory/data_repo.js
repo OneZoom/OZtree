@@ -9,7 +9,6 @@ class DataRepo {
     this.ott_id_map = {};
     this.id_ott_map = {};
     this.name_id_map = {};
-    this.ott_name_map = {};
     this.ott_region_map = {
         
         // lowest priority
@@ -154,7 +153,6 @@ class DataRepo {
     for (let arr of Object.values(this.metadata.node_meta)) {
       delete arr[data_repo.mc_key_n["common_en"]];
     }
-    this.ott_name_map = {};
   }
 
   get raw_data() {
@@ -359,11 +357,6 @@ function parse_vernacular_by_ott(data_repo, vernacular_by_ott) {
       if (!data_repo.metadata.leaf_meta[id][data_repo.mc_key_l["common_en"]])
         data_repo.metadata.leaf_meta[id][data_repo.mc_key_l["common_en"]] = vernacular;
     }
-    
-    //data_repo.ott_name_map[ott] = [scientificName, vernacular]
-    if (!data_repo.ott_name_map[ott]) data_repo.ott_name_map[ott] = [];
-    if (!data_repo.ott_name_map[ott][1])
-      data_repo.ott_name_map[ott][1] = vernacular;
   }
 }
 
