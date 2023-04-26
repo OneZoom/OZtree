@@ -10,13 +10,14 @@ import { UserInterruptError } from '../errors';
  * This function collects nodes and leaves which are on or near the main branch in the fly animation,
  * animation, then fetches metadata of these nodes or leaves, returning resolve when done.
  * @param {node} root controller.root
+ * @param subbranch_depth How far off main branch to develop
  * @return {Promise}
  * -- resolve when metadata is returned.
  * -- reject if there is any error.
  */
-function get_details_of_nodes_in_view_during_fly(root) {
+function get_details_of_nodes_in_view_during_fly(root, subbranch_depth) {
   /**
-   * Push all nodes that are on the main branch or within 4 generations from the main branch from the root to the targeted node.
+   * Push all nodes that are on the main branch or within (subbranch_depth) generations from the main branch from the root to the targeted node.
    */
   function get_target_nodes_arr(node, nodes_arr) {
     if (node.targeted) {
@@ -26,7 +27,7 @@ function get_details_of_nodes_in_view_during_fly(root) {
       }
       nodes_arr.push(node);
     } else {
-      nodes_arr = nodes_arr.concat(get_subbranch_nodes_arr(node, 4));
+      nodes_arr = nodes_arr.concat(get_subbranch_nodes_arr(node, subbranch_depth));
     }
     return nodes_arr;
   }
@@ -185,7 +186,7 @@ export default function (Controller) {
   }
   Controller.prototype.fetch_details_and_leap_to = function(dest_OZid, position=null, into_node=false) {
     this.develop_branch_to_and_target(dest_OZid);
-    return get_details_of_nodes_in_view_during_fly(this.root).then(function () {
+    return get_details_of_nodes_in_view_during_fly(this.root, 0).then(function () {
         return this.leap_to(dest_OZid, position, into_node);
     }.bind(this));
   }
@@ -317,7 +318,7 @@ export default function (Controller) {
                 flight_p = flight_p.then(function () {
                     position_helper.clear_target(this.root);
                     position_helper.target_by_code(this.root, n.ozid);
-                    return get_details_of_nodes_in_view_during_fly(this.root);
+                    return get_details_of_nodes_in_view_during_fly(this.root, 4);
                 }.bind(this));
             }.bind(this));
 
