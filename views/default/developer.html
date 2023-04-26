@@ -11,9 +11,8 @@
 </div>
 {{end block}}
 
-<div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
-    <div class = "uk-padding">
-  
+<div class="uk-text-small uk-column-1-3@m uk-padding-small">
+
   <h4>Introduction</h4>
   <p>We have a whole range of tools available here, including {{=A('APIs', _href=URL('API','index'))}}, an {{=A('index of species popularity', _href=URL('popularity','index'))}} and <a href=" http://github.com/onezoom/OZtree" target="_blank">source code</a>, but we're always working on the next enhancements and are trying to build a developer community. Please don't struggle on if you hit difficulties or have concerns, instead <a href="mailto:mail@onezoom.org">contact us</a> so we can work together on solving your problem. If you've done something special with OneZoom please <a href="mailto:mail@onezoom.org">let us know</a>.  Perhaps you've used it for teaching, visualising your own data or in a public display?  OneZoom is a non-profit organisation and our purpose is to advance the education of the public in the subjects of evolution, biodiversity and conservation of the variety of life on earth.</p>
     <ol class="uk-list">
@@ -56,8 +55,6 @@
               <li>General: make sure that Javascript is enabled and that your browser supports HTML5 and canvas.</li>
           </ol>
       
-        </div>
-    <div class = "uk-padding">
       <h4>Using source code from our public GitHub repository or Docker image</h4>
       
       <p>All our live source code is available to view on our <a href=" http://github.com/onezoom/OZtree" target="_blank">public GitHub repository</a>.  We also provide two Docker images of our latest codebase: <a href="https://hub.docker.com/r/onezoom/oztree-complete" target="_blank">oztree-complete</a> contains everything you need to run OneZoom with no live internet connection, <a href="https://hub.docker.com/r/onezoom/oztree" target="_blank">oztree</a> is a download of reduced size that uses the internet to grab images as needed from the OneZoom server. </p>
@@ -125,8 +122,6 @@
       <p>Some features were lost from version 1.2 variants: there is no longer an animal sound player, growth animation, kiosk version, customisable html embed function, or feature to load your own phylogeny. Version 1.2 still runs within version 2.0 to provide legacy support of these features.</p>
     </li>
     
-    </div>
-     <div class = "uk-padding">
     <li>
         <h4>Version 1.2 kiosk</h4>
         
@@ -189,6 +184,5 @@
         <li>Be patient, if your tree has 50,000 nodes or more it can take a minute or so to load and may use a noticeable chunk of ram on your computer.  Most computers should be able to handle tress with 1 million nodes or more if you are willing to wait for it to load. </li>
       </ol>
     </li>
-    </div>
 </div>
 

@@ -4,7 +4,8 @@ import tree_state from '../tree_state';
 import { global_button_action, click_on_button_cb } from '../button_manager';
 import config from '../global_config';
 import tree_settings from '../tree_settings';
-import { get_largest_visible_node, parse_url_base } from './utils';
+import { parse_url_base } from './state';
+import { get_largest_visible_node } from './utils';
 import { resolve_pinpoints, node_to_pinpoint } from './pinpoint';
 
 function setup_page_by_state(controller, state) {
@@ -19,15 +20,9 @@ function setup_page_by_state(controller, state) {
 
   controller.close_all();
 
-  var p = Promise.resolve();
-  if (state.hasOwnProperty('vis_type')) {
-    // Change view type (implicitly rebuilding tree)
-    p = controller.change_view_type(state.vis_type, init);
-  } else {
-    // Do initial build of default tree
-    if (init) controller.rebuild_tree();
-  }
-  return p.then(function () {
+  // Change view type
+  // NB: In doing so, we implicitly rebuild the tree, which needs to happen regardless on init
+  return controller.change_view_type(state.vis_type, init).then(function () {
     // Perform initial highlighting if asked
     return state.hasOwnProperty('highlights') ? controller.highlight_replace(state.highlights) : null;
   }).then(function () {

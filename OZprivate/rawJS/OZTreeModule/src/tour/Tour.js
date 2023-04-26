@@ -1,5 +1,61 @@
+/**
+ * OneZoom Tour engine
+ *
+ * Generate a tour of the onezoom tree from an HTML document.
+ *
+ * Starting a tour isn't generally done from here, rather the ``tour`` URL parameter, e.g:
+ *
+ *     onezoom.controller.set_treestate('?tour=/tour/data.html/superpowers');
+ *     /life/?tour=/tour/data.html/superpowers
+ *
+ * Tours can be described in 2 ways:
+ *
+ * * As an HTML document, parsed by this module
+ * * As a JSON document, stored in the DB & converted to HTML by ``views/tour/data.html``
+ *
+ * For information on the JSON fornat, see ``views/tour/data.html``.
+ *
+ * The HTML document describes the tour and tourstops and is of the following form, where each
+ * ``div.container`` is an individual tourstop:
+ *
+ *     <div class="tour">
+ *       <link rel="stylesheet ...><!-- NB: A tour can include CSS/JS, which will get included into the page -->
+ *       <div class="container [visibility classes]"
+ *            data-ott="770315"
+ *            data-transition_in="fly_straight"
+ *            data-transition_in_wait="1000"
+ *            data-fly_in_speed="0.7"
+ *            data-stop_wait="3000">
+ *         ... Tour stop HTML ...
+ *       </div>
+ *       <div class="container" data-ott="770616">
+ *         ... Tour stop HTML ...
+ *       </div>
+ *     </div>
+ *
+ * * ``[visibility classes]``: The TourStop states that a TourStop will be visible in. One of:
+ *   * ``visible-transition_in``: Visible whilst transitioning to the tourstop node
+ *   * ``visible-transition_out``: Visible whilst transitioning to the next tourstop node
+ *   * ``hidden-active_wait``: Hidden whilst at the tourstop (NB: The default is ``visible-active_wait``)
+ * * ``data-ott``: Specifies the OTT / Pinpoint that the tourstop will view, or ``0`` for point on the tree the tour started at
+ * * ``data-transition_in``: The type of transition to use, one of ``leap``, ``fly_straight``. Defaults to ``flight``
+ * * ``data-transition_in_wait``: Delay start of flight, in milliseconds. Defaults to 0
+ * * ``data-fly_in_speed``: Relative flight speed to global setting, default is 1. See {@link controller/controller_anim/fly_on_tree_to}
+ * * ``data-stop_wait``: Wait at tourstop for (stop_wait) milliseconds, then automatically move on. By default wait for user to press "next"
+ *
+ * Other modules provide extra functionality useful when writing tours, in particular:
+ * * {@link tour/handler/HtmlAudio} Autoplays/stops ``<audio>`` in a tourstop based on ``data-ts_autoplay``.
+ * * {@link tour/handler/QsOpts} Applies/reverts tree state based on ``data-qs_opts``, e.g. highlights, colour schemes, language.
+ * * {@link tour/handler/UiEvents} Behavioural CSS classes to add to tour forward/backward/etc buttons.
+ * * {@link tour/handler/Vimeo} Autoplays/stops embedded Vimeo in a tourstop based on ``data-ts_autoplay``.
+ * * {@link tour/handler/Youtube} Autoplays/stops embedded Youtube in a tourstop based on ``data-ts_autoplay``.
+ * * ``applications.OZtree.modules.embed:media_embed``: Given a media URL from one of the recognised hosting sites, generate embed HTML suitable for the handlers above.
+ *
+ * @module tour/Tour
+ */
 import handler_htmlaudio from './handler/HtmlAudio';
 import handler_qsopts from './handler/QsOpts';
+import handler_uievents from './handler/UIEvents';
 import handler_vimeo from './handler/Vimeo';
 import handler_youtube from './handler/Youtube';
 import TourStopClass from './TourStop'
@@ -176,7 +232,7 @@ class Tour {
 
     // Attach all plugins to tour, loaded when everything is finished
     return Promise.all([
-      this.bind_ui_events(),
+      handler_uievents(this),
       resolve_pinpoints(Object.keys(this.pinpoint_to_ozid)).then((pps) => {
         pps.forEach((pp) => {
           this.pinpoint_to_ozid[pp.pinpoint] = pp.ozid;
@@ -416,42 +472,6 @@ class Tour {
 
   user_backward() {
     this.goto_prev()
-  }
-
-  /**
-   * Bind previous, next, pause, play, exit button event
-   */
-  bind_ui_events() {
-    const document = this.container[0].ownerDocument;
-
-    this.container.click((e) => {
-      var target = $(e.target).closest('.tour_forward,.tour_backward,.tour_play,.tour_pause,.tour_resume,.tour_exit,.exit_confirm,.exit_cancel');
-
-      if (target.length === 0) return;
-      if (target.hasClass('tour_forward')) return this.user_forward()
-      if (target.hasClass('tour_backward')) return this.user_backward()
-      if (target.hasClass('tour_play')) return this.user_play()
-      if (target.hasClass('tour_pause')) return this.user_pause()
-      if (target.hasClass('tour_resume')) return this.user_resume()
-      if (target.hasClass('tour_exit')) return this.user_exit()
-      if (target.hasClass('exit_confirm')) {
-        this.exit_confirm_popup.hide()
-        return this.user_exit()
-      }
-      if (target.hasClass('exit_cancel')) {
-        this.exit_confirm_popup.hide()
-        return this.user_resume()
-      }
-    })
-
-    // Listen to document level visibility (read: inactive tab), translate to tourstop blocks
-    const onVisibilityChange = (e) => {
-      this.tourstop_array.forEach((ts) => {
-        ts.block_toggle('hiddentab', document.visibilityState !== 'visible');
-      });
-    };
-    document.removeEventListener('visibilitychange', onVisibilityChange);
-    document.addEventListener('visibilitychange', onVisibilityChange);
   }
 
   /**

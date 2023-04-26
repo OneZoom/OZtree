@@ -4,7 +4,8 @@
 import config from '../global_config';
 import data_repo from '../factory/data_repo';
 import { record_url } from '../navigation/record';
-import { parse_state, get_largest_visible_node } from '../navigation/utils';
+import { parse_state } from '../navigation/state';
+import { get_largest_visible_node } from '../navigation/utils';
 import { setup_page_by_state } from '../navigation/setup_page';
 import tree_settings from '../tree_settings';
 import tree_state from '../tree_state';
@@ -61,20 +62,27 @@ export default function (Controller) {
    * @memberof Controller
    */
   Controller.prototype.change_view_type = function (vis, init = false) {
-    if (vis !== tree_settings.vis) {
-      let prev = tree_settings.vis
-      tree_settings.vis = vis;
-      let self = this;
+    if (!vis) vis = tree_settings.default.vis;
 
-      // Get pre-rebuild state, so we can restore the rough position by ID
-      // Get largest node, use this to restore position
-      let n = !init ? get_largest_visible_node(this.root) : null;
+    // If nothing to do, return now
+    if (vis === tree_settings.vis && !init) return Promise.resolve();
 
-      return tree_settings.rebuild_tree(vis, prev, this).then(function () {
-        if (!init) return(self.init_move_to(n.ozid, "leap"));
-      }.bind(this));
+    // Change tree-state, noting previous
+    let prev = tree_settings.vis
+    tree_settings.vis = vis;
+
+    // On init, just build the tree, the rest of setup_page_by_state will set location
+    if (init) {
+        return tree_settings.rebuild_tree(vis, prev, this);
     }
-    return Promise.resolve();
+
+    // Get pre-rebuild state, so we can restore the rough position by ID
+    // Get largest node, use this to restore position
+    let n = get_largest_visible_node(this.root);
+
+    return tree_settings.rebuild_tree(vis, prev, this).then(() => {
+      return this.init_move_to(n.ozid, "leap");
+    });
   }
   Controller.prototype.get_view_type = function () {
     return (tree_settings.vis);
@@ -115,7 +123,7 @@ export default function (Controller) {
     if (!image_source) image_source = "best_any";
     if (data_repo.image_source !== image_source) {
       data_repo.image_source = image_source;
-      clear_node_pics(this.root);
+      if (this.root) clear_node_pics(this.root);
       this.trigger_refresh_loop()
       if (!init) {
         record_url(this, {
