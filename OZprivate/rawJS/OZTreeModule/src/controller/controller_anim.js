@@ -79,6 +79,7 @@ function get_details_of_nodes_in_view_during_fly(root) {
             image_source: data_repo.image_source
           },
           success: function(res) {
+            // NB: Do the work of update_nodes_details()
             let length;
             length = temp_nodes_arr.length;
             for (let i=0; i<length; i++) {
