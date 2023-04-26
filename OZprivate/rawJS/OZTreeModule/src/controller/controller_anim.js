@@ -183,6 +183,12 @@ export default function (Controller) {
         this, into_node, Infinity, 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
     }))
   }
+  Controller.prototype.fetch_details_and_leap_to = function(dest_OZid, position=null, into_node=false) {
+    this.develop_branch_to_and_target(dest_OZid);
+    return get_details_of_nodes_in_view_during_fly(this.root).then(function () {
+        return this.leap_to(dest_OZid, position, into_node);
+    }.bind(this));
+  }
   
   /**
    * Fly directly to a specified OneZoom node id in the tree from your current position.
@@ -394,13 +400,7 @@ export default function (Controller) {
     }
 
     // init == "leap"
-    // NB: leap_to won't fetch details, we do it ourselves
-    position_helper.clear_target(this.root);
-    n = this.develop_branch_to_and_target(dest_OZid);
-    position_helper.target_by_code(this.root, n.ozid);
-    return get_details_of_nodes_in_view_during_fly(this.root).then(function () {
-        return this.leap_to(dest_OZid, init, into_node=into_node);
-    }.bind(this));
+    return this.fetch_details_and_leap_to(dest_OZid, init, into_node=into_node);
   };
   
   /**

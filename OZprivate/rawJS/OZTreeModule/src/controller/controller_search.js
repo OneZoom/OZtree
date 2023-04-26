@@ -73,7 +73,7 @@ export default function (Controller) {
         if (config.search_jump_mode === 'flight') {
             return p.then((pp) => this.fly_on_tree_to(null, pp.ozid));
         } else {
-            return p.then((pp) => this.leap_to(pp.ozid));
+            return p.then((pp) => this.fetch_details_and_leap_to(pp.ozid));
         }
     }
 

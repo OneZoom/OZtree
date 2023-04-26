@@ -290,14 +290,6 @@ class SearchManager {
     let tidy_latin = (latinName && (!latinName.startsWith("_")) && (!latinName.endsWith("_"))) ? latinName.split("_").join(" ") : null; 
     let tidy_common = vernacular ? capitalizeFirstLetter(vernacular) : null; // ready for printing in UI
     
-    //populate some global hash tables
-    if (this.data_repo && ott) {
-        this.data_repo.id_ott_map[id*id_decider] = ott;
-        if (!this.data_repo.ott_name_map[ott]) this.data_repo.ott_name_map[ott] = [];
-        if (tidy_latin) this.data_repo.ott_name_map[ott][0] = tidy_latin;
-        if (tidy_common) this.data_repo.ott_name_map[ott][1] = tidy_common;
-    }
-    
     let row = [tidy_common, tidy_latin, id * id_decider];
     let score_result = overall_search_score(toSearchFor, latinName, lang, vernacular, extra_vernaculars);
     if (score_result.length < 2) {
