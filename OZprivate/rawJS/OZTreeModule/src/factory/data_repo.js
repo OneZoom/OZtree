@@ -7,7 +7,6 @@ import {pic_src_order} from '../tree_settings';
 class DataRepo {
   constructor() {
     this.ott_id_map = {};
-    this.id_ott_map = {};
     this.name_id_map = {};
     this.ott_region_map = {
         
@@ -125,7 +124,7 @@ class DataRepo {
    */
   
   update_metadata(res) {
-    this.populate_id_ott_map(res);
+    this.populate_ott_id_map(res);
     this.populate_name_id_map(res);
     parse_ordered_leaves(this, res.leaves, node_details_api);
     parse_ordered_nodes(this, res.nodes, node_details_api);
@@ -204,7 +203,7 @@ class DataRepo {
    * @private 
    * @param {Object} res - the API JSON return result from node_details.json
    */
-  populate_id_ott_map(res) {
+  populate_ott_id_map(res) {
     let nodes = res.nodes;
     let leaves = res.leaves;
     for (let i=0; i<nodes.length; i++) {
@@ -212,7 +211,6 @@ class DataRepo {
       let id = nodes[i][node_details_api.node_cols["id"]];
       if (ott) {
         this.ott_id_map[ott] = id;
-        this.id_ott_map[id] = ott;
       }
     }
     for (let i=0; i<leaves.length; i++) {
@@ -220,7 +218,6 @@ class DataRepo {
       let id = leaves[i][node_details_api.leaf_cols["id"]];
       if (ott) {
         this.ott_id_map[ott] = -id;
-        this.id_ott_map[-id] = ott;
       }
     }
   }

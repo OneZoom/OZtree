@@ -49,11 +49,14 @@ export function populate_data_repo(tree_serial = '25589581') {
   * Find an OZid that matches given conditions
   */
 export function get_ozid({leaf = false, node = false, nonexistant = false}) {
-  var candidates = Object.keys(data_repo.id_ott_map);
+  var candidates = [].concat(
+      Object.keys(data_repo.metadata.leaf_meta).map((x) => parseInt(x, 10)).map((x) => -x),
+      Object.keys(data_repo.metadata.node_meta).map((x) => parseInt(x, 10)),
+  );
 
   if (nonexistant) candidates = [999999999, -999999999]
   if (leaf) candidates = candidates.filter((x) => x < 0)
   if (node) candidates = candidates.filter((x) => x >= 0)
 
-  return parseInt(candidates[Math.floor(Math.random() * (candidates.length - 1))]);
+  return candidates[Math.floor(Math.random() * (candidates.length - 1))];
 }

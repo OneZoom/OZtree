@@ -206,17 +206,11 @@ class SearchManager {
         if (res.nodes){ // check if there are node search results before processing those
             for (let i=0; i<res.nodes.length; i++) {
                 temp_ott_id_map[res.nodes[i].ott] = res.nodes[i].id;
-                if (this.data_repo)
-                    // If this.data_repo exists append data - this is to enable URL rewriting later
-                    this.data_repo.id_ott_map[res.nodes[i].id] = res.nodes[i].ott;
             }
         }
         if (res.leaves){ // check that there are leaf search results
             for (let i=0; i<res.leaves.length; i++) {
                 temp_ott_id_map[res.leaves[i].ott] = -res.leaves[i].id;
-                if (this.data_repo)
-                    // If this.data_repo exists append data - this is to enable URL rewriting later
-                    this.data_repo.id_ott_map[-res.leaves[i].id] = res.leaves[i].ott;
             }
          }
           if (res.reservations){ // check that there are reservation search results (sponsors)

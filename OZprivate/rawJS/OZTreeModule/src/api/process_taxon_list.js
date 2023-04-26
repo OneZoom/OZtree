@@ -41,7 +41,7 @@ export default function process_taxon_list(taxon_json, taxon_callback, header_ca
               ott_array: otts
             },
             success: function (xhr) {
-              let res = populate_data_repo_id_ott_map(xhr);
+              let res = populate_data_repo_ott_id_map(xhr);
               let ott_id_map = res[0];
               let scinames = res[1];
               for (let i = 0; i < taxon_list.length; i++) {
@@ -74,20 +74,18 @@ export default function process_taxon_list(taxon_json, taxon_callback, header_ca
   }
 }
 
-function populate_data_repo_id_ott_map(xhr) {
+function populate_data_repo_ott_id_map(xhr) {
   let ott_id_map = {};
   for (let ott in xhr.leaves) {
     if (xhr.leaves.hasOwnProperty(ott)) {
       ott_id_map[ott] = -xhr.leaves[ott];
       data_repo.ott_id_map[ott] = -xhr.leaves[ott];
-      data_repo.id_ott_map[-xhr.leaves[ott]] = ott;
     }
   }
   for (let ott in xhr.nodes) {
     if (xhr.nodes.hasOwnProperty(ott)) {
       ott_id_map[ott] = xhr.nodes[ott];
       data_repo.ott_id_map[ott] = xhr.nodes[ott];
-      data_repo.id_ott_map[xhr.nodes[ott]] = ott;
     }
   }
   return [ott_id_map, xhr.names];

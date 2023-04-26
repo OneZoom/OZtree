@@ -474,8 +474,6 @@ class Midnode {
   get ott() {
     if (this._ott !== null) return this._ott;
     let ott = this.get_attribute("OTTid");
-    if (!ott && this.is_interior_node && data_repo.id_ott_map[this.metacode]) ott = data_repo.id_ott_map[this.metacode];
-    else if (!ott && this.is_leaf && data_repo.id_ott_map[-this.metacode]) ott = data_repo.id_ott_map[-this.metacode];
     if (this.detail_fetched || ott) {
       this._ott = ott;
     }
