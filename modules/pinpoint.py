@@ -13,7 +13,7 @@ def resolve_pinpoint_to_row(pinpoint):
     if not pinpoint:
         # No pinpoint, root node
         node_query = db.ordered_nodes.parent < 1
-        leaf_query = False
+        leaf_query = None
     elif not pinpoint.startswith('@'):
         # Doesn't start with @? Treat as OTT
         node_query = db.ordered_nodes.ott == int(pinpoint)
@@ -29,14 +29,20 @@ def resolve_pinpoint_to_row(pinpoint):
             # NB: Cheat and just return the left branch, don't do the lookup yet
             node_query = db.ordered_nodes.ott == sub_pinpoints[0]
             leaf_query = db.ordered_leaves.ott == sub_pinpoints[0]
+        elif parts[0] == '_ozid':
+            ozid = int(parts[1])
+            node_query = (db.ordered_nodes.id == ozid) if ozid > 0 else None
+            leaf_query = (db.ordered_leaves.id == -ozid) if ozid < 0 else None
         else: # Regular @[latin]=[OTT] form, search for either.
             tidy_latin = parts[0].replace("_", " ")
             node_query = (db.ordered_nodes.name == tidy_latin) | (db.ordered_nodes.ott == int(parts[1]))
             leaf_query = (db.ordered_leaves.name == tidy_latin) | (db.ordered_leaves.ott == int(parts[1]))
 
     # Look at nodes first
-    for r in db(node_query).select(db.ordered_nodes.ALL, orderby="OTT IS NULL"):
-        return r, False
-    for r in db(leaf_query).select(db.ordered_leaves.ALL, orderby="OTT IS NULL"):
-        return r, True
+    if node_query is not None:
+        for r in db(node_query).select(db.ordered_nodes.ALL, orderby="OTT IS NULL"):
+            return r, False
+    if leaf_query is not None:
+        for r in db(leaf_query).select(db.ordered_leaves.ALL, orderby="OTT IS NULL"):
+            return r, True
     return None, False
