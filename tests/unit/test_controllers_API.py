@@ -15,6 +15,40 @@ class TestControllersAPI(unittest.TestCase):
     def tearDown(self):
         db.rollback()
 
+    def test_pinpoints(self):
+        def pinpoints(pps, **kwargs):
+            out = util.call_controller(API, 'pinpoints', vars=kwargs, args=pps)
+            self.assertEqual(out['lang'], kwargs.get('lang', 'en'))
+            return out['results']
+
+        # Get arbitary content
+        leaves = db((db.ordered_leaves.ott != None) & (db.ordered_leaves.name != None)).select(orderby='ott', limitby=(0,4))
+        nodes = db((db.ordered_nodes.ott != None) & (db.ordered_nodes.name != None)).select(orderby='ott', limitby=(0,4))
+        vns = db((db.vernacular_by_ott.lang_primary=='en') & (db.vernacular_by_ott.preferred==True)).select(
+          join=db.ordered_leaves.on(db.ordered_leaves.ott == db.vernacular_by_ott.ott),
+          limitby=(0,4))
+
+        self.assertEqual(pinpoints([]), [])
+        self.assertEqual(pinpoints(['@missingmissingmissing']), [dict(pinpoint='@missingmissingmissing')])
+
+        self.assertEqual(
+            pinpoints(['@=%d' % n.ott for n in leaves]),
+            [dict(ott=n.ott, ozid=-n.id, pinpoint='@=%d' % n.ott) for n in leaves],
+        )
+        self.assertEqual(
+            pinpoints(['@=%d' % n.ott for n in nodes]),
+            [dict(ott=n.ott, ozid=n.id, pinpoint='@=%d' % n.ott) for n in nodes],
+        )
+        self.assertEqual(
+            pinpoints(['@=%d' % v.ordered_leaves.ott for v in vns], vernacular='short', lang='en'),
+            [dict(
+                ott=v.vernacular_by_ott.ott,
+                ozid=-v.ordered_leaves.id,
+                pinpoint='@=%d' % v.vernacular_by_ott.ott,
+                vn=v.vernacular_by_ott.vernacular,
+            ) for v in vns],
+        )
+
     def test_search_init(self):
         """Search for arbitary node/name combinations"""
         def search_init(**kwargs):

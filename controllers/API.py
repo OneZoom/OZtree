@@ -7,6 +7,7 @@ from numbers import Number
 import OZfunc
 import img
 import sponsorship_search
+import pinpoint
 """
 This contains the API functions - node_details, image_details, search_names, and search_sponsors. search_node also exists, which is a combination of search_names and search_sponsors.
 # request.vars:
@@ -146,6 +147,40 @@ def search_node():
     else:
         res2 = {"reservations": {}, "nodes": {}, "leaves": {}}
     return {"nodes": res1, "sponsors": res2}
+
+def pinpoints():
+    session.forget(response)
+    pinpoints = request.args
+    lang = request.vars.lang or request.env.http_accept_language or 'en'
+
+    results = []
+    for pp in request.args:
+        r, is_leaf = pinpoint.resolve_pinpoint_to_row(pp)
+        if not r:
+            # No result
+            results.append(dict(pinpoint=pp))
+            continue
+        results.append(dict(
+            pinpoint=pp,
+            ozid=-r.id if is_leaf else r.id,
+            ott=r.ott,
+        ))
+
+    vn_type = request.vars.get('vernacular', None)
+    if vn_type:
+        vn_results = OZfunc.get_common_names(
+            [r['ott'] for r in results if r.get('ott', None)],
+            return_nulls=False,
+            prefer_short_name='short' in vn_type,
+            include_unpreferred='unpreferred' in vn_type,
+            return_all='all' in vn_type,
+            lang=lang,
+        )
+        for r in results:
+            if r.get('ott', None):
+                r['vn'] = vn_results.get(r['ott'], None)
+
+    return dict(lang=lang, results=results)
 
 def search_init():
     """
