@@ -30,6 +30,10 @@ class TestModulesPinpoint(unittest.TestCase):
             else:
                 self.assertEqual(is_leaf, False)
             return r
+        def ancestor(*pps):
+            """Find common ancestor of pinpoints"""
+            return rpr("@_ancestor=" + "-".join(str(rpr(p).ott) for p in pps))
+
         # Get arbitary content
         leaves = db((db.ordered_leaves.ott != None) & (db.ordered_leaves.name != None)).select(orderby='ott', limitby=(0,4))
         nodes = db((db.ordered_nodes.ott != None) & (db.ordered_nodes.name != None)).select(orderby='ott', limitby=(0,4))
@@ -65,6 +69,24 @@ class TestModulesPinpoint(unittest.TestCase):
         # Both
         for n in leaves:
             self.assertEqual(rpr("@%s=%d" % (tidy_latin(n.name), n.ott)).id, n.id)
+
+        # Common ancestor
+        self.assertEqual(
+            ancestor("@Crypturellus", "@Crypturellus").name.lower(),
+            "crypturellus",
+        )
+        self.assertEqual(
+            ancestor("@Xenicus_gilviventris", "@Crypturellus").name.lower(),
+            "aves",
+        )
+        self.assertEqual(
+            ancestor("@Xenicus_gilviventris", "@Alectoris").name.lower(),
+            "neognathae",
+        )
+        self.assertEqual(
+            ancestor("@Xenicus_gilviventris", "@Crypturellus", "@Alectoris").name.lower(),
+            "aves",
+        )
 
 
 if __name__ == '__main__':
