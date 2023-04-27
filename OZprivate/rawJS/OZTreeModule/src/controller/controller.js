@@ -114,6 +114,11 @@ class Controller {
     */
   trigger_refresh_loop() {
     function refresh_loop() {
+      if (!this.root) {
+        // Tree not init-ed, we started early.
+        this.refresh_timer = null;
+        return;
+      }
       call_hook("before_draw");
       if ((this.widthres != this.canvas.clientWidth)||(this.heightres != this.canvas.clientHeight))
       {

@@ -7,9 +7,7 @@ import {pic_src_order} from '../tree_settings';
 class DataRepo {
   constructor() {
     this.ott_id_map = {};
-    this.id_ott_map = {};
     this.name_id_map = {};
-    this.ott_name_map = {};
     this.ott_region_map = {
         
         // lowest priority
@@ -126,7 +124,7 @@ class DataRepo {
    */
   
   update_metadata(res) {
-    this.populate_id_ott_map(res);
+    this.populate_ott_id_map(res);
     this.populate_name_id_map(res);
     parse_ordered_leaves(this, res.leaves, node_details_api);
     parse_ordered_nodes(this, res.nodes, node_details_api);
@@ -154,7 +152,6 @@ class DataRepo {
     for (let arr of Object.values(this.metadata.node_meta)) {
       delete arr[data_repo.mc_key_n["common_en"]];
     }
-    this.ott_name_map = {};
   }
 
   get raw_data() {
@@ -206,7 +203,7 @@ class DataRepo {
    * @private 
    * @param {Object} res - the API JSON return result from node_details.json
    */
-  populate_id_ott_map(res) {
+  populate_ott_id_map(res) {
     let nodes = res.nodes;
     let leaves = res.leaves;
     for (let i=0; i<nodes.length; i++) {
@@ -214,7 +211,6 @@ class DataRepo {
       let id = nodes[i][node_details_api.node_cols["id"]];
       if (ott) {
         this.ott_id_map[ott] = id;
-        this.id_ott_map[id] = ott;
       }
     }
     for (let i=0; i<leaves.length; i++) {
@@ -222,7 +218,6 @@ class DataRepo {
       let id = leaves[i][node_details_api.leaf_cols["id"]];
       if (ott) {
         this.ott_id_map[ott] = -id;
-        this.id_ott_map[-id] = ott;
       }
     }
   }
@@ -359,11 +354,6 @@ function parse_vernacular_by_ott(data_repo, vernacular_by_ott) {
       if (!data_repo.metadata.leaf_meta[id][data_repo.mc_key_l["common_en"]])
         data_repo.metadata.leaf_meta[id][data_repo.mc_key_l["common_en"]] = vernacular;
     }
-    
-    //data_repo.ott_name_map[ott] = [scientificName, vernacular]
-    if (!data_repo.ott_name_map[ott]) data_repo.ott_name_map[ott] = [];
-    if (!data_repo.ott_name_map[ott][1])
-      data_repo.ott_name_map[ott][1] = vernacular;
   }
 }
 

@@ -82,7 +82,6 @@ export function resolve_pinpoints(pinpoint_or_pinpoints) {
         if (res.ids && res.ids.length) {
           if (p.ott) {
             data_repo.ott_id_map[p.ott] = res.ids[0]
-            data_repo.id_ott_map[res.ids[0]] = p.ott
           }
           p.ozid = res.ids[0]
           resolve(p);

@@ -206,17 +206,11 @@ class SearchManager {
         if (res.nodes){ // check if there are node search results before processing those
             for (let i=0; i<res.nodes.length; i++) {
                 temp_ott_id_map[res.nodes[i].ott] = res.nodes[i].id;
-                if (this.data_repo)
-                    // If this.data_repo exists append data - this is to enable URL rewriting later
-                    this.data_repo.id_ott_map[res.nodes[i].id] = res.nodes[i].ott;
             }
         }
         if (res.leaves){ // check that there are leaf search results
             for (let i=0; i<res.leaves.length; i++) {
                 temp_ott_id_map[res.leaves[i].ott] = -res.leaves[i].id;
-                if (this.data_repo)
-                    // If this.data_repo exists append data - this is to enable URL rewriting later
-                    this.data_repo.id_ott_map[-res.leaves[i].id] = res.leaves[i].ott;
             }
          }
           if (res.reservations){ // check that there are reservation search results (sponsors)
@@ -289,14 +283,6 @@ class SearchManager {
     // "latin names" starting or ending with underscore are "fake" in OneZoom
     let tidy_latin = (latinName && (!latinName.startsWith("_")) && (!latinName.endsWith("_"))) ? latinName.split("_").join(" ") : null; 
     let tidy_common = vernacular ? capitalizeFirstLetter(vernacular) : null; // ready for printing in UI
-    
-    //populate some global hash tables
-    if (this.data_repo && ott) {
-        this.data_repo.id_ott_map[id*id_decider] = ott;
-        if (!this.data_repo.ott_name_map[ott]) this.data_repo.ott_name_map[ott] = [];
-        if (tidy_latin) this.data_repo.ott_name_map[ott][0] = tidy_latin;
-        if (tidy_common) this.data_repo.ott_name_map[ott][1] = tidy_common;
-    }
     
     let row = [tidy_common, tidy_latin, id * id_decider];
     let score_result = overall_search_score(toSearchFor, latinName, lang, vernacular, extra_vernaculars);

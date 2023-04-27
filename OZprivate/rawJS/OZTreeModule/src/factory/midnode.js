@@ -282,18 +282,14 @@ class Midnode {
    * Get attribute of node by key name. Use this function to fetch metadata of node only.
    */
   get_attribute(key_name) {
-    if (this.detail_fetched && this.is_leaf) {
-      let col = data_repo.mc_key_l[key_name];
-      if (data_repo.metadata.leaf_meta[this.metacode] && data_repo.metadata.leaf_meta[this.metacode][col] !== undefined) {
-        return data_repo.metadata.leaf_meta[this.metacode][col];
-      }
-    } else if (this.detail_fetched && this.is_interior_node) {
-      let col = data_repo.mc_key_n[key_name];
-      if (data_repo.metadata.node_meta[this.metacode] && data_repo.metadata.node_meta[this.metacode][col] !== undefined) {
-        return data_repo.metadata.node_meta[this.metacode][col];
-      }
+    if (this.is_leaf) {
+      if (!data_repo.metadata.leaf_meta[this.metacode]) return undefined;
+      return data_repo.metadata.leaf_meta[this.metacode][data_repo.mc_key_l[key_name]];
     }
-    return undefined;
+    if (this.is_interior_node) {
+      if (!data_repo.metadata.node_meta[this.metacode]) return undefined;
+      return data_repo.metadata.node_meta[this.metacode][data_repo.mc_key_n[key_name]];
+    }
   }
   
   clear_pics() {
@@ -332,7 +328,6 @@ class Midnode {
   get cname() {
     if (this._cname !== null) return this._cname;
     let _cname = this.get_attribute("common_en");
-    if (!_cname && this.ott && data_repo.ott_name_map[this.ott]) _cname = data_repo.ott_name_map[this.ott][1];
     if (this.detail_fetched) {
       _cname = capitalizeFirstLetter(_cname);
       this._cname = _cname;
@@ -342,7 +337,6 @@ class Midnode {
   get latin_name() {
     if (this._latin_name !== null) return this._latin_name;
     let _latin_name = this.get_attribute("scientificName");
-    if (!_latin_name && this.ott && data_repo.ott_name_map[this.ott]) _latin_name = data_repo.ott_name_map[this.ott][0];
     if (_latin_name && _latin_name.charAt(_latin_name.length-1) === "_") {
       _latin_name = null;
     } else if (_latin_name) {
@@ -480,8 +474,6 @@ class Midnode {
   get ott() {
     if (this._ott !== null) return this._ott;
     let ott = this.get_attribute("OTTid");
-    if (!ott && this.is_interior_node && data_repo.id_ott_map[this.metacode]) ott = data_repo.id_ott_map[this.metacode];
-    else if (!ott && this.is_leaf && data_repo.id_ott_map[-this.metacode]) ott = data_repo.id_ott_map[-this.metacode];
     if (this.detail_fetched || ott) {
       this._ott = ott;
     }
