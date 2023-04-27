@@ -71,30 +71,21 @@ export function resolve_pinpoints(pinpoint_or_pinpoints) {
       p.ozid = p.ozid || data_repo.ott_id_map[p.ott] || data_repo.name_id_map[p.latin_name];
   })
 
-  // Make a separate API call for each node without an ID, fill in details
-  return Promise.all(pinpoints.filter((p) => !p.ozid && (p.ott || p.latin_name)).map((p) => new Promise(function(resolve, reject) {
-    let data = {}
-    if (p.ott) data.ott = p.ott
-    if (p.latin_name) data.name = p.latin_name
-    api_manager.search_init({
-      data: data,
-      success: function (res) {
-        if (res.ids && res.ids.length) {
-          if (p.ott) {
-            data_repo.ott_id_map[p.ott] = res.ids[0]
-          }
-          p.ozid = res.ids[0]
-          resolve(p);
-        } else {
-          // If we can't get an ozid at this point, it's broken
-          reject("Invalid pinpoint: " + p.pinpoint);
-        }
-      },
-      error: function (res) {
-        reject("Failed to talk to server: " + res);
-      }
+  // Request the API fills in any pinpoints we don't already know about
+  let missing_pinpoints = pinpoints.filter((p) => !p.ozid);
+  return api_manager.pinpoints(missing_pinpoints.map((p) => p.pinpoint), {}).then((res) => {
+    if (missing_pinpoints.length !== res.results.length) throw new Error("Mismatching number of results: " + res.results.length + " vs " + missing_pinpoints.length);
+    missing_pinpoints.forEach((p, i) => {
+      // Update our pinpoint object with results
+      Object.assign(p, res.results[i]);
+
+      // If we haven't got an ozid at this point, it's broken
+      if (!p.ozid) throw new Error("Invalid pinpoint" + p.pinpoint);
+
+      // Add info into the ott_id_map for next time
+      if (p.ott) data_repo.ott_id_map[p.ott] = p.ozid;
     });
-  }))).then(function () {
+
     pinpoints.forEach((p) => {
       if (p.ozid === 'common_ancestor') {
         // For any common ancestors, look up their target node now their targets are identified

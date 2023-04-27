@@ -58,7 +58,7 @@ config.api = {
   get_ids_by_ott_array_api: null,
   otts2vns_api: null,
 
-  search_init_api: null,
+  pinpoints_api: null,
 
   abort_request_threshold: 30000, //timeout for ajax call
   max_concurrent_request: 3,
