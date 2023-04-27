@@ -49,6 +49,16 @@ class TestControllersAPI(unittest.TestCase):
             ) for v in vns],
         )
 
+        # Request sciname in results
+        self.assertEqual(
+            pinpoints(['@=%d' % n.ott for n in leaves], sciname='y'),
+            [dict(ott=n.ott, ozid=-n.id, pinpoint='@=%d' % n.ott, sciname=n.name) for n in leaves],
+        )
+        self.assertEqual(
+            pinpoints(['@=%d' % n.ott for n in nodes], sciname='y'),
+            [dict(ott=n.ott, ozid=n.id, pinpoint='@=%d' % n.ott, sciname=n.name) for n in nodes],
+        )
+
     def test_search_init(self):
         """Search for arbitary node/name combinations"""
         def search_init(**kwargs):

@@ -165,6 +165,8 @@ def pinpoints():
             ozid=-r.id if is_leaf else r.id,
             ott=r.ott,
         ))
+        if request.vars.get('sciname', None):
+            results[-1]['sciname'] = r.name;
 
     vn_type = request.vars.get('vernacular', None)
     if vn_type:
