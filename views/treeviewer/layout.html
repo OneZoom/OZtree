@@ -623,7 +623,11 @@ function setupUI() {
             onezoom.controller.set_language(self.value);
             //reset the UI to a new language
             $('[uk-modal]').remove(); //UIkit modals jump around the DOM, so need deleting by hand
-            $('#UI').load('{{=URL("treeviewer", setup_params["UI_layer"]["page"], vars=setup_params["UI_layer"].get("vars"))}}{{=XML("&" if setup_params["UI_layer"].get("vars") else "?")}}'+lang_param, setupUI)
+            $('#UI').load('{{=URL("treeviewer", setup_params["UI_layer"]["page"], vars=setup_params["UI_layer"].get("vars"))}}{{=XML("&" if setup_params["UI_layer"].get("vars") else "?")}}'+lang_param, function () {
+                // New DOM is loaded, but UIKit hasn't noticed yet. Let it's hooks fire first, then set up UI
+                // This means things like UIkit.getComponent(x, 'tooltip') will now work
+                window.setTimeout(setupUI, 10);
+            })
         });
     })
     $('select#treepage').val('{{=request.function}}');
