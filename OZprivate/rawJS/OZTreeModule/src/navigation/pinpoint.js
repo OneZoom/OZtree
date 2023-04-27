@@ -14,10 +14,14 @@ import data_repo from '../factory/data_repo';
  * ``@_ozid=123456``: Where 123456 is an OZid / metacode
  * If required, API lookups will be made to fill in an gaps in local knowledge.
  *
+ * Extra metadata can be requested by setting items in the (extra_metadata) object:
+ * * ``sciname``: Anything truthy will add a ``sciname`` field to the pinpoint objects.
+ * * ``vn``: Add a ``vn`` field to the pinpoint object output. See ``controllers/API/pinpoints`` for possible values.
+ *
  * @param pinpoint_or_pinpoints A pinpoint string or list of pinpoint strings
  * @return {Promise} Resolves to a pinpoint dict or list of pinpoint dicts, depending on what was handed in
  */
-export function resolve_pinpoints(pinpoint_or_pinpoints) {
+export function resolve_pinpoints(pinpoint_or_pinpoints, extra_metadata={}) {
   let pinpoints = Array.isArray(pinpoint_or_pinpoints) ? pinpoint_or_pinpoints : [pinpoint_or_pinpoints];
   let extra_lookups = [];
 
@@ -71,9 +75,13 @@ export function resolve_pinpoints(pinpoint_or_pinpoints) {
       p.ozid = p.ozid || data_repo.ott_id_map[p.ott] || data_repo.name_id_map[p.latin_name];
   })
 
-  // Request the API fills in any pinpoints we don't already know about
-  let missing_pinpoints = pinpoints.filter((p) => !p.ozid);
-  return api_manager.pinpoints(missing_pinpoints.map((p) => p.pinpoint), {}).then((res) => {
+  // Request the API fills in any pinpoints / metadata we don't already know about
+  let missing_pinpoints = pinpoints.filter((p) => {
+    if (!p.ozid) return true;
+    for (let n of Object.keys(extra_metadata)) if (!p[n]) return true;
+    return false;
+  });
+  return api_manager.pinpoints(missing_pinpoints.map((p) => p.pinpoint), extra_metadata).then((res) => {
     if (missing_pinpoints.length !== res.results.length) throw new Error("Mismatching number of results: " + res.results.length + " vs " + missing_pinpoints.length);
     missing_pinpoints.forEach((p, i) => {
       // Update our pinpoint object with results

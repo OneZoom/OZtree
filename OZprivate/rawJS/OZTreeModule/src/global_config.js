@@ -55,8 +55,6 @@ config.api = {
 
   search_api: null,
   search_sponsor_api: null,
-  get_ids_by_ott_array_api: null,
-  otts2vns_api: null,
 
   pinpoints_api: null,
 

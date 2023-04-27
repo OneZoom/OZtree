@@ -12,8 +12,8 @@ class APIManager {
   
   /** Set the urls that will be used when calling the API.
    *  @params {Object.<string, string>} server_urls - a set of urls for the OneZoom API. 
-   * Names for each url can be one of 'search_api', 'search_sponsor_api', 'get_ids_by_ott_array_api',
-   * 'otts2vns_api', 'node_details_api', 'pinpoints_api'
+   * Names for each url can be one of 'search_api', 'search_sponsor_api',
+   * 'node_details_api', 'pinpoints_api'
    */
   set_urls(server_urls) {
     for (let name in server_urls) {
@@ -76,16 +76,6 @@ class APIManager {
       alert('Something’s not quite right.' +
        '\n(search_sponsor_api was not set in config.api).' +
        '\nPlease email mail@onezoom.org and let us know.')
-  }
-  get_ids_by_ott_array(params) {
-    params.url = config.api.get_ids_by_ott_array_api;
-    api_wrapper(params);
-  }
-  otts2vns(params) {
-    //returns vernaculars, so we have to set the language if necessary
-    if (config.lang) params.data.lang = config.lang;
-    params.url = config.api.otts2vns_api;
-    api_wrapper(params);
   }
   node_detail(params) {
     //node_detail contains vernaculars, so we have to set the language if necessary
