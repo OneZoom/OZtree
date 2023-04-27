@@ -168,7 +168,7 @@ def pinpoints():
         if request.vars.get('sciname', None):
             results[-1]['sciname'] = r.name;
 
-    vn_type = request.vars.get('vernacular', None)
+    vn_type = request.vars.get('vn', None)
     if vn_type:
         vn_results = OZfunc.get_common_names(
             [r['ott'] for r in results if r.get('ott', None)],

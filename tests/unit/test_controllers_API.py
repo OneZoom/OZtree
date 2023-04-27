@@ -40,7 +40,7 @@ class TestControllersAPI(unittest.TestCase):
             [dict(ott=n.ott, ozid=n.id, pinpoint='@=%d' % n.ott) for n in nodes],
         )
         self.assertEqual(
-            pinpoints(['@=%d' % v.ordered_leaves.ott for v in vns], vernacular='short', lang='en'),
+            pinpoints(['@=%d' % v.ordered_leaves.ott for v in vns], vn='short', lang='en'),
             [dict(
                 ott=v.vernacular_by_ott.ott,
                 ozid=-v.ordered_leaves.id,
