@@ -9,6 +9,8 @@
 </div>
 {{end block}}
 
+<div class="uk-text-small uk-padding-small">
+
 <h2>Embed a customised OneZoom tree in your website</h2>
 
 <p>Without downloading or installing any software you can still use our embed
@@ -45,3 +47,61 @@ window.fetch(`${oz_origin}/API/getOTT.json?gbif=${gbif_code}`).then(x=>x.json())
     document.getElementById('oz_iframe').src = ott ? oz_embed_url(ott) : '';
 });
 </pre>
+
+<h2>Remote-control of OneZoom</h2>
+
+<p>
+Many aspects of OneZoom treeviewer can be configured by URL. There are 2 relevant bits of documentation:
+</p>
+
+<ul>
+  <li><a href="https://github.com/OneZoom/OZtree/blob/HEAD/OZprivate/rawJS/OZTreeModule/src/navigation/state.js">The URL parsing documentation, describing the query string options available</a></li>
+  <li><a href="https://github.com/OneZoom/OZtree/blob/HEAD/OZprivate/rawJS/OZTreeModule/src/navigation/pinpoint.js">The Pinpoint documentation, describing the pinpoint strings used to direct OneZoom to a species</a></li>
+</ul>
+
+<p>
+Anything that can be set via. the URL can be changed at run time by giving a
+querystring to <code>onezoom.controller.set_treestate()</code>. For example:
+</p>
+
+<pre>
+onezoom.controller.set_treestate('?lang=fr')
+onezoom.controller.set_treestate('?lang=fr&amp;cols=AT')
+// NB: An empty URL section resets to default
+onezoom.controller.set_treestate('?lang=&amp;cols=')
+</pre>
+
+<h4>Zooming around</h4>
+
+This can also be done with <code>set_treestate()</code>:
+
+<pre>
+onezoom.controller.set_treestate('@Aves')
+// Instant jump to Elephants
+onezoom.controller.set_treestate('@Loxodonta_africana?anim=jump')
+</pre>
+
+<h4>Highlighting</h4>
+
+Highlights can be enabled by providing a highlight string to <code>set_treestate()</code>:
+
+<pre>
+onezoom.controller.set_treestate('?highlight=path:@tetrapoda@aves&amp;highlight=fan:@aves@GALLOANSERAE')
+// Turn highlights off again
+onezoom.controller.set_treestate('?highlight=')
+</pre>
+
+<p>
+See the <a href="https://github.com/OneZoom/OZtree/blob/main/OZprivate/rawJS/OZTreeModule/src/projection/highlight/highlight.js">the highlight documentation</a>
+for more information on syntax.
+</p>
+
+<h4>Playing a tour</h4>
+
+Tours can be played using the <code>tour</code> querystring option:
+
+<pre>
+onezoom.controller.set_treestate('?tour=/tour/data.html/superpowers');
+</pre>
+
+</div><!-- uk-text-small uk-padding-small -->
