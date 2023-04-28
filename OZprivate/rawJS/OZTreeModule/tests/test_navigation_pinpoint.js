@@ -43,6 +43,45 @@ test('resolve_pinpoints:ott', function (test) {
   })
 });
 
+test('resolve_pinpoints:sciname', function (test) {
+  return populate_data_repo().then(() => {
+    return Promise.all([
+        test_pinpoint(test, '@Pteropus_vampyrus=448935', {
+            pinpoint: '@Pteropus_vampyrus=448935',
+            // NB; Got back untidied name, as it's valid
+            sciname: 'Pteropus vampyrus',
+            ott: 448935,
+            ozid: -836320,
+        }),
+        test_pinpoint(test, '@Pteropus_vamp=448935', {
+            pinpoint: '@Pteropus_vamp=448935',
+            // NB: No sciname since the broken value isn't in the map
+            ott: 448935,
+            ozid: -836320,
+        }),
+        test_pinpoint(test, '@Pteropus_lylei', {
+            pinpoint: '@Pteropus_lylei',
+            // Can look up just from latin name if in map
+            sciname: 'Pteropus lylei',
+            ozid: -836318,
+        }),
+        test_pinpoint(test, '@Pteropus_lylei=448935', {
+            pinpoint: '@Pteropus_lylei=448935',
+            // NB: OTT won over latin name, so we don't mention it
+            ott: 448935,
+            ozid: -836320,
+        }),
+    ]);
+
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
 test('resolve_pinpoints:ozid', function (test) {
   return populate_data_repo().then(() => {
     return test_pinpoint(test, '@_ozid=836250', {

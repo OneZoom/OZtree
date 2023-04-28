@@ -17,7 +17,7 @@ function test_highlights_for(test, node, highlight_strs) {
   test.deepEqual(
     highlights_for(node).map((h) => h.str),
     highlight_strs,
-    "Highlights at " + node.ozid + (node.latin_name ? ' / ' + node.latin_name : '') + (node.cname ? ' / ' + node.cname : '') + (node.ott ? ' / ' + node.ott : ''),
+    "Highlights at " + node.ozid + (node.sciname ? ' / ' + node.sciname : '') + (node.cname ? ' / ' + node.cname : '') + (node.ott ? ' / ' + node.ott : ''),
   );
 }
 
@@ -81,18 +81,18 @@ test('update_highlights', function (test) {
     // Gather some test points
     return resolve_pinpoints([
       '@biota=93302',
-      '@mammalia=244265',
+      '@Mammalia=244265',
       '@chiroptera=574724',  // All bats
-      '@peropodidae=574742',  // Megabats
-      '@dobsonia=988790',  // Bare-backed fruit bats
-      '@dobsonia_moluccensis=1032365',
-      '@dobsonia_crenulata=3613457',
-      '@acerodon=635024', // Flying foxes
-      '@pteropus=813030', // Flying foxes
-      '@pteropus_vampyrus=448935',
-      '@pteropus_lylei=630309',
+      '@Peropodidae=574742',  // Megabats
+      '@Dobsonia=988790',  // Bare-backed fruit bats
+      '@Dobsonia_moluccensis=1032365',
+      '@Dobsonia_crenulata=3613457',
+      '@Acerodon=635024', // Flying foxes
+      '@Pteropus=813030', // Flying foxes
+      '@Pteropus_vampyrus=448935',
+      '@Pteropus_lylei=630309',
     ]).then((pps) => pps.forEach((pp) => {
-        nodes[pp.latin_name] = factory.dynamic_loading_by_metacode(pp.ozid)
+        nodes[pp.ott === 574724 ? 'chiroptera' : pp.sciname] = factory.dynamic_loading_by_metacode(pp.ozid)
     }));
 
   }).then(function () {
@@ -101,7 +101,7 @@ test('update_highlights', function (test) {
     ], fake_picker).then((hs) => highlight_update(nodes.biota, hs)).then(() => {
       test.deepEqual(current_highlights(), []);
       test_highlights_for(test, nodes.biota, []);
-      test_highlights_for(test, nodes.mammalia, []);
+      test_highlights_for(test, nodes.Mammalia, []);
     });
 
   }).then(function () {
@@ -136,23 +136,23 @@ test('update_highlights', function (test) {
         // ... on both paths
         'fan:@chiroptera=574724@pteropus=813030',
       ]);
-      test_highlights_for(test, nodes.acerodon, [
+      test_highlights_for(test, nodes.Acerodon, [
         'fan:@chiroptera=574724@pteropus=813030',
         'path:@acerodon=635024',
       ]);
-      test_highlights_for(test, nodes['dobsonia moluccensis'], [
+      test_highlights_for(test, nodes['Dobsonia moluccensis'], [
         'fan:@chiroptera=574724@pteropus=813030',
       ]);
-      test_highlights_for(test, nodes.pteropus, [
+      test_highlights_for(test, nodes.Pteropus, [
         // NB: Path from here not active
         'path:@pteropus_vampyrus=448935',
       ]);
-      test_highlights_for(test, nodes.pteropus.children[1], [
+      test_highlights_for(test, nodes.Pteropus.children[1], [
         // NB: Now it is NB(2): The order of our highlights has been preserved
         'path:@pteropus=813030@pteropus_vampyrus=448935',
         'path:@pteropus_vampyrus=448935',
       ]);
-      test_highlights_for(test, nodes['pteropus vampyrus'], [
+      test_highlights_for(test, nodes['Pteropus vampyrus'], [
         'path:@pteropus=813030@pteropus_vampyrus=448935',
         'path:@pteropus_vampyrus=448935',
       ]);
@@ -176,7 +176,7 @@ test('highlights_for', function (test) {
     return resolve_pinpoints([
       '@biota=93302',
     ]).then((pps) => pps.forEach((pp) => {
-        nodes[pp.latin_name] = factory.dynamic_loading_by_metacode(pp.ozid)
+        nodes[pp.sciname] = factory.dynamic_loading_by_metacode(pp.ozid)
     }));
 
   }).then(function () {

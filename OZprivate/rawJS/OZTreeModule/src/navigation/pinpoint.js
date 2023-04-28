@@ -45,9 +45,9 @@ export function resolve_pinpoints(pinpoint_or_pinpoints, extra_metadata={}) {
     let parts = pinpoint.split("=");
     if (parts.length === 1) {
       // NB: "@12345" used to be OZid. We've stopped doing that, but keep the NaN check
-      //     so we don't interpret "@12345" as a latin_name
+      //     so we don't interpret "@12345" as a sciname
       if (isNaN(parseInt(parts[0]))) {
-        out.latin_name = untidy_latin(parts[0]);
+        out.sciname = untidy_latin(parts[0]);
       }
     } else if (parts[0] === '_ozid') {
       // Raw OZID
@@ -63,7 +63,7 @@ export function resolve_pinpoints(pinpoint_or_pinpoints, extra_metadata={}) {
       out.ozid = 'common_ancestor';
     } else {
       // Regular @[latin]=[OTT] form
-      if (parts[0].length > 0) out.latin_name = untidy_latin(parts[0]);
+      if (parts[0].length > 0) out.sciname = untidy_latin(parts[0]);
       if (!isNaN(parseInt(parts[1]))) out.ott = parseInt(parts[1]);
     }
 
@@ -72,7 +72,27 @@ export function resolve_pinpoints(pinpoint_or_pinpoints, extra_metadata={}) {
 
   // Try local lookups first using data_repo
   pinpoints.forEach((p) => {
-      p.ozid = p.ozid || data_repo.ott_id_map[p.ott] || data_repo.name_id_map[p.latin_name];
+      if (p.ott) {
+        let dr_ozid = data_repo.ott_id_map[p.ott];
+        if (!dr_ozid) {
+          delete p.ott;  // We don't know if it's valid, let the server populate it if required
+        } else if (p.ozid && p.ozid != dr_ozid) {
+          delete p.ott;  // Doesn't match existing ozid, so wrong
+        } else {
+          p.ozid = dr_ozid;
+        }
+      }
+      if (p.sciname) {
+        // NB: This will be case-sensitive matching, server will be case-insensitive. Worth the CPU time to solve?
+        let dr_ozid = data_repo.name_id_map[p.sciname];
+        if (!dr_ozid) {
+          delete p.sciname;  // We don't know if it's valid, let the server populate it if required
+        } else if (p.ozid && p.ozid != dr_ozid) {
+          delete p.sciname;  // Doesn't match existing ozid, so wrong
+        } else {
+          p.ozid = dr_ozid;
+        }
+      }
   })
 
   // Request the API fills in any pinpoints / metadata we don't already know about
