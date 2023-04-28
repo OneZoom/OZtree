@@ -7,6 +7,10 @@ def index():
     return dict(release_info=__release_info())
 
 
+def changelog():
+    return dict(release_info=__release_info())
+
+
 def embedding():
     return dict()
 

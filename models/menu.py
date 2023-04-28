@@ -52,6 +52,7 @@ response.menu = [
                                             (T('Popularity index'), False , URL('popularity' , 'index.html')),
                                             (T('Public APIs'), False , URL('API','index.html')),
                                             (T('Data sources'), False, URL('default' , 'data_sources.html')),
+                                            (T('Changelog'), False , URL('developer' , 'changelog.html')),
                                             (T('Legacy trees'), False , URL('default' , 'tree_index.html')),
                                             ]),
                  
