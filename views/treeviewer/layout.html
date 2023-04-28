@@ -325,13 +325,13 @@ function update_location_menu(loc_root) {
         .append(
           $('<a>')
             .css('margin-left', '-' + richnessRemainder + 'px')
-            .data('locationCode', my_location_codes[i])
+            .data('pinpoint', '@_ozid=' + my_location_codes[i])
             .click(function() { /* close And Fly */
               if (((document.getElementById("locationDropdown").offsetWidth)*2) > onezoom.tree_state.widthres) {
                 {{if is_testing:}}console.log("Small screen width detected, so closing location box before jump");{{pass}}
                 $("#locationDropdown").hide();
               };
-              onezoom.controller.default_move_to($(this).data('locationCode'));
+              onezoom.controller.default_move_to($(this).data('pinpoint'));
             })
             .append(my_location_names[i] + "<br>(" + onezoom.utils.number_convert(my_location_richness[i]) + ")")
         )

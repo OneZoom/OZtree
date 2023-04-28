@@ -1,0 +1,122 @@
+{{response.title='Embedding OneZoom'}}
+{{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{extend 'uikit_layout.html'}}
+
+{{block masthead}}
+<div class="home-heading uk-text-center uk-padding-small">
+    <h1>Embed OneZoom in your website</h1>
+    <p>Configure a OneZoom embeddable widget for your website</p>
+</div>
+{{end block}}
+
+<div class="uk-text-small uk-padding-small">
+
+<h2>Embed a customised OneZoom tree in your website</h2>
+
+<p>Without downloading or installing any software you can still use our embed
+and link tool if you want to embed custom versions of a tree that's already on
+OneZoom. After selecting the settings you want the page will e-mail you a short
+piece of code that you can copy any paste into your website to give you a
+OneZoom visualisation.</p>
+
+<p>The <a href="{{=URL('embed_edit')}}">embed editor can be accessed here</a>.</p>
+
+<h2>Bulk-embedding OneZoom in many pages</h2>
+
+<p>If embedding in many pages, it may be useful to check that a species / node
+exists before importing the entirety of OneZoom. To do this you can use the <a
+href="{{=URL('API', 'index')}}#API/getOTT">getOTT</a> API that finds a matching OTT
+identifier if available. Once you have an OTT you can load OneZoom using the an
+embed URL as generated using the <a href="{{=URL('embed_edit')}}">embed
+editor</a>.</p>
+
+<p><a href="{{=URL('API', 'index')}}#API/getOTT">getOTT</a> can search by several
+different identifiers. For example, the code below will search based on a GBIF
+ID and, if available in OneZoom, update the iframe to load the OneZoom tree.</p>
+
+<pre>
+const oz_origin = 'https://onezoom.org';
+const oz_embed_url = ott => `${oz_origin}/life/@${ott}?otthome=${ott}&embedkey=...`;
+
+// Fetch a GBIF ID from the URL
+let gbif_code = parseInt(window.location.search.match(/gbif=([0-9]+)/)[1]);
+
+window.fetch(`${oz_origin}/API/getOTT.json?gbif=${gbif_code}`).then(x=>x.json()).then(function (data) {
+    let ott = data.gbif[gbif_code];
+
+    document.getElementById('oz_iframe').src = ott ? oz_embed_url(ott) : '';
+});
+</pre>
+
+<h2>OneZoom treeviewer variants</h2>
+
+There are several variations on the main OneZoom <code>/life/</code> page:
+
+<ul>
+  <li><a href="{{=URL('default', 'life')}}"><code>/life/</code></a>: The default interactive view</li>
+  <li><a href="{{=URL('default', 'life_noninteractive')}}"><code>/life_noninteractive/</code></a>: Non-interactive view, all OneZoom UI is hidden</li>
+</ul>
+
+<h2>Remote-control of OneZoom</h2>
+
+<p>
+Many aspects of OneZoom treeviewer can be configured by URL. There are 2 relevant bits of documentation:
+</p>
+
+<ul>
+  <li><a href="https://github.com/OneZoom/OZtree/blob/HEAD/OZprivate/rawJS/OZTreeModule/src/navigation/state.js">The URL parsing documentation, describing the query string options available</a></li>
+  <li><a href="https://github.com/OneZoom/OZtree/blob/HEAD/OZprivate/rawJS/OZTreeModule/src/navigation/pinpoint.js">The Pinpoint documentation, describing the pinpoint strings used to direct OneZoom to a species</a></li>
+</ul>
+
+<p>
+Anything that can be set via. the URL can be changed at run time by giving a
+querystring to <code>onezoom.controller.set_treestate()</code>. For example:
+</p>
+
+<pre>
+onezoom.controller.set_treestate('?lang=fr')
+onezoom.controller.set_treestate('?lang=fr&amp;cols=AT')
+// NB: An empty URL section resets to default
+onezoom.controller.set_treestate('?lang=&amp;cols=')
+</pre>
+
+<h4>Zooming around</h4>
+
+This can also be done with <code>set_treestate()</code>:
+
+<pre>
+onezoom.controller.set_treestate('@Aves')
+// Instant jump to Elephants
+onezoom.controller.set_treestate('@Loxodonta_africana?anim=jump')
+// Slow direct flight to Rodents
+onezoom.controller.set_treestate('@RODENTIA?anim=straight-0.2')
+// Quick Flight to blackbird
+onezoom.controller.set_treestate('@Turdus_merula?anim=flight-4')
+// Reset flights back to normal
+onezoom.controller.set_treestate('?anim=')
+</pre>
+
+<h4>Highlighting</h4>
+
+Highlights can be enabled by providing a highlight string to <code>set_treestate()</code>:
+
+<pre>
+onezoom.controller.set_treestate('?highlight=path:@tetrapoda@aves&amp;highlight=fan:@aves@GALLOANSERAE')
+// Turn highlights off again
+onezoom.controller.set_treestate('?highlight=')
+</pre>
+
+<p>
+See the <a href="https://github.com/OneZoom/OZtree/blob/main/OZprivate/rawJS/OZTreeModule/src/projection/highlight/highlight.js">the highlight documentation</a>
+for more information on syntax.
+</p>
+
+<h4>Playing a tour</h4>
+
+Tours can be played using the <code>tour</code> querystring option:
+
+<pre>
+onezoom.controller.set_treestate('?tour=/tour/data.html/superpowers');
+</pre>
+
+</div><!-- uk-text-small uk-padding-small -->

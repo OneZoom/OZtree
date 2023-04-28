@@ -67,6 +67,14 @@ test('parse_state', function (t) {
     t.deepEqual(parse_state("?"), {
     }, "A single question mark generates a do-nothing state");
 
+    global.window = { location: new URL("http://onezoom.example.com/cake/@pinpoint") };
+    t.deepEqual(parse_state("@Myzopoda_aurita?pop=ol_6794"), {
+      url_base: 'http://onezoom.example.com/cake/',
+      pinpoint: '@Myzopoda_aurita',
+      tap_action: 'ow_leaf',
+      tap_ott_or_id: 6794,
+    }, "@pinpoint parsed relative to current page");
+
     t.end();
 });
 

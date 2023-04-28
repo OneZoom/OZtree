@@ -16,6 +16,7 @@ export default function (Controller) {
    * * The current page URL (by default)
    * * A Location/URL object
    * * A URL string
+   * * A URL relative to current page (starting with @)
    * * A querystring (starting with '?')
    * * A state object as accepted by setup_page_by_state()
    * @return Promise for when work is finished

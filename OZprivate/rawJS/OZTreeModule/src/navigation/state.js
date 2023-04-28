@@ -20,7 +20,7 @@
  * * ``init``: The manner in which to head to the initial node, see {@link controller/controller_anim#init_move_to}, e.g. ``init=pzoom``
  * * ``lang``: A 2-letter ISO 639-1 language code, e.g. ``lang=en``
  * * ``img``: Image source, 'best_verified', 'best_pd', or 'best_any', e.g. ``img=best_pd``
- * * ``anim``: How to navigate to search results, ``anim=jump`` or ``anim=flight``
+ * * ``anim``: How to navigate to search results, ``anim=jump``, ``anim=flight`` or ``anim=straight``. Optionally add ``-(speed)`` to set relative speed as float.
  * * ``otthome``: The "home" pinpoint, i.e. where you go on clicking reset, e.g. ``otthome=@aves``
  * * ``ssaver``: Screensaver inactive duration in seconds, e.g. ``ssaver=60``
  * * ``highlight``: Highlight strings to apply to a tree, can be used multiple times. See {@link projection/highlight/highlight}, e.g. ``highlight=path:@aves&highlight=path:@mammalia``
@@ -48,6 +48,12 @@ function parse_state(location) {
   if (typeof location === 'string' && location.startsWith('?')) {
     // If location is stringy and starts with ?, it's a query-string
     return parse_window_location({ search: location });
+  }
+  if (typeof location === 'string' && location.startsWith('@')) {
+    // If location is stringy and starts with @, it's a pinpoint relative to current page
+    // Prefix with current page URL and go to that.
+    location = parse_url_base(window.location) + location;
+    return parse_window_location(new URL(location));
   }
   if (typeof location === 'string') {
     // Otherwise parse as URL before setting it up
