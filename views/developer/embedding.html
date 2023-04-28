@@ -48,6 +48,15 @@ window.fetch(`${oz_origin}/API/getOTT.json?gbif=${gbif_code}`).then(x=>x.json())
 });
 </pre>
 
+<h2>OneZoom treeviewer variants</h2>
+
+There are several variations on the main OneZoom <code>/life/</code> page:
+
+<ul>
+  <li><a href="{{=URL('default', 'life')}}"><code>/life/</code></a>: The default interactive view</li>
+  <li><a href="{{=URL('default', 'life_noninteractive')}}"><code>/life_noninteractive/</code></a>: Non-interactive view, all OneZoom UI is hidden</li>
+</ul>
+
 <h2>Remote-control of OneZoom</h2>
 
 <p>
