@@ -48,7 +48,7 @@ response.menu = [
                  
                  (T('For Science'), False, None , [
                                             (T('Work with us'), False, URL('default' , 'work_with_us.html')),
-                                            (T('Developer tools'), False , URL('default' , 'developer.html')),
+                                            (T('Developer tools'), False , URL('developer' , 'index.html')),
                                             (T('Popularity index'), False , URL('popularity' , 'index.html')),
                                             (T('Public APIs'), False , URL('API','index.html')),
                                             (T('Data sources'), False, URL('default' , 'data_sources.html')),
