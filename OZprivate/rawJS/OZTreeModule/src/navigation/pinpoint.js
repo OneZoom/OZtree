@@ -10,14 +10,18 @@ import data_repo from '../factory/data_repo';
  * ``@name``: Where name is a latin name
  * ``@name=12345``: Where name is a latin name, 12345 an OTT
  * ``@=12345``: Where 12345 is an OTT
- * ``@_ancestor=1234-6789``: Where 1234-6789 are OTTs
+ * ``@_ancestor=1234=6789``: Where 1234, 6789 are OTTs
  * ``@_ozid=123456``: Where 123456 is an OZid / metacode
  * If required, API lookups will be made to fill in an gaps in local knowledge.
+ *
+ * Extra metadata can be requested by setting items in the (extra_metadata) object:
+ * * ``sciname``: Anything truthy will add a ``sciname`` field to the pinpoint objects.
+ * * ``vn``: Add a ``vn`` field to the pinpoint object output. See ``controllers/API/pinpoints`` for possible values.
  *
  * @param pinpoint_or_pinpoints A pinpoint string or list of pinpoint strings
  * @return {Promise} Resolves to a pinpoint dict or list of pinpoint dicts, depending on what was handed in
  */
-export function resolve_pinpoints(pinpoint_or_pinpoints) {
+export function resolve_pinpoints(pinpoint_or_pinpoints, extra_metadata={}) {
   let pinpoints = Array.isArray(pinpoint_or_pinpoints) ? pinpoint_or_pinpoints : [pinpoint_or_pinpoints];
   let extra_lookups = [];
 
@@ -41,16 +45,16 @@ export function resolve_pinpoints(pinpoint_or_pinpoints) {
     let parts = pinpoint.split("=");
     if (parts.length === 1) {
       // NB: "@12345" used to be OZid. We've stopped doing that, but keep the NaN check
-      //     so we don't interpret "@12345" as a latin_name
+      //     so we don't interpret "@12345" as a sciname
       if (isNaN(parseInt(parts[0]))) {
-        out.latin_name = parts[0];
+        out.sciname = untidy_latin(parts[0]);
       }
     } else if (parts[0] === '_ozid') {
       // Raw OZID
       out.ozid = parseInt(parts[1], 10);
     } else if (parts[0] === '_ancestor') {
       // Common-ancestor lookup, add extra lookups to list of things to get
-      out.sub_pinpoints = parts[1].split('-').map((sub_ott) => {
+      out.sub_pinpoints = parts.slice(1).map((sub_ott) => {
         let sub_pp = { pinpoint: sub_ott, ott: parseInt(sub_ott) };
         extra_lookups.push(sub_pp);
         return sub_pp;
@@ -59,7 +63,7 @@ export function resolve_pinpoints(pinpoint_or_pinpoints) {
       out.ozid = 'common_ancestor';
     } else {
       // Regular @[latin]=[OTT] form
-      if (parts[0].length > 0) out.latin_name = parts[0];
+      if (parts[0].length > 0) out.sciname = untidy_latin(parts[0]);
       if (!isNaN(parseInt(parts[1]))) out.ott = parseInt(parts[1]);
     }
 
@@ -68,33 +72,48 @@ export function resolve_pinpoints(pinpoint_or_pinpoints) {
 
   // Try local lookups first using data_repo
   pinpoints.forEach((p) => {
-      p.ozid = p.ozid || data_repo.ott_id_map[p.ott] || data_repo.name_id_map[p.latin_name];
+      if (p.ott) {
+        let dr_ozid = data_repo.ott_id_map[p.ott];
+        if (!dr_ozid) {
+          delete p.ott;  // We don't know if it's valid, let the server populate it if required
+        } else if (p.ozid && p.ozid != dr_ozid) {
+          delete p.ott;  // Doesn't match existing ozid, so wrong
+        } else {
+          p.ozid = dr_ozid;
+        }
+      }
+      if (p.sciname) {
+        // NB: This will be case-sensitive matching, server will be case-insensitive. Worth the CPU time to solve?
+        let dr_ozid = data_repo.name_id_map[p.sciname];
+        if (!dr_ozid) {
+          delete p.sciname;  // We don't know if it's valid, let the server populate it if required
+        } else if (p.ozid && p.ozid != dr_ozid) {
+          delete p.sciname;  // Doesn't match existing ozid, so wrong
+        } else {
+          p.ozid = dr_ozid;
+        }
+      }
   })
 
-  // Make a separate API call for each node without an ID, fill in details
-  return Promise.all(pinpoints.filter((p) => !p.ozid && (p.ott || p.latin_name)).map((p) => new Promise(function(resolve, reject) {
-    let data = {}
-    if (p.ott) data.ott = p.ott
-    if (p.latin_name) data.name = p.latin_name
-    api_manager.search_init({
-      data: data,
-      success: function (res) {
-        if (res.ids && res.ids.length) {
-          if (p.ott) {
-            data_repo.ott_id_map[p.ott] = res.ids[0]
-          }
-          p.ozid = res.ids[0]
-          resolve(p);
-        } else {
-          // If we can't get an ozid at this point, it's broken
-          reject("Invalid pinpoint: " + p.pinpoint);
-        }
-      },
-      error: function (res) {
-        reject("Failed to talk to server: " + res);
-      }
+  // Request the API fills in any pinpoints / metadata we don't already know about
+  let missing_pinpoints = pinpoints.filter((p) => {
+    if (!p.ozid) return true;
+    for (let n of Object.keys(extra_metadata)) if (!p[n]) return true;
+    return false;
+  });
+  return api_manager.pinpoints(missing_pinpoints.map((p) => p.pinpoint), extra_metadata).then((res) => {
+    if (missing_pinpoints.length !== res.results.length) throw new Error("Mismatching number of results: " + res.results.length + " vs " + missing_pinpoints.length);
+    missing_pinpoints.forEach((p, i) => {
+      // Update our pinpoint object with results
+      Object.assign(p, res.results[i]);
+
+      // If we haven't got an ozid at this point, it's broken
+      if (!p.ozid) throw new Error("Invalid pinpoint" + p.pinpoint);
+
+      // Add info into the ott_id_map for next time
+      if (p.ott) data_repo.ott_id_map[p.ott] = p.ozid;
     });
-  }))).then(function () {
+
     pinpoints.forEach((p) => {
       if (p.ozid === 'common_ancestor') {
         // For any common ancestors, look up their target node now their targets are identified
@@ -115,7 +134,29 @@ export function node_to_pinpoint(node) {
   if (!node.ott && !node.latin_name) return null;
   return [
     "@",
-    node.latin_name ? node.latin_name.split(" ").join("_") : "",
+    node.latin_name ? tidy_latin(node.latin_name) : '',
     node.ott ? "=" + node.ott : "",
   ].join("")
+}
+
+/**
+ * Convert latin name to pinpoint-friendly form
+ *
+ * Tidy latin doesn't contain any of /,=,_ or space
+ * * Truncate at the first instance of any of the dissalowed characters
+ * * Convert space to underscore
+ *
+ * NB: "latin names" starting or ending with underscore are "fake" in OneZoom
+ */
+function tidy_latin(s) {
+  return s.replace(/[\/=_].*$/, '').replace(/ /g, '_');
+}
+
+/**
+ * Revert tidy_latin as much as possible
+ *
+ * Should at least be true that ``s.startsWith(untidy_latin(tidy_latin(s)))``
+ */
+function untidy_latin(s) {
+  return s.replace(/_/g, ' ');
 }

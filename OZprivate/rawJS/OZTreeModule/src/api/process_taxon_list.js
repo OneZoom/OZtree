@@ -1,8 +1,8 @@
 /* A function that takes in a list of headers and OTT/names and maps two callback functions onto the list,
  * one for a header line and one for a taxon line */
 
-import api_manager from './api_manager'; //for api_manager.get_ids_by_ott_array()
-import data_repo from '../factory/data_repo'
+import config from '../global_config';
+import { resolve_pinpoints } from '../navigation/pinpoint.js';
 
 /**
  * Takes an list of headings & ott/name entries and applies the callback to each one in turn. This is mainly used for populating
@@ -15,80 +15,37 @@ import data_repo from '../factory/data_repo'
  * @param {Function} completed_callback - a function [f()] to call once the taxa have been processed and the data_repo filled
  */
 export default function process_taxon_list(taxon_json, taxon_callback, header_callback, completed_callback) {
-  if (taxon_json) {
-    let taxon_list = JSON.parse(taxon_json);
-    if (taxon_list && taxon_list.length) {
-      let taxa = taxon_list.filter(function (x) { return typeof (x) !== "string" }); //filter out the headers, return a view
-      let otts = taxa.map(function (item) { return item.OTT }).join(",")
-      //must make an API call to add vernaculars to each item before processing
-      api_manager.otts2vns({
-        data: {
-          otts: otts,
-          prefer_short: 1, //return bespoke short names first (could be more inaccurate)
-          include_unpreferred: 1
-        },
-        success: function (xhr) {
-          //if there is not a matching language name, add from the returned value
-          for (let i = 0; i < taxa.length; i++) {
-            //pick the most precise user-specified name, then the 2-letter user-specified name, then any blank key
-            //and if non of those exist, use the vernacular returned in the correct language by the API (if present)
-            //since taxa is a filtered view into the taxon_list array, adding to one of them here should change taxon_list too
-            taxa[i].vernacular = taxa[i][xhr.lang] || taxa[i][xhr.lang.split('-', 1)] || taxa[i][""] || xhr[taxa[i].OTT.toString()]
-          }
-          //call the main processing function
-          api_manager.get_ids_by_ott_array({
-            data: {
-              ott_array: otts
-            },
-            success: function (xhr) {
-              let res = populate_data_repo_ott_id_map(xhr);
-              let ott_id_map = res[0];
-              let scinames = res[1];
-              for (let i = 0; i < taxon_list.length; i++) {
-                if (typeof (taxon_list[i]) === "string") {
-                  if (typeof header_callback === "function") {
-                      header_callback(taxon_list[i]);
-                  }
-                } else {
-                  if (typeof taxon_callback === "function") {
-                      // Recreate a compile_searchbox_data() format
-                      let ott = taxon_list[i].OTT.toString();
-                      var result = [
-                        taxon_list[i].vernacular,
-                        scinames[ott],
-                        ott_id_map[ott],
-                      ];
-                      result.pinpoint = '@' + (scinames[ott] || '').replace(/ /g, '_') + '=' + ott;
-                      taxon_callback(ott, result);
-                  }
-                }
-              }
-              if (typeof completed_callback === "function") {
-                completed_callback();
-              }
-            }
-          })
-        }
-      })
-    }
-  }
+  let taxon_list = JSON.parse(taxon_json || '[]');
+  let lang = config.lang || 'en';
+  if (!taxon_list || !taxon_list.length) return;
+
+  let taxa = taxon_list.filter(function (x) { return typeof (x) !== "string" }); //filter out the headers, return a view
+  return resolve_pinpoints(taxa.map((t) => t.OTT), { sciname: 'y', vn: 'short:unpreferred' }).then((pps) => {
+    // Update taxa with results of pp search
+    pps.forEach((p, i) => {
+      Object.assign(taxa[i], p);
+
+      //pick the most precise user-specified name, then the 2-letter user-specified name, then any blank key
+      //and if non of those exist, use the vernacular returned in the correct language by the API (if present)
+      //since taxa is a filtered view into the taxon_list array, adding to one of them here should change taxon_list too
+      taxa[i].vernacular = taxa[i][lang] || taxa[i][lang.split('-', 1)] || taxa[i][""] || p.vn
+    });
+
+    taxon_list.forEach((taxon) => {
+      if (typeof taxon === "string") {
+        if (typeof header_callback === "function") header_callback(taxon);
+        return;
+      }
+      if (typeof taxon_callback === "function") {
+        // Recreate a compile_searchbox_data() format
+        let result = [
+          taxon.vernacular,
+          taxon.sciname,
+          taxon.ozid,
+        ];
+        result.pinpoint = taxon.pinpoint;
+        taxon_callback(taxon.ott, result);
+      }
+    });
+  }).then(completed_callback || ((x) => x));
 }
-
-function populate_data_repo_ott_id_map(xhr) {
-  let ott_id_map = {};
-  for (let ott in xhr.leaves) {
-    if (xhr.leaves.hasOwnProperty(ott)) {
-      ott_id_map[ott] = -xhr.leaves[ott];
-      data_repo.ott_id_map[ott] = -xhr.leaves[ott];
-    }
-  }
-  for (let ott in xhr.nodes) {
-    if (xhr.nodes.hasOwnProperty(ott)) {
-      ott_id_map[ott] = xhr.nodes[ott];
-      data_repo.ott_id_map[ott] = xhr.nodes[ott];
-    }
-  }
-  return [ott_id_map, xhr.names];
-}
-
-

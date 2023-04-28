@@ -1,5 +1,6 @@
 import api_manager from '../api/api_manager';
 import node_details_api from './node_details';
+import { node_to_pinpoint } from '../navigation/pinpoint';
 import {capitalizeFirstLetter, max} from '../util/index'; // basic tools
 
 /** Class providing functions that send queries to the search API, via the API manager class, and process the returned results. Can be used even if there is no OneZoom canvas */
@@ -223,10 +224,10 @@ class SearchManager {
                   let id = temp_ott_id_map[ott];
                   let searchScore = (record[4] == type)?1:0;
                   // give a low score, but higher if you asked for "for" and got "for or asked for "by" and got "by"
-                  let tidy_latin = (latinName && (!latinName.startsWith("_")) && (!latinName.endsWith("_"))) ? latinName.split("_").join(" ") : null; 
                   let tidy_common = vernacular ? capitalizeFirstLetter(vernacular) : null; // ready for printing in UI
                   
-                  let row = [tidy_common, tidy_latin, id, searchScore];
+                  // "latin names" starting or ending with underscore are "fake" in OneZoom
+                  let row = [tidy_common, latinName && !latinName.startsWith("_") ? latinName : null, id, searchScore];
                   let additional_info = {info_type: "Sponsorship Info", text: null};
                   let prefix = "";
                   if (record[4] && record[4] !== "null") prefix = OZstrings["Sponsored " + record[4]] + " ";
@@ -240,7 +241,7 @@ class SearchManager {
                       additional_info.text = capitalizeFirstLetter(record[3]);
                       row.push(additional_info);
                   }
-                  row.pinpoint = '@' + (tidy_latin || '').replace(/ /g, '_') + '=' + ott;
+                  row.pinpoint = node_to_pinpoint({ ott: ott, latin_name: latinName });
                   newRes.push(row);
               }
           }
@@ -279,12 +280,10 @@ class SearchManager {
     let id = record[cols["id"]];
     let extra_vernaculars = record[cols["extra_vernaculars"]];
     let id_decider = is_leaf? -1:1;
-    // ready latin name for printing in UI. 
-    // "latin names" starting or ending with underscore are "fake" in OneZoom
-    let tidy_latin = (latinName && (!latinName.startsWith("_")) && (!latinName.endsWith("_"))) ? latinName.split("_").join(" ") : null; 
     let tidy_common = vernacular ? capitalizeFirstLetter(vernacular) : null; // ready for printing in UI
     
-    let row = [tidy_common, tidy_latin, id * id_decider];
+    // "latin names" starting or ending with underscore are "fake" in OneZoom
+    let row = [tidy_common, latinName && !latinName.startsWith("_") ? latinName : null, id * id_decider];
     let score_result = overall_search_score(toSearchFor, latinName, lang, vernacular, extra_vernaculars);
     if (score_result.length < 2) {
         row = row.concat(score_result)
@@ -294,8 +293,7 @@ class SearchManager {
         let extra = OZstrings["Also called:"] + " " + extra_vernaculars[score_result[1]]
         row = row.concat([score_result[0], {info_type: "Extra Vernacular", text: extra}])
     }
-    // NB: See src/navigation/pinpoint.js for how these are formed
-    row.pinpoint = '@' + (tidy_latin || '').replace(/ /g, '_') + '=' + ott;
+    row.pinpoint = node_to_pinpoint({ ott: ott, latin_name: latinName });
     return row;
   }
 }

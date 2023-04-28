@@ -1,7 +1,7 @@
 /**
   * Usage: npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/test_navigation_pinpoint.js
   */
-import { resolve_pinpoints } from '../src/navigation/pinpoint.js';
+import { resolve_pinpoints, node_to_pinpoint } from '../src/navigation/pinpoint.js';
 import { populate_data_repo } from './util_data_repo.js'
 import { populate_factory } from './util_factory'
 import test from 'tape';
@@ -43,6 +43,45 @@ test('resolve_pinpoints:ott', function (test) {
   })
 });
 
+test('resolve_pinpoints:sciname', function (test) {
+  return populate_data_repo().then(() => {
+    return Promise.all([
+        test_pinpoint(test, '@Pteropus_vampyrus=448935', {
+            pinpoint: '@Pteropus_vampyrus=448935',
+            // NB; Got back untidied name, as it's valid
+            sciname: 'Pteropus vampyrus',
+            ott: 448935,
+            ozid: -836320,
+        }),
+        test_pinpoint(test, '@Pteropus_vamp=448935', {
+            pinpoint: '@Pteropus_vamp=448935',
+            // NB: No sciname since the broken value isn't in the map
+            ott: 448935,
+            ozid: -836320,
+        }),
+        test_pinpoint(test, '@Pteropus_lylei', {
+            pinpoint: '@Pteropus_lylei',
+            // Can look up just from latin name if in map
+            sciname: 'Pteropus lylei',
+            ozid: -836318,
+        }),
+        test_pinpoint(test, '@Pteropus_lylei=448935', {
+            pinpoint: '@Pteropus_lylei=448935',
+            // NB: OTT won over latin name, so we don't mention it
+            ott: 448935,
+            ozid: -836320,
+        }),
+    ]);
+
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
 test('resolve_pinpoints:ozid', function (test) {
   return populate_data_repo().then(() => {
     return test_pinpoint(test, '@_ozid=836250', {
@@ -65,7 +104,7 @@ test('resolve_pinpoints:common_ancestor', function (test) {
     factory = f;
 
   }).then(function () {
-    return test_pinpoint(test, '@_ancestor=988790-824869', {
+    return test_pinpoint(test, '@_ancestor=988790=824869', {
       sub_pinpoints: [
         { pinpoint: '988790', ott: 988790, ozid: 836250 },
         { pinpoint: '824869', ott: 824869, ozid: 836247 },
@@ -75,7 +114,7 @@ test('resolve_pinpoints:common_ancestor', function (test) {
 
   }).then(function () {
     // Ancestor of a node below another is the first node
-    return test_pinpoint(test, '@_ancestor=244265-48401', {
+    return test_pinpoint(test, '@_ancestor=244265=48401', {
       sub_pinpoints: [
         { pinpoint: '244265', ott: 244265, ozid: 834744 },  // Mammals
         { pinpoint: '48401', ott: 48401, ozid: -836261 },  // Fijian monkey-faced bat (Mirimiri acrodonta)
@@ -92,6 +131,39 @@ test('resolve_pinpoints:common_ancestor', function (test) {
   })
 });
 
+test('node_to_pinpoint:tidy_latin', function (test) {
+  test.deepEqual(
+    node_to_pinpoint({  }),
+    null,
+    "Nothing defined, return null rather than an empty string",
+  );
+
+  test.deepEqual(
+    node_to_pinpoint({ ott: 12345 }),
+    '@=12345',
+    "Just OTT"
+  );
+
+  test.deepEqual(
+    node_to_pinpoint({ latin_name: "Pteropus vampyrus" }),
+    '@Pteropus_vampyrus',
+    "Just latin, tidied"
+  );
+
+  test.deepEqual(
+    node_to_pinpoint({ latin_name: "Bacillus cereus F837/76", ott: 612331 }),
+    '@Bacillus_cereus_F837=612331',
+    "Latin tidied and truncated"
+  );
+
+  test.deepEqual(
+    node_to_pinpoint({ latin_name: "Bacillus coagulans DSM 1 = ATCC 7050", ott: 724868 }),
+    '@Bacillus_coagulans_DSM_1_=724868',
+    "Latin tidied and truncated"
+  );
+
+  test.end();
+});
 
 test.onFinish(function() {
   // NB: Something data_repo includes in is holding node open.
