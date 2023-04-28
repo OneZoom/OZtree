@@ -73,7 +73,7 @@ class PolytomyHorizonCalc {
     if(node.has_child) {
       let length = node.children.length;
       for (let i=0; i<length; i++) {
-        this.calc_horizon(node.children[i]);
+        if (node.children[i].recalc) this.calc_horizon(node.children[i]);
       }
       this.recalc_node_horizon(node);
     }

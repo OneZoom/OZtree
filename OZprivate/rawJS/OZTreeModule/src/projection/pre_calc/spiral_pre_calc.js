@@ -123,8 +123,10 @@ function _pre_calc(node) {
     node.arcy = node.bezey*1.01;
     node.arcr = node.bezr/2;
     
-    _pre_calc(node.children[0]);
-    _pre_calc(node.children[1]);
+    if (node.has_child) {
+      if (node.children[0].recalc) _pre_calc(node.children[0]);
+      if (node.children[1].recalc) _pre_calc(node.children[1]);
+    }
   } else {
     node.arcx = node.bezex+posmult*(tempcospre);
     node.arcy = node.bezey+posmult*(tempsinpre);

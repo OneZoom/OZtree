@@ -1,7 +1,7 @@
 import {pre_calc as _pre_calc, set_pre_calculator} from './pre_calc/pre_calc';
 import _re_calc  from  './re_calc';
 import _get_shapes from './shape_manager';
-import {calc_horizon as _calc_horizon, update_parent_horizon as _update_parent_horizon, set_horizon_calculator} from './horizon_calc/horizon_calc';
+import {calc_horizon as _calc_horizon, set_horizon_calculator} from './horizon_calc/horizon_calc';
 import data_repo from '../factory/data_repo';
 import { highlight_propogate as _highlight_propogate } from './highlight/highlight';
 
@@ -11,9 +11,6 @@ class Projection {
   }
   calc_horizon(node) {
     _calc_horizon(node);
-  }
-  update_parent_horizon(nodes) {
-    _update_parent_horizon(nodes);
   }
   highlight_propogate(node) {
     _highlight_propogate(node)

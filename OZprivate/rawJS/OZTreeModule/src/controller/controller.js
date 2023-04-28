@@ -165,28 +165,24 @@ class Controller {
 
     if (target_OZid === 'visible') {
       node = this.factory.dynamic_loading_by_visibility();
-      precalc_from = node;
       // If nothing to develop, return
       if (!node) return;
     } else {
       node = this.factory.dynamic_loading_by_metacode(target_OZid);
-      // NB: _by_visibility returns the last existant node, _by_metacode returns the target node
-      //     (which may not have existed). Ideally we should know both here.
-      //     As we've no idea what the last existant node was, assume root.
-      precalc_from = this.root;
     }
 
     // Develop upwards and outwards
     node.develop_children(generation_at_searched_node);
     if (generation_on_subbranch > 0) {
       node.develop_branches(generation_on_subbranch);
-      precalc_from = this.root;
     }
 
-    this.projection.pre_calc(precalc_from);
-    this.projection.calc_horizon(precalc_from)
-    this.projection.update_parent_horizon(precalc_from)
-    this.projection.highlight_propogate(precalc_from)
+    if (this.root.recalc) {
+      this.projection.pre_calc(this.root);
+      this.projection.calc_horizon(this.root)
+      this.projection.highlight_propogate(this.root);
+      this.root.reset_recalc();
+    }
 
     return node;
   }

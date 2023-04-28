@@ -91,8 +91,8 @@ function _pre_calc(node) {
     
     if (node.has_child)
     {
-      _pre_calc(node.children[0]);
-      _pre_calc(node.children[1]);
+      if (node.children[0].recalc) _pre_calc(node.children[0]);
+      if (node.children[1].recalc) _pre_calc(node.children[1]);
     }
   }
   else {

@@ -95,7 +95,7 @@ function _pre_calc(node) {
       node.children[i].bezsx = node.children[i].bezc1x =  0; // same position as the node itself.
       node.children[i].bezsy = node.children[i].bezc1y =  0; // this is where it connects to the parent.
       node.children[i].bezr = node.bezr;
-      _pre_calc(node.children[i]);
+      if (node.children[i].recalc) _pre_calc(node.children[i]);
     }
   } else {
       node.arcr = 0.75;

@@ -130,6 +130,9 @@ class Midnode {
       this.metacode = leaf_metacode;
       this.type = "leafNode";
     }
+
+    // Mark this and any parents as needing recalc
+    this.set_recalc();
   }
     
   update_attribute() {
@@ -200,6 +203,29 @@ class Midnode {
     }
     // Nothing found
     return null;
+  }
+
+  /**
+   * Reset the recalc flag for this and parents
+   */
+  set_recalc() {
+    let n = this;
+    while (n && !n.recalc) {  // NB: Stop if we find a parent where it's already set, assume something else has done the work
+      n.recalc = true;
+      n = n.upnode;
+    }
+  }
+
+  /**
+   * Reset the recalc flag for this and all children
+   */
+  reset_recalc() {
+    this.recalc = false;
+
+    if (!this.has_child) return;
+    for (let i = 0; i < this.children.length; i++) {
+      if (this.children[i].recalc) this.children[i].reset_recalc();
+    }
   }
 
   /**

@@ -158,7 +158,7 @@ export function highlight_propogate(node) {
 
   // Recurse
   for (let i = 0; i < node.children.length; i++) {
-    highlight_propogate(node.children[i]);
+    if (node.children[i].recalc) highlight_propogate(node.children[i]);
   }
 }
 
