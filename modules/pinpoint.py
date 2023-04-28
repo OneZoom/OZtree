@@ -57,13 +57,13 @@ def resolve_pinpoint_to_row(pinpoint):
         node_query = db.ordered_nodes.ott == int(pinpoint)
         leaf_query = db.ordered_leaves.ott == int(pinpoint)
     else:
-        parts = pinpoint[1:].split("=", 2)
+        parts = pinpoint[1:].split("=")  # NB: Split subsequent = for _ancestor
         if len(parts) == 1:  # @(latin) form
             tidy_latin = parts[0].replace("_", " ")
             node_query = db.ordered_nodes.name == tidy_latin
             leaf_query = db.ordered_leaves.name == tidy_latin
         elif parts[0] == '_ancestor':
-            otts = [int(x) for x in parts[1].split('-')]
+            otts = [int(x) for x in parts[1:]]
             if all(x == otts[0] for x in otts):
                 # All-identical, just an OTT query
                 node_query = db.ordered_nodes.ott == otts[0]

@@ -32,7 +32,7 @@ class TestModulesPinpoint(unittest.TestCase):
             return r
         def ancestor(*pps):
             """Find common ancestor of pinpoints"""
-            return rpr("@_ancestor=" + "-".join(str(rpr(p).ott) for p in pps))
+            return rpr("@_ancestor=" + "=".join(str(rpr(p).ott) for p in pps))
 
         # Get arbitary content
         leaves = db((db.ordered_leaves.ott != None) & (db.ordered_leaves.name != None)).select(orderby='ott', limitby=(0,4))

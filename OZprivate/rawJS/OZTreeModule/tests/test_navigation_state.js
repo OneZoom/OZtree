@@ -31,10 +31,10 @@ test('parse_state', function (t) {
         pinpoint: null,
     }, "No pinpoint")
 
-    t.deepEqual(pwl("http://onezoom.example.com/life/@Myzopoda_aurita?otthome=%40_ancestor%3D983483-3600795"), {
+    t.deepEqual(pwl("http://onezoom.example.com/life/@Myzopoda_aurita?otthome=%40_ancestor%3D983483%3D3600795"), {
         url_base: 'http://onezoom.example.com/life/',
         pinpoint: '@Myzopoda_aurita',
-        home_ott_id: '@_ancestor=983483-3600795',
+        home_ott_id: '@_ancestor=983483=3600795',
     }, "Pinpoint with latin name & OTT, common-ancestor otthome")
 
     t.deepEqual(pwl("http://onezoom.example.com/life/@Myzopoda_aurita?highlight=fan:@biota&initmark=12345&highlight=fan:@mammalia"), {
@@ -84,7 +84,7 @@ test('deparse_state', function (t) {
     test_url_match("http://onezoom.example.com/life/@Myzopoda_aurita?pop=ol_6794");
     test_url_match("http://onezoom.example.com/life/@Myzopoda_aurita");
     test_url_match("http://onezoom.example.com/life/@=6794#x1402,y364,w1.4013");
-    test_url_match("http://onezoom.example.com/life/@Myzopoda_aurita?otthome=%40_ancestor%3D983483-3600795");
+    test_url_match("http://onezoom.example.com/life/@Myzopoda_aurita?otthome=%40_ancestor%3D983483%3D3600795");
 
     t.end();
 });
