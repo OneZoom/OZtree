@@ -1,7 +1,7 @@
 /**
   * Usage: npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/test_navigation_pinpoint.js
   */
-import { resolve_pinpoints } from '../src/navigation/pinpoint.js';
+import { resolve_pinpoints, node_to_pinpoint } from '../src/navigation/pinpoint.js';
 import { populate_data_repo } from './util_data_repo.js'
 import { populate_factory } from './util_factory'
 import test from 'tape';
@@ -131,6 +131,39 @@ test('resolve_pinpoints:common_ancestor', function (test) {
   })
 });
 
+test('node_to_pinpoint:tidy_latin', function (test) {
+  test.deepEqual(
+    node_to_pinpoint({  }),
+    null,
+    "Nothing defined, return null rather than an empty string",
+  );
+
+  test.deepEqual(
+    node_to_pinpoint({ ott: 12345 }),
+    '@=12345',
+    "Just OTT"
+  );
+
+  test.deepEqual(
+    node_to_pinpoint({ latin_name: "Pteropus vampyrus" }),
+    '@Pteropus_vampyrus',
+    "Just latin, tidied"
+  );
+
+  test.deepEqual(
+    node_to_pinpoint({ latin_name: "Bacillus cereus F837/76", ott: 612331 }),
+    '@Bacillus_cereus_F837=612331',
+    "Latin tidied and truncated"
+  );
+
+  test.deepEqual(
+    node_to_pinpoint({ latin_name: "Bacillus coagulans DSM 1 = ATCC 7050", ott: 724868 }),
+    '@Bacillus_coagulans_DSM_1_=724868',
+    "Latin tidied and truncated"
+  );
+
+  test.end();
+});
 
 test.onFinish(function() {
   // NB: Something data_repo includes in is holding node open.

@@ -85,6 +85,9 @@ class TestModulesPinpoint(unittest.TestCase):
             "aves",
         )
 
+    def test_tidy_latin(self):
+        self.assertEqual(tidy_latin("Bacillus cereus F837/76"), "Bacillus_cereus_F837")
+        self.assertEqual(tidy_latin("Bacillus coagulans DSM 1 = ATCC 7050"), "Bacillus_coagulans_DSM_1_")
 
 if __name__ == '__main__':
     import sys

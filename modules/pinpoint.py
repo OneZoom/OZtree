@@ -100,7 +100,7 @@ def tidy_latin(s):
 
     Python version of src/navigation/pinpoint:tidy_latin
     """
-    return s.replace(' ', '_')
+    return re.sub(r'[\/=_].*$', '', s).replace(' ', '_')
 
 
 def untidy_latin(s):

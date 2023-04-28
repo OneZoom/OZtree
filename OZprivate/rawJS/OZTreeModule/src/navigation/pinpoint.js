@@ -142,17 +142,20 @@ export function node_to_pinpoint(node) {
 /**
  * Convert latin name to pinpoint-friendly form
  *
- * Tidy latin doesn't contain space
+ * Tidy latin doesn't contain any of /,=,_ or space
+ * * Truncate at the first instance of any of the dissalowed characters
  * * Convert space to underscore
  *
  * NB: "latin names" starting or ending with underscore are "fake" in OneZoom
  */
 function tidy_latin(s) {
-  return s.replace(/ /g, '_');
+  return s.replace(/[\/=_].*$/, '').replace(/ /g, '_');
 }
 
 /**
  * Revert tidy_latin as much as possible
+ *
+ * Should at least be true that ``s.startsWith(untidy_latin(tidy_latin(s)))``
  */
 function untidy_latin(s) {
   return s.replace(/_/g, ' ');
