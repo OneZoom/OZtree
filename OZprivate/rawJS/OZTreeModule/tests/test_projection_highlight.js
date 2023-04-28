@@ -140,7 +140,7 @@ test('update_highlights', function (test) {
         'fan:@chiroptera=574724@pteropus=813030',
         'path:@acerodon=635024',
       ]);
-      test_highlights_for(test, nodes.dobsonia_moluccensis, [
+      test_highlights_for(test, nodes['dobsonia moluccensis'], [
         'fan:@chiroptera=574724@pteropus=813030',
       ]);
       test_highlights_for(test, nodes.pteropus, [
@@ -152,7 +152,7 @@ test('update_highlights', function (test) {
         'path:@pteropus=813030@pteropus_vampyrus=448935',
         'path:@pteropus_vampyrus=448935',
       ]);
-      test_highlights_for(test, nodes.pteropus_vampyrus, [
+      test_highlights_for(test, nodes['pteropus vampyrus'], [
         'path:@pteropus=813030@pteropus_vampyrus=448935',
         'path:@pteropus_vampyrus=448935',
       ]);

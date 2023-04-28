@@ -7,12 +7,9 @@ import unittest
 
 from applications.OZtree.modules.pinpoint import (
     resolve_pinpoint_to_row,
+    tidy_latin,
 )
 from applications.OZtree.tests.unit import util
-
-
-def tidy_latin(s):
-    return s.replace(" ", "_")
 
 
 class TestModulesPinpoint(unittest.TestCase):

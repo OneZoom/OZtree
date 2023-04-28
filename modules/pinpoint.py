@@ -1,3 +1,5 @@
+import re
+
 from gluon import current
 
 
@@ -59,9 +61,9 @@ def resolve_pinpoint_to_row(pinpoint):
     else:
         parts = pinpoint[1:].split("=")  # NB: Split subsequent = for _ancestor
         if len(parts) == 1:  # @(latin) form
-            tidy_latin = parts[0].replace("_", " ")
-            node_query = db.ordered_nodes.name == tidy_latin
-            leaf_query = db.ordered_leaves.name == tidy_latin
+            latin_name = untidy_latin(parts[0])
+            node_query = db.ordered_nodes.name == latin_name
+            leaf_query = db.ordered_leaves.name == latin_name
         elif parts[0] == '_ancestor':
             otts = [int(x) for x in parts[1:]]
             if all(x == otts[0] for x in otts):
@@ -78,9 +80,9 @@ def resolve_pinpoint_to_row(pinpoint):
             node_query = (db.ordered_nodes.id == ozid) if ozid > 0 else None
             leaf_query = (db.ordered_leaves.id == -ozid) if ozid < 0 else None
         else: # Regular @[latin]=[OTT] form, search for either.
-            tidy_latin = parts[0].replace("_", " ")
-            node_query = (db.ordered_nodes.name == tidy_latin) | (db.ordered_nodes.ott == int(parts[1]))
-            leaf_query = (db.ordered_leaves.name == tidy_latin) | (db.ordered_leaves.ott == int(parts[1]))
+            latin_name = untidy_latin(parts[0])
+            node_query = (db.ordered_nodes.name == latin_name) | (db.ordered_nodes.ott == int(parts[1]))
+            leaf_query = (db.ordered_leaves.name == latin_name) | (db.ordered_leaves.ott == int(parts[1]))
 
     # Look at nodes first
     if node_query is not None:
@@ -90,3 +92,21 @@ def resolve_pinpoint_to_row(pinpoint):
         for r in db(leaf_query).select(db.ordered_leaves.ALL, orderby="OTT IS NULL"):
             return r, True
     return None, False
+
+
+def tidy_latin(s):
+    """
+    Convert latin name to pinpoint-friendly form
+
+    Python version of src/navigation/pinpoint:tidy_latin
+    """
+    return s.replace(' ', '_')
+
+
+def untidy_latin(s):
+    """
+    Revert tidy_latin as much as possible
+
+    Python version of src/navigation/pinpoint:untidy_latin
+    """
+    return s.replace('_', ' ')

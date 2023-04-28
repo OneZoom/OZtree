@@ -47,7 +47,7 @@ export function resolve_pinpoints(pinpoint_or_pinpoints, extra_metadata={}) {
       // NB: "@12345" used to be OZid. We've stopped doing that, but keep the NaN check
       //     so we don't interpret "@12345" as a latin_name
       if (isNaN(parseInt(parts[0]))) {
-        out.latin_name = parts[0];
+        out.latin_name = untidy_latin(parts[0]);
       }
     } else if (parts[0] === '_ozid') {
       // Raw OZID
@@ -63,7 +63,7 @@ export function resolve_pinpoints(pinpoint_or_pinpoints, extra_metadata={}) {
       out.ozid = 'common_ancestor';
     } else {
       // Regular @[latin]=[OTT] form
-      if (parts[0].length > 0) out.latin_name = parts[0];
+      if (parts[0].length > 0) out.latin_name = untidy_latin(parts[0]);
       if (!isNaN(parseInt(parts[1]))) out.ott = parseInt(parts[1]);
     }
 
@@ -114,7 +114,26 @@ export function node_to_pinpoint(node) {
   if (!node.ott && !node.latin_name) return null;
   return [
     "@",
-    node.latin_name ? node.latin_name.split(" ").join("_") : "",
+    node.latin_name ? tidy_latin(node.latin_name) : '',
     node.ott ? "=" + node.ott : "",
   ].join("")
+}
+
+/**
+ * Convert latin name to pinpoint-friendly form
+ *
+ * Tidy latin doesn't contain space
+ * * Convert space to underscore
+ *
+ * NB: "latin names" starting or ending with underscore are "fake" in OneZoom
+ */
+function tidy_latin(s) {
+  return s.replace(/ /g, '_');
+}
+
+/**
+ * Revert tidy_latin as much as possible
+ */
+function untidy_latin(s) {
+  return s.replace(/_/g, ' ');
 }

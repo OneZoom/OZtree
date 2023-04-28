@@ -217,8 +217,8 @@ def search_init():
     except (TypeError, ValueError) as error:
         pass  # Some problem converting ott to int, try on name
     try:
-        tidy_latin = request.vars.name.replace("_", " ")
-        query = db.ordered_leaves.name == tidy_latin
+        sciname = pinpoint.untidy_latin(request.vars.name)
+        query = db.ordered_leaves.name == sciname
         name_ids = set([-r.id for r in db(query).select(db.ordered_leaves.id)])
         query = db.ordered_nodes.name == request.vars.name
         name_ids.update([r.id for r in db(query).select(db.ordered_nodes.id)])
