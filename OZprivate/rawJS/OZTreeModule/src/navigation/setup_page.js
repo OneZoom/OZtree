@@ -26,14 +26,17 @@ function setup_page_by_state(controller, state) {
     // Perform initial highlighting if asked
     return state.hasOwnProperty('highlights') ? controller.highlight_replace(state.highlights) : null;
   }).then(function () {
-      return state.pinpoint ? resolve_pinpoints(state.pinpoint) : {};
-  }).then(function (pp) {
-    let id = pp.ozid;
     tree_state.url_parsed = true;
-    if (id !== undefined) {
-        // If there's somewhere to move to, do that.
-        return controller.init_move_to(id, state.xp !== undefined ? state : state.init);
+    // Skip move if no pinpoint
+    if (!state.pinpoint) return;
+    if (!init) {
+      // Not init-ing tree, so fly to new location
+      return controller.default_move_to(state.pinpoint);
     }
+    return resolve_pinpoints(state.pinpoint).then((pp) => {
+      // If there's somewhere to move to, do that.
+      return controller.init_move_to(pp.ozid, state.xp !== undefined ? state : state.init);
+    });
   }).then(function () {
     // Start a tour if present
     if (state.tour_setting) controller.tour_start(state.tour_setting)

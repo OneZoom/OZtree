@@ -49,6 +49,12 @@ function parse_state(location) {
     // If location is stringy and starts with ?, it's a query-string
     return parse_window_location({ search: location });
   }
+  if (typeof location === 'string' && location.startsWith('@')) {
+    // If location is stringy and starts with @, it's a pinpoint relative to current page
+    // Prefix with current page URL and go to that.
+    location = parse_url_base(window.location) + location;
+    return parse_window_location(new URL(location));
+  }
   if (typeof location === 'string') {
     // Otherwise parse as URL before setting it up
     return parse_window_location(new URL(location));
