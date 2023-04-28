@@ -68,8 +68,14 @@ export default function (Controller) {
           p = resolve_pinpoints(dest);
         }
 
-        if (config.search_jump_mode === 'flight') {
-            return p.then((pp) => this.fly_on_tree_to(null, pp.ozid));
+        if (config.search_jump_mode.startsWith('flight')) {
+            // "anim=flight-0.5" means half-speed flights
+            let flight_speed = parseFloat(config.search_jump_mode.split('-')[1]) || 1
+            return p.then((pp) => this.fly_on_tree_to(null, pp.ozid, false, flight_speed));
+        } else if (config.search_jump_mode.startsWith('straight')) {
+            // "anim=straight-0.5" means half-speed flights
+            let flight_speed = parseFloat(config.search_jump_mode.split('-')[1]) || 1
+            return p.then((pp) => this.fly_straight_to(pp.ozid, false, flight_speed, 'linear'));
         } else {
             return p.then((pp) => this.fetch_details_and_leap_to(pp.ozid));
         }
