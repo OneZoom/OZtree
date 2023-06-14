@@ -167,7 +167,8 @@ def reservation_expire(r):
     expired_r = r.as_dict()
     del expired_r['id']
     expired_id = db.expired_reservations.insert(**expired_r)
-    r.delete_record()
+    # Blank everything in current reservation DB record bar view accounting
+    clear_reservation(r.OTT_ID)
     return expired_id
 
 
@@ -538,7 +539,7 @@ def get_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
         else:
             # there is already a row in the database so update if this is the main visit
             if update_view_count and not maintenance_mode:
-                reservation_query.update(
+                reservation_row.update_record(
                     last_view=request.now,
                     num_views=(reservation_row.num_views or 0)+1,
                     name=leaf_entry.name)
