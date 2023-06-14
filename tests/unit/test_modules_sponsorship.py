@@ -16,6 +16,7 @@ from gluon.globals import Request
 
 from sponsorship import (
     get_reservation,
+    clear_reservation,
     sponsorship_config,
     sponsorship_enabled,
     reservation_total_counts,
@@ -319,8 +320,10 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(status, 'sponsored')
         self.assertEqual(reservation_row.verified_donor_name, "Emily")
 
-        # Expire the reservation
+        # Expire the reservation, won't be marked as renewed
         expired_r_id = reservation_expire(reservation_row)
+        expired_r = db(db.expired_reservations.id==expired_r_id).select().first()
+        self.assertEqual(expired_r.was_renewed, False)
 
         # Is available to anyone
         util.set_allow_sponsorship(0)
@@ -371,6 +374,7 @@ class TestSponsorship(unittest.TestCase):
         # Reserve time from previous entry kept
         self.assertEqual(reservation_row.reserve_time, expired_r.reserve_time)
         self.assertEqual(expired_r.sale_time, '01:01:01 Jan 01, 2001 GMT')
+        self.assertEqual(expired_r.was_renewed, True)
         self.assertEqual(reservation_row.sale_time, '01:01:01 Jan 01, 2002 GMT')
         self.assertEqual(reservation_row.user_sponsor_name, 'Arnold')
         self.assertEqual(reservation_row.verified_name, 'Definitely Arnold')
@@ -479,6 +483,7 @@ class TestSponsorship(unittest.TestCase):
         # ...but is on expired entry
         expired_row = db(db.expired_reservations.id == reservation_row1.prev_reservation_id).select().first()
         self.assertEqual(expired_row.giftaid_claimed_on, old_claimed_time)
+        self.assertEqual(expired_row.was_renewed, True)  # NB: A renewal, so old row is flagged as such
 
     def test_reservation_confirm_payment__partner(self):
         """Buy/renew items with partner percentages"""
@@ -1145,6 +1150,51 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual([r.OTT_ID for r in gae()], [ott2])
         reservation_expire(rows[1])
         self.assertEqual([r.OTT_ID for r in gae()], [])
+
+    def test_reservation_expire__keep_views(self):
+        """Expiring a reservation keeps view counts"""
+        ott = util.find_unsponsored_ott()
+
+        # Try reserving OTT, should at least be viewed once
+        status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::001", update_view_count=False)
+        self.assertEqual(reservation_row.num_views, 1)
+
+        # Reserve again, count goes up
+        clear_reservation(ott)
+        status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::001", update_view_count=True)
+        self.assertEqual(reservation_row.num_views, 2)
+
+        # Buy ott, validate, count preserved
+        self.assertEqual(status, 'available')
+        reservation_add_to_basket('UT::BK001', reservation_row, dict(
+            e_mail='001@unittest.example.com',
+            user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
+            user_donor_name="Emily",
+            prev_reservation=None,
+        ))
+        reservation_confirm_payment('UT::BK001', 10000, dict(
+            PP_transaction_code='UT::PP1',
+            PP_e_mail='paypal@unittest.example.com',
+            sale_time='01:01:01 Jan 01, 2001 GMT',
+        ))
+        util.verify_reservation(reservation_row, verified_name="Definitely Arnold")
+        status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::002")
+        self.assertEqual(status, 'sponsored')
+        self.assertEqual(reservation_row.num_views, 2)
+
+        # Not available, but view count goes up.
+        status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::002", update_view_count=True)
+        self.assertEqual(status, 'sponsored')
+        self.assertEqual(reservation_row.num_views, 3)
+        status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::002", update_view_count=True)
+        self.assertEqual(status, 'sponsored')
+        self.assertEqual(reservation_row.num_views, 4)
+
+        # Expire the reservation, available again with same view count
+        expired_r_id = reservation_expire(reservation_row)
+        status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::002", update_view_count=True)
+        self.assertEqual(status, 'available')
+        self.assertEqual(reservation_row.num_views, 5)
 
     def test_reservation_time_limit(self):
         ott = util.find_unsponsored_ott()

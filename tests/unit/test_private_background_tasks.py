@@ -58,7 +58,7 @@ class TestBackgroundTasks(unittest.TestCase):
         db.rollback()
 
     def run_background_tasks(self, *args):
-        out = subprocess.check_output(('grunt', ':'.join((
+        out = subprocess.check_output((util.grunt_path(), ':'.join((
             'exec',
             'background_tasks',
             'ut-onezoom-host',

@@ -137,6 +137,8 @@ def reservation_total_counts(count_type):
 
 def clear_reservation(reservations_table_id):
     db = current.db
+    # NB: We intentionally clear name, deactivated here, and let lt get repopulated
+    #     in new rows.
     keep_fields = ('id', 'OTT_ID', 'num_views', 'last_view')
     del_fields = {f: None for f in db.reservations.fields if f not in keep_fields}
     assert len(keep_fields) + len(del_fields) == len(db.reservations.fields)
@@ -166,9 +168,9 @@ def reservation_expire(r):
     db = current.db
     expired_r = r.as_dict()
     del expired_r['id']
-    expired_r['was_renewed'] = True
     expired_id = db.expired_reservations.insert(**expired_r)
-    r.delete_record()
+    # Blank everything in current reservation DB record bar view accounting
+    clear_reservation(r.OTT_ID)
     return expired_id
 
 
@@ -354,6 +356,7 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
         # If there's a previous row, fill in any missing values using the old entry.
         # Set either as part of an extension above, or as part of a renewal (on paypal-start)
         if prev_row:
+            prev_row.update_record(was_renewed=True)  # Mark previous row as "renewed"
             for k in db.expired_reservations.fields:
                 if (db.expired_reservations[k].writable and
                         k in db.reservations.fields and
@@ -538,7 +541,7 @@ def get_reservation(OTT_ID_Varin, form_reservation_code, update_view_count=False
         else:
             # there is already a row in the database so update if this is the main visit
             if update_view_count and not maintenance_mode:
-                reservation_query.update(
+                reservation_row.update_record(
                     last_view=request.now,
                     num_views=(reservation_row.num_views or 0)+1,
                     name=leaf_entry.name)
