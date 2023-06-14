@@ -105,7 +105,6 @@ def index():
     
     # OTTs from the reservations table (i.e. sponsored)
     query = (db.reservations.verified_time != None) & \
-        ((db.reservations.deactivated == None) | (db.reservations.deactivated == "")) & \
         (db.reservations.verified_preferred_image_src != None)
     sponsored_rows = db(query).select(
         db.reservations.OTT_ID,
@@ -967,7 +966,6 @@ def sponsored():
     tot=None
     resv = db.reservations
     query = (resv.verified_time != None)
-    query &= ((resv.deactivated == None) | (resv.deactivated == ""))
     if (request.vars.omit_nopics):
         query = query & (resv.verified_preferred_image_src != None)
     if (request.vars.getfirst('search_mesg')):

@@ -25,7 +25,6 @@ def search_sponsor(searchFor, searchType='all', language='en-GB,en;q=0.9', limit
     colname_map = {nm:index for index,nm in enumerate(colnames)}
     search_queries = [
         "verified_time IS NOT NULL",
-        "(deactivated IS NULL OR deactivated = '')",
     ]
     search_terms = []
 

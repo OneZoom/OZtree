@@ -500,7 +500,6 @@ def nodes_info_from_string(
                 + " FROM reservations"
                 + " WHERE OTT_ID in ({otts})"
                 +  " AND verified_time IS NOT NULL"
-                +  " AND (deactivated IS NULL OR deactivated = '')"
                 + ") AS t")
             sql = query7.format(otts=ott_ids)
             reservations_res = db.executesql(sql)

@@ -587,8 +587,8 @@ db.define_table('reservations',
     # A comma-separated string of partner_identifier(s)
     Field('partner_paid_on', type='datetime', requires=IS_EMPTY_OR(IS_DATETIME()), writable=False),
     Field('giftaid_claimed_on', type='datetime', requires=IS_EMPTY_OR(IS_DATETIME()), writable=False),
-    Field('deactivated', type='text'),
-    # true if this row in the reservations table has been deliberately deactivated for any reason other than expiry e.g. complaint / species disappears etc.
+    Field('deactivated', type='text', requires=IS_EMPTY_OR('')),
+    # Unused, all null
     format = '%(OTT_ID)s_%(name)s')
 
 #a duplicate of the reservations table to store old reservations. This table need never be sent to 3rd parties

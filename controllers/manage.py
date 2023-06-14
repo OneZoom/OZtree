@@ -228,7 +228,6 @@ def SPONSOR_UPDATE():
         'verified_preferred_image_src',
         'verified_preferred_image_src_id',
         'admin_comment',
-        'deactivated'
     ]
     row_id = request.args[0]
     row = db(db.reservations.id==row_id).select(*[db.reservations[n] for n in read_only_cols+write_to_cols]).first()

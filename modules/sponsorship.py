@@ -117,7 +117,6 @@ def reservation_total_counts(count_type):
             SELECT COUNT(*) FROM (
                     SELECT DISTINCT username FROM reservations
                      WHERE verified_time IS NOT NULL
-                       AND (deactivated IS NULL OR deactivated = '')
                 UNION DISTINCT
                     SELECT DISTINCT username FROM expired_reservations
             ) x
@@ -127,7 +126,6 @@ def reservation_total_counts(count_type):
             SELECT COUNT(*) FROM (
                     SELECT DISTINCT OTT_ID FROM reservations
                      WHERE verified_time IS NOT NULL
-                       AND (deactivated IS NULL OR deactivated = '')
                 UNION DISTINCT
                     SELECT DISTINCT OTT_ID FROM expired_reservations
             ) x
