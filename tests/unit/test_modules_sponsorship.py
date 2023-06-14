@@ -1194,7 +1194,7 @@ class TestSponsorship(unittest.TestCase):
         expired_r_id = reservation_expire(reservation_row)
         status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::002", update_view_count=True)
         self.assertEqual(status, 'available')
-        self.assertEqual(reservation_row.num_views, 5
+        self.assertEqual(reservation_row.num_views, 5)
 
     def test_reservation_time_limit(self):
         ott = util.find_unsponsored_ott()
