@@ -1,12 +1,26 @@
 import datetime
+import os.path
 import uuid
 import random
+import shutil
 
 import sponsorship
 import usernames
 
 from gluon import current
 from gluon.globals import Request
+
+
+def grunt_path():
+    """Find grunt executable, return full path"""
+    for x in (
+            './node_modules/.bin/grunt',
+            './applications/OZtree/node_modules/.bin/grunt',
+            'grunt',
+            ):
+        if shutil.which(x):
+            return os.path.abspath(shutil.which(x))
+    raise RuntimeError("Cannot find grunt executable")
 
 
 def call_controller(module, endpoint, vars={}, args=[], method=None, username=None):
