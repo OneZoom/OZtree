@@ -137,6 +137,8 @@ def reservation_total_counts(count_type):
 
 def clear_reservation(reservations_table_id):
     db = current.db
+    # NB: We intentionally clear name, deactivated here, and let lt get repopulated
+    #     in new rows.
     keep_fields = ('id', 'OTT_ID', 'num_views', 'last_view')
     del_fields = {f: None for f in db.reservations.fields if f not in keep_fields}
     assert len(keep_fields) + len(del_fields) == len(db.reservations.fields)
