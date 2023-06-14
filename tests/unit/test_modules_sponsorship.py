@@ -319,8 +319,10 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(status, 'sponsored')
         self.assertEqual(reservation_row.verified_donor_name, "Emily")
 
-        # Expire the reservation
+        # Expire the reservation, won't be marked as renewed
         expired_r_id = reservation_expire(reservation_row)
+        expired_r = db(db.expired_reservations.id==expired_r_id).select().first()
+        self.assertEqual(expired_r.was_renewed, False)
 
         # Is available to anyone
         util.set_allow_sponsorship(0)
@@ -371,6 +373,7 @@ class TestSponsorship(unittest.TestCase):
         # Reserve time from previous entry kept
         self.assertEqual(reservation_row.reserve_time, expired_r.reserve_time)
         self.assertEqual(expired_r.sale_time, '01:01:01 Jan 01, 2001 GMT')
+        self.assertEqual(expired_r.was_renewed, True)
         self.assertEqual(reservation_row.sale_time, '01:01:01 Jan 01, 2002 GMT')
         self.assertEqual(reservation_row.user_sponsor_name, 'Arnold')
         self.assertEqual(reservation_row.verified_name, 'Definitely Arnold')
@@ -479,6 +482,7 @@ class TestSponsorship(unittest.TestCase):
         # ...but is on expired entry
         expired_row = db(db.expired_reservations.id == reservation_row1.prev_reservation_id).select().first()
         self.assertEqual(expired_row.giftaid_claimed_on, old_claimed_time)
+        self.assertEqual(expired_row.was_renewed, True)  # NB: A renewal, so old row is flagged as such
 
     def test_reservation_confirm_payment__partner(self):
         """Buy/renew items with partner percentages"""

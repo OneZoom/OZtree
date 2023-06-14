@@ -166,7 +166,6 @@ def reservation_expire(r):
     db = current.db
     expired_r = r.as_dict()
     del expired_r['id']
-    expired_r['was_renewed'] = True
     expired_id = db.expired_reservations.insert(**expired_r)
     r.delete_record()
     return expired_id
@@ -354,6 +353,7 @@ def reservation_confirm_payment(basket_code, total_paid_pence, basket_fields):
         # If there's a previous row, fill in any missing values using the old entry.
         # Set either as part of an extension above, or as part of a renewal (on paypal-start)
         if prev_row:
+            prev_row.update_record(was_renewed=True)  # Mark previous row as "renewed"
             for k in db.expired_reservations.fields:
                 if (db.expired_reservations[k].writable and
                         k in db.reservations.fields and
