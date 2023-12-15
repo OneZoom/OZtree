@@ -58,6 +58,7 @@ except:
     local_pic_path = lambda s, s_id: os.path.join(request.folder, img.local_path, img.thumb_path(s, s_id))
 
 name_length_chars = 190 ##max length for a species name is 190 chars (allows indexing. NB: max OTT name is 108 chars)
+name_rank_chars = 30 ##max length for a taxonomic rank, e.g. species, genus, ...
 
 
 #########################################################################
@@ -241,6 +242,7 @@ db.define_table('ordered_nodes',
     Field('wikidata', type='integer'),
     Field('wikipedia_lang_flag', type='integer'), #
     Field('eol', type='integer'),
+    Field('rnk', type='string', length=name_rank_chars),
     Field('raw_popularity', type='double'),
     Field('popularity', type='double'),
     #the following 5 fields are sources listed by the OpenTree
