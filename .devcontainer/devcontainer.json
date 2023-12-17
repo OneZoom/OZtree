@@ -12,6 +12,9 @@
 		}
 	},
 	"postCreateCommand": "pip install cryptography pymysql",
+	"forwardPorts": [
+		8000
+	],
 	"customizations": {
 		"vscode": {
 			"extensions": [
