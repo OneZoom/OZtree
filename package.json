@@ -14,7 +14,7 @@
   "scripts": {
     "test": "npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/*.js",
     "compile_js": "webpack --mode production",
-    "compile_js_dev:watch": "webpack --watch --config webpack.config.dev.js",
+    "compile_js_dev:watch": "webpack --mode development --watch --config webpack.config.dev.js",
     "compile_js_dev": "webpack --mode development"
   },
   "repository": {

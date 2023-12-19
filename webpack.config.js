@@ -59,6 +59,7 @@ var config = {
       }
     ]
   },
+  devtool: 'eval-source-map',
   plugins: [
     new HtmlWebpackPlugin({
       filename: 'OZ_main.html',
