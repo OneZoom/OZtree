@@ -142,62 +142,7 @@ The database is now up and running. We recommend that you do *not* load data int
 
 ## Web2py installation
 
-Configuring the OneZoom application to use the database involves creating a file called 'appconfig.ini' in the `private` folder within the OZtree app, modified to use the username and password that you supplied above. A minimal appconfig.ini file to get the site working is
-
-```
-; App configuration
-
-; db configuration - set migrate=0 once installed
-[db]
-uri       = mysql://oz:passwd@127.0.0.1/OneZoom?set_encoding=utf8mb4
-migrate   = 1
-pool_size = 1
-
-; smtp address and credentials
-[smtp]
-
-[twitter]
-
-[forms]
-; form styling
-formstyle = bootstrap3_inline
-separator =
-
-[paypal]
-url        = https://www.sandbox.paypal.com
-
-[general]
-
-[images]
-; * url_base: get thumbnail images from this source. If not
-;    defined, will default to the local version, but that
-;    means you will need to download >100,000 thumbnail images
-;    onto your machine. If you want to use the images on the
-;    OneZoom server, set this to `//images.onezoom.org/`
-url_base = //images.onezoom.org/
-
-[sponsorship]
-; * allow. Should we allow the sponsorship page to be
-;    shown on this machine? Usually not allowed, except on the
-;    main OneZoom site (on museum displays people will not want
-;    to enter paypal etc details).
-; * maintenance_mins: to enable maintenance mode (e.g. when 
-;    switching beta and production to enable a new website version)
-;    set to the number of minutes you expect the site to be down
-;    note that if is_testing=False then you will probably need to 
-;    restart the server for changes to this to take effect
-; * reservation_time_limit_mins: how long to reserve a leaf while a 
-;    user is looking at the sponsor page
-; * unpaid_time_limit_mins: how long before a sponsored leaf becomes 
-;    free again if we receive no payment notification
-allow_sponsorship = 0
-maintenance_mins = 0
-
-[api]
-;If you want to get data from the Encyclopedia of Life, you need to put your own API key here. 
-;Fill it in using instructions at http://eol.org/info/api_overview 
-;eol_api_key = 11111111111
-```
+Configuring the OneZoom application to use the database involves creating a file called 'appconfig.ini' in the `private` folder within the OZtree app. A minimal appconfig.ini file to get the site working is in [private/appconfig.ini.example](private/appconfig.ini.example), which can renamed to `appconfig.ini` and modified to use the username and password that you supplied above.
 
 In order to use web2py you need to have a python v3 installed, the latest version can be found at
 [https://www.python.org/downloads/](https://www.python.org/downloads/)
