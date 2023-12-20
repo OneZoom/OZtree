@@ -39,17 +39,17 @@
     "babel-tape-runner": "^3.0.0",
     "babelify": "^10.0.0",
     "compression-webpack-plugin": "^6.1.1",
-    "filemanager-webpack-plugin": "^3.1.1",
+    "filemanager-webpack-plugin": "^8.0.0",
     "grunt": "^1.5.3",
-    "grunt-browserify": "^5.3.0",
+    "grunt-browserify": "^6.0.0",
     "grunt-contrib-clean": "^2.0.0",
     "grunt-contrib-compress": "^1.6.0",
     "grunt-contrib-copy": "^1.0.0",
-    "grunt-contrib-jshint": "^2.1.0",
+    "grunt-contrib-jshint": "^3.2.0",
     "grunt-contrib-watch": "^1.1.0",
     "grunt-curl": "^2.5.1",
     "grunt-exec": "^3.0.0",
-    "grunt-jsdoc-to-markdown": "^5.0.0",
+    "grunt-jsdoc-to-markdown": "^6.0.0",
     "html-webpack-plugin": "^4.0.2",
     "jsdom": "^19.0.0",
     "tape": "^5.5.3",
@@ -60,7 +60,7 @@
   "dependencies": {
     "grunt-sass": "^3.1.0",
     "lodash": "^4.17.21",
-    "npm": "^8.11.0",
+    "npm": "^10.2.5",
     "sass": "^1.32.12"
   }
 }
