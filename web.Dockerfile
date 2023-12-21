@@ -5,4 +5,8 @@ FROM ${IMAGE_NAME}
 RUN groupmod --gid 1000 www-data \
     && usermod --uid 1000 --gid 1000 www-data \
     && chown -R 1000:1000 /opt/web2py/applications
-RUN mv /opt/web2py/applications/OZtree /opt/web2py/applications/OZtree_original
+# Move the original source code into a shared volume, clearing out anything from past runs.
+RUN if [ -d /opt/web2py/applications/OZtree_original ]; then \
+        rm -rf /opt/web2py/applications/OZtree_original; \
+    fi \
+    && mv /opt/web2py/applications/OZtree /opt/web2py/applications/OZtree_original

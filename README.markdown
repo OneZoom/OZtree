@@ -16,10 +16,8 @@ If you are using Visual Studio Code, perform the following steps (you will need 
 1. Open the directory in VSCode.
 1. Create a `.env` file at the root of the project and add `WEB_IMAGE_NAME=onezoom/oztree-with-iucn`, changing the value to whatever image name you choose in step 1.
 1. Open the command palette and choose "Dev Containers: Reopen in Container".
-1. Once all scripts have finished running, you will need to make a couple one-time changes to your local source to sync your source with the web container. First, reopen the repository in your local directory.
 1. Visit https://github.com/OneZoom/OZtree-docker/blob/main/appconfig.ini and copy the contents into `private/appconfig.ini`.
-1. Open an integrated terminal and run the following: `docker exec $(docker ps -f name=onezoom-web --quiet) sh -c "cp /opt/web2py/applications/OZtree_original/databases/*.table /opt/web2py/applications/OZtree/databases"`
-1. Reopen the project within your container.
+1. Open an integrated terminal and run the following: `cp /opt/web2py/applications/OZtree_original/databases/*.table /opt/web2py/applications/OZtree/databases`
 1. Open an integrated terminal and run `npm install && grunt dev`.
 1. Visit http://localhost and the website should load! As noted earlier, you can also run your own server from the dev container by [running web2py.py directly](#starting-and-shutting-down-web2py).
 1. (Optional) Once tables are created, and everything is working, you can set `is_testing = False` in `models/db.py` and `migrate=0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.

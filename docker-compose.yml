@@ -9,6 +9,7 @@ services:
         source: .
         target: /opt/web2py/applications/OZtree
         consistency: cached
+      - original-repo:/opt/web2py/applications/OZtree_original:ro
     # Overrides default command so things don't shut down after the process ends.
     command: /bin/sh -c "while sleep 1000; do :; done"
     network_mode: service:web
@@ -23,3 +24,7 @@ services:
         source: .
         target: /opt/web2py/applications/OZtree
         consistency: cached
+      - original-repo:/opt/web2py/applications/OZtree_original
+
+volumes:
+  original-repo:
