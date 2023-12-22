@@ -18,7 +18,7 @@ def COMPILED_DOCS():
     return the markdown
     """
     try:
-        with open('applications/{}/OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown'.format(request.application), 'rb') as md:
+        with open('applications/{}/OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown'.format(request.application), 'r', encoding="utf-8") as md:
             return dict(markdown=md.read())
     except:
         return dict(markdown="No compiled markdown file found")
