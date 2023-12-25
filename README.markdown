@@ -20,6 +20,7 @@ If you are using Visual Studio Code, perform the following steps (you will need 
 1. Run `npm install && grunt dev`. You will need to rerun `grunt dev` any time you make code changes.
 1. Visit http://localhost and the website should load! You can also run your own server from the dev container by [running web2py.py directly](#starting-and-shutting-down-web2py).
 1. (Optional) Once tables are created, and everything is working, you can set `is_testing = False` in `models/db.py` and `migrate = 0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
+1. (Optional) [Create a manager account](#creating-auth-users--groups) in the auth table, e.g. so you can [view docs](#documentation).
 
 ## Installing locally
 
