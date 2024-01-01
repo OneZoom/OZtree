@@ -36,14 +36,13 @@ class PolytomyHorizonCalc {
     return changed;
   }
   calc_horizon(node) {
-    // Calculate parent's arcr based on our own.
+    // Calculate parent's arcr within our coordinate reference.
     function parent_arcr(node) {
       if (!node.upnode) return 0;
 
-      // NB: node.upnode.arcr can't be relied on at this point, so derive from nextr
       for (let i = 0; i < node.upnode.children.length; i++) {
         if (node.upnode.children[i] === node) {
-          return node.arcr / node.upnode.nextr[i];
+          return node.upnode.arcr / node.upnode.nextr[i];
         }
       }
     }
