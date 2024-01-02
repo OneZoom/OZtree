@@ -1,5 +1,4 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-docker-compose
+// For format details, see https://aka.ms/devcontainer.json.
 {
 	"name": "OZTree Dev",
 	"dockerComposeFile": "../docker-compose.yml",
@@ -11,8 +10,10 @@
 			"version": "3.8"
 		}
 	},
+	// Need newer pymysql version or MySQL connection will fail.
 	"postCreateCommand": "pip install cryptography pymysql",
 	"forwardPorts": [
+		// This is automatically forwarded if using a local container, but not on Codespaces.
 		8000
 	],
 	"customizations": {
