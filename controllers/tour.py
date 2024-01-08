@@ -91,7 +91,7 @@ def homepage_animation():
         elif r.category.endswith("red"):
             threatened.append(key)
         if r.tour_identifier:
-            hrefs[key] = URL('life/' + r.tour_identifier)
+            hrefs[key] = URL('default', 'life/' + r.tour_identifier)
             title = db(db.tours.identifier == r.tour_identifier).select(db.tours.name).first()
             text_titles[key] = title.name if title else r.tour_identifier
         else:
@@ -99,6 +99,10 @@ def homepage_animation():
         if r.ott:
             # We might still want to find e.g. an image, even if we are looking at a tour
             startpoints_ott_map[r.ott] = key
+
+    for ott, key in startpoints_ott_map.items():
+        if key not in hrefs:
+            hrefs[key] = URL('default', 'life/@=%d' % ott, url_encode=False)
 
     # Names
     st_node_otts, has_vernacular = set(), set()
