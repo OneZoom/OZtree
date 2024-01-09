@@ -1,6 +1,10 @@
 import {call_hook} from '../util/index';
 import node_details_api from '../api/node_details';
 import {pic_src_order} from '../tree_settings';
+
+const metadata_cols_leaf = ["OTTid","scientificName","common_en","popularity","picID","picID_credit","picID_rating","IUCN","price","sponsor_kind","sponsor_name","sponsor_extra","sponsor_url","n_spp"];
+const metadata_cols_node = ["OTTid","scientificName","common_en","popularity","picID","picID_credit","picID_rating","IUCN","price","sponsor_kind","sponsor_name","sponsor_extra","sponsor_url","lengthbr","sp1","sp2","sp3","sp4","sp5","sp6","sp7","sp8","iucnNE","iucnDD","iucnLC","iucnNT","iucnVU","iucnEN","iucnCR","iucnEW","iucnEX"];
+
 /**
  * A class to store all tree data, metadata and metadata related information. It also provides interface to update metadata.
  */
@@ -96,8 +100,17 @@ class DataRepo {
             
     };
     this.image_source = "best_any";
-    this.leaf_col_len = 15;
-    this.node_col_len = 31;
+
+    // Configure leaf/node column key lookups
+    this.mc_key_l = {};
+    metadata_cols_leaf.forEach((k, i) => this.mc_key_l[k] = i);
+    this.leaf_col_len = metadata_cols_leaf.length;
+
+    this.mc_key_n = {};
+    metadata_cols_node.forEach((k, i) => this.mc_key_n[k] = i);
+    this.node_col_len = metadata_cols_node.length;
+
+    this.metadata = { leaf_meta: [], node_meta: [] };
   }
   /**
    * Place all the data in the passed-in object into the this object
@@ -107,14 +120,6 @@ class DataRepo {
   setup(data_obj) {
     for (let key of Object.keys(data_obj)) {
       this[key] = data_obj[key];
-    }
-    this.mc_key_l = {};
-    this.mc_key_n = {};
-    for (let i = 0 ; i < (this.metadata.leaf_meta[0].length) ; i ++) {
-        this.mc_key_l[this.metadata.leaf_meta[0][i]] = i;
-    }  
-    for (let i = 0 ; i < (this.metadata.node_meta[0].length) ; i ++) {
-        this.mc_key_n[this.metadata.node_meta[0][i]] = i;
     }
   }
   
