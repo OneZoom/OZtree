@@ -282,14 +282,10 @@ class Midnode {
    * Get attribute of node by key name. Use this function to fetch metadata of node only.
    */
   get_attribute(key_name) {
-    if (this.is_leaf) {
-      if (!data_repo.metadata.leaf_meta[this.metacode]) return undefined;
-      return data_repo.metadata.leaf_meta[this.metacode][data_repo.mc_key_l[key_name]];
-    }
-    if (this.is_interior_node) {
-      if (!data_repo.metadata.node_meta[this.metacode]) return undefined;
-      return data_repo.metadata.node_meta[this.metacode][data_repo.mc_key_n[key_name]];
-    }
+    let m = data_repo.get_meta_entry(this.ozid);
+    if (!m) return undefined;
+
+    return m.entry[m.idx[key_name]];
   }
   
   clear_pics() {
@@ -401,9 +397,7 @@ class Midnode {
     let codes = [];
     let keys = ["sp1", "sp2", "sp3", "sp4", "sp5", "sp6", "sp7", "sp8"];
     for (let i=0; i<keys.length; i++) {
-      let key = keys[i];
-      let col = data_repo.mc_key_n[key];
-      let ott = data_repo.metadata.node_meta[this.metacode] ? data_repo.metadata.node_meta[this.metacode][col] : null;
+      let ott = this.get_attribute(keys[i]);
       if (ott && data_repo.ott_id_map[ott]) {
         let code = -data_repo.ott_id_map[ott];
         codes.push(code);
@@ -520,31 +514,30 @@ class Midnode {
    */
   
   get_picset_src_info(index) {
-    let code = this.picset_code[index];
-    if (code) {
-      let srcID_col = data_repo.mc_key_l["picID"];
-      let src_col = data_repo.mc_key_l["picID_src"];
-      let credit = data_repo.mc_key_l["picID_credit"];
-      return [data_repo.metadata.leaf_meta[code][src_col], data_repo.metadata.leaf_meta[code][srcID_col], data_repo.metadata.leaf_meta[code][credit]];
-    }
+    let m = data_repo.get_meta_entry(-this.picset_code[index]);
+    if (!m) return undefined;
+
+    return [
+      m.entry[m.idx["picID_src"]],
+      m.entry[m.idx["picID"]],
+      m.entry[m.idx["picID_credit"]],
+    ];
   }
   get_picset_common(index) {
-    let code = this.picset_code[index];
-    if (code) {
-      let col = data_repo.mc_key_l["common_en"];
-      let common = data_repo.metadata.leaf_meta[code][col];
-      if (common && common.length > 0) common = common[0].toUpperCase() + common.slice(1);
-      return common;
-    }
+    let m = data_repo.get_meta_entry(-this.picset_code[index]);
+    if (!m) return undefined;
+
+    let common = m.entry[m.idx["common_en"]];
+    if (common && common.length > 0) common = common[0].toUpperCase() + common.slice(1);
+    return common;
   }
   get_picset_latin(index) {
-    let code = this.picset_code[index];
-    if (code) {
-      let col = data_repo.mc_key_l["scientificName"];
-      let latin = data_repo.metadata.leaf_meta[code][col];
-      if (latin && latin.length > 0) latin = latin.split("_").join(" ");
-      return latin;
-    }
+    let m = data_repo.get_meta_entry(-this.picset_code[index]);
+    if (!m) return undefined;
+
+    let latin = m.entry[m.idx["scientificName"]];
+    if (latin && latin.length > 0) latin = latin.split("_").join(" ");
+    return latin;
   }
   get has_child() {
     return this.children.length > 0;
