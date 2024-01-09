@@ -347,6 +347,10 @@ class Midnode {
   get sponsor_extra() {
     return this.get_attribute("sponsor_extra");
   }
+  get tours() {
+    // NB: Should always be a list (either stored in data_repo or no tours)
+    return this.get_attribute("tours") || [];
+  }
   get lengthbr() {
     if (this._age !== null) return this._age;
     let age = this.get_attribute("lengthbr");
