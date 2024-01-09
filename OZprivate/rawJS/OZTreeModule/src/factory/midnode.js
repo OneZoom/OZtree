@@ -22,9 +22,6 @@ class Midnode {
     // metadata information
     this._cname = null;
     this._latin_name = null;
-    this._sponsor_name = null;
-    this._sponsor_kind = null;
-    this._sponsor_extra = null;
     this._age = null;
     this._spec_num_full = null;
     this._picset_len = null;
@@ -83,12 +80,10 @@ class Midnode {
   }
   release() {
     this.children = [];
+    this._meta = undefined;
     this._detail_fetched = false;
     this._cname = null;
     this._latin_name = null;
-    this._sponsor_name = null;
-    this._sponsor_kind = null;
-    this._sponsor_extra = null;
     this._age = null;
     this._spec_num_full = null;
     this._picset_len = null;
@@ -282,10 +277,10 @@ class Midnode {
    * Get attribute of node by key name. Use this function to fetch metadata of node only.
    */
   get_attribute(key_name) {
-    let m = data_repo.get_meta_entry(this.ozid);
-    if (!m) return undefined;
+    if (!this._meta) this._meta = data_repo.get_meta_entry(this.ozid);
+    if (!this._meta) return undefined;
 
-    return m.entry[m.idx[key_name]];
+    return this._meta.entry[this._meta.idx[key_name]];
   }
   
   clear_pics() {
@@ -344,28 +339,13 @@ class Midnode {
     return _latin_name;
   }
   get sponsor_name() {
-    if (this._sponsor_name !== null) return this._sponsor_name;
-    let _sponsor_name = this.get_attribute("sponsor_name");
-    if (this.detail_fetched) {
-      this._sponsor_name = _sponsor_name;
-    }
-    return _sponsor_name
+    return this.get_attribute("sponsor_name");
   }
   get sponsor_kind() {
-    if (this._sponsor_kind !== null) return this._sponsor_kind;
-    let _sponsor_kind = this.get_attribute("sponsor_kind");
-    if (this.detail_fetched) {
-      this._sponsor_kind = _sponsor_kind;
-    }
-    return _sponsor_kind;
+    return this.get_attribute("sponsor_kind");
   }
   get sponsor_extra() {
-    if (this._sponsor_extra !== null) return this._sponsor_extra;
-    let _sponsor_extra = this.get_attribute("sponsor_extra");
-    if (this.detail_fetched) {
-      this._sponsor_extra = _sponsor_extra;
-    }
-    return _sponsor_extra;
+    return this.get_attribute("sponsor_extra");
   }
   get lengthbr() {
     if (this._age !== null) return this._age;

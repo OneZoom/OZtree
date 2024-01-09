@@ -3,7 +3,67 @@
   */
 import { get_ozid } from './util_data_repo'
 import { populate_factory } from './util_factory'
+import data_repo from '../src/factory/data_repo.js';
 import test from 'tape';
+
+function um(res) {
+  if (!res.lang) res.lang = "en-GB";
+  ['leafIucn', 'leafPic', 'leaves', 'nodes', 'reservations', 'tours_by_ott', 'vernacular_by_name', 'vernacular_by_ott'].forEach((k) => {
+    if (!res[k]) res[k] = [];
+  });
+  return data_repo.update_metadata(res)
+}
+
+test('sponsor_name,sponsor_kind,sponsor_extra', function (test) {
+  var factory;
+  function sponsor(node) {
+    return {
+      name: node.sponsor_name,
+      kind: node.sponsor_kind,
+      extra: node.sponsor_extra,
+    };
+  }
+
+  return populate_factory().then((f) => {
+    // Init data_repo & factory
+    factory = f;
+
+ }).then(() => {
+   var node = factory.dynamic_loading_by_metacode(759126);
+
+   test.deepEqual(sponsor(node), {
+     name: undefined,
+     kind: undefined,
+     extra: undefined
+   }, "No sponsorship initially");
+
+   um({reservations: [
+     // OTT_ID, verified_kind, verified_name, verified_more_info, verified_url
+     [node.ott, "For", "Arthur Dent", "Don't panic", "https://example.com"],
+   ]})
+   test.deepEqual(sponsor(node), {
+     name: 'Arthur Dent',
+     kind: 'For',
+     extra: 'Don\'t panic'
+   }, "Updated metadata, got a sponsorship");
+
+   node.release();
+   node.metacode = 5;  // NB: Unless we change metacode, we'd just fetch the same metadata again
+   test.deepEqual(sponsor(node), {
+     name: undefined,
+     kind: undefined,
+     extra: undefined
+   }, "Releasing cleared metadata");
+
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+
+});
 
 test('picset', function (test) {
   var factory;
