@@ -369,6 +369,7 @@ def nodes_info_from_string(
     image_type='best_any',
     include_sponsorship=True,
     include_pic_details=False,
+    include_tours_by_ott=True,
     check_malicious=True,
 ):
     """
@@ -504,7 +505,20 @@ def nodes_info_from_string(
                 + ") AS t")
             sql = query7.format(otts=ott_ids)
             reservations_res = db.executesql(sql)
-            
+
+    if len(leafOtts) or len(nodeOtts):
+        tours_res = []
+        if include_tours_by_ott:
+            for r in db(db.tourstop.ott.belongs(leafOtts | nodeOtts)).select(
+                        db.tourstop.ott,
+                        db.tour.identifier,
+                        join=db.tour.on(db.tour.id == db.tourstop.tour),
+                        orderby=(db.tourstop.ott, db.tourstop.tour),
+                    ):
+                if len(tours_res) == 0 or tours_res[-1][0] != r.tourstop.ott:
+                    tours_res.append([r.tourstop.ott, []])
+                tours_res[-1][1].append('/tour/data.html/ %s' % r.tour.identifier)
+
     if leafIDs_string or nodeIDs_string:
         return dict(
             nodes=ordered_nodes_query_res or [],
@@ -514,7 +528,9 @@ def nodes_info_from_string(
             vernacular_by_name=vernacular_name_query_res2 or [], 
             leafIucn=iucn_query_res or [],
             leafPic=images_by_ott_query_res or [],
-            reservations=reservations_res or [])
+            reservations=reservations_res or [],
+            tours_by_ott=tours_res,
+        )
     else:
         # We didn't pass any ids in, so we simply output a list of the column names for 
         # the various arrays. The client can thus make a blank call at the start of a
@@ -534,7 +550,9 @@ def nodes_info_from_string(
             vernacular_by_name=[],   
             leafIucn=[],
             leafPic=[],
-            reservations=[])
+            reservations=[],
+            tours_by_ott=[],
+        )
 
 
 def query_val_to_ints(CommaSepString):

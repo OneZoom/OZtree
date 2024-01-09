@@ -30,6 +30,7 @@ class TestNodeInfo(unittest.TestCase):
 
     def tearDown(self):
         util.clear_unittest_sponsors()
+        util.clear_unittest_tours()
         # Remove anything created as part of tests
         db.rollback()
 
@@ -92,6 +93,34 @@ class TestNodeInfo(unittest.TestCase):
             # NB: rs[2] doesn't appear in reservations output
         })
 
+    def test_nodes_info_from_string_tours(self):
+        def tour_url(*args):
+            return ['/tour/data.html/ %s' % t['identifier'] for t in args]
+
+        db = current.db
+        leaves = [db(db.ordered_leaves.ott == ott).select(db.ordered_leaves.ALL)[0] for ott in util.find_unsponsored_otts(10)]
+        tour1 = util.create_tour([l.ott for l in leaves[0:5]])
+        tour2 = util.create_tour([l.ott for l in leaves[3:7]])
+        expected_tours_by_ott = [
+          [leaves[0].ott, tour_url(tour1)],
+          [leaves[1].ott, tour_url(tour1)],
+          [leaves[2].ott, tour_url(tour1)],
+          [leaves[3].ott, tour_url(tour1, tour2)],
+          [leaves[4].ott, tour_url(tour1, tour2)],
+          [leaves[5].ott, tour_url(tour2)],
+          [leaves[6].ott, tour_url(tour2)],
+        ]
+
+        out = self.ni([l.id for l in leaves], [])
+        # Reponse has all leaves
+        self.assertEqual(
+            sorted([l.ott for l in leaves]),
+            sorted([x[1] for x in out['leaves']]),
+        )
+        self.assertEqual(
+            sorted(out['tours_by_ott'], key=lambda x: x[0]),
+            sorted(expected_tours_by_ott, key=lambda x: x[0]),
+        )
 
 if __name__ == '__main__':
     import sys
