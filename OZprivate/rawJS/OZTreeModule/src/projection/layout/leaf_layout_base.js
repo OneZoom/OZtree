@@ -12,7 +12,7 @@ import {get_abs_x, get_abs_y, get_abs_r} from './utils';
 import {global_button_action} from '../../button_manager';
 import {live_area_config} from '../live_area_config';
 import {add_mr} from '../move_restriction';
-import {get_image, image_ready} from '../../image_cache';
+import {get_image} from '../../image_cache';
 import {extxt, spec_num_full} from '../../factory/utils';
 import config from '../../global_config';
 
@@ -67,7 +67,6 @@ class LeafLayoutBase {
       } else {
         let leafpic_drawn = false;
         let imageObject = get_image(node.pic_src, node.pic_filename); //here we could use preferred_px to get a higher-res photo
-        imageObject = image_ready(imageObject) ? imageObject : null;
         let imageCredit = node.pic_credit;
         let [sponsorText, extraText, sponsored] = this.get_sponsor_text(node);
         // figure out if there are slight changes to leaf size or color depending on style

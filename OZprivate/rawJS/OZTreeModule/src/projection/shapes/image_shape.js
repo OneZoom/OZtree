@@ -1,6 +1,6 @@
 import BaseShape from './base_shape';
 import {ObjectPool} from '../../util/index';
-import {get_image, image_ready} from '../../image_cache';
+import {get_image} from '../../image_cache';
 
 
 class ImageShape extends BaseShape {
@@ -37,7 +37,7 @@ class ImageShape extends BaseShape {
 
 function image_render(context, shape) {
   let image = shape.img ? shape.img : get_image(shape.src, shape.filename);
-  if (!image_ready(image)) return;
+  if (!image) return;
 
   if (shape.border_radius || shape.alpha < 1) {
     context.save();
