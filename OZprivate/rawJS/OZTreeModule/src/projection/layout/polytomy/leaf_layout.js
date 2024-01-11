@@ -1,4 +1,4 @@
-import LeafLayoutBase from '../leaf_layout_helper';
+import LeafLayoutBase from '../leaf_layout_base';
 
 import {color_theme} from '../../../themes/color_theme';
 import ArcShape from '../../shapes/arc_shape';

@@ -1,3 +1,3 @@
-import SignpostLayoutBase from '../signpost_layout_helper';
+import SignpostLayoutBase from '../signpost_layout_base';
 
 export default SignpostLayoutBase;

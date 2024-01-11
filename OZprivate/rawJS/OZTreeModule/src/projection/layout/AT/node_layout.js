@@ -1,4 +1,4 @@
-import NodeLayoutBase from '../node_layout_helper';
+import NodeLayoutBase from '../node_layout_base';
 import config from '../../../global_config';
 import {color_theme} from '../../../themes/color_theme';
 import {ageAsText, gpmapper, is_primary_or_secondary_name} from '../../../factory/utils';

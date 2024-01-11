@@ -1,4 +1,4 @@
-import LeafLayoutBase from '../leaf_layout_helper';
+import LeafLayoutBase from '../leaf_layout_base';
 import ArcShape from '../../shapes/arc_shape';
 import BezierShape from '../../shapes/bezier_shape';
 import ImageShape from '../../shapes/image_shape';
