@@ -40,7 +40,7 @@ functionality. At the moment, a single file is created, called OZentry.js
  * @param {string} rawData A 'condensed Newick' string, e.g. as defined in completetree_XXXXX.js
  * (condensed Newick is a ladderized-ascending binary newick tree with all characters except braces removed, 
  * and curly braces substituted where a bifurcation only exists order to randomly resolve polytomies.
- * @param {Object} metadata - *** To document ...
+ * @param {Object} unused - leave null
  * @param {Object} cut_position_map_json_str dichotomy cut map from the tree-build-generated cut_position_map.js
  * @param {Object} polytomy_cut_position_map_json_str polytomy cut map from the tree-build-generated cut_position_map.js
  * @param {Object} cut_threshold - Threshold used when generating (and defined in) cut_position_map.js
@@ -54,7 +54,7 @@ function setup(
   canvasID,
   default_viz_settings,
   rawData,
-  metadata,
+  unused,
   cut_position_map_json_str,
   polytomy_cut_position_map_json_str,
   cut_threshold,
@@ -131,7 +131,6 @@ function setup(
           raw_data: rawData,
           cut_map: JSON.parse(cut_position_map_json_str || "{}"),
           poly_cut_map: JSON.parse(polytomy_cut_position_map_json_str || "{}"),
-          metadata: metadata,
           cut_threshold: cut_threshold || 10000,
           tree_date: tree_date || "{}"
         })

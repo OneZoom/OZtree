@@ -13,7 +13,7 @@ export function populate_data_repo(tree_serial = '25589581') {
     // NB: We use JSDOM because the generated files don't export their contents, so wouldn't
     //     be accessible if we require()d them.
     const vdom = new jsdom.JSDOM(`<body>
-       <!-- rawData, metadata -->
+       <!-- rawData -->
        <script src="completetree_${tree_serial}.js" type="text/javascript"></script>
        <!-- cut_position_map_json_str, polytomy_cut_position_map_json_str, cut_thresholdcut_threshold -->
        <script src="cut_position_map_${tree_serial}.js" type="text/javascript"></script>
@@ -31,7 +31,6 @@ export function populate_data_repo(tree_serial = '25589581') {
         raw_data: this.rawData,
         cut_map: JSON.parse(this.cut_position_map_json_str),
         poly_cut_map: JSON.parse(this.polytomy_cut_position_map_json_str),
-        metadata: this.metadata,
         cut_threshold: this.cut_threshold,
         tree_date: this.tree_date,
       });

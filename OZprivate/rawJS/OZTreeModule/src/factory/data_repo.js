@@ -1,6 +1,11 @@
 import {call_hook} from '../util/index';
 import node_details_api from '../api/node_details';
 import {pic_src_order} from '../tree_settings';
+
+const metadata_cols_leaf = ["OTTid","scientificName","common_en","popularity","picID","picID_credit","picID_rating","IUCN","price","sponsor_kind","sponsor_name","sponsor_extra","sponsor_url","n_spp"];
+const metadata_cols_node = ["OTTid","scientificName","common_en","popularity","picID","picID_credit","picID_rating","IUCN","price","sponsor_kind","sponsor_name","sponsor_extra","sponsor_url","lengthbr","sp1","sp2","sp3","sp4","sp5","sp6","sp7","sp8","iucnNE","iucnDD","iucnLC","iucnNT","iucnVU","iucnEN","iucnCR","iucnEW","iucnEX"];
+const metadata_sparse_cols = ["tours"];
+
 /**
  * A class to store all tree data, metadata and metadata related information. It also provides interface to update metadata.
  */
@@ -96,8 +101,23 @@ class DataRepo {
             
     };
     this.image_source = "best_any";
-    this.leaf_col_len = 15;
-    this.node_col_len = 31;
+
+    // Configure leaf/node column key lookups
+    this.mc_key_l = {};
+    metadata_cols_leaf.forEach((k, i) => this.mc_key_l[k] = i);
+    this.leaf_col_len = metadata_cols_leaf.length;
+
+    this.mc_key_n = {};
+    metadata_cols_node.forEach((k, i) => this.mc_key_n[k] = i);
+    this.node_col_len = metadata_cols_node.length;
+
+    // Don't reserve space for sparse cols, just add them as separate properties to the array when needed
+    metadata_sparse_cols.forEach((k) => {
+      this.mc_key_l[k] = k;
+      this.mc_key_n[k] = k;
+    });
+
+    this.metadata = { leaf_meta: [], node_meta: [] };
   }
   /**
    * Place all the data in the passed-in object into the this object
@@ -107,14 +127,6 @@ class DataRepo {
   setup(data_obj) {
     for (let key of Object.keys(data_obj)) {
       this[key] = data_obj[key];
-    }
-    this.mc_key_l = {};
-    this.mc_key_n = {};
-    for (let i = 0 ; i < (this.metadata.leaf_meta[0].length) ; i ++) {
-        this.mc_key_l[this.metadata.leaf_meta[0][i]] = i;
-    }  
-    for (let i = 0 ; i < (this.metadata.node_meta[0].length) ; i ++) {
-        this.mc_key_n[this.metadata.node_meta[0][i]] = i;
     }
   }
   
@@ -133,6 +145,7 @@ class DataRepo {
     parse_vernacular_by_ott(this, res.vernacular_by_ott);
     parse_vernacular_by_name(this, res.vernacular_by_name);
     parse_sponsorship(this, res.reservations, node_details_api);
+    parse_tours_by_ott(this, res.tours_by_ott || []);
   }
   update_image_metadata(metacode, rights, licence) {
     this.metadata.leaf_meta[metacode][this.mc_key_l["picID_credit"]] = rights +  " / " + licence;
@@ -240,60 +253,69 @@ class DataRepo {
       }
     }
   }
+
+  get_meta_entry(id) {
+    if (id < 0) {
+      if (!this.metadata.leaf_meta[-id]) this.metadata.leaf_meta[-id] = new Array(this.leaf_col_len);
+      return { entry: this.metadata.leaf_meta[-id], idx: this.mc_key_l };
+    }
+    if (id > 0) {
+      if (!this.metadata.node_meta[id]) this.metadata.node_meta[id] = new Array(this.node_col_len);
+      return { entry: this.metadata.node_meta[id], idx: this.mc_key_n };
+    }
+    // id null --> probably an empty entry in ott_id_map
+    return null;
+  }
 }
   
-  
+
 function parse_ordered_leaves(data_repo, leaves, node_details) {
   for (let i=0; i<leaves.length; i++) {
-    let id = leaves[i][node_details.leaf_cols["id"]];
-    let ott = leaves[i][node_details.leaf_cols["ott"]];
-    if (!data_repo.metadata.leaf_meta[id]) data_repo.metadata.leaf_meta[id] = new   Array(data_repo.leaf_col_len);
-    let leaf_meta_entry = data_repo.metadata.leaf_meta[id];
-    leaf_meta_entry[data_repo.mc_key_l["OTTid"]] = ott;
-    leaf_meta_entry[data_repo.mc_key_l["scientificName"]] =leaves[i][node_details.leaf_cols["name"]];
-    leaf_meta_entry[data_repo.mc_key_l["popularity"]] = leaves[i][node_details.leaf_cols["popularity"]];
+    let m = data_repo.get_meta_entry(-leaves[i][node_details.leaf_cols["id"]]);
+
+    m.entry[m.idx["OTTid"]] = leaves[i][node_details.leaf_cols["ott"]];
+    m.entry[m.idx["scientificName"]] =leaves[i][node_details.leaf_cols["name"]];
+    m.entry[m.idx["popularity"]] = leaves[i][node_details.leaf_cols["popularity"]];
   }
 }
 
 function parse_ordered_nodes(data_repo, nodes, node_details) {
   for (let i=0; i<nodes.length; i++) {
-    let id = nodes[i][node_details.node_cols["id"]];
-    let ott = nodes[i][node_details.node_cols["ott"]];
-    if (!data_repo.metadata.node_meta[id]) data_repo.metadata.node_meta[id] = new Array(data_repo.node_col_len);
-    let node_meta_entry = data_repo.metadata.node_meta[id];
-    node_meta_entry[data_repo.mc_key_n["OTTid"]] = ott;
-    node_meta_entry[data_repo.mc_key_n["scientificName"]] = nodes[i][node_details.node_cols["name"]];
-    node_meta_entry[data_repo.mc_key_n["popularity"]] = nodes[i][node_details.node_cols["popularity"]];
-    node_meta_entry[data_repo.mc_key_n["lengthbr"]] = Math.abs(nodes[i][node_details.node_cols["age"]]);
+    let m = data_repo.get_meta_entry(nodes[i][node_details.node_cols["id"]]);
+
+    m.entry[m.idx["OTTid"]] = nodes[i][node_details.node_cols["ott"]];
+    m.entry[m.idx["scientificName"]] = nodes[i][node_details.node_cols["name"]];
+    m.entry[m.idx["popularity"]] = nodes[i][node_details.node_cols["popularity"]];
+    m.entry[m.idx["lengthbr"]] = Math.abs(nodes[i][node_details.node_cols["age"]]);
     
-    node_meta_entry[data_repo.mc_key_n["sp1"]] = nodes[i][node_details.node_cols["{pic}1"]];
-    node_meta_entry[data_repo.mc_key_n["sp2"]] = nodes[i][node_details.node_cols["{pic}2"]];
-    node_meta_entry[data_repo.mc_key_n["sp3"]] = nodes[i][node_details.node_cols["{pic}3"]];
-    node_meta_entry[data_repo.mc_key_n["sp4"]] = nodes[i][node_details.node_cols["{pic}4"]];
-    node_meta_entry[data_repo.mc_key_n["sp5"]] = nodes[i][node_details.node_cols["{pic}5"]];
-    node_meta_entry[data_repo.mc_key_n["sp6"]] = nodes[i][node_details.node_cols["{pic}6"]];
-    node_meta_entry[data_repo.mc_key_n["sp7"]] = nodes[i][node_details.node_cols["{pic}7"]];
-    node_meta_entry[data_repo.mc_key_n["sp8"]] = nodes[i][node_details.node_cols["{pic}8"]];
+    m.entry[m.idx["sp1"]] = nodes[i][node_details.node_cols["{pic}1"]];
+    m.entry[m.idx["sp2"]] = nodes[i][node_details.node_cols["{pic}2"]];
+    m.entry[m.idx["sp3"]] = nodes[i][node_details.node_cols["{pic}3"]];
+    m.entry[m.idx["sp4"]] = nodes[i][node_details.node_cols["{pic}4"]];
+    m.entry[m.idx["sp5"]] = nodes[i][node_details.node_cols["{pic}5"]];
+    m.entry[m.idx["sp6"]] = nodes[i][node_details.node_cols["{pic}6"]];
+    m.entry[m.idx["sp7"]] = nodes[i][node_details.node_cols["{pic}7"]];
+    m.entry[m.idx["sp8"]] = nodes[i][node_details.node_cols["{pic}8"]];
     
-    node_meta_entry[data_repo.mc_key_n["iucnDD"]] = nodes[i][node_details.node_cols["iucnDD"]];
-    node_meta_entry[data_repo.mc_key_n["iucnNE"]] = nodes[i][node_details.node_cols["iucnNE"]];
-    node_meta_entry[data_repo.mc_key_n["iucnLC"]] = nodes[i][node_details.node_cols["iucnLC"]];
-    node_meta_entry[data_repo.mc_key_n["iucnNT"]] = nodes[i][node_details.node_cols["iucnNT"]];
-    node_meta_entry[data_repo.mc_key_n["iucnVU"]] = nodes[i][node_details.node_cols["iucnVU"]];
-    node_meta_entry[data_repo.mc_key_n["iucnEN"]] = nodes[i][node_details.node_cols["iucnEN"]];
-    node_meta_entry[data_repo.mc_key_n["iucnCR"]] = nodes[i][node_details.node_cols["iucnCR"]];
-    node_meta_entry[data_repo.mc_key_n["iucnEW"]] = nodes[i][node_details.node_cols["iucnEW"]];
-    node_meta_entry[data_repo.mc_key_n["iucnEX"]] = nodes[i][node_details.node_cols["iucnEX"]];
+    m.entry[m.idx["iucnDD"]] = nodes[i][node_details.node_cols["iucnDD"]];
+    m.entry[m.idx["iucnNE"]] = nodes[i][node_details.node_cols["iucnNE"]];
+    m.entry[m.idx["iucnLC"]] = nodes[i][node_details.node_cols["iucnLC"]];
+    m.entry[m.idx["iucnNT"]] = nodes[i][node_details.node_cols["iucnNT"]];
+    m.entry[m.idx["iucnVU"]] = nodes[i][node_details.node_cols["iucnVU"]];
+    m.entry[m.idx["iucnEN"]] = nodes[i][node_details.node_cols["iucnEN"]];
+    m.entry[m.idx["iucnCR"]] = nodes[i][node_details.node_cols["iucnCR"]];
+    m.entry[m.idx["iucnEW"]] = nodes[i][node_details.node_cols["iucnEW"]];
+    m.entry[m.idx["iucnEX"]] = nodes[i][node_details.node_cols["iucnEX"]];
   }
 }
 
 function parse_iucn(data_repo, iucn) {
   for (let i=0; i<iucn.length; i++) {
     let ott = iucn[i][0];
-    let status_code = iucn[i][1];
-    let id = -data_repo.ott_id_map[ott];
-    if (!data_repo.metadata.leaf_meta[id]) data_repo.metadata.leaf_meta[id] = new Array(data_repo.leaf_col_len);
-    data_repo.metadata.leaf_meta[id][data_repo.mc_key_l["IUCN"]] = status_code;
+    let m = data_repo.get_meta_entry(data_repo.ott_id_map[ott]);
+    if (!m) continue;
+
+    m.entry[m.idx["IUCN"]] = iucn[i][1];
   }
 }
 
@@ -312,29 +334,29 @@ function parse_pics(data_repo, leaves, pics, order, node_details) {
 
   // For each potential leaf, clear any stored image first (in case this leaf no longer has an image)
   for (let i=0; i<leaves.length; i++) {
-    let id = leaves[i][node_details.leaf_cols["id"]];
-    if (!data_repo.metadata.leaf_meta[id]) data_repo.metadata.leaf_meta[id] = new Array(data_repo.leaf_col_len);
-    let pic_entry = data_repo.metadata.leaf_meta[id];
-    pic_entry[data_repo.mc_key_l["picID_src"]]    = null;
-    pic_entry[data_repo.mc_key_l["picID"]]        = null;
-    pic_entry[data_repo.mc_key_l["picID_rating"]] = null;
+    let m = data_repo.get_meta_entry(-leaves[i][node_details.leaf_cols["id"]]);
+
+    m.entry[m.idx["picID_src"]]    = null;
+    m.entry[m.idx["picID"]]        = null;
+    m.entry[m.idx["picID_rating"]] = null;
     /** 
      * this attribute is fetched by image_details api call. 
      * set credit to null to force it being fetched by image_details API call. 
      * Otherwise if user change image source, the image credit
      * might refer to previous image source.
      */
-    pic_entry[data_repo.mc_key_l["picID_credit"]] = null;
+    m.entry[m.idx["picID_credit"]] = null;
   }
 
   // Add all found images back
   for (let i=0; i<pics.length; i++) {
     let ott = pics[i][node_details.pic_cols["ott"]];
-    let id = -data_repo.ott_id_map[ott];
-    let pic_entry = data_repo.metadata.leaf_meta[id];
-    pic_entry[data_repo.mc_key_l["picID_src"]]    = pics[i][node_details.pic_cols["src"]].toString();
-    pic_entry[data_repo.mc_key_l["picID"]]        = pics[i][node_details.pic_cols["src_id"]].toString();
-    pic_entry[data_repo.mc_key_l["picID_rating"]] = pics[i][node_details.pic_cols["rating"]];
+    let m = data_repo.get_meta_entry(data_repo.ott_id_map[ott]);
+    if (!m) continue;
+
+    m.entry[m.idx["picID_src"]]    = pics[i][node_details.pic_cols["src"]].toString();
+    m.entry[m.idx["picID"]]        = pics[i][node_details.pic_cols["src_id"]].toString();
+    m.entry[m.idx["picID_rating"]] = pics[i][node_details.pic_cols["rating"]];
   }
 }
 
@@ -342,75 +364,52 @@ function parse_vernacular_by_ott(data_repo, vernacular_by_ott) {
   //pick the first vernacular returned by the array
   for (let i=0; i<vernacular_by_ott.length; i++) {
     let ott = vernacular_by_ott[i][0];
-    let vernacular = vernacular_by_ott[i][1];
-    let id = data_repo.ott_id_map[ott];
-    if (id && id>0) {
-      if (!data_repo.metadata.node_meta[id]) data_repo.metadata.node_meta[id] = new Array(data_repo.node_col_len);
-      if (!data_repo.metadata.node_meta[id][data_repo.mc_key_n["common_en"]])
-        data_repo.metadata.node_meta[id][data_repo.mc_key_n["common_en"]] = vernacular;
-    } else if (id && id<0) {
-      id = -id;
-      if (!data_repo.metadata.leaf_meta[id]) data_repo.metadata.leaf_meta[id] = new Array(data_repo.leaf_col_len);
-      if (!data_repo.metadata.leaf_meta[id][data_repo.mc_key_l["common_en"]])
-        data_repo.metadata.leaf_meta[id][data_repo.mc_key_l["common_en"]] = vernacular;
-    }
+    let m = data_repo.get_meta_entry(data_repo.ott_id_map[ott]);
+    if (!m) continue;
+
+    if (!m.entry[m.idx["common_en"]]) m.entry[m.idx["common_en"]] = vernacular_by_ott[i][1];
   }
 }
 
 function parse_vernacular_by_name(data_repo, vernacular_by_name) {
   for (let i=0; i<vernacular_by_name.length; i++) {
     let name = vernacular_by_name[i][0];
-    let vernacular = vernacular_by_name[i][1];
-    let id = data_repo.name_id_map[name];
-    if (id && id>0) {
-      if (!data_repo.metadata.node_meta[id]) data_repo.metadata.node_meta[id] = new Array(data_repo.node_col_len);
-      if (!data_repo.metadata.node_meta[id][data_repo.mc_key_n["common_en"]])
-        data_repo.metadata.node_meta[id][data_repo.mc_key_n["common_en"]] = vernacular;
-    } else if (id && id<0) {
-      id = -id;
-      if (!data_repo.metadata.leaf_meta[id]) data_repo.metadata.leaf_meta[id] = new Array(data_repo.leaf_col_len);
-      if (!data_repo.metadata.leaf_meta[id][data_repo.mc_key_l["common_en"]])
-        data_repo.metadata.leaf_meta[id][data_repo.mc_key_l["common_en"]] = vernacular;
-    }
+    let m = data_repo.get_meta_entry(data_repo.name_id_map[name]);
+    if (!m) continue;
+
+    if (!m.entry[m.idx["common_en"]]) m.entry[m.idx["common_en"]] = vernacular_by_name[i][1];
   }
 }
 
 function parse_sponsorship(data_repo, reservations, node_details) {
   for (let i=0; i<reservations.length; i++) {
     let ott = reservations[i][node_details.res_cols["OTT_ID"]];
-    if (data_repo.ott_id_map[ott] && data_repo.ott_id_map[ott] > 0) {  //node
-      let id = data_repo.ott_id_map[ott];
-      if (!data_repo.metadata.node_meta[id]) data_repo.metadata.node_meta[id] = new Array(data_repo.node_col_len);
-      let node_meta_entry = data_repo.metadata.node_meta[id];
-      node_meta_entry[data_repo.mc_key_n["sponsor_name"]] = reservations[i][node_details.res_cols["verified_name"]];
-      node_meta_entry[data_repo.mc_key_n["sponsor_kind"]] = reservations[i][node_details.res_cols["verified_kind"]];
-      node_meta_entry[data_repo.mc_key_n["sponsor_extra"]] = reservations[i][node_details.res_cols["verified_more_info"]];
-      node_meta_entry[data_repo.mc_key_n["sponsor_url"]] = reservations[i][node_details.res_cols["verified_url"]];
+    let m = data_repo.get_meta_entry(data_repo.ott_id_map[ott]);
+    if (!m) continue;
+
+    m.entry[m.idx["sponsor_name"]] = reservations[i][node_details.res_cols["verified_name"]];
+    m.entry[m.idx["sponsor_kind"]] = reservations[i][node_details.res_cols["verified_kind"]];
+    m.entry[m.idx["sponsor_extra"]] = reservations[i][node_details.res_cols["verified_more_info"]];
+    m.entry[m.idx["sponsor_url"]] = reservations[i][node_details.res_cols["verified_url"]];
       
-      //only replace scientificName and common_en if scientificName or common_name is not present.
-      if (!node_meta_entry[data_repo.mc_key_n["scientificName"]]) {
-        node_meta_entry[data_repo.mc_key_n["scientificName"]] = reservations[i][node_details.res_cols["name"]];
-      }      
-      if (!node_meta_entry[data_repo.mc_key_n["common_en"]]) {
-        node_meta_entry[data_repo.mc_key_n["common_en"]] = reservations[i][node_details.res_cols["common_name"]];
-      }      
-    } else if (data_repo.ott_id_map[ott] && data_repo.ott_id_map[ott] < 0) {  //leaf
-      let id = -data_repo.ott_id_map[ott];
-      if (!data_repo.metadata.leaf_meta[id]) data_repo.metadata.leaf_meta[id] = new Array(data_repo.leaf_col_len);
-      let leaf_meta_entry = data_repo.metadata.leaf_meta[id];
-      leaf_meta_entry[data_repo.mc_key_l["sponsor_name"]] = reservations[i][node_details.res_cols["verified_name"]];
-      leaf_meta_entry[data_repo.mc_key_l["sponsor_kind"]] = reservations[i][node_details.res_cols["verified_kind"]];
-      leaf_meta_entry[data_repo.mc_key_l["sponsor_extra"]] = reservations[i][node_details.res_cols["verified_more_info"]];
-      leaf_meta_entry[data_repo.mc_key_l["sponsor_url"]] = reservations[i][node_details.res_cols["verified_url"]];
-      
-      //only replace scientificName and common_en if scientificName or common_name is not present.
-      if (!leaf_meta_entry[data_repo.mc_key_l["scientificName"]]) {
-        leaf_meta_entry[data_repo.mc_key_l["scientificName"]] = reservations[i][node_details.res_cols["name"]];
-      }      
-      if (!leaf_meta_entry[data_repo.mc_key_l["common_en"]]) {
-        leaf_meta_entry[data_repo.mc_key_l["common_en"]] = reservations[i][node_details.res_cols["common_name"]];
-      }  
+    //only replace scientificName and common_en if scientificName or common_name is not present.
+    if (!m.entry[m.idx["scientificName"]]) {
+      m.entry[m.idx["scientificName"]] = reservations[i][node_details.res_cols["name"]];
     }
+    if (!m.entry[m.idx["common_en"]]) {
+      m.entry[m.idx["common_en"]] = reservations[i][node_details.res_cols["common_name"]];
+    }
+  }
+}
+
+function parse_tours_by_ott(data_repo, vals) {
+  // Cols: OTT, url
+  for (let i = 0; i < vals.length; i++) {
+    let ott = vals[i][0]
+    let m = data_repo.get_meta_entry(data_repo.ott_id_map[ott]);
+    if (!m) continue;
+
+    m.entry[m.idx["tours"]] = vals[i][1];
   }
 }
 
