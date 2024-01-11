@@ -7,9 +7,6 @@ class BaseShape {
     set_data(this, obj);
     this.uid = uid++;
   }
-  render(context) {
-    this.renderer.render(context, this);
-  }
   static create(obj) {
     let shape = this.obj_pool.get();
     set_data(shape, obj);
