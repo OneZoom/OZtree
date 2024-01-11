@@ -180,7 +180,7 @@ class LeafLayout extends LeafLayoutBase {
       s.height = 0;
       shapes.push(s);
 
-      this.circle_cut_image(shapes, imageObject, x, y, r, color_theme.get_color("leaf.inside.fill",node), null, node);
+      this.circle_cut_image(shapes, imageObject, x, y, r, color_theme.get_color("leaf.inside.fill",node), node);
   }
 
   /** Draw the special human leaf */
@@ -362,7 +362,6 @@ class LeafLayout extends LeafLayoutBase {
   fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop, node) {
     this.circle_cut_image(shapes,imageObject, x,y,r * l_consts.r_image,
       color_theme.get_color("leaf.inside.fill",node),
-      undefined,
       node);
 
     // Apply a wash atop images

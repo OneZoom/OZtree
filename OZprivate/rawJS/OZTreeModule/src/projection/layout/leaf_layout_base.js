@@ -795,7 +795,7 @@ class LeafLayoutBase {
   fullLeaf_detail1(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
     if (r > 20 && r <= 50) {
       if (imageObject) {
-        this.circle_cut_image(shapes,imageObject, x, y, r*0.85, color_theme.get_color("leaf.inside.fill",node), null, node);
+        this.circle_cut_image(shapes,imageObject, x, y, r*0.85, color_theme.get_color("leaf.inside.fill",node), node);
       } else {
         let text_shape = TextShape.create();
         text_shape.height = 5;
@@ -822,7 +822,6 @@ class LeafLayoutBase {
       if (imageObject) {
         this.rounded_image(shapes,imageObject, x, y+r*0.2,r*0.95,
           color_theme.get_color("leaf.inside.fill",node),
-          undefined,
           requiresCrop,cropMult,cropLeft,cropTop, node);
       }
 
@@ -969,12 +968,10 @@ class LeafLayoutBase {
       if (imageObject && (conservation_text.length > 0)) {
         this.rounded_image(shapes,imageObject,x,y,r*0.75,
           color_theme.get_color("leaf.inside.fill",node),
-          undefined,
           requiresCrop,cropMult,cropLeft,cropTop, node);
       } else if (imageObject) {
         this.rounded_image(shapes,imageObject,x,y+r*0.05,r*0.75,
           color_theme.get_color("leaf.inside.fill",node),
-          undefined,
           requiresCrop,cropMult,cropLeft,cropTop, node);
       } 
     }
@@ -993,24 +990,12 @@ class LeafLayoutBase {
   * imageObject is the image to be drawn (assumed to be square)
   * centerpointx,centerpointy,radiusr show where the image will be drawn (in a circle)
   * borderColor is the immediate border around the image
-  * highlightColor could be null but if not is a second border around the image highlighting it further (typically used on touch or mouseover)
   *
   * returns: none
   *
   */
-  circle_cut_image(shapes,imageObject,centerpointx,centerpointy,radiusr,borderColor,highlightColor, node) {
+  circle_cut_image(shapes,imageObject,centerpointx,centerpointy,radiusr,borderColor, node) {
     if (imageObject) {
-      if (highlightColor) {
-        let arc_shape = ArcShape.create();
-        arc_shape.x = centerpointx;
-        arc_shape.y = centerpointy;
-        arc_shape.r = radiusr * 1.05;
-        arc_shape.circle = true;
-        arc_shape.do_fill = true;
-        arc_shape.fill.color = highlightColor;
-        shapes.push(arc_shape);
-      }
-      
       let arc_shape = ArcShape.create();
       arc_shape.x = centerpointx;
       arc_shape.y = centerpointy;
@@ -1098,17 +1083,9 @@ class LeafLayoutBase {
   /**
    * Draw an image with rounded corners, used as a centerpiece for full nodes
    */
-  rounded_image(shapes,imageObject,x,y,w,borderColor,highlightColor,requiresCrop,cropMult,cropLeft,cropTop,node) {
+  rounded_image(shapes,imageObject,x,y,w,borderColor,requiresCrop,cropMult,cropLeft,cropTop,node) {
     if (imageObject) {
       let path_shape;
-      
-      if (highlightColor) {
-        path_shape = PathShape.create();
-        this.draw_src(x-w/2,y-w/2,w,w,w*0.03,node,path_shape);
-        path_shape.do_fill = true;
-        path_shape.fill.color = highlightColor;
-        shapes.push(path_shape);
-      }
       
       path_shape = PathShape.create();
       this.draw_src(x-w/2,y-w/2,w,w,w*0.03,node,path_shape);
