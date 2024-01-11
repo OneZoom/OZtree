@@ -88,12 +88,7 @@ class SignpostLayoutBase {
       image_shape.h = this.centerr * 2 * 0.97 * 0.6;
       image_shape.alpha = this.alpha;
       image_shape.height = this.signpost_height;
-      let arc_shape = ArcShape.create();
-      arc_shape.x = this.centerx;
-      arc_shape.y = this.centery;
-      arc_shape.r = this.centerr * 0.97 * 0.6;
-      arc_shape.circle = true;
-      image_shape.clip = arc_shape;
+      image_shape.border_radius = true;
       shapes.push(image_shape);
     }
   }

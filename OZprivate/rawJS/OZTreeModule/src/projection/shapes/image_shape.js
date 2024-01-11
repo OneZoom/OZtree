@@ -15,6 +15,7 @@ class ImageShape extends BaseShape {
     this.w = NaN;
     this.h = NaN;
     this.alpha = 1;  // Specify an alpha-blend level to be used when rendering this image
+    this.border_radius = null;
   }
   release() {
     this.img = null;
@@ -26,16 +27,7 @@ class ImageShape extends BaseShape {
     this.w = NaN;
     this.h = NaN;
     this.alpha = 1;
-    if (this.clip) {
-      if (Object.prototype.toString.call(this.clip) === "[object Array]") {
-        for (let i=0; i<this.clip.length; i++) {
-          this.clip[i].free();
-        }
-      } else {
-        this.clip.free();
-      }
-      this.clip = null;
-    }
+    this.border_radius = null;
   }
   render(context) {
     image_render(context, this)
@@ -47,22 +39,22 @@ function image_render(context, shape) {
   let image = shape.img ? shape.img : get_image(shape.src, shape.filename);
   if (!image_ready(image)) return;
 
-  if (shape.clip || shape.alpha < 1) {
+  if (shape.border_radius || shape.alpha < 1) {
     context.save();
   }
   
-  //Clip context.
-  //shape.clip maybe a shape object or an array of shapes.
-  if (shape.clip) {
-    context.beginPath();
-    if (Object.prototype.toString.call(shape.clip) === "[object Array]") {
-      for (let i=0; i<shape.clip.length; i++) {
-        shape.clip[i].follow_path(context);
-      }
-    } else {
-      shape.clip.follow_path(context);
-    }
-    context.clip();
+  if (shape.border_radius) {
+     context.beginPath();
+     image_border_path(
+       shape.x,
+       shape.y,
+       shape.w,
+       shape.h,
+       shape.border_radius,
+       context
+     );
+     context.closePath();
+     context.clip();
   }
   
   if (shape.alpha < 1) {
@@ -74,12 +66,36 @@ function image_render(context, shape) {
     context.drawImage(image, shape.x, shape.y, shape.w, shape.h);
   }
   
-  if (shape.clip || shape.alpha < 1) {
+  if (shape.border_radius || shape.alpha < 1) {
     context.restore();
     context.globalAlpha = 1;
   }
 }
 
+function image_border_path(x, y, width, height, radius, context) {
+  if (radius === true) {
+     // border_radius === true means a circle
+     const radius = (width / 2);
+     context.arc(
+       x + radius,
+       y + radius,
+       radius,
+       0,
+       2 * Math.PI,
+     );
+  } else {
+    // https://stackoverflow.com/a/19593950
+    context.moveTo(x + radius, y);
+    context.lineTo(x + width - radius, y);
+    context.quadraticCurveTo(x + width, y, x + width, y + radius);
+    context.lineTo(x + width, y + height - radius);
+    context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    context.lineTo(x + radius, y + height);
+    context.quadraticCurveTo(x, y + height, x, y + height - radius);
+    context.lineTo(x, y + radius);
+    context.quadraticCurveTo(x, y, x + radius, y);
+  }
+}
 
 ImageShape.obj_pool = new ObjectPool(ImageShape, 200);
 

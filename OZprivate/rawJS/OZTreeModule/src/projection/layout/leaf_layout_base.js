@@ -996,19 +996,13 @@ class LeafLayoutBase {
   */
   circle_cut_image(shapes,imageObject,centerpointx,centerpointy,radiusr,borderColor, node) {
     if (imageObject) {
-      let arc_shape = ArcShape.create();
-      arc_shape.x = centerpointx;
-      arc_shape.y = centerpointy;
-      arc_shape.r = radiusr * 0.975;
-      arc_shape.circle = true;
-      
       let image_shape = ImageShape.create();
       image_shape.img = imageObject;
       image_shape.x = centerpointx - radiusr;
       image_shape.y = centerpointy - radiusr;
       image_shape.w = radiusr * 2;
       image_shape.h = radiusr * 2;
-      image_shape.clip = arc_shape; 
+      image_shape.border_radius = true;
       image_shape.height= 5;
       shapes.push(image_shape);
     }
@@ -1085,12 +1079,8 @@ class LeafLayoutBase {
    */
   rounded_image(shapes,imageObject,x,y,w,borderColor,requiresCrop,cropMult,cropLeft,cropTop,node) {
     if (imageObject) {
-      let path_shape;
-      
-      path_shape = PathShape.create();
-      this.draw_src(x-w/2,y-w/2,w,w,w*0.03,node,path_shape);
       let image_shape = ImageShape.create();
-      image_shape.clip = path_shape;
+      image_shape.border_radius = w * 0.03;
       image_shape.img = imageObject;
       image_shape.x = x-w/2.0;
       image_shape.y = y-w/2.0; 
@@ -1122,70 +1112,6 @@ class LeafLayoutBase {
       }
       shapes.push(image_shape);
     }
-  }
-
-
-
-  // rectangle with rounded corners
-  draw_src(x,y,rx,ry,corner,node,path_shape) {
-    path_shape.path_length = 9;
-    let move_to_shape = MoveToShape.create();
-    move_to_shape.x = x + corner;
-    move_to_shape.y = y;
-    path_shape.path[0] = move_to_shape;
-    
-    let arc_shape = ArcShape.create();
-    arc_shape.x = x + corner;
-    arc_shape.y = y + corner;
-    arc_shape.r = corner;
-    arc_shape.start_angle = -Math.PI/2;
-    arc_shape.end_angle = Math.PI;
-    arc_shape.counter_wise = true;
-    path_shape.path[1] = arc_shape;
-    let line_to_shape = LineToShape.create();
-    line_to_shape.x = x;
-    line_to_shape.y = y + ry - corner;
-    path_shape.path[2] = line_to_shape;
-        
-    arc_shape = ArcShape.create();
-    arc_shape.x = x + corner;
-    arc_shape.y = y + ry - corner;
-    arc_shape.r = corner;
-    arc_shape.start_angle = Math.PI;
-    arc_shape.end_angle = Math.PI/2;
-    arc_shape.counter_wise = true;  
-    path_shape.path[3] = arc_shape;
-    line_to_shape = LineToShape.create();
-    line_to_shape.x = x + rx - corner;
-    line_to_shape.y = y + ry;
-    path_shape.path[4] = line_to_shape;
-    
-    arc_shape = ArcShape.create();
-    arc_shape.x = x + rx - corner;
-    arc_shape.y = y + ry - corner;
-    arc_shape.r = corner;
-    arc_shape.start_angle = Math.PI/2;
-    arc_shape.end_angle= 0;
-    arc_shape.counter_wise = true;
-    path_shape.path[5] = arc_shape;
-    line_to_shape = LineToShape.create();
-    line_to_shape.x = x + rx;
-    line_to_shape.y = y + ry - corner;
-    path_shape.path[6] = line_to_shape;
-    
-    arc_shape = ArcShape.create();
-    arc_shape.type = "arc";
-    arc_shape.x = x + rx - corner;
-    arc_shape.y = y + corner;
-    arc_shape.r = corner;
-    arc_shape.start_angle = 0;
-    arc_shape.end_angle = -Math.PI/2;
-    arc_shape.counter_wise = true;
-    path_shape.path[7] = arc_shape;
-    line_to_shape = LineToShape.create();
-    line_to_shape.x = x + corner;
-    line_to_shape.y = y;
-    path_shape.path[8] = line_to_shape;
   }
 
   mouse_over_circle(x,y,r) {
