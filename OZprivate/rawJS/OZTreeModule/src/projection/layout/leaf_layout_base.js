@@ -1,3 +1,8 @@
+/**
+  * Hover attributes:
+  * * "hovered": Something has claimed focus, subsequent attempts shouldn't
+  * * "hovering": The current item being rendered should render with focus applied
+  */
 import {color_theme} from '../../themes/color_theme';
 import ArcShape from '../shapes/arc_shape';
 import ArcTextShape from '../shapes/arc_text_shape';
