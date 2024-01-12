@@ -16,6 +16,12 @@ import {get_image} from '../../image_cache';
 import {extxt, spec_num_full} from '../../factory/utils';
 import config from '../../global_config';
 
+// Detail levels
+const DETAIL_1 = 20  // r > 20: break from branch, circular thumbnail, one name
+const DETAIL_2 = 50  // r > 50: name and thumbnail if both available
+const DETAIL_3 = 90  // r > 90: full details on leaf including leaf text and basic sponsorship
+const DETAIL_4 = 200  // r > 200: further sponsorship text appears
+
 class LeafLayoutBase {
   get_shapes(node, shapes) {
     this.reset_hover_state();
@@ -349,9 +355,9 @@ class LeafLayoutBase {
     shapes.push(path_shape);
     
     let insidesize = 0.88;
-    if (r < 20) {
+    if (r < DETAIL_1) {
       insidesize = 0.80;
-    } else if (r < 50) {
+    } else if (r < DETAIL_2) {
       insidesize = 0.80+0.08*(r-20)/(20);
     }
     // now move on to do the innder part of the leaf
@@ -459,18 +465,13 @@ class LeafLayoutBase {
       this.hovering = true;
       live_area_config.leaf_low_res_leafbase.register_button_event(node);
     }
-    let detail_level = 0;
-    if (r > 90) {
-      detail_level = 3;
-    }
-    
+
     this.circularDottedLeaf(x,y,r,node,shapes);
     this.hovering = false;
   }
 
   leafBaseLiveAreaTest(x,y,r,node) {
-    let base_mouse_over = this.liveAreaTest(x,y,r) && r<90;
-    if (!this.hovered && !node.under_signpost && base_mouse_over) {
+    if (!this.hovered && !node.under_signpost && r < DETAIL_3 && this.liveAreaTest(x,y,r)) {
       this.hovered = true;
       this.hovering = true;
       live_area_config.leaf_low_res_leafbase.register_button_event(node);
@@ -489,7 +490,7 @@ class LeafLayoutBase {
     this.leafBaseLiveAreaTest(x,y,r,node);
     // DRAW MAIN LEAF PARTS
     // this clips out the circle for the leaf if needed to create the break
-    if (r > 20) {
+    if (r > DETAIL_1) {
       let arc_shape = ArcShape.create();
       arc_shape.x = x;
       arc_shape.y = y;
@@ -537,25 +538,11 @@ class LeafLayoutBase {
 
   */
   loadingLeaf(x,y,r,commonText,latinText,lineText,node,shapes) {
-    // DETERMINE DETAIL LEVEL
-    // level 0 - basic leaf
-    // level 1 - break from branch, circular thumbnail, one name
-    // level 2 - name and thumbnail if both available
-    // level 3 - full details on leaf including leaf text and basic sponsorship
-    let detail_level = 0;
-    if (r > 90) {
-      detail_level = 3;
-    } else if (r > 50) {
-      detail_level = 2;
-    } else if (r > 20) {
-      detail_level = 1;
-    }
-    
     let text_shape;
     // DRAW THE IMAGE AND TEXT
-    if (detail_level > 0) {
+    if (r > DETAIL_1) {
       // draw some text
-      if (detail_level < 3) {
+      if (r <= DETAIL_3) {  // i.e. r is DETAIL_1 or DETAIL_2
         text_shape = TextShape.create();
         this.fill_loading_leaf(text_shape, node, x);
         text_shape.y = y;
@@ -700,25 +687,7 @@ class LeafLayoutBase {
   */
   fullLeaf(shapes, x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
     // HACK ALERT: cropMult,cropLeft,cropTop WERE PUT IN LAST MINUTE TO SOLVE THE SPONSOR LEAF PAGE IT NEEDS TO BE ROLLED OUT FOR THE ENTIRE FILE LATER - FOR NOW IT'S ONLY IN THE PLACES WHERE IT SAYS "HACK ALERT"
-    
-    // DETERMINE DETAIL LEVEL
-    // level 0 - basic leaf
-    // level 1 - break from branch, circular thumbnail, one name
-    // level 2 - name and thumbnail if both available
-    // level 3 - full details on leaf including leaf text and basic sponsorship
-    // level 4 - further sponsorship text appears
-    let detail_level = 0;
-    if (r > 200) {
-      detail_level = 4;
-    } else if (r > 90) {
-      detail_level = 3;
-    } else if (r > 50) {
-      detail_level = 2;
-    } else if (r > 20) {
-      detail_level = 1;
-    }
-    // these levels are defined but don't seem to be used later on. the leaf details functions below check again whether the value of r is at different detail levels.
-      
+
     this.fullLeaf_sponsor(shapes, x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
     // this draws the sponsorship text.
     
@@ -740,12 +709,12 @@ class LeafLayoutBase {
 
 
   fullLeaf_sponsor(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
-    if (!config.projection.draw_sponsors) return;
-    if (r > 90) { // global variable hack to turn off sponsorship text
+    if (!config.projection.draw_sponsors) return;  // global variable hack to turn off sponsorship text
+    if (r > DETAIL_3) {
       let shortenedSponsorText = (sponsorText + extraText).substr(0,76);
-      if (r > 90 && r <= 200) {
+      if (r > DETAIL_3 && r <= DETAIL_4) {
         sponsorText = shortenedSponsorText.length > 44 ? sponsorText.substr(0,44) : sponsorText;
-      } else if (r > 200) {
+      } else if (r > DETAIL_4) {
         sponsorText = shortenedSponsorText;
       }
       let text_above = 1;
@@ -792,7 +761,7 @@ class LeafLayoutBase {
    * Render image/text for level 1
    */
   fullLeaf_detail1(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
-    if (r > 20 && r <= 50) {
+    if (r > DETAIL_1 && r <= DETAIL_2) {
       if (imageObject) {
         this.circle_cut_image(shapes,imageObject, x, y, r*0.85, color_theme.get_color("leaf.inside.fill",node), node);
       } else {
@@ -817,7 +786,7 @@ class LeafLayoutBase {
    * Render image/text for level 2
    */
   fullLeaf_detail2(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
-    if (r > 50 && r <= 90) {
+    if (r > DETAIL_2 && r <= DETAIL_3) {
       if (imageObject) {
         this.rounded_image(shapes,imageObject, x, y+r*0.2,r*0.95,
           color_theme.get_color("leaf.inside.fill",node),
@@ -876,7 +845,7 @@ class LeafLayoutBase {
    */
   fullLeaf_detail3_imagecopyright(shapes,x,y,r,conservation_text,imageObject,copyText,node) {
     if (imageObject) {
-      if (r > 90 && r * 0.035 > 6) {
+      if (r > DETAIL_3 && r * 0.035 > 6) {
         let button_pos = (conservation_text.length > 0) ? (y+r*0.34) : (y+r*0.39); // find position for the copyright symbol
         this.copyright(shapes,x+r*0.43,button_pos,r*0.035,
           [node.pic_src, node.pic_filename, copyText],
@@ -892,7 +861,7 @@ class LeafLayoutBase {
   }
 
   fullLeaf_detail3_names(shapes,x,y,r,commonText,latinText,conservation_text,imageObject,node) {
-    if (r > 90) {
+    if (r > DETAIL_3) {
       if (!this.hovered && this.liveAreaTest(x,y,r*0.88)) {
         this.hovered = true;
         this.hovering = true;
@@ -934,7 +903,7 @@ class LeafLayoutBase {
   }
   
   fullLeaf_detail3_conservation(shapes,x,y,r,conservation_text,imageObject,node) {
-    if (r > 90 && conservation_text.length > 0) {
+    if (r > DETAIL_3 && conservation_text.length > 0) {
       let conservation_hover_test1 = !this.hovered && imageObject && this.liveSquareAreaTest(x-r/2,x+r/2,y+r*0.51,y+r*0.83);
       let conservation_hover_test2 = !this.hovered && !imageObject && this.liveSquareAreaTest(x-r/2,x+r/2,y+r*0.37,y+r*0.71);
       if (conservation_hover_test1 || conservation_hover_test2) {
@@ -963,7 +932,7 @@ class LeafLayoutBase {
    * Add image to shapes if available
    */
   fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop, node) {
-    if (r > 90) {
+    if (r > DETAIL_3) {
       if (imageObject && (conservation_text.length > 0)) {
         this.rounded_image(shapes,imageObject,x,y,r*0.75,
           color_theme.get_color("leaf.inside.fill",node),
