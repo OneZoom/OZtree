@@ -692,9 +692,16 @@ class LeafLayoutBase {
     // this draws the sponsorship text.
     
     // Draw leaf at either detail level 1, 2 or 3
-    this.fullLeaf_detail1(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
-    this.fullLeaf_detail2(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
-    this.fullLeaf_detail3(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
+    if (r > DETAIL_3) {
+      this.fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop,node)
+      this.fullLeaf_detail3_imagecopyright(shapes,x,y,r,conservation_text,imageObject,copyText,node);
+      this.fullLeaf_detail3_conservation(shapes,x,y,r,conservation_text,imageObject,node);
+      this.fullLeaf_detail3_names(shapes,x,y,r,commonText,latinText,conservation_text,imageObject,node);
+    } else if (r > DETAIL_2) {
+      this.fullLeaf_detail2(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
+    } else if (r > DETAIL_1) {
+      this.fullLeaf_detail1(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
+    }
   }
 
   get_sponsor_text_direction(angle) {
@@ -761,62 +768,58 @@ class LeafLayoutBase {
    * Render image/text for level 1
    */
   fullLeaf_detail1(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
-    if (r > DETAIL_1 && r <= DETAIL_2) {
-      if (imageObject) {
-        this.circle_cut_image(shapes,imageObject, x, y, r*0.85, color_theme.get_color("leaf.inside.fill",node), node);
-      } else {
-        let text_shape = TextShape.create();
-        text_shape.height = 5;
-        text_shape.line = 3;
-        text_shape.text = commonText ? commonText : latinText;
-        text_shape.font_style = commonText ? null : 'italic';
-        text_shape.x = x;
-        text_shape.y = y;
-        text_shape.width = r * 1.25;
-        text_shape.defpt = r * 0.3;
-        text_shape.min_text_size_extra = 3;
-        text_shape.do_fill = true;
-        text_shape.fill.color = color_theme.get_color("leaf.text.fill", node);
-        shapes.push(text_shape);
-      }  
-    }
+    if (imageObject) {
+      this.circle_cut_image(shapes,imageObject, x, y, r*0.85, color_theme.get_color("leaf.inside.fill",node), node);
+    } else {
+      let text_shape = TextShape.create();
+      text_shape.height = 5;
+      text_shape.line = 3;
+      text_shape.text = commonText ? commonText : latinText;
+      text_shape.font_style = commonText ? null : 'italic';
+      text_shape.x = x;
+      text_shape.y = y;
+      text_shape.width = r * 1.25;
+      text_shape.defpt = r * 0.3;
+      text_shape.min_text_size_extra = 3;
+      text_shape.do_fill = true;
+      text_shape.fill.color = color_theme.get_color("leaf.text.fill", node);
+      shapes.push(text_shape);
+    }  
   }
 
   /**
    * Render image/text for level 2
    */
   fullLeaf_detail2(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
-    if (r > DETAIL_2 && r <= DETAIL_3) {
-      if (imageObject) {
-        this.rounded_image(shapes,imageObject, x, y+r*0.2,r*0.95,
-          color_theme.get_color("leaf.inside.fill",node),
-          requiresCrop,cropMult,cropLeft,cropTop, node);
-      }
-
-      let text_shape = TextShape.create();
-      text_shape.height = 5;
-      text_shape.min_text_size_extra = 3;
-      text_shape.x = x;
-      text_shape.do_fill = true;
-      text_shape.fill.color = color_theme.get_color("leaf.text.fill",node);
-      if (imageObject) {
-        text_shape.text = commonText ? commonText : latinText;
-        text_shape.font_style = commonText ? null : 'italic';
-        text_shape.y = y - r * 0.55;
-        text_shape.width = r * 1.1;
-        text_shape.defpt = r * 0.15;
-        text_shape.line = 2;
-        shapes.push(text_shape);
-      } else {
-        text_shape.text = commonText ? commonText : latinText;
-        text_shape.font_style = commonText ? null : 'italic';
-        text_shape.y = y;
-        text_shape.width = r * 1.25;
-        text_shape.defpt = r * 0.3;
-        text_shape.line = 3;
-        shapes.push(text_shape);
-      }  
+    if (imageObject) {
+      this.rounded_image(shapes,imageObject, x, y+r*0.2,r*0.95,
+        color_theme.get_color("leaf.inside.fill",node),
+        requiresCrop,cropMult,cropLeft,cropTop, node);
     }
+
+    let text_shape = TextShape.create();
+    text_shape.height = 5;
+    text_shape.min_text_size_extra = 3;
+    text_shape.x = x;
+    text_shape.do_fill = true;
+    text_shape.fill.color = color_theme.get_color("leaf.text.fill",node);
+    if (imageObject) {
+      text_shape.text = commonText ? commonText : latinText;
+      text_shape.font_style = commonText ? null : 'italic';
+      text_shape.y = y - r * 0.55;
+      text_shape.width = r * 1.1;
+      text_shape.defpt = r * 0.15;
+      text_shape.line = 2;
+      shapes.push(text_shape);
+    } else {
+      text_shape.text = commonText ? commonText : latinText;
+      text_shape.font_style = commonText ? null : 'italic';
+      text_shape.y = y;
+      text_shape.width = r * 1.25;
+      text_shape.defpt = r * 0.3;
+      text_shape.line = 3;
+      shapes.push(text_shape);
+    }  
   }
 
   fill_fullleaf_detail3(text_shape, node, r, x) {
@@ -833,19 +836,12 @@ class LeafLayoutBase {
     text_shape.fill.color = color_theme.get_color("leaf.text.fill", node);
   }
 
-  fullLeaf_detail3(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
-    this.fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop,node)
-    this.fullLeaf_detail3_imagecopyright(shapes,x,y,r,conservation_text,imageObject,copyText,node);
-    this.fullLeaf_detail3_conservation(shapes,x,y,r,conservation_text,imageObject,node);
-    this.fullLeaf_detail3_names(shapes,x,y,r,commonText,latinText,conservation_text,imageObject,node);
-  }
-  
   /**
    * Add a copyright symbol to shapes if there is an image
    */
   fullLeaf_detail3_imagecopyright(shapes,x,y,r,conservation_text,imageObject,copyText,node) {
     if (imageObject) {
-      if (r > DETAIL_3 && r * 0.035 > 6) {
+      if (r * 0.035 > 6) {
         let button_pos = (conservation_text.length > 0) ? (y+r*0.34) : (y+r*0.39); // find position for the copyright symbol
         this.copyright(shapes,x+r*0.43,button_pos,r*0.035,
           [node.pic_src, node.pic_filename, copyText],
@@ -861,49 +857,47 @@ class LeafLayoutBase {
   }
 
   fullLeaf_detail3_names(shapes,x,y,r,commonText,latinText,conservation_text,imageObject,node) {
-    if (r > DETAIL_3) {
-      if (!this.hovered && this.liveAreaTest(x,y,r*0.88)) {
-        this.hovered = true;
-        this.hovering = true;
-        live_area_config.leaf_high_res_text.register_button_event(node);
-      }
-      let index = 3;
-      index -= imageObject ? 2 : 0;
-      index -= (conservation_text.length > 0) ? 1 : 0;
-      let cl1_y_arr = [0.47, 0.63, -0.5, -0.45];
-      let cl2_y_arr = [-0.6, -0.55, 0, 0.2];
-      let cl1_line_arr = [1, 2, 2, 2];
-      let cl2_line_arr = [2, 2, 2, 3];
-      let cl1_width_arr = [1, 1.1, 1.1, 1.1];
-      let cl2_width_arr = [1.2, 1.2, 1.5, 1.4];
-      let cl1_defpt_arr = [0.1, 0.12, 0.15, 0.15];
-      let cl2_defpt_arr = [0.12, 0.15, 0.25, 0.2];
-      
-      let text_shape = TextShape.create();
-      this.fill_fullleaf_detail3(text_shape, node, r, x);
-      text_shape.text = commonText ? latinText : OZstrings["No common name"];
-      text_shape.font_style = commonText ? 'italic' : null;
-      text_shape.y = y + r * cl1_y_arr[index];
-      text_shape.width = r * cl1_width_arr[index];
-      text_shape.defpt = r * cl1_defpt_arr[index];
-      text_shape.line = cl1_line_arr[index];
-      shapes.push(text_shape);
-
-      text_shape = TextShape.create();
-      this.fill_fullleaf_detail3(text_shape, node, r, x);
-      text_shape.text = commonText ? commonText : latinText;
-      text_shape.font_style = commonText ? null : 'italic';
-      text_shape.y = y + r * cl2_y_arr[index];
-      text_shape.width = r * cl2_width_arr[index];
-      text_shape.defpt = r * cl2_defpt_arr[index];
-      text_shape.line = cl2_line_arr[index];
-      shapes.push(text_shape);
-      this.hovering = false;
+    if (!this.hovered && this.liveAreaTest(x,y,r*0.88)) {
+      this.hovered = true;
+      this.hovering = true;
+      live_area_config.leaf_high_res_text.register_button_event(node);
     }
+    let index = 3;
+    index -= imageObject ? 2 : 0;
+    index -= (conservation_text.length > 0) ? 1 : 0;
+    let cl1_y_arr = [0.47, 0.63, -0.5, -0.45];
+    let cl2_y_arr = [-0.6, -0.55, 0, 0.2];
+    let cl1_line_arr = [1, 2, 2, 2];
+    let cl2_line_arr = [2, 2, 2, 3];
+    let cl1_width_arr = [1, 1.1, 1.1, 1.1];
+    let cl2_width_arr = [1.2, 1.2, 1.5, 1.4];
+    let cl1_defpt_arr = [0.1, 0.12, 0.15, 0.15];
+    let cl2_defpt_arr = [0.12, 0.15, 0.25, 0.2];
+
+    let text_shape = TextShape.create();
+    this.fill_fullleaf_detail3(text_shape, node, r, x);
+    text_shape.text = commonText ? latinText : OZstrings["No common name"];
+    text_shape.font_style = commonText ? 'italic' : null;
+    text_shape.y = y + r * cl1_y_arr[index];
+    text_shape.width = r * cl1_width_arr[index];
+    text_shape.defpt = r * cl1_defpt_arr[index];
+    text_shape.line = cl1_line_arr[index];
+    shapes.push(text_shape);
+
+    text_shape = TextShape.create();
+    this.fill_fullleaf_detail3(text_shape, node, r, x);
+    text_shape.text = commonText ? commonText : latinText;
+    text_shape.font_style = commonText ? null : 'italic';
+    text_shape.y = y + r * cl2_y_arr[index];
+    text_shape.width = r * cl2_width_arr[index];
+    text_shape.defpt = r * cl2_defpt_arr[index];
+    text_shape.line = cl2_line_arr[index];
+    shapes.push(text_shape);
+    this.hovering = false;
   }
   
   fullLeaf_detail3_conservation(shapes,x,y,r,conservation_text,imageObject,node) {
-    if (r > DETAIL_3 && conservation_text.length > 0) {
+    if (conservation_text.length > 0) {
       let conservation_hover_test1 = !this.hovered && imageObject && this.liveSquareAreaTest(x-r/2,x+r/2,y+r*0.51,y+r*0.83);
       let conservation_hover_test2 = !this.hovered && !imageObject && this.liveSquareAreaTest(x-r/2,x+r/2,y+r*0.37,y+r*0.71);
       if (conservation_hover_test1 || conservation_hover_test2) {
@@ -932,17 +926,15 @@ class LeafLayoutBase {
    * Add image to shapes if available
    */
   fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop, node) {
-    if (r > DETAIL_3) {
-      if (imageObject && (conservation_text.length > 0)) {
-        this.rounded_image(shapes,imageObject,x,y,r*0.75,
-          color_theme.get_color("leaf.inside.fill",node),
-          requiresCrop,cropMult,cropLeft,cropTop, node);
-      } else if (imageObject) {
-        this.rounded_image(shapes,imageObject,x,y+r*0.05,r*0.75,
-          color_theme.get_color("leaf.inside.fill",node),
-          requiresCrop,cropMult,cropLeft,cropTop, node);
-      } 
-    }
+    if (imageObject && (conservation_text.length > 0)) {
+      this.rounded_image(shapes,imageObject,x,y,r*0.75,
+        color_theme.get_color("leaf.inside.fill",node),
+        requiresCrop,cropMult,cropLeft,cropTop, node);
+    } else if (imageObject) {
+      this.rounded_image(shapes,imageObject,x,y+r*0.05,r*0.75,
+        color_theme.get_color("leaf.inside.fill",node),
+        requiresCrop,cropMult,cropLeft,cropTop, node);
+    } 
   }
 
   /* drawing of images */
