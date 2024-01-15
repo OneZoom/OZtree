@@ -302,25 +302,20 @@ logographic_transcriptions = cache.ram('logographic_transcriptions',
 
 
 # id / name / icon of all tabs
-tab_definitions = cache.ram('tab_definitions',
-    lambda: __import__('collections').OrderedDict([
-      ('opentree',{'id':'opentree',   'name':'OpenTree',     'icon':URL('static','images/mini-opentree-logo.png')}),
-      ('wiki',{'id':'wiki',   'name':'Wikipedia',            'icon':URL('static','images/W.svg')}),
-      ('eol',{'id':'eol',     'name':'Encyclopedia of Life', 'icon':URL('static','images/EoL.png')}),
-      ('iucn',{'id':'iucn',   'name':'Conservation',         'icon':URL('static','images/IUCN_Red_List.svg')}),
-      ('ncbi',{'id':'ncbi',   'name':'Genetics',             'icon':URL('static','images/DNA_icon.svg')}),
-      ('gbif',{'id':'gbif',   'name':'Occurrence',           'icon':URL('static','images/GBIF-2015-dotorg-stacked.svg')}),
-      #('powo',{'id':'powo',   'name':T('Kew')}),
-      ('ozlinks',{'id':'ozlinks','name':'External Links', 'icon':URL('static','images/links.svg')}),
-      ('ozspons',{'id':'ozspons','name':'Sponsor', 'icon':URL('static','images/sponsor.png')})]),
-    time_expire = None)
-
+tab_definitions = dict(
+    opentree={'id':'opentree',   'name':'OpenTree',     'icon':URL('static','images/mini-opentree-logo.png')},
+    wiki={'id':'wiki',   'name':'Wikipedia',            'icon':URL('static','images/W.svg')},
+    eol={'id':'eol',     'name':'Encyclopedia of Life', 'icon':URL('static','images/EoL.png')},
+    iucn={'id':'iucn',   'name':'Conservation',         'icon':URL('static','images/IUCN_Red_List.svg')},
+    ncbi={'id':'ncbi',   'name':'Genetics',             'icon':URL('static','images/DNA_icon.svg')},
+    gbif={'id':'gbif',   'name':'Occurrence',           'icon':URL('static','images/GBIF-2015-dotorg-stacked.svg')},
+    #('powo',{'id':'powo',   'name':T('Kew')}),
+    ozlinks={'id':'ozlinks','name':'External Links', 'icon':URL('static','images/links.svg')},
+    ozspons={'id':'ozspons','name':'Sponsor', 'icon':URL('static','images/sponsor.png')},
+)
 
 # Default tabs to display
-tab_defaults = cache.ram('tab_defaults',
-    lambda: ['wiki', 'eol', 'gbif', 'iucn', 'ncbi', 'ozspons'],
-    time_expire = None)
-
+tab_defaults = ['wiki', 'eol', 'gbif', 'iucn', 'ncbi', 'ozspons']
 
 #allow these to be accessed in modules
 current.OZglobals = dict(
