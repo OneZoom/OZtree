@@ -791,7 +791,7 @@ def node_images():
     for p in results['leafPic']:
         pics[p[pic_cols['ott']]] = [
             None,
-            img.thumb_url(thumb_base_url, p[pic_cols['src']], p[pic_cols['src_id']]),
+            img.thumb_url(p[pic_cols['src']], p[pic_cols['src_id']]),
             p[pic_cols['rights']],
             p[pic_cols['licence']],
             p[pic_cols['rating']],

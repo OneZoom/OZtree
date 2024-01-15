@@ -174,7 +174,7 @@ def index():
             db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id):
         key = startpoints_ott_map.get(r.ott, None) or st_leaf_for_node_otts.get(r.ott, None)
         if key not in images:
-            images[key] = {'url': img.thumb_url(thumb_base_url, r.src, r.src_id)}
+            images[key] = {'url': img.thumb_url(r.src, r.src_id)}
     # Sponsored images
     for r in db(
             (db.images_by_ott.ott.belongs(spon_leaf_otts)) & (db.images_by_ott.overall_best_any==1)
@@ -184,12 +184,11 @@ def index():
         reservations_row = sponsored_by_ott[r.ott]
         if reservations_row.user_nondefault_image:
             images[r.ott] = {'url': img.thumb_url(
-                thumb_base_url,
                 reservations_row.verified_preferred_image_src,
                 reservations_row.verified_preferred_image_src_id)}
         else:
             images[r.ott] = {
-                'url': img.thumb_url(thumb_base_url, r.src, r.src_id),
+                'url': img.thumb_url(r.src, r.src_id),
                 'rights':r.rights,
                 'licence': r.licence.split('(')[0]}
     blank = {'url': URL('static','images/noImage_transparent.png')}
@@ -795,7 +794,7 @@ def sponsor_renew():
             db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
             db.images_by_ott.rights, db.images_by_ott.licence):
         images[r.ott] = {
-            'url': img.thumb_url(thumb_base_url, r.src, r.src_id),
+            'url': img.thumb_url(r.src, r.src_id),
             'rights':r.rights,
             'licence': r.licence.split('(')[0]}
 
@@ -835,7 +834,6 @@ def sponsor_renew():
         # If there's a nondefault image, replace with that
         if r.user_nondefault_image:
             images[r.OTT_ID] = {'url': img.thumb_url(
-                thumb_base_url,
                 r.verified_preferred_image_src,
                 r.verified_preferred_image_src_id)}
 
@@ -1062,7 +1060,7 @@ def donor():
             db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
             db.images_by_ott.rights, db.images_by_ott.licence):
         images[r.ott] = {
-            'url': img.thumb_url(thumb_base_url, r.src, r.src_id),
+            'url': img.thumb_url(r.src, r.src_id),
             'rights':r.rights,
             'licence': r.licence.split('(')[0],
         }
@@ -1210,7 +1208,7 @@ def sponsor_picks(sponsor_suggestion=None):
             except:
                 val['vars']={}
             if not row.thumb_url and row.thumb_src is not None:
-                val['thumb_url']=img.thumb_url(thumb_base_url, row.thumb_src,row.thumb_src_id)
+                val['thumb_url']=img.thumb_url(row.thumb_src,row.thumb_src_id)
             if row.identifier.isdigit():
                 val['vars']['ott'] = row.identifier = int(row.identifier)
                 val['page'] = 'sponsor_node'
@@ -1293,7 +1291,7 @@ def sponsor_node_price():
             sci_names = {
                 r.ordered_leaves.ott: r.ordered_leaves.name for r in rows_with_img}
             image_urls = {
-                r.ordered_leaves.ott: img.thumb_url(thumb_base_url, r.images_by_ott.src, r.images_by_ott.src_id)
+                r.ordered_leaves.ott: img.thumb_url(r.images_by_ott.src, r.images_by_ott.src_id)
                 for r in rows_with_img
             }
             image_attributions = {
@@ -1349,7 +1347,7 @@ def sponsor_node_price():
                     limitby=(start, start+extra_needed), 
                     orderby = "images_by_ott.rating ASC")
                 image_urls = {
-                    species.ordered_leaves.ott: img.thumb_url(thumb_base_url, species.images_by_ott.src, species.images_by_ott.src_id)
+                    species.ordered_leaves.ott: img.thumb_url(species.images_by_ott.src, species.images_by_ott.src_id)
                     for species in rows_with_img
                 }
                 image_attributions = {species.ordered_leaves.ott:(' / '.join([t for t in [species.images_by_ott.rights, species.images_by_ott.licence] if t])) for species in rows_with_img}
@@ -1453,7 +1451,7 @@ def sponsor_handpicks():
                                orderby = orderby)
             otts[price_pounds] = [r.ordered_leaves.ott for r in rows]
             image_urls.update({
-                species.ordered_leaves.ott: img.thumb_url(thumb_base_url, species.images_by_ott.src, species.images_by_ott.src_id)
+                species.ordered_leaves.ott: img.thumb_url(species.images_by_ott.src, species.images_by_ott.src_id)
                 for species in rows
                 if species.images_by_ott.src
             })
@@ -1725,7 +1723,7 @@ def about():
     return dict(release_info=__release_info())
 
 def data_sources():
-    return dict(img_url = lambda src, src_id: img.thumb_url(thumb_base_url, src, src_id))
+    return dict(img_url = lambda src, src_id: img.thumb_url(src, src_id))
 
 def how():
     return dict()

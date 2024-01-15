@@ -24,7 +24,7 @@
     <ul class="sponsor_list">
     {{for i,s in enumerate(reservations or []):}}
         {{if max_items and i==max_items: break}}
-        <li style="background-image: url('{{try:}}{{=img.thumb_url(thumb_base_url, s[headers['verified_preferred_image_src']],s[headers['verified_preferred_image_src_id']]) if (s[headers['verified_preferred_image_src']] and [headers['verified_preferred_image_src_id']]) else img.thumb_url(thumb_base_url, *default_images[s[headers['OTT_ID']]])}}{{except:}}{{=URL('static','images/noImage_transparent.png')}}{{pass}}')" /><a href="{{=URL('default', 'life', args=['@={}'.format(s[headers['OTT_ID']])], extension=False, url_encode=False)}}">
+        <li style="background-image: url('{{try:}}{{=img.thumb_url(s[headers['verified_preferred_image_src']],s[headers['verified_preferred_image_src_id']]) if (s[headers['verified_preferred_image_src']] and [headers['verified_preferred_image_src_id']]) else img.thumb_url(*default_images[s[headers['OTT_ID']]])}}{{except:}}{{=URL('static','images/noImage_transparent.png')}}{{pass}}')" /><a href="{{=URL('default', 'life', args=['@={}'.format(s[headers['OTT_ID']])], extension=False, url_encode=False)}}">
         {{=nice_name(s[headers['name']], common_names.get(s[headers['OTT_ID']]), html=True, leaf=True, first_upper=True)}}.</a> {{if s[headers['verified_kind']]:}}Sponsored {{=s[headers['verified_kind']]}} {{pass}}{{=s[headers['verified_name']]}}, {{=s[headers['verified_more_info']]}}</li>
     {{pass}}
     </ul>

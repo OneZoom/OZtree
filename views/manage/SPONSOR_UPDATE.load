@@ -106,7 +106,7 @@
         <p>{{if not vars.get("emailed_re_sponsorship"):}}<input type="checkbox" name="auto_email" title="automatically email this sponsor when the button is clicked" {{if to_be_validated:}}checked="checked"{{pass}}>{{pass}}{{email = escape(vars['e_mail'] or vars['PP_e_mail'] or '')}}<a href="mailto:{{=email}}?Subject=Your%20sponsorship%20of%20{{=escape(vars['name'] or '')}}%20on%20OneZoom"><img src="{{=URL('static','images/email-icon.png')}}" alt="email" title="Compose new email to {{=(email or '<blank addressee>')}}" /></a></p>{{if vars.get('twitter_name'):}}<p>{{if not vars.get("tweeted_re_sponsorship"):}}<input type="checkbox" name="auto_tweet" title="automatically tweet this sponsor when the button is clicked" {{if to_be_validated:}}checked="checked"{{pass}}>{{pass}}<a href="http://twitter.com/home/?status=@{{=vars.get('twitter_name')}}" target="_blank"><img src="{{=URL('static','images/tiny-twitter-icon.png')}}" alt="tweet" title="tweet to this sponsor" /></a></p>{{pass}}</div>
         <div class="adminComment">{{=form.custom.widget.admin_comment}}
         <script>
-        thumb_func = {{=XML(img.js_thumb_url(thumb_base_url))}}
+        thumb_func = {{=XML(img.js_thumb_url())}}
         
         function init_EOL_name_and_image(row_id, taxon_obj) {
             var fm = '#form_'+ row_id

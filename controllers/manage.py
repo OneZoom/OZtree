@@ -749,7 +749,7 @@ def SHOW_EMAILS():
         if s.verified_preferred_image_src and s.verified_preferred_image_src_id and local_pic_path is not None:
             # do we have a local picture, or is it missing?
             details['local_pic'] = os.path.isfile(img.thumb_url(
-                img.local_path, s.verified_preferred_image_src, s.verified_preferred_image_src_id))
+                s.verified_preferred_image_src, s.verified_preferred_image_src_id, base_url=img.local_path))
         else:
             details['local_pic'] = None
         details.update({

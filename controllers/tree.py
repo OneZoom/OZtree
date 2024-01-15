@@ -114,7 +114,7 @@ def pic_info():
         return dict(
             image=row,
             url_override=url,
-            image_url=img.thumb_url(thumb_base_url, row.src, row.src_id)
+            image_url=img.thumb_url(row.src, row.src_id)
         )
     else:
         raise HTTP(400,"No such image")

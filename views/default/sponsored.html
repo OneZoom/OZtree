@@ -19,7 +19,7 @@
                 <figcaption>{{=(html_names[item['OTT_ID']])}}</figcaption>
                 <a href="{{=URL('life/@=' + str(item['OTT_ID']), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life"
 {{if image:}}
-    src="{{=img.thumb_url(thumb_base_url, image.get('src'), image.get('src_id'))}}"
+    src="{{=img.thumb_url(image.get('src'), image.get('src_id'))}}"
     title="{{=' / '.join([t for t in [image.rights, image.licence] if t]).replace('"',"'")}}"
     class="{{if image.get('src_id') in pds:}}pd{{pass}}"
 {{else:}}
