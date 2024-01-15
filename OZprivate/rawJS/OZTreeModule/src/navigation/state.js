@@ -252,9 +252,9 @@ function encode_popup_action(popup_action) {
     return 'ol';
   } else if (popup_action == "ow_node") {
     return 'on';
-  } else if (popup_action == "ow_sponsor_leaf") {
+  } else if (popup_action == "ow_ozspons_leaf") {
     return 'osl';
-  } else if (popup_action == "ow_sponsor_node") {
+  } else if (popup_action == "ow_ozspons_node") {
     return 'osn'
   } else if (popup_action == "ow_iucn_leaf") {
     return 'oil';
@@ -269,9 +269,9 @@ function decode_popup_action(popup_action) {
   } else if (popup_action == "on") {
     return 'ow_node';
   } else if (popup_action == "osl") {
-    return 'ow_sponsor_leaf';
+    return 'ow_ozspons_leaf';
   } else if (popup_action == "osn") {
-    return 'ow_sponsor_node'
+    return 'ow_ozspons_node'
   } else if (popup_action == 'oil') {
     return 'ow_iucn_leaf';
   } else {
