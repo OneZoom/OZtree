@@ -1,3 +1,8 @@
+/**
+  * Hover attributes:
+  * * "hovered": Something has claimed focus, subsequent attempts shouldn't
+  * * "hovering": The current item being rendered should render with focus applied
+  */
 import {color_theme} from '../../themes/color_theme';
 import ArcShape from '../shapes/arc_shape';
 import ArcTextShape from '../shapes/arc_text_shape';
@@ -12,9 +17,15 @@ import {get_abs_x, get_abs_y, get_abs_r} from './utils';
 import {global_button_action} from '../../button_manager';
 import {live_area_config} from '../live_area_config';
 import {add_mr} from '../move_restriction';
-import {get_image, image_ready} from '../../image_cache';
+import {get_image} from '../../image_cache';
 import {extxt, spec_num_full} from '../../factory/utils';
 import config from '../../global_config';
+
+// Detail levels
+const DETAIL_1 = 20  // r > 20: break from branch, circular thumbnail, one name
+const DETAIL_2 = 50  // r > 50: name and thumbnail if both available
+const DETAIL_3 = 90  // r > 90: full details on leaf including leaf text and basic sponsorship
+const DETAIL_4 = 200  // r > 200: further sponsorship text appears
 
 class LeafLayoutBase {
   get_shapes(node, shapes) {
@@ -67,7 +78,6 @@ class LeafLayoutBase {
       } else {
         let leafpic_drawn = false;
         let imageObject = get_image(node.pic_src, node.pic_filename); //here we could use preferred_px to get a higher-res photo
-        imageObject = image_ready(imageObject) ? imageObject : null;
         let imageCredit = node.pic_credit;
         let [sponsorText, extraText, sponsored] = this.get_sponsor_text(node);
         // figure out if there are slight changes to leaf size or color depending on style
@@ -350,9 +360,9 @@ class LeafLayoutBase {
     shapes.push(path_shape);
     
     let insidesize = 0.88;
-    if (r < 20) {
+    if (r < DETAIL_1) {
       insidesize = 0.80;
-    } else if (r < 50) {
+    } else if (r < DETAIL_2) {
       insidesize = 0.80+0.08*(r-20)/(20);
     }
     // now move on to do the innder part of the leaf
@@ -460,18 +470,13 @@ class LeafLayoutBase {
       this.hovering = true;
       live_area_config.leaf_low_res_leafbase.register_button_event(node);
     }
-    let detail_level = 0;
-    if (r > 90) {
-      detail_level = 3;
-    }
-    
+
     this.circularDottedLeaf(x,y,r,node,shapes);
     this.hovering = false;
   }
 
   leafBaseLiveAreaTest(x,y,r,node) {
-    let base_mouse_over = this.liveAreaTest(x,y,r) && r<90;
-    if (!this.hovered && !node.under_signpost && base_mouse_over) {
+    if (!this.hovered && !node.under_signpost && r < DETAIL_3 && this.liveAreaTest(x,y,r)) {
       this.hovered = true;
       this.hovering = true;
       live_area_config.leaf_low_res_leafbase.register_button_event(node);
@@ -490,7 +495,7 @@ class LeafLayoutBase {
     this.leafBaseLiveAreaTest(x,y,r,node);
     // DRAW MAIN LEAF PARTS
     // this clips out the circle for the leaf if needed to create the break
-    if (r > 20) {
+    if (r > DETAIL_1) {
       let arc_shape = ArcShape.create();
       arc_shape.x = x;
       arc_shape.y = y;
@@ -538,25 +543,11 @@ class LeafLayoutBase {
 
   */
   loadingLeaf(x,y,r,commonText,latinText,lineText,node,shapes) {
-    // DETERMINE DETAIL LEVEL
-    // level 0 - basic leaf
-    // level 1 - break from branch, circular thumbnail, one name
-    // level 2 - name and thumbnail if both available
-    // level 3 - full details on leaf including leaf text and basic sponsorship
-    let detail_level = 0;
-    if (r > 90) {
-      detail_level = 3;
-    } else if (r > 50) {
-      detail_level = 2;
-    } else if (r > 20) {
-      detail_level = 1;
-    }
-    
     let text_shape;
     // DRAW THE IMAGE AND TEXT
-    if (detail_level > 0) {
+    if (r > DETAIL_1) {
       // draw some text
-      if (detail_level < 3) {
+      if (r <= DETAIL_3) {  // i.e. r is DETAIL_1 or DETAIL_2
         text_shape = TextShape.create();
         this.fill_loading_leaf(text_shape, node, x);
         text_shape.y = y;
@@ -701,32 +692,21 @@ class LeafLayoutBase {
   */
   fullLeaf(shapes, x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
     // HACK ALERT: cropMult,cropLeft,cropTop WERE PUT IN LAST MINUTE TO SOLVE THE SPONSOR LEAF PAGE IT NEEDS TO BE ROLLED OUT FOR THE ENTIRE FILE LATER - FOR NOW IT'S ONLY IN THE PLACES WHERE IT SAYS "HACK ALERT"
-    
-    // DETERMINE DETAIL LEVEL
-    // level 0 - basic leaf
-    // level 1 - break from branch, circular thumbnail, one name
-    // level 2 - name and thumbnail if both available
-    // level 3 - full details on leaf including leaf text and basic sponsorship
-    // level 4 - further sponsorship text appears
-    let detail_level = 0;
-    if (r > 200) {
-      detail_level = 4;
-    } else if (r > 90) {
-      detail_level = 3;
-    } else if (r > 50) {
-      detail_level = 2;
-    } else if (r > 20) {
-      detail_level = 1;
-    }
-    // these levels are defined but don't seem to be used later on. the leaf details functions below check again whether the value of r is at different detail levels.
-      
+
     this.fullLeaf_sponsor(shapes, x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
     // this draws the sponsorship text.
     
     // Draw leaf at either detail level 1, 2 or 3
-    this.fullLeaf_detail1(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
-    this.fullLeaf_detail2(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
-    this.fullLeaf_detail3(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
+    if (r > DETAIL_3) {
+      this.fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop,node)
+      this.fullLeaf_detail3_imagecopyright(shapes,x,y,r,conservation_text,imageObject,copyText,node);
+      this.fullLeaf_detail3_conservation(shapes,x,y,r,conservation_text,imageObject,node);
+      this.fullLeaf_detail3_names(shapes,x,y,r,commonText,latinText,conservation_text,imageObject,node);
+    } else if (r > DETAIL_2) {
+      this.fullLeaf_detail2(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
+    } else if (r > DETAIL_1) {
+      this.fullLeaf_detail1(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop);
+    }
   }
 
   get_sponsor_text_direction(angle) {
@@ -741,12 +721,12 @@ class LeafLayoutBase {
 
 
   fullLeaf_sponsor(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
-    if (!config.projection.draw_sponsors) return;
-    if (r > 90) { // global variable hack to turn off sponsorship text
+    if (!config.projection.draw_sponsors) return;  // global variable hack to turn off sponsorship text
+    if (r > DETAIL_3) {
       let shortenedSponsorText = (sponsorText + extraText).substr(0,76);
-      if (r > 90 && r <= 200) {
+      if (r > DETAIL_3 && r <= DETAIL_4) {
         sponsorText = shortenedSponsorText.length > 44 ? sponsorText.substr(0,44) : sponsorText;
-      } else if (r > 200) {
+      } else if (r > DETAIL_4) {
         sponsorText = shortenedSponsorText;
       }
       let text_above = 1;
@@ -793,63 +773,58 @@ class LeafLayoutBase {
    * Render image/text for level 1
    */
   fullLeaf_detail1(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
-    if (r > 20 && r <= 50) {
-      if (imageObject) {
-        this.circle_cut_image(shapes,imageObject, x, y, r*0.85, color_theme.get_color("leaf.inside.fill",node), null, node);
-      } else {
-        let text_shape = TextShape.create();
-        text_shape.height = 5;
-        text_shape.line = 3;
-        text_shape.text = commonText ? commonText : latinText;
-        text_shape.font_style = commonText ? null : 'italic';
-        text_shape.x = x;
-        text_shape.y = y;
-        text_shape.width = r * 1.25;
-        text_shape.defpt = r * 0.3;
-        text_shape.min_text_size_extra = 3;
-        text_shape.do_fill = true;
-        text_shape.fill.color = color_theme.get_color("leaf.text.fill", node);
-        shapes.push(text_shape);
-      }  
-    }
+    if (imageObject) {
+      this.circle_cut_image(shapes,imageObject, x, y, r*0.85, color_theme.get_color("leaf.inside.fill",node), node);
+    } else {
+      let text_shape = TextShape.create();
+      text_shape.height = 5;
+      text_shape.line = 3;
+      text_shape.text = commonText ? commonText : latinText;
+      text_shape.font_style = commonText ? null : 'italic';
+      text_shape.x = x;
+      text_shape.y = y;
+      text_shape.width = r * 1.25;
+      text_shape.defpt = r * 0.3;
+      text_shape.min_text_size_extra = 3;
+      text_shape.do_fill = true;
+      text_shape.fill.color = color_theme.get_color("leaf.text.fill", node);
+      shapes.push(text_shape);
+    }  
   }
 
   /**
    * Render image/text for level 2
    */
   fullLeaf_detail2(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
-    if (r > 50 && r <= 90) {
-      if (imageObject) {
-        this.rounded_image(shapes,imageObject, x, y+r*0.2,r*0.95,
-          color_theme.get_color("leaf.inside.fill",node),
-          undefined,
-          requiresCrop,cropMult,cropLeft,cropTop, node);
-      }
-
-      let text_shape = TextShape.create();
-      text_shape.height = 5;
-      text_shape.min_text_size_extra = 3;
-      text_shape.x = x;
-      text_shape.do_fill = true;
-      text_shape.fill.color = color_theme.get_color("leaf.text.fill",node);
-      if (imageObject) {
-        text_shape.text = commonText ? commonText : latinText;
-        text_shape.font_style = commonText ? null : 'italic';
-        text_shape.y = y - r * 0.55;
-        text_shape.width = r * 1.1;
-        text_shape.defpt = r * 0.15;
-        text_shape.line = 2;
-        shapes.push(text_shape);
-      } else {
-        text_shape.text = commonText ? commonText : latinText;
-        text_shape.font_style = commonText ? null : 'italic';
-        text_shape.y = y;
-        text_shape.width = r * 1.25;
-        text_shape.defpt = r * 0.3;
-        text_shape.line = 3;
-        shapes.push(text_shape);
-      }  
+    if (imageObject) {
+      this.rounded_image(shapes,imageObject, x, y+r*0.2,r*0.95,
+        color_theme.get_color("leaf.inside.fill",node),
+        requiresCrop,cropMult,cropLeft,cropTop, node);
     }
+
+    let text_shape = TextShape.create();
+    text_shape.height = 5;
+    text_shape.min_text_size_extra = 3;
+    text_shape.x = x;
+    text_shape.do_fill = true;
+    text_shape.fill.color = color_theme.get_color("leaf.text.fill",node);
+    if (imageObject) {
+      text_shape.text = commonText ? commonText : latinText;
+      text_shape.font_style = commonText ? null : 'italic';
+      text_shape.y = y - r * 0.55;
+      text_shape.width = r * 1.1;
+      text_shape.defpt = r * 0.15;
+      text_shape.line = 2;
+      shapes.push(text_shape);
+    } else {
+      text_shape.text = commonText ? commonText : latinText;
+      text_shape.font_style = commonText ? null : 'italic';
+      text_shape.y = y;
+      text_shape.width = r * 1.25;
+      text_shape.defpt = r * 0.3;
+      text_shape.line = 3;
+      shapes.push(text_shape);
+    }  
   }
 
   fill_fullleaf_detail3(text_shape, node, r, x) {
@@ -866,19 +841,12 @@ class LeafLayoutBase {
     text_shape.fill.color = color_theme.get_color("leaf.text.fill", node);
   }
 
-  fullLeaf_detail3(shapes,x,y,r,angle,sponsored,mouseTouch,sponsorText,extraText,commonText,latinText,conservation_text,copyText,imageObject,hasImage,node,requiresCrop,cropMult,cropLeft,cropTop) {
-    this.fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop,node)
-    this.fullLeaf_detail3_imagecopyright(shapes,x,y,r,conservation_text,imageObject,copyText,node);
-    this.fullLeaf_detail3_conservation(shapes,x,y,r,conservation_text,imageObject,node);
-    this.fullLeaf_detail3_names(shapes,x,y,r,commonText,latinText,conservation_text,imageObject,node);
-  }
-  
   /**
    * Add a copyright symbol to shapes if there is an image
    */
   fullLeaf_detail3_imagecopyright(shapes,x,y,r,conservation_text,imageObject,copyText,node) {
     if (imageObject) {
-      if (r > 90 && r * 0.035 > 6) {
+      if (r * 0.035 > 6) {
         let button_pos = (conservation_text.length > 0) ? (y+r*0.34) : (y+r*0.39); // find position for the copyright symbol
         this.copyright(shapes,x+r*0.43,button_pos,r*0.035,
           [node.pic_src, node.pic_filename, copyText],
@@ -894,49 +862,47 @@ class LeafLayoutBase {
   }
 
   fullLeaf_detail3_names(shapes,x,y,r,commonText,latinText,conservation_text,imageObject,node) {
-    if (r > 90) {
-      if (!this.hovered && this.liveAreaTest(x,y,r*0.88)) {
-        this.hovered = true;
-        this.hovering = true;
-        live_area_config.leaf_high_res_text.register_button_event(node);
-      }
-      let index = 3;
-      index -= imageObject ? 2 : 0;
-      index -= (conservation_text.length > 0) ? 1 : 0;
-      let cl1_y_arr = [0.47, 0.63, -0.5, -0.45];
-      let cl2_y_arr = [-0.6, -0.55, 0, 0.2];
-      let cl1_line_arr = [1, 2, 2, 2];
-      let cl2_line_arr = [2, 2, 2, 3];
-      let cl1_width_arr = [1, 1.1, 1.1, 1.1];
-      let cl2_width_arr = [1.2, 1.2, 1.5, 1.4];
-      let cl1_defpt_arr = [0.1, 0.12, 0.15, 0.15];
-      let cl2_defpt_arr = [0.12, 0.15, 0.25, 0.2];
-      
-      let text_shape = TextShape.create();
-      this.fill_fullleaf_detail3(text_shape, node, r, x);
-      text_shape.text = commonText ? latinText : OZstrings["No common name"];
-      text_shape.font_style = commonText ? 'italic' : null;
-      text_shape.y = y + r * cl1_y_arr[index];
-      text_shape.width = r * cl1_width_arr[index];
-      text_shape.defpt = r * cl1_defpt_arr[index];
-      text_shape.line = cl1_line_arr[index];
-      shapes.push(text_shape);
-
-      text_shape = TextShape.create();
-      this.fill_fullleaf_detail3(text_shape, node, r, x);
-      text_shape.text = commonText ? commonText : latinText;
-      text_shape.font_style = commonText ? null : 'italic';
-      text_shape.y = y + r * cl2_y_arr[index];
-      text_shape.width = r * cl2_width_arr[index];
-      text_shape.defpt = r * cl2_defpt_arr[index];
-      text_shape.line = cl2_line_arr[index];
-      shapes.push(text_shape);
-      this.hovering = false;
+    if (!this.hovered && this.liveAreaTest(x,y,r*0.88)) {
+      this.hovered = true;
+      this.hovering = true;
+      live_area_config.leaf_high_res_text.register_button_event(node);
     }
+    let index = 3;
+    index -= imageObject ? 2 : 0;
+    index -= (conservation_text.length > 0) ? 1 : 0;
+    let cl1_y_arr = [0.47, 0.63, -0.5, -0.45];
+    let cl2_y_arr = [-0.6, -0.55, 0, 0.2];
+    let cl1_line_arr = [1, 2, 2, 2];
+    let cl2_line_arr = [2, 2, 2, 3];
+    let cl1_width_arr = [1, 1.1, 1.1, 1.1];
+    let cl2_width_arr = [1.2, 1.2, 1.5, 1.4];
+    let cl1_defpt_arr = [0.1, 0.12, 0.15, 0.15];
+    let cl2_defpt_arr = [0.12, 0.15, 0.25, 0.2];
+
+    let text_shape = TextShape.create();
+    this.fill_fullleaf_detail3(text_shape, node, r, x);
+    text_shape.text = commonText ? latinText : OZstrings["No common name"];
+    text_shape.font_style = commonText ? 'italic' : null;
+    text_shape.y = y + r * cl1_y_arr[index];
+    text_shape.width = r * cl1_width_arr[index];
+    text_shape.defpt = r * cl1_defpt_arr[index];
+    text_shape.line = cl1_line_arr[index];
+    shapes.push(text_shape);
+
+    text_shape = TextShape.create();
+    this.fill_fullleaf_detail3(text_shape, node, r, x);
+    text_shape.text = commonText ? commonText : latinText;
+    text_shape.font_style = commonText ? null : 'italic';
+    text_shape.y = y + r * cl2_y_arr[index];
+    text_shape.width = r * cl2_width_arr[index];
+    text_shape.defpt = r * cl2_defpt_arr[index];
+    text_shape.line = cl2_line_arr[index];
+    shapes.push(text_shape);
+    this.hovering = false;
   }
   
   fullLeaf_detail3_conservation(shapes,x,y,r,conservation_text,imageObject,node) {
-    if (r > 90 && conservation_text.length > 0) {
+    if (conservation_text.length > 0) {
       let conservation_hover_test1 = !this.hovered && imageObject && this.liveSquareAreaTest(x-r/2,x+r/2,y+r*0.51,y+r*0.83);
       let conservation_hover_test2 = !this.hovered && !imageObject && this.liveSquareAreaTest(x-r/2,x+r/2,y+r*0.37,y+r*0.71);
       if (conservation_hover_test1 || conservation_hover_test2) {
@@ -965,19 +931,15 @@ class LeafLayoutBase {
    * Add image to shapes if available
    */
   fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop, node) {
-    if (r > 90) {
-      if (imageObject && (conservation_text.length > 0)) {
-        this.rounded_image(shapes,imageObject,x,y,r*0.75,
-          color_theme.get_color("leaf.inside.fill",node),
-          undefined,
-          requiresCrop,cropMult,cropLeft,cropTop, node);
-      } else if (imageObject) {
-        this.rounded_image(shapes,imageObject,x,y+r*0.05,r*0.75,
-          color_theme.get_color("leaf.inside.fill",node),
-          undefined,
-          requiresCrop,cropMult,cropLeft,cropTop, node);
-      } 
-    }
+    if (imageObject && (conservation_text.length > 0)) {
+      this.rounded_image(shapes,imageObject,x,y,r*0.75,
+        color_theme.get_color("leaf.inside.fill",node),
+        requiresCrop,cropMult,cropLeft,cropTop, node);
+    } else if (imageObject) {
+      this.rounded_image(shapes,imageObject,x,y+r*0.05,r*0.75,
+        color_theme.get_color("leaf.inside.fill",node),
+        requiresCrop,cropMult,cropLeft,cropTop, node);
+    } 
   }
 
   /* drawing of images */
@@ -993,37 +955,19 @@ class LeafLayoutBase {
   * imageObject is the image to be drawn (assumed to be square)
   * centerpointx,centerpointy,radiusr show where the image will be drawn (in a circle)
   * borderColor is the immediate border around the image
-  * highlightColor could be null but if not is a second border around the image highlighting it further (typically used on touch or mouseover)
   *
   * returns: none
   *
   */
-  circle_cut_image(shapes,imageObject,centerpointx,centerpointy,radiusr,borderColor,highlightColor, node) {
+  circle_cut_image(shapes,imageObject,centerpointx,centerpointy,radiusr,borderColor, node) {
     if (imageObject) {
-      if (highlightColor) {
-        let arc_shape = ArcShape.create();
-        arc_shape.x = centerpointx;
-        arc_shape.y = centerpointy;
-        arc_shape.r = radiusr * 1.05;
-        arc_shape.circle = true;
-        arc_shape.do_fill = true;
-        arc_shape.fill.color = highlightColor;
-        shapes.push(arc_shape);
-      }
-      
-      let arc_shape = ArcShape.create();
-      arc_shape.x = centerpointx;
-      arc_shape.y = centerpointy;
-      arc_shape.r = radiusr * 0.975;
-      arc_shape.circle = true;
-      
       let image_shape = ImageShape.create();
       image_shape.img = imageObject;
       image_shape.x = centerpointx - radiusr;
       image_shape.y = centerpointy - radiusr;
       image_shape.w = radiusr * 2;
       image_shape.h = radiusr * 2;
-      image_shape.clip = arc_shape; 
+      image_shape.border_radius = true;
       image_shape.height= 5;
       shapes.push(image_shape);
     }
@@ -1098,22 +1042,10 @@ class LeafLayoutBase {
   /**
    * Draw an image with rounded corners, used as a centerpiece for full nodes
    */
-  rounded_image(shapes,imageObject,x,y,w,borderColor,highlightColor,requiresCrop,cropMult,cropLeft,cropTop,node) {
+  rounded_image(shapes,imageObject,x,y,w,borderColor,requiresCrop,cropMult,cropLeft,cropTop,node) {
     if (imageObject) {
-      let path_shape;
-      
-      if (highlightColor) {
-        path_shape = PathShape.create();
-        this.draw_src(x-w/2,y-w/2,w,w,w*0.03,node,path_shape);
-        path_shape.do_fill = true;
-        path_shape.fill.color = highlightColor;
-        shapes.push(path_shape);
-      }
-      
-      path_shape = PathShape.create();
-      this.draw_src(x-w/2,y-w/2,w,w,w*0.03,node,path_shape);
       let image_shape = ImageShape.create();
-      image_shape.clip = path_shape;
+      image_shape.border_radius = w * 0.03;
       image_shape.img = imageObject;
       image_shape.x = x-w/2.0;
       image_shape.y = y-w/2.0; 
@@ -1145,70 +1077,6 @@ class LeafLayoutBase {
       }
       shapes.push(image_shape);
     }
-  }
-
-
-
-  // rectangle with rounded corners
-  draw_src(x,y,rx,ry,corner,node,path_shape) {
-    path_shape.path_length = 9;
-    let move_to_shape = MoveToShape.create();
-    move_to_shape.x = x + corner;
-    move_to_shape.y = y;
-    path_shape.path[0] = move_to_shape;
-    
-    let arc_shape = ArcShape.create();
-    arc_shape.x = x + corner;
-    arc_shape.y = y + corner;
-    arc_shape.r = corner;
-    arc_shape.start_angle = -Math.PI/2;
-    arc_shape.end_angle = Math.PI;
-    arc_shape.counter_wise = true;
-    path_shape.path[1] = arc_shape;
-    let line_to_shape = LineToShape.create();
-    line_to_shape.x = x;
-    line_to_shape.y = y + ry - corner;
-    path_shape.path[2] = line_to_shape;
-        
-    arc_shape = ArcShape.create();
-    arc_shape.x = x + corner;
-    arc_shape.y = y + ry - corner;
-    arc_shape.r = corner;
-    arc_shape.start_angle = Math.PI;
-    arc_shape.end_angle = Math.PI/2;
-    arc_shape.counter_wise = true;  
-    path_shape.path[3] = arc_shape;
-    line_to_shape = LineToShape.create();
-    line_to_shape.x = x + rx - corner;
-    line_to_shape.y = y + ry;
-    path_shape.path[4] = line_to_shape;
-    
-    arc_shape = ArcShape.create();
-    arc_shape.x = x + rx - corner;
-    arc_shape.y = y + ry - corner;
-    arc_shape.r = corner;
-    arc_shape.start_angle = Math.PI/2;
-    arc_shape.end_angle= 0;
-    arc_shape.counter_wise = true;
-    path_shape.path[5] = arc_shape;
-    line_to_shape = LineToShape.create();
-    line_to_shape.x = x + rx;
-    line_to_shape.y = y + ry - corner;
-    path_shape.path[6] = line_to_shape;
-    
-    arc_shape = ArcShape.create();
-    arc_shape.type = "arc";
-    arc_shape.x = x + rx - corner;
-    arc_shape.y = y + corner;
-    arc_shape.r = corner;
-    arc_shape.start_angle = 0;
-    arc_shape.end_angle = -Math.PI/2;
-    arc_shape.counter_wise = true;
-    path_shape.path[7] = arc_shape;
-    line_to_shape = LineToShape.create();
-    line_to_shape.x = x + corner;
-    line_to_shape.y = y;
-    path_shape.path[8] = line_to_shape;
   }
 
   mouse_over_circle(x,y,r) {

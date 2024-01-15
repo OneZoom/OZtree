@@ -142,7 +142,7 @@ config.render = {
 }
 
 config.pic = {
-  data_path_pics: null, //will be set as a function f(src, src_id, preferred_res, square) later
+  data_path_pics: null, // Set by modules.img:js_thumb_url() via. server_urls.html
   max_allowed_pic_map_size: 800,
   clear_image_cache_interval: 240000
 }

@@ -49,33 +49,24 @@ export function click_on_button_cb(controller) {
       alert("Developer error: you need to define a function named OZ_node_json_url_func that takes a OneZoom node ID and returns a URL to get a json list of tabs");
       return;
     }
-    if (global_button_action.action =="ow_leaf") {
-      config.ui.openLinkouts(global_button_action.data, 'ott');
-      callAjax(config.api.OZ_leaf_json_url_func(global_button_action.data, config.lang), config.ui.populateLinkouts);
-    } else if (global_button_action.action =="ow_iucn_leaf") {
-      config.ui.openLinkouts(global_button_action.data, 'ott');
-      callAjax(config.api.OZ_leaf_json_url_func(global_button_action.data, config.lang), config.ui.populateLinkouts, 'iucn');
-    } else if (global_button_action.action =="ow_sponsor_leaf") {
-      config.ui.openLinkouts(global_button_action.data, 'ott');
-      callAjax(config.api.OZ_leaf_json_url_func(global_button_action.data, config.lang), config.ui.populateLinkouts, 'ozspons');
-    } else if (global_button_action.action =="ow_node") {
-      config.ui.openLinkouts(global_button_action.data, 'OZid'); /* most internal nodes don't have an OTT, so node actions pass in the OneZoom ID */
-      callAjax(config.api.OZ_node_json_url_func(global_button_action.data, config.lang), config.ui.populateLinkouts);
-    } else if (global_button_action.action =="ow_sponsor_node") {
-      config.ui.openLinkouts(global_button_action.data, 'OZid'); /* most internal nodes don't have an OTT, so node actions pass in the OneZoom ID */
-      callAjax(config.api.OZ_node_json_url_func(global_button_action.data, config.lang), config.ui.populateLinkouts, 'ozspons');
+    if (is_popup_state()) {
+      const m = global_button_action.action.match(/^ow_(.*)_(?:leaf|node)$/);
+      // callback_arg is either middle part of ow_iucn_leaf / ow_ozspons_leaf, or nothing
+      const linkoutArg = m ? m[1] : undefined;
+      const is_ozid = global_button_action.action.endsWith("_node");
+
+      // most internal nodes don't have an OTT, so node actions pass in the OneZoom ID
+      config.ui.openLinkouts(global_button_action.data, is_ozid ? 'OZid' : 'ott');
+      $.ajax({
+        'url': (is_ozid ? config.api.OZ_node_json_url_func : config.api.OZ_leaf_json_url_func)(global_button_action.data, config.lang),
+        success: (result) => {
+          config.ui.populateLinkouts(result, linkoutArg);
+        },
+      });
     }
   }
 }
 
-
 export function is_popup_state() {
-  return global_button_action.action === "ow_leaf" || global_button_action.action === "ow_node" || global_button_action.action === "ow_sponsor_node" || global_button_action.action === "ow_sponsor_leaf" || global_button_action.action === "ow_iucn_leaf";
-}
-
-// call yan's API to get info for tree internal window
-function callAjax(url, callback, arg){
-    $.ajax({'url': url, success: function(result){
-        callback(result,arg);
-    }})
+  return global_button_action.action.startsWith("ow_");
 }

@@ -137,7 +137,7 @@ function parse_querystring(state, querystring) {
         tap_action = "ow_leaf";
       }
       state.tap_action = tap_action;
-      state.tap_ott_or_id = parseInt(tap_ott_or_id);
+      state.tap_ott_or_id = parseInt(tap_ott_or_id, 10);
     } else if (/^vis=/.test(querystring[i])) {
       let vis_type = querystring[i].substring(querystring[i].indexOf("=") + 1);
       state.vis_type = vis_type;
@@ -222,7 +222,7 @@ function parse_hash(state, hash) {
   if (!hash || hash.length === 0) return;
   hash = hash.substring(1);    //remove '#'
   if (hash.indexOf("ott") === 0) {
-    let ott = parseInt(hash.substring(3));
+    let ott = parseInt(hash.substring(3), 10);
     if (!isNaN(ott)) state.ott = ott;
   } else {
     let parts = hash.split(",");
@@ -252,9 +252,9 @@ function encode_popup_action(popup_action) {
     return 'ol';
   } else if (popup_action == "ow_node") {
     return 'on';
-  } else if (popup_action == "ow_sponsor_leaf") {
+  } else if (popup_action == "ow_ozspons_leaf") {
     return 'osl';
-  } else if (popup_action == "ow_sponsor_node") {
+  } else if (popup_action == "ow_ozspons_node") {
     return 'osn'
   } else if (popup_action == "ow_iucn_leaf") {
     return 'oil';
@@ -269,9 +269,9 @@ function decode_popup_action(popup_action) {
   } else if (popup_action == "on") {
     return 'ow_node';
   } else if (popup_action == "osl") {
-    return 'ow_sponsor_leaf';
+    return 'ow_ozspons_leaf';
   } else if (popup_action == "osn") {
-    return 'ow_sponsor_node'
+    return 'ow_ozspons_node'
   } else if (popup_action == 'oil') {
     return 'ow_iucn_leaf';
   } else {

@@ -1,4 +1,4 @@
-import LeafLayoutBase from '../leaf_layout_helper';
+import LeafLayoutBase from '../leaf_layout_base';
 import {add_mr} from '../../move_restriction';
 import config from '../../../global_config';
 import tree_state from '../../../tree_state';

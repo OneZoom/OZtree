@@ -4,7 +4,7 @@ import ArcShape from '../shapes/arc_shape';
 import TextShape from '../shapes/text_shape';
 import ImageShape from '../shapes/image_shape';
 import tree_settings from '../../tree_settings';
-import {get_image, image_ready} from '../../image_cache'
+import {get_image} from '../../image_cache'
 import {global_button_action} from '../../button_manager';
 import {live_area_config} from '../live_area_config';
 
@@ -77,8 +77,8 @@ class SignpostLayoutBase {
     if (node.num_pics > 0) {
       let pic_info = node.get_picset_src_info(0);
       let image = get_image(pic_info[0],pic_info[1]);
-      if (!image_ready(image)) return;
-      
+      if (!image) return;
+
       let image_shape = ImageShape.create();
       image_shape.src = pic_info[0];  
       image_shape.filename = pic_info[1];  
@@ -88,12 +88,7 @@ class SignpostLayoutBase {
       image_shape.h = this.centerr * 2 * 0.97 * 0.6;
       image_shape.alpha = this.alpha;
       image_shape.height = this.signpost_height;
-      let arc_shape = ArcShape.create();
-      arc_shape.x = this.centerx;
-      arc_shape.y = this.centery;
-      arc_shape.r = this.centerr * 0.97 * 0.6;
-      arc_shape.circle = true;
-      image_shape.clip = arc_shape;
+      image_shape.border_radius = true;
       shapes.push(image_shape);
     }
   }
