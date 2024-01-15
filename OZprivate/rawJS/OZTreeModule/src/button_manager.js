@@ -68,5 +68,5 @@ export function click_on_button_cb(controller) {
 }
 
 export function is_popup_state() {
-  return global_button_action.action.startsWith("ow_");
+  return global_button_action.action && global_button_action.action.startsWith("ow_");
 }
