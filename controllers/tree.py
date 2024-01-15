@@ -182,7 +182,9 @@ def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
                 urls['powo'] = powo_url(row[core_table].ipni) #would alter here if ipni availability calculated on the fly
         if sponsorship_urls: #always return a sponsorship url, even if e.g. invalid or ott missing
             urls['ozspons'] = sponsorship_urls
-    except:
+    except Exception as e:
+        if is_testing:
+            raise e
         errors = ["Couldn't get any data"]
     return(dict(data=urls, errors=errors, ott=ott, id=id, name=name))
 
