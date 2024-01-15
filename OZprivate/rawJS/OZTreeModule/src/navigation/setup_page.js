@@ -48,9 +48,9 @@ function setup_page_by_state(controller, state) {
 
   }).then(function () {
     //open popup dialog if exists.
-    if (state.tap_action && state.tap_ott_or_id) {
-      global_button_action.action = state.tap_action;
-      global_button_action.data = state.tap_ott_or_id;
+    if (state.tap_action) {
+      global_button_action.action = state.tap_action.action;
+      global_button_action.data = state.tap_action.data;
       click_on_button_cb(controller);
     } else {
       controller.close_all();
@@ -111,10 +111,10 @@ function tree_current_state_obj(controller, {record_popup = null}) {
   if (data_repo.image_source !== 'best_any') state.image_source = data_repo.image_source;
   if (controller.get_search_jump_mode() !== 'flight') state.search_jump_mode = controller.get_search_jump_mode();
   if (config.home_ott_id) state.home_ott_id = config.home_ott_id
-  if (record_popup) {
-    state.tap_action = record_popup.action;
-    state.tap_ott_or_id = record_popup.data;
-  }
+  if (record_popup) state.tap_action = {
+    action: record_popup.action,
+    data: record_popup.data,
+  };
   if (!tree_settings.is_default_ssaver_inactive_duration_seconds()) state.ssaver_inactive_duration_seconds = tree_settings.ssaver_inactive_duration_seconds
 
   state.highlights = controller.highlight_list();

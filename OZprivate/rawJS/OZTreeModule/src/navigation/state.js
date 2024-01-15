@@ -125,19 +125,7 @@ function parse_querystring(state, querystring) {
   querystring = querystring.replace(/^\?/, '').split("&"); //knock off initial '?'
   for (let i = 0; i < querystring.length; i++) {
     if (/^pop=/.test(querystring[i])) {
-      let tap_params = querystring[i].substring(querystring[i].indexOf("=") + 1).split("_");
-      let tap_ott_or_id, tap_action;
-      if (tap_params.length == 2) {
-        //new param specification style, e.g. "pop=ol_id"
-        tap_action = decode_popup_action(tap_params[0]);
-        tap_ott_or_id = tap_params[1];
-      } else {
-        //old params specification style. pop=id
-        tap_ott_or_id = tap_params[0];
-        tap_action = "ow_leaf";
-      }
-      state.tap_action = tap_action;
-      state.tap_ott_or_id = parseInt(tap_ott_or_id, 10);
+      state.tap_action = decode_popup_action(querystring[i].substring(querystring[i].indexOf("=") + 1));
     } else if (/^vis=/.test(querystring[i])) {
       let vis_type = querystring[i].substring(querystring[i].indexOf("=") + 1);
       state.vis_type = vis_type;
@@ -186,7 +174,7 @@ function parse_querystring(state, querystring) {
 function deparse_querystring(state) {
   var sp = new URLSearchParams("");
 
-  if (state.tap_action) sp.set('pop', encode_popup_action(state.tap_action) + "_" + state.tap_ott_or_id);
+  if (state.tap_action) sp.set('pop', encode_popup_action(state.tap_action));
   if (state.vis_type) sp.set('vis', state.vis_type);
   if (state.init) sp.set('init', state.init);
   if (state.lang) sp.set('lang', state.lang);
@@ -248,35 +236,47 @@ function deparse_hash(state) {
 }
 
 function encode_popup_action(popup_action) {
-  if (popup_action == "ow_leaf") {
-    return 'ol';
-  } else if (popup_action == "ow_node") {
-    return 'on';
-  } else if (popup_action == "ow_ozspons_leaf") {
-    return 'osl';
-  } else if (popup_action == "ow_ozspons_node") {
-    return 'osn'
-  } else if (popup_action == "ow_iucn_leaf") {
-    return 'oil';
-  } else {
-    console.err("popup action unknown type " + popup_action);
+  if (popup_action.action === "ow_leaf") {
+    return 'ol_' + popup_action.data;
+  } else if (popup_action.action === "ow_node") {
+    return 'on_' + popup_action.data;
+  } else if (popup_action.action === "ow_ozspons_leaf") {
+    return 'osl_' + popup_action.data;
+  } else if (popup_action.action === "ow_ozspons_node") {
+    return 'osn_' + popup_action.data;
+  } else if (popup_action.action === "ow_iucn_leaf") {
+    return 'oil_' + popup_action.data;
   }
+  // Otherwise, use non-abbreviated form
+  return popup_action.action + '_' + popup_action.data;
 }
 
-function decode_popup_action(popup_action) {
-  if (popup_action == "ol") {
-    return 'ow_leaf';
-  } else if (popup_action == "on") {
-    return 'ow_node';
-  } else if (popup_action == "osl") {
-    return 'ow_ozspons_leaf';
-  } else if (popup_action == "osn") {
-    return 'ow_ozspons_node'
-  } else if (popup_action == 'oil') {
-    return 'ow_iucn_leaf';
-  } else {
-    console.err('popup action unknown type ' + popup_action);
+function decode_popup_action(popup_qs) {
+  var m;
+
+  if (popup_qs.match(/^\d+$/)) {
+    // Old params specification style. pop=1234
+    return { action: "ow_leaf", data: parseInt(popup_qs, 10) };
   }
+
+  m = popup_qs.match(/^(ol|on|osl|osn|oil)_(\d+)$/);
+  if (m) {
+    // Abbreviated style, pop=ol=1234
+    return { action: {
+      ol: 'ow_leaf',
+      on: 'ow_node',
+      osl: 'ow_ozspons_leaf',
+      osn: 'ow_ozspons_node',
+      oil: 'ow_iucn_leaf',
+    }[m[1]], data: parseInt(m[2], 10) };
+  }
+
+  m = popup_qs.match(/^(ow_.*_(?:leaf|node))_(\d+)$/);
+  if (m) {
+    // Full style, pop=ow_oztours_leaf_1234
+    return { action: m[1], data: parseInt(m[2], 10) };
+  }
+  throw new Error("Unparsable pop parameter: " + popup_qs);
 }
 
 export { parse_state, deparse_state, parse_url_base };
