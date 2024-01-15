@@ -95,7 +95,7 @@ class TestNodeInfo(unittest.TestCase):
 
     def test_nodes_info_from_string_tours(self):
         def tour_url(*args):
-            return ['/tour/data.html/ %s' % t['identifier'] for t in args]
+            return ['/tour/data.html/%s' % t['identifier'] for t in args]
 
         db = current.db
         leaves = [db(db.ordered_leaves.ott == ott).select(db.ordered_leaves.ALL)[0] for ott in util.find_unsponsored_otts(10)]
