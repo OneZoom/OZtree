@@ -5,7 +5,6 @@ import { global_button_action, click_on_button_cb } from '../button_manager';
 import config from '../global_config';
 import tree_settings from '../tree_settings';
 import { parse_url_base } from './state';
-import { get_largest_visible_node } from './utils';
 import { resolve_pinpoints, node_to_pinpoint } from './pinpoint';
 
 function setup_page_by_state(controller, state) {
@@ -87,7 +86,7 @@ function tree_current_state_obj(controller, {record_popup = null}) {
   state.url_base = parse_url_base(window.location);
 
   // Choose one with an OTT by preference
-  let node = get_largest_visible_node(controller.root, (node) => !!node.ott) || get_largest_visible_node(controller.root);
+  let node = controller.largest_visible_node((node) => !!node.ott) || controller.largest_visible_node();
   // NB: Still possible to find nothing, e.g. with a manually tampered URL that positions xp/wp/ws at an empty point in the tree
   if (!node) return {};
 

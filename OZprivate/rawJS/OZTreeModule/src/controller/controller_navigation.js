@@ -12,6 +12,15 @@ import tree_state from '../tree_state';
 
 export default function (Controller) {
   /**
+   * Return the current largest visible node, that optionally meets condition
+   * @param {function} Function returning true iff a node should be considered, e.g. "(node) => node.ott" for only nodes with an OTT
+   * @return A midnode object, if available.
+   */
+  Controller.prototype.largest_visible_node = function (condition=null) {
+    return get_largest_visible_node(this.root, condition);
+  }
+
+  /**
    * Configure the treeviewer based on either:
    * * The current page URL (by default)
    * * A Location/URL object
@@ -79,7 +88,7 @@ export default function (Controller) {
 
     // Get pre-rebuild state, so we can restore the rough position by ID
     // Get largest node, use this to restore position
-    let n = get_largest_visible_node(this.root);
+    let n = this.largest_visible_node();
 
     return tree_settings.rebuild_tree(vis, prev, this).then(() => {
       return this.init_move_to(n.ozid, "leap");

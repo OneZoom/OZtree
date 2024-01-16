@@ -1,5 +1,4 @@
 import { tree_current_state_obj } from './setup_page';
-import { get_largest_visible_node } from './utils';
 import { parse_state, deparse_state } from './state';
 import config from '../global_config';
 
@@ -68,7 +67,7 @@ function current_view_near_previous_view(current_state) {
 }
 
 function get_title(controller) {
-  let node_with_name = get_largest_visible_node(controller.root, (node) => !!(node.cname || node.latin_name));
+  let node_with_name = controller.largest_visible_node((node) => !!(node.cname || node.latin_name));
 
   if (!node_with_name) return config.title_func();
   if (node_with_name.cname) return config.title_func(node_with_name.cname);
