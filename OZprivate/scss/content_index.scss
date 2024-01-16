@@ -150,26 +150,6 @@
   }
 }
 
-/* ********** Home page slider prev/next arrows ************** */
-
-.oz-slider-arrow {
-  width: 35px;
-  height: 35px;
-  margin: 15px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-
-  &.oz-slider-arrow-left {
-    left: -55px;
-    background-image: url(../images/oz-leftarrow-darkbg.svg);
-  }
-  &.oz-slider-arrow-right {
-    right: -55px;
-    background-image: url(../images/oz-rightarrow-darkbg.svg);
-  }
-}
-
 /* ********** Home page news items ************** */
 
 .news-list img.non-default {

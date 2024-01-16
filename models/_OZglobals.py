@@ -302,6 +302,7 @@ logographic_transcriptions = cache.ram('logographic_transcriptions',
 
 
 # id / name / icon of all tabs
+# controllers/tree:linkouts() / leaf_linkouts() needs to produce a URL for each of these
 tab_definitions = dict(
     opentree={'id':'opentree',   'name':'OpenTree',     'icon':URL('static','images/mini-opentree-logo.png')},
     wiki={'id':'wiki',   'name':'Wikipedia',            'icon':URL('static','images/W.svg')},
@@ -312,10 +313,11 @@ tab_definitions = dict(
     #('powo',{'id':'powo',   'name':T('Kew')}),
     ozlinks={'id':'ozlinks','name':'External Links', 'icon':URL('static','images/links.svg')},
     ozspons={'id':'ozspons','name':'Sponsor', 'icon':URL('static','images/sponsor.png')},
+    oztours={'id':'oztours','name':'Tours', 'icon':URL('static','images/tour-pin.svg')},
 )
 
 # Default tabs to display
-tab_defaults = ['wiki', 'eol', 'gbif', 'iucn', 'ncbi', 'ozspons']
+tab_defaults = ['wiki', 'eol', 'gbif', 'iucn', 'ncbi', 'ozspons', 'oztours']
 
 #allow these to be accessed in modules
 current.OZglobals = dict(

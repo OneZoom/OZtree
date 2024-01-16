@@ -1,6 +1,7 @@
 import datetime
 from OZfunc import nice_name_from_otts
 import img
+import tour
 
 def wikipedia_OZpage():
     """
@@ -180,6 +181,11 @@ def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
                 urls['gbif'] = gbif_url(row[core_table].gbif, is_leaf)
             if row[core_table].ipni:
                 urls['powo'] = powo_url(row[core_table].ipni) #would alter here if ipni availability calculated on the fly
+            if ott and len(tour.tours_related_to_ott([ott])) > 0:
+                urls['oztours'] = [
+                  URL('tour', 'list', scheme=True, host=True, extension='html', vars=dict(otts=[ott], popup=1)),
+                  URL('tour', 'list', scheme=True, host=True, extension='html', vars=dict(otts=[ott])),
+                ]
         if sponsorship_urls: #always return a sponsorship url, even if e.g. invalid or ott missing
             urls['ozspons'] = sponsorship_urls
     except Exception as e:

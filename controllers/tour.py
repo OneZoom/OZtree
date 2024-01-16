@@ -70,6 +70,7 @@ from OZfunc import (
     get_common_name, get_common_names,
     nice_name,
 )
+import tour
 
 
 def homepage_animation():
@@ -267,4 +268,17 @@ def data():
     return dict(
         tour_identifier=tour_identifier,
         tour=tour,
+    )
+
+
+def list():
+    otts = set(int(x) for x in request.vars.get("otts", "").split(",") if x)
+    if len(otts) == 0:
+        raise HTTP(400, "No OTT provided")
+
+    return dict(
+        otts=otts,
+        all_ott_tours=tour.tours_related_to_ott(otts, full_meta=True),
+        images={},
+        tour_url=tour.tour_url,
     )
