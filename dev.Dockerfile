@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/devcontainers/javascript-node:18
 WORKDIR /opt
-# Copied from https://github.com/OneZoom/OZtree-docker/blob/main/Dockerfile
-RUN git clone --recursive https://github.com/web2py/web2py.git --depth 1 --branch v2.21.1 --single-branch web2py \
+# Recent version compatible with Python 3.10.
+RUN git clone --recursive https://github.com/web2py/web2py.git --depth 1 --branch v2.27.1 --single-branch web2py \
     && chown -R node:node web2py
 COPY --chown=node:node _COPY_CONTENTS_TO_WEB2PY_DIR/routes.py web2py/
 # Required to avoid build issue when running grunt

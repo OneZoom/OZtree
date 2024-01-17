@@ -7,7 +7,7 @@
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
 		"ghcr.io/devcontainers/features/python:1": {
-			"version": "3.8"
+			"version": "3.10"
 		}
 	},
 	// Need newer pymysql version or MySQL connection will fail.
