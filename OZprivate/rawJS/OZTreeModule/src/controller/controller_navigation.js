@@ -13,11 +13,17 @@ import tree_state from '../tree_state';
 export default function (Controller) {
   /**
    * Return the current largest visible node, that optionally meets condition
+   *
+   * Debug helper: You can set a watch in the javascript console:
+   *   n = onezoom.controller.largest_visible_node() ; n.cname + " - " + n.latin_name
+   *
    * @param {function} Function returning true iff a node should be considered, e.g. "(node) => node.ott" for only nodes with an OTT
    * @return A midnode object, if available.
    */
   Controller.prototype.largest_visible_node = function (condition=null) {
-    return get_largest_visible_node(this.root, condition);
+    if (!this.root) return null;  // Trying to record_url() before the tree is setup
+
+    return get_largest_visible_node(this.root, tree_state.widthres, tree_state.heightres, condition);
   }
 
   /**
