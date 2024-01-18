@@ -181,10 +181,12 @@ def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
                 urls['gbif'] = gbif_url(row[core_table].gbif, is_leaf)
             if row[core_table].ipni:
                 urls['powo'] = powo_url(row[core_table].ipni) #would alter here if ipni availability calculated on the fly
-            if ott and len(tour.tours_related_to_ott([ott])) > 0:
+
+            tours = [t.identifier for t in tour.tours_related_to_ott([ott]).get(ott, [])] if ott else []
+            if len(tours) > 0:
                 urls['oztours'] = [
-                  URL('tour', 'list', scheme=True, host=True, extension='html', vars=dict(otts=[ott], popup=1)),
-                  URL('tour', 'list', scheme=True, host=True, extension='html', vars=dict(otts=[ott])),
+                  URL('tour', 'list', scheme=True, host=True, extension='html', vars=dict(tours=",".join(tours), popup=1)),
+                  URL('tour', 'list', scheme=True, host=True, extension='html', vars=dict(tours=",".join(tours))),
                 ]
         if sponsorship_urls: #always return a sponsorship url, even if e.g. invalid or ott missing
             urls['ozspons'] = sponsorship_urls

@@ -272,13 +272,15 @@ def data():
 
 
 def list():
-    otts = set(int(x) for x in request.vars.get("otts", "").split(",") if x)
-    if len(otts) == 0:
-        raise HTTP(400, "No OTT provided")
+    tour_identifiers = [x for x in request.vars.get("tours", "").split(",") if x]
+
+    # Fetch all tours, put into dict with order matching tour_identifiers
+    tours = {t:None for t in tour_identifiers}
+    for t in db(db.tour.identifier.belongs(tours.keys())).select(db.tour.ALL):
+        tours[t.identifier] = t
 
     return dict(
-        otts=otts,
-        all_ott_tours=tour.tours_related_to_ott(otts, full_meta=True),
+        tours=tours.values(),
         images={},
         tour_url=tour.tour_url,
     )
