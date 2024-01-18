@@ -252,18 +252,21 @@ ul#controlButtons.button-label-hidden {
     padding: 0 20px; /* no need for top/bottom padding */
 }
 
+#tours-modal .uk-modal-dialog,
 #imageinfo-modal .uk-modal-dialog {
     height: 100%; /* make sure dialog is full height, even if iframe has not been loaded */
     display: flex;
     flex-flow: column;
 }
 
+#tours-modal .uk-modal-body,
 #imageinfo-modal .uk-modal-body {
     flex: 1; /* fill remaining height */
     display: flex; /* contents (e.g. iframe) should fill height too */
 }
-    
-#imageinfo-modal .uk-modal-header a {
+
+#tours-modal .uk-modal-header a.expand-tab,
+#imageinfo-modal .uk-modal-header a.expand-tab {
     float: right;
 }
 
