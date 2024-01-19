@@ -70,7 +70,7 @@ Before anything else, get the OZtree app from [github](https://github.com/OneZoo
 6. Load up data into the tables: first create a user and assign it a 'manager' role in the `auth_` tables using the web2py database admin pages, then load the other tables using data from the original OneZoom site (e.g. sent to you via file transfer) - see *"[Filling the database](#filling-the-database)"*.
 7. Optimise your installation:
 	* create indexes on the tables by running the SQL script in `OZtree/OZprivate/ServerScripts/SQL/create_db_indexes.sql`. You can do this, for example, by running `SOURCE /path/to/OZtree/OZprivate/ServerScripts/SQL/create_db_indexes.sql` within a mysql client.
-	* set `is_testing = False` in `models/db.py` and `migrate=0` in appconfig.ini.
+	* set `migrate=0` in appconfig.ini.
 
 
 ## Downloading the OZtree app
@@ -219,7 +219,7 @@ When web2py is run, it will print instructions telling how to shut down the web2
 
 **If this is a new installation** you should now visit `http://127.0.0.1:8000/OZtree/default/` or `https://127.0.0.1:8000/OZtree/default/` to force web2py to create database tables. To load data into the tables, see "Loading Data", below.
 
-Once tables are created, and everything is working, you can set `is_testing = False` in `models/db.py` and `migrate=0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
+Once tables are created, and everything is working, you can set `migrate=0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB
 
 ### Web2py folder structure
 
