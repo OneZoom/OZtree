@@ -29,6 +29,16 @@ module.exports = function (grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     exec: {
+      web2py_configure: {
+        cwd: "../../",
+        command: [
+          'git submodule update --init --recursive',
+          'ln -sf applications/OZtree/_COPY_CONTENTS_TO_WEB2PY_DIR/routes.py routes.py',
+          '( [ -d applications/welcome ] && rm -r -- "applications/welcome" || true )',
+          '( [ -d applications/examples ] && rm -r -- "applications/examples" || true )',
+          '( [ -f applications/OZtree/private/appconfig.ini ] || { cp applications/OZtree/private/appconfig.ini.example applications/OZtree/private/appconfig.ini ; echo "****** edit private/appconfig.ini"; exit 1; } )',
+        ].join(" && "),
+      },
       compile_python: {
         // compile python to make it faster on the server and hence reduce server load.
         // should probably be run using the same python version as used to run web2py
@@ -220,6 +230,6 @@ module.exports = function (grunt) {
   grunt.registerTask("compile-js_dev", ["exec:compile_js_dev"]);
   grunt.registerTask("partial-install",       ["compile-js", "css", "copy:dev", "curl-dir:get_minlife", "exec:convert_links_to_local"]);
   grunt.registerTask("partial-local-install", ["compile-js", "css", "copy:dev", "curl-dir:get_local_minlife", "exec:convert_links_to_local"]);
-  grunt.registerTask("prod", ["clean", "compile-python", "compile-js", "css", "compress", "copy:prod", "make_release_info", "docs"]);
-  grunt.registerTask("dev",  ["clean",               "compile-js_dev", "css", "compress", "copy:dev",  "make_release_info", "docs"]);
+  grunt.registerTask("prod", ["clean", "web2py", "compile-python", "compile-js", "css", "compress", "copy:prod", "make_release_info", "docs"]);
+  grunt.registerTask("dev",  ["clean", "web2py", "compile-js_dev", "css", "compress", "copy:dev",  "make_release_info", "docs"]);
 };

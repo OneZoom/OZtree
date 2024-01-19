@@ -65,7 +65,7 @@ Before anything else, get the OZtree app from [github](https://github.com/OneZoo
 2. Install command-line software by running `npm install -g grunt-cli` (you may need to do all this with administrator privileges).
 3. Run `npm install` from within the OZtree folder you moved in step 1. then run `grunt dev` (or `grunt prod` if in production mode) - see *"[Building the OneZoom tree viewer](#building-the-onezoom-tree-viewer)"*.
 3. [Install](http://dev.mysql.com/downloads/mysql/) & start MySQL, then create a new database (see *"[Setting up the database backend](#setting-up-the-database-backend)"*)
-4. Create a appconfig.ini file in `OZtree/private`, with `migrate=1` and which references this database with the appropriate username and password. We also recommend copying the `routes.py` file from `OZtree/_COPY_CONTENTS_TO_WEB2PY_DIR` to the top level of your web2py installation - see *"[Web2py installation](#web2py-installation)"*
+4. Edit `private/appconfig.ini` file in `OZtree/private`, with `migrate=1` and with the appropriate database username and password.
 5. Fire up a temporary web2py server and visit the main page to create the (empty) database tables - see *"[Starting and shutting down web2py](#starting-and-shutting-down-web2py)"*
 6. Load up data into the tables: first create a user and assign it a 'manager' role in the `auth_` tables using the web2py database admin pages, then load the other tables using data from the original OneZoom site (e.g. sent to you via file transfer) - see *"[Filling the database](#filling-the-database)"*.
 7. Optimise your installation:
@@ -218,8 +218,6 @@ On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. 
 When web2py is run, it will print instructions telling how to shut down the web2py server. For example, on Windows you might use `taskkill /f /pid XXXX`, where `XXXX` is the process id.
 
 **If this is a new installation** you should now visit `http://127.0.0.1:8000/OZtree/default/` or `https://127.0.0.1:8000/OZtree/default/` to force web2py to create database tables. To load data into the tables, see "Loading Data", below.
-
-Also, if you want to make OneZoom the default application, make a copy of the routes.py file in the folder labelled `_COPY_CONTENTS_TO_WEB2PY_DIR` and place it in the top level web2py directory (see `_COPY_CONTENTS_TO_WEB2PY_DIR/README.markdown`).
 
 Once tables are created, and everything is working, you can set `is_testing = False` in `models/db.py` and `migrate=0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
 
