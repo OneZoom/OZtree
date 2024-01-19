@@ -150,6 +150,9 @@ auth.settings.registration_requires_verification = False
 auth.settings.registration_requires_approval = False
 auth.settings.reset_password_requires_verification = True
 
+## Configure session handling: http://web2py.com/books/default/chapter/29/13/deployment-recipes#Sessions-in-database
+session.connect(request, response, db)
+
 ##restrict site to only logged in users
 ## https://groups.google.com/forum/#!topic/web2py/0j92-sPp4bc
 ##NB: useful url to add a guest user programmatically http://stackoverflow.com/questions/35504306/web2py-how-to-programmatically-register-users/35518991
