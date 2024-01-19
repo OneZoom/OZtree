@@ -7,12 +7,13 @@ partial_install_site = "http://www.onezoom.org";
 partial_local_install_site = "http://127.0.0.1:8000"; // if you are running a local installation
 preferred_python3 = "python3.11"; // in case you have multiple python3 versions installed
 web2py_py = path.join(path.dirname(path.dirname(process.cwd())), 'web2py.py');
+venv_python = path.join(path.dirname(path.dirname(process.cwd())), 'bin/python');
 
 /** Generate a function to execute a web2py script, handing over all arguments */
 function exec_web2py_script(script_name, init_args) {
     return function () {
         return [
-            preferred_python3,
+            venv_python,
             web2py_py,
             '-S OZtree/default',
             '-M',
@@ -37,6 +38,15 @@ module.exports = function (grunt) {
           '( [ -d applications/welcome ] && rm -r -- "applications/welcome" || true )',
           '( [ -d applications/examples ] && rm -r -- "applications/examples" || true )',
           '( [ -f applications/OZtree/private/appconfig.ini ] || { cp applications/OZtree/private/appconfig.ini.example applications/OZtree/private/appconfig.ini ; echo "****** edit private/appconfig.ini"; exit 1; } )',
+          preferred_python3  + ' -m venv .',
+          './bin/pip install -r applications/OZtree/requirements.txt',
+        ].join(" && "),
+      },
+      web2py_start_dev: {
+        cwd: "../../",
+        command: [
+          '( [ -f oz.crt ] || openssl req -newkey rsa:2048 -x509 -days 365 -nodes -keyout oz.key -subj "/CN=dev.onezoom/" -out oz.crt; )',
+          venv_python + ' web2py.py -c oz.crt -k oz.key -p 8000 -a pass',
         ].join(" && "),
       },
       compile_python: {
@@ -44,11 +54,7 @@ module.exports = function (grunt) {
         // should probably be run using the same python version as used to run web2py
         cwd: "../../",
         command:
-                preferred_python3 + ' -c "import gluon.compileapp; gluon.compileapp.compile_application(\''
-                + process.cwd()
-                + '\', skip_failed_views=True)"'
-            + ' || ' + // If python 3.7 isn't available, use the system-defined python3 instead
-                'python3 -c "import gluon.compileapp; gluon.compileapp.compile_application(\''
+                venv_python + ' -c "import gluon.compileapp; gluon.compileapp.compile_application(\''
                 + process.cwd()
                 + '\', skip_failed_views=True)"'
       },
@@ -69,7 +75,7 @@ module.exports = function (grunt) {
         }
       },
       make_release_info: {
-        command: 'git describe --tags > RELEASE_INFO && python3 OZprivate/ServerScripts/Utilities/get_release_name.py RELEASE_INFO >> RELEASE_INFO'
+        command: 'git describe --tags > RELEASE_INFO && ' + venv_python + ' OZprivate/ServerScripts/Utilities/get_release_name.py RELEASE_INFO >> RELEASE_INFO'
       },
       test_server: {
         command: function () {
@@ -105,7 +111,7 @@ module.exports = function (grunt) {
         // Any .html file in /static is fair game. See documentation in
         // https://github.com/OneZoom/OZtree#onezoom-setup
         command: 
-            "python3 OZprivate/ServerScripts/Utilities/partial_install.py" +
+            venv_python + " OZprivate/ServerScripts/Utilities/partial_install.py" +
             " --search " + partial_local_install_site + // replace local urls, for partial local install
             " --replace " + partial_install_site +
             " static/*.html"
@@ -230,6 +236,8 @@ module.exports = function (grunt) {
   grunt.registerTask("compile-js_dev", ["exec:compile_js_dev"]);
   grunt.registerTask("partial-install",       ["compile-js", "css", "copy:dev", "curl-dir:get_minlife", "exec:convert_links_to_local"]);
   grunt.registerTask("partial-local-install", ["compile-js", "css", "copy:dev", "curl-dir:get_local_minlife", "exec:convert_links_to_local"]);
+  grunt.registerTask("web2py", ["exec:web2py_configure"]);
   grunt.registerTask("prod", ["clean", "web2py", "compile-python", "compile-js", "css", "compress", "copy:prod", "make_release_info", "docs"]);
   grunt.registerTask("dev",  ["clean", "web2py", "compile-js_dev", "css", "compress", "copy:dev",  "make_release_info", "docs"]);
+  grunt.registerTask("start-dev", ['exec:web2py_start_dev']);
 };
