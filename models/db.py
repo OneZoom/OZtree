@@ -11,12 +11,6 @@ import json
 ## if SSL/HTTPS is properly configured and you want all HTTP requests to
 ## be redirected to HTTPS, uncomment the line below:
 # request.requires_https()
-#set the default language
-T.set_current_languages('en', 'en-en')
-#ALL pages can set ?lang=XXX to override the browser default for translating strings
-if request.vars.lang: 
-    T.force(request.vars.lang)
-
 
 ## app configuration made easy. Look inside private/appconfig.ini
 from gluon.contrib.appconfig import AppConfig
@@ -26,26 +20,26 @@ from gluon import current
 ## Useful global variables
 #########################################################################
 
-## once in production, set is_testing=False to gain optimizations
-## this will also set migration=False for all tables, so that the DB table definitions are fixed
-is_testing = True
+# Running under rocket --> is_testing is true
+is_testing = (request.env.server_software or '').lower().startswith('rocket')
 
-## get config params etc
-if is_testing:
+## Read configuration
+if is_testing and len(request.env.cmd_options.args) > 1 and os.path.isfile(request.env.cmd_options.args[-1]):
     # For unit testing, we might want to load a different appconfig.ini file, which can
     # be passed in to the rocket server as the last arg on the command-line.
     # (on the main server this is not used, and we default back to appconfig.ini
-    try:
-        if os.path.isfile(request.env.cmd_options.args[-1]):
-            myconf = AppConfig(request.env.cmd_options.args[-1], reload=True)
-        else:
-            raise IOError("No such file")
-    except (IOError, IndexError, AttributeError):
-        myconf = AppConfig(reload=True) #changes to appconfig.ini do not require restart
-    T.is_writable = True #allow translators to add new languages e.g. on the test (beta) site, but not on prod
+    myconf = AppConfig(request.env.cmd_options.args[-1], reload=is_testing)
 else:
-    myconf = AppConfig() #faster to read once and never re-update
-    T.is_writable = False
+    # NB: When running under rocket, re-load config every request with is_testing
+    myconf = AppConfig(reload=is_testing)
+
+## Configure i18n
+T.set_current_languages('en', 'en-en')
+# Allow translators to add new languages e.g. on the test (beta) site, but not on prod
+T.is_writable = is_testing
+#ALL pages can set ?lang=XXX to override the browser default for translating strings
+if request.vars.lang:
+    T.force(request.vars.lang)
 
 try:
     thumb_base_url = myconf.take('images.url_base')
