@@ -1,6 +1,6 @@
 """
 Run from the OZtree directory as
-python3 ../../web2py.py -S OZtree -M -R applications/OZtree/OZprivate/ServerScripts/Utilities/OneOff/make_usernames.py
+./web2py-run OZprivate/ServerScripts/Utilities/OneOff/make_usernames.py
 
 After 2 passes, will allocate usernames of remaining unallocated reservations using a
 species name plus year.
