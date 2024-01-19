@@ -126,16 +126,6 @@ def search_node():
     session.forget(response)
     response.headers["Access-Control-Allow-Origin"] = '*'
     searchFor = make_unicode(request.vars.query or '')
-    try:
-        if myconf.take('general.log_search_strings'):
-            if request.vars.no_log:
-                #'no_log' flag set: this is probably us blatting the search for testing purposes
-                pass
-            else:
-                db.search_log.update_or_insert(db.search_log.search_string==searchFor, search_string=searchFor, search_count=db.search_log.search_count+1)
-                
-    except:
-        pass
     res1 = search_for_name()
     if len(res1['leaf_hits']) + len(res1['node_hits']) <15:
         try:

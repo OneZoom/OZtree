@@ -29,7 +29,6 @@ separator =
 url        = https://www.sandbox.paypal.com
 
 [general]
-;log_search_strings = 1
 
 [images]
 ; * url_base: get thumbnail images from this source. If not
