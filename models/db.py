@@ -660,12 +660,6 @@ db.define_table('visit_count',
     Field('leaf_click_count', type='integer'),
     format = '%(ott)s', migrate=is_testing)
 
-# this table collects a list of search terms so we can optimise search
-db.define_table('search_log',
-    Field('search_string', type='string', notnull=True, unique=True, length=name_length_chars), #this should be utf8mb4
-    Field('search_count', type='integer', notnull=True),
-    format = '%(search_string)s', migrate=is_testing)
-
 # This table buffers recently 'visited' EoL taxa (visited through the window popup or via the copyright link)
 # taxa in this table are stored until at least 1 minute after the taxon is visited, and then read by the EOL update 
 # script (EoLQueryPicsNames.py) to check for updates to the crop location, ratings, etc. Once checked, the taxon
