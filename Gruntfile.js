@@ -35,6 +35,7 @@ module.exports = function (grunt) {
         command: [
           'git submodule update --init --recursive',
           'ln -sf applications/OZtree/_COPY_CONTENTS_TO_WEB2PY_DIR/routes.py routes.py',
+          'ln -sf handlers/wsgihandler.py handler.py',
           '( [ -d applications/welcome ] && rm -r -- "applications/welcome" || true )',
           '( [ -d applications/examples ] && rm -r -- "applications/examples" || true )',
           '( [ -f applications/OZtree/private/appconfig.ini ] || { cp applications/OZtree/private/appconfig.ini.example applications/OZtree/private/appconfig.ini ; echo "****** edit private/appconfig.ini"; exit 1; } )',
