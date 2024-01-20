@@ -15,10 +15,10 @@ If you are using Visual Studio Code, perform the following steps (you will need 
 1. `git clone https://github.com/OneZoom/OZtree` into the directory of your choice. If using Windows, it is highly recommended to [clone on the WSL2 filesystem](https://code.visualstudio.com/remote/advancedcontainers/improve-performance#_store-your-source-code-in-the-wsl-2-filesystem-on-windows) both for performance reasons and to avoid permissions issues. If you wish to fork the repository and clone your fork, you will need to copy the tags from upstream, otherwise you will see build issues later. You can do this with `git fetch --tags upstream` followed by `git push --tags`.
 1. Open the cloned directory in VSCode.
 1. Create a `.env` file at the root of the project and add `WEB_IMAGE_NAME=onezoom/oztree-with-iucn`, changing the value to whatever image name you choose in step 1.
-1. Open the command palette and choose "Dev Containers: Reopen in Container".
+1. Open the command palette and choose "Dev Containers: Reopen in Container". This may take several minutes to run.
 1. Open an integrated terminal and run the following: `cp /opt/web2py/applications/OZtree_original/private/appconfig.ini /opt/web2py/applications/OZtree/private/ && cp /opt/web2py/applications/OZtree_original/databases/*.table /opt/web2py/applications/OZtree/databases/`
 1. Run `npm install && grunt dev`. You will need to rerun `grunt dev` any time you make code changes.
-1. Visit http://localhost and the website should load! You can also run your own server from the dev container by [running web2py.py directly](#starting-and-shutting-down-web2py).
+1. Visit http://localhost:8080 and the website should load! You can also run your own server from the dev container by [running web2py.py directly](#starting-and-shutting-down-web2py).
 1. (Optional) Once tables are created, and everything is working, you can set `is_testing = False` in `models/db.py` and `migrate = 0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
 1. (Optional) [Create a manager account](#creating-auth-users--groups) in the auth table, e.g. so you can [view docs](#documentation).
 

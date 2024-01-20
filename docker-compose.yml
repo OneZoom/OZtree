@@ -25,6 +25,8 @@ services:
         target: /opt/web2py/applications/OZtree
         consistency: cached
       - original-repo:/opt/web2py/applications/OZtree_original
+    ports:
+      - "8080:80"
 
 volumes:
   original-repo:
