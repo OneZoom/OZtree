@@ -41,6 +41,10 @@ module.exports = function (grunt) {
           '( [ -f applications/OZtree/private/appconfig.ini ] || { cp applications/OZtree/private/appconfig.ini.example applications/OZtree/private/appconfig.ini ; echo "****** edit private/appconfig.ini"; exit 1; } )',
           preferred_python3  + ' -m venv .',
           './bin/pip install -r applications/OZtree/requirements.txt',
+          // Make web2py.py use the venv
+          'mv web2py.py web2py.py.o',
+          'echo "#!' + venv_python + '" > web2py.py',
+          'tail -n +2 web2py.py.o >> web2py.py',
         ].join(" && "),
       },
       web2py_start_dev: {
