@@ -27,6 +27,7 @@ services:
       - original-repo:/opt/web2py/applications/OZtree_original
     ports:
       - "8080:80"
+      - "3307:3306"
 
 volumes:
   original-repo:
