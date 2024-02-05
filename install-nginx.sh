@@ -30,9 +30,9 @@ for SN in onezoom.org ${WWW_SERVER_NAME} ${WWW_IMAGES_SERVER_NAME}; do
                 -out "${NGINX_CERT_PATH}/${SN}/fullchain-ss.pem" \
                 -subj "/CN=${SN}" \
                 -addext "subjectAltName = DNS:selfsigned.${SN}"
-        ln -rs ${NGINX_CERT_PATH}/${SN}/privkey-ss.pem ${NGINX_CERT_PATH}/${SN}/privkey.pem
-        ln -rs ${NGINX_CERT_PATH}/${SN}/fullchain-ss.pem ${NGINX_CERT_PATH}/${SN}/fullchain.pem
-        ln -rs ${NGINX_CERT_PATH}/${SN}/fullchain-ss.pem ${NGINX_CERT_PATH}/${SN}/chain.pem
+        ln -s ${NGINX_CERT_PATH}/${SN}/privkey-ss.pem ${NGINX_CERT_PATH}/${SN}/privkey.pem
+        ln -s ${NGINX_CERT_PATH}/${SN}/fullchain-ss.pem ${NGINX_CERT_PATH}/${SN}/fullchain.pem
+        ln -s ${NGINX_CERT_PATH}/${SN}/fullchain-ss.pem ${NGINX_CERT_PATH}/${SN}/chain.pem
     fi
 done
 
