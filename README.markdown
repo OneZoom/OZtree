@@ -43,7 +43,7 @@ apt update && apt install mysql-server
 
 #### Windows
 
-On Windows we recommended downloading the MSI installer as it will make it easier to configure the new server during the installation
+On Windows we recommended downloading the [MSI installer](https://dev.mysql.com/downloads/installer/) as it will make it easier to configure the new server during the installation.
 Once mysql is installed, you will need to set a root password, and create a database for web2py to use. See http://dev.mysql.com/doc/refman/5.7/en/default-privileges.html. 
 The mysqld program is responsible for running the new database just created. When this program is  running, you can connect to the database.
 
@@ -97,7 +97,7 @@ but will get API information form the OneZoom website, *and* also use the OneZoo
 For developers only, who may wish to create a minlife version not only using modified javascript in the treeviewer but also with bespoke html, you can run `grunt partial-local-install`.
 This is much more effort since it requires you to set up a full installation (as below) before creating the minlife scripts, but once created, the files in `static` will be enough for other users to view (and test) your modifications.
 
-## Database setup / migation
+## Database set-up / migation
 
 For full installations, you need to setup your database.
 
@@ -161,7 +161,12 @@ If everything works, restart both.
 
 ## Database explorer
 
-(optional) We find it useful to have a GUI interface to connect to the database and run SQL scripts, this can be used instead of using MySQL command line (similar to Windows command line) that is installed by default with MySQL. On Mac OS X we use the (excellent) http://www.sequelpro.com. On windows you could try http://www.mysql.com/products/workbench/ or https://www.quest.com/products/toad-for-mysql/
+(optional) We find it useful to have a GUI interface to connect to the database and run SQL scripts, this can be used instead of using MySQL command line (similar to Windows command line) that is installed by default with MySQL.
+On Mac OS X we use the (excellent) http://www.sequelpro.com.
+On windows you could try http://www.mysql.com/products/workbench/ or https://www.quest.com/products/toad-for-mysql/
+Under windows, [SQL Workbench](https://www.mysql.com/products/workbench/) can also be used, even if your MySQL server is installed under WSL2.
+
+installing SQL Workbench on Windows works great to connect to the Ubuntu MySQL instance.
 
 ## Starting and shutting down web2py
 
