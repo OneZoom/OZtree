@@ -13,9 +13,10 @@
   },
   "scripts": {
     "test": "npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/*.js",
-    "compile_js": "webpack --mode production",
-    "compile_js_dev:watch": "webpack --watch --config webpack.config.dev.js",
-    "compile_js_dev": "webpack --mode development"
+    "comment": "openssl-legacy-provider is needed for node 18 until we upgrade webpack - https://stackoverflow.com/a/69699772",
+    "compile_js": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode production",
+    "compile_js_dev:watch": "NODE_OPTIONS=--openssl-legacy-provider webpack --watch --config webpack.config.dev.js",
+    "compile_js_dev": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode development"
   },
   "repository": {
     "type": "git",
