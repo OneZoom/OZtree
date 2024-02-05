@@ -3,7 +3,7 @@ set -eu
 PROJECT_PATH="${PROJECT_PATH-$(dirname "$(readlink -f "$0")")}"  # The full project path
 WEB2PY_PATH="$(dirname $(dirname "$PROJECT_PATH"))"
 WEB2PY_NAME="${WEB2PY_NAME-$(basename ${WEB2PY_PATH})}"  # Directory web2py lives in, will be unique per installation
-DEPLOY_USER="$(stat -c '%U' $0)"
+DEPLOY_USER="$(stat -c '%U' install-supervisord.sh 2>/dev/null || stat -f '%Su' install-supervisord.sh 2>/dev/null)"
 
 APP_USER="www"
 APP_GROUP="www"
