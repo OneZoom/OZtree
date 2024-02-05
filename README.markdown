@@ -12,7 +12,7 @@ There are two ways in which you can install OneZoom on a personal computer: full
 
 ## Requirements and packages
 
-For any installation, OneZoom requires node & python (3.11).
+For any installation, OneZoom requires node & python (3.10).
 
 #### Debian/Ubuntu
 
@@ -21,28 +21,22 @@ apt install nodejs npm
 apt install python3 python3-dev python3-venv
 ```
 
-### Full installation
+#### FreeBSD
 
-In addition, for a full installation you also need nginx, supervisor & MySQL.
+```
+sudo pkg install lang/python310 node18 npm-node18
+```
+
+In addition, for a full installation you also need MySQL:
 
 #### Debian/Ubuntu
 
 ```
-apt install nginx
-
-apt install supervisor
-
 apt install lsb-release
 wget https://dev.mysql.com/get/mysql-apt-config_0.8.29-1_all.deb
 dpkg -i mysql-apt-config_0.8.29-1_all.deb
 apt update && apt install mysql-server
 # NB: Select "Use Legacy Authentication Method (Retain MySQL 5.x Compatibility)"
-```
-
-#### FreeBSD
-
-```
-sudo pkg install nginx py39-supervisor lang/python310
 ```
 
 #### Windows
@@ -79,10 +73,9 @@ Next, ``cp private/appconfig.ini.example private/appconfig.ini`` and edit to mat
 
 * Use the same database credentials as configured earlier.
 
-Once done, either run
+Once done, run ``./node_modules/.bin/grunt dev`` for a development installation.
 
-* ``./node_modules/.bin/grunt prod`` for a production installation
-* ``./node_modules/.bin/grunt dev`` for a development installation
+For production installation, see later.
 
 ### Partial installation
 
@@ -128,6 +121,41 @@ mysql -p
 USE OneZoom
 SOURCE ${WEB2PY_PATH}/applications/OZtree/OZprivate/ServerScripts/SQL/create_db_indexes.sql
 ```
+
+## Production installation
+
+For a production installation of OneZoom, you also need nginx & supervisor:
+
+#### Debian/Ubuntu
+
+```
+apt install nginx supervisor
+```
+
+#### FreeBSD
+
+```
+sudo pkg install nginx py39-supervisor lang/python310
+```
+
+### Installation
+
+Run grunt to configure onezoom for production use:
+
+```
+cd ${WEB2PY_PATH}/applications/OZtree
+npm ci --legacy-peer-deps
+./node_modules/.bin/grunt prod
+```
+
+Then run the install scripts to set up nginx & supervisord:
+
+```
+sudo ./install-nginx.sh
+sudo ./install-supervisord.sh
+```
+
+If everything works, restart both.
 
 ## Database explorer
 
