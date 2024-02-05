@@ -554,8 +554,9 @@ def SHOW_RENEWAL_INFO():
                         id_map[id_string] = []
                     id_map[id_string].append(id_string)
     try:
-        uname_info = sponsorship.sponsorship_email_reminders(
-            [uname for info_for_id in id_map.values() for uname in info_for_id])
+        uname_info = {
+            k:r for (k, r) in sponsorship.sponsorship_email_reminders(
+                [uname for info_for_id in id_map.values() for uname in info_for_id])}
     
         renew_urls = {
             k: {uname: uname_info[uname]["renew_url"] for uname in v}

@@ -28,6 +28,12 @@ class TestOzMail(unittest.TestCase):
         self.assertNotEqual(mail, None)
         self.assertEqual(reason, None)
 
+        # autosend_email=0, server='logging' is fine
+        util.set_smtp(sender="admin@example.com", autosend_email=0)
+        util.set_appconfig('smtp', 'server', 'logging')
+        mail, reason = ozmail.get_mailer()
+        self.assertNotEqual(mail, None)
+
     def test_normalize_whitespace(self):
         self.assertEqual(
             ozmail.normalize_whitespace("\n\nHello there!\n\n\n\n\nWhat a\nlovely day\nfor\nan email.\n\nBest regards,\n"),
@@ -53,6 +59,8 @@ class TestOzMail(unittest.TestCase):
 if __name__ == '__main__':
     import sys
 
+    if current.globalenv['is_testing'] != True:
+        raise RuntimeError("Do not run tests in production environments, ensure is_testing = True")
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestOzMail))
     result = unittest.TextTestRunner(verbosity=2).run(suite)

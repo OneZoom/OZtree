@@ -65,7 +65,7 @@ Before anything else, get the OZtree app from [github](https://github.com/OneZoo
 2. Install command-line software by running `npm install -g grunt-cli` (you may need to do all this with administrator privileges).
 3. Run `npm install` from within the OZtree folder you moved in step 1. then run `grunt dev` (or `grunt prod` if in production mode) - see *"[Building the OneZoom tree viewer](#building-the-onezoom-tree-viewer)"*.
 3. [Install](http://dev.mysql.com/downloads/mysql/) & start MySQL, then create a new database (see *"[Setting up the database backend](#setting-up-the-database-backend)"*)
-4. Create a appconfig.ini file in `OZtree/private`, with `migrate=1` and which references this database with the appropriate username and password. We also recommend copying the `routes.py` file from `OZtree/_MOVE_CONTENTS_TO_WEB2PY_DIR` to the top level of your web2py installation - see *"[Web2py installation](#web2py-installation)"*
+4. Create a appconfig.ini file in `OZtree/private`, with `migrate=1` and which references this database with the appropriate username and password. We also recommend copying the `routes.py` file from `OZtree/_COPY_CONTENTS_TO_WEB2PY_DIR` to the top level of your web2py installation - see *"[Web2py installation](#web2py-installation)"*
 5. Fire up a temporary web2py server and visit the main page to create the (empty) database tables - see *"[Starting and shutting down web2py](#starting-and-shutting-down-web2py)"*
 6. Load up data into the tables: first create a user and assign it a 'manager' role in the `auth_` tables using the web2py database admin pages, then load the other tables using data from the original OneZoom site (e.g. sent to you via file transfer) - see *"[Filling the database](#filling-the-database)"*.
 7. Optimise your installation:
@@ -128,7 +128,7 @@ So a major step when installing OneZoom is:
 3. 	Once mysql is installed, you will need to set a root password, and create a database for web2py to use. See http://dev.mysql.com/doc/refman/5.7/en/default-privileges.html. So once mysqld is running, you need to log in to the sql server with the root name and password (if you are using the command line, log in using `mysql -u root -p`), and issue the following SQL commands (the text after the `mysql>` prompt) to create a database for web2py to use: feel free to use a different *'passwd'*.
 
 	```
-	mysql> create database OneZoom
+	mysql> create database OneZoom;
 		Query OK, 1 row affected (0.09 sec)
 	
 	mysql> CREATE USER 'oz'@'localhost' IDENTIFIED BY 'passwd';
@@ -219,7 +219,7 @@ When web2py is run, it will print instructions telling how to shut down the web2
 
 **If this is a new installation** you should now visit `http://127.0.0.1:8000/OZtree/default/` or `https://127.0.0.1:8000/OZtree/default/` to force web2py to create database tables. To load data into the tables, see "Loading Data", below.
 
-Also, if you want to make OneZoom the default application, make a copy of the routes.py file in the folder labelled `_MOVE_CONTENTS_TO_WEB2PY_DIR` and place it in the top level web2py directory (see `_MOVE_CONTENTS_TO_WEB2PY_DIR/README.markdown`).
+Also, if you want to make OneZoom the default application, make a copy of the routes.py file in the folder labelled `_COPY_CONTENTS_TO_WEB2PY_DIR` and place it in the top level web2py directory (see `_COPY_CONTENTS_TO_WEB2PY_DIR/README.markdown`).
 
 Once tables are created, and everything is working, you can set `is_testing = False` in `models/db.py` and `migrate=0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
 
@@ -232,7 +232,7 @@ Once tables are created, and everything is working, you can set `is_testing = Fa
 
 `models` stores the python back end server code.
 
-`static` stores all static files including images, css, and compiled js. Files which are output by various server processes are stored in `FinalOutputs`. This includes very large numbers of thumbnail images (stored in `FinalOutputs/pics`) and static data files such as the tree topology and the tree cut positions (stored in `FinalOutputs/data`). The OZTreeModule folder contains the compiled verson of most of the core OneZoom code. `static/OZLegacy` contains most of the old trees.
+`static` stores all static files including images, css, and compiled js. Files which are output by various server processes are stored in `FinalOutputs`. This includes very large numbers of thumbnail images (stored in `FinalOutputs/pics`) and static data files such as the tree topology and the tree cut positions (stored in `FinalOutputs/data`). The OZTreeModule folder contains the compiled version of most of the core OneZoom code. `static/OZLegacy` contains most of the old trees.
 
 `views` is where all the html is stored - it's OK to just use raw html in here if no server side functions are needed for that particular page.
 
@@ -249,13 +249,41 @@ Once tables are created, and everything is working, you can set `is_testing = Fa
 
 ### Creating auth users & groups
 
-Web2py uses an `auth_` based system, which has tables for users, roles, and a mapping table assigning rols to users. This can be edited through the web interface: assuming you are running a temporary version of web2py on localhost, you can access the admin pages through http://127.0.0.1:8000/admin/design/OneZoom, which will require you to enter the temporary administrator password ('pass', above) that you used in the web2py startup command. The database tables can be seen at the url http://127.0.0.1:8000/OZtree/appadmin. You need to click to edit the `db.auth_user` table, from where you can click to add a "New Record", and submit a first name, last name, email, username, and password. You then need to go back to the appadmin page and create a "manager" role by adding a New Record to `db.auth_group` table (you can type anything in the description box). Finally, you need to create a New Record in the `db.auth_membership` table, and assign the "manager" group ID to your user ID in the resulting page.
+Web2py uses an `auth_` based system, which has tables for users, roles, and a mapping table assigning roles to users. This can be edited through the web interface: assuming you are running a temporary version of web2py on localhost, you can access the admin pages through http://127.0.0.1:8000/admin/default/design/OZtree, which will require you to enter the temporary administrator password ('pass', above) that you used in the web2py startup command. The database tables can be seen at the url http://127.0.0.1:8000/OZtree/appadmin. You need to click to edit the `db.auth_user` table, from where you can click to add a "New Record", and submit a first name, last name, email, username, and password. You then need to go back to the appadmin page and create a "manager" role by adding a New Record to `db.auth_group` table (you can type anything in the description box). Finally, you need to create a New Record in the `db.auth_membership` table, and assign the "manager" group ID to your user ID in the resulting page.
 
 ### Other tables
 
-The main bulk of the data returned from the API is stored in the rest of the tables in the database, as detailed below. To get the API and the rest of the website working, you will have to obtain a database dump of the OneZoom tables by emailing the normal OneZoom address. If you are loading new data on top of old, it is a good idea to truncate all the non-auth tables before loading data.
+The main bulk of the data returned from the API is stored in the rest of the tables in the database, as detailed below. To get the API and the rest of the website working, you will have to obtain a database dump of the OneZoom tables. You can either do this by emailing mail@onezoom.org, or getting it from a Docker setup of OZTree. If you are loading new data on top of old, it is a good idea to truncate all the non-auth tables before loading data.
 
-Note that mySQL stupidly has a resticted version of the unicode character set, so fields that could contain e.g. chinese characters  need to be set to utf8mb4 (which is not the default). These are the `vernacular` field in the `vernacular_by_ott` and `vernacular_by_name` tables, the `rights` field in the `images_by_ott` and `images_by_name` tables, and the following fields in the `reservations` table: `e_mail`, `twitter_name`, `user_sponsor_name`, `user_donor_name` `user_more_info`, `user_message_OZ`, `verified_sponsor_name`, `verified_donor_name` `verified_more_info`. When we send you the tables, they should contain `create` syntax which makes sure the tables are correctly defined, but it may be worth checking too.
+You can use the following steps to fill up the tables based on a Docker setup. Start by following the [Docker instructions](https://hub.docker.com/r/onezoom/oztree-complete), including the 'Saving the image' section. Then, run these commands one by one:
+
+```sh
+# start by stopping/deleting any OZTree container instance that may still be running (your container name may be different):
+docker stop oztree
+
+# Create a folder on your local machine to hold the dump
+mkdir ~/dbdump
+
+# Run a new OZTree Docker container instance, mounting your local folder
+docker run -d -p 8080:80 --name oztree --mount type=bind,source="$(pwd)"/dbdump,target=/dbdump onezoom/oztree-complete-with-iucn
+
+# Start a shell in the container
+docker exec -it oztree /bin/bash
+
+# Dump the container's database into your mounted local folder. This is fairly fast. The resulting file is ~1GB.
+mysqldump OneZoom > /dbdump/ozdb.sql
+
+# Exit the running OZTree container. We're done with it now, so feel free to delete it.
+exit
+
+# Now import the dump into your local OneZoom database (you may need to pass -u & -p based on your MySql configuration)
+# WARNING: this is an extremely long step that can take over an hour with no indication of progress!
+sudo mysql OneZoom < ~/dbdump/ozdb.sql
+
+# You're done, and your local database should be fully populated. Feel free to delete the dump file /dbdump/ozdb.sql
+```
+
+Note that mySQL stupidly has a restricted version of the unicode character set, so fields that could contain e.g. chinese characters  need to be set to utf8mb4 (which is not the default). These are the `vernacular` field in the `vernacular_by_ott` and `vernacular_by_name` tables, the `rights` field in the `images_by_ott` and `images_by_name` tables, and the following fields in the `reservations` table: `e_mail`, `twitter_name`, `user_sponsor_name`, `user_donor_name` `user_more_info`, `user_message_OZ`, `verified_sponsor_name`, `verified_donor_name` `verified_more_info`. When we send you the tables, they should contain `create` syntax which makes sure the tables are correctly defined, but it may be worth checking too.
 
 ### Optimising tables (IMPORTANT)
 
@@ -273,7 +301,7 @@ OneZoom data list - this is data that's not stored anywhere else outside OneZoom
 2. Banned is ours and is important but could be recreated
 3. eol_inspected is ours but is not important at all so could be lost and we wouldn't care
 4. eol_updated is ours but is not critical
-5. images_by_name and images_by_ott - entries put in by us where src=1 are ours and are *semi critical* because they include things like special images of sponsors etc. also includes hacked ratings and hacked picutres in general.
+5. images_by_name and images_by_ott - entries put in by us where src=1 are ours and are *semi critical* because they include things like special images of sponsors etc. also includes hacked ratings and hacked pictures in general.
 6. IUCN - not ours at all
 7. leaves_in_unsponsored_tree - now not used any more can be deleted
 8. Ordered leaves and ordered nodes - can be recreated, but include derived products like popularity, matched IDs and Yan's curation of the tree. This can be regenerated any time provided our codebase and algorithms are fine
@@ -285,12 +313,15 @@ OneZoom data list - this is data that's not stored anywhere else outside OneZoom
 
 Notes
 
-* there a question mark over tours information and associated things
+* there is a question mark over tours information and associated things
 * there are many critical source files in OZ_private, including tree sources.
 
 ## Running tests
 
 ### Server unit tests
+
+**NB:** The server tests are not sandboxed, so have the potential to delete database data.
+On run on a personal instance where data loss does not matter.
 
 The server unit tests have no additional dependencies. To run, do:
 
@@ -299,6 +330,12 @@ The server unit tests have no additional dependencies. To run, do:
 To run individual tests, do:
 
     grunt exec:test_server:test_modules_username.py
+
+### Client unit tests
+
+The client unit tests have no additional dependencies. To run, do:
+
+    grunt test-client
 
 ### Server Selenium-based functional tests
 
@@ -316,7 +353,7 @@ You can then run the tests with:
 
 # Documentation
 
-Documentation is partially compiled fomr the source code using Grunt, and lives in `OZprivate/rawJS/OZTreeModule/docs`. Once compiled, it can be viewed online using your web2py server. For example, if you are running web2py on http://127.0.0.1:8000, you should be able to visit [http://127.0.0.1:8000/OZtree/dev/DOCS](http://127.0.0.1:8000/OZtree/dev/DOCS), or (if you have manager access to the OneZoom site) at [http://onezoom.org/dev/DOCS](http://onezoom.org/dev/DOCS).
+Documentation is partially compiled from the source code using Grunt, and lives in `OZprivate/rawJS/OZTreeModule/docs`. Once compiled, it can be viewed online using your web2py server. For example, if you are running web2py on http://127.0.0.1:8000, you should be able to visit [http://127.0.0.1:8000/OZtree/dev/DOCS](http://127.0.0.1:8000/OZtree/dev/DOCS), or (if you have manager access to the OneZoom site) at [http://onezoom.org/dev/DOCS](http://onezoom.org/dev/DOCS).
 
 # Keeping OneZoom updated
 
@@ -344,7 +381,7 @@ If you wish to make sure your OneZoom data is up-to-date, there are a few steps 
 # Customising OneZoom
 A few suggestions about ways to customize OneZoom
 
-### Easy customization posibilities
+### Easy customization possibilities
 
 * Change the colour schemes: the code in `rawJS/OZTreeModule/src/themes` gives examples of how to create new colour schemes for branches, leaves, etc of the tree. They can be gathered together into themes (including different leaf styles, default fractal views etc) by adding to the code in `rawJS/OZTreeModule/src/tree_settings.js`.
 
