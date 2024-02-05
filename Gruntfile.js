@@ -5,7 +5,7 @@ const path = require('path');
 
 partial_install_site = "http://www.onezoom.org";
 partial_local_install_site = "http://127.0.0.1:8000"; // if you are running a local installation
-preferred_python3 = "python3.11"; // in case you have multiple python3 versions installed
+preferred_python3 = "python3.10"; // in case you have multiple python3 versions installed
 web2py_py = path.join(path.dirname(path.dirname(process.cwd())), 'web2py.py');
 venv_python = path.join(path.dirname(path.dirname(process.cwd())), 'bin/python');
 
