@@ -39,6 +39,12 @@ apt update && apt install mysql-server
 # NB: Select "Use Legacy Authentication Method (Retain MySQL 5.x Compatibility)"
 ```
 
+#### FreeBSD
+
+```
+sudo pkg install nginx py39-supervisor lang/python310
+```
+
 #### Windows
 
 On Windows we recommended downloading the MSI installer as it will make it easier to configure the new server during the installation
