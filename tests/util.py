@@ -69,7 +69,7 @@ class Web2py_server:
         self.pid = None
         if self.is_local():
             print("> starting web2py")
-            cmd = ['python3', os.path.join(web2py_app_dir, '..','..','web2py.py'), '-Q', '-i', ip, '-p', port, '-a', 'pass']
+            cmd = [os.path.join(web2py_app_dir, '..','..','bin', 'python3'), os.path.join(web2py_app_dir, '..','..','web2py.py'), '-Q', '-i', ip, '-p', port, '-a', 'pass']
             if appconfig_file is not None:
                 cmd += ['--args', appconfig_file]
             self.pid = subprocess.Popen(cmd)

@@ -37,7 +37,6 @@ call MakeFullUnicode('images_by_ott', 'rights');
 call MakeFullUnicode('images_by_ott', 'licence');
 call MakeFullUnicode('images_by_name', 'rights');
 call MakeFullUnicode('images_by_name', 'licence');
-call MakeFullUnicode('search_log', 'search_string');
 
 # note make sure that the name column in vernacular_by_name and the name column in ordered_leaves and ordered_nodes are of the same character set otherwise search can get incredibly slow even with indexes.
 
@@ -212,9 +211,6 @@ CREATE FULLTEXT INDEX ft_user_sponsor_info_index ON reservations (user_more_info
 
 DROP   INDEX ipni_index          ON PoWO;
 CREATE INDEX ipni_index          ON PoWO (ipni_int)         USING HASH;
-
-DROP   INDEX string_index    ON search_log;
-CREATE INDEX string_index    ON search_log (search_string)   USING HASH;
 
 DROP   INDEX identifier_index    ON partners;
 CREATE INDEX identifier_index    ON partners (partner_identifier)   USING HASH;
