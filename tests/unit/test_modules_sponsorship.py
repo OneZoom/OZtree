@@ -1,7 +1,7 @@
 """
-Run with
+Run with::
 
-python3 web2py.py -S OZtree -M -R applications/OZtree/tests/unit/test_modules_sponsorship.py
+    ./web2py-run tests/unit/test_modules_sponsorship.py
     
 Note you should make sure prices are set before running tests (manage/SET_PRICES.html)
 """
