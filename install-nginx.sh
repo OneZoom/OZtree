@@ -12,7 +12,7 @@ WWW_IMAGES_SERVER_NAME="$(echo ${WWW_SERVER_NAME} | sed 's/^w*/images/')"  # ima
 [ -d "/usr/local/etc/nginx" ] && NGINX_PATH="/usr/local/etc/nginx"
 mkdir -p "${NGINX_PATH}/conf.d/"
 NGINX_LOG_PATH="/var/log/nginx"
-[ -d "/var/db/acme/live/" ] && NGINX_CERT_PATH="/var/db/acme/live/"
+[ -d "/var/db/acme/" ] && NGINX_CERT_PATH="/var/db/acme/live/"
 [ -d "/var/lib/dehydrated/certs" ] && NGINX_CERT_PATH="/var/lib/dehydrated/certs"
 NGINX_DHPARAM_PATH="${NGINX_PATH}/dhparam.pem"
 [ -d "/var/db/acme/live" ] && NGINX_CHALLENGE_PATH="/var/db/acme/live"
