@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eu
+set -eux
 PROJECT_PATH="${PROJECT_PATH-$(dirname "$(readlink -f "$0")")}"  # The full project path
 WEB2PY_PATH="$(dirname $(dirname "$PROJECT_PATH"))"
 WEB2PY_NAME="${WEB2PY_NAME-$(basename ${WEB2PY_PATH})}"  # Directory web2py lives in, will be unique per installation
