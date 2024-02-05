@@ -23,7 +23,7 @@ for DIR in "${PROJECT_PATH}/errors" \
 done
 
 [ -d "/etc/supervisor" ] && SUPERVISORD_CONF_PATH="/etc/supervisor"
-[ -d "/usr/local/etc/supervisord" ] && SUPERVISORD_CONF_PATH="/usr/local/etc/supervisord"
+[ -e "/usr/local/etc/supervisord.conf.sample" ] && SUPERVISORD_CONF_PATH="/usr/local/etc"
 mkdir -p "${SUPERVISORD_CONF_PATH}/supervisord.conf.d/"
 mkdir -p "/var/run/supervisor"
 
