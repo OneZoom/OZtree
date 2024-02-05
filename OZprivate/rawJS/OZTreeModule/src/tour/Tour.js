@@ -315,7 +315,7 @@ class Tour {
       }
 
       this.state = tstate.PLAYING
-      this.rough_initial_loc = this.onezoom.utils.largest_visible_node()
+      this.rough_initial_loc = this.onezoom.controller.largest_visible_node().ozid
       if (window.is_testing) console.log("Tour `" + this.name + "` started")
       if (typeof this.start_callback === 'function') {
         this.start_callback()

@@ -6,6 +6,37 @@ import Screensaver from '../tour/Screensaver'
 
 /** @class Controller */
 export default function (Controller) {
+  Controller.prototype.tours_nearby = function (cutoff=1) {
+    var out = {};
+
+    // Walk node tree finding visible nodes, run fn(node)
+    function foreach_visible_node(fn, node) {
+      if (node.rvar < cutoff) return [];
+
+      const local_out = node.gvar ? fn(node) : undefined;
+      return [].concat.apply(
+          (local_out === undefined ? [] : [local_out]),
+          (node.dvar ? node.children : []).map(foreach_visible_node.bind(null, fn)) );
+    }
+
+    // Get an array of {rvar, tours} for each visible node with tours
+    const node_tours = foreach_visible_node(
+        (n) => n.tours.length > 0 ? {rvar: n.rvar, tours: n.tours} : undefined,
+        this.root,
+        cutoff,
+    );
+
+    // Convert to dict of tour => maximum rvar
+    node_tours.forEach((nt) => nt.tours.forEach((t) => {
+      if (!out[t] || out[t] < nt.rvar) out[t] = nt.rvar
+    }));
+
+    // Convert back into an array, sorted by rvar
+    out = Object.entries(out).sort((a, b) => a[1] - b[1]);
+
+    // Return just tours
+    return out.map((x) => x[0]);
+  }
 
   /** Return the tour_setting for the currently active tour setting, or null */
   Controller.prototype.tour_active_setting = function () {

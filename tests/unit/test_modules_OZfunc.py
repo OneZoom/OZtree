@@ -94,21 +94,21 @@ class TestNodeInfo(unittest.TestCase):
         })
 
     def test_nodes_info_from_string_tours(self):
-        def tour_url(*args):
-            return ['/tour/data.html/ %s' % t['identifier'] for t in args]
+        def tour_id(*args):
+            return [t['identifier'] for t in args]
 
         db = current.db
         leaves = [db(db.ordered_leaves.ott == ott).select(db.ordered_leaves.ALL)[0] for ott in util.find_unsponsored_otts(10)]
         tour1 = util.create_tour([l.ott for l in leaves[0:5]])
         tour2 = util.create_tour([l.ott for l in leaves[3:7]])
         expected_tours_by_ott = [
-          [leaves[0].ott, tour_url(tour1)],
-          [leaves[1].ott, tour_url(tour1)],
-          [leaves[2].ott, tour_url(tour1)],
-          [leaves[3].ott, tour_url(tour1, tour2)],
-          [leaves[4].ott, tour_url(tour1, tour2)],
-          [leaves[5].ott, tour_url(tour2)],
-          [leaves[6].ott, tour_url(tour2)],
+          [leaves[0].ott, tour_id(tour1)],
+          [leaves[1].ott, tour_id(tour1)],
+          [leaves[2].ott, tour_id(tour1)],
+          [leaves[3].ott, tour_id(tour1, tour2)],
+          [leaves[4].ott, tour_id(tour1, tour2)],
+          [leaves[5].ott, tour_id(tour2)],
+          [leaves[6].ott, tour_id(tour2)],
         ]
 
         out = self.ni([l.id for l in leaves], [])

@@ -11,6 +11,8 @@ import random
 from gluon import current
 from gluon.http import HTTP
 
+from .tour import tours_related_to_ott
+
 def raise_incorrect_url(example_url, info=current.T("Incorrect usage")):
     raise HTTP(400,  info+ "<br />" + current.T("Try e.g. %s") % "<a href='{0}'>{0}</a>".format(example_url), link='<{}>; rel="example"'.format(example_url))
 
@@ -509,15 +511,8 @@ def nodes_info_from_string(
     if len(leafOtts) or len(nodeOtts):
         tours_res = []
         if include_tours_by_ott:
-            for r in db(db.tourstop.ott.belongs(leafOtts | nodeOtts)).select(
-                        db.tourstop.ott,
-                        db.tour.identifier,
-                        join=db.tour.on(db.tour.id == db.tourstop.tour),
-                        orderby=(db.tourstop.ott, db.tourstop.tour),
-                    ):
-                if len(tours_res) == 0 or tours_res[-1][0] != r.tourstop.ott:
-                    tours_res.append([r.tourstop.ott, []])
-                tours_res[-1][1].append('/tour/data.html/ %s' % r.tour.identifier)
+            for ott, tours in tours_related_to_ott(leafOtts | nodeOtts, full_meta=False).items():
+                tours_res.append([ott, [t.identifier for t in tours]])
 
     if leafIDs_string or nodeIDs_string:
         return dict(

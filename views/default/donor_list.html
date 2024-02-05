@@ -29,7 +29,7 @@
 {{    image = images.get(OTT)}}
 {{    if image:}}
                 <li><a href="{{=URL('life/@=' + str(OTT), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life"
-    src="{{=img.thumb_url(thumb_base_url, image.get('src'), image.get('src_id'))}}"
+    src="{{=img.thumb_url(image.get('src'), image.get('src_id'))}}"
     title="{{=' / '.join([t for t in [image.rights, image.licence] if t]).replace('"',"'")}}" /></a></li>
 {{    pass}}
 {{   pass}}
@@ -40,7 +40,7 @@
                 <a href="{{=URL('life/@=' + str(OTT), url_encode=False)}}"><img alt="Go to this species on the OneZoom tree of life"
 {{  image = images.get(OTT)}}
 {{  if image:}}
-    src="{{=img.thumb_url(thumb_base_url, image.get('src'),image.get('src_id'))}}"
+    src="{{=img.thumb_url(image.get('src'),image.get('src_id'))}}"
     title="{{=' / '.join([t for t in [image.rights, image.licence] if t]).replace('"',"'")}}"
 {{  else:}}
     src="{{=URL('static','images/noImage_transparent.png')}}"

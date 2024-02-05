@@ -9,7 +9,6 @@ import process_taxon_list from './api/process_taxon_list';
 import { init as garbage_collection_start } from './factory/garbage_collection';
 import { spec_num_full, number_convert, view_richness } from './factory/utils'
 import { add_hook, call_hook } from './util/index';
-import { get_largest_visible_node } from './navigation/utils';
 import config from './global_config';
 import tree_state from './tree_state';
 import data_repo from './factory/data_repo';
@@ -98,14 +97,6 @@ function setup(
     oz.tree_settings = tree_settings;
     oz.tree_state = tree_state;
     oz.data_repo = data_repo;
-    oz.utils.largest_visible_node = () => {
-      let node = get_largest_visible_node(oz.controller.root)
-      if (node.is_leaf) {
-          return -node.metacode
-      } else {
-          return node.metacode
-      }
-    }
   } else {
     // Page with no canvas: no point having either a controller or a data_repo
     api_manager.start(null);

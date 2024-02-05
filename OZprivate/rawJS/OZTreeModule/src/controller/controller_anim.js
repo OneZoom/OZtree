@@ -1,6 +1,5 @@
 import api_manager from '../api/api_manager';
 import tree_state from '../tree_state';
-import {get_largest_visible_node} from '../navigation/utils';
 import data_repo from '../factory/data_repo';
 import * as position_helper from '../position_helper';
 import config from '../global_config';
@@ -291,7 +290,7 @@ export default function (Controller) {
 
         if (src_OZid == null) {
             // Find largest visible node: use this as our starting point
-            let top_node = get_largest_visible_node(this.root, function(node) { return node.ott; }) || this.root;
+            let top_node = this.largest_visible_node(function(node) { return node.ott; }) || this.root;
             src_OZid = top_node.ozid;
         } else {
             // Move to start location

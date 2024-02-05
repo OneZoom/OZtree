@@ -287,6 +287,43 @@ class TestControllersTour(unittest.TestCase):
             orig_ts2[2]['ott'],
         ])
 
+    def test_list(self):
+        def t_list(tours):
+            return util.call_controller(
+                tour,
+                'list',
+                method='GET',
+                args=[],
+                vars=dict(tours=",".join(tours)),
+            )
+
+        # DB setup
+        db = current.db
+        leaves = [db(db.ordered_leaves.ott == ott).select(db.ordered_leaves.ALL)[0] for ott in util.find_unsponsored_otts(10)]
+        tour1 = util.create_tour([l.ott for l in leaves[0:5]])
+        tour2 = util.create_tour([l.ott for l in leaves[3:7]])
+
+        # Empty tours list
+        out = t_list([])
+        self.assertEqual(list(out['tours']), [])
+
+        # Ask for 2 tours, get them back in order
+        self.assertEqual(
+            [t.identifier for t in t_list([tour1['identifier'], tour2['identifier']])['tours']],
+            [tour1['identifier'], tour2['identifier']],
+        )
+        self.assertEqual(
+            [t.identifier for t in t_list([tour2['identifier'], tour1['identifier']])['tours']],
+            [tour2['identifier'], tour1['identifier']],
+        )
+
+        # Duplicates filtered
+        self.assertEqual(
+            [t.identifier for t in t_list([tour2['identifier'], tour1['identifier'], tour2['identifier']])['tours']],
+            [tour2['identifier'], tour1['identifier']],
+        )
+
+
 if __name__ == '__main__':
     import sys
 

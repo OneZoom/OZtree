@@ -845,7 +845,35 @@ function setupUI() {
              $('#imageinfo-modal .popup-content iframe').remove();
              $('#imageinfo-modal .popup-content .no-loading-info').show();
         });
-    
+
+    $('#tours-modal')
+        .on('beforeshow', function (event) {
+            var tours = onezoom.controller.tours_nearby();
+
+            event.target.setAttribute('data-modal-src', "/tour/list.html?tours=" + encodeURIComponent(tours.join(",")));
+        });
+    $('#tours-modal')
+        .on('show', function (event) {
+          var popupContentEl = event.target.querySelector(":scope .popup-content");
+          popupContentEl.innerHTML = '<div class="uk-position-center"><img src="/static/images/ajax-loader.gif" /></div>';
+
+          var url = event.target.getAttribute('data-modal-src');
+          if (!url) {
+            popupContentEl.innerHTML = '<div class="uk-position-center">No url set!</div>';
+            return;
+          }
+
+          var ifrm = document.createElement("iframe");
+          ifrm.setAttribute('src', url + '&popup=1');
+          ifrm.addEventListener('load', function(event) {
+            event.target.previousElementSibling.remove();
+          }, false);
+          ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
+          popupContentEl.append(ifrm);
+
+          $(event.target).find(".uk-modal-header a.expand-tab").attr('href', url);
+        });
+
     /*** Model for external tabs, e.g. wikipedia (must create & destroy tabbed content (e.g. iframes)) ***/
     $('#external-modal')
       .on('hidden', function() {

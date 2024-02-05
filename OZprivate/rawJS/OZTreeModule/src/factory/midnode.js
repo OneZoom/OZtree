@@ -58,8 +58,8 @@ class Midnode {
     this.xvar = 1.0;
     this.yvar = 1.0;
     this.rvar = 1.0;
-    this.gvar = false;  // gvar is true if this node itself needs to be drawn on screen
-    this.dvar = false;  // dvar is true if this node (or a descendent node) needs to be drawn on the screen
+    this.gvar = false;  // gvar is true if this node itself needs to be drawn on screen (i.e onezoom.config.debug_bounding_box = 1)
+    this.dvar = false;  // dvar is true if this node (or a descendent node) needs to be drawn on the screen (i.e onezoom.config.debug_bounding_box = 4)
     this.graphref = false;
     this.targeted = false;
     

@@ -70,6 +70,7 @@ from OZfunc import (
     get_common_name, get_common_names,
     nice_name,
 )
+import tour
 
 
 def homepage_animation():
@@ -267,4 +268,19 @@ def data():
     return dict(
         tour_identifier=tour_identifier,
         tour=tour,
+    )
+
+
+def list():
+    tour_identifiers = [x for x in request.vars.get("tours", "").split(",") if x]
+
+    # Fetch all tours, put into dict with order matching tour_identifiers
+    tours = {t:None for t in tour_identifiers}
+    for t in db(db.tour.identifier.belongs(tours.keys())).select(db.tour.ALL):
+        tours[t.identifier] = t
+
+    return dict(
+        tours=tours.values(),
+        images={},
+        tour_url=tour.tour_url,
     )

@@ -83,7 +83,7 @@ var image_objects = [];
 image_objects.push({
     "src":"{{=int(default_image.src)}}",
     "src_id":"{{=int(default_image.src_id)}}",
-    "url":"{{=img.thumb_url(thumb_base_url, default_image.src, default_image.src_id)}}",
+    "url":"{{=img.thumb_url(default_image.src, default_image.src_id)}}",
     "already_downloaded":1,
     "default":1}); //highest possible data rating, so this gets put first
 {{pass}}
