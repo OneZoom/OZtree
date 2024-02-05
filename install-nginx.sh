@@ -77,7 +77,7 @@ http {
 
     server_names_hash_bucket_size 128;
 
-    include /etc/nginx/conf.d/*.conf;
+    include ${NGINX_PATH}/conf.d/*.conf;
 }
 EOF
 
