@@ -70,7 +70,7 @@ export WEB2PY_PATH="/srv/.../onezoom.myhostname.org"
 mkdir -p ${WEB2PY_PATH}
 chown deploy:staff ${WEB2PY_PATH}
 git clone https://github.com/web2py/web2py ${WEB2PY_PATH} --branch v2.27.1
-git clone https://github.com/OneZoom/OZtree.git ${WEB2PY_PATH}/applications/OZtree --branch production-next
+git clone https://github.com/OneZoom/OZtree.git ${WEB2PY_PATH}/applications/OZtree --branch production
 cd ${WEB2PY_PATH}/applications/OZtree
 npm ci --legacy-peer-deps
 ```
