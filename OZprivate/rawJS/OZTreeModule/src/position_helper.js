@@ -194,20 +194,6 @@ function get_v_horizon_by_arc(node, factor, x, y, r) {
 }
 
 
-function print_target_node(node) {
-  let arr = [];
-  get_targets(node, arr);
-  console.log(arr.reverse());
-}
-
-function get_targets(node, arr) {
-  arr.push(node.metacode);
-  if (node.upnode) {
-    get_targets(node.upnode, arr);
-  }
-}
-
-
 // this function clears completely all the targeted tags in the tree
 function clear_target(node) {
   // set value to false
