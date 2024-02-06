@@ -4,7 +4,7 @@ import tree_state from '../tree_state';
 
 
 function re_calc(node, xp, yp, ws) {
-  drawreg(node, xp, yp, ws*220, this);
+  drawreg(node, xp, yp, ws*220);
 }
 
 // the horizon is precalcualted these parts are calculated every time the tree view gets moved
