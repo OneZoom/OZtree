@@ -337,43 +337,37 @@ function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func,
  * @param {float} prop_z Proportion of r_mult to zoom (0 - start, 1 - end)
  */
 function pan_zoom(prop_p, prop_z) {
-  if (r_mult >= 1) {
-    auto_pan_zoom(prop_p, prop_z);
-  } else {
-    auto_pan_zoom_out(prop_p, prop_z);
+  // Copy globals so we can modify
+  let pre_xp2 = pre_xp;
+  let pre_yp2 = pre_yp;
+  let pre_ws2 = pre_ws;
+  let y_add2 = y_add;
+  let x_add2 = x_add;
+  let r_mult2 = r_mult;
+
+  const tree_centreX = tree_state.widthres/2;
+  const tree_centreY = tree_state.heightres/2
+
+  if (r_mult2 < 1) { // Zooming outwards
+    pre_xp2 = tree_centreX + (pre_xp2-x_add2-tree_centreX)*r_mult2;
+    pre_yp2 = tree_centreY + (pre_yp2-y_add2-tree_centreY)*r_mult2;
+    pre_ws2 = pre_ws2 * r_mult2;
+
+    prop_p = 1-prop_p;
+    prop_z = 1-prop_z;
+
+    y_add2 = (-y_add2)*r_mult2;
+    x_add2 = (-x_add2)*r_mult2;
+    r_mult2 = 1/r_mult2;
+    // todo - getting there, but need to play with the function still - it's not right
+    // also can transform the prop_p and prop_z components of this to make it non linear and more zooming initially
+    // could change to measure x and y add in terms of the zoomed out version
   }
+
+  tree_state.ws = pre_ws2 * Math.pow(r_mult2,prop_z);
+  tree_state.xp = tree_centreX + x_add2*(1-prop_p) + (pre_xp2-x_add2-tree_centreX) * Math.pow(r_mult2,prop_z);
+  tree_state.yp = tree_centreY + y_add2*(1-prop_p) + (pre_yp2-y_add2-tree_centreY) * Math.pow(r_mult2,prop_z);
 }
-
-function auto_pan_zoom(prop_p,prop_z) {  
-  let centreY = y_add + tree_state.heightres/2;
-  let centreX = x_add + tree_state.widthres/2;
-  tree_state.ws = pre_ws*(Math.pow(r_mult,prop_z));
-  tree_state.xp = centreX + (pre_xp-centreX)*(Math.pow(r_mult,prop_z)) - x_add*prop_p;
-  tree_state.yp = centreY + (pre_yp-centreY)*(Math.pow(r_mult,prop_z)) - y_add*prop_p;
-}
-
-function auto_pan_zoom_out(prop_p,prop_z){
-  let pre_xp_new = tree_state.widthres/2 + (pre_xp-tree_state.widthres/2 - x_add)*r_mult;
-  let pre_yp_new = tree_state.heightres/2 + (pre_yp-tree_state.heightres/2 - y_add)*r_mult;
-  let pre_ws_new = pre_ws*r_mult;
-  
-  let prop_p2 = 1-prop_p;
-  let prop_z2 = 1-prop_z;
-  
-  let y_add2 = (-y_add)*r_mult;
-  let x_add2 = (-x_add)*r_mult;
-  let r_mult2 = 1/r_mult;
-    
-  let centreY = y_add2+tree_state.heightres/2;
-  let centreX = x_add2+tree_state.widthres/2;
-  tree_state.ws = pre_ws_new*(Math.pow(r_mult2,prop_z2));
-  tree_state.xp = centreX + (pre_xp_new-centreX)*(Math.pow(r_mult2,prop_z2)) - x_add2*prop_p2;
-  tree_state.yp = centreY + (pre_yp_new-centreY)*(Math.pow(r_mult2,prop_z2)) - y_add2*prop_p2;
-
-  // todo - getting there, but need to play with the function still - it's not right
-  // also can transform the prop_p and prop_z components of this to make it non linear and more zooming initially
-  // could change to measure x and y add in terms of the zoomed out version
-};
 
 function reanchor_at_node(node) {
   node.graphref = true;
