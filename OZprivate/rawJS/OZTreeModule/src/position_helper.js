@@ -1,7 +1,7 @@
 import tree_state from './tree_state';
 import {max, min} from './util/index';
 
-let targetScreenProp = 0.95;
+let targetScreenProp = 0.95;  // proportion of screen that should be filled with targeted area when zooming in / out
 let x_add = null;
 let y_add = null;
 let r_mult = null;
@@ -60,77 +60,69 @@ function drawreg2_target(node, x,y,r) {
 }
 
 /**
- * Update x_add / y_add / r_mult globals, either to node location if developed,
- * or x2/y2/r2
+ * Update x_add / y_add / r_mult / more_flying_needed globals,
+ * either to node location if developed, or x2/y2/r2
  */
 function get_xyr_target(node, x2,y2,r2,into_node) {
   let x = node.rvar ? node.xvar : x2;
   let y = node.rvar ? node.yvar : y2;
   let r = node.rvar ? node.rvar : r2;
-  
-  if ((node.targeted)||(r_mult<0.00000001)) {
-    // nothing to do otherwise
-    
-    // update all the variables as we go.
-    /* this vx part is copied from move routines above*/
-    let vxmax;
-    let vxmin;
-    let vymax;
-    let vymin;
-    
-    // we don'fly_timer want to include the stem in this and so we include both child horizons only
-    if (node.has_child) {
-      if (into_node&&into_node==true) {
-        [vxmax, vxmin, vymax, vymin] = get_v_horizon_by_arc(node, 1.1, x, y, r);
-      } else {
-        [vxmax, vxmin, vymax, vymin] = get_v_horizon_by_child(node, x, y, r);
-      }
+
+  // Node not targeted / already there --> nothing to do.
+  if (!node.targeted && r_mult >= 0.00000001) return;
+
+  // Work out desired bounding box for this node
+  let x_targ_max;
+  let x_targ_min;
+  let y_targ_max;
+  let y_targ_min;
+  // we don't want to include the stem in this and so we include both child horizons only
+  if (node.has_child) {
+    if (into_node&&into_node==true) {
+      [x_targ_max, x_targ_min, y_targ_max, y_targ_min] = get_v_horizon_by_arc(node, 1.1, x, y, r);
     } else {
-      [vxmax, vxmin, vymax, vymin] = get_v_horizon_by_arc(node, 1.305, x, y, r);
+      [x_targ_max, x_targ_min, y_targ_max, y_targ_min] = get_v_horizon_by_child(node, x, y, r);
     }
-    
-    let x_targ_max = vxmax;
-    let x_targ_min = vxmin;
-    let y_targ_max = vymax;
-    let y_targ_min = vymin;
-    
-    // find out if new target area is constained by x or y axis compared to current view
-    if ((tree_state.widthres/tree_state.heightres)> (x_targ_max-x_targ_min)/(y_targ_max-y_targ_min)) {
-      // height controls size
-      r_mult = (tree_state.heightres*targetScreenProp)/(y_targ_max-y_targ_min);
-    } else {
-      // width controls size
-      r_mult = (tree_state.widthres*targetScreenProp)/(x_targ_max-x_targ_min);
+  } else {
+    [x_targ_max, x_targ_min, y_targ_max, y_targ_min] = get_v_horizon_by_arc(node, 1.305, x, y, r);
+  }
+
+  // find out if new target area is constained by x or y axis compared to current view
+  if ((tree_state.widthres/tree_state.heightres)> (x_targ_max-x_targ_min)/(y_targ_max-y_targ_min)) {
+    // height controls size
+    r_mult = (tree_state.heightres*targetScreenProp)/(y_targ_max-y_targ_min);
+  } else {
+    // width controls size
+    r_mult = (tree_state.widthres*targetScreenProp)/(x_targ_max-x_targ_min);
+  }
+  x_add = (x_targ_max+x_targ_min - tree_state.widthres)/2;
+  y_add = (y_targ_max+y_targ_min - tree_state.heightres)/2;
+
+  // only go 1000000 at a time on r_mult
+  if (r_mult >= 10000000 && !node.graphref) {
+    more_flying_needed = true;
+    return;
+  }
+
+  // No children, nowhere to recurse to
+  if (!node.has_child) return;
+
+  // Find the first child that's targeted, recurse & use those values
+  for (let i=0; i < node.children.length; i++) {
+    let child = node.children[i];
+    if (child.targeted) {
+      get_xyr_target(child, x+r*node.nextx[i],y+r*node.nexty[i],r*node.nextr[i],into_node);
+      return;
     }
-    x_add = (x_targ_max+x_targ_min - tree_state.widthres)/2;
-    y_add = (y_targ_max+y_targ_min - tree_state.heightres)/2;
-    //* // strangely when I comment this out I get a perfect zoom out!
-    
-    if ((r_mult<10000000)||(node.graphref)) {// only go 1000000 at a time on r_mult
-      if (node.has_child) {
-        let child_targeted = false;
-        let length = node.children.length;
-        for (let i=0; i<length; i++) {
-          let child = node.children[i];
-          if (child.targeted && !child_targeted) {
-            child_targeted = true;
-            get_xyr_target(child, x+r*node.nextx[i],y+r*node.nexty[i],r*node.nextr[i],into_node);
-          }
-        }
-        
-        if (!child_targeted) {
-          if (r_mult < 0.00000001) more_flying_needed = true;
-          for (let i=0; i<node.children.length; i++) {
-            let child = node.children[i];
-            if (child.graphref && !child.gvar) {
-              get_xyr_target(child, x+r*node.nextx[i],y+r*node.nexty[i],r*node.nextr[i],into_node);
-              break;
-            }
-          }
-        }
-      }
-    } else {
-      more_flying_needed = true;
+  }
+
+  // If we didn't find a target child, use graphref/gvar to recurse
+  if (r_mult < 0.00000001) more_flying_needed = true;
+  for (let i=0; i<node.children.length; i++) {
+    let child = node.children[i];
+    if (child.graphref && !child.gvar) {
+      get_xyr_target(child, x+r*node.nextx[i],y+r*node.nexty[i],r*node.nextr[i],into_node);
+      return;
     }
   }
 }
