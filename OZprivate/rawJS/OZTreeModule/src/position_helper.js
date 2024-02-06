@@ -1,7 +1,6 @@
 import tree_state from './tree_state';
 import {max, min} from './util/index';
 
-let targetScreenProp = 0.95;  // proportion of screen that should be filled with targeted area when zooming in / out
 let x_add = null;
 let y_add = null;
 let r_mult = null;
@@ -88,15 +87,17 @@ function get_xyr_target(node, x2,y2,r2,into_node) {
   }
 
   // find out if new target area is constained by x or y axis compared to current view
-  if ((tree_state.widthres/tree_state.heightres)> (x_targ_max-x_targ_min)/(y_targ_max-y_targ_min)) {
+  if (tree_state.focal_area.width / tree_state.focal_area.height > (x_targ_max-x_targ_min)/(y_targ_max-y_targ_min)) {
     // height controls size
-    r_mult = (tree_state.heightres*targetScreenProp)/(y_targ_max-y_targ_min);
+    r_mult = tree_state.focal_area.height / (y_targ_max-y_targ_min);
   } else {
     // width controls size
-    r_mult = (tree_state.widthres*targetScreenProp)/(x_targ_max-x_targ_min);
+    r_mult = tree_state.focal_area.width / (x_targ_max-x_targ_min);
   }
-  x_add = (x_targ_max+x_targ_min - tree_state.widthres)/2;
-  y_add = (y_targ_max+y_targ_min - tree_state.heightres)/2;
+
+  // Center node in focal area
+  x_add = (x_targ_max+x_targ_min)/2 - tree_state.focal_area.xcentre;
+  y_add = (y_targ_max+y_targ_min)/2 - tree_state.focal_area.ycentre;
 
   // only go 1000000 at a time on r_mult
   if (r_mult >= 10000000 && !node.graphref) {
@@ -345,8 +346,8 @@ function pan_zoom(prop_p, prop_z) {
   let x_add2 = x_add;
   let r_mult2 = r_mult;
 
-  const tree_centreX = tree_state.widthres/2;
-  const tree_centreY = tree_state.heightres/2
+  const tree_centreX = tree_state.focal_area.xcentre;
+  const tree_centreY = tree_state.focal_area.ycentre;
 
   if (r_mult2 < 1) { // Zooming outwards
     pre_xp2 = tree_centreX + (pre_xp2-x_add2-tree_centreX)*r_mult2;

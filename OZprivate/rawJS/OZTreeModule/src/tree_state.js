@@ -47,6 +47,7 @@ class TreeState {
     }
     this.widthres = canvas.width;
     this.heightres = canvas.height;
+    this._update_focal_area()
     call_hook("window_size_change");
   }
   get flying() {
@@ -58,6 +59,27 @@ class TreeState {
       call_hook("flying_finish");
     }
   }
+
+  // Update the focal_area bounding box: The rect we should fill on flights, used by position_helper
+  _update_focal_area() {
+    const targetScreenProp = 0.95;  // proportion of screen that should be filled with targeted area when zooming in / out
+    const borderPerc = (1 - targetScreenProp) / 2;
+
+    this.focal_area = {
+      // Shrink overall bounding box by targetScreenProp
+      xmin: Math.round(this.widthres * borderPerc),
+      ymin: Math.round(this.heightres * borderPerc),
+      xmax: Math.round(this.widthres - this.widthres * borderPerc),
+      ymax: Math.round(this.heightres - this.heightres * borderPerc),
+    };
+
+    // Include width/height/center as convenience helpers
+    this.focal_area.width = this.focal_area.xmax - this.focal_area.xmin;
+    this.focal_area.height = this.focal_area.ymax - this.focal_area.ymin;
+    this.focal_area.xcentre = (this.focal_area.xmax + this.focal_area.xmin)/2;
+    this.focal_area.ycentre = (this.focal_area.ymax + this.focal_area.ymin)/2;
+  }
+
   get xp() {
     return this._xp;
   }
