@@ -96,11 +96,11 @@ class TreeState {
 
     // After 400ms, any action should be cleared (unless something updates it with a new action)
     if (this.action_timeout) {
-        window.clearTimeout(this.action_timeout);
+        clearTimeout(this.action_timeout);
         this.action_timeout = null;
     }
     if (this.action) {
-        this.action_timeout = window.setTimeout(this.set_action.bind(this, null), 400);
+        this.action_timeout = setTimeout(this.set_action.bind(this, null), 400);
     }
   }
   is_idle() {
