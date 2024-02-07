@@ -6,7 +6,7 @@ services:
       dockerfile: dev.Dockerfile
     volumes:
       - type: bind
-        source: .
+        source: ..
         target: /opt/web2py/applications/OZtree
         consistency: cached
       - original-repo:/opt/web2py/applications/OZtree_original:ro
@@ -21,7 +21,7 @@ services:
         IMAGE_NAME: ${WEB_IMAGE_NAME}
     volumes: 
       - type: bind
-        source: .
+        source: ..
         target: /opt/web2py/applications/OZtree
         consistency: cached
       - original-repo:/opt/web2py/applications/OZtree_original
