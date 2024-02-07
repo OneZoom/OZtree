@@ -4,6 +4,7 @@ import {pic_src_order} from '../tree_settings';
 
 const metadata_cols_leaf = ["OTTid","scientificName","common_en","popularity","picID","picID_credit","picID_rating","IUCN","price","sponsor_kind","sponsor_name","sponsor_extra","sponsor_url","n_spp"];
 const metadata_cols_node = ["OTTid","scientificName","common_en","popularity","picID","picID_credit","picID_rating","IUCN","price","sponsor_kind","sponsor_name","sponsor_extra","sponsor_url","lengthbr","sp1","sp2","sp3","sp4","sp5","sp6","sp7","sp8","iucnNE","iucnDD","iucnLC","iucnNT","iucnVU","iucnEN","iucnCR","iucnEW","iucnEX"];
+const metadata_sparse_cols = ["tours"];
 
 /**
  * A class to store all tree data, metadata and metadata related information. It also provides interface to update metadata.
@@ -110,6 +111,12 @@ class DataRepo {
     metadata_cols_node.forEach((k, i) => this.mc_key_n[k] = i);
     this.node_col_len = metadata_cols_node.length;
 
+    // Don't reserve space for sparse cols, just add them as separate properties to the array when needed
+    metadata_sparse_cols.forEach((k) => {
+      this.mc_key_l[k] = k;
+      this.mc_key_n[k] = k;
+    });
+
     this.metadata = { leaf_meta: [], node_meta: [] };
   }
   /**
@@ -138,6 +145,7 @@ class DataRepo {
     parse_vernacular_by_ott(this, res.vernacular_by_ott);
     parse_vernacular_by_name(this, res.vernacular_by_name);
     parse_sponsorship(this, res.reservations, node_details_api);
+    parse_tours_by_ott(this, res.tours_by_ott || []);
   }
   update_image_metadata(metacode, rights, licence) {
     this.metadata.leaf_meta[metacode][this.mc_key_l["picID_credit"]] = rights +  " / " + licence;
@@ -391,6 +399,17 @@ function parse_sponsorship(data_repo, reservations, node_details) {
     if (!m.entry[m.idx["common_en"]]) {
       m.entry[m.idx["common_en"]] = reservations[i][node_details.res_cols["common_name"]];
     }
+  }
+}
+
+function parse_tours_by_ott(data_repo, vals) {
+  // Cols: OTT, url
+  for (let i = 0; i < vals.length; i++) {
+    let ott = vals[i][0]
+    let m = data_repo.get_meta_entry(data_repo.ott_id_map[ott]);
+    if (!m) continue;
+
+    m.entry[m.idx["tours"]] = vals[i][1];
   }
 }
 

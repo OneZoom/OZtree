@@ -11,6 +11,8 @@ import random
 from gluon import current
 from gluon.http import HTTP
 
+from .tour import tours_related_to_ott
+
 def raise_incorrect_url(example_url, info=current.T("Incorrect usage")):
     raise HTTP(400,  info+ "<br />" + current.T("Try e.g. %s") % "<a href='{0}'>{0}</a>".format(example_url), link='<{}>; rel="example"'.format(example_url))
 
@@ -369,6 +371,7 @@ def nodes_info_from_string(
     image_type='best_any',
     include_sponsorship=True,
     include_pic_details=False,
+    include_tours_by_ott=True,
     check_malicious=True,
 ):
     """
@@ -504,7 +507,13 @@ def nodes_info_from_string(
                 + ") AS t")
             sql = query7.format(otts=ott_ids)
             reservations_res = db.executesql(sql)
-            
+
+    if len(leafOtts) or len(nodeOtts):
+        tours_res = []
+        if include_tours_by_ott:
+            for ott, tours in tours_related_to_ott(leafOtts | nodeOtts, full_meta=False).items():
+                tours_res.append([ott, [t.identifier for t in tours]])
+
     if leafIDs_string or nodeIDs_string:
         return dict(
             nodes=ordered_nodes_query_res or [],
@@ -514,7 +523,9 @@ def nodes_info_from_string(
             vernacular_by_name=vernacular_name_query_res2 or [], 
             leafIucn=iucn_query_res or [],
             leafPic=images_by_ott_query_res or [],
-            reservations=reservations_res or [])
+            reservations=reservations_res or [],
+            tours_by_ott=tours_res,
+        )
     else:
         # We didn't pass any ids in, so we simply output a list of the column names for 
         # the various arrays. The client can thus make a blank call at the start of a
@@ -534,7 +545,9 @@ def nodes_info_from_string(
             vernacular_by_name=[],   
             leafIucn=[],
             leafPic=[],
-            reservations=[])
+            reservations=[],
+            tours_by_ott=[],
+        )
 
 
 def query_val_to_ints(CommaSepString):

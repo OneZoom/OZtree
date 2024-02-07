@@ -103,10 +103,8 @@ export function setup_tour(test, s, interaction = null, verbose_test = false) {
         log.push(["set_treestate:", treestate]);
         fake_oz.treestate = treestate;
       },
-    },
-    utils : {
       largest_visible_node: function () { return fake_oz.cur_node; },
-    }
+    },
   };
 
   // Populate data repo so we don't try and poke the API

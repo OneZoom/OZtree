@@ -58,8 +58,8 @@ class Midnode {
     this.xvar = 1.0;
     this.yvar = 1.0;
     this.rvar = 1.0;
-    this.gvar = false;  // dvar is true if this node (or a descendent node) needs to be drawn on the screen
-    this.dvar = false;  // gvar is true if this node itself needs to be drawn on screen
+    this.gvar = false;  // gvar is true if this node itself needs to be drawn on screen (i.e onezoom.config.debug_bounding_box = 1)
+    this.dvar = false;  // dvar is true if this node (or a descendent node) needs to be drawn on the screen (i.e onezoom.config.debug_bounding_box = 4)
     this.graphref = false;
     this.targeted = false;
     
@@ -346,6 +346,10 @@ class Midnode {
   }
   get sponsor_extra() {
     return this.get_attribute("sponsor_extra");
+  }
+  get tours() {
+    // NB: Should always be a list (either stored in data_repo or no tours)
+    return this.get_attribute("tours") || [];
   }
   get lengthbr() {
     if (this._age !== null) return this._age;

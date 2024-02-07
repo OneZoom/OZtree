@@ -461,3 +461,29 @@ span.img-species {
 .endangered-species .img-species.leafout::after {
   background-image: url(../images/oz-logo-leafout-outline-red.svg);
 }
+
+/* ********** Slider prev/next arrows ************************ */
+
+.uk-slider {
+  figure figcaption {
+    padding: 5px 1px;
+  }
+
+  .oz-slider-arrow {
+    width: 35px;
+    height: 35px;
+    margin: 15px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    &.oz-slider-arrow-left {
+      left: -55px;
+      background-image: url(../images/oz-leftarrow-darkbg.svg);
+    }
+    &.oz-slider-arrow-right {
+      right: -55px;
+      background-image: url(../images/oz-rightarrow-darkbg.svg);
+    }
+  }
+}

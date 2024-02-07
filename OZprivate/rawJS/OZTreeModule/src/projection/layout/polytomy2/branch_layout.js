@@ -1,4 +1,4 @@
-import BranchLayoutBase from '../branch_layout_helper';
+import BranchLayoutBase from '../branch_layout_base';
 import PathShape from '../../shapes/path_shape';
 import LineToShape from '../../shapes/line_to_shape';
 import MoveToShape from '../../shapes/move_to_shape';

@@ -1,4 +1,4 @@
-import LeafLayoutBase from '../leaf_layout_helper';
+import LeafLayoutBase from '../leaf_layout_base';
 import ArcShape from '../../shapes/arc_shape';
 import BezierShape from '../../shapes/bezier_shape';
 import ImageShape from '../../shapes/image_shape';
@@ -7,7 +7,6 @@ import config from '../../../global_config';
 import data_repo from '../../../factory/data_repo';
 import tree_state from '../../../tree_state';
 import {color_theme} from '../../../themes/color_theme';
-import {get_image, image_ready} from '../../../image_cache';
 import api_wrapper from '../../../api/api_wrapper';
 
 const l_consts = {
@@ -137,7 +136,6 @@ class LeafLayout extends LeafLayoutBase {
               human_data.userProfile.picture,
               human_data.userProfile.picture
           );
-          imageObject = image_ready(imageObject) ? imageObject : null;
       }
 
       rings = human_data.wonChallenges.map(function (challenge) {
@@ -180,7 +178,7 @@ class LeafLayout extends LeafLayoutBase {
       s.height = 0;
       shapes.push(s);
 
-      this.circle_cut_image(shapes, imageObject, x, y, r, color_theme.get_color("leaf.inside.fill",node), null, node);
+      this.circle_cut_image(shapes, imageObject, x, y, r, color_theme.get_color("leaf.inside.fill",node), node);
   }
 
   /** Draw the special human leaf */
@@ -212,7 +210,6 @@ class LeafLayout extends LeafLayoutBase {
 
       // Try and fetch the background image, draw it if available, and we are zoomed in enough.
       let imageObject = get_image('otop:otop-human-leaf.png', 'otop:otop-human-leaf.png');
-      imageObject = image_ready(imageObject) ? imageObject : null;
       if (this.get_fullleaf_r(node) > 30 && imageObject) {
           let s = ImageShape.create();
           s.img = imageObject;
@@ -362,7 +359,6 @@ class LeafLayout extends LeafLayoutBase {
   fullLeaf_detail3_pics(shapes,x,y,r,conservation_text,imageObject,requiresCrop,cropMult,cropLeft,cropTop, node) {
     this.circle_cut_image(shapes,imageObject, x,y,r * l_consts.r_image,
       color_theme.get_color("leaf.inside.fill",node),
-      undefined,
       node);
 
     // Apply a wash atop images

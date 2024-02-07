@@ -5,7 +5,6 @@ import { global_button_action, click_on_button_cb } from '../button_manager';
 import config from '../global_config';
 import tree_settings from '../tree_settings';
 import { parse_url_base } from './state';
-import { get_largest_visible_node } from './utils';
 import { resolve_pinpoints, node_to_pinpoint } from './pinpoint';
 
 function setup_page_by_state(controller, state) {
@@ -48,19 +47,9 @@ function setup_page_by_state(controller, state) {
 
   }).then(function () {
     //open popup dialog if exists.
-    if (state.tap_action && (state.tap_ott_or_id || state.ott)) {
-      global_button_action.action = state.tap_action;
-      if (state.tap_ott_or_id) {
-        global_button_action.data = parseInt(state.tap_ott_or_id);
-      } else {
-        //try to fill in automatically from the ott - this allows e.g. ?osn_&init=jump
-        if (state.tap_action.endsWith('node')) {
-          //nodes must be referenced by OZid, not ott
-          global_button_action.data = parseInt(data_repo.ott_id_map[state.ott]);
-        } else {
-          global_button_action.data = parseInt(state.ott);
-        }
-      }
+    if (state.tap_action) {
+      global_button_action.action = state.tap_action.action;
+      global_button_action.data = state.tap_action.data;
       click_on_button_cb(controller);
     } else {
       controller.close_all();
@@ -97,7 +86,7 @@ function tree_current_state_obj(controller, {record_popup = null}) {
   state.url_base = parse_url_base(window.location);
 
   // Choose one with an OTT by preference
-  let node = get_largest_visible_node(controller.root, (node) => !!node.ott) || get_largest_visible_node(controller.root);
+  let node = controller.largest_visible_node((node) => !!node.ott) || controller.largest_visible_node();
   // NB: Still possible to find nothing, e.g. with a manually tampered URL that positions xp/wp/ws at an empty point in the tree
   if (!node) return {};
 
@@ -121,10 +110,10 @@ function tree_current_state_obj(controller, {record_popup = null}) {
   if (data_repo.image_source !== 'best_any') state.image_source = data_repo.image_source;
   if (controller.get_search_jump_mode() !== 'flight') state.search_jump_mode = controller.get_search_jump_mode();
   if (config.home_ott_id) state.home_ott_id = config.home_ott_id
-  if (record_popup) {
-    state.tap_action = record_popup.action;
-    state.tap_ott_or_id = record_popup.data;
-  }
+  if (record_popup) state.tap_action = {
+    action: record_popup.action,
+    data: record_popup.data,
+  };
   if (!tree_settings.is_default_ssaver_inactive_duration_seconds()) state.ssaver_inactive_duration_seconds = tree_settings.ssaver_inactive_duration_seconds
 
   state.highlights = controller.highlight_list();

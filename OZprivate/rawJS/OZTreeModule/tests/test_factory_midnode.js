@@ -65,6 +65,32 @@ test('sponsor_name,sponsor_kind,sponsor_extra', function (test) {
 
 });
 
+test('tours', function (test) {
+  var factory;
+
+  return populate_factory().then((f) => {
+    // Init data_repo & factory
+    factory = f;
+
+ }).then(() => {
+   var node = factory.dynamic_loading_by_metacode(759126);
+
+   test.deepEqual(node.tours, []);
+   um({tours_by_ott: [
+     // OTT_ID, verified_kind, verified_name, verified_more_info, verified_url
+     [node.ott, ["ut::tour1"]],
+   ]})
+   test.deepEqual(node.tours, ["ut::tour1"]);
+
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
 test('picset', function (test) {
   var factory;
   function picset(ozid) {

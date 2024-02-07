@@ -354,12 +354,11 @@ function autotext3(
  * imageObject is the image to be drawn (assumed to be square)
  * centerpointx,centerpointy,radiusr show where the image will be drawn (in a circle)
  * borderColor is the immediate border around the image
- * highlightColor could be null but if not is a second border around the image highlighting it further (typically used on touch or mouseover)
  *
  * returns: none
  *
  */
-function circle_cut_image(context_in, imageObject, centerpointx, centerpointy, radiusr, borderColor, highlightColor)
+function circle_cut_image(context_in, imageObject, centerpointx, centerpointy, radiusr, borderColor)
 {
     if (imageObject)
     {
@@ -1193,13 +1192,13 @@ function ghostLeaf(
             {
                 //if (leaf_clicking == "z")
                 //{
-                //    circle_cut_image(leafContext,imageObject,x,y,r*0.85,'rgb(255,255,255)','rgb(255,255,255)');
+                //    circle_cut_image(leafContext,imageObject,x,y,r*0.85,'rgb(255,255,255)');
                // }
                 //else
                 //{
                     circle_cut_image(
                         leafContext, imageObject, x, y, r*0.85,
-                        node_eval(leafCol.inside.fill, node), null);
+                        node_eval(leafCol.inside.fill, node));
                 //}
             }
             else
@@ -1750,7 +1749,7 @@ function fullLeaf(
             {
                     circle_cut_image(
                         leafContext,imageObject,x,y,r*0.85,
-                        node_eval(leafCol.inside.fill, node), null);
+                        node_eval(leafCol.inside.fill, node));
             }
             else
             {

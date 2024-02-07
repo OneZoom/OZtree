@@ -37,6 +37,10 @@ test('DataRepo:update_metadata', function (t) {
             "vernacular_by_ott": ottids.map(ottid => vernaculars[ottid]).filter(x => !!x),
             "vernacular_by_name":[],
             "leafIucn": ottids.map(ottid => leafIucn[ottid]).filter(x => !!x),
+            "tours_by_ott": [
+                [770315, ['ut::tour1', 'ut::tour2']],
+                [158484, ['ut::tour1']],
+            ],
         });
     }
 
@@ -73,6 +77,13 @@ test('DataRepo:update_metadata', function (t) {
         { ozid: -837462, OTTid: 158484, sponsor_name: undefined, sponsor_kind: undefined, sponsor_extra: undefined, sponsor_url: undefined },
         { ozid: -837463, OTTid: 417950, sponsor_name: undefined, sponsor_kind: undefined, sponsor_extra: undefined, sponsor_url: undefined },
     ], "Sponsorship details set");
+
+    // Test parse_tours_by_ott
+    t.deepEqual(pic_metadata(["OTTid", "tours"]), [
+        { ozid: -837461, OTTid: 770315, tours: ['ut::tour1', 'ut::tour2'] },
+        { ozid: -837462, OTTid: 158484, tours: ['ut::tour1'] },
+        { ozid: -837463, OTTid: 417950, tours: undefined },
+    ], "Tour URLs set");
 
     um([158484, 417950], [
         [158484,26863090,99,40000],

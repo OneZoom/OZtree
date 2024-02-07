@@ -1,6 +1,8 @@
 """
-Run with
-python3 web2py.py -S OZtree -M -R applications/OZtree/tests/unit/test_modules_username.py
+Run with::
+
+    ./web2py-run tests/unit/test_modules_username.py
+
 """
 import unittest
 

@@ -111,6 +111,43 @@ def clear_unittest_sponsors():
         db.uncategorised_donation.e_mail.endswith('@unittest.example.com')).delete()
 
 
+def create_tour(otts, tour_identifier=None, title=None, description=None, author=None):
+    db = current.db
+
+    if not tour_identifier:
+        tour_identifier = 'UT::TOUR%d' % (db(db.tour.identifier).count(),)
+
+    tour_body = dict(
+        title=title or 'A unit test tour %s' % tour_identifier,
+        description=description or 'A default description',
+        author=author or 'UT::Author',
+    )
+
+    if isinstance(otts, int):
+        otts = util.find_unsponsored_otts(tour_body['tourstops'])
+    tour_body['tourstops'] = [dict(
+        ott=ott,
+        identifier="ott%d" % ott,
+        template_data=dict(title="Tour %s OTT %d" % (
+            tour_identifier,
+            ott
+        )),
+    ) for ott in otts]
+
+    import applications.OZtree.controllers.tour as tour_controller
+    out = call_controller(
+        tour_controller,
+        'data',
+        method='PUT',
+        args=[tour_identifier],
+        vars=tour_body,
+        username='admin'
+    )
+    # Turn response rows into dicts
+    out['tour'] = out['tour'].as_dict()
+    out['tour']['tourstops'] = [ts.as_dict() for ts in out['tour']['tourstops']]
+    return out['tour']
+
 def clear_unittest_tours():
     """
     Tours with identifiers starting with UT:: are assumed to be unit test tours

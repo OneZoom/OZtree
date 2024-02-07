@@ -156,7 +156,7 @@ class Images:
             ott = image.ott
             src_id = min_src_id + i
             save_to = os.path.join(img_dir, img.thumb_path(src, src_id))
-            filename = img.thumb_url(img_dir, src, src_id)
+            filename = img.thumb_url(src, src_id, base_url=img_dir)
             assert os.path.dirname(filename) == save_to
             os.makedirs(save_to, exist_ok=True)
             shutil.copy(image.path, filename)

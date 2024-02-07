@@ -12,7 +12,7 @@ export function get_image(src, filename, preferred_px=null) {
       pic_map[url].image.src = url;
     }
     pic_map[url].last_used = count++;
-    return pic_map[url].image;
+    return image_ready(pic_map[url].image) ? pic_map[url].image : null;
   } else {
     return null;
   }

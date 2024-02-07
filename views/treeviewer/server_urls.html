@@ -4,7 +4,7 @@ var server_urls = {
   /* These fill out the equivalently named variables in OneZoom global_config.
      They need to be defined in this file to avoid hard-coding them into the OneZoom js code 
      They are coded with the full URL so that they can be used remotely (e.g. in a partial install) */
-  data_path_pics: {{=XML(img.js_thumb_url(thumb_base_url))}},
+  data_path_pics: {{=XML(img.js_thumb_url())}},
   node_details_api: "{{try:}}{{=myconf.take('API.node')}}{{except:}}{{=URL('API','node_details.json', scheme=True, host=True)}}{{pass}}",
   pinpoints_api: "{{try:}}{{=myconf.take('API.pinpoints')}}{{except:}}{{=URL('API','pinpoints.json', scheme=True, host=True)}}{{pass}}",
   search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",

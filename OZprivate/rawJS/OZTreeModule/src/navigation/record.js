@@ -1,5 +1,4 @@
 import { tree_current_state_obj } from './setup_page';
-import { get_largest_visible_node } from './utils';
 import { parse_state, deparse_state } from './state';
 import config from '../global_config';
 
@@ -60,15 +59,15 @@ function current_view_near_previous_view(current_state) {
   else if (current_state.vis_type !== previous_state.vis_type) return false;
   else if (current_state.pinpoint === previous_state.pinpoint) {
     //If no tap window open and position not changed a lot, do not record current position into history.
-    if (!current_state.tap_ott_or_id && !previous_state.tap_ott_or_id) return true;
+    if (!current_state.tap_action && !previous_state.tap_action) return true;
     //If opened tap is same as previous, do not record current position into history.
-    if (current_state.tap_ott_or_id && previous_state.tap_ott_or_id && (current_state.tap_ott_or_id === previous_state.tap_ott)) return true;
+    if (current_state.tap_action && previous_state.tap_action && (JSON.stringify(current_state.tap_action) === JSON.stringify(previous_state.tap_action))) return true;
   }
   return false;
 }
 
 function get_title(controller) {
-  let node_with_name = get_largest_visible_node(controller.root, (node) => !!(node.cname || node.latin_name));
+  let node_with_name = controller.largest_visible_node((node) => !!(node.cname || node.latin_name));
 
   if (!node_with_name) return config.title_func();
   if (node_with_name.cname) return config.title_func(node_with_name.cname);

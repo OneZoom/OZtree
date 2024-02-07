@@ -180,7 +180,7 @@ class NodeLayoutBase {
     
     /*
      * this function: draws a copyright symbol and handles zooming in as well as clicking
-     * copied from leaf_layout_helper.
+     * copied from leaf_layout_base.
      * picinfo should be an array of [pic_src, pic_src_id, text]
      */
     copyright(shapes,x,y,r,picinfo, textColor, strokeColor, fillColor, textHighlightColor, strokeHighlightColor, fillHighlightColor) {

@@ -12,8 +12,7 @@ test('parse_state', function (t) {
     t.deepEqual(pwl("http://onezoom.example.com/life/@Myzopoda_aurita?pop=ol_6794"), {
         url_base: 'http://onezoom.example.com/life/',
         pinpoint: '@Myzopoda_aurita',
-        tap_action: 'ow_leaf',
-        tap_ott_or_id: 6794,
+        tap_action: {action: 'ow_leaf', data: 6794},
     }, "Pinpoint with latin name & OTT, pop-up action")
 
     t.deepEqual(pwl("http://onezoom.example.com/life/@Myzopoda_aurita=6794"), {
@@ -46,8 +45,7 @@ test('parse_state', function (t) {
     t.deepEqual(parse_state("http://onezoom.example.com/life/@Myzopoda_aurita?pop=ol_6794"), {
         url_base: 'http://onezoom.example.com/life/',
         pinpoint: '@Myzopoda_aurita',
-        tap_action: 'ow_leaf',
-        tap_ott_or_id: 6794,
+        tap_action: {action: 'ow_leaf', data: 6794},
     }, "Can parse URL directly")
 
     t.deepEqual(parse_state("?highlight=path:@biota&otthome=@aves"), {
@@ -71,8 +69,7 @@ test('parse_state', function (t) {
     t.deepEqual(parse_state("@Myzopoda_aurita?pop=ol_6794"), {
       url_base: 'http://onezoom.example.com/cake/',
       pinpoint: '@Myzopoda_aurita',
-      tap_action: 'ow_leaf',
-      tap_ott_or_id: 6794,
+      tap_action: {action: 'ow_leaf', data: 6794},
     }, "@pinpoint parsed relative to current page");
 
     t.end();

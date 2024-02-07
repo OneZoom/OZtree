@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+SCRIPT="applications/OZtree/$1"
+shift
+
+cd ../../
+exec ./bin/python3 web2py.py -S OZtree -M -R "${SCRIPT}" --args $*

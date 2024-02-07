@@ -36,7 +36,7 @@ live_area_config.interior_high_res_text = {
 
 live_area_config.interior_sponsor_text = {
   register_button_event: function(node) {
-    global_button_action.action = "ow_sponsor_node";
+    global_button_action.action = "ow_ozspons_node";
     global_button_action.data = node.metacode;  
   }
 }
@@ -64,7 +64,7 @@ live_area_config.leaf_low_res_leafbase = {
 
 live_area_config.leaf_sponsor_text = {
   register_button_event: function(node) {
-    global_button_action.action = "ow_sponsor_leaf";
+    global_button_action.action = "ow_ozspons_leaf";
     global_button_action.data = node.ott;
   }
 }
