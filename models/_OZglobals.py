@@ -317,7 +317,7 @@ tab_definitions = dict(
 )
 
 # Default tabs to display
-tab_defaults = ['wiki', 'eol', 'gbif', 'iucn', 'ncbi', 'ozspons', 'oztours']
+tab_defaults = ['oztours', 'wiki', 'eol', 'gbif', 'iucn', 'ncbi', 'ozspons',]
 
 #allow these to be accessed in modules
 current.OZglobals = dict(
