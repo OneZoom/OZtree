@@ -1,3 +1,10 @@
+#tour_wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+}
+
 #tour_wrapper > .tour {
     /* All containers should be hidden at start */
     > .container {
@@ -26,4 +33,70 @@
     /* tour_backward & tour_forward don't make sense at beginning / end */
     > .container.ts-first .tour_backward { display: none }
     > .container.ts-last .tour_forward { display: none }
+}
+
+#tour_wrapper > .tour.layout-def {
+  .tour_container {
+    border: 1px solid #cccccc;
+    width: fit-content;
+    background: white;
+    padding-top: 5px;
+    top: 10px;
+    left: 10px;
+    position: absolute;
+  }
+
+  .title {
+    border-bottom: 1px solid #cccccc;
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 10px;
+    padding: 0 30px;
+  }
+
+  .img {
+    display: block;
+    width: 250px;
+    height: 300px;
+  }
+
+  .window_text {
+    width: 250px;
+    padding-left: 10px;
+    margin-bottom: 10px;
+  }
+
+  .window_text.gray_background {
+    background-color: gray;
+  }
+
+  .footer {
+    border-top: 1px solid #cccccc;
+    padding: 7px 0;
+  }
+
+  .footer:after {
+    content: '';
+    display: block;
+    clear: both;
+  }
+
+  .button {
+    float: left;
+    border: 1px solid #cccccc;
+    padding: 2px;
+    font-size: 12px;
+    text-align: center;
+    width: 45px;
+    margin: 0 7px;
+  }
+
+  .button:hover {
+    cursor: pointer;
+    background-color: #dddddd;
+  }
+
+  .tour_exit {
+    float: right;
+  }
 }

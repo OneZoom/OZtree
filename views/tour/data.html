@@ -35,10 +35,9 @@ ts_fields = (  # HTML fields that can be added to container
 )
 }}
 {{T.set_current_languages((tour['lang'],))}}
-<div class="tour tour-{{=request.function}} {{=tour_identifier}}"
+<div class="tour tour-{{=request.function}} layout-def {{=tour_identifier}}"
        {{for prop, tlated in tour_props:}}{{if tour.get(prop):}}data-{{=prop}}="{{=T(tour[prop]) if tlated else tour[prop]}}"
        {{pass}}{{pass}}>
-  <link rel="stylesheet" type="text/css" href="{{=URL('static', 'tour/tour_template.css')}}" />
 {{for ts in tour['tourstops']:}}
   {{tdata = ts['template_data']}}
   {{if tdata.get('class', '') and not tdata['class'].isalnum():}}<script>alert('Invalid characters in class')</script>{{pass}}
