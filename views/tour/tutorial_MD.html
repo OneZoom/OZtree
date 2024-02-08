@@ -13,7 +13,7 @@ from applications.OZtree.modules.embed import media_embed
     <div class='window_text'>
       {{=T('The tree of life shows how all life on earth is related.  Each leaf represents a different species. The branches show how all these species evolved from common ancestors over billions of years.')}}
     </div>
-    {{ include "tour/tourstop/footer.html" }}
+    {{ include "tour/tourstop/tutorial_footer.html" }}
   </div>
 
   <div class="container tour_container"
@@ -25,7 +25,7 @@ from applications.OZtree.modules.embed import media_embed
     <div class="window_text" style="min-height: 10px">
       {{=T('You can explore this complete tree of life by zooming in and out like you would use an online map.')}}
     </div>
-    {{ include "tour/tourstop/footer.html" }}
+    {{ include "tour/tourstop/tutorial_footer.html" }}
   </div>
 
   <div class="container tour_container visible-transition_in"
@@ -47,7 +47,7 @@ from applications.OZtree.modules.embed import media_embed
         {{=T('You can move the map left, right, up and down by moving a single finger on the screen.')}}
       </div>
     {{pass}}
-    {{ include "tour/tourstop/footer.html" }}
+    {{ include "tour/tourstop/tutorial_footer.html" }}
   </div>
 
   <div class="container tour_container visible-transition_in"
@@ -67,7 +67,7 @@ from applications.OZtree.modules.embed import media_embed
         {{=T('' if request.function == 'tutorial_MDmouse' else 'Touch the screen with two fingers: spread them apart to zoom in, pinch together to zoom out. Alternatively, you can use the on screen ‘+’ and ‘-’ buttons.')}}
       {{pass}}
     </div>
-    {{ include "tour/tourstop/footer.html" }}
+    {{ include "tour/tourstop/tutorial_footer.html" }}
   </div>
 
   <div class="container tour_container"
@@ -79,7 +79,7 @@ from applications.OZtree.modules.embed import media_embed
     <div class='window_text'>
       {{=T('Species known to be under threat of extinction are shown with red leaves. This information comes from the International Union for the Conservation of Nature (IUCN) Red List.')}}
     </div>
-    {{ include "tour/tourstop/footer.html" }}
+    {{ include "tour/tourstop/tutorial_footer.html" }}
   </div>
 
   <div class="container tour_container"
@@ -91,7 +91,7 @@ from applications.OZtree.modules.embed import media_embed
     <div class='window_text'>
       {{=T('Critically endangered species are shown with darker red leaves.  These species could really be gone in the near future unless they get our help.')}}
     </div>
-    {{ include "tour/tourstop/footer.html" }}
+    {{ include "tour/tourstop/tutorial_footer.html" }}
   </div>
 
   <div class="container tour_container"
@@ -103,7 +103,7 @@ from applications.OZtree.modules.embed import media_embed
     <div class='window_text'>
       {{=T('Green leaves are okay for now, they are not under threat of extinction.')}}
     </div>
-    {{ include "tour/tourstop/footer.html" }}
+    {{ include "tour/tourstop/tutorial_footer.html" }}
   </div>
 
   <div class="container tour_container"
@@ -115,7 +115,7 @@ from applications.OZtree.modules.embed import media_embed
     <div class='window_text'>
       {{=T('Most of the leaves are grey meaning that the extent to which they are under threat from extinction is not formally known.')}}
     </div>
-    {{ include "tour/tourstop/footer.html" }}
+    {{ include "tour/tourstop/tutorial_footer.html" }}
   </div>
 
   <div class="container tour_container"
@@ -127,7 +127,7 @@ from applications.OZtree.modules.embed import media_embed
     <div class='window_text'>
       {{=T('Lighter grey branches show small sections of the tree where we had to guess the connections for now because they are not yet known.')}}
     </div>
-    {{ include "tour/tourstop/footer.html" }}
+    {{ include "tour/tourstop/tutorial_footer.html" }}
   </div>
 
   <div class="container tour_container visible-transition_in"
@@ -141,7 +141,7 @@ from applications.OZtree.modules.embed import media_embed
       <svg style='float:left;margin:0 10px; xmlns='http://www.w3.org/2000/svg' height='40' width='40' viewBox='0 0 20 20'><circle r='7' cy='9' cx='9' stroke-width='1.1' stroke='#999' fill='none'/><path d='M14 14l4 4-4-4z' stroke-width='1.1' stroke='#999' fill='none'/><path d='M7.318 10.553c-1.086-.583-.818-1.554.07-2.155 1.018-.84 2.642-1.463 3.328-2.409.285-.71-1.304-1.416-2.565-1.096-.605.003-1.078.702-1.636.317-.298-.308.239-.621.775-.718 1.517-.318 3.498-.243 4.602.45.86.62.622 1.477-.032 2.117-.989.981-2.936 1.645-3.494 2.746-.128.43.8.775 1.55.67.614.272-.343.576-.864.528-.614-.096-1.278-.19-1.739-.45zM10.471 12.9c.1.938-1.704 1.493-2.428.74-.784-.64-.091-1.952 1.082-1.834.703.03 1.393.511 1.342 1.093z'/></svg>
       {{=T('You can click in the search box above to see some suggested popular places to visit or enter the name of something you specifically want to find in the tree of life.  There’s so much life out there you’ll be amazed what you can find.')}}
     </div>
-    {{ include "tour/tourstop/footer.html" }}
+    {{ include "tour/tourstop/tutorial_footer.html" }}
     <div class="outsidebox" style="top: 60px; right: 230px; width: 80px; height: 80px; display: block">
       <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 43.561 43.152' height='80' width='80'><defs><marker id='a' orient='auto' overflow='visible'><path d='M-10.69-4.437L1.328-.017-10.69 4.401c1.92-2.61 1.909-6.18 0-8.84z' fill='#da0000' fill-rule='evenodd' stroke='#da0000' stroke-width='.6875' stroke-linejoin='round'/></marker></defs><path d='M67.042 130.23c24.897-5.443 33.074-12.871 40.09-40.076' fill='none' stroke='#da0000' stroke-width='1.223' marker-end='url(#a)' transform='translate(-66.524 -87.628)'/></svg>
     </div>
@@ -159,7 +159,7 @@ from applications.OZtree.modules.embed import media_embed
     <div class='window_text' style="min-height: 230px">
       <p><div style='float:left;margin:0 10px;border:1px solid grey;padding: 10px;border-radius: 5px;'><svg width='40' height='40' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg' data-svg='compass'><circle fill='none' stroke='#000' stroke-width='1.1' cx='9.5' cy='9.5' r='9'></circle><path d='m 9.5,3.5 -1.5,6 1.5,6 1.5,-6 z' fill='none' stroke='#000' stroke-linejoin='miter' stroke-miterlimit='8' transform='rotate(40 9.5 9.5)'></path><path d='m 9.5,3.5 -1.5,6 3,0 z' fill='#000' transform='rotate(40 9.5 9.5)'></path><path fill='none' stroke='#000' stroke-linecap='round' d='M 9.5,0.5 9.5,2'></path><path fill='none' stroke='#000' stroke-linecap='round' d='m 9.5,17 0,1.5'></path><path fill='none' stroke='#000' stroke-linecap='round' d='M 0.5,9.5 2,9.5'></path><path fill='none' stroke='#000' stroke-linecap='round' d='m 17,9.5 1.5,0'></path></svg></div>{{=T('The compass icon will show where you are in the complete tree of life. Select the named locations to zoom out and see more of the tree.')}}</p><p>{{=T('The reset icon will take you back to the start location,')}}<span style='float:left;margin:10px 10px;border:1px solid grey;padding: 10px;border-radius: 5px;'><svg width='40' height='40' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg' data-svg='refresh'><path fill='none' stroke='#000' stroke-width='1.1' d='M17.08,11.15 C17.09,11.31 17.1,11.47 17.1,11.64 C17.1,15.53 13.94,18.69 10.05,18.69 C6.16,18.68 3,15.53 3,11.63 C3,7.74 6.16,4.58 10.05,4.58 C10.9,4.58 11.71,4.73 12.46,5'></path><polyline fill='none' stroke='#000' points='9.9 2 12.79 4.89 9.79 7.9'></polyline></svg></span>{{=T('which should be familiar to you.')}}</p>
     </div>
-    {{ include "tour/tourstop/footer.html" }}
+    {{ include "tour/tourstop/tutorial_footer.html" }}
     <div class="outsidebox" style="bottom: 230px; left: 80px; height: 300px; width: 230px; display: block">
       <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 77.345 21.441' height='81.035' width='292.327'><defs><marker id='a' orient='auto' overflow='visible'><path d='M-10.69-4.437L1.328-.017-10.69 4.401c1.92-2.61 1.909-6.18 0-8.84z' fill='#da0000' fill-rule='evenodd' stroke='#da0000' stroke-width='.6875' stroke-linejoin='round'/></marker></defs><path d='M179.49 88.162c-28.549-1.475-38.364-5.2-75.533 18.396' fill='none' stroke='#da0000' stroke-width='1.223' marker-end='url(#a)' transform='translate(-102.177 -86.426)'/></svg><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 77.359 28.238' height='450' width='292.38'><defs><marker id='a' orient='auto' overflow='visible'><path d='M-10.69-4.437L1.328-.017-10.69 4.401c1.92-2.61 1.909-6.18 0-8.84z' fill='#da0000' fill-rule='evenodd' stroke='#da0000' stroke-width='.6875' stroke-linejoin='round'/></marker></defs><path d='M180.019 83.664c-16.642 15.194-43.655-3.876-76.062 22.894' fill='none' stroke='#da0000' stroke-width='1.223' marker-end='url(#a)' transform='translate(-102.298 -79.791)'/></svg>
     </div>
@@ -175,7 +175,7 @@ from applications.OZtree.modules.embed import media_embed
     <div class='window_text'>
       {{=T('Click on the text on any named leaf or branch to get further information about that species or group of species. We use specially treated wikipedia pages to provide information on well over a million species, and tens of thousands of groups')}}
     </div>
-    {{ include "tour/tourstop/footer.html" }}
+    {{ include "tour/tourstop/tutorial_footer.html" }}
     <div class="outsidebox" style="bottom: 60%; left: 29%; top: 20%; right: 55%; display: block">
       <svg xmlns='http://www.w3.org/2000/svg' width='372.571' height='154.772' viewBox='0 0 98.576 40.95'><defs><marker orient='auto' id='a' overflow='visible'><path d='M-10.69-4.437L1.328-.017-10.69 4.401c1.92-2.61 1.909-6.18 0-8.84z' fill='#da0000' fill-rule='evenodd' stroke='#da0000' stroke-width='.6875' stroke-linejoin='round'/></marker></defs><path d='M101.902 135.474c39.45-3.327 33.11-32.645 96.482-34.979' fill='none' stroke='#da0000' stroke-width='1.223' marker-end='url(#a)' transform='translate(-101.85 -95.133)'/></svg>
     </div>
@@ -221,7 +221,7 @@ from applications.OZtree.modules.embed import media_embed
       <div style='float:right;margin:0 20px;padding:8px;border:2px solid grey;border-radius:50%'><svg width='40' height='40' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'><circle fill='none' stroke='#000' stroke-width='1.2' cx='5.79' cy='2.79' r='1.79'></circle><circle fill='none' stroke='#000' stroke-width='1.2' cx='14.19' cy='2.79' r='1.79'></circle><ellipse fill='none' stroke='#000' stroke-width='1.2' cx='10.03' cy='16.79' rx='1.79' ry='1.79'></ellipse><path fill='none' stroke='#000' stroke-width='2' d='M5.79,4.57 L5.79,6.56 C5.79,9.19 10.03,10.22 10.03,13.31 C10.03,14.86 10.04,14.55 10.04,14.55 C10.04,14.37 10.04,14.86 10.04,13.31 C10.04,10.22 14.2,9.19 14.2,6.56 L14.2,4.57'></path></svg></div><p>
       {{=T('Next to the search button you can select the advanced search button. This will enable you to mark multiple places on the tree using different coloured lines. It also enables you to find the most recent common ancestor of any set of species, such as animals and plants.')}}
     </div>
-    {{ include "tour/tourstop/footer.html" }}
+    {{ include "tour/tourstop/tutorial_footer.html" }}
     <div class="outsidebox" style="top: 40px; height: 80px; right: 500px; width: 60px; display: block">
       <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44.766 33.871' height='128.016' width='169.194'><defs><marker id='a' orient='auto' overflow='visible'><path d='M-10.69-4.437L1.328-.017-10.69 4.401c1.92-2.61 1.909-6.18 0-8.84z' fill='#da0000' fill-rule='evenodd' stroke='#da0000' stroke-width='.6875' stroke-linejoin='round'/></marker></defs><path d='M155.575 132.45c26.598-.303 7.408-19.793 42.81-31.955' fill='none' stroke='#da0000' stroke-width='1.223' marker-end='url(#a)' transform='translate(-155.568 -99.19)'/></svg>
     </div>
@@ -236,7 +236,7 @@ from applications.OZtree.modules.embed import media_embed
       <p>That’s the end of the tutorial. We’re returning you to the rough location where you were before starting.</p>
       <h1>{{=T('Have fun exploring!')}}</h1>
     </div>
-    {{ include "tour/tourstop/footer.html" }}
+    {{ include "tour/tourstop/tutorial_footer.html" }}
   </div>
 
 </div>
