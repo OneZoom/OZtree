@@ -60,17 +60,34 @@ class TreeState {
     }
   }
 
+  /**
+   * Constrain focal area to the right (frac_landscape) if landscape, topmost (frac_portrait) if portrait
+   */
+  constrain_focal_area(frac_landscape, frac_portrait) {
+    this._fa = {
+      frac_landscape: frac_landscape,
+      frac_portrait: frac_portrait,
+    };
+    this._update_focal_area();
+  }
+
   // Update the focal_area bounding box: The rect we should fill on flights, used by position_helper
   _update_focal_area() {
     const targetScreenProp = 0.95;  // proportion of screen that should be filled with targeted area when zooming in / out
     const borderPerc = (1 - targetScreenProp) / 2;
+    const is_landscape = this.widthres / this.heightres > 1;
+
+    if (!this._fa) this._fa = {
+      frac_landscape: 1,
+      frac_portrait: 1,
+    };
 
     this.focal_area = {
       // Shrink overall bounding box by targetScreenProp
-      xmin: Math.round(this.widthres * borderPerc),
+      xmin: Math.round(this.widthres * (is_landscape ? 1-this._fa.frac_landscape : 0) + this.widthres * borderPerc),
       ymin: Math.round(this.heightres * borderPerc),
       xmax: Math.round(this.widthres - this.widthres * borderPerc),
-      ymax: Math.round(this.heightres - this.heightres * borderPerc),
+      ymax: Math.round(this.heightres * (!is_landscape ? this._fa.frac_portrait: 1) - this.heightres * borderPerc),
     };
 
     // Include width/height/center as convenience helpers

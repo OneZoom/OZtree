@@ -39,6 +39,24 @@ test('focal_area', function (test) {
     ymax: 900 - 900 * 0.025,
   }, "Applied border to 500x900");
 
+  tree_state.setup_canvas({ width: 2000, height: 1000 });
+  tree_state.constrain_focal_area(0.75, 0.66);
+  test_focal_area(test, {
+    xmin: 2000 * (1-0.75) + 2000 * 0.025,
+    xmax: 2000 - 2000 * 0.025,
+    ymin: 1000 * 0.025,
+    ymax: 1000 - 1000 * 0.025,
+  }, "Landscape: constrained by increasing xmin by 1-perc");
+
+  tree_state.setup_canvas({ width: 1000, height: 2000 });
+  tree_state.constrain_focal_area(0.75, 0.66);
+  test_focal_area(test, {
+    xmin: 1000 * 0.025,
+    xmax: 1000 - 1000 * 0.025,
+    ymin: 2000 * 0.025,
+    ymax: 2000 * (0.66) - 2000 * 0.025,
+  }, "Portrait: constrained by decreeasing xmax");
+
   test.end();
 });
 
