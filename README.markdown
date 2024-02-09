@@ -150,6 +150,8 @@ npm ci --legacy-peer-deps
 ./node_modules/.bin/grunt prod
 ```
 
+Edit ``models/db.py``, and set ``is_testing = False``.
+
 Then run the install scripts to set up nginx & supervisord:
 
 ```

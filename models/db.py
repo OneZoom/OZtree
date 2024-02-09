@@ -20,8 +20,9 @@ from gluon import current
 ## Useful global variables
 #########################################################################
 
-# Running under rocket --> is_testing is true
-is_testing = (request.env.server_software or '').lower().startswith('rocket')
+## once in production, set is_testing=False to gain optimizations
+## this will also set migration=False for all tables, so that the DB table definitions are fixed
+is_testing = True
 
 ## Read configuration
 if is_testing and len(request.env.cmd_options.args) > 1 and os.path.isfile(request.env.cmd_options.args[-1]):
@@ -30,7 +31,7 @@ if is_testing and len(request.env.cmd_options.args) > 1 and os.path.isfile(reque
     # (on the main server this is not used, and we default back to appconfig.ini
     myconf = AppConfig(request.env.cmd_options.args[-1], reload=is_testing)
 else:
-    # NB: When running under rocket, re-load config every request with is_testing
+    # Reload config on each request when is_testing (i.e. not production)
     myconf = AppConfig(reload=is_testing)
 
 ## Configure i18n
