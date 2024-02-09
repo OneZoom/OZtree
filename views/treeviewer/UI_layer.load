@@ -236,12 +236,6 @@ unchecked>
 <div id="tours-modal" class="uk-modal-container" uk-modal>
     <div class="uk-modal-dialog">
         <button class="uk-modal-close-outside" type="button" uk-close></button>
-        <div class="uk-modal-header">
-            <h2 class="uk-modal-title">
-              {{=T('Tours')}}
-              <a target="_blank" class="uk-icon-button expand-tab" uk-tooltip="pos: left" title="{{=T('Open this in a new window')}}" uk-icon="icon: expand; ratio: 0.75" ></a>
-            </h2>
-        </div>
         <div class="uk-modal-body popup-content iframe-container">
         </div>
     </div>

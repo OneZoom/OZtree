@@ -23,8 +23,11 @@ a, a:link, a:active, a:visited, a:hover {
 }
 
 .main_content {
-  a, a:link, a:active, a:visited, a:hover {
+  a:not(.block) {
     color: $oz_green_bg;
+    &:link, &:active, &:visited, &:hover {
+      color: $oz_green_bg;
+    }
   }
   a.a-light {
     color: $oz_green_fg;
