@@ -1,7 +1,6 @@
 import tree_state from './tree_state';
 import {max, min} from './util/index';
 
-let targetScreenProp = 0.95;
 let x_add = null;
 let y_add = null;
 let r_mult = null;
@@ -60,77 +59,71 @@ function drawreg2_target(node, x,y,r) {
 }
 
 /**
- * Update x_add / y_add / r_mult globals, either to node location if developed,
- * or x2/y2/r2
+ * Update x_add / y_add / r_mult / more_flying_needed globals,
+ * either to node location if developed, or x2/y2/r2
  */
 function get_xyr_target(node, x2,y2,r2,into_node) {
   let x = node.rvar ? node.xvar : x2;
   let y = node.rvar ? node.yvar : y2;
   let r = node.rvar ? node.rvar : r2;
-  
-  if ((node.targeted)||(r_mult<0.00000001)) {
-    // nothing to do otherwise
-    
-    // update all the variables as we go.
-    /* this vx part is copied from move routines above*/
-    let vxmax;
-    let vxmin;
-    let vymax;
-    let vymin;
-    
-    // we don'fly_timer want to include the stem in this and so we include both child horizons only
-    if (node.has_child) {
-      if (into_node&&into_node==true) {
-        [vxmax, vxmin, vymax, vymin] = get_v_horizon_by_arc(node, 1.1, x, y, r);
-      } else {
-        [vxmax, vxmin, vymax, vymin] = get_v_horizon_by_child(node, x, y, r);
-      }
+
+  // Node not targeted / already there --> nothing to do.
+  if (!node.targeted && r_mult >= 0.00000001) return;
+
+  // Work out desired bounding box for this node
+  let x_targ_max;
+  let x_targ_min;
+  let y_targ_max;
+  let y_targ_min;
+  // we don't want to include the stem in this and so we include both child horizons only
+  if (node.has_child) {
+    if (into_node&&into_node==true) {
+      [x_targ_max, x_targ_min, y_targ_max, y_targ_min] = get_v_horizon_by_arc(node, 1.1, x, y, r);
     } else {
-      [vxmax, vxmin, vymax, vymin] = get_v_horizon_by_arc(node, 1.305, x, y, r);
+      [x_targ_max, x_targ_min, y_targ_max, y_targ_min] = get_v_horizon_by_child(node, x, y, r);
     }
-    
-    let x_targ_max = vxmax;
-    let x_targ_min = vxmin;
-    let y_targ_max = vymax;
-    let y_targ_min = vymin;
-    
-    // find out if new target area is constained by x or y axis compared to current view
-    if ((tree_state.widthres/tree_state.heightres)> (x_targ_max-x_targ_min)/(y_targ_max-y_targ_min)) {
-      // height controls size
-      r_mult = (tree_state.heightres*targetScreenProp)/(y_targ_max-y_targ_min);
-    } else {
-      // width controls size
-      r_mult = (tree_state.widthres*targetScreenProp)/(x_targ_max-x_targ_min);
+  } else {
+    [x_targ_max, x_targ_min, y_targ_max, y_targ_min] = get_v_horizon_by_arc(node, 1.305, x, y, r);
+  }
+
+  // find out if new target area is constained by x or y axis compared to current view
+  if (tree_state.focal_area.width / tree_state.focal_area.height > (x_targ_max-x_targ_min)/(y_targ_max-y_targ_min)) {
+    // height controls size
+    r_mult = tree_state.focal_area.height / (y_targ_max-y_targ_min);
+  } else {
+    // width controls size
+    r_mult = tree_state.focal_area.width / (x_targ_max-x_targ_min);
+  }
+
+  // Center node in focal area
+  x_add = (x_targ_max+x_targ_min)/2 - tree_state.focal_area.xcentre;
+  y_add = (y_targ_max+y_targ_min)/2 - tree_state.focal_area.ycentre;
+
+  // only go 1000000 at a time on r_mult
+  if (r_mult >= 10000000 && !node.graphref) {
+    more_flying_needed = true;
+    return;
+  }
+
+  // No children, nowhere to recurse to
+  if (!node.has_child) return;
+
+  // Find the first child that's targeted, recurse & use those values
+  for (let i=0; i < node.children.length; i++) {
+    let child = node.children[i];
+    if (child.targeted) {
+      get_xyr_target(child, x+r*node.nextx[i],y+r*node.nexty[i],r*node.nextr[i],into_node);
+      return;
     }
-    x_add = (x_targ_max+x_targ_min - tree_state.widthres)/2;
-    y_add = (y_targ_max+y_targ_min - tree_state.heightres)/2;
-    //* // strangely when I comment this out I get a perfect zoom out!
-    
-    if ((r_mult<10000000)||(node.graphref)) {// only go 1000000 at a time on r_mult
-      if (node.has_child) {
-        let child_targeted = false;
-        let length = node.children.length;
-        for (let i=0; i<length; i++) {
-          let child = node.children[i];
-          if (child.targeted && !child_targeted) {
-            child_targeted = true;
-            get_xyr_target(child, x+r*node.nextx[i],y+r*node.nexty[i],r*node.nextr[i],into_node);
-          }
-        }
-        
-        if (!child_targeted) {
-          if (r_mult < 0.00000001) more_flying_needed = true;
-          for (let i=0; i<node.children.length; i++) {
-            let child = node.children[i];
-            if (child.graphref && !child.gvar) {
-              get_xyr_target(child, x+r*node.nextx[i],y+r*node.nexty[i],r*node.nextr[i],into_node);
-              break;
-            }
-          }
-        }
-      }
-    } else {
-      more_flying_needed = true;
+  }
+
+  // If we didn't find a target child, use graphref/gvar to recurse
+  if (r_mult < 0.00000001) more_flying_needed = true;
+  for (let i=0; i<node.children.length; i++) {
+    let child = node.children[i];
+    if (child.graphref && !child.gvar) {
+      get_xyr_target(child, x+r*node.nextx[i],y+r*node.nexty[i],r*node.nextr[i],into_node);
+      return;
     }
   }
 }
@@ -191,20 +184,6 @@ function get_v_horizon_by_arc(node, factor, x, y, r) {
   let vymax = (y+r*(node.arcy+node.arcr*factor));
   let vymin = (y+r*(node.arcy-node.arcr*factor)); // add for leaf points   *1.305 doesn'fly_timer care about the leaf direction - could change this later perhaps
   return [vxmax, vxmin, vymax, vymin]
-}
-
-
-function print_target_node(node) {
-  let arr = [];
-  get_targets(node, arr);
-  console.log(arr.reverse());
-}
-
-function get_targets(node, arr) {
-  arr.push(node.metacode);
-  if (node.upnode) {
-    get_targets(node.upnode, arr);
-  }
 }
 
 
@@ -359,43 +338,37 @@ function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func,
  * @param {float} prop_z Proportion of r_mult to zoom (0 - start, 1 - end)
  */
 function pan_zoom(prop_p, prop_z) {
-  if (r_mult >= 1) {
-    auto_pan_zoom(prop_p, prop_z);
-  } else {
-    auto_pan_zoom_out(prop_p, prop_z);
+  // Copy globals so we can modify
+  let pre_xp2 = pre_xp;
+  let pre_yp2 = pre_yp;
+  let pre_ws2 = pre_ws;
+  let y_add2 = y_add;
+  let x_add2 = x_add;
+  let r_mult2 = r_mult;
+
+  const tree_centreX = tree_state.focal_area.xcentre;
+  const tree_centreY = tree_state.focal_area.ycentre;
+
+  if (r_mult2 < 1) { // Zooming outwards
+    pre_xp2 = tree_centreX + (pre_xp2-x_add2-tree_centreX)*r_mult2;
+    pre_yp2 = tree_centreY + (pre_yp2-y_add2-tree_centreY)*r_mult2;
+    pre_ws2 = pre_ws2 * r_mult2;
+
+    prop_p = 1-prop_p;
+    prop_z = 1-prop_z;
+
+    y_add2 = (-y_add2)*r_mult2;
+    x_add2 = (-x_add2)*r_mult2;
+    r_mult2 = 1/r_mult2;
+    // todo - getting there, but need to play with the function still - it's not right
+    // also can transform the prop_p and prop_z components of this to make it non linear and more zooming initially
+    // could change to measure x and y add in terms of the zoomed out version
   }
+
+  tree_state.ws = pre_ws2 * Math.pow(r_mult2,prop_z);
+  tree_state.xp = tree_centreX + x_add2*(1-prop_p) + (pre_xp2-x_add2-tree_centreX) * Math.pow(r_mult2,prop_z);
+  tree_state.yp = tree_centreY + y_add2*(1-prop_p) + (pre_yp2-y_add2-tree_centreY) * Math.pow(r_mult2,prop_z);
 }
-
-function auto_pan_zoom(prop_p,prop_z) {  
-  let centreY = y_add + tree_state.heightres/2;
-  let centreX = x_add + tree_state.widthres/2;
-  tree_state.ws = pre_ws*(Math.pow(r_mult,prop_z));
-  tree_state.xp = centreX + (pre_xp-centreX)*(Math.pow(r_mult,prop_z)) - x_add*prop_p;
-  tree_state.yp = centreY + (pre_yp-centreY)*(Math.pow(r_mult,prop_z)) - y_add*prop_p;
-}
-
-function auto_pan_zoom_out(prop_p,prop_z){
-  let pre_xp_new = tree_state.widthres/2 + (pre_xp-tree_state.widthres/2 - x_add)*r_mult;
-  let pre_yp_new = tree_state.heightres/2 + (pre_yp-tree_state.heightres/2 - y_add)*r_mult;
-  let pre_ws_new = pre_ws*r_mult;
-  
-  let prop_p2 = 1-prop_p;
-  let prop_z2 = 1-prop_z;
-  
-  let y_add2 = (-y_add)*r_mult;
-  let x_add2 = (-x_add)*r_mult;
-  let r_mult2 = 1/r_mult;
-    
-  let centreY = y_add2+tree_state.heightres/2;
-  let centreX = x_add2+tree_state.widthres/2;
-  tree_state.ws = pre_ws_new*(Math.pow(r_mult2,prop_z2));
-  tree_state.xp = centreX + (pre_xp_new-centreX)*(Math.pow(r_mult2,prop_z2)) - x_add2*prop_p2;
-  tree_state.yp = centreY + (pre_yp_new-centreY)*(Math.pow(r_mult2,prop_z2)) - y_add2*prop_p2;
-
-  // todo - getting there, but need to play with the function still - it's not right
-  // also can transform the prop_p and prop_z components of this to make it non linear and more zooming initially
-  // could change to measure x and y add in terms of the zoomed out version
-};
 
 function reanchor_at_node(node) {
   node.graphref = true;
