@@ -205,6 +205,11 @@ def data():
             tss_targets = {}
             for i, ts in enumerate(request.vars['tourstops']):
                 ts = { "template_data": {}, **ts_shared, **ts, "tour": tour_id, "ord": i + 1 }  # Combine with shared data, references
+                if str(ts.get('ott', "")).startswith('@_ancestor'):
+                    parts = ts['ott'].split("=")
+                    assert len(parts) == 3
+                    ts['ott'] = int(parts[1])
+                    ts['secondary_ott'] = int(parts[2])
                 if 'symlink_tourstop' in ts:
                     if 'symlink_tour' not in ts:
                         ts['symlink_tour'] = tour_identifier
@@ -253,7 +258,7 @@ def data():
 
     def munge_tourstop(ts):
         if ts.secondary_ott:
-            ts.ott = "%d..%d" % (ts.ott, ts.secondary_ott)
+            ts.ott = "@_ancestor=%d=%d" % (ts.ott, ts.secondary_ott)
         return ts
 
     # Combine lists of associated tourstops, add to tour object

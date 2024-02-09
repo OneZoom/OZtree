@@ -287,6 +287,35 @@ class TestControllersTour(unittest.TestCase):
             orig_ts2[2]['ott'],
         ])
 
+    def test_data_commonancestor(self):
+        """Can refer to common ancestors in tourstops"""
+        otts = util.find_unsponsored_otts(10)
+
+        # Can insert a tour with a common ancestor pinpoint
+        t = self.tour_put('UT::TOUR', dict(
+            title="A unit test tour",
+            description="It's a nice tour",
+            author="UT::Author",
+            tourstops=[
+                dict(
+                    ott='@_ancestor=%d=%d' % (otts[0], otts[1]),
+                    identifier="ott0",
+                ),
+            ],
+        ))
+
+        # Get back the same pinpoint
+        self.assertEqual(
+            t['tourstops'][0]['ott'],
+            '@_ancestor=%d=%d' % (otts[0], otts[1]),
+        )
+
+        # Broken down in DB
+        ts = db(db.tour.id == t['id']).select(db.tour.ALL)[0].tourstop.select()[0]
+        self.assertEqual(ts.ott, otts[0])
+        self.assertEqual(ts.secondary_ott, otts[1])
+
+
     def test_list(self):
         def t_list(tours):
             return util.call_controller(
