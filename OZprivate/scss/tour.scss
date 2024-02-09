@@ -29,6 +29,7 @@
     /* tour_resume buttons only visible the tour is paused */
     .tour_resume { display: none }
     &[data-state=tstate-paused] .tour_resume { display: initial }
+    &[data-state=tstate-paused] .tour_forward { display: none }
 
     /* tour_backward & tour_forward don't make sense at beginning / end */
     > .container.ts-first .tour_backward { display: none }
@@ -36,63 +37,213 @@
 }
 
 #tour_wrapper > .tour.layout-def {
-  .tour_container {
-    border: 1px solid #cccccc;
-    width: fit-content;
-    background: white;
-    padding-top: 5px;
-    top: 10px;
-    left: 10px;
-    position: absolute;
+  > .tour_container {
+    position: fixed;
+    bottom: -1px;
+    left: 0;
+    box-sizing: border-box;
+    width: 100%;
+    height: fit-content;
+    max-height: 100vh;
+
+    padding: 0 0.6rem;
+
+    border: 1px solid #242A22;
+    border-bottom-width: 0;
+    border-radius: 20px 20px 0 0;
+
+    background: rgba(255,255,255,0.8);
+    color: #242A22;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+
+    @media (orientation: landscape) {
+      /* Mobile landscape mode */
+      max-width: 50%;
+      margin: 0 5px;
+
+      @media (min-width: 1000px) {
+        /* Desktop/tablet landscape mode */
+        position: absolute;
+        top: 50vh;
+        left: 5vw;
+        width: 40vw;
+        max-width: none;
+        transform: translate(0, -50%);
+
+        border-bottom-width: 1px;
+        border-radius: 5px;
+      }
+    }
   }
 
   .title {
-    border-bottom: 1px solid #cccccc;
-    text-align: center;
-    font-size: 20px;
-    margin-bottom: 10px;
-    padding: 0 30px;
-  }
+    flex-shrink: 1;
+    overflow-y: hidden;
 
-  .img {
-    display: block;
-    width: 250px;
-    height: 300px;
+    margin: 0;
+    font-size: 26px;
+
+    @media (orientation: landscape) {
+      @media (min-width: 1000px) {
+        /* Desktop/tablet landscape mode */
+        padding: 5px 0;
+        font-size: 32px;
+        border-bottom: 1px solid #242A22;
+      }
+    }
   }
 
   .window_text {
-    width: 250px;
-    padding-left: 10px;
-    margin-bottom: 10px;
+    flex-grow: 1;
+    flex-shrink: 10;
+    overflow-y: auto;
+  }
+
+  .tour_container > iframe, .tour_container > a.embed-wikimedia, .tour_container > .embed-audio {
+    flex-grow: 1000;
+    flex-shrink: 1000; /* Far more likely to shrink media than window text */
+    overflow-y: auto;
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .tour_container > iframe {
+    max-width: 100%;
+    aspect-ratio: 16/9;
+  }
+  .tour_container > a.embed-wikimedia {
+    max-width: 80%;
+    > img {
+      object-fit: cover;
+      max-height: 100%;
+      max-width: 100%;
+      border: 1px solid #242A22;
+      border-radius: 5px;
+    }
+  }
+  .tour_container > .embed-audio {
+    position: relative; /* Contain copyright link */
+    width: 100%;
+    > audio {
+      display: inline;
+      max-width: 80%;
+      max-height: 100%;
+    }
+    .copyright {
+      position: absolute;
+      top: 0;
+    }
+  }
+
+  button {
+    border: 1px solid #000;
+    background-color: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .header {
+    margin: 0 -0.6rem; /* Cancel container padding */
+
+    .tour_exit.handle {
+      border: none;
+      margin: 0.3rem auto;
+      width: 5rem;
+      height: 3px;
+      background: #242A22;
+      border-radius: 6px;
+      font-size: 0;
+
+      &:active {
+        background: #9BD05A;
+        box-shadow: 0 0 6px 1px #9BD05A;
+      }
+    }
+
+    .tour_exit.button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      line-height: 1.4rem;
+      font-size: 30px;
+      border: none;
+
+      &:active {
+        color: #9BD05A;
+        text-shadow: 0 0 6px #9BD05A;
+      }
+    }
+
+    .tour_exit.handle { display: block; }
+    .tour_exit.button { display: none; }
+    @media (orientation: landscape) {
+      @media (min-width: 1000px) {
+        /* Desktop/tablet landscape mode: Reveal × */
+        .tour_exit.handle { display: none; }
+        .tour_exit.button { display: block; }
+      }
+    }
   }
 
   .footer {
-    border-top: 1px solid #cccccc;
-    padding: 7px 0;
+    border-top: 1px solid #000;
+    margin: 0.3rem 0;
+    padding-top: 7px;
+    display: flex;
+    justify-content: space-between;
+
+    .tour_backward, .tour_forward, .tour_resume {
+      border: 0;
+      height: 35px;
+      background-repeat: no-repeat;
+      box-shadow: 0 4px 4px 0 rgba(0,0,0,0.25);
+    }
+    .tour_backward:active, .tour_forward:active, .tour_resume:active {
+      background-color: #EEE;
+    }
+
+    .tour_backward {
+      background-image: url(../images/oz-leftarrow-darkbg.svg);
+    }
+    .tour_forward, .tour_resume {
+      background-image: url(../images/oz-rightarrow-darkbg.svg);
+      background-position: right;
+      padding-right: 40px;
+    }
+
+    .tour_backward, .tour_forward, .tour_resume {
+      font-size: inherit;
+      border: 1px solid #242A22;
+    }
+    .tour_backward {
+      background-position: left;
+      border-radius: calc(35px / 2) 5px 5px calc(35px / 2);
+      border-left: none;
+      text-indent: 35px;
+      padding-right: 10px;
+    }
+    .tour_forward, .tour_resume {
+      background-position: right;
+      border-radius: 5px calc(35px / 2) calc(35px / 2) 5px;
+      border-right: none;
+      padding-left: 10px;
+      padding-right: 40px;
+    }
+
+    @media (orientation: landscape) {
+      @media (min-width: 1000px) {
+        /* Desktop/tablet landscape mode */
+        margin: 0.9rem 0;
+      }
+    }
   }
 
-  .footer:after {
+  &:after {
     content: '';
     display: block;
     clear: both;
-  }
-
-  .button {
-    float: left;
-    border: 1px solid #cccccc;
-    padding: 2px;
-    font-size: 12px;
-    text-align: center;
-    width: 45px;
-    margin: 0 7px;
-  }
-
-  .button:hover {
-    cursor: pointer;
-    background-color: #dddddd;
-  }
-
-  .tour_exit {
-    float: right;
   }
 }

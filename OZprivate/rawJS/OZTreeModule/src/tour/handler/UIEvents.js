@@ -49,6 +49,50 @@ function handler(tour) {
     }
   })
 
+  // Resize tourstop containers when grabbed by handles
+  var downInit = null;
+  const onMouseMove = (event) => {
+    if (!downInit) return;
+    var y = event.touches ? event.touches[0].screenY : event.screenY;
+    downInit.tourstop.style.height = Math.max(downInit.offset - y, 50) + 'px';
+  };
+  const onMouseUp = (event) => {
+    if (event.touches) {
+      document.removeEventListener('touchmove', onMouseMove);
+      document.removeEventListener('touchend', onMouseUp);
+      document.removeEventListener('touchcancel', onMouseUp);
+    } else {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    }
+    if (downInit.tourstop.offsetHeight < 50) {
+      tour.user_exit();
+    }
+    downInit = null;
+  };
+  const onMouseDown = (event) => {
+    if (event.target.classList.contains('handle')) {
+      var container = event.target.closest('.container');
+      var y = event.touches ? event.touches[0].screenY : event.screenY;
+      downInit = {target: event.target, tourstop: container, offset: container.offsetHeight + y};
+
+      if (event.touches) {
+        document.addEventListener('touchmove', onMouseMove);
+        document.addEventListener('touchend', onMouseUp);
+        document.addEventListener('touchcancel', onMouseUp);
+      } else {
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      }
+    }
+  };
+  tour.container[0].addEventListener('mousedown', onMouseDown);
+  tour.container[0].addEventListener('touchstart', onMouseDown);
+  tour.tourstop_observer('*', '*', (tour, tourstop, el_ts) => {
+    // Reset tourstop height after any state change
+    el_ts.style.height = '';
+  });
+
   // Listen to document level visibility (read: inactive tab), translate to tourstop blocks
   const onVisibilityChange = (e) => {
     tour.tourstop_array.forEach((ts) => {

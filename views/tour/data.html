@@ -36,6 +36,7 @@ ts_fields = (  # HTML fields that can be added to container
 }}
 {{T.set_current_languages((tour['lang'],))}}
 <div class="tour tour-{{=request.function}} layout-def {{=tour_identifier}}"
+       data-focal-area="0.5 0.5"
        {{for prop, tlated in tour_props:}}{{if tour.get(prop):}}data-{{=prop}}="{{=T(tour[prop]) if tlated else tour[prop]}}"
        {{pass}}{{pass}}>
 {{for ts in tour['tourstops']:}}
@@ -45,13 +46,25 @@ ts_fields = (  # HTML fields that can be added to container
   <div class="container tour_container {{=tdata.get('class', '')}} {{=" ".join(c for c in ts_classes if c in tdata)}}"
        {{for prop in ts_props:}}{{if ts.get(prop):}}data-{{=prop}}="{{=ts[prop]}}"
        {{pass}}{{pass}}>
+    <div class="header">
+      <button type="button" class="button tour_exit" aria-label="{{=T('Exit tour')}}">×</button>
+      <button type="button" class="handle tour_exit" aria-label="{{=T('Exit tour')}}"></button>
+    </div>
     {{for k, tag in ts_fields:}}{{if tdata.get(k, ''):}}
     <{{=tag}} class="{{=k}}">{{=T(tdata[k])}}</{{=tag}}>{{pass}}{{pass}}
-    {{if len(tdata.get('media', [])) > 0:}}<div class="media">{{for url in tdata['media']:}}
+    {{if len(tdata.get('media', [])) > 0:}}{{for url in tdata['media']:}}
       {{=XML(media_embed(url, ts_autoplay='tsstate-active_wait'))}}
-    {{pass}}</div>{{pass}}
+    {{pass}}{{pass}}
 
-    {{ include "tour/tourstop/footer.html" }}
+    <div class="footer">
+      <span>
+        <button class="tour_backward">{{=T('Back')}}</button>
+      </span>
+      <span>
+        <button class="tour_resume">{{=T('Resume')}}</button>
+        <button class="tour_forward">{{=T('Next')}}</button>
+      </span>
+    </div>
   </div>
 {{pass}}
 </div>
