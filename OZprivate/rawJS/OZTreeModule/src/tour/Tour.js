@@ -117,6 +117,16 @@ class Tour {
       this.remove_canvas_interaction_callbacks()
     }
 
+    // Inside a tour, leave room for tourstops during flights
+    if (new_state === tstate.INACTIVE) {
+      tree_state.constrain_focal_area(1, 1);
+    } else if (this.container[0].hasAttribute('data-focal-area')){
+      tree_state.constrain_focal_area.apply(
+          tree_state,
+          this.container[0].getAttribute('data-focal-area').split(" "),
+      );
+    }
+
     return this._state;
   }
 
