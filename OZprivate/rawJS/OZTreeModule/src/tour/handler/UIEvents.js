@@ -65,7 +65,7 @@ function handler(tour) {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     }
-    if (downInit.tourstop.offsetHeight < 50) {
+    if (downInit.tourstop.offsetHeight < 90) {
       tour.user_exit();
     }
     downInit = null;
