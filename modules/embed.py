@@ -82,10 +82,10 @@ def media_embed(url, **kwargs):
     if m:
         # TODO: There's a dedicated audio player embed we should probably use. The purpose here
         #       is more to demonstrate HTML audio than wikipedia commons in particular.
-        return """<audio class="embed-audio" controls
+        return """<div class="embed-audio"><audio controls
           src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{name}"
           {element_data}
-          ></audio><a href="{url}" title="title">(c)</a>""".format(
+          ></audio><a class="copyright" href="{url}" title="title">©</a></div>""".format(
             title=m.group(1),
             name=m.group(1),
             url=url,
