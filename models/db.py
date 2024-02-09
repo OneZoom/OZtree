@@ -765,7 +765,7 @@ db.define_table('tour',
 db.define_table('tourstop',
     Field('tour', db.tour),
     Field('identifier', type='string', notnull=True),  # Unique identifier for tourstop, for establishing symlinks
-    Field('ord', type='integer', notnull=True),  # The position of this tourstop in the tour
+    Field('ord', type='integer', notnull=True),  # The position of this tourstop in the tour, starting with 1
     Field('ott', type='integer', notnull=False),  # The OTT this tourstop points at. NULL => return to start
     Field('secondary_ott', type='integer', notnull=True),  # A second OTT when targeting a common ancestor
     Field('qs_opts', type='string', notnull=False, default=''),  # QS-style options to apply to modify tourstop, e.g. into_node=true&initmark=...
