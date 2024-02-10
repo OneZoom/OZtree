@@ -1,7 +1,9 @@
 ARG IMAGE_NAME
 FROM ${IMAGE_NAME}
 # Based on https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user#_change-the-uidgid-of-an-existing-container-user
-# Without this, it will chown everything to www-data on the host and break permissions.
+# This changes the www-data UID to 1000 to match the default user on the host, so that when it
+# chowns everything to www-data, it doesn't make it so that the host user cannot write to the files
+# anymore.
 RUN groupmod --gid 1000 www-data \
     && usermod --uid 1000 --gid 1000 www-data \
     && chown -R 1000:1000 /opt/web2py/applications
