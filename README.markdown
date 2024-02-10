@@ -21,7 +21,7 @@ If you are using Visual Studio Code, perform the following steps (you will need 
 1. Your repository is mounted at `/opt/web2py/applications/OZtree` and the original production docker container application is mounted at `cp /opt/web2py/applications/OZtree_original`. In order to sync your repository with the production database state, open an integrated terminal and run the following: `cp /opt/web2py/applications/OZtree_original/private/appconfig.ini /opt/web2py/applications/OZtree/private/ && cp /opt/web2py/applications/OZtree_original/databases/*.table /opt/web2py/applications/OZtree/databases/`
 1. Run `npm ci && grunt dev`. You will need to rerun `grunt dev` any time you make code changes.
 1. Visit http://localhost:8080 and the website should load! You can also run your own server from the dev container by [running web2py.py directly](#starting-and-shutting-down-web2py).
-1. (Optional) Once tables are created, and everything is working, you can set `is_testing = False` in `models/db.py` and `migrate = 0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
+1. (Optional) Once tables are created, and everything is working, you can set `migrate = 0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
 1. (Optional) [Create a manager account](#creating-auth-users--groups) in the auth table, e.g. so you can [view docs](#documentation).
 1. (Optional) MySQL is available on port 3307 if you wish to debug using local tools outside the container.
 
