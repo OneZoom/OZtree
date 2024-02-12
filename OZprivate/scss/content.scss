@@ -161,13 +161,6 @@ background-color: white;
       transform: none;
       background-position: center left;
     }
-
-    .oz-slider-arrow-left {
-      background-image: url(../images/oz-leftarrow-greenfg.svg);
-    }
-    .oz-slider-arrow-right {
-      background-image: url(../images/oz-rightarrow-greenfg.svg);
-    }
   }
 
   &.bkgd-polytomy {
@@ -371,7 +364,7 @@ ul.leaf-list {
 
 
 input.oz-pill { border: none; }
-.oz-pill {
+body .oz-pill {
   @extend %oz-background-dark;
 
   display: inline-block;

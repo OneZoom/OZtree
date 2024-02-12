@@ -30,8 +30,22 @@ $oz-font-serif: serif;
     color: $oz_grey_fg;
   }
 
+  a:not(.block) {
+    color: inherit;
+    &:link, &:active, &:visited, &:hover {
+      color: inherit;
+    }
+  }
+
   .oz-pill {
     border: 1px solid $oz_light_bg;
+  }
+
+  .uk-slider .oz-slider-arrow-left {
+    background-image: url(../images/oz-leftarrow-greenfg.svg);
+  }
+  .uk-slider .oz-slider-arrow-right {
+    background-image: url(../images/oz-rightarrow-greenfg.svg);
   }
 }
 
