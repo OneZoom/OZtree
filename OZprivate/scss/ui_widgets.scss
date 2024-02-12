@@ -1,0 +1,148 @@
+@import "colour_scheme.scss";
+
+/* ********** Call-to-action pills & lists ********************** */
+
+ul.leaf-list {
+  padding-left: 0;
+  line-height: 2rem;
+
+  li { list-style: none; }
+  li:before {
+    content: '';
+    display: inline-block;
+    vertical-align: text-bottom;
+    width: 2rem;
+    height: 1rem;
+    padding-right: 1rem;
+    background-image: url(../images/oz-leaf-greenfg.svg);
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+
+  &.oz-pill {
+    /* Nicer padding when being used as a call-to-action (e.g. sponsors) */
+    padding: 0.3rem 1rem;
+  }
+}
+
+
+input.oz-pill { border: none; }
+body .oz-pill {
+  @extend %oz-background-dark;
+
+  display: inline-block;
+  border-radius: 1.5rem 0;
+
+  &:not(img) {
+    padding: 0.75rem 1rem;
+  }
+
+  &.pill-round {
+    border-radius: 1.5rem;
+  }
+
+  &.pill-leafout {
+    background-image: url(../images/oz-logo-leafout-white.svg);
+    background-repeat: no-repeat;
+    background-position: 97% center;
+    background-size: 1.5rem;
+    padding-right: calc(1.5rem + 1rem); /* Add icon size to normal padding */
+  }
+
+  &.pill-leaf {
+    background-image: url(../images/oz-leaf-greenfg.svg);
+    background-repeat: no-repeat;
+    background-position: 0.7rem center;
+    background-size: 1.5rem;
+    padding-left: calc(1.5rem + 1rem); /* Add icon size to normal padding */
+  }
+
+  &.with-splash {
+    position: relative;
+  }
+
+  .oz-pill-splash {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: calc(100% - 10rem);
+    background-size: cover;
+    background-position: center;
+    border-radius: 0 0 1.4rem 0;
+  }
+
+  .uk-button {
+    text-transform: none;
+    font-size: 100%;
+  }
+  .uk-button-link {
+    @extend %oz-background-dark;
+  }
+}
+
+
+.main_content a.oz-pill {
+  &:link, &:visited, &:active, &:hover {
+    color: $oz_green_fg;
+  }
+}
+
+/* ********** Species leafout links ***************************** */
+
+img.species, .img-species > img {
+  background: whitesmoke;
+  border-radius: 50%;
+}
+span.img-species {
+  display: inline-block;
+}
+.img-species {
+  position: relative; /* Contain leafout background */
+}
+.img-species.leafout::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-image: url(../images/oz-logo-leafout-outline.svg);
+  background-repeat: no-repeat;
+  background-position: center 85%;
+  background-size: 30px;
+}
+.img-species.leafout.leafout-corner::after {
+  right: -10px;
+  background-position: right bottom;
+  background-image: url(../images/oz-logo-leafout-black.svg);
+}
+.endangered-species .img-species.leafout::after {
+  background-image: url(../images/oz-logo-leafout-outline-red.svg);
+}
+
+/* ********** Slider prev/next arrows ************************ */
+
+.uk-slider {
+  figure figcaption {
+    padding: 5px 1px;
+  }
+
+  .oz-slider-arrow {
+    width: 35px;
+    height: 35px;
+    margin: 15px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    &.oz-slider-arrow-left {
+      left: -55px;
+      background-image: url(../images/oz-leftarrow-darkbg.svg);
+    }
+    &.oz-slider-arrow-right {
+      right: -55px;
+      background-image: url(../images/oz-rightarrow-darkbg.svg);
+    }
+  }
+}
