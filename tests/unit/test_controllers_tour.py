@@ -315,6 +315,51 @@ class TestControllersTour(unittest.TestCase):
         self.assertEqual(ts.ott, otts[0])
         self.assertEqual(ts.secondary_ott, otts[1])
 
+    def test_data_shareddata(self):
+        """Can use tourstop_shared to fill in common tourstop values"""
+        otts = util.find_unsponsored_otts(10)
+
+        # Can insert a tour with a common ancestor pinpoint
+        t = self.tour_put('UT::TOUR', dict(
+            title="A unit test tour",
+            description="It's a nice tour",
+            author="UT::Author",
+            tourstop_shared=dict(
+                stop_wait=1234,
+                template_data={
+                    "title": "Some tourstop",
+                    "visible-transition_in": True,
+                },
+            ),
+            tourstops=[
+                dict(
+                    ott='@_ancestor=%d=%d' % (otts[0], otts[1]),
+                    identifier="ott0",
+                    stop_wait=3,
+                    template_data=dict(title="The first tourstop"),
+                ),
+                dict(
+                    ott='@_ancestor=%d=%d' % (otts[0], otts[1]),
+                    identifier="ott1",
+                    template_data={
+                        "visible-transition_in": False,
+                    },
+                ),
+            ],
+        ))
+        # Tourstop wins for top-level items
+        self.assertEqual(
+            [ts['stop_wait'] for ts in t['tourstops']],
+            [3, 1234],
+        )
+        # Items within template_data are also overridable, even if their override value is falsy
+        self.assertEqual(
+            [ts['template_data'] for ts in t['tourstops']],
+            [
+                {'title': 'The first tourstop', 'visible-transition_in': True},
+                {'title': 'Some tourstop', 'visible-transition_in': False},
+            ]
+        )
 
     def test_list(self):
         def t_list(tours):

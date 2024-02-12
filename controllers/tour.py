@@ -204,7 +204,15 @@ def data():
             ts_shared = request.vars.get('tourstop_shared', {})
             tss_targets = {}
             for i, ts in enumerate(request.vars['tourstops']):
-                ts = { "template_data": {}, **ts_shared, **ts, "tour": tour_id, "ord": i + 1 }  # Combine with shared data, references
+                ts = {
+                    **ts_shared,
+                    **ts,
+                    # Deep-clone template_data, should always exist
+                    "template_data": {**ts_shared.get("template_data", {}), **ts.get("template_data", {})},
+                    # Add DB references
+                    "tour": tour_id,
+                    "ord": i + 1,
+                }
                 if str(ts.get('ott', "")).startswith('@_ancestor'):
                     parts = ts['ott'].split("=")
                     assert len(parts) == 3
