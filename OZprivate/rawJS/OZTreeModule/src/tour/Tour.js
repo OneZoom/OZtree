@@ -234,16 +234,12 @@ class Tour {
     this.clear(tour_start_step)
 
     // Reset OTT/pinpoint to OZid map
-    this.tourstop_array.forEach(tourstop => {
-      if (tourstop.setting.ott && !isNaN(tourstop.setting.ott) && tourstop.setting.ott > 0) {
-        this.pinpoint_to_ozid[tourstop.setting.ott] = null;
-      }
-    });
+    this.pinpoint_to_ozid = {}
 
     // Attach all plugins to tour, loaded when everything is finished
     return Promise.all([
       handler_uievents(this),
-      resolve_pinpoints(Object.keys(this.pinpoint_to_ozid)).then((pps) => {
+      resolve_pinpoints(this.tourstop_array.map((s) => !s.setting.ott || s.setting.ott === "0" ? null : s.setting.ott)).then((pps) => {
         pps.forEach((pp) => {
           this.pinpoint_to_ozid[pp.pinpoint] = pp.ozid;
         });
