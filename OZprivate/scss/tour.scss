@@ -192,8 +192,12 @@
     border-top: 1px solid #000;
     margin: 0.3rem 0;
     padding-top: 7px;
+
     display: flex;
-    justify-content: space-between;
+    gap: 3%;
+    > .grow {
+        flex-grow: 1;
+    }
 
     .tour_backward, .tour_forward, .tour_resume {
       border: 0;

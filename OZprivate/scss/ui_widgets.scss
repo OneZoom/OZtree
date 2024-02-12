@@ -39,14 +39,15 @@ ul.leaf-list {
 
 
 input.oz-pill { border: none; }
-body .oz-pill {
+html body .oz-pill {
   @extend %oz-background-dark;
+  color: $oz_green_fg;
 
   display: inline-block;
   border-radius: 1.5rem 0;
 
   &:not(img) {
-    padding: 0.75rem 1rem;
+    padding: 0.3rem 1rem;
   }
 
   &.pill-round {
@@ -69,6 +70,14 @@ body .oz-pill {
     padding-left: calc(1.5rem + 1rem); /* Add icon size to normal padding */
   }
 
+  &.pill-share {
+    background-image: url(../images/oz-pill-share-greenfg.svg);
+    background-repeat: no-repeat;
+    background-position: 0.7rem center;
+    background-size: 1.3rem;
+    padding-left: calc(1.3rem + 1rem); /* Add icon size to normal padding */
+  }
+
   &.with-splash {
     position: relative;
   }
@@ -84,6 +93,10 @@ body .oz-pill {
     border-radius: 0 0 1.4rem 0;
   }
 
+  /* Buttons and other actions have fully-rounded corners */
+  .uk-button, &[uk-toggle] {
+    border-radius: 1.5rem;
+  }
   .uk-button {
     text-transform: none;
     font-size: 100%;
