@@ -85,6 +85,16 @@ class TestModulesPinpoint(unittest.TestCase):
             "aves",
         )
 
+    def test_latin_repeats(self):
+        """If searching for a non-unique latin phrase, OTT is checked first"""
+        # Find a latin name with lots of matching nodes with different OTTs (e.g. Calycina, Sergia, ...)
+        non_unique_name = db.executesql("SELECT name FROM ordered_nodes WHERE name IS NOT NULL GROUP BY name HAVING COUNT(DISTINCT ott) > 2 LIMIT 1")[0][0]
+
+        # For each, querying for @name=OTT should return the node with the matching OTT
+        for n in db(db.ordered_nodes.name==non_unique_name).select(db.ordered_nodes.name, db.ordered_nodes.ott):
+            out = resolve_pinpoint_to_row("@%s=%d" % (n.name, n.ott))
+            self.assertEqual(out[0]['ott'], n.ott)
+
     def test_tidy_latin(self):
         self.assertEqual(tidy_latin("Bacillus cereus F837/76"), "Bacillus_cereus_F837")
         self.assertEqual(tidy_latin("Bacillus coagulans DSM 1 = ATCC 7050"), "Bacillus_coagulans_DSM_1_")
