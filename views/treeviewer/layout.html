@@ -846,6 +846,26 @@ function setupUI() {
              $('#imageinfo-modal .popup-content .no-loading-info').show();
         });
 
+    $('#share-modal')
+        .on('beforeshow', function (event) {
+            var form = event.target.querySelector(":scope form");
+            form.url.value = window.location.href;
+        })
+        .on('submit', function (event) {
+            var form = event.target;
+            event.preventDefault();
+
+            form.url.select();
+            navigator.clipboard.writeText(form.url.value);
+
+            if (!form.elements.copy.oldValue) form.elements.copy.oldValue = form.elements.copy.value;
+            form.elements.copy.value = form.elements.copy.getAttribute('data-success-value');
+            window.setTimeout(function () {
+              form.elements.copy.value = form.elements.copy.oldValue;
+            }, 900);
+            return false;
+        });
+
     $('#tours-modal')
         .on('beforeshow', function (event) {
             var tours = onezoom.controller.tours_nearby();

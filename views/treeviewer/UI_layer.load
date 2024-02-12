@@ -310,3 +310,21 @@ unchecked>
     </div>
   </div>
 </div>
+<div id="share-modal" class="uk-modal-container" uk-modal>
+    <div class="uk-modal-dialog uk-modal-body">
+        <button class="uk-modal-close-default" type="button" uk-close></button>
+        <h2 class="uk-modal-title">{{=T('Share')}}</h2>
+        <form style="position: relative" class="no_disable">
+          <input type="url" name="url"
+              class="uk-input"
+              style="border-radius: 50lh;"
+              value="http://moo.com"
+              />
+          <input type="submit" name="copy" class="uk-button uk-button-default"
+              style="position: absolute; right: 0; border-radius: 50lh; background: #242A22; color: #9BD05A"
+              value="{{=T('Copy')}}" data-success-value="{{=T('Copied!')}}"
+              />
+        </form>
+        <p></p>
+    </div>
+</div>

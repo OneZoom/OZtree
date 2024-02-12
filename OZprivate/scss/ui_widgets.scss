@@ -1,5 +1,17 @@
 @import "colour_scheme.scss";
 
+.uk-button {
+  /* No shouty buttons */
+  text-transform: none;
+}
+
+button.uk-modal-close-default {
+  /* Modal button closer to edge than default */
+  top: 0;
+  right: 0;
+  color: #000;
+}
+
 /* ********** Call-to-action pills & lists ********************** */
 
 ul.leaf-list {
