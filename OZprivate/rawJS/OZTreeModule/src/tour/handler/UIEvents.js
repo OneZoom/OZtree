@@ -11,6 +11,7 @@
  *           <span class='button tour_resume'>{{=T('Resume tutorial')}}</span>
  *           <span class='button tour_exit'>{{=T('Exit tutorial')}}</span>
  *           <span class='button tour_forward'>{{=T('Skip')}} →</span>
+ *           <span class='button tour_goto stop_5'>{{=('Visit stop')}} 5</span>
  *         </div>
  *       </div>
  *     </div>
@@ -30,7 +31,7 @@ function handler(tour) {
   const document = tour.container[0].ownerDocument;
 
   tour.container.click((e) => {
-    var target = $(e.target).closest('.tour_forward,.tour_backward,.tour_play,.tour_pause,.tour_resume,.tour_exit,.exit_confirm,.exit_cancel');
+    var target = $(e.target).closest('.tour_forward,.tour_backward,.tour_goto,.tour_play,.tour_pause,.tour_resume,.tour_exit,.exit_confirm,.exit_cancel');
 
     if (target.length === 0) return;
     if (target.hasClass('tour_forward')) return tour.user_forward()
@@ -39,6 +40,12 @@ function handler(tour) {
     if (target.hasClass('tour_pause')) return tour.user_pause()
     if (target.hasClass('tour_resume')) return tour.user_resume()
     if (target.hasClass('tour_exit')) return tour.user_exit()
+    if (target.hasClass('tour_goto')) {
+      let m = target[0].className.match(/(?:\W|^)stop_(\d+)/);
+
+      if (!m) throw new Error("tour_goto class set without stop_(n) class: ", target[0].className);
+      return tour.goto_stop(parseInt(m[1], 10));
+    }
     if (target.hasClass('exit_confirm')) {
       tour.exit_confirm_popup.hide()
       return tour.user_exit()

@@ -392,6 +392,13 @@ class Tour {
    * Go to previous tour stop
    */
   goto_prev() {
+    this.goto_stop(Math.max(this.curr_step - 1, 0));
+  }
+
+  /**
+   * Jump to given tourstop
+   */
+  goto_stop(requested_step) {
     if (this.state === tstate.INACTIVE) {
       return
     }
@@ -399,11 +406,14 @@ class Tour {
       this.curr_stop().exit()
     }
 
-    if (this.curr_step > 0) {
-      this.prev_step = this.curr_step--
+    if (requested_step != this.curr_step) {
+      this.prev_step = this.curr_step;
+      this.curr_step = requested_step;
     }
 
     this.state = tstate.PLAYING  // NB: Cancel any paused state
+    // NB: We assume any jump is "backward", for the current use-cases it's the right thing
+    //     but this may not be what we want for a quiz, e.g.
     this.curr_stop().play_from_start('backward')
   }
 
