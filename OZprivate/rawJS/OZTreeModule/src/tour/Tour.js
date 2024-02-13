@@ -183,7 +183,7 @@ class Tour {
 
     var resolve_tour_loaded;
     this.tour_loaded = new Promise((resolve) => resolve_tour_loaded = resolve).then(() => {
-      if (window.is_testing) console.log("Loaded tour")
+      if (window.tour_trace) console.log("Loaded tour")
       return this.ready_callback();
     });
 
@@ -290,7 +290,7 @@ class Tour {
       throw new Error("Unknown value of interaction setting: " + this.interaction)
     }
 
-    if (window.is_testing) console.log("Adding canvas hooks")
+    if (window.tour_trace) console.log("Adding canvas hooks")
     Interaction_Action_Arr.forEach(action_name => {
         if (typeof this.interaction_callback === 'function') {
             // Add the user's interaction callback as well
@@ -320,7 +320,7 @@ class Tour {
 
       this.state = tstate.PLAYING
       this.rough_initial_loc = this.onezoom.controller.largest_visible_node().ozid
-      if (window.is_testing) console.log("Tour `" + this.name + "` started")
+      if (window.tour_trace) console.log("Tour `" + this.name + "` started")
       if (typeof this.start_callback === 'function') {
         this.start_callback()
       }
@@ -434,7 +434,7 @@ class Tour {
    */
   user_pause() {
     if (this.state !== tstate.INACTIVE && this.curr_stop()) {
-      if (window.is_testing) console.log("User paused")
+      if (window.tour_trace) console.log("User paused")
       this.state = tstate.PAUSED
       this.curr_stop().pause()
     }
@@ -445,7 +445,7 @@ class Tour {
    */
   user_resume() {
     if (this.state !== tstate.INACTIVE && this.curr_stop()) {
-      if (window.is_testing) console.log("User resumed")
+      if (window.tour_trace) console.log("User resumed")
       this.state = tstate.PLAYING
       this.curr_stop().resume()
     }
