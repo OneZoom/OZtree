@@ -63,7 +63,6 @@ import tree_state from '../tree_state';
 import { add_hook, remove_hook } from '../util';
 import { resolve_pinpoints } from '../navigation/pinpoint';
 
-let tour_id = 1
 const Interaction_Action_Arr = ['mouse_down', 'mouse_wheel', 'touch_start', 'touch_move', 'touch_end', 'window_size_change']
 
 //Tour State classes
@@ -75,7 +74,6 @@ const tstate = {
 
 class Tour {
   constructor(onezoom) {
-    this.tour_id = tour_id++
     this.onezoom = onezoom // enabling access to controller
     this.curr_step = 0
     this.prev_step = null
