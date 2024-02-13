@@ -12,6 +12,7 @@
  *           <span class='button tour_exit'>{{=T('Exit tutorial')}}</span>
  *           <span class='button tour_forward'>{{=T('Skip')}} →</span>
  *           <span class='button tour_goto stop_5'>{{=('Visit stop')}} 5</span>
+ *           <select class="tour_goto"><option value="5">5</option</select>
  *         </div>
  *       </div>
  *     </div>
@@ -40,7 +41,7 @@ function handler(tour) {
     if (target.hasClass('tour_pause')) return tour.user_pause()
     if (target.hasClass('tour_resume')) return tour.user_resume()
     if (target.hasClass('tour_exit')) return tour.user_exit()
-    if (target.hasClass('tour_goto')) {
+    if (target[0].tagName !== 'SELECT' && target[0].classList.contains('tour_goto')) {
       let m = target[0].className.match(/(?:\W|^)stop_(\d+)/);
 
       if (!m) throw new Error("tour_goto class set without stop_(n) class: ", target[0].className);
@@ -54,7 +55,15 @@ function handler(tour) {
       tour.exit_confirm_popup.hide()
       return tour.user_resume()
     }
-  })
+  });
+  tour.container.change((event) => {
+    var target = event.target.closest('.tour_goto');
+
+    if (!target) return;
+    if (target.tagName === 'SELECT' && target.classList.contains('tour_goto')) {
+      return tour.goto_stop(parseInt(target.value, 10));
+    }
+  });
 
   // Resize tourstop containers when grabbed by handles
   var downInit = null;
