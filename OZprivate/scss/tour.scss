@@ -189,7 +189,7 @@
   }
 
   .footer {
-    border-top: 1px solid #000;
+    border-top: 1px solid #242a22;
     margin: 0.3rem 0;
     padding-top: 7px;
 
@@ -244,7 +244,7 @@
     @media (orientation: landscape) {
       @media (min-width: 1000px) {
         /* Desktop/tablet landscape mode */
-        margin: 0.9rem 0;
+        margin: 0 0 0.9rem 0;
       }
     }
   }

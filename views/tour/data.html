@@ -56,9 +56,9 @@ ts_fields = (  # HTML fields that can be added to container
       {{=XML(media_embed(url, ts_autoplay='tsstate-active_wait'))}}
     {{pass}}{{pass}}
 
+    <div><a href="#share-modal" class="tour_pause oz-pill pill-share" style="float: right" uk-toggle>{{=T('Share')}}</a></div>
     <div class="footer">
       <button class="tour_backward">{{=T('Back')}}</button>
-      <a href="#share-modal" class="tour_pause oz-pill pill-share" uk-toggle>{{=T('Share')}}</a>
       <span class="grow"></span>
       <button class="tour_resume">{{=T('Resume')}}</button>
       <button class="tour_forward">{{=T('Next')}}</button>
