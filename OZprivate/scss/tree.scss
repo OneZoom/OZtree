@@ -28,7 +28,7 @@ body.tree-viewer {
     }
 
     #UI {
-        z-index:2; /* overlay the canvas with the UI */
+        z-index: 200; /* overlay the canvas & tour UI with the UI */
         height: 0; /* UI layer can't cover page, then we can't interact with canvas */
     }
 }
