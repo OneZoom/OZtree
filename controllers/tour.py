@@ -112,7 +112,7 @@ def homepage_animation():
             db.ordered_leaves.ott, db.ordered_leaves.name):
         titles[r.ott] = r.name
     # Look up scientific names and best PD image otts for all startpoint otts
-    for r in db(db.ordered_nodes.ott.belongs(list(startpoints_ott_map.keys()))).select(
+    for r in db(db.ordered_nodes.ott.belongs(startpoints_ott_map.keys())).select(
             db.ordered_nodes.ott, db.ordered_nodes.name, db.ordered_nodes.rpd1):
         st_node_otts.add(r.ott)
         titles[r.ott] = r.name
