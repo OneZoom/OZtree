@@ -849,6 +849,25 @@ function setupUI() {
     $('#share-modal')
         .on('beforeshow', function (event) {
             var form = event.target.querySelector(":scope form");
+
+            // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share#sharing_a_url
+            if (navigator.share) {
+                navigator.share({
+                  title: window.document.title,
+                  text: "Explore the tree of life with OneZoom",
+                  url: window.location.href,
+                }).catch(function (error) {
+                  if (error.name === "AbortError") {
+                      UIkit.modal('#share-modal').hide();
+                  } else {
+                      throw error;
+                  }
+                }).then(function () {
+                  UIkit.modal('#share-modal').hide();
+                });
+            }
+
+            // Fallback: Populate form and let modal show
             form.url.value = window.location.href;
         })
         .on('submit', function (event) {
