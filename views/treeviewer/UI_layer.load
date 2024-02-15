@@ -50,7 +50,25 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
   <div uk-spinner="ratio: 3"></div>
 </div>
 
-<ul class="ui-controls uk-iconnav uk-iconnav-vertical">
+<ul class="ui-controls controls-right uk-iconnav uk-iconnav-vertical">
+  <li id="resetButton" class="uk-visible@s">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('Reset view')}}" uk-icon="icon: refresh"></a>
+    </div>
+  </li>
+  <li id="inButton" class="uk-visible@s">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('Zoom in')}}" uk-icon="icon: plus"></a>
+    </div>
+  </li>
+  <li id="outButton" class="uk-visible@s">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('Zoom out')}}" uk-icon="icon: minus"></a>
+    </div>
+  </li>
+</ul>
+
+<ul class="ui-controls controls-left uk-iconnav uk-iconnav-vertical">
   <li id="toursButton">
     <div class="icon-container">
       <a href="#tours-modal" uk-toggle uk-icon="icon: location"></a>
@@ -65,24 +83,6 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
         <ol class="location-list"></ol>
     </div><!-- inline-block: hide whitespace
     --><span class='button-label top-border top-right-radius top-padding'>{{=T('Location')}}</span>
-  </li>
-  <li id="inButton" class="uk-visible@s">
-    <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('Zoom in')}}" uk-icon="icon: plus"></a>
-    </div>
-    <span class='button-label top-border'>{{=T('Zoom in')}}</span>
-  </li>
-  <li id="outButton" class="uk-visible@s">
-    <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('Zoom out')}}" uk-icon="icon: minus"></a>
-    </div>
-    <span class='button-label'>{{=T('Zoom out')}}</span>
-  </li>
-  <li id="resetButton" class="uk-visible@s">
-    <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('Reset view')}}" uk-icon="icon: refresh"></a>
-    </div>
-    <span class='button-label'>{{=T('Reset view')}}</span>
   </li>
   <li id="screenshotButton">
     <div class='icon-container'>
