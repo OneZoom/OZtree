@@ -12,15 +12,15 @@ $color-ui-foreground: #eee;
 #locationDropdown .location-list,
 #locationDropdown .toploc a,
 #locationDropdown li a,
-#controlButtons {
+.ui-controls {
   background: $color-ui-background;
   border-color: $color-ui-border;
   color: $color-ui-foreground;
 }
-#controlButtons>*>a {
+.ui-controls>*>a {
   color: $color-ui-foreground;
 }
-#controlButtons #resetButton a {
+.ui-controls #resetButton a {
   border-color: $color-ui-foreground;
 }
 #advanced_search_toggle .uk-icon-button {

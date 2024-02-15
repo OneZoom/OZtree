@@ -584,17 +584,17 @@ function setupUI() {
         .click(function(){onezoom.controller.button_reset()});
 
     /* Control Button Hint Toggle */
-    $('#controlButtons #hideControlsButton .icon-container')
+    $('.ui-controls #hideControlsButton .icon-container')
         .click(function() {
-            $('#controlButtons').addClass('button-label-hidden')
+            $('.ui-controls').addClass('button-label-hidden')
         })
 
-    $('#controlButtons #showControlsButton .icon-container')
+    $('.ui-controls #showControlsButton .icon-container')
         .click(function () {
-            $('#controlButtons').removeClass('button-label-hidden')
+            $('.ui-controls').removeClass('button-label-hidden')
         })
     
-    $('#controlButtons #howToUseButton .icon-container')
+    $('.ui-controls #howToUseButton .icon-container')
         .click(function () {
             if (globals['tutorial_config']) onezoom.controller.tour_start(globals['tutorial_config'])
         })

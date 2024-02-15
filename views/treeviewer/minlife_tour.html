@@ -25,7 +25,7 @@ setup_params = {
 {{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
 <!-- since this should be possible to run without a server, remove the ability to switch languages/pages -->
 <style>
-ul#controlButtons #tourButton {display: block;}
+ul.ui-controls #tourButton {display: block;}
 .treeswitch {display: none}
 .langswitch {display: none}
 </style>
@@ -102,7 +102,7 @@ var pagetitle_func = function(nm) {return (nm)?("OneZoom restricted: "+ nm):"One
 // "#tourButton", and inject tthe tour object into the onezoom object dynamically.
 
 $(document).on("setupUI", function() {
-    $('#controlButtons #tourButton .icon-container')
+    $('.ui-controls #tourButton .icon-container')
         .click(function () {
             onezoom.controller.tour_start(document.getElementById('tour_config').firstChild)
         })

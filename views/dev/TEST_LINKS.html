@@ -8,7 +8,7 @@
 
 <p>However, instead of clicking on the links directly, you will probably get a better effect if you pre-load the path to the leaf, so that side-branches etc. get properly cached. You can then run something like the following in the javascript console. The timeout (15 seconds / 15000 milliseconds) is to give enough time to close the console window and select the area to be captured using quicktime or any other screen capture program</p>
 <p><code><pre>
-$('#controlButtons').hide()
+$('.ui-controls').hide()
 onezoom.config.projection.draw_sponsors = false
 onezoom.config.projection.sign_thres = 50 //adjust level where signposts are shown: default is 70
 onezoom.config.threshold.dynamic_adjust = false

@@ -99,7 +99,7 @@ body.loading #UI #loading_spinner {
     width: 1.25rem; height: 1.25rem;
 }
 
-#controlButtons {
+.ui-controls {
     position: fixed;
     bottom: 0.5em; 
     left:0.5em; 
@@ -110,8 +110,8 @@ body.loading #UI #loading_spinner {
     padding: 0.2em 0;
     margin: 0;
     }
-#controlButtons a:hover {text-decoration:none}
-#controlButtons > li {
+.ui-controls a:hover {text-decoration:none}
+.ui-controls > li {
     padding:0;
     margin:0;
     border-radius: 5px;
@@ -133,47 +133,47 @@ body.loading #UI #loading_spinner {
     }
 }
     
-#controlButtons [uk-dropdown] {
+.ui-controls [uk-dropdown] {
     /* make sure dropdowns always fit in the viewport, but don't cover header (or possibly get lost under Safari URL bar) */
     max-height: calc(100vh - 8rem);
     overflow-y: auto;
 }
-#controlButtons #inButton a {
+.ui-controls #inButton a {
     border-top: 1px solid #DDD
 }
 
-#controlButtons #multipleInfoButton a, 
-#controlButtons #singleInfoButton a, 
-#controlButtons #hideControlsButton a, 
-#controlButtons #showControlsButton a{
+.ui-controls #multipleInfoButton a, 
+.ui-controls #singleInfoButton a, 
+.ui-controls #hideControlsButton a, 
+.ui-controls #showControlsButton a{
     border-top: 1px solid #DDD;
 }
 
 /* Hide label text on the right of buttons */
-#controlButtons .button-label {
+.ui-controls .button-label {
     display: none;
 }
 
-#controlButtons #singleInfoButton {
+.ui-controls #singleInfoButton {
     display:none;
 }
 
 /* Hide hide/show control button, how to use button, tour button, etc */
-#controlButtons #showControlsButton,
-#controlButtons #hideControlsButton,
-#controlButtons #howToUseButton,
-#controlButtons #tourButton,
+.ui-controls #showControlsButton,
+.ui-controls #hideControlsButton,
+.ui-controls #howToUseButton,
+.ui-controls #tourButton,
 {
     display: none;
 }
 /* hide any "expert-mode" buttons */
-#controlButtons #screenshotButton
+.ui-controls #screenshotButton
 {
     display: none;
 }
 
 /* Toggle show/hide buttons if enabled */
-ul#controlButtons.button-label-hidden {
+ul.ui-controls.button-label-hidden {
     #showControlsButton { display: block; }
     #hideControlsButton { display: none; }
 }

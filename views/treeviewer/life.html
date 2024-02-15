@@ -50,15 +50,15 @@ body.within-iframe #searchnav,
 body.within-iframe #advanced_search_toggle { display: none; }
 
 /* In iframes, stick to just zoom buttons until too small for that too */
-body.within-iframe #controlButtons > #locationButton,
-body.within-iframe #controlButtons > #multipleInfoButton,
-body.within-iframe #controlButtons > #settingsButton { display: none; }
-body.within-iframe #controlButtons > #resetButton,
-body.within-iframe #controlButtons > #inButton,
-body.within-iframe #controlButtons > #outButton { display: block !important; }
+body.within-iframe .ui-controls > #locationButton,
+body.within-iframe .ui-controls > #multipleInfoButton,
+body.within-iframe .ui-controls > #settingsButton { display: none; }
+body.within-iframe .ui-controls > #resetButton,
+body.within-iframe .ui-controls > #inButton,
+body.within-iframe .ui-controls > #outButton { display: block !important; }
 
 /* Disable all dividers */
-body.within-iframe #controlButtons > li a {
+body.within-iframe .ui-controls > li a {
     border-top: none !important;
     border-bottom: none !important;
 }
