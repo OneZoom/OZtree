@@ -53,19 +53,39 @@ body.loading #UI #loading_spinner {
   margin: -45px 0 0 -45px;
 }
 
-.uk-navbar-item {
-    height:3rem;
-    line-height:3rem; /* force vertical centering */
-    display: block; /* don't use flex, as we want to position these outside a container */
+#UI {
+  .ui-topleft, .ui-topright, .ui-bottomleft, .ui-bottomright {
+    margin: 0.5rem;
+  }
+  .ui-topleft {
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin-right: 0;
+  }
+  .ui-topright {
+    float: right;
+    margin-left: 0;
+  }
+  .ui-bottomleft {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    margin-right: 0;
+  }
+  .ui-bottomright {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    margin-left: 0;
+  }
+  font-size: .875rem; /* From uk-navbar-item */
 }
 
-.uk-navbar-item.advanced_mode {
+.search-nav.advanced_mode {
     background-color: #EEE;
     border-bottom-left-radius: 5px;
     height:auto;
-}
-.uk-navbar-item div {
-    line-height:1rem; /* force vertical centering */
 }
 .logo {
     float: left;
@@ -104,19 +124,7 @@ body.loading #UI #loading_spinner {
     border-radius: 5px; 
     background-color: white;
     padding: 0.2em 0;
-    margin: 0;
-
-    &.controls-left {
-        position: fixed;
-        bottom: 0.5em;
-        left: 0.5em;
-    }
-
-    &.controls-right {
-        position: fixed;
-        bottom: 0.5em;
-        right: 0.5em;
-    }
+    margin: 0.5em;
 }
 .ui-controls a:hover {text-decoration:none}
 .ui-controls > li {
@@ -420,24 +428,18 @@ iframe {
     }
 }
 @media screen and (max-width: 640px) {
-    .uk-navbar-item {
-        padding: 0 5px;
-        height:2.5rem;
-        line-height:2.5rem;
-    }
-
-    #advanced_search_button {
-        width: 1.5rem;
-        height: 1.5rem;
-    }
-    #advanced_search_button svg {
-        height: 1rem;
-    }
     .logo img {
         height: 1.5rem;
     }
-    #searchnav .searchbox input {
-        height: 2rem;
+
+    /* Shrink height of top-right items */
+    .ui-topright {
+        &.ui-controls .icon-container > a {
+            padding: 0.2rem 0;
+        }
+        .searchbox input {
+            height: 2rem;
+        }
     }
     .uk-modal-close-outside {
         padding: 0;
