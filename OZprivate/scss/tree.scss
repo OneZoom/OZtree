@@ -150,7 +150,6 @@ body.loading #UI #loading_spinner {
     border-top: 1px solid #DDD
 }
 
-.ui-controls #multipleInfoButton a, 
 .ui-controls #singleInfoButton a, 
 .ui-controls #hideControlsButton a, 
 .ui-controls #showControlsButton a{
@@ -245,17 +244,10 @@ ul.ui-controls.button-label-hidden {
     width:12rem;
 }
 
-#infoDropdown {
-    padding: 0.5em 0;
-}
-#infoDropdown li span {
-    margin-right: 1em;
-}
-
 #settingsDropdown {
     text-align: left;
     padding: 0.6rem 20px 0.6rem 0rem;
-    min-width: 10rem;
+    min-width: 14rem;
 }
 
 .uk-modal-body {

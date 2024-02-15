@@ -126,84 +126,55 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
       <a uk-tooltip="pos: right" title="{{=T('Show panel')}}" uk-icon="icon: triangle-right"></a>
     </div>
   </li>
-  <li id="multipleInfoButton">
-    <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('Information')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: info"></a>
-    </div>
-    <span class='button-label'>Information</span>
-  </li>
-
-  <div id="infoDropdown" uk-dropdown="pos: right; mode: click;">
-    <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
-      <li><a href="#howuse-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('How to use')}}</a></li>
-      <li><a href="#colkey-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Colour key')}}</a></li>
-      <li><a href="#about-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('About OneZoom')}}</a></li>
-      <li><a href="#datasources-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Data sources')}}</a></li>
-      <li><a href="#terms-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Terms of use')}}</a></li>
-    </ul>
-  </div>
   <li id="settingsButton">
-      <div class='icon-container'>
-        <a uk-tooltip="pos: right" title="{{=T('Settings')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: settings"></a>
-      </div>
-  <form id="settingsDropdown" class="uk-navbar-dropdown" uk-dropdown="pos: right-bottom; mode: click;">
-    <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
+    <div class='icon-container'>
+      <a uk-tooltip="pos: right" title="{{=T('Settings')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: settings"></a>
+    </div>
+    <form id="settingsDropdown" class="uk-navbar-dropdown" uk-dropdown="pos: right-bottom; mode: click;">
+      <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
+        <li class="uk-nav-header">{{=T('Information')}}</li>
+        <li><a href="#howuse-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('How to use')}}</a></li>
+        <li><a href="#colkey-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Colour key')}}</a></li>
+        <li><a href="#about-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('About OneZoom')}}</a></li>
+        <li><a href="#datasources-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Data sources')}}</a></li>
+        <li><a href="#terms-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Terms of use')}}</a></li>
 
-      <li class="uk-nav-header">{{=T('Image sources')}}</li>
-      <li><label uk-tooltip="pos: right" title="{{=T('Show best image from any source: the image may not have been verified by a taxonomist. For any image, click or zoom on the © symbol for details.')}}">
-        <input class="uk-radio" type="radio" name="imgsource" value="best_any"> {{=T('Any')}}</label></li>
-      <li><label uk-tooltip="pos: right" title="{{=T('Only show images that have been verified by a taxonomist. For any image, click or zoom on the © symbol for details')}}">
-        <input class="uk-radio" type="radio" name="imgsource" value="best_verified"> {{=T('Verified')}}</label></li>
-      <li><label uk-tooltip="pos: right" title="{{=T('Only show public domain images (those not requiring the photographer or copyright holder to be listed when reusing OneZoom imagery)')}}">
-        <input class="uk-radio" type="radio" name="imgsource" value="best_pd"> {{=T('Public domain')}}</label></li>
+        <li class="uk-nav-header">{{=T('Image sources')}}</li>
+        <li><label uk-tooltip="pos: right" title="{{=T('Show best image from any source: the image may not have been verified by a taxonomist. For any image, click or zoom on the © symbol for details.')}}">
+          <input class="uk-radio" type="radio" name="imgsource" value="best_any"> {{=T('Any')}}</label></li>
+        <li><label uk-tooltip="pos: right" title="{{=T('Only show images that have been verified by a taxonomist. For any image, click or zoom on the © symbol for details')}}">
+          <input class="uk-radio" type="radio" name="imgsource" value="best_verified"> {{=T('Verified')}}</label></li>
+        <li><label uk-tooltip="pos: right" title="{{=T('Only show public domain images (those not requiring the photographer or copyright holder to be listed when reusing OneZoom imagery)')}}">
+          <input class="uk-radio" type="radio" name="imgsource" value="best_pd"> {{=T('Public domain')}}</label></li>
 
+        <li class="uk-nav-header animswitch">{{=T("SEARCH MODE")}}</li>
+        <li><label><input class="uk-radio" type="radio" name="searchmode" value="flight"> {{=T('Fly to results')}}</label></li>
+        <li><label><input class="uk-radio" type="radio" name="searchmode" value="jump"> {{=T('Jump to results')}}</label></li>
 
-<li class="uk-nav-header animswitch">{{=T("SEARCH MODE")}}</li>
-<li class="animswitch">
-<li>
-<label>
-<input class="uk-radio" type="radio" name="searchmode" value="flight"> {{=T('Fly to results')}}
-</label>
-</li>
-<li>
-<label>
-<input class="uk-radio" type="radio" name="searchmode" value="jump"> {{=T('Jump to results')}}
-</label>
-</li>
-</li>
+        <li class="uk-nav-header">{{=T("Colour By")}}</li>
+        <li class="colourswitch"><select id="colourtype" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a colour palette for the tree')}}">
+          {{include 'settings_values/cols.load'}}
+        </select></li>
+        <li><input type="checkbox" id="CBF" name="CBF" unchecked> <label for="CBF">Colour blind friendly</label></li>
 
+        <li class="uk-nav-header">{{=T('Visualisation Shape')}}</li>
+        <li class="treeswitch"><select id="treeshape" class="uk-select uk-form-small">
+          {{include 'settings_values/vis.load'}}
+        </select></li>
 
+        <li class="uk-nav-header langswitch">{{=T("Language")}}</li>
+        <li class="langswitch"><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1] if browser_language else None,)}}">
+          {{include 'settings_values/lang.load'}}
+        </select></li>
 
-<li class="uk-nav-header">{{=T("Colour By")}}</li>
-
-<li class="colourswitch"><select id="colourtype" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a colour palette for the tree')}}">
-  {{include 'settings_values/cols.load'}}
-</select></li>
-
-<input type="checkbox" id="CBF" name="CBF"
-unchecked>
-<label for="CBF">Colour blind friendly</label>
-
-<li class="uk-nav-header">{{=T('Visualisation Shape')}}</li>
-<li class="treeswitch"><select id="treeshape" class="uk-select uk-form-small">
-  {{include 'settings_values/vis.load'}}
-</select></li>
-
-      <li class="uk-nav-header langswitch">{{=T("Language")}}</li>
-      <li class="langswitch"><select id="language" class="uk-select uk-form-small" uk-tooltip="pos: right" title="{{=T('Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.') % (browser_language[1] if browser_language else None,)}}">
-        {{include 'settings_values/lang.load'}}
-      </select></li>
-
-<li class="uk-nav-header treeswitch">{{=T('Page Content')}}</li>
-<li class="treeswitch"><select id="treepage" class="uk-select uk-form-small">
-<option value="life">{{=T('OneZoom default')}}</option>
-<option value="AT">{{=T('Ancestor’s Tale')}}</option>
-<!--<option value="linnean">{{=T('Linnean Society')}}</option> -->
-</select></li>
-
-
-    </ul>
-  </form>
+        <li class="uk-nav-header treeswitch">{{=T('Page Content')}}</li>
+        <li class="treeswitch"><select id="treepage" class="uk-select uk-form-small">
+          <option value="life">{{=T('OneZoom default')}}</option>
+          <option value="AT">{{=T('Ancestor’s Tale')}}</option>
+          <!--<option value="linnean">{{=T('Linnean Society')}}</option> -->
+        </select></li>
+      </ul>
+    </form>
   </li>
 </ul>
 

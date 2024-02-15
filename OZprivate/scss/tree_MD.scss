@@ -4,12 +4,11 @@ html {font-size: 150%}
 .treeswitch {display: none !important} /* can't allow to switch to trees on other pages */
 .expand-tab {display: none !important} /* can't allow link out buttons */
 .ui-controls #singleInfoButton {display:list-item;}
-.ui-controls #multipleInfoButton {display:none;}
 /* make the buttons larger */
 .ui-controls > li a {padding-right: 0.5rem; padding-left: 0.5rem;}
 .ui-controls > li a svg {width: 40px; height: 40px;}
 .searchbox .spinner svg, .remove-searchbox svg {width: 25px; height: 25px;}
-#settingsDropdown, #infoDropdown {width: 12em;}
+#settingsDropdown {width: 12em;}
 
 
 /* Only show button labels by default in life_MD.html */
@@ -41,14 +40,6 @@ ul.ui-controls.controls-left {
    */
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
-}
-
-/*
- * Kai: I don't know why when click on hide or show buttons, infoDropdown would popup automatically.
- * In order to stop it from opening, set it hidden in here.
- */
-ul.ui-controls #infoDropdown {
-  display: none !important;
 }
 
 .ui-controls .button-label.top-border {
