@@ -276,14 +276,13 @@ ul#controlButtons.button-label-hidden {
     form {
         position: relative; /* Contain input[type='submit'] */
         > input[type='url'] {
-            border-radius: 50lh;
+            border-radius: 1.5rem;
         }
         > input[type='submit'] {
             position: absolute;
             right: 0;
-            border-radius: 50lh;
-            background: #242A22;
-            color: #9BD05A;
+            top: 1px;
+            padding: 0 1rem;
         }
     }
 }

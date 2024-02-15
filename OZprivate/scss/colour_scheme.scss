@@ -12,6 +12,8 @@ $oz_terms_bg: #4a514a;
 $oz_terms_fg: #c6c2be;
 $oz_grey_leaf: #6e6e6e;
 
+$oz_border_def: 242A22;
+
 $oz-font-serif: serif;
 %oz-font-serif {
   font-family: $oz-font-serif;
@@ -37,6 +39,9 @@ $oz-font-serif: serif;
     }
   }
 
+  &.oz-pill {
+    color: $oz_green_fg;
+  }
   .oz-pill {
     border: 1px solid $oz_light_bg;
   }
@@ -56,6 +61,10 @@ $oz-font-serif: serif;
   em {
     color: $oz_red_bg;
     font-family: inherit;
+  }
+
+  &.oz-pill {
+    color: $oz_dark_bg;
   }
 
 .green-text {

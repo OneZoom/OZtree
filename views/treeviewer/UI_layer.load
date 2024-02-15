@@ -319,7 +319,7 @@ unchecked>
               class="uk-input"
               value="http://moo.com"
               />
-          <input type="submit" name="copy" class="uk-button uk-button-default"
+          <input type="submit" name="copy" class="uk-button oz-pill"
               value="{{=T('Copy')}}" data-success-value="{{=T('Copied!')}}"
               />
         </form>

@@ -47,7 +47,7 @@ ul.leaf-list {
 
 input.oz-pill { border: none; }
 html body .oz-pill {
-  @extend %oz-background-dark;
+  background: $oz_dark_bg;
   color: $oz_green_fg;
 
   display: inline-block;
@@ -101,12 +101,21 @@ html body .oz-pill {
   }
 
   /* Buttons and other actions have fully-rounded corners */
-  .uk-button, &[uk-toggle] {
+  &.uk-button, &[uk-toggle] {
     border-radius: 1.5rem;
   }
-  .uk-button {
+  &.uk-button {
     text-transform: none;
     font-size: 100%;
+
+    &:hover {
+      background: $oz_dark_bg;
+      color: $oz_green_fg;
+    }
+    &:active {
+      background: $oz_green_fg;
+      color: $oz_dark_bg;
+    }
   }
   .uk-button-link {
     @extend %oz-background-dark;
