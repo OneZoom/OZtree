@@ -1,8 +1,19 @@
 {{include 'link_modifier.html'}}
 <!-- This contains all the overlay on top of the OneZoom canvas. It can be reloaded in different languages -->
 
-{{if not request.vars.no_oz_logo:}}<div class="logo uk-navbar-item">{{#The logo *never* opens a new tab (but it can be removed)}}{{=no_tab_A(IMG(_src=URL('static','images/oz-logo-1line-mono-dark.svg')), _href=URL('default','index', extension=False), _id="OZ-logo")}}&nbsp;</div>{{pass}}
-{{if request.vars.partner_logo:}}<div class="logo uk-navbar-item">{{if request.vars.partner_url:}}{{=A(IMG(_src=request.vars.partner_logo), _href=request.vars.partner_url)}}{{else:}}{{=SPAN(IMG(_src=request.vars.partner_logo))}}{{pass}}</div>{{pass}}
+<div class="logo uk-navbar-item">
+  {{if request.vars.partner_logo:}}
+    {{if request.vars.partner_url:}}
+      {{=A(IMG(_src=request.vars.partner_logo), _href=request.vars.partner_url)}}
+    {{else:}}
+      {{=SPAN(IMG(_src=request.vars.partner_logo))}}
+    {{pass}}
+  {{elif not request.vars.no_oz_logo:}}
+    {{#The logo *never* opens a new tab (but it can be removed)}}
+    {{=no_tab_A(IMG(_src=URL('static','images/oz-logo-1line-mono-dark.svg')), _href=URL('default','index', extension=False), _id="OZ-logo")}}
+  {{pass}}
+</div>
+
 <div class="uk-navbar-item search-nav" id="searchnav">
   <div class="search-basic">
     <div class="searchbox uk-search uk-search-default" id="search_form_basic">
@@ -44,10 +55,6 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
 </div>
 <div id="advanced_search_toggle" class="uk-navbar-item">
     <a id="advanced_search_button" data-advanced-title="{{=T('Turn off advanced search mode')}}" data-simple-title="{{=T('Advanced search (tracer) mode: click to turn on')}}" class="uk-icon-button" uk-tooltip="pos: left" uk-icon="icon: git-fork"></a>
-</div>
-
-<div id="loading_spinner">
-  <div uk-spinner="ratio: 3"></div>
 </div>
 
 <ul class="ui-controls controls-right uk-iconnav uk-iconnav-vertical">
@@ -199,6 +206,13 @@ unchecked>
   </form>
   </li>
 </ul>
+
+<div id="loading_spinner">
+  <div uk-spinner="ratio: 3"></div>
+</div>
+
+{{# Modals for use within UI ################################################}}
+
 <div id="error-modal" class="uk-modal-container" uk-modal>
     <div class="uk-modal-dialog uk-modal-body">
         <button class="uk-modal-close-outside" type="button" uk-close></button>
