@@ -47,6 +47,7 @@
  * * {@link tour/handler/HtmlAudio} Autoplays/stops ``<audio>`` in a tourstop based on ``data-ts_autoplay``.
  * * {@link tour/handler/QsOpts} Applies/reverts tree state based on ``data-qs_opts``, e.g. highlights, colour schemes, language.
  * * {@link tour/handler/UiEvents} Behavioural CSS classes to add to tour forward/backward/etc buttons.
+ * * {@link tour/handler/TsProgress} Individual links to tourstops, showing currently visited stops.
  * * {@link tour/handler/Vimeo} Autoplays/stops embedded Vimeo in a tourstop based on ``data-ts_autoplay``.
  * * {@link tour/handler/Youtube} Autoplays/stops embedded Youtube in a tourstop based on ``data-ts_autoplay``.
  * * ``applications.OZtree.modules.embed:media_embed``: Given a media URL from one of the recognised hosting sites, generate embed HTML suitable for the handlers above.
@@ -56,6 +57,7 @@
 import handler_htmlaudio from './handler/HtmlAudio';
 import handler_qsopts from './handler/QsOpts';
 import handler_uievents from './handler/UIEvents';
+import handler_tsprogress from './handler/TsProgress';
 import handler_vimeo from './handler/Vimeo';
 import handler_youtube from './handler/Youtube';
 import TourStopClass from './TourStop'
@@ -244,6 +246,7 @@ class Tour {
       }),
       handler_htmlaudio(this),
       handler_qsopts(this),
+      handler_tsprogress(this),
       handler_vimeo(this),
       handler_youtube(this),
     ]);

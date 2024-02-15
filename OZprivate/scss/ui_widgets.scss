@@ -5,6 +5,13 @@
   text-transform: none;
 }
 
+.uk-select {
+  border: 1px solid #242a22;
+  border-radius: 5px;
+  background: inherit;
+  color: inherit;
+}
+
 button.uk-modal-close-default {
   /* Modal button closer to edge than default */
   top: 0;

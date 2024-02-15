@@ -36,10 +36,11 @@ ts_fields = (  # HTML fields that can be added to container
 }}
 {{T.set_current_languages((tour['lang'],))}}
 <div class="tour tour-{{=request.function}} layout-def {{=tour_identifier}}"
+       data-identifier="{{=tour_identifier}}"
        data-focal-area="0.5 0.5"
        {{for prop, tlated in tour_props:}}{{if tour.get(prop):}}data-{{=prop}}="{{=T(tour[prop]) if tlated else tour[prop]}}"
        {{pass}}{{pass}}>
-{{for ts in tour['tourstops']:}}
+{{for ts_idx, ts in enumerate(tour['tourstops']):}}
   {{tdata = ts['template_data']}}
   {{if tdata.get('class', '') and not tdata['class'].isalnum():}}<script>alert('Invalid characters in class')</script>{{pass}}
   {{T.set_current_languages((ts['lang'],))}}
@@ -59,7 +60,18 @@ ts_fields = (  # HTML fields that can be added to container
     <div><a href="#share-modal" class="tour_pause oz-pill pill-share" style="float: right" uk-toggle>{{=T('Share')}}</a></div>
     <div class="footer">
       <button class="tour_backward">{{=T('Back')}}</button>
-      <span class="grow"></span>
+      <span class="grow">
+        <select name="tourstop"
+                class="ts-progress uk-select tour_goto"
+                {{# Revert selection to hidden default selection after any change }}
+                onchange="setTimeout(function (x) { x.selectedIndex = 0 }, 10, this)"
+                style="height: 35px; text-align-last: center;">
+          <option hidden selected value="">{{=ts_idx + 1}} {{=T('of')}} {{=len(tour['tourstops'])}}</option>
+          {{for i, ts in enumerate(tour['tourstops']):}}
+            <option value="{{=i}}" {{if i == ts_idx:}}disabled{{pass}}>{{=tour['tourstops'][i]['template_data'].get('title', '')}}</option>
+          {{pass}}
+        </select>
+      </span>
       <button class="tour_resume">{{=T('Resume')}}</button>
       <button class="tour_forward">{{=T('Next')}}</button>
     </div>
