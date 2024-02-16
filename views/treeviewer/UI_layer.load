@@ -110,76 +110,84 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     <a id="advanced_search_button" data-advanced-title="{{=T('Turn off advanced search mode')}}" data-simple-title="{{=T('Advanced search (tracer) mode: click to turn on')}}" class="uk-icon-button" uk-tooltip="pos: left" uk-icon="icon: git-fork"></a>
 </div>
 
-<ul class="ui-controls ui-bottomright uk-iconnav uk-iconnav-vertical">
-  <li id="resetButton" class="uk-visible@s">
-    <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('Reset view')}}" uk-icon="icon: refresh"></a>
-    </div>
-  </li>
-  <li id="inButton" class="uk-visible@s">
-    <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('Zoom in')}}" uk-icon="icon: plus"></a>
-    </div>
-  </li>
-  <li id="outButton" class="uk-visible@s">
-    <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('Zoom out')}}" uk-icon="icon: minus"></a>
-    </div>
-  </li>
-</ul>
+<div class="ui-bottomright">
+  <ul class="ui-controls uk-iconnav uk-iconnav-vertical">
+    <li id="resetButton" class="uk-visible@s">
+      <div class='icon-container'>
+        <a uk-tooltip="pos: right" title="{{=T('Reset view')}}" uk-icon="icon: refresh"></a>
+      </div>
+    </li>
+  </ul>
+  <ul class="ui-controls uk-iconnav uk-iconnav-vertical">
+    <li id="inButton" class="uk-visible@s">
+      <div class='icon-container'>
+        <a uk-tooltip="pos: right" title="{{=T('Zoom in')}}" uk-icon="icon: plus"></a>
+      </div>
+    </li>
+    <li id="outButton" class="uk-visible@s">
+      <div class='icon-container'>
+        <a uk-tooltip="pos: right" title="{{=T('Zoom out')}}" uk-icon="icon: minus"></a>
+      </div>
+    </li>
+  </ul>
+</div>
 
-<ul class="ui-controls ui-bottomleft uk-iconnav uk-iconnav-vertical">
-  <li id="toursButton">
-    <div class="icon-container">
-      <a href="#tours-modal" uk-toggle uk-icon="icon: location"></a>
-    </div><!-- inline-block: hide whitespace
-    --><span class='button-label top-border top-right-radius top-padding'>{{=T('Tours')}}</span>
-  </li>
-  <li id="locationButton">
-    <div class='icon-container'>
-      <a class="uk-icon"><svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle fill="none" stroke="#000" stroke-width="1.1" cx="9.5" cy="9.5" r="9"/><path d="m 9.5,3.5 -1.5,6 1.5,6 1.5,-6 z" fill="none" stroke="#000" stroke-linejoin="miter" stroke-miterlimit="8" transform="rotate(40 9.5 9.5)"/><path d="m 9.5,3.5 -1.5,6 3,0 z" fill="#000" transform="rotate(40 9.5 9.5)"/><path fill="none" stroke="#000" stroke-linecap="round" d="M 9.5,0.5 9.5,2"/><path fill="none" stroke="#000" stroke-linecap="round" d="m 9.5,17 0,1.5"/><path fill="none" stroke="#000" stroke-linecap="round" d="M 0.5,9.5 2,9.5"/><path fill="none" stroke="#000" stroke-linecap="round" d="m 17,9.5 1.5,0"/></svg></a>
-    </div><!-- inline-block: hide whitespace
-    --><div uk-dropdown="pos: right-bottom; delay-hide: 1000; boundary: .ui-controls; boundary-align: true" id="locationDropdown">
-        <ol class="location-list"></ol>
-    </div><!-- inline-block: hide whitespace
-    --><span class='button-label top-border top-right-radius top-padding'>{{=T('Location')}}</span>
-  </li>
-  <li id="screenshotButton">
-    <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('Take an svg screenshot')}}" onclick="make_screenshot(this);" uk-icon="icon: camera"></a>
-    </div><!-- inline-block: hide whitespace
-    --><span class='button-label'>{{=T('Take an svg screenshot')}}</span>
-  </li>
-  <li id="singleInfoButton">
-    <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('Information')}}" href="#info-modal" uk-toggle uk-icon="icon: info"></a>
-    </div><!-- inline-block: hide whitespace
-    --><span class='button-label top-border'>{{=T('Information')}}</span>
-  </li>
-  <li id="howToUseButton">
-    <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('How to use')}}" uk-icon="icon: question"></a>
-    </div><!-- inline-block: hide whitespace
-    --><span class='button-label'>{{=T('How to use')}}</span>
-  </li>
-  <li id="tourButton">
-    <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('Take a tour')}}" uk-icon="icon: world"></a>
-    </div><!-- inline-block: hide whitespace
-    --><span class='button-label'>{{=T('Take a tour')}}</span>
-  </li>
-  <li id="hideControlsButton">
-    <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('Hide panel')}}" uk-icon="icon: triangle-left"></a>
-    </div><!-- inline-block: hide whitespace
-    --><span class='button-label top-border bottom-border bottom-right-radius bottom-padding'>{{=T('Hide panel')}}</span>
-  </li>
-  <li id="showControlsButton">
-    <div class='icon-container'>
-      <a uk-tooltip="pos: right" title="{{=T('Show panel')}}" uk-icon="icon: triangle-right"></a>
-    </div>
-  </li>
-</ul>
+<div class="ui-bottomleft">
+  <ul class="ui-controls uk-iconnav uk-iconnav-vertical">
+    <li id="toursButton">
+      <div class="icon-container">
+        <a href="#tours-modal" uk-toggle uk-icon="icon: location"></a>
+      </div><!-- inline-block: hide whitespace
+      --><span class='button-label top-border top-right-radius top-padding'>{{=T('Tours')}}</span>
+    </li>
+  </ul>
+  <ul class="ui-controls uk-iconnav uk-iconnav-vertical">
+    <li id="locationButton">
+      <div class='icon-container'>
+        <a class="uk-icon"><svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle fill="none" stroke="#000" stroke-width="1.1" cx="9.5" cy="9.5" r="9"/><path d="m 9.5,3.5 -1.5,6 1.5,6 1.5,-6 z" fill="none" stroke="#000" stroke-linejoin="miter" stroke-miterlimit="8" transform="rotate(40 9.5 9.5)"/><path d="m 9.5,3.5 -1.5,6 3,0 z" fill="#000" transform="rotate(40 9.5 9.5)"/><path fill="none" stroke="#000" stroke-linecap="round" d="M 9.5,0.5 9.5,2"/><path fill="none" stroke="#000" stroke-linecap="round" d="m 9.5,17 0,1.5"/><path fill="none" stroke="#000" stroke-linecap="round" d="M 0.5,9.5 2,9.5"/><path fill="none" stroke="#000" stroke-linecap="round" d="m 17,9.5 1.5,0"/></svg></a>
+      </div><!-- inline-block: hide whitespace
+      --><div uk-dropdown="pos: right-bottom; delay-hide: 1000; boundary: .ui-controls; boundary-align: true" id="locationDropdown">
+          <ol class="location-list"></ol>
+      </div><!-- inline-block: hide whitespace
+      --><span class='button-label top-border top-right-radius top-padding'>{{=T('Location')}}</span>
+    </li>
+    <li id="screenshotButton">
+      <div class='icon-container'>
+        <a uk-tooltip="pos: right" title="{{=T('Take an svg screenshot')}}" onclick="make_screenshot(this);" uk-icon="icon: camera"></a>
+      </div><!-- inline-block: hide whitespace
+      --><span class='button-label'>{{=T('Take an svg screenshot')}}</span>
+    </li>
+    <li id="singleInfoButton">
+      <div class='icon-container'>
+        <a uk-tooltip="pos: right" title="{{=T('Information')}}" href="#info-modal" uk-toggle uk-icon="icon: info"></a>
+      </div><!-- inline-block: hide whitespace
+      --><span class='button-label top-border'>{{=T('Information')}}</span>
+    </li>
+    <li id="howToUseButton">
+      <div class='icon-container'>
+        <a uk-tooltip="pos: right" title="{{=T('How to use')}}" uk-icon="icon: question"></a>
+      </div><!-- inline-block: hide whitespace
+      --><span class='button-label'>{{=T('How to use')}}</span>
+    </li>
+    <li id="tourButton">
+      <div class='icon-container'>
+        <a uk-tooltip="pos: right" title="{{=T('Take a tour')}}" uk-icon="icon: world"></a>
+      </div><!-- inline-block: hide whitespace
+      --><span class='button-label'>{{=T('Take a tour')}}</span>
+    </li>
+    <li id="hideControlsButton">
+      <div class='icon-container'>
+        <a uk-tooltip="pos: right" title="{{=T('Hide panel')}}" uk-icon="icon: triangle-left"></a>
+      </div><!-- inline-block: hide whitespace
+      --><span class='button-label top-border bottom-border bottom-right-radius bottom-padding'>{{=T('Hide panel')}}</span>
+    </li>
+    <li id="showControlsButton">
+      <div class='icon-container'>
+        <a uk-tooltip="pos: right" title="{{=T('Show panel')}}" uk-icon="icon: triangle-right"></a>
+      </div>
+    </li>
+  </ul>
+</div>
 
 <div id="loading_spinner">
   <div uk-spinner="ratio: 3"></div>
