@@ -27,6 +27,12 @@ button.uk-modal-close-default {
   color: #000;
 }
 
+.uk-dropdown {
+  color: $oz_border_def;
+  border: 1px solid $oz_border_def;
+  border-radius: 5px;
+}
+
 /* ********** Call-to-action pills & lists ********************** */
 
 ul.leaf-list {
