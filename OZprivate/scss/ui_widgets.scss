@@ -93,6 +93,10 @@ html body .oz-pill {
     padding-left: calc(1.3rem + 1rem); /* Add icon size to normal padding */
   }
 
+  &.pill-ukicon {
+    padding-left: 10px; /* Reduce padding, give room for uk-icon */
+  }
+
   &.with-splash {
     position: relative;
   }
@@ -109,12 +113,14 @@ html body .oz-pill {
   }
 
   /* Buttons and other actions have fully-rounded corners */
-  &.uk-button, &[uk-toggle] {
+  &.uk-button, &[uk-toggle], &:is(button) {
     border-radius: 1.5rem;
   }
   &.uk-button {
     text-transform: none;
     font-size: 100%;
+    /* Don't make buttons extra-tall */
+    line-height: normal;
 
     &:hover {
       background: $oz_dark_bg;

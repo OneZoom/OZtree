@@ -84,26 +84,32 @@
     </div>
   </div>
   <div id="search-advanced">
-    <ul id="searchboxes"><script>
+    <ul id="searchboxes">
+    </ul>
+    <div class="sa-footer">
+      <button id="common_ancestor_button" class="uk-button oz-pill pill-ukicon" uk-tooltip="pos: bottom-left" title="{{=T('Go to common ancestor')}}"><span uk-icon="icon: git-fork"></span>common ancestor</button>
+      <button id="add_searchbox" class="uk-button oz-pill" title="{{=T('Add another location')}}" uk-tooltip="pos: bottom-left" uk-icon="icon: plus; ratio:0.8"></button>
+    </div>
+    <script>
 //define the advanced searchbox html as a js variable so we can make an indefinate number of them
 advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="searchresult">\
               <div class="icon-beside-input">\
                 <button   class="main-icon" uk-icon="icon: location"></button>\
               </div><input class="uk-search-input" type="search" value="" readonly />\
+              <button class="remove-searchbox uk-button oz-pill pill-ukicon" title="{{=T('Remove location box')}}" uk-tooltip="pos: bottom-left" uk-icon="icon: minus; ratio:0.8"></button>\
             </div><div class="searchinput"><div class="icon-beside-input">\
                 <button   class="spinner" uk-spinner="ratio:0.5"></button>\
                 <button   class="uk-icon main-icon">\
                   <img src="{{=URL('static/images', 'oz-logo-icon-darkbg.svg')}}" alt="" />\
                 </button>\
               </div><input class="uk-search-input" type="search" placeholder="{{=T('Trace a path to...')}}" />\
+              <button class="remove-searchbox uk-button oz-pill pill-ukicon" title="{{=T('Remove location box')}}" uk-tooltip="pos: bottom-left" uk-icon="icon: minus; ratio:0.8"></button>\
             </div><div uk-dropdown="pos: bottom-left;  offset: 1; mode: click" class="search_dropdown" class="selectable uk-overflow-auto">\
               <div class="no_results">{{=T("No results found")}}</div>\
               <dl class="search_hits"></dl>\
               <dl class="popular_species"></dl>\
-            </div><button   class="remove-searchbox" title="{{=T('Remove location box')}}" uk-tooltip="pos: bottom-left" uk-icon="icon: minus-circle; ratio:0.8"></button></div></li>';
-      </script></ul>
-    <button   id="common_ancestor_button" uk-tooltip="pos: bottom-left" title="{{=T('Go to common ancestor')}}"><span uk-icon="icon: git-fork"></span>common ancestor</button>
-    <button   id="add_searchbox" title="{{=T('Add another location')}}" uk-tooltip="pos: bottom-left" uk-icon="icon: plus-circle;"></button>
+            </div></div></li>';
+    </script>
   </div>
 </div>
 <div id="advanced_search_toggle" class="ui-topright">

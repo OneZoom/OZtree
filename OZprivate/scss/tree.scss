@@ -81,11 +81,6 @@ body.loading #UI #loading_spinner {
   }
 }
 
-.search-nav.advanced_mode {
-    background-color: #EEE;
-    border-bottom-left-radius: 5px;
-    height:auto;
-}
 .logo {
     float: left;
     img {
@@ -95,13 +90,16 @@ body.loading #UI #loading_spinner {
     > a:hover { opacity: 1; }
 }
 
+/* Scale icons with font, so MD display enlarges */
 #advanced_search_button {
     width: 2rem; height: 2rem;
+    svg {
+        width: 1.25rem; height: 1.25rem;
+    }
 }
-
-#advanced_search_button svg, .searchbox .main-icon svg,
+#searchboxes .remove-searchbox svg, .searchbox .main-icon svg,
 #common_ancestor_button svg, #add_searchbox svg {
-    width: 1.25rem; height: 1.25rem;
+    width: 1rem; height: 1rem;
 }
 
 .ui-controls {
