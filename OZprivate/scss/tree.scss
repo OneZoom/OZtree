@@ -116,16 +116,19 @@ body.loading #UI #loading_spinner {
                 border-right: 1px solid $oz_border_def;
             }
             > .button-label {
-                display: inline;
-                padding: 0 1rem;
+                display: inline-block;
+                line-height: 2.2rem;
+                padding-left: 1rem;
+                vertical-align:top;
+                width: 5.5rem;
             }
         }
     }
 }
 .ui-controls a:hover {text-decoration:none}
 .ui-controls > li {
-    border-top: 1px solid $oz_green_fg;
-    &:first-child { border-top: none; }
+    &:not(:first-child) .icon-container { border-top: 1px solid $oz_green_fg; }
+    &:not(:first-child) .button-label { border-top: 1px solid $oz_border_def; }
 
     padding:0;
     margin:0;
