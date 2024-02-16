@@ -5,6 +5,13 @@
   z-index: 100;
 }
 
+/* Disable any events on the UI when active, have to quit tour to re-activate */
+#tour_wrapper.tour-active + #UI > :not(.logo) {
+  opacity: 0.1;
+  pointer-events: none;
+  user-select: none;
+}
+
 #tour_wrapper > .tour {
     /* All containers should be hidden at start */
     > .container {

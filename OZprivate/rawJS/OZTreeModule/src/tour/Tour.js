@@ -110,6 +110,12 @@ class Tour {
     // Update container state based on our state
     if (this.container) this.container[0].setAttribute('data-state', this._state);
 
+    // Set CSS class if anything is happening, so UI can decide to dim
+    if (this.div_wrapper) {
+      const anyActive = Array.from(this.div_wrapper.children).find((c) => c.getAttribute('data-state') !== tstate.INACTIVE);
+      this.div_wrapper.classList.toggle('tour-active', !!anyActive);
+    }
+
     // When playing we should be able to block interaction
     if (new_state === tstate.PLAYING) {
       this.add_canvas_interaction_callbacks()
