@@ -1,8 +1,16 @@
 @import "colour_scheme.scss";
 
+html {
+  color: $oz_border_def;
+}
+
 .uk-button {
   /* No shouty buttons */
   text-transform: none;
+}
+
+.uk-search-input {
+  color: $oz_border_def;
 }
 
 .uk-select {

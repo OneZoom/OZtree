@@ -79,7 +79,6 @@ body.loading #UI #loading_spinner {
     right: 0;
     margin-left: 0;
   }
-  font-size: .875rem; /* From uk-navbar-item */
 }
 
 .search-nav.advanced_mode {
@@ -89,25 +88,11 @@ body.loading #UI #loading_spinner {
 }
 .logo {
     float: left;
-    min-height: 20px; /* Override uk-navbar's min-height */
-}
-.logo a, .icon-beside-input .main-icon {
-    opacity: 0.55;
-}
-.icon-beside-input .main-icon {
-    opacity: 0.45;
-}
-.logo a:hover {
-    opacity: 1;
-}
-.icon-beside-input .main-icon:hover {
-    opacity: 0.7;
-}
-.logo a, #logo img {
-    vertical-align: middle;
-}
-.logo img {
-    height: 2rem;
+    img {
+      height: 2rem;
+    }
+    > a { opacity: 0.55; }
+    > a:hover { opacity: 1; }
 }
 
 #advanced_search_button {
@@ -120,7 +105,7 @@ body.loading #UI #loading_spinner {
 }
 
 .ui-controls {
-    border: 1px solid #DDD;
+    border: 1px solid $oz_border_def;
     border-radius: 5px; 
     background-color: white;
     margin-top: 0.5em;
@@ -130,18 +115,18 @@ body.loading #UI #loading_spinner {
     @media screen and (min-width: 640px) {
         &:not(.button-label-hidden) > li {
             > .icon-container:not(:only-child) {
-                border-right: 1px solid #DDD;
+                border-right: 1px solid $oz_border_def;
             }
             > .button-label {
                 display: inline;
-                padding: 0 0.3rem;
+                padding: 0 1rem;
             }
         }
     }
 }
 .ui-controls a:hover {text-decoration:none}
 .ui-controls > li {
-    border-top: 1px solid #DDD;
+    border-top: 1px solid $oz_green_fg;
     &:first-child { border-top: none; }
 
     padding:0;
@@ -150,6 +135,10 @@ body.loading #UI #loading_spinner {
 
     .icon-container {
         display: inline-block;
+        background-color: $oz_dark_bg;
+        color: $oz_green_fg;
+        > a:hover { color: lighten($oz_green_fg, 30%) }
+
         > a {
             display: inline-block;
             padding:0.5rem 0.1rem;
