@@ -20,7 +20,7 @@
       <a uk-tooltip="pos: right" title="{{=T('Settings')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: settings"></a>
     </div>
   </li>
-    <form id="settingsDropdown" class="uk-navbar-dropdown" uk-dropdown="pos: right-bottom; mode: click;">
+    <form id="settingsDropdown" class="uk-navbar-dropdown" uk-dropdown="pos: right-bottom; mode: click; offset: 3;">
       <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
         <li class="uk-nav-header">{{=T('Information')}}</li>
         <li><a href="#howuse-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('How to use')}}</a></li>

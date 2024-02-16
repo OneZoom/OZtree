@@ -20,6 +20,10 @@ html {
   color: inherit;
 }
 
+.uk-radio:checked, .uk-radio:checked:focus {
+  background-color: $oz_green_fg;
+}
+
 button.uk-modal-close-default {
   /* Modal button closer to edge than default */
   top: 0;
@@ -31,6 +35,19 @@ button.uk-modal-close-default {
   color: $oz_border_def;
   border: 1px solid $oz_border_def;
   border-radius: 5px;
+}
+
+.uk-navbar-dropdown-nav>li>a {
+  /* Used for settings menu items */
+  color: $oz_border_def;
+  &:hover {
+    color: $oz_green_bg;
+  }
+}
+
+.uk-input:focus, .uk-select:focus, .uk-textarea:focus {
+  border-color: $oz_green_bg;
+  color: inherit;
 }
 
 /* ********** Call-to-action pills & lists ********************** */
