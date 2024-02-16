@@ -19,6 +19,7 @@
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Settings')}}" onclick="$('.uk-tooltip.uk-active').hide()" uk-icon="icon: settings"></a>
     </div>
+  </li>
     <form id="settingsDropdown" class="uk-navbar-dropdown" uk-dropdown="pos: right-bottom; mode: click;">
       <ul class="uk-nav uk-navbar-dropdown-nav uk-margin-left">
         <li class="uk-nav-header">{{=T('Information')}}</li>
@@ -64,7 +65,6 @@
         </select></li>
       </ul>
     </form>
-  </li>
 </ul>
 
 <div class="ui-topright search-nav" id="searchnav">
@@ -147,32 +147,32 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
   <li id="screenshotButton">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Take an svg screenshot')}}" onclick="make_screenshot(this);" uk-icon="icon: camera"></a>
-    </div>
-    <span class='button-label'>{{=T('Take an svg screenshot')}}</span>
+    </div><!-- inline-block: hide whitespace
+    --><span class='button-label'>{{=T('Take an svg screenshot')}}</span>
   </li>
   <li id="singleInfoButton">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Information')}}" href="#info-modal" uk-toggle uk-icon="icon: info"></a>
-    </div>
-    <span class='button-label top-border'>{{=T('Information')}}</span>
+    </div><!-- inline-block: hide whitespace
+    --><span class='button-label top-border'>{{=T('Information')}}</span>
   </li>
   <li id="howToUseButton">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('How to use')}}" uk-icon="icon: question"></a>
-    </div>
-    <span class='button-label'>{{=T('How to use')}}</span>
+    </div><!-- inline-block: hide whitespace
+    --><span class='button-label'>{{=T('How to use')}}</span>
   </li>
   <li id="tourButton">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Take a tour')}}" uk-icon="icon: world"></a>
-    </div>
-    <span class='button-label'>{{=T('Take a tour')}}</span>
+    </div><!-- inline-block: hide whitespace
+    --><span class='button-label'>{{=T('Take a tour')}}</span>
   </li>
   <li id="hideControlsButton">
     <div class='icon-container'>
       <a uk-tooltip="pos: right" title="{{=T('Hide panel')}}" uk-icon="icon: triangle-left"></a>
-    </div>
-    <span class='button-label top-border bottom-border bottom-right-radius bottom-padding'>{{=T('Hide panel')}}</span>
+    </div><!-- inline-block: hide whitespace
+    --><span class='button-label top-border bottom-border bottom-right-radius bottom-padding'>{{=T('Hide panel')}}</span>
   </li>
   <li id="showControlsButton">
     <div class='icon-container'>

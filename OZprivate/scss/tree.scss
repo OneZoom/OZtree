@@ -123,18 +123,32 @@ body.loading #UI #loading_spinner {
     border: 1px solid #DDD;
     border-radius: 5px; 
     background-color: white;
-    padding: 0.2em 0;
     margin: 0.5em;
+
+    /* Hide labels, show them on a big screen & when not explicitly hidden */
+    > li > .button-label { display: none; }
+    @media screen and (min-width: 640px) {
+        &:not(.button-label-hidden) > li {
+            > .icon-container:not(:only-child) {
+                border-right: 1px solid #DDD;
+            }
+            > .button-label {
+                display: inline;
+                padding: 0 0.3rem;
+            }
+        }
+    }
 }
 .ui-controls a:hover {text-decoration:none}
 .ui-controls > li {
+    border-top: 1px solid #DDD;
+    &:first-child { border-top: none; }
+
     padding:0;
     margin:0;
-    border-radius: 5px;
-    text-align: center;
     position: relative;
+
     .icon-container {
-        width: 100%;
         display: inline-block;
         > a {
             display: inline-block;
@@ -153,20 +167,6 @@ body.loading #UI #loading_spinner {
     /* make sure dropdowns always fit in the viewport, but don't cover header (or possibly get lost under Safari URL bar) */
     max-height: calc(100vh - 8rem);
     overflow-y: auto;
-}
-.ui-controls #inButton a {
-    border-top: 1px solid #DDD
-}
-
-.ui-controls #singleInfoButton a, 
-.ui-controls #hideControlsButton a, 
-.ui-controls #showControlsButton a{
-    border-top: 1px solid #DDD;
-}
-
-/* Hide label text on the right of buttons */
-.ui-controls .button-label {
-    display: none;
 }
 
 .ui-controls #singleInfoButton {
