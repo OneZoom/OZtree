@@ -47,9 +47,13 @@
     box-sizing: border-box;
     width: 16rem;
     border: 0;
-    height: 2.5rem;
-    border-left: 1px solid #DDD;
+    padding: 0.5rem 0.3rem;  /* Padding around a .ui-controls .uk-icon */
+    height: 2.25rem; /* Height of a .ui-controls .uk-icon */
 
+    /* On small screens, searchbox scales with screen width */
+    @media screen and (max-width: 490px) {
+        width: calc(100vw - 10rem);
+    }
 }
 
 .search-nav #search-advanced .searchinput, .search-nav #search-advanced .searchresult {
@@ -63,6 +67,7 @@
 .search-nav .icon-beside-input {
     display: inline-block;
     width: 2rem;
+    padding-left: 0.3rem; /* Matching .search-nav .searchbox input */
     text-align: center;
 }
 
@@ -143,6 +148,10 @@ ul#searchboxes {
 }
 #search-advanced #add_searchbox svg circle {
     fill: white;
+}
+
+#advanced_search_toggle {
+    line-height: 2.25rem; /* Pad to match height of searchnav */
 }
 
 /* Dropdown for search results */
@@ -237,17 +246,4 @@ ul#searchboxes {
     width: 60%;
     margin: 0.25em auto;
     background: #ddd;
-}
-
-/* On miniscule screens, only display search box on click */
-@media screen and (max-width: 490px) {
-    .search-nav .search-basic .searchbox input {
-        width: calc(100vw - 3rem);
-    }
-    .search-nav .search-basic .searchinput:not(.uk-open) .uk-search-input:not(:focus) {
-        /* Hide simple search box until it's selected */
-        padding: 0;
-        width: 0;
-        border-left: none;
-    }
 }

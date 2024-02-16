@@ -432,15 +432,6 @@ iframe {
         height: 1.5rem;
     }
 
-    /* Shrink height of top-right items */
-    .ui-topright {
-        &.ui-controls .icon-container > a {
-            padding: 0.2rem 0;
-        }
-        .searchbox input {
-            height: 2rem;
-        }
-    }
     .uk-modal-close-outside {
         padding: 0;
     }
@@ -448,9 +439,6 @@ iframe {
 
 /* On tiny screens, shrink the search box */    
 @media screen and (max-width: 440px) {
-    #searchnav .searchbox input {
-        width: 14rem;
-    }
     #external-modal .external-content .external-tabs::before {
         left: 2px;
     }
