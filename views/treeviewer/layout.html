@@ -948,27 +948,30 @@ function setupUI() {
         // Reconstitute compile_searchbox_data() format
         function(event, result) {closeAndLeap(event, result[2], $('#searchnav .search-basic'))});
 
-    var existing_searchresults = onezoom.controller.list_all_marked().filter(function(id_col) {return !isNaN(id_col[0])});
-    if (existing_searchresults.length) {
-        var colours = {};
-        var ids = [];
-        for(var i=0; i<existing_searchresults.length; i++) {
-           ids.push(existing_searchresults[i][0]);
-           colours[existing_searchresults[i][0]]=existing_searchresults[i][1]
+    // Give treeviewer a chance to parse state, then configure advanced search if on
+    window.setTimeout(function () {
+        var existing_searchresults = onezoom.controller.list_all_marked();
+        if (existing_searchresults.length) {
+            var colours = {};
+            var ids = [];
+            for(var i=0; i<existing_searchresults.length; i++) {
+               ids.push(existing_searchresults[i][0]);
+               colours[existing_searchresults[i][0]]=existing_searchresults[i][1]
+            }
+            //must look up the names & values via the API
+            onezoom.search_manager.lookup_nodes(ids, function(result) {
+               // Reconstitute compile_searchbox_data() format
+               var OZIDin = result[2];
+               add_advanced_searchbox(result, colours[OZIDin]);
+            },'best_pd');
+            toggleAdvancedSearch(true);
+        } else {
+            //add 2 searchboxes as default
+            add_advanced_searchbox();
+            add_advanced_searchbox();
+            toggleAdvancedSearch(false);
         }
-        //must look up the names & values via the API
-        onezoom.search_manager.lookup_nodes(ids, function(result) {
-           // Reconstitute compile_searchbox_data() format
-           var OZIDin = result[2];
-           add_advanced_searchbox(result, colours[OZIDin]);
-        },'best_pd');
-        toggleAdvancedSearch(true);
-    } else {
-        //add 2 searchboxes as default
-        add_advanced_searchbox();
-        add_advanced_searchbox();
-        toggleAdvancedSearch(false);        
-    }
+    }, 100);
 
     $(document).triggerHandler("setupUI", onezoom);
 }
