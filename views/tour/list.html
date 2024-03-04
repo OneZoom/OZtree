@@ -11,9 +11,9 @@
 <ul class="uk-padding-small uk-list uk-text-small uk-child-width-1-2@m" uk-grid>
 
   {{for tour in tours:}}<li>
-    <a {{if request.vars.get("popup"):}}onclick="window.parent.onezoom.controller.tour_start('{{=tour_url(tour)}}'); return(false)"{{pass}}
+    <a {{if request.vars.get("popup"):}}onclick="window.parent.onezoom.controller.tour_start('{{=tour.url}}'); return(false)"{{pass}}
        class="block"
-       href="{{=URL('default', 'life', vars=dict(tour=tour_url(tour)))}}">
+       href="{{=URL('default', 'life', vars=dict(tour=tour.url))}}">
         <img src="{{=img.url(tour.image_url)}}"
          onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'"
             width="150" height="150"

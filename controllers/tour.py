@@ -290,10 +290,10 @@ def list():
     # Fetch all tours, put into dict with order matching tour_identifiers
     tours = {t:None for t in tour_identifiers}
     for t in db(db.tour.identifier.belongs(tours.keys())).select(db.tour.ALL):
+        # Splice in tour_url to DB row
+        t['url'] = tour.tour_url(t)
         tours[t.identifier] = t
 
     return dict(
-        tours=tours.values(),
-        images={},
-        tour_url=tour.tour_url,
+        tours=[*tours.values()],
     )
