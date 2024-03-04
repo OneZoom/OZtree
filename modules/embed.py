@@ -92,4 +92,8 @@ def media_embed(url, **kwargs):
             element_data=element_data,
         )
 
-    raise HTTP(400, "Unknown embed URL %s" % url)
+
+    # Fall back to linking
+    return """<a href="{url}" style="font-weight:bold">{url}</a>""".format(
+        url=url,
+    )

@@ -47,8 +47,11 @@ class TestEmbed(unittest.TestCase):
             out = embed.media_embed(url, **kwargs)
             return re.split('\s+', out, flags=re.MULTILINE)
 
-        with self.assertRaisesRegex(HTTP, '400'):
-            media_embed('https://www.wibble.com/some_image.jpg')
+        self.assertEqual(media_embed('https://www.wibble.com/some_image.jpg'), [
+            '<a',
+            'href="https://www.wibble.com/some_image.jpg"',
+            'style="font-weight:bold">https://www.wibble.com/some_image.jpg</a>',
+        ])
 
         self.assertEqual(media_embed('https://www.youtube.com/embed/12345'), [
             '<iframe',
