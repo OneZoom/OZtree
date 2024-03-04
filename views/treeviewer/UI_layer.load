@@ -116,21 +116,21 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     <a id="advanced_search_button" data-advanced-title="{{=T('Turn off advanced search mode')}}" data-simple-title="{{=T('Advanced search (tracer) mode: click to turn on')}}" class="uk-icon-button" uk-tooltip="pos: left" uk-icon="icon: git-fork"></a>
 </div>
 
-<div class="ui-bottomright">
+<div class="ui-bottomright uk-visible@s">
   <ul class="ui-controls uk-iconnav uk-iconnav-vertical">
-    <li id="resetButton" class="uk-visible@s">
+    <li id="resetButton">
       <div class='icon-container'>
         <a uk-tooltip="pos: right" title="{{=T('Reset view')}}" uk-icon="icon: refresh"></a>
       </div>
     </li>
   </ul>
   <ul class="ui-controls uk-iconnav uk-iconnav-vertical">
-    <li id="inButton" class="uk-visible@s">
+    <li id="inButton">
       <div class='icon-container'>
         <a uk-tooltip="pos: right" title="{{=T('Zoom in')}}" uk-icon="icon: plus"></a>
       </div>
     </li>
-    <li id="outButton" class="uk-visible@s">
+    <li id="outButton">
       <div class='icon-container'>
         <a uk-tooltip="pos: right" title="{{=T('Zoom out')}}" uk-icon="icon: minus"></a>
       </div>
