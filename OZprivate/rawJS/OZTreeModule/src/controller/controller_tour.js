@@ -1,4 +1,5 @@
 import config from '../global_config';
+import api_manager from '../api/api_manager';
 import tree_settings from '../tree_settings';
 import {record_url, record_url_delayed} from '../navigation/record';
 import Tour from '../tour/Tour'
@@ -37,6 +38,23 @@ export default function (Controller) {
     // Return just tours
     return out.map((x) => x[0]);
   }
+
+  Controller.prototype.tours_nearby_detail = function (cutoff=1) {
+    var tours = this.tours_nearby(cutoff);
+
+    // Are all tourstops in our cache If so pull out of that
+    if (!this._tour_detail_cache) this._tour_detail_cache = {};
+    if (tours.every((id) => this._tour_detail_cache.hasOwnProperty(id))) {
+      return Promise.resolve(tours.map((id) => this._tour_detail_cache[id]));
+    }
+
+    // Fetch tour information, return that
+    return api_manager.tour_list(tours).then((ts_detail) => {
+      // Save for later
+      ts_detail.forEach((t) => this._tour_detail_cache[t.identifier] = t);
+      return ts_detail;
+    });
+  };
 
   /** Return the tour_setting for the currently active tour setting, or null */
   Controller.prototype.tour_active_setting = function () {
