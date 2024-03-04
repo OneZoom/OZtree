@@ -83,12 +83,6 @@ class APIManager {
     params.url = config.api.node_details_api;
     api_wrapper(params);
   }
-  tour_detail(params) {
-    //this returns an HTML web page fragment so we have to set the language if necessary
-    if (config.lang) params.data.lang = config.lang;
-    params.url = config.api.tourstop_page;
-    api_wrapper(params);    
-  }
 }
 
 let api_manager = new APIManager();
