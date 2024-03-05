@@ -71,7 +71,7 @@ def media_embed(url, **kwargs):
         return """<a class="embed-wikimedia" title="{title}" href="{url}" {element_data}><img
           src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{name}"
           alt="{name}"
-        /></a>""".format(
+        /><span class="copyright">©</span></a>""".format(
             title=m.group(1),
             name=m.group(1),
             url=url,

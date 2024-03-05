@@ -91,7 +91,8 @@ class TestEmbed(unittest.TestCase):
             '><img',
             'src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Rose_of_Jericho.gif"',
             'alt="Rose_of_Jericho.gif"',
-            '/></a>',
+            '/><span',
+            'class="copyright">©</span></a>',
         ])
 
         self.assertEqual(media_embed('https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg'), [

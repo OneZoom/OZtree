@@ -135,6 +135,10 @@
       border: 1px solid #242A22;
       border-radius: 5px;
     }
+    > .copyright {
+      position: absolute;
+      right: 10px;
+    }
   }
   .tour_container > .embed-audio {
     position: relative; /* Contain copyright link */
