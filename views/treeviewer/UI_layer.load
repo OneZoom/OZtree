@@ -314,7 +314,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
   </div>
 </div>
 <div id="share-modal" class="uk-modal-container" uk-modal>
-    <div class="uk-modal-dialog uk-modal-body">
+    <div class="uk-modal-dialog uk-modal-body" style="width: 600px">
         <button class="uk-modal-close-default" type="button" uk-close></button>
         <h2 class="uk-modal-title">{{=T('Share')}}</h2>
         <form class="no_disable">
