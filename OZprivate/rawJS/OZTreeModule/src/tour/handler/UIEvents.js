@@ -11,6 +11,8 @@
  *           <span class='button tour_resume'>{{=T('Resume tutorial')}}</span>
  *           <span class='button tour_exit'>{{=T('Exit tutorial')}}</span>
  *           <span class='button tour_forward'>{{=T('Skip')}} →</span>
+ *           <span class='button tour_goto stop_5'>{{=('Visit stop')}} 5</span>
+ *           <select class="tour_goto"><option value="5">5</option</select>
  *         </div>
  *       </div>
  *     </div>
@@ -30,7 +32,7 @@ function handler(tour) {
   const document = tour.container[0].ownerDocument;
 
   tour.container.click((e) => {
-    var target = $(e.target).closest('.tour_forward,.tour_backward,.tour_play,.tour_pause,.tour_resume,.tour_exit,.exit_confirm,.exit_cancel');
+    var target = $(e.target).closest('.tour_forward,.tour_backward,.tour_goto,.tour_play,.tour_pause,.tour_resume,.tour_exit,.exit_confirm,.exit_cancel');
 
     if (target.length === 0) return;
     if (target.hasClass('tour_forward')) return tour.user_forward()
@@ -39,6 +41,12 @@ function handler(tour) {
     if (target.hasClass('tour_pause')) return tour.user_pause()
     if (target.hasClass('tour_resume')) return tour.user_resume()
     if (target.hasClass('tour_exit')) return tour.user_exit()
+    if (target[0].tagName !== 'SELECT' && target[0].classList.contains('tour_goto')) {
+      let m = target[0].className.match(/(?:\W|^)stop_(\d+)/);
+
+      if (!m) throw new Error("tour_goto class set without stop_(n) class: ", target[0].className);
+      return tour.goto_stop(parseInt(m[1], 10));
+    }
     if (target.hasClass('exit_confirm')) {
       tour.exit_confirm_popup.hide()
       return tour.user_exit()
@@ -47,7 +55,59 @@ function handler(tour) {
       tour.exit_confirm_popup.hide()
       return tour.user_resume()
     }
-  })
+  });
+  tour.container.change((event) => {
+    var target = event.target.closest('.tour_goto');
+
+    if (!target) return;
+    if (target.tagName === 'SELECT' && target.classList.contains('tour_goto')) {
+      return tour.goto_stop(parseInt(target.value, 10));
+    }
+  });
+
+  // Resize tourstop containers when grabbed by handles
+  var downInit = null;
+  const onMouseMove = (event) => {
+    if (!downInit) return;
+    var y = event.touches ? event.touches[0].screenY : event.screenY;
+    downInit.tourstop.style.height = Math.max(downInit.offset - y, 50) + 'px';
+  };
+  const onMouseUp = (event) => {
+    if (event.touches) {
+      document.removeEventListener('touchmove', onMouseMove);
+      document.removeEventListener('touchend', onMouseUp);
+      document.removeEventListener('touchcancel', onMouseUp);
+    } else {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    }
+    if (downInit.tourstop.offsetHeight < 90) {
+      tour.user_exit();
+    }
+    downInit = null;
+  };
+  const onMouseDown = (event) => {
+    if (event.target.classList.contains('handle')) {
+      var container = event.target.closest('.container');
+      var y = event.touches ? event.touches[0].screenY : event.screenY;
+      downInit = {target: event.target, tourstop: container, offset: container.offsetHeight + y};
+
+      if (event.touches) {
+        document.addEventListener('touchmove', onMouseMove);
+        document.addEventListener('touchend', onMouseUp);
+        document.addEventListener('touchcancel', onMouseUp);
+      } else {
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      }
+    }
+  };
+  tour.container[0].addEventListener('mousedown', onMouseDown);
+  tour.container[0].addEventListener('touchstart', onMouseDown);
+  tour.tourstop_observer('*', '*', (tour, tourstop, el_ts) => {
+    // Reset tourstop height after any state change
+    el_ts.style.height = '';
+  });
 
   // Listen to document level visibility (read: inactive tab), translate to tourstop blocks
   const onVisibilityChange = (e) => {

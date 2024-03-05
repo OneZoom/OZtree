@@ -112,7 +112,7 @@ def homepage_animation():
             db.ordered_leaves.ott, db.ordered_leaves.name):
         titles[r.ott] = r.name
     # Look up scientific names and best PD image otts for all startpoint otts
-    for r in db(db.ordered_nodes.ott.belongs(list(startpoints_ott_map.keys()))).select(
+    for r in db(db.ordered_nodes.ott.belongs(startpoints_ott_map.keys())).select(
             db.ordered_nodes.ott, db.ordered_nodes.name, db.ordered_nodes.rpd1):
         st_node_otts.add(r.ott)
         titles[r.ott] = r.name
@@ -204,7 +204,20 @@ def data():
             ts_shared = request.vars.get('tourstop_shared', {})
             tss_targets = {}
             for i, ts in enumerate(request.vars['tourstops']):
-                ts = { "template_data": {}, **ts_shared, **ts, "tour": tour_id, "ord": i + 1 }  # Combine with shared data, references
+                ts = {
+                    **ts_shared,
+                    **ts,
+                    # Deep-clone template_data, should always exist
+                    "template_data": {**ts_shared.get("template_data", {}), **ts.get("template_data", {})},
+                    # Add DB references
+                    "tour": tour_id,
+                    "ord": i + 1,
+                }
+                if str(ts.get('ott', "")).startswith('@_ancestor'):
+                    parts = ts['ott'].split("=")
+                    assert len(parts) == 3
+                    ts['ott'] = int(parts[1])
+                    ts['secondary_ott'] = int(parts[2])
                 if 'symlink_tourstop' in ts:
                     if 'symlink_tour' not in ts:
                         ts['symlink_tour'] = tour_identifier
@@ -253,7 +266,7 @@ def data():
 
     def munge_tourstop(ts):
         if ts.secondary_ott:
-            ts.ott = "%d..%d" % (ts.ott, ts.secondary_ott)
+            ts.ott = "@_ancestor=%d=%d" % (ts.ott, ts.secondary_ott)
         return ts
 
     # Combine lists of associated tourstops, add to tour object
@@ -277,10 +290,10 @@ def list():
     # Fetch all tours, put into dict with order matching tour_identifiers
     tours = {t:None for t in tour_identifiers}
     for t in db(db.tour.identifier.belongs(tours.keys())).select(db.tour.ALL):
+        # Splice in tour_url to DB row
+        t['url'] = tour.tour_url(t)
         tours[t.identifier] = t
 
     return dict(
-        tours=tours.values(),
-        images={},
-        tour_url=tour.tour_url,
+        tours=[*tours.values()],
     )

@@ -54,6 +54,23 @@ class APIManager {
       })
     });
   }
+
+  /**
+   * Call /tour/list.json?tours=(tour_ids)
+   * @param tour_ids Array of (string) tour identifiers
+   * @return Promise of parsed result
+   */
+  tour_list(tour_ids) {
+    return new Promise((resolve, reject) => {
+      api_wrapper({
+        method: 'get',
+        url: '/tour/list.json',  // TODO: Config-ise it
+        data: { tours: tour_ids.join(",") },
+        success: resolve,
+        error: (res) => reject("Failed to talk to server: " + res),
+      });
+    }).then((data) => data.tours);
+  }
   
   /**
    * @params {String} query
@@ -82,12 +99,6 @@ class APIManager {
     if (config.lang) params.data.lang = config.lang;
     params.url = config.api.node_details_api;
     api_wrapper(params);
-  }
-  tour_detail(params) {
-    //this returns an HTML web page fragment so we have to set the language if necessary
-    if (config.lang) params.data.lang = config.lang;
-    params.url = config.api.tourstop_page;
-    api_wrapper(params);    
   }
 }
 

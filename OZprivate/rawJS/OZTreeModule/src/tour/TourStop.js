@@ -259,7 +259,7 @@ class TourStopClass {
    * Play current tour stop from the start
    */
   play_from_start(direction) {
-    if (window.is_testing) console.log(Date().toString() + ": playing tourstop " +
+    if (window.tour_trace) console.log(Date().toString() + ": playing tourstop " +
         this.tour.curr_step + " - " + direction)
     // NB: Switch to inactive to remove any dregs of a previous transition
     //     cancelled by goto_prev() calling exit. Maybe it should be happening there?
@@ -307,7 +307,8 @@ class TourStopClass {
 
       if (this.setting.transition_in === 'leap' || this.direction === 'backward') {
         /* Leap */
-        return this.controller.leap_to(this.OZid, this.setting.pos, this.setting.fly_into_node)
+        // NB: Use fetch_details_and_leap_to() so one can load page mid-tour and go backwards.
+        return this.controller.fetch_details_and_leap_to(this.OZid, this.setting.pos, this.setting.fly_into_node)
       }
 
       /* Flight */
@@ -327,7 +328,7 @@ class TourStopClass {
         this.tour.user_pause()
       } else if (e instanceof UserInterruptError) {
         // Flight interrupted (e.g. by pause).
-        if (window.is_testing) console.log("Flight to " + this.OZid + " interrupted", e)
+        if (window.tour_trace) console.log("Flight to " + this.OZid + " interrupted", e)
       } else {
         throw e;
       }
@@ -353,7 +354,7 @@ class TourStopClass {
     // Add a block that we'll then remove in (wait_time) ms
     this.block_add('timer');
     clearTimeout(this.goto_next_timer)
-    if (window.is_testing) console.log("Setting timer for " + wait_time + "milliseconds")
+    if (window.tour_trace) console.log("Setting timer for " + wait_time + "milliseconds")
     this.goto_next_timer = setTimeout(() => {
       this.block_remove('timer');
     }, wait_time);

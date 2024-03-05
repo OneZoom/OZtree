@@ -47,8 +47,11 @@ class TestEmbed(unittest.TestCase):
             out = embed.media_embed(url, **kwargs)
             return re.split('\s+', out, flags=re.MULTILINE)
 
-        with self.assertRaisesRegex(HTTP, '400'):
-            media_embed('https://www.wibble.com/some_image.jpg')
+        self.assertEqual(media_embed('https://www.wibble.com/some_image.jpg'), [
+            '<a',
+            'href="https://www.wibble.com/some_image.jpg"',
+            'style="font-weight:bold">https://www.wibble.com/some_image.jpg</a>',
+        ])
 
         self.assertEqual(media_embed('https://www.youtube.com/embed/12345'), [
             '<iframe',
@@ -88,17 +91,19 @@ class TestEmbed(unittest.TestCase):
             '><img',
             'src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Rose_of_Jericho.gif"',
             'alt="Rose_of_Jericho.gif"',
-            '/></a>',
+            '/><span',
+            'class="copyright">©</span></a>',
         ])
 
         self.assertEqual(media_embed('https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg'), [
-            '<audio',
-            'class="embed-audio"',
+            '<div',
+            'class="embed-audio"><audio',
             'controls',
             'src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Turdus_philomelos.ogg"',
             '></audio><a',
+            'class="copyright"',
             'href="https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg"',
-            'title="title">(c)</a>',
+            'title="title">©</a></div>',
         ])
 
 if __name__ == '__main__':

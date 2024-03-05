@@ -52,7 +52,9 @@ class Controller {
    */
   bind_listener() {
     this.interactor.bind_listener(this.canvas);
-    window.onpopstate = this.set_treestate.bind(this);
+    window.onpopstate = function (event) {
+      this.set_treestate(event.location);
+    }.bind(this);
   }
   setup_canvas(canvas) {
     this.canvas = canvas;

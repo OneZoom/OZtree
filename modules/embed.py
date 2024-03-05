@@ -71,7 +71,7 @@ def media_embed(url, **kwargs):
         return """<a class="embed-wikimedia" title="{title}" href="{url}" {element_data}><img
           src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{name}"
           alt="{name}"
-        /></a>""".format(
+        /><span class="copyright">©</span></a>""".format(
             title=m.group(1),
             name=m.group(1),
             url=url,
@@ -82,14 +82,18 @@ def media_embed(url, **kwargs):
     if m:
         # TODO: There's a dedicated audio player embed we should probably use. The purpose here
         #       is more to demonstrate HTML audio than wikipedia commons in particular.
-        return """<audio class="embed-audio" controls
+        return """<div class="embed-audio"><audio controls
           src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{name}"
           {element_data}
-          ></audio><a href="{url}" title="title">(c)</a>""".format(
+          ></audio><a class="copyright" href="{url}" title="title">©</a></div>""".format(
             title=m.group(1),
             name=m.group(1),
             url=url,
             element_data=element_data,
         )
 
-    raise HTTP(400, "Unknown embed URL %s" % url)
+
+    # Fall back to linking
+    return """<a href="{url}" style="font-weight:bold">{url}</a>""".format(
+        url=url,
+    )

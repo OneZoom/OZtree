@@ -25,7 +25,7 @@ setup_params = {
 {{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
 <!-- since this should be possible to run without a server, remove the ability to switch languages/pages -->
 <style>
-ul#controlButtons #tourButton {display: block;}
+ul.ui-controls #tourButton {display: block;}
 .treeswitch {display: none}
 .langswitch {display: none}
 </style>
@@ -34,8 +34,7 @@ ul#controlButtons #tourButton {display: block;}
 var pagetitle_func = function(nm) {return (nm)?("OneZoom restricted: "+ nm):"OneZoom Tree of Life Explorer: restricted version"};
 </script>
 <script id="tour_config" type="text/html">
-<div class="tour minlife_tour">
-  <link rel="stylesheet" type="text/css" href="{{=URL('static', 'tour/tour_template.css')}}" />
+<div class="tour tour-minlife layout-def">
 
   <div class="container tour_container"
        data-ott="991547"
@@ -56,7 +55,7 @@ var pagetitle_func = function(nm) {return (nm)?("OneZoom restricted: "+ nm):"One
        data-stop_wait=""
        >
     <h2 class="title">OneZoom Demo Tour</h2>
-    <div class='window_text gray_background'>Slide 2 with style change</div>
+    <div class='window_text'>Slide 2</div>
     <img class="img" src="http://images.onezoom.org/99/727/26848727.jpg" />
     {{ include "tour/tourstop/footer.html" }}
   </div>
@@ -103,7 +102,7 @@ var pagetitle_func = function(nm) {return (nm)?("OneZoom restricted: "+ nm):"One
 // "#tourButton", and inject tthe tour object into the onezoom object dynamically.
 
 $(document).on("setupUI", function() {
-    $('#controlButtons #tourButton .icon-container')
+    $('.ui-controls #tourButton .icon-container')
         .click(function () {
             onezoom.controller.tour_start(document.getElementById('tour_config').firstChild)
         })

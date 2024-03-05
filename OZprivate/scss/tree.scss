@@ -1,4 +1,6 @@
 /* UIkit-skin scss file for OneZoom. Author: Yan Wong for OneZoom CIO. License: MIT */
+@import "colour_scheme.scss";
+@import "ui_widgets.scss";
 @import "search_ui.scss";
 @import "tour.scss";
 
@@ -26,7 +28,7 @@ body.tree-viewer {
     }
 
     #UI {
-        z-index:2; /* overlay the canvas with the UI */
+        z-index: 200; /* overlay the canvas & tour UI with the UI */
         height: 0; /* UI layer can't cover page, then we can't interact with canvas */
     }
 }
@@ -51,73 +53,93 @@ body.loading #UI #loading_spinner {
   margin: -45px 0 0 -45px;
 }
 
-.uk-navbar-item {
-    height:3rem;
-    line-height:3rem; /* force vertical centering */
-    display: block; /* don't use flex, as we want to position these outside a container */
+#UI {
+  .ui-topleft, .ui-topright, .ui-bottomleft, .ui-bottomright {
+    margin: 0.5rem;
+  }
+  .ui-topleft {
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin-right: 0;
+  }
+  .ui-topright {
+    float: right;
+    margin-left: 0;
+  }
+  .ui-bottomleft {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    margin-right: 0;
+  }
+  .ui-bottomright {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    margin-left: 0;
+  }
 }
 
-.uk-navbar-item.advanced_mode {
-    background-color: #EEE;
-    border-bottom-left-radius: 5px;
-    height:auto;
-}
-.uk-navbar-item div {
-    line-height:1rem; /* force vertical centering */
-}
 .logo {
     float: left;
-    min-height: 20px; /* Override uk-navbar's min-height */
-}
-.logo a, .icon-beside-input .main-icon {
-    opacity: 0.55;
-}
-.icon-beside-input .main-icon {
-    opacity: 0.45;
-}
-.logo a:hover {
-    opacity: 1;
-}
-.icon-beside-input .main-icon:hover {
-    opacity: 0.7;
-}
-.logo a, #logo img {
-    vertical-align: middle;
-}
-.logo img {
-    height: 2rem;
+    img {
+      height: 2rem;
+    }
+    > a { opacity: 0.55; }
+    > a:hover { opacity: 1; }
 }
 
+/* Scale icons with font, so MD display enlarges */
 #advanced_search_button {
     width: 2rem; height: 2rem;
+    svg {
+        width: 1.25rem; height: 1.25rem;
+    }
 }
-
-#advanced_search_button svg, .searchbox .main-icon svg,
+#searchboxes .remove-searchbox svg, .searchbox .main-icon svg,
 #common_ancestor_button svg, #add_searchbox svg {
-    width: 1.25rem; height: 1.25rem;
+    width: 1rem; height: 1rem;
 }
 
-#controlButtons {
-    position: fixed;
-    bottom: 0.5em; 
-    left:0.5em; 
-    display:block; 
-    border: 1px solid #DDD;
+.ui-controls {
+    border: 1px solid $oz_border_def;
     border-radius: 5px; 
     background-color: white;
-    padding: 0.2em 0;
-    margin: 0;
+    margin-top: 0.5em;
+
+    /* Hide labels, show them on a big screen & when not explicitly hidden */
+    > li > .button-label { display: none; }
+    @media screen and (min-width: 640px) {
+        &:not(.button-label-hidden) > li {
+            > .icon-container:not(:only-child) {
+                border-right: 1px solid $oz_border_def;
+            }
+            > .button-label {
+                display: inline-block;
+                line-height: 2.2rem;
+                padding-left: 1rem;
+                vertical-align:top;
+                width: 5.5rem;
+            }
+        }
     }
-#controlButtons a:hover {text-decoration:none}
-#controlButtons > li {
+}
+.ui-controls a:hover {text-decoration:none}
+.ui-controls > li:not(.drawer) {
+    &:not(:first-child) .icon-container { border-top: 1px solid $oz_green_fg; }
+    &:not(:first-child) .button-label { border-top: 1px solid $oz_border_def; }
+
     padding:0;
     margin:0;
-    border-radius: 5px;
-    text-align: center;
     position: relative;
+
     .icon-container {
-        width: 100%;
         display: inline-block;
+        background-color: $oz_dark_bg;
+        color: $oz_green_fg;
+        > a:hover { color: lighten($oz_green_fg, 30%) }
+
         > a {
             display: inline-block;
             padding:0.5rem 0.1rem;
@@ -130,48 +152,79 @@ body.loading #UI #loading_spinner {
         }
     }
 }
+
+.ui-controls {
+    transition: border-bottom-right-radius 0.5s;
+}
+.ui-controls.open-drawer:not(.button-label-hidden) {
+    @media screen and (min-width: 640px) {
+        border-bottom-right-radius: 20px;
+        > li.drawer { border-bottom-right-radius: 18px; }
+    }
+
+    > li.drawer {
+        height: 2rem;
+    }
+}
+.ui-controls.button-label-hidden li.drawer {
+    /* Hide drawer if button-labels are hidden */
+    display: none;
+}
+.ui-controls > li.drawer {
+    padding: 0;
+    overflow: hidden;
+
+    background-color: $oz_dark_bg;
+    color: $oz_green_fg;
+    a {
+        color: inherit;
+        &:hover { color: lighten($oz_green_fg, 30%); }
+    }
+
+    a {
+        display: block;
+        padding: 0 1rem;
+        border-top: 1px solid $oz_green_fg;
+        text-align: center;
+    }
+
+    /* Open on-demand */
+    height: 0;
+    transition: height 0.5s;
+    a { line-height: 2rem; }
+
+    /* Disable drawers / tour-teasers on small screens */
+    @media screen and (max-width: 640px) {
+        display: none;
+    }
+}
     
-#controlButtons [uk-dropdown] {
+.ui-controls [uk-dropdown] {
     /* make sure dropdowns always fit in the viewport, but don't cover header (or possibly get lost under Safari URL bar) */
     max-height: calc(100vh - 8rem);
     overflow-y: auto;
 }
-#controlButtons #inButton a {
-    border-top: 1px solid #DDD
-}
 
-#controlButtons #multipleInfoButton a, 
-#controlButtons #singleInfoButton a, 
-#controlButtons #hideControlsButton a, 
-#controlButtons #showControlsButton a{
-    border-top: 1px solid #DDD;
-}
-
-/* Hide label text on the right of buttons */
-#controlButtons .button-label {
-    display: none;
-}
-
-#controlButtons #singleInfoButton {
+.ui-controls #singleInfoButton {
     display:none;
 }
 
 /* Hide hide/show control button, how to use button, tour button, etc */
-#controlButtons #showControlsButton,
-#controlButtons #hideControlsButton,
-#controlButtons #howToUseButton,
-#controlButtons #tourButton,
+.ui-controls #showControlsButton,
+.ui-controls #hideControlsButton,
+.ui-controls #howToUseButton,
+.ui-controls #tourButton,
 {
     display: none;
 }
 /* hide any "expert-mode" buttons */
-#controlButtons #screenshotButton
+.ui-controls #screenshotButton
 {
     display: none;
 }
 
 /* Toggle show/hide buttons if enabled */
-ul#controlButtons.button-label-hidden {
+ul.ui-controls.button-label-hidden {
     #showControlsButton { display: block; }
     #hideControlsButton { display: none; }
 }
@@ -235,17 +288,10 @@ ul#controlButtons.button-label-hidden {
     width:12rem;
 }
 
-#infoDropdown {
-    padding: 0.5em 0;
-}
-#infoDropdown li span {
-    margin-right: 1em;
-}
-
 #settingsDropdown {
     text-align: left;
     padding: 0.6rem 20px 0.6rem 0rem;
-    min-width: 10rem;
+    min-width: 14rem;
 }
 
 .uk-modal-body {
@@ -270,6 +316,22 @@ ul#controlButtons.button-label-hidden {
     float: right;
 }
 
+#share-modal {
+    form {
+        position: relative; /* Contain input[type='submit'] */
+        > input[type='url'] {
+            border-radius: 1.5rem;
+        }
+        > input[type='submit'] {
+            position: absolute;
+            right: 2px;
+            top: 2px;
+            bottom: 2px;
+            padding: 0 1rem;
+        }
+    }
+}
+
 #external-modal .uk-modal-dialog {
     height: 100%; /* always fill with the dialog */
     width: 120em; //override the default max width of 1800px so it is wider but readable
@@ -279,7 +341,6 @@ ul#controlButtons.button-label-hidden {
     height: 100%;
     display: flex;
     flex-flow: column;
-    background-color: white;
 }
 
 #external-modal .external-content .external-tabs {
@@ -371,12 +432,12 @@ iframe {
 }
 
 #external-modal .expand-tab {
-    height: 2rem;
-}
-#external-modal .expand-tab a {
-    margin: 0.25rem;
-    width: 1.5em;
-    height: 1.5em;
+    a {
+        margin-right: 25px; /* Space for close button */
+        width: 15px;
+        height: 15px;
+        color: $oz_border_def;
+    }
 }
 
 .selectable {
@@ -403,35 +464,13 @@ iframe {
     }
 }
 @media screen and (max-width: 640px) {
-    .uk-navbar-item {
-        padding: 0 5px;
-        height:2.5rem;
-        line-height:2.5rem;
-    }
-
-    #advanced_search_button {
-        width: 1.5rem;
-        height: 1.5rem;
-    }
-    #advanced_search_button svg {
-        height: 1rem;
-    }
     .logo img {
         height: 1.5rem;
-    }
-    #searchnav .searchbox input {
-        height: 2rem;
-    }
-    .uk-modal-close-outside {
-        padding: 0;
     }
 }
 
 /* On tiny screens, shrink the search box */    
 @media screen and (max-width: 440px) {
-    #searchnav .searchbox input {
-        width: 14rem;
-    }
     #external-modal .external-content .external-tabs::before {
         left: 2px;
     }

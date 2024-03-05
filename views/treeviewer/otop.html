@@ -76,7 +76,7 @@ setup_params = {
 {{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree-dark.css')}}" />
 <style>
-#controlButtons #settingsButton { display: none; }
+.ui-controls #settingsButton { display: none; }
 
 body {
   background: #120a15;
@@ -139,8 +139,7 @@ body.loading > canvas {
 }
 
 /* Turn on single info button */
-#controlButtons #singleInfoButton { display: list-item; }
-#controlButtons #multipleInfoButton { display: none; }
+.ui-controls #singleInfoButton { display: list-item; }
 
 #tutorial-slideshow h3,
 #tutorial-slideshow {

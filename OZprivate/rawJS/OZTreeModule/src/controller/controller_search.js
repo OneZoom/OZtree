@@ -41,10 +41,14 @@ export default function (Controller) {
     }
     
     /**
-     * Returns a list of all marked areas in the tree
+     * Returns marked area list, as expected by advanced_search UI
      */
     Controller.prototype.list_all_marked = function() {
-        return this.highlight_detail().map((h) => [h.ozids[0], h.color]);
+        return this.highlight_detail().filter((h) => {
+          return h.type === 'path' && h.ozids[0] === 1;
+        }).map((h) => {
+          return [h.ozids[1], h.color];
+        });
     }
     
     /**

@@ -28,6 +28,7 @@ class Screensaver extends Tour {
    */
   setup_setting(tour_setting, start_callback, loop_back_forth, exit_callback,
                 interaction, interaction_callback, autostart_after_seconds) {
+    this.is_screensaver = true;
     this.auto_activate_timer = null
     this.loop_back_forth = loop_back_forth
     this.autostart_after_seconds = autostart_after_seconds

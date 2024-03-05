@@ -1,3 +1,19 @@
+@import "colour_scheme.scss";
+
+#tour_wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+}
+
+/* Disable any events on the UI when active, have to quit tour to re-activate */
+#tour_wrapper.tour-active + #UI > :not(.logo) {
+  opacity: 0.1;
+  pointer-events: none;
+  user-select: none;
+}
+
 #tour_wrapper > .tour {
     /* All containers should be hidden at start */
     > .container {
@@ -22,8 +38,235 @@
     /* tour_resume buttons only visible the tour is paused */
     .tour_resume { display: none }
     &[data-state=tstate-paused] .tour_resume { display: initial }
+    &[data-state=tstate-paused] .tour_forward { display: none }
 
     /* tour_backward & tour_forward don't make sense at beginning / end */
-    > .container.ts-first .tour_backward { display: none }
-    > .container.ts-last .tour_forward { display: none }
+    > .container.ts-first .tour_backward { opacity: 0.5 }
+    > .container.ts-last .tour_forward { opacity: 0.5 }
+}
+
+#tour_wrapper > .tour.layout-def {
+  > .tour_container {
+    @extend %oz-drop-shadow;
+    position: fixed;
+    bottom: -1px;
+    left: 0;
+    box-sizing: border-box;
+    width: 100%;
+    height: fit-content;
+    max-height: 66vh;
+
+    padding: 0 0.6rem;
+
+    border: 1px solid #242A22;
+    border-bottom-width: 0;
+    border-radius: 20px 20px 0 0;
+
+    background: rgba(255,255,255,0.8);
+    color: #242A22;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+
+    @media (orientation: landscape) {
+      /* Mobile landscape mode */
+      max-width: 50%;
+      margin: 0 5px;
+
+      @media (min-width: 1000px) {
+        /* Desktop/tablet landscape mode */
+        position: absolute;
+        top: 50vh;
+        left: 5vw;
+        width: 40vw;
+        max-width: none;
+        max-height: 100vh;
+        transform: translate(0, -50%);
+
+        border-bottom-width: 1px;
+        border-radius: 5px;
+      }
+    }
+  }
+
+  .title {
+    flex-shrink: 1;
+    overflow-y: hidden;
+
+    margin: 0;
+    margin-right: 5px; /* Don't butt up to close button */
+    font-size: 26px;
+
+    @media (orientation: landscape) {
+      @media (min-width: 1000px) {
+        /* Desktop/tablet landscape mode */
+        padding: 5px 0;
+        font-size: 32px;
+        border-bottom: 1px solid #242A22;
+      }
+    }
+  }
+
+  .window_text {
+    flex-grow: 1;
+    flex-shrink: 10;
+    overflow-y: auto;
+  }
+
+  .tour_container > iframe, .tour_container > a.embed-wikimedia, .tour_container > .embed-audio {
+    flex-grow: 1000;
+    flex-shrink: 1000; /* Far more likely to shrink media than window text */
+    overflow-y: auto;
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .tour_container > iframe {
+    max-width: 100%;
+    aspect-ratio: 16/9;
+  }
+  .tour_container > a.embed-wikimedia {
+    max-width: 80%;
+    > img {
+      object-fit: cover;
+      max-height: 100%;
+      max-width: 100%;
+      border: 1px solid #242A22;
+      border-radius: 5px;
+    }
+    > .copyright {
+      position: absolute;
+      right: 10px;
+    }
+  }
+  .tour_container > .embed-audio {
+    position: relative; /* Contain copyright link */
+    width: 100%;
+    > audio {
+      display: inline;
+      max-width: 80%;
+      max-height: 100%;
+    }
+    .copyright {
+      position: absolute;
+      top: 0;
+    }
+  }
+
+  button {
+    border: 1px solid #000;
+    background-color: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .header {
+    margin: 0 -0.6rem; /* Cancel container padding */
+
+    .tour_exit.handle {
+      border: none;
+      margin: 0.3rem auto;
+      width: 5rem;
+      height: 3px;
+      background: #242A22;
+      border-radius: 6px;
+      font-size: 0;
+
+      &:active {
+        background: #9BD05A;
+        box-shadow: 0 0 6px 1px #9BD05A;
+      }
+    }
+
+    .tour_exit.button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      line-height: 1.4rem;
+      font-size: 30px;
+      border: none;
+
+      &:active {
+        color: #9BD05A;
+        text-shadow: 0 0 6px #9BD05A;
+      }
+    }
+
+    .tour_exit.handle { display: block; }
+    .tour_exit.button { display: none; }
+    @media (orientation: landscape) {
+      @media (min-width: 1000px) {
+        /* Desktop/tablet landscape mode: Reveal × */
+        .tour_exit.handle { display: none; }
+        .tour_exit.button { display: block; }
+      }
+    }
+  }
+
+  .footer {
+    border-top: 1px solid #242a22;
+    margin: 0.3rem 0;
+    padding-top: 7px;
+
+    display: flex;
+    gap: 3%;
+    > .grow {
+        flex-grow: 1;
+    }
+
+    .tour_backward, .tour_forward, .tour_resume {
+      @extend %oz-drop-shadow-active;
+      border: 0;
+      height: 35px;
+      background-repeat: no-repeat;
+
+      &:active {
+        background-color: #EEE;
+        position: relative;
+        top: 2px;
+      }
+    }
+
+    .tour_backward {
+      background-image: url(../images/oz-leftarrow-darkbg.svg);
+    }
+    .tour_forward, .tour_resume {
+      background-image: url(../images/oz-rightarrow-darkbg.svg);
+      background-position: right;
+      padding-right: 40px;
+    }
+
+    .tour_backward, .tour_forward, .tour_resume {
+      font-size: inherit;
+      border: 1px solid #242A22;
+    }
+    .tour_backward {
+      background-position: left;
+      border-radius: calc(35px / 2) 5px 5px calc(35px / 2);
+      border-left: none;
+      text-indent: 35px;
+      padding-right: 10px;
+    }
+    .tour_forward, .tour_resume {
+      background-position: right;
+      border-radius: 5px calc(35px / 2) calc(35px / 2) 5px;
+      border-right: none;
+      padding-left: 10px;
+      padding-right: 40px;
+    }
+
+    @media (orientation: landscape) {
+      @media (min-width: 1000px) {
+        /* Desktop/tablet landscape mode */
+        margin: 0 0 0.9rem 0;
+      }
+    }
+  }
+
+  &:after {
+    content: '';
+    display: block;
+    clear: both;
+  }
 }

@@ -1,3 +1,5 @@
+@import "colour_scheme.scss";
+
 #advanced_search_toggle, .search-nav {
     float: right;
 }
@@ -10,32 +12,16 @@
     padding: 0;
 }
 
-.search-nav button {
-    color: #999;
-    border-color: #999;
-}
-
-.search-nav button:hover {
-    color: #666;
-    border-color: #666;
-}
-
-
 .search-nav .searchbox {
     width: auto;
     background-color: white;
-    border: 1px solid #DDD;
+    border: 1px solid $oz_border_def;
     border-radius: 5px;
-}
-
-.search-nav .searchbox, #add_searchbox, #common_ancestor_button {
-    margin: 0.25rem;
 }
 
 .search-nav .search_dropdown {
     width: 100%;
-    border: 1px solid #eee;
-    max-height: calc(100vh - 4rem);
+    max-height: calc(100vh - 6rem);
     overflow-y: auto;
 }
 
@@ -51,13 +37,13 @@
     box-sizing: border-box;
     width: 16rem;
     border: 0;
-    height: 2.5rem;
-    border-left: 1px solid #DDD;
+    padding: 0.5rem 0.3rem;  /* Padding around a .ui-controls .uk-icon */
+    height: 2.25rem; /* Height of a .ui-controls .uk-icon */
 
-}
-
-.search-nav #search-advanced .searchinput, .search-nav #search-advanced .searchresult {
-    border-right: 1px solid #DDD;
+    /* On small screens, searchbox scales with screen width */
+    @media screen and (max-width: 490px) {
+        width: calc(100vw - 10rem);
+    }
 }
 
 .search-nav .searchbox .remove-searchbox {
@@ -67,7 +53,12 @@
 .search-nav .icon-beside-input {
     display: inline-block;
     width: 2rem;
+    padding-left: 0.3rem; /* Matching .search-nav .searchbox input */
     text-align: center;
+
+    .main-icon {
+        opacity: 0.9;
+    }
 }
 
 .search-nav .searchbox .icon-beside-input .spinner {
@@ -110,43 +101,51 @@
     white-space: nowrap;
 }
 
-#searchboxes {
-    margin:0;
-    padding:0;
-}
-
 ul#searchboxes {
     margin:0;
     padding:0;
     list-style: none;
-}
-#searchboxes .searchbox {
-    display: list-item;
+
+    > li {
+        display: list-item;
+        &:first-child {
+            border-radius: 5px 5px 0 0;
+        }
+        &:not(:first-child) {
+            border-radius: 0;
+            border-top: 0;
+        }
+    }
+    + .sa-footer #add_searchbox, .remove-searchbox {
+        /* Make oz-pills circular */
+        padding: 2px;
+        line-height: 1px;
+    }
+    + .sa-footer {
+        padding: 5px;
+        border-radius: 0 0 5px 5px;
+        border: 1px solid $oz_border_def;
+        border-top: 0;
+        overflow: hidden;
+        background: white;
+
+        #add_searchbox {
+            float: right;
+            margin-top: 3px;
+        }
+    }
 }
 
-#search-advanced #common_ancestor_button {
-    float: left;
-    border-width: 1px;
-    border-style: solid;
-    background-color: white;
-    border-radius: 10px;
-    font-size: 0.7rem;
-    line-height: 1.5rem;
+#advanced_search_toggle {
+    > * {
+        background-color: $oz_dark_bg;
+        color: $oz_green_fg;
+    }
+    line-height: 2.25rem; /* Pad to match height of searchnav */
 }
-
-#search-advanced #common_ancestor_button span {
-    display: block;
-    float: left;
-    margin-top: 0.25rem;
-    margin-right: 0.25rem;
-}
-
-#search-advanced #add_searchbox {
-    padding: 0.5rem 0.45rem;
-    float: right;
-}
-#search-advanced #add_searchbox svg circle {
-    fill: white;
+.search-nav.advanced_mode + #advanced_search_toggle > * {
+    background-color: $oz_green_fg;
+    color: $oz_dark_fg;
 }
 
 /* Dropdown for search results */
@@ -241,17 +240,4 @@ ul#searchboxes {
     width: 60%;
     margin: 0.25em auto;
     background: #ddd;
-}
-
-/* On miniscule screens, only display search box on click */
-@media screen and (max-width: 490px) {
-    .search-nav .search-basic .searchbox input {
-        width: calc(100vw - 3rem);
-    }
-    .search-nav .search-basic .searchinput:not(.uk-open) .uk-search-input:not(:focus) {
-        /* Hide simple search box until it's selected */
-        padding: 0;
-        width: 0;
-        border-left: none;
-    }
 }

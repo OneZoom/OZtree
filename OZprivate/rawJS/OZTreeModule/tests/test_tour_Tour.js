@@ -457,6 +457,118 @@ test('tour:user_forward', function (test) {
 });
 
 
+test('tour:goto_stop', function (test) {
+  var t = setup_tour(test, `<div class="tour">
+    <div class="container" data-ott="91101" data-stop_wait="5000">t1</div>
+    <div class="container" data-ott="92202" data-stop_wait="5000">t2</div>
+    <div class="container" data-ott="92203" data-stop_wait="5000">t3</div>
+    <div class="container" data-ott="92204" data-stop_wait="5000">t4</div>
+    <div class="container" data-ott="92205" data-stop_wait="5000">t5</div>
+  </div>`, null, false);
+
+  return t.tour.start().then(function () {
+    return t.wait_for_tourstop_state(0, 'tsstate-transition_in');
+  }).then(function () {
+    test.deepEqual(t.oz.tree_state.flying, 'fly_on_tree_to', "Flying (not leaping) to start");
+    t.finish_flight();
+    return t.wait_for_tourstop_state(0, 'tsstate-active_wait');
+  }).then(function () {
+    test.deepEqual(t.tour_states(), [
+      'tstate-playing',
+      'tsstate-active_wait',
+      'tsstate-inactive',
+      'tsstate-inactive',
+      'tsstate-inactive',
+      'tsstate-inactive',
+    ], "Ready at first node");
+    test.deepEqual(t.tour.prev_step, null, "No previous step");
+
+    t.tour.user_backward();  // Already at start so backward just resets tourstop
+    return t.wait_for_tourstop_state(0, 'tsstate-transition_in');
+  }).then(function () {
+    test.deepEqual(t.oz.tree_state.flying, 'fetch_details_and_leap_to', "Flying (not leaping) to same place");
+    t.finish_flight();
+    return t.wait_for_tourstop_state(0, 'tsstate-active_wait');
+  }).then(function () {
+    test.deepEqual(t.tour_states(), [
+      'tstate-playing',
+      'tsstate-active_wait',
+      'tsstate-inactive',
+      'tsstate-inactive',
+      'tsstate-inactive',
+      'tsstate-inactive',
+    ], "Ready at first node");
+    test.deepEqual(t.tour.prev_step, null, "Still no previous step");
+
+    t.tour.user_forward();
+    return Promise.all([
+      t.wait_for_tourstop_state(0, 'tsstate-transition_out'),
+      t.wait_for_tourstop_state(1, 'tsstate-transition_in'),
+    ]);
+  }).then(function () {
+    test.deepEqual(t.oz.tree_state.flying, 'fly_on_tree_to', "Flying (not leaping) to second");
+    t.finish_flight();
+    return t.wait_for_tourstop_state(1, 'tsstate-active_wait');
+  }).then(function () {
+    test.deepEqual(t.tour_states(), [
+      'tstate-playing',
+      'tsstate-inactive',
+      'tsstate-active_wait',
+      'tsstate-inactive',
+      'tsstate-inactive',
+      'tsstate-inactive',
+    ], "Ready at second node");
+
+    t.tour.goto_stop(3);
+    return Promise.all([
+      t.wait_for_tourstop_state(1, 'tsstate-transition_out'),
+      t.wait_for_tourstop_state(3, 'tsstate-transition_in'),
+    ]);
+  }).then(function () {
+    test.deepEqual(t.oz.tree_state.flying, 'fetch_details_and_leap_to', "Leaping to arbiary stop");
+    t.finish_flight();
+    return t.wait_for_tourstop_state(3, 'tsstate-active_wait');
+  }).then(function () {
+    test.deepEqual(t.tour_states(), [
+      'tstate-playing',
+      'tsstate-inactive',
+      'tsstate-inactive',
+      'tsstate-inactive',
+      'tsstate-active_wait',
+      'tsstate-inactive',
+    ], "Ready at fourth node");
+    test.deepEqual(t.tour.prev_step, 1, "Previous step is 1");
+
+    t.tour.goto_stop(3);
+    return Promise.all([
+      t.wait_for_tourstop_state(1, 'tsstate-transition_out'),
+      t.wait_for_tourstop_state(3, 'tsstate-transition_in'),
+    ]);
+  }).then(function () {
+    test.deepEqual(t.oz.tree_state.flying, 'fetch_details_and_leap_to', "Leaping to arbiary stop");
+    t.finish_flight();
+    return t.wait_for_tourstop_state(3, 'tsstate-active_wait');
+  }).then(function () {
+    test.deepEqual(t.tour_states(), [
+      'tstate-playing',
+      'tsstate-inactive',
+      'tsstate-inactive',
+      'tsstate-inactive',
+      'tsstate-active_wait',
+      'tsstate-inactive',
+    ], "Ready at fourth node");
+    test.deepEqual(t.tour.prev_step, 1, "Previous step is still 1");
+
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
+
 test.onFinish(function() {
   // NB: Something data_repo includes in is holding node open.
   //     Can't find it so force our tests to end.
