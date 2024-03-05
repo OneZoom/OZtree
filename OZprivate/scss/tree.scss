@@ -126,7 +126,7 @@ body.loading #UI #loading_spinner {
     }
 }
 .ui-controls a:hover {text-decoration:none}
-.ui-controls > li {
+.ui-controls > li:not(.drawer) {
     &:not(:first-child) .icon-container { border-top: 1px solid $oz_green_fg; }
     &:not(:first-child) .button-label { border-top: 1px solid $oz_border_def; }
 
@@ -150,6 +150,55 @@ body.loading #UI #loading_spinner {
                 height:1.25rem;
             }
         }
+    }
+}
+
+.ui-controls {
+    transition: border-bottom-right-radius 0.5s;
+}
+.ui-controls.open-drawer:not(.button-label-hidden) {
+    @media screen and (min-width: 640px) {
+        border-bottom-right-radius: 20px;
+        > li.drawer { border-bottom-right-radius: 18px; }
+    }
+
+    > li.drawer {
+        height: 2rem;
+    }
+}
+.ui-controls.button-label-hidden li.drawer {
+    /* Hide drawer if button-labels are hidden */
+    display: none;
+}
+.ui-controls > li.drawer {
+    padding: 0;
+    overflow: hidden;
+
+    background-color: $oz_dark_bg;
+    color: $oz_green_fg;
+    a {
+        color: inherit;
+        &:hover { color: lighten($oz_green_fg, 30%); }
+    }
+
+    a {
+        display: block;
+        padding: 0 1rem;
+        border-top: 1px solid $oz_green_fg;
+        text-align: center;
+    }
+
+    /* Open on-demand */
+    height: 0;
+    transition: height 0.5s;
+    a { line-height: 2rem; }
+
+    @media screen and (max-width: 640px) {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 2; /* Sit above other menu items */
     }
 }
     

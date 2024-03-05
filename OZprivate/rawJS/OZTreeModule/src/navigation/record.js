@@ -43,6 +43,12 @@ function record_url(controller, options, force) {
       window.history.pushState(null, "", deparse_state(current_state).href);
     }
     document.title = unescape(get_title(controller));
+
+    // Send tree state upwards for UI
+    controller.canvas.dispatchEvent(new CustomEvent("oz_treestate", {
+        bubbles: true,
+        detail: current_state,
+    }));
   }
 }
 

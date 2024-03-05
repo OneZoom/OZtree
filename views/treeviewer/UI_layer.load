@@ -146,6 +146,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
       </div><!-- inline-block: hide whitespace
       --><span class='button-label top-border top-right-radius top-padding'>{{=T('Tours')}}</span>
     </li>
+    <li class="drawer tour-teaser"><a href=""></a></li>
   </ul>
   <ul class="ui-controls uk-iconnav uk-iconnav-vertical">
     <li id="locationButton">

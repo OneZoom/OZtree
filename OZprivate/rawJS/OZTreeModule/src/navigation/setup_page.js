@@ -54,8 +54,14 @@ function setup_page_by_state(controller, state) {
     } else {
       controller.close_all();
     }
-  })
-  .catch(function (error) {
+
+    // Send tree state upwards for UI
+    // NB: Wait for a second so the UI catches up and is ready for event.
+    window.setTimeout(() => controller.canvas.dispatchEvent(new CustomEvent("oz_treestate", {
+        bubbles: true,
+        detail: state,
+    })), 1000);
+  }).catch(function (error) {
     tree_state.url_parsed = true;
     if (error instanceof UserInterruptError) {
         // The flight was cancelled by the user, not an actual issue

@@ -885,6 +885,44 @@ function setupUI() {
             return false;
         });
 
+    document.querySelectorAll(".tour-teaser").forEach(function (el) {
+        el.addEventListener("click", function (event) {
+            onezoom.controller.tour_start(el.getAttribute('data-tour_url'));
+            event.preventDefault();
+            return false;
+        });
+    });
+    window.addEventListener("oz_treestate", function (event) {
+        onezoom.controller.tours_nearby_detail().then(function (tours) {
+            var tour = tours.length === 0 ? null : tours[0];
+
+            document.querySelectorAll(".tour-teaser").forEach(function (el) {
+              var aEl = el.querySelector(':scope a');
+
+              // Leave open if already showing this tour
+              if (tours[0] && el.getAttribute('data-tour_url') === tours[0].url) {
+                  el.closest('.ui-controls').classList.toggle("open-drawer", true);
+                  return;
+              }
+
+              // Close, wait & re-open with new tour
+              el.closest('.ui-controls').classList.toggle("open-drawer", false);
+
+              window.setTimeout(function () {
+                  if (tours[0]) {
+                      el.setAttribute('data-tour_url', tours[0].url);
+                      aEl.setAttribute('href', document.location.pathname + '?tour=' + tours[0].url);
+                      aEl.innerText = tours[0].title;
+                      el.closest('.ui-controls').classList.toggle("open-drawer", true);
+                  } else {
+                      el.setAttribute('data-tour_url', '');
+                      // Stop forcing width of ui-controls
+                      aEl.innerText = "";
+                  }
+              }, 500); // i.e. the transition timeout in tree.scss
+            });
+        });
+    });
     $('#tours-modal')
         .on('beforeshow', function (event) {
             var tours = onezoom.controller.tours_nearby();
