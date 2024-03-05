@@ -78,3 +78,13 @@ $oz-font-serif: serif;
 }
 
 }
+
+%oz-drop-shadow {
+    box-shadow: 0 4px 4px 0 rgba(0,0,0,.25);
+}
+%oz-drop-shadow-active {
+    @extend %oz-drop-shadow;
+    &:active {
+        box-shadow: 0 2px 4px 0 rgba(0,0,0,0.25);
+    }
+}

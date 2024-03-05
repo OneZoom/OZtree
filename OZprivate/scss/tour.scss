@@ -1,3 +1,5 @@
+@import "colour_scheme.scss";
+
 #tour_wrapper {
   position: absolute;
   top: 0;
@@ -45,6 +47,7 @@
 
 #tour_wrapper > .tour.layout-def {
   > .tour_container {
+    @extend %oz-drop-shadow;
     position: fixed;
     bottom: -1px;
     left: 0;
@@ -207,16 +210,15 @@
     }
 
     .tour_backward, .tour_forward, .tour_resume {
+      @extend %oz-drop-shadow-active;
       border: 0;
       height: 35px;
       background-repeat: no-repeat;
-      box-shadow: 0 4px 4px 0 rgba(0,0,0,0.25);
 
       &:active {
         background-color: #EEE;
         position: relative;
         top: 2px;
-        box-shadow: 0 2px 4px 0 rgba(0,0,0,0.25);
       }
     }
 
