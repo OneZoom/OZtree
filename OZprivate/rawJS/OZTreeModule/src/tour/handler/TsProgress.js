@@ -9,6 +9,14 @@
  * See {@link tour/handler/UIEvents} for tour_goto markup
  */
 function handler(tour) {
+  // For screensavers, assume that the museum display user has wandered off, so should reset progress
+  if (tour.is_screensaver) {
+    tour.tourstop_observer('*', ['tsstate-active_wait'], (tour, tourstop, el_ts) => {
+      progressWipe();
+    });
+    return;
+  }
+
   // Without an identifier, we can't store state
   if (!tour.container[0].getAttribute("data-identifier")) return Promise.resolve();
 
@@ -81,6 +89,20 @@ function progressStore(tour, newVal) {
 
   // No state / invalid number of tourstops, return fresh state
   return Array.from({length: tour.tourstop_array.length}, () => false);
+}
+
+/** Wipe all progress stored in the browser */
+function progressWipe() {
+  try {
+   for (let i = localStorage.length - 1; i >= 0; i--) {
+     if (localStorage.key(i).startsWith('ts-progress-')) {
+       localStorage.removeItem(localStorage.key(i));
+     }
+   }
+  } catch(error) {
+    console.warn(error);
+  }
+  if (window.fakeLs) window.fakeLs = {};
 }
 
 export default handler;
