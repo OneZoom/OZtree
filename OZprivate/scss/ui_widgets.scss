@@ -20,6 +20,14 @@ html {
   color: inherit;
 }
 
+.uk-select:not([multiple]):not([size]) option {
+  background: white;
+  color: $oz_border_def;
+  &:disabled {
+    color: #555;
+  }
+}
+
 .uk-radio:checked, .uk-radio:checked:focus {
   background-color: $oz_border_def;
 }
