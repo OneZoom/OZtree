@@ -54,7 +54,7 @@
     box-sizing: border-box;
     width: 100%;
     height: fit-content;
-    max-height: 100vh;
+    max-height: 66vh;
 
     padding: 0 0.6rem;
 
@@ -81,6 +81,7 @@
         left: 5vw;
         width: 40vw;
         max-width: none;
+        max-height: 100vh;
         transform: translate(0, -50%);
 
         border-bottom-width: 1px;
