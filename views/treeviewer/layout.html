@@ -428,11 +428,6 @@ function add_advanced_searchbox(result, col) {
      * If any parameters are given, we set the box to those values
      */
     var box_selector = $(advSchbx).appendTo('#searchboxes');
-    $('.search_dropdown', box_selector)
-        .on('show', function(event) {
-            //have to recalc the max height here as we need to dynamically work out the dropbox posn
-            $(event.currentTarget).css("max-height", "calc(100vh - 5px - " + $(event.currentTarget).offset().top + "px)");
-        });
 
     $('.remove-searchbox', box_selector)
         .click(function(event) {
@@ -761,12 +756,6 @@ function setupUI() {
              }
         }
       });
-    
-    $('#searchnav .search-basic .search_dropdown')
-        .on('show', function(event) {
-            //have to recalc the max height here as we need to dynamically work out the dropbox posn
-            $(event.currentTarget).css("max-height", "calc(100vh - 5px - " + $(event.currentTarget).offset().top + "px)");
-        })
     
     /* Advanced search stuff */
     $('#add_searchbox')
