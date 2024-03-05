@@ -17,6 +17,12 @@ function handler(tour) {
 
     tour.tourstop_observer('*', ['tsstate-active_wait'], (tour, tourstop, el_ts) => {
       const progress = progressStore(tour);
+
+      // If we have already visited all the tourstops, clear & start again
+      if (Object.keys(progress).every((k) => progress[k])) {
+          Object.keys(progress).forEach((k) => progress[k] = false);
+      }
+
       progress[tour.curr_step] = true;
       progressStore(tour, progress)
       updateTsProgress(tour, progress);
