@@ -193,12 +193,9 @@ body.loading #UI #loading_spinner {
     transition: height 0.5s;
     a { line-height: 2rem; }
 
+    /* Disable drawers / tour-teasers on small screens */
     @media screen and (max-width: 640px) {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 2; /* Sit above other menu items */
+        display: none;
     }
 }
     
