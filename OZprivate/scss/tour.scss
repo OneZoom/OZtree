@@ -94,6 +94,7 @@
     overflow-y: hidden;
 
     margin: 0;
+    margin-right: 5px; /* Don't butt up to close button */
     font-size: 26px;
 
     @media (orientation: landscape) {
