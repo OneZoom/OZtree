@@ -344,7 +344,6 @@ ul.ui-controls.button-label-hidden {
     height: 100%;
     display: flex;
     flex-flow: column;
-    background-color: white;
 }
 
 #external-modal .external-content .external-tabs {
@@ -436,12 +435,12 @@ iframe {
 }
 
 #external-modal .expand-tab {
-    height: 2rem;
-}
-#external-modal .expand-tab a {
-    margin: 0.25rem;
-    width: 1.5em;
-    height: 1.5em;
+    a {
+        margin-right: 25px; /* Space for close button */
+        width: 15px;
+        height: 15px;
+        color: $oz_border_def;
+    }
 }
 
 .selectable {
@@ -470,10 +469,6 @@ iframe {
 @media screen and (max-width: 640px) {
     .logo img {
         height: 1.5rem;
-    }
-
-    .uk-modal-close-outside {
-        padding: 0;
     }
 }
 

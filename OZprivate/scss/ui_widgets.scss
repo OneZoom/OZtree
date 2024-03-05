@@ -32,11 +32,29 @@ html {
   background-color: $oz_border_def;
 }
 
-button.uk-modal-close-default {
-  /* Modal button closer to edge than default */
-  top: 0;
-  right: 0;
-  color: #000;
+.uk-modal-container {
+  .uk-modal-dialog {
+    border: 1px solid $oz_border_def;
+    border-radius: 5px;
+  }
+
+  .uk-modal-header {
+    background: none; /* So border-radius isn't obscured */
+    border-bottom: none;
+  }
+
+  button.uk-modal-close-default {
+    /* Modal button closer to edge than default */
+    top: 0;
+    right: 0;
+  }
+}
+
+.uk-icon.uk-close, .uk-icon[uk-icon="icon: close"] {
+    color: $oz_border_def;
+    line,path {
+        stroke-width: 2;
+    }
 }
 
 .uk-dropdown {
