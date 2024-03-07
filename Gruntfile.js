@@ -102,10 +102,18 @@ module.exports = function (grunt) {
         command: 'npm run test'
       },
       compile_js: {
-        command: 'npm run compile_js' //command defined in package.json
+        command: [
+            // Only pass --openssl-legacy-provider if node recognises it (NB: FreeBSD node18 doesn't)
+            'export NODE_OPTIONS="$(node --help | grep -o -- --openssl-legacy-provider || true)"',
+            'npm run compile_js',
+        ].join(" && "),
       },
       compile_js_dev: {
-        command: 'npm run compile_js_dev' //command defined in package.json
+        command: [
+            // Only pass --openssl-legacy-provider if node recognises it (NB: FreeBSD node18 doesn't)
+            'export NODE_OPTIONS="$(node --help | grep -o -- --openssl-legacy-provider || true)"',
+            'npm run compile_js_dev',
+        ].join(" && "),
       },
       fetch_uikit: {
         cwd: "static/uikit-3/",
