@@ -105,4 +105,31 @@ function progressWipe() {
   if (window.fakeLs) window.fakeLs = {};
 }
 
+/** Return summary of any browser-stored progress for (tourIdentifier) */
+function progressSummary(tourIdentifier) {
+  var progress;
+
+  try {
+    progress = JSON.parse(localStorage.getItem('ts-progress-' + tourIdentifier));
+  } catch(error) {
+    progress = window.fakeLs['ts-progress-' + tourIdentifier];
+  }
+
+  if (!progress) return {
+    in_progress: false,
+    finished: false,
+    progress: 0,
+    total: 10,  // NB: Guess, we don't know but don't care.
+  };
+
+  const final = progress.findLastIndex((x) => !!x) + 1;
+  return {
+    in_progress: final > 0 && final !== progress.length,
+    finished: final === progress.length,
+    progress: final,
+    total: progress.length,
+  };
+}
+
+export { progressSummary };
 export default handler;

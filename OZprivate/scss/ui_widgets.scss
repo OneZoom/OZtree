@@ -4,6 +4,21 @@ html {
   color: $oz_border_def;
 }
 
+progress[value] {
+  border: 1px solid $oz_border_def;
+  border-radius: 5px;
+  background: #eee;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.25) inset;
+  &::-webkit-progress-bar {
+    border-radius: 5px;
+    background: #eee;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.25) inset;
+  }
+
+  &::-webkit-progress-value { background-color: $oz_dark_bg; }
+  &::-moz-progress-bar { background-color: $oz_dark_bg; }
+}
+
 .uk-button {
   /* No shouty buttons */
   text-transform: none;
