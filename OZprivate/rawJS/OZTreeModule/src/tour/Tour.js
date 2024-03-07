@@ -44,7 +44,7 @@
  * * ``data-stop_wait``: Wait at tourstop for (stop_wait) milliseconds, then automatically move on. By default wait for user to press "next"
  *
  * Other modules provide extra functionality useful when writing tours, in particular:
- * * {@link tour/handler/HtmlAudio} Autoplays/stops ``<audio>`` in a tourstop based on ``data-ts_autoplay``.
+ * * {@link tour/handler/HtmlAV} Autoplays/stops HTML ``<audio>`` / ``<video>`` in a tourstop based on ``data-ts_autoplay``.
  * * {@link tour/handler/QsOpts} Applies/reverts tree state based on ``data-qs_opts``, e.g. highlights, colour schemes, language.
  * * {@link tour/handler/UiEvents} Behavioural CSS classes to add to tour forward/backward/etc buttons.
  * * {@link tour/handler/TsProgress} Individual links to tourstops, showing currently visited stops.
@@ -54,7 +54,7 @@
  *
  * @module tour/Tour
  */
-import handler_htmlaudio from './handler/HtmlAudio';
+import handler_htmlav from './handler/HtmlAV';
 import handler_qsopts from './handler/QsOpts';
 import handler_uievents from './handler/UIEvents';
 import handler_tsprogress from './handler/TsProgress';
@@ -250,7 +250,7 @@ class Tour {
           this.pinpoint_to_ozid[pp.pinpoint] = pp.ozid;
         });
       }),
-      handler_htmlaudio(this),
+      handler_htmlav(this),
       handler_qsopts(this),
       handler_tsprogress(this),
       handler_vimeo(this),
