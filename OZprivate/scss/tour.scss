@@ -90,24 +90,6 @@
     }
   }
 
-  .title {
-    flex-shrink: 1;
-    overflow-y: hidden;
-
-    margin: 0;
-    margin-right: 5px; /* Don't butt up to close button */
-    font-size: 26px;
-
-    @media (orientation: landscape) {
-      @media (min-width: 1000px) {
-        /* Desktop/tablet landscape mode */
-        padding: 5px 0;
-        font-size: 32px;
-        border-bottom: 1px solid #242A22;
-      }
-    }
-  }
-
   .window_text {
     flex-grow: 1;
     flex-shrink: 10;
@@ -173,11 +155,6 @@
       background: #242A22;
       border-radius: 6px;
       font-size: 0;
-
-      &:active {
-        background: #9BD05A;
-        box-shadow: 0 0 6px 1px #9BD05A;
-      }
     }
 
     .tour_exit.button {
@@ -191,6 +168,19 @@
       &:active {
         color: #9BD05A;
         text-shadow: 0 0 6px #9BD05A;
+      }
+    }
+    > .title {
+      margin: 0 calc(0.6rem + 5px) 0 0.6rem; /* Cancel-cancel container padding, space for close */
+      font-size: 26px;
+
+      @media (orientation: landscape) {
+        @media (min-width: 1000px) {
+          /* Desktop/tablet landscape mode */
+          padding: 5px 0;
+          font-size: 32px;
+          border-bottom: 1px solid #242A22;
+        }
       }
     }
 

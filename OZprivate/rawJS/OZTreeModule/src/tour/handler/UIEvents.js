@@ -87,8 +87,11 @@ function handler(tour) {
     downInit = null;
   };
   const onMouseDown = (event) => {
-    if (event.target.classList.contains('handle')) {
-      var container = event.target.closest('.container');
+    const elHeader = event.target.closest('.header');
+
+    if (elHeader && elHeader.querySelector(':scope .handle').offsetParent) {
+      // Clicked on header & handle visible, so enable resize
+      const container = event.target.closest('.container');
       var y = event.touches ? event.touches[0].screenY : event.screenY;
       downInit = {target: event.target, tourstop: container, offset: container.offsetHeight + y};
 
