@@ -11,7 +11,7 @@
  *
  ******************************************************/
 
-import {default as natural_theme} from './themes/natural_theme.js';
+import {default as natural_theme} from '../themes/natural_theme.js';
 
 /* Allow colours etc to vary depending on node properties
  * if func_or_string is a function it is called with param `node`

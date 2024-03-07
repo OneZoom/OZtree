@@ -517,7 +517,7 @@ function add_advanced_searchbox(result, col) {
             onezoom.search_manager.full_search(
                 search_term,
                 function(original_string, actual_search, results) {
-                    search_ui.searchPopulate(searchbox, original_string, results, function (event, result) {
+                    OZui.searchPopulate(searchbox, original_string, results, function (event, result) {
                         // NB: result defined by compile_searchbox_data()
                         event.preventDefault();  // Don't follow links
                         return UI_reset_marked_via_event(event, result);
@@ -732,7 +732,7 @@ function setupUI() {
              onezoom.search_manager.full_search(
                                                 search_term,
                                                 function(original_string, actual_search, results) {
-                                                search_ui.searchPopulate(searchbox, original_string, results, function(event, result) {
+                                                OZui.searchPopulate(searchbox, original_string, results, function(event, result) {
                                                     event.preventDefault();  // Don't follow links
                                                     // Reconstitute compile_searchbox_data() format
                                                     closeAndLeap(event, result[2], $('#searchnav .search-basic'));
