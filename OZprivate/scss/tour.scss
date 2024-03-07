@@ -123,7 +123,8 @@
     text-align: center;
   }
   .tour_container > iframe {
-    max-width: 100%;
+    width: 100%;
+    max-height: 40vh; /* Don't allow video to take over in ~square viewports */
     aspect-ratio: 16/9;
   }
   .tour_container > a.embed-wikimedia {
