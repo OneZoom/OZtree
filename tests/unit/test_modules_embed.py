@@ -106,6 +106,16 @@ class TestEmbed(unittest.TestCase):
             'title="title">©</a></div>',
         ])
 
+        self.assertEqual(media_embed('https://commons.wikimedia.org/wiki/File:Intense_bone_fluorescence_reveals_hidden_patterns_in_pumpkin_toadlets_-_video_1_-_41598_2019_41959_MOESM2_ESM.webm'), [
+            '<div',
+            'class="embed-video"><video',
+            'controls',
+            'src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Intense_bone_fluorescence_reveals_hidden_patterns_in_pumpkin_toadlets_-_video_1_-_41598_2019_41959_MOESM2_ESM.webm"',
+            '></video><a',
+            'class="copyright"',
+            'href="https://commons.wikimedia.org/wiki/File:Intense_bone_fluorescence_reveals_hidden_patterns_in_pumpkin_toadlets_-_video_1_-_41598_2019_41959_MOESM2_ESM.webm">©</a></div>',
+        ])
+
 if __name__ == '__main__':
     import sys
 

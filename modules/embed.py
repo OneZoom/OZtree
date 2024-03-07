@@ -92,6 +92,19 @@ def media_embed(url, **kwargs):
             element_data=element_data,
         )
 
+    # https://commons.wikimedia.org/wiki/Commons:File_types#Video
+    m = re.fullmatch(r'https://commons.wikimedia.org/wiki/File:(.+\.(ogv|webm|mpg|mpeg))', url)
+    if m:
+        # NB: There's an embedded player we could use, but there's no way to control it over the iframe barrrier
+        return """<div class="embed-video"><video controls
+          src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{name}"
+          {element_data}
+          ></video><a class="copyright" href="{url}">©</a></div>""".format(
+            title=m.group(1),
+            name=m.group(1),
+            url=url,
+            element_data=element_data,
+        )
 
     # Fall back to linking
     return """<a href="{url}" style="font-weight:bold">{url}</a>""".format(
