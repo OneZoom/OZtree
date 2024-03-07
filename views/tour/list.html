@@ -12,7 +12,7 @@
   {{if list_title:}}<h3 class="uk-padding-small">{{=list_title}}</h3>{{pass}}
   <ul class="tours-list uk-padding-small uk-list uk-text-small uk-child-width-1-2@m" uk-grid>
 
-    {{for tour in tour_list:}}<li>
+    {{for tour in tour_list:}}<li data-tour_identifier="{{=tour.identifier}}" style="margin-top: 0; margin-bottom: 1rem">
       <a {{if request.vars.get("popup"):}}onclick="window.parent.onezoom.controller.tour_start('{{=tour.url}}'); return(false)"{{pass}}
          class="block uk-flex uk-flex-column"
          style="min-height: 150px; padding-left: calc(150px + 1rem); position: relative;"

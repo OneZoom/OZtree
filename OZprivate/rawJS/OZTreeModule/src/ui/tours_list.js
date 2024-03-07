@@ -6,6 +6,9 @@ export function sortList(elUl) {
     const tourIdentifier = elLi.getAttribute('data-tour_identifier');
     const p = progressSummary(tourIdentifier);
 
+    // Order items in_progress / untouched / finished
+    elLi.style.order = p.finished ? 1 : p.in_progress ? -1 : 0;
+
     // Update progress meter with state
     progressEl.setAttribute('value', p.progress);
     progressEl.setAttribute('max', p.total);
