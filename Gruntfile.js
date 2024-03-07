@@ -34,7 +34,7 @@ module.exports = function (grunt) {
       web2py_configure: {
         cwd: "../../",
         command: [
-          'git submodule update --init --recursive',
+          '( [ -d .git ] && git submodule update --init --recursive || true )',
           'ln -sf applications/OZtree/_COPY_CONTENTS_TO_WEB2PY_DIR/routes.py routes.py',
           'ln -sf handlers/wsgihandler.py handler.py',
           '( [ -d applications/welcome ] && rm -r -- "applications/welcome" || true )',
