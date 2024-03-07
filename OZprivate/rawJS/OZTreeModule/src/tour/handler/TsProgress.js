@@ -122,7 +122,7 @@ function progressSummary(tourIdentifier) {
     total: 10,  // NB: Guess, we don't know but don't care.
   };
 
-  const final = progress.findLastIndex((x) => !!x) + 1;
+  const final = progress.lastIndexOf(true) + 1;
   return {
     in_progress: final > 0 && final !== progress.length,
     finished: final === progress.length,

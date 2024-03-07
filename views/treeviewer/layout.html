@@ -883,13 +883,13 @@ function setupUI() {
     });
     window.addEventListener("oz_treestate", function (event) {
         onezoom.controller.tours_nearby_detail().then(function (tours) {
-            var tour = tours.length === 0 ? null : tours[0];
+            var tour = OZui.tours_list.teaseTour(tours);
 
             document.querySelectorAll(".tour-teaser").forEach(function (el) {
               var aEl = el.querySelector(':scope a');
 
               // Leave open if already showing this tour
-              if (tours[0] && el.getAttribute('data-tour_url') === tours[0].url) {
+              if (tour && el.getAttribute('data-tour_url') === tour.url) {
                   el.closest('.ui-controls').classList.toggle("open-drawer", true);
                   return;
               }
@@ -898,10 +898,10 @@ function setupUI() {
               el.closest('.ui-controls').classList.toggle("open-drawer", false);
 
               window.setTimeout(function () {
-                  if (tours[0]) {
-                      el.setAttribute('data-tour_url', tours[0].url);
-                      aEl.setAttribute('href', document.location.pathname + '?tour=' + tours[0].url);
-                      aEl.innerText = tours[0].title;
+                  if (tour) {
+                      el.setAttribute('data-tour_url', tour.url);
+                      aEl.setAttribute('href', document.location.pathname + '?tour=' + tour.url);
+                      aEl.innerText = tour.title;
                       el.closest('.ui-controls').classList.toggle("open-drawer", true);
                   } else {
                       el.setAttribute('data-tour_url', '');

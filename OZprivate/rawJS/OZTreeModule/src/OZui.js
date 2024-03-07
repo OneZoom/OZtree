@@ -1,6 +1,6 @@
 import { searchPopulate } from './ui/search.js';
 import { fullLeafBase, fullLeaf, natural_theme } from './ui/leaf_draw.js';
-import { sortList } from './ui/tours_list.js';
+import { sortList, teaseTour } from './ui/tours_list.js';
 
 export { searchPopulate };
 
@@ -12,4 +12,5 @@ export const leaf_draw = {
 
 export const tours_list = {
   sortList: sortList,
+  teaseTour: teaseTour,
 };
