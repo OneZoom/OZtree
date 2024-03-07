@@ -96,13 +96,16 @@
     overflow-y: auto;
   }
 
-  .tour_container > iframe, .tour_container > a.embed-wikimedia, .tour_container > .embed-audio {
+  .tour_container > iframe, .tour_container > a.embed-wikimedia, .tour_container > .embed-audio, .tour_container > .embed-video {
     flex-grow: 1000;
     flex-shrink: 1000; /* Far more likely to shrink media than window text */
     overflow-y: auto;
     display: block;
     margin: 0 auto;
     text-align: center;
+    > .copyright {
+      float: right;
+    }
   }
   .tour_container > iframe {
     width: 100%;
@@ -110,21 +113,27 @@
     aspect-ratio: 16/9;
   }
   .tour_container > a.embed-wikimedia {
-    max-width: 80%;
+    /* Keep .copyright inside box */
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
     > img {
       object-fit: cover;
       max-height: 100%;
-      max-width: 100%;
+      max-width: 80%;
       border: 1px solid #242A22;
       border-radius: 5px;
     }
     > .copyright {
+      /* Use remaining width rather than displaying below */
       position: absolute;
-      right: 10px;
+      padding-left: 3px;
     }
   }
   .tour_container > .embed-audio {
     position: relative; /* Contain copyright link */
+    overflow-x: hidden;
+    overflow-y: auto;
     width: 100%;
     > audio {
       display: inline;
