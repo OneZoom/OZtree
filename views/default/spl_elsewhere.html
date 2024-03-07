@@ -6,7 +6,7 @@
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}
 {{import img}}
-{{include '../static/OZTreeModule/dist/OZ_leaf_draw.html'}}
+{{include '../static/OZTreeModule/dist/OZui.html'}}
 
 {{block masthead}}
 {{if 'popup' not in request.vars:}}
@@ -35,7 +35,7 @@
     var hasSponsor = false;
     var sponsorText = OZstrings['Sponsored for a person of your choice'].toUpperCase();
     var extraText = "";
-    var leafCol = leaf_draw.natural_theme.leaf;
+    var leafCol = OZui.leaf_draw.natural_theme.leaf;
     // this is a bit of a hack but it no longer works to grab the style from the main natural_theme because some of the colours are functions that need to be run on the midnode object of the tree so I'm overiding it here with fixed colours.
     //can override leafCol after this, e.g.
     leafCol.inside.fill  = 'rgb(135,215,90)'; // or could be a function of a node obj
@@ -61,9 +61,9 @@
     var node = {"redlist": "{{=iucn_code}}"}
 
     function drawPreview(context, image) {
-        leaf_draw.fullLeafBase(
+        OZui.leaf_draw.fullLeafBase(
             context, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, leafCol, node)
-        leaf_draw.fullLeaf(
+        OZui.leaf_draw.fullLeaf(
             context, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, hasSponsor, null,
             sponsorText, extraText, {{=XML(js_common_name or '')}}, {{=XML(js_species_name)}},
             leaftext[0], leaftext[1], null, fonttype, mintextsize, image, null, leafCol, node)

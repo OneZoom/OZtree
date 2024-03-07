@@ -180,7 +180,7 @@
             search_manager.full_search(
                 search_term,
                 function(original_string, actual_search, results) {
-                    search_ui.searchPopulate(searchbox, original_string, results, function (event) {
+                    OZui.searchPopulate(searchbox, original_string, results, function (event) {
                         event.preventDefault();  // Don't follow links
                         var hidden_el = searchbox.find('input[type=hidden]')[0];
                         var href = $(event.target).closest('a').attr('href');

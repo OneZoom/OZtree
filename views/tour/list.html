@@ -1,28 +1,50 @@
 {{response.title='OneZoom: Available Tours'}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
 {{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}
+{{include '../static/OZTreeModule/dist/OZui.html'}}
     
 {{block masthead}}
 <div class="home-heading uk-padding-small">
-  <h1 style="margin: 0">{{=T("Tours near here" if request.vars.get("title-near") else "Tours through here")}}</h1>
+  <h1 style="margin: 0">{{=T("Tours near here") if request.vars.get("title-near") else T("Tours through here")}}</h1>
 </div>
 {{end block}}
+{{for list_title, tour_list in [('', response._vars.get('tours', [])), (T('Other Tours'), response._vars.get('rest', []))]:}}{{if len(tour_list) > 0:}}
+  {{if list_title:}}<h3 class="uk-padding-small">{{=list_title}}</h3>{{pass}}
+  <ul class="tours-list uk-padding-small uk-list uk-text-small uk-child-width-1-2@m" uk-grid>
 
-<ul class="uk-padding-small uk-list uk-text-small uk-child-width-1-2@m" uk-grid>
+    {{for tour in tour_list:}}<li data-tour_identifier="{{=tour.identifier}}" style="margin-top: 0; margin-bottom: 1rem">
+      <a {{if request.vars.get("popup"):}}onclick="window.parent.onezoom.controller.tour_start('{{=tour.url}}'); return(false)"{{pass}}
+         class="block uk-flex uk-flex-column"
+         style="min-height: 150px; padding-left: calc(150px + 1rem); position: relative;"
+         href="{{=URL('default', 'life', vars=dict(tour=tour.url))}}">
+          <img src="{{=img.url(tour.image_url)}}"
+           onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'"
+              width="150" height="150"
+              alt="" style="position: absolute; left: 0; border: 1px solid #242A22; border-radius: 10px" />
+          <h3 style="margin: 0">{{=tour.title}}</h3>
+          <p class="uk-flex-auto">{{=tour.description}}</p>
+          <progress value="10" max="100">10 %</progress>
+      </a>
 
-  {{for tour in tours:}}<li>
-    <a {{if request.vars.get("popup"):}}onclick="window.parent.onezoom.controller.tour_start('{{=tour.url}}'); return(false)"{{pass}}
-       class="block"
-       href="{{=URL('default', 'life', vars=dict(tour=tour.url))}}">
-        <img src="{{=img.url(tour.image_url)}}"
-         onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'"
-            width="150" height="150"
-            alt="" style="float: left; margin-right: 1vw; border: 1px solid #242A22; border-radius: 10px" />
-        <h3 style="margin: 0">{{=tour.title}}</h3>
-        <p>{{=tour.description}}</p>
-    </a>
+      </a>
+    </li>{{pass}}
 
-    </a>
-  </li>{{pass}}
+  </ul><script>OZui.tours_list.sortList(document.currentScript.previousElementSibling)</script>
+{{pass}}{{pass}}
+<style>
+ul.tours-list progress[value="0"] {
+    display: none;
+}
+ul.tours-list progress.complete:after {
+    content: "✓";
 
-</ul>
+    float: right;
+    position: relative;
+    right: -1em;
+    top: -0.9em;
+
+    color: green;
+    font-weight: bold;
+    font-size: 30px;
+}
+</style>
