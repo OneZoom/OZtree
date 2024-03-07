@@ -4,25 +4,27 @@
     
 {{block masthead}}
 <div class="home-heading uk-padding-small">
-  <h1 style="margin: 0">{{=T("Tours near here" if request.vars.get("title-near") else "Tours through here")}}</h1>
+  <h1 style="margin: 0">{{=T("Tours near here") if request.vars.get("title-near") else T("Tours through here")}}</h1>
 </div>
 {{end block}}
+{{for list_title, tour_list in [('', response._vars.get('tours', [])), (T('Other Tours'), response._vars.get('rest', []))]:}}{{if len(tour_list) > 0:}}
+  {{if list_title:}}<h3 class="uk-padding-small">{{=list_title}}</h3>{{pass}}
+  <ul class="uk-padding-small uk-list uk-text-small uk-child-width-1-2@m" uk-grid>
 
-<ul class="uk-padding-small uk-list uk-text-small uk-child-width-1-2@m" uk-grid>
+    {{for tour in tour_list:}}<li>
+      <a {{if request.vars.get("popup"):}}onclick="window.parent.onezoom.controller.tour_start('{{=tour.url}}'); return(false)"{{pass}}
+         class="block"
+         href="{{=URL('default', 'life', vars=dict(tour=tour.url))}}">
+          <img src="{{=img.url(tour.image_url)}}"
+           onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'"
+              width="150" height="150"
+              alt="" style="float: left; margin-right: 1vw; border: 1px solid #242A22; border-radius: 10px" />
+          <h3 style="margin: 0">{{=tour.title}}</h3>
+          <p>{{=tour.description}}</p>
+      </a>
 
-  {{for tour in tours:}}<li>
-    <a {{if request.vars.get("popup"):}}onclick="window.parent.onezoom.controller.tour_start('{{=tour.url}}'); return(false)"{{pass}}
-       class="block"
-       href="{{=URL('default', 'life', vars=dict(tour=tour.url))}}">
-        <img src="{{=img.url(tour.image_url)}}"
-         onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'"
-            width="150" height="150"
-            alt="" style="float: left; margin-right: 1vw; border: 1px solid #242A22; border-radius: 10px" />
-        <h3 style="margin: 0">{{=tour.title}}</h3>
-        <p>{{=tour.description}}</p>
-    </a>
+      </a>
+    </li>{{pass}}
 
-    </a>
-  </li>{{pass}}
-
-</ul>
+  </ul>
+{{pass}}{{pass}}

@@ -362,14 +362,21 @@ class TestControllersTour(unittest.TestCase):
         )
 
     def test_list(self):
-        def t_list(tours):
+        def t_list(tours, include_rest=""):
             return util.call_controller(
                 tour,
                 'list',
                 method='GET',
                 args=[],
-                vars=dict(tours=",".join(tours)),
+                vars=dict(tours=",".join(tours), include_rest=str(include_rest)),
             )
+
+        def t_filter(out, list_name):
+            return [
+                t.identifier
+                for t in out[list_name]
+                if t.identifier.startswith('UT::')
+            ]
 
         # DB setup
         db = current.db
@@ -396,6 +403,11 @@ class TestControllersTour(unittest.TestCase):
             [t.identifier for t in t_list([tour2['identifier'], tour1['identifier'], tour2['identifier']])['tours']],
             [tour2['identifier'], tour1['identifier']],
         )
+
+        # Can ask for the remainder
+        out = t_list([tour1['identifier']], include_rest=True)
+        self.assertEqual(t_filter(out, 'tours'), [tour1['identifier']])
+        self.assertEqual(t_filter(out, 'rest'), [tour2['identifier']])
 
 
 if __name__ == '__main__':

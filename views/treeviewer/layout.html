@@ -916,7 +916,7 @@ function setupUI() {
         .on('beforeshow', function (event) {
             var tours = onezoom.controller.tours_nearby();
 
-            event.target.setAttribute('data-modal-src', "/tour/list.html?title-near=1&tours=" + encodeURIComponent(tours.join(",")));
+            event.target.setAttribute('data-modal-src', "/tour/list.html?title-near=1&include_rest=1&tours=" + encodeURIComponent(tours.join(",")));
         });
     $('#tours-modal')
         .on('show', function (event) {

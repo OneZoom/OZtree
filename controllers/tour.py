@@ -286,6 +286,8 @@ def data():
 
 def list():
     tour_identifiers = [x for x in request.vars.get("tours", "").split(",") if x]
+    include_rest = bool(request.vars.get("include_rest", ""))
+    out = dict()
 
     # Fetch all tours, put into dict with order matching tour_identifiers
     tours = {t:None for t in tour_identifiers}
@@ -293,7 +295,13 @@ def list():
         # Splice in tour_url to DB row
         t['url'] = tour.tour_url(t)
         tours[t.identifier] = t
+    out['tours'] = [*tours.values()]
 
-    return dict(
-        tours=[*tours.values()],
-    )
+    if include_rest:
+        out['rest'] = []
+        for t in db(~(db.tour.identifier.belongs(tours.keys()))).select(db.tour.ALL):
+            # Splice in tour_url to DB row
+            t['url'] = tour.tour_url(t)
+            out['rest'].append(t)
+
+    return out
