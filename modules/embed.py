@@ -39,13 +39,13 @@ def media_embed(url, **kwargs):
 
     m = re.fullmatch(r'https://www.youtube.com/embed/(.+)', url)
     if m:
-        return """<iframe
+        return """<div class="embed-video"><iframe
             class="embed-youtube"
             type="text/html"
             src="{url}?enablejsapi=1&playsinline=1&origin={origin}"
             frameborder="0"
             {element_data}
-        ></iframe>""".format(
+        ></iframe></div>""".format(
             url=url,
             origin='%s://%s' % (request.env.wsgi_url_scheme, request.env.http_host),
             element_data=element_data,
@@ -53,14 +53,14 @@ def media_embed(url, **kwargs):
 
     m = re.fullmatch(r'https://player.vimeo.com/video/(.+)', url)
     if m:
-        return """<iframe
+        return """<div class="embed-video"><iframe
             class="embed-vimeo"
             src="{url}"
             frameborder="0"
             allow="autoplay; fullscreen"
             allowfullscreen
             {element_data}
-        ></iframe>""".format(
+        ></iframe></div>""".format(
             url=url,
             element_data=element_data,
         )

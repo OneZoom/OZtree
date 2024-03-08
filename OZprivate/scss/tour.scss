@@ -90,59 +90,49 @@
     }
   }
 
-  .title {
-    flex-shrink: 1;
-    overflow-y: hidden;
-
-    margin: 0;
-    margin-right: 5px; /* Don't butt up to close button */
-    font-size: 26px;
-
-    @media (orientation: landscape) {
-      @media (min-width: 1000px) {
-        /* Desktop/tablet landscape mode */
-        padding: 5px 0;
-        font-size: 32px;
-        border-bottom: 1px solid #242A22;
-      }
-    }
-  }
-
   .window_text {
     flex-grow: 1;
     flex-shrink: 10;
     overflow-y: auto;
   }
 
-  .tour_container > iframe, .tour_container > a.embed-wikimedia, .tour_container > .embed-audio {
+  .tour_container > iframe, .tour_container > a.embed-wikimedia, .tour_container > .embed-audio, .tour_container > .embed-video {
     flex-grow: 1000;
     flex-shrink: 1000; /* Far more likely to shrink media than window text */
     overflow-y: auto;
     display: block;
-    margin: 0 auto;
     text-align: center;
-  }
-  .tour_container > iframe {
-    width: 100%;
-    max-height: 40vh; /* Don't allow video to take over in ~square viewports */
-    aspect-ratio: 16/9;
+    > .copyright {
+      float: right;
+    }
+    > iframe {
+      width: 100%;
+      max-height: 40vh; /* Don't allow video to take over in ~square viewports */
+      aspect-ratio: 16/9;
+    }
   }
   .tour_container > a.embed-wikimedia {
-    max-width: 80%;
+    /* Keep .copyright inside box */
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
     > img {
       object-fit: cover;
       max-height: 100%;
-      max-width: 100%;
+      max-width: 80%;
       border: 1px solid #242A22;
       border-radius: 5px;
     }
     > .copyright {
+      /* Use remaining width rather than displaying below */
       position: absolute;
-      right: 10px;
+      padding-left: 3px;
     }
   }
   .tour_container > .embed-audio {
     position: relative; /* Contain copyright link */
+    overflow-x: hidden;
+    overflow-y: auto;
     width: 100%;
     > audio {
       display: inline;
@@ -173,11 +163,6 @@
       background: #242A22;
       border-radius: 6px;
       font-size: 0;
-
-      &:active {
-        background: #9BD05A;
-        box-shadow: 0 0 6px 1px #9BD05A;
-      }
     }
 
     .tour_exit.button {
@@ -191,6 +176,19 @@
       &:active {
         color: #9BD05A;
         text-shadow: 0 0 6px #9BD05A;
+      }
+    }
+    > .title {
+      margin: 0 calc(0.6rem + 5px) 0 0.6rem; /* Cancel-cancel container padding, space for close */
+      font-size: 26px;
+
+      @media (orientation: landscape) {
+        @media (min-width: 1000px) {
+          /* Desktop/tablet landscape mode */
+          padding: 5px 0;
+          font-size: 32px;
+          border-bottom: 1px solid #242A22;
+        }
       }
     }
 
