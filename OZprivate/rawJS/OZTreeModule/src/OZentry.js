@@ -4,7 +4,6 @@ import 'babel-polyfill';
 import './libs/requestAnimationFrame';
 import get_controller from './controller/controller';
 import api_manager from './api/api_manager';
-import search_manager from './api/search_manager';
 import process_taxon_list from './api/process_taxon_list';
 import { init as garbage_collection_start } from './factory/garbage_collection';
 import { spec_num_full, number_convert, view_richness } from './factory/utils'
@@ -108,7 +107,6 @@ function setup(
 
   oz.controller.public_oz = oz;  // Let the controller get at the public interface
   oz.config = config;
-  oz.search_manager = search_manager;
   oz.add_hook = add_hook;
 
   // use setTimeout so that loading screen is displayed before build tree starts.
@@ -139,18 +137,4 @@ function setup(
   return oz;
 }
 
-/**
- * This function returns an object containing API helpers
- * User can use this object to call API helpers without creating a OneZoom instance.
- * 
- * @param {Object} server_urls - A named key:value dict of urls that the api manager etc needs to fire
- *     off AJAX requests. See global_config.js for the list of necessary names
- */
-function api_utils_setup(server_urls) {
-  api_manager.set_urls(server_urls)
-  return {
-    search_manager: search_manager,
-  }
-}
-
-export {setup as default, api_utils_setup};
+export { setup as default };

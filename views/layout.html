@@ -101,13 +101,6 @@
 <script>
 (function() {
     var box_selector = $('#header_searchnav');
-    var search_manager = OZentry.api_utils_setup({
-      /* These fill out the equivalently named variables in OneZoom global_config.
-         They need to be defined in this file to avoid hard-coding them into the OneZoom js code
-         They are coded with the full URL so that they can be used remotely (e.g. in a partial install) */
-      search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",
-      search_sponsor_api: "{{try:}}{{=myconf.take('API.search_sponsor')}}{{except:}}{{=URL('API','search_for_sponsor.json', scheme=True, host=True)}}{{pass}}",
-    }).search_manager;
 
     $('.searchinput input', box_selector)
         .blur(function(event) {
@@ -132,7 +125,7 @@
                 {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
                 $('.no_results', dropdown).hide();
                 $('.search_hits', dropdown).empty();
-                search_manager.full_search(""); // this clears the search
+                OZui.search_manager.full_search(""); // this clears the search
                 $('.searchinput', searchbox).removeClass('waiting_for_search_result');
             } else {
                 //$('.searchinput', searchbox).addClass('waiting_for_search_result');
@@ -142,7 +135,7 @@
                 }
             if ((search_term.replace(/ /g,'').length > 2)||((search_term.replace(/ /g,'').length > 1)&&(delay_ms == 1))) { // we're never going to search for a single character
 
-            search_manager.full_search(
+            OZui.search_manager.full_search(
                 search_term,
                 function(original_string, actual_search, results) {
                     OZui.searchPopulate(searchbox, original_string, results, function () {return null;})},

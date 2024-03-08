@@ -14,6 +14,14 @@ class SearchManager {
     this.search_timer = null;
     this.last_search = null;
   }
+
+  /**
+   * Configure the URLs to use when searching
+   */
+  set_urls(server_urls) {
+    api_manager.set_urls(server_urls);
+    this._urls_configured = true;
+  }
     
   /**
    * The main function for carrying out text string searches
@@ -25,6 +33,10 @@ class SearchManager {
    * @param {function} onSend - the function that gets executed when the search has been sent to the server
    */
   full_search(toSearchFor, callback, search_delay=400, onSend=null) {
+    // If not yet configured, look for configuration in global environment
+    if (!this._urls_configured && global.window && window.server_urls) {
+      this.set_urls(window.server_urls);
+    }
     
     if ((!this.last_search)||(this.last_search != toSearchFor))
     {

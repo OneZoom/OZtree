@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
           // Find Homo-sapiens ready for hiding
           window.setTimeout(function () {
-              onezoom.search_manager.full_search('Homo Sapiens', function (latin_name, cname, res) {
+              OZui.search_manager.full_search('Homo Sapiens', function (latin_name, cname, res) {
                   if (res.length < 1) {
                       throw new Error("Could not find Homo Sapiens node");
                   }

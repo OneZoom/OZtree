@@ -503,7 +503,7 @@ function add_advanced_searchbox(result, col) {
                 {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
                 $('.no_results', dropdown).hide();
                 $('.search_hits', dropdown).empty();
-                onezoom.search_manager.full_search(""); // this clears the search
+                OZui.search_manager.full_search(""); // this clears the search
                 $('.searchinput', searchbox).removeClass('waiting_for_search_result');
             } else {
                 //$('.searchinput', searchbox).addClass('waiting_for_search_result');
@@ -515,7 +515,7 @@ function add_advanced_searchbox(result, col) {
             
             //if (search_term.replace(/ /g,'').length > 1) { // we're never going to search for a single character
             
-            onezoom.search_manager.full_search(
+            OZui.search_manager.full_search(
                 search_term,
                 function(original_string, actual_search, results) {
                     OZui.searchPopulate(searchbox, original_string, results, function (event, result) {
@@ -718,7 +718,7 @@ function setupUI() {
             {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
             $('.no_results', dropdown).hide();
             $('.search_hits', dropdown).empty();
-            onezoom.search_manager.full_search("");
+            OZui.search_manager.full_search("");
             $('.searchinput', searchbox).removeClass('waiting_for_search_result');
         } else {
             var delay_ms = 1000;
@@ -730,7 +730,7 @@ function setupUI() {
              
              // we want to test for whether the search is working already or not....
              
-             onezoom.search_manager.full_search(
+             OZui.search_manager.full_search(
                                                 search_term,
                                                 function(original_string, actual_search, results) {
                                                 OZui.searchPopulate(searchbox, original_string, results, function(event, result) {
@@ -987,7 +987,7 @@ function setupUI() {
                colours[existing_searchresults[i][0]]=existing_searchresults[i][1]
             }
             //must look up the names & values via the API
-            onezoom.search_manager.lookup_nodes(ids, function(result) {
+            OZui.search_manager.lookup_nodes(ids, function(result) {
                // Reconstitute compile_searchbox_data() format
                var OZIDin = result[2];
                add_advanced_searchbox(result, colours[OZIDin]);
