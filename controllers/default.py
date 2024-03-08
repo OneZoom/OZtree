@@ -12,6 +12,7 @@ import json
 from collections import OrderedDict
 
 import ozmail
+import tour
 from embed import embedize_url
 from sponsorship import (
     sponsorship_enabled, reservation_total_counts, clear_reservation, get_reservation,
@@ -80,17 +81,20 @@ def index():
             carousel.append(key)
         elif r.category == 'homepage_red':
             threatened.append(key)
+
+        text_titles[key] = ""
         if r.image_url:
             images[key] = {'url': r.image_url}
-        if r.tour_identifier:
-            hrefs[key] = URL('life/' + r.tour_identifier)
-            title = db(db.tours.identifier == r.tour_identifier).select(db.tours.name).first()
-            text_titles[key] = title.name if title else r.tour_identifier
-        else:
-            text_titles[key] = ""
         if r.ott:
-            # We might still want to find e.g. an image, even if we are looking at a tour
             startpoints_ott_map[r.ott] = key
+
+        if r.tour_identifier:
+            t = db(db.tour.identifier == r.tour_identifier).select(db.tour.ALL).first()
+
+            text_titles[key] = t.title or r.tour_identifier
+            hrefs[key] = URL('life', vars = dict(tour = tour.tour_url(t)))
+            if t.image_url:
+                images[key] = {'url': img.url(t.image_url)}
 
     # Pick 5 random threatened spp 
     random.seed(request.now.month*100 + request.now.day)
