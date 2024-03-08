@@ -76,21 +76,16 @@ import tour
 def homepage_animation():
     # OTTs from the tree_startpoints table
     startpoints_ott_map, hrefs, titles, text_titles = {}, {}, {}, {}
-    carousel, anim, threatened = [], [], []
+    anim = []
     for r in db(
-            (db.tree_startpoints.category.startswith('homepage')) &
+            (db.tree_startpoints.category == 'homepage_anim') &
             (db.tree_startpoints.partner_identifier == None)
         ).select(
             db.tree_startpoints.ott, db.tree_startpoints.category,
             db.tree_startpoints.image_url, db.tree_startpoints.tour_identifier,
             orderby = db.tree_startpoints.id):
         key = r.tour_identifier or str(r.ott)
-        if r.category.endswith("main"):
-            carousel.append(key)
-        elif r.category.endswith("anim"):
-            anim.append(key)
-        elif r.category.endswith("red"):
-            threatened.append(key)
+        anim.append(key)
         if r.tour_identifier:
             hrefs[key] = URL('default', 'life/' + r.tour_identifier)
             title = db(db.tours.identifier == r.tour_identifier).select(db.tours.name).first()
