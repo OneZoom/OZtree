@@ -73,6 +73,30 @@ function handler(tour) {
     downInit.tourstop.style.height = Math.max(downInit.offset - y, 50) + 'px';
   };
   const onMouseUp = (event) => {
+    const minimisedHeight = Array.from(downInit.tourstop.children).map(function (el) {
+      if (el.classList.contains('header') || el.classList.contains('actions') || el.classList.contains('footer')) {
+        // https://youmightnotneedjquery.com/#elements
+        const style = getComputedStyle(el);
+
+        return (
+          el.getBoundingClientRect().height +
+          parseFloat(style.marginTop) +
+          parseFloat(style.marginBottom)
+        );
+      }
+
+      return 0;
+    }).reduce((acc, a) => acc + a, 0) + 20;  // NB: Not sure where the 20 pixels are coming from
+
+    function resizeTo(elTs, heightStyle, callback) {
+      elTs.style.transition = 'height 0.3s ease-out';
+      elTs.style.height = heightStyle;
+      window.setTimeout(() => {
+        elTs.style.transition = '';
+        if (callback) callback();
+      }, 300);
+    }
+
     if (event.touches) {
       document.removeEventListener('touchmove', onMouseMove);
       document.removeEventListener('touchend', onMouseUp);
@@ -81,8 +105,13 @@ function handler(tour) {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     }
-    if (downInit.tourstop.offsetHeight < 90) {
-      tour.user_exit();
+
+    if (downInit.tourstop.offsetHeight < minimisedHeight) {
+      resizeTo(downInit.tourstop, '0px', () => tour.user_exit());
+    } else if (downInit.tourstop.offsetHeight < minimisedHeight * 1.5) {
+      resizeTo(downInit.tourstop, minimisedHeight + 'px', () => tour.user_pause());
+    } else {
+      resizeTo(downInit.tourstop, '', () => tour.user_resume());
     }
     downInit = null;
   };
