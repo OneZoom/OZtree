@@ -74,27 +74,27 @@ def index():
             (db.tree_startpoints.partner_identifier == None)
         ).select(
             db.tree_startpoints.ott, db.tree_startpoints.category,
-            db.tree_startpoints.image_url, db.tree_startpoints.tour_identifier,
+            db.tree_startpoints.image_url,
+            db.tour.ALL,
+            left=db.tour.on(db.tree_startpoints.tour_identifier == db.tour.identifier),
             orderby = db.tree_startpoints.id):
-        key = r.tour_identifier or str(r.ott)
-        if r.category == 'homepage_main':
+        key = r.tour.identifier or str(r.tree_startpoints.ott)
+        if r.tree_startpoints.category == 'homepage_main':
             carousel.append(key)
-        elif r.category == 'homepage_red':
+        elif r.tree_startpoints.category == 'homepage_red':
             threatened.append(key)
 
         text_titles[key] = ""
-        if r.image_url:
-            images[key] = {'url': r.image_url}
-        if r.ott:
-            startpoints_ott_map[r.ott] = key
+        if r.tree_startpoints.image_url:
+            images[key] = {'url': r.tree_startpoints.image_url}
+        if r.tree_startpoints.ott:
+            startpoints_ott_map[r.tree_startpoints.ott] = key
 
-        if r.tour_identifier:
-            t = db(db.tour.identifier == r.tour_identifier).select(db.tour.ALL).first()
-
-            text_titles[key] = t.title or r.tour_identifier
-            hrefs[key] = URL('life', vars = dict(tour = tour.tour_url(t)))
-            if t.image_url:
-                images[key] = {'url': img.url(t.image_url)}
+        if r.tour.identifier:
+            text_titles[key] = r.tour.title or r.tour.identifier
+            hrefs[key] = URL('life', vars = dict(tour = tour.tour_url(r.tour)))
+            if r.tour.image_url:
+                images[key] = {'url': img.url(r.tour.image_url)}
 
     # Pick 5 random threatened spp 
     random.seed(request.now.month*100 + request.now.day)
