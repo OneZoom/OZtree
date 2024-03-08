@@ -43,6 +43,8 @@
     {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
     <script>var OZstrings={{include 'treeviewer/js_strings.json'}};</script>
     {{include '../static/OZTreeModule/dist/OZ_main.html'}}
+    {{include '../static/OZTreeModule/dist/OZui.html'}}
+    {{include 'treeviewer/server_urls.html' }}
 
     {{block head}}{{end}}
     {{

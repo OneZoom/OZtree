@@ -36,7 +36,9 @@
 
     {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
     {{include '../static/OZTreeModule/dist/OZ_main.html'}}
+    {{include '../static/OZTreeModule/dist/OZui.html'}}
     <script>var OZstrings={{include 'treeviewer/js_strings.json'}}</script>
+    {{include 'treeviewer/server_urls.html' }}
   </head>
   <body class="standalone">
     <!--[if lt IE 8]><p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p><![endif]-->
