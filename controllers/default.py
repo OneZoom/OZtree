@@ -227,12 +227,6 @@ def footer_sponsor_items():
     return dict()
 
 
-def homepage_animation_template():
-    """
-    The html fragment used as a template for the embedded animation on the homepage
-    """
-    return dict()
-
 @require_https_if_nonlocal()
 def user():
     """
