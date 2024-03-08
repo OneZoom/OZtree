@@ -54,33 +54,36 @@ class TestEmbed(unittest.TestCase):
         ])
 
         self.assertEqual(media_embed('https://www.youtube.com/embed/12345'), [
-            '<iframe',
+            '<div',
+            'class="embed-video"><iframe',
             'class="embed-youtube"',
             'type="text/html"',
             'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
             'frameborder="0"',
-            '></iframe>',
+            '></iframe></div>',
         ])
         self.assertEqual(media_embed('https://www.youtube.com/embed/12345', ts_autoplay="tsstate-active_wait", camel='"yes"'), [
-            '<iframe',
+            '<div',
+            'class="embed-video"><iframe',
             'class="embed-youtube"',
             'type="text/html"',
             'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
             'frameborder="0"',
             'data-ts_autoplay="tsstate-active_wait"',
             'data-camel="&quot;yes&quot;"',
-            '></iframe>',
+            '></iframe></div>',
         ])
 
         self.assertEqual(media_embed('https://player.vimeo.com/video/12345'), [
-            '<iframe',
+            '<div',
+            'class="embed-video"><iframe',
             'class="embed-vimeo"',
             'src="https://player.vimeo.com/video/12345"',
             'frameborder="0"',
             'allow="autoplay;',
             'fullscreen"',
             'allowfullscreen',
-            '></iframe>',
+            '></iframe></div>',
         ])
 
         self.assertEqual(media_embed('https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif'), [

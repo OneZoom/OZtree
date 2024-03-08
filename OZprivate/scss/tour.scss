@@ -101,16 +101,15 @@
     flex-shrink: 1000; /* Far more likely to shrink media than window text */
     overflow-y: auto;
     display: block;
-    margin: 0 auto;
     text-align: center;
     > .copyright {
       float: right;
     }
-  }
-  .tour_container > iframe {
-    width: 100%;
-    max-height: 40vh; /* Don't allow video to take over in ~square viewports */
-    aspect-ratio: 16/9;
+    > iframe {
+      width: 100%;
+      max-height: 40vh; /* Don't allow video to take over in ~square viewports */
+      aspect-ratio: 16/9;
+    }
   }
   .tour_container > a.embed-wikimedia {
     /* Keep .copyright inside box */
