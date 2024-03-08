@@ -150,7 +150,6 @@ function api_utils_setup(server_urls) {
   api_manager.set_urls(server_urls)
   return {
     search_manager: search_manager,
-    process_taxon_list: process_taxon_list
   }
 }
 
