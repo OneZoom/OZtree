@@ -71,7 +71,7 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
             if (window.is_testing) { console.log("Hiding no_result section of dropdown"); }
             $('.no_results', dropdown).hide();
             if (!is_sponsored(search_result[0])) {
-                $(".search_hits", dropdown).append($('<dt></dt>').text(OZstrings['NameHits']))
+                $(".search_hits", dropdown).append($('<dt></dt>').text(OZstrings['Search results']))
             }
             var sponsored=false;
             $.each(search_result, function(index) {
