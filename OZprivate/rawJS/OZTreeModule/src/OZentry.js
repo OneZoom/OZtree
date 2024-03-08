@@ -109,8 +109,6 @@ function setup(
   oz.controller.public_oz = oz;  // Let the controller get at the public interface
   oz.config = config;
   oz.search_manager = search_manager;
-  // TO DO - use data_repo passed in to the entry function, so we don't need to include it in the initial JS
-  oz.search_manager.add_data_repo(oz.data_repo);
   oz.add_hook = add_hook;
 
   // use setTimeout so that loading screen is displayed before build tree starts.

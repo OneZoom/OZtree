@@ -14,15 +14,6 @@ class SearchManager {
     this.search_timer = null;
     this.last_search = null;
   }
-
-  /**
-   * Add a data repo, which reduces the number of future requests that might be made when 
-   * navigating around the tree. Only really useful when there is a OneZoom canvas present.
-   * @param {Object} data_repo - If given, cache search results in this data repo
-   */
-  add_data_repo(data_repo) {
-    this.data_repo = data_repo;
-  }
     
   /**
    * The main function for carrying out text string searches
