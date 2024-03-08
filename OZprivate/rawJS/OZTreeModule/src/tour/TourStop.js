@@ -21,7 +21,6 @@ class TourStopClass {
     this.blocks = new Set()
     this.tour = tour
     this.controller = this.tour.onezoom.controller
-    this.data_repo = this.tour.onezoom.data_repo
     this.container = container
     container[0].tourstop = this  // Add a link back from the DOM element to the class
     this.goto_next_timer = null
