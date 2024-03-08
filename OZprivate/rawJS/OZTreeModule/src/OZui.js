@@ -1,4 +1,4 @@
-import search_manager from './api/search_manager';
+import search_manager from './ui/search_manager';
 import { searchPopulate } from './ui/search.js';
 import { fullLeafBase, fullLeaf, natural_theme } from './ui/leaf_draw.js';
 import { sortList, teaseTour } from './ui/tours_list.js';

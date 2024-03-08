@@ -1,5 +1,5 @@
 import api_manager from '../api/api_manager';
-import node_details_api from './node_details';
+import node_details_api from '../api/node_details';
 import { node_to_pinpoint } from '../navigation/pinpoint';
 import {capitalizeFirstLetter, max} from '../util/index'; // basic tools
 

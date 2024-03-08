@@ -80,10 +80,6 @@ This contains all the data stored in an instance (e.g. id2ott mapping, tree?)
 ### onezoom.config
 {{src/global_config.md}}
 
-### onezoom.search_manager
-
-{{src/api/search_manager.md}}
-
 ##Prerequisites
 
 The data fed into the 
