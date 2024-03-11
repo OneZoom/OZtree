@@ -465,6 +465,11 @@ function add_advanced_searchbox(result, highlight) {
                 searchbox.addClass('result_displayed_in_box');
             }
         })
+        .on('keydown', function(event) {
+            // Stop UI-kit from nullifying space
+            // https://github.com/uikit/uikit/blob/8313ce565be686952ab6edf8a7caee5fdfcca08c/src/js/core/toggle.js#L138-L151
+            event.stopPropagation();
+        })
         .on('keyup', function(event) {
             
             var search_term = this.value;
@@ -696,6 +701,11 @@ function setupUI() {
       });
 
     $('#searchnav .search-basic .searchinput input')
+      .on('keydown', function(event) {
+        // Stop UI-kit from nullifying space
+        // https://github.com/uikit/uikit/blob/8313ce565be686952ab6edf8a7caee5fdfcca08c/src/js/core/toggle.js#L138-L151
+        event.stopPropagation();
+      })
       .keyup(function(event) {
         var search_term = this.value;
         var searchbox = $(this).closest('.searchbox');

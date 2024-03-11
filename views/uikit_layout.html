@@ -95,6 +95,11 @@
     var box_selector = $('#header_searchnav');
 
     $('.searchinput input', box_selector)
+        .on('keydown', function(event) {
+            // Stop UI-kit from nullifying space
+            // https://github.com/uikit/uikit/blob/8313ce565be686952ab6edf8a7caee5fdfcca08c/src/js/core/toggle.js#L138-L151
+            event.stopPropagation();
+        })
         .on('keyup', function(event) {
 
             var search_term = this.value;
