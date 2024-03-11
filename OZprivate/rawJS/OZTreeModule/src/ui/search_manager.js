@@ -144,6 +144,11 @@ class SearchManager {
    * @param {string} image_source - 'best_verified', 'best_pd', or 'best_any'
    */
   lookup_nodes(node_ids, callback, image_source) {
+    // If not yet configured, look for configuration in global environment
+    if (!this._urls_configured && global.window && window.server_urls) {
+      this.set_urls(window.server_urls);
+    }
+
     let nodes_searched_for = node_ids.splice(0,400);
     let leaves_arr = nodes_searched_for.filter(x => !isNaN(x) && x < 0).map(Math.abs);
     let nodes_arr  = nodes_searched_for.filter(x => !isNaN(x) && x > 0);
