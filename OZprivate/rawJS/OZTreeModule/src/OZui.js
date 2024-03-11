@@ -1,9 +1,9 @@
 import search_manager from './ui/search_manager';
-import { searchPopulate } from './ui/search.js';
+import { searchPopulate, setup_location_list } from './ui/search.js';
 import { fullLeafBase, fullLeaf, natural_theme } from './ui/leaf_draw.js';
 import { sortList, teaseTour } from './ui/tours_list.js';
 
-export { search_manager, searchPopulate };
+export { search_manager, searchPopulate, setup_location_list };
 
 export const leaf_draw = {
   fullLeafBase: fullLeafBase,

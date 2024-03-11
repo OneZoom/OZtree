@@ -103,4 +103,45 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
     }
 }
 
-export { searchPopulate };
+/* Add a set of species (e.g. popular species) to a target list,
+ * by using the onezoom.utils.process_taxon_list() function
+ * to map OTT ids to OneZoom IDs / vernacular names.
+ * The parameter 'click_callback_id_name' should be a
+ * callback that is fired when an item is clicked on in the list
+ * (called with event, OZid, item_name, sci_name, dropdown)
+ */
+function setup_location_list(target, locations_json, click_callback_id_name) {
+    target.empty();
+    onezoom.utils.process_taxon_list(
+        locations_json,
+        function(ott, result) {
+            // Reconstitute compile_searchbox_data() format
+            var given_name = result[0],
+                sciname = result[1],
+                OZid = result[2];
+
+            if (OZid) {
+                target.append(
+                    $('<dd>').html(
+                        $('<p>')
+                            .html(given_name?$('<span></span>').text(given_name):$('<i></i>').text(sciname))
+                            .addClass('taxon_location_button')
+                            .attr("draggable","true")
+                            .attr("id",'menuitem'+OZid.toString())
+                            .attr("data-OZid",OZid.toString())
+                            .data('result', result)
+                            .click(function(event) {
+                                click_callback_id_name(event, result);
+                            })
+                            .on('dragstart', function(event){
+                                 event.originalEvent.dataTransfer.setData('drop_id', $(this).attr('id'));
+                                 event.originalEvent.dataTransfer.setData('taxon', true);
+                            })
+                    )
+                );
+            }
+        },
+        function(header) {target.append($('<dt>').text(OZstrings.hasOwnProperty(header)?OZstrings[header]:header))});
+}
+
+export { searchPopulate, setup_location_list };
