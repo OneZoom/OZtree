@@ -38,9 +38,9 @@ class SearchManager {
       this.set_urls(window.server_urls);
     }
     
-    if ((!this.last_search)||(this.last_search != toSearchFor))
-    {
-      
+    // If the last search was the same, don't do anything
+    if ( this.last_search && this.last_search === toSearchFor ) return;
+
     clearTimeout(this.search_timer);
     let originalSearch = toSearchFor; // we want to return the original search string back to the UI.
     // detect if the search string has something in relating to sponsorship and catch that after running the text through the translation services.
@@ -59,38 +59,22 @@ class SearchManager {
         if (toSearchFor.length == 0) return; // no point searching for nothing
         
         // this is a time out for the search
-        this.search_timer = setTimeout(function() {
+        this.search_timer = setTimeout(() => {
             if (onSend) onSend(); // this informs the UI that an API request has now been made.
-            // this calls the API
-            api_manager.search({
-                dont_resend: true,
-                data: {
-                query: toSearchFor
-                },
-                success: function(res) {
-                // this sorts the results
-                    this.last_search = null;
-                    let newRes1 = self.populateByNodeResults(toSearchFor, res.nodes);
-                    // this calls the API again for sponsor search
-                    self.searchForSponsor(toSearchFor, function(res) {
-                        let newRes = newRes1.concat(res);
-                        // sort the results based on quality retuned with the search results.
-                        // this sorts the results
-                        newRes.sort(function(a, b) {
-                            if (a[3] < b[3]) {
-                                return 1;
-                            } else if (a[3] == b[3]) {
-                                return 0;
-                            } else {
-                                return -1;
-                            }
-                        });
-                        callback(originalSearch,toSearchFor,newRes);
-                    }, "all");
-                }
+
+            return Promise.all([
+                this.searchForTree(toSearchFor),
+                new Promise((resolve) => this.searchForSponsor(toSearchFor, resolve)),
+            ]).then((data) => {
+                this.last_search = null;
+                let res = self.populateByNodeResults(toSearchFor, data[0].nodes);
+                res = res.concat(data[1]);
+                // Sort the results based on quality retuned with the search results.
+                res.sort((a, b) => a[3] < b[3] ? 1 : a[3] == b[3]? 0 : -1);
+
+                return callback(originalSearch, toSearchFor, res);
             });
         }, search_delay);
-    }
     }
   }
   // Notes: the Python server side API calls to server throws out punctuation except for 
@@ -98,6 +82,19 @@ class SearchManager {
   // It will also sort out what happens if only 2 characters are requested by requiring exact match to return anything.
   // It will also strip out leading spaces and punctations on the search for sponsors only
     
+  /**
+   * Search on tree for (toSearchFor)
+   */
+  searchForTree(toSearchFor) {
+    return new Promise((resolve) => {
+      api_manager.search({
+        dont_resend: true,
+        data: { query: toSearchFor },
+        success: resolve,
+      });
+    });
+  }
+
   /**
    * Search specifically within sponsorship fields.
    * @param {string} toSearchFor - the string to search for within sponsor fields (name, message)
