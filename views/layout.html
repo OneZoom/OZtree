@@ -138,7 +138,8 @@
             OZui.search_manager.full_search(
                 search_term,
                 function(original_string, actual_search, results) {
-                    OZui.searchPopulate(searchbox, original_string, results, function () {return null;})},
+                    OZui.searchPopulate(searchbox, original_string, results);
+                },
                 delay_ms,
                 function() {
                     {{if is_testing:}}console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search");{{pass}}

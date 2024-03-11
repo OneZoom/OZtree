@@ -1,9 +1,7 @@
 /* Callback function for when total search is complete.
- * The parameter 'click_callback_id_name' should be another
- * callback that is fired when an item is clicked on in the list
  * (called with event, OZid, item_name, sci_name)
  */
-function searchPopulate(searchbox, original_search, search_result, click_callback_id_name) {
+function searchPopulate(searchbox, original_search, search_result) {
     // we want to test if we're waiting for a result at all and if we're not then do nothing regardless
     // think the status of the spinner should be used as this test i.e. the spinner starts going when an 
     // API call is actually made and stops going only when an API call is received 
@@ -90,10 +88,12 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
                  tempHTML += compile_extra(result);
                  $(".search_hits", dropdown).append(
                                                     $('<dd></dd>')
-                                                    .html(tempHTML)
-                                                    .click(function(event) {
-                                                           click_callback_id_name(event, result)
-                                                    }));
+                                                    // Attach compile_searchbox_data() results to reconstitute on advanced_search_box click
+                                                    .attr("data-vernacular", result[0])
+                                                    .attr("data-sciname", result[1])
+                                                    .attr("data-OZid", result[2])
+                                                    .attr("data-pinpoint", result.pinpoint)
+                                                    .html(tempHTML));
                  })
         }
         UIkit.dropdown(dropdown).show();
@@ -110,38 +110,33 @@ function searchPopulate(searchbox, original_search, search_result, click_callbac
  * callback that is fired when an item is clicked on in the list
  * (called with event, OZid, item_name, sci_name, dropdown)
  */
-function setup_location_list(target, locations_json, click_callback_id_name) {
-    target.empty();
-    onezoom.utils.process_taxon_list(
-        locations_json,
-        function(ott, result) {
-            // Reconstitute compile_searchbox_data() format
-            var given_name = result[0],
-                sciname = result[1],
-                OZid = result[2];
-
-            if (OZid) {
-                target.append(
-                    $('<dd>').html(
-                        $('<p>')
-                            .html(given_name?$('<span></span>').text(given_name):$('<i></i>').text(sciname))
-                            .addClass('taxon_location_button')
-                            .attr("draggable","true")
-                            .attr("id",'menuitem'+OZid.toString())
-                            .attr("data-OZid",OZid.toString())
-                            .data('result', result)
-                            .click(function(event) {
-                                click_callback_id_name(event, result);
-                            })
-                            .on('dragstart', function(event){
-                                 event.originalEvent.dataTransfer.setData('drop_id', $(this).attr('id'));
-                                 event.originalEvent.dataTransfer.setData('taxon', true);
-                            })
-                    )
-                );
-            }
-        },
-        function(header) {target.append($('<dt>').text(OZstrings.hasOwnProperty(header)?OZstrings[header]:header))});
+function setup_location_list(target, locations_json) {
+  onezoom.utils.process_taxon_list(locations_json).then(function (taxon_list) {
+    target.empty().append(taxon_list.map(function (taxon) {
+      if (typeof taxon === "string") {
+        return $('<dt>').text(OZstrings.hasOwnProperty(taxon) ? OZstrings[taxon] : taxon);
+      }
+      return $('<dd>')
+        // Attach compile_searchbox_data()-esque results to reconstitute on advanced_search_box click
+        .attr("data-vernacular", taxon.vernacular)
+        .attr("data-sciname", taxon.sciname)
+        .attr("data-OZid", taxon.ozid)
+        .attr("data-pinpoint", '@=' + taxon.ott)
+        .html($('<p>').html($('<a>')
+          .attr('href', taxon.href)
+          .attr("draggable","true")
+          .on('dragstart', function(event) {
+            // Recreate a compile_searchbox_data() format
+            event.originalEvent.dataTransfer.setData('result', JSON.stringify({
+              0: taxon.vernacular,
+              1: taxon.sciname,
+              2: taxon.ozid,
+              "pinpoint": '@=' + taxon.ott,
+            }));
+          })
+          .html(taxon.vernacular ? $('<span>').text(taxon.vernacular) : $('<i>').text(taxon.sciname) )));
+    }));
+  });
 }
 
 export { searchPopulate, setup_location_list };

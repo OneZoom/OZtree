@@ -136,6 +136,30 @@
     var form_embed_edit = document.getElementById('form_embed_edit'),
         iframe_embed_preview = document.getElementById('iframe_embed_preview');
 
+    $('.search_dropdown', form_embed_edit)
+        .click(function(event) {
+            var searchbox = $(this.parentElement);
+            var search_input = searchbox.find('.searchinput input[type=search]')
+            var hidden_el = searchbox.find('input[type=hidden]')[0];
+            var ddEl = event.target.closest('dd');
+            var href = $(ddEl).find('a').attr('href');
+
+            if (!href) return;  // Ignore non-links
+            event.preventDefault();  // Don't follow links
+
+            // Populate search input with current item, so it's more obvious what's selected
+            search_input.val($(event.target).closest('dd').text());
+
+            if (hidden_el.name === '_pinpoint') {
+                hidden_el.value = href.replace(/^.*\//, '');
+                form_embed_edit.elements['otthome'].value = href.replace(/^.*\=/, '');
+            } else if (hidden_el.name === 'initmark') {
+                hidden_el.value = href.replace(/^.*\=/, '');
+            } else {
+                throw new Error("Unknown hidden element name" + hidden_el);
+            }
+            form_embed_edit.dispatchEvent(new Event('change'));
+        });
     $('.searchinput input', form_embed_edit)
         .blur(function(event) {
             // if we have an already-selected location, and we lose focus, we simply revert
@@ -171,24 +195,8 @@
             OZui.search_manager.full_search(
                 search_term,
                 function(original_string, actual_search, results) {
-                    OZui.searchPopulate(searchbox, original_string, results, function (event) {
-                        event.preventDefault();  // Don't follow links
-                        var hidden_el = searchbox.find('input[type=hidden]')[0];
-                        var href = $(event.target).closest('a').attr('href');
-
-                        // Populate search input with current item, so it's more obvious what's selected
-                        search_input.val($(event.target).closest('dd').text());
-
-                        if (hidden_el.name === '_pinpoint') {
-                            hidden_el.value = href.replace(/^.*\//, '');
-                            form_embed_edit.elements['otthome'].value = href.replace(/^.*\=/, '');
-                        } else if (hidden_el.name === 'initmark') {
-                            hidden_el.value = href.replace(/^.*\=/, '');
-                        } else {
-                            throw new Error("Unknown hidden element name" + hidden_el);
-                        }
-                        form_embed_edit.dispatchEvent(new Event('change'));
-                    })},
+                    OZui.searchPopulate(searchbox, original_string, results);
+                },
                 delay_ms,
                 function() {
                     {{if is_testing:}}console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search");{{pass}}

@@ -358,11 +358,6 @@ function UI_move_to_common_ancestor(searchbox, event) {
     closeAndLeap(event, pinpoints, $('#search-advanced #searchboxes'), 'ancestor');
 }
 
-function UI_reset_marked_via_event(event, result) {
-    //fired when an item is selected in an advanced dropdown
-    UI_reset_marked($(event.currentTarget).closest('.searchbox'), result, event);
-}
-
 function toggleAdvancedSearch(state) {
     //toggles advanced search mode, or switches it on (state=true) or off (state=false)
     if (state == null) {
@@ -439,6 +434,25 @@ function add_advanced_searchbox(result, col) {
             };
         })
         
+    $('.search_dropdown', box_selector)
+      .click(function(event) {
+        // Don't follow links directly
+        event.preventDefault();
+        event.stopPropagation();
+
+        var elItem = event.target.closest('dd');
+        if ($(elItem).attr('data-OZid')) {
+          UI_reset_marked($(event.currentTarget).closest('.searchbox'), {
+            // Recreate a compile_searchbox_data() format
+            0: $(elItem).attr('data-vernacular'),
+            1: $(elItem).attr('data-sciname'),
+            2: parseInt($(elItem).attr('data-OZid'), 10),
+            "pinpoint":  $(elItem).attr('data-pinpoint'),
+          }, event);
+        }
+        return false;
+      });
+
     $('.searchinput input', box_selector)
         .blur(function(event) {
             // if we have an already-selected location, and we lose focus, we simply revert
@@ -477,11 +491,7 @@ function add_advanced_searchbox(result, col) {
             OZui.search_manager.full_search(
                 search_term,
                 function(original_string, actual_search, results) {
-                    OZui.searchPopulate(searchbox, original_string, results, function (event, result) {
-                        // NB: result defined by compile_searchbox_data()
-                        event.preventDefault();  // Don't follow links
-                        return UI_reset_marked_via_event(event, result);
-                    });
+                    OZui.searchPopulate(searchbox, original_string, results);
                 },
                 delay_ms,
                 function() {
@@ -493,7 +503,7 @@ function add_advanced_searchbox(result, col) {
             }
         });
         
-    OZui.setup_location_list($('.popular_species', box_selector), locations_json, UI_reset_marked_via_event);
+    OZui.setup_location_list($('.popular_species', box_selector), locations_json);
 
     // Set-up from initial parameters
     // Reconstitute compile_searchbox_data() format
@@ -636,20 +646,19 @@ function setupUI() {
       .on("drop", function(event) {
         event.preventDefault();  
         event.stopPropagation();
-        if (event.originalEvent.dataTransfer.getData('taxon')) {
-            var dropped_item = $('#' + event.originalEvent.dataTransfer.getData('drop_id'))
+        if (event.originalEvent.dataTransfer.getData('result')) {
             //find the first unused advanced search box
             var to_fill = $('#search-advanced .searchresult:not([data-OZid])').first().closest('.searchbox');
             if (to_fill.length) {
                 UI_reset_marked(
                     to_fill,
                     // Use data set by setup_location_list / load_into_searchbox
-                    dropped_item.data('result')
+                    JSON.parse(event.originalEvent.dataTransfer.getData('result'))
                 );
             } else {
                 add_advanced_searchbox(
                     // Use data set by setup_location_list / load_into_searchbox
-                    dropped_item.data('result')
+                    JSON.parse(event.originalEvent.dataTransfer.getData('result'))
                 );
             }
             toggleAdvancedSearch(true);
@@ -667,6 +676,17 @@ function setupUI() {
         event.preventDefault();
       })
     
+    $('#searchnav .search-basic .search_dropdown')
+      .click(function(event) {
+        // Don't follow links directly
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Strip /life/ and set_treestate of link
+        var ddEl = event.target.closest('dd');
+        closeAndLeap(event, parseInt(ddEl.getAttribute("data-OZid"), 10), $('#searchnav .search-basic'));
+      });
+
     $('#searchnav .search-basic .searchinput input')
       .keyup(function(event) {
         var search_term = this.value;
@@ -692,11 +712,7 @@ function setupUI() {
              OZui.search_manager.full_search(
                                                 search_term,
                                                 function(original_string, actual_search, results) {
-                                                OZui.searchPopulate(searchbox, original_string, results, function(event, result) {
-                                                    event.preventDefault();  // Don't follow links
-                                                    // Reconstitute compile_searchbox_data() format
-                                                    closeAndLeap(event, result[2], $('#searchnav .search-basic'));
-                                                })
+                                                    OZui.searchPopulate(searchbox, original_string, results);
                                                 },
                                                 delay_ms,
                                                 function() {
@@ -931,9 +947,7 @@ function setupUI() {
         event.stopPropagation();
     });
 
-    OZui.setup_location_list($('#searchnav .search-basic .popular_species'), locations_json, 
-        // Reconstitute compile_searchbox_data() format
-        function(event, result) {closeAndLeap(event, result[2], $('#searchnav .search-basic'))});
+    OZui.setup_location_list($('#searchnav .search-basic .popular_species'), locations_json);
 
     // Give treeviewer a chance to parse state, then configure advanced search if on
     window.setTimeout(function () {
