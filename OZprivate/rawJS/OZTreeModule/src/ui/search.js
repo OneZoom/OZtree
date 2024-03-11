@@ -91,7 +91,6 @@ function searchPopulate(searchbox, original_search, search_result) {
                                                     // Attach compile_searchbox_data() results to reconstitute on advanced_search_box click
                                                     .attr("data-vernacular", result[0])
                                                     .attr("data-sciname", result[1])
-                                                    .attr("data-OZid", result[2])
                                                     .attr("data-pinpoint", result.pinpoint)
                                                     .html(tempHTML));
                  })
@@ -120,7 +119,6 @@ function setup_location_list(target, locations_json) {
         // Attach compile_searchbox_data()-esque results to reconstitute on advanced_search_box click
         .attr("data-vernacular", taxon.vernacular)
         .attr("data-sciname", taxon.sciname)
-        .attr("data-OZid", taxon.ozid)
         .attr("data-pinpoint", '@=' + taxon.ott)
         .html($('<p>').html($('<a>')
           .attr('href', taxon.href)

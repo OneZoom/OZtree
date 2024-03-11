@@ -307,8 +307,7 @@ function update_location_menu(loc_root) {
 function load_into_searchbox(searchbox, result, highlight) {
     // Reconstitute compile_searchbox_data() format
     var given_name = result[0],
-        sciname = result[1],
-        OZIDin = result[2];
+        sciname = result[1];
     var colour = highlight.color;
 
     //Place a non-editable box of the selected item [given_name (/sci_name/)]
@@ -326,7 +325,6 @@ function load_into_searchbox(searchbox, result, highlight) {
     }
     searchresult.attr('data-highlight', highlight.str);
     searchresult.attr('data-href', result.pinpoint);
-    searchresult.attr('data-OZid', OZIDin);
     searchresult.data('result', result);
     searchbox.addClass('result_displayed_in_box');
     //once the svg is loaded into the icon, change the colour of the icon
@@ -447,12 +445,12 @@ function add_advanced_searchbox(result, highlight) {
         event.stopPropagation();
 
         var elItem = event.target.closest('dd');
-        if ($(elItem).attr('data-OZid')) {
+        if ($(elItem).attr('data-pinpoint')) {
           UI_reset_marked($(event.currentTarget).closest('.searchbox'), {
             // Recreate a compile_searchbox_data() format
             0: $(elItem).attr('data-vernacular'),
             1: $(elItem).attr('data-sciname'),
-            2: parseInt($(elItem).attr('data-OZid'), 10),
+            2: 0, // NB: Was OZid, now redundant
             "pinpoint":  $(elItem).attr('data-pinpoint'),
           }, event);
         }
@@ -463,7 +461,7 @@ function add_advanced_searchbox(result, highlight) {
         .blur(function(event) {
             // if we have an already-selected location, and we lose focus, we simply revert
             var searchbox = $(event.currentTarget).closest('.searchbox');
-            if ($('.searchresult', searchbox).attr('data-OZid')) {
+            if ($('.searchresult', searchbox).attr('data-href')) {
                 searchbox.addClass('result_displayed_in_box');
             }
         })
@@ -659,7 +657,7 @@ function setupUI() {
         event.stopPropagation();
         if (event.originalEvent.dataTransfer.getData('result')) {
             //find the first unused advanced search box
-            var to_fill = $('#search-advanced .searchresult:not([data-OZid])').first().closest('.searchbox');
+            var to_fill = $('#search-advanced .searchresult:not([data-highlight])').first().closest('.searchbox');
             if (to_fill.length) {
                 UI_reset_marked(
                     to_fill,
