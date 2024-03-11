@@ -299,11 +299,12 @@ function update_location_menu(loc_root) {
   }
 }
 
-function load_into_searchbox(searchbox, result, colour) {
+function load_into_searchbox(searchbox, result, highlight) {
     // Reconstitute compile_searchbox_data() format
     var given_name = result[0],
         sciname = result[1],
         OZIDin = result[2];
+    var colour = highlight.color;
 
     //Place a non-editable box of the selected item [given_name (/sci_name/)]
     //over the top of the original search box and replace the search icon
@@ -318,6 +319,7 @@ function load_into_searchbox(searchbox, result, colour) {
     } else {
         $('input',searchresult).attr('value',(given_name || '') + (sciname || ''));
     }
+    searchresult.attr('data-highlight', highlight.str);
     searchresult.attr('data-OZid', OZIDin);
     searchresult.data('result', result);
     searchbox.addClass('result_displayed_in_box');
@@ -330,21 +332,19 @@ function load_into_searchbox(searchbox, result, colour) {
 
 function UI_reset_marked(searchbox, result, event) {
     // Reconstitute compile_searchbox_data() format
-    var given_name = result[0],
-        sciname = result[1],
-        OZIDin = result[2];
 
     //create a new mark, and load into a searchbox 
     var searchresult = $('.searchresult', searchbox);
     {{if is_testing:}}console.log("Hiding search dropdown");{{pass}}
     UIkit.dropdown($('.search_dropdown', searchbox)).hide();
-    if (searchresult.attr('data-OZid')) {
-        onezoom.controller.unmark_area(parseInt(searchresult.attr('data-OZid'), 10));
+    if (searchresult.attr('data-highlight')) {
+        onezoom.controller.highlight_remove(searchresult.attr('data-highlight'));
     }
-    var colour = onezoom.controller.mark_area(OZIDin);
-    load_into_searchbox(searchbox, result, colour);
-    {{if is_testing:}}console.log("Marking " + OZIDin + " with " + colour);{{pass}}
-    UI_move_to_common_ancestor(event);
+    return onezoom.controller.highlight_add('path:' + result.pinpoint).then(function (highlight) {
+      load_into_searchbox(searchbox, result, highlight);
+      {{if is_testing:}}console.log("Marking " + result.pinpoint + " with " + highlight.color);{{pass}}
+      UI_move_to_common_ancestor(event);
+    });
 }
 
 function UI_move_to_common_ancestor(searchbox, event) {
@@ -377,7 +377,7 @@ function toggleAdvancedSearch(state) {
     }
 }
 
-function add_advanced_searchbox(result, col) {
+function add_advanced_searchbox(result, highlight) {
     /* Add an advanced searchbox, and attach all the necessary listeners.
      * This is done dynamically so that we can add and remove them easily.
      * If any parameters are given, we set the box to those values
@@ -387,8 +387,8 @@ function add_advanced_searchbox(result, col) {
     $('.remove-searchbox', box_selector)
         .click(function(event) {
             var searchbox = $(event.currentTarget).closest('.searchbox');
-            var highlighted = parseInt($('.searchresult', searchbox).attr('data-OZid'), 10);
-            if (highlighted) onezoom.controller.unmark_area(highlighted);
+            var highlight_str = $('.searchresult', searchbox).attr('data-highlight');
+            if (highlight_str) onezoom.controller.highlight_remove(highlight_str);
             searchbox.remove();
             if ($('#search-advanced #searchboxes li').length == 0) {
                 toggleAdvancedSearch(false);
@@ -467,9 +467,8 @@ function add_advanced_searchbox(result, col) {
             var searchbox = $(this).closest('.searchbox');
             var searchresult = $('.searchresult', searchbox);
             var dropdown = $('.search_dropdown', searchbox);
-            if (searchresult.attr('data-OZid')) {
-                onezoom.controller.unmark_area(parseInt(searchresult.attr('data-OZid'), 10));
-                searchresult.attr('data-OZid','');
+            if (searchresult.attr('data-highlight')) {
+                onezoom.controller.highlight_remove(searchresult.attr('data-highlight'));
             }
             if (search_term.length==0) {
                 $('.popular_species', dropdown).show();
@@ -508,10 +507,16 @@ function add_advanced_searchbox(result, col) {
     // Set-up from initial parameters
     // Reconstitute compile_searchbox_data() format
     if (result && result[2]) {
-        if (!col) col = onezoom.controller.mark_area(OZid);
+        if (!highlight) {
+            // Fake a pinpoint, so we can at least carry on. Not ideal but not sure this is used anyway.
+            highlight = {
+                str: 'path:' + result.pinpoint,
+                color: 'grey',
+            };
+        }
         //look up this OZid, and use OZid, name, sciname, colour to show the result
         //use a timeout to allow the icon time to load, so we can colour it
-        load_into_searchbox(box_selector, result, col);
+        load_into_searchbox(box_selector, result, highlight);
     }
 }
 
@@ -951,19 +956,20 @@ function setupUI() {
 
     // Give treeviewer a chance to parse state, then configure advanced search if on
     window.setTimeout(function () {
-        var existing_searchresults = onezoom.controller.list_all_marked();
-        if (existing_searchresults.length) {
-            var colours = {};
-            var ids = [];
-            for(var i=0; i<existing_searchresults.length; i++) {
-               ids.push(existing_searchresults[i][0]);
-               colours[existing_searchresults[i][0]]=existing_searchresults[i][1]
-            }
+        var highlights = onezoom.controller.highlight_detail().filter(function (h) {
+            return h.type === 'path' && h.ozids[0] === 1;
+        });
+        if (highlights.length) {
+            var highlight_map = {};
+            var ids = highlights.map(function (h) {
+                highlight_map[h.ozids[1]] = h;
+                return h.ozids[1];
+            });
+
             //must look up the names & values via the API
             OZui.search_manager.lookup_nodes(ids, function(result) {
                // Reconstitute compile_searchbox_data() format
-               var OZIDin = result[2];
-               add_advanced_searchbox(result, colours[OZIDin]);
+               add_advanced_searchbox(result, highlight_map[result[2]]);
             },'best_pd');
             toggleAdvancedSearch(true);
         } else {
@@ -972,7 +978,7 @@ function setupUI() {
             add_advanced_searchbox();
             toggleAdvancedSearch(false);
         }
-    }, 100);
+    }, 1000);
 
     $(document).triggerHandler("setupUI", onezoom);
 }

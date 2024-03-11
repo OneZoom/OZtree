@@ -116,10 +116,6 @@
             var searchbox = $(this).closest('.searchbox');
             var searchresult = $('.searchresult', searchbox);
             var dropdown = $('.search_dropdown', searchbox);
-            if (searchresult.attr('data-OZid')) {
-                onezoom.controller.unmark_area(searchresult.attr('data-OZid'));
-                searchresult.attr('data-OZid','');
-            }
             if (search_term.length==0) {
                 $('.popular_species', dropdown).show();
                 {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
