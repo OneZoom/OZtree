@@ -63,27 +63,43 @@ function searchPopulate(searchbox, original_search, search_result) {
         if (window.is_testing) { console.log("Hiding popular species section of dropdown"); }
         $('.popular_species', dropdown).hide();
         $('.search_hits', dropdown).empty();
-        if (search_result.length == 0) {
+        if (search_result.tree.length + search_result.tour.length == 0) {
             $('.no_results', dropdown).show();
         } else {
             if (window.is_testing) { console.log("Hiding no_result section of dropdown"); }
             $('.no_results', dropdown).hide();
-            if (!is_sponsored(search_result[0])) {
-                $(".search_hits", dropdown).append($('<dt></dt>').text(OZstrings['Search results']))
-            }
-            var sponsored=false;
-            $.each(search_result, function(index) {
+
+            $.each(search_result.tour, function(index) {
+                var result = this;
+                console.log(result);
+
+                if (index === 0) {
+                    $(".search_hits", dropdown).append($('<dt>').text(OZstrings['Tours']));
+                }
+                $(".search_hits", dropdown).append($('<dd>')
+                    .attr("data-href", result.href)
+                    .append($('<a>')
+                        .attr("href", '?tour=' + encodeURIComponent(result.url))
+                        .text(result.title) ));
+            });
+
+            var prev_sponsored = null;  // NB: Always show a header at start
+            $.each(search_result.tree, function(index) {
+                 var result = this;
+
                  if (index==200) {
                     //we have shown 200 items already
                     $(".search_hits", dropdown).append(
                         $('<dd></dd>').html("<em>(only showing top 200 hits)</em>"))
                     return false
                  }
-                 var result = this;
-                 if ((sponsored==false) && (is_sponsored(result))) {
-                 $(".search_hits", dropdown).append($('<dt class="sponsorhits"></dt>').html(OZstrings['SponsorHits']))
-                 sponsored=true;
+
+                 // Append header when section type changes
+                 if (prev_sponsored === null || prev_sponsored !== is_sponsored(result)) {
+                     prev_sponsored = is_sponsored(result);
+                     $(".search_hits", dropdown).append($('<dt></dt>').text(OZstrings[prev_sponsored ? 'SponsorHits' : 'Search results']));
                  }
+
                  var tempHTML = compile_names(result);
                  tempHTML += compile_extra(result);
                  $(".search_hits", dropdown).append(

@@ -65,6 +65,7 @@ class SearchManager {
             return Promise.all([
                 this.searchForTree(toSearchFor),
                 new Promise((resolve) => this.searchForSponsor(toSearchFor, resolve)),
+                api_manager.tour_search(toSearchFor),
             ]).then((data) => {
                 this.last_search = null;
                 let res = self.populateByNodeResults(toSearchFor, data[0].nodes);
@@ -72,7 +73,10 @@ class SearchManager {
                 // Sort the results based on quality retuned with the search results.
                 res.sort((a, b) => a[3] < b[3] ? 1 : a[3] == b[3]? 0 : -1);
 
-                return callback(originalSearch, toSearchFor, res);
+                return callback(originalSearch, toSearchFor, {
+                    tree: res,
+                    tour: data[2],
+                });
             });
         }, search_delay);
     }
