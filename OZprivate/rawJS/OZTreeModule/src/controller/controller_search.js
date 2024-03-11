@@ -11,14 +11,12 @@ export default function (Controller) {
      * A higher level function, which moves to the given location using
      * whatever move method is defined as the default (in config.search_jump_mode).
      * @param dest Where we want to go to
-     * @param input_type How is (dest) defined? 'ozid', 'pinpoint', 'ancestor' (dest is a list of pinpoints). Defaults to 'pinpoint'
+     * @param input_type How is (dest) defined? 'pinpoint' or 'ancestor' (dest is a list of pinpoints). Defaults to 'pinpoint'
      */
     Controller.prototype.default_move_to = function(dest, input_type) {
         var p;
 
-        if (input_type === 'ozid') {
-          p = Promise.resolve({ozid: dest});
-        } else if (input_type === 'ancestor') {
+        if (input_type === 'ancestor') {
           p = resolve_pinpoints(dest).then((pinpoints) => {
             // After resolving pinpoints, find the common ancestor and use that
             // NB: This returns a node, not a pinpoint object. But has an ozid property just the same
