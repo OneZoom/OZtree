@@ -52,7 +52,7 @@
               <button   class="main-icon" uk-icon="icon: search"></button>
             </div>
             <input id="input_url_search" class="uk-search-input" type="search" placeholder="{{=T('Search all life...')}}" />
-            <input type="hidden" name="initmark" value="" />
+            <input type="hidden" name="highlight" value="" />
           </div>
           <div uk-dropdown="pos: bottom-left; offset: 0" class="search_dropdown selectable uk-overflow-auto">
             <div class="no_results">{{=T("No results found")}}</div>
@@ -62,7 +62,7 @@
         <br/>
       </div></div>
       <p>
-        <button id="button_clear_initmark" class="uk-button oz-pill" disabled>Clear highlight</button>
+        <button id="button_clear_highlight" class="uk-button oz-pill" disabled>Clear highlight</button>
       </p>
 
       <label><span class="uk-form-label">{{=T('Image sources')}}</span>
@@ -153,8 +153,8 @@
             if (hidden_el.name === '_pinpoint') {
                 hidden_el.value = href.replace(/^.*\//, '');
                 form_embed_edit.elements['otthome'].value = href.replace(/^.*\=/, '');
-            } else if (hidden_el.name === 'initmark') {
-                hidden_el.value = href.replace(/^.*\=/, '');
+            } else if (hidden_el.name === 'highlight') {
+                hidden_el.value = 'path:' + href.replace(/^.*\//, '');
             } else {
                 throw new Error("Unknown hidden element name" + hidden_el);
             }
@@ -196,9 +196,11 @@
             }
         });
 
-    document.getElementById('button_clear_initmark').addEventListener('click', function (e) {
+    document.getElementById('button_clear_highlight').addEventListener('click', function (e) {
         e.preventDefault();
-        form_embed_edit.elements['initmark'].value = "";
+        form_embed_edit.elements['highlight'].value = "";
+        // Search search input
+        form_embed_edit.elements['highlight'].previousElementSibling.value = "";
         form_embed_edit.dispatchEvent(new Event('change'));
     });
 
@@ -214,7 +216,7 @@
             return encodeURIComponent(x.name) + "=" + encodeURIComponent(x.value);
         }).join("&");
 
-        document.getElementById('button_clear_initmark').disabled = !(form_embed_edit.elements['initmark'].value);
+        document.getElementById('button_clear_highlight').disabled = !(form_embed_edit.elements['highlight'].value);
 
         iframe_embed_preview.src = url;
         document.getElementById('form_embed_email').elements.url.value = url;
