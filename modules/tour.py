@@ -21,3 +21,27 @@ def tours_related_to_ott(otts, full_meta=False):
 def tour_url(tour_row):
     """Convert tour row to a tour URL"""
     return '/tour/data.html/%s' % tour_row.identifier
+
+
+def tour_search(searchFor, language='en'):
+    """Find all tours matching free-text (query)"""
+    db = current.db
+    lang_primary = language.split(',')[0].split("-")[0].lower()
+
+    query = (db.tour.lang == lang_primary)
+    for w in searchFor.replace("%","").replace("_", " ").split():
+        if len(w) < 3:
+            # Ignore stop words
+            next
+
+        # Add query item for each search term
+        query = query & (
+            # http://web2py.com/books/default/chapter/29/06/the-database-abstraction-layer#like-ilike-regexp-startswith-endswith-contains-upper-lower
+            db.tour.title.contains(w, case_sensitive=False) |
+            db.tour.description.contains(w, case_sensitive=False) |
+            # http://web2py.com/books/default/chapter/29/06/the-database-abstraction-layer#list-type-and-contains
+            db.tour.keywords.contains(w, case_sensitive=False) |
+            False
+        )
+
+    return db(query).select(db.tour.ALL, orderby=(db.tour.title))
