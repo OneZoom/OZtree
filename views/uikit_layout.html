@@ -95,13 +95,6 @@
     var box_selector = $('#header_searchnav');
 
     $('.searchinput input', box_selector)
-        .blur(function(event) {
-            // if we have an already-selected location, and we lose focus, we simply revert
-            var searchbox = $(event.currentTarget).closest('.searchbox');
-            if ($('.searchresult', searchbox).attr('data-OZid')) {
-                searchbox.addClass('result_displayed_in_box');
-            }
-        })
         .on('keyup', function(event) {
 
             var search_term = this.value;
