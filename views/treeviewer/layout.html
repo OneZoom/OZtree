@@ -697,7 +697,8 @@ function setupUI() {
         event.stopPropagation();
 
         var ddEl = event.target.closest('dd');
-        closeAndLeap(event, $(ddEl).find('a').attr('href'), $('#searchnav .search-basic'));
+        var href = $(ddEl).find('a').attr('href');
+        if (href) closeAndLeap(event, href, $('#searchnav .search-basic'));
       });
 
     $('#searchnav .search-basic .searchinput input')
