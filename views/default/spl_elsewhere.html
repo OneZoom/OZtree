@@ -6,7 +6,6 @@
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}
 {{import img}}
-{{include '../static/OZTreeModule/dist/OZui.html'}}
 
 {{block masthead}}
 {{if 'popup' not in request.vars:}}

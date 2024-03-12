@@ -71,7 +71,23 @@ class APIManager {
       });
     }).then((data) => data.tours);
   }
-  
+
+  /**
+   * Call /tour/search.json?query=(searchString)
+   * @return Promise of parsed result
+   */
+  tour_search(searchString) {
+    return new Promise((resolve, reject) => {
+      api_wrapper({
+        method: 'get',
+        url: '/tour/search.json',
+        data: { query: searchString },
+        success: resolve,
+        error: (res) => reject("Failed to talk to server: " + res),
+      });
+    }).then((data) => data.results);
+  }
+
   /**
    * @params {String} query
    */

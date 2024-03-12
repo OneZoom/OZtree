@@ -10,11 +10,8 @@ import { resolve_pinpoints } from '../navigation/pinpoint.js';
  * @param {String} taxon_json - a JSON string specifying an array, each item of which is a string (treated as a header) or an object containing
  * an 'OTT' property and any number of optional text labels to use, keyed by language. For example taxon_list could be 
  * ['header text',{'OTT':1234,'en':'name to use},{...]
- * @param {Function} taxon_callback - the 1-param UI function [f(result)] to call on a header string, e.g. adding it to a list, result is a compile_searchbox_data() structure
- * @param {Function} header_callback - the 1-param UI function [f(label)] to call on a header string, e.g. adding it to a list
- * @param {Function} completed_callback - a function [f()] to call once the taxa have been processed and the data_repo filled
  */
-export default function process_taxon_list(taxon_json, taxon_callback, header_callback, completed_callback) {
+export default function process_taxon_list(taxon_json) {
   let taxon_list = JSON.parse(taxon_json || '[]');
   let lang = config.lang || 'en';
   if (!taxon_list || !taxon_list.length) return;
@@ -29,23 +26,13 @@ export default function process_taxon_list(taxon_json, taxon_callback, header_ca
       //and if non of those exist, use the vernacular returned in the correct language by the API (if present)
       //since taxa is a filtered view into the taxon_list array, adding to one of them here should change taxon_list too
       taxa[i].vernacular = taxa[i][lang] || taxa[i][lang.split('-', 1)] || taxa[i][""] || p.vn
+
+      if (p.ott) {
+        // Fill in a URL for this taxon
+        taxa[i].href = '/life/@=' + p.ott;
+      }
     });
 
-    taxon_list.forEach((taxon) => {
-      if (typeof taxon === "string") {
-        if (typeof header_callback === "function") header_callback(taxon);
-        return;
-      }
-      if (typeof taxon_callback === "function") {
-        // Recreate a compile_searchbox_data() format
-        let result = [
-          taxon.vernacular,
-          taxon.sciname,
-          taxon.ozid,
-        ];
-        result.pinpoint = taxon.pinpoint;
-        taxon_callback(taxon.ott, result);
-      }
-    });
-  }).then(completed_callback || ((x) => x));
+    return taxon_list;
+  });
 }

@@ -74,6 +74,32 @@ class TestModuleTour(unittest.TestCase):
             visible_in_search=tour1['visible_in_search'],
         )]})
 
+    def test_tour_search(self):
+        db = current.db
+        leaves = [db(db.ordered_leaves.ott == ott).select(db.ordered_leaves.ALL)[0] for ott in util.find_unsponsored_otts(10)]
+        tour1 = util.create_tour([l.ott for l in leaves[0:1]], title="Test tour first", description="A tour with things")
+        tour2 = util.create_tour([l.ott for l in leaves[1:2]], title="Test tour things", description="A tour with stuff")
+
+        # Search in both title and description
+        out = tour.tour_search("things")
+        self.assertEqual(
+            [o.identifier for o in out],
+            [tour1['identifier'], tour2['identifier']],
+        )
+
+        # String only in description
+        out = tour.tour_search("stuff")
+        self.assertEqual(
+            [o.identifier for o in out],
+            [tour2['identifier']],
+        )
+
+        # String only in title
+        out = tour.tour_search("first")
+        self.assertEqual(
+            [o.identifier for o in out],
+            [tour1['identifier']],
+        )
 
 if __name__ == '__main__':
     import sys

@@ -300,3 +300,19 @@ def list():
             out['rest'].append(t)
 
     return out
+
+
+def search():
+    session.forget(response)
+    language = request.vars.lang or request.env.http_accept_language or 'en'
+    searchFor = request.vars.query
+
+    results = tour.tour_search(searchFor, language)
+    for t in results:
+        # Splice in tour_url to DB row
+        t['url'] = tour.tour_url(t)
+
+    return dict(
+        lang=language,
+        results=results.as_list(),
+    )
