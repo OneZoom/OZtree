@@ -62,7 +62,7 @@ class TestEmbed(unittest.TestCase):
             'frameborder="0"',
             '></iframe></div>',
         ])
-        self.assertEqual(media_embed('https://www.youtube.com/embed/12345', ts_autoplay="tsstate-active_wait", camel='"yes"'), [
+        self.assertEqual(media_embed('https://www.youtube.com/embed/12345', defaults=dict(ts_autoplay="tsstate-active_wait", camel='"yes"')), [
             '<div',
             'class="embed-video"><iframe',
             'class="embed-youtube"',
@@ -71,6 +71,26 @@ class TestEmbed(unittest.TestCase):
             'frameborder="0"',
             'data-ts_autoplay="tsstate-active_wait"',
             'data-camel="&quot;yes&quot;"',
+            '></iframe></div>',
+        ])
+        # Can override defaults by providing a dict
+        self.assertEqual(media_embed(dict(url='https://www.youtube.com/embed/12345', ts_autoplay="nothanks"), defaults=dict(ts_autoplay="tsstate-active_wait")), [
+            '<div',
+            'class="embed-video"><iframe',
+            'class="embed-youtube"',
+            'type="text/html"',
+            'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
+            'frameborder="0"',
+            'data-ts_autoplay="nothanks"',
+            '></iframe></div>',
+        ])
+        self.assertEqual(media_embed(dict(url='https://www.youtube.com/embed/12345', ts_autoplay=None), defaults=dict(ts_autoplay="tsstate-active_wait")), [
+            '<div',
+            'class="embed-video"><iframe',
+            'class="embed-youtube"',
+            'type="text/html"',
+            'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
+            'frameborder="0"',
             '></iframe></div>',
         ])
 

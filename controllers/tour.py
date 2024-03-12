@@ -62,7 +62,11 @@ media
             "https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif",
         ],
 
-    Any media will autoplay when arriving at the tourstop, and stop when leaving.
+    By default media will autoplay when arriving at the tourstop, and stop when leaving. You can override with:
+
+        media: [
+            {"url": "https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg", "ts_autoplay": "tsstate-transition_in tsstate-active_wait"}
+        ],
 """
 from pymysql.err import IntegrityError
 

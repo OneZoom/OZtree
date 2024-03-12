@@ -55,7 +55,7 @@ ts_fields = (  # HTML fields that can be added to container
     {{for k, tag in ts_fields:}}{{if tdata.get(k, ''):}}
     <{{=tag}} class="{{=k}}">{{=T(tdata[k])}}</{{=tag}}>{{pass}}{{pass}}
     {{if len(tdata.get('media', [])) > 0:}}{{for url in tdata['media']:}}
-      {{=XML(media_embed(url, ts_autoplay='tsstate-active_wait'))}}
+      {{=XML(media_embed(url, defaults=dict(ts_autoplay='tsstate-active_wait')))}}
     {{pass}}{{pass}}
 
     <div class="actions"><a href="#share-modal" class="tour_pause oz-pill pill-share" style="float: right" uk-toggle>{{=T('Share')}}</a></div>
