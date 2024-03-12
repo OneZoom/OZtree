@@ -49,7 +49,7 @@ ts_fields = (  # HTML fields that can be added to container
        {{pass}}{{pass}}>
     <div class="header">
       <button type="button" class="button tour_exit" uk-icon="icon: close" aria-label="{{=T('Exit tour')}}"></button>
-      <button type="button" class="handle tour_exit" aria-label="{{=T('Exit tour')}}"></button>
+      <button type="button" class="handle" aria-label="{{=T('Exit tour')}}"></button>
       {{if tdata.get('title', ''):}}<h2 class="title">{{=tdata['title']}}</h2>{{pass}}
     </div>
     {{for k, tag in ts_fields:}}{{if tdata.get(k, ''):}}

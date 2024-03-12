@@ -155,7 +155,7 @@
   .header {
     margin: 0 -0.6rem; /* Cancel container padding */
 
-    .tour_exit.handle {
+    .handle {
       border: none;
       margin: 0.3rem auto;
       width: 5rem;
@@ -192,12 +192,12 @@
       }
     }
 
-    .tour_exit.handle { display: block; }
+    .handle { display: block; }
     .tour_exit.button { display: none; }
     @media (orientation: landscape) {
       @media (min-width: 1000px) {
         /* Desktop/tablet landscape mode: Reveal × */
-        .tour_exit.handle { display: none; }
+        .handle { display: none; }
         .tour_exit.button { display: block; }
       }
     }
