@@ -34,22 +34,24 @@ function record_url(controller, options, force) {
   // No OTT found to anchor the URL on, don't record
   if (!current_state.pinpoint) return
 
-  if (current_view_near_previous_view(current_state) && !(force)) {
-    return;
-  } else if (window.location.protocol != "file:") {
-    if (options.replaceURL) {
-      window.history.replaceState(null, "", deparse_state(current_state).href);
-    } else {
-      window.history.pushState(null, "", deparse_state(current_state).href);
-    }
-    document.title = unescape(get_title(controller));
+  // Not allowed to record when being served via file:
+  if (window.location.protocol === "file:") return;
 
-    // Send tree state upwards for UI
-    controller.canvas.dispatchEvent(new CustomEvent("oz_treestate", {
-        bubbles: true,
-        detail: current_state,
-    }));
+  // Don't bother recording if it's basically the same state
+  if (!force && current_view_near_previous_view(current_state)) return;
+
+  if (options.replaceURL) {
+    window.history.replaceState(null, "", deparse_state(current_state).href);
+  } else {
+    window.history.pushState(null, "", deparse_state(current_state).href);
   }
+  document.title = unescape(get_title(controller));
+
+  // Send tree state upwards for UI
+  controller.canvas.dispatchEvent(new CustomEvent("oz_treestate", {
+      bubbles: true,
+      detail: current_state,
+  }));
 }
 
 /**
