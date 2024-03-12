@@ -89,9 +89,9 @@ function handler(tour) {
       return 0;
     }).reduce((acc, a) => acc + a, 0) + 20;  // NB: Not sure where the 20 pixels are coming from
 
-    function resizeTo(elTs, heightStyle, callback) {
+    function resizeTo(elTs, height, callback) {
       elTs.style.transition = 'height 0.3s ease-out';
-      elTs.style.height = heightStyle;
+      elTs.style.height = height + 'px';
       window.setTimeout(() => {
         elTs.style.transition = '';
         if (callback) callback();
@@ -110,16 +110,16 @@ function handler(tour) {
     if (!downInit.move) {
       // If we didn't move, toggle pause/resume
       if (Math.abs(downInit.tourstop.offsetHeight - minimisedHeight) < 3) {
-          resizeTo(downInit.tourstop, '', () => tour.user_resume());
+          resizeTo(downInit.tourstop, downInit.tourstop.ozOrigHeight, () => tour.user_resume());
       } else {
-          resizeTo(downInit.tourstop, minimisedHeight + 'px', () => tour.user_pause());
+          resizeTo(downInit.tourstop, minimisedHeight, () => tour.user_pause());
       }
     } else if (downInit.tourstop.offsetHeight < minimisedHeight * 0.8) {
-      resizeTo(downInit.tourstop, '0px', () => tour.user_exit());
+      resizeTo(downInit.tourstop, 0, () => tour.user_exit());
     } else if (downInit.tourstop.offsetHeight < minimisedHeight * 1.5) {
-      resizeTo(downInit.tourstop, minimisedHeight + 'px', () => tour.user_pause());
+      resizeTo(downInit.tourstop, minimisedHeight, () => tour.user_pause());
     } else {
-      resizeTo(downInit.tourstop, '', () => tour.user_resume());
+      resizeTo(downInit.tourstop, downInit.tourstop.ozOrigHeight, () => tour.user_resume());
     }
     downInit = null;
   };
@@ -131,6 +131,12 @@ function handler(tour) {
       const container = event.target.closest('.container');
       var y = event.touches ? event.touches[0].screenY : event.screenY;
       downInit = {target: event.target, tourstop: container, offset: container.offsetHeight + y};
+      if (!downInit.tourstop.style.height) {
+          // Store natural height
+          downInit.tourstop.ozOrigHeight = downInit.tourstop.offsetHeight;
+          // Fix the height at the current height, so animations work
+          downInit.tourstop.style.height = downInit.tourstop.ozOrigHeight + 'px';
+      }
 
       if (event.touches) {
         document.addEventListener('touchmove', onMouseMove);
