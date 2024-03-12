@@ -27,15 +27,27 @@ def embedize_url(url, email):
     ))
 
 
-def media_embed(url, **kwargs):
-    """Generate media embed code for given URL"""
+def media_embed(url, defaults=dict()):
+    """
+    Generate media embed code for given URL
+    - url: Either a URI in recognised format or dict(url: "https://", **opts), where (opts) & (defaults) are merged
+    - defaults: data-x options to set on the HTML, can be overriden by (opts)
+    """
     request = current.request
+
+    # If url is a dict, merge provided options with the defaults
+    if isinstance(url, dict):
+        opts = {**defaults, **url}
+        url = opts['url']
+    else:
+        opts = defaults
+        url = url
 
     # Join together extra element data
     element_data = ' '.join('data-%s="%s"' % (
         key,
         html.escape(value),
-    ) for key, value in kwargs.items())
+    ) for key, value in opts.items() if key != 'url' and value is not None)
 
     m = re.fullmatch(r'https://www.youtube.com/embed/(.+)', url)
     if m:
