@@ -39,10 +39,15 @@
     .tour_resume { display: none }
     &[data-state=tstate-paused] .tour_resume { display: initial }
     &[data-state=tstate-paused] .tour_forward { display: none }
+    &[data-state=tstate-paused] .tour_final { display: none }
 
     /* tour_backward & tour_forward don't make sense at beginning / end */
     > .container.ts-first .tour_backward { opacity: 0.5 }
-    > .container.ts-last .tour_forward { opacity: 0.5 }
+    > .container.ts-last .tour_forward { display: none; }
+
+    /* tour_final only makes sense at the end */
+    > .container:not(.ts-last) .tour_final { display: none }
+    &:not(&[data-state=tstate-paused]) > .container.ts-last .tour_final { display: block }
 }
 
 #tour_wrapper > .tour.layout-def {
@@ -214,7 +219,7 @@
         flex-grow: 1;
     }
 
-    .tour_backward, .tour_forward, .tour_resume {
+    .tour_backward, .tour_forward, .tour_resume, .tour_final {
       @extend %oz-drop-shadow-active;
       border: 0;
       height: 35px;
@@ -230,13 +235,13 @@
     .tour_backward {
       background-image: url(../images/oz-leftarrow-darkbg.svg);
     }
-    .tour_forward, .tour_resume {
+    .tour_forward, .tour_resume, .tour_final {
       background-image: url(../images/oz-rightarrow-darkbg.svg);
       background-position: right;
       padding-right: 40px;
     }
 
-    .tour_backward, .tour_forward, .tour_resume {
+    .tour_backward, .tour_forward, .tour_resume, .tour_final {
       font-size: inherit;
       border: 1px solid #242A22;
     }
@@ -247,7 +252,7 @@
       text-indent: 35px;
       padding-right: 10px;
     }
-    .tour_forward, .tour_resume {
+    .tour_forward, .tour_resume, .tour_final {
       background-position: right;
       border-radius: 5px calc(35px / 2) calc(35px / 2) 5px;
       border-right: none;
