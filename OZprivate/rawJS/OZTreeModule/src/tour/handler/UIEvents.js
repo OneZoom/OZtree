@@ -71,6 +71,7 @@ function handler(tour) {
     if (!downInit) return;
     var y = event.touches ? event.touches[0].screenY : event.screenY;
     downInit.tourstop.style.height = Math.max(downInit.offset - y, 50) + 'px';
+    downInit.move = true;
   };
   const onMouseUp = (event) => {
     const minimisedHeight = Array.from(downInit.tourstop.children).map(function (el) {
@@ -106,7 +107,14 @@ function handler(tour) {
       document.removeEventListener('mouseup', onMouseUp);
     }
 
-    if (downInit.tourstop.offsetHeight < minimisedHeight) {
+    if (!downInit.move) {
+      // If we didn't move, toggle pause/resume
+      if (Math.abs(downInit.tourstop.offsetHeight - minimisedHeight) < 3) {
+          resizeTo(downInit.tourstop, '', () => tour.user_resume());
+      } else {
+          resizeTo(downInit.tourstop, minimisedHeight + 'px', () => tour.user_pause());
+      }
+    } else if (downInit.tourstop.offsetHeight < minimisedHeight * 0.8) {
       resizeTo(downInit.tourstop, '0px', () => tour.user_exit());
     } else if (downInit.tourstop.offsetHeight < minimisedHeight * 1.5) {
       resizeTo(downInit.tourstop, minimisedHeight + 'px', () => tour.user_pause());
