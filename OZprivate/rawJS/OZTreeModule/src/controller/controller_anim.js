@@ -181,6 +181,7 @@ export default function (Controller) {
     return flight_promise(new Promise((resolve, reject) => {
       position_helper.perform_actual_fly(
         this, into_node, Infinity, 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
+      tree_state.flying = false;
     }))
   }
   Controller.prototype.fetch_details_and_leap_to = function(dest_OZid, position=null, into_node=false) {
