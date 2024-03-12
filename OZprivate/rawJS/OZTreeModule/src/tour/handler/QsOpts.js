@@ -25,6 +25,7 @@ function handler(tour) {
                    );
       if (new_qs === '?') return;
 
+      // NB: Because we don't record tour treestate in record_url(), window.location will always be the pre-tour state.
       tourstop.hander_qsopts_old_qs = inverse_qs(new_qs, window.location.search);
       tour.onezoom.controller.set_treestate(new_qs);
     }, (tour, tourstop, el_ts) => {

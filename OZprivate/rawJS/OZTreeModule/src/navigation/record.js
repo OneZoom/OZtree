@@ -40,6 +40,13 @@ function record_url(controller, options, force) {
   // Don't bother recording if it's basically the same state
   if (!force && current_view_near_previous_view(current_state)) return;
 
+  if (current_state.tour_setting) {
+    // Leave everything alone bar tour---parse existing state, splice tour state in.
+    const tour = current_state.tour_setting;
+    current_state = parse_state(window.location);
+    current_state.tour_setting = tour;
+  }
+
   if (options.replaceURL) {
     window.history.replaceState(null, "", deparse_state(current_state).href);
   } else {
@@ -64,6 +71,7 @@ function current_view_near_previous_view(current_state) {
   if (current_state === null && previous_state !== null) return false;
   else if (current_state !== null && previous_state === null) return false;
   else if (current_state === null && previous_state === null) return true;
+  else if (current_state.tour_setting !== previous_state.tour_setting) return false;
   else if (current_state.vis_type !== previous_state.vis_type) return false;
   else if (current_state.pinpoint === previous_state.pinpoint) {
     //If no tap window open and position not changed a lot, do not record current position into history.
