@@ -54,11 +54,12 @@ def media_embed(url, defaults=dict()):
         return """<div class="embed-video"><iframe
             class="embed-youtube"
             type="text/html"
-            src="{url}?enablejsapi=1&playsinline=1&origin={origin}"
+            src="{url}{qs_continuation}enablejsapi=1&playsinline=1&origin={origin}"
             frameborder="0"
             {element_data}
         ></iframe></div>""".format(
             url=url,
+            qs_continuation='&' if "?" in url else "?",
             origin='%s://%s' % (request.env.wsgi_url_scheme, request.env.http_host),
             element_data=element_data,
         )
