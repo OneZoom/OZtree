@@ -81,7 +81,7 @@
         left: 5vw;
         width: 40vw;
         max-width: none;
-        max-height: 100vh;
+        max-height: calc(100vh - 40px * 2); /* Don't overlap OZ logo */
         transform: translate(0, -50%);
 
         border-bottom-width: 1px;
