@@ -45,6 +45,7 @@ ott
     The OTT that this tourstop heads to.
 qs_opts
     Tree state to apply when visiting this tourstop, e.g. colour-scheme or highlights. See ``src/navigation/state.js``.
+    You can do ``"qs_opts": "?into_node=max"``, to zoom into a node (rather than seeing it's children).
 transition_in
     The type of transition to use when navigating to ``ott``. Either ``leap``, ``fly_straight`` or ``flight``.
 fly_in_speed
