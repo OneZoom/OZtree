@@ -68,9 +68,9 @@ def index():
     """
     # OTTs from the tree_startpoints table
     startpoints_ott_map, hrefs, images, titles, text_titles = {}, {}, {}, {}, {}
-    carousel, threatened = [], []
+    carousel = []
     for r in db(
-            (db.tree_startpoints.category.belongs(('homepage_main', 'homepage_red'))) &
+            (db.tree_startpoints.category.belongs(('homepage_main',))) &
             (db.tree_startpoints.partner_identifier == None)
         ).select(
             db.tree_startpoints.ott, db.tree_startpoints.category,
@@ -81,8 +81,6 @@ def index():
         key = r.tour.identifier or str(r.tree_startpoints.ott)
         if r.tree_startpoints.category == 'homepage_main':
             carousel.append(key)
-        elif r.tree_startpoints.category == 'homepage_red':
-            threatened.append(key)
 
         text_titles[key] = ""
         if r.tree_startpoints.image_url:
@@ -96,38 +94,8 @@ def index():
             if r.tour.image_url:
                 images[key] = {'url': img.url(r.tour.image_url)}
 
-    # Pick 5 random threatened spp 
-    random.seed(request.now.month*100 + request.now.day)
-    if len(threatened) > 5:
-        threatened = random.sample(threatened, 5)
-    image_required = set(carousel + threatened)
-    # Remove the unused threatened ones
-    startpoints_ott_map = {k: v for k, v in startpoints_ott_map.items() if v in image_required}
+    image_required = set(carousel)
     
-    # OTTs from the reservations table (i.e. sponsored)
-    query = (db.reservations.verified_time != None) & \
-        ((db.reservations.deactivated == None) | (db.reservations.deactivated == "")) & \
-        (db.reservations.verified_preferred_image_src != None)
-    sponsored_rows = db(query).select(
-        db.reservations.OTT_ID,
-        db.reservations.name,
-        db.reservations.user_nondefault_image,
-        db.reservations.verified_kind,
-        db.reservations.verified_name,
-        db.reservations.verified_more_info,
-        db.reservations.verified_preferred_image_src,
-        db.reservations.verified_preferred_image_src_id,
-        orderby=~db.reservations.verified_time|db.reservations.reserve_time,
-        limitby=(0, 20)
-        )
-    
-    spon_leaf_otts = set()
-    sponsored_by_ott = {}
-    for r in sponsored_rows:
-        sponsored_by_ott[r.OTT_ID] = r
-        hrefs[r.OTT_ID] = URL('life/@=%d' % r.OTT_ID, url_encode=False)
-        spon_leaf_otts.add(r.OTT_ID)
-        titles[r.OTT_ID] = r.name
     for ott, key in startpoints_ott_map.items():
         if key not in hrefs:
             hrefs[key] = URL('life/@=%d' % ott, url_encode=False)
@@ -176,22 +144,6 @@ def index():
         key = startpoints_ott_map.get(r.ott, None) or st_leaf_for_node_otts.get(r.ott, None)
         if key not in images:
             images[key] = {'url': img.thumb_url(r.src, r.src_id)}
-    # Sponsored images
-    for r in db(
-            (db.images_by_ott.ott.belongs(spon_leaf_otts)) & (db.images_by_ott.overall_best_any==1)
-        ).select(
-            db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
-            db.images_by_ott.rights, db.images_by_ott.licence):
-        reservations_row = sponsored_by_ott[r.ott]
-        if reservations_row.user_nondefault_image:
-            images[r.ott] = {'url': img.thumb_url(
-                reservations_row.verified_preferred_image_src,
-                reservations_row.verified_preferred_image_src_id)}
-        else:
-            images[r.ott] = {
-                'url': img.thumb_url(r.src, r.src_id),
-                'rights':r.rights,
-                'licence': r.licence.split('(')[0]}
     blank = {'url': URL('static','images/noImage_transparent.png')}
     for key in titles.keys():
         if key not in images:
@@ -213,7 +165,7 @@ def index():
             )
             for row in db().select(db.news.ALL, orderby =~ db.news.news_date, limitby = (0, 5))
         ],
-        carousel=carousel, threatened=threatened, sponsored=sponsored_rows,
+        carousel=carousel,
         hrefs=hrefs, images=images, html_names=titles, has_vernacular=has_vernacular, add_the=add_the,
         n_total_sponsored=reservation_total_counts('donors'),
         n_sponsored_leaves=reservation_total_counts('otts'),

@@ -22,7 +22,7 @@ $oz-font-serif: serif;
 
 %oz-background-dark {
   background: $oz_dark_bg;
-  color: $oz_light_bg;
+  color: #fff;
 
   h1, h2, h3, h4, h5, h6 {
     color: $oz_green_fg;
@@ -39,9 +39,10 @@ $oz-font-serif: serif;
     }
   }
 
-  &.oz-pill {
+  &.uk-button, &[role=button] {
     color: $oz_green_fg;
   }
+
   .oz-pill {
     border: 1px solid $oz_light_bg;
   }

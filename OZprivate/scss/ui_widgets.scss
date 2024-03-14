@@ -120,18 +120,13 @@ ul.leaf-list {
 
 input.oz-pill { border: none; }
 html body .oz-pill {
-  background: $oz_dark_bg;
-  color: $oz_green_fg;
+  @extend %oz-background-dark;
 
   display: inline-block;
   border-radius: 1.5rem 0;
 
   &:not(img) {
     padding: 0.3rem 1rem;
-  }
-
-  &.pill-round {
-    border-radius: 1.5rem;
   }
 
   &.pill-leafout {
@@ -178,7 +173,7 @@ html body .oz-pill {
   }
 
   /* Buttons and other actions have fully-rounded corners */
-  &.uk-button, &[uk-toggle], &:is(button) {
+  &.uk-button, &[uk-toggle], &:is(button), &[role=button] {
     border-radius: 1.5rem;
   }
   &.uk-button {
