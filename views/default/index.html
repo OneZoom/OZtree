@@ -56,8 +56,6 @@
           transition: opacity 0.3s;
         }
         .oz-slider-popularplaces li .img-species {
-          margin: 50% 0;
-          transform: scale(1);
           transition: transform 0.1s;
         }
         .oz-slider-popularplaces li .img-species.leafout::after {
@@ -65,7 +63,7 @@
         }
         </style>
         <div class="uk-position-relative uk-width-5-6 uk-container-center oz-slider-popularplaces" uk-slider="center: true; index: 1">
-          <div class="uk-slider-container"><div class="inner-container"><ul class="uk-slider-items uk-child-width-1-3 uk-child-width-1-5@l">{{for key in carousel:}}
+          <div class="uk-slider-container"><div class="inner-container"><ul class="uk-slider-items uk-child-width-1-3 uk-child-width-1-4@l">{{for key in carousel:}}
             <li>
               <a href="{{=hrefs[key]}}" target="_blank"><figure>
                 <div class="img-species leafout"><img src="{{=images.get(key, {}).get('url', '')}}"
@@ -82,44 +80,6 @@
        <div class="oz-card-bottom-right"><a href="/life.html" class="oz-pill pill-leafout" target="_blank">Start at the origin of life</a></div>
         
       </div>
-      <script>
-       function popularplaces_recalc() {
-           var all_items, mid_point, i;
-
-           // Clear styling from inactive items
-           all_items = Array.prototype.slice.call(document.querySelectorAll('.oz-slider-popularplaces ul.uk-slider-items li'));
-           for (i = 0; i < all_items.length; i++) {
-               all_items[i].style['z-index'] = '';
-               all_items[i].querySelector('div.img-species').style.transform = '';
-           }
-
-           // Get active items, sorted by CSS & HTML order
-           all_items = Array.prototype.slice.call(document.querySelectorAll('.oz-slider-popularplaces ul.uk-slider-items li.uk-active'));
-           all_items.sort(function (a, b) {
-               return parseInt(getComputedStyle(a).order, 10) - parseInt(getComputedStyle(b).order, 10);
-           });
-
-           // Arrange around midpoint
-           mid_point = (all_items.length / 2) - 0.5;
-           for (i = 0; i < all_items.length; i++) {
-               all_items[i].style['z-index'] = all_items.length - Math.abs(Math.floor(i - mid_point));
-               all_items[i].querySelector('div.img-species').style.transform = 'scale(' + (1.2 + (mid_point - Math.abs(i - mid_point)) * 0.8/mid_point) + ')';
-           }
-       };
-       function wait_for_slider_init() {
-           if (document.querySelectorAll('.oz-slider-popularplaces .uk-active').length > 0) {
-               popularplaces_recalc();
-           } else {
-               setTimeout(wait_for_slider_init, 100);
-           }
-       }
-
-       // Fire both before and after so we look like we're working at the same time as the scroll
-       // TODO: Listen to itemshow, assume that the item that isn't the new one is about to be hidden?
-       document.querySelector('.oz-slider-popularplaces').addEventListener('itemshow', popularplaces_recalc);
-       document.querySelector('.oz-slider-popularplaces').addEventListener('itemshown', popularplaces_recalc);
-       wait_for_slider_init(); // Start busy-wait until slider is ready
-      </script>
 
     </div>
     </div>
