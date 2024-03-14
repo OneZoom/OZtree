@@ -26,12 +26,12 @@ function setup_page_by_state(controller, state) {
     return state.hasOwnProperty('highlights') ? controller.highlight_replace(state.highlights) : null;
   }).then(function () {
     tree_state.url_parsed = true;
-    // Skip move if no pinpoint
-    if (!state.pinpoint) return;
     if (!init) {
-      // Not init-ing tree, so fly to new location
-      return controller.default_move_to(state.pinpoint);
+      // Not init-ing tree, so fly to new location if given
+      return state.pinpoint ? controller.default_move_to(state.pinpoint) : undefined;
     }
+    // On init, move to default_init_pinpoint if none given
+    if (!state.pinpoint) state.pinpoint = config.default_init_pinpoint;
     if (!config.home_ott_id) {
         // No home_ott_id set yet, use current (initial) pinpoint as home
         // so a homepage Carnivorans link resets to Carnivorans, e.g.
