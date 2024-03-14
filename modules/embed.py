@@ -105,6 +105,33 @@ def media_embed(url, defaults=dict()):
               {element_data}
               ></video><a class="copyright" href="{url}">©</a></div>""".format(**opts)
 
+    ############### Custom tours assets at https://onezoom.github.io/tours/
+    # Replace the media extension with .html to get a link to the copyright page
+    m = re.fullmatch(r'https://onezoom.github.io/tours/(.+)\.(gif|jpg|jpeg|png|svg|ogg|mp3|ogv|webm|mpg|mpeg)', opts['url'])
+    if m:
+        if not opts.get('alt'):
+            opts['alt'] = humanise_url(m.group(1))
+        if not opts.get('title'):
+            opts['title'] = "%s.%s" % (m.group(1), m.group(2))
+        opts['src_url'] = opts['url']
+        opts['url'] = 'https://onezoom.github.io/tours/%s.html' % m.group(1)
+
+        if m.group(2) in ('gif', 'jpg', 'jpeg', 'png', 'svg'):
+            return """<a class="embed-image{klass}" title="{title}" href="{url}" {element_data}><img
+              src="{src_url}"
+              alt="{alt}"
+            /><span class="copyright">©</span></a>""".format(**opts)
+        if m.group(2) in ('ogg', 'mp3'):
+            return """<div class="embed-audio{klass}"><audio controls
+              src="{src_url}"
+              {element_data}
+              ></audio><a class="copyright" href="{url}" title="title">©</a></div>""".format(**opts)
+        if m.group(2) in ('ogv', 'webm', 'mpg', 'mpeg'):
+            return """<div class="embed-video{klass}"><video controls
+              src="{src_url}"
+              {element_data}
+              ></video><a class="copyright" href="{url}">©</a></div>""".format(**opts)
+
     # Fallback without copyright link
     m = re.fullmatch(r'(.+\.(gif|jpg|jpeg|png|svg))', opts['url'])
     if m:
