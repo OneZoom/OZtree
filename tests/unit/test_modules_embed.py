@@ -49,8 +49,17 @@ class TestEmbed(unittest.TestCase):
 
         self.assertEqual(media_embed('https://www.wibble.com/some_image.jpg'), [
             '<a',
-            'href="https://www.wibble.com/some_image.jpg"',
-            'style="font-weight:bold">https://www.wibble.com/some_image.jpg</a>',
+            'class="embed-image"',
+            '><img',
+            'src="https://www.wibble.com/some_image.jpg"',
+            'alt="some',
+            'image"',
+            '/></a>',
+        ])
+        self.assertEqual(media_embed('https://www.wibble.com/some_file.bin'), [
+            '<a',
+            'href="https://www.wibble.com/some_file.bin"',
+            'style="font-weight:bold">https://www.wibble.com/some_file.bin</a>',
         ])
 
         self.assertEqual(media_embed('https://www.youtube.com/embed/12345'), [
@@ -135,7 +144,9 @@ class TestEmbed(unittest.TestCase):
             'href="https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif"',
             '><img',
             'src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Rose_of_Jericho.gif"',
-            'alt="Rose_of_Jericho.gif"',
+            'alt="Rose',
+            'of',
+            'Jericho"',
             '/><span',
             'class="copyright">©</span></a>',
         ])
