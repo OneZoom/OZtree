@@ -120,8 +120,7 @@ ul.leaf-list {
 
 input.oz-pill { border: none; }
 html body .oz-pill {
-  background: $oz_dark_bg;
-  color: $oz_green_fg;
+  @extend %oz-background-dark;
 
   display: inline-block;
   border-radius: 1.5rem 0;
