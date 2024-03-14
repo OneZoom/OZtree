@@ -36,7 +36,13 @@ Both ``template_data`` and ``tourstop_shared`` can have the same content;
 title
     Title of tourstop, included at top of pop-up.
 window_text
-    Body text of tourstop.
+    Body text of tourstop. Can either be a single string, or an array of multiple items, which can also include visibility:
+
+        "window_text": [
+            "This text is visible whenever the tourstop is visible",
+            { "visible-transition_in": true, "text": "This text is only visible on transition_in" },
+            { "visible-transition_in": true, "visible-active_wait": true, "text": "This text is visible both transition_in and active_wait" }
+        ],
 comment
     Ignored comment section, for tour authors.
 visible-transition_in / visible-transition_out / hidden-active_wait
@@ -67,6 +73,9 @@ media
         media: [
             {"url": "https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg", "ts_autoplay": "tsstate-transition_in tsstate-active_wait"}
         ],
+
+    When a media item is visible can be altered by setting ``"visible-transition_in": true``, the rules working the same as "window_text".
+
 """
 from pymysql.err import IntegrityError
 

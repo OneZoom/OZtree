@@ -48,6 +48,16 @@
     /* tour_final only makes sense at the end */
     > .container:not(.ts-last) .tour_final { display: none }
     &:not(&[data-state=tstate-paused]) > .container.ts-last .tour_final { display: block }
+
+    /* Content can use the .visible-* classes too */
+    > .container .visible-transition_in, > .container .visible-transition_out, > .container .visible-active_wait {
+      display: none!important; /* NB: Should work above any attempts to do display: block */
+    }
+    > .container[data-state=tsstate-transition_in] .visible-transition_in,
+    > .container[data-state=tsstate-transition_out] .visible-transition_out,
+    > .container[data-state=tsstate-active_wait] .visible-active_wait {
+      display: unset!important;
+    }
 }
 
 #tour_wrapper > .tour.layout-def {
