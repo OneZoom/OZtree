@@ -123,19 +123,6 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
 </div>
 
 
-<div class="uk-child-width-expand@m uk-grid-match" style="border: 20px solid white" uk-grid>
-  {{for sub_menu in response.menu[0:3]:}}
-    <div>
-      <div class="oz-pill with-splash">
-        <h3>{{=T(sub_menu[0])}}</h3>
-        {{=MENU(sub_menu[-1][0:4], _class="leaf-list")}}
-        <!-- NB: 15rem is length of longest menu item -->
-        <div class="oz-pill-splash" style="width: calc(100% - 15rem); background-image: url({{=menu_splash_images[sub_menu[0]]}})"></div>
-      </div>
-    </div>
-  {{pass}}
-</div>
-
 <section class="oz-section bkgd-quotes"><div class="oz-section-body">
   <h3>What they say...</h3>
 
@@ -171,6 +158,20 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
 
   <a class="oz-pill pill-leaf" href="//www.onezoom.org/sponsor.html" role="button">Sponsor a leaf now!</a>
 </div></section>
+
+
+<div class="uk-child-width-expand@m uk-grid-match" style="border: 20px solid white" uk-grid>
+  {{for sub_menu in response.menu[0:3]:}}
+    <div>
+      <div class="oz-pill with-splash">
+        <h3>{{=T(sub_menu[0])}}</h3>
+        {{=MENU(sub_menu[-1][0:4], _class="leaf-list")}}
+        <!-- NB: 15rem is length of longest menu item -->
+        <div class="oz-pill-splash" style="width: calc(100% - 15rem); background-image: url({{=menu_splash_images[sub_menu[0]]}})"></div>
+      </div>
+    </div>
+  {{pass}}
+</div>
 
 
 <section class="oz-section bkgd-natural"><div class="oz-section-body news-list">
