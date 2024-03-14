@@ -52,7 +52,8 @@ class TestEmbed(unittest.TestCase):
             'class="embed-image"',
             '><img',
             'src="https://www.wibble.com/some_image.jpg"',
-            'alt=""',
+            'alt="some',
+            'image"',
             '/></a>',
         ])
         self.assertEqual(media_embed('https://www.wibble.com/some_file.bin'), [
@@ -143,7 +144,9 @@ class TestEmbed(unittest.TestCase):
             'href="https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif"',
             '><img',
             'src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Rose_of_Jericho.gif"',
-            'alt="Rose_of_Jericho.gif"',
+            'alt="Rose',
+            'of',
+            'Jericho"',
             '/><span',
             'class="copyright">©</span></a>',
         ])
