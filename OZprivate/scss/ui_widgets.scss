@@ -129,10 +129,6 @@ html body .oz-pill {
     padding: 0.3rem 1rem;
   }
 
-  &.pill-round {
-    border-radius: 1.5rem;
-  }
-
   &.pill-leafout {
     background-image: url(../images/oz-logo-leafout-white.svg);
     background-repeat: no-repeat;
@@ -177,7 +173,7 @@ html body .oz-pill {
   }
 
   /* Buttons and other actions have fully-rounded corners */
-  &.uk-button, &[uk-toggle], &:is(button) {
+  &.uk-button, &[uk-toggle], &:is(button), &[role=button] {
     border-radius: 1.5rem;
   }
   &.uk-button {
