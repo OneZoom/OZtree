@@ -47,17 +47,23 @@ def media_embed(url, defaults=dict()):
     element_data = ' '.join('data-%s="%s"' % (
         key,
         html.escape(value),
-    ) for key, value in opts.items() if key != 'url' and value is not None)
+    ) for key, value in opts.items() if key != 'url' and value is not None and value is not True)
+
+    # List of classes from all true options
+    klass = ''.join(' %s' % (
+        html.escape(key),
+    ) for key, value in opts.items() if key != 'url' and value is True)
 
     m = re.fullmatch(r'https://www.youtube.com/embed/(.+)', url)
     if m:
-        return """<div class="embed-video"><iframe
+        return """<div class="embed-video{klass}"><iframe
             class="embed-youtube"
             type="text/html"
             src="{url}{qs_continuation}enablejsapi=1&playsinline=1&origin={origin}"
             frameborder="0"
             {element_data}
         ></iframe></div>""".format(
+            klass=klass,
             url=url,
             qs_continuation='&' if "?" in url else "?",
             origin='%s://%s' % (request.env.wsgi_url_scheme, request.env.http_host),
@@ -66,7 +72,7 @@ def media_embed(url, defaults=dict()):
 
     m = re.fullmatch(r'https://player.vimeo.com/video/(.+)', url)
     if m:
-        return """<div class="embed-video"><iframe
+        return """<div class="embed-video{klass}"><iframe
             class="embed-vimeo"
             src="{url}"
             frameborder="0"
@@ -74,6 +80,7 @@ def media_embed(url, defaults=dict()):
             allowfullscreen
             {element_data}
         ></iframe></div>""".format(
+            klass=klass,
             url=url,
             element_data=element_data,
         )
@@ -81,10 +88,11 @@ def media_embed(url, defaults=dict()):
     m = re.fullmatch(r'https://commons.wikimedia.org/wiki/File:(.+\.(gif|jpg|jpeg|png|svg))', url)
     if m:
         # TODO: Fetch & cache image metadata,
-        return """<a class="embed-wikimedia" title="{title}" href="{url}" {element_data}><img
+        return """<a class="embed-wikimedia{klass}" title="{title}" href="{url}" {element_data}><img
           src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{name}"
           alt="{name}"
         /><span class="copyright">©</span></a>""".format(
+            klass=klass,
             title=m.group(1),
             name=m.group(1),
             url=url,
@@ -95,10 +103,11 @@ def media_embed(url, defaults=dict()):
     if m:
         # TODO: There's a dedicated audio player embed we should probably use. The purpose here
         #       is more to demonstrate HTML audio than wikipedia commons in particular.
-        return """<div class="embed-audio"><audio controls
+        return """<div class="embed-audio{klass}"><audio controls
           src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{name}"
           {element_data}
           ></audio><a class="copyright" href="{url}" title="title">©</a></div>""".format(
+            klass=klass,
             title=m.group(1),
             name=m.group(1),
             url=url,
@@ -109,10 +118,11 @@ def media_embed(url, defaults=dict()):
     m = re.fullmatch(r'https://commons.wikimedia.org/wiki/File:(.+\.(ogv|webm|mpg|mpeg))', url)
     if m:
         # NB: There's an embedded player we could use, but there's no way to control it over the iframe barrrier
-        return """<div class="embed-video"><video controls
+        return """<div class="embed-video{klass}"><video controls
           src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{name}"
           {element_data}
           ></video><a class="copyright" href="{url}">©</a></div>""".format(
+            klass=klass,
             title=m.group(1),
             name=m.group(1),
             url=url,
