@@ -125,12 +125,14 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
 
   <p>
     OneZoom is a registered non-profit in the UK, all our products are available for free.
+    Help us raise awareness about the variety of life on earth and the need to conserve it!
+
     {{if n_total_sponsored > 0:}}
-      <a href="{{=URL('default', 'donor_list.html')}}">{{=n_total_sponsored}} people like you</a> have helped us by making donations.
-      Their names have appeared as sponsors on <a href="{{=URL('default', 'sponsored.html')}}">{{=n_sponsored_leaves}} leaves of our tree of life</a> leaves of our tree of life.
+      <strong><a href="{{=URL('default', 'donor_list.html')}}">{{=n_total_sponsored}} people like you</a></strong> have helped us by making donations.
+      Their names have appeared as sponsors on <strong><a href="{{=URL('default', 'sponsored.html')}}">{{=n_sponsored_leaves}} leaves of our tree of life</a></strong> leaves of our tree of life.
     {{pass}}
   </p>
-  <p>Only one name per leaf so get your favourite while you can, for yourself or as a gift.</p>
+  <p>Why not sponsor a leaf as a gift?</p>
 
   <a class="oz-pill pill-leaf" href="//www.onezoom.org/sponsor.html" role="button">Sponsor a leaf now!</a>
 </div></section>
