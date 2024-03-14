@@ -1,18 +1,5 @@
 @import "colour_scheme.scss";
 
-/* ********** HP sections ********** */
-
-
-.oz-card-bottom-right {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-
-  .oz-pill {
-    border-radius: 1.5rem 0 0 0;
-  }
-}
-
 /* ********** Grid modifications for homepage  ********** */
 
 .uk-grid-oz-dark {
