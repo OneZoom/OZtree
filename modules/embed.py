@@ -7,6 +7,8 @@ from gluon import current
 from gluon.http import HTTP
 from gluon.utils import web2py_uuid
 
+import img
+
 def embedize_url(url, email):
     request = current.request
     db = current.db
@@ -57,6 +59,22 @@ def media_embed(url, defaults=dict()):
     opts['klass'] = ''.join(' %s' % (
         html.escape(key),
     ) for key, value in opts.items() if key != 'url' and value is True)
+
+    m = re.fullmatch(r'imgsrc:(\d+):(\d+)', opts['url'])
+    if m:
+        opts['src_url'] = img.url(opts['url'])
+        opts['url'] = '/tree/pic_info/%s/%s' % (
+            m.group(1),
+            m.group(2),
+        )
+        if not opts.get('alt'):
+            opts['alt'] = ""
+        if not opts.get('title'):
+            opts['title'] = ""
+        return """<a class="embed-image{klass}" title="{title}" href="{url}" {element_data}><img
+          src="{src_url}"
+          alt="{alt}"
+        /><span class="copyright">©</span></a>""".format(**opts)
 
     m = re.fullmatch(r'https://www.youtube.com/embed/(.+)', opts['url'])
     if m:
