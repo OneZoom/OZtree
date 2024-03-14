@@ -33,7 +33,7 @@ module.exports = function (grunt) {
       web2py_configure: {
         cwd: "../../",
         command: [
-          'git submodule update --init --recursive',
+          '( [ -d .git ] && git submodule update --init --recursive || true )',
           'ln -sf applications/OZtree/_COPY_CONTENTS_TO_WEB2PY_DIR/routes.py routes.py',
           'ln -sf handlers/wsgihandler.py handler.py',
           '( [ -d applications/welcome ] && rm -r -- "applications/welcome" || true )',
@@ -101,10 +101,18 @@ module.exports = function (grunt) {
         command: 'npm run test'
       },
       compile_js: {
-        command: 'npm run compile_js' //command defined in package.json
+        command: [
+            // Only pass --openssl-legacy-provider if node recognises it (NB: FreeBSD node18 doesn't)
+            'export NODE_OPTIONS="$(node --help | grep -o -- --openssl-legacy-provider || true)"',
+            'npm run compile_js',
+        ].join(" && "),
       },
       compile_js_dev: {
-        command: 'npm run compile_js_dev' //command defined in package.json
+        command: [
+            // Only pass --openssl-legacy-provider if node recognises it (NB: FreeBSD node18 doesn't)
+            'export NODE_OPTIONS="$(node --help | grep -o -- --openssl-legacy-provider || true)"',
+            'npm run compile_js_dev',
+        ].join(" && "),
       },
       unify_docs: {
         //put all markdown files referred to in OZTreeModule/docs/index.markdown in a single _compiled.markdown file
