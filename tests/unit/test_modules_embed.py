@@ -102,6 +102,19 @@ class TestEmbed(unittest.TestCase):
             'frameborder="0"',
             '></iframe></div>',
         ])
+        # Can set classes using ": true"
+        self.assertEqual(media_embed({"url": 'https://www.youtube.com/embed/12345', "peep": True, "poop": True}, defaults=dict(ts_autoplay="tsstate-active_wait")), [
+            '<div',
+            'class="embed-video',
+            'peep',
+            'poop"><iframe',
+            'class="embed-youtube"',
+            'type="text/html"',
+            'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
+            'frameborder="0"',
+            'data-ts_autoplay="tsstate-active_wait"',
+            '></iframe></div>',
+        ])
 
         self.assertEqual(media_embed('https://player.vimeo.com/video/12345'), [
             '<div',
