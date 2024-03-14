@@ -129,6 +129,28 @@ def media_embed(url, defaults=dict()):
             element_data=element_data,
         )
 
+    # Fallback without copyright link
+    m = re.fullmatch(r'(.+\.(gif|jpg|jpeg|png|svg))', url)
+    if m:
+        return """<a class="embed-image{klass}" {element_data}><img
+          src="{url}"
+          alt=""
+        /></a>""".format(
+            klass=klass,
+            url=url,
+            element_data=element_data,
+        )
+    m = re.fullmatch(r'(.+\.(ogg|mp3))', url)
+    if m:
+        return """<div class="embed-audio{klass}"><audio controls
+          src="{url}"
+          {element_data}
+          ></audio></div>""".format(
+            klass=klass,
+            url=url,
+            element_data=element_data,
+        )
+
     # Fall back to linking
     return """<a href="{url}" style="font-weight:bold">{url}</a>""".format(
         url=url,
