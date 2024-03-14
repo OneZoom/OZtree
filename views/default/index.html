@@ -123,32 +123,6 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
 </div>
 
 
-<section class="oz-section bkgd-leaves"><div class="oz-section-body">
-  <style>
-  .endangered-species {
-    height: 100px;
-    overflow: hidden;
-  }
-  .endangered-species a {
-    margin: 0 0.5rem;
-  }
-  .endangered-species .img-species {
-    width: 100px;
-    height: 100px;
-  }
-  </style>
-  <h3 class="uk-card-title">Biodiversity and Conservation...</h3>
-  <p>We want to help everyone appreciate biodiversity and the need to conserve it.<br/>
-  <em>Red leaves on our tree of life show species known to be under threat of extinction.</em><br/>
-  <span class="green-text"> Green leaves are either okay for now but might be nearly threatened.</span><br/>
-  <span class="grey-text">Most leaves are grey meaning that it's not known how threatened they are.</span></p>
-
-  <div class="endangered-species">{{for key in threatened:}}
-    <a href="{{=hrefs[key]}}" title="{{=str(html_names.get(key, '')).capitalize()}}" target="_blank"><span class="img-species leafout leafout-corner"><img class="species" src="{{=images[key]['url']}}" onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'" alt="{{=str(html_names.get(key, '')).capitalize()}}" /></span></a>
-  {{pass}}</div>
-</div></section>
-
-
 <div class="uk-child-width-expand@m uk-grid-match" style="border: 20px solid white" uk-grid>
   {{for sub_menu in response.menu[0:3]:}}
     <div>

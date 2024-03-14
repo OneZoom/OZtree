@@ -68,9 +68,9 @@ def index():
     """
     # OTTs from the tree_startpoints table
     startpoints_ott_map, hrefs, images, titles, text_titles = {}, {}, {}, {}, {}
-    carousel, threatened = [], []
+    carousel = []
     for r in db(
-            (db.tree_startpoints.category.belongs(('homepage_main', 'homepage_red'))) &
+            (db.tree_startpoints.category.belongs(('homepage_main',))) &
             (db.tree_startpoints.partner_identifier == None)
         ).select(
             db.tree_startpoints.ott, db.tree_startpoints.category,
@@ -81,8 +81,6 @@ def index():
         key = r.tour.identifier or str(r.tree_startpoints.ott)
         if r.tree_startpoints.category == 'homepage_main':
             carousel.append(key)
-        elif r.tree_startpoints.category == 'homepage_red':
-            threatened.append(key)
 
         text_titles[key] = ""
         if r.tree_startpoints.image_url:
@@ -96,13 +94,7 @@ def index():
             if r.tour.image_url:
                 images[key] = {'url': img.url(r.tour.image_url)}
 
-    # Pick 5 random threatened spp 
-    random.seed(request.now.month*100 + request.now.day)
-    if len(threatened) > 5:
-        threatened = random.sample(threatened, 5)
-    image_required = set(carousel + threatened)
-    # Remove the unused threatened ones
-    startpoints_ott_map = {k: v for k, v in startpoints_ott_map.items() if v in image_required}
+    image_required = set(carousel)
     
     for ott, key in startpoints_ott_map.items():
         if key not in hrefs:
@@ -173,7 +165,7 @@ def index():
             )
             for row in db().select(db.news.ALL, orderby =~ db.news.news_date, limitby = (0, 5))
         ],
-        carousel=carousel, threatened=threatened,
+        carousel=carousel,
         hrefs=hrefs, images=images, html_names=titles, has_vernacular=has_vernacular, add_the=add_the,
         n_total_sponsored=reservation_total_counts('donors'),
         n_sponsored_leaves=reservation_total_counts('otts'),
