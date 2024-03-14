@@ -1,6 +1,7 @@
 import html
 import os.path
 import re
+import urllib.parse
 import urllib.request
 
 from gluon import current
@@ -49,11 +50,15 @@ def media_embed(url, defaults=dict()):
         opts = defaults.copy()
         opts['url'] = url
 
+    # URLs should be relative to any URL base
+    if opts.get('url_base'):
+        opts['url'] = urllib.parse.urljoin(opts['url_base'], opts['url'])
+
     # Join together extra element data
     opts['element_data'] = ' '.join('data-%s="%s"' % (
         key,
         html.escape(value),
-    ) for key, value in opts.items() if key not in ('url', 'alt', 'title') and value is not None and value is not True)
+    ) for key, value in opts.items() if key not in ('url', 'url_base', 'alt', 'title') and value is not None and value is not True)
 
     # List of classes from all true options
     opts['klass'] = ''.join(' %s' % (

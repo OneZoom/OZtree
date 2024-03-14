@@ -73,6 +73,11 @@ class TestEmbed(unittest.TestCase):
             '/><span',
             'class="copyright">©</span></a>',
         ])
+        # Base doesn't rewrite imgsrc: URLs
+        self.assertEqual(
+            media_embed('imgsrc:99:27732437'),
+            media_embed('imgsrc:99:27732437', defaults=dict(url_base="https://moo.com/base")),
+        )
 
         self.assertEqual(media_embed('https://www.youtube.com/embed/12345'), [
             '<div',
@@ -198,6 +203,11 @@ class TestEmbed(unittest.TestCase):
             '/><span',
             'class="copyright">©</span></a>',
         ])
+        # Can use a URL base
+        self.assertEqual(
+            media_embed('https://onezoom.github.io/tours/frogs/Various_frogs_and_toads.jpeg'),
+            media_embed('frogs/Various_frogs_and_toads.jpeg', defaults=dict(url_base='https://onezoom.github.io/tours/')),
+        )
 
 if __name__ == '__main__':
     import sys
