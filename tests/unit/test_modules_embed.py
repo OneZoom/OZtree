@@ -139,7 +139,7 @@ class TestEmbed(unittest.TestCase):
 
         self.assertEqual(media_embed('https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif'), [
             '<a',
-            'class="embed-wikimedia"',
+            'class="embed-image"',
             'title="Rose_of_Jericho.gif"',
             'href="https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif"',
             '><img',

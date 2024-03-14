@@ -97,7 +97,7 @@ def media_embed(url, defaults=dict()):
         if not opts.get('title'):
             opts['title'] = m.group(1)
         # TODO: Fetch & cache image metadata,
-        return """<a class="embed-wikimedia{klass}" title="{title}" href="{url}" {element_data}><img
+        return """<a class="embed-image{klass}" title="{title}" href="{url}" {element_data}><img
           src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{name}"
           alt="{alt}"
         /><span class="copyright">©</span></a>""".format(
