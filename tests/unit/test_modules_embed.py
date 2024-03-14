@@ -172,6 +172,21 @@ class TestEmbed(unittest.TestCase):
             'href="https://commons.wikimedia.org/wiki/File:Intense_bone_fluorescence_reveals_hidden_patterns_in_pumpkin_toadlets_-_video_1_-_41598_2019_41959_MOESM2_ESM.webm">©</a></div>',
         ])
 
+        self.assertEqual(media_embed('https://onezoom.github.io/tours/frogs/Various_frogs_and_toads.jpeg'), [
+            '<a',
+            'class="embed-image"',
+            'title="frogs/Various_frogs_and_toads.jpeg"',
+            'href="https://onezoom.github.io/tours/frogs/Various_frogs_and_toads.html"',
+            '><img',
+            'src="https://onezoom.github.io/tours/frogs/Various_frogs_and_toads.jpeg"',
+            'alt="Various',
+            'frogs',
+            'and',
+            'toads"',
+            '/><span',
+            'class="copyright">©</span></a>',
+        ])
+
 if __name__ == '__main__':
     import sys
 

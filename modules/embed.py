@@ -43,39 +43,34 @@ def media_embed(url, defaults=dict()):
     # If url is a dict, merge provided options with the defaults
     if isinstance(url, dict):
         opts = {**defaults, **url}
-        url = opts['url']
     else:
         opts = defaults.copy()
-        url = url
+        opts['url'] = url
 
     # Join together extra element data
-    element_data = ' '.join('data-%s="%s"' % (
+    opts['element_data'] = ' '.join('data-%s="%s"' % (
         key,
         html.escape(value),
     ) for key, value in opts.items() if key not in ('url', 'alt', 'title') and value is not None and value is not True)
 
     # List of classes from all true options
-    klass = ''.join(' %s' % (
+    opts['klass'] = ''.join(' %s' % (
         html.escape(key),
     ) for key, value in opts.items() if key != 'url' and value is True)
 
-    m = re.fullmatch(r'https://www.youtube.com/embed/(.+)', url)
+    m = re.fullmatch(r'https://www.youtube.com/embed/(.+)', opts['url'])
     if m:
+        opts['qs_continuation'] = '&' if "?" in url else "?"
+        opts['origin'] = '%s://%s' % (request.env.wsgi_url_scheme, request.env.http_host)
         return """<div class="embed-video{klass}"><iframe
             class="embed-youtube"
             type="text/html"
             src="{url}{qs_continuation}enablejsapi=1&playsinline=1&origin={origin}"
             frameborder="0"
             {element_data}
-        ></iframe></div>""".format(
-            klass=klass,
-            url=url,
-            qs_continuation='&' if "?" in url else "?",
-            origin='%s://%s' % (request.env.wsgi_url_scheme, request.env.http_host),
-            element_data=element_data,
-        )
+        ></iframe></div>""".format(**opts)
 
-    m = re.fullmatch(r'https://player.vimeo.com/video/(.+)', url)
+    m = re.fullmatch(r'https://player.vimeo.com/video/(.+)', opts['url'])
     if m:
         return """<div class="embed-video{klass}"><iframe
             class="embed-vimeo"
@@ -84,91 +79,74 @@ def media_embed(url, defaults=dict()):
             allow="autoplay; fullscreen"
             allowfullscreen
             {element_data}
-        ></iframe></div>""".format(
-            klass=klass,
-            url=url,
-            element_data=element_data,
-        )
+        ></iframe></div>""".format(**opts)
 
-    m = re.fullmatch(r'https://commons.wikimedia.org/wiki/File:(.+\.(gif|jpg|jpeg|png|svg))', url)
+    m = re.fullmatch(r'https://commons.wikimedia.org/wiki/File:(.+)\.(gif|jpg|jpeg|png|svg|ogg|mp3|ogv|webm|mpg|mpeg)', opts['url'])
+    if m:
+        if not opts.get('alt'):
+            opts['alt'] = humanise_url("%s.%s" % (m.group(1), m.group(2)))
+        if not opts.get('title'):
+            opts['title'] = "%s.%s" % (m.group(1), m.group(2))
+        opts['src_url'] = "https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/%s.%s" % (m.group(1), m.group(2))
+
+        if m.group(2) in ('gif', 'jpg', 'jpeg', 'png', 'svg'):
+            return """<a class="embed-image{klass}" title="{title}" href="{url}" {element_data}><img
+              src="{src_url}"
+              alt="{alt}"
+            /><span class="copyright">©</span></a>""".format(**opts)
+        if m.group(2) in ('ogg', 'mp3'):
+            return """<div class="embed-audio{klass}"><audio controls
+              src="{src_url}"
+              {element_data}
+              ></audio><a class="copyright" href="{url}" title="title">©</a></div>""".format(**opts)
+        if m.group(2) in ('ogv', 'webm', 'mpg', 'mpeg'):
+            return """<div class="embed-video{klass}"><video controls
+              src="{src_url}"
+              {element_data}
+              ></video><a class="copyright" href="{url}">©</a></div>""".format(**opts)
+
+    ############### Custom tours assets at https://onezoom.github.io/tours/
+    # Replace the media extension with .html to get a link to the copyright page
+    m = re.fullmatch(r'https://onezoom.github.io/tours/(.+)\.(gif|jpg|jpeg|png|svg|ogg|mp3|ogv|webm|mpg|mpeg)', opts['url'])
     if m:
         if not opts.get('alt'):
             opts['alt'] = humanise_url(m.group(1))
         if not opts.get('title'):
-            opts['title'] = m.group(1)
-        # TODO: Fetch & cache image metadata,
-        return """<a class="embed-image{klass}" title="{title}" href="{url}" {element_data}><img
-          src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{name}"
-          alt="{alt}"
-        /><span class="copyright">©</span></a>""".format(
-            klass=klass,
-            title=opts['title'],
-            name=m.group(1),
-            alt=opts['alt'],
-            url=url,
-            element_data=element_data,
-        )
+            opts['title'] = "%s.%s" % (m.group(1), m.group(2))
+        opts['src_url'] = opts['url']
+        opts['url'] = 'https://onezoom.github.io/tours/%s.html' % m.group(1)
 
-    m = re.fullmatch(r'https://commons.wikimedia.org/wiki/File:(.+\.(ogg|mp3))', url)
-    if m:
-        if not opts.get('title'):
-            opts['title'] = m.group(1)
-        # TODO: There's a dedicated audio player embed we should probably use. The purpose here
-        #       is more to demonstrate HTML audio than wikipedia commons in particular.
-        return """<div class="embed-audio{klass}"><audio controls
-          src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{name}"
-          {element_data}
-          ></audio><a class="copyright" href="{url}" title="title">©</a></div>""".format(
-            klass=klass,
-            title=opts['title'],
-            name=m.group(1),
-            url=url,
-            element_data=element_data,
-        )
-
-    # https://commons.wikimedia.org/wiki/Commons:File_types#Video
-    m = re.fullmatch(r'https://commons.wikimedia.org/wiki/File:(.+\.(ogv|webm|mpg|mpeg))', url)
-    if m:
-        if not opts.get('title'):
-            opts['title'] = m.group(1)
-        # NB: There's an embedded player we could use, but there's no way to control it over the iframe barrrier
-        return """<div class="embed-video{klass}"><video controls
-          src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/{name}"
-          {element_data}
-          ></video><a class="copyright" href="{url}">©</a></div>""".format(
-            klass=klass,
-            title=opts.get('title', ''),
-            name=m.group(1),
-            url=url,
-            element_data=element_data,
-        )
+        if m.group(2) in ('gif', 'jpg', 'jpeg', 'png', 'svg'):
+            return """<a class="embed-image{klass}" title="{title}" href="{url}" {element_data}><img
+              src="{src_url}"
+              alt="{alt}"
+            /><span class="copyright">©</span></a>""".format(**opts)
+        if m.group(2) in ('ogg', 'mp3'):
+            return """<div class="embed-audio{klass}"><audio controls
+              src="{src_url}"
+              {element_data}
+              ></audio><a class="copyright" href="{url}" title="title">©</a></div>""".format(**opts)
+        if m.group(2) in ('ogv', 'webm', 'mpg', 'mpeg'):
+            return """<div class="embed-video{klass}"><video controls
+              src="{src_url}"
+              {element_data}
+              ></video><a class="copyright" href="{url}">©</a></div>""".format(**opts)
 
     # Fallback without copyright link
-    m = re.fullmatch(r'(.+\.(gif|jpg|jpeg|png|svg))', url)
+    m = re.fullmatch(r'(.+\.(gif|jpg|jpeg|png|svg))', opts['url'])
     if m:
         if not opts.get('alt'):
             opts['alt'] = humanise_url(url)
         return """<a class="embed-image{klass}" {element_data}><img
           src="{url}"
           alt="{alt}"
-        /></a>""".format(
-            klass=klass,
-            url=url,
-            alt=opts['alt'],
-            element_data=element_data,
-        )
-    m = re.fullmatch(r'(.+\.(ogg|mp3))', url)
+        /></a>""".format(**opts)
+    m = re.fullmatch(r'(.+\.(ogg|mp3))', opts['url'])
     if m:
         return """<div class="embed-audio{klass}"><audio controls
           src="{url}"
           {element_data}
-          ></audio></div>""".format(
-            klass=klass,
-            url=url,
-            element_data=element_data,
-        )
+          ></audio></div>""".format(**opts)
 
     # Fall back to linking
-    return """<a href="{url}" style="font-weight:bold">{url}</a>""".format(
-        url=url,
-    )
+    return """<a href="{url}" style="font-weight:bold">{url}</a>""".format(**opts)
