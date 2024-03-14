@@ -57,7 +57,7 @@ ts_fields = (  # HTML fields that can be added to container
     <{{=tag}} class="{{=' '.join(key for key, value in content_dict.items() if value is True)}}"
         >{{=T(content_dict['text'])}}</{{=tag}}>{{pass}}{{pass}}{{pass}}
     {{if len(tdata.get('media', [])) > 0:}}{{for url in tdata['media']:}}
-      {{=XML(media_embed(url, defaults=dict(ts_autoplay='tsstate-active_wait')))}}
+      {{=XML(media_embed(url, defaults=dict(ts_autoplay='tsstate-active_wait', url_base='https://onezoom.github.io/tours/')))}}
     {{pass}}{{pass}}
 
     <div class="actions"><a href="#share-modal" class="tour_pause oz-pill pill-share" style="float: right" uk-toggle>{{=T('Share')}}</a></div>

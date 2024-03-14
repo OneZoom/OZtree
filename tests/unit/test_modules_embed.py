@@ -62,6 +62,23 @@ class TestEmbed(unittest.TestCase):
             'style="font-weight:bold">https://www.wibble.com/some_file.bin</a>',
         ])
 
+        self.assertEqual(media_embed('imgsrc:99:27732437'), [
+            '<a',
+            'class="embed-image"',
+            'title=""',
+            'href="/tree/pic_info/99/27732437"',
+            '><img',
+            'src="http://127.0.0.1:8000/OZtree/static/FinalOutputs/img/99/437/27732437.jpg"',
+            'alt=""',
+            '/><span',
+            'class="copyright">©</span></a>',
+        ])
+        # Base doesn't rewrite imgsrc: URLs
+        self.assertEqual(
+            media_embed('imgsrc:99:27732437'),
+            media_embed('imgsrc:99:27732437', defaults=dict(url_base="https://moo.com/base")),
+        )
+
         self.assertEqual(media_embed('https://www.youtube.com/embed/12345'), [
             '<div',
             'class="embed-video"><iframe',
@@ -186,6 +203,11 @@ class TestEmbed(unittest.TestCase):
             '/><span',
             'class="copyright">©</span></a>',
         ])
+        # Can use a URL base
+        self.assertEqual(
+            media_embed('https://onezoom.github.io/tours/frogs/Various_frogs_and_toads.jpeg'),
+            media_embed('frogs/Various_frogs_and_toads.jpeg', defaults=dict(url_base='https://onezoom.github.io/tours/')),
+        )
 
 if __name__ == '__main__':
     import sys
