@@ -3,10 +3,17 @@
 {{extend 'uikit_layout.html'}}
 
 {{block masthead}}
-<div class="home-heading uk-text-center">
+<div class="home-heading uk-text-center uk-overflow-hidden">
   <h1>Welcome to the OneZoom tree of life explorer...</h1>
-  <p>An interactive map of the evolutionary links between all living things known to science. Discover your favourites, see which species are under threat, and be amazed by the diversity of life on earth.</p>
-  <em>Our tree of life explorer is designed to be easily accessible for everyone. We also provide educational tools for teachers, software for scientists and interactive exhibits for museums. This is a free community resource with no advertising.</em>
+  <p>
+    The Tree of Life shows how all life on Earth is related.
+    In our interactive tree of life you can explore the relationships between
+    <b>{{="{:,}".format(n_species)}}</b> species
+    and wonder at <b>{{="{:,}".format(n_images)}}</b> images on a single zoomable page.
+    Each leaf represents a different species, and the branches illustrate how these many species evolved from common ancestors over billions of years.
+    Explore the relationships between species, learn about their common ancestors, or embark on a guided tour around the tree.
+    Zoom around the tree to be amazed by the diversity of life on Earth.
+  </p>
 </div>
 {{end block}}
 
@@ -14,24 +21,6 @@
 <div class="uk-grid-small uk-child-width-expand@s uk-grid-match uk-grid-oz-dark" uk-grid>
   <div> <!-- left column -->
     <div class="uk-grid-small" uk-grid>
-
-      <div class="uk-card uk-card-default uk-card-small uk-card-body oz-info-card">
-        <h3 class="uk-card-title">What is the tree of life?</h3>
-        <p>
-          The tree of life shows how all life on earth is related.
-          Each leaf represents a different species.
-          The branches show how these many species evolved from common ancestors over billions of years.
-          In our interactive tree of life you can explore the relationships between
-          <b>{{="{:,}".format(n_species)}}</b> species and wonder at <b>{{="{:,}".format(n_images)}}</b> images on a single zoomable page.
-        </p>
-        <div class="oz-info-card-aside">
-          <ul class="hp-stat-circles">
-            <li style="top: -1.3rem; right: 10%; width: 7rem; height: 7rem;">{{="{:,}".format(n_species)}} species</li>
-            <li style="top: 30%; right: 45%; width: 5.5rem; height: 5.5rem;">{{="{:,}".format(n_images)}} images</li>
-          </ul>
-          <div class="oz-card-bottom-right"><a href="/introduction.html" class="oz-pill leaf-list">Find out more</a></div>
-        </div>
-      </div>
 
       <div class="uk-card uk-card-default uk-card-small uk-card-body uk-width-expand">
         <h3 class="uk-card-title">Popular places to start exploring...</h3>
