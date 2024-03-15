@@ -71,7 +71,6 @@ function searchPopulate(searchbox, original_search, search_result) {
 
             $.each(search_result.tour, function(index) {
                 var result = this;
-                console.log(result);
 
                 if (index === 0) {
                     $(".search_hits", dropdown).append($('<dt>').text(OZstrings['Tours']));
@@ -79,7 +78,8 @@ function searchPopulate(searchbox, original_search, search_result) {
                 $(".search_hits", dropdown).append($('<dd>')
                     .attr("data-href", result.href)
                     .append($('<a>')
-                        .attr("href", '?tour=' + encodeURIComponent(result.url))
+                        // NB: This href needs to work from other pages, e.g. homepage
+                        .attr("href", '/life/?tour=' + encodeURIComponent(result.url))
                         .text(result.title) ));
             });
 
