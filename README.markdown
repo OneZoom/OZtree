@@ -26,7 +26,8 @@ apt install python3 python3-dev python3-venv
 #### FreeBSD
 
 ```
-sudo pkg install lang/python310 node18 npm-node18
+# NB: rust is required to build the python cryptography package
+sudo pkg install lang/python310 node18 npm-node18 rust
 ```
 
 In addition, for a full installation you also need MySQL:
