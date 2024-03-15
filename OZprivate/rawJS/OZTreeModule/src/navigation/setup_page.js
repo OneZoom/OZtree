@@ -30,8 +30,8 @@ function setup_page_by_state(controller, state) {
       // Not init-ing tree, so fly to new location if given
       return state.pinpoint ? controller.default_move_to(state.pinpoint) : undefined;
     }
-    // On init, move to default_init_pinpoint if none given
-    if (!state.pinpoint) state.pinpoint = config.default_init_pinpoint;
+    // On init, move to tree root if no other pinpoint given
+    if (!state.pinpoint) state.pinpoint = '@_ozid=1';
     if (!config.home_ott_id) {
         // No home_ott_id set yet, use current (initial) pinpoint as home
         // so a homepage Carnivorans link resets to Carnivorans, e.g.
