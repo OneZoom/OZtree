@@ -51,6 +51,10 @@ function handler(tour) {
           if (event.data == YT.PlayerState.ENDED) {
             tourstop.block_remove(block_name);
           } else if (event.data == YT.PlayerState.PLAYING && tourstop.state === iframe.autoplay_states.slice(-1)[0]) {
+            if (el.ozStartPos === undefined) {  // NB: not falsey, since startPos may be 0
+                // First time we've seen a player start, record start time.
+                el.ozStartPos = Math.floor(window.YT.get(el.id).getCurrentTime());
+            }
             tourstop.block_add(block_name);
           }
           // NB; Ignore other events, particularly UNSTARTED since this happens after end
@@ -65,7 +69,11 @@ function handler(tour) {
 
         if (player.getPlayerState() === YT.PlayerState.PLAYING && window.getComputedStyle(el_ts).visibility !== 'visible') {
           // Shouldn't ever play whilst invisible
-          player.stopVideo();
+          player.pauseVideo();
+          // Reset to start
+          // NB: We can't use stopVideo() to do this, since it will also clear any video clip from the URL
+          // NB: We also can't do seekTo(0), since seekTo() isn't relative to a clip
+          if (el.ozStartPos !== undefined) player.seekTo(el.ozStartPos);
         } else if (el.autoplay_states.indexOf(tourstop.state) > -1) {
           player.playVideo();
 
