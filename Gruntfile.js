@@ -103,15 +103,11 @@ module.exports = function (grunt) {
       },
       compile_js: {
         command: [
-            // Only pass --openssl-legacy-provider if node recognises it (NB: FreeBSD node18 doesn't)
-            'export NODE_OPTIONS="$(node --help | grep -o -- --openssl-legacy-provider || true)"',
             'npm run compile_js',
         ].join(" && "),
       },
       compile_js_dev: {
         command: [
-            // Only pass --openssl-legacy-provider if node recognises it (NB: FreeBSD node18 doesn't)
-            'export NODE_OPTIONS="$(node --help | grep -o -- --openssl-legacy-provider || true)"',
             'npm run compile_js_dev',
         ].join(" && "),
       },
