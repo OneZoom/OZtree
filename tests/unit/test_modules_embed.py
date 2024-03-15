@@ -86,6 +86,9 @@ class TestEmbed(unittest.TestCase):
             'type="text/html"',
             'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
             'frameborder="0"',
+            'allow="autoplay;',
+            'fullscreen"',
+            'allowfullscreen',
             '></iframe></div>',
         ])
         self.assertEqual(media_embed('https://www.youtube.com/embed/12345?clip=sausage'), [
@@ -95,6 +98,9 @@ class TestEmbed(unittest.TestCase):
             'type="text/html"',
             'src="https://www.youtube.com/embed/12345?clip=sausage&enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
             'frameborder="0"',
+            'allow="autoplay;',
+            'fullscreen"',
+            'allowfullscreen',
             '></iframe></div>',
         ])
         self.assertEqual(media_embed('https://www.youtube.com/embed/12345', defaults=dict(ts_autoplay="tsstate-active_wait", camel='"yes"')), [
@@ -104,6 +110,9 @@ class TestEmbed(unittest.TestCase):
             'type="text/html"',
             'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
             'frameborder="0"',
+            'allow="autoplay;',
+            'fullscreen"',
+            'allowfullscreen',
             'data-ts_autoplay="tsstate-active_wait"',
             'data-camel="&quot;yes&quot;"',
             '></iframe></div>',
@@ -116,6 +125,9 @@ class TestEmbed(unittest.TestCase):
             'type="text/html"',
             'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
             'frameborder="0"',
+            'allow="autoplay;',
+            'fullscreen"',
+            'allowfullscreen',
             'data-ts_autoplay="nothanks"',
             '></iframe></div>',
         ])
@@ -126,6 +138,9 @@ class TestEmbed(unittest.TestCase):
             'type="text/html"',
             'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
             'frameborder="0"',
+            'allow="autoplay;',
+            'fullscreen"',
+            'allowfullscreen',
             '></iframe></div>',
         ])
         # Can set classes using ": true"
@@ -138,6 +153,9 @@ class TestEmbed(unittest.TestCase):
             'type="text/html"',
             'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
             'frameborder="0"',
+            'allow="autoplay;',
+            'fullscreen"',
+            'allowfullscreen',
             'data-ts_autoplay="tsstate-active_wait"',
             '></iframe></div>',
         ])
