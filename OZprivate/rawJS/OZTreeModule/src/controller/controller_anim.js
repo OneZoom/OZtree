@@ -392,9 +392,13 @@ export default function (Controller) {
       // Leap to node
       return this.leap_to(dest_OZid, into_node=into_node)
         .then(() => {
-          // Zoom out marginally
-          // TODO: This will refuse to go back further than a given point, but that's much futher back than before
-          this.zoomout(tree_state.widthres / 2, tree_state.heightres / 2, 0.1, true);
+          if (dest_OZid === 1) {
+            // Tree root, so zoom *in* marginally & zoom back out
+            this.zoomin(tree_state.widthres / 2, tree_state.heightres / 2, 0.4, true);
+          } else {
+            // Zoom out marginally
+            this.zoomout(tree_state.widthres / 2, tree_state.heightres / 2, 0.1, true);
+          }
           // Fly back in again
           return this.fly_on_tree_to(null, dest_OZid, into_node=into_node);
         })

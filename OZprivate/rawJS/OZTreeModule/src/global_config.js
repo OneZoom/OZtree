@@ -39,10 +39,6 @@ config.search_jump_mode = "flight";
  */
 config.home_ott_id = null
 
-/** @property {string} default_init_pinpoint - Default initial pinpoint if none specified in the URL, i.e. "/life/"
- */
-config.default_init_pinpoint = '@Metazoa=691846';
-
 config.api = {
   /* These configure how API calls are made, and to where.
      Those ending in _api are mostly null and will be set
