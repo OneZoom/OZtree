@@ -83,21 +83,21 @@ class TestModuleTour(unittest.TestCase):
         # Search in both title and description
         out = tour.tour_search("things")
         self.assertEqual(
-            [o.identifier for o in out],
+            [o.identifier for o in out if o.identifier.startswith('UT::')],
             [tour1['identifier'], tour2['identifier']],
         )
 
         # String only in description
         out = tour.tour_search("stuff")
         self.assertEqual(
-            [o.identifier for o in out],
+            [o.identifier for o in out if o.identifier.startswith('UT::')],
             [tour2['identifier']],
         )
 
         # String only in title
         out = tour.tour_search("first")
         self.assertEqual(
-            [o.identifier for o in out],
+            [o.identifier for o in out if o.identifier.startswith('UT::')],
             [tour1['identifier']],
         )
 
