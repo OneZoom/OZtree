@@ -40,7 +40,7 @@ function handler(tour) {
     }
   }).then(() => {
     // Create a new player object for every existing iframe & block progression when playing
-    return Promise.all(el_yts.map((el_yt) => new Promise((resolve) => new YT.Player(el_yt, {
+    return Promise.all(el_yts.map((el) => new Promise((resolve) => new YT.Player(el, {
       events: {
         onReady: resolve,
         onStateChange: function (event) {
@@ -61,15 +61,17 @@ function handler(tour) {
     // Attach observers for any autoplaying video
     tour.tourstop_observer('.contains-youtube', '*', (tour, tourstop, el_ts) => {
       el_ts.querySelectorAll(":scope iframe.embed-youtube").forEach((el) => {
+        const player = window.YT.get(el.id);
+
         if (window.getComputedStyle(el_ts).visibility !== 'visible') {
           // Shouldn't ever play whilst invisible
-          window.YT.get(el.id).stopVideo();
+          player.stopVideo();
         } else if (el.autoplay_states.indexOf(tourstop.state) > -1) {
-          window.YT.get(el.id).playVideo();
+          player.playVideo();
 
           // Check to see if final block should be added
           if (tourstop.state === el.autoplay_states.slice(-1)[0]) {
-            if (window.YT.get(el.id).getPlayerState() === YT.PlayerState.PLAYING) {
+            if (player.getPlayerState() === YT.PlayerState.PLAYING) {
               tourstop.block_add(el.src);
             }
           }
