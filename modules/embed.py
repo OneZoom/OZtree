@@ -90,6 +90,8 @@ def media_embed(url, defaults=dict()):
             type="text/html"
             src="{url}{qs_continuation}enablejsapi=1&playsinline=1&origin={origin}"
             frameborder="0"
+            allow="autoplay; fullscreen"
+            allowfullscreen
             {element_data}
         ></iframe></div>""".format(**opts)
 

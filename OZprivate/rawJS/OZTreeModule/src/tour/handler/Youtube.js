@@ -40,7 +40,7 @@ function handler(tour) {
     }
   }).then(() => {
     // Create a new player object for every existing iframe & block progression when playing
-    return Promise.all(el_yts.map((el_yt) => new Promise((resolve) => new YT.Player(el_yt, {
+    return Promise.all(el_yts.map((el) => new Promise((resolve) => new YT.Player(el, {
       events: {
         onReady: resolve,
         onStateChange: function (event) {
@@ -51,6 +51,10 @@ function handler(tour) {
           if (event.data == YT.PlayerState.ENDED) {
             tourstop.block_remove(block_name);
           } else if (event.data == YT.PlayerState.PLAYING && tourstop.state === iframe.autoplay_states.slice(-1)[0]) {
+            if (el.ozStartPos === undefined) {  // NB: not falsey, since startPos may be 0
+                // First time we've seen a player start, record start time.
+                el.ozStartPos = Math.floor(window.YT.get(el.id).getCurrentTime());
+            }
             tourstop.block_add(block_name);
           }
           // NB; Ignore other events, particularly UNSTARTED since this happens after end
@@ -61,15 +65,21 @@ function handler(tour) {
     // Attach observers for any autoplaying video
     tour.tourstop_observer('.contains-youtube', '*', (tour, tourstop, el_ts) => {
       el_ts.querySelectorAll(":scope iframe.embed-youtube").forEach((el) => {
-        if (window.getComputedStyle(el_ts).visibility !== 'visible') {
+        const player = window.YT.get(el.id);
+
+        if (player.getPlayerState() === YT.PlayerState.PLAYING && window.getComputedStyle(el_ts).visibility !== 'visible') {
           // Shouldn't ever play whilst invisible
-          window.YT.get(el.id).stopVideo();
+          player.pauseVideo();
+          // Reset to start
+          // NB: We can't use stopVideo() to do this, since it will also clear any video clip from the URL
+          // NB: We also can't do seekTo(0), since seekTo() isn't relative to a clip
+          if (el.ozStartPos !== undefined) player.seekTo(el.ozStartPos);
         } else if (el.autoplay_states.indexOf(tourstop.state) > -1) {
-          window.YT.get(el.id).playVideo();
+          player.playVideo();
 
           // Check to see if final block should be added
           if (tourstop.state === el.autoplay_states.slice(-1)[0]) {
-            if (window.YT.get(el.id).getPlayerState() === YT.PlayerState.PLAYING) {
+            if (player.getPlayerState() === YT.PlayerState.PLAYING) {
               tourstop.block_add(el.src);
             }
           }
