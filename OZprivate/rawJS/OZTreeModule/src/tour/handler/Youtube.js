@@ -63,7 +63,7 @@ function handler(tour) {
       el_ts.querySelectorAll(":scope iframe.embed-youtube").forEach((el) => {
         const player = window.YT.get(el.id);
 
-        if (window.getComputedStyle(el_ts).visibility !== 'visible') {
+        if (player.getPlayerState() === YT.PlayerState.PLAYING && window.getComputedStyle(el_ts).visibility !== 'visible') {
           // Shouldn't ever play whilst invisible
           player.stopVideo();
         } else if (el.autoplay_states.indexOf(tourstop.state) > -1) {
