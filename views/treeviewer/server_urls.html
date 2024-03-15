@@ -13,7 +13,12 @@ var server_urls = {
   update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
   tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
 
-  {{popup_vars = dict(setup_params.get('popups', {}).get('vars', {}), lang='...LANG...') if 'setup_params' in vars() else dict(lang='...LANG...')}}
+  {{ # NB: Ideally we'd look up setup_params in vars(), but a lot of controllers set vars=request.vars
+  try:
+      popup_vars = dict(setup_params.get('popups', {}).get('vars', {}), lang='...LANG...')
+  except:
+      popup_vars = dict(lang='...LANG...')
+  }}{{pass}}
   OZ_leaf_json_url_func: function(ott, lang) {return("{{=XML(URL(
       'tree',
       'leaf_linkouts',
