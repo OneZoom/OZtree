@@ -14,7 +14,7 @@ There are two ways in which you can install OneZoom on a personal computer: full
 
 ## Requirements and packages
 
-For any installation, OneZoom requires node & python (3.10).
+For any installation, OneZoom requires node (18+) & python (3.10).
 
 #### Debian/Ubuntu
 
