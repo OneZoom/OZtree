@@ -155,7 +155,7 @@ server {
     listen 80;
     listen 443 ssl http2;
 
-    server_name ${WWW_SERVER_NAME};
+    server_name ${WWW_SERVER_NAME} *.onezoom.org;
 
     if (\$scheme != "https") {
         return 301 https://\$server_name\$request_uri;
