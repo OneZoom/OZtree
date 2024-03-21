@@ -77,7 +77,7 @@ setup_params = {
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree_MD.css')}}" />
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree-dark.css')}}" />
 <style>
-#controlButtons #settingsButton { display: none; }
+.ui-controls #settingsButton { display: none; }
 
 body {
   background: #120a15;
@@ -140,8 +140,7 @@ body.loading > canvas {
 }
 
 /* Turn on single info button */
-#controlButtons #singleInfoButton { display: list-item; }
-#controlButtons #multipleInfoButton { display: none; }
+.ui-controls #singleInfoButton { display: list-item; }
 
 #tutorial-slideshow h3,
 #tutorial-slideshow {
@@ -355,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 <script>
       $(document).ready(function() {
-          var tutorial_slideshow, homo_sapiens_metacode;
+          var tutorial_slideshow;
 
           // Copy HTML to page body (we don't have a template slot to add it server-side)
           tutorial_slideshow = document.createElement('DIV');
@@ -369,12 +368,7 @@ document.addEventListener('DOMContentLoaded', function () {
           tutorial_slideshow.addEventListener('hidden', function (e) {
               var slideshow = UIkit.slideshow(tutorial_slideshow.querySelector('.uk-slideshow'));
 
-              if (homo_sapiens_metacode) {
-                  onezoom.controller.fly_on_tree_to(null, homo_sapiens_metacode);
-              }
-
-              // Reset slideshow, disable flight / animation for subsequent displays
-              homo_sapiens_metacode = null;
+              onezoom.controller.set_treestate('@Homo_Sapiens');
               slideshow.stopAutoplay();
               slideshow.show(0);
           });
@@ -385,15 +379,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
           // Show on startup
           UIkit.modal(tutorial_slideshow).show();
-
-          // Find Homo-sapiens ready for hiding
-          window.setTimeout(function () {
-              onezoom.search_manager.full_search('Homo Sapiens', function (latin_name, cname, res) {
-                  if (res.length < 1) {
-                      throw new Error("Could not find Homo Sapiens node");
-                  }
-                  homo_sapiens_metacode = res[0][2];
-              }, search_delay=0);
-          }, 100);
       });
 </script>

@@ -52,7 +52,9 @@ class Controller {
    */
   bind_listener() {
     this.interactor.bind_listener(this.canvas);
-    window.onpopstate = this.set_treestate.bind(this);
+    window.onpopstate = function (event) {
+      this.set_treestate(event.location);
+    }.bind(this);
   }
   setup_canvas(canvas) {
     this.canvas = canvas;
@@ -120,11 +122,11 @@ class Controller {
         return;
       }
       call_hook("before_draw");
-      if ((this.widthres != this.canvas.clientWidth)||(this.heightres != this.canvas.clientHeight))
+      if ((tree_state.widthres != this.canvas.clientWidth)||(tree_state.heightres != this.canvas.clientHeight))
       {
-          this.widthres = this.canvas.width = this.canvas.clientWidth;
-          this.heightres = this.canvas.height = this.canvas.clientHeight;
           // we are setting 1px on canvas = 1px on screen (client)
+          this.canvas.width = this.canvas.clientWidth;
+          this.canvas.height = this.canvas.clientHeight;
           this.cancel_flight();
           this.re_calc();
           this.renderer.setup_canvas(this.canvas);

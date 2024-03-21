@@ -20,8 +20,9 @@ from gluon import current
 ## Useful global variables
 #########################################################################
 
-# Running under rocket --> is_testing is true
-is_testing = (request.env.server_software or '').lower().startswith('rocket')
+## once in production, set is_testing=False to gain optimizations
+## this will also set migration=False for all tables, so that the DB table definitions are fixed
+is_testing = True
 
 ## Read configuration
 if is_testing and len(request.env.cmd_options.args) > 1 and os.path.isfile(request.env.cmd_options.args[-1]):
@@ -30,7 +31,7 @@ if is_testing and len(request.env.cmd_options.args) > 1 and os.path.isfile(reque
     # (on the main server this is not used, and we default back to appconfig.ini
     myconf = AppConfig(request.env.cmd_options.args[-1], reload=is_testing)
 else:
-    # NB: When running under rocket, re-load config every request with is_testing
+    # Reload config on each request when is_testing (i.e. not production)
     myconf = AppConfig(reload=is_testing)
 
 ## Configure i18n
@@ -764,7 +765,7 @@ db.define_table('tour',
 db.define_table('tourstop',
     Field('tour', db.tour),
     Field('identifier', type='string', notnull=True),  # Unique identifier for tourstop, for establishing symlinks
-    Field('ord', type='integer', notnull=True),  # The position of this tourstop in the tour
+    Field('ord', type='integer', notnull=True),  # The position of this tourstop in the tour, starting with 1
     Field('ott', type='integer', notnull=False),  # The OTT this tourstop points at. NULL => return to start
     Field('secondary_ott', type='integer', notnull=True),  # A second OTT when targeting a common ancestor
     Field('qs_opts', type='string', notnull=False, default=''),  # QS-style options to apply to modify tourstop, e.g. into_node=true&initmark=...

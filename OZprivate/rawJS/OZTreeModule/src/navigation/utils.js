@@ -37,7 +37,7 @@ function get_largest_visible_node(node, width, height, condition=null) {
   //otherwise try to find node with ott in its children
   let largest_node = null, largest_area = -1;
   node.children.forEach((child) => {
-    const child_largest = get_largest_visible_node(child, condition);
+    const child_largest = get_largest_visible_node(child, width, height, condition);
     if (!child_largest) return;
 
     const area = get_area_in_screen(child_largest);

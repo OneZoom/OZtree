@@ -50,6 +50,8 @@ def resolve_pinpoint_to_row(pinpoint):
     """
     db = current.db
 
+    orderby = None
+
     if not pinpoint:
         # No pinpoint, root node
         node_query = db.ordered_nodes.parent < 1
@@ -64,6 +66,8 @@ def resolve_pinpoint_to_row(pinpoint):
             latin_name = untidy_latin(parts[0])
             node_query = db.ordered_nodes.name == latin_name
             leaf_query = db.ordered_leaves.name == latin_name
+            # NULL OTTs should be considered last
+            orderby = "OTT IS NULL"
         elif parts[0] == '_ancestor':
             otts = [int(x) for x in parts[1:]]
             if all(x == otts[0] for x in otts):
@@ -83,13 +87,15 @@ def resolve_pinpoint_to_row(pinpoint):
             latin_name = untidy_latin(parts[0])
             node_query = (db.ordered_nodes.name == latin_name) | (db.ordered_nodes.ott == int(parts[1]))
             leaf_query = (db.ordered_leaves.name == latin_name) | (db.ordered_leaves.ott == int(parts[1]))
+            # OTT we want should be top, then any other OTTs, then NULL OTTs
+            orderby = "OTT = %d DESC" % int(parts[1])
 
     # Look at nodes first
     if node_query is not None:
-        for r in db(node_query).select(db.ordered_nodes.ALL, orderby="OTT IS NULL"):
+        for r in db(node_query).select(db.ordered_nodes.ALL, orderby=orderby):
             return r, False
     if leaf_query is not None:
-        for r in db(leaf_query).select(db.ordered_leaves.ALL, orderby="OTT IS NULL"):
+        for r in db(leaf_query).select(db.ordered_leaves.ALL, orderby=orderby):
             return r, True
     return None, False
 

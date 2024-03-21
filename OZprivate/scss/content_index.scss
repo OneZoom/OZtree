@@ -1,24 +1,5 @@
 @import "colour_scheme.scss";
 
-.main_content {
-    a, a:link, a:active, a:visited, a:hover {
-    color: inherit;
-    }
-}
-
-/* ********** HP sections ********** */
-
-
-.oz-card-bottom-right {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-
-  .oz-pill {
-    border-radius: 1.5rem 0 0 0;
-  }
-}
-
 /* ********** Grid modifications for homepage  ********** */
 
 .uk-grid-oz-dark {
@@ -101,52 +82,6 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-  }
-}
-
-/* ********** Home page stat circles ************************* */
-
-.oz-info-card {
-  .oz-info-card-aside {
-    min-height: 1rem; /* Use this as padding to stop text clashing with "start exploring" */
-  }
-
-  @media screen and (min-width: 1200px) {
-    padding-right: calc(12em) !important;
-
-    .oz-info-card-aside {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: 12em;
-      overflow: hidden;
-    }
-  }
-
-  .hp-stat-circles {
-    @extend %oz-font-serif;
-    font-size: 120%;
-
-    @media screen and (max-width: 1200px) {
-      display: none;
-    }
-
-    > * {
-      list-style-type: none;
-      display: flex;
-      justify-content: center;
-      align-content: center;
-      flex-direction: column;
-      position: absolute;
-      border-radius: 100%;
-      background: $oz_green_fg;
-      color: $oz_dark_bg;
-      text-align: center;
-    }
-    + h3 {
-      margin-top: 0;
-    }
   }
 }
 

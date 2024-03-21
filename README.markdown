@@ -47,7 +47,8 @@ apt install python3 python3-dev python3-venv
 #### FreeBSD
 
 ```
-sudo pkg install lang/python310 node18 npm-node18
+# NB: rust is required to build the python cryptography package
+sudo pkg install lang/python310 node18 npm-node18 rust
 ```
 
 In addition, for a full installation you also need MySQL:
@@ -170,6 +171,8 @@ cd ${WEB2PY_PATH}/applications/OZtree
 npm ci --legacy-peer-deps
 ./node_modules/.bin/grunt prod
 ```
+
+Edit ``models/db.py``, and set ``is_testing = False``.
 
 Then run the install scripts to set up nginx & supervisord:
 

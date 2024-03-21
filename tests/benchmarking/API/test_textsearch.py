@@ -183,11 +183,11 @@ def make_js_translation_code():
     """
     To restrict load on the server, the ordering of returned results is done in javascript
     using the overall_search_score function. We can run this using js2py by
-    extracting all the plain functions in OZTreeModule/src/api/search_manager.js and looking for
+    extracting all the plain functions in OZTreeModule/src/ui/search_manager.js and looking for
     lines bounded by a start line of  ^function... and an end line of ^}
     Since it is very slow to convert the JS to JS5, we keep a copy of the converted code locally
     """
-    js_fn = os.path.join(web2py_app_dir,'OZprivate','rawJS','OZTreeModule','src','api','search_manager.js')
+    js_fn = os.path.join(web2py_app_dir,'OZprivate','rawJS','OZTreeModule','src','ui','search_manager.js')
     cache_fn = os.path.join(script_path,"BlatSearch.code_cache")
     
     js_modtime = os.path.getmtime(js_fn)

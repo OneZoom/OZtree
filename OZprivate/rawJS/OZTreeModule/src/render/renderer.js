@@ -107,7 +107,12 @@ function reanchor_and_dynamic_load_tree() {
 
 function need_refresh() {
   render_id++;
-  return view_changed() || render_id % 60 == 0;
+
+  if (render_id % 60 === 0) return true;
+  if (tree_state.xp != last_xp || tree_state.yp != last_yp || tree_state.ws != last_ws) return true;
+  if (!areEqual(global_button_action.action,last_btn_action)) return true
+  if (!areEqual(global_button_action.data,last_btn_data)) return true;
+  return false;
 }
 
 function refresh_by_image(shapes) {
@@ -157,30 +162,6 @@ function refresh_by_redraw(shapes, _context) {
   last_draw_by_redraw = true;
 }
 
-
-/**
- * Has the view of the tree changed, or the mouseover state of a button changed?
- * @return a boolean telling us if the tree view has changed such that it requires redrawing.
- */
-function view_changed() {
-    if (tree_state.xp != last_xp
-        || tree_state.yp != last_yp
-        || tree_state.ws != last_ws)
-    {
-        return true; // the tree position has changed
-    }
-    else if (!areEqual(global_button_action.action,last_btn_action))
-    {
-        return true; // the button action has changed
-    }
-    else if (!areEqual(global_button_action.data,last_btn_data))
-    {
-        return true; // the button data has changed
-    }
-    else {
-        return false; // nothing has changed if we got down to here without returning true
-    }
-}
 
 /**
  * A test for two input parameters to see if they are the same

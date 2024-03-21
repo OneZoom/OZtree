@@ -47,59 +47,185 @@ class TestEmbed(unittest.TestCase):
             out = embed.media_embed(url, **kwargs)
             return re.split('\s+', out, flags=re.MULTILINE)
 
-        with self.assertRaisesRegex(HTTP, '400'):
-            media_embed('https://www.wibble.com/some_image.jpg')
+        self.assertEqual(media_embed('https://www.wibble.com/some_image.jpg'), [
+            '<a',
+            'class="embed-image"',
+            '><img',
+            'src="https://www.wibble.com/some_image.jpg"',
+            'alt="some',
+            'image"',
+            '/></a>',
+        ])
+        self.assertEqual(media_embed('https://www.wibble.com/some_file.bin'), [
+            '<a',
+            'href="https://www.wibble.com/some_file.bin"',
+            'style="font-weight:bold">https://www.wibble.com/some_file.bin</a>',
+        ])
+
+        self.assertEqual(media_embed('imgsrc:99:27732437'), [
+            '<a',
+            'class="embed-image"',
+            'title=""',
+            'href="/tree/pic_info/99/27732437"',
+            '><img',
+            'src="http://127.0.0.1:8000/OZtree/static/FinalOutputs/img/99/437/27732437.jpg"',
+            'alt=""',
+            '/><span',
+            'class="copyright">©</span></a>',
+        ])
+        # Base doesn't rewrite imgsrc: URLs
+        self.assertEqual(
+            media_embed('imgsrc:99:27732437'),
+            media_embed('imgsrc:99:27732437', defaults=dict(url_base="https://moo.com/base")),
+        )
 
         self.assertEqual(media_embed('https://www.youtube.com/embed/12345'), [
-            '<iframe',
+            '<div',
+            'class="embed-video"><iframe',
             'class="embed-youtube"',
             'type="text/html"',
             'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
             'frameborder="0"',
-            '></iframe>',
+            'allow="autoplay;',
+            'fullscreen"',
+            'allowfullscreen',
+            '></iframe></div>',
         ])
-        self.assertEqual(media_embed('https://www.youtube.com/embed/12345', ts_autoplay="tsstate-active_wait", camel='"yes"'), [
-            '<iframe',
+        self.assertEqual(media_embed('https://www.youtube.com/embed/12345?clip=sausage'), [
+            '<div',
+            'class="embed-video"><iframe',
+            'class="embed-youtube"',
+            'type="text/html"',
+            'src="https://www.youtube.com/embed/12345?clip=sausage&enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
+            'frameborder="0"',
+            'allow="autoplay;',
+            'fullscreen"',
+            'allowfullscreen',
+            '></iframe></div>',
+        ])
+        self.assertEqual(media_embed('https://www.youtube.com/embed/12345', defaults=dict(ts_autoplay="tsstate-active_wait", camel='"yes"')), [
+            '<div',
+            'class="embed-video"><iframe',
             'class="embed-youtube"',
             'type="text/html"',
             'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
             'frameborder="0"',
+            'allow="autoplay;',
+            'fullscreen"',
+            'allowfullscreen',
             'data-ts_autoplay="tsstate-active_wait"',
             'data-camel="&quot;yes&quot;"',
-            '></iframe>',
+            '></iframe></div>',
+        ])
+        # Can override defaults by providing a dict
+        self.assertEqual(media_embed(dict(url='https://www.youtube.com/embed/12345', ts_autoplay="nothanks"), defaults=dict(ts_autoplay="tsstate-active_wait")), [
+            '<div',
+            'class="embed-video"><iframe',
+            'class="embed-youtube"',
+            'type="text/html"',
+            'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
+            'frameborder="0"',
+            'allow="autoplay;',
+            'fullscreen"',
+            'allowfullscreen',
+            'data-ts_autoplay="nothanks"',
+            '></iframe></div>',
+        ])
+        self.assertEqual(media_embed(dict(url='https://www.youtube.com/embed/12345', ts_autoplay=None), defaults=dict(ts_autoplay="tsstate-active_wait")), [
+            '<div',
+            'class="embed-video"><iframe',
+            'class="embed-youtube"',
+            'type="text/html"',
+            'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
+            'frameborder="0"',
+            'allow="autoplay;',
+            'fullscreen"',
+            'allowfullscreen',
+            '></iframe></div>',
+        ])
+        # Can set classes using ": true"
+        self.assertEqual(media_embed({"url": 'https://www.youtube.com/embed/12345', "peep": True, "poop": True}, defaults=dict(ts_autoplay="tsstate-active_wait")), [
+            '<div',
+            'class="embed-video',
+            'peep',
+            'poop"><iframe',
+            'class="embed-youtube"',
+            'type="text/html"',
+            'src="https://www.youtube.com/embed/12345?enablejsapi=1&playsinline=1&origin=None://127.0.0.1:8000"',
+            'frameborder="0"',
+            'allow="autoplay;',
+            'fullscreen"',
+            'allowfullscreen',
+            'data-ts_autoplay="tsstate-active_wait"',
+            '></iframe></div>',
         ])
 
         self.assertEqual(media_embed('https://player.vimeo.com/video/12345'), [
-            '<iframe',
+            '<div',
+            'class="embed-video"><iframe',
             'class="embed-vimeo"',
             'src="https://player.vimeo.com/video/12345"',
             'frameborder="0"',
             'allow="autoplay;',
             'fullscreen"',
             'allowfullscreen',
-            '></iframe>',
+            '></iframe></div>',
         ])
 
         self.assertEqual(media_embed('https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif'), [
             '<a',
-            'class="embed-wikimedia"',
+            'class="embed-image"',
             'title="Rose_of_Jericho.gif"',
             'href="https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif"',
             '><img',
             'src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Rose_of_Jericho.gif"',
-            'alt="Rose_of_Jericho.gif"',
-            '/></a>',
+            'alt="Rose',
+            'of',
+            'Jericho"',
+            '/><span',
+            'class="copyright">©</span></a>',
         ])
 
         self.assertEqual(media_embed('https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg'), [
-            '<audio',
-            'class="embed-audio"',
+            '<div',
+            'class="embed-audio"><audio',
             'controls',
             'src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Turdus_philomelos.ogg"',
             '></audio><a',
+            'class="copyright"',
             'href="https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg"',
-            'title="title">(c)</a>',
+            'title="title">©</a></div>',
         ])
+
+        self.assertEqual(media_embed('https://commons.wikimedia.org/wiki/File:Intense_bone_fluorescence_reveals_hidden_patterns_in_pumpkin_toadlets_-_video_1_-_41598_2019_41959_MOESM2_ESM.webm'), [
+            '<div',
+            'class="embed-video"><video',
+            'controls',
+            'src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Intense_bone_fluorescence_reveals_hidden_patterns_in_pumpkin_toadlets_-_video_1_-_41598_2019_41959_MOESM2_ESM.webm"',
+            '></video><a',
+            'class="copyright"',
+            'href="https://commons.wikimedia.org/wiki/File:Intense_bone_fluorescence_reveals_hidden_patterns_in_pumpkin_toadlets_-_video_1_-_41598_2019_41959_MOESM2_ESM.webm">©</a></div>',
+        ])
+
+        self.assertEqual(media_embed('https://onezoom.github.io/tours/frogs/Various_frogs_and_toads.jpeg'), [
+            '<a',
+            'class="embed-image"',
+            'title="frogs/Various_frogs_and_toads.jpeg"',
+            'href="https://onezoom.github.io/tours/frogs/Various_frogs_and_toads.html"',
+            '><img',
+            'src="https://onezoom.github.io/tours/frogs/Various_frogs_and_toads.jpeg"',
+            'alt="Various',
+            'frogs',
+            'and',
+            'toads"',
+            '/><span',
+            'class="copyright">©</span></a>',
+        ])
+        # Can use a URL base
+        self.assertEqual(
+            media_embed('https://onezoom.github.io/tours/frogs/Various_frogs_and_toads.jpeg'),
+            media_embed('frogs/Various_frogs_and_toads.jpeg', defaults=dict(url_base='https://onezoom.github.io/tours/')),
+        )
 
 if __name__ == '__main__':
     import sys

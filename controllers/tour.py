@@ -36,7 +36,13 @@ Both ``template_data`` and ``tourstop_shared`` can have the same content;
 title
     Title of tourstop, included at top of pop-up.
 window_text
-    Body text of tourstop.
+    Body text of tourstop. Can either be a single string, or an array of multiple items, which can also include visibility:
+
+        "window_text": [
+            "This text is visible whenever the tourstop is visible",
+            { "visible-transition_in": true, "text": "This text is only visible on transition_in" },
+            { "visible-transition_in": true, "visible-active_wait": true, "text": "This text is visible both transition_in and active_wait" }
+        ],
 comment
     Ignored comment section, for tour authors.
 visible-transition_in / visible-transition_out / hidden-active_wait
@@ -45,6 +51,7 @@ ott
     The OTT that this tourstop heads to.
 qs_opts
     Tree state to apply when visiting this tourstop, e.g. colour-scheme or highlights. See ``src/navigation/state.js``.
+    You can do ``"qs_opts": "?into_node=max"``, to zoom into a node (rather than seeing it's children).
 transition_in
     The type of transition to use when navigating to ``ott``. Either ``leap``, ``fly_straight`` or ``flight``.
 fly_in_speed
@@ -59,9 +66,19 @@ media
         media: [
             "https://www.youtube.com/embed/ayOmAJwCMlM",
             "https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif",
+            "frogs/Various_frogs_and_toads.jpeg"
         ],
 
-    Any media will autoplay when arriving at the tourstop, and stop when leaving.
+    In the final case, the URL will be expanded to "https://onezoom.github.io/tours/frogs/Various_frogs_and_toads.jpeg".
+
+    By default media will autoplay when arriving at the tourstop, and stop when leaving. You can override with:
+
+        media: [
+            {"url": "https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg", "ts_autoplay": "tsstate-transition_in tsstate-active_wait"}
+        ],
+
+    When a media item is visible can be altered by setting ``"visible-transition_in": true``, the rules working the same as "window_text".
+
 """
 from pymysql.err import IntegrityError
 
@@ -76,21 +93,16 @@ import tour
 def homepage_animation():
     # OTTs from the tree_startpoints table
     startpoints_ott_map, hrefs, titles, text_titles = {}, {}, {}, {}
-    carousel, anim, threatened = [], [], []
+    anim = []
     for r in db(
-            (db.tree_startpoints.category.startswith('homepage')) &
+            (db.tree_startpoints.category == 'homepage_anim') &
             (db.tree_startpoints.partner_identifier == None)
         ).select(
             db.tree_startpoints.ott, db.tree_startpoints.category,
             db.tree_startpoints.image_url, db.tree_startpoints.tour_identifier,
             orderby = db.tree_startpoints.id):
         key = r.tour_identifier or str(r.ott)
-        if r.category.endswith("main"):
-            carousel.append(key)
-        elif r.category.endswith("anim"):
-            anim.append(key)
-        elif r.category.endswith("red"):
-            threatened.append(key)
+        anim.append(key)
         if r.tour_identifier:
             hrefs[key] = URL('default', 'life/' + r.tour_identifier)
             title = db(db.tours.identifier == r.tour_identifier).select(db.tours.name).first()
@@ -112,7 +124,7 @@ def homepage_animation():
             db.ordered_leaves.ott, db.ordered_leaves.name):
         titles[r.ott] = r.name
     # Look up scientific names and best PD image otts for all startpoint otts
-    for r in db(db.ordered_nodes.ott.belongs(list(startpoints_ott_map.keys()))).select(
+    for r in db(db.ordered_nodes.ott.belongs(startpoints_ott_map.keys())).select(
             db.ordered_nodes.ott, db.ordered_nodes.name, db.ordered_nodes.rpd1):
         st_node_otts.add(r.ott)
         titles[r.ott] = r.name
@@ -204,7 +216,20 @@ def data():
             ts_shared = request.vars.get('tourstop_shared', {})
             tss_targets = {}
             for i, ts in enumerate(request.vars['tourstops']):
-                ts = { "template_data": {}, **ts_shared, **ts, "tour": tour_id, "ord": i + 1 }  # Combine with shared data, references
+                ts = {
+                    **ts_shared,
+                    **ts,
+                    # Deep-clone template_data, should always exist
+                    "template_data": {**ts_shared.get("template_data", {}), **ts.get("template_data", {})},
+                    # Add DB references
+                    "tour": tour_id,
+                    "ord": i + 1,
+                }
+                if str(ts.get('ott', "")).startswith('@_ancestor'):
+                    parts = ts['ott'].split("=")
+                    assert len(parts) == 3
+                    ts['ott'] = int(parts[1])
+                    ts['secondary_ott'] = int(parts[2])
                 if 'symlink_tourstop' in ts:
                     if 'symlink_tour' not in ts:
                         ts['symlink_tour'] = tour_identifier
@@ -253,7 +278,7 @@ def data():
 
     def munge_tourstop(ts):
         if ts.secondary_ott:
-            ts.ott = "%d..%d" % (ts.ott, ts.secondary_ott)
+            ts.ott = "@_ancestor=%d=%d" % (ts.ott, ts.secondary_ott)
         return ts
 
     # Combine lists of associated tourstops, add to tour object
@@ -273,14 +298,38 @@ def data():
 
 def list():
     tour_identifiers = [x for x in request.vars.get("tours", "").split(",") if x]
+    include_rest = bool(request.vars.get("include_rest", ""))
+    out = dict()
 
     # Fetch all tours, put into dict with order matching tour_identifiers
     tours = {t:None for t in tour_identifiers}
     for t in db(db.tour.identifier.belongs(tours.keys())).select(db.tour.ALL):
+        # Splice in tour_url to DB row
+        t['url'] = tour.tour_url(t)
         tours[t.identifier] = t
+    out['tours'] = [*tours.values()]
+
+    if include_rest:
+        out['rest'] = []
+        for t in db(~(db.tour.identifier.belongs(tours.keys()))).select(db.tour.ALL):
+            # Splice in tour_url to DB row
+            t['url'] = tour.tour_url(t)
+            out['rest'].append(t)
+
+    return out
+
+
+def search():
+    session.forget(response)
+    language = request.vars.lang or request.env.http_accept_language or 'en'
+    searchFor = request.vars.query
+
+    results = tour.tour_search(searchFor, language)
+    for t in results:
+        # Splice in tour_url to DB row
+        t['url'] = tour.tour_url(t)
 
     return dict(
-        tours=tours.values(),
-        images={},
-        tour_url=tour.tour_url,
+        lang=language,
+        results=results.as_list(),
     )

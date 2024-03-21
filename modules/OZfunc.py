@@ -508,8 +508,8 @@ def nodes_info_from_string(
             sql = query7.format(otts=ott_ids)
             reservations_res = db.executesql(sql)
 
+    tours_res = []
     if len(leafOtts) or len(nodeOtts):
-        tours_res = []
         if include_tours_by_ott:
             for ott, tours in tours_related_to_ott(leafOtts | nodeOtts, full_meta=False).items():
                 tours_res.append([ott, [t.identifier for t in tours]])

@@ -81,3 +81,8 @@ sponsorship_renew_discount = 0.2
 ; -> Add/select "web" stream -> Copy code from "Global site tag (gtag.js)"
 ; Will begin with UA- or G-
 ;ga_code = G-ABCABCABCA
+; * civicuk_api_key: An API key from cookiecontrol by CivicUK
+; To get a code, log into the https://www.civicuk.com/cookie-control/user-area/
+; -> "Domains", configure your instance domain
+; -> "Licences", copy/paste the hex key
+;civicuk_api_key = 123abc123abc123abc123abc123abc123abc123a

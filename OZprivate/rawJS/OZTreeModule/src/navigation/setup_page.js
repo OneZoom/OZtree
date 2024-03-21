@@ -26,12 +26,12 @@ function setup_page_by_state(controller, state) {
     return state.hasOwnProperty('highlights') ? controller.highlight_replace(state.highlights) : null;
   }).then(function () {
     tree_state.url_parsed = true;
-    // Skip move if no pinpoint
-    if (!state.pinpoint) return;
     if (!init) {
-      // Not init-ing tree, so fly to new location
-      return controller.default_move_to(state.pinpoint);
+      // Not init-ing tree, so fly to new location if given
+      return state.pinpoint ? controller.default_move_to(state.pinpoint) : undefined;
     }
+    // On init, move to tree root if no other pinpoint given
+    if (!state.pinpoint) state.pinpoint = '@_ozid=1';
     if (!config.home_ott_id) {
         // No home_ott_id set yet, use current (initial) pinpoint as home
         // so a homepage Carnivorans link resets to Carnivorans, e.g.
@@ -54,8 +54,14 @@ function setup_page_by_state(controller, state) {
     } else {
       controller.close_all();
     }
-  })
-  .catch(function (error) {
+
+    // Send tree state upwards for UI
+    // NB: Wait for a second so the UI catches up and is ready for event.
+    window.setTimeout(() => controller.canvas.dispatchEvent(new CustomEvent("oz_treestate", {
+        bubbles: true,
+        detail: state,
+    })), 1000);
+  }).catch(function (error) {
     tree_state.url_parsed = true;
     if (error instanceof UserInterruptError) {
         // The flight was cancelled by the user, not an actual issue

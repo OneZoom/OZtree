@@ -28,7 +28,7 @@ export default function (Controller) {
     ).then((highlights) => {
       highlight_update(this.root, highlights);
       this.trigger_refresh_loop();
-      return highlights[0];
+      return highlights[highlights.length - 1];
     });
   };
 
@@ -37,7 +37,7 @@ export default function (Controller) {
    * @param highlight_str Highlight string, see src/projection/highlight/highlight.js for definition
    */
   Controller.prototype.highlight_remove = function (highlight_str) {
-      highlight_update(this.root, current_highlights().filter((h) => h.str === highlight_str));
+      highlight_update(this.root, current_highlights().filter((h) => h.str !== highlight_str));
       this.trigger_refresh_loop();
 
       return Promise.resolve();

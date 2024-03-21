@@ -3,6 +3,7 @@
 ### but still allows us to place all the tree viewer code in a single directory
 
 import OZfunc
+import img
 
 def js_strings():
     """
@@ -76,4 +77,4 @@ def about_plus_data():
     """
     Only in the treeviewer
     """
-    return dict()
+    return dict(release_info=OZfunc.__release_info(), img_url = lambda src, src_id: img.thumb_url(src, src_id))

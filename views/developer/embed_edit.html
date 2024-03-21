@@ -37,7 +37,7 @@
             <input type="hidden" name="_pinpoint" value="" />
             <input type="hidden" name="otthome" value="" />
           </div>
-          <div uk-dropdown="pos: bottom-left; offset: 1" class="search_dropdown selectable uk-overflow-auto">
+          <div uk-dropdown="pos: bottom-left; offset: 0" class="search_dropdown selectable uk-overflow-auto">
             <div class="no_results">{{=T("No results found")}}</div>
             <dl class="search_hits"></dl>
           </div>
@@ -52,16 +52,18 @@
               <button   class="main-icon" uk-icon="icon: search"></button>
             </div>
             <input id="input_url_search" class="uk-search-input" type="search" placeholder="{{=T('Search all life...')}}" />
-            <input type="hidden" name="initmark" value="" />
+            <input type="hidden" name="highlight" value="" />
           </div>
-          <div uk-dropdown="pos: bottom-left; offset: 1" class="search_dropdown selectable uk-overflow-auto">
+          <div uk-dropdown="pos: bottom-left; offset: 0" class="search_dropdown selectable uk-overflow-auto">
             <div class="no_results">{{=T("No results found")}}</div>
             <dl class="search_hits"></dl>
           </div>
         </div>
         <br/>
       </div></div>
-      <button id="button_clear_initmark" class="uk-button uk-button-secondary" disabled>Clear highlight</button>
+      <p>
+        <button id="button_clear_highlight" class="uk-button oz-pill" disabled>Clear highlight</button>
+      </p>
 
       <label><span class="uk-form-label">{{=T('Image sources')}}</span>
       <div class="uk-form-controls">
@@ -134,22 +136,35 @@
     var form_embed_edit = document.getElementById('form_embed_edit'),
         iframe_embed_preview = document.getElementById('iframe_embed_preview');
 
-    // Wire up search box to update url field
-    var search_manager = OZentry.api_utils_setup({
-      /* These fill out the equivalently named variables in OneZoom global_config.
-         They need to be defined in this file to avoid hard-coding them into the OneZoom js code
-         They are coded with the full URL so that they can be used remotely (e.g. in a partial install) */
-      search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",
-      search_sponsor_api: "{{try:}}{{=myconf.take('API.search_sponsor')}}{{except:}}{{=URL('API','search_for_sponsor.json', scheme=True, host=True)}}{{pass}}",
-    }).search_manager;
+    $('.search_dropdown', form_embed_edit)
+        .click(function(event) {
+            var searchbox = $(this.parentElement);
+            var search_input = searchbox.find('.searchinput input[type=search]')
+            var hidden_el = searchbox.find('input[type=hidden]')[0];
+            var ddEl = event.target.closest('dd');
+            var href = $(ddEl).find('a').attr('href');
 
-    $('.searchinput input', form_embed_edit)
-        .blur(function(event) {
-            // if we have an already-selected location, and we lose focus, we simply revert
-            var searchbox = $(event.currentTarget).closest('.searchbox');
-            if ($('.searchresult', searchbox).attr('data-OZid')) {
-                searchbox.addClass('result_displayed_in_box');
+            if (!href) return;  // Ignore non-links
+            event.preventDefault();  // Don't follow links
+
+            // Populate search input with current item, so it's more obvious what's selected
+            search_input.val($(event.target).closest('dd').text());
+
+            if (hidden_el.name === '_pinpoint') {
+                hidden_el.value = href.replace(/^.*\//, '');
+                form_embed_edit.elements['otthome'].value = href.replace(/^.*\=/, '');
+            } else if (hidden_el.name === 'highlight') {
+                hidden_el.value = 'path:' + href.replace(/^.*\//, '');
+            } else {
+                throw new Error("Unknown hidden element name" + hidden_el);
             }
+            form_embed_edit.dispatchEvent(new Event('change'));
+        });
+    $('.searchinput input', form_embed_edit)
+        .on('keydown', function(event) {
+            // Stop UI-kit from nullifying space
+            // https://github.com/uikit/uikit/blob/8313ce565be686952ab6edf8a7caee5fdfcca08c/src/js/core/toggle.js#L138-L151
+            event.stopPropagation();
         })
         .on('keyup', function(event) {
 
@@ -158,15 +173,11 @@
             var searchbox = $(this).closest('.searchbox');
             var searchresult = $('.searchresult', searchbox);
             var dropdown = $('.search_dropdown', searchbox);
-            if (searchresult.attr('data-OZid')) {
-                onezoom.controller.unmark_area(searchresult.attr('data-OZid'));
-                searchresult.attr('data-OZid','');
-            }
             if (search_term.length==0) {
                 {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
                 $('.no_results', dropdown).hide();
                 $('.search_hits', dropdown).empty();
-                search_manager.full_search(""); // this clears the search
+                OZui.search_manager.full_search(""); // this clears the search
                 $('.searchinput', searchbox).removeClass('waiting_for_search_result');
             } else {
                 var delay_ms = 1000;
@@ -175,27 +186,11 @@
                 }
             if ((search_term.replace(/ /g,'').length > 2)||((search_term.replace(/ /g,'').length > 1)&&(delay_ms == 1))) { // we're never going to search for a single character
 
-            search_manager.full_search(
+            OZui.search_manager.full_search(
                 search_term,
                 function(original_string, actual_search, results) {
-                    search_ui.searchPopulate(searchbox, original_string, results, function (event) {
-                        event.preventDefault();  // Don't follow links
-                        var hidden_el = searchbox.find('input[type=hidden]')[0];
-                        var href = $(event.target).closest('a').attr('href');
-
-                        // Populate search input with current item, so it's more obvious what's selected
-                        search_input.val($(event.target).closest('dd').text());
-
-                        if (hidden_el.name === '_pinpoint') {
-                            hidden_el.value = href.replace(/^.*\//, '');
-                            form_embed_edit.elements['otthome'].value = href.replace(/^.*\=/, '');
-                        } else if (hidden_el.name === 'initmark') {
-                            hidden_el.value = href.replace(/^.*\=/, '');
-                        } else {
-                            throw new Error("Unknown hidden element name" + hidden_el);
-                        }
-                        form_embed_edit.dispatchEvent(new Event('change'));
-                    })},
+                    OZui.searchPopulate(searchbox, original_string, results);
+                },
                 delay_ms,
                 function() {
                     {{if is_testing:}}console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search");{{pass}}
@@ -206,9 +201,11 @@
             }
         });
 
-    document.getElementById('button_clear_initmark').addEventListener('click', function (e) {
+    document.getElementById('button_clear_highlight').addEventListener('click', function (e) {
         e.preventDefault();
-        form_embed_edit.elements['initmark'].value = "";
+        form_embed_edit.elements['highlight'].value = "";
+        // Search search input
+        form_embed_edit.elements['highlight'].previousElementSibling.value = "";
         form_embed_edit.dispatchEvent(new Event('change'));
     });
 
@@ -224,7 +221,7 @@
             return encodeURIComponent(x.name) + "=" + encodeURIComponent(x.value);
         }).join("&");
 
-        document.getElementById('button_clear_initmark').disabled = !(form_embed_edit.elements['initmark'].value);
+        document.getElementById('button_clear_highlight').disabled = !(form_embed_edit.elements['highlight'].value);
 
         iframe_embed_preview.src = url;
         document.getElementById('form_embed_email').elements.url.value = url;

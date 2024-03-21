@@ -287,15 +287,96 @@ class TestControllersTour(unittest.TestCase):
             orig_ts2[2]['ott'],
         ])
 
+    def test_data_commonancestor(self):
+        """Can refer to common ancestors in tourstops"""
+        otts = util.find_unsponsored_otts(10)
+
+        # Can insert a tour with a common ancestor pinpoint
+        t = self.tour_put('UT::TOUR', dict(
+            title="A unit test tour",
+            description="It's a nice tour",
+            author="UT::Author",
+            tourstops=[
+                dict(
+                    ott='@_ancestor=%d=%d' % (otts[0], otts[1]),
+                    identifier="ott0",
+                ),
+            ],
+        ))
+
+        # Get back the same pinpoint
+        self.assertEqual(
+            t['tourstops'][0]['ott'],
+            '@_ancestor=%d=%d' % (otts[0], otts[1]),
+        )
+
+        # Broken down in DB
+        ts = db(db.tour.id == t['id']).select(db.tour.ALL)[0].tourstop.select()[0]
+        self.assertEqual(ts.ott, otts[0])
+        self.assertEqual(ts.secondary_ott, otts[1])
+
+    def test_data_shareddata(self):
+        """Can use tourstop_shared to fill in common tourstop values"""
+        otts = util.find_unsponsored_otts(10)
+
+        # Can insert a tour with a common ancestor pinpoint
+        t = self.tour_put('UT::TOUR', dict(
+            title="A unit test tour",
+            description="It's a nice tour",
+            author="UT::Author",
+            tourstop_shared=dict(
+                stop_wait=1234,
+                template_data={
+                    "title": "Some tourstop",
+                    "visible-transition_in": True,
+                },
+            ),
+            tourstops=[
+                dict(
+                    ott='@_ancestor=%d=%d' % (otts[0], otts[1]),
+                    identifier="ott0",
+                    stop_wait=3,
+                    template_data=dict(title="The first tourstop"),
+                ),
+                dict(
+                    ott='@_ancestor=%d=%d' % (otts[0], otts[1]),
+                    identifier="ott1",
+                    template_data={
+                        "visible-transition_in": False,
+                    },
+                ),
+            ],
+        ))
+        # Tourstop wins for top-level items
+        self.assertEqual(
+            [ts['stop_wait'] for ts in t['tourstops']],
+            [3, 1234],
+        )
+        # Items within template_data are also overridable, even if their override value is falsy
+        self.assertEqual(
+            [ts['template_data'] for ts in t['tourstops']],
+            [
+                {'title': 'The first tourstop', 'visible-transition_in': True},
+                {'title': 'Some tourstop', 'visible-transition_in': False},
+            ]
+        )
+
     def test_list(self):
-        def t_list(tours):
+        def t_list(tours, include_rest=""):
             return util.call_controller(
                 tour,
                 'list',
                 method='GET',
                 args=[],
-                vars=dict(tours=",".join(tours)),
+                vars=dict(tours=",".join(tours), include_rest=str(include_rest)),
             )
+
+        def t_filter(out, list_name):
+            return [
+                t.identifier
+                for t in out[list_name]
+                if t.identifier.startswith('UT::')
+            ]
 
         # DB setup
         db = current.db
@@ -322,6 +403,11 @@ class TestControllersTour(unittest.TestCase):
             [t.identifier for t in t_list([tour2['identifier'], tour1['identifier'], tour2['identifier']])['tours']],
             [tour2['identifier'], tour1['identifier']],
         )
+
+        # Can ask for the remainder
+        out = t_list([tour1['identifier']], include_rest=True)
+        self.assertEqual(t_filter(out, 'tours'), [tour1['identifier']])
+        self.assertEqual(t_filter(out, 'rest'), [tour2['identifier']])
 
 
 if __name__ == '__main__':

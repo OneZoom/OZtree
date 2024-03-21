@@ -105,8 +105,9 @@ function parse_url_base(location) {
 
 // Pull pinpoint out of pathname, e.g. @Eukaryota=304358
 function parse_pathname(state, pathname) {
-    if (!pathname) return;
-    state.pinpoint = pathname.indexOf("@") === -1 ? null : pathname.slice(pathname.indexOf("@"));
+    if (pathname) {
+        state.pinpoint = pathname.indexOf("@") > -1 ? pathname.replace(/^[^@]*/, '') : null;
+    }
 }
 
 /// pathname should equal pinpoint

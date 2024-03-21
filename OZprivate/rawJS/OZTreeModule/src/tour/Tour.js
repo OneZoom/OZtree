@@ -44,18 +44,20 @@
  * * ``data-stop_wait``: Wait at tourstop for (stop_wait) milliseconds, then automatically move on. By default wait for user to press "next"
  *
  * Other modules provide extra functionality useful when writing tours, in particular:
- * * {@link tour/handler/HtmlAudio} Autoplays/stops ``<audio>`` in a tourstop based on ``data-ts_autoplay``.
+ * * {@link tour/handler/HtmlAV} Autoplays/stops HTML ``<audio>`` / ``<video>`` in a tourstop based on ``data-ts_autoplay``.
  * * {@link tour/handler/QsOpts} Applies/reverts tree state based on ``data-qs_opts``, e.g. highlights, colour schemes, language.
  * * {@link tour/handler/UiEvents} Behavioural CSS classes to add to tour forward/backward/etc buttons.
+ * * {@link tour/handler/TsProgress} Individual links to tourstops, showing currently visited stops.
  * * {@link tour/handler/Vimeo} Autoplays/stops embedded Vimeo in a tourstop based on ``data-ts_autoplay``.
  * * {@link tour/handler/Youtube} Autoplays/stops embedded Youtube in a tourstop based on ``data-ts_autoplay``.
  * * ``applications.OZtree.modules.embed:media_embed``: Given a media URL from one of the recognised hosting sites, generate embed HTML suitable for the handlers above.
  *
  * @module tour/Tour
  */
-import handler_htmlaudio from './handler/HtmlAudio';
+import handler_htmlav from './handler/HtmlAV';
 import handler_qsopts from './handler/QsOpts';
 import handler_uievents from './handler/UIEvents';
+import handler_tsprogress from './handler/TsProgress';
 import handler_vimeo from './handler/Vimeo';
 import handler_youtube from './handler/Youtube';
 import TourStopClass from './TourStop'
@@ -63,7 +65,6 @@ import tree_state from '../tree_state';
 import { add_hook, remove_hook } from '../util';
 import { resolve_pinpoints } from '../navigation/pinpoint';
 
-let tour_id = 1
 const Interaction_Action_Arr = ['mouse_down', 'mouse_wheel', 'touch_start', 'touch_move', 'touch_end', 'window_size_change']
 
 //Tour State classes
@@ -75,7 +76,6 @@ const tstate = {
 
 class Tour {
   constructor(onezoom) {
-    this.tour_id = tour_id++
     this.onezoom = onezoom // enabling access to controller
     this.curr_step = 0
     this.prev_step = null
@@ -110,11 +110,27 @@ class Tour {
     // Update container state based on our state
     if (this.container) this.container[0].setAttribute('data-state', this._state);
 
+    // Set CSS class if anything is happening, so UI can decide to dim
+    if (this.div_wrapper) {
+      const anyActive = Array.from(this.div_wrapper.children).find((c) => c.getAttribute('data-state') !== tstate.INACTIVE);
+      this.div_wrapper.classList.toggle('tour-active', !!anyActive);
+    }
+
     // When playing we should be able to block interaction
     if (new_state === tstate.PLAYING) {
       this.add_canvas_interaction_callbacks()
     } else {
       this.remove_canvas_interaction_callbacks()
+    }
+
+    // Inside a tour, leave room for tourstops during flights
+    if (new_state === tstate.INACTIVE) {
+      tree_state.constrain_focal_area(1, 1);
+    } else if (this.container[0].hasAttribute('data-focal-area')){
+      tree_state.constrain_focal_area.apply(
+          tree_state,
+          this.container[0].getAttribute('data-focal-area').split(" "),
+      );
     }
 
     return this._state;
@@ -175,7 +191,7 @@ class Tour {
 
     var resolve_tour_loaded;
     this.tour_loaded = new Promise((resolve) => resolve_tour_loaded = resolve).then(() => {
-      if (window.is_testing) console.log("Loaded tour")
+      if (window.tour_trace) console.log("Loaded tour")
       return this.ready_callback();
     });
 
@@ -224,22 +240,19 @@ class Tour {
     this.clear(tour_start_step)
 
     // Reset OTT/pinpoint to OZid map
-    this.tourstop_array.forEach(tourstop => {
-      if (tourstop.setting.ott && !isNaN(tourstop.setting.ott) && tourstop.setting.ott > 0) {
-        this.pinpoint_to_ozid[tourstop.setting.ott] = null;
-      }
-    });
+    this.pinpoint_to_ozid = {}
 
     // Attach all plugins to tour, loaded when everything is finished
     return Promise.all([
       handler_uievents(this),
-      resolve_pinpoints(Object.keys(this.pinpoint_to_ozid)).then((pps) => {
+      resolve_pinpoints(this.tourstop_array.map((s) => !s.setting.ott || s.setting.ott === "0" ? null : s.setting.ott)).then((pps) => {
         pps.forEach((pp) => {
           this.pinpoint_to_ozid[pp.pinpoint] = pp.ozid;
         });
       }),
-      handler_htmlaudio(this),
+      handler_htmlav(this),
       handler_qsopts(this),
+      handler_tsprogress(this),
       handler_vimeo(this),
       handler_youtube(this),
     ]);
@@ -286,7 +299,7 @@ class Tour {
       throw new Error("Unknown value of interaction setting: " + this.interaction)
     }
 
-    if (window.is_testing) console.log("Adding canvas hooks")
+    if (window.tour_trace) console.log("Adding canvas hooks")
     Interaction_Action_Arr.forEach(action_name => {
         if (typeof this.interaction_callback === 'function') {
             // Add the user's interaction callback as well
@@ -316,7 +329,7 @@ class Tour {
 
       this.state = tstate.PLAYING
       this.rough_initial_loc = this.onezoom.controller.largest_visible_node().ozid
-      if (window.is_testing) console.log("Tour `" + this.name + "` started")
+      if (window.tour_trace) console.log("Tour `" + this.name + "` started")
       if (typeof this.start_callback === 'function') {
         this.start_callback()
       }
@@ -388,6 +401,13 @@ class Tour {
    * Go to previous tour stop
    */
   goto_prev() {
+    this.goto_stop(Math.max(this.curr_step - 1, 0));
+  }
+
+  /**
+   * Jump to given tourstop
+   */
+  goto_stop(requested_step) {
     if (this.state === tstate.INACTIVE) {
       return
     }
@@ -395,11 +415,14 @@ class Tour {
       this.curr_stop().exit()
     }
 
-    if (this.curr_step > 0) {
-      this.prev_step = this.curr_step--
+    if (requested_step != this.curr_step) {
+      this.prev_step = this.curr_step;
+      this.curr_step = requested_step;
     }
 
     this.state = tstate.PLAYING  // NB: Cancel any paused state
+    // NB: We assume any jump is "backward", for the current use-cases it's the right thing
+    //     but this may not be what we want for a quiz, e.g.
     this.curr_stop().play_from_start('backward')
   }
 
@@ -430,7 +453,7 @@ class Tour {
    */
   user_pause() {
     if (this.state !== tstate.INACTIVE && this.curr_stop()) {
-      if (window.is_testing) console.log("User paused")
+      if (window.tour_trace) console.log("User paused")
       this.state = tstate.PAUSED
       this.curr_stop().pause()
     }
@@ -441,7 +464,7 @@ class Tour {
    */
   user_resume() {
     if (this.state !== tstate.INACTIVE && this.curr_stop()) {
-      if (window.is_testing) console.log("User resumed")
+      if (window.tour_trace) console.log("User resumed")
       this.state = tstate.PLAYING
       this.curr_stop().resume()
     }

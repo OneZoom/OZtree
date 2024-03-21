@@ -22,7 +22,6 @@ response.files.append(URL('static', 'OZSponsor/sponsor_leaf.css'))
 response.files.append(URL('static', 'OZSponsor/EOLqueries.js'))
 response.files.append(URL('static','css/content_pages.css'))
 }}
-{{include '../static/OZTreeModule/dist/OZ_leaf_draw.html'}}
 {{import img}}
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}
@@ -88,7 +87,7 @@ image_objects.push({
     "default":1}); //highest possible data rating, so this gets put first
 {{pass}}
 var leafImageFile = null; // image file (if null and image_objects exists then image is not loaded yet)
-var leafCol = leaf_draw.natural_theme.leaf;
+var leafCol = OZui.leaf_draw.natural_theme.leaf;
     // this is a bit of a hack but it no longer works to grab the style from the main natural_theme because some of the colours are functions that need to be run on the midnode object of the tree so I'm overiding it here with fixed colours.
     //can override leafCol after this, e.g.
      leafCol.inside.fill  = 'rgb(135,215,90)'; // or could be a function of a node obj
@@ -222,7 +221,7 @@ function drawPreview()
     }
     
     // draw the leaf base again (to wipe out any previous renderings)
-    leaf_draw.fullLeafBase(
+    OZui.leaf_draw.fullLeafBase(
         leafContext, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, leafCol, node);
     // draw the leaf details
     
@@ -231,7 +230,7 @@ function drawPreview()
     {
         
         var cfout = crop_frac(image_obj, {{=percent_crop_expansion}});
-        leaf_draw.fullLeaf(
+        OZui.leaf_draw.fullLeaf(
             leafContext, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, hasText, null,
             sponsorText, extraText, {{=XML(js_common_name or '')}}, {{=XML(js_species_name)}},
             null, null, null, fonttype, mintextsize, leafImageFile, null,
@@ -239,7 +238,7 @@ function drawPreview()
     }
     else
     {
-        leaf_draw.fullLeaf(
+        OZui.leaf_draw.fullLeaf(
             leafContext, widthRes/2.28, heightRes/2, widthRes/2.3, 5.6, 2, hasText, null,
             sponsorText, extraText, {{=XML(js_common_name or '')}}, {{=XML(js_species_name)}},
             null, null, null, fonttype, mintextsize, leafImageFile, null,

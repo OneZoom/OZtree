@@ -6,6 +6,7 @@ const path = require('path');
 partial_install_site = "http://www.onezoom.org";
 partial_local_install_site = "http://127.0.0.1:8000"; // if you are running a local installation
 preferred_python3 = "python3.10"; // in case you have multiple python3 versions installed
+version_uikit = "3.18.3";
 web2py_py = path.join(path.dirname(path.dirname(process.cwd())), 'web2py.py');
 venv_python = path.join(path.dirname(path.dirname(process.cwd())), 'bin/python');
 
@@ -33,7 +34,7 @@ module.exports = function (grunt) {
       web2py_configure: {
         cwd: "../../",
         command: [
-          'git submodule update --init --recursive',
+          '( [ -d .git ] && git submodule update --init --recursive || true )',
           'ln -sf applications/OZtree/_COPY_CONTENTS_TO_WEB2PY_DIR/routes.py routes.py',
           'ln -sf handlers/wsgihandler.py handler.py',
           '( [ -d applications/welcome ] && rm -r -- "applications/welcome" || true )',
@@ -101,10 +102,22 @@ module.exports = function (grunt) {
         command: 'npm run test'
       },
       compile_js: {
-        command: 'npm run compile_js' //command defined in package.json
+        command: [
+            // Only pass --openssl-legacy-provider if node recognises it (NB: FreeBSD node18 doesn't)
+            'export NODE_OPTIONS="$(node --help | grep -o -- --openssl-legacy-provider || true)"',
+            'npm run compile_js',
+        ].join(" && "),
       },
       compile_js_dev: {
-        command: 'npm run compile_js_dev' //command defined in package.json
+        command: [
+            // Only pass --openssl-legacy-provider if node recognises it (NB: FreeBSD node18 doesn't)
+            'export NODE_OPTIONS="$(node --help | grep -o -- --openssl-legacy-provider || true)"',
+            'npm run compile_js_dev',
+        ].join(" && "),
+      },
+      fetch_uikit: {
+        cwd: "static/uikit-3/",
+        command: '[ -f "uikit-'+version_uikit+'.zip" ] || { rm -r -- "uikit-*.zip"; curl -LO "https://github.com/uikit/uikit/releases/download/v'+version_uikit+'/uikit-'+version_uikit+'.zip" && unzip -o "uikit-'+version_uikit+'.zip" || rm -- "uikit-'+version_uikit+'.zip"; }',
       },
       unify_docs: {
         //put all markdown files referred to in OZTreeModule/docs/index.markdown in a single _compiled.markdown file
@@ -242,7 +255,7 @@ module.exports = function (grunt) {
   grunt.registerTask("partial-install",       ["compile-js", "css", "copy:dev", "curl-dir:get_minlife", "exec:convert_links_to_local"]);
   grunt.registerTask("partial-local-install", ["compile-js", "css", "copy:dev", "curl-dir:get_local_minlife", "exec:convert_links_to_local"]);
   grunt.registerTask("web2py", ["exec:web2py_configure"]);
-  grunt.registerTask("prod", ["clean", "web2py", "compile-python", "compile-js", "css", "compress", "copy:prod", "make_release_info", "docs"]);
-  grunt.registerTask("dev",  ["clean", "web2py", "compile-js_dev", "css", "compress", "copy:dev",  "make_release_info", "docs"]);
+  grunt.registerTask("prod", ["clean", "web2py", "exec:fetch_uikit", "compile-python", "compile-js", "css", "compress", "copy:prod", "make_release_info", "docs"]);
+  grunt.registerTask("dev",  ["clean", "web2py", "exec:fetch_uikit", "compile-js_dev", "css", "compress", "copy:dev",  "make_release_info", "docs"]);
   grunt.registerTask("start-dev", ['exec:web2py_start_dev']);
 };

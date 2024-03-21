@@ -12,6 +12,7 @@ import json
 from collections import OrderedDict
 
 import ozmail
+import tour
 from embed import embedize_url
 from sponsorship import (
     sponsorship_enabled, reservation_total_counts, clear_reservation, get_reservation,
@@ -67,66 +68,34 @@ def index():
     """
     # OTTs from the tree_startpoints table
     startpoints_ott_map, hrefs, images, titles, text_titles = {}, {}, {}, {}, {}
-    carousel, anim, threatened = [], [], []
+    carousel = []
     for r in db(
-            (db.tree_startpoints.category.startswith('homepage')) &
+            (db.tree_startpoints.category.belongs(('homepage_main',))) &
             (db.tree_startpoints.partner_identifier == None)
         ).select(
             db.tree_startpoints.ott, db.tree_startpoints.category,
-            db.tree_startpoints.image_url, db.tree_startpoints.tour_identifier,
+            db.tree_startpoints.image_url,
+            db.tour.ALL,
+            left=db.tour.on(db.tree_startpoints.tour_identifier == db.tour.identifier),
             orderby = db.tree_startpoints.id):
-        key = r.tour_identifier or str(r.ott)
-        if r.category.endswith("main"):
+        key = r.tour.identifier or str(r.tree_startpoints.ott)
+        if r.tree_startpoints.category == 'homepage_main':
             carousel.append(key)
-        elif r.category.endswith("anim"):
-            anim.append(key)
-        elif r.category.endswith("red"):
-            threatened.append(key)
-        if r.image_url:
-            images[key] = {'url': r.image_url}
-        if r.tour_identifier:
-            hrefs[key] = URL('life/' + r.tour_identifier)
-            title = db(db.tours.identifier == r.tour_identifier).select(db.tours.name).first()
-            text_titles[key] = title.name if title else r.tour_identifier
-        else:
-            text_titles[key] = ""
-        if r.ott:
-            # We might still want to find e.g. an image, even if we are looking at a tour
-            startpoints_ott_map[r.ott] = key
 
-    # Pick 5 random threatened spp 
-    random.seed(request.now.month*100 + request.now.day)
-    if len(threatened) > 5:
-        threatened = random.sample(threatened, 5)
-    image_required = set(carousel + threatened)
-    keys = set(anim) |  image_required
-    # Remove the unused threatened ones
-    startpoints_ott_map = {k: v for k, v in startpoints_ott_map.items() if v in keys}
+        text_titles[key] = ""
+        if r.tree_startpoints.image_url:
+            images[key] = {'url': r.tree_startpoints.image_url}
+        if r.tree_startpoints.ott:
+            startpoints_ott_map[r.tree_startpoints.ott] = key
+
+        if r.tour.identifier:
+            text_titles[key] = r.tour.title or r.tour.identifier
+            hrefs[key] = URL('life', vars = dict(tour = tour.tour_url(r.tour)))
+            if r.tour.image_url:
+                images[key] = {'url': img.url(r.tour.image_url)}
+
+    image_required = set(carousel)
     
-    # OTTs from the reservations table (i.e. sponsored)
-    query = (db.reservations.verified_time != None) & \
-        ((db.reservations.deactivated == None) | (db.reservations.deactivated == "")) & \
-        (db.reservations.verified_preferred_image_src != None)
-    sponsored_rows = db(query).select(
-        db.reservations.OTT_ID,
-        db.reservations.name,
-        db.reservations.user_nondefault_image,
-        db.reservations.verified_kind,
-        db.reservations.verified_name,
-        db.reservations.verified_more_info,
-        db.reservations.verified_preferred_image_src,
-        db.reservations.verified_preferred_image_src_id,
-        orderby=~db.reservations.verified_time|db.reservations.reserve_time,
-        limitby=(0, 20)
-        )
-    
-    spon_leaf_otts = set()
-    sponsored_by_ott = {}
-    for r in sponsored_rows:
-        sponsored_by_ott[r.OTT_ID] = r
-        hrefs[r.OTT_ID] = URL('life/@=%d' % r.OTT_ID, url_encode=False)
-        spon_leaf_otts.add(r.OTT_ID)
-        titles[r.OTT_ID] = r.name
     for ott, key in startpoints_ott_map.items():
         if key not in hrefs:
             hrefs[key] = URL('life/@=%d' % ott, url_encode=False)
@@ -175,22 +144,6 @@ def index():
         key = startpoints_ott_map.get(r.ott, None) or st_leaf_for_node_otts.get(r.ott, None)
         if key not in images:
             images[key] = {'url': img.thumb_url(r.src, r.src_id)}
-    # Sponsored images
-    for r in db(
-            (db.images_by_ott.ott.belongs(spon_leaf_otts)) & (db.images_by_ott.overall_best_any==1)
-        ).select(
-            db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
-            db.images_by_ott.rights, db.images_by_ott.licence):
-        reservations_row = sponsored_by_ott[r.ott]
-        if reservations_row.user_nondefault_image:
-            images[r.ott] = {'url': img.thumb_url(
-                reservations_row.verified_preferred_image_src,
-                reservations_row.verified_preferred_image_src_id)}
-        else:
-            images[r.ott] = {
-                'url': img.thumb_url(r.src, r.src_id),
-                'rights':r.rights,
-                'licence': r.licence.split('(')[0]}
     blank = {'url': URL('static','images/noImage_transparent.png')}
     for key in titles.keys():
         if key not in images:
@@ -212,7 +165,7 @@ def index():
             )
             for row in db().select(db.news.ALL, orderby =~ db.news.news_date, limitby = (0, 5))
         ],
-        carousel=carousel, anim=anim, threatened=threatened, sponsored=sponsored_rows,
+        carousel=carousel,
         hrefs=hrefs, images=images, html_names=titles, has_vernacular=has_vernacular, add_the=add_the,
         n_total_sponsored=reservation_total_counts('donors'),
         n_sponsored_leaves=reservation_total_counts('otts'),
@@ -229,12 +182,6 @@ def footer_sponsor_items():
     """
     return dict()
 
-
-def homepage_animation_template():
-    """
-    The html fragment used as a template for the embedded animation on the homepage
-    """
-    return dict()
 
 @require_https_if_nonlocal()
 def user():
