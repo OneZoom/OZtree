@@ -6,6 +6,27 @@ If you simply want to run a local copy of OneZoom, but not modify the code yours
 
 # OneZoom setup
 
+## Installing in a Docker Dev Container
+
+If you are using Visual Studio Code or another editor that supports [Dev Containers](https://containers.dev/), the easiest way to set up a full development environment is to use the included Dev Container configuration. This will automatically create two containers: one for development (_dev_), and another (_web_) with the MySQL database and production web server (nginx + uwsgi), derived from the Docker image mentioned above. Your source code will be mounted simultaneously into both containers: dev will let you run build commands and web will serve it as a web server you can access via port forwarding. You can also run your own server from the dev container by [running web2py.py directly](#starting-and-shutting-down-web2py) -- this is particularly useful for debugging.
+
+If you are using Visual Studio Code, perform the following steps (you will need to modify these for another editor):
+
+1. Follow the instructions at either https://hub.docker.com/r/onezoom/oztree or https://hub.docker.com/r/onezoom/oztree-complete to save a docker image with IUCN data.
+1. Follow the [VSCode instructions for installing Dev Container support](https://code.visualstudio.com/docs/devcontainers/containers#_installation).
+1. `git clone https://github.com/OneZoom/OZtree` into the directory of your choice. If using Windows, it is highly recommended to [clone on the WSL2 filesystem](https://code.visualstudio.com/remote/advancedcontainers/improve-performance#_store-your-source-code-in-the-wsl-2-filesystem-on-windows) both for performance reasons and to avoid permissions issues. If you wish to fork the repository and clone your fork, you will need to copy the tags from upstream, otherwise you will see build issues later. You can do this with `git fetch --tags upstream` followed by `git push --tags`.
+1. Open the cloned directory in VSCode.
+1. Create a `.env` file in the `.devcontainer` directory and add `WEB_IMAGE_NAME=onezoom/oztree-with-iucn`, changing the value to whatever image name you choose in step 1.
+1. Open the command palette and choose "Dev Containers: Reopen in Container". This may take several minutes to run.
+1. Your repository is mounted at `/opt/web2py/applications/OZtree` and the original production docker container application is mounted at `cp /opt/web2py/applications/OZtree_original`. In order to sync your repository with the production database state, open an integrated terminal and run the following: `cp /opt/web2py/applications/OZtree_original/private/appconfig.ini /opt/web2py/applications/OZtree/private/ && cp /opt/web2py/applications/OZtree_original/databases/*.table /opt/web2py/applications/OZtree/databases/`
+1. Run `npm ci && grunt dev`. You will need to rerun `grunt dev` any time you make code changes.
+1. Visit http://localhost:8080 and the website should load! You can also run your own server from the dev container by [running web2py.py directly](#starting-and-shutting-down-web2py).
+1. (Optional) Once tables are created, and everything is working, you can set `migrate = 0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
+1. (Optional) [Create a manager account](#creating-auth-users--groups) in the auth table, e.g. so you can [view docs](#documentation).
+1. (Optional) MySQL is available on port 3307 if you wish to debug using local tools outside the container.
+
+## Installing locally
+
 There are two ways in which you can install OneZoom on a personal computer: full installation and partial installation. 
 
 * *Partial installation* does not create a standalone OneZoom site, but simply creates a local web file containing the javascript tree viewer. Instead of your tree viewer getting information from your own computer, it must do so by constantly requesting data from the OneZoom website (via the OneZoom APIs). This restricts your OneZoom viewer in various ways:  you cannot make your own bespoke tree, you cannot change languages in the viewer, and you are dependent upon a permanent, fast internet connection. Also note that this installation method is also relatively untested, and there are unfixed problems with e.g. displaying lists of popular species. However, partial installation may be suitable for developers who simply want to re-program features of the tree viewer, such as colours, branch geometry, etc.
