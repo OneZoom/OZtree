@@ -49,10 +49,9 @@ module.exports = function (grunt) {
         ].join(" && "),
       },
       web2py_start_dev: {
-        cwd: "../../",
+        cwd: "./",
         command: [
-          '( [ -f oz.crt ] || openssl req -newkey rsa:2048 -x509 -days 365 -nodes -keyout oz.key -subj "/CN=dev.onezoom/" -out oz.crt; )',
-          venv_python + ' web2py.py -c oz.crt -k oz.key -p 8000 -a pass',
+          './web2py-run',
         ].join(" && "),
       },
       compile_python: {
