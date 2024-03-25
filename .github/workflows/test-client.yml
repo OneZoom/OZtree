@@ -26,3 +26,7 @@ jobs:
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
+      - run: ./node_modules/.bin/grunt compile-js
+      - run: ./node_modules/.bin/grunt compile-js_dev
+      - run: ./node_modules/.bin/grunt css
+      - run: ./node_modules/.bin/grunt compress
