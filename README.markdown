@@ -39,7 +39,6 @@ apt install lsb-release
 wget https://dev.mysql.com/get/mysql-apt-config_0.8.29-1_all.deb
 dpkg -i mysql-apt-config_0.8.29-1_all.deb
 apt update && apt install mysql-server
-# NB: Select "Use Legacy Authentication Method (Retain MySQL 5.x Compatibility)"
 ```
 
 #### Windows
@@ -69,7 +68,7 @@ chown deploy:staff ${WEB2PY_PATH}
 git clone https://github.com/web2py/web2py ${WEB2PY_PATH} --branch v2.27.1
 git clone https://github.com/OneZoom/OZtree.git ${WEB2PY_PATH}/applications/OZtree --branch production
 cd ${WEB2PY_PATH}/applications/OZtree
-npm ci --legacy-peer-deps
+npm ci
 ```
 
 Next, ``cp private/appconfig.ini.example private/appconfig.ini`` and edit to match your needs, taking care to:
