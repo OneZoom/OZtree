@@ -12,7 +12,7 @@ WWW_IMAGES_SERVER_NAME="$(echo ${WWW_SERVER_NAME} | sed 's/^w*/images/')"  # ima
 [ -d "/usr/local/etc/nginx" ] && NGINX_PATH="/usr/local/etc/nginx"
 mkdir -p "${NGINX_PATH}/conf.d/"
 NGINX_LOG_PATH="/var/log/nginx"
-NGINX_CERT_PATH="/var/db/acme/live/"
+NGINX_CERT_PATH="/var/db/acme/live"
 NGINX_DHPARAM_PATH="${NGINX_PATH}/dhparam.pem"
 [ -d "/var/acme" ] && NGINX_CHALLENGE_PATH="/var/acme"
 
@@ -21,7 +21,7 @@ NGINX_DHPARAM_PATH="${NGINX_PATH}/dhparam.pem"
 
 if [ ! -f "${NGINX_CERT_PATH}/${WWW_SERVER_NAME}/privkey" ]; then
     # Fall back to self-signed bootstrap-cert
-    NGINX_CERT_PATH="${NGINX_PATH}/snakeoil-certs/"
+    NGINX_CERT_PATH="${NGINX_PATH}/snakeoil-certs"
     NGINX_CHALLENGE_PATH="/dev/null"
     for SN in onezoom.org ${WWW_SERVER_NAME} ${WWW_IMAGES_SERVER_NAME}; do
         mkdir -p "${NGINX_CERT_PATH}/${SN}"
