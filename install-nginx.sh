@@ -19,7 +19,7 @@ NGINX_DHPARAM_PATH="${NGINX_PATH}/dhparam.pem"
 # Generate NGINX_DHPARAM
 [ -e "${NGINX_DHPARAM_PATH}" ] || openssl dhparam -out "${NGINX_DHPARAM_PATH}" 4096
 
-if [ ! -f "${NGINX_CERT_PATH}/${PROJECT_PATH}/privkey" ]; then
+if [ ! -f "${NGINX_CERT_PATH}/${WWW_SERVER_NAME}/privkey" ]; then
     # Fall back to self-signed bootstrap-cert
     NGINX_CERT_PATH="${NGINX_PATH}/snakeoil-certs/"
     NGINX_CHALLENGE_PATH="/dev/null"
