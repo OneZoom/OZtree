@@ -167,7 +167,7 @@ Run grunt to configure onezoom for production use:
 
 ```
 cd ${WEB2PY_PATH}/applications/OZtree
-npm ci --legacy-peer-deps
+npm ci
 ./node_modules/.bin/grunt prod
 ```
 
