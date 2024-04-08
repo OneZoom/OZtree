@@ -25,10 +25,15 @@ from gluon import current
 is_testing = True
 
 ## Read configuration
-if is_testing and len(request.env.cmd_options.args) > 1 and os.path.isfile(request.env.cmd_options.args[-1]):
+if (
+    is_testing and
+    request.env.cmd_options is not None and
+    len(request.env.cmd_options.args) > 1 and
+    os.path.isfile(request.env.cmd_options.args[-1])
+):
     # For unit testing, we might want to load a different appconfig.ini file, which can
-    # be passed in to the rocket server as the last arg on the command-line.
-    # (on the main server this is not used, and we default back to appconfig.ini
+    # be passed in to the rocket server as the last arg on the command-line (on the main
+    # server, `request.env.cmd_options` is undefined, and we default back to appconfig.ini)
     myconf = AppConfig(request.env.cmd_options.args[-1], reload=is_testing)
 else:
     # Reload config on each request when is_testing (i.e. not production)
