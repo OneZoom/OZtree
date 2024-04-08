@@ -35,7 +35,7 @@ There are two ways in which you can install OneZoom on a personal computer: full
 
 ## Requirements and packages
 
-For any installation, OneZoom requires node & python (3.10).
+For any installation, OneZoom requires node (18+) & python (3.10).
 
 #### Debian/Ubuntu
 
@@ -60,7 +60,6 @@ apt install lsb-release
 wget https://dev.mysql.com/get/mysql-apt-config_0.8.29-1_all.deb
 dpkg -i mysql-apt-config_0.8.29-1_all.deb
 apt update && apt install mysql-server
-# NB: Select "Use Legacy Authentication Method (Retain MySQL 5.x Compatibility)"
 ```
 
 #### Windows
@@ -90,7 +89,7 @@ chown deploy:staff ${WEB2PY_PATH}
 git clone https://github.com/web2py/web2py ${WEB2PY_PATH} --branch v2.27.1
 git clone https://github.com/OneZoom/OZtree.git ${WEB2PY_PATH}/applications/OZtree --branch production
 cd ${WEB2PY_PATH}/applications/OZtree
-npm ci --legacy-peer-deps
+npm ci
 ```
 
 Next, ``cp private/appconfig.ini.example private/appconfig.ini`` and edit to match your needs, taking care to:
@@ -197,7 +196,7 @@ installing SQL Workbench on Windows works great to connect to the Ubuntu MySQL i
 On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. This is complete overkill if you just want to run a local copy of OneZoom for testing purposes. You can simply run a [temporary and basic web2py server using Python 3](http://www.web2py.com/books/default/chapter/29/03/overview#Startup). The simplest is to open a command-line prompt in the root web2py folder, and run the following (assuming the command `python3` is linked to something like Python 3.7)
 
 ```
-./node_modules/.bin/grunt start-dev
+./web2py-run
 ```
 
 When web2py is run, it will print instructions telling how to shut down the web2py server. For example, on Windows you might use `taskkill /f /pid XXXX`, where `XXXX` is the process id.

@@ -207,6 +207,18 @@ server {
         uwsgi_pass uwsgi_${WEB2PY_NAME};
         include uwsgi_params;
     }
+
+    # Switch to a dev server by renaming this to "location /" and similarly with the above section
+    location /devserver {
+        proxy_pass       https://127.0.0.1:8000;
+        proxy_ssl_verify off;
+        proxy_set_header Host            \$host;
+        proxy_set_header X-Real-IP       \$remote_addr;
+        proxy_set_header X-Forwarded-for \$remote_addr;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection \$http_connection;
+    }
 }
 EOF
 
