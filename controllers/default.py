@@ -326,7 +326,10 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
 
     elif status == 'invalid':  # must define some null vars
         response.view = request.controller + "/spl_invalid." + request.extension
-        return dict(OTT_ID=OTT_ID_Varin, species_name=leaf_entry.name)
+        return dict(
+            OTT_ID=OTT_ID_Varin,
+            species_name=T("No name") if leaf_entry is None else leaf_entry.name,
+        )
 
     else:
         # initialise other variables that will be passed on to the page
