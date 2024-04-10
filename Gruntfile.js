@@ -112,7 +112,7 @@ module.exports = function (grunt) {
       },
       fetch_uikit: {
         cwd: "static/uikit-3/",
-        command: '[ -f "uikit-'+version_uikit+'.zip" ] || { rm -r -- "uikit-*.zip"; curl -LO "https://github.com/uikit/uikit/releases/download/v'+version_uikit+'/uikit-'+version_uikit+'.zip" && unzip -o "uikit-'+version_uikit+'.zip" || rm -- "uikit-'+version_uikit+'.zip"; }',
+        command: '[ -f "uikit-'+version_uikit+'.zip" ] || { rm -rf -- "uikit-*.zip"; curl -LO "https://github.com/uikit/uikit/releases/download/v'+version_uikit+'/uikit-'+version_uikit+'.zip" && unzip -o "uikit-'+version_uikit+'.zip" || rm -- "uikit-'+version_uikit+'.zip"; }',
       },
       unify_docs: {
         //put all markdown files referred to in OZTreeModule/docs/index.markdown in a single _compiled.markdown file
