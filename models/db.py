@@ -124,6 +124,9 @@ response.headers['Server'] = 'n/a'
 
 from gluon.tools import Auth, Service, PluginManager
 
+## Configure session handling: http://web2py.com/books/default/chapter/29/13/deployment-recipes#Sessions-in-database
+session.connect(request, response, db)
+
 auth = Auth(db)
 service = Service()
 plugins = PluginManager()
@@ -158,9 +161,6 @@ auth.settings.registration_requires_verification = False
 auth.settings.registration_requires_approval = False
 auth.settings.reset_password_requires_verification = True
 auth.settings.allow_basic_login = True
-
-## Configure session handling: http://web2py.com/books/default/chapter/29/13/deployment-recipes#Sessions-in-database
-session.connect(request, response, db)
 
 ##restrict site to only logged in users
 ## https://groups.google.com/forum/#!topic/web2py/0j92-sPp4bc
