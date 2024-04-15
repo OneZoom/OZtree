@@ -14,7 +14,6 @@ import sponsorship
 @auth.requires_membership(role='manager')
 def index():
     '''this is a page to give quick links to all the management routines'''
-    request.is_local or request.requires_https() #require https unless local
     return dict()
 
 @auth.requires(lambda: auth.has_membership('manager') or auth.has_membership('translator'))
