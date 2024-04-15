@@ -870,7 +870,7 @@ def SET_PRICES():
             
         response.flash = DIV(
             f"SET THE FOLLOWING DEFAULT PRICE STRUCTURE for {n_leaves} species:", BR(),PRE(*output), 
-            f"Total revenue: {fmt_pounds(revenue)}!\nNow overriding the following special exclusions (and setting banned):", BR(),
+            f"Total revenue: {OZfunc.fmt_pounds(revenue)}!\nNow overriding the following special exclusions (and setting banned):", BR(),
             f"{bespoke_spp}"
         )
 

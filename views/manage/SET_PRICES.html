@@ -6,8 +6,9 @@
   <div class="col-md-12">
 <h1>Set the prices from the pre-calculated popularities</h1>
 {{=form.custom.begin}}
+{{if pop_min is not None and pop_max is not None:}}
 Popularity ranges from {{=int(round(pop_min,0))}} to {{=int(round(pop_max,0))}}. As a guide, here are the popularities of a few species:
-
+{{pass}}
 <ul>
 {{for name, val, quant in example_spp:}}
 <li>{{=name}} = {{=f"{val:.0f}"}} (quantile = {{=f"{quant:.2f}"}}%)</li>
