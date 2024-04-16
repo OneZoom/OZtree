@@ -14,7 +14,7 @@
 {{if sponsorship_enabled:}}
  &pound;{{if s.price is None:}}{{T('contact us')}}{{else:}}{{=f"{s.price/100:.2f}"}}{{pass}}{{T('or more to sponsor.')}}
 {{else:}}
-  {{=T(price_levels_pence.get(s.price) or "click for sponsorship details"))}}
+  {{=T(price_levels_pence.get(s.price) or "click for sponsorship details")}}
 {{pass}}</li>
     {{pass}}
     </ul>
