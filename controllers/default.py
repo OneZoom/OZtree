@@ -1176,14 +1176,14 @@ def treecards():
     prices = []
     accumulate = 0
     for row in db(db.prices).select(db.prices.ALL, orderby=db.prices.price):
-        accumulate += row.n_leaves
-        prices.append(
-            {'price_pounds': row.price/100, 'n': row.n_leaves, 'cumulative': accumulate})
+        if row.price is not None and row.n_leaves > 0:
+            accumulate += row.n_leaves
+            prices.append(
+                {'price_pounds': row.price/100, 'n': row.n_leaves, 'cumulative': accumulate})
     for p in prices:
         p['quantile'] = p['cumulative']/accumulate
-    return dict(
-        pick=sponsor_picks(sponsor_suggestion=sponsor_suggestion_flags['sponsor_for']),
-        prices=prices)
+    suggest = sponsor_suggestion_flags['sponsor_for']
+    return dict(pick=sponsor_picks(sponsor_suggestion=suggest), prices=prices)
 
 
 
