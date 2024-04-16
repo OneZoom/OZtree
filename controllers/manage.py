@@ -855,13 +855,14 @@ def SET_PRICES():
             }
             prev = band
         if prev is not None:
-            assert bands[prev].price is None  # Check the last has no price set
-            queries[prev] = db(db.banned.ott)  # And set that to the banned list
+            assert bands[prev].price is None  # Check the last has no price set (and ban)
+            banned = db()._select(db.banned.ott)
+            queries[prev] = db(db.ordered_leaves.ott.belongs(banned))
 
         #save the results
         db.prices.truncate()
         for band in sorted(bands):
-            num=queries[band].count()
+            num = queries[band].count()
             db.prices.insert(
                 quantile=(float(cutoffs[band][0]) if band in cutoffs else None),
                 n_leaves=num,
