@@ -573,6 +573,8 @@ def otts2ids(ottIntegers):
         return {"nodes": {}, "leaves": {}, "names": {}}
 
 def fmt_pounds(pounds=0, pence=0):
-    p = pence / 100 + pounds
-    return '£{:.0f}'.format(p) if float(p).is_integer() else '£{:.2f}'.format(p)
-
+    try:
+        p = pence / 100 + pounds
+        return '£{:.0f}'.format(p) if float(p).is_integer() else '£{:.2f}'.format(p)
+    except:
+        return current.T('Undefined price')

@@ -649,8 +649,8 @@ db.define_table('uncategorised_donation',
 
 # this table defines the current pricing cutoff points
 db.define_table('prices',
-    Field('price', type='integer', unique=True, requires=IS_NOT_EMPTY()),
-    Field('perpetuity_price', type='integer', requires=IS_NOT_EMPTY()),
+    Field('price', type='integer', unique=True),
+    Field('perpetuity_price', type='integer'),
     # Map the "normal" 4 year price to the in-perpetuity price
     Field('quantile', type='double'),
     Field('n_leaves', type='integer'),

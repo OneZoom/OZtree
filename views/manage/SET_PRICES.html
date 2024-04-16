@@ -39,10 +39,12 @@ Popularity ranges from {{=int(round(pop_min,0))}} to {{=int(round(pop_max,0))}}.
 </tr>
 {{for b, price in bands.items():}}
 <tr>
-{{  if b != max_band:}}
-<th style="text-align: left">{{=b}} (currently {{=fmt_pounds(pence=price)}})</th><td style="background-color: yellow; border-right: double">{{=form.custom.widget['_'.join(['quantile', b])]}}</td>
-{{  else:}}
+{{  if b == max_band:}}
 <th style="text-align: left">{{=b}} (currently {{=fmt_pounds(pence=price)}})</th><td style="border-right: double">remainder</td>
+{{elif price is None:}}
+<th style="text-align: left">{{=b}} (currently {{=fmt_pounds(pence=price)}})</th><td style="border-right: double">{{=price}}</td>
+{{  else:}}
+<th style="text-align: left">{{=b}} (currently {{=fmt_pounds(pence=price)}})</th><td style="background-color: yellow; border-right: double">{{=form.custom.widget['_'.join(['quantile', b])]}}</td>
 {{  pass}}
 {{  for i, field in enumerate(other_fields):}}
 <td style="border: none; {{if i==0:}}padding-left: 4em;{{pass}}">{{=form.custom.widget["_".join([field.name, b])]}}</td>
@@ -51,6 +53,11 @@ Popularity ranges from {{=int(round(pop_min,0))}} to {{=int(round(pop_max,0))}}.
 </tr>
 </table>
 Click here to set all the prices in the database (may take some time): {{=form.custom.submit}}
-{{=form.custom.end}}<h2>Submitted variables</h2>
+{{=form.custom.end}}
+<br />
+{{if request.vars:}}
+<details><summary>Click to see submitted variables</summary>
 {{=BEAUTIFY(request.vars)}}
+{{pass}}
+</details>
 </div></div>
