@@ -27,5 +27,5 @@
     {{pic_index.add(rng % len(data))}}
 {{pass}}
 {{for p in pic_index:}}
-<a href="/life/@={{=data[p][0]}}?pop=osn_&init=jump" target="_blank"><img class="species" alt="{{=data[p][1]}}" src="{{=img.thumb_url(data[p][2], data[p][3])}}" /></a>
+<a href="{{=URL('default', 'sponsor_node.html', vars={'ott': data[p][0]})}}"><img class="species" alt="{{=data[p][1]}}" src="{{=img.thumb_url(data[p][2], data[p][3])}}" /></a>
 {{pass}}
