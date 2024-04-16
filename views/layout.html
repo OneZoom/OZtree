@@ -37,8 +37,8 @@
     <!--[if lt IE 9]>
         <script src="{{=URL('static','js/respond-1.4.2.min.js')}}"></script>
         <![endif]-->
-    {{include 'web2py_ajax.html'}} <!-- this includes jquery.js, calendar.js/.css and web2py.js -->
-
+    {{include 'web2py_ajax.html'  # This makes web2py ajax available in the include below: used e.g. as this is the layout for management pages}}
+    {{include 'web2py.html'}}
     <!-- Treeviewer code for search / embedded view -->
     {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
     <script>var OZstrings={{include 'treeviewer/js_strings.json'}};</script>

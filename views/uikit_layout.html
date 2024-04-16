@@ -21,22 +21,14 @@
     <meta name="google-site-verification" content="">
     {{if response.canonical:}}<link rel="canonical" href="{{=response.canonical}}">{{pass}}
 
-    <script type="text/javascript" src="{{=URL('static','js/jquery.min.js')}}"></script>
     <link rel="stylesheet" href="{{=URL('static','uikit-3/css/uikit.min.css')}}" />
     <script src="{{=URL('static','uikit-3/js/uikit.min.js')}}"></script>
     <script src="{{=URL('static','uikit-3/js/uikit-icons.min.js')}}"></script>
     <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/content.css')}}" />
-    
-    {{
-    response.include_meta()
-    response.include_files()
-    }}
-    <!-- include 'web2py_ajax.html' could be done here, but it performs more than we want so we disect it and keep only the bits we really need -->
-
+    {{include 'web2py.html'}}
 
     {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
-    {{include '../static/OZTreeModule/dist/OZ_main.html'}}
-    {{include '../static/OZTreeModule/dist/OZui.html'}}
+    {{include '../static/OZTreeModule/dist/OZ_main.html'  # Include the tree viewer for use on the front page}}
     <script>var OZstrings={{include 'treeviewer/js_strings.json'}}</script>
     {{include 'treeviewer/server_urls.html' }}
   </head>

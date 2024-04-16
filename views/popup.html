@@ -1,18 +1,14 @@
 <!DOCTYPE html>
 <html lang="{{=T.accepted_language or 'en'}}" class="{{='leaf_redirect' if response.view.startswith('default/spl_') else ''}}">
 <head>
-  <script type="text/javascript" src="{{=URL('static','js/jquery.min.js')}}"></script>
   <script src="{{=URL('static','uikit-3/js/uikit.min.js')}}"></script>
   <link rel="stylesheet" href="{{=URL('static','uikit-3/css/uikit.min.css')}}" />
   <link rel="stylesheet" href="{{=URL('static','css/content.css')}}" type="text/css" />
   <link rel="stylesheet" href="{{=URL('static','css/popup.css')}}" type="text/css" />
   <link rel="shortcut icon" href="{{=URL('static', 'favicon.ico')}}" type="image/x-icon" />
   <link rel="apple-touch-icon" href="{{=URL('static','favicon.png')}}">
+  {{include 'web2py.html'}}
   <style>h2 {margin-top: 0}</style>
-{{
-    response.include_meta()
-    response.include_files()
-}}
   <script>
   {{include 'popup.js'}}
   var OZstrings={{include 'treeviewer/js_strings.json'}};
@@ -36,10 +32,7 @@
     <!-- All JavaScript at the bottom, except for Modernizr which enables
          HTML5 elements & feature detects -->
     <script src="{{=URL('static','js/modernizr-2.8.3.min.js')}}"></script>
-    <!--[if lt IE 9]>
-        <script src="{{=URL('static','js/respond-1.4.2.min.js')}}"></script>
-        <![endif]-->
-    {{include '../static/OZTreeModule/dist/OZui.html'}} <!--Doesn't need the main stuff in a popup -->
+    {{include '../static/OZTreeModule/dist/OZui.html'  # Don't need the full OZ_main (tree view) capability in a popup}}
     {{include 'treeviewer/server_urls.html' }}
     {{block head}}{{end}}
   </head>

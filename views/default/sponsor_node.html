@@ -2,6 +2,7 @@
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{response.files.insert(0,URL('static','js/web2py.js')) #To allow =LOAD(ajax=True) to work}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{include 'web2py_ajax.html'  # We need ajax to load scrolling pictures in the sponsor node page}}
 {{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}
 
 {{block masthead}}
