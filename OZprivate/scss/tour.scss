@@ -110,6 +110,10 @@
     flex-shrink: 10;
     overflow-y: auto;
   }
+  .window_text > p:last-child {
+    /* Remove margins from final paragraph within window_text */
+    margin-bottom: 0;
+  }
 
   .tour_container > iframe, .tour_container > a.embed-image, .tour_container > .embed-audio, .tour_container > .embed-video {
     flex-grow: 1000;
