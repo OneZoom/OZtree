@@ -28,7 +28,8 @@
     {{include 'web2py.html'}}
 
     {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
-    {{include '../static/OZTreeModule/dist/OZ_main.html'  # Include the tree viewer for use on the front page}}
+    {{include '../static/OZTreeModule/dist/OZentry.html'}}
+    {{include '../static/OZTreeModule/dist/OZui.html'}}
     <script>var OZstrings={{include 'treeviewer/js_strings.json'}}</script>
     {{include 'treeviewer/server_urls.html' }}
   </head>

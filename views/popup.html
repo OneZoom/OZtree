@@ -32,7 +32,7 @@
     <!-- All JavaScript at the bottom, except for Modernizr which enables
          HTML5 elements & feature detects -->
     <script src="{{=URL('static','js/modernizr-2.8.3.min.js')}}"></script>
-    {{include '../static/OZTreeModule/dist/OZui.html'  # Don't need the full OZ_main (tree view) capability in a popup}}
+    {{include '../static/OZTreeModule/dist/OZui.html'  # NB: Not including OZentry.html }}
     {{include 'treeviewer/server_urls.html' }}
     {{block head}}{{end}}
   </head>

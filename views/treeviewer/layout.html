@@ -34,8 +34,9 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/OZ_shared.css')}}" />
   {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
   <!-- do not change the next line in any way. The exact format is used for partial installs -->
-  <div id="OZ_js_modules" data-include="../static/OZTreeModule/dist/OZ_main.html">
-  {{include "../static/OZTreeModule/dist/OZ_main.html"}}
+  <div id="OZ_js_modules" data-include="../static/OZTreeModule/dist/OZentry.html ../static/OZTreeModule/dist/OZui.html">
+    {{include '../static/OZTreeModule/dist/OZentry.html'}}
+    {{include '../static/OZTreeModule/dist/OZui.html'}}
   </div>
 
   <!-- treeviewer constants -->
