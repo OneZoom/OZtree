@@ -299,7 +299,7 @@ Notes
 ### Server unit tests
 
 **NB:** The server tests are not sandboxed, so have the potential to delete database data.
-On run on a personal instance where data loss does not matter.
+You are advided to run this on a personal instance where data loss does not matter.
 
 The server unit tests have no additional dependencies. To run, do:
 
