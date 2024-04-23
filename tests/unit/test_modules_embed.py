@@ -193,8 +193,7 @@ class TestEmbed(unittest.TestCase):
             'src="https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/Turdus_philomelos.ogg"',
             '></audio><a',
             'class="copyright"',
-            'href="https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg"',
-            'title="title">©</a></div>',
+            'href="https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg">©</a></div>',
         ])
 
         self.assertEqual(media_embed('https://commons.wikimedia.org/wiki/File:Intense_bone_fluorescence_reveals_hidden_patterns_in_pumpkin_toadlets_-_video_1_-_41598_2019_41959_MOESM2_ESM.webm'), [

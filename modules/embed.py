@@ -123,7 +123,7 @@ def media_embed(url, defaults=dict()):
             return """<div class="embed-audio{klass}"><audio controls
               src="{src_url}"
               {element_data}
-              ></audio><a class="copyright" href="{url}" title="title">©</a></div>""".format(**opts)
+              ></audio><a class="copyright" href="{url}">©</a></div>""".format(**opts)
         if m.group(2) in ('ogv', 'webm', 'mpg', 'mpeg'):
             return """<div class="embed-video{klass}"><video controls
               src="{src_url}"
@@ -150,7 +150,7 @@ def media_embed(url, defaults=dict()):
             return """<div class="embed-audio{klass}"><audio controls
               src="{src_url}"
               {element_data}
-              ></audio><a class="copyright" href="{url}" title="title">©</a></div>""".format(**opts)
+              ></audio><a class="copyright" href="{url}">©</a></div>""".format(**opts)
         if m.group(2) in ('ogv', 'webm', 'mpg', 'mpeg'):
             return """<div class="embed-video{klass}"><video controls
               src="{src_url}"
