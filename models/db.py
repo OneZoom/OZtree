@@ -772,10 +772,10 @@ db.define_table('tourstop',
     Field('identifier', type='string', notnull=True),  # Unique identifier for tourstop, for establishing symlinks
     Field('ord', type='integer', notnull=True),  # The position of this tourstop in the tour, starting with 1
     Field('ott', type='integer', notnull=False),  # The OTT this tourstop points at. NULL => return to start
-    Field('secondary_ott', type='integer', notnull=True),  # A second OTT when targeting a common ancestor
+    Field('secondary_ott', type='integer', notnull=True, default=0),  # A second OTT when targeting a common ancestor
     Field('qs_opts', type='string', notnull=False, default=''),  # QS-style options to apply to modify tourstop, e.g. into_node=true&initmark=...
     Field('author', type='text', notnull=True, default=''),  # Author of tourstop (doesn't necessarily match tour in case of remix)
-    Field('transition_in', type='string', notnull=True, requires=IS_IN_SET(('fly', 'leap', 'fly_straight'))),  # Transition to use when flying to stop
+    Field('transition_in', type='string', notnull=True, requires=IS_IN_SET(('fly', 'leap', 'fly_straight')), default='fly'),  # Transition to use when flying to stop
     Field('fly_in_speed', type='double', notnull=False, default=1),  # Speed relative to global_anim_speed
     Field('transition_in_wait', type='integer', notnull=False),  # How long to wait before entering into transition
     Field('stop_wait', type='integer', notnull=False),  # How long to wait at this stop (null => wait until "next" is pressed)
@@ -783,7 +783,7 @@ db.define_table('tourstop',
     Field('template_data', type='text', notnull=True,
         filter_in=lambda obj: json.dumps(obj),
         filter_out=lambda txt: json.loads(txt)),  # JSON template data for tourstop
-    Field('lang', type='string', notnull=True, length=3), #the 'primary' 2  or 3 letter 'lang' code for this name (e.g. 'en', 'cmn'). See http://www.w3.org/International/articles/language-tags/
+    Field('lang', type='string', notnull=True, length=3, default='en'), #the 'primary' 2  or 3 letter 'lang' code for this name (e.g. 'en', 'cmn'). See http://www.w3.org/International/articles/language-tags/
     Field('checked_by', type='string'),  # Who has checked the validity of this data?
     Field('checked_updated', 'datetime', default=None),  # When did they do it?
     Field('visible_in_search', 'boolean', notnull=True, default=True),  # Available in tourstop-search for remixing a tour?
