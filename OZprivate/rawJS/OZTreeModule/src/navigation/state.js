@@ -112,7 +112,8 @@ function parse_pathname(state, pathname) {
 
 /// pathname should equal pinpoint
 function deparse_pathname(state) {
-    return state.url_base + state.pinpoint;
+    // NB: In some cases, pinpoint may be null: https://github.com/OneZoom/OZtree/issues/785
+    return state.url_base + (state.pinpoint || '');
 }
 
 /**
