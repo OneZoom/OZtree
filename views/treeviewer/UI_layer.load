@@ -139,7 +139,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
 </div>
 
 <div class="ui-bottomleft">
-  <ul class="ui-controls uk-iconnav uk-iconnav-vertical">
+  <ul class="ui-controls ui-controls-tours uk-iconnav uk-iconnav-vertical">
     <li id="toursButton">
       <div class="icon-container">
         <a href="#tours-modal" uk-toggle uk-icon="icon: location"></a>
