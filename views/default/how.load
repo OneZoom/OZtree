@@ -36,11 +36,15 @@
 4.) Settings
 -->
 <h3>Settings menu</h3>
-<p>Many of the things we'll be referring to in this user guide are accessible from a settings menu at the bottom left of the tree view. You need to press the settings button to open the settings menu.</p>
+<p>Many of the things we'll be referring to in this user guide are accessible from a settings menu at the top right of the tree view. You need to press the settings button to open the settings menu.</p>
 
 <center><img src= "{{=URL('static','images/user_guide/Settings.jpg')}}" alt=""></img></center>
 
-<p>The language setting is an easy one to explain to start with.  It does what it says on the tin and enables you to change the language of the tree of life explorer itself. Unfortunately, it does not yet change the language on other pages of our website.</p>
+<p>The information section provides further information about the tree. For example, the present guide is accessible from the 'how to use' option.  Another example is a detailed page listing all the data sources contributing to the tree.</p>
+<img src= "{{=URL('static','images/user_guide/data_sources.png')}}" alt="">
+</div>
+
+<p>The language setting does what it says on the tin: it enables you to change the language of the tree of life explorer itself. Unfortunately, it does not yet change the language on other pages of our website.</p>
 
 <p>The page content setting enables you to select between slightly different markups of extra information on the tree. So far the only alternative to our default is a markup to accompany The Ancestor's Tale (2016) book by Dawkins and Wong.</p>
 
@@ -131,14 +135,14 @@ Note that the tabs of information on offer aren't always the same as not every r
 
 <div class = "uk-padding">
 <!--
-9.) Compass, reset and intelligent zoom out.
+9.) Location, reset and intelligent zoom out.
 -->
 <h3>Avoiding getting lost in the tree</h3>
 <p>When exploring a large tree it can be easy to get lost. To help avoid this, when exploring with a mouse, the tree won't permit you to navigate to a place where no leaf or common ancestor is on the screen. It also won't let you zoom in to a useless extent (e.g. fill the whole screen with one letter.  We've provided additional tools to help you know where you are in the tree.</p>
 
 <img src= "{{=URL('static','images/user_guide/location_buttons.jpg')}}" alt="">
 
-<p>The list of groups opened with the compass icon are all clickable and will zoom the tree out automatically to the ancestor node that you clicked on.</p>
+<p>The location icon on the left brings up a list of groups that are all clickable and will zoom the tree out automatically to the ancestor node that you clicked on.</p>
 
 <img src= "{{=URL('static','images/user_guide/Compass.jpg')}}" alt="">
 
@@ -146,8 +150,8 @@ Note that the tabs of information on offer aren't always the same as not every r
 </div>
 
 <div class = "uk-padding">
-<h3>More on the compass feature</h3>
-<p> The compass feature only lists named nodes that are ancestors to your current view of the tree. The grey shapes between named nodes on your list also give information. The group 'Lady beetles' with 12 species is a very tiny part of the much larger group that contains it. The shape connecting the two is therefore almost a triangle showing that 'lady beetles' are a very tiny part of the 'Lady beetles and ladybird beetles'.</p>
+<h3>More on the location feature</h3>
+<p> The location button on the bottom left lists named nodes that are ancestors to your current view of the tree. The grey shapes between named nodes on your list also give information. The group 'Lady beetles' with 12 species is a very tiny part of the much larger group that contains it. The shape connecting the two is therefore almost a triangle showing that 'lady beetles' are a very tiny part of the 'Lady beetles and ladybird beetles'.</p>
 
 <img src= "{{=URL('static','images/user_guide/compass_eg1.png')}}" alt="">
 
@@ -245,17 +249,6 @@ Note that the tabs of information on offer aren't always the same as not every r
 
 </div>
 
-<div class = "uk-padding">
-<!--
-13.) Information button
--->
-<h3>Information button</h3>
-
-<p>The information button on the bottom left can be used to access further information about the tree.</p>
-<img src= "{{=URL('static','images/user_guide/info_button.png')}}" alt="">
-<p>The present guide is accessible from the 'how to use' option.  Another example is a detailed page listing all the data sources contributing to the tree.</p>
-<img src= "{{=URL('static','images/user_guide/data_sources.png')}}" alt="">
-</div>
 </div>
 
 </div>
