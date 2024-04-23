@@ -18,8 +18,13 @@
   <ul class="uk-list">
     <li>
       <h4>Version 4.0 'paradoxical frog' (current version - April 2024)</h4>
-      <a href="{{=URL('static','images/TourWithVideo.jpg')}}" target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/user_guide/TourWithVideo.jpg')}}" alt=""></a>
-      <p> Includes all the features of version 3.5 but adds the concept of TreeTours: guided visits around the tree of life with accompanying video and audio. New tours can be created via a <a href="https://github.com/OneZoom/tours">separate GitHub repository</a>. The treeview UI has changed slightly (e.g. toolbars moved) after a combination of user and developer feedback. Under the hood, improvements have been made in pinpointing areas of the tree to display, and the code used to construct the underlying data behind the tree of life has been streamlined and also placed into <a href="https://github.com/OneZoom/tree-build">its own GitHub repository</a>. Various minor bugs have also been fixed, and testing of the OneZoom codebase has been substantially increased.</p>
+      <p> An evolution of the OneZoom UI from version 3.6, accounting for user / expert feedback and to account for the development of OneZoom TreeTours: guided visits around the tree of life with accompanying video and audio.</p>
+      <a href="{{=URL('static','images/TourWithVideo.jpg')}}" target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/TourWithVideo.jpg')}}" alt=""></a>      
+      <p>New tours can be created via a <a href="https://github.com/OneZoom/tours">separate GitHub repository</a>. Under the hood, other improvements have been made e.g. in pinpointing areas of the tree to display and in the code used to piece together the underlying data behind the tree of life (also placed into <a href="https://github.com/OneZoom/tree-build">its own GitHub repository</a>). Various minor bugs have also been fixed, and testing of the OneZoom codebase has been substantially increased.</p>
+    </li>
+    <li>
+      <h4>Version 3.6 'musical furry lobster' (obsolete)</h4>
+      <p> Includes all the features of version 3.5 but adds species ocurrence maps, a docker image, and the ability to display and renew personal sponsorships easily.</p>
     </li>
     <li>
       <h4>Version 3.5 'chocolate chip starfish' (obsolete)</h4>
@@ -36,8 +41,9 @@
     </li>
     <li>
       <h4>Version 3.3.1 (obsolete)</h4>
+      <p> Includes all the features of version 3.3 and adds code to build a museum tree of life display exhibit in seconds.</p>
       <a href="{{=URL('static','images/DandDWT1.png')}}" target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/DandDWT1.png')}}" alt=""></a>
-      <p> Includes all the features of version 3.3 and adds code to build a museum tree of life display exhibit  in seconds.  In particular, i) the user interface has been customized for museum display use, ii) the display URL has been 'sandboxed' so that users can't break out and explore material outside the tree of life and taxa pages on Wikipedia, iii) a new tutorial has been added to the display, and iv) a 'screensaver' function ensures that unattended displays automatically reset and fly around the tree to attract potential users passing by.  A new launch page enables customization of the museum display including the home taxa location, language, view type and other settings.  Version 3.4 also features some updates to the menus and pages on the website outside of the tree of life explorer.</p>
+      <p>In particular, i) the user interface has been customized for museum display use, ii) the display URL has been 'sandboxed' so that users can't break out and explore material outside the tree of life and taxa pages on Wikipedia, iii) a new tutorial has been added to the display, and iv) a 'screensaver' function ensures that unattended displays automatically reset and fly around the tree to attract potential users passing by.  A new launch page enables customization of the museum display including the home taxa location, language, view type and other settings.  Version 3.4 also features some updates to the menus and pages on the website outside of the tree of life explorer.</p>
     </li>
     <li>
       <h4>Version 3.3 (obsolete)</h4>
@@ -56,10 +62,10 @@
       <p>Includes all the features of version 3.0 and adds substantial performance enhancements as well as basic multi-language support. Behind the scenes the core visualisation software has been entirely refactored and modularised in ECMAScript 6.</p>
      </li>
     <li>
-      <h4>Version 3.0 (obsolete)</h4>
+      <h4>Version 3.0 (obsolete)</h4>      
+      <p>Includes all the features of version 2.0 and adds dynamic loading and caching systems so that the entire tree of life can at last be viewed on a single page.</p>
       <a href="{{=URL('static','images/Screenshots/all_life_PD.png')}}" target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/Screenshots/all_life_PD.png')}}" alt=""></a>
-      
-      <p>Includes all the features of version 2.0 and adds dynamic loading and caching systems so that the entire tree of life can at last be viewed on a single page. A common ancestor search function was also added as well as a URL parser that stores your position in the tree.</p>
+      <p>A common ancestor search function was also added as well as a URL parser that stores your position in the tree.</p>
     </li>
     <li>
       <h4>Version 2.0 (obsolete)</h4>
@@ -69,8 +75,9 @@
     
     <li>
       <h4>Version 1.2 kiosk</h4>
+      <p>This is very different from the other version 1.2 variants in terms of functionality. This code provides an easy to deploy explorer for touch screen environments in public venues. It has been developed using feedback from surveys and observations made at venues hosting the display. Features include... embedded images, embedded animal sounds, dynamic zooming around the tree when not in use, full search functionality and a bespoke on screen keyboard so that the system keyboard need not be exposed to users. </p>
       <a href="{{=URL('static','images/gallery/sydney_kiosk_small.jpg')}}" target = "_blank" class="thumbnail"><img src= "{{=URL('static','images/gallery/sydney_kiosk_small.jpg')}}" alt=""></a>
-      <p>This is very different from the other version 1.2 variants in terms of functionality. This code provides an easy to deploy explorer for touch screen environments in public venues. It has been developed using feedback from surveys and observations made at venues hosting the display. Features include... embedded images, embedded animal sounds, dynamic zooming around the tree when not in use, full search functionality and a bespoke on screen keyboard so that the system keyboard need not be exposed to users. </p><p><a href = "{{=URL('static','downloads/OneZoom_V1.2_Kiosk.zip')}}" >Download OneZoom version 1.2 kiosk </a>, note that to function properly this also requires raw data that is not included in the download. You will need to unzip the software, then <a href="mailto:mail@onezoom.org">contact us</a> to request an example data set (we have tetrapods and plants). You can then use this to learn the file formats and layouts necessary to input your own data without needing to edit the code itself.</p>
+      <p><a href = "{{=URL('static','downloads/OneZoom_V1.2_Kiosk.zip')}}" >Download OneZoom version 1.2 kiosk </a>, note that to function properly this also requires raw data that is not included in the download. You will need to unzip the software, then <a href="mailto:mail@onezoom.org">contact us</a> to request an example data set (we have tetrapods and plants). You can then use this to learn the file formats and layouts necessary to input your own data without needing to edit the code itself.</p>
     </li>
     <li>
       <h4>Version 1.2</h4>
