@@ -1,9 +1,0 @@
-[By email on 17th July 2014, pers. comm. Iñaki RuizTrillo
-> are there any studies that attempt to resolve the taxonomy & order or branching *within* this clade. 
-> E.g. are the 4 groups Dermocystida, Ichthyophonida, Eccrinales and Amoebidiales monophyletic, and if 
-> so, is any the outgroup to the rest?
-
-That’s a good question. We are working on phylogenomics of them. However, the data on eccrinales and amoebidiales is minimal (just from one single gene, the 18S rDNA). I do not think this is settled and I think we need more data to confirm that eccrinales and amoebidiales are within the ichthyosporeans. I think they are, but we need more data to confirm. We have focused so far on ichthyophonida and dermocystidia. Our preliminary data on multigene trees suggest that Corallochytrium limacisporium may indeed be sister to Dermocystidia and Ichthyophonida (no data on eccrinales and amoebidiales). I hope I would be able to say more in about 4 to 5 years.
-
-]
-(((Amoebidiaceae_ott5362854@,(Sphaeroforma_ott5248824@,Ichthyophonae_ott5247663@))Ichthyophonida,Dermocystida_ott99700@),Corallochytrida_ott5247668@);

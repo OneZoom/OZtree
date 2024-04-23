@@ -1,4 +1,0 @@
-[The Cryptomycota and Microsporidia are grouped according to http://www.ncbi.nlm.nih.gov/pubmed/23932404, together with the Aphelidea (see http://journal.frontiersin.org/Journal/10.3389/fmicb.2014.00112/abstract). Note that in draftversion 4 these are absent from the tree due to 'incertae sedis'. Hopefully this will be corrected in version 5.
-
-#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Fungi]
-(Aphelidea_ott5355148@:800,(Cryptomycota_ott338285@:700,Microsporidia_ott16113@:700):100)Opisthosporidia;
