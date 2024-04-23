@@ -108,7 +108,9 @@ class Tour {
     this._state = new_state;
 
     // Update container state based on our state
-    if (this.container) this.container[0].setAttribute('data-state', this._state);
+    if (this.container && this.container[0].getAttribute('data-state') !== this._state) {
+      this.container[0].setAttribute('data-state', this._state);
+    }
 
     // Set CSS class if anything is happening, so UI can decide to dim
     if (this.div_wrapper) {
@@ -518,6 +520,13 @@ class Tour {
           add_fn(this, mutation.target.tourstop, mutation.target);
         }
       });
+
+      // Add observer to tour itself also, to catch pausing
+      (new window.MutationObserver((mutationList, observer) => {
+        const el_ts = this.curr_stop().container[0];
+
+        if (el_ts.matches(target_sel)) add_fn(this, el_ts.tourstop, el_ts);
+      })).observe(this.container[0], opts);
     } else {
       expected_states = new Set(expected_states)
       mo = new window.MutationObserver((mutationList, observer) => {

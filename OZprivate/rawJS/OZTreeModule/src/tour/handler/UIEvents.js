@@ -154,7 +154,7 @@ function handler(tour) {
   tour.container[0].addEventListener('touchstart', onMouseDown);
   tour.tourstop_observer('*', '*', (tour, tourstop, el_ts) => {
     // Reset tourstop height after any state change
-    el_ts.style.height = '';
+    if (tour.state === 'tstate-playing') el_ts.style.height = '';
   });
 
   // Listen to document level visibility (read: inactive tab), translate to tourstop blocks

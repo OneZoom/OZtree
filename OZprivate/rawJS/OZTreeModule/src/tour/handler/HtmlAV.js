@@ -28,16 +28,31 @@ function handler(tour) {
   return Promise.resolve().then(() => {
     // Attach events to block progression when playing
     return el_avs.forEach((el) => {
-      el.addEventListener('play', (e) => {
-        const tourstop = e.target.el_tourstop.tourstop;
+      el.addEventListener('play', (event) => {
+        const tourstop = event.target.el_tourstop.tourstop;
         const block_name = event.target.src;
+
+        if (tourstop.tour.state !== 'tstate-playing') {
+          tourstop.tour.user_resume();
+        }
 
         if (tourstop.state === el.autoplay_states.slice(-1)[0]) {
           event.target.el_tourstop.tourstop.block_add(block_name);
         }
       });
-      el.addEventListener('ended', (e) => {
-        const tourstop = e.target.el_tourstop.tourstop;
+      el.addEventListener('pause', (event) => {
+        const tourstop = event.target.el_tourstop.tourstop;
+        const block_name = event.target.src;
+
+        // If AV is ending (rather than pausing mid-video, do nothing and let the ended event handle things
+        if (event.target.ended) return;
+
+        if (tourstop.state === 'tsstate-active_wait' && tourstop.tour.state === 'tstate-playing') {
+          tourstop.tour.user_pause();
+        }
+      });
+      el.addEventListener('ended', (event) => {
+        const tourstop = event.target.el_tourstop.tourstop;
         const block_name = event.target.src;
 
         event.target.el_tourstop.tourstop.block_remove(block_name);
@@ -47,11 +62,17 @@ function handler(tour) {
     // Attach observers for any autoplaying AV
     tour.tourstop_observer('.contains-httpav', '*', (tour, tourstop, el_ts) => {
       el_ts.querySelectorAll(":scope audio,:scope video").forEach((el) => {
-        if (window.getComputedStyle(el_ts).visibility !== 'visible') {
-          // Shouldn't ever play whilst invisible
-          el.pause();
-          el.currentTime = 0;
-        } else if (el.autoplay_states.indexOf(tourstop.state) > -1) {
+
+        if (!el.paused) {
+          if (window.getComputedStyle(el_ts).visibility !== 'visible') {
+            // Shouldn't ever play whilst invisible
+            el.pause();
+            el.currentTime = 0;
+          } else if (tour.state !== 'tstate-playing') {
+            // Pause when tour is paused
+            el.pause();
+          }
+        } else if (tour.state === 'tstate-playing' && el.autoplay_states.indexOf(tourstop.state) > -1) {
           el.play();
 
           // Check to see if final block should be added

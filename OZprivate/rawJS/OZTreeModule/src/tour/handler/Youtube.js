@@ -48,6 +48,13 @@ function handler(tour) {
           const block_name = iframe.src;
           const tourstop = iframe.el_tourstop.tourstop;
 
+          // Sync tour state with video state
+          if (event.data === YT.PlayerState.PLAYING && tourstop.tour.state !== 'tstate-playing') {
+            tourstop.tour.user_resume();
+          } else if (event.data === YT.PlayerState.PAUSED && tourstop.state === 'tsstate-active_wait' && tourstop.tour.state === 'tstate-playing') {
+            tourstop.tour.user_pause();
+          }
+
           if (event.data == YT.PlayerState.ENDED) {
             tourstop.block_remove(block_name);
           } else if (event.data == YT.PlayerState.PLAYING && tourstop.state === iframe.autoplay_states.slice(-1)[0]) {
@@ -67,14 +74,19 @@ function handler(tour) {
       el_ts.querySelectorAll(":scope iframe.embed-youtube").forEach((el) => {
         const player = window.YT.get(el.id);
 
-        if (player.getPlayerState() === YT.PlayerState.PLAYING && window.getComputedStyle(el_ts).visibility !== 'visible') {
-          // Shouldn't ever play whilst invisible
-          player.pauseVideo();
-          // Reset to start
-          // NB: We can't use stopVideo() to do this, since it will also clear any video clip from the URL
-          // NB: We also can't do seekTo(0), since seekTo() isn't relative to a clip
-          if (el.ozStartPos !== undefined) player.seekTo(el.ozStartPos);
-        } else if (el.autoplay_states.indexOf(tourstop.state) > -1) {
+        if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+          if (window.getComputedStyle(el_ts).visibility !== 'visible') {
+            // Shouldn't ever play whilst invisible
+            player.pauseVideo();
+            // Reset to start
+            // NB: We can't use stopVideo() to do this, since it will also clear any video clip from the URL
+            // NB: We also can't do seekTo(0), since seekTo() isn't relative to a clip
+            if (el.ozStartPos !== undefined) player.seekTo(el.ozStartPos);
+          } else if (tour.state !== 'tstate-playing') {
+            // Pause when tour is paused
+            player.pauseVideo();
+          }
+        } else if (tour.state === 'tstate-playing' && el.autoplay_states.indexOf(tourstop.state) > -1) {
           player.playVideo();
 
           // Check to see if final block should be added
