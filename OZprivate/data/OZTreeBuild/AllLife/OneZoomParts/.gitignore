@@ -1,6 +1,0 @@
-#ignore everything
-*
-#except the readme and .gitignore
-!.gitignore
-!README.metadata
-

@@ -1,5 +1,0 @@
-## Details
-
-The `include_noAutoOTT` directory contains the main bespoke phylogeny files. In these files, most taxa have not been mapped to Open Tree Taxonomy IDs, in case these IDs change over time. Scripts exist to create modified files where the vast majority of OTT numbers are added to taxa by looking up the scientific name in the OpenTree TNRS service. These modified files can be populated automatically into additional `include_***` directories by running the `Add_OTT_numbers_to_trees.py` script, as described in [OZprivate/ServerScripts/TreeBuild/README.markdown](../../../../OZprivate/ServerScripts/TreeBuild/README.markdown).
-
-The `SupplementaryTaxonomy.tsv` file can be used to override any misidentified or missmapped taxa from the current OpenTree, as also described in the link above (step 5). 

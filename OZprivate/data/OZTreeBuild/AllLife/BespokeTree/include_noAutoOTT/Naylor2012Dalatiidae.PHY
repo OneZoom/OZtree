@@ -1,4 +1,0 @@
-[Arrangement from 'Elasmobranch Phylogeny: A Mitochondrial Estimate Based on 595 Species' (https://doi.org/10.1201/B11867-9 see http://sharksrays.org)
-
-#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Vertebrates]
-((Squaliolus_ott956134@,(Euprotomicroides_ott3595317@,Euprotomicrus_ott547469@)),(Dalatias_ott1027234@,Isistius_ott277031@))Dalatiidae;
