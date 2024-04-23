@@ -1,5 +1,6 @@
 {{
 from applications.OZtree.modules.embed import media_embed
+from applications.OZtree.modules.markdown import markdown
 ts_classes = (  # CSS classes that can be added to template_data as boolean properties
     'visible-transition_in',
     'visible-transition_in_wait',
@@ -55,7 +56,7 @@ ts_fields = (  # HTML fields that can be added to container
     {{for k, tag in ts_fields:}}{{if tdata.get(k, ''):}}{{for value in tdata[k] if isinstance(tdata[k], list) else [tdata[k]]:}}
     {{content_dict = value if isinstance(value, dict) else dict(text=value)}}
     <{{=tag}} class="{{=k}} {{=' '.join(key for key, value in content_dict.items() if value is True)}}"
-        >{{=T(content_dict['text'])}}</{{=tag}}>{{pass}}{{pass}}{{pass}}
+        >{{=XML(markdown(content_dict['text']))}}</{{=tag}}>{{pass}}{{pass}}{{pass}}
     {{if len(tdata.get('media', [])) > 0:}}{{for url in tdata['media']:}}
       {{=XML(media_embed(url, defaults=dict(ts_autoplay='tsstate-active_wait', url_base='https://onezoom.github.io/tours/')))}}
     {{pass}}{{pass}}
