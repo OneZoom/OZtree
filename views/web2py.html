@@ -1,0 +1,6 @@
+<!--A OneZoom-specific slimmed down version of the standard w2p includes, to be used if web2py ajax is not required-->
+{{
+response.files.insert(0,URL('static','js/jquery.min.js'))
+response.include_meta()
+response.include_files()
+}}

@@ -26,7 +26,7 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
 }}
   <title>OneZoom Tree of Life Explorer, text page for {{=page_info.get('title_name')}}</title>
   {{if response.canonical:}}<link rel="canonical" href="{{=response.canonical}}" />{{pass}}
-{{include 'web2py_ajax.html' #only really needed for web2py ajax loading in sponsor_node tab (must be above the UIkit lines)}}
+  {{include 'web2py.html' # must be above the UIkit lines}}
   <link rel="stylesheet" href="{{=URL('static','uikit-3/css/uikit.min.css')}}" />
   <script src="{{=URL('static','uikit-3/js/uikit.min.js')}}"></script>
   <script src="{{=URL('static','uikit-3/js/uikit-icons.min.js')}}"></script>
@@ -34,9 +34,9 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
   <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/OZ_shared.css')}}" />
   {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
   <!-- do not change the next line in any way. The exact format is used for partial installs -->
-  <div id="OZ_js_modules" data-include="../static/OZTreeModule/dist/OZ_main.html">
-  {{include "../static/OZTreeModule/dist/OZ_main.html"}}
-  {{include '../static/OZTreeModule/dist/OZui.html'}}
+  <div id="OZ_js_modules" data-include="../static/OZTreeModule/dist/OZentry.html ../static/OZTreeModule/dist/OZui.html">
+    {{include '../static/OZTreeModule/dist/OZentry.html'}}
+    {{include '../static/OZTreeModule/dist/OZui.html'}}
   </div>
 
   <!-- treeviewer constants -->

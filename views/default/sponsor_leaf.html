@@ -22,6 +22,7 @@ response.files.append(URL('static', 'OZSponsor/sponsor_leaf.css'))
 response.files.append(URL('static', 'OZSponsor/EOLqueries.js'))
 response.files.append(URL('static','css/content_pages.css'))
 }}
+{{include 'web2py_ajax.html'  # I'm not actually sure we need ajax on the leaf page: perhaps this could be removed?}}
 {{import img}}
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}
