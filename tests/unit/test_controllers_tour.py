@@ -361,6 +361,71 @@ class TestControllersTour(unittest.TestCase):
             ]
         )
 
+    def test_data_resettodefault(self):
+        """Removing values will reset them to their default"""
+        otts = util.find_unsponsored_otts(10)
+
+        # Can insert a tour with a common ancestor pinpoint
+        t = self.tour_put('UT::TOUR', dict(
+            title="A unit test tour",
+            description="It's a nice tour",
+            author="UT::Author",
+            tourstop_shared=dict(
+                stop_wait=1234,
+            ),
+            tourstops=[
+                dict(
+                    ott=otts[0],
+                    identifier="ott0",
+                    stop_wait=3,
+                    author="Frank",
+                ),
+                dict(
+                    ott=otts[1],
+                    identifier="ott1",
+                    author="Gelda",
+                ),
+            ],
+        ))
+        # One entry uses default
+        self.assertEqual(
+            [ts['stop_wait'] for ts in self.tour_get('UT::TOUR')['tourstops']],
+            [3, 1234],
+        )
+        # Both have an Author
+        self.assertEqual(
+            [ts['author'] for ts in self.tour_get('UT::TOUR')['tourstops']],
+            ['Frank', 'Gelda'],
+        )
+
+        # Clear author, stop_wait. Get set back to their DB defaults
+        t = self.tour_put('UT::TOUR', dict(
+            title="A unit test tour",
+            description="It's a nice tour",
+            author="UT::Author",
+            tourstop_shared=dict(
+            ),
+            tourstops=[
+                dict(
+                    ott=otts[0],
+                    identifier="ott0",
+                    stop_wait=3,
+                ),
+                dict(
+                    ott=otts[1],
+                    identifier="ott1",
+                ),
+            ],
+        ))
+        self.assertEqual(
+            [ts['stop_wait'] for ts in self.tour_get('UT::TOUR')['tourstops']],
+            [3, None],
+        )
+        self.assertEqual(
+            [ts['author'] for ts in self.tour_get('UT::TOUR')['tourstops']],
+            ['', ''],
+        )
+
     def test_list(self):
         def t_list(tours, include_rest=""):
             return util.call_controller(

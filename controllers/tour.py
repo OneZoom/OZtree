@@ -217,6 +217,8 @@ def data():
             tss_targets = {}
             for i, ts in enumerate(request.vars['tourstops']):
                 ts = {
+                    # All fields not otherwise specfied return to their default
+                    **{k:db.tourstop.get(k).default for k in db.tourstop.fields if k not in ['created', 'updated']},
                     **ts_shared,
                     **ts,
                     # Deep-clone template_data, should always exist
