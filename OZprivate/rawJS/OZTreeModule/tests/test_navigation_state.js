@@ -91,5 +91,8 @@ test('deparse_state', function (t) {
     test_url_match("http://onezoom.example.com/life/@=6794#x1402,y364,w1.4013");
     test_url_match("http://onezoom.example.com/life/@Myzopoda_aurita?otthome=%40_ancestor%3D983483%3D3600795");
 
+    // URLs without a pinpoint pass through unscathed
+    test_url_match("http://onezoom.example.com/life/?tour=%2Fmoo%2Foink.html");
+
     t.end();
 });
