@@ -56,9 +56,26 @@ function handler(tour) {
         const tourstop = this.element.el_tourstop.tourstop;
         const block_name = this.element.src;
 
+        if (tourstop.tour.state !== 'tstate-playing') {
+          tourstop.tour.user_resume();
+        }
+
         if (tourstop.state === el_video.autoplay_states.slice(-1)[0]) {
           tourstop.block_add(block_name);
         }
+      });
+      el_video.vimeoplayer.on('pause', function (data) {
+        const tourstop = this.element.el_tourstop.tourstop;
+        const block_name = this.element.src;
+
+        el_video.vimeoplayer.getEnded().then((ended) => {
+          // If AV is ending (rather than pausing mid-video, do nothing and let the ended event handle things
+          if (ended) return;
+
+          if (tourstop.state === 'tsstate-active_wait' && tourstop.tour.state === 'tstate-playing') {
+            tourstop.tour.user_pause();
+          }
+        });
       });
       el_video.vimeoplayer.on('ended', function (data) {
         const tourstop = this.element.el_tourstop.tourstop;
@@ -71,22 +88,27 @@ function handler(tour) {
     // Attach observers for any autoplaying video
     tour.tourstop_observer('.contains-vimeo', '*', (tour, tourstop, el_ts) => {
       el_ts.querySelectorAll(":scope iframe.embed-vimeo").forEach((el) => {
-        if (window.getComputedStyle(el_ts).visibility !== 'visible') {
-          // Shouldn't ever play whilst invisible
-          el.vimeoplayer.pause();
-          el.vimeoplayer.setCurrentTime(0);
-        } else if (el.autoplay_states.indexOf(tourstop.state) > -1) {
-          el.vimeoplayer.play();
+        el.vimeoplayer.getPaused().then((paused) => {
 
-          // Check to see if final block should be added
-          if (tourstop.state === el.autoplay_states.slice(-1)[0]) {
-            el.vimeoplayer.getPaused().then((paused) => {
-              const block_name = el.src;
+          if (!paused) {
+            if (window.getComputedStyle(el_ts).visibility !== 'visible') {
+              // Shouldn't ever play whilst invisible
+              el.vimeoplayer.pause();
+              el.vimeoplayer.setCurrentTime(0);
+            } else if (tour.state != 'tstate-playing') {
+              // Pause when tour is paused
+              el.vimeoplayer.pause();
+            }
+          } else if (tour.state === 'tstate-playing' && el.autoplay_states.indexOf(tourstop.state) > -1) {
+            el.vimeoplayer.play();
 
-              if (!paused) tourstop.block_add(block_name);
-            });
+            // Check to see if final block should be added
+            if (tourstop.state === el.autoplay_states.slice(-1)[0]) {
+              if (!paused) tourstop.block_add(el.src);
+            }
           }
-        }
+
+        });
       });
     });
   });
