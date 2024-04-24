@@ -468,6 +468,7 @@ db.define_table('reservations',
     # a login, we will always use the reservations.username value.
     # The reservations.username field is optional but needed if the user is to have a
     # "public" page of all their sponsorships 
+    # NB: Ideally the default of this field would be None, not "" - https://github.com/OneZoom/OZtree/issues/645
     Field('e_mail', type='string', length=200, requires=IS_EMPTY_OR(IS_EMAIL())),
     Field('twitter_name', type='text'),
     Field('allow_contact', type=boolean, default=False),

@@ -308,6 +308,7 @@ class TestSponsorship(unittest.TestCase):
             e_mail='001@unittest.example.com',
             user_sponsor_name="Arnold",  # NB: Have to at least set user_sponsor_name
             user_donor_name="Emily",
+            user_sponsor_kind="for",
             prev_reservation=None,
         ))
         reservation_confirm_payment('UT::BK001', 10000, dict(
@@ -315,10 +316,13 @@ class TestSponsorship(unittest.TestCase):
             PP_e_mail='paypal@unittest.example.com',
             sale_time='01:01:01 Jan 01, 2001 GMT',
         ))
-        util.verify_reservation(reservation_row, verified_name="Definitely Arnold")
+        username = util.verify_reservation(reservation_row, verified_name="Definitely Arnold")
         status, _, reservation_row, _ = get_reservation(ott, form_reservation_code="UT::002")
         self.assertEqual(status, 'sponsored')
+        self.assertEqual(reservation_row.verified_kind, "for")
         self.assertEqual(reservation_row.verified_donor_name, "Emily")
+        self.assertEqual(reservation_row.verified_name, "Definitely Arnold")
+        self.assertEqual(reservation_row.username, username)
 
         # Expire the reservation, won't be marked as renewed
         expired_r_id = reservation_expire(reservation_row)
@@ -358,6 +362,7 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(reservation_row.e_mail, '002@unittest.example.com')
         self.assertEqual(reservation_row.PP_e_mail, None)
         self.assertEqual(reservation_row.PP_transaction_code, None)
+        self.assertEqual(reservation_row.username, None)
 
         # Buy it, compare details with expired row
         reservation_confirm_payment('UT::BK002', 10000, dict(
@@ -376,11 +381,14 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(expired_r.sale_time, '01:01:01 Jan 01, 2001 GMT')
         self.assertEqual(expired_r.was_renewed, True)
         self.assertEqual(reservation_row.sale_time, '01:01:01 Jan 01, 2002 GMT')
+        self.assertEqual(reservation_row.username, username)
         self.assertEqual(reservation_row.user_sponsor_name, 'Arnold')
         self.assertEqual(reservation_row.verified_name, 'Definitely Arnold')
         self.assertEqual(reservation_row.PP_e_mail, 'paypal@unittest.example.com')
         self.assertEqual(reservation_row.PP_transaction_code, 'UT::PP2')
         self.assertEqual(reservation_row.verified_donor_name, "Emily")
+        self.assertEqual(reservation_row.user_sponsor_kind, "for")
+        self.assertEqual(reservation_row.verified_kind, "for")
 
     def test_reservation_confirm_payment__invalid(self):
         """Unknown baskets are an error"""
