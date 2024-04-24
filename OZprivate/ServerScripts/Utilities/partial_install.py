@@ -29,10 +29,11 @@ for line in fileinput.input(args.filenames, inplace=True):
     # the local version, in static/
     m = re.match('\s*<div id="OZ_js_modules" data-include="([^>]+)">', line)
     if m:
-        include_path = os.path.join(os.path.dirname(fileinput.filename()), m.group(1))
-        with open(include_path) as include_file:
-            for inc_line in include_file:
-                line += inc_line
+        for include_path in m.group(1).split(" "):
+            include_path = os.path.join(os.path.dirname(fileinput.filename()), include_path)
+            with open(include_path) as include_file:
+                for inc_line in include_file:
+                    line += inc_line
         skip_lines = True
     elif line.strip() == '</div>':
         skip_lines = False

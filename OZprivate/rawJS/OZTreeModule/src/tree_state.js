@@ -28,7 +28,6 @@ class TreeState {
     this.url_parsed = false;
     this.last_active_at = new Date();
     this.last_render_at = new Date();
-    this.disable_interaction = false;
     let self = this;
     setTimeout(function() {
       self.url_parsed = true;
@@ -48,6 +47,7 @@ class TreeState {
     }
     this.widthres = canvas.width;
     this.heightres = canvas.height;
+    this._update_focal_area()
     call_hook("window_size_change");
   }
   get flying() {
@@ -59,6 +59,44 @@ class TreeState {
       call_hook("flying_finish");
     }
   }
+
+  /**
+   * Constrain focal area to the right (frac_landscape) if landscape, topmost (frac_portrait) if portrait
+   */
+  constrain_focal_area(frac_landscape, frac_portrait) {
+    this._fa = {
+      frac_landscape: frac_landscape,
+      frac_portrait: frac_portrait,
+    };
+    this._update_focal_area();
+  }
+
+  // Update the focal_area bounding box: The rect we should fill on flights, used by position_helper
+  _update_focal_area() {
+    const targetScreenProp = 0.95;  // proportion of screen that should be filled with targeted area when zooming in / out
+    const borderPerc = (1 - targetScreenProp) / 2;
+    const is_landscape = this.widthres / this.heightres > 1;
+
+    if (!this._fa) this._fa = {
+      frac_landscape: 1,
+      frac_portrait: 1,
+    };
+
+    this.focal_area = {
+      // Shrink overall bounding box by targetScreenProp
+      xmin: Math.round(this.widthres * (is_landscape ? 1-this._fa.frac_landscape : 0) + this.widthres * borderPerc),
+      ymin: Math.round(this.heightres * borderPerc),
+      xmax: Math.round(this.widthres - this.widthres * borderPerc),
+      ymax: Math.round(this.heightres * (!is_landscape ? this._fa.frac_portrait: 1) - this.heightres * borderPerc),
+    };
+
+    // Include width/height/center as convenience helpers
+    this.focal_area.width = this.focal_area.xmax - this.focal_area.xmin;
+    this.focal_area.height = this.focal_area.ymax - this.focal_area.ymin;
+    this.focal_area.xcentre = (this.focal_area.xmax + this.focal_area.xmin)/2;
+    this.focal_area.ycentre = (this.focal_area.ymax + this.focal_area.ymin)/2;
+  }
+
   get xp() {
     return this._xp;
   }
@@ -97,11 +135,11 @@ class TreeState {
 
     // After 400ms, any action should be cleared (unless something updates it with a new action)
     if (this.action_timeout) {
-        window.clearTimeout(this.action_timeout);
+        clearTimeout(this.action_timeout);
         this.action_timeout = null;
     }
     if (this.action) {
-        this.action_timeout = window.setTimeout(this.set_action.bind(this, null), 400);
+        this.action_timeout = setTimeout(this.set_action.bind(this, null), 400);
     }
   }
   is_idle() {

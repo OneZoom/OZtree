@@ -12,6 +12,8 @@ $oz_terms_bg: #4a514a;
 $oz_terms_fg: #c6c2be;
 $oz_grey_leaf: #6e6e6e;
 
+$oz_border_def: #242A22;
+
 $oz-font-serif: serif;
 %oz-font-serif {
   font-family: $oz-font-serif;
@@ -20,7 +22,7 @@ $oz-font-serif: serif;
 
 %oz-background-dark {
   background: $oz_dark_bg;
-  color: $oz_light_bg;
+  color: #fff;
 
   h1, h2, h3, h4, h5, h6 {
     color: $oz_green_fg;
@@ -30,8 +32,26 @@ $oz-font-serif: serif;
     color: $oz_grey_fg;
   }
 
+  a:not(.block) {
+    color: inherit;
+    &:link, &:active, &:visited, &:hover {
+      color: inherit;
+    }
+  }
+
+  &.uk-button, &[role=button] {
+    color: $oz_green_fg;
+  }
+
   .oz-pill {
     border: 1px solid $oz_light_bg;
+  }
+
+  .uk-slider .oz-slider-arrow-left {
+    background-image: url(../images/oz-leftarrow-greenfg.svg);
+  }
+  .uk-slider .oz-slider-arrow-right {
+    background-image: url(../images/oz-rightarrow-greenfg.svg);
   }
 }
 
@@ -44,6 +64,10 @@ $oz-font-serif: serif;
     font-family: inherit;
   }
 
+  &.oz-pill {
+    color: $oz_dark_bg;
+  }
+
 .green-text {
     color: $oz_green_bg;
     font-family: inherit;
@@ -54,4 +78,14 @@ $oz-font-serif: serif;
     font-family: inherit;
 }
 
+}
+
+%oz-drop-shadow {
+    box-shadow: 0 4px 4px 0 rgba(0,0,0,.25);
+}
+%oz-drop-shadow-active {
+    @extend %oz-drop-shadow;
+    &:active {
+        box-shadow: 0 2px 4px 0 rgba(0,0,0,0.25);
+    }
 }

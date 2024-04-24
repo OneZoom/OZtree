@@ -1,8 +1,11 @@
 #!/bin/sh
 set -eu
 
-SCRIPT="applications/OZtree/$1"
-shift
+[ -n "${1-}" ] && { SCRIPT="applications/OZtree/$1"; shift; } || { SCRIPT=""; }
 
-cd ../../
-exec ./bin/python3 web2py.py -S OZtree -M -R "${SCRIPT}" --args $*
+cd "$(readlink -f ../../)"
+
+[ -n "${SCRIPT}" ] && exec ./bin/python3 web2py.py -S OZtree -M -R "${SCRIPT}" --args $*
+
+[ -f oz.crt ] || openssl req -newkey rsa:2048 -x509 -days 365 -nodes -keyout oz.key -subj "/CN=dev.onezoom/" -out oz.crt;
+exec ./bin/python3 web2py.py -c oz.crt -k oz.key -p 8000 -a pass

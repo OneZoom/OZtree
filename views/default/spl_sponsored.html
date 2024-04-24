@@ -30,7 +30,7 @@
             <figcaption>{{=XML(long_name)}}</figcaption>
             <img alt="{{=T('Image of %s') % (species_name)}}"
             {{if image:}}
-            src="{{=img.thumb_url(thumb_base_url, image.src, image.src_id)}}"
+            src="{{=img.thumb_url(image.src, image.src_id)}}"
             title="{{=' / '.join([t for t in [image.rights, image.licence] if t]).replace('"',"'")}}"
             {{else:}}
             src="{{=URL('static','images/noImage_transparent.png')}}"

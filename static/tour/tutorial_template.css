@@ -1,11 +1,11 @@
-#tour_wrapper {
+.tour.tutorial_MD {
   position: fixed;
   top: 0;
   left: 0;
   z-index: 2000;
 }
 
-#tour_wrapper .tour_container {
+.tour.tutorial_MD .tour_container {
   border: 1px solid #cccccc;
   width: fit-content;
   height: fit-content;
@@ -17,13 +17,13 @@
   position: fixed;
 }
 
-#tour_wrapper .outsidebox {
+.tour.tutorial_MD .outsidebox {
     position: fixed;
     bottom: 0px;
     right: 0px;
 }
 
-#tour_wrapper .title {
+.tour.tutorial_MD .title {
   border-bottom: 1px solid #cccccc;
   text-align: center;
   font-size: 24px;
@@ -31,27 +31,27 @@
   padding: 0 30px;
 }
 
-#tour_wrapper .img {
+.tour.tutorial_MD .img {
   display: block;
   width: 250px;
   height: 300px;
 }
 
-#tour_wrapper .window_text {
+.tour.tutorial_MD .window_text {
   min-height: 140px;
   padding: 0 1em;
   margin-bottom: 10px;
   font-size: 18px;
 }
 
-#tour_wrapper .footer {
+.tour.tutorial_MD .footer {
   border-top: 1px solid #cccccc;
   padding: 15px 0;
   display: flex;
   justify-content: space-between;
 }
 
-#tour_wrapper .button {
+.tour.tutorial_MD .button {
   flex: 1 1 0;
   border: 1px solid #cccccc;
   border-radius: 0.5em;
@@ -62,7 +62,7 @@
   background-color: #ffffee;
 }
 
-#tour_wrapper .button:hover {
+.tour.tutorial_MD .button:hover {
   cursor: pointer;
   background-color: #dddddd;
 }

@@ -12,6 +12,7 @@ import json
 from collections import OrderedDict
 
 import ozmail
+import tour
 from embed import embedize_url
 from sponsorship import (
     sponsorship_enabled, reservation_total_counts, clear_reservation, get_reservation,
@@ -21,6 +22,7 @@ from sponsorship import (
     sponsorship_email_reminders, sponsor_verify_url,
     sponsorship_restrict_contact, sponsor_renew_request_logic,
     sponsorship_config, sponsorable_children_query)
+from pinpoint import resolve_pinpoint_to_row
 
 from usernames import donor_name_for_username
 
@@ -66,66 +68,34 @@ def index():
     """
     # OTTs from the tree_startpoints table
     startpoints_ott_map, hrefs, images, titles, text_titles = {}, {}, {}, {}, {}
-    carousel, anim, threatened = [], [], []
+    carousel = []
     for r in db(
-            (db.tree_startpoints.category.startswith('homepage')) &
+            (db.tree_startpoints.category.belongs(('homepage_main',))) &
             (db.tree_startpoints.partner_identifier == None)
         ).select(
             db.tree_startpoints.ott, db.tree_startpoints.category,
-            db.tree_startpoints.image_url, db.tree_startpoints.tour_identifier,
+            db.tree_startpoints.image_url,
+            db.tour.ALL,
+            left=db.tour.on(db.tree_startpoints.tour_identifier == db.tour.identifier),
             orderby = db.tree_startpoints.id):
-        key = r.tour_identifier or str(r.ott)
-        if r.category.endswith("main"):
+        key = r.tour.identifier or str(r.tree_startpoints.ott)
+        if r.tree_startpoints.category == 'homepage_main':
             carousel.append(key)
-        elif r.category.endswith("anim"):
-            anim.append(key)
-        elif r.category.endswith("red"):
-            threatened.append(key)
-        if r.image_url:
-            images[key] = {'url': r.image_url}
-        if r.tour_identifier:
-            hrefs[key] = URL('life/' + r.tour_identifier)
-            title = db(db.tours.identifier == r.tour_identifier).select(db.tours.name).first()
-            text_titles[key] = title.name if title else r.tour_identifier
-        else:
-            text_titles[key] = ""
-        if r.ott:
-            # We might still want to find e.g. an image, even if we are looking at a tour
-            startpoints_ott_map[r.ott] = key
 
-    # Pick 5 random threatened spp 
-    random.seed(request.now.month*100 + request.now.day)
-    if len(threatened) > 5:
-        threatened = random.sample(threatened, 5)
-    image_required = set(carousel + threatened)
-    keys = set(anim) |  image_required
-    # Remove the unused threatened ones
-    startpoints_ott_map = {k: v for k, v in startpoints_ott_map.items() if v in keys}
+        text_titles[key] = ""
+        if r.tree_startpoints.image_url:
+            images[key] = {'url': r.tree_startpoints.image_url}
+        if r.tree_startpoints.ott:
+            startpoints_ott_map[r.tree_startpoints.ott] = key
+
+        if r.tour.identifier:
+            text_titles[key] = r.tour.title or r.tour.identifier
+            hrefs[key] = URL('life', vars = dict(tour = tour.tour_url(r.tour)))
+            if r.tour.image_url:
+                images[key] = {'url': img.url(r.tour.image_url)}
+
+    image_required = set(carousel)
     
-    # OTTs from the reservations table (i.e. sponsored)
-    query = (db.reservations.verified_time != None) & \
-        ((db.reservations.deactivated == None) | (db.reservations.deactivated == "")) & \
-        (db.reservations.verified_preferred_image_src != None)
-    sponsored_rows = db(query).select(
-        db.reservations.OTT_ID,
-        db.reservations.name,
-        db.reservations.user_nondefault_image,
-        db.reservations.verified_kind,
-        db.reservations.verified_name,
-        db.reservations.verified_more_info,
-        db.reservations.verified_preferred_image_src,
-        db.reservations.verified_preferred_image_src_id,
-        orderby=~db.reservations.verified_time|db.reservations.reserve_time,
-        limitby=(0, 20)
-        )
-    
-    spon_leaf_otts = set()
-    sponsored_by_ott = {}
-    for r in sponsored_rows:
-        sponsored_by_ott[r.OTT_ID] = r
-        hrefs[r.OTT_ID] = URL('life/@=%d' % r.OTT_ID, url_encode=False)
-        spon_leaf_otts.add(r.OTT_ID)
-        titles[r.OTT_ID] = r.name
     for ott, key in startpoints_ott_map.items():
         if key not in hrefs:
             hrefs[key] = URL('life/@=%d' % ott, url_encode=False)
@@ -173,24 +143,7 @@ def index():
             db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id):
         key = startpoints_ott_map.get(r.ott, None) or st_leaf_for_node_otts.get(r.ott, None)
         if key not in images:
-            images[key] = {'url': img.thumb_url(thumb_base_url, r.src, r.src_id)}
-    # Sponsored images
-    for r in db(
-            (db.images_by_ott.ott.belongs(spon_leaf_otts)) & (db.images_by_ott.overall_best_any==1)
-        ).select(
-            db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
-            db.images_by_ott.rights, db.images_by_ott.licence):
-        reservations_row = sponsored_by_ott[r.ott]
-        if reservations_row.user_nondefault_image:
-            images[r.ott] = {'url': img.thumb_url(
-                thumb_base_url,
-                reservations_row.verified_preferred_image_src,
-                reservations_row.verified_preferred_image_src_id)}
-        else:
-            images[r.ott] = {
-                'url': img.thumb_url(thumb_base_url, r.src, r.src_id),
-                'rights':r.rights,
-                'licence': r.licence.split('(')[0]}
+            images[key] = {'url': img.thumb_url(r.src, r.src_id)}
     blank = {'url': URL('static','images/noImage_transparent.png')}
     for key in titles.keys():
         if key not in images:
@@ -212,7 +165,7 @@ def index():
             )
             for row in db().select(db.news.ALL, orderby =~ db.news.news_date, limitby = (0, 5))
         ],
-        carousel=carousel, anim=anim, threatened=threatened, sponsored=sponsored_rows,
+        carousel=carousel,
         hrefs=hrefs, images=images, html_names=titles, has_vernacular=has_vernacular, add_the=add_the,
         n_total_sponsored=reservation_total_counts('donors'),
         n_sponsored_leaves=reservation_total_counts('otts'),
@@ -229,12 +182,6 @@ def footer_sponsor_items():
     """
     return dict()
 
-
-def homepage_animation_template():
-    """
-    The html fragment used as a template for the embedded animation on the homepage
-    """
-    return dict()
 
 @require_https_if_nonlocal()
 def user():
@@ -379,7 +326,10 @@ def sponsor_leaf_check(use_form_data, form_data_to_db):
 
     elif status == 'invalid':  # must define some null vars
         response.view = request.controller + "/spl_invalid." + request.extension
-        return dict(OTT_ID=OTT_ID_Varin, species_name=leaf_entry.name)
+        return dict(
+            OTT_ID=OTT_ID_Varin,
+            species_name=T("No name") if leaf_entry is None else leaf_entry.name,
+        )
 
     else:
         # initialise other variables that will be passed on to the page
@@ -794,7 +744,7 @@ def sponsor_renew():
             db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
             db.images_by_ott.rights, db.images_by_ott.licence):
         images[r.ott] = {
-            'url': img.thumb_url(thumb_base_url, r.src, r.src_id),
+            'url': img.thumb_url(r.src, r.src_id),
             'rights':r.rights,
             'licence': r.licence.split('(')[0]}
 
@@ -834,7 +784,6 @@ def sponsor_renew():
         # If there's a nondefault image, replace with that
         if r.user_nondefault_image:
             images[r.OTT_ID] = {'url': img.thumb_url(
-                thumb_base_url,
                 r.verified_preferred_image_src,
                 r.verified_preferred_image_src_id)}
 
@@ -952,6 +901,7 @@ def sponsor_renew():
         all_partner_data=all_partner_data,
         form=form,
         giftaid_recorded=giftaid_recorded,
+        show_donor_link=(len(active_rows) > 0 or len(expiring_rows) > 0),
     )
 
 
@@ -1060,7 +1010,7 @@ def donor():
             db.images_by_ott.ott, db.images_by_ott.src, db.images_by_ott.src_id,
             db.images_by_ott.rights, db.images_by_ott.licence):
         images[r.ott] = {
-            'url': img.thumb_url(thumb_base_url, r.src, r.src_id),
+            'url': img.thumb_url(r.src, r.src_id),
             'rights':r.rights,
             'licence': r.licence.split('(')[0],
         }
@@ -1208,7 +1158,7 @@ def sponsor_picks(sponsor_suggestion=None):
             except:
                 val['vars']={}
             if not row.thumb_url and row.thumb_src is not None:
-                val['thumb_url']=img.thumb_url(thumb_base_url, row.thumb_src,row.thumb_src_id)
+                val['thumb_url']=img.thumb_url(row.thumb_src,row.thumb_src_id)
             if row.identifier.isdigit():
                 val['vars']['ott'] = row.identifier = int(row.identifier)
                 val['page'] = 'sponsor_node'
@@ -1226,14 +1176,14 @@ def treecards():
     prices = []
     accumulate = 0
     for row in db(db.prices).select(db.prices.ALL, orderby=db.prices.price):
-        accumulate += row.n_leaves
-        prices.append(
-            {'price_pounds': row.price/100, 'n': row.n_leaves, 'cumulative': accumulate})
+        if row.price is not None and row.n_leaves > 0:
+            accumulate += row.n_leaves
+            prices.append(
+                {'price_pounds': row.price/100, 'n': row.n_leaves, 'cumulative': accumulate})
     for p in prices:
         p['quantile'] = p['cumulative']/accumulate
-    return dict(
-        pick=sponsor_picks(sponsor_suggestion=sponsor_suggestion_flags['sponsor_for']),
-        prices=prices)
+    suggest = sponsor_suggestion_flags['sponsor_for']
+    return dict(pick=sponsor_picks(sponsor_suggestion=suggest), prices=prices)
 
 
 
@@ -1291,7 +1241,7 @@ def sponsor_node_price():
             sci_names = {
                 r.ordered_leaves.ott: r.ordered_leaves.name for r in rows_with_img}
             image_urls = {
-                r.ordered_leaves.ott: img.thumb_url(thumb_base_url, r.images_by_ott.src, r.images_by_ott.src_id)
+                r.ordered_leaves.ott: img.thumb_url(r.images_by_ott.src, r.images_by_ott.src_id)
                 for r in rows_with_img
             }
             image_attributions = {
@@ -1347,7 +1297,7 @@ def sponsor_node_price():
                     limitby=(start, start+extra_needed), 
                     orderby = "images_by_ott.rating ASC")
                 image_urls = {
-                    species.ordered_leaves.ott: img.thumb_url(thumb_base_url, species.images_by_ott.src, species.images_by_ott.src_id)
+                    species.ordered_leaves.ott: img.thumb_url(species.images_by_ott.src, species.images_by_ott.src_id)
                     for species in rows_with_img
                 }
                 image_attributions = {species.ordered_leaves.ott:(' / '.join([t for t in [species.images_by_ott.rights, species.images_by_ott.licence] if t])) for species in rows_with_img}
@@ -1451,7 +1401,7 @@ def sponsor_handpicks():
                                orderby = orderby)
             otts[price_pounds] = [r.ordered_leaves.ott for r in rows]
             image_urls.update({
-                species.ordered_leaves.ott: img.thumb_url(thumb_base_url, species.images_by_ott.src, species.images_by_ott.src_id)
+                species.ordered_leaves.ott: img.thumb_url(species.images_by_ott.src, species.images_by_ott.src_id)
                 for species in rows
                 if species.images_by_ott.src
             })
@@ -1629,34 +1579,6 @@ def pp_process_post():
     else:
         return(dict(vars=request.vars, args=request.args))
 
-"""Controllers related to OneZoom embedding functionality"""
-
-def embed_instructions():
-    return dict()
-
-def embed_edit():
-    form = FORM(
-        LABEL("E-mail address"),
-        INPUT(_type='email', requires=[IS_NOT_EMPTY(), IS_EMAIL()], _name='email', _class="uk-input uk-margin-bottom"),
-        INPUT(_type='hidden', _name='url', _value=URL('life', scheme=True, host=True)),
-        INPUT(_type='submit', _value="Send e-mail", _class="oz-pill pill-leaf"),
-        _id="form_embed_email",
-    )
-
-    if form.accepts(request.vars, session=None, keepvalues=True):
-        mail, reason=ozmail.get_mailer()
-        if mail is None:
-            response.flash = '%s, so cannot send email' % reason
-        else:
-            mailargs = ozmail.template_mail('embed_code', dict(
-                url=embedize_url(form.vars.url, form.vars.email),
-            ), to=form.vars.email)
-            mail.send(**mailargs)
-            response.flash = "E-mail with embed code sent"
-    return dict(
-        form=form,
-    )
-
 """ Controllers for language file export """
 
 def lang_export():
@@ -1739,13 +1661,19 @@ def installations():
     redirect(URL('education', 'installations'))
 
 def developer():
-    return dict(release_info=__release_info())
+    redirect(URL('developer', 'index'))
+
+def embed_instructions():
+    redirect(URL('developer', 'embedding'))
+
+def embed_edit():
+    redirect(URL('developer', 'embed_edit'))
 
 def about():
     return dict(release_info=__release_info())
 
 def data_sources():
-    return dict(img_url = lambda src, src_id: img.thumb_url(thumb_base_url, src, src_id))
+    return dict(img_url = lambda src, src_id: img.thumb_url(src, src_id))
 
 def how():
     return dict()
@@ -1907,72 +1835,33 @@ def life_text():
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return dict(page_info = {'tree': text_tree(remove_location_arg(request.args))})
 
-def text_tree(location_string):
+def text_tree(pinpoint_string):
     """
     A text representation. NB: The 'normal' pages also have the text-only data embedded in them, for SEO reasons
+
+    pinpoint_string is an '@(name)=(value)' string as defined in src/navigation/pinpoint.js,
+    e.g. '@Haematomyzus_elephantis=283963'
     """
-    #target_string must consist only of chars that are allowed in web2py arg
+    # pinpoint_string must consist only of chars that are allowed in web2py arg
     # array (i.e. in the path: see http://stackoverflow.com/questions/7279198
     # this by default restricts it to re.match(r'([\w@ -]|(?<=[\w@ -])[.=])*')
-    #So we use @ as a separator between species and prepend a letter to the 
-    #ott number to indicate extra use for this species (e.g. whether to remove it)
-    #e.g. @Hominidae=770311@Homo_sapiens=d770315@Gorilla_beringei=d351685
-    # The target string is contained in the location_string, copied from args[-1]
-    # which has all the string up to the '?' or '#'
-    #we have to use both the name and the ott number to get the list of species. 
-    #NB: both name or ott could have multiple matches.
-
-    base_ott=base_name=''
     try:
-        taxa=location_string.split("@")[1:]
-        for t in taxa:
-            if t and re.search("=[a-z]", t)==None: #take the first one that doesn't have an ott = [letter]1234
-                base_name, sep, base_ott = t.partition("=")
-                if base_ott:
-                    base_ott = int(base_ott)
-    except:
+        base_row, base_taxa_are_leaves = resolve_pinpoint_to_row(pinpoint_string)
+    except Exception as e:
         #ignore all parsing errors and just show the root
-        pass
-    
-    base_taxa_are_leaves = None
-    base_rows = []
-    #ott takes priority: if we have an ott, use that, and ignore the rest. We don't care if the name doesn't match
-    if base_ott: 
-        base_rows = db(db.ordered_nodes.ott == base_ott).select(db.ordered_nodes.ALL)     #by default, look at nodes first
-        if len(base_rows):
-            base_taxa_are_leaves = False
-        else:
-            base_rows = db(db.ordered_leaves.ott == base_ott).select(db.ordered_leaves.ALL)
-            if len(base_rows):
-                base_taxa_are_leaves = True
-    #if there is no ott, or it doesn't match try matching on the name instead.
-    if len(base_rows)==0 and base_name:
-        try:
-            row_id = int(base_name) #only works if we have a name which is a positive or negative number - which indicates a row number to use
-            response.meta.robots = 'noindex, follow' #don't index this page: it has no ott or name!
-            if row_id < 0:
-                base_rows = db(db.ordered_leaves.id == -row_id).select(db.ordered_leaves.ALL)
-                base_taxa_are_leaves = True
-            elif row_id > 0:
-                base_rows = db(db.ordered_nodes.id == row_id).select(db.ordered_nodes.ALL)
-                base_taxa_are_leaves = False
-                
-        except:
-            base_rows = db(db.ordered_nodes.name == base_name).select(db.ordered_nodes.ALL)
-            if len(base_rows):
-                base_taxa_are_leaves = False
-            else:
-                base_rows = db(db.ordered_leaves.name == base_name).select(db.ordered_leaves.ALL)
-                if len(base_rows):
-                    base_taxa_are_leaves = True
-    if len(base_rows)==0:
-        base_rows = db(db.ordered_nodes.parent < 1).select(db.ordered_nodes.ALL) #this should always match the root
+        base_row = None
+        base_taxa_are_leaves = False
+        if is_testing:
+            raise e
+    if not base_row:
+        response.meta.robots = 'noindex, follow'  # Don't index this page, this hasn't sucessfully targeted anything
+        base_row = db(db.ordered_nodes.parent < 1).select(db.ordered_nodes.ALL).first() #this should always match the root
         base_taxa_are_leaves=False
 
     #we construct a nested heirarchy, and an 'info' dictionary, indexed by id (negative for leaves)
     bases = {}
     info = {}
-    for row in base_rows:
+    for row in [base_row]:
         if row.real_parent != 0:
             data = db(db.ordered_nodes.id == abs(row.real_parent)).select(db.ordered_nodes.ALL).first()
             if data:
@@ -2107,7 +1996,6 @@ def lifeMD():
     """
     response.view = "treeviewer" + "/" + request.function + "." + request.extension
     return dict(
-        screensaver_otts=[991547, 81461, 99252, 770315],
         **treeview_info(has_text_tree=False))
     
 def life_MDtouch():

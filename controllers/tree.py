@@ -1,6 +1,7 @@
 import datetime
 from OZfunc import nice_name_from_otts
 import img
+import tour
 
 def wikipedia_OZpage():
     """
@@ -114,7 +115,7 @@ def pic_info():
         return dict(
             image=row,
             url_override=url,
-            image_url=img.thumb_url(thumb_base_url, row.src, row.src_id)
+            image_url=img.thumb_url(row.src, row.src_id)
         )
     else:
         raise HTTP(400,"No such image")
@@ -180,9 +181,18 @@ def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
                 urls['gbif'] = gbif_url(row[core_table].gbif, is_leaf)
             if row[core_table].ipni:
                 urls['powo'] = powo_url(row[core_table].ipni) #would alter here if ipni availability calculated on the fly
+
+            tours = [t.identifier for t in tour.tours_related_to_ott([ott]).get(ott, [])] if ott else []
+            if len(tours) > 0:
+                urls['oztours'] = [
+                  URL('tour', 'list', scheme=True, host=True, extension='html', vars=dict(tours=",".join(tours), popup=1)),
+                  URL('tour', 'list', scheme=True, host=True, extension='html', vars=dict(tours=",".join(tours))),
+                ]
         if sponsorship_urls: #always return a sponsorship url, even if e.g. invalid or ott missing
             urls['ozspons'] = sponsorship_urls
-    except:
+    except Exception as e:
+        if is_testing:
+            raise e
         errors = ["Couldn't get any data"]
     return(dict(data=urls, errors=errors, ott=ott, id=id, name=name))
 

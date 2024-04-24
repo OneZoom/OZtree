@@ -2,6 +2,7 @@
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{response.files.insert(0,URL('static','js/web2py.js')) #To allow =LOAD(ajax=True) to work}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
+{{include 'web2py_ajax.html'  # We need ajax to load scrolling pictures in the sponsor node page}}
 {{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}
 
 {{block masthead}}
@@ -13,8 +14,10 @@
 {{end block}}
 <h2>{{=T('Choose a leaf to sponsor on the OneZoom Tree of Life')}}</h2>
 <em>{{=T('Sponsor a leaf for yourself or as a unique gift for someone you know.')}}</em>
-<p>{{info_text = T('All the species on this page are descended from the part of the tree that you clicked on. We have selected some popular ones to show you, or you can look through %(sp_list)s. If you choose to sponsor one, we will acknowledge your donation to the %(oz_link)s and %(partner_link)s by displaying your chosen sponsor’s name on that leaf of the tree. Donations to OneZoom will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. %(partner_fund_use)s.') if partner else T('All the species on this page are descended from the part of the tree that you clicked on. We have selected some popular ones to show you, or you can look through %(sp_list)s. If you choose to sponsor one, we will acknowledge your donation to the %(oz_link)s by displaying your chosen sponsor’s name on that leaf of the tree. Donations to OneZoom will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.')}}
-    {{=XML(info_text % dict(sp_list=A(T("an alphabetical list"), _href=URL('list_sponsorable_children', vars=vars)), oz_link=A(T("OneZoom charity"), _href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"),partner_fund_use=T(partner.get('details')) if partner else "",partner_link=A(partner.get('name'), _href=partner.get('url'), _target="_blank") if partner else ""))}}</p>
+
+<p>{{if 'popup' in request.vars:}}{{=T('All the species on this page are descended from the part of the tree that you clicked on')}}{{elif 'ott' in request.vars:}}{{=XML(T('All the species on this page can be placed on a <a href="%s">branch of the tree of life</a>') % URL('life/@=' + str(request.vars['ott']), url_encode=False))}}{{else:}}{{=T('All the species on this page can be placed on a branch of the tree of life')}}{{pass}}.
+{{info_text = T('We have selected some popular ones to show you, or you can look through %(sp_list)s. If you choose to sponsor one, we will acknowledge your donation to the %(oz_link)s and %(partner_link)s by displaying your chosen sponsor’s name on that leaf of the tree. Donations to OneZoom will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it. %(partner_fund_use)s.') if partner else T('We have selected some popular ones to show you, or you can look through %(sp_list)s. If you choose to sponsor one, we will acknowledge your donation to the %(oz_link)s by displaying your chosen sponsor’s name on that leaf of the tree. Donations to OneZoom will help us in our aim to provide easy access to scientific knowledge about biodiversity and evolution, and raise awareness about the variety of life on earth together with the need to conserve it.')}}
+{{=XML(info_text % dict(sp_list=A(T("an alphabetical list"), _href=URL('list_sponsorable_children', vars=vars)), oz_link=A(T("OneZoom charity"), _href='//www.onezoom.org/static/images/RegistrationCertificate.jpg', _target="_blank"),partner_fund_use=T(partner.get('details')) if partner else "",partner_link=A(partner.get('name'), _href=partner.get('url'), _target="_blank") if partner else ""))}}</p>
 <div>
 {{if error is not None:}}
     <h4>{{=error}}</h4>
@@ -23,7 +26,7 @@
         {{=LOAD('default','sponsor_node_price.load', vars=dict({'n':6, 'price':price}, **vars), ajax=True)}}
     {{pass}}
     {{if len(first25) > 0:}}
-        <h3>{{=T('Or browse all sponsorable species, in alphabetical order')}}</h3>
+        <h3>{{=T('Or browse all sponsorable species on this branch, in alphabetical order')}}</h3>
         <ul class="alphabetical_list">
         {{for i, spp in enumerate(first25):}}
             {{if i<24:}}

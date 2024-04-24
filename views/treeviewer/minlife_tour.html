@@ -25,7 +25,7 @@ setup_params = {
 {{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
 <!-- since this should be possible to run without a server, remove the ability to switch languages/pages -->
 <style>
-ul#controlButtons #tourButton {display: block;}
+ul.ui-controls #tourButton {display: block;}
 .treeswitch {display: none}
 .langswitch {display: none}
 </style>
@@ -33,157 +33,78 @@ ul#controlButtons #tourButton {display: block;}
 <script type="text/javascript">
 var pagetitle_func = function(nm) {return (nm)?("OneZoom restricted: "+ nm):"OneZoom Tree of Life Explorer: restricted version"};
 </script>
-<script type="text/javascript">
-var tour_config = {
-        /* Settings general to the tour, rather that specific to each tour stop */
-        "general": {
-            confirm_template: "{{=URL('static', 'tour/exit_confirm.html')}}", // Must be defined if the interaction parameter  
-            confirm_template_style: "{{=URL('static', 'tour/exit_confirm.html')}}", // ditto
-            "dom_names": {
-                /* The following values are actually the defaults, but we specify them
-                 * here anyway for illustration purposes
-                 */
-                "wrapper_id": "tour_wrapper", /* the DOM id of the wrapper in which to
-                * place the tour stops */
-                "forward_class": "tour_forward",
-                "backward_class": "tour_backward",
-                "play_class": "tour_play",
-                "pause_class": "tour_pause",
-                "resume_class": "tour_resume",
-                "exit_class": "tour_exit",
-                "exit_confirm_class": "exit_confirm",
-                "exit_cancel_class": "exit_cancel"
-            }
-        },
-        "tourstop_shared": { /* These set the "default" values for any tourstop on this
-             * tour. They are overridden by any identically named values defined in each
-             * element of the "tourstop" array.
-             */
-            "template": "{{=URL('static', 'tour/tour_template.html')}}",
-            "template_style": "{{=URL('static', 'tour/tour_template.css')}}",
-            "hide_tourstop_style": {"display": "none"}, // This is the default. Alternatively
-            "show_tourstop_style": {"display": "block"}, // try {"opacity":"0"} & {"opacity":"1"} or {"add_class": "active"}, {"remove_class": "active"}
-            "update_class": {
-                "title": "OneZoom Demo Tour",
-            },
-            "wait": 3000 /* For this tour, by default wait 3 seconds between each stop.
-            * (if not specified, the default is null, meaning wait until the "next"
-            * button is pressed.
-            */
-        },
-        "tourstops": [
-            {
-                "ott": "991547",
-                "update_class": {
-                    "window_text": "Slide 1",
-                    "img": {
-                        "src": "http://images.onezoom.org/99/098/31338098.jpg"
-                    },
-                    "tour_backward": {
-                        "style": {"visibility": "hidden"} /* Hide the backward button on
-                        * the first stop. Any class can be hidden like this, even the
-                        * whole window (class = .container)
-                        */
-                    },
-                },
-                "wait": 6000, /* Wait a bit longer here: 6 seconds */
-                "wait_after_backward": 0  /* used if this stop is entered by going back */
-            },
-            {
-                "ott": 991547,
-                "transition_in": "leap", /* can be "fly" (default), "leap", or 
-                * "fly_straight" (rare)
-                */
-                "update_class": {
-                    "window_text": {
-                        "html": "Slide 2 with style change",
-                        "style": {"window_text": "gray_background"}},
-                    "img": {
-                        "src": "http://images.onezoom.org/99/727/26848727.jpg"
-                    }
-                },
-                // set 'wait" to null to require pressing "next" to continue
-                "wait": null
-            },
-            {
-                "ott": "81461",
-                "fly_in_speed": 2, /* speed relative to the global_anim_speed, as
-                * accessed via controller.set_anim_speed() & controller.get_anim_speed()
-                */
-                "transition_in_visibility": "show_self", /* Should we show the tourstop on
-                arrival (default), during transition-in ("show_self"), or force no
-                tourstops to be shown during transition in ("force_hide"). If the default
-                then the previous stop is likely to carry on being shown during
-                transition, unless it has chosen to hide itself
-                */ 
-                "transition_in_wait": 1000, /* how long to wait (e.g. after showing self)
-                before entering into the transition, in milliseconds.
-                */
-                "update_class": {
-                    "container": {"style": {"visibility": "hidden"}} /* hide everything
-                    */
-                },
-                "wait": 3000
-            },
-            {
-                "ott": 81461,
-                "pos": "max", /*  "pos" alters the final position. For a transition_in of
-                * "fly" or "fly_straight" to an internal node (not leaf) of the tree, it
-                * can be set to the string "max" which makes the transition end up with
-                * the internal node filling the screen (i.e. children are not visible).
-                * For a transition of "leap", it can be set to an object 
-                * {'xp': xp, 'yp': yp, 'ws': ws} where xp, yp, ws are numbers giving the 
-                * position relative to the node
-                */
-                "update_class": {
-                    "window_text": "Slide 4",
-                    "img": {
-                        "style": {"visibility": "hidden"}
-                    }
-                },
-                "wait": 1000
-            },
-            {
-                "ott": null, /* "ott":null means return to the (rough) starting position
-                */
-                "update_class": {
-                    "window_text": "The End",
-                    "tour_forward": {
-                        "style": {"visibility": "hidden"}
-                    },
-                "exec": null /* Only for javascript objects: define properties "on_start",
-                * "on_show", or "on_exit" as functions. Those functions are executed
-                * as the first event when arriving at a stop or when starting the
-                * transition into a stop. The function is passed the tourstop object as
-                * the first parameter so that you can access the text, the tour and its
-                * controller. The function must return an array of any timers that it
-                * initiates, so that they can be cancelled if necessary. 
-                */
-                },
-            },
-        ]
-        };
+<script id="tour_config" type="text/html">
+<div class="tour tour-minlife layout-def">
 
+  <div class="container tour_container"
+       data-ott="991547"
+       data-stop_wait="6000"
+       data-stop_wait_after_backward="0"
+       >
+    <h2 class="title">OneZoom Demo Tour</h2>
+    <div class='window_text'>Slide 1</div>
+    <img class="img" src="http://images.onezoom.org/99/098/31338098.jpg" />
+    {{ include "tour/tourstop/footer.html" }}
+  </div>
+
+  <div class="container tour_container"
+       data-ott="991547"
+       comment-transition_in="can be 'fly' (default), 'leap', or 'fly_straight' (rare)"
+       data-transition_in="leap"
+       comment-wait="set 'wait" to null to require pressing "next" to continue"
+       data-stop_wait=""
+       >
+    <h2 class="title">OneZoom Demo Tour</h2>
+    <div class='window_text'>Slide 2</div>
+    <img class="img" src="http://images.onezoom.org/99/727/26848727.jpg" />
+    {{ include "tour/tourstop/footer.html" }}
+  </div>
+
+  <!-- NB: visible-transition_in means this tourstop is visible in transition_in, as well as active_wait (by default) -->
+  <div class="container tour_container visible-transition_in"
+       data-ott="81461"
+       comment-fly_in_speed="speed relative to the global_anim_speed, set via controller.set_anim_speed()"
+       data-fly_in_speed="2"
+       comment-transition_in_wait="how long to wait (e.g. after showing self) before entering into the transition, in milliseconds."
+       data-transition_in_wait="1000"
+       data-stop_wait="3000"
+       comment-style="hide everything"
+       style="visibility: hidden"
+       >
+  </div>
+
+  <div class="container tour_container"
+       data-ott="81461"
+       comment-pos="pos alters the final position. 'max' ==> the transition ends up with the internal node filling the screen"
+       data-pos="max"
+       data-stop_wait="1000"
+       >
+    <h2 class="title">OneZoom Demo Tour</h2>
+    <div class='window_text'>Slide 4</div>
+    {{ include "tour/tourstop/footer.html" }}
+  </div>
+
+  <div class="container tour_container"
+       comment-ott="Zero OTT means return to the (rough) starting position"
+       data-ott="0"
+       data-stop_wait="3000"
+       >
+    <h2 class="title">The End</h2>
+    {{ include "tour/tourstop/footer.html" }}
+  </div>
+
+  {{include 'tour/tourstop/exit_confirm.html'}}
+</div>
+</script>
+
+<script>
 // Until we finalise the UI for tours, define tours as happening when we click the
 // "#tourButton", and inject tthe tour object into the onezoom object dynamically.
 
-$(document).on("setupOneZoom", function(event, onezoom_object) {
-    onezoom_object.tour = onezoom_object.utils.new_tour(onezoom_object);
-    onezoom_object.add_hook('on_tree_loaded', () => {
-        onezoom_object.tour.setup_setting(
-            tour_config, 'main_tour',
-            globals.UI_callbacks.closeAll, // before the tutorial runs, close modals etc.
-            null, // nothing on tutorial end
-            null, // nothing on premature exit
-            null, // allow interaction to pause the tutorial
-            function() {$(".tour_resume").show()} // if interaction, show the resume button
-            )});
-});
-
 $(document).on("setupUI", function() {
-    $('#controlButtons #tourButton .icon-container')
+    $('.ui-controls #tourButton .icon-container')
         .click(function () {
-            onezoom.tour.start()  //activate tutorial
+            onezoom.controller.tour_start(document.getElementById('tour_config').firstChild)
         })
 
 });

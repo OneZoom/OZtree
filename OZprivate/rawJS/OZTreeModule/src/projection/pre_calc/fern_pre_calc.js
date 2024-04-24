@@ -8,11 +8,9 @@ class FernPreCalc {
     if (!this._viewtype) throw new Error("viewtype not defined in FernPreCalc.");
     else return this._viewtype;
   }
-  pre_calc(node, from_root) {
-    let angle = from_root ? Math.PI*(3/2-0.05) : node.arca;
-    let dir = typeof node.dir === 'undefined' ? true : node.dir;
+  pre_calc(node) {
     let partl1 = 0.55;
-    if (from_root) {
+    if (node.is_root) {
       node.bezsx = -Math.sin(Math.PI*0.05);
       node.bezsy = 0; // start y position
       node.bezex = -Math.sin(Math.PI*0.05); // end x position
@@ -22,15 +20,17 @@ class FernPreCalc {
       node.bezc2x= -Math.sin(Math.PI*0.05); // control point 2 x position
       node.bezc2y= -0.95; // control point 2 y position
       node.bezr  = partl1; // line width
+      node.arca = Math.PI*(3/2-0.05);
+      node.dir = true;
     }
-    _pre_calc(node, angle, dir);
+    _pre_calc(node);
   }
   setup() {
     set_horizon_calculator('bezier');
   }
 }
 
-function _pre_calc(node, angle, dir) {
+function _pre_calc(node) {
   let leafmult = 3.2;
   let posmult = 0.9;
   let partc = 0.4;
@@ -43,12 +43,12 @@ function _pre_calc(node, angle, dir) {
   let partl1a = partl1;
 	let partl1b = partl1;
   
-  let tempsinpre = Math.sin(angle);
-  let tempcospre = Math.cos(angle);
-  let tempsin90pre = Math.sin(angle + Math.PI/2.0);
-  let tempcos90pre = Math.cos(angle + Math.PI/2.0);  
+  let tempsinpre = Math.sin(node.arca);
+  let tempcospre = Math.cos(node.arca);
+  let tempsin90pre = Math.sin(node.arca + Math.PI/2.0);
+  let tempcos90pre = Math.cos(node.arca + Math.PI/2.0);
   
-  if (!dir) {
+  if (!node.dir) {
     thisangleleft = 0.1;
     thisangleright = 0.2;
     thisratio1 = 0.42;
@@ -66,13 +66,10 @@ function _pre_calc(node, angle, dir) {
     }
   }
   
-  let tempsin2 = Math.sin(angle + Math.PI*thisangleright);
-	let tempcos2 = Math.cos(angle + Math.PI*thisangleright);
-	let tempsin3 = Math.sin(angle - Math.PI*thisangleleft);
-	let tempcos3 = Math.cos(angle - Math.PI*thisangleleft);
-  
-  node.arca = angle;
-  node.dir = dir;
+  let tempsin2 = Math.sin(node.arca + Math.PI*thisangleright);
+	let tempcos2 = Math.cos(node.arca + Math.PI*thisangleright);
+	let tempsin3 = Math.sin(node.arca - Math.PI*thisangleleft);
+	let tempcos3 = Math.cos(node.arca - Math.PI*thisangleleft);
 
   if (node.has_child) {
     if (child1right) {
@@ -88,6 +85,8 @@ function _pre_calc(node, angle, dir) {
       (node.children[0]).bezc2x = 0.15*(tempcospre)/thisratio1;
       (node.children[0]).bezc2y = 0.15*(tempsinpre)/thisratio1;
       (node.children[0]).bezr = partl1;
+      (node.children[0]).arca = node.arca + Math.PI*thisangleright;
+      (node.children[0]).dir = !node.dir;
       
       (node.children[1]).bezsx = -(0.3)*(tempcospre)/thisratio2;
       (node.children[1]).bezsy = -(0.3)*(tempsinpre)/thisratio2;
@@ -98,11 +97,13 @@ function _pre_calc(node, angle, dir) {
       (node.children[1]).bezc2x = 0.9*tempcos3;
       (node.children[1]).bezc2y = 0.9*tempsin3;
       (node.children[1]).bezr = partl1;
-      
-      node.nextx[0] = (1.3*Math.cos(angle))+(((node.bezr)-(partl1a*thisratio1))/2.0)*tempcos90pre; // x refernece point for both children
-      node.nexty[0] = (1.3*Math.sin(angle))+(((node.bezr)-(partl1a*thisratio1))/2.0)*tempsin90pre; // y reference point for both children
-      node.nextx[1] = (1.3*Math.cos(angle))-(((node.bezr)-(partl1b*thisratio2))/2.0)*tempcos90pre; // x refernece point for both children
-      node.nexty[1] = (1.3*Math.sin(angle))-(((node.bezr)-(partl1b*thisratio2))/2.0)*tempsin90pre; // y reference point for both children
+      (node.children[1]).arca = node.arca - Math.PI*thisangleleft;
+      (node.children[1]).dir = !node.dir;
+
+      node.nextx[0] = (1.3*Math.cos(node.arca))+(((node.bezr)-(partl1a*thisratio1))/2.0)*tempcos90pre; // x refernece point for both children
+      node.nexty[0] = (1.3*Math.sin(node.arca))+(((node.bezr)-(partl1a*thisratio1))/2.0)*tempsin90pre; // y reference point for both children
+      node.nextx[1] = (1.3*Math.cos(node.arca))-(((node.bezr)-(partl1b*thisratio2))/2.0)*tempcos90pre; // x refernece point for both children
+      node.nexty[1] = (1.3*Math.sin(node.arca))-(((node.bezr)-(partl1b*thisratio2))/2.0)*tempsin90pre; // y reference point for both children
     }
     else
     {
@@ -118,6 +119,8 @@ function _pre_calc(node, angle, dir) {
       (node.children[1]).bezc2x = 0.15*(tempcospre)/thisratio1;
       (node.children[1]).bezc2y = 0.15*(tempsinpre)/thisratio1;
       (node.children[1]).bezr = partl1;
+      (node.children[1]).arca = node.arca + Math.PI*thisangleright;
+      (node.children[1]).dir = !node.dir;
       
       (node.children[0]).bezsx = -(0.3)*(tempcospre)/thisratio2;
       (node.children[0]).bezsy = -(0.3)*(tempsinpre)/thisratio2;
@@ -128,11 +131,13 @@ function _pre_calc(node, angle, dir) {
       (node.children[0]).bezc2x = 0.9*tempcos3;
       (node.children[0]).bezc2y = 0.9*tempsin3;
       (node.children[0]).bezr = partl1;
+      (node.children[0]).arca = node.arca - Math.PI*thisangleleft;
+      (node.children[0]).dir = !node.dir;
       
-      node.nextx[1] = (1.3*Math.cos(angle))+(((node.bezr)-(partl1a*thisratio1))/2.0)*tempcos90pre; // x refernece point for both children
-      node.nexty[1] = (1.3*Math.sin(angle))+(((node.bezr)-(partl1a*thisratio1))/2.0)*tempsin90pre; // y reference point for both children
-      node.nextx[0] = (1.3*Math.cos(angle))-(((node.bezr)-(partl1b*thisratio2))/2.0)*tempcos90pre; // x refernece point for both children
-      node.nexty[0] = (1.3*Math.sin(angle))-(((node.bezr)-(partl1b*thisratio2))/2.0)*tempsin90pre; // y reference point for both children
+      node.nextx[1] = (1.3*Math.cos(node.arca))+(((node.bezr)-(partl1a*thisratio1))/2.0)*tempcos90pre; // x refernece point for both children
+      node.nexty[1] = (1.3*Math.sin(node.arca))+(((node.bezr)-(partl1a*thisratio1))/2.0)*tempsin90pre; // y reference point for both children
+      node.nextx[0] = (1.3*Math.cos(node.arca))-(((node.bezr)-(partl1b*thisratio2))/2.0)*tempcos90pre; // x refernece point for both children
+      node.nexty[0] = (1.3*Math.sin(node.arca))-(((node.bezr)-(partl1b*thisratio2))/2.0)*tempsin90pre; // y reference point for both children
     }
     
     node.arcx = node.bezex*1.01;
@@ -141,16 +146,8 @@ function _pre_calc(node, angle, dir) {
     
     if (node.has_child)
     {
-      if (child1right)
-      {
-        _pre_calc(node.children[0], angle + Math.PI*thisangleright,!dir);
-        _pre_calc(node.children[1], angle - Math.PI*thisangleleft,!dir);
-      }
-      else
-      {
-        _pre_calc(node.children[1], angle + Math.PI*thisangleright,!dir);
-        _pre_calc(node.children[0], angle - Math.PI*thisangleleft,!dir);
-      }
+      _pre_calc(node.children[0]);
+      _pre_calc(node.children[1]);
     }
   }
   else

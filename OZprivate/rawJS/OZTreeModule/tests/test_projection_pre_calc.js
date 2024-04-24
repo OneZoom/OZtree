@@ -6,6 +6,7 @@ test('pre_calc', function (t) {
     let root = {
         richness_val: 1,
         has_child: true,
+        is_root: true,
         children: [
             { richness_val: 0.3 },
             { richness_val: 0.7 },
@@ -16,7 +17,7 @@ test('pre_calc', function (t) {
     };
 
     set_pre_calculator('balanced');
-    pre_calc(root, true);
+    pre_calc(root);
     t.deepEqual(root.nextr, [0.61, 0.61]);
     t.ok(almostEqual(root.nextx[0], -0.10725000000000025));
     t.ok(almostEqual(root.nextx[1], 0.10724999999999978));
@@ -46,7 +47,7 @@ test('pre_calc', function (t) {
             { richness_val: 0.7 },
             { richness_val: 0.3 },
     ];
-    pre_calc(root, true);
+    pre_calc(root);
     t.ok(almostEqual(root.children[0].bezc1x, 9.034279665841129e-17));
     t.ok(almostEqual(root.children[0].bezc1y, 0.4918032786885246));
     t.ok(almostEqual(root.children[1].bezc1x, -3.0114265552803764e-17));

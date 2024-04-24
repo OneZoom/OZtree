@@ -1,4 +1,0 @@
-[From Criswell 2011 thesis: http://repositories.lib.utexas.edu/handle/2152/ETD-UT-2011-05-3540. Relationships here based on her preliminary max likelihood molecular tree (p186): "Protopterus annectens and Protopterus aethiopicus are sister taxa in every analysis... The relationships within the Protopterus clade show Protopterus amphibius falling out as the most basal species. Protopterus aethiopicus and Protopterus annectens are most closely related to one another, with Protopterus dolloi falling out as the sister taxon to that clade.". Time from timetree (http://www.hedgeslab.org/pubs/217.pdf)
-
-#from https://github.com/OpenTreeOfLife/opentree/wiki/Open-Tree-of-Life-APIs#contexts to help add OTTids: context=Vertebrates]
-(Neoceratodus_forsteri:277,((Protopterus_amphibius:0,(Protopterus_dolloi:0,(Protopterus_annectens:0,Protopterus_aethiopicus:0):0):0):120,Lepidosiren_paradoxa:120):157)Dipnoi;

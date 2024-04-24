@@ -14,7 +14,6 @@ import sponsorship
 @auth.requires_membership(role='manager')
 def index():
     '''this is a page to give quick links to all the management routines'''
-    request.is_local or request.requires_https() #require https unless local
     return dict()
 
 @auth.requires(lambda: auth.has_membership('manager') or auth.has_membership('translator'))
@@ -109,7 +108,7 @@ def SHOW_SPONSOR_SUMS():
         cols['grouped_otts'], 
         cols['sum_paid'],
         cols['count'],
-        groupby=groupby, orderby= cols['sum_paid'] + " DESC")
+        groupby=groupby, orderby=cols['sum_paid'] + " DESC")
     return dict(rows = rows, cols=cols)
 
 @OZfunc.require_https_if_nonlocal()
@@ -749,7 +748,7 @@ def SHOW_EMAILS():
         if s.verified_preferred_image_src and s.verified_preferred_image_src_id and local_pic_path is not None:
             # do we have a local picture, or is it missing?
             details['local_pic'] = os.path.isfile(img.thumb_url(
-                img.local_path, s.verified_preferred_image_src, s.verified_preferred_image_src_id))
+                s.verified_preferred_image_src, s.verified_preferred_image_src_id, base_url=img.local_path))
         else:
             details['local_pic'] = None
         details.update({
@@ -794,7 +793,14 @@ def SET_PRICES():
     
     """
     # Take the initial prices from the previous prices in the DB
-    bands = {string.ascii_uppercase[i]: row for i, row in enumerate(db().select(db.prices.ALL))}
+    bands = {
+        string.ascii_uppercase[i]: row
+        for i, row in enumerate(db().select(
+            db.prices.ALL,
+            orderby="ISNULL(quantile), quantile, ISNULL(price), price"
+        ))
+    }
+    max_band=max((b for b in bands if bands[b].price is not None), default=None)
     n_leaves = db(db.ordered_leaves).count()
 
     bespoke_spp = [ #these are in order highest to lowest
@@ -807,8 +813,10 @@ def SET_PRICES():
     # Make a form with all the rows in it
     other_fields = [f for f in db.prices if f.name not in ('id', 'quantile', 'n_leaves')]
     fields = []
-    for i, (band, row) in enumerate(sorted(bands.items(), reverse=True)):
-        if i > 0:
+    for band, row in bands.items():
+        if band == max_band or row.price is None:
+            pass  # Don't get quantiles for the max band or the unsponsorable
+        else:
             field = db.prices.quantile
             # Don't have a max popularity cutoff for the highest price
             fields.append(Field("_".join([field.name, band]), type = field.type, default=row[field.name], requires=IS_NOT_EMPTY()))
@@ -822,7 +830,7 @@ def SET_PRICES():
         cutoffs = {}
         other_vars = {}
         prev = None
-        for band in sorted(bands.keys()):
+        for band in sorted(bands):
             if prev is None:
                 # Cheapest category
                 quantile = float(form.vars["_".join(["quantile", band])])
@@ -837,55 +845,54 @@ def SET_PRICES():
                     (db.ordered_leaves.popularity_rank <= cutoffs[prev][1]) & 
                     (db.ordered_leaves.popularity_rank >  cutoffs[band][1]))
             else:
-                #this is the last one, which does not have a defined top price
-                queries[band] = db(
-                    (db.ordered_leaves.popularity_rank <= cutoffs[prev][1]))
+                if bands[band].price is not None:
+                    #this is the last quantile: no upper cutoff
+                    queries[band] = db(
+                        (db.ordered_leaves.popularity_rank <= cutoffs[prev][1]))
             other_vars[band] = {
                 f.name: form.vars["_".join([f.name, band])]
                 for f in other_fields
             }
             prev = band
-        
+        if prev is not None:
+            assert bands[prev].price is None  # Check the last has no price set (and ban)
+            banned = db()._select(db.banned.ott)
+            queries[prev] = db(db.ordered_leaves.ott.belongs(banned))
+
         #save the results
         db.prices.truncate()
-        for band in sorted(bands.keys()):
-            num=queries[band].count()
-            db.prices.insert(
-                quantile=(float(cutoffs[band][0]) if band in cutoffs else None),
-                n_leaves=num,
-                **other_vars[band],
-            )
+        for band in sorted(bands):
+            num = queries[band].count()
+            quantile = float(cutoffs[band][0]) if band in cutoffs else None
+            db.prices.insert(quantile=quantile, n_leaves=num, **other_vars[band])
+            if quantile is not None:
+                form.element(_name=f"quantile_{band}").update(_value=str(quantile))
+            for name, val in other_vars[band].items():
+                form.element(_name=f"{name}_{band}").update(_value="" if val is None else str(val))
 
         output = []
         revenue = 0
-        #also None means 'call us'
         for band in sorted(bands):
+            num = queries[band].count()
+            pc = 0 if n_leaves==0 else (100*num/n_leaves)
             price = other_vars[band]['price']
-            cnt=queries[band].update(price=price)
-            num=queries[band].count()
-            revenue += num*price/100
-            output.append(f"{OZfunc.fmt_pounds(pence=price)}: {num:>8} species ({100*num/n_leaves:.2f}%) - {cnt} changed")
+            price_str = OZfunc.fmt_pounds(pence=price)
+            # Now set all the prices for this band
+            count = 0 if num == 0 else queries[band].update(price=price)
+            revenue += num*(price or 0)/100
+            output.append(f"{price_str}: {num:>8} species ({pc:.2f}%): {count} changed")
             output.append(BR())
 
-            
         response.flash = DIV(
             f"SET THE FOLLOWING DEFAULT PRICE STRUCTURE for {n_leaves} species:", BR(),PRE(*output), 
-            f"Total revenue: {fmt_pounds(revenue)}!\nNow overriding the following special exclusions (and setting banned):", BR(),
+            f"Total revenue: {OZfunc.fmt_pounds(revenue)}!\nNow overriding the following special exclusions (and setting banned):", BR(),
             f"{bespoke_spp}"
         )
 
-        #override with the bespoke ones
-        target_band = 0
-        for band in sorted(bands, reverse=True):
-            db(db.ordered_leaves.name.belongs(bespoke_spp[target_band])).update(price=other_vars[band]['price'])
-            target_band+=1
-            if target_band>=len(bespoke_spp):
-                break
-
-        #make sure the banned ones are NULLified
-        rows = db().select(db.banned.ott)
-        for ban in rows:
-            db(db.ordered_leaves.ott == ban.ott).update(price=None)
+        #override bespoke species prices: these are ordered by reverse price tag
+        rev_price_bands = [b for b in sorted(bands, reverse=True) if other_vars[b]['price'] is not None]
+        for band, spp in zip(rev_price_bands, bespoke_spp):
+            db(db.ordered_leaves.name.belongs(spp)).update(price=other_vars[band]['price'])
 
     elif form.errors:
         response.flash = 'form has errors'
@@ -921,9 +928,9 @@ def SET_PRICES():
     pop_max=db(db.ordered_leaves).select(mx)
     return dict(
         form=form,
-        bands={b: bands[b].price for b in sorted(bands.keys())},
+        bands={b: bands[b].price for b in sorted(bands)},
         other_fields=other_fields,
-        max_band=max(bands.keys()) if len(bands) else None,
+        max_band=max_band,
         pop_min=pop_min[0][mn],
         pop_max=pop_max[0][mx],
         example_spp=sorted(example_spp, key=lambda tup: tup[1]),

@@ -76,7 +76,7 @@ setup_params = {
 {{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree-dark.css')}}" />
 <style>
-#controlButtons #settingsButton { display: none; }
+.ui-controls #settingsButton { display: none; }
 
 body {
   background: #120a15;
@@ -139,8 +139,7 @@ body.loading > canvas {
 }
 
 /* Turn on single info button */
-#controlButtons #singleInfoButton { display: list-item; }
-#controlButtons #multipleInfoButton { display: none; }
+.ui-controls #singleInfoButton { display: list-item; }
 
 #tutorial-slideshow h3,
 #tutorial-slideshow {
@@ -281,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (responseJSON.id) {
             // TODO: The region is only available on a node once detail_fetched - this happens too early on page reload
-            selected_node = onezoom.controller.develop_branch_to(-responseJSON.id);  // NB: Assume this is a leaf node
+            selected_node = onezoom.controller.develop_branch_to_and_target(-responseJSON.id);  // NB: Assume this is a leaf node
         }
         if (selected_node.region) {
             responseJSON.data.otopchallenge = ['/OZtree/static/otop/challenge.html?' + encodeURIComponent(region_challenge_map[selected_node.region] || region_challenge_map["default"])];
@@ -359,7 +358,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 <script>
       $(document).ready(function() {
-          var m, tutorial_slideshow, homo_sapiens_metacode;
+          var m, tutorial_slideshow;
 
           // Copy HTML to page body (we don't have a template slot to add it server-side)
           tutorial_slideshow = document.createElement('DIV');
@@ -373,12 +372,7 @@ document.addEventListener('DOMContentLoaded', function () {
           tutorial_slideshow.addEventListener('hidden', function (e) {
               var slideshow = UIkit.slideshow(tutorial_slideshow.querySelector('.uk-slideshow'));
 
-              if (homo_sapiens_metacode) {
-                  onezoom.controller.fly_on_tree_to(null, homo_sapiens_metacode);
-              }
-
-              // Reset slideshow, disable flight / animation for subsequent displays
-              homo_sapiens_metacode = null;
+              onezoom.controller.set_treestate('@Homo_Sapiens');
               slideshow.stopAutoplay();
               slideshow.show(0);
           });
@@ -394,15 +388,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
           // Show on startup
           UIkit.modal(tutorial_slideshow).show();
-
-          // Find Homo-sapiens ready for hiding
-          window.setTimeout(function () {
-              onezoom.search_manager.full_search('Homo Sapiens', function (latin_name, cname, res) {
-                  if (res.length < 1) {
-                      throw new Error("Could not find Homo Sapiens node");
-                  }
-                  homo_sapiens_metacode = res[0][2];
-              }, search_delay=0);
-          }, 100);
       });
 </script>

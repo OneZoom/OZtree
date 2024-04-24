@@ -1,9 +1,7 @@
 import {col_headers} from '../data/col_headers';
 import data_repo from '../factory/data_repo';
-import {get_factory} from '../factory/factory';
 import api_manager from './api_manager';
 import tree_state from '../tree_state';
-import get_controller from '../controller/controller';
 import config from '../global_config';
 
 class NodeDetailsAPI {
@@ -13,7 +11,7 @@ class NodeDetailsAPI {
     this.update_metadata_header(col_headers);
   }
   
-  start() {
+  start(controller) {
     //fill these in on start as they may not be defined in config until then
     //it is possible that we shouldn't store these in the class anyway, but always refer back to config.api.XXX
     //as the current setup will not allow us to change the config options after the OZ code has started.
@@ -22,7 +20,7 @@ class NodeDetailsAPI {
     this.interval_when_busy = config.api.node_details_interval_when_busy;
     this.interval_when_idle = config.api.node_details_interval_when_idle;
     this.fill_in_api_structure();
-    fetch_node_start(this);
+    fetch_node_start(this, controller);
   }
   /**
    * For brevity, the OneZoom remote API returns data for each node or leaf as a
@@ -79,10 +77,9 @@ class NodeDetailsAPI {
  * The general principle is to fetch more frequently if there are nodes waiting
  * to be fetched.
  */
-function fetch_node_start(node_details_api) {
-  let root = get_factory().get_root();
-  if (root) {
-    let nodes_to_fetch = fetch_node_detail(node_details_api);
+function fetch_node_start(node_details_api, controller) {
+  if (controller && controller.root) {
+    let nodes_to_fetch = fetch_node_detail(node_details_api, controller);
     if (nodes_to_fetch && nodes_to_fetch > 0) {
       node_details_api.timer = node_details_api.interval_when_busy;
     } else {
@@ -92,19 +89,19 @@ function fetch_node_start(node_details_api) {
     node_details_api.timer = node_details_api.interval_when_idle;
   }
   setTimeout(function() {
-    fetch_node_start(node_details_api);
+    fetch_node_start(node_details_api, controller);
   }, node_details_api.timer);
 }
 
-function fetch_node_detail(node_details_api) {
+function fetch_node_detail(node_details_api, controller) {
   if (tree_state.flying) {
     return 0;
   } else {
     let nodes_need_detail = [];
-    collect_nodes_need_details(get_factory().get_root(), nodes_need_detail);
+    collect_nodes_need_details(controller.root, nodes_need_detail);
     reorder_nodes_by_visibility(nodes_need_detail);
     if (nodes_need_detail.length > 0) {
-      node_detail_ajax_call(node_details_api, nodes_need_detail);  
+      node_detail_ajax_call(node_details_api, controller, nodes_need_detail);
     }
     return nodes_need_detail.length;    
   }
@@ -178,7 +175,7 @@ function reorder_nodes_by_visibility(nodes_need_detail) {
  * So do not add such nodes into nodes_to_fetch or leaves into leaves_to_fetch,
  * otherwise the next ajax call would contains repetitive nodes/leaves.
  */
-function node_detail_ajax_call(node_details_api, nodes) {
+function node_detail_ajax_call(node_details_api, controller, nodes) {
   if (nodes.length == 0) return;
   let nodes_to_fetch = [];
   let leaves_to_fetch = [];
@@ -191,7 +188,7 @@ function node_detail_ajax_call(node_details_api, nodes) {
   }
 
   if (nodes_to_fetch.length + leaves_to_fetch.length > 0) {
-    node_detail_ajax_call_2(node_details_api, nodes_to_fetch, leaves_to_fetch);
+    node_detail_ajax_call_2(node_details_api, controller, nodes_to_fetch, leaves_to_fetch);
   }
 }
 
@@ -201,7 +198,7 @@ function node_detail_ajax_call(node_details_api, nodes) {
  * one time to avoid from 502 (parameter too long error)
  * 
  */
-function node_detail_ajax_call_2(node_details_api, nodes_to_fetch, leaves_to_fetch) {
+function node_detail_ajax_call_2(node_details_api, controller, nodes_to_fetch, leaves_to_fetch) {
   let nodes_arr = nodes_to_fetch.splice(0, node_details_api.nodes_num);
   let leaves_arr = leaves_to_fetch.splice(0, node_details_api.nodes_num);
   let nttoids = [];
@@ -249,7 +246,7 @@ function node_detail_ajax_call_2(node_details_api, nodes_to_fetch, leaves_to_fet
         data_repo.update_metadata(res);
         update_nodes_details(nodes_arr);
         update_nodes_details(leaves_arr);
-        get_controller().trigger_refresh_loop();
+        if (controller) controller.trigger_refresh_loop();
       } catch(e) {
         console.error(e);
       } finally {

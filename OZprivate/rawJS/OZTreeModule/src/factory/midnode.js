@@ -22,9 +22,6 @@ class Midnode {
     // metadata information
     this._cname = null;
     this._latin_name = null;
-    this._sponsor_name = null;
-    this._sponsor_kind = null;
-    this._sponsor_extra = null;
     this._age = null;
     this._spec_num_full = null;
     this._picset_len = null;
@@ -61,8 +58,8 @@ class Midnode {
     this.xvar = 1.0;
     this.yvar = 1.0;
     this.rvar = 1.0;
-    this.gvar = false;  // dvar is true if this node (or a descendent node) needs to be drawn on the screen
-    this.dvar = false;  // gvar is true if this node itself needs to be drawn on screen
+    this.gvar = false;  // gvar is true if this node itself needs to be drawn on screen (i.e onezoom.config.debug_bounding_box = 1)
+    this.dvar = false;  // dvar is true if this node (or a descendent node) needs to be drawn on the screen (i.e onezoom.config.debug_bounding_box = 4)
     this.graphref = false;
     this.targeted = false;
     
@@ -74,8 +71,6 @@ class Midnode {
     this.child_end_pos = new Array(config.factory.child_num);
     
     this.full_children_length = 0;
-      
-    this.marked_areas = new Set();
   }
   static create(obj) {
     return this.obj_pool.get();
@@ -85,12 +80,10 @@ class Midnode {
   }
   release() {
     this.children = [];
+    this._meta = undefined;
     this._detail_fetched = false;
     this._cname = null;
     this._latin_name = null;
-    this._sponsor_name = null;
-    this._sponsor_kind = null;
-    this._sponsor_extra = null;
     this._age = null;
     this._spec_num_full = null;
     this._picset_len = null;
@@ -106,7 +99,7 @@ class Midnode {
     this._date = null;
     this._popularity = null;
     this._is_polytomy = null;
-    this.marked_areas.clear(); // clear all marked areas
+    delete this.highlight_status;
   }
     
   // called initially with
@@ -136,21 +129,14 @@ class Midnode {
     
   update_attribute() {
     this._detail_fetched = true;
-    if (this.is_leaf) {
-      update_leaf_attribute();
-    } else {
-      update_node_attribute();
-    }
   }
   
   /**
    * Develop children of this node recursively, down to (depths) below next child
-   *
-   * @param apart_from Don't develop the children off this index
    */
-  develop_children(default_depth, apart_from) {
+  develop_children(default_depth) {
     for (let i=0; i<this.full_children_length; i++) {
-      let depth = i === apart_from ? 0 : default_depth;
+      let depth = default_depth;
 
       if (this.children[i]) {
         // This child already exists, give it the chance to develop it's own children
@@ -163,8 +149,54 @@ class Midnode {
       }
     }
   }
-  
-  
+
+  /**
+   * Develop offshoots from the path from this node to the root
+   * @param depth The depth to develop offshoot's children
+   */
+  develop_branches(depth) {
+    // Hit root, nothing more to do
+    if (!this.upnode) return;
+
+    // For all sibling nodes, develop their children by depth
+    for (let i=0; i<this.upnode.full_children_length; i++) {
+      if (this.upnode.children[i] !== this) {
+        this.upnode.children[i].develop_children(depth)
+      }
+    }
+
+    // recurse towards root
+    this.upnode.develop_branches(depth)
+  }
+
+  /**
+   * Return the index of the child descending towards OZid, or null if not a descendant
+   *
+   * Children do not have to be developed for this to work
+   */
+  child_index_towards(OZid) {
+    if (this.is_leaf) {
+      // No point trying to find children of a leaf node
+      return null
+    }
+    if (OZid < 0) {
+      // full_children_length is the length of children regardless they are developed or not.
+      for (let index=0; index<this.full_children_length; index++) {
+        if (this.child_leaf_meta_start[index] <= -OZid && this.child_leaf_meta_end[index] >= -OZid) {
+          return index;
+        }
+      }
+    } else {
+      for (let index=0; index<this.full_children_length; index++) {
+        if (this.child_node_meta_start[index] <= OZid && this.child_node_meta_end[index] >= OZid) {
+          return index;
+        }
+      }
+    }
+    // Nothing found
+    return null;
+  }
+
   /**
    * Get cut index for children of node. 
    * If node string length < cut_threshold, then force search the cut index,
@@ -245,18 +277,10 @@ class Midnode {
    * Get attribute of node by key name. Use this function to fetch metadata of node only.
    */
   get_attribute(key_name) {
-    if (this.detail_fetched && this.is_leaf) {
-      let col = data_repo.mc_key_l[key_name];
-      if (data_repo.metadata.leaf_meta[this.metacode] && data_repo.metadata.leaf_meta[this.metacode][col] !== undefined) {
-        return data_repo.metadata.leaf_meta[this.metacode][col];
-      }
-    } else if (this.detail_fetched && this.is_interior_node) {
-      let col = data_repo.mc_key_n[key_name];
-      if (data_repo.metadata.node_meta[this.metacode] && data_repo.metadata.node_meta[this.metacode][col] !== undefined) {
-        return data_repo.metadata.node_meta[this.metacode][col];
-      }
-    }
-    return undefined;
+    if (!this._meta) this._meta = data_repo.get_meta_entry(this.ozid);
+    if (!this._meta) return undefined;
+
+    return this._meta.entry[this._meta.idx[key_name]];
   }
   
   clear_pics() {
@@ -268,6 +292,16 @@ class Midnode {
     this._detail_fetched = false;
   }
   
+  /**
+   * Returns the OZid
+   * i.e. negative metacode for leaf, positive metacode for interior node
+   */
+  get ozid() {
+    return (this.is_leaf ? -1 : 1) * this.metacode
+  }
+  get is_root() {
+    return !this.upnode;
+  }
   get is_leaf() {
     return this.type === "leafNode";
   }
@@ -285,7 +319,6 @@ class Midnode {
   get cname() {
     if (this._cname !== null) return this._cname;
     let _cname = this.get_attribute("common_en");
-    if (!_cname && this.ott && data_repo.ott_name_map[this.ott]) _cname = data_repo.ott_name_map[this.ott][1];
     if (this.detail_fetched) {
       _cname = capitalizeFirstLetter(_cname);
       this._cname = _cname;
@@ -295,7 +328,6 @@ class Midnode {
   get latin_name() {
     if (this._latin_name !== null) return this._latin_name;
     let _latin_name = this.get_attribute("scientificName");
-    if (!_latin_name && this.ott && data_repo.ott_name_map[this.ott]) _latin_name = data_repo.ott_name_map[this.ott][0];
     if (_latin_name && _latin_name.charAt(_latin_name.length-1) === "_") {
       _latin_name = null;
     } else if (_latin_name) {
@@ -307,28 +339,17 @@ class Midnode {
     return _latin_name;
   }
   get sponsor_name() {
-    if (this._sponsor_name !== null) return this._sponsor_name;
-    let _sponsor_name = this.get_attribute("sponsor_name");
-    if (this.detail_fetched) {
-      this._sponsor_name = _sponsor_name;
-    }
-    return _sponsor_name
+    return this.get_attribute("sponsor_name");
   }
   get sponsor_kind() {
-    if (this._sponsor_kind !== null) return this._sponsor_kind;
-    let _sponsor_kind = this.get_attribute("sponsor_kind");
-    if (this.detail_fetched) {
-      this._sponsor_kind = _sponsor_kind;
-    }
-    return _sponsor_kind;
+    return this.get_attribute("sponsor_kind");
   }
   get sponsor_extra() {
-    if (this._sponsor_extra !== null) return this._sponsor_extra;
-    let _sponsor_extra = this.get_attribute("sponsor_extra");
-    if (this.detail_fetched) {
-      this._sponsor_extra = _sponsor_extra;
-    }
-    return _sponsor_extra;
+    return this.get_attribute("sponsor_extra");
+  }
+  get tours() {
+    // NB: Should always be a list (either stored in data_repo or no tours)
+    return this.get_attribute("tours") || [];
   }
   get lengthbr() {
     if (this._age !== null) return this._age;
@@ -360,9 +381,7 @@ class Midnode {
     let codes = [];
     let keys = ["sp1", "sp2", "sp3", "sp4", "sp5", "sp6", "sp7", "sp8"];
     for (let i=0; i<keys.length; i++) {
-      let key = keys[i];
-      let col = data_repo.mc_key_n[key];
-      let ott = data_repo.metadata.node_meta[this.metacode] ? data_repo.metadata.node_meta[this.metacode][col] : null;
+      let ott = this.get_attribute(keys[i]);
       if (ott && data_repo.ott_id_map[ott]) {
         let code = -data_repo.ott_id_map[ott];
         codes.push(code);
@@ -433,8 +452,6 @@ class Midnode {
   get ott() {
     if (this._ott !== null) return this._ott;
     let ott = this.get_attribute("OTTid");
-    if (!ott && this.is_interior_node && data_repo.id_ott_map[this.metacode]) ott = data_repo.id_ott_map[this.metacode];
-    else if (!ott && this.is_leaf && data_repo.id_ott_map[-this.metacode]) ott = data_repo.id_ott_map[-this.metacode];
     if (this.detail_fetched || ott) {
       this._ott = ott;
     }
@@ -481,31 +498,30 @@ class Midnode {
    */
   
   get_picset_src_info(index) {
-    let code = this.picset_code[index];
-    if (code) {
-      let srcID_col = data_repo.mc_key_l["picID"];
-      let src_col = data_repo.mc_key_l["picID_src"];
-      let credit = data_repo.mc_key_l["picID_credit"];
-      return [data_repo.metadata.leaf_meta[code][src_col], data_repo.metadata.leaf_meta[code][srcID_col], data_repo.metadata.leaf_meta[code][credit]];
-    }
+    let m = data_repo.get_meta_entry(-this.picset_code[index]);
+    if (!m) return undefined;
+
+    return [
+      m.entry[m.idx["picID_src"]],
+      m.entry[m.idx["picID"]],
+      m.entry[m.idx["picID_credit"]],
+    ];
   }
   get_picset_common(index) {
-    let code = this.picset_code[index];
-    if (code) {
-      let col = data_repo.mc_key_l["common_en"];
-      let common = data_repo.metadata.leaf_meta[code][col];
-      if (common && common.length > 0) common = common[0].toUpperCase() + common.slice(1);
-      return common;
-    }
+    let m = data_repo.get_meta_entry(-this.picset_code[index]);
+    if (!m) return undefined;
+
+    let common = m.entry[m.idx["common_en"]];
+    if (common && common.length > 0) common = common[0].toUpperCase() + common.slice(1);
+    return common;
   }
   get_picset_latin(index) {
-    let code = this.picset_code[index];
-    if (code) {
-      let col = data_repo.mc_key_l["scientificName"];
-      let latin = data_repo.metadata.leaf_meta[code][col];
-      if (latin && latin.length > 0) latin = latin.split("_").join(" ");
-      return latin;
-    }
+    let m = data_repo.get_meta_entry(-this.picset_code[index]);
+    if (!m) return undefined;
+
+    let latin = m.entry[m.idx["scientificName"]];
+    if (latin && latin.length > 0) latin = latin.split("_").join(" ");
+    return latin;
   }
   get has_child() {
     return this.children.length > 0;
@@ -517,14 +533,6 @@ class Midnode {
       return data_repo.tree_date.leaves[this.metacode];
     }    
   }
-}
-
-function update_node_attribute() {
-  // console.log("update node attribute");
-}
-
-function update_leaf_attribute() {
-  // console.log("update leaf attribute");
 }
 
 function calc_richness_of_node(node) {
@@ -567,33 +575,5 @@ function get_bracket_offset(prev_end, next_start) {
   }
   return offset_count;
 }
-
-/**
- * Define getter and setter for Midnode.position attributes. 
- * Hence, instead of writing 'node.position.hxmax = node.position.gxmax + node.position.xvar ....', you can write 'node.hxmax = node.gxmax + node.xvar * ...'
- */
-// let position_accessor_defined = false;
-// if (!position_accessor_defined) {
-//   position_accessor_defined = true;
-//   []
-//   .concat(["arca", "arcr", "arcx", "arcy"])
-//   .concat(["bezc1x", "bezc1y", "bezc2x", "bezc2y", "bezex", "bezey", "bezr", "bezsx", "bezsy"])
-//   .concat(["dvar", "gvar"])
-//   .concat(["gxmin", "gxmax", "gymin", "gymax"])
-//   .concat(["hxmin", "hxmax", "hymin", "hymax"])
-//   .concat(["nextr", "nextx", "nexty"])
-//   .concat(["xvar", "yvar", "rvar"])
-//   .concat(["targeted", "route_to_search", "graphref", "dir"])
-//   .forEach(function(key) {
-//     Object.defineProperty(Midnode.prototype, key, {
-//       get: function() {
-//         return this.position[key];
-//       },
-//       set: function(val) {
-//         this.position[key] = val;
-//       }  
-//     });
-//   });
-// }
 
 export default Midnode;

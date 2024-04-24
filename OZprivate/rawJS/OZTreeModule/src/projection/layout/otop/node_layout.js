@@ -1,4 +1,4 @@
-import NodeLayoutBase from '../node_layout_helper';
+import NodeLayoutBase from '../node_layout_base';
 import config from '../../../global_config';
 
 import tree_state from '../../../tree_state';

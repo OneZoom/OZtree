@@ -45,16 +45,8 @@ setup_params = {
 
 <!-- could include bespoke css file here using <link rel="stylesheet" /> -->
 <style>
-    #controlButtons #screenshotButton {
+    .ui-controls #screenshotButton {
         display: block;
-    }
-
-    #controlButtons #screenshotButton a {
-        border-top: 1px solid #DDD
-    }
-
-    #controlButtons #infoButton a {
-        border: 0
     }
 </style>
 <script src="{{=URL('static','js/canvas2svg.js')}}"></script>
@@ -68,9 +60,14 @@ setup_params = {
                 height: document.getElementById("OneZoomCanvasID").height,
             });
             onezoom.controller.draw_single_frame(context);
-            var svg_content = context.getSerializedSvg(true);
-            /* Change MIME type to trick the browser to download the file instead of displaying it */
-            lnk.href = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg_content);
+            lnk.href = URL.createObjectURL(new Blob([context.getSerializedSvg(true)], {
+                type: "image/svg+xml",
+            }));
+            lnk.download = 'onezoom.svg';  // Download file, instead of opening in browser
+            window.setTimeout(function () {
+                URL.revokeObjectURL(lnk.href);
+            }, 100);
+
             return true;
         } catch (err) {
             alert("You can't save pictures with embedded images unless you enable '-allow-file-access-from-files' in chrome, or equivalent in other browsers.")

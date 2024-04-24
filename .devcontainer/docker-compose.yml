@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    volumes:
+      - type: bind
+        source: ..
+        target: /opt/web2py/applications/OZtree
+        consistency: cached
+      - original-repo:/opt/web2py/applications/OZtree_original:ro
+    # Overrides default command so things don't shut down after the process ends.
+    command: /bin/sh -c "while sleep 1000; do :; done"
+    network_mode: service:web
+  web:
+    build:
+      context: .
+      dockerfile: web.Dockerfile
+      args:
+        IMAGE_NAME: ${WEB_IMAGE_NAME}
+    volumes: 
+      - type: bind
+        source: ..
+        target: /opt/web2py/applications/OZtree
+        consistency: cached
+      - original-repo:/opt/web2py/applications/OZtree_original
+    ports:
+      - "8080:80"
+      - "3307:3306"
+
+volumes:
+  original-repo:

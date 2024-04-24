@@ -2,6 +2,7 @@
 set -eux
 PROJECT_PATH="${PROJECT_PATH-$(dirname "$(readlink -f "$0")")}"  # The full project path
 WEB2PY_PATH="$(dirname $(dirname "$PROJECT_PATH"))"
+ADMIN_PATH="${WEB2PY_PATH}/applications/admin"
 WEB2PY_NAME="${WEB2PY_NAME-$(basename ${WEB2PY_PATH})}"  # Directory web2py lives in, will be unique per installation
 DEPLOY_USER="$(stat -c '%U' install-supervisord.sh 2>/dev/null || stat -f '%Su' install-supervisord.sh 2>/dev/null)"
 
@@ -9,18 +10,35 @@ APP_USER="www"
 APP_GROUP="www"
 WWW_SERVER_NAME="${WEB2PY_NAME}"
 
-# NB: Yan says we should write to web2py_path & gluon. Seems risky
-for DIR in "${PROJECT_PATH}/errors" \
-           "${PROJECT_PATH}/databases" \
-           "${PROJECT_PATH}/sessions" \
-           "${PROJECT_PATH}/uploads" \
-           "${WEB2PY_PATH}/logs" \
-           "${WEB2PY_PATH}/deposit" \
-           "/var/run/uwsgi"; do
+# The APP_USER (webserver process) needs to be able to write to some
+# directories in any installed web2py apps, so make a list here to chown
+DIRS_TO_CHOWN=("/var/run/uwsgi")
+for APP_PATH in "${PROJECT_PATH}" "${ADMIN_PATH}"; do
+    # NB: Yan says we should write to
+    # web2py_path & gluon but seems risky, so just pick specific directories
+    for DIR in "${APP_PATH}/errors" \
+            "${APP_PATH}/databases" \
+            "${APP_PATH}/sessions" \
+            "${APP_PATH}/languages" \
+            "${APP_PATH}/uploads" \
+            "${APP_PATH}/logs" \
+            "${APP_PATH}/deposit"; do
+        DIRS_TO_CHOWN+=("${DIR}")
+    done
+done
+
+for DIR in "${DIRS_TO_CHOWN[@]}"; do
     mkdir -p -- "${DIR}"
     chown -R ${APP_USER} "${DIR}"
     chmod g+w "${DIR}"
 done
+
+# This dir needs to exist, but does not need to be writable by the APP_USER
+for APP_PATH in "${WEB2PY_PATH}" "${ADMIN_PATH}"; do
+    mkdir -p -- "${APP_PATH}/private"
+    chown -R ${DEPLOY_USER} "${APP_PATH}/private"
+done
+
 
 [ -d "/etc/supervisor" ] && SUPERVISORD_CONF_PATH="/etc/supervisor"
 [ -e "/usr/local/etc/supervisord.conf.sample" ] && SUPERVISORD_CONF_PATH="/usr/local/etc"

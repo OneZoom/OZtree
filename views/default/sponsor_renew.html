@@ -7,7 +7,7 @@
 {{block masthead}}
 <div class="home-heading uk-text-center uk-padding-small">
     <h1>This is the private sponsorship renewal page for {{=username}}</h1>
-    <p>There is also a public page available at <a href="{{=URL("/donor/%s" % username)}}">{{=URL("/donor/%s" % username, scheme=True, host=True)}}</a> that you can share if you wish.</p>
+    {{if show_donor_link:}}<p>There is also a public page available at <a href="{{=URL("/donor/%s" % username)}}">{{=URL("/donor/%s" % username, scheme=True, host=True)}}</a> that you can share if you wish.</p>{{pass}}
 </div>
 {{end block}}
 
@@ -18,8 +18,7 @@ need to conserve it. You will see that our online tree of life explorer has impr
 </p>
 
 <p>
-Leaf sponsorships usually last for 4 years at which point they need to be renewed, we have given most sponsors extra time
-so that they don't have to renew during the height of the COVID crisis. This page will help you to see all your sponsorships
+Leaf sponsorships usually last for 4 years at which point they need to be renewed. This page will help you to see all your sponsorships
 and renew those that are expiring soon. Scroll down and select what you want to renew, or to do this quickly
 </p>
 

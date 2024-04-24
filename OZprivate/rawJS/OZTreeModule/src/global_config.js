@@ -35,7 +35,7 @@ config.generation_at_searched_node = 9;
  */
 config.search_jump_mode = "flight";
 
-/** @property {number} home_ott_id - default focusing place when reset
+/** @property {string} home_ott_id - default pinpoint to head to when "Reset view" pressed
  */
 config.home_ott_id = null
 
@@ -55,10 +55,8 @@ config.api = {
 
   search_api: null,
   search_sponsor_api: null,
-  ott2id_arry_api: null,
-  otts2vns_api: null,
 
-  search_init_api: null,
+  pinpoints_api: null,
 
   abort_request_threshold: 30000, //timeout for ajax call
   max_concurrent_request: 3,
@@ -121,11 +119,6 @@ config.gc = {
   detach_level: 2,
 }
 
-config.marked_area_color_map = []
-// this will store all the colour map for all marked areas in the tree
-// it could later be edited by special functions or by the end users, but for now we'll automatically manage addition and subtraction from the array
-// the array defines the order and colour of drawing paths to marked areas
-
 config.projection = {
   partl2: 0.1,
   interior_circle_draw: true,
@@ -149,7 +142,7 @@ config.render = {
 }
 
 config.pic = {
-  data_path_pics: null, //will be set as a function f(src, src_id, preferred_res, square) later
+  data_path_pics: null, // Set by modules.img:js_thumb_url() via. server_urls.html
   max_allowed_pic_map_size: 800,
   clear_image_cache_interval: 240000
 }

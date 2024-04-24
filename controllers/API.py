@@ -7,6 +7,7 @@ from numbers import Number
 import OZfunc
 import img
 import sponsorship_search
+import pinpoint
 """
 This contains the API functions - node_details, image_details, search_names, and search_sponsors. search_node also exists, which is a combination of search_names and search_sponsors.
 # request.vars:
@@ -137,6 +138,42 @@ def search_node():
         res2 = {"reservations": {}, "nodes": {}, "leaves": {}}
     return {"nodes": res1, "sponsors": res2}
 
+def pinpoints():
+    session.forget(response)
+    pinpoints = request.args
+    lang = request.vars.lang or request.env.http_accept_language or 'en'
+
+    results = []
+    for pp in request.args:
+        r, is_leaf = pinpoint.resolve_pinpoint_to_row(pp)
+        if not r:
+            # No result
+            results.append(dict(pinpoint=pp))
+            continue
+        results.append(dict(
+            pinpoint=pp,
+            ozid=-r.id if is_leaf else r.id,
+            ott=r.ott,
+        ))
+        if request.vars.get('sciname', None):
+            results[-1]['sciname'] = r.name;
+
+    vn_type = request.vars.get('vn', None)
+    if vn_type:
+        vn_results = OZfunc.get_common_names(
+            [r['ott'] for r in results if r.get('ott', None)],
+            return_nulls=False,
+            prefer_short_name='short' in vn_type,
+            include_unpreferred='unpreferred' in vn_type,
+            return_all='all' in vn_type,
+            lang=lang,
+        )
+        for r in results:
+            if r.get('ott', None):
+                r['vn'] = vn_results.get(r['ott'], None)
+
+    return dict(lang=lang, results=results)
+
 def search_init():
     """
     This is called at the very start of loading a tree view page. It looks in
@@ -170,8 +207,8 @@ def search_init():
     except (TypeError, ValueError) as error:
         pass  # Some problem converting ott to int, try on name
     try:
-        tidy_latin = request.vars.name.replace("_", " ")
-        query = db.ordered_leaves.name == tidy_latin
+        sciname = pinpoint.untidy_latin(request.vars.name)
+        query = db.ordered_leaves.name == sciname
         name_ids = set([-r.id for r in db(query).select(db.ordered_leaves.id)])
         query = db.ordered_nodes.name == request.vars.name
         name_ids.update([r.id for r in db(query).select(db.ordered_nodes.id)])
@@ -744,7 +781,7 @@ def node_images():
     for p in results['leafPic']:
         pics[p[pic_cols['ott']]] = [
             None,
-            img.thumb_url(thumb_base_url, p[pic_cols['src']], p[pic_cols['src_id']]),
+            img.thumb_url(p[pic_cols['src']], p[pic_cols['src_id']]),
             p[pic_cols['rights']],
             p[pic_cols['licence']],
             p[pic_cols['rating']],

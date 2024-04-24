@@ -1,13 +1,48 @@
 {{# Google analytics tracking code Copyright Google }}
 {{ga_code = myconf.get('analytics.ga_code', default='')}}
-{{if ga_code:}}
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id={{=ga_code}}"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-  
-    gtag('config', '{{=ga_code}}', { 'anonymize_ip': true });
+{{civicuk_api_key = myconf.get('analytics.civicuk_api_key', default='')}}
+
+{{if ga_code and civicuk_api_key:}}
+  {{# https://www.civicuk.com/blog-item/simplify-cookie-control-set-google-consent-mode }}
+  {{# https://developers.google.com/tag-platform/devguides/consent#implementation_example }}
+  <script type="text/javascript">
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', '{{=ga_code}}', { 'anonymize_ip': true });
+
+  // Deny analytics storage before GA loaded
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied'
+  });
+
+  var cc_config={
+    apiKey: '{{=civicuk_api_key}}',
+    product: "COMMUNITY",
+    text: {
+      title: "OneZoom uses cookies to store information on your computer.",
+      intro:
+          "Some of these cookies are essential, while others help us to improve your experience by providing insights into how the site is being used." +
+          "\n\n" +
+          "OneZoom is a charitable incorporated organisation (non-profit) registered in the UK",
+    },
+    necessaryCookies: ['session_id_oztree'],
+    optionalCookies: [{
+      name: 'analytics',
+      label: 'Analytical Cookies',
+      description: 'Analytical cookies help us to improve our website by collecting and reporting information on its usage.',
+      cookies: ['_ga', '_gid', '_gat', '__utma', '__utmt', '__utmb', '__utmc', '__utmz', '__utmv'],
+      onAccept: function() { gtag('consent', 'update', {'analytics_storage': 'granted'}); },
+      onRevoke: function() { gtag('consent', 'update', {'analytics_storage': 'denied'}); },
+    }],
+  };
   </script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{=ga_code}}"></script>
+  <script src="https://cc.cdn.civiccomputing.com/9/cookieControl-9.x.min.js" type="text/javascript"></script>
+  <script type="text/javascript">CookieControl.load(cc_config);</script>
+  <style>body #ccc #ccc-icon:first-child { display: none }</style>
 {{pass}}

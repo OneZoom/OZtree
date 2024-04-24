@@ -15,3 +15,5 @@ OZprivate/rawJS/OZTreeModule/dist/*
 OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown
 node_modules
 OZprivate/ServerScripts/Tests/BlatSearch.code_cache
+.env
+/static/uikit-3/

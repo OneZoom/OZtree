@@ -1,10 +1,13 @@
 import os.path
 import re
 import subprocess
-import requests
+import urllib.request
 from time import sleep
 #use testconfig from nose (get it using `pip3 install nose-testconfig`)
-from testconfig import config
+try:
+  from testconfig import config
+except ModuleNotFoundError:
+  config = {}
 
 web2py_app_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 appconfig_loc = os.path.join(web2py_app_dir, 'private', 'appconfig.ini')
@@ -76,9 +79,9 @@ class Web2py_server:
             #wait until the server has started
             for i in range(1000):
                 try:
-                    requests.get(base_url)
+                    urllib.request.urlopen(base_url)
                     break
-                except requests.exceptions.ConnectionError:
+                except urllib.error.URLError:
                     sleep(0.1)
                     
     @classmethod

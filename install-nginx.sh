@@ -12,16 +12,16 @@ WWW_IMAGES_SERVER_NAME="$(echo ${WWW_SERVER_NAME} | sed 's/^w*/images/')"  # ima
 [ -d "/usr/local/etc/nginx" ] && NGINX_PATH="/usr/local/etc/nginx"
 mkdir -p "${NGINX_PATH}/conf.d/"
 NGINX_LOG_PATH="/var/log/nginx"
-NGINX_CERT_PATH="/var/db/acme/live/"
+NGINX_CERT_PATH="/var/db/acme/live"
 NGINX_DHPARAM_PATH="${NGINX_PATH}/dhparam.pem"
 [ -d "/var/acme" ] && NGINX_CHALLENGE_PATH="/var/acme"
 
 # Generate NGINX_DHPARAM
 [ -e "${NGINX_DHPARAM_PATH}" ] || openssl dhparam -out "${NGINX_DHPARAM_PATH}" 4096
 
-if [ ! -f "${NGINX_CERT_PATH}/onezoom.org/privkey" ]; then
+if [ ! -f "${NGINX_CERT_PATH}/${WWW_SERVER_NAME}/privkey" ]; then
     # Fall back to self-signed bootstrap-cert
-    NGINX_CERT_PATH="${NGINX_PATH}/snakeoil-certs/"
+    NGINX_CERT_PATH="${NGINX_PATH}/snakeoil-certs"
     NGINX_CHALLENGE_PATH="/dev/null"
     for SN in onezoom.org ${WWW_SERVER_NAME} ${WWW_IMAGES_SERVER_NAME}; do
         mkdir -p "${NGINX_CERT_PATH}/${SN}"
@@ -155,7 +155,7 @@ server {
     listen 80;
     listen 443 ssl http2;
 
-    server_name ${WWW_SERVER_NAME} *.onezoom.org;
+    server_name ${WWW_SERVER_NAME};
 
     if (\$scheme != "https") {
         return 301 https://\$server_name\$request_uri;
@@ -206,6 +206,18 @@ server {
         }
         uwsgi_pass uwsgi_${WEB2PY_NAME};
         include uwsgi_params;
+    }
+
+    # Switch to a dev server by renaming this to "location /" and similarly with the above section
+    location /devserver {
+        proxy_pass       https://127.0.0.1:8000;
+        proxy_ssl_verify off;
+        proxy_set_header Host            \$host;
+        proxy_set_header X-Real-IP       \$remote_addr;
+        proxy_set_header X-Forwarded-for \$remote_addr;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection \$http_connection;
     }
 }
 EOF

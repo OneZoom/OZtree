@@ -8,36 +8,61 @@ import unittest
 import applications.OZtree.controllers.API as API
 from applications.OZtree.tests.unit import util
 
-from gluon.globals import Request, Session
-
-
-def api_to_fn(endpoint):
-    """Wrap endpoint to turn back into a python function"""
-    def fn(**kwargs):
-        current.request = Request(dict())
-        for (k, v) in kwargs.items():
-            current.request.vars[k] = v
-        API.request = current.request
-        return endpoint()
-    return fn
-
 
 class TestControllersAPI(unittest.TestCase):
     maxDiff = None
 
-    def setUp(self):
-        # Poke session / DB / request into API's namespace
-        API.session = current.session
-        API.db = current.db
-        API.request = current.request
-        API.response = current.response
-
     def tearDown(self):
         db.rollback()
 
+    def test_pinpoints(self):
+        def pinpoints(pps, **kwargs):
+            out = util.call_controller(API, 'pinpoints', vars=kwargs, args=pps)
+            self.assertEqual(out['lang'], kwargs.get('lang', 'en'))
+            return out['results']
+
+        # Get arbitary content
+        leaves = db((db.ordered_leaves.ott != None) & (db.ordered_leaves.name != None)).select(orderby='ott', limitby=(0,4))
+        nodes = db((db.ordered_nodes.ott != None) & (db.ordered_nodes.name != None)).select(orderby='ott', limitby=(0,4))
+        vns = db((db.vernacular_by_ott.lang_primary=='en') & (db.vernacular_by_ott.preferred==True)).select(
+          join=db.ordered_leaves.on(db.ordered_leaves.ott == db.vernacular_by_ott.ott),
+          limitby=(0,4))
+
+        self.assertEqual(pinpoints([]), [])
+        self.assertEqual(pinpoints(['@missingmissingmissing']), [dict(pinpoint='@missingmissingmissing')])
+
+        self.assertEqual(
+            pinpoints(['@=%d' % n.ott for n in leaves]),
+            [dict(ott=n.ott, ozid=-n.id, pinpoint='@=%d' % n.ott) for n in leaves],
+        )
+        self.assertEqual(
+            pinpoints(['@=%d' % n.ott for n in nodes]),
+            [dict(ott=n.ott, ozid=n.id, pinpoint='@=%d' % n.ott) for n in nodes],
+        )
+        self.assertEqual(
+            pinpoints(['@=%d' % v.ordered_leaves.ott for v in vns], vn='short', lang='en'),
+            [dict(
+                ott=v.vernacular_by_ott.ott,
+                ozid=-v.ordered_leaves.id,
+                pinpoint='@=%d' % v.vernacular_by_ott.ott,
+                vn=v.vernacular_by_ott.vernacular,
+            ) for v in vns],
+        )
+
+        # Request sciname in results
+        self.assertEqual(
+            pinpoints(['@=%d' % n.ott for n in leaves], sciname='y'),
+            [dict(ott=n.ott, ozid=-n.id, pinpoint='@=%d' % n.ott, sciname=n.name) for n in leaves],
+        )
+        self.assertEqual(
+            pinpoints(['@=%d' % n.ott for n in nodes], sciname='y'),
+            [dict(ott=n.ott, ozid=n.id, pinpoint='@=%d' % n.ott, sciname=n.name) for n in nodes],
+        )
+
     def test_search_init(self):
         """Search for arbitary node/name combinations"""
-        search_init = api_to_fn(API.search_init)
+        def search_init(**kwargs):
+            return util.call_controller(API, 'search_init', vars=kwargs)
 
         # Get an arbitary leaf & node
         leaf = db((db.ordered_leaves.ott != None) & (db.ordered_leaves.name != None)).select(orderby='ott', limitby=(0,1))[0]
@@ -58,7 +83,8 @@ class TestControllersAPI(unittest.TestCase):
 
     def test_getOTT(self):
         """Can fetch OTT names in variety of forms"""
-        getOTT = api_to_fn(API.getOTT)
+        def getOTT(**kwargs):
+            return util.call_controller(API, 'getOTT', vars=kwargs)
 
         # Nothing in = nothing out
         self.assertEqual(getOTT(), {'errors': []})

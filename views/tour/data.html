@@ -1,0 +1,85 @@
+{{
+from applications.OZtree.modules.embed import media_embed
+from applications.OZtree.modules.markdown import markdown
+ts_classes = (  # CSS classes that can be added to template_data as boolean properties
+    'visible-transition_in',
+    'visible-transition_in_wait',
+    'visible-transition_out',
+    'visible-transition_out_wait',
+    'visible-active_wait',
+    'hidden-active_wait',
+)
+
+tour_props = (  # Data properties that can be added to tour data
+    ('author', False),
+    ('title', True),
+    ('description', True),
+    ('image_url', False),
+    ('keywords', False),
+)
+
+ts_props = (  # Data properties that can be added to tourstop data
+    'ott',
+    'qs_opts',
+    'transition_in',
+    'fly_in_speed',
+    'transition_in_wait',
+    'stop_wait',
+    'stop_wait_after_backward',
+)
+
+ts_fields = (  # HTML fields that can be added to container
+    # NB: 'title' will be added to header
+    ('window_text', 'div'),
+    ('author', 'div'),
+    ('checked_by', 'div'),
+)
+}}
+{{T.set_current_languages((tour['lang'],))}}
+<div class="tour tour-{{=request.function}} layout-def {{=tour_identifier}}"
+       data-identifier="{{=tour_identifier}}"
+       data-focal-area="0.5 0.5"
+       {{for prop, tlated in tour_props:}}{{if tour.get(prop):}}data-{{=prop}}="{{=T(tour[prop]) if tlated else tour[prop]}}"
+       {{pass}}{{pass}}>
+{{for ts_idx, ts in enumerate(tour['tourstops']):}}
+  {{tdata = ts['template_data']}}
+  {{if tdata.get('class', '') and not tdata['class'].isalnum():}}<script>alert('Invalid characters in class')</script>{{pass}}
+  {{T.set_current_languages((ts['lang'],))}}
+  <div class="container tour_container {{=tdata.get('class', '')}} {{=" ".join(c for c in ts_classes if c in tdata)}}"
+       {{for prop in ts_props:}}{{if ts.get(prop):}}data-{{=prop}}="{{=ts[prop]}}"
+       {{pass}}{{pass}}>
+    <div class="header">
+      <button type="button" class="button tour_exit" uk-icon="icon: close" aria-label="{{=T('Exit tour')}}"></button>
+      <button type="button" class="handle" aria-label="{{=T('Exit tour')}}"></button>
+      {{if tdata.get('title', ''):}}<h2 class="title">{{=tdata['title']}}</h2>{{pass}}
+    </div>
+    {{for k, tag in ts_fields:}}{{if tdata.get(k, ''):}}{{for value in tdata[k] if isinstance(tdata[k], list) else [tdata[k]]:}}
+    {{content_dict = value if isinstance(value, dict) else dict(text=value)}}
+    <{{=tag}} class="{{=k}} {{=' '.join(key for key, value in content_dict.items() if value is True)}}"
+        >{{=XML(markdown(content_dict['text']))}}</{{=tag}}>{{pass}}{{pass}}{{pass}}
+    {{if len(tdata.get('media', [])) > 0:}}{{for url in tdata['media']:}}
+      {{=XML(media_embed(url, defaults=dict(ts_autoplay='tsstate-active_wait', url_base='https://onezoom.github.io/tours/')))}}
+    {{pass}}{{pass}}
+
+    <div class="actions"><a href="#share-modal" class="tour_pause oz-pill pill-share" style="float: right" uk-toggle>{{=T('Share')}}</a></div>
+    <div class="footer">
+      <button class="tour_backward">{{=T('Back')}}</button>
+      <span class="grow">
+        <select name="tourstop"
+                class="ts-progress uk-select tour_goto"
+                {{# Revert selection to hidden default selection after any change }}
+                onchange="setTimeout(function (x) { x.selectedIndex = 0 }, 10, this)"
+                style="height: 35px; text-align-last: center;">
+          <option hidden selected value="">{{=ts_idx + 1}} {{=T('of')}} {{=len(tour['tourstops'])}}</option>
+          {{for i, ts in enumerate(tour['tourstops']):}}
+            <option value="{{=i}}" {{if i == ts_idx:}}disabled{{pass}}>{{=tour['tourstops'][i]['template_data'].get('title', '')}}</option>
+          {{pass}}
+        </select>
+      </span>
+      <button class="tour_resume">{{=T('Resume')}}</button>
+      <button class="tour_forward">{{=T('Next')}}</button>
+      <button class="tour_final">{{=T('Exit')}}</button>
+    </div>
+  </div>
+{{pass}}
+</div>

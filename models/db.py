@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os.path
 import img
+import json
 
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
@@ -19,17 +20,23 @@ from gluon import current
 ## Useful global variables
 #########################################################################
 
-# Running under rocket --> is_testing is true
-is_testing = (request.env.server_software or '').lower().startswith('rocket')
+## once in production, set is_testing=False to gain optimizations
+## this will also set migration=False for all tables, so that the DB table definitions are fixed
+is_testing = True
 
 ## Read configuration
-if is_testing and len(request.env.cmd_options.args) > 1 and os.path.isfile(request.env.cmd_options.args[-1]):
+if (
+    is_testing and
+    request.env.cmd_options is not None and
+    len(request.env.cmd_options.args) > 1 and
+    os.path.isfile(request.env.cmd_options.args[-1])
+):
     # For unit testing, we might want to load a different appconfig.ini file, which can
-    # be passed in to the rocket server as the last arg on the command-line.
-    # (on the main server this is not used, and we default back to appconfig.ini
+    # be passed in to the rocket server as the last arg on the command-line (on the main
+    # server, `request.env.cmd_options` is undefined, and we default back to appconfig.ini)
     myconf = AppConfig(request.env.cmd_options.args[-1], reload=is_testing)
 else:
-    # NB: When running under rocket, re-load config every request with is_testing
+    # Reload config on each request when is_testing (i.e. not production)
     myconf = AppConfig(reload=is_testing)
 
 ## Configure i18n
@@ -51,6 +58,7 @@ except:
     local_pic_path = lambda s, s_id: os.path.join(request.folder, img.local_path, img.thumb_path(s, s_id))
 
 name_length_chars = 190 ##max length for a species name is 190 chars (allows indexing. NB: max OTT name is 108 chars)
+name_rank_chars = 30 ##max length for a taxonomic rank, e.g. species, genus, ...
 
 
 #########################################################################
@@ -116,6 +124,9 @@ response.headers['Server'] = 'n/a'
 
 from gluon.tools import Auth, Service, PluginManager
 
+## Configure session handling: http://web2py.com/books/default/chapter/29/13/deployment-recipes#Sessions-in-database
+session.connect(request, response, db)
+
 auth = Auth(db)
 service = Service()
 plugins = PluginManager()
@@ -149,9 +160,7 @@ except:
 auth.settings.registration_requires_verification = False
 auth.settings.registration_requires_approval = False
 auth.settings.reset_password_requires_verification = True
-
-## Configure session handling: http://web2py.com/books/default/chapter/29/13/deployment-recipes#Sessions-in-database
-session.connect(request, response, db)
+auth.settings.allow_basic_login = True
 
 ##restrict site to only logged in users
 ## https://groups.google.com/forum/#!topic/web2py/0j92-sPp4bc
@@ -236,6 +245,7 @@ db.define_table('ordered_nodes',
     Field('wikidata', type='integer'),
     Field('wikipedia_lang_flag', type='integer'), #
     Field('eol', type='integer'),
+    Field('rnk', type='string', length=name_rank_chars),
     Field('raw_popularity', type='double'),
     Field('popularity', type='double'),
     #the following 5 fields are sources listed by the OpenTree
@@ -458,6 +468,7 @@ db.define_table('reservations',
     # a login, we will always use the reservations.username value.
     # The reservations.username field is optional but needed if the user is to have a
     # "public" page of all their sponsorships 
+    # NB: Ideally the default of this field would be None, not "" - https://github.com/OneZoom/OZtree/issues/645
     Field('e_mail', type='string', length=200, requires=IS_EMPTY_OR(IS_EMAIL())),
     Field('twitter_name', type='text'),
     Field('allow_contact', type=boolean, default=False),
@@ -639,8 +650,8 @@ db.define_table('uncategorised_donation',
 
 # this table defines the current pricing cutoff points
 db.define_table('prices',
-    Field('price', type='integer', unique=True, requires=IS_NOT_EMPTY()),
-    Field('perpetuity_price', type='integer', requires=IS_NOT_EMPTY()),
+    Field('price', type='integer', unique=True),
+    Field('perpetuity_price', type='integer'),
     # Map the "normal" 4 year price to the in-perpetuity price
     Field('quantile', type='double'),
     Field('n_leaves', type='integer'),
@@ -741,29 +752,54 @@ db.define_table('partner_taxa',
     Field('deactived', type=boolean, notnull=True), #allows us to keep details in the DB but not to do sponsorship. However, it is more efficient to delete them from this table
     format = '%(partner_identifier)s', migrate=is_testing)
 
-#some tables for tours
-#one row per tour, to store e.g. the name of the tour
-db.define_table('tours',
-    Field('identifier', type='string', unique=True, length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
-    Field('name', type='text', notnull=True), #the name, to go before 'TreeTour', e.g. 'Iridescence' - this may be translated
-    Field('description', type='text'), #a description of the tour
-    Field('rating', type='double'), #average user rating
-    format = '%(identifier)s', migrate=is_testing)
+# Root for all tours
+db.define_table('tour',
+    Field('identifier', type='string', unique=True, length=20, notnull=True),  # Identifier for tour, used in URLs, e.g.
+    Field('lang', type='string', notnull=True, length=3), #the 'primary' 2  or 3 letter 'lang' code for this name (e.g. 'en', 'cmn'). See http://www.w3.org/International/articles/language-tags/
+    Field('author', type='text', notnull=True, default=''),  # Author of tour
+    Field('image_url', type='string'),  # URL to image used when displaying in e.g. popular places
+    Field('title', type='text', notnull=True, default=''),  # Title for tour for listings
+    Field('description', type='text', notnull=True, default=''),  # Description for tour for listings
+    Field('keywords', type='list:string', default=[]),  # Arbitary keywords, e.g. 'education', '11--16' (age)
+    Field('visible_in_search', 'boolean', notnull=True, default=True),  # Available in text search results or nearby tours search
+    Field('created', 'datetime', default=request.now),
+    Field('updated', 'datetime', default=request.now, update=request.now),
+    Field('views', 'integer', notnull=True, default=0),
+    format='%(identifier)s', migrate=is_testing)
 
-#the list of stops for each tour: one row per stop, giving ids into the tourstops table
-db.define_table('tourorders',
-    Field('identifier', type='string', length=20, notnull=True), #a unique alphanumeric identifier, e.g. LinnSoc
-    Field('transition', type='string', length=20), #the transition to this stop from the previous one
-    Field('node_fullzoom', type=boolean), #when we transition to a node, should we zoom so the node fills the screen? this has no effect when zooming to a leaf. Note this should maybe be moved to be part of tourstops because it is conceptually part of a stop to properly define the place on the tree.
-    Field('stop_number', type='integer', notnull=True), #the 0-based order of this stop in the defined tour
-    Field('stop_id', type='integer', notnull=True), #the id in the tourstops table corresponding to this tour
-    format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
+# Tourstops within a tour
+db.define_table('tourstop',
+    Field('tour', db.tour),
+    Field('identifier', type='string', notnull=True),  # Unique identifier for tourstop, for establishing symlinks
+    Field('ord', type='integer', notnull=True),  # The position of this tourstop in the tour, starting with 1
+    Field('ott', type='integer', notnull=False),  # The OTT this tourstop points at. NULL => return to start
+    Field('secondary_ott', type='integer', notnull=True, default=0),  # A second OTT when targeting a common ancestor
+    Field('qs_opts', type='string', notnull=False, default=''),  # QS-style options to apply to modify tourstop, e.g. into_node=true&initmark=...
+    Field('author', type='text', notnull=True, default=''),  # Author of tourstop (doesn't necessarily match tour in case of remix)
+    Field('transition_in', type='string', notnull=True, requires=IS_IN_SET(('fly', 'leap', 'fly_straight')), default='fly'),  # Transition to use when flying to stop
+    Field('fly_in_speed', type='double', notnull=False, default=1),  # Speed relative to global_anim_speed
+    Field('transition_in_wait', type='integer', notnull=False),  # How long to wait before entering into transition
+    Field('stop_wait', type='integer', notnull=False),  # How long to wait at this stop (null => wait until "next" is pressed)
+    Field('stop_wait_after_backward', type='integer', notnull=False),  # How long to wait if entered by going back
+    Field('template_data', type='text', notnull=True,
+        filter_in=lambda obj: json.dumps(obj),
+        filter_out=lambda txt: json.loads(txt)),  # JSON template data for tourstop
+    Field('lang', type='string', notnull=True, length=3, default='en'), #the 'primary' 2  or 3 letter 'lang' code for this name (e.g. 'en', 'cmn'). See http://www.w3.org/International/articles/language-tags/
+    Field('checked_by', type='string'),  # Who has checked the validity of this data?
+    Field('checked_updated', 'datetime', default=None),  # When did they do it?
+    Field('visible_in_search', 'boolean', notnull=True, default=True),  # Available in tourstop-search for remixing a tour?
+    Field('created', 'datetime', default=request.now),
+    Field('updated', 'datetime', default=request.now, update=request.now),
+    format='%(ott)d_%(identifier)s', migrate=is_testing)
 
-db.define_table('tourstops',
-    Field('ott', type='integer', notnull=True), #the ott of this taxon
-    Field('description', type='text'), #text to show at this stop
-    Field('video', type='string', length=20), #the youtube video number, if there is a video
-    format = '%(identifier)s_%(stop_number)s', migrate=is_testing)
+# Symlinks to other tourstops in another tour, a full tour will combine both tours and tourstops
+db.define_table('tourstop_symlink',
+    Field('tour', db.tour),
+    Field('tourstop', db.tourstop),
+    Field('ord', type='integer', notnull=True),  # The position of this tourstop in the tour
+    Field('created', 'datetime', default=request.now),
+    Field('updated', 'datetime', default=request.now, update=request.now),
+    format='%(tour)d_%(ord)d', migrate=is_testing)
 
 # These are popular places, tours or other things that a user can use to explore the tree
 # in a more guided way.  E.g. use as a first way into the tree or as suggestions of places

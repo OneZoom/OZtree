@@ -1,13 +1,17 @@
-import * as renderer from '../../render/move_to_renderer';
 import BaseShape from './base_shape';
 import {ObjectPool} from '../../util/index';
 
 class MoveToShape extends BaseShape {
   constructor(obj) {
     super(obj);
-    this.renderer = renderer;
     this.x = 1.0;
     this.y = 1.0;
+  }
+  render(context) {
+    context.moveTo(this.x, this.y);
+  }
+  follow_path(context) {
+    context.moveTo(this.x, this.y);
   }
 }
 

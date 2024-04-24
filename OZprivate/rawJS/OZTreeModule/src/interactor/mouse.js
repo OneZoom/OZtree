@@ -35,12 +35,9 @@ class MouseInteractor {
   }
   
   mouse_dblclick(event) {
-    call_hook('mouse_dblclick')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('mouse_dblclick')) return;
     
-    tree_state.flying = false;
+    this.controller.cancel_flight();
     set_mouse_position(this, event);
     tree_state.mouse_hold = false;
     this.clicking = false;
@@ -50,12 +47,9 @@ class MouseInteractor {
   }
   
   mouse_wheel(event) {
-    call_hook('mouse_wheel')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('mouse_wheel')) return;
 
-    tree_state.flying = false;
+    this.controller.cancel_flight();
     event.preventDefault();
     event.stopPropagation();
     var canvas = this.canvas
@@ -71,7 +65,7 @@ class MouseInteractor {
     set_mouse_position(this, event);
         
     if (Math.abs(delta - 0) > 0.05) {
-      record_url_delayed();
+      record_url_delayed(this.controller);
       /* set cursor to zoom-in or zoom-out, but set it to go back to default if we haven't scolled for a while */
       if (this.cursor_animator) clearInterval(this.cursor_animator);
       this.cursor_animator = setTimeout(function(){canvas.style.cursor='default';}, 250);
@@ -86,12 +80,9 @@ class MouseInteractor {
   }
   
   mouse_down(event) {
-    call_hook('mouse_down')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('mouse_down')) return;
 
-    tree_state.flying = false;
+    this.controller.cancel_flight();
     set_mouse_position(this, event);
     this.clicking = true;
     tree_state.mouse_hold = true;
@@ -101,10 +92,7 @@ class MouseInteractor {
   }
   
   mouse_move(event) {
-    call_hook('mouse_move')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('mouse_move')) return;
 
     if (tree_state.mouse_hold) {
       let new_mouse_x = event.clientX - this.canvas.offsetLeft;
@@ -124,10 +112,7 @@ class MouseInteractor {
   }
   
   mouse_up(event) {
-    call_hook('mouse_up')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('mouse_up')) return;
 
     /**
      * It's important to call record_url_delayed before controller.click. 
@@ -137,7 +122,7 @@ class MouseInteractor {
      * On the other hand, if call record_url_delayed before controller.click, when controller.click calls record_url, since 
      * record_url would clear timer set by record_url_delayed function, only one record_url would be called as a result.
      */
-    record_url_delayed();
+    record_url_delayed(this.controller);
     if (this.cursor_animator) clearInterval(this.cursor_animator);
     this.canvas.style.cursor='default';
     if (this.clicking) {

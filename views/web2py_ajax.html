@@ -9,10 +9,6 @@
     )}}
     //--></script>
 {{
-response.files.insert(0,URL('static','js/jquery.min.js'))
-response.files.insert(1,URL('static','css/calendar.css'))
-response.files.insert(2,URL('static','js/calendar.js'))
-response.files.insert(3,URL('static','js/web2py.js'))
-response.include_meta()
-response.include_files()
+# Include this file as well as web2py.html if web2py ajax functionality is needed
+response.files.insert(1, URL('static','js/web2py.js'))
 }}

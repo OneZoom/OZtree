@@ -1,8 +1,31 @@
-This README file contains instructions for installing a private copy of OneZoom, either the tree explorer or the entire website. For gory details on running a *public* OneZoom server, see [README_SERVER.markdown](README_SERVER.markdown). Details of how to customize the OneZoom javascript viewer, along with information about the OneZoom APIs, are available by following the instructions below, then opening the compiled markdown file (at `OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown` or if you are running your own private OneZoom web server, at /dev/DOCS - for example, https://127.0.0.1:8000/dev/DOCS). 
+This README file contains instructions for installing a private copy of OneZoom, either the tree explorer or the entire website.
+
+Details of how to customize the OneZoom javascript viewer, along with information about the OneZoom APIs, are available by following the instructions below, then opening the compiled markdown file (at `OZprivate/rawJS/OZTreeModule/docs/_compiled.markdown` or if you are running your own private OneZoom web server, at /dev/DOCS - for example, https://127.0.0.1:8000/dev/DOCS). 
 
 If you simply want to run a local copy of OneZoom, but not modify the code yourself, we recommend using our [Docker image](https://hub.docker.com/r/onezoom/oztree-complete). The rest of this README provides details for compiling and running a OneZoom instance (something that is done under the hood when [creating the docker image](https://github.com/OneZoom/OZtree-docker)).
 
 # OneZoom setup
+
+## Installing in a Docker Dev Container
+
+If you are using Visual Studio Code or another editor that supports [Dev Containers](https://containers.dev/), the easiest way to set up a full development environment is to use the included Dev Container configuration. This will automatically create two containers: one for development (_dev_), and another (_web_) with the MySQL database and production web server (nginx + uwsgi), derived from the Docker image mentioned above. Your source code will be mounted simultaneously into both containers: dev will let you run build commands and web will serve it as a web server you can access via port forwarding. You can also run your own server from the dev container by [running web2py.py directly](#starting-and-shutting-down-web2py) -- this is particularly useful for debugging.
+
+If you are using Visual Studio Code, perform the following steps (you will need to modify these for another editor):
+
+1. Follow the instructions at either https://hub.docker.com/r/onezoom/oztree or https://hub.docker.com/r/onezoom/oztree-complete to save a docker image with IUCN data.
+1. Follow the [VSCode instructions for installing Dev Container support](https://code.visualstudio.com/docs/devcontainers/containers#_installation).
+1. `git clone https://github.com/OneZoom/OZtree` into the directory of your choice. If using Windows, it is highly recommended to [clone on the WSL2 filesystem](https://code.visualstudio.com/remote/advancedcontainers/improve-performance#_store-your-source-code-in-the-wsl-2-filesystem-on-windows) both for performance reasons and to avoid permissions issues. If you wish to fork the repository and clone your fork, you will need to copy the tags from upstream, otherwise you will see build issues later. You can do this with `git fetch --tags upstream` followed by `git push --tags`.
+1. Open the cloned directory in VSCode.
+1. Create a `.env` file in the `.devcontainer` directory and add `WEB_IMAGE_NAME=onezoom/oztree-with-iucn`, changing the value to whatever image name you choose in step 1.
+1. Open the command palette and choose "Dev Containers: Reopen in Container". This may take several minutes to run.
+1. Your repository is mounted at `/opt/web2py/applications/OZtree` and the original production docker container application is mounted at `cp /opt/web2py/applications/OZtree_original`. In order to sync your repository with the production database state, open an integrated terminal and run the following: `cp /opt/web2py/applications/OZtree_original/private/appconfig.ini /opt/web2py/applications/OZtree/private/ && cp /opt/web2py/applications/OZtree_original/databases/*.table /opt/web2py/applications/OZtree/databases/`
+1. Run `npm ci && grunt dev`. You will need to rerun `grunt dev` any time you make code changes.
+1. Visit http://localhost:8080 and the website should load! You can also run your own server from the dev container by [running web2py.py directly](#starting-and-shutting-down-web2py).
+1. (Optional) Once tables are created, and everything is working, you can set `migrate = 0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
+1. (Optional) [Create a manager account](#creating-auth-users--groups) in the auth table, e.g. so you can [view docs](#documentation).
+1. (Optional) MySQL is available on port 3307 if you wish to debug using local tools outside the container.
+
+## Installing locally
 
 There are two ways in which you can install OneZoom on a personal computer: full installation and partial installation. 
 
@@ -12,7 +35,7 @@ There are two ways in which you can install OneZoom on a personal computer: full
 
 ## Requirements and packages
 
-For any installation, OneZoom requires node & python (3.10).
+For any installation, OneZoom requires node (18+) & python (3.10).
 
 #### Debian/Ubuntu
 
@@ -24,7 +47,8 @@ apt install python3 python3-dev python3-venv
 #### FreeBSD
 
 ```
-sudo pkg install lang/python310 node18 npm-node18
+# NB: rust is required to build the python cryptography package
+sudo pkg install lang/python310 node18 npm-node18 rust
 ```
 
 In addition, for a full installation you also need MySQL:
@@ -36,12 +60,11 @@ apt install lsb-release
 wget https://dev.mysql.com/get/mysql-apt-config_0.8.29-1_all.deb
 dpkg -i mysql-apt-config_0.8.29-1_all.deb
 apt update && apt install mysql-server
-# NB: Select "Use Legacy Authentication Method (Retain MySQL 5.x Compatibility)"
 ```
 
 #### Windows
 
-On Windows we recommended downloading the MSI installer as it will make it easier to configure the new server during the installation
+On Windows we recommended downloading the [MSI installer](https://dev.mysql.com/downloads/installer/) as it will make it easier to configure the new server during the installation.
 Once mysql is installed, you will need to set a root password, and create a database for web2py to use. See http://dev.mysql.com/doc/refman/5.7/en/default-privileges.html. 
 The mysqld program is responsible for running the new database just created. When this program is  running, you can connect to the database.
 
@@ -66,7 +89,7 @@ chown deploy:staff ${WEB2PY_PATH}
 git clone https://github.com/web2py/web2py ${WEB2PY_PATH} --branch v2.27.1
 git clone https://github.com/OneZoom/OZtree.git ${WEB2PY_PATH}/applications/OZtree --branch production
 cd ${WEB2PY_PATH}/applications/OZtree
-npm ci --legacy-peer-deps
+npm ci
 ```
 
 Next, ``cp private/appconfig.ini.example private/appconfig.ini`` and edit to match your needs, taking care to:
@@ -95,7 +118,7 @@ but will get API information form the OneZoom website, *and* also use the OneZoo
 For developers only, who may wish to create a minlife version not only using modified javascript in the treeviewer but also with bespoke html, you can run `grunt partial-local-install`.
 This is much more effort since it requires you to set up a full installation (as below) before creating the minlife scripts, but once created, the files in `static` will be enough for other users to view (and test) your modifications.
 
-## Database setup / migation
+## Database set-up / migation
 
 For full installations, you need to setup your database.
 
@@ -144,9 +167,11 @@ Run grunt to configure onezoom for production use:
 
 ```
 cd ${WEB2PY_PATH}/applications/OZtree
-npm ci --legacy-peer-deps
+npm ci
 ./node_modules/.bin/grunt prod
 ```
+
+Edit ``models/db.py``, and set ``is_testing = False``.
 
 Then run the install scripts to set up nginx & supervisord:
 
@@ -159,14 +184,19 @@ If everything works, restart both.
 
 ## Database explorer
 
-(optional) We find it useful to have a GUI interface to connect to the database and run SQL scripts, this can be used instead of using MySQL command line (similar to Windows command line) that is installed by default with MySQL. On Mac OS X we use the (excellent) http://www.sequelpro.com. On windows you could try http://www.mysql.com/products/workbench/ or https://www.quest.com/products/toad-for-mysql/
+(optional) We find it useful to have a GUI interface to connect to the database and run SQL scripts, this can be used instead of using MySQL command line (similar to Windows command line) that is installed by default with MySQL.
+On Mac OS X we use the (excellent) http://www.sequelpro.com.
+On windows you could try http://www.mysql.com/products/workbench/ or https://www.quest.com/products/toad-for-mysql/
+Under windows, [SQL Workbench](https://www.mysql.com/products/workbench/) can also be used, even if your MySQL server is installed under WSL2.
+
+installing SQL Workbench on Windows works great to connect to the Ubuntu MySQL instance.
 
 ## Starting and shutting down web2py
 
 On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. This is complete overkill if you just want to run a local copy of OneZoom for testing purposes. You can simply run a [temporary and basic web2py server using Python 3](http://www.web2py.com/books/default/chapter/29/03/overview#Startup). The simplest is to open a command-line prompt in the root web2py folder, and run the following (assuming the command `python3` is linked to something like Python 3.7)
 
 ```
-./node_modules/.bin/grunt start-dev
+./web2py-run
 ```
 
 When web2py is run, it will print instructions telling how to shut down the web2py server. For example, on Windows you might use `taskkill /f /pid XXXX`, where `XXXX` is the process id.
@@ -180,7 +210,7 @@ When web2py is run, it will print instructions telling how to shut down the web2
 
 `models` stores the python back end server code.
 
-`static` stores all static files including images, css, and compiled js. Files which are output by various server processes are stored in `FinalOutputs`. This includes very large numbers of thumbnail images (stored in `FinalOutputs/pics`) and static data files such as the tree topology and the tree cut positions (stored in `FinalOutputs/data`). The OZTreeModule folder contains the compiled version of most of the core OneZoom code. `static/OZLegacy` contains most of the old trees.
+`static` stores all static files including images, css, and compiled js. Files which are output by various server processes are stored in `FinalOutputs`. This includes very large numbers of thumbnail images (stored in `FinalOutputs/img`) and static data files such as the tree topology and the tree cut positions (stored in `FinalOutputs/data`). The OZTreeModule folder contains the compiled version of most of the core OneZoom code. `static/OZLegacy` contains most of the old trees.
 
 `views` is where all the html is stored - it's OK to just use raw html in here if no server side functions are needed for that particular page.
 
@@ -269,7 +299,7 @@ Notes
 ### Server unit tests
 
 **NB:** The server tests are not sandboxed, so have the potential to delete database data.
-On run on a personal instance where data loss does not matter.
+You are advided to run this on a personal instance where data loss does not matter.
 
 The server unit tests have no additional dependencies. To run, do:
 
@@ -298,6 +328,13 @@ You also need chrome/chromium driver installed with, e.g.:
 You can then run the tests with:
 
     grunt test-server-functional
+
+## Debugging
+
+If you wish to use your editor's debugger to debug the JavaScript code, you will need to compile source maps. Run the following:
+
+1. Run `grunt dev` to perform the initial dev compilation.
+1. Run `npm run compile_js_dev:watch` to compile source maps and automatically recompile if files are changed. Note: this command will continue to run until it is killed.
 
 # Documentation
 

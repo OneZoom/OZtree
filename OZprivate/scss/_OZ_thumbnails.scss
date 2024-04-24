@@ -7,7 +7,7 @@
 .thumbnail {
   display: block;
   padding: $thumbnail-padding;
-  margin-top: ($line-height-computed / 2);
+  margin-top: calc($line-height-computed / 2);
   margin-bottom: $line-height-computed;
   line-height: $line-height-base;
   background-color: $thumbnail-bg;
@@ -38,11 +38,11 @@ figure {
   .thumbnail {
     border: 0;
     border-radius: 0;
-    margin-bottom: $line-height-computed / 2;
+    margin-bottom: calc($line-height-computed / 2);
   }
   figcaption {
     text-align: center;
-    margin-bottom: $line-height-computed / 2;
+    margin-bottom: calc($line-height-computed / 2);
   }
 }
 

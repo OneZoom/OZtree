@@ -21,22 +21,17 @@
     <meta name="google-site-verification" content="">
     {{if response.canonical:}}<link rel="canonical" href="{{=response.canonical}}">{{pass}}
 
-    <script type="text/javascript" src="{{=URL('static','js/jquery.min.js')}}"></script>
     <link rel="stylesheet" href="{{=URL('static','uikit-3/css/uikit.min.css')}}" />
     <script src="{{=URL('static','uikit-3/js/uikit.min.js')}}"></script>
     <script src="{{=URL('static','uikit-3/js/uikit-icons.min.js')}}"></script>
     <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/content.css')}}" />
-    
-    {{
-    response.include_meta()
-    response.include_files()
-    }}
-    <!-- include 'web2py_ajax.html' could be done here, but it performs more than we want so we disect it and keep only the bits we really need -->
-
+    {{include 'web2py.html'}}
 
     {{if is_testing:}}<script>window.is_testing = true;</script>{{pass}}
-    {{include '../static/OZTreeModule/dist/OZ_main.html'}}
+    {{include '../static/OZTreeModule/dist/OZentry.html'}}
+    {{include '../static/OZTreeModule/dist/OZui.html'}}
     <script>var OZstrings={{include 'treeviewer/js_strings.json'}}</script>
+    {{include 'treeviewer/server_urls.html' }}
   </head>
   <body class="standalone">
     <!--[if lt IE 8]><p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p><![endif]-->
@@ -81,7 +76,7 @@
             <img src="{{=URL('static/images', 'oz-logo-icon-darkbg.svg')}}" alt="" />
           </button>
         </div><input class="uk-search-input" type="search" placeholder="{{=T('Search all life...')}}" /></div>
-      <div uk-dropdown="pos: bottom-left; offset: 1" class="search_dropdown selectable uk-overflow-auto">
+      <div uk-dropdown="pos: bottom-left; offset: 0" class="search_dropdown selectable uk-overflow-auto">
         <div class="no_results">{{=T("No results found")}}</div>
         <dl class="search_hits"></dl>
         <dl class="popular_species"></dl>
@@ -91,21 +86,12 @@
 <script>
 (function() {
     var box_selector = $('#header_searchnav');
-    var search_manager = OZentry.api_utils_setup({
-      /* These fill out the equivalently named variables in OneZoom global_config.
-         They need to be defined in this file to avoid hard-coding them into the OneZoom js code
-         They are coded with the full URL so that they can be used remotely (e.g. in a partial install) */
-      search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",
-      search_sponsor_api: "{{try:}}{{=myconf.take('API.search_sponsor')}}{{except:}}{{=URL('API','search_for_sponsor.json', scheme=True, host=True)}}{{pass}}",
-    }).search_manager;
 
     $('.searchinput input', box_selector)
-        .blur(function(event) {
-            // if we have an already-selected location, and we lose focus, we simply revert
-            var searchbox = $(event.currentTarget).closest('.searchbox');
-            if ($('.searchresult', searchbox).attr('data-OZid')) {
-                searchbox.addClass('result_displayed_in_box');
-            }
+        .on('keydown', function(event) {
+            // Stop UI-kit from nullifying space
+            // https://github.com/uikit/uikit/blob/8313ce565be686952ab6edf8a7caee5fdfcca08c/src/js/core/toggle.js#L138-L151
+            event.stopPropagation();
         })
         .on('keyup', function(event) {
 
@@ -113,16 +99,12 @@
             var searchbox = $(this).closest('.searchbox');
             var searchresult = $('.searchresult', searchbox);
             var dropdown = $('.search_dropdown', searchbox);
-            if (searchresult.attr('data-OZid')) {
-                onezoom.controller.unmark_area(searchresult.attr('data-OZid'));
-                searchresult.attr('data-OZid','');
-            }
             if (search_term.length==0) {
                 $('.popular_species', dropdown).show();
                 {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
                 $('.no_results', dropdown).hide();
                 $('.search_hits', dropdown).empty();
-                search_manager.full_search(""); // this clears the search
+                OZui.search_manager.full_search(""); // this clears the search
                 $('.searchinput', searchbox).removeClass('waiting_for_search_result');
             } else {
                 //$('.searchinput', searchbox).addClass('waiting_for_search_result');
@@ -132,10 +114,10 @@
                 }
             if ((search_term.replace(/ /g,'').length > 2)||((search_term.replace(/ /g,'').length > 1)&&(delay_ms == 1))) { // we're neve
 
-            search_manager.full_search(
+            OZui.search_manager.full_search(
                 search_term,
                 function(original_string, actual_search, results) {
-                    search_ui.searchPopulate(searchbox, original_string, results, function () {return null;});
+                    OZui.searchPopulate(searchbox, original_string, results);
                     dropdown.find('dd').addClass('leafout');
                     dropdown.find('a').attr('target', '_blank');
                 },
@@ -213,8 +195,8 @@
         <h3>Follow us</h3>
         <div>
           <a href="mailto:mail@onezoom.org" title=""><span uk-icon="icon: mail" style="vertical-align: bottom;"></span>&nbsp; E&#8209;mail</a><br/>
-          <a href="https://twitter.com/OneZoomTree" target="_blank" title=""><span uk-icon="icon: twitter" style="vertical-align: bottom;"></span>&nbsp; Twitter</a><br/>
           <a href="http://www.facebook.com/OneZoomTree" target="_blank" title=""><span uk-icon="icon: facebook" style="vertical-align: bottom;"></span>&nbsp; Facebook</a><br/>
+          <a href="https://twitter.com/OneZoomTree" target="_blank" title=""><span uk-icon="icon: twitter" style="vertical-align: bottom;"></span>&nbsp; X</a><br/>
         </div>
       </div>
 

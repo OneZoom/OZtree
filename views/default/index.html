@@ -3,137 +3,29 @@
 {{extend 'uikit_layout.html'}}
 
 {{block masthead}}
-<div class="home-heading uk-text-center">
+<div class="home-heading uk-text-center uk-overflow-hidden">
   <h1>Welcome to the OneZoom tree of life explorer...</h1>
-  <p>An interactive map of the evolutionary links between all living things known to science. Discover your favourites, see which species are under threat, and be amazed by the diversity of life on earth.</p>
-  <em>Our tree of life explorer is designed to be easily accessible for everyone. We also provide educational tools for teachers, software for scientists and interactive exhibits for museums. This is a free community resource with no advertising.</em>
+  <p>
+    The Tree of Life shows how all life on Earth is related.
+    In our interactive tree of life you can explore the relationships between
+    <b>{{="{:,}".format(n_species)}}</b> species
+    and wonder at <b>{{="{:,}".format(n_images)}}</b> images on a single zoomable page.
+    Each leaf represents a different species, and the branches illustrate how these many species evolved from common ancestors over billions of years.
+    Explore the relationships between species, learn about their common ancestors, or embark on a guided tour around the tree.
+    Zoom around the tree to be amazed by the diversity of life on Earth.
+  </p>
 </div>
 {{end block}}
 
 
 <div class="uk-grid-small uk-child-width-expand@s uk-grid-match uk-grid-oz-dark" uk-grid>
-  <div> <!-- left column -->
-    <div class="uk-grid-small" uk-grid>
-
-      <div class="uk-card uk-card-default uk-card-small uk-card-body oz-info-card">
-        <h3 class="uk-card-title">What is the tree of life?</h3>
-        <p>
-          The tree of life shows how all life on earth is related.
-          Each leaf represents a different species.
-          The branches show how these many species evolved from common ancestors over billions of years.
-          In our interactive tree of life you can explore the relationships between
-          <b>{{="{:,}".format(n_species)}}</b> species and wonder at <b>{{="{:,}".format(n_images)}}</b> images on a single zoomable page.
-        </p>
-        <div class="oz-info-card-aside">
-          <ul class="hp-stat-circles">
-            <li style="top: -1.3rem; right: 10%; width: 7rem; height: 7rem;">{{="{:,}".format(n_species)}} species</li>
-            <li style="top: 30%; right: 45%; width: 5.5rem; height: 5.5rem;">{{="{:,}".format(n_images)}} images</li>
-          </ul>
-          <div class="oz-card-bottom-right"><a href="/introduction.html" class="oz-pill leaf-list">Find out more</a></div>
-        </div>
-      </div>
-
-      <div class="uk-card uk-card-default uk-card-small uk-card-body uk-width-expand">
-        <h3 class="uk-card-title">Popular places to start exploring...</h3>
-
-        <style>
-        .oz-slider-popularplaces img {
-          border: 3px solid white;
-        }
-        .oz-slider-popularplaces .inner-container {
-          width: 90%;
-          margin: 0 auto;
-        }
-
-        .oz-slider-popularplaces li figcaption {
-          transition: opacity 0.1s;
-          opacity: 0;
-          padding: 1px;
-          font-size: 90%;
-        }
-        .oz-slider-popularplaces li.uk-active figcaption {
-          opacity: 1;
-          transition: opacity 0.3s;
-        }
-        .oz-slider-popularplaces li .img-species {
-          margin: 50% 0;
-          transform: scale(1);
-          transition: transform 0.1s;
-        }
-        .oz-slider-popularplaces li .img-species.leafout::after {
-          background-size: 20px;
-        }
-        </style>
-        <div class="uk-position-relative uk-width-5-6 uk-container-center oz-slider-popularplaces" uk-slider="center: true; index: 1">
-          <div class="uk-slider-container"><div class="inner-container"><ul class="uk-slider-items uk-child-width-1-3 uk-child-width-1-5@l">{{for key in carousel:}}
-            <li>
-              <a href="{{=hrefs[key]}}" target="_blank"><figure>
-                <div class="img-species leafout"><img src="{{=images.get(key, {}).get('url', '')}}"
-                                                  onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'"
-                                                      alt="{{=str(html_names.get(key, '')).capitalize()}}" /></div>
-                <figcaption class="uk-text-center">{{=XML(str(html_names.get(key, '')).capitalize())}}</figcaption>
-              </figure></a>
-            </li>
-          {{pass}}</ul></div></div>
-          <a class="uk-position-top-left oz-slider-arrow oz-slider-arrow-left" style="height: 127px" href="#" uk-slider-item="previous"></a>
-          <a class="uk-position-top-right oz-slider-arrow oz-slider-arrow-right" style="height: 127px" href="#" uk-slider-item="next"></a>
-        </div>
-        
-       <div class="oz-card-bottom-right"><a href="/life.html" class="oz-pill pill-leafout" target="_blank">Start at the origin of life</a></div>
-        
-      </div>
-      <script>
-       function popularplaces_recalc() {
-           var all_items, mid_point, i;
-
-           // Clear styling from inactive items
-           all_items = Array.prototype.slice.call(document.querySelectorAll('.oz-slider-popularplaces ul.uk-slider-items li'));
-           for (i = 0; i < all_items.length; i++) {
-               all_items[i].style['z-index'] = '';
-               all_items[i].querySelector('div.img-species').style.transform = '';
-           }
-
-           // Get active items, sorted by CSS & HTML order
-           all_items = Array.prototype.slice.call(document.querySelectorAll('.oz-slider-popularplaces ul.uk-slider-items li.uk-active'));
-           all_items.sort(function (a, b) {
-               return parseInt(getComputedStyle(a).order, 10) - parseInt(getComputedStyle(b).order, 10);
-           });
-
-           // Arrange around midpoint
-           mid_point = (all_items.length / 2) - 0.5;
-           for (i = 0; i < all_items.length; i++) {
-               all_items[i].style['z-index'] = all_items.length - Math.abs(Math.floor(i - mid_point));
-               all_items[i].querySelector('div.img-species').style.transform = 'scale(' + (1.2 + (mid_point - Math.abs(i - mid_point)) * 0.8/mid_point) + ')';
-           }
-       };
-       function wait_for_slider_init() {
-           if (document.querySelectorAll('.oz-slider-popularplaces .uk-active').length > 0) {
-               popularplaces_recalc();
-           } else {
-               setTimeout(wait_for_slider_init, 100);
-           }
-       }
-
-       // Fire both before and after so we look like we're working at the same time as the scroll
-       // TODO: Listen to itemshow, assume that the item that isn't the new one is about to be hidden?
-       document.querySelector('.oz-slider-popularplaces').addEventListener('itemshow', popularplaces_recalc);
-       document.querySelector('.oz-slider-popularplaces').addEventListener('itemshown', popularplaces_recalc);
-       wait_for_slider_init(); // Start busy-wait until slider is ready
-      </script>
-
-    </div>
-    </div>
-  <div> <!-- Right column -->
-    <div class="uk-card uk-card-default uk-card-small">
-      <div class="hp_tour_ui" id="tour_wrapper"></div>
-      <canvas id="OneZoomCanvasID" class="embedded" style="width: 100%; height: 100%"></canvas>
+  <div class="uk-card uk-card-default uk-card-small" style="height: 20rem; padding-left: 0;">
+    <div class="hp_tour_ui" id="tour_wrapper"></div>
+    <canvas id="OneZoomCanvasID" class="embedded" style="width: 100%; height: 100%"></canvas>
     <!-- treeviewer constants -->
     {{include 'treeviewer/dynamic_scripts.html' }}
     {{include 'treeviewer/server_urls.html' }}
-      <script>
-animation_config = {{include 'treeviewer/homepage_animation.js'}}
-      </script>
-      <script>
+    <script>
 $(document).ready(function() {    /* Mainly a place to attach JS event handlers */
     // Set up some global variables
     /** CREATE A ONEZOOM INSTANCE
@@ -149,70 +41,59 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             'OneZoomCanvasID',
             window['tree_config'],
             window.rawData,
-            window.metadata,
+            null,
             window.cut_position_map_json_str,
             window.polytomy_cut_position_map_json_str,
             window.cut_threshold,
             window.tree_date);
         window.onezoom.add_hook('on_tree_loaded', () => {
             /* we use the 'screensaver' tour to provide a constant animation */
-            onezoom.screensaver.setup_setting(
-                animation_config,
-                'homepage_animation',
-                null, // nothing before the screensaver runs
-                true, // loop back and forth
-                null, // nothing on exit
-                "block", // disable interaction with the tree
-                null, // do not provide an interaction callback
-                0, // start immediately
-                ); 
+            onezoom.controller.set_screensaver('/tour/homepage_animation', 0, 'block')
         })
     }
 })
-      </script>
-      </div>
-    </div>
+    </script>
+  </div>
 </div>
 
+<div class="uk-grid-small uk-child-width-expand@s uk-grid-match uk-grid-oz-dark" uk-grid style="margin-top: 0; padding-top: 0;">
+    <div class="uk-card uk-card-default uk-card-small">
 
-<section class="oz-section bkgd-leaves"><div class="oz-section-body">
-  <style>
-  .endangered-species {
-    height: 100px;
-    overflow: hidden;
-  }
-  .endangered-species a {
-    margin: 0 0.5rem;
-  }
-  .endangered-species .img-species {
-    width: 100px;
-    height: 100px;
-  }
-  </style>
-  <h3 class="uk-card-title">Biodiversity and Conservation...</h3>
-  <p>We want to help everyone appreciate biodiversity and the need to conserve it.<br/>
-  <em>Red leaves on our tree of life show species known to be under threat of extinction.</em><br/>
-  <span class="green-text"> Green leaves are either okay for now but might be nearly threatened.</span><br/>
-  <span class="grey-text">Most leaves are grey meaning that it's not known how threatened they are.</span></p>
+        <h3 class="uk-card-title">Popular places to start exploring...</h3>
 
-  <div class="endangered-species">{{for key in threatened:}}
-    <a href="{{=hrefs[key]}}" title="{{=str(html_names.get(key, '')).capitalize()}}" target="_blank"><span class="img-species leafout leafout-corner"><img class="species" src="{{=images[key]['url']}}" onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'" alt="{{=str(html_names.get(key, '')).capitalize()}}" /></span></a>
-  {{pass}}</div>
-</div></section>
+        <style>
+        .oz-slider-popularplaces img {
+          border: 10px solid white;
+        }
+        .oz-slider-popularplaces li {
+          width: 120px;
+        }
+        .oz-slider-popularplaces > a.oz-slider-arrow {
+          height: 95px;
+        }
 
-
-<div class="uk-child-width-expand@m uk-grid-match" style="border: 20px solid white" uk-grid>
-  {{for sub_menu in response.menu[0:3]:}}
-    <div>
-      <div class="oz-pill with-splash">
-        <h3>{{=T(sub_menu[0])}}</h3>
-        {{=MENU(sub_menu[-1][0:4], _class="leaf-list")}}
-        <!-- NB: 15rem is length of longest menu item -->
-        <div class="oz-pill-splash" style="width: calc(100% - 15rem); background-image: url({{=menu_splash_images[sub_menu[0]]}})"></div>
+        .oz-slider-popularplaces li figcaption {
+          padding: 1px;
+          font-size: 90%;
+        }
+        </style>
+        <div class="uk-position-relative uk-width-5-6 uk-container-center oz-slider-popularplaces" uk-slider="center: true; index: 1">
+          <div class="uk-slider-container"><div class="inner-container"><ul class="uk-slider-items">{{for key in carousel:}}
+            <li>
+              <a href="{{=hrefs[key]}}" target="_blank"><figure>
+                <div class="img-species leafout"><img src="{{=images.get(key, {}).get('url', '')}}"
+                                                  onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'"
+                                                      alt="{{=str(html_names.get(key, '')).capitalize()}}" /></div>
+                <figcaption class="uk-text-center">{{=XML(str(html_names.get(key, '')).capitalize())}}</figcaption>
+              </figure></a>
+            </li>
+          {{pass}}</ul></div></div>
+          <a class="uk-position-top-left oz-slider-arrow oz-slider-arrow-left" href="#" uk-slider-item="previous"></a>
+          <a class="uk-position-top-right oz-slider-arrow oz-slider-arrow-right" href="#" uk-slider-item="next"></a>
+        </div>
       </div>
-    </div>
-  {{pass}}
 </div>
+
 
 <section class="oz-section bkgd-quotes"><div class="oz-section-body">
   <h3>What they say...</h3>
@@ -240,60 +121,31 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
 
   <p>
     OneZoom is a registered non-profit in the UK, all our products are available for free.
+    Help us raise awareness about the variety of life on earth and the need to conserve it!
+
     {{if n_total_sponsored > 0:}}
-      <a href="{{=URL('default', 'donor_list.html')}}">{{=n_total_sponsored}} people like you</a> have helped us by making donations.
-      Their names have appeared as sponsors on <a href="{{=URL('default', 'sponsored.html')}}">{{=n_sponsored_leaves}} leaves of our tree of life</a> leaves of our tree of life.
+      <strong><a href="{{=URL('default', 'donor_list.html')}}">{{=n_total_sponsored}} people like you</a></strong> have helped us by making donations.
+      Their names have appeared as sponsors on <strong><a href="{{=URL('default', 'sponsored.html')}}">{{=n_sponsored_leaves}} leaves of our tree of life</a></strong> leaves of our tree of life.
     {{pass}}
   </p>
-  <p>Only one name per leaf so get your favourite while you can, for yourself or as a gift.</p>
+  <p>Why not sponsor a leaf as a gift?</p>
 
-  <style>
-    .oz-slider-sponsored figure {
-      padding: 0.3rem;
-    }
-    .oz-slider-sponsored li:first-child {
-    }
-    .oz-slider-sponsored figure img {
-      width: 100px; height: 100px;
-      margin-bottom: 1rem;
-    }
-    .oz-slider-sponsored .sponsored-by {
-      color: green;
-      font-size: 95%;
-    }
-    .oz-slider-sponsored a:hover  {
-      text-decoration: none;
-    }
-    .oz-slider-sponsored a:hover figcaption > div:first-child {
-      text-decoration: underline;
-    }
-  </style>
-  <div class="uk-position-relative oz-slider-sponsored" uk-slider>
-    <div class="uk-slider-container"><ul class="uk-slider-items uk-child-width-1-2 uk-child-width-1-3@s uk-child-width-1-4@m">{{for i, item in enumerate(sponsored):}}
-      {{key = item['OTT_ID']}}
-      <li>
-        <a href="{{=hrefs.get(key,'')}}" target="_blank">
-          <figure class="uk-text-small">
-            <img class="species" alt=""
-                    src="{{=images[key].get('url','')}}"
-                    title="{{=' / '.join(s for s in [images[key].get('rights', ''), images[key].get('licence', '')] if s)}}" />
-            <figcaption>
-              <div style="height: 4.2rem; overflow: hidden">{{=html_names.get(key, 'Unknown')}}</div>
-              <div style="margin-bottom: 0.5rem;">Sponsored {{=item['verified_kind']}}</div>
-              <div><i class="sponsored-by">
-                {{=item['verified_name']}}
-                {{if item.get('verified_more_info', ''):}}— {{=item['verified_more_info']}}{{pass}}
-              </i></div>
-            </figcaption>
-          </figure>
-        </a>
-      </li>
-    {{pass}}</ul></div>
-    <a class="uk-position-top-left oz-slider-arrow oz-slider-arrow-left" style="height:65px" href="#" uk-slider-item="previous"></a>
-    <a class="uk-position-top-right oz-slider-arrow oz-slider-arrow-right" style="height:65px" href="#" uk-slider-item="next"></a>
-  </div>
-  <ul class="oz-pill leaf-list"><li><a href="//www.onezoom.org/sponsor.html">Sponsor a leaf now!</a></li></ul>
+  <a class="oz-pill pill-leaf" href="//www.onezoom.org/sponsor.html" role="button">Sponsor a leaf now!</a>
 </div></section>
+
+
+<div class="uk-child-width-expand@m uk-grid-match" style="border: 20px solid white" uk-grid>
+  {{for sub_menu in response.menu[0:3]:}}
+    <div>
+      <div class="oz-pill with-splash">
+        <h3>{{=T(sub_menu[0])}}</h3>
+        {{=MENU(sub_menu[-1][0:4], _class="leaf-list")}}
+        <!-- NB: 15rem is length of longest menu item -->
+        <div class="oz-pill-splash" style="width: calc(100% - 15rem); background-image: url({{=menu_splash_images[sub_menu[0]]}})"></div>
+      </div>
+    </div>
+  {{pass}}
+</div>
 
 
 <section class="oz-section bkgd-natural"><div class="oz-section-body news-list">

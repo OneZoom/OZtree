@@ -1,10 +1,12 @@
-import tree_state from '../tree_state'
+import { UserInterruptError } from '../errors';
 
-//Tour Stop States
-const INACTIVE = 'TOURSTOP_INACTIVE'
-const TRANSITION_WAIT = 'TOURSTOP_T_WAIT'
-const TRANSITION_MOVE = 'TOURSTOP_T_MOVE'
-const ARRIVED = 'TOURSTOP_ARRIVED'
+//Tour Stop State classes
+const tsstate = {
+  INACTIVE: 'tsstate-inactive',  // Tourstop hidden
+  TRANSITION_IN: 'tsstate-transition_in',  // Transitioning into tourstop
+  TRANSITION_OUT: 'tsstate-transition_out',  // Transitioning into *following* tourstop
+  ACTIVE_WAIT: 'tsstate-active_wait',  // Arrived at tourstop, waiting for user input / timer
+};
 
 const delay = (delayTime) => {
   return new Promise((resolve) => {
@@ -15,205 +17,252 @@ const delay = (delayTime) => {
 }
 
 class TourStopClass {
-  // Export the constants
-  static get INACTIVE() {return INACTIVE}
-  static get TRANSITION_WAIT() {return TRANSITION_WAIT}
-  static get TRANSITION_MOVE() {return TRANSITION_MOVE}
-  static get ARRIVED() {return ARRIVED}
-
-  constructor(tour, setting) {
+  constructor(tour, container) {
+    this.blocks = new Set()
     this.tour = tour
     this.controller = this.tour.onezoom.controller
-    this.data_repo = this.tour.onezoom.data_repo
-    this.setting = setting
+    this.container = container
+    container[0].tourstop = this  // Add a link back from the DOM element to the class
     this.goto_next_timer = null
-    this.state = INACTIVE
-    /* If we set tree_state.flying = false, we stop the flight and resolve the promise.
-     * This normally causes arrival at a stop, but sometimes we don't want to (e.g.
-     * if we are pausing or force-exiting the tourstop. Setting block_arrival solves this
-     */ 
-    this.block_arrival = false
+    this.state = tsstate.INACTIVE
     this.direction = 'forward'
-    this.template_loaded = $.Deferred() // Allows us to fire off something once all templates have loaded
-    this.container_appended = false
+    this.container_appended = true
 
-    //Container is set when tour.setup_setting is called
-    this.container = null
+    // Extract all settings from data attributes
+    this.setting = { exec: {}, qs_opts: '' };
+    [].forEach.call(this.container[0].attributes, (attr) => {
+      if (!/^data-/.test(attr.name)) return;
+      let name = attr.name.replace(/^data-/, ''), val = attr.value;
+
+      // Convert parameter datatypes
+      switch(name) {
+        case "transition_in_wait":
+        case "stop_wait":
+          val = parseInt(val);
+          break;
+        case "fly_in_speed":
+          val = parseFloat(val);
+          break;
+      }
+
+      this.setting[name] = val;
+    });
+    // NB: Temporarily munge out into_node until there's better support: https://github.com/OneZoom/OZtree/issues/541
+    this.setting.fly_into_node = this.setting.qs_opts.indexOf('into_node=max') > -1
+    this.setting.fly_in_speed = this.setting.fly_in_speed || 1;
+  }
+
+  /**
+   * If transitioning, find the stop that we're transitioning from/to
+   * otherwise (or if it doesn't exist return null
+   */
+  transition_pair_stop() {
+    const curr_stop = this.tour.curr_stop();
+    if (!curr_stop) return null;
+
+    return curr_stop !== this ? curr_stop : this.tour.prev_stop();
+  }
+
+  block_toggle(block_name, condition) {
+    if (condition === undefined) {
+      this.block_toggle(block_name, !this.blocks.has(block_name))
+    } else if (condition){
+      this.block_add(block_name)
+    } else {
+      this.block_remove(block_name)
+    }
+  }
+
+  /**
+   * Add a new block to this tourstop, to prevent the current state being
+   * left automatically. Your block can be overriden by the user with advance(),
+   * in which case it will be removed automatically.
+   */
+  block_add(block_name, recursing) {
+    if (window.tour_trace) console.log("[BLOCK " + this.setting.ott + " " + this.state + " (" + Array.from(this.blocks) +")] Adding " + block_name)
+    this.container[0].classList.add('block-' + block_name);
+    this.blocks.add(block_name)
+
+    if (!recursing && (this.state === tsstate.TRANSITION_IN || this.state === tsstate.TRANSITION_OUT)) {
+      // Also block the other half of the transition
+      const other_stop = this.transition_pair_stop();
+      if (other_stop) other_stop.block_add('trans-' + block_name, true)
+    }
+  }
+
+  /**
+   * Remove an existing block from tourstop progression. If none left,
+   * advance to the next stage
+   */
+  block_remove(block_name, recursing) {
+    if (window.tour_trace) console.log("[BLOCK " + this.setting.ott + " " + this.state + " (" + Array.from(this.blocks) +")] Removing " + block_name)
+    if (this.blocks.size === 0) {
+      // Nothing to do, don't re-trigger final block removal
+      return;
+    }
+    this.container[0].classList.remove('block-' + block_name);
+    this.blocks.delete(block_name)
+
+    if (!recursing) {
+      // Also unblock the other half of the transition
+      // NB: Do this first before advancing ours, since otherwise
+      //     this.transition_pair_stop() will be null
+      const other_stop = this.transition_pair_stop();
+      if (other_stop) other_stop.block_remove('trans-' + block_name, true)
+    }
+
+    // If we've removed the last block, move on
+    if (this.blocks.size === 0) {
+      this.advance();
+    }
+  }
+
+  /**
+   * Clear all blocks on a tourstop, e.g. when a new state is reached
+   */
+  block_clear() {
+    this.blocks.forEach((x) => this.container[0].classList.remove('block-' + x));
+    this.blocks.clear();
   }
 
   /**
    * Find the OZid for this stop from this.setting.ott, or use the rough_initial_loc if
-   * ott is falsey
+   * ott is 0, return undefined if otherwise falsey
    */
   get OZid() {
-    if (this.setting.ott) {
-      if (this.data_repo.ott_id_map.hasOwnProperty(this.setting.ott)) {
-        return this.data_repo.ott_id_map[this.setting.ott]
-      } else {
-        console.error('OTT to OZid map for ott: ' + this.setting.ott + ' not fetched')
-        return undefined
-      }
-    } else {
+    if (parseInt(this.setting.ott) === 0) {
       return this.tour.rough_initial_loc
+    } else if (!this.setting.ott) { // i.e. null/undefined
+      return undefined
+    } else if (this.tour.pinpoint_to_ozid[this.setting.ott]) {
+      return this.tour.pinpoint_to_ozid[this.setting.ott];
+    } else {
+      console.error('OTT to OZid map for ott: ' + this.setting.ott + ' not fetched')
+      return undefined
     }
+  }
+
+  get state() {
+    return this._state || tsstate.INACTIVE;
+  }
+  set state(new_state) {
+    if (window.tour_trace) console.log("[STATE " + (this.setting || {}).ott + "] " + this.state + " -> " + new_state);
+    this._state = new_state;
+
+    // Update container state based on our state
+    this.container[0].setAttribute('data-state', this._state);
+
+    // Any lingering blocks from previous state don't apply to this state
+    this.block_clear();
+
+    // If transitioning in, inform the previous stop it's transitioning out
+    if (this.state === tsstate.TRANSITION_IN) {
+      // NB: We need to make sure this happens after our state-change, as the
+      //     previous stop may raise blocks which need to be mirrored to our
+      //     transition-in state, not the previous inactive state (and thrown
+      //     away).
+      if (this.tour.prev_stop()) this.tour.prev_stop().leave();
+    }
+
+    return this._state;
   }
 
   /**
    * Exit current stop
    */
   exit() {
-    this.tour.clear_callback_timers()
-    clearTimeout(this.goto_next_timer)
-    this.block_arrival = true
-    tree_state.flying = false
-    this.state = INACTIVE
-    this.execute("on_exit")
-    // Don't need to hide this stop: it might carry on being shown during next transition
+    // TODO: Ideally we sent cancel events for flights & timers on state change
+    // but for now at least cancel any flights.
+    this.controller.cancel_flight();
+    this.state = tsstate.INACTIVE
   }
 
-  hide() {
-    let style = this.setting.hide_tourstop_style || this.tour.hide_tourstop_style;
-
-    if (!this.container) {
-      return
-    }
-
-    if (style.add_class) {
-      this.container.addClass(style.add_class)
-    } else if (style.remove_class) {
-      this.container.removeClass(style.remove_class)
-    } else {
-      this.container.css(style)
-    }
-  }
-
-  show() {
-    let style = this.setting.show_tourstop_style || this.tour.show_tourstop_style;
-
-    if (!this.container) {
-      return
-    }
-
-    if (style.add_class) {
-      this.container.addClass(style.add_class)
-    } else if (style.remove_class) {
-      this.container.removeClass(style.remove_class)
-    } else {
-      this.container.css(style)
+  /**
+   * Either all blocks on the current state have expired, or the user has pressed
+   * "skip". Move to next state.
+   */
+  advance() {
+    if (this.state === tsstate.INACTIVE) {
+      // Do nothing. An explicit play() should trigger this
+    } else if (this.state === tsstate.TRANSITION_IN) {
+      // Transition-in has finished, made it to tourstop
+      this.arrive_at_tourstop();
+    } else if (this.state === tsstate.ACTIVE_WAIT) {
+      // Ask tour to move to next stop
+      // NB: goto_next will then call leave() for this stop
+      this.tour.goto_next();
+    } else if (this.state === tsstate.TRANSITION_OUT) {
+      this.exit();
     }
   }
 
-  shown() {
-    if (this.container) {
-      let requirements = this.setting.show_tourstop_style || this.tour.show_tourstop_style
-      return Object.entries(requirements).every((k, v) => {return this.container.css(k) === v})
+  /**
+   * Leave the current stop
+   */
+  leave() {
+    // If already leaving, don't try and leave again
+    if (this.state !== tsstate.TRANSITION_OUT) {
+      this.state = tsstate.TRANSITION_OUT;
     }
-    return false
   }
 
   arrive_at_tourstop() {
-    this.tour.clear_callback_timers()
-    if (this.state === INACTIVE) {
+    const other_stop = this.transition_pair_stop();
+
+    // Tour (probably) exited mid-transition, consider any lingering flight promise-chains
+    // cancelled.
+    if (this.state === tsstate.INACTIVE) {
       return
     }
-    // Show the tour stop *after* firing the function, in case we want the function do
-    // do anything first (which could including showing the stop)
-    if (window.is_testing) console.log("Arrived at tourstop: force hiding all other stops")
-    var stop_just_shown = this.tour.hide_and_show_stops(this.container)
-    if (stop_just_shown) {
-       this.execute("on_show")
-    }
-    this.state = ARRIVED
+    // leap if not already at our tourstop (e.g. if user skipped over flight)
+    // NB: This will break the flight promise chain with UserInterruptError
+    if (this.OZid) this.controller.leap_to(this.OZid, this.setting.pos, this.setting.fly_into_node)
+
+    this.state = tsstate.ACTIVE_WAIT
+    this.arm_wait_timer();
     this.direction = 'forward'
-    this.wait_and_goto_next()
+
+    // Make sure other half to transition has left
+    // Ideally it will of it's own accord, but user_forward() may have left blocks behind
+    if (other_stop) other_stop.state = tsstate.INACTIVE;
   }    
 
   /**
-   * Called when user presses next during a transition 
-   */
-  skip_transition() {
-    tree_state.flying = false
-    // leap (this should cancel any exiting flight)
-    this.controller.leap_to(this.OZid, this.setting.pos)
-    // We do not need to call arrive_at_tourstop as this should be called when the
-    // transition promise is resolved
-  }
-
-  /**
-   * 1. Reset timeout, which when triggered would otherwise leap to next tour stop
+   * 1, Block any advancement from the current tourstop
    * 2. Stop fly animation, but ensure it doesn't cause tourstop arrival. Resuming
    *    will start the animation again, from the new location.
    */
   pause() {
-    this.tour.clear_callback_timers() // don't bother pausing these, just cancel them
-    // We would like to get the time elapsed if we at waiting to move on from ARRIVED
+    // We would like to get the time elapsed if we at waiting to move on from ACTIVE_WAIT
     // but there is no obvious way to get it
-    clearTimeout(this.goto_next_timer)
+    this.block_add('tourpaused');
 
-    this.block_arrival = true
-    tree_state.flying = false
+    this.controller.cancel_flight();
   }
 
   resume() {
-    if ((this.state === INACTIVE) || (this.state === ARRIVED)) {
+    if (this.state === tsstate.ACTIVE_WAIT) {
       // Not in a transition, so jump back to the tourstop location (in case user has
       // moved the tree) and continue - it would be weird to fly on a path that wasn't 
       /// part of the tour - so jump back to the last place when you were on the tour
-      this.controller.leap_to(this.OZid, this.setting.pos)
-      // We should really only have to wait for the remaining time at this stop, but
-      // that's tricky, so we wait again from the beginning. - the tour was already in
-      // flight / transition an so it's appropriate to continue that to the destination.
-      this.wait_and_goto_next()
+      this.arrive_at_tourstop();
     } else {
+      // Either already in a transition or inactive, restart the transition
       this.play('forward')
     }
+    this.block_remove('tourpaused');
 
-  }
-
-  throw_error_if_already_exited() {
-      if (this.state === INACTIVE) {
-        throw new Error("Tourstop has already exited")
-      }
-  }
-
-  execute(exec_when) {
-    if (typeof this.setting.exec === "object") {
-      if (typeof this.setting.exec[exec_when] === "function") {
-      /* This can only happen when the settings are passed as a javascript object,
-       * not as JSON. This (deliberately) restricts scriptability to hard-coded
-       * functions, not anything stored in the tours database. It allows non-user
-       * tours like the tutorial to interact programmatically with the OneZoom viewer
-       */
-          if (window.is_testing) console.log("Executing a function prior to transition")
-          var timers = this.setting.exec[exec_when](this)
-          if (timers) {
-            if (timers.length) {
-                this.tour.callback_timers.push(...timers)
-            } else {
-                this.tour.callback_timers.push(timers)
-            }
-          }
-      } else {
-          console.log(
-              "Cannot run whatever is defined in `exec." + exec_when + "`" +
-              " This may be because your settings are in JSON not javascript format")
-      }
-    }
   }
 
   /**
    * Play current tour stop from the start
    */
   play_from_start(direction) {
-    if (window.is_testing) console.log(Date().toString() + ": playing tourstop " +
-        (this.setting.update_class.title || this.tour.curr_step) + " - " + direction)
-    this.execute("on_start")
-    if (this.setting.transition_in_visibility === "force_hide") {
-      this.tour.hide_and_show_stops(null, true) // block interaction from stopping tour
-    } else if (this.setting.transition_in_visibility === "show_self") {
-      this.tour.hide_and_show_stops(this.container)
-      this.execute("on_show")
-    }
+    if (window.tour_trace) console.log(Date().toString() + ": playing tourstop " +
+        this.tour.curr_step + " - " + direction)
+    // NB: Switch to inactive to remove any dregs of a previous transition
+    //     cancelled by goto_prev() calling exit. Maybe it should be happening there?
+    this.exit()
     this.play(direction)
   }
   
@@ -223,106 +272,101 @@ class TourStopClass {
    * If wait time is not present, then listen to UI event for next action
    */
   play(direction) {
-    this.block_arrival = false // Make sure we can arrive at the stop
     this.direction = direction
-    if (!this.transition_promise_active) { // when first called transition_promise_active will be undefined and hence this statement will evaluate as true
-      this.transition_promise_active = true
-      let promise = Promise.resolve()
-      
+
+    // NB: Set block regardless, so a pause/resume gets caught before the flight ends
+    if (window.tour_trace) console.log("[FLIGHT " + this.setting.ott + "] Preflight")
+    this.block_add('preflight')
+
+    // Wait for any previous flight to be cancelled and it's promise settled
+    return this.controller.cancel_flight().then(() => {
       /* Wait before the transition animation, but only in certain circumstances.
        * Don't wait if tourstop is entered by going backwards (otherwise user might feel the app is stuck)
        * Don't wait if we are already in a transition animation (e.g. if we paused halfway through)
        */
-      if (this.state !== TRANSITION_MOVE) {
-        this.state = TRANSITION_WAIT
+      if (this.state !== tsstate.TRANSITION_IN) {
+        this.state = tsstate.TRANSITION_IN
+        this.block_add('flight')  // NB: Changing state will remove the flight block, re-add it
+
         const transition_in_wait = this.setting.transition_in_wait
         if (typeof transition_in_wait === 'number' && this.direction !== 'backward') {
-          promise = promise.then(() => delay(transition_in_wait)) // wait slightly before the transition
+          return delay(transition_in_wait);
         }
+      } else {
+        // Flight now refers to "our" flight
+        this.block_add('flight')
+        this.block_remove('preflight')
       }
-    
-      /**
-       * Perform flight or leap
-       */
+    }).then(() => {
+      if (window.tour_trace) console.log("[FLIGHT " + this.setting.ott + "] Start")
+      if (!this.OZid) {
+        /* No transition, just load tourstop */
+        return;
+      }
+
       if (this.setting.transition_in === 'leap' || this.direction === 'backward') {
         /* Leap */
-        promise = promise
-          .then(() => {
-              this.state = TRANSITION_MOVE
-              this.throw_error_if_already_exited()
-              return this.controller.leap_to(this.OZid, this.setting.pos)
-           })
-          .catch(() => {})
-      } else {
-          /* Flight */
-          let into_node = this.setting.pos === 'max'
-          let speed = this.setting.fly_in_speed || 1
-          
-          if (this.setting.transition_in === 'fly_straight') {
-            /* Fly-straight: this is an unusual thing to want to do */
-            promise = promise
-              .then(() => {
-                this.state = TRANSITION_MOVE
-                this.throw_error_if_already_exited()
-                return this.controller.fly_straight_to(this.OZid, into_node, speed, 'linear')
-              })
-              .catch(() => {})
-          } else {
-            /* Fly normally - if interrupted we reject() and require clicking "skip" */
-            promise = promise
-              .then(() => {
-                this.state = TRANSITION_MOVE
-                this.throw_error_if_already_exited()
-                return this.controller.fly_on_tree_to(null, this.OZid, into_node, speed)
-              })
-              .catch(() => {})
-          }
+        // NB: Use fetch_details_and_leap_to() so one can load page mid-tour and go backwards.
+        return this.controller.fetch_details_and_leap_to(this.OZid, this.setting.pos, this.setting.fly_into_node)
       }
-      promise
-        .then(() => {
-          if (this.block_arrival) {
-            this.block_arrival = false
-          } else {
-            this.arrive_at_tourstop()
-          }
-          this.transition_promise_active = null
-        })
-        .catch(() => {this.transition_promise_active = null})
-    }
+
+      /* Flight */
+      if (this.setting.transition_in === 'fly_straight') {
+        /* Fly-straight: this is an unusual thing to want to do */
+        return this.controller.fly_straight_to(this.OZid, this.setting.fly_into_node, this.setting.fly_in_speed, 'linear')
+      }
+      /* Fly normally - if interrupted we reject() and require clicking "skip" */
+      return this.controller.fly_on_tree_to(null, this.OZid, this.setting.fly_into_node, this.setting.fly_in_speed)
+
+    }).catch((e) => {
+      if (this.state === tsstate.TRANSITION_IN && this.tour.state !== 'tstate-paused') {
+        // We shouldn't get here, as any interactions should have paused the tour
+        // then stopped the flight. But just in case we do pause, to put tour in
+        // a recoverable state.
+        console.warn("Flight stopped unexpectedly, pausing tour", e)
+        this.tour.user_pause()
+      } else if (e instanceof UserInterruptError) {
+        // Flight interrupted (e.g. by pause).
+        if (window.tour_trace) console.log("Flight to " + this.OZid + " interrupted", e)
+      } else {
+        throw e;
+      }
+
+    }).finally(() => {
+      // Remove block now flight is finished, one way or another
+      this.block_remove('flight')
+      this.block_remove('preflight')
+      if (window.tour_trace) console.log("[FLIGHT " + this.setting.ott + "] End")
+    })
   }
 
-  /**
-   * If has numeric wait_time, then execute next after wait_time,
-   * otherwise wait for user click next/prev
-   */
-  wait_and_goto_next() {
+  /** Arm this tourstop's wait timer, or wait for user interaction */
+  arm_wait_timer() {
     const wait_time = this.get_wait_time()
 
-    const timer_tick = () => {
-      if (this.controller.is_tree_visible()) {
-        // Tree is ready to go, so go there
-        this.tour.goto_next();
-      } else {
-        // Tree not visible, so wait some more
-        this.goto_next_timer = setTimeout(timer_tick, wait_time);
-      }
-    };
-
-    if (typeof wait_time === 'number') {
-      clearTimeout(this.goto_next_timer)
-      if (window.is_testing) console.log("Setting timer for " + wait_time + "milliseconds")
-      this.goto_next_timer = setTimeout(timer_tick, wait_time);
+    if (typeof wait_time !== 'number') {
+      // No wait time, so blocking waiting for user instead.
+      this.block_add('manual');
+      return
     }
+
+    // Add a block that we'll then remove in (wait_time) ms
+    this.block_add('timer');
+    clearTimeout(this.goto_next_timer)
+    if (window.tour_trace) console.log("Setting timer for " + wait_time + "milliseconds")
+    this.goto_next_timer = setTimeout(() => {
+      this.block_remove('timer');
+    }, wait_time);
   }
 
   get_wait_time() {
     if (
       this.direction === 'backward' &&
-      this.setting.hasOwnProperty('wait_after_backward')
+      this.setting.hasOwnProperty('stop_wait_after_backward')
     ) {
-      return this.setting.wait_after_backward
+      return this.setting.stop_wait_after_backward
     } else {
-      return this.setting.wait //null means stay here until user interation
+      return this.setting.stop_wait //null means stay here until user interation
     }
   }
 }

@@ -4,18 +4,21 @@ var server_urls = {
   /* These fill out the equivalently named variables in OneZoom global_config.
      They need to be defined in this file to avoid hard-coding them into the OneZoom js code 
      They are coded with the full URL so that they can be used remotely (e.g. in a partial install) */
-  data_path_pics: {{=XML(img.js_thumb_url(thumb_base_url))}},
+  data_path_pics: {{=XML(img.js_thumb_url())}},
   node_details_api: "{{try:}}{{=myconf.take('API.node')}}{{except:}}{{=URL('API','node_details.json', scheme=True, host=True)}}{{pass}}",
+  pinpoints_api: "{{try:}}{{=myconf.take('API.pinpoints')}}{{except:}}{{=URL('API','pinpoints.json', scheme=True, host=True)}}{{pass}}",
   search_api: "{{try:}}{{=myconf.take('API.search')}}{{except:}}{{=URL('API','search_node.json', scheme=True, host=True)}}{{pass}}",
   search_sponsor_api: "{{try:}}{{=myconf.take('API.search_sponsor')}}{{except:}}{{=URL('API','search_for_sponsor.json', scheme=True, host=True)}}{{pass}}",
-  search_init_api: "{{try:}}{{=myconf.take('API.search_init')}}{{except:}}{{=URL('API','search_init.json', scheme=True, host=True)}}{{pass}}",
-  ott2id_arry_api: "{{try:}}{{=myconf.take('API.ott2id_array')}}{{except:}}{{=URL('API', 'get_ids_by_ott_array.json', scheme=True, host=True)}}{{pass}}",
-  otts2vns_api: "{{try:}}{{=myconf.take('API.otts2vns')}}{{except:}}{{=URL('API','otts2vns.json', scheme=True, host=True)}}{{pass}}",
   image_details_api: "{{try:}}{{=myconf.take('API.image')}}{{except:}}{{=URL('API', 'image_details.json', scheme=True, host=True)}}{{pass}}",
   update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
   tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
 
-  {{popup_vars = dict(setup_params.get('popups', {}).get('vars', {}), lang='...LANG...') if 'setup_params' in vars() else dict(lang='...LANG...')}}
+  {{ # NB: Ideally we'd look up setup_params in vars(), but a lot of controllers set vars=request.vars
+  try:
+      popup_vars = dict(setup_params.get('popups', {}).get('vars', {}), lang='...LANG...')
+  except:
+      popup_vars = dict(lang='...LANG...')
+  }}{{pass}}
   OZ_leaf_json_url_func: function(ott, lang) {return("{{=XML(URL(
       'tree',
       'leaf_linkouts',

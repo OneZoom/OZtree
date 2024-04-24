@@ -38,11 +38,13 @@ function remove_hook(key, id) {
 }
 function call_hook(key, arg) {
   const handlers = hook[key];
+  let rv;
   if (handlers) {
     for (let id in handlers) {
-      handlers[id].call(this, arg);
+      if (handlers[id].call(this, arg) === false) return false;
     }
   }
+  return true;
 }
 
 export {add_hook, remove_hook, call_hook};

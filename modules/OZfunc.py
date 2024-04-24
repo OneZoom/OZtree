@@ -11,6 +11,8 @@ import random
 from gluon import current
 from gluon.http import HTTP
 
+from .tour import tours_related_to_ott
+
 def raise_incorrect_url(example_url, info=current.T("Incorrect usage")):
     raise HTTP(400,  info+ "<br />" + current.T("Try e.g. %s") % "<a href='{0}'>{0}</a>".format(example_url), link='<{}>; rel="example"'.format(example_url))
 
@@ -369,6 +371,7 @@ def nodes_info_from_string(
     image_type='best_any',
     include_sponsorship=True,
     include_pic_details=False,
+    include_tours_by_ott=True,
     check_malicious=True,
 ):
     """
@@ -476,11 +479,6 @@ def nodes_info_from_string(
     else:
         all_pcols = ["ott", "src_id", "src", "rating"]
     all_rcols = ["OTT_ID", "verified_kind", "verified_name", "verified_more_info", "verified_url"]
-    alt_rtxt = {
-        "verified_name": "'leaf_sponsored'",
-        "verified_more_info": "''", 
-        "verified_url":"NULL",
-    }
     pic_cols = {nm:index for index,nm in enumerate(all_pcols)} 
     res_cols = {nm:index for index,nm in enumerate(all_rcols)} 
     if len(leafOtts):
@@ -497,23 +495,25 @@ def nodes_info_from_string(
             sql = query6.format(otts=ott_ids)
             iucn_query_res = db.executesql(sql)
         if include_sponsorship:
-            query7 = "SELECT "
-            # A very complicated query here, use alternative text if this is not an active
-            # node (waiting verification or expired)
-            query7 += ",".join(
-                ["IF(active,{0},{1}) as {0}".format(nm, alt_rtxt[nm]) 
-                    if nm in alt_rtxt else nm for nm in all_rcols])
-            query7 += (
-                " FROM (SELECT "
+            query7 = (
+                "SELECT "
                 + ",".join(all_rcols)
-                + ",(DATE_ADD(verified_time, INTERVAL sponsorship_duration_days DAY) > CURDATE()) AS active FROM reservations"
+                + " FROM (SELECT "
+                + ",".join(all_rcols)
+                + " FROM reservations"
                 + " WHERE OTT_ID in ({otts})"
                 +  " AND verified_time IS NOT NULL"
                 +  " AND (deactivated IS NULL OR deactivated = '')"
                 + ") AS t")
             sql = query7.format(otts=ott_ids)
             reservations_res = db.executesql(sql)
-            
+
+    tours_res = []
+    if len(leafOtts) or len(nodeOtts):
+        if include_tours_by_ott:
+            for ott, tours in tours_related_to_ott(leafOtts | nodeOtts, full_meta=False).items():
+                tours_res.append([ott, [t.identifier for t in tours]])
+
     if leafIDs_string or nodeIDs_string:
         return dict(
             nodes=ordered_nodes_query_res or [],
@@ -523,7 +523,9 @@ def nodes_info_from_string(
             vernacular_by_name=vernacular_name_query_res2 or [], 
             leafIucn=iucn_query_res or [],
             leafPic=images_by_ott_query_res or [],
-            reservations=reservations_res or [])
+            reservations=reservations_res or [],
+            tours_by_ott=tours_res,
+        )
     else:
         # We didn't pass any ids in, so we simply output a list of the column names for 
         # the various arrays. The client can thus make a blank call at the start of a
@@ -543,7 +545,9 @@ def nodes_info_from_string(
             vernacular_by_name=[],   
             leafIucn=[],
             leafPic=[],
-            reservations=[])
+            reservations=[],
+            tours_by_ott=[],
+        )
 
 
 def query_val_to_ints(CommaSepString):
@@ -569,6 +573,8 @@ def otts2ids(ottIntegers):
         return {"nodes": {}, "leaves": {}, "names": {}}
 
 def fmt_pounds(pounds=0, pence=0):
-    p = pence / 100 + pounds
-    return '£{:.0f}'.format(p) if float(p).is_integer() else '£{:.2f}'.format(p)
-
+    try:
+        p = pence / 100 + pounds
+        return '£{:.0f}'.format(p) if float(p).is_integer() else '£{:.2f}'.format(p)
+    except:
+        return current.T('Undefined price')

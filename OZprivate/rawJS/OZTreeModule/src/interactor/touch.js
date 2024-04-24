@@ -20,15 +20,12 @@ class TouchInteractor {
     canvas.addEventListener("touchend", this.touch_end.bind(this), false);
   }
   touch_start(event) {
-    call_hook('touch_start')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('touch_start')) return;
 
     this.controller.close_all();
     event.preventDefault();
     event.stopPropagation();
-    tree_state.flying = false;
+    this.controller.cancel_flight();
     set_finger_position(this, event);
     tree_state.touch_hold = true;
     if(event.targetTouches.length >= 2) {
@@ -42,10 +39,7 @@ class TouchInteractor {
   }
   
   touch_move(event) {
-    call_hook('touch_move')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('touch_move')) return;
 
     event.preventDefault();    
     event.stopPropagation();
@@ -87,10 +81,7 @@ class TouchInteractor {
   }
   
   touch_end(event) {
-    call_hook('touch_end')
-    if (tree_state.disable_interaction) {
-      return
-    }
+    if (!call_hook('touch_end')) return;
     
     event.preventDefault();    
     event.stopPropagation();
@@ -103,7 +94,7 @@ class TouchInteractor {
        * On the other hand, if call record_url_delayed before controller.click, when controller.click calls record_url, since 
        * record_url would clear timer set by record_url_delayed function, only one record_url would be called as a result.
        */
-      record_url_delayed();
+      record_url_delayed(this.controller);
       tree_state.touch_hold = false;
       if (this.clicking) {
         this.controller.click();

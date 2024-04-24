@@ -1,8 +1,6 @@
 import data_repo from '../factory/data_repo';
-import {get_factory} from '../factory/factory';
 import api_wrapper from './api_wrapper';
 import tree_state from '../tree_state';
-import get_controller from '../controller/controller';
 import config from '../global_config';
 
 
@@ -11,9 +9,9 @@ class ImageDetailsAPI {
     this.size_threshold = 350;
     this.interval = 1000;
   }
-  start() {
+  start(controller) {
     this.api = config.api.image_details_api;
-    start_fetch_loop(this);
+    start_fetch_loop(this, controller);
   }
 }
 
@@ -40,7 +38,7 @@ function prepare_picid_metacode_map(image_data) {
   return picid_metacode_map;
 }
 
-function fetch_image_detail(root, image_api) {
+function fetch_image_detail(root, image_api, controller) {
   if (!tree_state.flying) {
     let image_data = [];
     collect_nodes_need_image_details(root, image_data, image_api);
@@ -62,7 +60,7 @@ function fetch_image_detail(root, image_api) {
                         res.image_details[src_id][picid][res.headers["licence"]]);
                 }
             }
-            get_controller().trigger_refresh_loop();
+            if (controller) controller.trigger_refresh_loop();
           }
         },
         error: function() {
@@ -77,13 +75,12 @@ function fetch_image_detail(root, image_api) {
 /**
  * Fetching image details every image_api.interval milliseconds.
  */
-function start_fetch_loop(image_api) {
-  let root = get_factory().get_root();
-  if (root) {
-    fetch_image_detail(root, image_api);
+function start_fetch_loop(image_api, controller) {
+  if (controller && controller.root) {
+    fetch_image_detail(controller.root, image_api, controller);
   } 
   setTimeout(function() {
-    start_fetch_loop(image_api);
+    start_fetch_loop(image_api, controller);
   }, image_api.interval);
 }
 

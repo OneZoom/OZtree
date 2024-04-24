@@ -12,8 +12,8 @@ class APIManager {
   
   /** Set the urls that will be used when calling the API.
    *  @params {Object.<string, string>} server_urls - a set of urls for the OneZoom API. 
-   * Names for each url can be one of 'search_api', 'search_sponsor_api', 'ott2id_arry_api',
-   * 'otts2vns_api', 'search_init_api', 'node_details_api', 
+   * Names for each url can be one of 'search_api', 'search_sponsor_api',
+   * 'node_details_api', 'pinpoints_api'
    */
   set_urls(server_urls) {
     for (let name in server_urls) {
@@ -26,13 +26,68 @@ class APIManager {
   /** Starts the API queue, collecting API requests and making intermittent API calls to 
    * record the places visited on the tree
    */
-  start() {
-    visit_count_api.start();   
-    node_details_api.start(); 
-    image_details_api.start();
+  start(controller) {
+    visit_count_api.start(controller);
+    node_details_api.start(controller);
+    image_details_api.start(controller);
   }
 
-  
+  /**
+   * Call the /API/pinpoints endpoint
+   * @param pps Array of pinpoints to lookup
+   * @param options /API/pinpoints querystring options
+   * @return Promise of parsed result
+   */
+  pinpoints(pps, options={}) {
+    return new Promise((resolve, reject) => {
+      if (pps.length === 0) {
+        // Don't bother the server if we have nothing to do
+        resolve({ results: [] });
+        return;
+      }
+      api_wrapper({
+        method: 'get',
+        url: config.api.pinpoints_api + '/' + pps.join("/"),
+        data: options,
+        success: resolve,
+        error: (res) => reject("Failed to talk to server: " + res),
+      })
+    });
+  }
+
+  /**
+   * Call /tour/list.json?tours=(tour_ids)
+   * @param tour_ids Array of (string) tour identifiers
+   * @return Promise of parsed result
+   */
+  tour_list(tour_ids) {
+    return new Promise((resolve, reject) => {
+      api_wrapper({
+        method: 'get',
+        url: '/tour/list.json',  // TODO: Config-ise it
+        data: { tours: tour_ids.join(",") },
+        success: resolve,
+        error: (res) => reject("Failed to talk to server: " + res),
+      });
+    }).then((data) => data.tours);
+  }
+
+  /**
+   * Call /tour/search.json?query=(searchString)
+   * @return Promise of parsed result
+   */
+  tour_search(searchString) {
+    return new Promise((resolve, reject) => {
+      api_wrapper({
+        method: 'get',
+        url: '/tour/search.json',
+        data: { query: searchString },
+        success: resolve,
+        error: (res) => reject("Failed to talk to server: " + res),
+      });
+    }).then((data) => data.results);
+  }
+
   /**
    * @params {String} query
    */
@@ -55,31 +110,11 @@ class APIManager {
        '\n(search_sponsor_api was not set in config.api).' +
        '\nPlease email mail@onezoom.org and let us know.')
   }
-  ott2id_arry(params) {
-    params.url = config.api.ott2id_arry_api;
-    api_wrapper(params);
-  }
-  otts2vns(params) {
-    //returns vernaculars, so we have to set the language if necessary
-    if (config.lang) params.data.lang = config.lang;
-    params.url = config.api.otts2vns_api;
-    api_wrapper(params);
-  }
-  search_init(params) {
-    params.url = config.api.search_init_api;
-    api_wrapper(params);
-  }
   node_detail(params) {
     //node_detail contains vernaculars, so we have to set the language if necessary
     if (config.lang) params.data.lang = config.lang;
     params.url = config.api.node_details_api;
     api_wrapper(params);
-  }
-  tour_detail(params) {
-    //this returns an HTML web page fragment so we have to set the language if necessary
-    if (config.lang) params.data.lang = config.lang;
-    params.url = config.api.tourstop_page;
-    api_wrapper(params);    
   }
 }
 

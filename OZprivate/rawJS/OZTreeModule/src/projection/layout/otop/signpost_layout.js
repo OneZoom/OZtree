@@ -1,5 +1,5 @@
 import config from '../../../global_config';
-import SignpostLayoutBase from '../signpost_layout_helper';
+import SignpostLayoutBase from '../signpost_layout_base';
 import tree_settings from '../../../tree_settings';
 import tree_state from '../../../tree_state';
 import {color_theme} from '../../../themes/color_theme';

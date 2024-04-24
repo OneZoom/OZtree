@@ -17,16 +17,15 @@ When calling the entry function, you may want to have already defined
 4. Initial tree config (see 
 5. Pagetitle function
 6. A string of brackets, in 'OneZoom-reduced-newick' format, giving the topology of the tree. This format is essentially a strictly binary tree in newick format, ladderized ascending, with all details except braces removed. Additionally, groups with 0-length branches (indicating arbitrarily resolved bifurcations) have their round braces removed and replaced with curly braces.
-7. Basic metadata column names and details associated with the tree
-8. A set of cut positions, defined in JSON format
-9. A set of polytomy cut positions, defined in JSON format
-10. A cut threshold for 3 and 4 above.
-11. A set of dates for the tree, 
+7. A set of cut positions, defined in JSON format
+8. A set of polytomy cut positions, defined in JSON format
+9. A cut threshold for 3 and 4 above.
+10. A set of dates for the tree, 
 
 Items 1-5 are usually defined within the html of the page, and may change from . Items 6-11 are usually defined in .js files which are loaded from the tree viewer web page. 
 
 
-Items 6 and 7 are usually defined within the file `FinalOutputs/data/completetree_XXXXXXX.js` (XXXXXXX is a timestamp), in the variables `rawData` and `metadata` respectively.
+Item 6 are usually defined within the file `FinalOutputs/data/completetree_XXXXXXX.js` (XXXXXXX is a timestamp), in the variable `rawData`.
 
 Items (3), (4) and (5) are usually defined within the file `FinalOutputs/data/cut_position_map_XXXXXXX.js`, in the variables `cut_position_map_json_str`, `polytomy_cut_position_map_json_str`, and `cut_threshold` respectively.
 
@@ -44,7 +43,7 @@ onezoom = OZentry.default(
 	'OneZoomCanvasID', 
 	tree_config, 
 	rawData, 
-	metadata,
+	null,  // NB: Legacy argument, leave null
 	cut_position_map_json_str, 
 	polytomy_cut_position_map_json_str, 
 	cut_threshold,
@@ -80,10 +79,6 @@ This contains all the data stored in an instance (e.g. id2ott mapping, tree?)
 
 ### onezoom.config
 {{src/global_config.md}}
-
-### onezoom.search_manager
-
-{{src/api/search_manager.md}}
 
 ##Prerequisites
 

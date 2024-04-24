@@ -42,20 +42,20 @@ setup_params = {
 }}
 {{extend ('treeviewer/layout_popuped_viewer.html' if request.vars.popup else 'treeviewer/layout.html')}}
 <style>
-#controlButtons #singleInfoButton,
-#controlButtons #hideControlsButton,
-#controlButtons #howToUseButton { display: block; }
+.ui-controls #singleInfoButton,
+.ui-controls #hideControlsButton,
+.ui-controls #howToUseButton { display: block; }
 
-#controlButtons #multipleInfoButton,
-#controlButtons #settingsButton { display: none; }
+.ui-controls.ui-controls-tours { display: none; }
+.ui-controls #settingsButton { display: none; }
 </style>
 <!-- bespoke css file for museum display -->
 <link rel="stylesheet" type="text/css" href="{{=URL('static', 'css/tree_MD.css')}}" />
 <script type="text/javascript">
 <!-- could define js variables (specifically: pagetitle_func, tree_config, screensaver_config, tutorial_config) here -->
   globals.pagetitle_func = function (nm) { return ((nm) ? "OneZoom Museum Display: " + nm : "OneZoom Tree of Life Museum Display") + " (touchscreen)" };
-  globals.screensaver_config = {{include 'treeviewer/screensaver_MD.js'}};
-  globals.tutorial_config = {{include 'treeviewer/tutorial_MD.js'}};
+  globals.screensaver_config = '/tour/screensaver';
+  globals.tutorial_config = '/tour/tutorial_MDtouch';
 
   /* disable right click */
   // document.oncontextmenu = function () { return false; };

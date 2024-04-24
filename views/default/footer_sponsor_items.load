@@ -13,7 +13,7 @@
 (568999, "Dragonflies", 30, 7073022),
 (965954, "Butterflies and moths", 99, 32635820),
 (1012685, "Mushrooms", 99, 27063145),
-(1007058, "Seahorses", 99, 5826670),
+(145129, "Seahorses", 99, 5826670),
 (78477, "Sharks", 99, 27151677),
 (991547, "Frogs and toads", 99, 22938164),
 (965942, "Lady beetles", 99, 5816650),
@@ -27,5 +27,5 @@
     {{pic_index.add(rng % len(data))}}
 {{pass}}
 {{for p in pic_index:}}
-<a href="/life/@={{=data[p][0]}}?pop=osn_&init=jump" target="_blank"><img class="species" alt="{{=data[p][1]}}" src="{{=img.thumb_url(thumb_base_url, data[p][2], data[p][3])}}" /></a>
+<a href="{{=URL('default', 'sponsor_node.html', vars={'ott': data[p][0]})}}"><img class="species" alt="{{=data[p][1]}}" src="{{=img.thumb_url(data[p][2], data[p][3])}}" /></a>
 {{pass}}

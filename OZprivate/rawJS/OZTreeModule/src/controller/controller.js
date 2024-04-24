@@ -3,17 +3,20 @@ import * as position_helper from '../position_helper';
 import config from '../global_config';
 import tree_state from '../tree_state';
 import install_controller_dom from './controller_dom';
+import install_controller_highlight from './controller_highlight';
 import install_controller_loc from './controller_loc';
+import install_controller_navigation from './controller_navigation';
 import install_controller_search from './controller_search';
 import install_controller_anim from './controller_anim';
 import install_controller_interactor from './controller_interactor';
+import install_controller_tour from './controller_tour';
 import {reset_global_button_action} from '../button_manager';
 import get_interactor from '../interactor/interactor';
 import * as renderer from '../render/renderer';
 import get_projection from '../projection/projection';
 import {get_factory} from '../factory/factory';
-import {popupstate} from '../navigation/setup_page';
-import {call_hook} from '../util/index';
+import { record_url_delayed } from '../navigation/record';
+import { add_hook, call_hook} from '../util/index';
 import data_repo from '../factory/data_repo';
 
 /**
@@ -28,30 +31,30 @@ class Controller {
     this.factory = get_factory();
     this.interactor.add_controller(this);
     this.renderer.add_controller(this);
-  }
-  
-  rebuild_tree() {
-    this.factory.build_tree();
+
+    // Set-up the record_url-after-flight hook, wiring up the controller
+    add_hook("flying_finish", record_url_delayed.bind(null, this));
   }
   
   /**
-   * Builds the initial tree
-   * @param {data_obj} an object of the form {raw_data: xxx, }
-   *   xxx is the raw_data newick data which represents the topology of the tree. For example: '(())'
-   * @param {String} cut_map_json a stringified json object which maps node position in rawData to its cut position of its children in rawData
-   * @param {Object} metadata metadata of leaves and nodes.
+   * (re)build tree, on init or tree-change.
+   * Assumes that the data_repo has already been set-up with data_repo.setup()
    */
-  build_tree(data_obj) {
-    data_repo.setup(data_obj);
-    this.factory.build_tree();    
-    this.update_form();
+  rebuild_tree() {
+    this.factory.build_tree();
+
+    this.dynamic_load_and_calc(this.root.ozid, { generation_at_searched_node: 20 });
+    this.re_calc();
   }
+  
   /**
    * onpopstate listens to browser history navigation. The popupstate callback would navigate the tree view according to url.
    */
   bind_listener() {
     this.interactor.bind_listener(this.canvas);
-    window.onpopstate = popupstate;
+    window.onpopstate = function (event) {
+      this.set_treestate(event.location);
+    }.bind(this);
   }
   setup_canvas(canvas) {
     this.canvas = canvas;
@@ -59,11 +62,6 @@ class Controller {
     canvas.height = canvas.clientHeight;
     this.renderer.setup_canvas(canvas);
     tree_state.setup_canvas(canvas);
-  }
-  update_form() {
-    this.projection.pre_calc(this.root, true);
-    this.projection.calc_horizon(this.root);
-    this.projection.re_calc(this.root, tree_state.xp, tree_state.yp, tree_state.ws);
   }
   reset() {
     return this.leap_to(this.root.metacode);  // NB: root is always a node, so ozID positive
@@ -118,13 +116,18 @@ class Controller {
     */
   trigger_refresh_loop() {
     function refresh_loop() {
+      if (!this.root) {
+        // Tree not init-ed, we started early.
+        this.refresh_timer = null;
+        return;
+      }
       call_hook("before_draw");
-      if ((this.widthres != this.canvas.clientWidth)||(this.heightres != this.canvas.clientHeight))
+      if ((tree_state.widthres != this.canvas.clientWidth)||(tree_state.heightres != this.canvas.clientHeight))
       {
-          this.widthres = this.canvas.width = this.canvas.clientWidth;
-          this.heightres = this.canvas.height = this.canvas.clientHeight;
           // we are setting 1px on canvas = 1px on screen (client)
-          tree_state.flying = false; // cancel animation
+          this.canvas.width = this.canvas.clientWidth;
+          this.canvas.height = this.canvas.clientHeight;
+          this.cancel_flight();
           this.re_calc();
           this.renderer.setup_canvas(this.canvas);
           tree_state.setup_canvas(this.canvas);
@@ -156,25 +159,48 @@ class Controller {
     this.refresh_timer = null;
   }
 
+  /**
+   * Load new midnodes, either aiming at a target OZid or 'visible' for nodes currently in view
+   */
+  dynamic_load_and_calc(target_OZid = null, { generation_at_searched_node = 0, generation_on_subbranch = 0 } = {}) {
+    var node, precalc_from;
+
+    if (target_OZid === 'visible') {
+      node = this.factory.dynamic_loading_by_visibility();
+      precalc_from = node;
+      // If nothing to develop, return
+      if (!node) return;
+    } else {
+      node = this.factory.dynamic_loading_by_metacode(target_OZid);
+      // NB: _by_visibility returns the last existant node, _by_metacode returns the target node
+      //     (which may not have existed). Ideally we should know both here.
+      //     As we've no idea what the last existant node was, assume root.
+      precalc_from = this.root;
+    }
+
+    // Develop upwards and outwards
+    node.develop_children(generation_at_searched_node);
+    if (generation_on_subbranch > 0) {
+      node.develop_branches(generation_on_subbranch);
+      precalc_from = this.root;
+    }
+
+    this.projection.pre_calc(precalc_from);
+    this.projection.calc_horizon(precalc_from)
+    this.projection.update_parent_horizon(precalc_from)
+    this.projection.highlight_propogate(precalc_from)
+
+    return node;
+  }
+
+  /**
+   * Recalculate all positions, e.g. after a tree move
+   */
   re_calc() {
     this.projection.re_calc(this.root, tree_state.xp, tree_state.yp, tree_state.ws);
   }
   reanchor() {
     position_helper.reanchor(this.root);
-  }
-  /**
-   * @return {boolean} return true if the tree has more developed nodes after this function call.
-   * developed_nodes contains most close ancestor of the nodes which have just been developed.
-   */
-  dynamic_loading() {
-    let developed_nodes = this.factory.dynamic_loading(); // this returns the ancestor of the new nodes not the new nodes themselves.
-    for (let i=0; i<developed_nodes.length; i++) {
-      let node = developed_nodes[i];
-      this.projection.pre_calc(node);
-      this.projection.calc_horizon(node);
-    }
-    this.projection.update_parent_horizon(developed_nodes);
-    return developed_nodes && developed_nodes.length > 0;
   }
   get root() {
     return this.factory.get_root();
@@ -185,10 +211,13 @@ class Controller {
  * In order to keep the controller file small, I split its prototypes in several files and call the following functions to add these prototypes on Controller.
  */
 install_controller_loc(Controller);
+install_controller_navigation(Controller);
 install_controller_search(Controller);
 install_controller_dom(Controller);
+install_controller_highlight(Controller);
 install_controller_anim(Controller);
 install_controller_interactor(Controller);
+install_controller_tour(Controller);
 
 
 let controller;
