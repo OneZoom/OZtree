@@ -245,7 +245,7 @@ db.define_table('ordered_nodes',
     Field('wikidata', type='integer'),
     Field('wikipedia_lang_flag', type='integer'), #
     Field('eol', type='integer'),
-    Field('rnk', type='string', length=name_rank_chars),
+    Field('rnk', type='string', length=name_rank_chars),  # The taxonomic rank, e.f. "genus"
     Field('raw_popularity', type='double'),
     Field('popularity', type='double'),
     #the following 5 fields are sources listed by the OpenTree
