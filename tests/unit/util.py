@@ -254,7 +254,10 @@ def purchase_reservation(otts = 1, basket_details = None, paypal_details = None,
 
 
 def verify_reservation(reservation_row, **kwargs):
-    """Emulate verification logic in controllers/manage.py:SPONSOR_UPDATE"""
+    """
+    Emulate verification logic in controllers/manage.py:SPONSOR_UPDATE
+    and return the username
+    """
     # Add verified options
     reservation_row.update_record(
         verified_time=current.request.now,
@@ -269,3 +272,4 @@ def verify_reservation(reservation_row, **kwargs):
         username=username,
         **kwargs,
     )
+    return username
