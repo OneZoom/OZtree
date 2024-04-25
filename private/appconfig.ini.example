@@ -31,6 +31,8 @@ url        = https://www.sandbox.paypal.com
 save_to_tmp_file_dir =
 
 [general]
+; Enable "automatic translations" behavior. Ignored unless is_testing is also set
+; allow_translation_string_writing = 1
 
 [images]
 ; * url_base: get thumbnail images from this source. If not
