@@ -11,7 +11,7 @@ WWW_IMAGES_SERVER_NAME="$(echo ${WWW_SERVER_NAME} | sed 's/^w*/images/')"  # ima
 [ -d "/etc/nginx" ] && NGINX_PATH="/etc/nginx"
 [ -d "/usr/local/etc/nginx" ] && NGINX_PATH="/usr/local/etc/nginx"
 mkdir -p "${NGINX_PATH}/conf.d/"
-NGINX_LOG_PATH="/var/log/nginx"
+NGINX_LOG_PATH="/var/log/http"
 NGINX_CERT_PATH="/var/db/acme/live"
 NGINX_DHPARAM_PATH="${NGINX_PATH}/dhparam.pem"
 NGINX_CHALLENGE_PATH="${NGINX_CHALLENGE_PATH-/var/acme}"
@@ -37,6 +37,11 @@ fi
 if [ ! -d "${NGINX_CHALLENGE_PATH}" ]; then
     # No challenge path, acmetool is probably not installed
     NGINX_CHALLENGE_PATH="/dev/null"
+fi
+
+if [ ! -d "${NGINX_LOG_PATH}" ]; then
+    # Ensure log dir exists
+    mkdir -p -- "${NGINX_LOG_PATH}"
 fi
 
 # Create NGINX config
