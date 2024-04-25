@@ -14,7 +14,7 @@ mkdir -p "${NGINX_PATH}/conf.d/"
 NGINX_LOG_PATH="/var/log/nginx"
 NGINX_CERT_PATH="/var/db/acme/live"
 NGINX_DHPARAM_PATH="${NGINX_PATH}/dhparam.pem"
-[ -d "/var/acme" ] && NGINX_CHALLENGE_PATH="/var/acme"
+NGINX_CHALLENGE_PATH="${NGINX_CHALLENGE_PATH-/var/acme}"
 
 # Generate NGINX_DHPARAM
 [ -e "${NGINX_DHPARAM_PATH}" ] || openssl dhparam -out "${NGINX_DHPARAM_PATH}" 4096
@@ -22,7 +22,6 @@ NGINX_DHPARAM_PATH="${NGINX_PATH}/dhparam.pem"
 if [ ! -f "${NGINX_CERT_PATH}/${WWW_SERVER_NAME}/privkey" ]; then
     # Fall back to self-signed bootstrap-cert
     NGINX_CERT_PATH="${NGINX_PATH}/snakeoil-certs"
-    NGINX_CHALLENGE_PATH="/dev/null"
     for SN in onezoom.org ${WWW_SERVER_NAME} ${WWW_IMAGES_SERVER_NAME}; do
         mkdir -p "${NGINX_CERT_PATH}/${SN}"
         if [ ! -e "${NGINX_CERT_PATH}/${SN}/privkey.pem" ]; then
@@ -33,6 +32,11 @@ if [ ! -f "${NGINX_CERT_PATH}/${WWW_SERVER_NAME}/privkey" ]; then
                     -addext "subjectAltName = DNS:selfsigned.${SN}"
         fi
     done
+fi
+
+if [ ! -d "${NGINX_CHALLENGE_PATH}" ]; then
+    # No challenge path, acmetool is probably not installed
+    NGINX_CHALLENGE_PATH="/dev/null"
 fi
 
 # Create NGINX config
