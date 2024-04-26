@@ -108,6 +108,8 @@ process_name=%(program_name)s%(process_num)d
 numprocs=5
 
 [program:${WEB2PY_NAME}_background_tasks]
+; includes sending email autoreminders. Stop this specific task via:
+;   supervisorctl stop ${WEB2PY_NAME}_background_tasks
 directory=${WEB2PY_PATH}
 user=${APP_USER}
 group=${APP_GROUP}
