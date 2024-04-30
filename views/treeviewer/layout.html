@@ -224,7 +224,7 @@ function closeAndLeap(event, href, original_searchbox, input_type) {
         onezoom.controller.default_move_to(href, 'ancestor');
     } else {
         // Strip /life/ from any URL, update tree state
-        onezoom.controller.set_treestate(href.replace(/^\/[A-Z_\-/]+/i, ''));
+        onezoom.controller.set_treestate(href.replace(/^\/[A-Z_\-/.]+/i, ''));
     }
 }
 
