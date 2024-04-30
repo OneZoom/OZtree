@@ -83,6 +83,54 @@ class ControllersDefaultSponsorInfo(unittest.TestCase):
         self.assertEqual(str(out['all_row_categories'][2]['title']), 'Expired sponsorships')
         self.assertEqual([r.OTT_ID for r in out['all_row_categories'][2]['rows']], [r.OTT_ID for r in rs])
 
+    def test_sponsor_renew_request(self):
+        email_1, user_1 = '1_betty@unittest.example.com', '1_bettyunittestexamplecom'
+
+        def srr(user_identifier):
+            current.request.scheme = True
+            current.request.extension = 'html'
+            current.request.controller = 'default'
+            current.request.function = 'sponsor_renew_request'
+            current.request.vars.clear()
+            current.session.flash = None
+            current.globalenv['myconf']['smtp'] = dict(autosend_email=0)
+            if user_identifier:
+                current.request.vars['user_identifier'] = user_identifier
+                current.request.vars['_formname'] = 'default'
+            try:
+                out = default.sponsor_renew_request()
+            except HTTP as e:
+                return dict(
+                    status=e.status,
+                    location=e.headers.get('Location'),
+                    flash=current.session.flash,
+                )
+            return dict(
+                status=current.response.status,
+                flash=current.session.flash,
+                form_errors=dict(out['form'].errors),
+                form_latest=dict(out['form'].latest),
+            )
+
+        # Empty form, no message
+        self.assertEqual(srr(None), dict(
+            status=200,
+            flash=None,
+            form_errors={},
+            form_latest={'user_identifier': None},
+        ))
+        # Sumbit something, get told we'll send an e-mail in a redirect (not a 200)
+        self.assertEqual(srr(user_1), dict(
+            status=303,
+            location='/sponsor_renew_request',
+            flash='If the user %s exists in our database, we will send them an email' % user_1,
+        ))
+        self.assertEqual(srr(email_1), dict(
+            status=303,
+            location='/sponsor_renew_request',
+            flash='If the user %s exists in our database, we will send them an email' % email_1,
+        ))
+
 
 if __name__ == '__main__':
     import sys

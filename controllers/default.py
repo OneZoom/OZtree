@@ -631,10 +631,11 @@ def sponsor_renew_request():
         INPUT(_name='user_identifier', _class="uk-input uk-margin-bottom"),
         INPUT(_type='submit', _class="oz-pill pill-leaf"))
     if form.accepts(request.vars, session=None):
-        response.flash = sponsor_renew_request_logic(
+        session.flash = sponsor_renew_request_logic(
             form.vars.user_identifier.strip(),
             mailer=ozmail.get_mailer()
         )
+        redirect(URL())
     return dict(
         form=form,
     )
