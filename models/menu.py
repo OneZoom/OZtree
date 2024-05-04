@@ -30,39 +30,39 @@ response.meta.generator = 'Web2py Web Framework'
 # james todo manager only menu?
 
 response.menu = [
-                 (T('For Everyone'), False, None , [ #need to set url_encode=False to avoid web2py quoting the @ sign
-                                            (T('A view of all known life'), False, URL('default', 'introduction', url_encode=False)),
-                                            (T('Your name on the tree'), False, URL('default' , 'sponsor.html')),
-                                            (T('Send a tr-eCard'), False, URL('default' , 'treecards.html')),
-                                            (T('Act for biodiversity'), False, URL('default' , 'otop_intro.html')),
-                                            (T('Full user guide'), False, URL('default' , 'full_guide.html')),
-                                            (T('My sponsorships'), False, URL('default' , 'sponsor_user_manage.html')),
+                 (T('For Everyone'), False, None , [
+                                            (T('A view of all known life'), False, URL('default', 'introduction', extension=False)),
+                                            (T('Your name on the tree'), False, URL('default' , 'sponsor', extension=False)),
+                                            (T('Send a tr-eCard'), False, URL('default' , 'treecards', extension=False)),
+                                            (T('Act for biodiversity'), False, URL('default' , 'otop_intro', extension=False)),
+                                            (T('Full user guide'), False, URL('default' , 'full_guide', extension=False)),
+                                            (T('My sponsorships'), False, URL('default' , 'sponsor_user_manage', extension=False)),
                                             ]),
                 
                  (T('For Education'), False, None , [
-                                                    (T('Installations'), False, URL('education' , 'installations.html')),
-                                                    (T('Display launcher'), False, URL('education' , 'museum_display_setup.html')),
-                                                     (T('Educational materials'), False , URL('education' , 'educational_materials.html')),
-                                                    (T('Screenshot tool'), False , URL('education' , 'screenshot_launcher.html')),
+                                                    (T('Installations'), False, URL('education' , 'installations', extension=False)),
+                                                    (T('Display launcher'), False, URL('education' , 'museum_display_setup', extension=False)),
+                                                     (T('Educational materials'), False , URL('education' , 'educational_materials', extension=False)),
+                                                    (T('Screenshot tool'), False , URL('education' , 'screenshot_launcher', extension=False)),
                                                    ]),
                  
                  (T('For Science'), False, None , [
-                                            (T('Work with us'), False, URL('default' , 'work_with_us.html')),
-                                            (T('Developer tools'), False , URL('developer' , 'index.html')),
-                                            (T('Popularity index'), False , URL('popularity' , 'index.html')),
-                                            (T('Public APIs'), False , URL('API','index.html')),
-                                            (T('Data sources'), False, URL('default' , 'data_sources.html')),
-                                            (T('Changelog'), False , URL('developer' , 'changelog.html')),
-                                            (T('Legacy trees'), False , URL('default' , 'tree_index.html')),
+                                            (T('Work with us'), False, URL('default' , 'work_with_us', extension=False)),
+                                            (T('Developer tools'), False , URL('developer' , 'index', extension=False)),
+                                            (T('Popularity index'), False , URL('popularity' , 'index', extension=False)),
+                                            (T('Public APIs'), False , URL('API','index', extension=False)),
+                                            (T('Data sources'), False, URL('default' , 'data_sources', extension=False)),
+                                            (T('Changelog'), False , URL('developer' , 'changelog', extension=False)),
+                                            (T('Legacy trees'), False , URL('default' , 'tree_index', extension=False)),
                                             ]),
                  
                  (T('About us'), False, None , [
-                                            (T('Project timeline'), False , URL('default' , 'timeline.html') ),
-                                            (T('Endorsements'), False, URL('default' , 'endorsements.html')),
-                                            (T('About OneZoom'), False, URL('default' , 'about.html')),
-                                            (T('Donors'), False , URL('default' , 'donor_list.html') ),
-                                            (T('Team'), False, URL('default' , 'team.html')),
-                                            (T('FAQ'), False, URL('default' , 'FAQ.html')),
+                                            (T('Project timeline'), False , URL('default' , 'timeline', extension=False) ),
+                                            (T('Endorsements'), False, URL('default' , 'endorsements', extension=False)),
+                                            (T('About OneZoom'), False, URL('default' , 'about', extension=False)),
+                                            (T('Donors'), False , URL('default' , 'donor_list', extension=False) ),
+                                            (T('Team'), False, URL('default' , 'team', extension=False)),
+                                            (T('FAQ'), False, URL('default' , 'FAQ', extension=False)),
                                             ]),
                  ]
 
