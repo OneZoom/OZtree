@@ -13,7 +13,7 @@
     {{for s in data:}}<tr{{if s.get('rowflag'):}} class="{{=s['rowflag']}}"{{pass}}>
     <td><input type="checkbox" /></td>
     <td><a href="mailto:{{=s['email']}}?subject={{=quote(s['subject'])}}&body={{=quote(s['message'])}}">{{=s['email']}}</a></td>
-    <td><i><a href="{{=URL('life.html#ott' + str(s['ott']))}}" target="_blank">{{=s['name']}}</a></i></td>
+    <td><i><a href="{{=URL('life/@=' + str(s['ott']), url_encode=False, extension=False)}}" target="_blank">{{=s['name']}}</a></i></td>
     <td class="{{if s['local_pic'] is not None:}}{{if s['local_pic']:}}downloaded{{else:}}missing{{pass}}{{pass}}"><a href="http://eol.org/data_objects/{{=s['img_src_id']}}" target="_blank">{{=s['img_src_id']}}</a></td>
     <td>{{=s['mesg']}}</td>
     </tr>
