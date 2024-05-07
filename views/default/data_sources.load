@@ -28,11 +28,11 @@
 
 <h3>Legacy trees</h3>
 
-<p>Additional 'legacy' trees {{=A("featured on the OneZoom website", _href=URL("tree_index.html"))}} may use different data and each has its own acknowledgments for data use, in the tree caption and/or embedded in the viewer itself for that particular tree.</p>
+<p>Additional 'legacy' trees {{=A("featured on the OneZoom website", _href=URL("tree_index", extension=False))}} may use different data and each has its own acknowledgments for data use, in the tree caption and/or embedded in the viewer itself for that particular tree.</p>
 
 <h3>Evolutionary Tree</h3>
 
-<p>The data used to construct the main tree on this site is from a {{=A("hand-crafted mix of sources",_href=URL("default", "data_sources.html"))}}, but relies heavily on the {{=A("Open Tree of Life", _href="http://www.opentreeoflife.org")}} project, to whom we are extremely grateful. For further, extensive information and references, {{=A("please explore the tree", _href=URL('life.html'))}} where the <q>data sources</q> menu item reveals full details about where the data came from. If you are an expert on certain species, we encourage you to {{=A("contribute data",_href="https://tree.opentreeoflife.org/curator")}} to the OpenTree project. </p>
+<p>The data used to construct the main tree on this site is from a {{=A("hand-crafted mix of sources",_href=URL("default", "data_sources", extension=False))}}, but relies heavily on the {{=A("Open Tree of Life", _href="http://www.opentreeoflife.org")}} project, to whom we are extremely grateful. For further, extensive information and references, {{=A("please explore the tree", _href=URL('life', extension=False))}} where the <q>data sources</q> menu item reveals full details about where the data came from. If you are an expert on certain species, we encourage you to {{=A("contribute data",_href="https://tree.opentreeoflife.org/curator")}} to the OpenTree project. </p>
 
 <p>The OneZoom tree of life is based on a bespoke <q>backbone</q>, originally focussed on vertebrate species, but now extended more widely to encompass all archaea and eukaryotes.</p>
 
@@ -46,7 +46,7 @@
 <p>For added accuracy, and to provide a few divergence dates, the OneZoom site relies on the additional studies listed below for specific areas of the tree of life. Where possible, the OpenTree ({{=A("version 13.4",_href="http://files.opentreeoflife.org/synthesis/opentree13.4/output/", _target="_blank")}})  has been used to supplement these studies to include most or all currently recognized species. Note that the OneZoom display currently requires all branches to split in two (bifurcations), rather than simultaneously splitting into 3 or more branches (technically known as polytomies). Where polytomies exist in the trees used, the OneZoom software splits them randomly into bifurcations.</p>
 
 <h3>Other sources</h3>
-<p>This page is only for information on data sources. If you're wondering how to cite OneZoom itself, or wondering about references that weren't data sources, please take a look at our {{=A('About page', _href=URL('default','about.html'))}}</p>
+<p>This page is only for information on data sources. If you're wondering how to cite OneZoom itself, or wondering about references that weren't data sources, please take a look at our {{=A('About page', _href=URL('default','about', extension=False))}}</p>
 
 </div>
 </div>
