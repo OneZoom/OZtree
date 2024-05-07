@@ -631,10 +631,11 @@ def sponsor_renew_request():
         INPUT(_name='user_identifier', _class="uk-input uk-margin-bottom"),
         INPUT(_type='submit', _class="oz-pill pill-leaf"))
     if form.accepts(request.vars, session=None):
-        response.flash = sponsor_renew_request_logic(
+        session.flash = sponsor_renew_request_logic(
             form.vars.user_identifier.strip(),
             mailer=ozmail.get_mailer()
         )
+        redirect(URL())
     return dict(
         form=form,
     )
@@ -2117,19 +2118,19 @@ def otop_MD():
 
 """ Some controllers that simply redirect to other OZ viewer pages, for brevity """
 def gnathostomata():
-    redirect(URL('default', 'life.html/@Gnathostomata=278114', url_encode=False))
+    redirect(URL('default', 'life/@Gnathostomata=278114', url_encode=False, extension=False))
 
 #def kew_plants():
 #    """
 #    redirect to the land plants
 #    """
-    redirect(URL('default', 'kew.html/@Embryophyta?init=jump', url_encode=False))
+    redirect(URL('default', 'kew/@Embryophyta?init=jump', url_encode=False, extension=False))
 
 #def kew_fungi():
 #    """
 #    redirect to the fungi plants
 #    """
-#    redirect(URL('default', 'kew.html/@Embryophyta?init=jump', url_encode=False))
+#    redirect(URL('default', 'kew/@Embryophyta?init=jump', url_encode=False, extension=False))
 
 def list_controllers():
     """

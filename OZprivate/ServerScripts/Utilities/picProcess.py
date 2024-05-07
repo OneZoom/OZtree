@@ -266,7 +266,7 @@ for row in OTT_node_data:
 # takes as an input "any" "verified" or "pd" and also the src column (a number)
 # it will OVERWRITE any rippled up pictures it finds for the same OTTID
 def ripple_leaf(type_in):
-    info("rippling up from leaves to first nodes for {}".format(type_in))
+    info("Rippling up from leaves to first nodes for {}".format(type_in))
     index_in = Images_OTT_head.index("overall_best_{}".format(type_in))
     for row in range(len(Images_OTT_data_T)):
             # function loops over all images in Images_OTT_data_T

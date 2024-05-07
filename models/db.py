@@ -42,7 +42,7 @@ else:
 ## Configure i18n
 T.set_current_languages('en', 'en-en')
 # Allow translators to add new languages e.g. on the test (beta) site, but not on prod
-T.is_writable = is_testing
+T.is_writable = is_testing and myconf.get('general.allow_translation_string_writing')
 #ALL pages can set ?lang=XXX to override the browser default for translating strings
 if request.vars.lang:
     T.force(request.vars.lang)
@@ -245,7 +245,7 @@ db.define_table('ordered_nodes',
     Field('wikidata', type='integer'),
     Field('wikipedia_lang_flag', type='integer'), #
     Field('eol', type='integer'),
-    Field('rnk', type='string', length=name_rank_chars),
+    Field('rnk', type='string', length=name_rank_chars),  # The taxonomic rank, e.f. "genus"
     Field('raw_popularity', type='double'),
     Field('popularity', type='double'),
     #the following 5 fields are sources listed by the OpenTree

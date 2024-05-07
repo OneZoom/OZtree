@@ -224,7 +224,7 @@ function closeAndLeap(event, href, original_searchbox, input_type) {
         onezoom.controller.default_move_to(href, 'ancestor');
     } else {
         // Strip /life/ from any URL, update tree state
-        onezoom.controller.set_treestate(href.replace(/^\/[A-Z_\-/]+/i, ''));
+        onezoom.controller.set_treestate(href.replace(/^\/[A-Z_\-/.]+/i, ''));
     }
 }
 
@@ -612,7 +612,7 @@ function setupUI() {
     $('select#treepage').val('{{=request.function}}');
     $('select#treepage').change(function() {
         /* slighly yucky function here - to go to the same location on another tree (another page), we 
-           replace the current url parameter (e.g. life.html, linnean.html, etc) with the
+           replace the current url parameter (e.g. `life/`, `linnean/`, etc) with the
            new value, by search-and-replace in the location.pathname component. We then paste
            the url back together again as "origin + new_pathname + search + hash" */
         window.location.href= window.location.origin + 
