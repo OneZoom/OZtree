@@ -185,7 +185,7 @@ If everything works, restart both.
 ## Database explorer
 
 (optional) We find it useful to have a GUI interface to connect to the database and run SQL scripts, this can be used instead of using MySQL command line (similar to Windows command line) that is installed by default with MySQL.
-On Mac OS X we use the (excellent) http://www.sequelpro.com.
+On Mac OS X we use the (excellent) https://sequel-ace.com.
 On windows you could try http://www.mysql.com/products/workbench/ or https://www.quest.com/products/toad-for-mysql/
 Under windows, [SQL Workbench](https://www.mysql.com/products/workbench/) can also be used, even if your MySQL server is installed under WSL2.
 
