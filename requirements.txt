@@ -2,3 +2,6 @@ pymysql==1.1.0
 # Required by pymysql depending on setup: https://stackoverflow.com/questions/54477829/cryptography-is-required-for-sha256-password-or-caching-sha2-password
 cryptography==42.0.5
 uwsgi==2.0.23
+requests==2.31.0
+azure-ai-vision-imageanalysis==1.0.0b2
+pillow==10.3.0
