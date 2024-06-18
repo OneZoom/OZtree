@@ -122,7 +122,19 @@ def get_vernaculars_from_json_item(json_item):
 
     # P1843 is the property for vernacular names
     try:
-        return [vernacular["mainsnak"]["datavalue"]["value"]["text"] for vernacular in json_item["claims"]["P1843"] if vernacular["mainsnak"]["datavalue"]["value"]["language"] == language]
+        vernaculars = []
+        known_canonical_vernaculars = set()
+        for vernacular in [vernacular["mainsnak"]["datavalue"]["value"]["text"] for vernacular in json_item["claims"]["P1843"] if vernacular["mainsnak"]["datavalue"]["value"]["language"] == language]:
+
+            # There are often multiple vernaculars that only differ in case or punctuation.
+            # We only want to keep one of each.
+            canonical_vernacular = ''.join(filter(str.isalnum, vernacular)).lower()
+            if canonical_vernacular in known_canonical_vernaculars:
+                continue
+            known_canonical_vernaculars.add(canonical_vernacular)
+
+            vernaculars.append(vernacular)
+        return vernaculars
     except (KeyError, IndexError):
         return None
 
@@ -167,14 +179,18 @@ def get_image_license(escaped_image_name):
 
     r = make_http_request_with_retries(image_metadata_url)
 
-    image_metadata = r.json()
-    extmetadata = image_metadata["query"]["pages"]["-1"]["imageinfo"][0]["extmetadata"]
+    try:
+        image_metadata = r.json()
+        extmetadata = image_metadata["query"]["pages"]["-1"]["imageinfo"][0]["extmetadata"]
 
-    # Strip the html tags from the artist
-    artist = extmetadata["Artist"]["value"]
-    artist = re.sub(r'<[^>]*>', '', artist)
+        # Strip the html tags from the artist
+        artist = extmetadata["Artist"]["value"]
+        artist = re.sub(r'<[^>]*>', '', artist)
 
-    license = extmetadata["License"]["value"]
+        license = extmetadata["License"]["value"]
+    except KeyError:
+        return None, None
+    
     try:
         license_url = extmetadata["LicenseUrl"]["value"]
         return f"{license} ({license_url})", f"© {artist}"
@@ -219,9 +235,13 @@ def use_wiki_image_for_qid(ott, qid, image_name, output_dir, check_if_up_to_date
                 logger.info(f"Image for {ott} is already up to date: {image_name}")
                 return
 
-    logger.info(f"Downloading image for ott={ott} (qid={qid}): {image_name}")
+    logger.info(f"Processing image for ott={ott} (qid={qid}): {image_name}")
 
     license_string, artist = get_image_license(escaped_image_name)
+    if not license_string:
+        logger.warning(f"Couldn't get license or artist for '{escaped_image_name};. Ignoring it.")
+        return
+
     image_url = get_preferred_image_url(escaped_image_name)
 
     # We use the qid as the source id. This is convenient, although it does mean
@@ -305,8 +325,8 @@ def process_leaf_image(ott_or_taxon, image_name=None):
     logger.info(f"Processing '{name}' (ott={ott}, qid={qid})")
 
     # If a specific image name is passed in, use it. Otherwise, we need to look it up.
+    json_item = get_wikidata_json_for_qid(qid)
     if not image_name:
-        json_item = get_wikidata_json_for_qid(qid)
         images = get_images_from_json_item(json_item)
         # We use the first image, which is typically the preferred one
         image_name = images[0]
