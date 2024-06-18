@@ -118,14 +118,14 @@ def get_images_from_json_item(json_item):
             pass
     return None
 
-def get_vernacular_from_json_item(json_item):
+def get_vernaculars_from_json_item(json_item):
     """
-    Get the English vernacular names from a Wikidata JSON item.
+    Get the vernacular names from a Wikidata JSON item in a given language.
     """
 
     # P1843 is the property for vernacular names
     try:
-        return [vernacular["mainsnak"]["datavalue"]["value"]["text"] for vernacular in json_item["claims"]["P1843"] if vernacular["mainsnak"]["datavalue"]["value"]["language"] == "en"][0]
+        return [vernacular["mainsnak"]["datavalue"]["value"]["text"] for vernacular in json_item["claims"]["P1843"] if vernacular["mainsnak"]["datavalue"]["value"]["language"] == language]
     except (KeyError, IndexError):
         return None
 
@@ -141,10 +141,10 @@ def enumerate_dump_items_with_images(wikipedia_dump_file):
 
         images = get_images_from_json_item(json_item)
         image = images[0] if images else None
-        vernacular = get_vernacular_from_json_item(json_item)
-        if image or vernacular:
+        vernaculars = get_vernaculars_from_json_item(json_item)
+        if image or vernaculars:
             qid = int(json_item["id"][1:])
-            yield qid, image, vernacular
+            yield qid, image, vernaculars
 
 
 def get_wikidata_json_for_qid(qid):
@@ -206,8 +206,6 @@ def use_wiki_image_for_qid(ott, qid, image_name, output_dir, check_if_up_to_date
     We keep both the uncropped and cropped versions of the image, along with the crop info.
     """
 
-    logger.info(f"Downloading image for ott={ott} (qid={qid}): {image_name}")
-
     wiki_image_url_prefix = "https://commons.wikimedia.org/wiki/File:"
 
     # Wikimedia uses underscores instead of spaces in URLs
@@ -223,6 +221,8 @@ def use_wiki_image_for_qid(ott, qid, image_name, output_dir, check_if_up_to_date
             if existing_image_name == escaped_image_name:
                 logger.info(f"Image for {ott} is already up to date: {image_name}")
                 return
+
+    logger.info(f"Downloading image for ott={ott} (qid={qid}): {image_name}")
 
     license_string, artist = get_image_license(escaped_image_name)
     image_url = get_preferred_image_url(escaped_image_name)
@@ -271,25 +271,27 @@ def use_wiki_image_for_qid(ott, qid, image_name, output_dir, check_if_up_to_date
                             artist, license_string))
     db_connection.commit()
 
-def use_wiki_vernacular_for_qid(ott, qid, vernacular):
+def save_all_wiki_vernaculars_for_qid(ott, qid, vernaculars):
     """
-    Save a vernacular name for a given QID to the database.
+    Save all vernacular names for a given QID to the database.
+    Note that there can be multiple vernaculars for one language (e.g. "Lion" and "Africa Lion")
     """
-
-    logger.info(f"Setting vernacular for ott={ott} (qid={qid}): {vernacular}")
 
     # Delete any existing wiki vernaculars for this taxon from the database
     sql = "DELETE FROM vernacular_by_ott WHERE ott={0} and src={0} and lang_primary={0};".format(subs)
     db_curs.execute(sql, (ott, src_flags['wiki'], language))
 
-    # Insert the new vernacular into the database
-    sql = "INSERT INTO vernacular_by_ott (ott, vernacular, lang_primary, lang_full, preferred, src, src_id, updated) VALUES ({0}, {0}, {0}, {0}, {0}, {0}, {0}, {1});".format(subs, datetime_now)
-    db_curs.execute(sql, (ott, vernacular, language, language, 1, src_flags['wiki'], qid))
+    for vernacular in vernaculars:
+        logger.info(f"Setting vernacular for ott={ott} (qid={qid}): {vernacular}")
+
+        # Insert the new vernacular into the database
+        sql = "INSERT INTO vernacular_by_ott (ott, vernacular, lang_primary, lang_full, preferred, src, src_id, updated) VALUES ({0}, {0}, {0}, {0}, {0}, {0}, {0}, {1});".format(subs, datetime_now)
+        db_curs.execute(sql, (ott, vernacular, language, language, 1, src_flags['wiki'], qid))
+
     db_connection.commit()
 
-
 def process_leaf_image(ott_or_taxon, image_name=None):
-    # If ott_or_taxon is a number, it's an ott. If it's a string, it's a taxon name.
+    # If ott_or_taxon is a number, it's an ott. Otherwise, it's a taxon name.
     sql = "SELECT ott,wikidata,name FROM ordered_leaves WHERE "
     if ott_or_taxon.isnumeric():
         sql += "ott={};".format(subs)
@@ -309,11 +311,12 @@ def process_leaf_image(ott_or_taxon, image_name=None):
     if not image_name:
         json_item = get_wikidata_json_for_qid(qid)
         images = get_images_from_json_item(json_item)
+        # We use the first image, which is typically the preferred one
         image_name = images[0]
     use_wiki_image_for_qid(ott, qid, image_name, output_dir)
 
-    vernacular = get_vernacular_from_json_item(json_item)
-    use_wiki_vernacular_for_qid(ott, qid, vernacular)
+    vernaculars = get_vernaculars_from_json_item(json_item)
+    save_all_wiki_vernaculars_for_qid(ott, qid, vernaculars)
 
 def process_clade_images(ott_or_taxon, dump_file):
 
@@ -351,13 +354,14 @@ def process_clade_images(ott_or_taxon, dump_file):
     leaves_without_vernaculars = dict(db_curs.fetchall())
     logger.info(f"Found {len(leaves_without_vernaculars)} taxa without a vernacular in the database")
 
-    for qid, image_name, vernacular in enumerate_dump_items_with_images(dump_file):
+    for qid, image_name, vernaculars in enumerate_dump_items_with_images(dump_file):
         if image_name and qid in leaves_without_images:
             ott = leaves_without_images[qid]
             use_wiki_image_for_qid(ott, qid, image_name, output_dir, check_if_up_to_date=False)
-        if vernacular and qid in leaves_without_vernaculars:
+        if vernaculars and qid in leaves_without_vernaculars:
             ott = leaves_without_vernaculars[qid]
-            use_wiki_vernacular_for_qid(ott, qid, vernacular)
+
+            save_all_wiki_vernaculars_for_qid(ott, qid, vernaculars)
 
 def main():
     global db_connection, datetime_now, subs, db_curs, config, output_dir
