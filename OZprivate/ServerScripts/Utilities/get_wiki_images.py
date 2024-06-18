@@ -28,9 +28,6 @@ from PIL import Image
 
 logger = logging.getLogger(__name__)
 
-# Limit to English vernacular names for now
-language = 'en'
-
 def open_file_based_on_extension(filename, mode):
     # Open a file, whether it's uncompressed, bz2 or gz
     if filename.endswith(".bz2"):
@@ -364,26 +361,33 @@ def process_clade_images(ott_or_taxon, dump_file):
             save_all_wiki_vernaculars_for_qid(ott, qid, vernaculars)
 
 def main():
-    global db_connection, datetime_now, subs, db_curs, config, output_dir
+    global db_connection, datetime_now, subs, db_curs, config, output_dir, language
 
     logging.debug('')  # Makes loggin work
     logger.setLevel(logging.INFO)
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config_file', default=None, help='The configuration file to use. If not given, defaults to private/appconfig.ini')
-    parser.add_argument('--output_dir', '-o', default=None, help="The location to save the cropped pictures (e.g. 'FinalOutputs/img'). If not given, defaults to ../../../static/FinalOutputs/img (relative to the script location). Files will be saved under output_dir/{src_flag}/{3-digits}/fn.jpg")
 
     subparsers = parser.add_subparsers(help='help for subcommand', dest="subcommand")
+
+    def add_common_args(parser):
+        parser.add_argument('--config_file', default=None, help='The configuration file to use. If not given, defaults to private/appconfig.ini')
+        parser.add_argument('--output_dir', '-o', default=None, help="The location to save the cropped pictures (e.g. 'FinalOutputs/img'). If not given, defaults to ../../../static/FinalOutputs/img (relative to the script location). Files will be saved under output_dir/{src_flag}/{3-digits}/fn.jpg")
+        parser.add_argument('--language', '-l', default="en", help="The language to use for vernacular names (e.g. 'en' for English)")
 
     parser_leaf = subparsers.add_parser('leaf', help='Process a single ott')
     parser_leaf.add_argument('ott_or_taxon', type=str, help='The leaf ott or taxon to process')
     parser_leaf.add_argument('image', nargs='?', type=str, help='The image to use for the given ott')
+    add_common_args(parser_leaf)
 
     parser_clade = subparsers.add_parser('clade', help='Process a full clade')
     parser_clade.add_argument('ott_or_taxon', type=str, help='The ott or taxon of the root of the clade')
     parser_clade.add_argument('dump_file', type=str, help='The wikidata JSON dump from which to get the images')
+    add_common_args(parser_clade)
     
     args = parser.parse_args()
+
+    language = args.language
 
     config = read_config(args.config_file)
     database = config.get("db", "uri")
