@@ -122,23 +122,30 @@ def get_vernaculars_from_json_item(json_item):
 
     # P1843 is the property for vernacular names
     try:
-        vernaculars = []
+        lang_and_vernaculars = []
         known_canonical_vernaculars = set()
-        for vernacular in [vernacular["mainsnak"]["datavalue"]["value"]["text"] for vernacular in json_item["claims"]["P1843"] if vernacular["mainsnak"]["datavalue"]["value"]["language"] == language]:
+        for claim in json_item["claims"]["P1843"]:
+        # for val in [vernacular_claim["mainsnak"]["datavalue"]["value"] for vernacular_claim in json_item["claims"]["P1843"]]:
+
+            vernacular_info = {
+                "name": claim["mainsnak"]["datavalue"]["value"]["text"],
+                "language": claim["mainsnak"]["datavalue"]["value"]["language"],
+                "preferred": 1 if claim["rank"] == "preferred" else 0
+            }
 
             # There are often multiple vernaculars that only differ in case or punctuation.
-            # We only want to keep one of each.
-            canonical_vernacular = ''.join(filter(str.isalnum, vernacular)).lower()
+            # We only want to keep one of each for a given language.
+            canonical_vernacular = vernacular_info["language"] + "," + ''.join(filter(str.isalnum, vernacular_info["name"])).lower()
             if canonical_vernacular in known_canonical_vernaculars:
                 continue
             known_canonical_vernaculars.add(canonical_vernacular)
 
-            vernaculars.append(vernacular)
-        return vernaculars
+            lang_and_vernaculars.append(vernacular_info)
+        return lang_and_vernaculars
     except (KeyError, IndexError):
         return None
 
-def enumerate_dump_items_with_images(wikipedia_dump_file):
+def enumerate_dump_items_with_images_or_vernaculars(wikipedia_dump_file):
     """
     Enumerate the items in a Wikidata JSON dump that have images.
     """
@@ -295,15 +302,15 @@ def save_all_wiki_vernaculars_for_qid(ott, qid, vernaculars):
     """
 
     # Delete any existing wiki vernaculars for this taxon from the database
-    sql = "DELETE FROM vernacular_by_ott WHERE ott={0} and src={0} and lang_primary={0};".format(subs)
-    db_curs.execute(sql, (ott, src_flags['wiki'], language))
+    sql = "DELETE FROM vernacular_by_ott WHERE ott={0} and src={0};".format(subs)
+    db_curs.execute(sql, (ott, src_flags['wiki']))
 
     for vernacular in vernaculars:
-        logger.info(f"Setting vernacular for ott={ott} (qid={qid}): {vernacular}")
+        logger.info(f"Setting '{vernacular['language']}' vernacular for ott={ott} (qid={qid}): {vernacular['name']}")
 
         # Insert the new vernacular into the database
         sql = "INSERT INTO vernacular_by_ott (ott, vernacular, lang_primary, lang_full, preferred, src, src_id, updated) VALUES ({0}, {0}, {0}, {0}, {0}, {0}, {0}, {1});".format(subs, datetime_now)
-        db_curs.execute(sql, (ott, vernacular, language, language, 1, src_flags['wiki'], qid))
+        db_curs.execute(sql, (ott, vernacular["name"], vernacular["language"], vernacular["language"], vernacular["preferred"], src_flags['wiki'], qid))
 
     db_connection.commit()
 
@@ -364,14 +371,14 @@ def process_clade_images(ott_or_taxon, dump_file):
     # Find all the leaves in the clade that don't have wiki vernaculars (ignoring vernaculars from other sources)
     sql = """
     SELECT wikidata, ordered_leaves.ott FROM ordered_leaves
-    LEFT OUTER JOIN (SELECT ott,src,vernacular FROM vernacular_by_ott WHERE src={} and lang_primary={}) as wiki_vernacular_by_ott ON ordered_leaves.ott=wiki_vernacular_by_ott.ott
+    LEFT OUTER JOIN (SELECT ott,src,vernacular FROM vernacular_by_ott WHERE src={}) as wiki_vernacular_by_ott ON ordered_leaves.ott=wiki_vernacular_by_ott.ott
     WHERE vernacular IS NULL AND ordered_leaves.id >= {} AND ordered_leaves.id <= {};
     """.format(subs, subs, subs, subs)
-    db_curs.execute(sql, (src_flags['wiki'], language, leaf_left, leaf_right))
+    db_curs.execute(sql, (src_flags['wiki'], leaf_left, leaf_right))
     leaves_without_vernaculars = dict(db_curs.fetchall())
     logger.info(f"Found {len(leaves_without_vernaculars)} taxa without a vernacular in the database")
 
-    for qid, image_name, vernaculars in enumerate_dump_items_with_images(dump_file):
+    for qid, image_name, vernaculars in enumerate_dump_items_with_images_or_vernaculars(dump_file):
         if image_name and qid in leaves_without_images:
             ott = leaves_without_images[qid]
             use_wiki_image_for_qid(ott, qid, image_name, output_dir, check_if_up_to_date=False)
@@ -393,7 +400,6 @@ def main():
     def add_common_args(parser):
         parser.add_argument('--config_file', default=None, help='The configuration file to use. If not given, defaults to private/appconfig.ini')
         parser.add_argument('--output_dir', '-o', default=None, help="The location to save the cropped pictures (e.g. 'FinalOutputs/img'). If not given, defaults to ../../../static/FinalOutputs/img (relative to the script location). Files will be saved under output_dir/{src_flag}/{3-digits}/fn.jpg")
-        parser.add_argument('--language', '-l', default="en", help="The language to use for vernacular names (e.g. 'en' for English)")
 
     parser_leaf = subparsers.add_parser('leaf', help='Process a single ott')
     parser_leaf.add_argument('ott_or_taxon', type=str, help='The leaf ott or taxon to process')
@@ -406,8 +412,6 @@ def main():
     add_common_args(parser_clade)
     
     args = parser.parse_args()
-
-    language = args.language
 
     config = read_config(args.config_file)
     database = config.get("db", "uri")
