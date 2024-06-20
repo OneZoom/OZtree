@@ -123,35 +123,44 @@ def get_preferred_or_first_image_from_json_item(json_item):
 
     return image
 
-def get_vernaculars_from_json_item(json_item):
+def get_vernaculars_by_language_from_json_item(json_item):
     """
-    Get the vernacular names from a Wikidata JSON item in a given language.
+    Get the vernacular names from a Wikidata JSON item for all languages.
     """
+
+    vernaculars_by_language = {}
+    known_canonical_vernaculars = set()
 
     # P1843 is the property for vernacular names
     try:
-        lang_and_vernaculars = []
-        known_canonical_vernaculars = set()
         for claim in json_item["claims"]["P1843"]:
-        # for val in [vernacular_claim["mainsnak"]["datavalue"]["value"] for vernacular_claim in json_item["claims"]["P1843"]]:
+            language = claim["mainsnak"]["datavalue"]["value"]["language"]
 
             vernacular_info = {
                 "name": claim["mainsnak"]["datavalue"]["value"]["text"],
-                "language": claim["mainsnak"]["datavalue"]["value"]["language"],
                 "preferred": 1 if claim["rank"] == "preferred" else 0
             }
 
             # There are often multiple vernaculars that only differ in case or punctuation.
             # We only want to keep one of each for a given language.
-            canonical_vernacular = vernacular_info["language"] + "," + ''.join(filter(str.isalnum, vernacular_info["name"])).lower()
+            canonical_vernacular = language + "," + ''.join(filter(str.isalnum, vernacular_info["name"])).lower()
             if canonical_vernacular in known_canonical_vernaculars:
                 continue
             known_canonical_vernaculars.add(canonical_vernacular)
 
-            lang_and_vernaculars.append(vernacular_info)
-        return lang_and_vernaculars
+            vernaculars_by_language.setdefault(language, []).append(vernacular_info)
     except (KeyError, IndexError):
         return None
+
+    # For each language:
+    # - We keep all the vernaculars
+    # - If none are marked as preferred, the first non-referred will be marked as preferred
+    for _, vernaculars in vernaculars_by_language.items():
+        preferred_vernacular = next((vernacular for vernacular in vernaculars if vernacular["preferred"]), None)
+        if not preferred_vernacular:
+            vernaculars[0]["preferred"] = 1
+
+    return vernaculars_by_language
 
 def enumerate_dump_items_with_images_or_vernaculars(wikipedia_dump_file):
     """
@@ -164,10 +173,10 @@ def enumerate_dump_items_with_images_or_vernaculars(wikipedia_dump_file):
         json_item = json.loads(line.rstrip().rstrip(","))
 
         image = get_preferred_or_first_image_from_json_item(json_item)
-        vernaculars = get_vernaculars_from_json_item(json_item)
-        if image or vernaculars:
+        vernaculars_by_language = get_vernaculars_by_language_from_json_item(json_item)
+        if image or vernaculars_by_language:
             qid = int(json_item["id"][1:])
-            yield qid, image, vernaculars
+            yield qid, image, vernaculars_by_language
 
 
 def get_wikidata_json_for_qid(qid):
@@ -314,7 +323,7 @@ def save_wiki_image_for_qid(ott, qid, image, src, rating, output_dir, check_if_u
                             license_string))
     db_connection.commit()
 
-def save_all_wiki_vernaculars_for_qid(ott, qid, vernaculars):
+def save_all_wiki_vernaculars_for_qid(ott, qid, vernaculars_by_language):
     """
     Save all vernacular names for a given QID to the database.
     Note that there can be multiple vernaculars for one language (e.g. "Lion" and "Africa Lion")
@@ -324,16 +333,24 @@ def save_all_wiki_vernaculars_for_qid(ott, qid, vernaculars):
     sql = "DELETE FROM vernacular_by_ott WHERE ott={0} and src={0};".format(subs)
     db_curs.execute(sql, (ott, src_flags['wiki']))
 
-    for vernacular in vernaculars:
-        logger.info(f"Setting '{vernacular['language']}' vernacular for ott={ott} (qid={qid}): {vernacular['name']}")
-
+    for language, vernaculars in vernaculars_by_language.items():
         # The wikidata language could either be a full language code (e.g. "en-us") or just the primary code (e.g. "en")
         # We need to make sure that lang_primary is just the primary code
-        lang_primary = vernacular["language"].split("-")[0]
+        lang_primary = language.split("-")[0]
 
-        # Insert the new vernacular into the database
-        sql = "INSERT INTO vernacular_by_ott (ott, vernacular, lang_primary, lang_full, preferred, src, src_id, updated) VALUES ({0}, {0}, {0}, {0}, {0}, {0}, {0}, {1});".format(subs, datetime_now)
-        db_curs.execute(sql, (ott, vernacular["name"], lang_primary, vernacular["language"].split("-")[0], vernacular["preferred"], src_flags['wiki'], qid))
+        for vernacular in vernaculars:
+            logger.info(f"Setting '{language}' vernacular for ott={ott} (qid={qid}, preferred={vernacular['preferred']}): {vernacular['name']}")
+
+            # Insert the new vernacular into the database
+            sql = "INSERT INTO vernacular_by_ott (ott, vernacular, lang_primary, lang_full, preferred, src, src_id, updated) VALUES ({0}, {0}, {0}, {0}, {0}, {0}, {0}, {1});".format(subs, datetime_now)
+            db_curs.execute(sql, (
+                ott,
+                vernacular["name"],
+                lang_primary,
+                language,
+                vernacular["preferred"],
+                src_flags['wiki'],
+                qid))
 
     db_connection.commit()
 
@@ -372,8 +389,8 @@ def process_leaf(ott_or_taxon, image_name=None, rating=None):
         src = src_flags['wiki']
     save_wiki_image_for_qid(ott, qid, image, src, rating, output_dir)
 
-    vernaculars = get_vernaculars_from_json_item(json_item)
-    save_all_wiki_vernaculars_for_qid(ott, qid, vernaculars)
+    vernaculars_by_language = get_vernaculars_by_language_from_json_item(json_item)
+    save_all_wiki_vernaculars_for_qid(ott, qid, vernaculars_by_language)
 
 def process_clade(ott_or_taxon, dump_file):
 
