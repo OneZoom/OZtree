@@ -1,4 +1,17 @@
 #!/usr/bin/env python3
+
+"""
+This utility retrieves images and vernacular names from Wikidata for a given taxon or clade.
+
+It can be called in two ways:
+- To process a single taxon, use the 'leaf' subcommand. This will get the image and vernaculars for the given taxon. e.g.
+    get_wiki_images.py leaf "Panthera leo"
+    get_wiki_images.py leaf "Panthera leo" "File:Panthera leo.jpg"
+    get_wiki_images.py leaf "Panthera leo" "File:Panthera leo.jpg" 42000
+- To process a full clade, use the 'clade' subcommand. This will get the images and vernaculars for all the taxa in the clade.
+    e.g. get_wiki_images.py clade "Panthera" OneZoom_latest-all.json
+"""
+
 import argparse
 import bz2
 import configparser
