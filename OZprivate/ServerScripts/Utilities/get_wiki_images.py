@@ -207,9 +207,12 @@ def get_image_license_info(escaped_image_name):
         image_metadata = r.json()
         extmetadata = image_metadata["query"]["pages"]["-1"]["imageinfo"][0]["extmetadata"]
 
-        license_info["artist"] = extmetadata["Artist"]["value"]
-        # Strip the html tags from the artist
-        license_info["artist"] = re.sub(r'<[^>]*>', '', license_info["artist"])
+        if "artist" in extmetadata:
+            license_info["artist"] = extmetadata["Artist"]["value"]
+            # Strip the html tags from the artist
+            license_info["artist"] = re.sub(r'<[^>]*>', '', license_info["artist"])
+        else:
+            license_info["artist"] = "Unknown artist"
 
         license_info["license"] = extmetadata["License"]["value"]
 
@@ -293,6 +296,9 @@ def save_wiki_image_for_qid(ott, qid, image, src, rating, output_dir, check_if_u
 
     # Crop and resize the image using PIL
     im = Image.open(uncropped_image_path)
+    # Convert to RGB to avoid issues with transparency when working with a png file
+    if im.mode in ("RGBA", "P"):
+        im = im.convert("RGB")
     im = im.resize(
         (300, 300),
         box = (crop_box.x, crop_box.y, crop_box.x + crop_box.width, crop_box.y + crop_box.height)
@@ -354,7 +360,7 @@ def save_all_wiki_vernaculars_for_qid(ott, qid, vernaculars_by_language):
 
     db_connection.commit()
 
-def process_leaf(ott_or_taxon, image_name=None, rating=None):
+def process_leaf(ott_or_taxon, image_name, rating, skip_images):
     # If ott_or_taxon is a number, it's an ott. Otherwise, it's a taxon name.
     sql = "SELECT ott,wikidata,name FROM ordered_leaves WHERE "
     if ott_or_taxon.isnumeric():
@@ -378,21 +384,23 @@ def process_leaf(ott_or_taxon, image_name=None, rating=None):
     if not rating:
         rating = 40000 if image_name else 35000
 
-    # If a specific image name is passed in, use it. Otherwise, we need to look it up.
-    # Also, if an image is passed in, we categorize it as a bespoke image, not wiki.
     json_item = get_wikidata_json_for_qid(qid)
-    if image_name:
-        image = { "name": image_name }
-        src = src_flags['onezoom_bespoke']
-    else:
-        image = get_preferred_or_first_image_from_json_item(json_item)
-        src = src_flags['wiki']
-    save_wiki_image_for_qid(ott, qid, image, src, rating, output_dir)
+
+    if not skip_images:
+        # If a specific image name is passed in, use it. Otherwise, we need to look it up.
+        # Also, if an image is passed in, we categorize it as a bespoke image, not wiki.
+        if image_name:
+            image = { "name": image_name }
+            src = src_flags['onezoom_bespoke']
+        else:
+            image = get_preferred_or_first_image_from_json_item(json_item)
+            src = src_flags['wiki']
+        save_wiki_image_for_qid(ott, qid, image, src, rating, output_dir)
 
     vernaculars_by_language = get_vernaculars_by_language_from_json_item(json_item)
     save_all_wiki_vernaculars_for_qid(ott, qid, vernaculars_by_language)
 
-def process_clade(ott_or_taxon, dump_file):
+def process_clade(ott_or_taxon, dump_file, skip_images):
 
     # Get the left and right leaf ids for the passed in taxon
     sql = "SELECT ott,name,leaf_lft,leaf_rgt FROM ordered_nodes WHERE "
@@ -408,15 +416,16 @@ def process_clade(ott_or_taxon, dump_file):
         logger.error(f"'{ott_or_taxon}' not found in ordered_nodes table")
         return
 
-    # Find all the leaves in the clade that don't have wiki images (ignoring images from other sources)
-    sql = """
-    SELECT wikidata, ordered_leaves.ott FROM ordered_leaves
-    LEFT OUTER JOIN (SELECT ott,src,url FROM images_by_ott WHERE src={}) as wiki_images_by_ott ON ordered_leaves.ott=wiki_images_by_ott.ott
-    WHERE url IS NULL AND ordered_leaves.id >= {} AND ordered_leaves.id <= {};
-    """.format(subs, subs, subs)
-    db_curs.execute(sql, (src_flags['wiki'], leaf_left, leaf_right))
-    leaves_without_images = dict(db_curs.fetchall())
-    logger.info(f"Found {len(leaves_without_images)} taxa without an image in the database")
+    if not skip_images:
+        # Find all the leaves in the clade that don't have wiki images (ignoring images from other sources)
+        sql = """
+        SELECT wikidata, ordered_leaves.ott FROM ordered_leaves
+        LEFT OUTER JOIN (SELECT ott,src,url FROM images_by_ott WHERE src={}) as wiki_images_by_ott ON ordered_leaves.ott=wiki_images_by_ott.ott
+        WHERE url IS NULL AND ordered_leaves.id >= {} AND ordered_leaves.id <= {};
+        """.format(subs, subs, subs)
+        db_curs.execute(sql, (src_flags['wiki'], leaf_left, leaf_right))
+        leaves_without_images = dict(db_curs.fetchall())
+        logger.info(f"Found {len(leaves_without_images)} taxa without an image in the database")
 
     # Find all the leaves in the clade that don't have wiki vernaculars (ignoring vernaculars from other sources)
     sql = """
@@ -429,7 +438,7 @@ def process_clade(ott_or_taxon, dump_file):
     logger.info(f"Found {len(leaves_without_vernaculars)} taxa without a vernacular in the database")
 
     for qid, image, vernaculars in enumerate_dump_items_with_images_or_vernaculars(dump_file):
-        if image and qid in leaves_without_images:
+        if not skip_images and image and qid in leaves_without_images:
             ott = leaves_without_images[qid]
             save_wiki_image_for_qid(ott, qid, image, src_flags['wiki'], 35000, output_dir, check_if_up_to_date=False)
         if vernaculars and qid in leaves_without_vernaculars:
@@ -448,8 +457,9 @@ def main():
     subparsers = parser.add_subparsers(help='help for subcommand', dest="subcommand")
 
     def add_common_args(parser):
-        parser.add_argument('--config_file', default=None, help='The configuration file to use. If not given, defaults to private/appconfig.ini')
-        parser.add_argument('--output_dir', '-o', default=None, help="The location to save the cropped pictures (e.g. 'FinalOutputs/img'). If not given, defaults to ../../../static/FinalOutputs/img (relative to the script location). Files will be saved under output_dir/{src_flag}/{3-digits}/fn.jpg")
+        parser.add_argument('--config-file', default=None, help='The configuration file to use. If not given, defaults to private/appconfig.ini')
+        parser.add_argument('--output-dir', '-o', default=None, help="The location to save the cropped pictures (e.g. 'FinalOutputs/img'). If not given, defaults to ../../../static/FinalOutputs/img (relative to the script location). Files will be saved under output_dir/{src_flag}/{3-digits}/fn.jpg")
+        parser.add_argument('--skip-images', action='store_true', help='Only process vernaculars, not images')
 
     parser_leaf = subparsers.add_parser('leaf', help='Process a single ott')
     parser_leaf.add_argument('ott_or_taxon', type=str, help='The leaf ott or taxon to process')
@@ -483,10 +493,10 @@ def main():
 
     if args.subcommand == "leaf":
         # Process one leaf, optionally forcing the specified image
-        process_leaf(args.ott_or_taxon, args.image, args.rating)
+        process_leaf(args.ott_or_taxon, args.image, args.rating, args.skip_images)
     elif args.subcommand == "clade":
         # Process all the images in the passed in clade
-        process_clade(args.ott_or_taxon, args.dump_file)
+        process_clade(args.ott_or_taxon, args.dump_file, args.skip_images)
     else:
         parser.print_help()
                             
