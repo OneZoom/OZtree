@@ -78,12 +78,10 @@ export default function (Controller) {
    * @memberof Controller
    */
   Controller.prototype.change_view_type = function (vis, init = false) {
-    // If nothing to do, return now
-    if (!init && (!vis || vis === tree_settings.vis)) {
-      return Promise.resolve();
-    }
-
     if (!vis) vis = tree_settings.default.vis;
+
+    // If nothing to do, return now
+    if (vis === tree_settings.vis && !init) return Promise.resolve();
 
     // Change tree-state, noting previous
     let prev = tree_settings.vis
