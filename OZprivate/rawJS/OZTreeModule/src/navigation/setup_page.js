@@ -21,7 +21,8 @@ function setup_page_by_state(controller, state) {
 
   // Change view type
   // NB: In doing so, we implicitly rebuild the tree, which needs to happen regardless on init
-  return controller.change_view_type(state.vis_type, init).then(function () {
+  let p = (init || state.hasOwnProperty('vis_type')) ? controller.change_view_type(state.vis_type, init) : Promise.resolve()
+  return p.then(function () {
     // Perform initial highlighting if asked
     return state.hasOwnProperty('highlights') ? controller.highlight_replace(state.highlights) : null;
   }).then(function () {
@@ -138,4 +139,3 @@ function tree_current_state_obj(controller, {record_popup = null}) {
 
 
 export { setup_page_by_state, tree_current_state_obj };
-
