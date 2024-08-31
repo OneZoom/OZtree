@@ -23,7 +23,7 @@ grunt precompile_js_dev
 ```
 
 
-#### Compiling documentation of serveral modules into one:
+#### Compiling documentation of several modules into one:
 ```
 grunt precompile_docs
 ```
