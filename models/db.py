@@ -329,11 +329,9 @@ db.define_table('vernacular_by_name',
 
 # tables for image references. These are mostly intended for leaves
 # on the tree. It is more robust to populate nodes by picking the
-# highest-scoring child leaf, using ordered_nodes. This can be
-# done every time a new tree is generated
-# e.g. to the EOL pages batch API. Note that this saves the 
-# EOL data object ID, but not the image itself: this may need to be downloaded 
-# separately, if you want a local store. 
+# highest-scoring child leaf, using ordered_nodes. Note that this stores the 
+# source object ID, but not the image itself: this may need to be downloaded 
+# separately, if you want a local copy. 
 db.define_table('images_by_ott',
     Field('ott', type='integer', notnull=True, requires=IS_NOT_EMPTY()),
     Field('src', type='integer', notnull=True),
