@@ -31,6 +31,7 @@ from datetime import datetime
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from itertools import islice
+from db_helper import connect_to_database
 
 ## Local packages
 from getEOL_crops import subdir_name, get_credit, get_file_from_json_struct, convert_rating
@@ -642,32 +643,7 @@ if __name__ == "__main__":
                     status_forcelist=[ 500, 502, 503, 504 ])
     s.mount('https://', HTTPAdapter(max_retries=retries))
     
-    if args.database.startswith("sqlite://"):
-        from sqlite3 import dbapi2 as sqlite
-        db_connection = sqlite.connect(os.path.relpath(args.database[len("sqlite://"):], args.treedir))
-        datetime_now = "datetime('now')";
-        subs="?"
-        
-    elif args.database.startswith("mysql://"): #mysql://<mysql_user>:<mysql_password>@localhost/<mysql_database>
-        import pymysql
-        match = re.match(r'mysql://([^:]+):([^@]*)@([^/]+)/([^?]*)', args.database.strip())
-        if match.group(2) == '':
-            #enter password on the command line, if not given (more secure)
-            if args.script:
-                pw = input("pw: ")
-            else:
-                from getpass import getpass
-                pw = getpass("Enter the sql database password: ")
-        else:
-            pw = match.group(2)
-        db_connection = pymysql.connect(user=match.group(1), passwd=pw, host=match.group(3), db=match.group(4), port=3306, charset='utf8mb4')
-        datetime_now = "NOW()"
-        diff_minutes=lambda a,b: 'TIMESTAMPDIFF(MINUTE,{},{})'.format(a,b)
-        subs="%s"
-    else:
-        logger.error("No recognized database specified: {}".format(args.database))
-        sys.exit()
-
+    db_connection, datetime_now, subs = connect_to_database(args.database, None, args.script)
     batch_size=15
     if args.UPDATE_FROM_RESERVATIONS:
         db_curs = db_connection.cursor()
