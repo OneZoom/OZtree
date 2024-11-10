@@ -63,6 +63,7 @@ function refresh(root) {
 
   if (need_refresh()) {
     controller.projection.get_shapes(root, shapes);
+    update_cursor();
     refresh_by_redraw(shapes, context);
     let end = new Date().getTime();
     adjust_threshold(end-start);
@@ -71,6 +72,27 @@ function refresh(root) {
   }
 }
 
+function update_cursor() {
+  if (tree_state.mouse_hold) {
+    canvas.style.cursor = "move";
+    return;
+  }
+  switch(global_button_action.action) {
+    case "fly_node":
+    case "tap2zoom":
+    case "ow_node":
+    case "ow_ozspons_node":
+    case "ow_ozspons_leaf":
+    case "ow_leaf":
+    case "ow_iucn_leaf":
+    case "link":
+    case "leap":
+      canvas.style.cursor = "pointer";
+      break;
+    default:
+      canvas.style.cursor = "default";
+  }
+}
 
 /**
  * This function would first dynamically develop undeveloped parts.
