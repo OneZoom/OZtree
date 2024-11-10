@@ -51,6 +51,7 @@ function draw_src(x,y,rx,ry,corner,context_in)
 
 function autotext(dostroke, fontStyle, fonttype, mintextsize, texttodisp, textx, texty, textw, defpt, context_in, mintextsize_extra)
 {
+    console.log("autotext");
   if (!texttodisp || texttodisp.length === 0) return;
     var drawntext = false;
     if (defpt > mintextsize)
@@ -106,6 +107,7 @@ function autotext(dostroke, fontStyle, fonttype, mintextsize, texttodisp, textx,
 
 function autotext2(dostroke, fontStyle, fonttype, mintextsize, texttodisp, textx, texty, textw, defpt, context_in, mintextsize_extra)
 {
+    console.log("autotext2");
   if (!texttodisp || texttodisp.length === 0) return;
     var drawntext = false;
     // x and y are the centres
@@ -212,6 +214,7 @@ function autotext3(
     dostroke, fontStyle, fonttype, mintextsize, texttodisp,
     textx, texty, textw, defpt, context_in)
 {
+    console.log("autotext3");
   if (!texttodisp || texttodisp.length === 0) return;
     var drawntext = false;
     // x and y are the centres
@@ -360,6 +363,7 @@ function autotext3(
  */
 function circle_cut_image(context_in, imageObject, centerpointx, centerpointy, radiusr, borderColor)
 {
+    console.log("circle_cut_image");
     if (imageObject)
     {
         // save the state of the context.
@@ -563,9 +567,9 @@ function copyright(
         context_in.fillStyle = textColor;
     }
 
-    if (r > 40)
+    if (r > 40 * window.devicePixelRatio)
     {
-        if (r > 160)
+        if (r > 160 * window.devicePixelRatio)
         {
             autotext3(
                 false, textStyle, fonttype, mintextsize,
@@ -804,6 +808,7 @@ function naturalLeaf(leafContext, x, y, r, angle, xtip, ytip, tipd, tipa, inside
  */
 function randomNaturalLeaf(leafContext, x, y, r, angle, insideColor, outlineColor)
 {
+    console.log("randomNaturalLeaf");
     // choose a pseudo random number from the angle
     var pseudor = Math.floor(angle*112345)%4;
     // call naturalLeaf with an appropriate set of numbers for slightly different leaf looks
@@ -894,7 +899,7 @@ function arcText(textContext, x, y, r, stringText, textDirection, startAngle, ga
 function ghostLeafBase(leafContext, x, y, r, angle, leafCol, node={})
 {
     var detail_level = 0;
-    if (r > 90)
+    if (r > 90 * window.devicePixelRatio)
     {
         detail_level = 3;
     }
@@ -917,11 +922,12 @@ function ghostLeafBase(leafContext, x, y, r, angle, leafCol, node={})
 
 function fullLeafBase(leafContext, x, y, r, angle, type, leafCol, node={})
 {
+    console.log("fullLeafBase");
     if (!leafCol) {
        //leafCol = theme.leaf
     }
     var detail_level = 0;
-    if (r > 20)
+    if (r > 20 * window.devicePixelRatio)
     {
         detail_level = 1;
     }
@@ -993,6 +999,7 @@ function ghostLeaf(
     commonText, latinText, lineText, copyText, fonttype, mintextsize,
     imageObject, hasImage, hasOTT, leafCol, node={})
 {
+    console.log("ghostLeaf");
     // DETERMINE DETAIL LEVEL
     // level 0 - basic leaf
     // level 1 - break from branch, circular thumbnail, one name
@@ -1000,19 +1007,19 @@ function ghostLeaf(
     // level 3 - full details on leaf including leaf text and basic sponsorship
     // level 4 - further sponsorship text appears
     var detail_level = 0;
-    if (r > 200)
+    if (r > 200 * window.devicePixelRatio)
     {
         detail_level = 4;
     }
-    else if (r > 90)
+    else if (r > 90 * window.devicePixelRatio)
     {
         detail_level = 3;
     }
-    else if (r > 50)
+    else if (r > 50 * window.devicePixelRatio)
     {
         detail_level = 2;
     }
-    else if (r > 20)
+    else if (r > 20 * window.devicePixelRatio)
     {
         detail_level = 1;
     }
@@ -1400,15 +1407,15 @@ function loadingLeaf(leafContext, x, y, r, commonText, latinText, lineText, leaf
     // level 2 - name and thumbnail if both available
     // level 3 - full details on leaf including leaf text and basic sponsorship
     var detail_level = 0;
-    if (r > 90)
+    if (r > 90 * window.devicePixelRatio)
     {
         detail_level = 3;
     }
-    else if (r > 50)
+    else if (r > 50 * window.devicePixelRatio)
     {
         detail_level = 2;
     }
-    else if (r > 20)
+    else if (r > 20 * window.devicePixelRatio)
     {
         detail_level = 1;
     }
@@ -1549,6 +1556,7 @@ function fullLeaf(
     fonttype, mintextsize, imageObject, hasImage, leafCol, node={},
     requiresCrop,cropMult,cropLeft,cropTop)
 {
+    console.log("fullLeaf");
     
     // HACK ALERT: cropMult,cropLeft,cropTop WERE PUT IN LAST MINUTE TO SOLVE THE SPONSOR LEAF PAGE IT NEEDS TO BE ROLLED OUT FOR THE ENTIRE FILE LATER - FOR NOW IT'S ONLY IN THE PLACES WHERE IT SAYS "HACK ALERT"
     
@@ -1559,22 +1567,22 @@ function fullLeaf(
     // level 3 - full details on leaf including leaf text and basic sponsorship
     // level 4 - further sponsorship text appears
     var detail_level = 0;
-    if (r > 200)
-    {
-        detail_level = 4;
-    }
-    else if (r > 90)
-    {
-        detail_level = 3;
-    }
-    else if (r > 50)
-    {
-        detail_level = 2;
-    }
-    else if (r > 20)
-    {
-        detail_level = 1;
-    }
+    // if (r > (200 * window.devicePixelRatio))
+    // {
+    //     detail_level = 4;
+    // }
+    // else if (r > (90 * window.devicePixelRatio))
+    // {
+    //     detail_level = 3;
+    // }
+    // else if (r > (50 * window.devicePixelRatio))
+    // {
+    //     detail_level = 2;
+    // }
+    // else if (r > (20 * window.devicePixelRatio))
+    // {
+    //     detail_level = 1;
+    // }
     
     // SET UP VARIABLE TO RETURN BASED ON CLICKING
     var leaf_clicking = null;
@@ -1584,20 +1592,20 @@ function fullLeaf(
         if(mouseTouch&&(((((mouseTouch[0]-x)*(mouseTouch[0]-x))+((mouseTouch[1]-y)*(mouseTouch[1]-y)))<=(r*r))))
         {
             leaf_clicking = "z";
-            if (type == 1)
-            {
-                circularOutlinedLeaf(
-                    leafContext, x, y, r, r*0.12,
-                    node_eval(leafCol.inside_hover.fill, node),
-                    node_eval(leafCol.outline_hover.fill, node));
-            }
-            else
-            {
-                randomNaturalLeaf(
-                    leafContext, x, y, r, angle,
-                    node_eval(leafCol.inside_hover.fill, node),
-                    node_eval(leafCol.outline_hover.fill, node))
-            }
+            // if (type == 1)
+            // {
+            //     circularOutlinedLeaf(
+            //         leafContext, x, y, r, r*0.12,
+            //         node_eval(leafCol.inside_hover.fill, node),
+            //         node_eval(leafCol.outline_hover.fill, node));
+            // }
+            // else
+            // {
+            //     randomNaturalLeaf(
+            //         leafContext, x, y, r, angle,
+            //         node_eval(leafCol.inside_hover.fill, node),
+            //         node_eval(leafCol.outline_hover.fill, node))
+            // }
             
         }
     }

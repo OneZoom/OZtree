@@ -295,6 +295,7 @@ class LeafLayoutBase {
   * returns: nothing
   */
   naturalLeaf(x,y,r,angle,xtip,ytip,tipd,tipa,node,shapes) {  
+    console.log("naturalLeaf");
     // precalculate x and y components of movement from leaf perspective
     let tempsinpre = Math.sin(angle); // add for y in line with leaf length
     let tempcospre = Math.cos(angle); // add for x in line with leaf length

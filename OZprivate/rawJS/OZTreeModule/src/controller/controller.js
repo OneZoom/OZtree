@@ -58,8 +58,8 @@ class Controller {
   }
   setup_canvas(canvas) {
     this.canvas = canvas;
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
+    canvas.width = canvas.clientWidth * window.devicePixelRatio;
+    canvas.height = canvas.clientHeight * window.devicePixelRatio;
     this.renderer.setup_canvas(canvas);
     tree_state.setup_canvas(canvas);
   }
@@ -122,11 +122,11 @@ class Controller {
         return;
       }
       call_hook("before_draw");
-      if ((tree_state.widthres != this.canvas.clientWidth)||(tree_state.heightres != this.canvas.clientHeight))
+      if ((tree_state.widthres != this.canvas.clientWidth * window.devicePixelRatio)||(tree_state.heightres != this.canvas.clientHeight * window.devicePixelRatio))
       {
           // we are setting 1px on canvas = 1px on screen (client)
-          this.canvas.width = this.canvas.clientWidth;
-          this.canvas.height = this.canvas.clientHeight;
+          this.canvas.width = this.canvas.clientWidth * window.devicePixelRatio;
+          this.canvas.height = this.canvas.clientHeight * window.devicePixelRatio;
           this.cancel_flight();
           this.re_calc();
           this.renderer.setup_canvas(this.canvas);

@@ -95,8 +95,8 @@ class MouseInteractor {
     if (!call_hook('mouse_move')) return;
 
     if (tree_state.mouse_hold) {
-      let new_mouse_x = event.clientX - this.canvas.offsetLeft;
-      let new_mouse_y = event.clientY - this.canvas.offsetTop;
+      let new_mouse_x = (event.clientX - this.canvas.offsetLeft) * window.devicePixelRatio;
+      let new_mouse_y = (event.clientY - this.canvas.offsetTop) * window.devicePixelRatio;
       let delta_x = new_mouse_x - this.mouseX;
       let delta_y = new_mouse_y - this.mouseY;
       set_mouse_position(this, event);
@@ -153,8 +153,8 @@ class MouseInteractor {
 }
 
 function set_mouse_position(interactor, event) {
-  interactor.mouseX = event.clientX - interactor.canvas.offsetLeft;
-  interactor.mouseY = event.clientY - interactor.canvas.offsetTop;
+  interactor.mouseX = (event.clientX - interactor.canvas.offsetLeft) * window.devicePixelRatio;
+  interactor.mouseY = (event.clientY - interactor.canvas.offsetTop) * window.devicePixelRatio;
   tree_state.button_x = interactor.mouseX;
   tree_state.button_y = interactor.mouseY;
   interactor.controller.trigger_refresh_loop();
