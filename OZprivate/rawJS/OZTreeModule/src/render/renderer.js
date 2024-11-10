@@ -28,15 +28,18 @@ function add_controller(_c) {
   controller = _c;
 }
 
-function setup_canvas(_c) {
+function setup_canvas(_c, scale) {
   canvas = _c;
   context = canvas.getContext("2d");
+  context.scale(scale, scale);
   if (!bg_canvas) {
     bg_canvas = document.createElement('canvas');
     bg_context = bg_canvas.getContext('2d');
   }
   bg_canvas.width = _c.width;
   bg_canvas.height = _c.height;
+  bg_context.resetTransform();
+  bg_context.scale(scale, scale);
 }
 
 function set_temp_context(_c) {
@@ -145,7 +148,7 @@ function refresh_by_image(shapes) {
     // bg_context.drawImage(canvas, 0, 0);
   }
   context.clearRect(0,0,tree_state.widthres,tree_state.heightres);
-  context.drawImage(bg_canvas, tree_state.xp - last_xp, tree_state.yp - last_yp);
+  context.drawImage(bg_canvas, tree_state.xp - last_xp, tree_state.yp - last_yp, tree_state.widthres, tree_state.heightres);
   last_draw_by_redraw = false;
 }
 

@@ -12,7 +12,7 @@ import { set_pre_calculator } from '../src/projection/pre_calc/pre_calc';
 import { set_horizon_calculator } from '../src/projection/horizon_calc/horizon_calc';
 
 function fake_controller(factory, widthres, heightres) {
-  tree_state.setup_canvas({ width: widthres, height: heightres });
+  tree_state.setup_canvas({ width: widthres, height: heightres }, widthres, heightres);
 
   const controller = {
     root: factory.get_root(),
