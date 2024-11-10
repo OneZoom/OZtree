@@ -25,15 +25,18 @@ function add_controller(_c) {
   controller = _c;
 }
 
-function setup_canvas(_c) {
+function setup_canvas(_c, scale) {
   canvas = _c;
   context = canvas.getContext("2d");
+  context.scale(scale, scale);
   if (!bg_canvas) {
     bg_canvas = document.createElement('canvas');
     bg_context = bg_canvas.getContext('2d');
   }
   bg_canvas.width = _c.width;
   bg_canvas.height = _c.height;
+  bg_context.resetTransform();
+  bg_context.scale(scale, scale);
 }
 
 function set_temp_context(_c) {

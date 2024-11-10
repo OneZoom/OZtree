@@ -38,15 +38,15 @@ class TreeState {
       }
     }
   }
-  setup_canvas(canvas) {
+  setup_canvas(canvas, width_logical_pixels, height_logical_pixels) {
     this._canvas = canvas;
     if (this._xp === null) {
-      this._xp = canvas.width/3;
-      this._yp = canvas.height - 200;
+      this._xp = width_logical_pixels / 3;
+      this._yp = height_logical_pixels - 200;
       this._ws = 1;   
     }
-    this.widthres = canvas.width;
-    this.heightres = canvas.height;
+    this.widthres = width_logical_pixels;
+    this.heightres = height_logical_pixels;
     this._update_focal_area()
     call_hook("window_size_change");
   }
