@@ -62,62 +62,36 @@ function _pre_calc(node) {
     let atanpre = Math.atan2(node.children[0].richness_val,node.children[1].richness_val);
     let atanpowpre = Math.atan2(Math.pow(node.children[0].richness_val,0.5),Math.pow(node.children[1].richness_val,0.5));
 
-    if ((node.children[0].richness_val) >= (node.children[1].richness_val)) {
-      node.nextr[0] = thisratio1; // r (scale) reference for child 1
-      node.nextr[1] = thisratio2; // r (scale) reference for child 2
-      node.children[0].bezsx = -(0.3)*(tempcospre)/thisratio1;
-      node.children[0].bezsy = -(0.3)*(tempsinpre)/thisratio1;
-      node.children[0].bezex = tempcos2;
-      node.children[0].bezey = tempsin2;
-      node.children[0].bezc1x = -0.3*(tempcospre)/thisratio1;
-      node.children[0].bezc1y = -0.3*(tempsinpre)/thisratio1;
-      node.children[0].bezc2x = 0.15*(tempcospre)/thisratio1;
-      node.children[0].bezc2y = 0.15*(tempsinpre)/thisratio1;
-      node.children[0].arca = node.arca + Math.PI*thisangleright;
-      
-      node.children[1].bezsx = -(0.3)*(tempcospre)/thisratio2;
-      node.children[1].bezsy = -(0.3)*(tempsinpre)/thisratio2;
-      node.children[1].bezex = tempcos3;
-      node.children[1].bezey = tempsin3;
-      node.children[1].bezc1x = 0.1*(tempcospre)/thisratio2;
-      node.children[1].bezc1y = 0.1*(tempsinpre)/thisratio2;
-      node.children[1].bezc2x = 0.9*tempcos3;
-      node.children[1].bezc2y = 0.9*tempsin3;
-      node.children[1].arca = node.arca - Math.PI*thisangleleft;
-      
-      node.nextx[0] = (1.3*Math.cos(node.arca))+(((node.bezr)-(partl1*thisratio1))/2.0)*tempcos90pre; // x refernece point for both children
-      node.nexty[0] = (1.3*Math.sin(node.arca))+(((node.bezr)-(partl1*thisratio1))/2.0)*tempsin90pre; // y reference point for both children
-      node.nextx[1] = (1.3*Math.cos(node.arca))-(((node.bezr)-(partl1*thisratio2))/2.0)*tempcos90pre; // x refernece point for both children
-      node.nexty[1] = (1.3*Math.sin(node.arca))-(((node.bezr)-(partl1*thisratio2))/2.0)*tempsin90pre; // y reference point for both children
-    } else {
-      node.nextr[1] = thisratio1; // r (scale) reference for child 1
-      node.nextr[0] = thisratio2; // r (scale) reference for child 2
-      
-      node.children[1].bezsx = -(0.3)*(tempcospre)/thisratio1;
-      node.children[1].bezsy = -(0.3)*(tempsinpre)/thisratio1;
-      node.children[1].bezex = tempcos2;
-      node.children[1].bezey = tempsin2;
-      node.children[1].bezc1x = -0.2*(tempcospre)/thisratio1;
-      node.children[1].bezc1y = -0.2*(tempsinpre)/thisratio1;
-      node.children[1].bezc2x = 0.15*(tempcospre)/thisratio1;
-      node.children[1].bezc2y = 0.15*(tempsinpre)/thisratio1;
-      node.children[1].arca = node.arca + Math.PI*thisangleright;
-      
-      node.children[0].bezsx = -(0.3)*(tempcospre)/thisratio2;
-      node.children[0].bezsy = -(0.3)*(tempsinpre)/thisratio2;
-      node.children[0].bezex = tempcos3;
-      node.children[0].bezey = tempsin3;
-      node.children[0].bezc1x = 0.1*(tempcospre)/thisratio2;
-      node.children[0].bezc1y = 0.1*(tempsinpre)/thisratio2;
-      node.children[0].bezc2x = 0.9*tempcos3;
-      node.children[0].bezc2y = 0.9*tempsin3;
-      node.children[0].arca = node.arca - Math.PI*thisangleleft;
-      
-      node.nextx[1] = (1.3*Math.cos(node.arca))+(((node.bezr)-(partl1*thisratio1))/2.0)*tempcos90pre; // x refernece point for both children
-      node.nexty[1] = (1.3*Math.sin(node.arca))+(((node.bezr)-(partl1*thisratio1))/2.0)*tempsin90pre; // y reference point for both children
-      node.nextx[0] = (1.3*Math.cos(node.arca))-(((node.bezr)-(partl1*thisratio2))/2.0)*tempcos90pre; // x refernece point for both children
-      node.nexty[0] = (1.3*Math.sin(node.arca))-(((node.bezr)-(partl1*thisratio2))/2.0)*tempsin90pre; // y reference point for both children
-    }
+    const [leftChildIndex, rightChildIndex] = (node.children[0].richness_val) >= (node.children[1].richness_val) ? [1, 0] : [0, 1];
+    const leftChild = node.children[leftChildIndex];
+    const rightChild = node.children[rightChildIndex];
+    
+    node.nextr[rightChildIndex] = thisratio1; // r (scale) reference for child 1
+    node.nextr[leftChildIndex] = thisratio2; // r (scale) reference for child 2
+    rightChild.bezsx = -(0.3)*(tempcospre)/thisratio1;
+    rightChild.bezsy = -(0.3)*(tempsinpre)/thisratio1;
+    rightChild.bezex = tempcos2;
+    rightChild.bezey = tempsin2;
+    rightChild.bezc1x = -0.3*(tempcospre)/thisratio1;
+    rightChild.bezc1y = -0.3*(tempsinpre)/thisratio1;
+    rightChild.bezc2x = 0.15*(tempcospre)/thisratio1;
+    rightChild.bezc2y = 0.15*(tempsinpre)/thisratio1;
+    rightChild.arca = node.arca + Math.PI*thisangleright;
+    
+    leftChild.bezsx = -(0.3)*(tempcospre)/thisratio2;
+    leftChild.bezsy = -(0.3)*(tempsinpre)/thisratio2;
+    leftChild.bezex = tempcos3;
+    leftChild.bezey = tempsin3;
+    leftChild.bezc1x = 0.1*(tempcospre)/thisratio2;
+    leftChild.bezc1y = 0.1*(tempsinpre)/thisratio2;
+    leftChild.bezc2x = 0.9*tempcos3;
+    leftChild.bezc2y = 0.9*tempsin3;
+    leftChild.arca = node.arca - Math.PI*thisangleleft;
+    
+    node.nextx[rightChildIndex] = (1.3*Math.cos(node.arca))+(((node.bezr)-(partl1*thisratio1))/2.0)*tempcos90pre; // x refernece point for both children
+    node.nexty[rightChildIndex] = (1.3*Math.sin(node.arca))+(((node.bezr)-(partl1*thisratio1))/2.0)*tempsin90pre; // y reference point for both children
+    node.nextx[leftChildIndex] = (1.3*Math.cos(node.arca))-(((node.bezr)-(partl1*thisratio2))/2.0)*tempcos90pre; // x refernece point for both children
+    node.nexty[leftChildIndex] = (1.3*Math.sin(node.arca))-(((node.bezr)-(partl1*thisratio2))/2.0)*tempsin90pre; // y reference point for both children
     
     node.arcx = node.bezex*1.01;
     node.arcy = node.bezey*1.01;
