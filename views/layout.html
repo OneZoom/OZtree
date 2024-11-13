@@ -111,6 +111,7 @@
             var dropdown = $('.search_dropdown', searchbox);
             if (search_term.length==0) {
                 $('.popular_species', dropdown).show();
+                $('.recents', dropdown).show();
                 {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
                 $('.no_results', dropdown).hide();
                 $('.search_hits', dropdown).empty();

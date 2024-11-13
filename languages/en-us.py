@@ -212,6 +212,8 @@
 'Polytomy': 'Polytomy',
 'Polytomy2': 'Polytomy2',
 'Popular places': 'Popular places',
+'Recent places': 'Recent places',
+'Clear recents': 'Clear recents',
 'Popularity': 'Popularity',
 'Popularity index': 'Popularity index',
 'Pre Siderian': 'Pre Siderian',

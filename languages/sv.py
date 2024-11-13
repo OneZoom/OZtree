@@ -124,6 +124,8 @@
 'Polytomy': 'Polytomi',
 'Polytomy2': 'Polytomy2',
 'Popular places': 'Populära platser',
+'Recent places': 'Senaste platser',
+'Clear recents': 'Rensa senaste',
 'Popularity': 'Popularitet',
 'Pre Siderian': 'Presiderium',
 'Preview of your sponsored leaf': 'Förhandsgranskning av ditt sponsrade blad',

@@ -445,6 +445,7 @@ function add_advanced_searchbox(result, highlight) {
         event.stopPropagation();
 
         var elItem = event.target.closest('dd');
+        OZui.add_element_to_recents_list(elItem);
         if ($(elItem).attr('data-pinpoint')) {
           UI_reset_marked($(event.currentTarget).closest('.searchbox'), {
             // Recreate a compile_searchbox_data() format
@@ -481,6 +482,7 @@ function add_advanced_searchbox(result, highlight) {
             }
             if (search_term.length==0) {
                 $('.popular_species', dropdown).show();
+                $('.recents', dropdown).show();
                 {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
                 $('.no_results', dropdown).hide();
                 $('.search_hits', dropdown).empty();
@@ -510,8 +512,10 @@ function add_advanced_searchbox(result, highlight) {
             }
             }
         });
-        
+    
+    console.log("Adding advanced search box");
     OZui.setup_location_list($('.popular_species', box_selector), locations_json);
+    OZui.setup_recents_list($('.recents', box_selector));
 
     // Set-up from initial parameters
     // Reconstitute compile_searchbox_data() format
@@ -697,6 +701,7 @@ function setupUI() {
         event.stopPropagation();
 
         var ddEl = event.target.closest('dd');
+        OZui.add_element_to_recents_list(ddEl);
         var href = $(ddEl).find('a').attr('href');
         if (href) closeAndLeap(event, href, $('#searchnav .search-basic'));
       });
@@ -713,6 +718,7 @@ function setupUI() {
         var dropdown = $('.search_dropdown', searchbox);
         if (search_term.length==0) {
             $('.popular_species', dropdown).show();
+            $('.recents', dropdown).show();
             {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
             $('.no_results', dropdown).hide();
             $('.search_hits', dropdown).empty();
@@ -967,6 +973,7 @@ function setupUI() {
     });
 
     OZui.setup_location_list($('#searchnav .search-basic .popular_species'), locations_json);
+    OZui.setup_recents_list($('#searchnav .search-basic .recents'));
 
     // Give treeviewer a chance to parse state, then configure advanced search if on
     window.setTimeout(function () {

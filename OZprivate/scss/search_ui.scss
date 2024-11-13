@@ -189,6 +189,14 @@ ul#searchboxes {
     }
 }
 
+.search_dropdown div:not(:empty) {
+    margin-bottom: 1rem;
+}
+
+.search-nav .search_dropdown dd:last-child {
+    margin-bottom: 1rem;
+}
+
 .search-nav .search_dropdown dd:hover, .search-nav .search_dropdown dd p:hover {
     color: black;
 }
