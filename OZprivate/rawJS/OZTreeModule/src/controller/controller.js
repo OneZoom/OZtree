@@ -60,7 +60,7 @@ class Controller {
     this.canvas = canvas;
     canvas.width = canvas.clientWidth * window.devicePixelRatio;
     canvas.height = canvas.clientHeight * window.devicePixelRatio;
-    this.renderer.setup_canvas(canvas, window.devicePixelRatio);
+    this.renderer.setup_canvas(canvas);
     tree_state.setup_canvas(canvas, canvas.clientWidth, canvas.clientHeight);
   }
   reset() {
@@ -122,7 +122,10 @@ class Controller {
         return;
       }
       call_hook("before_draw");
-      if ((tree_state.widthres != this.canvas.clientWidth)||(tree_state.heightres != this.canvas.clientHeight))
+      if ((tree_state.widthres != this.canvas.clientWidth)
+        ||(tree_state.widthres * window.devicePixelRatio != this.canvas.width)
+        ||(tree_state.heightres != this.canvas.clientHeight)
+        ||(tree_state.heightres * window.devicePixelRatio != this.canvas.height))
       {
           this.canvas.width = this.canvas.clientWidth * window.devicePixelRatio;
           this.canvas.height = this.canvas.clientHeight * window.devicePixelRatio;
