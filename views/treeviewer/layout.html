@@ -294,7 +294,7 @@ function update_location_menu(loc_root) {
             .click(function() { /* close And Fly */
               if (((document.getElementById("locationDropdown").offsetWidth)*2) > onezoom.tree_state.widthres) {
                 {{if is_testing:}}console.log("Small screen width detected, so closing location box before jump");{{pass}}
-                $("#locationDropdown").hide();
+                UIkit.dropdown($("#locationDropdown")).hide();
               };
               onezoom.controller.default_move_to($(this).data('pinpoint'));
             })
