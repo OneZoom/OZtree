@@ -28,6 +28,8 @@ class TreeState {
     this.url_parsed = false;
     this.last_active_at = new Date();
     this.last_render_at = new Date();
+    this.button_x = null;
+    this.button_y = null;
     let self = this;
     setTimeout(function() {
       self.url_parsed = true;

@@ -33,9 +33,6 @@ class TouchInteractor {
     } else if (event.targetTouches.length == 1) {      
       this.clicking = true;
     }
-    // Jog the tree slightly to ensure that node hover-over states update
-    // NB: Obviously a hack, ideally we'd force this update without - see #155
-    this.controller.pan(1, 0);
   }
   
   touch_move(event) {
