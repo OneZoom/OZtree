@@ -165,7 +165,7 @@ function create_location_dd_element(vernacular, sciname, pinpoint, href, ozid) {
 
 
 
-const MAX_RECENT_PLACES = 5;
+const MAX_RECENT_PLACES = 8;
 
 /**
  * @typedef {Object} SearchResult
