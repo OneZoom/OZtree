@@ -27,9 +27,9 @@ class ArcTextShape extends BaseShape {
     context.save();    
     // we need a monospaced font in order for this not to look rubbish
     if (this.font_style) {
-      context.font = this.font_style + ' ' + ((Math.floor(this.width)).toString() + 'px courier');
+      context.font = this.font_style + ' ' + (this.width.toString() + 'px courier');
     } else {
-      context.font = ((Math.floor(this.width)).toString() + 'px courier');
+      context.font = (this.width.toString() + 'px courier');
     }
     // context.fillStyle = textColor;
     if (this.do_fill) {

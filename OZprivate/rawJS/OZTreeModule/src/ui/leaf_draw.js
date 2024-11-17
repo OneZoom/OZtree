@@ -62,11 +62,11 @@ function autotext(dostroke, fontStyle, fonttype, mintextsize, texttodisp, textx,
         context_in.textAlign = 'left';
         if (fontStyle)
         {
-            context_in.font = fontStyle + ' ' + (Math.floor(defpt+0.5)).toString() + 'px '+fonttype;
+            context_in.font = fontStyle + ' ' + ((defpt+0.5)).toString() + 'px '+fonttype;
         }
         else
         {
-            context_in.font = (Math.floor(defpt+0.5)).toString() + 'px '+ fonttype;
+            context_in.font = ((defpt+0.5)).toString() + 'px '+ fonttype;
         }
         var testw = context_in.measureText(texttodisp).width;
         if (testw > textw)
@@ -75,11 +75,11 @@ function autotext(dostroke, fontStyle, fonttype, mintextsize, texttodisp, textx,
             {
                 if (fontStyle)
                 {
-                    context_in.font = fontStyle + ' ' + (Math.floor(defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
+                    context_in.font = fontStyle + ' ' + ((defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
                 }
                 else
                 {
-                    context_in.font = (Math.floor(defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
+                    context_in.font = ((defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
                 }
                 if (dostroke)
                 {
@@ -118,11 +118,11 @@ function autotext2(dostroke, fontStyle, fonttype, mintextsize, texttodisp, textx
         context_in.textAlign = 'center';
         if (fontStyle)
         {
-            context_in.font = fontStyle + ' ' + (Math.floor(defpt+0.5)).toString() + 'px '+fonttype;
+            context_in.font = fontStyle + ' ' + ((defpt+0.5)).toString() + 'px '+fonttype;
         }
         else
         {
-            context_in.font = (Math.floor(defpt+0.5)).toString() + 'px '+ fonttype;
+            context_in.font = ((defpt+0.5)).toString() + 'px '+ fonttype;
         }
         
         var centerpoint = (texttodisp.length)/3;
@@ -169,11 +169,11 @@ function autotext2(dostroke, fontStyle, fonttype, mintextsize, texttodisp, textx
                         
                         if (fontStyle)
                         {
-                            context_in.font = fontStyle + ' ' + (Math.floor(defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
+                            context_in.font = fontStyle + ' ' + ((defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
                         }
                         else
                         {
-                            context_in.font = (Math.floor(defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
+                            context_in.font = ((defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
                         }
                         if (dostroke)
                         {
@@ -224,11 +224,11 @@ function autotext3(
         context_in.textAlign = 'center';
         if (fontStyle)
         {
-            context_in.font = fontStyle + ' ' + (Math.floor(defpt+0.5)).toString() + 'px '+fonttype;
+            context_in.font = fontStyle + ' ' + ((defpt+0.5)).toString() + 'px '+fonttype;
         }
         else
         {
-            context_in.font = (Math.floor(defpt+0.5)).toString() + 'px '+ fonttype;
+            context_in.font = ((defpt+0.5)).toString() + 'px '+ fonttype;
         }
         
         var centerpoint = (texttodisp.length)/4;
@@ -301,11 +301,11 @@ function autotext3(
                         
                         if (fontStyle)
                         {
-                            context_in.font = fontStyle + ' ' + (Math.floor(defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
+                            context_in.font = fontStyle + ' ' + ((defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
                         }
                         else
                         {
-                            context_in.font = (Math.floor(defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
+                            context_in.font = ((defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
                         }
                         if (dostroke)
                         {
