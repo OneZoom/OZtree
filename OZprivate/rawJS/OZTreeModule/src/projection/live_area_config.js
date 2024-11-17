@@ -9,6 +9,7 @@ import {global_button_action} from '../button_manager';
  *  register_button_event: function(node) {
  *    global_button_action.action = "xxxx"
  *    global_button_action.data = XXXXX
+ *    global_button_action.node = node
  *  }
  * }
  * 
@@ -24,6 +25,7 @@ live_area_config.interior_low_res_circle = {
   register_button_event: function(node) {
     global_button_action.action = "fly_node";
     global_button_action.data = node.metacode;
+    global_button_action.node = node;
   }
 }
 
@@ -31,6 +33,7 @@ live_area_config.interior_high_res_text = {
   register_button_event: function(node) {
     global_button_action.action = "ow_node";
     global_button_action.data = node.metacode;
+    global_button_action.node = node;
   }
 }
 
@@ -38,6 +41,7 @@ live_area_config.interior_sponsor_text = {
   register_button_event: function(node) {
     global_button_action.action = "ow_ozspons_node";
     global_button_action.data = node.metacode;  
+    global_button_action.node = node;
   }
 }
 
@@ -52,6 +56,7 @@ live_area_config.signpost = {
   register_button_event: function(node) {
     global_button_action.action = "tap2zoom";
     global_button_action.data = node.ozid;
+    global_button_action.node = node;
   }
 }
 
@@ -59,6 +64,7 @@ live_area_config.leaf_low_res_leafbase = {
   register_button_event: function(node) {
     global_button_action.action = "tap2zoom";
     global_button_action.data = node.ozid;
+    global_button_action.node = node;
   }
 }
 
@@ -66,6 +72,7 @@ live_area_config.leaf_sponsor_text = {
   register_button_event: function(node) {
     global_button_action.action = "ow_ozspons_leaf";
     global_button_action.data = node.ott;
+    global_button_action.node = node;
   }
 }
 
@@ -73,6 +80,7 @@ live_area_config.leaf_high_res_text = {
   register_button_event: function(node) {
     global_button_action.action = "ow_leaf";
     global_button_action.data = node.ott;
+    global_button_action.node = node;
   }
 }
 
@@ -80,6 +88,7 @@ live_area_config.leaf_conservation_text = {
   register_button_event: function(node) {
     global_button_action.action = "ow_iucn_leaf";
     global_button_action.data = node.ott;
+    global_button_action.node = node;
   }
 }
 

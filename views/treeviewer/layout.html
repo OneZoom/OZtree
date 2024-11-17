@@ -103,7 +103,7 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
     };
     
     /* called when the API returns with details about contents of the linkouts window */
-    globals.UI_callbacks.populateLinkouts = function(responseJSON, initialSelected) {
+    globals.UI_callbacks.populateLinkouts = function(responseJSON, initialSelected, searchResultToPush) {
         console.log("populating linkout tabs with API data from", responseJSON);
       {{if is_testing:}}console.log("populating linkout tabs with API data from", responseJSON);{{pass}}
       if (initialSelected) {
@@ -161,6 +161,9 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
       load_tab($("#external-modal .popup-container li").eq(select_tab_index));
       $('#external-modal .tab-loading-info').hide();
       $('#external-modal .external-content').show();
+      if (searchResultToPush) {
+        OZui.push_recent_place(searchResultToPush);
+      }
     };
 
   </script>
