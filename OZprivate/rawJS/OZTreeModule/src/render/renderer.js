@@ -61,14 +61,10 @@ function refresh(root) {
 
   if (need_refresh()) {
     controller.projection.get_shapes(root, shapes);
-    if (is_on_mobile && tree_state.is_dragging()) {
-      refresh_by_image(shapes);
-    } else {
-      refresh_by_redraw(shapes, context);
-      let end = new Date().getTime();
-      adjust_threshold(end-start);
-      record_view_position();
-    }
+    refresh_by_redraw(shapes, context);
+    let end = new Date().getTime();
+    adjust_threshold(end-start);
+    record_view_position();
     release_shapes(shapes);
   }
 }
@@ -113,40 +109,6 @@ function need_refresh() {
   if (!areEqual(global_button_action.action,last_btn_action)) return true
   if (!areEqual(global_button_action.data,last_btn_data)) return true;
   return false;
-}
-
-function refresh_by_image(shapes) {
-  if (last_draw_by_redraw) {
-    /**
-     ************************************************************************************
-     ***********Solve issue: page turning blank while pinching and then panning***********
-     ************************************************************************************
-     *
-     *
-     * The commented code would possibly result in blank image while pinching and then move.
-     * Because refresh is fired by timer rather than mouse or touch event, front canvas does
-     * not precisely reflect the current tree_state.xp and tree_state.yp.
-     *
-     * Suppose frame 1 is drawn at (0, 0), and last_xp and last_yp is set to (0, 0)
-     * When the xp and yp changed to (2000, 2000) before frame 2, if we draw frame 2 by image, then it 
-     * would first cache frame 1 in background canvas, then draw background canvas onto front canvas
-     * with a shift of (2000, 2000). Clearly, most phones would fail to display any information because (2000, 2000)
-     * is off the screen in frame 1.
-     * .
-     *
-     * In our uncomment code, we draw current view on background canvas by repaint and then reset last_xp and last_yp to (1000,1000).
-     *
-     * Dramatically change in xp and yp while pinching is the real reason behind this issue. In pure panning, xp and yp changes are
-     * so small that we wouldn't worry about shifting the background image and partial blank area is often reasonable and acceptable.
-     */
-    refresh_by_redraw(shapes, bg_context);
-    record_view_position();
-    // bg_context.clearRect(0, 0, tree_state.widthres, tree_state.heightres);
-    // bg_context.drawImage(canvas, 0, 0);
-  }
-  context.clearRect(0,0,tree_state.widthres,tree_state.heightres);
-  context.drawImage(bg_canvas, tree_state.xp - last_xp, tree_state.yp - last_yp);
-  last_draw_by_redraw = false;
 }
 
 function refresh_by_redraw(shapes, _context) {
