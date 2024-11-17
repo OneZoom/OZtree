@@ -132,34 +132,42 @@ function setup_location_list(target, locations_json) {
       if (typeof taxon === "string") {
         return $('<dt>').text(OZstrings.hasOwnProperty(taxon) ? OZstrings[taxon] : taxon);
       }
-      return create_location_dd_element(taxon.vernacular, taxon.sciname, '@=' + taxon.ott, taxon.href, taxon.ozid);
+      return create_location_dd_element(taxon.vernacular, taxon.sciname, '@=' + taxon.ott, taxon.href, taxon.ozid, false);
     }));
   });
 }
 
-function create_location_dd_element(vernacular, sciname, pinpoint, href, ozid) {
-    return $('<dd>')
-        // Attach compile_searchbox_data()-esque results to reconstitute on advanced_search_box click
+function create_location_dd_element(vernacular, sciname, pinpoint, href, ozid, allow_multiple_names) {
+    const link = $('<a>')
+        .attr('href', href)
+        .attr("draggable", "true")
+        .on('dragstart', function(event) {
+            // Recreate a compile_searchbox_data() format
+            event.originalEvent.dataTransfer.setData('result', JSON.stringify({
+                0: vernacular,
+                1: sciname,
+                2: ozid,
+                "pinpoint": pinpoint,
+            }));
+        });
+
+    const dd = $('<dd>')
         .attr("data-vernacular", vernacular)
         .attr("data-sciname", sciname)
-        .attr("data-pinpoint", pinpoint)
-        .html(
-            $('<p>').html(
-                $('<a>')
-                    .attr('href', href)
-                    .attr("draggable","true")
-                    .on('dragstart', function(event) {
-                        // Recreate a compile_searchbox_data() format
-                        event.originalEvent.dataTransfer.setData('result', JSON.stringify({
-                        0: vernacular,
-                        1: sciname,
-                        2: ozid,
-                        "pinpoint": pinpoint,
-                        }));
-                    })
-                    .html(vernacular ? $('<span>').text(vernacular) : $('<i>').text(sciname) )
-            )
-        );
+        .attr("data-pinpoint", pinpoint);
+
+    if (vernacular && sciname && allow_multiple_names) {
+        dd.append($('<p>').append(link.clone().text(vernacular)))
+          .append('(')
+          .append($('<i>').append(link.clone().text(sciname)))
+          .append(')');
+    } else if (vernacular) {
+        dd.append($('<p>').append(link.text(vernacular)));
+    } else if (sciname) {
+        dd.append($('<p>').append(link.html($('<i>').text(sciname))));
+    }
+
+    return dd;
 }
 
 
@@ -266,7 +274,7 @@ function update_recents_list($target) {
     $target.append(dl);
     dl.append($('<dt>').text(OZstrings.hasOwnProperty("Recent places") ? OZstrings["Recent places"] : "Recent places"));
     dl.append(recent_places.map(function (recent_place) {
-        return create_location_dd_element(recent_place.vernacular, recent_place.sciname, recent_place.pinpoint, recent_place.href);
+        return create_location_dd_element(recent_place.vernacular, recent_place.sciname, recent_place.pinpoint, recent_place.href, undefined, true);
     }));
     $target.append(make_clear_recents_button());
 };
