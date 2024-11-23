@@ -62,7 +62,8 @@ class MouseInteractor {
     //   temp_sensitivity = Math.pow(temp_sensitivity,((timeNow - this.timeLastScroll)/40))
     // }
     // this.timeLastScroll= timeNow;
-    let temp_sensitivity = Math.pow(config.sensitivity, Math.abs(delta) / 300)
+    const MAX_SCROLL_DELTA = 70;
+    let temp_sensitivity = Math.pow(config.sensitivity, Math.min(Math.abs(delta), MAX_SCROLL_DELTA) / 300)
     
     set_mouse_position(this, event);
         
