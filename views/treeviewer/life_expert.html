@@ -59,6 +59,7 @@ setup_params = {
                 width: document.getElementById("OneZoomCanvasID").width,
                 height: document.getElementById("OneZoomCanvasID").height,
             });
+            context.scale(window.devicePixelRatio, window.devicePixelRatio);
             onezoom.controller.draw_single_frame(context);
             lnk.href = URL.createObjectURL(new Blob([context.getSerializedSvg(true)], {
                 type: "image/svg+xml",
