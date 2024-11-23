@@ -1,7 +1,6 @@
 import tree_state from '../tree_state';
 import config from '../global_config';
 import {global_button_action} from '../button_manager';
-import {is_on_mobile} from '../util/index';
 /**
  * Renderer controls how to render and routes different shapes to different sub renderers to render
  */
@@ -21,8 +20,6 @@ let temp_context = null;
 let canvas = null;
 let bg_canvas = null;
 let bg_context = null;
-
-let last_draw_by_redraw = true;
   
 function add_controller(_c) {
   controller = _c;
@@ -121,7 +118,6 @@ function refresh_by_redraw(shapes, _context) {
      */
     shapes[i].render(_context);
   }
-  last_draw_by_redraw = true;
 }
 
 
