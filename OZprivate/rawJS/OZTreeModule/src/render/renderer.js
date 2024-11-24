@@ -73,25 +73,9 @@ function refresh(root) {
 }
 
 function update_cursor() {
-  if (tree_state.mouse_hold) {
-    canvas.style.cursor = "move";
-    return;
-  }
-  switch(global_button_action.action) {
-    case "fly_node":
-    case "tap2zoom":
-    case "ow_node":
-    case "ow_ozspons_node":
-    case "ow_ozspons_leaf":
-    case "ow_leaf":
-    case "ow_iucn_leaf":
-    case "link":
-    case "leap":
-      canvas.style.cursor = "pointer";
-      break;
-    default:
-      canvas.style.cursor = "default";
-  }
+  // If cursor wasn't set here (e.g. was set by mouse interactor), leave it as it is.
+  if (canvas.style.cursor && !["move", "pointer", "default"].includes(canvas.style.cursor)) return;
+  canvas.style.cursor = tree_state.mouse_hold ? "move" : (global_button_action.action ? "pointer" : "default");
 }
 
 /**
