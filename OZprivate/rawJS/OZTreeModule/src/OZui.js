@@ -1,9 +1,9 @@
 import search_manager from './ui/search_manager';
-import { searchPopulate, setup_location_list } from './ui/search.js';
+import { searchPopulate, setup_location_list, setup_recents_list, add_element_to_recents_list, push_recent_place } from './ui/search.js';
 import { fullLeafBase, fullLeaf, natural_theme } from './ui/leaf_draw.js';
 import { sortList, teaseTour } from './ui/tours_list.js';
 
-export { search_manager, searchPopulate, setup_location_list };
+export { search_manager, searchPopulate, setup_location_list, setup_recents_list, add_element_to_recents_list, push_recent_place };
 
 export const leaf_draw = {
   fullLeafBase: fullLeafBase,

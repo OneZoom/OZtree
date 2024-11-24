@@ -79,6 +79,7 @@
       <div uk-dropdown="pos: bottom-left; offset: 0" class="search_dropdown selectable uk-overflow-auto">
         <div class="no_results">{{=T("No results found")}}</div>
         <dl class="search_hits"></dl>
+        <div class="recents"></div>
         <dl class="popular_species"></dl>
       </div>
     </div>
@@ -86,6 +87,7 @@
 <script>
 (function() {
     var box_selector = $('#header_searchnav');
+    OZui.setup_recents_list($('.recents', box_selector));
 
     $('.searchinput input', box_selector)
         .on('keydown', function(event) {
@@ -101,6 +103,7 @@
             var dropdown = $('.search_dropdown', searchbox);
             if (search_term.length==0) {
                 $('.popular_species', dropdown).show();
+                $('.recents', dropdown).show();
                 {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
                 $('.no_results', dropdown).hide();
                 $('.search_hits', dropdown).empty();

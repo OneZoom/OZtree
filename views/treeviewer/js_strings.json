@@ -101,6 +101,8 @@ OZstrings = {
     ### Stuff in the tree viewer
     'Current location':T('Current location'),
     'Popular places':T('Popular places'),
+    'Recent places':T('Recent places'),
+    'Clear recents':T('Clear recents'),
     'Search results':T('Search results'),
     'NoEmailFromMD':T('Sorry, you can’t send an email directly from this display. Please use your own email program, and contact us at: '),
     'SponsorHits':T('Sponsorships'),

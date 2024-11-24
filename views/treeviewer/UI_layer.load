@@ -79,6 +79,7 @@
       <div uk-dropdown="pos: bottom-left; offset: 0" class="search_dropdown selectable uk-overflow-auto">
         <div class="no_results">{{=T("No results found")}}</div>
         <dl class="search_hits"></dl>
+        <div class="recents"></div>
         <dl class="popular_species"></dl>
       </div>
     </div>
@@ -107,6 +108,7 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
             </div><div uk-dropdown="pos: bottom-left; offset: 0; mode: click" class="search_dropdown" class="selectable uk-overflow-auto">\
               <div class="no_results">{{=T("No results found")}}</div>\
               <dl class="search_hits"></dl>\
+              <div class="recents"></div>\
               <dl class="popular_species"></dl>\
             </div></div></li>';
     </script>

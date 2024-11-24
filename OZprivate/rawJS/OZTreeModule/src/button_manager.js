@@ -1,15 +1,32 @@
 import config from './global_config';
 import tree_state from './tree_state';
 import {color_theme} from './themes/color_theme';
+import {node_to_pinpoint} from './navigation/pinpoint';
+
 
 export let global_button_action = {
   "action": null,
-  "data": null
+  "data": null,
+  "node": null
+}
+
+function try_make_search_result_for_node(node) {
+  const pinpoint = node_to_pinpoint(node);
+  if (pinpoint && (node.cname || node.latin_name)) {
+    return  {
+      vernacular: node.cname,
+      sciname: node.latin_name,
+      pinpoint: pinpoint,
+      href: "/life/" + pinpoint,
+    };
+  }
+  return null;
 }
 
 export function reset_global_button_action() {
   global_button_action.action = null;
   global_button_action.data = null;
+  global_button_action.node = null;
 }
 
 export function click_on_button_cb(controller) {
@@ -54,13 +71,14 @@ export function click_on_button_cb(controller) {
       // callback_arg is either middle part of ow_iucn_leaf / ow_ozspons_leaf, or nothing
       const linkoutArg = m ? m[1] : undefined;
       const is_ozid = global_button_action.action.endsWith("_node");
+      const search_result = global_button_action.node ? try_make_search_result_for_node(global_button_action.node) : null;
 
       // most internal nodes don't have an OTT, so node actions pass in the OneZoom ID
       config.ui.openLinkouts(global_button_action.data, is_ozid ? 'OZid' : 'ott');
       $.ajax({
         'url': (is_ozid ? config.api.OZ_node_json_url_func : config.api.OZ_leaf_json_url_func)(global_button_action.data, config.lang),
         success: (result) => {
-          config.ui.populateLinkouts(result, linkoutArg);
+          config.ui.populateLinkouts(result, linkoutArg, search_result);
         },
       });
     }
