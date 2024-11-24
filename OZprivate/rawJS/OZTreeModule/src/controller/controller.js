@@ -58,10 +58,15 @@ class Controller {
   }
   setup_canvas(canvas) {
     this.canvas = canvas;
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
+    canvas.width = Math.floor(canvas.clientWidth * window.devicePixelRatio);
+    canvas.height = Math.floor(canvas.clientHeight * window.devicePixelRatio);
     this.renderer.setup_canvas(canvas);
-    tree_state.setup_canvas(canvas);
+    tree_state.setup_canvas(canvas, canvas.clientWidth, canvas.clientHeight);
+  }
+  resize_canvas() {
+    this.setup_canvas(this.canvas);
+    this.cancel_flight();
+    this.re_calc();
   }
   reset() {
     return this.leap_to(this.root.metacode);  // NB: root is always a node, so ozID positive
@@ -122,16 +127,6 @@ class Controller {
         return;
       }
       call_hook("before_draw");
-      if ((tree_state.widthres != this.canvas.clientWidth)||(tree_state.heightres != this.canvas.clientHeight))
-      {
-          // we are setting 1px on canvas = 1px on screen (client)
-          this.canvas.width = this.canvas.clientWidth;
-          this.canvas.height = this.canvas.clientHeight;
-          this.cancel_flight();
-          this.re_calc();
-          this.renderer.setup_canvas(this.canvas);
-          tree_state.setup_canvas(this.canvas);
-      }
       reset_global_button_action();
       tree_state.last_render_at = new Date();
       this.renderer.refresh(this.root);
