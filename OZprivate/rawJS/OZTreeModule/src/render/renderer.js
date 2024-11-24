@@ -61,8 +61,19 @@ function refresh(root) {
   let start = new Date().getTime();
   let shapes = [];
 
-  if (need_refresh()) {
+  const cursor_moved = tree_state.button_x != last_button_x || tree_state.button_y != last_button_y;
+
+  if (cursor_moved) {
+    last_button_x = tree_state.button_x;
+    last_button_y = tree_state.button_y;
+    // get the shapes early so we see global_button_action changes in need_refresh
     controller.projection.get_shapes(root, shapes);
+  }
+
+  if (need_refresh()) {
+    if (!cursor_moved) {
+      controller.projection.get_shapes(root, shapes);
+    }
     update_cursor();
     refresh_by_redraw(shapes, context);
     let end = new Date().getTime();
@@ -114,12 +125,7 @@ function need_refresh() {
 
   if (render_id % 60 === 0) return true;
   if (tree_state.xp != last_xp || tree_state.yp != last_yp || tree_state.ws != last_ws) return true;
-  if (tree_state.button_x != last_button_x || tree_state.button_y != last_button_y) {
-    last_button_x = tree_state.button_x;
-    last_button_y = tree_state.button_y;
-    return true;
-  }
-  if (!areEqual(global_button_action.action,last_btn_action)) return true
+  if (!areEqual(global_button_action.action,last_btn_action)) return true;
   if (!areEqual(global_button_action.data,last_btn_data)) return true;
   return false;
 }
