@@ -18,6 +18,7 @@ let controller = null;
 let context = null;
 let temp_context = null;
 let canvas = null;
+let scale_factor = 1;
 let bg_canvas = null;
 let bg_context = null;
   
@@ -28,15 +29,13 @@ function add_controller(_c) {
 function setup_canvas(_c) {
   canvas = _c;
   context = canvas.getContext("2d");
-  context.scale(window.devicePixelRatio, window.devicePixelRatio);
+  scale_factor = window.devicePixelRatio;
   if (!bg_canvas) {
     bg_canvas = document.createElement('canvas');
     bg_context = bg_canvas.getContext('2d');
   }
-  bg_canvas.width = _c.width;
+  bg_canvas.width = _c.width;  // setting width/height resets context
   bg_canvas.height = _c.height;
-  bg_context.resetTransform();
-  bg_context.scale(window.devicePixelRatio, window.devicePixelRatio);
 }
 
 function set_temp_context(_c) {
@@ -112,6 +111,8 @@ function need_refresh() {
 }
 
 function refresh_by_redraw(shapes, _context) {
+  _context.resetTransform();
+  _context.scale(scale_factor, scale_factor);
   _context.clearRect(0,0,tree_state.widthres,tree_state.heightres);
   let length = shapes.length;
   for (let i=0; i<length; i++) {
