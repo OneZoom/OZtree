@@ -56,6 +56,9 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   </div>
 </div>
 
+{{if len(carousel) == 0:}}
+<!-- To show items in the "popular places" carousel, add "homepage_main" rows to the `tree_startpoints` table -->
+{{else:}}
 <div class="uk-grid-small uk-child-width-expand@s uk-grid-match uk-grid-oz-dark" uk-grid style="margin-top: 0; padding-top: 0;">
     <div class="uk-card uk-card-default uk-card-small">
 
@@ -87,17 +90,21 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
                 <figcaption class="uk-text-center">{{=XML(str(html_names.get(key, '')).capitalize())}}</figcaption>
               </figure></a>
             </li>
-          {{pass}}</ul></div></div>
+            {{pass}}
+          </ul></div></div>
           <a class="uk-position-top-left oz-slider-arrow oz-slider-arrow-left" href="#" uk-slider-item="previous"></a>
           <a class="uk-position-top-right oz-slider-arrow oz-slider-arrow-right" href="#" uk-slider-item="next"></a>
         </div>
       </div>
 </div>
+{{pass}}
 
 
 <section class="oz-section bkgd-quotes"><div class="oz-section-body">
   <h3>What they say...</h3>
-
+  {{if len(quotes) == 0:}}
+  <!-- To show items in the "quotes" carousel, add "homepage_main" rows to the `quotes` table -->
+  {{else:}}
   <div class="uk-position-relative" uk-slider="autoplay: true; autoplay-interval: 10000; pause-on-hover: true">
     <div class="uk-slider-container"><ul class="uk-slider-items uk-child-width-1-1">{{for q_items in quotes:}}{{for q in q_items:}} 
       <li>
@@ -111,10 +118,9 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
     <a class="uk-position-top-left oz-slider-arrow oz-slider-arrow-left" href="#" uk-slider-item="previous"></a>
     <a class="uk-position-top-right oz-slider-arrow oz-slider-arrow-right" href="#" uk-slider-item="next"></a>
   </div>
-
+  {{pass}}
   <div><a href="{{=URL('default', 'endorsements.html')}}">Other endorsements</a></div>
 </div></section>
-
 
 <section class="oz-section bkgd-polytomy"><div class="oz-section-body uk-position-relative">
   <h3 class="uk-card-title">Become a sponsor...</h3>
@@ -147,10 +153,11 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
   {{pass}}
 </div>
 
-
+{{if len(news) == 0:}}
+<!-- To show items in the "news" carousel, add rows to the `news` table -->
+{{else:}}
 <section class="oz-section bkgd-natural"><div class="oz-section-body news-list">
   <h3 class="uk-card-title">What we've been up to...</h3>
-
   <div class="uk-position-relative" uk-slider>
     <div class="uk-slider-container"><ul class="uk-slider-items uk-child-width-1-1">{{for row in news:}}
       <li>
@@ -172,3 +179,4 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
     <a class="uk-position-top-right oz-slider-arrow oz-slider-arrow-right" style="height:90%" href="#" uk-slider-item="next"></a>
   </div>
 </div></section>
+{{pass}}
