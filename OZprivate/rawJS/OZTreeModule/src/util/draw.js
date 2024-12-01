@@ -16,9 +16,9 @@ export function auto_text(do_stroke,font_style,text,textx,texty,textw,defpt,cont
     context.textBaseline = 'middle';
     context.textAlign = 'left';
     if (font_style) {
-      context.font = font_style + ' ' + (Math.floor(defpt+0.5)).toString() + 'px '+fonttype;
+      context.font = font_style + ' ' + ((defpt+0.5)).toString() + 'px '+fonttype;
     } else {
-      context.font = (Math.floor(defpt+0.5)).toString() + 'px '+ fonttype;
+      context.font = ((defpt+0.5)).toString() + 'px '+ fonttype;
     }
     let testw = context.measureText(text).width;
     if (testw > textw)
@@ -27,11 +27,11 @@ export function auto_text(do_stroke,font_style,text,textx,texty,textw,defpt,cont
       {
         if (font_style)
         {
-          context.font = font_style + ' ' + (Math.floor(defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
+          context.font = font_style + ' ' + ((defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
         }
         else
         {
-          context.font = (Math.floor(defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
+          context.font = ((defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
         }
         if (do_stroke)
         {
@@ -72,11 +72,11 @@ export function auto_text2(do_stroke,font_style,text,textx,texty,textw,defpt,con
     context.textAlign = 'center';
     if (font_style)
     {
-      context.font = font_style + ' ' + (Math.floor(defpt+0.5)).toString() + 'px '+fonttype;
+      context.font = font_style + ' ' + ((defpt+0.5)).toString() + 'px '+fonttype;
     }
     else
     {
-      context.font = (Math.floor(defpt+0.5)).toString() + 'px '+ fonttype;
+      context.font = ((defpt+0.5)).toString() + 'px '+ fonttype;
     }
     
     let centerpoint = (text.length)/3;
@@ -123,11 +123,11 @@ export function auto_text2(do_stroke,font_style,text,textx,texty,textw,defpt,con
             
             if (font_style)
             {
-              context.font = font_style + ' ' + (Math.floor(defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
+              context.font = font_style + ' ' + ((defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
             }
             else
             {
-              context.font = (Math.floor(defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
+              context.font = ((defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
             }
             if (do_stroke)
             {
@@ -178,11 +178,11 @@ export function auto_text3(do_stroke,font_style,text,textx,texty,textw,defpt,con
         context.textAlign = 'center';
         if (font_style)
         {
-            context.font = font_style + ' ' + (Math.floor(defpt+0.5)).toString() + 'px '+fonttype;
+            context.font = font_style + ' ' + ((defpt+0.5)).toString() + 'px '+fonttype;
         }
         else
         {
-            context.font = (Math.floor(defpt+0.5)).toString() + 'px '+ fonttype;
+            context.font = ((defpt+0.5)).toString() + 'px '+ fonttype;
         }
         
         let centerpoint = (text.length)/4;
@@ -255,11 +255,11 @@ export function auto_text3(do_stroke,font_style,text,textx,texty,textw,defpt,con
                         
                         if (font_style)
                         {
-                            context.font = font_style + ' ' + (Math.floor(defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
+                            context.font = font_style + ' ' + ((defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
                         }
                         else
                         {
-                            context.font = (Math.floor(defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
+                            context.font = ((defpt*textw/testw+0.5)).toString() + 'px '+fonttype;
                         }
                         if (do_stroke)
                         {
