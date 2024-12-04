@@ -53,8 +53,8 @@ class MouseInteractor {
     event.preventDefault();
     event.stopPropagation();
     var canvas = this.canvas
-    let delta = ('wheelDelta' in event) ? event.wheelDelta : -event.detail/2;
-    // console.log(delta, event);
+    let delta = ('deltaY' in event) ? -event.deltaY : -event.detail/2;
+    console.log(delta, event);
     // 0.84 is sensitivity
     // let temp_sensitivity = config.sensitivity;
     // let timeNow =(new Date().getTime())
@@ -62,7 +62,7 @@ class MouseInteractor {
     //   temp_sensitivity = Math.pow(temp_sensitivity,((timeNow - this.timeLastScroll)/40))
     // }
     // this.timeLastScroll= timeNow;
-    const MAX_SCROLL_DELTA = 70;
+    const MAX_SCROLL_DELTA = 170;
     let temp_sensitivity = Math.pow(config.sensitivity, Math.min(Math.abs(delta), MAX_SCROLL_DELTA) / 300)
     
     set_mouse_position(this, event);
