@@ -131,7 +131,10 @@ export function resolve_pinpoints(pinpoint_or_pinpoints, extra_metadata={}) {
   * Return a pinpoint string pointing at (node)
   */
 export function node_to_pinpoint(node) {
-  if (!node.ott && !node.latin_name) return null;
+  if (!node.ott && !node.latin_name) {
+    if (node.ozid) return "@_ozid=" + node.ozid;
+    return null;
+  };
   return [
     "@",
     node.latin_name ? tidy_latin(node.latin_name) : '',

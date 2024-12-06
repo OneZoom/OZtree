@@ -285,14 +285,16 @@ class SearchManager {
     // uses search match and pluralize
     let vernacular = record[cols["vernacular"]];
     let latinName  = record[cols["name"]];
-    let ott = record[cols["ott"]];
-    let id = record[cols["id"]];
-    let extra_vernaculars = record[cols["extra_vernaculars"]];
-    let id_decider = is_leaf? -1:1;
-    let tidy_common = vernacular ? capitalizeFirstLetter(vernacular) : null; // ready for printing in UI
     
     // "latin names" starting or ending with underscore are "fake" in OneZoom
-    let row = [tidy_common, latinName && !latinName.startsWith("_") ? latinName : null, id * id_decider];
+    latinName = latinName && !latinName.startsWith("_") && !latinName.endsWith("_") ? latinName : null;
+    let ott = record[cols["ott"]];
+    let extra_vernaculars = record[cols["extra_vernaculars"]];
+    let ozid = is_leaf ? -record[cols["id"]] : record[cols["id"]];
+
+    let tidy_common = vernacular ? capitalizeFirstLetter(vernacular) : null; // ready for printing in UI
+    
+    let row = [tidy_common, latinName, ozid];
     let score_result = overall_search_score(toSearchFor, latinName, lang, vernacular, extra_vernaculars);
     if (score_result.length < 2) {
         row = row.concat(score_result)
@@ -302,7 +304,7 @@ class SearchManager {
         let extra = OZstrings["Also called:"] + " " + extra_vernaculars[score_result[1]]
         row = row.concat([score_result[0], {info_type: "Extra Vernacular", text: extra}])
     }
-    row.pinpoint = node_to_pinpoint({ ott: ott, latin_name: latinName });
+    row.pinpoint = node_to_pinpoint({ ott: ott, latin_name: latinName, ozid });
     return row;
   }
 }
