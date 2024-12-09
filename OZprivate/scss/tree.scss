@@ -105,6 +105,7 @@ body.loading #UI #loading_spinner {
 .ui-controls {
     border: 1px solid $oz_border_def;
     border-radius: 5px; 
+    overflow: hidden; /* icons shouldn't sprawl over our corners */
     background-color: white;
     margin-top: 0.5em;
 
