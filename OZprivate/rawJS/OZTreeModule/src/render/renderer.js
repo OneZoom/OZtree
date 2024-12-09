@@ -10,6 +10,8 @@ let last_yp = null;
 let last_ws = null;
 let last_btn_data = null;
 let last_btn_action = null;
+let last_button_x = null;
+let last_button_y = null;
 
 //Do not skip refresh when render_id = 60, 120, 180... because we want to refresh page when node details or images get fetched.
 let render_id = 0;
@@ -58,8 +60,20 @@ function refresh(root) {
   let start = new Date().getTime();
   let shapes = [];
 
-  if (need_refresh()) {
+  const cursor_moved = tree_state.button_x != last_button_x || tree_state.button_y != last_button_y;
+
+  if (cursor_moved) {
+    last_button_x = tree_state.button_x;
+    last_button_y = tree_state.button_y;
+    // get the shapes early so we see global_button_action changes in need_refresh
     controller.projection.get_shapes(root, shapes);
+  }
+
+  if (need_refresh()) {
+    if (!cursor_moved) {
+      controller.projection.get_shapes(root, shapes);
+    }
+    update_cursor();
     refresh_by_redraw(shapes, context);
     let end = new Date().getTime();
     adjust_threshold(end-start);
@@ -68,6 +82,11 @@ function refresh(root) {
   }
 }
 
+function update_cursor() {
+  // If cursor wasn't set here (e.g. was set by mouse interactor), leave it as it is.
+  if (canvas.style.cursor && !["move", "pointer", "default"].includes(canvas.style.cursor)) return;
+  canvas.style.cursor = tree_state.mouse_hold ? "move" : (global_button_action.action ? "pointer" : "default");
+}
 
 /**
  * This function would first dynamically develop undeveloped parts.
@@ -105,7 +124,7 @@ function need_refresh() {
 
   if (render_id % 60 === 0) return true;
   if (tree_state.xp != last_xp || tree_state.yp != last_yp || tree_state.ws != last_ws) return true;
-  if (!areEqual(global_button_action.action,last_btn_action)) return true
+  if (!areEqual(global_button_action.action,last_btn_action)) return true;
   if (!areEqual(global_button_action.data,last_btn_data)) return true;
   return false;
 }
