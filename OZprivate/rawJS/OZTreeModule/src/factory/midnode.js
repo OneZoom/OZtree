@@ -412,10 +412,11 @@ class Midnode {
       num_threatened += this.get_attribute("iucnEN");
       num_threatened += this.get_attribute("iucnCR");
     }
+    let num_extant = this.richness_val - (this.get_attribute("iucnEX") + this.get_attribute("iucnEW"));
     if (this.detail_fetched) {
-      this._threatened_branch = (num_threatened > this.richness_val * 0.5);
+      this._threatened_branch = (num_threatened > num_extant * 0.5);
     }
-    return num_threatened > this.richness_val * 0.5;
+    return num_threatened > num_extant * 0.5;
   }
   get redlist() {
     if (this._redlist !== null) return this._redlist;
