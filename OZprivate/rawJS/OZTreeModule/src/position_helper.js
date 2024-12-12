@@ -271,17 +271,16 @@ function perform_actual_fly(controller, into_node, speed=1, accel_type="linear",
  */
 function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func) {
 
-  const time_proportion = (performance.now() - fly_start_time) / 1000 / fly_duration_s;
-  const clamped_time_proportion = Math.max(0, Math.min(time_proportion, 1));
+  const time_proportion = Math.max(0, Math.min((performance.now() - fly_start_time) / 1000 / fly_duration_s, 1));
 
-  function pan_proportion(time_proportion) {
+  function pan_proportion() {
     var out = (Math.sin((time_proportion+0.25) * Math.PI*2) + 1) / 2;
 
     return accel_type === 'accel' ? (time_proportion > 0.5 ? out : 0)
          : accel_type === 'decel' ? 1 - (time_proportion < 0.5 ? out : 0)
          : time_proportion;
   }
-  function zoom_proportion(time_proportion) {
+  function zoom_proportion() {
     var out = (Math.sin((time_proportion+1.5) * Math.PI) + 1) / 2;
 
     return accel_type === 'accel' ? out
@@ -293,7 +292,7 @@ function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func,
     //need to reanchor, this sometimes causes jerkiness
     //also we may not know how many steps we will need to take
     // NB: Approximate accel/decel by not panning at all, let the final non-reanchor step handle it
-    pan_zoom(accel_type === 'accel' || accel_type === 'decel'? 0 : clamped_time_proportion, clamped_time_proportion);
+    pan_zoom(accel_type === 'accel' || accel_type === 'decel'? 0 : time_proportion, time_proportion);
     tree_state.set_action(r_mult > 1 ? "fly-in" : "fly-out");
     controller.re_calc();
     controller.reanchor();
@@ -308,8 +307,8 @@ function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func,
   } else {
     //don't need to reanchor - this is more normal, and is smoother
     pan_zoom(
-      pan_proportion(clamped_time_proportion),
-      zoom_proportion(clamped_time_proportion)
+      pan_proportion(),
+      zoom_proportion()
     );
     tree_state.set_action(r_mult > 1 ? "fly-in" : "fly-out");
     controller.re_calc();
