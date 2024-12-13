@@ -4,17 +4,20 @@ import {max, min} from './util/index';
 let x_add = null;
 let y_add = null;
 let r_mult = null;
-let intro_step_num = null;
-let intro_sec_step_num = null;
+let fly_start_time = null;
 let global_anim_speed = 10; // set this to 15 for recoding smoother flight animations larger numbers mean slower
-let length_intro = null;
-let num_intro_steps = null;
+/**
+ * The duration of this phase of the flight in seconds.
+ * Not necessarily the duration to the target as we may need to re-anchor after this phase and keep going. 
+ */
+let fly_duration_s = null; 
 let more_flying_needed = null;
-let flight_fps = 1000/60; // set this to 1000/500 for recording much slower flight animations that can then be sped up after the screen casting process is complete.
+let original_flight_fps = 1000/60; // the frame rate used when global_anim_speed was calibrated
 let into_node;
 let pre_xp, pre_yp, pre_ws;
-let fly_timer = null
+let fly_frame_request_id = null
 
+/** Update xvar, yvar and rvar of all targeted nodes and their direct children based on that of anchored nodes. */
 function drawreg_target(node,x,y,r) {
   // we assume that only those for whom graphref is true will call this routine
   if (node.has_child) {
@@ -182,7 +185,7 @@ function get_v_horizon_by_arc(node, factor, x, y, r) {
   let vxmax = (x+r*(node.arcx+node.arcr*factor));
   let vxmin = (x+r*(node.arcx-node.arcr*factor));
   let vymax = (y+r*(node.arcy+node.arcr*factor));
-  let vymin = (y+r*(node.arcy-node.arcr*factor)); // add for leaf points   *1.305 doesn'fly_timer care about the leaf direction - could change this later perhaps
+  let vymin = (y+r*(node.arcy-node.arcr*factor)); // add for leaf points   *1.305 doesn't care about the leaf direction - could change this later perhaps
   return [vxmax, vxmin, vymax, vymin]
 }
 
@@ -220,8 +223,7 @@ function perform_actual_fly(controller, into_node, speed=1, accel_type="linear",
   pre_yp = tree_state.yp;
   pre_ws = tree_state.ws;
   get_xyr_target(controller.root, tree_state.xp, tree_state.yp, 220*tree_state.ws, into_node);
-  intro_step_num = 0;
-  intro_sec_step_num = 0;
+  fly_start_time = performance.now();
   if(((r_mult>0.9999)&&(r_mult<1.00001))&&(x_add*x_add<1)&&(y_add*y_add<1)) {
     // nothing to zoom to so better to do nothing and return false or it feels like a bug
     if (typeof finalize_func === "function") {
@@ -244,9 +246,10 @@ function perform_actual_fly(controller, into_node, speed=1, accel_type="linear",
     }
     return true;
   } else {
-    length_intro = Math.abs(Math.log(r_mult))*global_anim_speed;      
-    num_intro_steps = Math.max(Math.floor(length_intro),12)/speed;
-    perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
+    fly_duration_s = Math.max(Math.abs(Math.log(r_mult)) * global_anim_speed, 12) / speed / original_flight_fps;
+    fly_frame_request_id = requestAnimationFrame(function () {
+      perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
+    });
     return true;
   }
 }
@@ -267,67 +270,66 @@ function perform_actual_fly(controller, into_node, speed=1, accel_type="linear",
  * @param {func} abrupt_func is optional, and gives a function to call when fly is abrupted
  */
 function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func) {
-  function pan_proportion(step, total) {
-    var x = step / total,
-        out = (Math.sin((x+0.25) * Math.PI*2) + 1) / 2;
 
-    return accel_type === 'accel' ? (x > 0.5 ? out : 0)
-         : accel_type === 'decel' ? 1 - (x < 0.5 ? out : 0)
-         : x;
+  const time_proportion = Math.max(0, Math.min((performance.now() - fly_start_time) / 1000 / fly_duration_s, 1));
+
+  function pan_proportion() {
+    var out = (Math.sin((time_proportion+0.25) * Math.PI*2) + 1) / 2;
+
+    return accel_type === 'accel' ? (time_proportion > 0.5 ? out : 0)
+         : accel_type === 'decel' ? 1 - (time_proportion < 0.5 ? out : 0)
+         : time_proportion;
   }
-  function zoom_proportion(step, total) {
-    var x = step / total,
-        out = (Math.sin((x+1.5) * Math.PI) + 1) / 2;
+  function zoom_proportion() {
+    var out = (Math.sin((time_proportion+1.5) * Math.PI) + 1) / 2;
 
     return accel_type === 'accel' ? out
          : accel_type === 'decel' ? out
-         : x;
+         : time_proportion;
   }
 
   if (more_flying_needed) {
     //need to reanchor, this sometimes causes jerkiness
     //also we may not know how many steps we will need to take
     // NB: Approximate accel/decel by not panning at all, let the final non-reanchor step handle it
-    pan_zoom(accel_type === 'accel' || accel_type === 'decel'? 0 : 1/num_intro_steps, 1/num_intro_steps);
+    pan_zoom(accel_type === 'accel' || accel_type === 'decel'? 0 : time_proportion, time_proportion);
     tree_state.set_action(r_mult > 1 ? "fly-in" : "fly-out");
     controller.re_calc();
     controller.reanchor();
     controller.trigger_refresh_loop();
-    
-    clearTimeout(fly_timer);
-    fly_timer = setTimeout(function () {
-      if (tree_state.flying) {
-        perform_actual_fly(controller, into_node, speed, 'linear', finalize_func, abrupt_func);
-      } else if (typeof abrupt_func === 'function') {
-        abrupt_func()
-      }
-    },1000.0/flight_fps);
-  } else if (!more_flying_needed && intro_step_num <num_intro_steps) {
+
+    if (tree_state.flying) {
+      perform_actual_fly(controller, into_node, speed, 'linear', finalize_func, abrupt_func);
+    } else if (typeof abrupt_func === 'function') {
+      abrupt_func()
+    }
+
+  } else {
     //don't need to reanchor - this is more normal, and is smoother
-    intro_step_num++;
-    intro_sec_step_num++;
     pan_zoom(
-      pan_proportion(intro_sec_step_num, num_intro_steps),
-      zoom_proportion(intro_sec_step_num, num_intro_steps)
+      pan_proportion(),
+      zoom_proportion()
     );
     tree_state.set_action(r_mult > 1 ? "fly-in" : "fly-out");
     controller.re_calc();
     controller.trigger_refresh_loop();
     
-    clearTimeout(fly_timer);
-    fly_timer = setTimeout(function () {
-      if (tree_state.flying) {
-        perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
-      } else if (typeof abrupt_func === 'function') {
-        abrupt_func()
+    cancelAnimationFrame(fly_frame_request_id);
+
+    if (time_proportion < 1) {
+      fly_frame_request_id = requestAnimationFrame(function () {
+        if (tree_state.flying) {
+          perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
+        } else if (typeof abrupt_func === 'function') {
+          abrupt_func()
+        }
+      });
+    } else {
+      tree_state.flying = false;
+      tree_state.set_action(null);
+      if (typeof finalize_func === "function") {
+          finalize_func()
       }
-    },1000.0/flight_fps);
-  } else {
-    clearTimeout(fly_timer);
-    tree_state.flying = false;
-    tree_state.set_action(null);
-    if (typeof finalize_func === "function") {
-        finalize_func()
     }
   }
 }

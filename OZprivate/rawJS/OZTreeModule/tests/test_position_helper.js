@@ -98,8 +98,9 @@ function test_cur_location(test, controller, node_latin_name, exp_xp, exp_yp, ex
   exp_xp = round(exp_xp);
 }
 
-
 test('perform_actual_fly', function (test) {
+  global.requestAnimationFrame = (callback) => setTimeout(callback, 16);
+  global.cancelAnimationFrame = clearTimeout;
   var nodes = {};
   
   return populate_factory().then((factory) => {
@@ -151,6 +152,9 @@ test('perform_actual_fly', function (test) {
 
 
 test.onFinish(function() {
+  
+  global.requestAnimationFrame = undefined;
+  global.cancelAnimationFrame = undefined;
   // NB: Something data_repo includes in is holding node open.
   //     Can't find it so force our tests to end.
   process.exit(0)
