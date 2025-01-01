@@ -100,45 +100,63 @@
   </div>
 <script>
 (function() {
+    const update_search = (search_element, should_delay, debug_label) => {
+      var search_term = search_element.value;
+      var searchbox = $(search_element).closest('.searchbox');
+      var dropdown = $('.search_dropdown', searchbox);
+
+      var searchresult = $('.searchresult', searchbox);
+      if (searchresult && searchresult.attr('data-highlight')) {
+          onezoom.controller.highlight_remove(searchresult.attr('data-highlight'));
+      }
+      
+      if (search_term.length==0) {
+          $('.popular_species', dropdown).show();
+          $('.recents', dropdown).show();
+          {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
+          $('.no_results', dropdown).hide();
+          $('.search_hits', dropdown).empty();
+          OZui.search_manager.full_search("");
+          $('.searchinput', searchbox).removeClass('waiting_for_search_result');
+          return;
+      } 
+
+      const trimmed_search_term = search_term.replace(/ /g,'');
+      if (
+          trimmed_search_term.length > 2 ||
+          ((trimmed_search_term.length > 1) && !should_delay)
+      ) {
+          // never search for a single character
+          // and only search for two characters if enter has been pressed.            
+          OZui.search_manager.full_search(
+              search_term,
+              function(original_string, actual_search, results) {
+                  OZui.searchPopulate(searchbox, original_string, results);
+              },
+              should_delay ? 1000 : 0,
+              function() {
+                  {{if is_testing:}}console.log("Search for '" + search_term + "' sent to OneZoom API from " + debug_label + " search");{{pass}}
+
+                      if(!($(".searchinput").hasClass('waiting_for_search_result')))
+                      {
+                          $(".searchinput", searchbox).addClass('waiting_for_search_result'); // switch flag for search to on
+                      }
+                  }
+          );
+      }
+    }
+
     var box_selector = $('#header_searchnav');
 
     $('.searchinput input', box_selector)
-        .on('keyup', function(event) {
-
-            var search_term = this.value;
-            var searchbox = $(this).closest('.searchbox');
-            var searchresult = $('.searchresult', searchbox);
-            var dropdown = $('.search_dropdown', searchbox);
-            if (search_term.length==0) {
-                $('.popular_species', dropdown).show();
-                $('.recents', dropdown).show();
-                {{if is_testing:}}console.log("Hiding no_result section of dropdown");{{pass}}
-                $('.no_results', dropdown).hide();
-                $('.search_hits', dropdown).empty();
-                OZui.search_manager.full_search(""); // this clears the search
-                $('.searchinput', searchbox).removeClass('waiting_for_search_result');
-            } else {
-                //$('.searchinput', searchbox).addClass('waiting_for_search_result');
-                var delay_ms = 1000;
-                if (event.which == 13) {
-                    delay_ms = 1;   //enter was pressed - don't delay
-                }
-            if ((search_term.replace(/ /g,'').length > 2)||((search_term.replace(/ /g,'').length > 1)&&(delay_ms == 1))) { // we're never going to search for a single character
-
-            OZui.search_manager.full_search(
-                search_term,
-                function(original_string, actual_search, results) {
-                    OZui.searchPopulate(searchbox, original_string, results);
-                },
-                delay_ms,
-                function() {
-                    {{if is_testing:}}console.log("Search for '" + search_term + "' sent to OneZoom API from advanced search");{{pass}}
-                    if(!($(".searchinput").hasClass('waiting_for_search_result'))) {
-                        $(".searchinput", searchbox).addClass('waiting_for_search_result'); // switch flag for search to on
-                    }});
-            }
-            }
-        });
+      .on('input', function(event) {
+          update_search(this, true, 'home page');
+      })
+      .on('keyup', function(event) {
+        if (event.which == 13) {
+          update_search(this, false, 'home page');
+        }
+      });
 }())
 </script>
 
