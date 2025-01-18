@@ -100,6 +100,7 @@
   </div>
 <script>
 (function() {
+    // Keep in sync with the equivalent function in views/treeviewer/layout.html
     const update_search = (search_element, should_delay, debug_label) => {
       var search_term = search_element.value;
       var searchbox = $(search_element).closest('.searchbox');
@@ -122,12 +123,13 @@
       } 
 
       const trimmed_search_term = search_term.replace(/ /g,'');
+
+      // never search for a single character
+      // and only search for two characters if enter has been pressed.       
       if (
           trimmed_search_term.length > 2 ||
           ((trimmed_search_term.length > 1) && !should_delay)
       ) {
-          // never search for a single character
-          // and only search for two characters if enter has been pressed.            
           OZui.search_manager.full_search(
               search_term,
               function(original_string, actual_search, results) {
