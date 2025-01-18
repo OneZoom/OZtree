@@ -268,7 +268,7 @@ def make_temp_minlife_file(self):
             f.write(response.content)
         self.temp_minlife_created += [minlife_file_location.format(i)]
         #process links (see the partial_install command in Gruntfile.js in the app dir)
-        subprocess.call(['perl', '-i', os.path.join(web2py_app_dir, 'OZprivate','ServerScripts','Utilities','partial_install.pl'), minlife_file_location.format(i)])
+        subprocess.call([sys.executable, os.path.join(web2py_app_dir, 'OZprivate','ServerScripts','Utilities','partial_install.py'), minlife_file_location.format(i)])
         return minlife_file_location.format(i)
     else:
         raise Exception("There are already many test files in {}. Please remove some before continuing".format(minlife_file_location))
