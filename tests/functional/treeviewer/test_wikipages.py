@@ -19,6 +19,7 @@ web2py_dir = os.path.realpath(os.path.join(web2py_app_dir, '..','..'))
 sys.path = [p for p in sys.path if p != web2py_dir] #remove the web2py_dir from the path, otherwise _OZ_globals thinks we are running within web2py
 sys.path.insert(1,os.path.realpath(os.path.join(web2py_app_dir,'models'))) # to get _OZ_globals
 from _OZglobals import wikiflags
+import pytest
 
 
 class TestWikipages(FunctionalTest):
@@ -65,26 +66,21 @@ class TestWikipages(FunctionalTest):
         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
         self.browser.switch_to.default_content()
 
-    def test_wikidata_has_wikipedia(self):
+    @pytest.mark.parametrize("type, id, name", [
+        ('leaf', 'self.humanOTT', 'human'),
+        ('leaf_md', 'self.humanOTT', 'human'),
+        ('leaf', 'self.dogOTT', 'dog'),
+        ('leaf', 'self.catOTT', 'cat'),
+        ('node', 'self.mammalID', 'mammals'),
+        ('node_md', 'self.mammalID', 'mammals')
+    ])
+    def test_wikidata_has_wikipedia(self, type, id, name):
         """
         Test pages that *definitely* should have a wikipedia Qid:
         """
-        #self.browser.get(base_url + "life/@Homo_sapiens?pop=ol_{}".format(self.humanOTT))
-        print("human", flush=True, end="")
-        wait = WebDriverWait(self.browser, 30)
-        for type, id, name in [
-            ('leaf', self.humanOTT, 'human'),
-            ('leaf_md', self.humanOTT, 'human'),
-            ('leaf', self.dogOTT, 'dog'),
-            ('leaf', self.catOTT, 'cat'),
-            ('node', self.mammalID, 'mammals'),
-            ('node_md', self.mammalID, 'mammals')]:
-            yield self.wikidata_has_wikipedia, type, id, wait, name
-
-
-    def wikidata_has_wikipedia(self, type, id, wait, name):
         print(name + " via " + type + ": ", flush=True, end="")
-        self.browser.get(self.urls[type](id))
+        wait = WebDriverWait(self.browser, 30)
+        self.browser.get(self.urls[type](eval(id)))
         try:
             wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "footer.wikipage-source")))
             assert not self.element_by_class_exists("wikipedia-warning"), "{} wikipage should have no warnings".format(name)

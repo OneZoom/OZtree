@@ -61,7 +61,7 @@ class TestTabs(FunctionalTest):
         checked_tabs = {t['id']:False for t in requests.get(base_url + 'treeviewer/UI_layer.json', timeout=5).json()['tabs']}
         
         for identifier, tip_type in [('oak','leaf'), ('human','leaf'), ('mammal','node')]:
-            yield self.check_tab, identifier, tip_type, checked_tabs
+            self.check_tab(identifier, tip_type, checked_tabs)
         assert all(checked_tabs.values()), "All tab types should have been checked"
     
     def check_tab(self, identifier, tip_type, checked_tabs):
