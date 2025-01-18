@@ -9,7 +9,6 @@ import os.path
 from time import sleep
 
 import requests
-from nose import tools
 
 
 if sys.version_info[0] < 3:
@@ -17,9 +16,18 @@ if sys.version_info[0] < 3:
 
 from ..util import Web2py_server, base_url
 
+known_errors = [
+    # these ones require args
+    "sponsor_leaf",
+    "sponsor_node",
+    "sponsor_node_price",
+    "sponsor_pay",
+    "sponsor_replace_page"
+]
+
 class TestFunctionsInDefault(object):
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         self.web2py = Web2py_server()
         public_page_list_url = base_url + "list_controllers.json"
         print(">> getting public webpages from " + public_page_list_url)
@@ -28,7 +36,7 @@ class TestFunctionsInDefault(object):
         self.webpages = json['controllers']
                 
     @classmethod    
-    def tearDownClass(self):
+    def teardown_class(self):
         self.web2py.stop_server()
     
     def test_default_webpages(self):
@@ -36,7 +44,9 @@ class TestFunctionsInDefault(object):
         Check that all pages return a http 200 response, or if 400, have a header link to a correct version
         """
         for pagename in self.webpages:
-            print(pagename)
+            if pagename in known_errors:
+                continue
+            print(base_url + pagename)
             r = requests.get(base_url + pagename, timeout=5)
             if r.status_code != 200:
                 if r.status_code == 400:

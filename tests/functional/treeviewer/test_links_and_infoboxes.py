@@ -18,12 +18,12 @@ class TestLinksAndInfoboxes(FunctionalTest):
     (It is easy to get these wrong). Also test other links
     """
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
         #we need to find "true" links, e.g. not links acting as buttons (which have hrefs starting with #, so are "page-internal")
         #have to search by xpath as searching by css in selenium expands the href to include the hostname
         self.xpath_link_not_page_internal = "//a[@href and not(starts-with(@href, '#'))]" #an anchor with an href that does not start with '#' 
-        super().setUpClass()
+        super().setup_class()
 
     def test_MD_nolinks(self):
         """

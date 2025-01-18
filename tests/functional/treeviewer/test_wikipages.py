@@ -26,9 +26,9 @@ class TestWikipages(FunctionalTest):
     Tests the popup-ed wikipedia / wikidata pages, which are the most commonly viewed
     """
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
-        super().setUpClass()
+        super().setup_class()
         #In the main OneZoom viewer, the sponsorship popup urls are returned by calling the
         # server_urls.OZ_leaf_json_url_func javascript function, providing it with an ott, e.g.
         # server_urls.OZ_leaf_json_url_func(1234). We need to coppture this function as javascript,

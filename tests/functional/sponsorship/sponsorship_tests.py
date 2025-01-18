@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 import os
 import requests
-from nose import tools
-from time import sleep
 
 from selenium import webdriver #to fire up a duplicate page
 
@@ -17,7 +15,7 @@ class SponsorshipTest(FunctionalTest):
     """
     
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         """
         When setting up the sponsorship pages testing suite we have to create a new appconfig.ini file
         and point out web2py instance at it so that we can adjust maintenance_mins and allow_sponsorship
@@ -33,7 +31,7 @@ class SponsorshipTest(FunctionalTest):
                     if line.lstrip().startswith("[sponsorship]"):
                         test.write("maintenance_mins = {}\n".format(self.maintenance_mins))
                         test.write("allow_sponsorship = {}\n".format(self.allow_sponsorship))
-        super().setUpClass()
+        super().setup_class()
         
         #Now get s, from the "normal" OZ viewer, from a museum display, 
         #from a partner view and also a test case where all links are banned
@@ -58,13 +56,12 @@ class SponsorshipTest(FunctionalTest):
             }
 
     @classmethod
-    def tearDownClass(self):
-        super().tearDownClass()
+    def teardown_class(self):
+        super().teardown_class()
         print(">> removing temporary appconfig")
         os.remove(self.appconfig_loc)
         
-    @tools.nottest
-    def test_ott(self, extra_assert_tests, ott, extra_assert_tests_from_another_browser=None, browser=None):
+    def check_ott(self, extra_assert_tests, ott, extra_assert_tests_from_another_browser=None, browser=None):
         """
         Test the 4 separate urls, each viewing the same page linked from a different place
         (e.g. from the OZ tree viewer versus the min website, vs a museum display)
@@ -85,7 +82,7 @@ class SponsorshipTest(FunctionalTest):
             #still forwards to the same page
             print(" ... also testing same pages from an alternative browser ...", end="", flush=True)
             alt_browser = webdriver.Chrome()
-            self.test_ott(extra_assert_tests_from_another_browser, ott, None, alt_browser)
+            self.check_ott(extra_assert_tests_from_another_browser, ott, None, alt_browser)
             alt_browser.quit()
         #check all the alternative representations too
         print("|w2p", end="", flush=True)
@@ -107,29 +104,7 @@ class SponsorshipTest(FunctionalTest):
         assert has_linkouts(browser, include_site_internal=True) == False
         assert self.zoom_disabled()
         print(" ", end="", flush=True)
-
-    @tools.nottest
-    def test_md_sandbox(self, ott):
-        """
-        Follow any links from the museum display page and collect a list. If any are external, return False
-        """
-        self.browser.get(self.urls['treeviewer_md'](ott))
-        #Although any element can potentially link out to another page using javascript, 
-        # the most likely elements that will cause a sandbox escape on our own page
-        # are <a href=...> <form action=...> <area href=...>, or <button onclick=...>
-        # For external pages (e.g. wikipages) we shoud ensure that JS is stripped.
-        def first_external_link(self, already_followed):
-            """
-            Recurse through possible links from this page until we find an external one
-            in which case we can return False, or 
-            """
-            return 
-            
-        for elem in self.browser.find_elements_by_tag_name('a'):
-            href = elem.get_attribute('href')
         
-        
-    @tools.nottest
     def never_looked_at_ottname(self):
         """
         Find an unpopular species that has never been looked at (i.e. does not have an entry in the reservations table
@@ -151,7 +126,6 @@ class SponsorshipTest(FunctionalTest):
         db_cursor.close() 
         return ott, sciname
     
-    @tools.nottest
     def delete_reservation_entry(self, ott, name, email=test_email):
         """
         Warning: this will REMOVE data. Make sure that this is definitely one of the previously not looked at species
@@ -170,7 +144,6 @@ class SponsorshipTest(FunctionalTest):
         db_cursor.close() 
         return n_rows
 
-    @tools.nottest
     def invalid_ott(self):
         """
         Give an invalid OTT. We should also test for 'species' with no space in the name, but we can't be guaranteed
@@ -178,14 +151,12 @@ class SponsorshipTest(FunctionalTest):
         """
         return -1
 
-    @tools.nottest
     def banned_unsponsored_ott(self):
         """
         Human ott is always banned, never sponsored
         """
         return self.humanOTT
 
-    @tools.nottest
     def banned_sponsored_ott(self):
         """
         We could possibly pick pandas here, but we are not assured that they will be sponsored on all sites
@@ -193,7 +164,6 @@ class SponsorshipTest(FunctionalTest):
         raise NotImplementedError
 
        
-    @tools.nottest
     def sponsored_ott(self):
         """
         We might also want to test a sponsored banned species here, like the giant panda
@@ -206,7 +176,6 @@ class SponsorshipTest(FunctionalTest):
         else:
             return sponsored[0]['OTT_ID']
             
-    @tools.nottest
     def visit_data(self, ott):
         """
         Return the num_views, last_view and the reserve_time for this ott

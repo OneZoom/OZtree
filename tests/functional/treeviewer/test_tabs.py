@@ -21,9 +21,9 @@ class TestTabs(FunctionalTest):
     Tests all the tabs in a simplistic way, assuming we can find all ones for humans (leaf) and mammals (node)
     """
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
-        super().setUpClass()
+        super().setup_class()
         #In the main OneZoom viewer, the sponsorship popup urls are returned by calling the
         # server_urls.OZ_leaf_json_url_func javascript function, providing it with an ott, e.g.
         # server_urls.OZ_leaf_json_url_func(1234). We need to coppture this function as javascript,

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os.path
 
+from selenium.webdriver.common.by import By
 from .sponsorship_tests import SponsorshipTest
 from ..functional_tests import web2py_viewname_contains
 
@@ -9,9 +10,9 @@ class TestMaintenanceMode(SponsorshipTest):
     allow_sponsorship = 1
     
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
-        super().setUpClass()
+        super().setup_class()
 
     def test_invalid(self):
         """
@@ -20,8 +21,8 @@ class TestMaintenanceMode(SponsorshipTest):
         ott = self.invalid_ott()
         def assert_tests(browser):
             assert web2py_viewname_contains(browser, "spl_maintenance")
-            assert browser.find_element_by_id('time').text == '99'
-        SponsorshipTest.test_ott(self, assert_tests, ott)
+            assert browser.find_element(By.ID, 'time').text == '99'
+        SponsorshipTest.check_ott(self, assert_tests, ott)
 
     def test_banned_unsponsored(self):
         """
@@ -31,9 +32,9 @@ class TestMaintenanceMode(SponsorshipTest):
         vd = self.visit_data(ott)
         def assert_tests(browser):
             assert web2py_viewname_contains(browser, "spl_maintenance")
-            assert browser.find_element_by_id('time').text == '99'
+            assert browser.find_element(By.ID, 'time').text == '99'
             assert self.visit_data(ott) == vd, "visit data should not be changed in maintenance mode"
-        SponsorshipTest.test_ott(self, assert_tests, ott)
+        SponsorshipTest.check_ott(self, assert_tests, ott)
         
     def test_already_sponsored(self):
         """
@@ -43,11 +44,11 @@ class TestMaintenanceMode(SponsorshipTest):
         vd = self.visit_data(ott)
         def assert_tests(browser):
             assert web2py_viewname_contains(browser, "spl_maintenance")
-            assert browser.find_element_by_id('time').text == '99'
+            assert browser.find_element(By.ID, 'time').text == '99'
             assert self.visit_data(ott) == vd, "visit data should not be changed in maintenance mode"
-        SponsorshipTest.test_ott(self, assert_tests, ott)
+        SponsorshipTest.check_ott(self, assert_tests, ott)
         print("(banned but sponsored not implemented) ...", end="", flush=True)
-        #SponsorshipTest.test_ott(self, assert_tests, self.banned_sponsored_ott())
+        #SponsorshipTest.check_ott(self, assert_tests, self.banned_sponsored_ott())
 
     def test_sponsoring(self):
         """
@@ -58,11 +59,11 @@ class TestMaintenanceMode(SponsorshipTest):
         vd = self.visit_data(ott)
         def assert_tests(browser):
             assert web2py_viewname_contains(browser, "spl_maintenance")
-            assert browser.find_element_by_id('time').text == '99'
+            assert browser.find_element(By.ID, 'time').text == '99'
             assert self.visit_data(ott) == vd, "visit data should not be changed in maintenance mode"
         def alt_browser_assert_tests(browser):
             assert_tests(browser)
-        SponsorshipTest.test_ott(self, assert_tests, ott, 
+        SponsorshipTest.check_ott(self, assert_tests, ott, 
             extra_assert_tests_from_another_browser = alt_browser_assert_tests)
         n_deleted = self.delete_reservation_entry(ott, sciname, None) #delete the previously created entry
         assert n_deleted == 0, "visiting an unvisited ott in maintenance mode should not allocate a reservations row"
