@@ -3,6 +3,7 @@ import os.path
 from time import sleep
 
 from selenium import webdriver #to fire up a duplicate page
+from selenium.webdriver.common.by import By
 
 from .sponsorship_tests import SponsorshipTest
 from ..functional_tests import web2py_viewname_contains, web2py_date_accessed, has_linkouts, linkouts_url, test_email
@@ -16,9 +17,9 @@ class TestNormalSite(SponsorshipTest):
     allow_sponsorship = 1
     
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
-        super().setUpClass()
+        super().setup_class()
 
     def test_invalid(self):
         """
@@ -26,7 +27,7 @@ class TestNormalSite(SponsorshipTest):
         """
         def assert_tests(browser):
             assert web2py_viewname_contains(browser, "spl_invalid")
-        SponsorshipTest.test_ott(self, assert_tests, self.invalid_ott())
+        SponsorshipTest.check_ott(self, assert_tests, self.invalid_ott())
 
     def test_banned_unsponsored(self):
         """
@@ -40,7 +41,7 @@ class TestNormalSite(SponsorshipTest):
             assert n_visits > prev_n_visits, "number of visits (was {}, now {}) should be augmented".format(prev_n_visits, n_visits)
             assert abs(web2py_date_accessed(browser) - last_visit).seconds == 0, "last visit time should be recorded as just now"
             assert prev_reserve_time == reserve_time, "reserved time should not be recorded for banned species"
-        SponsorshipTest.test_ott(self, assert_tests, ott)
+        SponsorshipTest.check_ott(self, assert_tests, ott)
         
     def test_already_sponsored(self):
         """
@@ -54,9 +55,9 @@ class TestNormalSite(SponsorshipTest):
             assert n_visits > prev_n_visits, "number of visits (was {}, now {}) should be augmented".format(prev_n_visits, n_visits)
             assert abs(web2py_date_accessed(browser) - last_visit).seconds == 0, "last visit time should be recorded as just now"
             assert prev_reserve_time == reserve_time, "reserved time should not be recorded for already sponsored species"
-        SponsorshipTest.test_ott(self, assert_tests, ott)
+        SponsorshipTest.check_ott(self, assert_tests, ott)
         print("(banned but sponsored not implemented) ...", end="", flush=True)
-        #SponsorshipTest.test_ott(self, assert_tests, self.banned_sponsored_ott())
+        #SponsorshipTest.check_ott(self, assert_tests, self.banned_sponsored_ott())
 
     def test_sponsoring_from_normal(self):
         """
@@ -151,7 +152,7 @@ class TestNormalSite(SponsorshipTest):
         self.browser.get(self.urls['web2py'](ott)) #visit from another page (not the same session)
         self.browser.get(self.urls['treeviewer'](ott))
         assert web2py_viewname_contains(self.browser, "spl_reserved")
-        mins = self.browser.find_element_by_class_name("reserve_mins_left")
+        mins = self.browser.find_element(By.CLASS_NAME, "reserve_mins_left")
         mins = int(mins.get_attribute("innerHTML"))+1
         db_cursor = self.db['connection'].cursor()
         sql="UPDATE reservations SET reserve_time = DATE_ADD(reserve_time, INTERVAL {} MINUTE) where OTT_ID = {} LIMIT 1".format(self.db['subs'], self.db['subs'], self.db['subs'], self.db['subs'])
@@ -184,17 +185,17 @@ class TestNormalSite(SponsorshipTest):
             sleep(sleep_time)
         else:
             assert False, "timed out before the sponsorship iframe popped up (couldn't find selector '{}')".format(css_sel)
-        iframe = self.browser.find_element_by_css_selector(css_sel)
+        iframe = self.browser.find_element(By.CSS_SELECTOR, css_sel)
         self.browser.switch_to.frame(iframe)
         sleep(1) #must wait for iframe to load properly
         assert web2py_viewname_contains(self.browser, "sponsor_leaf")
         assert expected_word in self.browser.page_source
                 
         #fill in the form elements
-        email = self.browser.find_element_by_id("e-mail_input")
-        sponsor_name = self.browser.find_element_by_id("user_sponsor_name_input")
-        more_info = self.browser.find_element_by_id("user_more_info_input")
-        amount = self.browser.find_element_by_id("user_paid_input")
+        email = self.browser.find_element(By.ID, "e-mail_input")
+        sponsor_name = self.browser.find_element(By.ID, "user_sponsor_name_input")
+        more_info = self.browser.find_element(By.ID, "user_more_info_input")
+        amount = self.browser.find_element(By.ID, "user_paid_input")
         
         email.send_keys(test_email) #should test too long a name
         sponsor_name.send_keys(test_name) #probably worth testing weird characters here
@@ -206,18 +207,18 @@ class TestNormalSite(SponsorshipTest):
         assert len(self.browser.window_handles) == 1, "Should start with only one window open"
         main_oz_tab = self.browser.window_handles[0]
 
-        self.browser.find_element_by_id("submit_button").click()
+        self.browser.find_element(By.ID, "submit_button").click()
         
         assert len(self.browser.window_handles) == 2, "Clicks on an iframed sponsor form always open in a new tab"
         new_tab = [x for x in self.browser.window_handles if x != main_oz_tab][0]
         self.browser.switch_to.window(new_tab)
         assert web2py_viewname_contains(self.browser, "sponsor_leaf"), "Too little money should be spotted and an error shown"
 
-        amount = self.browser.find_element_by_id("user_paid_input")
+        amount = self.browser.find_element(By.ID, "user_paid_input")
         amount.clear()
         amount.send_keys(sponsorship_val) #fill in just enough money
 
-        self.browser.find_element_by_id("submit_button").click()
+        self.browser.find_element(By.ID, "submit_button").click()
         assert len(self.browser.window_handles) == 2, "Clicks on a non iframed sponsor form should not open in new tab"
 
         sleep(1)
@@ -255,17 +256,17 @@ class TestNormalSite(SponsorshipTest):
             sleep(sleep_time)
         else:
             assert False, "timed out before the sponsorship iframe popped up (couldn't find selector '{}')".format(css_sel)
-        iframe = self.browser.find_element_by_css_selector(css_sel)
+        iframe = self.browser.find_element(By.CSS_SELECTOR, css_sel)
         self.browser.switch_to.frame(iframe)
         sleep(1) #must wait for iframe to load properly
         assert web2py_viewname_contains(self.browser, "sponsor_leaf")
         assert expected_word in self.browser.page_source
                 
         #fill in the form elements
-        email = self.browser.find_element_by_id("e-mail_input")
-        sponsor_name = self.browser.find_element_by_id("user_sponsor_name_input")
-        more_info = self.browser.find_element_by_id("user_more_info_input")
-        amount = self.browser.find_element_by_id("user_paid_input")
+        email = self.browser.find_element(By.ID, "e-mail_input")
+        sponsor_name = self.browser.find_element(By.ID, "user_sponsor_name_input")
+        more_info = self.browser.find_element(By.ID, "user_more_info_input")
+        amount = self.browser.find_element(By.ID, "user_paid_input")
         
         email.send_keys(test_email) #should test too long a name
         sponsor_name.send_keys(test_name) #probably worth testing weird characters here

@@ -108,6 +108,7 @@ class TestBackgroundTasks(unittest.TestCase):
         self.assertIn('Expiring sponsorship for OTT %d' % r2_1.OTT_ID, out)
 
         # Run once, do the same work
+        util.set_smtp(sender="admin@example.com", autosend_email=0)
         out = self.run_background_tasks('log-email', 'verbose')
         self.assertIn('Dear 1_betty@unittest.example.com', out)
         self.assertIn('* %s' % nice_name_from_ott(r1_1.OTT_ID), out)

@@ -15,8 +15,8 @@ class TestLanguageLocalisation(FunctionalTest):
     TO DO
     """
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
-        super().setUpClass()
+        super().setup_class()
     
     
