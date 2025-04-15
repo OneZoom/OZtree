@@ -2,8 +2,8 @@
 """
 """
 
-from ...util import base_url
-from ..functional_tests import FunctionalTest
+from ..util import base_url
+from ..functional.functional_tests import FunctionalTest
 import os.path
 
 class TestViewerLoading(FunctionalTest):
@@ -11,9 +11,9 @@ class TestViewerLoading(FunctionalTest):
     Test whether the viewer loading functions work
     """
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
-        super().setUpClass()
+        super().setup_class()
         
     def test_viewer_loading_time(self):
         """

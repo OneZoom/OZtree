@@ -6,8 +6,7 @@ From https://github.com/OneZoom/OZtree/issues/62
 2) Test the iframe popups
 """
 import os.path
-from nose import tools
-from nose.plugins.skip import SkipTest
+from pytest import skip
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -26,11 +25,11 @@ class TestTreeDataMismatch(FunctionalTest):
     old_version = 1234 #should look up files that exist with an old version number
 
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         if not self.is_local:
-            raise SkipTest("Mismatch test requires altering the DB so can only run locally")
+            skip("Mismatch test requires altering the DB so can only run locally")
         print("== Running {} ==".format(os.path.basename(__file__)))
-        super().setUpClass() #will assign db etc
+        super().setup_class() #will assign db etc
         self.temp_minlife = make_temp_minlife_file(self) #must do this before changing table IDs
         print(">> swapping data in row 1 of ordered_nodes table to force temporary mismatch")
         db_cursor = self.db['connection'].cursor()
@@ -43,7 +42,7 @@ class TestTreeDataMismatch(FunctionalTest):
         db_cursor.close()
     
     @classmethod
-    def tearDownClass(self):
+    def teardown_class(self):
         remove_temp_minlife_files(self)
         print(">> restoring original version number to root node in database, and setting root node real_parent to 0")
         db_cursor = self.db['connection'].cursor()
@@ -54,15 +53,13 @@ class TestTreeDataMismatch(FunctionalTest):
         db_cursor.execute(sql, (0,)) # real_parent of the root should always be 0
         self.db['connection'].commit() #need to commit here otherwise next select returns stale data
         db_cursor.close()
-        super().tearDownClass()
+        super().teardown_class()
 
-
-    @tools.nottest
-    def test_mismatch(self, controller, base=base_url):
+    def check_mismatch(self, controller, base=base_url):
         self.browser.get(base + controller)
         wait = WebDriverWait(self.browser, 10)
         wait.until(EC.presence_of_element_located((By.ID, "version-error")))
-        assert "version {}".format(self.unused_version) in self.browser.find_element_by_tag_name("blockquote").text, \
+        assert "version {}".format(self.unused_version) in self.browser.find_element(By.TAG_NAME, "blockquote").text, \
             "On mismatch, {} tree should show the version number".format(controller)
 
     def test_life_mismatch(self):
@@ -70,37 +67,37 @@ class TestTreeDataMismatch(FunctionalTest):
         The default tree viewer should show mismatch
         """
         #can't go to the top level here beacuse we have set a silly real_parent number (non-existent)
-        self.test_mismatch("life/@={}".format(self.humanOTT))
+        self.check_mismatch("life/@={}".format(self.humanOTT))
 
     def test_life_MD_mismatch(self):
         """
         The museum display viewer should show mismatch
         """
-        self.test_mismatch("life_MD/@={}".format(self.humanOTT))
+        self.check_mismatch("life_MD/@={}".format(self.humanOTT))
 
     def test_expert_mode_mismatch(self):
         """
         The expert mode viewer (e.g. with screenshot functionality) should show mismatch
         """
-        self.test_mismatch("life_expert/@={}".format(self.humanOTT))
+        self.check_mismatch("life_expert/@={}".format(self.humanOTT))
 
     def test_AT_mismatch(self):
         """
         The Ancestor's Tale tree (different colours) should show mismatch
         """
-        self.test_mismatch("AT/@={}".format(self.humanOTT))
+        self.check_mismatch("AT/@={}".format(self.humanOTT))
 
     def test_trail2016_mismatch(self):
         """
         The Ancestor's Trail tree (different sponsorship details) should show mismatch
         """
-        self.test_mismatch("trail2016/@={}".format(self.humanOTT))
+        self.check_mismatch("trail2016/@={}".format(self.humanOTT))
 
     def test_linnean_mismatch(self):
         """
         The Linnean Soc tree (different sponsorship details) should show mismatch
         """
-        self.test_mismatch("linnean/@={}".format(self.humanOTT))
+        self.check_mismatch("linnean/@={}".format(self.humanOTT))
 
     def test_text_tree_mismatch(self):
         """
@@ -122,13 +119,13 @@ class TestTreeDataMismatch(FunctionalTest):
         """
         The minlife view for restricted installation should show mismatch error
         """
-        self.test_mismatch("treeviewer/minlife".format(self.humanOTT))
+        self.check_mismatch("treeviewer/minlife".format(self.humanOTT))
 
     def test_minlife_static(self):
         """
         The temporary minlife file in static should show a mismatch error
         """
-        self.test_mismatch(self.temp_minlife, "file://")
+        self.check_mismatch(self.temp_minlife, "file://")
 
     def test_minlife_old_download(self):
         """

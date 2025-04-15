@@ -4,7 +4,7 @@ import sys
 import os.path
 import tempfile
 from collections import namedtuple
-from nose import SkipTest
+from pytest import skip
 
 
 if sys.version_info[0] < 3:
@@ -21,11 +21,11 @@ local_pic_path = lambda src, src_id: os.path.join(
 
 class TestImageFiles(object):
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         self.db = get_db_connection()
 
     @classmethod    
-    def tearDownClass(self):
+    def teardown_class(self):
         pass
     
     def test_all_images_in_db_present_locally(self):
@@ -35,7 +35,7 @@ class TestImageFiles(object):
         """
         reporting_batch_size = 100
         if appconfig_contains("url_base=", "images"):
-            raise SkipTest("This OneZoom instance is not using local image thumbnails")
+            skip("This OneZoom instance is not using local image thumbnails")
         else:
             tmpfiles = []
             db_cursor = self.db['connection'].cursor()

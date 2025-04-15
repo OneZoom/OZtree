@@ -21,7 +21,7 @@
             
             <ul class = "uk-list columns blockquote-ul">
 {{category_order={'Scientists': 0, 'Lecturers and professors': 1, 'User quotes': 2, 'Professionals': 3, 'Students': 4, 'Educators': 5} }}
-{{for category in sorted(quotes.keys(), key=lambda x: category_order.index(x) if x in category_order else len(category_order)):}}
+{{for category in sorted(quotes.keys(), key=lambda x: category_order.get(x, len(category_order))):}}
                 <li><h4>{{=category}}</h4> <ul class = "uk-list columns blockquote-ul">
     {{for q in quotes[category]:}}
                     <li>
