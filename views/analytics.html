@@ -9,16 +9,17 @@
 
   window.dataLayer = window.dataLayer || [];
   function gtag() { dataLayer.push(arguments); }
-  gtag('js', new Date());
-  gtag('config', '{{=ga_code}}', { 'anonymize_ip': true });
 
-  // Deny analytics storage before GA loaded
+  // Deny analytics storage before any other gtag() calls, otherwise we get "A tag read consent state before a default was set"
   gtag('consent', 'default', {
     'ad_storage': 'denied',
     'ad_user_data': 'denied',
     'ad_personalization': 'denied',
     'analytics_storage': 'denied'
   });
+
+  gtag('js', new Date());
+  gtag('config', '{{=ga_code}}', { 'anonymize_ip': true });
 
   var cc_config={
     apiKey: '{{=civicuk_api_key}}',
