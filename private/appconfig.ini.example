@@ -90,3 +90,5 @@ sponsorship_renew_discount = 0.2
 ; -> "Domains", configure your instance domain
 ; -> "Licences", copy/paste the hex key
 ;civicuk_api_key = 123abc123abc123abc123abc123abc123abc123a
+; * ga_code: Uncomment to enable DebugView (Admin (bottom-left) -> Data Display -> DebugView)
+;ga_debugview = yes

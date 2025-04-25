@@ -1,5 +1,6 @@
 {{# Google analytics tracking code Copyright Google }}
 {{ga_code = myconf.get('analytics.ga_code', default='')}}
+{{ga_debugview = myconf.get('analytics.ga_debugview', default=False)}}
 {{civicuk_api_key = myconf.get('analytics.civicuk_api_key', default='')}}
 
 
@@ -16,8 +17,12 @@
   });
 
   gtag('js', new Date());
-  gtag('config', '{{=ga_code}}', { 'anonymize_ip': true });
+  gtag('config', '{{=ga_code}}', {
+      'anonymize_ip': true,
 
+      // Enable debug mode: Change appconfig.ini, Go to Admin (bottom-left) -> Data Display -> DebugView
+      {{if ga_debugview:}}'debug_mode': true,{{pass}}
+  });
 </script>
 
 {{if ga_code and civicuk_api_key:}}
