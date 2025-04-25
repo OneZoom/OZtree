@@ -114,6 +114,7 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
       var select_tab_index=null;
       var url_dict = responseJSON.data;
       var n_tabs = 0;
+      var pinpoint = responseJSON.ott ? '@=' + responseJSON.ott : "";
       // make sure the id names correspond to the names returned by the api
       $("#external-modal .external-tabs li").each(function(index) {
         var tab = $(this);
@@ -128,6 +129,8 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
             var specific_popup = $("#external-modal .popup-container ." + linkout_name);
             //set the data-src attribute to the url. When the tab is shown, it will get src from there
             specific_popup.attr("data-src", url_arr[0]);
+            // Add pinpoint, so it can be used in Google Analytics reporting
+            specific_popup.attr("data-pinpoint", pinpoint);
             {{if is_testing:}}console.log("set data-src for '" + linkout_name + "' to " + url_arr[0]);{{pass}}
             //define the linkout (some hackery here to allow the same element to act as a plain link or a 'post' submission)
             $(".expand-tab form input[type=hidden]", specific_popup).remove()
@@ -243,6 +246,12 @@ function closeAndLeap(event, href, original_searchbox, input_type) {
 function load_tab(tab_content) {
   var ifrm;
 
+  // Report all tab loads & changes to GA
+  // parameters from select_content https://developers.google.com/analytics/devguides/collection/ga4/reference/events?client_type=gtag#select_content
+  if (window.gtag) window.gtag("event", "popup_open", {
+      content_type: tab_content.attr("data-name"),
+      content_id: tab_content.attr("data-pinpoint") || undefined,
+  });
   if (tab_content.children().last().hasClass('popup-content')) {
       ifrm = tab_content.children().last().children('iframe')[0];
   } else {
@@ -253,8 +262,20 @@ function load_tab(tab_content) {
       ifrm.addEventListener('load', function() {
         {{if is_testing:}}console.log("Hiding iframe loading info");{{pass}}
         $(".iframe-loading-info", $(this).parent().parent()).hide()
-        }, false);
+        if (window.gtag) ifrm.contentDocument.addEventListener("scroll", function () {
+            // Only set a scroll timeout once
+            if (ifrm._oz_scrollTimeout) return;
+            // Report pop-up scrolling to GA
+            ifrm._oz_scrollTimeout = setTimeout(function () {
+                if (ifrm.checkVisibility()) window.gtag("event", "popup_scroll", {
+                    content_type: tab_content.attr("data-name"),
+                    content_id: tab_content.attr("data-pinpoint") || undefined,
+                });
+            }, 5000);
+        });
+      }, false);
       ifrm.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups");
+      ifrm.addEventListener("scroll", function (event) { console.log("woo") });
       //add iframe inside a div wrapper
       tab_content.append($('<div>', {'class':'popup-content iframe-container'}).append(ifrm));
   }
@@ -935,6 +956,13 @@ function setupUI() {
       .on('hidden', function() {
         {{if is_testing:}}console.log("Removing content, data-src values, and hidden vars from each tab");{{pass}}
         $('#external-modal .popup-container li').each(function() {
+            if ($(this).hasClass("uk-active") && this.checkVisibility()) {
+                // Report tab closure to GA
+                if (window.gtag) window.gtag("event", "popup_close", {
+                    content_type: $(this).attr("data-name"),
+                    content_id: $(this).attr("data-pinpoint") || undefined,
+                });
+            }
             $(this)
                 .attr("data-src","")
                 .children('.popup-content').remove()
