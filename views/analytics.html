@@ -16,9 +16,23 @@
     'analytics_storage': 'denied'
   });
 
+  // Strip off querystring / OTT from /life calls, so we don't treat each OTT as a separate page
+  var pv_location = window.location.href;
+  var pv_title = window.document.title;
+  if (window.location.pathname.startsWith("/life")) {
+    pv_location = document.location.href.replace(/(life[^/]*\/)@.*/, '$1');
+    pv_title = "OneZoom tree viewer";
+  }
+
   gtag('js', new Date());
   gtag('config', '{{=ga_code}}', {
       'anonymize_ip': true,
+
+      // NB: 'config' will trigger our page_view event, so these need to be set immediately
+      // https://developers.google.com/analytics/devguides/collection/ga4/reference/config#page_location
+      // https://developers.google.com/analytics/devguides/collection/ga4/reference/config#page_title
+      'page_location': pv_location,
+      'page_title': pv_title,
 
       // Enable debug mode: Change appconfig.ini, Go to Admin (bottom-left) -> Data Display -> DebugView
       {{if ga_debugview:}}'debug_mode': true,{{pass}}
