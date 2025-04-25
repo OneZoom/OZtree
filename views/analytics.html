@@ -2,11 +2,8 @@
 {{ga_code = myconf.get('analytics.ga_code', default='')}}
 {{civicuk_api_key = myconf.get('analytics.civicuk_api_key', default='')}}
 
-{{if ga_code and civicuk_api_key:}}
-  {{# https://www.civicuk.com/blog-item/simplify-cookie-control-set-google-consent-mode }}
-  {{# https://developers.google.com/tag-platform/devguides/consent#implementation_example }}
-  <script type="text/javascript">
 
+<script type="text/javascript">
   window.dataLayer = window.dataLayer || [];
   function gtag() { dataLayer.push(arguments); }
 
@@ -21,6 +18,12 @@
   gtag('js', new Date());
   gtag('config', '{{=ga_code}}', { 'anonymize_ip': true });
 
+</script>
+
+{{if ga_code and civicuk_api_key:}}
+  {{# https://www.civicuk.com/blog-item/simplify-cookie-control-set-google-consent-mode }}
+  {{# https://developers.google.com/tag-platform/devguides/consent#implementation_example }}
+  <script type="text/javascript">
   var cc_config={
     apiKey: '{{=civicuk_api_key}}',
     product: "COMMUNITY",
@@ -46,4 +49,12 @@
   <script src="https://cc.cdn.civiccomputing.com/9/cookieControl-9.x.min.js" type="text/javascript"></script>
   <script type="text/javascript">CookieControl.load(cc_config);</script>
   <style>body #ccc #ccc-icon:first-child { display: none }</style>
+{{else:}}
+  <script type="text/javascript">
+  // Dummy gtag logging events to webdeveloper console
+  function gtag() {
+    console.debug("gtag", JSON.stringify(Array.from(arguments)));
+  }
+  for (a of window.dataLayer) gtag.apply(null, a);
+  </script>
 {{pass}}
