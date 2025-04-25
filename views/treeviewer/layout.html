@@ -214,8 +214,6 @@ var locations_json = '{{=XML(setup_params.get("locations_json") or "[]")}}';
 
 
 function closeAndLeap(event, href, original_searchbox, input_type) {
-    //TODO: add hit in search count.
-    // add_hit_in_search_count(OZIDin);
     var dropdown = $(".search_dropdown", original_searchbox)
     if (dropdown.length) {
         if ((dropdown.first().outerWidth()*2) > document.getElementById("OneZoomCanvasID").width) {
@@ -225,8 +223,19 @@ function closeAndLeap(event, href, original_searchbox, input_type) {
     if (input_type === 'ancestor') {
         onezoom.controller.default_move_to(href, 'ancestor');
     } else {
+        // Strip /life/ from href
+        href = href.replace(/^\/[A-Z_\-/.]+/i, '');
+
+        // Report search hit to GA
+        if (window.gtag) window.gtag("event", "select_item", {
+            item_list_id: event.target.closest("dl").className || "search_results",
+            items: [{
+                item_id: href.replace(/\?.*/, ''),
+            }],
+        });
+
         // Strip /life/ from any URL, update tree state
-        onezoom.controller.set_treestate(href.replace(/^\/[A-Z_\-/.]+/i, ''));
+        onezoom.controller.set_treestate(href);
     }
 }
 
