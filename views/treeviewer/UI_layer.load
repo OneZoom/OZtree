@@ -27,7 +27,9 @@
         <li><a href="#colkey-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Colour key')}}</a></li>
         <li><a href="#about-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('About OneZoom')}}</a></li>
         <li><a href="#datasources-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Data sources')}}</a></li>
-        <li><a href="#terms-modal" uk-toggle><span uk-icon="icon: expand"></span>{{=T('Terms of use')}}</a></li>
+        {{if myconf.get('analytics.civicuk_api_key', default=''):}}
+        <li><a href="#" onclick="CookieControl.open(); return (false);"><span uk-icon="icon: expand"></span>{{=T('Cookie consent')}}</a></li>
+        {{pass}}
 
         <li class="uk-nav-header">{{=T('Image sources')}}</li>
         <li><label uk-tooltip="pos: right" title="{{=T('Show best image from any source: the image may not have been verified by a taxonomist. For any image, click or zoom on the © symbol for details.')}}">
