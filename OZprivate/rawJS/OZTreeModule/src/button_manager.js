@@ -37,6 +37,14 @@ export function click_on_button_cb(controller) {
   } else if (global_button_action.action =="fly_node") {
     controller.fly_straight_to(global_button_action.data, true);
   } else if (global_button_action.action =="tap2zoom") {
+    // Report any taps on signposts, leaf & nodes with an OTT to GA
+    if (window.gtag && global_button_action.node && global_button_action.node.ott) {
+      // https://developers.google.com/analytics/devguides/collection/ga4/reference/events?client_type=gtag#select_content
+      window.gtag("event", "select_content", {
+          content_id: "@=" + global_button_action.node.ott,
+      });
+    }
+
     controller.fly_straight_to(global_button_action.data);
   } else if (global_button_action.action =="link") {
     if (typeof config.ui.openCopyright !== 'function') {
