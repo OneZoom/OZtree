@@ -22,9 +22,9 @@ class TestSandbox(FunctionalTest):
     Test wikipedia sandbox functionality
     """
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
-        super().setUpClass()
+        super().setup_class()
         self.browser.get(base_url + 'life_MD')
         js_get_md_link = self.browser.execute_script("return server_urls.OZ_leaf_json_url_func.toString()")
         self.wikilink = lambda slf, ott: linkouts_url(slf.browser, js_get_md_link, ott, "wiki")

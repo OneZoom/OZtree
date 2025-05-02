@@ -95,7 +95,7 @@ module.exports = function (grunt) {
         }
       },
       test_server_functional: {
-        command: 'nosetests3 tests/functional/'
+        command: 'pytest tests/functional/'
       },
       test_client: {
         command: 'npm run test'
