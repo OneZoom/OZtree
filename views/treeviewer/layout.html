@@ -158,7 +158,6 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
         $('#external-modal .no-tab-data').show()
       }
       UIkit.tab('#external-modal .external-tabs').show(select_tab_index);
-      load_tab($("#external-modal .popup-container li").eq(select_tab_index));
       $('#external-modal .tab-loading-info').hide();
       $('#external-modal .external-content').show();
       if (searchResultToPush) {
