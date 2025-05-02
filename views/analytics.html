@@ -1,4 +1,25 @@
 {{# Google analytics tracking code Copyright Google }}
+{{# #### Events recorded into google analytics ####}}
+{{# src/button_manager.js: }}
+{{# * "select_content" event on tap2zoom for signpost/leaf/node with an OTT}}
+{{# src/navigation/record.js: }}
+{{# * "scroll" event when panned/zoomed significantly}}
+{{# src/tour/handler/TsProgress.js: }}
+{{# * "level_start" event on tour start (i.e. the first tourstop is now visited)}}
+{{# * "level_end" event on tour end (i.e. all tourstops are now visited)}}
+{{# src/ui/search_manager.js: }}
+{{# * "search" event on submitting search query to server}}
+{{# views/treeviewer/layout.html: }}
+{{# * "select_item" event on search result / recent / popular link click}}
+{{# * "popup_open" event on popup open / tab change }}
+{{# * "popup_scroll" event if user scrolls and iframe still visible after 5 seconds}}
+{{# * "popup_close" event on popup close}}
+
+{{# #### Debugging methods ####}}
+{{# (1) Disable ga_code in private/appconfig.ini, gtag events sent to JS console}}
+{{# (2) Use https://tagassistant.google.com/ for live debugging }}
+{{# (3) Enable ga_debugview in private/appconfig.ini, use DebugView: https://support.google.com/analytics/answer/7201382?hl=en }}
+
 {{ga_code = myconf.get('analytics.ga_code', default='')}}
 {{ga_debugview = myconf.get('analytics.ga_debugview', default=False)}}
 {{civicuk_api_key = myconf.get('analytics.civicuk_api_key', default='')}}
