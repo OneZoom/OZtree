@@ -62,6 +62,12 @@ class SearchManager {
         this.search_timer = setTimeout(() => {
             if (onSend) onSend(); // this informs the UI that an API request has now been made.
 
+            // Inform Google Analytics
+            // https://developers.google.com/analytics/devguides/collection/ga4/reference/events?client_type=gtag#search
+            if (window.gtag) gtag("event", "search", {
+                search_term: toSearchFor,
+            });
+
             return Promise.all([
                 this.searchForTree(toSearchFor),
                 new Promise((resolve) => this.searchForSponsor(toSearchFor, resolve)),

@@ -270,7 +270,7 @@ function update_recents_list($target) {
         return;
     }
 
-    const dl = $('<dl>');
+    const dl = $('<dl class="recent_places">');
     $target.append(dl);
     dl.append($('<dt>').text(OZstrings.hasOwnProperty("Recent places") ? OZstrings["Recent places"] : "Recent places"));
     dl.append(recent_places.map(function (recent_place) {
