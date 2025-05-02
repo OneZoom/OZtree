@@ -1685,6 +1685,9 @@ def colkey():
 def team():
     return dict()
 
+def past_contributors():
+    return dict()
+
 def timeline():
     news = db().select(db.news.ALL, orderby =~ db.news.news_date)
     return dict(news = news)
