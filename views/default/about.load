@@ -44,19 +44,23 @@ OneZoom is a charitable incorporated organisation (non-profit) registered under 
 
 <div class=""uk-padding uk-padding-remove-top"">
 
-<h3>Sponsorship scheme</h3>
+<h3>Funding and sponsorship </h3>
+<p><img src="/static/images/OTE_logo.png" style="width:20%;"/></p>
 
-<p>The names of donors to the OneZoom charity may appear on leaves of the tree. This is a thank you acknowledgement for individual support, it is not advertising and does not link to external pages. Donations contribute towards the overall aims of the OneZoom charity. Please note that donations do not contribute directly to (for example) conservation of a particular species, and neither are the species themselves named after sponsors (except that sometimes people sponsor a species that was already named after them, or that happens to share their name).</p>
+<p> We thank {{=A("On the Edge" ,_href="https://www.ontheedge.org/")}} for funding the introduction of our tree tours feature with a grant of £25,000 made in 2022. </p>
 
-<p>We are especially grateful to Prof. Richard Dawkins and Prof. Jonathan Drori who have been most generous with their donations for sponsorship.</p>
+<p> We thank everyone who supported us by sponsoring leaves on our tree of life, this source of income has enabled us to build and maintain the website you see today. </p>  
 
-<p>There is only one sponsor permitted for each species (leaf) of the tree, sponsorship lasts for 4 years and include the first refusal on renewal. More popular species require larger donations for sponsorship. You can sponsor by selecting leaves on the tree explorer, or if you are viewing at a public venue where this feature may be disabled, you can sponsor from the onezoom.org website. You can search the tree by the names of sponsors as well as by species names in case you want to locate a particular sponsored leaf of the tree.</p>
+<p> We are especially grateful to Prof. Richard Dawkins and Prof. Jonathan Drori who have been most generous with their donations for sponsorship.</p>
 
-<h3>Funding bodies</h3>
+<p> OneZoom still needs funding, our unique and important work falls between the cracks of mainstream funding opportuinities.</p> 
 
-<p>
-OneZoom needs funding to be able to continue its work.  We are looking to attract the interest of private foundations, research councils, museums and other organisations who we hope will be excited to be involved in OneZoom. If you work for an organisation that is potentially interested in getting involved with further development of OneZoom, please {{=A('contact us', _href="mailto:mail@onezoom.org")}}, we would be delighted to hear from you.
+<p> You can support us through sponoring a leaf, choose a leaf by clicking on it in the tree of life explorer, or through the sponsorship page on our website.</p>
+We are also hoping to attract the interest of private foundations and other organisations whose goals align with ours please {{=A('contact us', _href="mailto:mail@onezoom.org")}}, if you are aware of any opportuinities that could support OneZoom.
 </p>
+
+
+
 
 <h3>How to cite OneZoom</h3>
 
