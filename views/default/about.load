@@ -66,7 +66,9 @@ We are also hoping to attract the interest of private foundations and other orga
 
 <p>If you've used OneZoom in teaching or research and you want to cite the project please use</p>
 
-<p>OneZoom Core Team (2021). OneZoom Tree of Life Explorer Version 4.0 URL: {{=A('http://www.onezoom.org', _href="http://www.onezoom.org")}}</p>
+<p>OneZoom Core Team ({{=request.now.year}}). OneZoom Tree of Life Explorer Version {{=release_info[0]}}
+{{=XML("&lsquo;" + release_info[1] + "&rsquo;" if release_info[1] else "")}}
+{{=("(released " + release_info[2].strftime("%B %Y") + ")" if release_info[2] else "")}} URL: {{=A('http://www.onezoom.org', _href="http://www.onezoom.org")}}</p>
 
 <p>We also appreciate citations of our scientific publications about OneZoom development</p>
 
