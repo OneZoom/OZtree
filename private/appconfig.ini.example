@@ -83,10 +83,16 @@ sponsorship_renew_discount = 0.2
 ;        if unset, tracking is off.
 ; To get a code, go to Admin -> Select account -> Select property -> "Data streams"
 ; -> Add/select "web" stream -> Copy code from "Global site tag (gtag.js)"
-; Will begin with UA- or G-
+;    Will begin with UA- or G-
+; NB: "Enhanced measurement" must be disabled:
+; * "Admin" -> "Data collection" -> "Data streams"
+; * Click on stream
+; * "Events" -> Disable "Enhanced measurement"
 ;ga_code = G-ABCABCABCA
 ; * civicuk_api_key: An API key from cookiecontrol by CivicUK
 ; To get a code, log into the https://www.civicuk.com/cookie-control/user-area/
 ; -> "Domains", configure your instance domain
 ; -> "Licences", copy/paste the hex key
 ;civicuk_api_key = 123abc123abc123abc123abc123abc123abc123a
+; * ga_code: Uncomment to enable DebugView (Admin (bottom-left) -> Data Display -> DebugView)
+;ga_debugview = yes

@@ -31,9 +31,25 @@ function handler(tour) {
           Object.keys(progress).forEach((k) => progress[k] = false);
       }
 
+      // If no tourstops are visited, report start to GA
+      if (window.gtag && Object.keys(progress).every((k) => !progress[k])) {
+        // https://developers.google.com/analytics/devguides/collection/ga4/reference/events?client_type=gtag#level_start
+        window.gtag("event", "level_start", {
+          level_name: tour.tour_setting,
+        });
+      }
+
       progress[tour.curr_step] = true;
       progressStore(tour, progress)
       updateTsProgress(tour, progress);
+
+      // If all tourstops are visited, report end to GA
+      if (window.gtag && Object.keys(progress).every((k) => progress[k])) {
+        // https://developers.google.com/analytics/devguides/collection/ga4/reference/events?client_type=gtag#level_end
+        window.gtag("event", "level_end", {
+          level_name: tour.tour_setting,
+        });
+      }
     });
 
     resolve();

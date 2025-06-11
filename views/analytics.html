@@ -1,18 +1,35 @@
 {{# Google analytics tracking code Copyright Google }}
+{{# #### Events recorded into google analytics ####}}
+{{# src/button_manager.js: }}
+{{# * "select_content" event on tap2zoom for signpost/leaf/node with an OTT}}
+{{# src/navigation/record.js: }}
+{{# * "scroll" event when panned/zoomed significantly}}
+{{# src/tour/handler/TsProgress.js: }}
+{{# * "level_start" event on tour start (i.e. the first tourstop is now visited)}}
+{{# * "level_end" event on tour end (i.e. all tourstops are now visited)}}
+{{# src/ui/search_manager.js: }}
+{{# * "search" event on submitting search query to server}}
+{{# views/treeviewer/layout.html: }}
+{{# * "select_item" event on search result / recent / popular link click}}
+{{# * "popup_open" event on popup open / tab change }}
+{{# * "popup_scroll" event if user scrolls and iframe still visible after 5 seconds}}
+{{# * "popup_close" event on popup close}}
+
+{{# #### Debugging methods ####}}
+{{# (1) Disable ga_code in private/appconfig.ini, gtag events sent to JS console}}
+{{# (2) Use https://tagassistant.google.com/ for live debugging }}
+{{# (3) Enable ga_debugview in private/appconfig.ini, use DebugView: https://support.google.com/analytics/answer/7201382?hl=en }}
+
 {{ga_code = myconf.get('analytics.ga_code', default='')}}
+{{ga_debugview = myconf.get('analytics.ga_debugview', default=False)}}
 {{civicuk_api_key = myconf.get('analytics.civicuk_api_key', default='')}}
 
-{{if ga_code and civicuk_api_key:}}
-  {{# https://www.civicuk.com/blog-item/simplify-cookie-control-set-google-consent-mode }}
-  {{# https://developers.google.com/tag-platform/devguides/consent#implementation_example }}
-  <script type="text/javascript">
 
+<script type="text/javascript">
   window.dataLayer = window.dataLayer || [];
   function gtag() { dataLayer.push(arguments); }
-  gtag('js', new Date());
-  gtag('config', '{{=ga_code}}', { 'anonymize_ip': true });
 
-  // Deny analytics storage before GA loaded
+  // Deny analytics storage before any other gtag() calls, otherwise we get "A tag read consent state before a default was set"
   gtag('consent', 'default', {
     'ad_storage': 'denied',
     'ad_user_data': 'denied',
@@ -20,6 +37,33 @@
     'analytics_storage': 'denied'
   });
 
+  // Strip off querystring / OTT from /life calls, so we don't treat each OTT as a separate page
+  var pv_location = window.location.href;
+  var pv_title = window.document.title;
+  if (window.location.pathname.startsWith("/life")) {
+    pv_location = document.location.href.replace(/(life[^/]*\/)@.*/, '$1');
+    pv_title = "OneZoom tree viewer";
+  }
+
+  gtag('js', new Date());
+  gtag('config', '{{=ga_code}}', {
+      'anonymize_ip': true,
+
+      // NB: 'config' will trigger our page_view event, so these need to be set immediately
+      // https://developers.google.com/analytics/devguides/collection/ga4/reference/config#page_location
+      // https://developers.google.com/analytics/devguides/collection/ga4/reference/config#page_title
+      'page_location': pv_location,
+      'page_title': pv_title,
+
+      // Enable debug mode: Change appconfig.ini, Go to Admin (bottom-left) -> Data Display -> DebugView
+      {{if ga_debugview:}}'debug_mode': true,{{pass}}
+  });
+</script>
+
+{{if ga_code and civicuk_api_key:}}
+  {{# https://www.civicuk.com/blog-item/simplify-cookie-control-set-google-consent-mode }}
+  {{# https://developers.google.com/tag-platform/devguides/consent#implementation_example }}
+  <script type="text/javascript">
   var cc_config={
     apiKey: '{{=civicuk_api_key}}',
     product: "COMMUNITY",
@@ -45,4 +89,12 @@
   <script src="https://cc.cdn.civiccomputing.com/9/cookieControl-9.x.min.js" type="text/javascript"></script>
   <script type="text/javascript">CookieControl.load(cc_config);</script>
   <style>body #ccc #ccc-icon:first-child { display: none }</style>
+{{else:}}
+  <script type="text/javascript">
+  // Dummy gtag logging events to webdeveloper console
+  function gtag() {
+    console.debug("gtag", JSON.stringify(Array.from(arguments)));
+  }
+  for (a of window.dataLayer) gtag.apply(null, a);
+  </script>
 {{pass}}

@@ -40,6 +40,11 @@ function record_url(controller, options, force) {
   // Don't bother recording if it's basically the same state
   if (!force && current_view_near_previous_view(current_state)) return;
 
+  // Report change in location to GA
+  if (window.gtag) gtag("event", "scroll", {
+      content_id: current_state.pinpoint,
+  });
+
   if (current_state.tour_setting) {
     // Leave everything alone bar tour---parse existing state, splice tour state in.
     const tour = current_state.tour_setting;
