@@ -3,13 +3,13 @@ const sass = require('sass');
 const process = require('process');
 const path = require('path');
 
-partial_install_site = "http://www.onezoom.org";
-partial_local_install_site = "http://127.0.0.1:8000"; // if you are running a local installation
-version_uikit = "3.21.13";
-web2py_py = path.join(path.dirname(path.dirname(process.cwd())), 'web2py.py');
-venv_python = path.join(path.dirname(path.dirname(process.cwd())), 'bin/python');
-
+const partial_install_site = "http://www.onezoom.org";
+const partial_local_install_site = "http://127.0.0.1:8000"; // if you are running a local installation
+const version_uikit = "3.21.13";
+const web2py_py = path.join(path.dirname(path.dirname(process.cwd())), 'web2py.py');
+const venv_python = path.join(path.dirname(path.dirname(process.cwd())), 'bin/python');
 const { execSync } = require('child_process');
+
 let preferred_python3;
 try {
   execSync('python3.10 --version', { stdio: 'ignore' });
@@ -36,6 +36,7 @@ function exec_web2py_script(script_name, init_args) {
 }
 
 module.exports = function (grunt) {
+  const requirements_file = grunt.option('requirements') || 'requirements.txt';
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     exec: {
@@ -49,7 +50,7 @@ module.exports = function (grunt) {
           '( [ -d applications/examples ] && rm -r -- "applications/examples" || true )',
           '( [ -f applications/OZtree/private/appconfig.ini ] || { cp applications/OZtree/private/appconfig.ini.example applications/OZtree/private/appconfig.ini ; echo "****** edit private/appconfig.ini"; exit 1; } )',
           preferred_python3  + ' -m venv .',
-          './bin/pip install -r applications/OZtree/requirements.txt',
+          './bin/pip install -r applications/OZtree/' + requirements_file,
           // Make web2py.py use the venv
           'mv web2py.py web2py.py.o',
           'echo "#!' + venv_python + '" > web2py.py',
