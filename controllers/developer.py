@@ -1,3 +1,5 @@
+import ozmail
+
 from OZfunc import (
     __release_info,
 )

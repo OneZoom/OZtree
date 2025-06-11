@@ -262,6 +262,12 @@ Links within this site to other websites are not covered by this Data Protection
 <li>The number of returned data points (there may be several for all taxa, for example if a key is used to request the popularity of the top 20 mammals).</li>
 </ul>
 
+<h5>Data stored by us from users of the OneZoom embedded widget feature</h5>
+<ul>
+<li>Your e-mail.</li>
+<li>A unique code for recognising use of our tree of life explorer through individual widgets.</li>
+</ul>
+
 <h4>Where your personal data is stored</h4>
 
 <p>All personal data (except that sent by e-mail to us) is stored on our webservers in London and their associated backups.</p>

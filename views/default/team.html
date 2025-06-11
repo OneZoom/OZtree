@@ -3,60 +3,18 @@
 {{extend 'uikit_layout.html'}}
 
 {{block masthead}}
-<div class="home-heading uk-text-center uk-padding-small"><h1>Meet the OneZoom team</h1></div>
+<div class="home-heading uk-text-center uk-padding-small"><h1>Meet the OneZoom team</h1>
+ <p> We're in alphabetical order by surname. Special thanks also to our <a href="/default/past_contributors.html"> past contributors</a></p>
+
+ <em> Interested in joining us? Further volunteers are welcome especially those will skills in software development, user experience design, science communication, education, or charity governance. A person willing to write more tours around the tree of life would be particularly useful right now. Please get in touch if you're interested.</em>
+
+</div>
 {{end block}}
 
 
-<!-- trustees -->
 <div>
-    <div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
-        <div class = "uk-padding">
-            <header>
-                    <h4>Dr. James Rosindell</h4>
-                    <p>Chief Executive Officer, Trustee</p>
-            <header>
-            <img width = "95%" style = "margin:10px"src= "{{=URL('static','images/Team/James.jpg')}}" alt="">
-            <p><a href="//www.rosindell.org" target="_blank">James Rosindell</a> is a reader in biodiversity theory at Imperial College London. His area of research interest, biodiversity theory, is focused on the area of intersection between maths, biology and computing. He has published research around models of ecology, evolution, conservation and data-visualisation. James is the original inventor of OneZoom and wrote the early versions of the software. He co-wrote versions of OneZoom from 2 upwards and is especially responsible for client side JavaScript code as well as day to day running of the charity.</p>
-        </div>
-        
-        <div class = "uk-padding">
-            <header>
-                <h4>Dr. Yan Wong</h4>
-                <p>Chief Technology Officer, Trustee</p>
-            </header>
-            <img width = "95%" style = "margin:10px"src= "{{=URL('static','images/Team/Yan.jpg')}}" alt="Portrait of Yan Wong">
-            <p><a href="//www.bdi.ox.ac.uk/Team/yan-wong" target="_blank">Yan Wong</a> is an evolutionary biologist with interests in maths, genetics and computing. He currently works on fundamental problems in evolution and genetics at the Big Data Institute at the University of Oxford. He previously worked in professional science outreach, co-authoring the Ancestor's Tale (2004, 2016) with Richard Dawkins, and presenting television and radio science shows including the BBC1 prime-time series "Bang goes the theory", BBC learning zome films and Radio 4's' 'More or less'. Yan co-wrote versions of OneZoom from 2 upwards and was responsible for obtaining and rationalising the underlying data sources used to build and decorate the OneZoom tree, as well as implementing much of the server-side and API functionality.</p>
-        </div>
-        <div class = "uk-padding">
-            <header>
-                <h4>Prof. Luke Harmon</h4>
-                    <p>Trustee</p>
-            </header>
-            <img width = "95%" style = "margin:10px"src= "{{=URL('static','images/Team/Luke.jpg')}}" alt="Portrait of Luke Harmon">
-            <p><a href="//lukejharmon.github.io" target="_blank">Luke Harmon</a> is a Professor and the University of Idaho, USA. His research focuses on Ecology and Evolutionary Biology and particularly in reptiles and amphibians. Luke has published over 100 scientific articles with particular focus on analytical techniques for understanding the speed of evolution and the relationships between the physical traits of species and their evolutionary history. Luke co-authored with James the original publication of the OneZoom article in PLoS Biology and provided advice from the start of the project.</p>
-        </div>
-    </div>
-</div>
 
-<!-- others -->
-<div>
    <div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
-        <div class = "uk-padding uk-padding-remove-top">
-            <header>
-                <h4>Dr. Hélène Morlon</h4>
-                <p>Chief International Partnerships Officer</p>
-            </header>
-            <img width = "95%" style = "margin:10px"src= "{{=URL('static','images/Team/Helene.jpg')}}" alt="Portrait of Hélène Morlon">
-            <p><a href="http://www.biologie.ens.fr/phyloeco/index.html" target="_blank">Hélène Morlon</a> is a researcher at the French national center for scientific researcher (CNRS). After training in mathematics, she obtained a master in ecology and a PhD in environmental sciences. During five years as a postdoc in the US, she developed a deep interest in biodiversity research. She currently leads an interdisciplinary team of young researchers at the Ecole Normale Supérieure in Paris focused on understanding how the deep-time evolution of biodiversity led to life around us as we see it today. Hélène is a 2016 TED Fellow. Since joining the OneZoom team as an ambassador, Hélène has been working to raise awareness around OneZoom and help us form links and is also a member of the OneZoom scientific advisory panel.</p>
-        </div>
-        <div class = "uk-padding uk-padding-remove-top">
-            <header>
-                <h4>Jamie Lentin</h4>
-                <p>Software Developer</p>
-            </header>
-            <img width = "95%" style = "margin:10px"src= "{{=URL('static','images/Team/Jamie.jpg')}}" alt="Portrait of Jamie Lentin">
-            <p>Jamie Lentin is a Freelance Software Developer at Shuttle Thread Limited, developing data-rich web applications and services using open-source tools, predominantly for research projects. He has contributed to many open source projects, from Plone UI widgets down to the Linux kernel. Before Shuttle Thread he was a Principal Software Engineer at the BBC, and has a B.Sc from Imperial College London and M.Sc from University of Manchester. Jamie has been done software development work for OneZoom to support release of versions 3.3 onwards, including the tours functionality in version 4. He also implemented features required to host the tree explorer components of the One Tree, One Planet project.</p>
-        </div>
         
         <div class = "uk-padding uk-padding-remove-top">
             <header>
@@ -66,50 +24,72 @@
             <img width = "95%" style = "margin:10px"src= "{{=URL('static','images/Team/David.jpg')}}" alt="Portrait of David Ebbo">
             <p>David Ebbo is a software engineer who spent most of his career in the Seattle area, working at Microsoft and Google. He has contributed to a range of products over the years, including ASP.NET, NuGet, Azure App Service, Azure Functions, Microsoft Office and Google Cloud infrastructure. He now lives in Paris, near where he grew up. In his spare time, he enjoys trail running and pickleball. Since 2022 he has been a tireless contributor to the OneZoom project, for example by improving the backend tree building logic. He is currently working on incorporating extinct species into OneZoom.</p>
         </div>
-    </div>
 
-    <div class="uk-padding"><h2>Scientific advisory panel</h2></div>
-    <div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
-        <div class = "uk-padding uk-padding-remove-top">
-            <p>The scientific advisory panel is a group of field experts assembled to advise OneZoom on how best to perform its work from a scientific perspective.</p>
-            <ul>
-                <li> Prof. Dan Faith</li>
-                <li> Prof. Rosemary Gillespie</li>
-                <li> Dr. Hélène Morlon</li>
-                <li> Prof. Doug Soltis</li>
-                <li> Prof. Pam Soltis</li>
-            </ul>
-        </div>
-    </div>
-    
-
-    <div class="uk-padding"><h2>OneZoom Alumni</h2></div>
-    
-    <div class="uk-grid-small uk-text-small uk-child-width-1-3@m " uk-grid>
         <div class = "uk-padding uk-padding-remove-top">
             <header>
-            <h4>Kai Zhong</h4>
-            <p>Software Developer</p>
-                 </header>
-                <img width = "95%" style = "margin:10px"src= "{{=URL('static','images/Team/Kai.png')}}" alt="">
-                    <p>Kai Zhong graduated from Imperial College London in 2013 with a distinction in computer science at masters level. His main project was an Android app for OneZoom, which was supervised by James Rosindell and Duncan Gillies. He went on to work with James Rosindell to produce <a href="http://www.zoompast.org" target="_blank">ZoomPast</a> a human family tree (Genealogy) website based on the OneZoom concept. Kai has primarily been working on upgrading the OneZoom engine to enable it to handle visualisation of the complete tree of life. Kai Zong worked as a freelance software developer on the OneZoom project in 2016 and 2017 working on the release of versions 3.0 and 3.1. Kai now works as a professional software developer in China.</p>
-                    
-                    </div>
-    
-    
-    
-    <div class = "uk-padding uk-padding-remove-top">
-
-            
-            <header>
-                <h4>Jonathan Sutton</h4>
-                <p>Software Developer Intern</p>
+                <h4>Prof. Luke Harmon</h4>
+                    <p>Trustee</p>
             </header>
-            <img width = "95%" style = "margin:10px"src= "{{=URL('static','images/Team/jonathan.jpg')}}" alt="">
-                
-                <p>Jonathan Sutton studied maths and computer science at Imperial College as an undergraduate. He has always had a passion for science communication and education. He discovered OneZoom by accident, after attending a lecture given by James on 'mathematical approaches to evolutionary trees'. Since then, he has worked with James' research group on writing code for ecological neutral models. He won a bursary from the Imperial College 'Charity Insights' scheme to work with OneZoom, and focused on improving the website's efficiency on mobile devices. Jonathan made contributions to the OneZoom version 3 codebase. Since his graduation Jonathan now works for Facebook as a professional software developer.</p>
-                
-                </div>
-    
+            <img width = "95%" style = "margin:10px"src= "{{=URL('static','images/Team/Luke.jpg')}}" alt="Portrait of Luke Harmon">
+            <p><a href="//lukejharmon.github.io" target="_blank">Luke Harmon</a> is a professor and the University of Idaho, USA. His research focuses on Ecology and Evolutionary Biology and particularly in reptiles and amphibians. Luke has published over 100 scientific articles with particular focus on analytical techniques for understanding the speed of evolution and the relationships between the physical traits of species and their evolutionary history. Luke co-authored with James the original publication of the OneZoom article in PLoS Biology and provided advice from the start of the project.</p>
+        </div>
+
+        <div class = "uk-padding uk-padding-remove-top">
+            <header>
+                <h4>Jared Khan</h4>
+                <p>Volunteer Software Developer</p>
+            </header>
+            <img width = "95%" style = "margin:10px"src= "{{=URL('static','images/Team/Jared.jpg')}}" alt="Portrait of Jared Khan">
+            <p>Jared Khan is a software engineer based in the UK. Having studied Computer Science at the University of Cambridge, he went on to design and build mapping, localisation, and simulation tools at British self-driving car startup Five AI and now runs the playful UK/New Zealand maths education startup Polymath as an engineer, designer, and occasional artist & animator, helping engage 6-11 year-olds in maths topics at home and at school. He chanced upon OneZoom in 2023 and became a frequent user. His contributions to the app include high resolution rendering, search history, and smooth frame-rate animations. When he's not at a computer, he's often found rock climbing or film-making.
+            </p>
+        </div>
+
+        <div class = "uk-padding uk-padding-remove-top">
+            <header>
+                <h4>Jamie Lentin</h4>
+                <p>Software Developer</p>
+            </header>
+            <img width = "95%" style = "margin:10px"src= "{{=URL('static','images/Team/Jamie.jpg')}}" alt="Portrait of Jamie Lentin">
+            <p>Jamie Lentin is a Freelance Software Developer at Shuttle Thread Limited, developing data-rich web applications and services using open-source tools, predominantly for research projects. He has contributed to many open source projects, from Plone UI widgets down to the Linux kernel. Before Shuttle Thread he was a Principal Software Engineer at the BBC, and has a B.Sc from Imperial College London and M.Sc from University of Manchester. Jamie has been done software development work for OneZoom to support release of versions 3.3 onwards, including the tours functionality in version 4. He also implemented features required to host the tree explorer components of the One Tree, One Planet project.</p>
+        </div>
+
+        <div class = "uk-padding uk-padding-remove-top">
+            <header>
+                    <h4>Prof. James Rosindell</h4>
+                    <p>Chief Executive Officer, Trustee</p>
+            <header>
+            <img width = "95%" style = "margin:10px"src= "{{=URL('static','images/Team/JamesRosindell.jpg')}}" alt="">
+            <p><a href="//www.rosindell.org" target="_blank">James Rosindell</a> is a professor of biodiversity theory at Imperial College London. His area of research interest, biodiversity theory, is focused on the area of intersection between maths, biology and computing. He has published research around models of ecology, evolution, conservation and data-visualisation. James is the original inventor of OneZoom and wrote the early versions of the software. He co-wrote later versions of OneZoom where he was especially responsible for client side JavaScript code. Now he is mostly responsible for the running of the charity, overseeing the work done, and charting future directions.</p>
+        </div>
+
+        <div class = "uk-padding uk-padding-remove-top">
+            <header>
+                <h4>Lizzie Schulz</h4>
+                <p>Volunteer Social Media Officer</p>
+            </header>
+            <img width = "95%" style = "margin:10px"src= "{{=URL('static','images/Team/LizzieSchulz.jpg')}}" alt="Portrait of Lizzie Schulz">
+            <p>Lizzie Schulz is a PhD student in the Centre for the History and Philosophy of Science at the University of Leeds. Her research focuses on the tree of life, Darwinism, and evolutionary theory. Lizzie has an MSc from the University of Oxford and a BSc from McGill University. She is currently helping Onezoom with their social media and outreach activities. 
+            </p>
+        </div>
+
+        <div class = "uk-padding uk-padding-remove-top">
+            <header>
+                <h4>James Stout</h4>
+                <p>Volunteer Software Developer</p>
+            </header>
+            <img width = "95%" style = "margin:10px"src= "{{=URL('static','images/Team/James_stout.jpg')}}" alt="Portrait of James Stout">
+            <p>James Stout is Engineering Director at Google leading Accessibility Engineering. His team has built <a href = "https://www.popsci.com/story/technology/best-of-whats-new-2020/#6GDFNSEFKNDMVECQY6A3SF377M"> award-winning </a> assistive technologies for Android and Chrome in addition to tools that enable development teams inside and outside of Google to build more accessible products. Previously, he led a team at Waymo that <a href = "https://www.theatlantic.com/technology/archive/2017/08/inside-waymos-secret-testing-and-simulation-facilities/537648/"> simulated the self-driving car in virtual worlds </a> to ensure road safety. In his free time, James contributes to a variety of passion projects including improvements to OneZoom and a hands-free computer control system detailed at <a href = "https://handsfreecoding.org"> handsfreecoding.org </a>.
+            </p>
+        </div>
+
+        <div class = "uk-padding uk-padding-remove-top">
+            <header>
+                <h4>Dr. Yan Wong</h4>
+                <p>Chief Technology Officer, Trustee</p>
+            </header>
+            <img width = "95%" style = "margin:10px"src= "{{=URL('static','images/Team/Yan.jpg')}}" alt="Portrait of Yan Wong">
+            <p><a href="//www.bdi.ox.ac.uk/Team/yan-wong" target="_blank">Yan Wong</a> is an evolutionary biologist with interests in maths, genetics and computing. He currently works on fundamental problems in evolution and genetics at the Big Data Institute at the University of Oxford. He previously worked in professional science outreach, co-authoring the Ancestor's Tale (2004, 2016) with Richard Dawkins, and presenting television and radio science shows including the BBC1 prime-time series "Bang goes the theory", BBC learning zome films and Radio 4's' 'More or less'. Yan co-wrote versions of OneZoom from 2 upwards and was responsible for obtaining and rationalising the underlying data sources used to build and decorate the OneZoom tree, as well as implementing much of the server-side and API functionality.</p>
+        </div>
+
     </div>
 </div>

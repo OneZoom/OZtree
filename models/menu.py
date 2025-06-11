@@ -48,9 +48,10 @@ response.menu = [
                  
                  (T('For Science'), False, None , [
                                             (T('Work with us'), False, URL('default' , 'work_with_us', extension=False)),
-                                            (T('Developer tools'), False , URL('developer' , 'index', extension=False)),
+                                            (T('Embeddable widget'), False, URL('developer' , 'embedding', extension=False)),
                                             (T('Popularity index'), False , URL('popularity' , 'index', extension=False)),
                                             (T('Public APIs'), False , URL('API','index', extension=False)),
+                                             (T('Developer tools'), False , URL('developer' , 'index', extension=False)),
                                             (T('Data sources'), False, URL('default' , 'data_sources', extension=False)),
                                             (T('Changelog'), False , URL('developer' , 'changelog', extension=False)),
                                             (T('Legacy trees'), False , URL('default' , 'tree_index', extension=False)),
