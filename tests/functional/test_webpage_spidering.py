@@ -14,7 +14,6 @@ Using selenium for each page allows us to check each page for JS errors too.
 """
 import sys
 import os.path
-from nose import tools
 from time import sleep
 from urllib.parse import urlparse, urldefrag
 import requests
@@ -31,8 +30,8 @@ from .functional_tests import FunctionalTest
 
 class TestWebpageSpidering(FunctionalTest):
     @classmethod
-    def setUpClass(self):
-        super().setUpClass()
+    def setup_class(self):
+        super().setup_class()
         sleep(1)
         public_page_list_url = base_url + "list_controllers.json"
         print(">> getting public webpages from " + public_page_list_url)
@@ -61,7 +60,6 @@ class TestWebpageSpidering(FunctionalTest):
         print("Checked internal pages {}".format(self.internal_pages))
         print("Checked external links {}".format(self.external_links))
     
-    @tools.nottest
     def check_page(self, browser_at_location):
         """
         Recursively check pages. To avoid recursing through all species etc, chop off cgi params

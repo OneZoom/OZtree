@@ -168,7 +168,7 @@ class TestTextsearch(object):
     replicates = 3
 
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         self.web2py = Web2py_server()
         wait_for_server_active()
         colorama.init()
