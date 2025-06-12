@@ -106,7 +106,7 @@ if args.database is None:
             if m:
                 conf_type = m.group(1)
             if conf_type == 'db':
-                m = re.match('uri\s*=\s*(\S+)', line)
+                m = re.match(r'uri\s*=\s*(\S+)', line)
                 if m:
                     args.database = m.group(1)
 
