@@ -102,9 +102,9 @@ def image_details():
         for v in request.vars:
             if v.isdigit() and int(v) in inv_src_flags:
                 ids = request.vars[v]
-                if re.search("[^-\d,]", ids):
+                if re.search(r"[^-\d,]", ids):
                     raise #list of ids must only consist of digits and commas, otherwise this is a malicious API call
-                if re.search("^,|[-,]$|,,|-[-,]|\d-", ids):
+                if re.search(r"^,|[-,]$|,,|-[-,]|\d-", ids):
                     raise #ban commas at start, and before other commas, ban minus signs and commas at end, 
                 #if we get here, ids should only contain numbers (negative or positive) with commas between
                 image_details[int(v)]={int(id):None for id in ids.split(",")}
