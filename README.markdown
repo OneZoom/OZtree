@@ -12,27 +12,20 @@ If you are using Visual Studio Code or another editor that supports [Dev Contain
 
 If you are using Visual Studio Code, perform the following steps (you will need to modify these for another editor):
 
-1. Follow the instructions at either https://hub.docker.com/r/onezoom/oztree or https://hub.docker.com/r/onezoom/oztree-complete to save a docker image with IUCN data.
 1. Follow the [VSCode instructions for installing Dev Container support](https://code.visualstudio.com/docs/devcontainers/containers#_installation).
 1. `git clone https://github.com/OneZoom/OZtree` into the directory of your choice. If using Windows, it is highly recommended to [clone on the WSL2 filesystem](https://code.visualstudio.com/remote/advancedcontainers/improve-performance#_store-your-source-code-in-the-wsl-2-filesystem-on-windows) both for performance reasons and to avoid permissions issues. If you wish to fork the repository and clone your fork, you will need to copy the tags from upstream, otherwise you will see build issues later. You can do this with `git fetch --tags upstream` followed by `git push --tags`.
 1. Open the cloned directory in VSCode.
-1. Create a `.env` file in the `.devcontainer` directory and add `WEB_IMAGE_NAME=onezoom/oztree-with-iucn`, changing the value to whatever image name you choose in step 1.
-1. Open the command palette and choose "Dev Containers: Reopen in Container". This may take several minutes to run.
-1. Your repository is mounted at `/opt/web2py/applications/OZtree` and the original production docker container application is mounted at `/opt/web2py/applications/OZtree_original`. In order to sync your repository with the production database state, open an integrated terminal and run the following: 
+1. Open the command palette and choose "Dev Containers: Reopen in Container". This may take several minutes to run. When it completes, your repository will be mounted at `/opt/web2py/applications/OZtree`.
+1. Obtain a dump of the production SQL database, put it in your project directory, and load it with `mysql -h db -u oz -ppasswd OneZoom < dump.sql`
+1. Run `./web2py-run` to start the server locally and visit https://localhost:8000/ in your browser. 
 
-```bash
-cp /opt/web2py/applications/OZtree_original/private/appconfig.ini /opt/web2py/applications/OZtree/private/
-rm -f /opt/web2py/applications/OZtree/databases/*.table
-cp /opt/web2py/applications/OZtree_original/databases/*.table /opt/web2py/applications/OZtree/databases/
-```
+Additional notes:
 
-1. Run `npm ci && grunt dev`. You will need to rerun `grunt dev` any time you make code changes.
-1. Run `./web2py-run` to start the server locally.
-1. Load https://localhost:8000/. The first page load can take a long time (10+ minutes) as the database is updated. Do not kill the server while this is running. Future page loads will be much faster.
-1. You can now visit http://localhost:8080 at any time to load the page via nginx + uwsgi! You can also continue to rebuild and run the server with `grunt dev` and `./web2py-run` and use https://localhost:8000/.
-1. (Optional) Once tables are created, and everything is working, you can set `migrate = 0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
-1. (Optional) [Create a manager account](#creating-auth-users--groups) in the auth table, e.g. so you can [view docs](#documentation).
-1. (Optional) MySQL is available on port 3307 if you wish to debug using local tools outside the container.
+- If you ever rebuild your Dev Container, you'll need to delete the table files first using `rm -f databases/*.table`.
+- You will generally need to rerun `grunt dev` any time you make code changes, before running `./web2py-run`.
+- Once tables are populated, and everything is working, you can set `migrate = 0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
+- [Create a manager account](#creating-auth-users--groups) in the auth table, e.g. so you can [view docs](#documentation).
+- MySQL is available on port 3306 if you wish to debug using local tools on your host outside the container.
 
 ## Installing locally
 

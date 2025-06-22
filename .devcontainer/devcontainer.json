@@ -23,5 +23,5 @@
 			]
 		}
 	},
-	"postCreateCommand": "npm ci && grunt dev && ./web2py-run tests/unit/test_modules_embed.py"
+	"postCreateCommand": "cp -n private/appconfig.ini.example private/appconfig.ini && npm ci && grunt dev && ./web2py-run tests/unit/test_modules_embed.py"
 }
