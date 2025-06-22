@@ -21,11 +21,18 @@ If you are using Visual Studio Code, perform the following steps (you will need 
 
 Additional notes:
 
-- If you ever rebuild your Dev Container, you'll need to delete the table files first using `rm -f databases/*.table`.
 - You will generally need to rerun `grunt dev` any time you make code changes, before running `./web2py-run`.
 - Once tables are populated, and everything is working, you can set `migrate = 0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
 - [Create a manager account](#creating-auth-users--groups) in the auth table, e.g. so you can [view docs](#documentation).
 - MySQL is available on port 3306 if you wish to debug using local tools on your host outside the container.
+- Your MySQL database contents are stored in a Docker volume and will persist even if you rebuild your Dev Container, making this operation quick and safe. If you wish to rebuild your Dev Container from scratch with a fresh database, you will need to perform the following steps:
+	1. Open the command palette and choose "Dev Containers: Reopen Folder Locally" (or "in WSL", if using WSL on Windows).
+	1. Run `rm -f databases/*.table` to remove the table files in your workspace.
+	1. Run `docker container list --filter name=devcontainer` to get the container names.
+	1. Delete each container with `docker container stop <name>` and `docker container rm <name>`.
+	1. Run `docker volume list --filter name=devcontainer` to get the volume names.
+	1. Delete each volume with `docker volume rm <name>`.
+	1. Resume from the earlier steps with "Dev Containers: Reopen in Container".
 
 ## Installing locally
 
