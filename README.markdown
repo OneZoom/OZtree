@@ -8,7 +8,7 @@ If you simply want to run a local copy of OneZoom, but not modify the code yours
 
 ## Installing in a Docker Dev Container
 
-If you are using Visual Studio Code or another editor that supports [Dev Containers](https://containers.dev/), the easiest way to set up a full development environment is to use the included Dev Container configuration. This will automatically create two containers: one for development (_dev_), and another (_web_) with the MySQL database and production web server (nginx + uwsgi), derived from the Docker image mentioned above. Your source code will be mounted simultaneously into both containers: dev will let you run build commands and web will serve it as a web server you can access via port forwarding. You can also run your own server from the dev container by [running web2py.py directly](#starting-and-shutting-down-web2py) -- this is particularly useful for debugging.
+If you are using Visual Studio Code or another editor that supports [Dev Containers](https://containers.dev/), the easiest way to set up a full development environment is to use the included Dev Container configuration. 
 
 If you are using Visual Studio Code, perform the following steps (you will need to modify these for another editor):
 
