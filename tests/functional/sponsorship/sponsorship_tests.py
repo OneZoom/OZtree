@@ -6,7 +6,7 @@ import requests
 from selenium import webdriver #to fire up a duplicate page
 
 from ...util import appconfig_loc, base_url
-from ..functional_tests import FunctionalTest, test_email, web2py_viewname_contains, has_linkouts, linkouts_url
+from ..functional_tests import FunctionalTest, test_email, has_linkouts, linkouts_url
 
 
 class SponsorshipTest(FunctionalTest):
@@ -21,16 +21,16 @@ class SponsorshipTest(FunctionalTest):
         and point out web2py instance at it so that we can adjust maintenance_mins and allow_sponsorship
         """
         print(">> creating temporary appconfig")
-        self.appconfig_loc = appconfig_loc + '.test_orig.ini'
-        with open(appconfig_loc, "r") as orig, open(self.appconfig_loc, "w") as test:
+        self.test_appconfig_loc = appconfig_loc + '.sponsorhip_test.ini'
+        with open(appconfig_loc, "r") as orig, open(self.test_appconfig_loc, "w") as test_appconfig_file:
             for line in orig:
                 if line.lstrip().startswith("maintenance_mins") or line.lstrip().startswith("allow_sponsorship"):
-                    pass #do not write these out
+                    pass # skip existing maintenance_mins and allow_sponsorship settings
                 else:
-                    test.write(line)
+                    test_appconfig_file.write(line)
                     if line.lstrip().startswith("[sponsorship]"):
-                        test.write("maintenance_mins = {}\n".format(self.maintenance_mins))
-                        test.write("allow_sponsorship = {}\n".format(self.allow_sponsorship))
+                        test_appconfig_file.write("maintenance_mins = {}\n".format(self.maintenance_mins))
+                        test_appconfig_file.write("allow_sponsorship = {}\n".format(self.allow_sponsorship))
         super().setup_class()
         
         #Now get s, from the "normal" OZ viewer, from a museum display, 
@@ -59,7 +59,7 @@ class SponsorshipTest(FunctionalTest):
     def teardown_class(self):
         super().teardown_class()
         print(">> removing temporary appconfig")
-        os.remove(self.appconfig_loc)
+        os.remove(self.test_appconfig_loc)
         
     def check_ott(self, extra_assert_tests, ott, extra_assert_tests_from_another_browser=None, browser=None):
         """

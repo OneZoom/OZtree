@@ -75,10 +75,8 @@ class Web2py_server:
         self.pid = None
         if self.is_local():
             print("> starting web2py")
-            cmd = [os.path.join(web2py_app_dir, '..','..','bin', 'python3'), os.path.join(web2py_app_dir, '..','..','web2py.py'), '-Q', '-i', ip, '-p', port, '-a', 'pass']
-            if appconfig_file is not None:
-                cmd += ['--args', appconfig_file]
-            self.pid = subprocess.Popen(cmd)
+            cmd = [os.path.join(web2py_app_dir, '..','..','bin', 'python3'), os.path.join(web2py_app_dir, '..','..','web2py.py'), '-i', ip, '-p', port, '-a', 'pass']
+            self.pid = subprocess.Popen(cmd, env={"ONEZOOM_APPCONFIG": os.path.abspath(appconfig_file)} if appconfig_file else None)
             #wait until the server has started
             for i in range(1000):
                 try:

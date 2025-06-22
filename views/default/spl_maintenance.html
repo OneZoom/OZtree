@@ -14,6 +14,17 @@
 {{end block}}
 
 <h2>{{=T('Sorry, we’re temporarily in maintenance mode')}}</h2>
-<figure class="uk-align-right">{{=IMG(_src=URL('static','images/maintenance.jpg'), _alt="Monkey maintenance")}}<figcaption><p>{{=A("Japanese macaques", _href=URL('default', 'life/@Macaca_fuscata', host=True, url_encode=False, extension=False))}} grooming</p><p>{{=A("© Noneotuho",_href="https://commons.wikimedia.org/wiki/File:Macaca_fuscata,_grooming,_Iwatayama,_20090201.jpg",  _target="_blank")}} {{=A(IMG(_src=URL('static','images/by-sa.svg'), _alt="Creative commons attribution + share-alike licence"),_href="https://creativecommons.org/licenses/by-sa/3.0/deed.en", _target="_blank")}}</p></figcaption></figure>{{=T('Due to essential maintenance the sponsorship option is temporarily unavailable.')}}
+<figure class="uk-align-right">
+  {{=IMG(_src=URL('static','images/maintenance.jpg'), _alt="Monkey maintenance")}}
+  <figcaption>
+    <p>
+      {{=A("Japanese macaques", _href=URL('default', 'life/@Macaca_fuscata', host=True, url_encode=False, extension=False))}} grooming
+    </p>
+    <p>
+      {{=A("© Noneotuho",_href="https://commons.wikimedia.org/wiki/File:Macaca_fuscata,_grooming,_Iwatayama,_20090201.jpg",  _target="_blank")}} {{=A(IMG(_src=URL('static','images/by-sa.svg'), _alt="Creative commons attribution + share-alike licence"),_href="https://creativecommons.org/licenses/by-sa/3.0/deed.en", _target="_blank")}}
+    </p>
+  </figcaption>
+</figure>
+{{=T('Due to essential maintenance the sponsorship option is temporarily unavailable.')}}
 <p>{{=XML(T('You can still %s as normal and use the other website features.') % (A(T("explore the tree of life"), _href=URL('default', 'life', host=True, scheme=True, extension=False)),))}}</p>
 <p>{{=XML(T('We expect OneZoom to be fully functional again within %s minutes.') % (SPAN(mins, _id="time"), ))}}</p>

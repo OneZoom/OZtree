@@ -65,7 +65,7 @@ class FunctionalTest(object):
         
         
         try:
-            self.web2py = Web2py_server(self.appconfig_loc)
+            self.web2py = Web2py_server(self.test_appconfig_loc)
         except AttributeError:
             self.web2py = Web2py_server()
             

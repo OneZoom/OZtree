@@ -10,7 +10,8 @@ except NameError:
     if request.vars.links=='none':
         #remove hyperlink from *all* links created via the web2py A() helper, e.g. for the logos & in the LOADed modals
         def A(*args, **kwargs):
-            #use SPAN rather than CAT so that e.g. _style attributes are kept
+            # use SPAN rather than CAT so that e.g. _style attributes are kept
+            kwargs.pop('_href', None)
             return SPAN(*args, **kwargs)
         pass
     if request.vars.links=='newtab':
