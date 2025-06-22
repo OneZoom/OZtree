@@ -2,6 +2,7 @@
 import os.path
 import img
 import json
+import os
 
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
@@ -24,17 +25,18 @@ from gluon import current
 ## this will also set migration=False for all tables, so that the DB table definitions are fixed
 is_testing = True
 
+custom_appconfig_path = os.environ.get('ONEZOOM_APPCONFIG')
+
 ## Read configuration
 if (
     is_testing and
-    request.env.cmd_options is not None and
-    len(request.env.cmd_options.args) > 1 and
-    os.path.isfile(request.env.cmd_options.args[-1])
+    custom_appconfig_path and
+    os.path.isfile(custom_appconfig_path)
 ):
     # For unit testing, we might want to load a different appconfig.ini file, which can
     # be passed in to the rocket server as the last arg on the command-line (on the main
     # server, `request.env.cmd_options` is undefined, and we default back to appconfig.ini)
-    myconf = AppConfig(request.env.cmd_options.args[-1], reload=is_testing)
+    myconf = AppConfig(custom_appconfig_path, reload=is_testing)
 else:
     # Reload config on each request when is_testing (i.e. not production)
     myconf = AppConfig(reload=is_testing)

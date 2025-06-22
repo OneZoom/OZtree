@@ -6,7 +6,6 @@ From https://github.com/OneZoom/OZtree/issues/62
 2) Test the iframe popups
 """
 import os.path
-from nose import with_setup
 
 from ...util import base_url
 from ..functional_tests import FunctionalTest
@@ -16,9 +15,9 @@ class TestViewerErrors(FunctionalTest):
     Can't nest viewer in viewer
     """
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
-        super().setUpClass()
+        super().setup_class()
 
     def test_viewer_popuped(self):
         """

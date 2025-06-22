@@ -3,7 +3,6 @@
 """
 import os.path
 from time import sleep
-from nose import tools
 
 from ...util import base_url
 from ..functional_tests import FunctionalTest
@@ -25,7 +24,7 @@ class title_contains(object):
     self.text = text
 
   def __call__(self, driver):
-    text = driver.find_element_by_tag_name("title").get_attribute("innerHTML")   # Finding the referenced element
+    text = driver.find_element(By.TAG_NAME, "title").get_attribute("innerHTML")   # Finding the referenced element
     if self.text in text:
         return text
     else:
@@ -36,9 +35,9 @@ class TestImageInfo(FunctionalTest):
     Test whether the image information pages work
     """
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
-        super().setUpClass()
+        super().setup_class()
         self.image_data_dict = {}
         db_cursor = self.db['connection'].cursor()
         db_cursor.execute("SELECT src, src_id FROM images_by_ott WHERE src=1 AND src_id < 0 AND url LIKE 'https://commons.wikimedia.org/%' LIMIT 1") # a non-eol URL
@@ -57,8 +56,7 @@ class TestImageInfo(FunctionalTest):
         db_cursor.close()
 
 
-    @tools.nottest
-    def test_image_iframe(self, image_data, expected_iframe_title_contains, extra_iframe_checks=None):
+    def check_image_iframe(self, image_data, expected_iframe_title_contains, extra_iframe_checks=None):
         """
         Check that we can get a OneZoom page showing information about a held image
         """
@@ -66,10 +64,10 @@ class TestImageInfo(FunctionalTest):
         #check that the standard browser produces the correct iframe
         sleep(1) #wait for redirects
         iframe_css = "#imageinfo-modal iframe"
-        iframe = self.browser.find_element_by_css_selector(iframe_css)
+        iframe = self.browser.find_element(By.CSS_SELECTOR, iframe_css)
         self.browser.switch_to.frame(iframe)
         #here we should use self.browser.current_url but there seems to be a bug whereby it always returns the top url, so we look in title instead
-        actual_title = self.browser.find_element_by_tag_name("title").get_attribute("innerHTML")
+        actual_title = self.browser.find_element(By.TAG_NAME, "title").get_attribute("innerHTML")
         try:
             WebDriverWait(self.browser, 5).until(title_contains(expected_iframe_title_contains))
         except TimeoutException:
@@ -80,13 +78,12 @@ class TestImageInfo(FunctionalTest):
             extra_iframe_checks(self) #this should happen with in the iframe
         self.browser.switch_to_default_content()
 
-    @tools.nottest
-    def test_normal_images(self, image_data, linkout_url_contains, expected_iframe_title_contains, extra_iframe_checks=None):
+    def check_normal_images(self, image_data, linkout_url_contains, expected_iframe_title_contains, extra_iframe_checks=None):
         """
         Check that we can get a OneZoom page showing information about a held image, and there is a link out button
         """
         self.browser.get(base_url + 'life')
-        self.test_image_iframe(image_data, expected_iframe_title_contains, extra_iframe_checks)
+        self.check_image_iframe(image_data, expected_iframe_title_contains, extra_iframe_checks)
         assert len(self.browser.window_handles) == 1, "Should be only one window/tab open"
         main_oz_tab = self.browser.window_handles[0]
         #follow the link out (should open in new tab)
@@ -102,12 +99,11 @@ class TestImageInfo(FunctionalTest):
             assert False, 'There should be a button to link out when using image info {}'.format(image_data)
         self.browser.switch_to.window(main_oz_tab)
         
-    @tools.nottest
-    def test_md_images(self, image_data):
+    def check_md_images(self, image_data):
         def extra_iframe_checks(self):
             assert not self.element_by_tag_name_exists("a"), 'Should not have any link outs'
         self.browser.get(base_url + 'life_MD')
-        self.test_image_iframe(image_data, oz_imageinfo_pagetitle, extra_iframe_checks)
+        self.check_image_iframe(image_data, oz_imageinfo_pagetitle, extra_iframe_checks)
        
     def test_plain_images(self):
         """
@@ -115,55 +111,55 @@ class TestImageInfo(FunctionalTest):
         """
         def extra_iframe_checks(self):
             assert not self.element_by_css_selector_exists("#imageinfo a.provenance-url"), 'Should not have a link out from a plain image with no url'
-        self.test_normal_images(self.image_data_dict['plain'], base_url, oz_imageinfo_pagetitle, extra_iframe_checks)
+        self.check_normal_images(self.image_data_dict['plain'], base_url, oz_imageinfo_pagetitle, extra_iframe_checks)
         
     def test_wiki_images(self):
         """
         Test that a bespoke image inserted by hand from wikipedia pops up correctly in the normal viewer 
         """
         def extra_iframe_checks(self):
-            link_out = self.browser.find_element_by_css_selector("#imageinfo a.provenance-url")
+            link_out = self.browser.find_element(By.CSS_SELECTOR, "#imageinfo a.provenance-url")
             assert link_out, 'There should be a link to the wikipedia page'
             link_out.click()
             sleep(1)
-            assert 'Wikimedia Commons' in self.browser.find_element_by_tag_name("title").get_attribute("innerHTML"), 'Link shoudl navigate iframe to wikimedia commons'
+            assert 'Wikimedia Commons' in self.browser.find_element(By.TAG_NAME, "title").get_attribute("innerHTML"), 'Link shoudl navigate iframe to wikimedia commons'
         self.browser.get(base_url + 'life')
-        self.test_normal_images(self.image_data_dict['wiki'], base_url, oz_imageinfo_pagetitle, extra_iframe_checks)
+        self.check_normal_images(self.image_data_dict['wiki'], base_url, oz_imageinfo_pagetitle, extra_iframe_checks)
         
     def test_oz_images(self):
         """
         Test that a bespoke OZ image from EoL pops up the EoL site in the normal viewer 
         """
         self.browser.get(base_url + 'life')
-        self.test_normal_images(self.image_data_dict['oz'], '//eol.org/', "Encyclopedia of Life")
+        self.check_normal_images(self.image_data_dict['oz'], '//eol.org/', "Encyclopedia of Life")
         
     def test_eol_images(self):
         """
         Test that an normal image taken from EoL pops up the EoL site in the normal viewer 
         """
         self.browser.get(base_url + 'life')
-        self.test_normal_images(self.image_data_dict['eol'], '//eol.org/', "Encyclopedia of Life")
+        self.check_normal_images(self.image_data_dict['eol'], '//eol.org/', "Encyclopedia of Life")
         
     def test_plain_MD_images(self):
         """
         Test that a bespoke image inserted by hand with no URL pops up the OZ page in the museum display viewer 
         """
-        self.test_md_images(self.image_data_dict['plain'], )
+        self.check_md_images(self.image_data_dict['plain'], )
         
     def test_wiki_MD_images(self):
         """
         Test that a bespoke image inserted by hand from wikipedia pops up the OZ page in the museum display viewer 
         """
-        self.test_md_images(self.image_data_dict['wiki'])
+        self.check_md_images(self.image_data_dict['wiki'])
         
     def test_oz_MD_images(self):
         """
         Test that a bespoke OZ image from EoL pops up the OZ page in the museum display viewer 
         """
-        self.test_md_images(self.image_data_dict['oz'])
+        self.check_md_images(self.image_data_dict['oz'])
         
     def test_eol_MD_images(self):
         """
         Test that an normal image taken from EoL pops up the OZ page in the museum display viewer 
         """
-        self.test_md_images(self.image_data_dict['eol'])
+        self.check_md_images(self.image_data_dict['eol'])

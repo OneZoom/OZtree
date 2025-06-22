@@ -1,6 +1,5 @@
 # pip3 install -r tests/requirements.txt
-nose
-nose-testconfig
-selenium
+pytest
+selenium>=4.0.0
 requests
 pymysql

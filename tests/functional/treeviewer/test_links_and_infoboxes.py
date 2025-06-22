@@ -18,12 +18,12 @@ class TestLinksAndInfoboxes(FunctionalTest):
     (It is easy to get these wrong). Also test other links
     """
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
         #we need to find "true" links, e.g. not links acting as buttons (which have hrefs starting with #, so are "page-internal")
         #have to search by xpath as searching by css in selenium expands the href to include the hostname
         self.xpath_link_not_page_internal = "//a[@href and not(starts-with(@href, '#'))]" #an anchor with an href that does not start with '#' 
-        super().setUpClass()
+        super().setup_class()
 
     def test_MD_nolinks(self):
         """
@@ -36,7 +36,7 @@ class TestLinksAndInfoboxes(FunctionalTest):
             #only get the ones with an id
             id = elem.get_attribute("id")
             if id:
-                yield self.MD_nolinks, id
+                self.MD_nolinks(id)
             
     def MD_nolinks(self, id):
         print(id + ": ", flush=True, end="")
@@ -55,12 +55,12 @@ class TestLinksAndInfoboxes(FunctionalTest):
         main_oz_tab = self.browser.window_handles[0]
         #even in museum display we allow e.g. buttons with links as long as they are page-internal (start with #)
         #have to search by xpath as searching by css in selenium expands the href to include the hostname
-        yield self.tabbed_links, main_oz_tab, None
+        self.tabbed_links(main_oz_tab, None)
                 
         for elem in self.browser.find_elements_by_css_selector("[uk-modal]"):
             id = elem.get_attribute("id")
             if id:
-                yield self.tabbed_links, main_oz_tab, id
+                self.tabbed_links(main_oz_tab, id)
 
     def tabbed_links(self, main_oz_tab, id):
         if id:

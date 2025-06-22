@@ -55,10 +55,18 @@ if request.vars.popup:
       def URL(*args, **kwargs): return web2py_URL(*args, **dict(kwargs, vars=dict(kwargs.get('vars') or {}, popup=request.vars.popup)))
       #remove external A href links
       web2py_A = A
-      def A(*args, **kwargs): return web2py_A(*args, **kwargs) if '_target' not in kwargs and ('_href' not in kwargs or kwargs['_href'].startswith(".") or (kwargs['_href'].startswith("/") and not kwargs['_href'].startswith("//"))) else SPAN(*args, _style="text-decoration: underline;", **kwargs)
+      def A(*args, **kwargs):
+        if '_target' not in kwargs and ('_href' not in kwargs or kwargs['_href'].startswith(".") or (kwargs['_href'].startswith("/") and not kwargs['_href'].startswith("//"))):
+          return web2py_A(*args, **kwargs)
+        else:
+            kwargs.pop('_href', None)
+            return SPAN(*args, _style="text-decoration: underline;", **kwargs)
+        pass
     elif request.vars.popup=='4':
       #remove hyperlink from *all* links created via the web2py A() helper
-      def A(*args, **kwargs): return SPAN(*args, _style="text-decoration: underline;", **kwargs)
+      def A(*args, **kwargs):
+        kwargs.pop('_href', None)
+        return SPAN(*args, _style="text-decoration: underline;", **kwargs)
     pass
   pass
 pass

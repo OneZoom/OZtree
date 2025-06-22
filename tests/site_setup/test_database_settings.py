@@ -12,11 +12,11 @@ from ..util import get_db_connection
 
 class TestDatabaseSettings(object):
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         self.db = get_db_connection()
 
     @classmethod    
-    def tearDownClass(self):
+    def teardown_class(self):
         pass
     
     def test_indexes_created(self):

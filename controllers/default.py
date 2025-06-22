@@ -1810,7 +1810,7 @@ def licence():
     return dict()
 
 def news():
-    redirect(URL('default', 'milestones.html'))
+    redirect(URL('default', 'timeline.html'))
     return dict()
 
 

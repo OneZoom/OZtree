@@ -3,22 +3,19 @@
 """Carry out functional tests on OneZoom pages using an automated browser via selenium
 
  Example: carry out all tests
-    nosetests -w ./ tests/functional
+    python -m pytest ./ tests/functional
  Example: carry out all tests for unsponsorable sites (museum displays)
-    nosetests -vs functional/sponsorship/test_unsponsorable_site.py
+    python -m pytest -s functional/sponsorship/test_unsponsorable_site.py
  Example: carry out test that unsponsorable sites give the correct page for invalid otts 
-    nosetests -vs functional/sponsorship/test_unsponsorable_site.py:TestUnsponsorableSite.test_invalid
-    
- If you have installed the 'rednose' package (pip3 install rednose), you can get nicer output by e.g.
- 
-    nosetests -vs ./tests/functional --rednose
+    python -m pytest -s functional/sponsorship/test_unsponsorable_site.py:TestUnsponsorableSite.test_invalid
     
  To carry out tests on a remote machine, you can specify a [url][server] and [url][port]
  in a config file, which will not give the FunctionalTest class an is_local attribute
  and hence will skip tests marked @attr('is_local'). E.g. for testing beta.onezoom.org, you can do
- 
+    TODO: this is not yet implemented for the functional tests
+    in nosetests we used to do...
     nosetests -vs ./tests/functional --rednose --tc-file beta_cfg.ini
- 
+
 """
 
 import sys
@@ -26,7 +23,6 @@ import json
 import os
 import re
 from datetime import datetime
-from nose import tools
 import requests
 import subprocess
 import logging
@@ -52,7 +48,7 @@ class FunctionalTest(object):
     is_local = Web2py_server.is_local()
 
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         def striptext_in_file(line, file):
             """
             look for the line as a starting line in the file, stripping whitespace
@@ -69,7 +65,7 @@ class FunctionalTest(object):
         
         
         try:
-            self.web2py = Web2py_server(self.appconfig_loc)
+            self.web2py = Web2py_server(self.test_appconfig_loc)
         except AttributeError:
             self.web2py = Web2py_server()
             
@@ -97,55 +93,50 @@ class FunctionalTest(object):
         selenium_logger.setLevel(logging.WARNING)
         #chrome_options = webdriver.ChromeOptions()
         #chrome_options.add_experimental_option("mobileEmulation", { "deviceName": "iPhone 7" })
-        self.caps = webdriver.ChromeOptions().to_capabilities()
+        chrome_options = webdriver.ChromeOptions()
         # enable browser logging
-        self.caps['loggingPrefs'] = { 'browser':'ALL' }
-        self.browser = webdriver.Chrome(desired_capabilities = self.caps)
+        chrome_options.set_capability('goog:loggingPrefs', { 'browser':'ALL' })
+        self.browser = webdriver.Chrome(options=chrome_options)
         self.browser.implicitly_wait(1)
 
     @classmethod
-    def tearDownClass(self):
+    def teardown_class(self):
         #should test here that we don't have any console.log errors (although we might have logs).
         self.browser.quit()
         self.web2py.stop_server()
         
-    def setup(self):
+    def setup_method(self):
         """
         By default, clear logs before each test
         """
         self.clear_log()
 
-    def teardown(self):
+    def teardown_method(self):
         """
         By default, check javascript errors after each test. If you don't want to do this, e.g. for iframes, thic can be overridden
         """
         self.clear_log(check_errors=True)
 
-    @tools.nottest
     def element_by_tag_name_exists(self, tag_name):
-        try: self.browser.find_element_by_tag_name(tag_name)
+        try: self.browser.find_element(By.TAG_NAME, tag_name)
         except NoSuchElementException: return False
         return True
 
-    @tools.nottest
     def element_by_id_exists(self, id):
-        try: self.browser.find_element_by_id(id)
+        try: self.browser.find_element(By.ID, id)
         except NoSuchElementException: return False
         return True
 
-    @tools.nottest
     def element_by_class_exists(self, cls):
-        try: self.browser.find_element_by_class_name(cls)
+        try: self.browser.find_element(By.CLASS_NAME, cls)
         except NoSuchElementException: return False
         return True
 
-    @tools.nottest
     def element_by_css_selector_exists(self, css):
-        try: self.browser.find_element_by_css_selector(css)
+        try: self.browser.find_element(By.CSS_SELECTOR, css)
         except NoSuchElementException: return False
         return True
     
-    @tools.nottest
     def clear_log(self, check_errors=False):
         log = self.browser.get_log('browser')
         if check_errors:
@@ -155,7 +146,6 @@ class FunctionalTest(object):
                     if not (message['message'].startswith("https://media.eol.org/content") and "404 (Not Found)" in message['message']):
                         assert False, "Javascript issue of level {}, : {}".format(message['level'], message['message'])
             
-    @tools.nottest
     def zoom_disabled(self):
         """
         Check that the touch zoom functionality is disabled.
@@ -209,17 +199,17 @@ def has_linkouts(browser, include_site_internal):
     Depending on the param passed in, we may want to allow internal (relative) links such as 
     <a href='/sponsored'></a>
     """
-    for tag in browser.find_elements_by_css_selector("[href^='http']"):
+    for tag in browser.find_elements(By.CSS_SELECTOR, "[href^='http']"):
         if tag.tag_name != u'link' and not tag.get_attribute('href').startswith('http://127.0.0.1'): #should allow e.g. <link href="styles.css"> and http://127.0.0.1:..
              return True
-    for tag in browser.find_elements_by_css_selector("[href^='//']"):
+    for tag in browser.find_elements(By.CSS_SELECTOR, "[href^='//']"):
         if tag.tag_name != u'link': #should allow e.g. <link href="styles.css">
              return True
 
     #all hrefs should now be http or https refs to local stuff. We should double check this
     #by looking at the tag.attribute which is fully expanded by selenium/chrome to include http
     #but we should exclude all page-local links (i.e. beginning with #)
-    for tag in browser.find_elements_by_css_selector('[href]:not([href^="#"])'):
+    for tag in browser.find_elements(By.CSS_SELECTOR, '[href]:not([href^="#"])'):
         if tag.tag_name != u'link':
             if include_site_internal:
                 return True
@@ -234,13 +224,13 @@ def has_linkouts(browser, include_site_internal):
 def web2py_date_accessed(browser):
     #assumes that we have injected the access date into a meta element called 'date_accessed'
     #using the web2py code {{response.meta.date_accessed = request.now}}
-    return datetime.strptime(browser.find_element_by_xpath("//meta[@name='date_accessed']").get_attribute("content"), date_format)
+    return datetime.strptime(browser.find_element(By.XPATH, "//meta[@name='date_accessed']").get_attribute("content"), date_format)
     
 def web2py_viewname_contains(browser, expected_view):
     #Checks if we have injected the view name into a meta element called 'viewfile'
     #using the web2py code {{response.meta.viewfile = response.view}}
     try:
-        return expected_view in browser.find_element_by_xpath("//meta[@name='viewfile']").get_attribute("content")
+        return expected_view in browser.find_element(By.XPATH, "//meta[@name='viewfile']").get_attribute("content")
     except NoSuchElementException:
         return False
 
@@ -278,7 +268,7 @@ def make_temp_minlife_file(self):
             f.write(response.content)
         self.temp_minlife_created += [minlife_file_location.format(i)]
         #process links (see the partial_install command in Gruntfile.js in the app dir)
-        subprocess.call(['perl', '-i', os.path.join(web2py_app_dir, 'OZprivate','ServerScripts','Utilities','partial_install.pl'), minlife_file_location.format(i)])
+        subprocess.call([sys.executable, os.path.join(web2py_app_dir, 'OZprivate','ServerScripts','Utilities','partial_install.py'), minlife_file_location.format(i)])
         return minlife_file_location.format(i)
     else:
         raise Exception("There are already many test files in {}. Please remove some before continuing".format(minlife_file_location))

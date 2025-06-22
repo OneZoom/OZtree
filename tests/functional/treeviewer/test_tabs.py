@@ -21,9 +21,9 @@ class TestTabs(FunctionalTest):
     Tests all the tabs in a simplistic way, assuming we can find all ones for humans (leaf) and mammals (node)
     """
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         print("== Running {} ==".format(os.path.basename(__file__)))
-        super().setUpClass()
+        super().setup_class()
         #In the main OneZoom viewer, the sponsorship popup urls are returned by calling the
         # server_urls.OZ_leaf_json_url_func javascript function, providing it with an ott, e.g.
         # server_urls.OZ_leaf_json_url_func(1234). We need to coppture this function as javascript,
@@ -61,7 +61,7 @@ class TestTabs(FunctionalTest):
         checked_tabs = {t['id']:False for t in requests.get(base_url + 'treeviewer/UI_layer.json', timeout=5).json()['tabs']}
         
         for identifier, tip_type in [('oak','leaf'), ('human','leaf'), ('mammal','node')]:
-            yield self.check_tab, identifier, tip_type, checked_tabs
+            self.check_tab(identifier, tip_type, checked_tabs)
         assert all(checked_tabs.values()), "All tab types should have been checked"
     
     def check_tab(self, identifier, tip_type, checked_tabs):

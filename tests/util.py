@@ -3,16 +3,16 @@ import re
 import subprocess
 import urllib.request
 from time import sleep
-#use testconfig from nose (get it using `pip3 install nose-testconfig`)
-try:
-  from testconfig import config
-except ModuleNotFoundError:
-  config = {}
+#use testconfig from nose2 (get it using `pip3 install nose-testconfig`)
+# try:
+#   from testconfig import config
+# except ModuleNotFoundError:
+config = {}
 
 web2py_app_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 appconfig_loc = os.path.join(web2py_app_dir, 'private', 'appconfig.ini')
 ip = config.get("url", {}).get("server", "127.0.0.1")
-port = config.get("url", {}).get("port", "8001")
+port = config.get("url", {}).get("port", "8000")
 base_url = "http://"+ip
 if port != '80':
     base_url += (":"+port)
@@ -28,7 +28,7 @@ def get_db_connection():
             if m:
                 conf_type = m.group(1)
             if conf_type == 'db':
-                m = re.match('uri\s*=\s*(\S+)', line)
+                m = re.match(r'uri\s*=\s*(\S+)', line)
                 if m:
                     database_string = m.group(1)
     assert database_string is not None, "Can't find a database string to connect to"
@@ -47,7 +47,10 @@ def get_db_connection():
             pw = getpass("Enter the sql database password: ")
         else:
             pw = match.group(2)
-        db['connection'] = pymysql.connect(user=match.group(1), passwd=pw, host=match.group(3), db=match.group(4), port=3306, charset='utf8mb4')
+        print("Connecting to mysql database: user={}, host={}, database={}".format(match.group(1), match.group(3), match.group(4)))
+        print("password: {}".format(pw))
+        db['connection'] = pymysql.connect(user=match.group(1), passwd=pw, host='localhost', db=match.group(4), port=3306, charset='utf8mb4')
+        print("Connected")
         db['subs'] = "%s"
     else:
         fail("No recognized database specified: {}".format(database_string))
@@ -72,10 +75,8 @@ class Web2py_server:
         self.pid = None
         if self.is_local():
             print("> starting web2py")
-            cmd = [os.path.join(web2py_app_dir, '..','..','bin', 'python3'), os.path.join(web2py_app_dir, '..','..','web2py.py'), '-Q', '-i', ip, '-p', port, '-a', 'pass']
-            if appconfig_file is not None:
-                cmd += ['--args', appconfig_file]
-            self.pid = subprocess.Popen(cmd)
+            cmd = [os.path.join(web2py_app_dir, '..','..','bin', 'python3'), os.path.join(web2py_app_dir, '..','..','web2py.py'), '-i', ip, '-p', port, '-a', 'pass']
+            self.pid = subprocess.Popen(cmd, env={"ONEZOOM_APPCONFIG": os.path.abspath(appconfig_file)} if appconfig_file else None)
             #wait until the server has started
             for i in range(1000):
                 try:
