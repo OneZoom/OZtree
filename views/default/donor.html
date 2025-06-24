@@ -17,9 +17,9 @@
         <div class="uk-margin-small-bottom">
           <a href="{{=URL('/life/@=%d?init=jump' % item.OTT_ID, url_encode=False)}}" target="_blank">
             <span class="img-species leafout leafout-corner"><img class="species" alt=""
-                    src="{{=images[item.OTT_ID].get('url','')}}"
+                    src="{{=images.get(item.OTT_ID, {}).get('url','')}}"
                 onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'"
-                  title="{{=' / '.join(s for s in [images[item.OTT_ID].get('rights', ''), images[item.OTT_ID].get('licence', '')] if s)}}" /></span>
+                  title="{{=' / '.join(s for s in [images.get(item.OTT_ID, {}).get('rights', ''), images.get(item.OTT_ID, {}).get('licence', '')] if s)}}" /></span>
           </a>
         </div>
 
