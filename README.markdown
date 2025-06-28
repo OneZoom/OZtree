@@ -16,7 +16,7 @@ If you are using Visual Studio Code, perform the following steps (you will need 
 1. `git clone https://github.com/OneZoom/OZtree` into the directory of your choice. If using Windows, it is highly recommended to [clone on the WSL2 filesystem](https://code.visualstudio.com/remote/advancedcontainers/improve-performance#_store-your-source-code-in-the-wsl-2-filesystem-on-windows) both for performance reasons and to avoid permissions issues. If you wish to fork the repository and clone your fork, you will need to copy the tags from upstream, otherwise you will see build issues later. You can do this with `git fetch --tags upstream` followed by `git push --tags`.
 1. Open the cloned directory in VSCode.
 1. Open the command palette and choose "Dev Containers: Reopen in Container". This may take several minutes to run. When it completes, your repository will be mounted at `/opt/web2py/applications/OZtree`.
-1. Obtain a dump of the production SQL database, put it in your project directory, and load it with `mysql -h db -u oz -ppasswd OneZoom < dump.sql`
+1. [Obtain a dump](#other-tables) of the production SQL database, put it in your project directory, and load it with `mysql -h db -u oz -ppasswd OneZoom < dump.sql`
 1. Run `./web2py-run` to start the server locally and visit https://localhost:8000/ in your browser. 
 
 Additional notes:
@@ -32,7 +32,7 @@ Additional notes:
 	1. Delete each container with `docker container stop <name>` and `docker container rm <name>`.
 	1. Run `docker volume list --filter name=devcontainer` to get the volume names.
 	1. Delete each volume with `docker volume rm <name>`.
-	1. Resume from the earlier steps with "Dev Containers: Reopen in Container".
+	1. Resume from the installation steps with "Dev Containers: Reopen in Container".
 
 ## Installing locally
 

@@ -22,5 +22,9 @@
 			]
 		}
 	},
+	// Perform the following after creating the container:
+	// 1. Create appconfig.ini from example if not already present.
+	// 2. Install dependencies and build.
+	// 3. Run a test to initialize the database if not populated.
 	"postCreateCommand": "cp -n private/appconfig.ini.example private/appconfig.ini && npm ci && grunt dev && ./web2py-run tests/unit/test_modules_embed.py"
 }
