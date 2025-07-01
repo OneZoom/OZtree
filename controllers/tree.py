@@ -77,9 +77,11 @@ def GBIF_OZpage():
 
 def pic_info():
     """
-    This is the URL that we use to display copyright information about an image, where we pass in the image ID and image source ID.
-    Within the tree viewer, this is always loaded into an iframe, but the popup status determines which iframe to load.
-    When popup >= 3 we want to always use our own image info page, but for popup <3 we could potentially use
+    This is the URL that we use to display copyright information about an image, 
+    where we pass in the image ID and image source ID. Within the tree viewer, this
+    is always loaded into an iframe, but the popup status determines which iframe to load.
+    When popup >= 3 (museum displays etc) we want to always use our own image info page,
+    but for popup <3 could potentially use
     an alternative. When called from a jump out link, this will have redirect=1 set
     """
     try:
@@ -119,6 +121,22 @@ def pic_info():
         )
     else:
         raise HTTP(400,"No such image")
+
+def wikimedia_commons_QID():
+    # when passed a QID, look it up in the images_by_ott table, and
+    # jump there if 
+    src_id = int(request.args[0])  # This should be a QID
+    row = db((db.images_by_ott.src == src_flags['wiki']) & (db.images_by_ott.src_id == src_id)).select(
+        db.images_by_ott.url).first()
+    if row:
+        redirect(row.url)
+    else:
+        raise HTTP(
+            400,
+            f"Could not find a Wikimedia Commons image (src={src_flags['wiki']} with QID {src_id}."
+        )
+    
+
 
 def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
     """
