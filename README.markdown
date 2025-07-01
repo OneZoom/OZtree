@@ -8,31 +8,31 @@ If you simply want to run a local copy of OneZoom, but not modify the code yours
 
 ## Installing in a Docker Dev Container
 
-If you are using Visual Studio Code or another editor that supports [Dev Containers](https://containers.dev/), the easiest way to set up a full development environment is to use the included Dev Container configuration. This will automatically create two containers: one for development (_dev_), and another (_web_) with the MySQL database and production web server (nginx + uwsgi), derived from the Docker image mentioned above. Your source code will be mounted simultaneously into both containers: dev will let you run build commands and web will serve it as a web server you can access via port forwarding. You can also run your own server from the dev container by [running web2py.py directly](#starting-and-shutting-down-web2py) -- this is particularly useful for debugging.
+If you are using Visual Studio Code or another editor that supports [Dev Containers](https://containers.dev/), the easiest way to set up a full development environment is to use the included Dev Container configuration. 
 
 If you are using Visual Studio Code, perform the following steps (you will need to modify these for another editor):
 
-1. Follow the instructions at either https://hub.docker.com/r/onezoom/oztree or https://hub.docker.com/r/onezoom/oztree-complete to save a docker image with IUCN data.
 1. Follow the [VSCode instructions for installing Dev Container support](https://code.visualstudio.com/docs/devcontainers/containers#_installation).
 1. `git clone https://github.com/OneZoom/OZtree` into the directory of your choice. If using Windows, it is highly recommended to [clone on the WSL2 filesystem](https://code.visualstudio.com/remote/advancedcontainers/improve-performance#_store-your-source-code-in-the-wsl-2-filesystem-on-windows) both for performance reasons and to avoid permissions issues. If you wish to fork the repository and clone your fork, you will need to copy the tags from upstream, otherwise you will see build issues later. You can do this with `git fetch --tags upstream` followed by `git push --tags`.
 1. Open the cloned directory in VSCode.
-1. Create a `.env` file in the `.devcontainer` directory and add `WEB_IMAGE_NAME=onezoom/oztree-with-iucn`, changing the value to whatever image name you choose in step 1.
-1. Open the command palette and choose "Dev Containers: Reopen in Container". This may take several minutes to run.
-1. Your repository is mounted at `/opt/web2py/applications/OZtree` and the original production docker container application is mounted at `/opt/web2py/applications/OZtree_original`. In order to sync your repository with the production database state, open an integrated terminal and run the following: 
+1. Open the command palette and choose "Dev Containers: Reopen in Container". This may take several minutes to run. When it completes, your repository will be mounted at `/opt/web2py/applications/OZtree`.
+1. [Obtain a dump](#other-tables) of the production SQL database, put it in your project directory, and load it with `mysql -h db -u oz -ppasswd OneZoom < dump.sql`
+1. Run `./web2py-run` to start the server locally and visit https://localhost:8000/ in your browser. 
 
-```bash
-cp /opt/web2py/applications/OZtree_original/private/appconfig.ini /opt/web2py/applications/OZtree/private/
-rm -f /opt/web2py/applications/OZtree/databases/*.table
-cp /opt/web2py/applications/OZtree_original/databases/*.table /opt/web2py/applications/OZtree/databases/
-```
+Additional notes:
 
-1. Run `npm ci && grunt dev`. You will need to rerun `grunt dev` any time you make code changes.
-1. Run `./web2py-run` to start the server locally.
-1. Load https://localhost:8000/. The first page load can take a long time (10+ minutes) as the database is updated. Do not kill the server while this is running. Future page loads will be much faster.
-1. You can now visit http://localhost:8080 at any time to load the page via nginx + uwsgi! You can also continue to rebuild and run the server with `grunt dev` and `./web2py-run` and use https://localhost:8000/.
-1. (Optional) Once tables are created, and everything is working, you can set `migrate = 0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
-1. (Optional) [Create a manager account](#creating-auth-users--groups) in the auth table, e.g. so you can [view docs](#documentation).
-1. (Optional) MySQL is available on port 3307 if you wish to debug using local tools outside the container.
+- You will generally need to rerun `grunt dev` any time you make code changes, before running `./web2py-run`.
+- Once tables are populated, and everything is working, you can set `migrate = 0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
+- [Create a manager account](#creating-auth-users--groups) in the auth table, e.g. so you can [view docs](#documentation).
+- MySQL is available on port 3306 if you wish to debug using local tools on your host outside the container.
+- Your MySQL database contents are stored in a Docker volume and will persist even if you rebuild your Dev Container, making this operation quick and safe. If you wish to rebuild your Dev Container from scratch with a fresh database, you will need to perform the following steps:
+	1. Open the command palette and choose "Dev Containers: Reopen Folder Locally" (or "in WSL", if using WSL on Windows).
+	1. Run `rm -f databases/*.table` to remove the table files in your workspace.
+	1. Run `docker container list --filter name=devcontainer` to get the container names.
+	1. Delete each container with `docker container stop <name>` and `docker container rm <name>`.
+	1. Run `docker volume list --filter name=devcontainer` to get the volume names.
+	1. Delete each volume with `docker volume rm <name>`.
+	1. Resume from the installation steps with "Dev Containers: Reopen in Container".
 
 ## Installing locally
 
