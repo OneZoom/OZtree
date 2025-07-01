@@ -388,10 +388,10 @@ def nodes_info_from_string(
     if check_malicious:
         # For speed, we pass leafIDs_string and nodeIDs_string as comma-separated strings
         # straight to SQL, so we should check they don't contain malicious SQL commands
-        if re.search("[^\d,]", leafIDs_string) or re.search("[^\d,]", nodeIDs_string):
+        if re.search(r"[^\d,]", leafIDs_string) or re.search(r"[^\d,]", nodeIDs_string):
             #list of ids must only consist of digits and commas
             raise ValueError 
-        if re.search("^,|,$|,,", leafIDs_string) or re.search("^,|,$|,,", nodeIDs_string):
+        if re.search(r"^,|,$|,,", leafIDs_string) or re.search(r"^,|,$|,,", nodeIDs_string):
             #ban sequential commas, or commas at beginning or end
             raise ValueError
     if image_type not in ("best_verified", "best_pd"):

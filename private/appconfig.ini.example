@@ -40,7 +40,17 @@ save_to_tmp_file_dir =
 ;    means you will need to download >100,000 thumbnail images
 ;    onto your machine. If you want to use the images on the
 ;    OneZoom server, set this to `//images.onezoom.org/`
+; * eol_jumpout_url: The internal URL that redirects to the Encyclopedia
+;    of Life data object page for a given source and source ID.
+; * wiki_jumpout_url: The internal URL that redirects to an image on
+;    Wikimedia Commons by looking up the QID in the images_by_ott table
 url_base = //images.onezoom.org/
+eol_jumpout_url = /tree/eol_dataobject_ID/{src}/{src_id}
+wiki_jumpout_url = /tree/wikimedia_commons_QID/{src_id}y
+
+[azure_vision]
+; * endpoint: The endpoint for the Azure Computer Vision API for image cropping
+; * key: The key for the Azure Computer Vision API
 
 [sponsorship]
 ; * allow_sponsorship. Should we allow the sponsorship page to be
