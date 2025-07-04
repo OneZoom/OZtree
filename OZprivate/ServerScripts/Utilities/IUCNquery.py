@@ -135,6 +135,10 @@ else:
 db_curs = db_connection.cursor()
 
 if not args.UPDATE_NODES_ONLY:
+    raise ValueError(
+        "IUCN API no longer provides access to the full dataset, "
+        "run with --UPDATE_NODES_ONLY to percolate existing data upwards"
+    )
     if args.IUCN_file:
         IUCN_API_data = json.loads(args.IUCN_file.read())
     else:
