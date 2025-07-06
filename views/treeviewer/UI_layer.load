@@ -10,7 +10,7 @@
     {{pass}}
   {{elif not request.vars.no_oz_logo:}}
     {{#The logo *never* opens a new tab (but it can be removed)}}
-    {{=no_tab_A(IMG(_src=URL('static','images/oz-logo-1line-mono-dark.svg')), _href=URL('default','index', extension=False), _id="OZ-logo")}}
+    {{=no_tab_A(IMG(_src=URL('static','images/oz-logo-1line-mono-dark.svg')), _href="/", _id="OZ-logo")}}
   {{pass}}
 </div>
 

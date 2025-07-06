@@ -4,7 +4,7 @@
 
 {{block masthead}}
 <div class="home-heading uk-text-center uk-overflow-hidden">
-  <h1>Welcome to the OneZoom {{=request.application}} tree of life explorer...</h1>
+  <h1>Welcome to the OneZoom {{='' if request.application==default_application else request.application}} tree of life explorer...</h1>
   <p>
     The Tree of Life shows how all life on Earth is related.
     In our interactive tree of life you can explore the relationships between

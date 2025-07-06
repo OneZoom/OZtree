@@ -11,6 +11,8 @@ import urllib.request
 import json
 from collections import OrderedDict
 
+from gluon.rewrite import routers
+
 import ozmail
 import tour
 from embed import embedize_url
@@ -148,11 +150,13 @@ def index():
     for key in titles.keys():
         if key not in images:
             images[key] = blank
+    default_application = routers.get('BASE', {}).get('default_application')
 
     return dict(
         n_species=db(db.ordered_leaves).count(),
         n_images=db(db.images_by_ott).count(),
         sponsorship_enabled=sponsorship_enabled(),
+        default_application=default_application,
         quotes=[
             db(db.quotes.quality >= 190).select(db.quotes.ALL, orderby='<random>', limitby=(0, 2)),
             db((db.quotes.quality < 190) & (db.quotes.quality >= 100)).select(db.quotes.ALL, orderby='<random>', limitby=(0, 8))
