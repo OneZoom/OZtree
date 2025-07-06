@@ -152,6 +152,7 @@ def index():
     return dict(
         n_species=db(db.ordered_leaves).count(),
         n_images=db(db.images_by_ott).count(),
+        sponsorship_enabled=sponsorship_enabled(),
         quotes=[
             db(db.quotes.quality >= 190).select(db.quotes.ALL, orderby='<random>', limitby=(0, 2)),
             db((db.quotes.quality < 190) & (db.quotes.quality >= 100)).select(db.quotes.ALL, orderby='<random>', limitby=(0, 8))
