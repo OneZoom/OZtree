@@ -12,6 +12,8 @@ var server_urls = {
   image_details_api: "{{try:}}{{=myconf.take('API.image')}}{{except:}}{{=URL('API', 'image_details.json', scheme=True, host=True)}}{{pass}}",
   update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
   tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
+  tour_list_api: "{{=URL('tour', 'list.json', scheme=True, host=True)}}",
+  tour_search_api: "{{=URL('tour','search.json', scheme=True, host=True)}}",
 
   {{ # NB: Ideally we'd look up setup_params in vars(), but a lot of controllers set vars=request.vars
   try:

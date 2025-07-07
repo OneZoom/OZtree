@@ -64,7 +64,7 @@ class APIManager {
     return new Promise((resolve, reject) => {
       api_wrapper({
         method: 'get',
-        url: '/tour/list.json',  // TODO: Config-ise it
+        url: config.api.tour_list_api,
         data: { tours: tour_ids.join(",") },
         success: resolve,
         error: (res) => reject("Failed to talk to server: " + res),
@@ -80,7 +80,7 @@ class APIManager {
     return new Promise((resolve, reject) => {
       api_wrapper({
         method: 'get',
-        url: '/tour/search.json',
+        url: config.api.tour_search_api,
         data: { query: searchString },
         success: resolve,
         error: (res) => reject("Failed to talk to server: " + res),
