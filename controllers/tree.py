@@ -102,6 +102,9 @@ def pic_info():
         url = URL('tree','eol_old_dataobject_ID', vars=request.vars, scheme=True, host=True)
 
     else:
+        # As an exception to the rule that all redirecting pages are in /redirect.
+        # we allow the pic_info page to redirect to the image source URL, but ban it
+        # if popups are not allowed (e.g. popup=3, or popup=4)
         if url is not None and (popup is None or popup < 3):
             redirect(url.format(src=src, src_id=src_id))
     
@@ -121,21 +124,6 @@ def pic_info():
         )
     else:
         raise HTTP(400,"No such image")
-
-def wikimedia_commons_QID():
-    # when passed a QID, look it up in the images_by_ott table, and
-    # jump there if 
-    src_id = int(request.args[0])  # This should be a QID
-    row = db((db.images_by_ott.src == src_flags['wiki']) & (db.images_by_ott.src_id == src_id)).select(
-        db.images_by_ott.url).first()
-    if row:
-        redirect(row.url)
-    else:
-        raise HTTP(
-            400,
-            f"Could not find a Wikimedia Commons image (src={src_flags['wiki']} with QID {src_id}."
-        )
-    
 
 
 def linkouts(is_leaf, ott=None, id=None, sponsorship_urls=[]):
@@ -262,56 +250,7 @@ def node_linkouts():
     return_values['data']['ozlinks'] = [URL('tree', 'node_linkouts', scheme=True, host=True, extension='html', args=request.args, vars=request.vars)]
     return return_values
 
-
-# OneZoom pages that redirect to other sites. These are used to register site visits so we can
-# e.g. update the image or common names tables when they are visited (and potentially corrected)
-
-def eol_page_ID():
-    """
-    Log the eol page visited, and redirect there.
-    EoL has no https site currently
-    """
-    import datetime
-    try:
-        EOLid = int(request.args[0])
-        OTTid = int(request.args[1])
-    except:
-        raise HTTP(400,"No valid id provided")
     
-    #we have inspected this EoL page - log it so we know to check EoL for changes   
-    db.eol_inspected.update_or_insert(db.eol_inspected.ott == OTTid,
-                               ott=OTTid,
-                               via=eol_inspect_via_flags['EoL_tab'],
-                               inspected=datetime.datetime.now())
-    redirect("//eol.org/pages/{}".format(EOLid))
-
-def eol_dataobject_ID():
-    """
-    Called when jumping out from an image. Provide the DOid (src_id) as the first arg.
-    Log the eol data object visited, and redirect there.
-    """
-    try:
-        src = int(request.args[0]) # for src = 1 or 2, this is an EoL data object ID
-        src_id = int(request.args[1]) # for src = 1 or 2, this is an EoL data object ID
-    except:
-        raise HTTP(400,"No valid id provided")
-    
-    #can redirect this to EoL, after logging so we can refresh e.g. cropped images
-    rows = db(db.images_by_ott.src_id == src_id).select(db.images_by_ott.ott)
-    for row in rows:
-        db.eol_inspected.update_or_insert(db.eol_inspected.ott == row.ott,
-                                   ott=row.ott,
-                                   via=eol_inspect_via_flags['image'],
-                                   inspected=datetime.datetime.now())
-    # might as well also look for this image in the images_by_name table (probably won't find it)
-    rows = db(db.images_by_ott.src_id == src_id).select(db.images_by_name.name)
-    for row in rows:
-        db.eol_inspected.update_or_insert((db.eol_inspected.name != None) & (db.eol_inspected.name == row.name),
-                                   name=row.name,
-                                   via=eol_inspect_via_flags['image'],
-                                   inspected=datetime.datetime.now())
-    redirect("//eol.org/media/{}".format(src_id))
-        
 def eol_old_dataobject_ID():
     """
     For old versions of eol images: the media urls are no longer valid.
@@ -389,7 +328,7 @@ def eol_url(EOLid, OTTid):
     so we can check if images or common names may have been updated.
     """
     try:
-        return [URL('tree','eol_page_ID', args=[int(EOLid), int(OTTid)], scheme=True, host=True), "//eol.org/pages/{}".format(int(EOLid))]
+        return [URL('redirect','eol_page_ID', args=[int(EOLid), int(OTTid)], scheme=True, host=True), "//eol.org/pages/{}".format(int(EOLid))]
     except:
         raise HTTP(400,"No valid EOL id provided")
 

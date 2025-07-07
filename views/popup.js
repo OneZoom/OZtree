@@ -20,15 +20,15 @@ $(document).ready(function() {
 });
 
 {{
-## Set up and override python functions for popupding
+## Set up and override python functions for popuping
 # popup-ed pages are our own pages used as iframes within the viewer, and have e.g. toolbars etc absent.
 # They also have pinch-zooming turned off, as this zooms the entire page, not just the iframe
 # We may also wish to "sandbox" links within popup-ed pages e.g. for museum displays. 
 # The degree of sandboxing is specified by the 'popup' parameter as follows:
 #1 no sandboxing: all links open as normal. Links that are internal (i.e. use the URL helper) 
-#  should pass on the popup status (this also avoids popupding the tree viewer itself) (normal display)
+#  should pass on the popup status (this also avoids popup-ing the tree viewer itself) (normal display)
 #  We would probably like to stop URLs that open in a new tab (e.g. within an A(... _target="_blank") helper
-#  from also adding popup, but this is diffcult to do, so these should be hardcoded urls instead
+#  from also adding popup, but this is difficult to do, so these should be hardcoded urls instead
 #2 minor "sandbox": all links open in a new tab (the "popup" need not be passed on to these links)
 #3 can only follow relative links without _target set (and cannot e.g. right click): popup status should be passed on (normal museum display)
 #4 cannot follow links at all (and cannot e.g. right click) 
@@ -55,7 +55,8 @@ if request.vars.popup:
       def URL(*args, **kwargs): return web2py_URL(*args, **dict(kwargs, vars=dict(kwargs.get('vars') or {}, popup=request.vars.popup)))
       #remove external A href links
       web2py_A = A
-      def A(*args, **kwargs): return web2py_A(*args, **kwargs) if '_target' not in kwargs and ('_href' not in kwargs or kwargs['_href'].startswith(".") or (kwargs['_href'].startswith("/") and not kwargs['_href'].startswith("//"))) else SPAN(*args, _style="text-decoration: underline;", **kwargs)
+      def is_internal_url(href): return (href.startswith(".") or (href.startswith("/") and not href.startswith("//"))) and not '/redirect/' in href
+      def A(*args, **kwargs): return web2py_A(*args, **kwargs) if '_target' not in kwargs and is_internal_url(kwargs.get('_href', '')) else SPAN(*args, _style="text-decoration: underline;", **kwargs)
     elif request.vars.popup=='4':
       #remove hyperlink from *all* links created via the web2py A() helper
       def A(*args, **kwargs): return SPAN(*args, _style="text-decoration: underline;", **kwargs)
