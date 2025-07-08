@@ -64,6 +64,8 @@ config.api = {
   image_details_api: null,
 
   tourstop_page: null,
+  tour_list_api: null,
+  tour_search_api: null,
 
   //The following are functions which take an OTT or a OneZoom id
   OZ_leaf_json_url_func: null,
