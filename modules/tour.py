@@ -20,7 +20,8 @@ def tours_related_to_ott(otts, full_meta=False):
 
 def tour_url(tour_row):
     """Convert tour row to a tour URL"""
-    return '/tour/data.html/%s' % tour_row.identifier
+    URL = current.globalenv['URL']
+    return URL('tour', 'data.html', args=[tour_row.identifier])
 
 
 def tour_search(searchFor, language='en'):
