@@ -4,12 +4,14 @@ import sys
 
 try:
     from gluon import current
+    from gluon.rewrite import routers
 except ImportError:
     #this is not being used in web2py, but instead in an independent python app
     #simply define cache.ram to be a function that returns the result of calling the 2nd arg
     #This is a complex HACK!!!
     cache = type("", (), dict(ram=lambda self, name, func, **kw: func()))()
     current = type("", (), {})() #allow us to set e.g. current.OZglobals, so we don't bomb out later
+    routers = {}
     def T(x):
         """Don't translate when used as an independent app"""
         return x
@@ -327,4 +329,6 @@ current.OZglobals = dict(
     unicode_punctuation_to_space_table = unicode_punctuation_to_space_table,
     logographic_transcriptions = logographic_transcriptions,
     tab_definitions = tab_definitions,
-    tab_defaults = tab_defaults)
+    tab_defaults = tab_defaults,
+    default_application = routers.get('BASE', {}).get('default_application'),
+)
