@@ -77,7 +77,7 @@
           <button   class="uk-icon main-icon">
             <img src="{{=URL('static/images', 'oz-logo-icon-darkbg.svg')}}" alt="" />
           </button>
-        </div><input class="uk-search-input" type="search" placeholder="{{=T('Search all life...')}}" /></div>
+        </div><input class="uk-search-input" type="search" placeholder="{{=T('Search all life...') if request.application==current.OZglobals['default_application'] else T('Search the tree...')}}" /></div>
       <div uk-dropdown="pos: bottom-left; offset: 0" class="search_dropdown selectable uk-overflow-auto">
         <div class="no_results">{{=T("No results found")}}</div>
         <dl class="search_hits"></dl>
