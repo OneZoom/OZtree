@@ -1,6 +1,6 @@
-#Convenience pages that allow anyone to pass in an OTT and get redirected to and EoL, wikidata, or wikipedia page
-#We could also add NCBI, IUCN, etc.
-
+#Pages that end up redirecting the user somewhere else. These include convenience pages
+# to pass in an OTT and get redirected to and EoL, wikidata, or wikipedia page (could also add NCBI, IUCN, etc.
+# and also pages that allow us to log visits to external sites, such as the EoL or wikidata pages.
 def eol():
     """ e.g. http://mysite/eol.html/1234 for an OTT id 1234 redirects to the eol page for OTT id 1234
          and http://mysite/eol.json/1234 returns the EOLid in JSON form: {'data':'5678'}"""
@@ -57,3 +57,72 @@ def wikipedia():
                             request.args[1] if len(request.args)>1 else None,
                             request.args[0] if len(request.args) else None],
                     data=None))
+
+
+# OneZoom pages that redirect to other sites. These are used to register site visits so we can
+# e.g. update the image or common names tables when they are visited (and potentially corrected)
+
+def eol_page_ID():
+    """
+    Log the eol page visited, and redirect there.
+    EoL has no https site currently
+    """
+    import datetime
+    try:
+        EOLid = int(request.args[0])
+        OTTid = int(request.args[1])
+    except:
+        raise HTTP(400,"No valid id provided")
+    
+    #we have inspected this EoL page - log it so we know to check EoL for changes   
+    db.eol_inspected.update_or_insert(db.eol_inspected.ott == OTTid,
+                               ott=OTTid,
+                               via=eol_inspect_via_flags['EoL_tab'],
+                               inspected=datetime.datetime.now())
+    redirect("//eol.org/pages/{}".format(EOLid))
+
+
+def eol_dataobject_ID():
+    """
+    Called when jumping out from an image. Provide the DOid (src_id) as the first arg.
+    Log the eol data object visited, and redirect there.
+    """
+    try:
+        src = int(request.args[0]) # for src = 1 or 2, this is an EoL data object ID
+        src_id = int(request.args[1]) # for src = 1 or 2, this is an EoL data object ID
+    except:
+        raise HTTP(400,"No valid id provided")
+    assert src in [src_flags['onezoom_via_eol'], src_flags['eol']]
+    #can redirect this to EoL, after logging so we can refresh e.g. cropped images
+    rows = db((db.images_by_ott.src == src_flags['onezoom_via_eol'] | db.images_by_ott.src == src_flags['eol']) &
+              (db.images_by_ott.src_id == src_id)).select(db.images_by_ott.ott)
+    for row in rows:
+        db.eol_inspected.update_or_insert(db.eol_inspected.ott == row.ott,
+                                   ott=row.ott,
+                                   via=eol_inspect_via_flags['image'],
+                                   inspected=datetime.datetime.now())
+    # might as well also look for this image in the images_by_name table (probably won't find it)
+    rows = db(db.images_by_ott.src_id == src_id).select(db.images_by_name.name)
+    for row in rows:
+        db.eol_inspected.update_or_insert((db.eol_inspected.name != None) & (db.eol_inspected.name == row.name),
+                                   name=row.name,
+                                   via=eol_inspect_via_flags['image'],
+                                   inspected=datetime.datetime.now())
+    redirect("//eol.org/media/{}".format(src_id))
+
+
+def wikimedia_commons_QID():
+    # when passed a QID, look it up in the images_by_ott table, and jump there
+    src_id = int(request.args[0])  # This should be a QID
+    row = db((db.images_by_ott.src == src_flags['wiki']) & (db.images_by_ott.src_id == src_id)).select(
+        db.images_by_ott.url).first()
+    # Could update the inspected field here, which would give a clue to the harvester which pictures
+    # might benefit from reharvesting
+    if row:
+        redirect(row.url)
+    else:
+        raise HTTP(
+            400,
+            f"Could not find a Wikimedia Commons image (src={src_flags['wiki']} with QID {src_id}."
+        )
+    

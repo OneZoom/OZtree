@@ -45,8 +45,8 @@ save_to_tmp_file_dir =
 ; * wiki_jumpout_url: The internal URL that redirects to an image on
 ;    Wikimedia Commons by looking up the QID in the images_by_ott table
 url_base = //images.onezoom.org/
-eol_jumpout_url = /tree/eol_dataobject_ID/{src}/{src_id}
-wiki_jumpout_url = /tree/wikimedia_commons_QID/{src_id}y
+eol_jumpout_url = /redirect/eol_dataobject_ID/{src}/{src_id}
+wiki_jumpout_url = /redirect/wikimedia_commons_QID/{src_id}
 
 [azure_vision]
 ; * endpoint: The endpoint for the Azure Computer Vision API for image cropping
