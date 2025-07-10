@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 #NB: this should be executed first (begins with _ and the web2py book says "Models in the same folder/subfolder are executed in alphabetical order.")
 import sys
-# Python 2 and 3, instead of python2 unichr:
-oldchr = chr  # For supporting python 2 in places
-from builtins import chr
 
 try:
     from gluon import current
