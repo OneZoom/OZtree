@@ -143,6 +143,16 @@ export default function (Controller) {
     return tree_state.flight_promise || Promise.resolve();
   };
 
+  function make_skip_flight(controller, dest_OZid, into_node, finalize_func=null) {
+    return () => {
+      controller.leap_to(dest_OZid, null, into_node);
+      if (finalize_func != null) {
+        finalize_func();
+      }
+      controller.skip_flight = undefined;
+    }
+  }
+
   /**
    * Leap directly to a new OneZoom node id in the tree. If a position is given, it
    * should be of the form [xp, yp, ws] or {'xp': xp, 'yp': yp, 'ws': ws}
@@ -208,18 +218,18 @@ export default function (Controller) {
    *     speed. Values over 1 lead to faster animations (default = 1)
    * @param {string} accel_type The acceleration type, one of
    *    "linear" (default, also used if null), "accel", or "decel".
-   * @param {func} finalize_func The function to call at the end of the zoom (optional)
    * @return {Promise} resolve when fly finishes. throws an exception when fly is interrupted
    */
   Controller.prototype.fly_straight_to = function(
         dest_OZid, into_node, speed=1, accel_type='linear') {
     tree_state.flying = false;
     this.develop_branch_to_and_target(dest_OZid);
+    this.skip_flight = make_skip_flight(this, dest_OZid, into_node)
 
     return flight_promise(new Promise((resolve, reject) => {
       position_helper.perform_actual_fly(
         this, into_node, speed, accel_type || 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
-    }))
+    }).then(() => this.skip_flight = undefined))
   }
     
     
@@ -253,6 +263,8 @@ export default function (Controller) {
     Controller.prototype.fly_on_tree_to = function(
             src_OZid, dest_OZid,
             into_node=false, speed=1, accel_type="parabolic", finalize_func=null) {
+        this.skip_flight = make_skip_flight(this, dest_OZid, into_node, finalize_func)
+
         var p = new Promise(function (resolve) {
             config.ui.loadingMessage(true);
             window.setTimeout(resolve, 200);
@@ -347,6 +359,7 @@ export default function (Controller) {
         }.bind(this));
 
         // Finished!
+        p = p.then(() => this.skip_flight = undefined)
         p = p.then(finalize_func);
         p = p.catch(function (e) {
             config.ui.loadingMessage(false);
