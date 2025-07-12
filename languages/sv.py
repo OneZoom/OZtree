@@ -145,6 +145,7 @@
 'Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.': 'Select a language (your current browser default is ‘%s’). Most languages have some vernacular names on OneZoom, but only a few languages have been fully translated.',
 'Settings': 'Inställningar',
 'Show best image from any source: the image may not have been verified by a taxonomist. For any image, click or zoom on the © symbol for details.': 'Show best image from any source: the image may not have been verified by a taxonomist. For any image, click or zoom on the © symbol for details.',
+'Skip animation': 'Hoppa över animation',
 'Siderian': 'Siderium',
 'Silurian': 'Silur',
 'Sources for the data used in this tree': 'Sources for the data used in this tree',

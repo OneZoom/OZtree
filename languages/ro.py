@@ -282,6 +282,7 @@
 'Search': 'Căutare',
 'Semantic': 'Semantică',
 'Services': 'Servicii',
+'Skip animation': 'Omite animația',
 'session expired': 'sesiune expirată',
 'shell': 'line de commandă',
 'site': 'site',

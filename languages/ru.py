@@ -155,6 +155,7 @@
 'Rows selected': 'Выделено строк',
 'Semantic': 'Semantic',
 'Services': 'Services',
+'Skip animation': 'Пропустить анимацию',
 'Size of cache:': 'Size of cache:',
 'state': 'состояние',
 'Statistics': 'Statistics',

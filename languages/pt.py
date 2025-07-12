@@ -147,6 +147,7 @@
 'select post': 'select post',
 'Semantic': 'Semantic',
 'Services': 'Services',
+'Skip animation': 'Pular animação',
 'show category': 'show category',
 'show comment': 'show comment',
 'show post': 'show post',

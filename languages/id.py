@@ -217,6 +217,7 @@
 'Send Email': 'Kirim Email',
 'Service': 'Layanan',
 'Site': 'Situs',
+'Skip animation': 'Lewati animasi',
 'Size of cache:': 'Ukuran cache:',
 'starts with': 'dimulai dengan',
 'static': 'statis',

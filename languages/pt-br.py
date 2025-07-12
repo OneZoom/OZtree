@@ -136,6 +136,7 @@
 'Rows selected': 'Linhas selecionadas',
 'Semantic': 'Semântico',
 'Services': 'Serviço',
+'Skip animation': 'Pular animação',
 'Size of cache:': 'Tamanho do cache:',
 'state': 'estado',
 'Statistics': 'Estatísticas',

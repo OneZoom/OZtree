@@ -196,6 +196,7 @@
 'Search': 'Ricerca',
 'Semantic': 'Semantic',
 'Services': 'Servizi',
+'Skip animation': 'Salta animazione',
 'Size of cache:': 'Size of cache:',
 'starts with': 'comincia con',
 'state': 'stato',

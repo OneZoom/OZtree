@@ -131,6 +131,7 @@
 'Rows selected': 'označených riadkov',
 'Semantic': 'Semantic',
 'Services': 'Services',
+'Skip animation': 'Preskočiť animáciu',
 'Size of cache:': 'Size of cache:',
 'state': 'stav',
 'Statistics': 'Statistics',

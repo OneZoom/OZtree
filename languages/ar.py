@@ -97,6 +97,7 @@
 'Role': 'دور',
 'Semantic': 'دليل لفظي',
 'Services': 'خدمات',
+'Skip animation': 'تخطي الرسوم المتحركة',
 'Stylesheet': 'أسلوب النمط',
 'Support': 'الدعم',
 'The Core': 'النواة',

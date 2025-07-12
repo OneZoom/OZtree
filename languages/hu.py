@@ -129,6 +129,7 @@
 'Rows selected': 'Kiválasztott sorok',
 'Semantic': 'Semantic',
 'Services': 'Services',
+'Skip animation': 'Animáció átugrása',
 'Size of cache:': 'Size of cache:',
 'state': 'állapot',
 'Statistics': 'Statistics',

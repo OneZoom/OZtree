@@ -247,6 +247,7 @@
 'Siderian': 'Siderian',
 'Silurian': 'Silurian',
 'Skip': 'Skip',
+'Skip animation': 'Skip animation',
 'Sorry, the species or group that you asked for is not on the OneZoom tree.': 'Sorry, the species or group that you asked for is not on the OneZoom tree.',
 'Sorry, there has been a OneZoom version error': 'Sorry, there has been a OneZoom version error',
 'Sorry, this leaf is not available to sponsor right now': 'Sorry, this leaf is not available to sponsor right now',
