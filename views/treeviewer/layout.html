@@ -612,6 +612,28 @@ function setupUI() {
         .click(function(){onezoom.controller.button_zoom_in()});
     $('#resetButton .icon-container')
         .click(function(){onezoom.controller.button_reset()});
+    $('.skip-animation-button')
+        .click(function(){onezoom.controller.skip_flight?.()});
+    $(document).on('keydown', function(event){
+        if (event.key === 'Escape') {
+            onezoom.controller.skip_flight?.();
+        }
+    });
+    
+    const update_skip_button = () => {
+        if (onezoom.controller.skip_flight) {
+            $('.skip-animation-button').fadeIn();
+            if (onezoom.tree_state.flight_promise) {
+                onezoom.tree_state.flight_promise.finally(() => {
+                    update_skip_button();
+                });
+            }
+        } else {
+            $('.skip-animation-button').fadeOut();
+        }
+    }
+    onezoom.add_hook('set_action', update_skip_button);
+    update_skip_button();
 
     /* Control Button Hint Toggle */
     $('.ui-controls #hideControlsButton .icon-container')

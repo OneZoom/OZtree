@@ -129,6 +129,7 @@
 'Save model as...': 'Modeli farklı kaydet...',
 'Semantic': 'Anlamsal',
 'Services': 'Hizmetler',
+'Skip animation': 'Animasyonu atla',
 'state': 'durum',
 'Stylesheet': 'Stil Şablonu',
 'submit': 'gönder',

@@ -310,6 +310,7 @@
 'Semantic': 'Semantic',
 'Services': 'Services',
 'Settings': 'Settings',
+'Skip animation': '跳过动画',
 'Show best image from any source: the image may not have been verified by a taxonomist. For any image, click or zoom on the © symbol for details.': 'Show best image from any source: the image may not have been verified by a taxonomist. For any image, click or zoom on the © symbol for details.',
 'Siderian': 'Siderian',
 'Silurian': 'Silurian',

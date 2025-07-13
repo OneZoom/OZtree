@@ -93,6 +93,24 @@ progress[value] {
   color: inherit;
 }
 
+.skip-animation-button {
+  margin-top: 0.6em;
+  display: none; // Will be shown by script
+}
+
+.oz-button-small {
+  border-radius: 6px; 
+  background: white;
+}
+
+.oz-button-small:hover {
+  background: white;
+}
+
+.oz-button-small [uk-icon]:last-child {
+  margin-right: -0.6em;
+}
+
 /* ********** Call-to-action pills & lists ********************** */
 
 ul.leaf-list {

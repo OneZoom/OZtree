@@ -355,6 +355,7 @@
 'Saved file hash:': 'hash uloženého souboru:',
 'Semantic': 'Modul semantic',
 'Services': 'Služby',
+'Skip animation': 'Přeskočit animaci',
 'session': 'session',
 'session expired': 'session expired',
 'Set Breakpoint on %s at line %s: %s': 'Bod přerušení nastaven v souboru %s na řádce %s: %s',

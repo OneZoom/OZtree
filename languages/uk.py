@@ -185,6 +185,7 @@
 'Save profile': 'Зберегти параметри',
 'Semantic': 'Семантика',
 'Services': 'Сервіс',
+'Skip animation': 'Пропустити анімацію',
 'Size of cache:': 'Розмір кешу:',
 'state': 'стан',
 'Statistics': 'Статистика',

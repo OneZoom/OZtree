@@ -317,6 +317,7 @@
 'Search': 'Buscar',
 'Semantic': 'Semántica',
 'Services': 'Servicios',
+'Skip animation': 'Saltar animación',
 'session expired': 'sesión expirada',
 'shell': 'terminal',
 'site': 'sitio',

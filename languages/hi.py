@@ -119,6 +119,7 @@
 'Rows selected': 'चयनित (चुने गये) पंक्तियाँ ',
 'Semantic': 'Semantic',
 'Services': 'Services',
+'Skip animation': 'एनीमेशन छोड़ें',
 'Size of cache:': 'Size of cache:',
 'state': 'स्थिति',
 'Statistics': 'Statistics',

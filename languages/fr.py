@@ -327,6 +327,7 @@
 'Show best image from any source: the image may not have been verified by a taxonomist. For any image, click or zoom on the © symbol for details.': 'Show best image from any source: the image may not have been verified by a taxonomist. For any image, click or zoom on the © symbol for details.',
 'Siderian': 'Sidérien',
 'Silurian': 'Silurien',
+'Skip animation': 'Passer l\'animation',
 'Size of cache:': 'Taille du cache:',
 'Sorry, the species or group that you asked for is not on the OneZoom tree.': 'Sorry, the species or group that you asked for is not on the OneZoom tree.',
 'Sorry, there has been a OneZoom version error': 'Sorry, there has been a OneZoom version error',

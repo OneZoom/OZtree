@@ -29,11 +29,11 @@ export default function (Controller) {
         if (config.search_jump_mode.startsWith('flight')) {
             // "anim=flight-0.5" means half-speed flights
             let flight_speed = parseFloat(config.search_jump_mode.split('-')[1]) || 1
-            return p.then((pp) => this.fly_on_tree_to(null, pp.ozid, false, flight_speed));
+            return p.then((pp) => this.fly_on_tree_to(null, pp.ozid, false, flight_speed, undefined, undefined, true));
         } else if (config.search_jump_mode.startsWith('straight')) {
             // "anim=straight-0.5" means half-speed flights
             let flight_speed = parseFloat(config.search_jump_mode.split('-')[1]) || 1
-            return p.then((pp) => this.fly_straight_to(pp.ozid, false, flight_speed, 'linear'));
+            return p.then((pp) => this.fly_straight_to(pp.ozid, false, flight_speed, 'linear', true));
         } else {
             return p.then((pp) => this.fetch_details_and_leap_to(pp.ozid));
         }

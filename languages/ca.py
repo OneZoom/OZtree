@@ -359,6 +359,7 @@
 'Search Pages': 'Search Pages',
 'Semantic': 'Semàntica',
 'Services': 'Serveis',
+'Skip animation': 'Saltar animació',
 'session expired': 'sessió expirada',
 'shell': 'terminal',
 'Sign Up': 'Sign Up',

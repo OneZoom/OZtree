@@ -135,6 +135,7 @@
 'Rows selected': 'Wybrane wiersze',
 'Semantic': 'Semantic',
 'Services': 'Services',
+'Skip animation': 'Pomiń animację',
 'Size of cache:': 'Size of cache:',
 'state': 'stan',
 'Statistics': 'Statistics',

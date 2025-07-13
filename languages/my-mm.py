@@ -211,6 +211,7 @@
 'Semantic': 'Semantic',
 'Services': 'Services',
 'shell': 'shell',
+'Skip animation': 'အန်နီမေးရှင်း ကျော်ရန်',
 'Site': 'Site',
 'Size of cache:': 'Size of cache:',
 'Start wizard': 'Start wizard',

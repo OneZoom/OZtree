@@ -285,6 +285,7 @@
 'Search': 'Zoek',
 'Semantic': 'Semantisch',
 'Services': 'Services',
+'Skip animation': 'Animatie overslaan',
 'session expired': 'sessie verlopen',
 'shell': 'shell',
 'site': 'site',

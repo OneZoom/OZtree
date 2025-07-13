@@ -159,6 +159,7 @@
 'Save model as...': 'Speichere Vorlage als...',
 'Semantic': 'Semantik',
 'Services': 'Dienste',
+'Skip animation': 'Animation überspringen',
 'Size of cache:': 'Cachegröße:',
 'state': 'Status',
 'Statistics': 'Statistik',

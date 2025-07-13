@@ -166,6 +166,7 @@
 'Save profile': 'Simpan profil',
 'Search': 'Cari',
 'Select Files to Package': 'Pilih Fail untuk Pakej',
+'Skip animation': 'Langkau animasi',
 'Send Email': 'Kirim Emel',
 'Size of cache:': 'Saiz cache:',
 'Solution': 'Penyelesaian',

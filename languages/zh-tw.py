@@ -190,6 +190,7 @@
 'Saved file hash:': '檔案雜湊值已紀錄:',
 'Semantic': 'Semantic',
 'Services': 'Services',
+'Skip animation': '跳過動畫',
 'Size of cache:': 'Size of cache:',
 'state': '狀態',
 'Static files': '靜態檔案',

@@ -250,7 +250,7 @@ function add_element_to_recents_list(element) {
 
 function make_clear_recents_button() {
     return $('<button>')
-        .addClass('uk-button uk-button-default uk-button-small')
+        .addClass('uk-button uk-button-default uk-button-small oz-button-small')
         .text(OZstrings.hasOwnProperty("Clear recents") ? OZstrings["Clear recents"] : "Clear recents")
         .on('click', clear_recents);
 }

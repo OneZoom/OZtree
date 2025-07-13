@@ -262,6 +262,7 @@
 'Semantic': 'Semantic',
 'Services': 'Services',
 'Settings': 'Settings',
+'Skip animation': '跳过动画',
 'Siderian': 'Siderian',
 'Silurian': 'Silurian',
 'Size of cache:': 'Size of cache:',
