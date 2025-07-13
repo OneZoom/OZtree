@@ -129,11 +129,13 @@ function flight_promise(p) {
  */
 function make_skip_flight(controller, dest_OZid, into_node, finalize_func=null) {
   return () => {
-    controller.leap_to(dest_OZid, null, into_node);
-    if (finalize_func != null) {
-      finalize_func();
-    }
-    controller.skip_flight = undefined;
+    controller.cancel_flight().then(() => {
+      controller.leap_to(dest_OZid, null, into_node);
+      if (finalize_func != null) {
+        finalize_func();
+      }
+      controller.skip_flight = undefined;
+    })
   }
 }
 
