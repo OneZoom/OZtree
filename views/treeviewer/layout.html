@@ -612,15 +612,16 @@ function setupUI() {
         .click(function(){onezoom.controller.button_zoom_in()});
     $('#resetButton .icon-container')
         .click(function(){onezoom.controller.button_reset()});
-    $('#skipButton')
-        .click(function(){onezoom.controller.skip_flight?.()});
     $('.skip-animation-button')
         .click(function(){onezoom.controller.skip_flight?.()});
-    
+    $(document).on('keydown', function(event){
+        if (event.key === 'Escape') {
+            onezoom.controller.skip_flight?.();
+        }
+    });
     
     const update_skip_button = () => {
         if (onezoom.controller.skip_flight) {
-            $('#skipButtonContainer').fadeIn();
             $('.skip-animation-button').fadeIn();
             if (onezoom.tree_state.flight_promise) {
                 onezoom.tree_state.flight_promise.finally(() => {
@@ -628,7 +629,6 @@ function setupUI() {
                 });
             }
         } else {
-            $('#skipButtonContainer').fadeOut();
             $('.skip-animation-button').fadeOut();
         }
     }

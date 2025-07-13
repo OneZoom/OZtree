@@ -125,6 +125,19 @@ function flight_promise(p) {
 }
 
 /**
+ * Make a function that can be used to skip the flight.
+ */
+function make_skip_flight(controller, dest_OZid, into_node, finalize_func=null) {
+  return () => {
+    controller.leap_to(dest_OZid, null, into_node);
+    if (finalize_func != null) {
+      finalize_func();
+    }
+    controller.skip_flight = undefined;
+  }
+}
+
+/**
  * Part of Controller class. It contains functions to perform animations.
  */
 export default function (Controller) {
@@ -142,16 +155,6 @@ export default function (Controller) {
     tree_state.flying = false;
     return tree_state.flight_promise || Promise.resolve();
   };
-
-  function make_skip_flight(controller, dest_OZid, into_node, finalize_func=null) {
-    return () => {
-      controller.leap_to(dest_OZid, null, into_node);
-      if (finalize_func != null) {
-        finalize_func();
-      }
-      controller.skip_flight = undefined;
-    }
-  }
 
   /**
    * Leap directly to a new OneZoom node id in the tree. If a position is given, it
