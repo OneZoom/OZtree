@@ -125,7 +125,7 @@ config.projection = {
   partl2: 0.1,
   interior_circle_draw: true,
   draw_all_details: true,
-  draw_sponsors: true,
+  draw_sponsors: false,
   node_low_res_thres: 70,
   node_high_res_thres: 450,
   partc: 0.4,
