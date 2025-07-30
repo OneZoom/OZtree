@@ -1208,6 +1208,7 @@ def sponsor_node_price():
             db.prices.class_description,
             db.prices.price_description,
         )
+        if row.price is not None
     }
     lowest_price_pence = min(price_levels_pence.keys())
     try:
@@ -1345,7 +1346,7 @@ def sponsor_node():
             partner = None    
         first25 = db(query).select(limitby=(0, 25), orderby=db.ordered_leaves.name)
         if len(first25) > 0:
-            prices_pence = sorted([r.price for r in db().select(db.prices.price)])
+            prices_pence = sorted([r.price for r in db().select(db.prices.price) if r.price is not None])
             prices_pence.append("")
             return(dict(prices_pence=prices_pence, first25=first25, vars=request.vars, common_name=common_name, partner=partner, error=None))
         else:
