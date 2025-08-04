@@ -274,11 +274,6 @@ export default function (Controller) {
             this.skip_flight = make_skip_flight(this, dest_OZid, into_node, finalize_func)
         }
 
-        var p = new Promise(function (resolve) {
-            config.ui.loadingMessage(true);
-            window.setTimeout(resolve, 200);
-        }.bind(this));
-
         // Return flight path (common ancestor, then target)
         function get_flight_path(node_start, node_end) {
             var n, visited_nodes = {};
@@ -310,27 +305,36 @@ export default function (Controller) {
             throw new Error("No common nodes for " + node_start + " and " + node_end);
         }
 
-        if (src_OZid == null) {
-            // Find largest visible node: use this as our starting point
-            let top_node = this.largest_visible_node(function(node) { return node.ott; }) || this.root;
-            src_OZid = top_node.ozid;
-        } else {
-            // Move to start location
-            p = p.then(function () {
-              return this.leap_to(src_OZid)
-            }.bind(this));
-        }
-
-        p = p.then(function () {
+        return flight_promise(new Promise((resolve) => {
+            config.ui.loadingMessage(true);
+            window.setTimeout(resolve, 200);
+        }).then(() => {
+            if (src_OZid !== null) {
+                // Move to start location
+                // NB: Not using leap_to helper here, we want this to be part of the same flight
+                this.develop_branch_to_and_target(src_OZid);
+                return new Promise((resolve, reject) => position_helper.perform_actual_fly(
+                    this,
+                    into_node,
+                    Infinity,
+                    'linear',
+                    resolve,
+                    () => reject(new UserInterruptError('Fly is interrupted'))
+                ));
+           }
+        }).then(() => {
+            if (src_OZid === null) {
+                // Find largest visible node: use this as our starting point
+                let top_node = this.largest_visible_node(function(node) { return node.ott; }) || this.root;
+                src_OZid = top_node.ozid;
+            }
             var flight_path = get_flight_path(
                 this.develop_branch_to_and_target(src_OZid),
                 this.develop_branch_to_and_target(dest_OZid)
             );
             config.ui.loadingMessage(false);
             return flight_path;
-        }.bind(this));
-
-        p = p.then(function (flight_path) {
+        }).then((flight_path) => {
             var flight_p = Promise.resolve();
 
             flight_path.map(function (n) {
@@ -344,9 +348,7 @@ export default function (Controller) {
             }.bind(this));
 
             return flight_p.then(function () { return flight_path; });
-        }.bind(this));
-
-        p = p.then(function (flight_path) {
+        }).then((flight_path) => {
             var flight_p = Promise.resolve();
 
             flight_path.map(function (n, idx, arr) {
@@ -365,17 +367,10 @@ export default function (Controller) {
             }.bind(this));
 
             return flight_p.then(function () { return flight_path; });
-        }.bind(this));
-
-        // Finished!
-        p = p.finally(() => this.skip_flight = undefined)
-        p = p.then(finalize_func);
-        p = p.catch(function (e) {
+        }).finally(() => this.skip_flight = undefined).then(finalize_func).catch((e) => {
             config.ui.loadingMessage(false);
             throw e;
-        })
-
-        return flight_promise(p);
+        }));
     };
 
   /**
