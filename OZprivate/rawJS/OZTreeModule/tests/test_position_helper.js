@@ -63,6 +63,7 @@ function move_to(controller, node, opts) {
   // Rough parallel to Controller.prototype.leap_to / Controller.prototype.fly_on_tree_to
 
   return new Promise((resolve, reject) => {
+    controller.tree_state.flying = true;
     // develop_branch_to_and_target
     controller.factory.dynamic_loading_by_metacode(node.ozid)
     position_helper.clear_target(controller.root);
@@ -76,7 +77,9 @@ function move_to(controller, node, opts) {
       resolve,
       () => reject(new Error("Flight interrupted")),
     );
-  });
+  }).finally(() => {
+    controller.tree_state.flying = false;
+  })
 }
 function test_cur_location(test, controller, node_latin_name, exp_xp, exp_yp, exp_ws, message) {
   function round(x) {

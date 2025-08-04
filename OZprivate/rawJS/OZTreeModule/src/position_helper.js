@@ -216,7 +216,6 @@ function clear_target(node) {
  * @return {boolean} returns false if the distance to codein_fly is too short so there is no animation performed.
  */
 function perform_actual_fly(controller, into_node, speed=1, accel_type="linear", finalize_func=null, abrupt_func=null) {
-  tree_state.flying = true;
   more_flying_needed = false;
   drawreg_target(controller.root, tree_state.xp, tree_state.yp, 220*tree_state.ws);
   pre_xp = tree_state.xp;
@@ -240,7 +239,6 @@ function perform_actual_fly(controller, into_node, speed=1, accel_type="linear",
       return true;
     }
     controller.trigger_refresh_loop();
-    tree_state.flying = false;
     if (typeof finalize_func === "function") {
       finalize_func()
     }
@@ -321,7 +319,6 @@ function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func,
       });
     } else {
       // Reached our destination, stop flying & trigger callback
-      tree_state.flying = false;
       tree_state.set_action(null);
       if (typeof finalize_func === "function") {
           finalize_func()

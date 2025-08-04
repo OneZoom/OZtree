@@ -118,11 +118,13 @@ function flight_promise(do_flight_fn, do_skip_fn) {
   tree_state.flying = false;
   const flight_promise = tree_state.flight_promise = (tree_state.flight_promise || Promise.resolve()).then(() => {
     tree_state.flight_skip = do_skip_fn || undefined;
+    tree_state.flying = true;
     return do_flight_fn();
   }).finally(() => {
     // NB: Only remove flight promise if it was ours. If we've been cancelled (and already replaced) leave alone
     if (tree_state.flight_promise === flight_promise) tree_state.flight_promise = undefined;
     tree_state.flight_skip = undefined;
+    tree_state.flying = false;
   }).catch((e) => {
     // Eat any errors. We don't care at this point, this branch of the promise
     // chain is just to make sure we've finished, but without we get unhandled
@@ -194,7 +196,6 @@ export default function (Controller) {
       this.develop_branch_to_and_target(dest_OZid);
       position_helper.perform_actual_fly(
         this, into_node, Infinity, 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
-      tree_state.flying = false;
     }))
   }
   Controller.prototype.fetch_details_and_leap_to = function(dest_OZid, position=null, into_node=false) {
