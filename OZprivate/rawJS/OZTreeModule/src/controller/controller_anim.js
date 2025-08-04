@@ -110,15 +110,19 @@ function get_details_of_nodes_in_view_during_fly(root, subbranch_depth) {
 }
 
 /** Cancel any previous flights, call do_flight_fn & save do_skip_fn if user wants to skip flight */
-function flight_promise(do_flight_fn) {
+function flight_promise(do_flight_fn, do_skip_fn) {
   // Cancel any active flights first by turning off tree_state.flying
   // NB: The flight will *not* be cancelled immediately. perform_fly_b2()
   //     will notice on next setTimeout() and shut itself down, after
   //     which it's safe to start new flights.
   tree_state.flying = false;
-  const flight_promise = tree_state.flight_promise = (tree_state.flight_promise || Promise.resolve()).then(do_flight_fn).finally(() => {
+  const flight_promise = tree_state.flight_promise = (tree_state.flight_promise || Promise.resolve()).then(() => {
+    tree_state.flight_skip = do_skip_fn || undefined;
+    return do_flight_fn();
+  }).finally(() => {
     // NB: Only remove flight promise if it was ours. If we've been cancelled (and already replaced) leave alone
     if (tree_state.flight_promise === flight_promise) tree_state.flight_promise = undefined;
+    tree_state.flight_skip = undefined;
   }).catch((e) => {
     // Eat any errors. We don't care at this point, this branch of the promise
     // chain is just to make sure we've finished, but without we get unhandled
@@ -128,19 +132,6 @@ function flight_promise(do_flight_fn) {
     }
   });
   return flight_promise;
-}
-
-/**
- * Make a function that can be used to skip the flight.
- */
-function make_skip_flight(controller, dest_OZid, into_node, finalize_func=null) {
-  return () => {
-    controller.leap_to(dest_OZid, null, into_node);
-    if (finalize_func != null) {
-      finalize_func();
-    }
-    controller.skip_flight = undefined;
-  }
 }
 
 /**
@@ -157,6 +148,14 @@ export default function (Controller) {
   Controller.prototype.cancel_flight = function () {
     // Trigger a do-nothing flight, which will cancel any ongoing flights first
     return flight_promise(() => { });
+  };
+
+  /**
+   * If a skippable flight is in progress, return a function to skip it
+   * otherwise, return undefined
+   */
+  Controller.prototype.get_flight_skip_fn = function () {
+    return tree_state.flight_skip || undefined;
   };
 
   /**
@@ -227,15 +226,13 @@ export default function (Controller) {
    */
   Controller.prototype.fly_straight_to = function(
         dest_OZid, into_node, speed=1, accel_type='linear', allow_skip=false) {
-    if (allow_skip) {
-      this.skip_flight = make_skip_flight(this, dest_OZid, into_node)
-    }
-
     return flight_promise(() => new Promise((resolve, reject) => {
       this.develop_branch_to_and_target(dest_OZid);
       position_helper.perform_actual_fly(
         this, into_node, speed, accel_type || 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
-    }).finally(() => this.skip_flight = undefined))
+    }), allow_skip ? () => {
+        this.leap_to(dest_OZid, null, into_node);
+    } : undefined);
   }
     
     
@@ -270,10 +267,6 @@ export default function (Controller) {
     Controller.prototype.fly_on_tree_to = function(
             src_OZid, dest_OZid,
             into_node=false, speed=1, accel_type="parabolic", finalize_func=null, allow_skip=false) {
-        if (allow_skip) {
-            this.skip_flight = make_skip_flight(this, dest_OZid, into_node, finalize_func)
-        }
-
         // Return flight path (common ancestor, then target)
         function get_flight_path(node_start, node_end) {
             var n, visited_nodes = {};
@@ -367,10 +360,15 @@ export default function (Controller) {
             }.bind(this));
 
             return flight_p.then(function () { return flight_path; });
-        }).finally(() => this.skip_flight = undefined).then(finalize_func).catch((e) => {
+        }).then(finalize_func).catch((e) => {
             config.ui.loadingMessage(false);
             throw e;
-        }));
+        }), allow_skip ? () => {
+            this.leap_to(dest_OZid, null, into_node);
+            if (finalize_func != null) {
+                finalize_func();
+            }
+        } : undefined);
     };
 
   /**
