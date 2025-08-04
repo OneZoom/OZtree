@@ -109,10 +109,16 @@ function get_details_of_nodes_in_view_during_fly(root, subbranch_depth) {
   });
 }
 
-/** Collect a promise into tree_state, clear it once done */
-function flight_promise(p) {
-  tree_state.flight_promise = p.finally(() => {
-    tree_state.flight_promise = undefined;
+/** Cancel any previous flights, call do_flight_fn & save do_skip_fn if user wants to skip flight */
+function flight_promise(do_flight_fn) {
+  // Cancel any active flights first by turning off tree_state.flying
+  // NB: The flight will *not* be cancelled immediately. perform_fly_b2()
+  //     will notice on next setTimeout() and shut itself down, after
+  //     which it's safe to start new flights.
+  tree_state.flying = false;
+  const flight_promise = tree_state.flight_promise = (tree_state.flight_promise || Promise.resolve()).then(do_flight_fn).finally(() => {
+    // NB: Only remove flight promise if it was ours. If we've been cancelled (and already replaced) leave alone
+    if (tree_state.flight_promise === flight_promise) tree_state.flight_promise = undefined;
   }).catch((e) => {
     // Eat any errors. We don't care at this point, this branch of the promise
     // chain is just to make sure we've finished, but without we get unhandled
@@ -121,7 +127,7 @@ function flight_promise(p) {
       console.warn("Cancelled flight failed", e)
     }
   });
-  return tree_state.flight_promise;
+  return flight_promise;
 }
 
 /**
@@ -149,11 +155,8 @@ export default function (Controller) {
    * Returns promise which will resolve once flights are ready to happen again
    */
   Controller.prototype.cancel_flight = function () {
-    // NB: The flight will *not* be cancelled immediately. perform_fly_b2()
-    //     will notice on next setTimeout() and shut itself down, after
-    //     which it's safe to start new flights.
-    tree_state.flying = false;
-    return tree_state.flight_promise || Promise.resolve();
+    // Trigger a do-nothing flight, which will cancel any ongoing flights first
+    return flight_promise(() => { });
   };
 
   /**
@@ -171,8 +174,6 @@ export default function (Controller) {
    *     shows the entire tree structure descended from that node.
    */   
   Controller.prototype.leap_to = function(dest_OZid, position=null, into_node=false) {
-    tree_state.flying = false;
-
     if (position && (typeof(position) === 'object')) {
       return new Promise((resolve) => {
         tree_state.xp = position.xp || position[0] || 0
@@ -190,8 +191,8 @@ export default function (Controller) {
       });
     }
 
-    this.develop_branch_to_and_target(dest_OZid);
-    return flight_promise(new Promise((resolve, reject) => {
+    return flight_promise(() => new Promise((resolve, reject) => {
+      this.develop_branch_to_and_target(dest_OZid);
       position_helper.perform_actual_fly(
         this, into_node, Infinity, 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
       tree_state.flying = false;
@@ -226,13 +227,12 @@ export default function (Controller) {
    */
   Controller.prototype.fly_straight_to = function(
         dest_OZid, into_node, speed=1, accel_type='linear', allow_skip=false) {
-    tree_state.flying = false;
-    this.develop_branch_to_and_target(dest_OZid);
     if (allow_skip) {
       this.skip_flight = make_skip_flight(this, dest_OZid, into_node)
     }
 
-    return flight_promise(new Promise((resolve, reject) => {
+    return flight_promise(() => new Promise((resolve, reject) => {
+      this.develop_branch_to_and_target(dest_OZid);
       position_helper.perform_actual_fly(
         this, into_node, speed, accel_type || 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
     }).finally(() => this.skip_flight = undefined))
@@ -305,7 +305,7 @@ export default function (Controller) {
             throw new Error("No common nodes for " + node_start + " and " + node_end);
         }
 
-        return flight_promise(new Promise((resolve) => {
+        return flight_promise(() => new Promise((resolve) => {
             config.ui.loadingMessage(true);
             window.setTimeout(resolve, 200);
         }).then(() => {
