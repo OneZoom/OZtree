@@ -377,11 +377,17 @@ function pan_zoom(prop_p, prop_z) {
  * Force the anchor to be the given (node),
  * (i.e. set graphref on node and all it's ancestors)
  */
-function reanchor_at_node(node) {
-  node.graphref = true;
-  if (node.upnode) {
-    reanchor_at_node(node.upnode);
+function reanchor_at_node(node, root_node) {
+  // Set graphref false everywhere
+  deanchor(root_node);
+
+  // Walk up tree from (node), setting graphref
+  while (node.upnode) {
+    node.graphref = true;
+    node = node.upnode;
   }
+  // Set graphref on root node
+  node.graphref = true;
 }
 
 /**
@@ -429,4 +435,4 @@ function set_anim_speed(val) {
   global_anim_speed = val;
 }
 
-export {deanchor, reanchor, reanchor_at_node, target_by_code, clear_target, perform_actual_fly, get_anim_speed, set_anim_speed};
+export {reanchor, reanchor_at_node, target_by_code, clear_target, perform_actual_fly, get_anim_speed, set_anim_speed};
