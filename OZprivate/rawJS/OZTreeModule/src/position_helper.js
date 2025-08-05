@@ -389,28 +389,30 @@ function reanchor_at_node(node) {
  * (i.e. set graphref on this node and it's ancestors)
  */
 function reanchor(node) {
-  if (node.dvar) {
-    node.graphref = true;
-    if (node.gvar || !node.has_child || (node.rvar > 2.2 && node.rvar < 22000)) {
-      tree_state.xp = node.xvar;
-      tree_state.yp = node.yvar;
-      tree_state.ws = node.rvar / 220;
-      let length = node.children.length; 
-      for (let i=0; i<length; i++) {
-        deanchor(node.children[i]);
-      }
-    } else {
-      let length = node.children.length;
-      for (let i=0; i<length; i++) {
-        if (node.children[i].dvar) {
-          reanchor(node.children[i]);
-          for (let j=0; j<length; j++) {
-            if (i !== j) {
-              deanchor(node.children[j]);
-            }
+  // If this node (or it's desendents) aren't visible, don't bother
+  if (!node.dvar) return;
+
+  node.graphref = true;
+  if (node.gvar || !node.has_child || (node.rvar > 2.2 && node.rvar < 22000)) {
+    // Anchor to this node
+    tree_state.xp = node.xvar;
+    tree_state.yp = node.yvar;
+    tree_state.ws = node.rvar / 220;
+    // Deanchor everything below this node
+    for (let i=0; i<node.children.length; i++) {
+      deanchor(node.children[i]);
+    }
+  } else {
+    // Recurse, anchoring to the first visible child
+    for (let i=0; i<node.children.length; i++) {
+      if (node.children[i].dvar) {
+        reanchor(node.children[i]);
+        for (let j=0; j<node.children.length; j++) {
+          if (i !== j) {
+            deanchor(node.children[j]);
           }
-          break;
         }
+        break;
       }
     }
   }
