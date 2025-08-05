@@ -297,6 +297,7 @@ function parse_ordered_nodes(data_repo, nodes, node_details) {
     m.entry[m.idx["sp7"]] = nodes[i][node_details.node_cols["{pic}7"]];
     m.entry[m.idx["sp8"]] = nodes[i][node_details.node_cols["{pic}8"]];
     
+    // The numbers of DD/NE/LC... leaves below this node (as opposed to parse_iucn, which is OTT/"LC" pairs)
     m.entry[m.idx["iucnDD"]] = nodes[i][node_details.node_cols["iucnDD"]];
     m.entry[m.idx["iucnNE"]] = nodes[i][node_details.node_cols["iucnNE"]];
     m.entry[m.idx["iucnLC"]] = nodes[i][node_details.node_cols["iucnLC"]];
