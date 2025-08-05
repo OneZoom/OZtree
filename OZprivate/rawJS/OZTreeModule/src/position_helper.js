@@ -132,6 +132,9 @@ function get_xyr_target(node, x2,y2,r2,into_node) {
   }
 }
 
+/**
+ *  Walk tree from (node), probably root, turning graphref off
+ */
 function deanchor(node) {
   if (node.graphref) {
     let length = node.children.length;
@@ -370,6 +373,10 @@ function pan_zoom(prop_p, prop_z) {
   tree_state.yp = tree_centreY + y_add2*(1-prop_p) + (pre_yp2-y_add2-tree_centreY) * Math.pow(r_mult2,prop_z);
 }
 
+/**
+ * Force the anchor to be the given (node),
+ * (i.e. set graphref on node and all it's ancestors)
+ */
 function reanchor_at_node(node) {
   node.graphref = true;
   if (node.upnode) {
@@ -377,6 +384,10 @@ function reanchor_at_node(node) {
   }
 }
 
+/**
+ * Walk tree, anchoring to the first node on-screen that has 2.2 < node.rvar < 22000
+ * (i.e. set graphref on this node and it's ancestors)
+ */
 function reanchor(node) {
   if (node.dvar) {
     node.graphref = true;
