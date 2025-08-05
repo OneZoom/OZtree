@@ -32,13 +32,11 @@ def call_controller(module, endpoint, vars={}, args=[], method=None, username=No
     current.request.args = args
     if method:
         current.request.env.request_method = method
+    current.request.application = 'OZtree'
+    current.request.folder = os.path.abspath('applications/OZtree')
 
-    class FakeAuth():
-        """Fake enough of of the auth API"""
-        def basic(self):
-            # NB: Do this in the basic call to ensure it happens
-            self.user = username
-    current.globalenv['auth'] = FakeAuth()
+    # Force any provided username into auth setup
+    current.globalenv['auth'].user = username
 
     # Poke session / DB / request into module's namespace
     module.session = current.session
@@ -47,6 +45,12 @@ def call_controller(module, endpoint, vars={}, args=[], method=None, username=No
     module.response = current.response
     module.auth = current.globalenv['auth']
     module.HTTP = current.globalenv['HTTP']
+    module.FORM = current.globalenv['FORM']
+    module.LABEL = current.globalenv['LABEL']
+    module.INPUT = current.globalenv['INPUT']
+    module.IS_NOT_EMPTY = current.globalenv['IS_NOT_EMPTY']
+    module.IS_EMAIL = current.globalenv['IS_EMAIL']
+    module.URL = current.globalenv['URL']
 
     return getattr(module, endpoint)()
 
