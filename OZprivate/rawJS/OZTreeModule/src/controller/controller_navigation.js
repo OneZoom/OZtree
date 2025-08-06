@@ -3,6 +3,7 @@
  */
 import config from '../global_config';
 import data_repo from '../factory/data_repo';
+import data_store_api from '../data_store/api';
 import { record_url } from '../navigation/record';
 import { parse_state } from '../navigation/state';
 import { get_largest_visible_node } from '../navigation/utils';
@@ -91,6 +92,9 @@ export default function (Controller) {
     if (init) {
         return tree_settings.rebuild_tree(vis, prev, this);
     }
+
+    // Get any data stores to clear their state in case they're no longer needed
+    data_store_api.clear();
 
     // Get pre-rebuild state, so we can restore the rough position by ID
     // Get largest node, use this to restore position
