@@ -40,7 +40,6 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
   </div>
 
   <!-- treeviewer constants -->
-  {{include 'treeviewer/dynamic_scripts.html' }}
   {{include 'treeviewer/server_urls.html' }}
   <script>var OZstrings={{include 'treeviewer/js_strings.json'}}</script>
   <script type="text/javascript">
@@ -1057,13 +1056,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             window.globals.UI_callbacks,
             window.pagetitle_func,
             'OneZoomCanvasID',
-            window['tree_config'],
-            window.rawData,
-            null,
-            window.cut_position_map_json_str,
-            window.polytomy_cut_position_map_json_str,
-            window.cut_threshold,
-            window.tree_date);
+            window['tree_config']);
 
         /* The screensaver is a type of tour with a different calling signature */
         onezoom.add_hook('on_tree_loaded', () => {

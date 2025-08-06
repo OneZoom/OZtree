@@ -12,12 +12,6 @@ def js_strings():
     """
     return dict()
 
-def dynamic_scripts():
-    """
-    Javascript to load any large data files in advance
-    """
-    return dict()
-
 def server_urls():
     """
     Javascript to define API urls
@@ -61,7 +55,6 @@ def minlife():
     return dict(
         page_info = {
             'title_name': 'Minimal OneZoom page',
-            'try_local_treefiles_version': OZfunc.__check_version()
         }
     )
 
