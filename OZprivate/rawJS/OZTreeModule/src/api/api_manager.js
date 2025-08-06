@@ -62,6 +62,21 @@ class APIManager {
   }
 
   /**
+   * Fetch static tree data
+   * (file name will be automatically decorated with path/tree_version)
+   *
+   * Returns a window.fetch response promise
+   */
+  static_tree_data(data_file) {
+    const abortController = new AbortController();
+    setTimeout(() => { abortController.abort()}, config.api.abort_request_threshold);
+
+    return window.fetch(config.api.static_data_url_func(data_file), {
+      signal: abortController.signal
+    });
+  }
+
+  /**
    * Call the /API/pinpoints endpoint
    * @param pps Array of pinpoints to lookup
    * @param options /API/pinpoints querystring options
