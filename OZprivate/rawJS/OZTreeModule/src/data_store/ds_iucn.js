@@ -17,7 +17,8 @@ export default class DataStoreIUCN extends DataStore {
   // Only one array for all IUCN data
   sliceNameFor(node) {
     // TODO: We could choose le & be here, but no point.
-    return "iucn_le.dat";
+    // NB: There is no data for nodes in IUCN, so it has no slice
+    return node.is_leaf ? "iucn_le.dat" : null;
   }
 
   // We read iucn.dat as a Uint16Array() (CPU-endianness)

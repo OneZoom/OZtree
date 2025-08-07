@@ -13,6 +13,8 @@ export default class DataStore {
   /**
    * Convert a node into an array slice name
    * (i.e. the data array that this node will be found in)
+   *
+   * If null is returned, then it's assumed that there is no data for the node
    */
   sliceNameFor(node) {
     return this.is_leaf ? "data_leaf.dat" : "data_node.dat";
@@ -38,9 +40,11 @@ export default class DataStore {
    * Get value from DataStore for given node
    *
    * If slice is missing, queue up request to fetch it
+   * If the node has no assigned slice, return null
    */
   get(node) {
     const sliceName = this.sliceNameFor(node);
+    if (sliceName === null) return null;
     const view = this._slices[sliceName];
 
     if (!view) {
