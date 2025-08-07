@@ -64,6 +64,21 @@ function draw_bounding_box(node, shapes) {
   }
 
   if (debug & 0x2) { // Bounding box for node + parent
+    s = BezierShape.create();
+    s.sx = s.sy = s.ex = s.ey = null;
+    s.path_points.push(['move', node.xvar + node.rvar * node.gxmin, node.yvar + node.rvar * node.gymin]);
+    s.path_points.push(['line', node.xvar + node.rvar * node.gxmin, node.yvar + node.rvar * node.gymax]);
+    s.path_points.push(['line', node.xvar + node.rvar * node.gxmax, node.yvar + node.rvar * node.gymax]);
+    s.path_points.push(['line', node.xvar + node.rvar * node.gxmax, node.yvar + node.rvar * node.gymin]);
+    s.path_points.push(['line', node.xvar + node.rvar * node.gxmin, node.yvar + node.rvar * node.gymin]);
+    s.do_stroke = true;
+    s.stroke.line_width = 1;
+    s.height = 0;
+    s.stroke.color = 'hsl(' + Math.sin(node.metacode) * 360 + ', 100%, 80%)';
+    shapes.push(s);
+  }
+
+  if (debug & 0x1) { // Bounding box text label
     s = TextShape.create();
     s.text = "" + node.latin_name;
     s.width = (node.xvar + node.rvar * node.gxmax) - (node.xvar + node.rvar * node.gxmin);
@@ -79,20 +94,6 @@ function draw_bounding_box(node, shapes) {
     shapes.push(s);
   }
 
-  if (debug & 0x1) { // Bounding box text label
-    s = BezierShape.create();
-    s.sx = s.sy = s.ex = s.ey = null;
-    s.path_points.push(['move', node.xvar + node.rvar * node.gxmin, node.yvar + node.rvar * node.gymin]);
-    s.path_points.push(['line', node.xvar + node.rvar * node.gxmin, node.yvar + node.rvar * node.gymax]);
-    s.path_points.push(['line', node.xvar + node.rvar * node.gxmax, node.yvar + node.rvar * node.gymax]);
-    s.path_points.push(['line', node.xvar + node.rvar * node.gxmax, node.yvar + node.rvar * node.gymin]);
-    s.path_points.push(['line', node.xvar + node.rvar * node.gxmin, node.yvar + node.rvar * node.gymin]);
-    s.do_stroke = true;
-    s.stroke.line_width = 1;
-    s.height = 0;
-    s.stroke.color = 'hsl(' + Math.sin(node.metacode) * 360 + ', 100%, 80%)';
-    shapes.push(s);
-  }
 }
 
 function height_comparator(a, b) {
