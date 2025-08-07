@@ -291,7 +291,20 @@ class Midnode {
     this._picID_credit = null;
     this._detail_fetched = false;
   }
-  
+
+  /**
+   * Text representation of node, for debugging purposes
+   *
+   * Use with console log, e.g: console.log("Reanchoring to " + node);
+   * (NB "+", not ",")
+   */
+  toString() {
+    return [
+      this.cname || this.latin_name || 'Node',
+      this.ott ? '@=' + this.ott : '@_ozid=' + this.ozid,
+    ].join(" ");
+  }
+
   /**
    * Returns the OZid
    * i.e. negative metacode for leaf, positive metacode for interior node

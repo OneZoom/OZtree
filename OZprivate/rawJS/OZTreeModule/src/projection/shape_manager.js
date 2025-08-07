@@ -80,7 +80,7 @@ function draw_bounding_box(node, shapes) {
 
   if (debug & 0x1) { // Bounding box text label
     s = TextShape.create();
-    s.text = "" + node.latin_name;
+    s.text = "" + node.toString();
     s.width = (node.xvar + node.rvar * node.gxmax) - (node.xvar + node.rvar * node.gxmin);
     s.height = 5;
     s.x = node.xvar + node.rvar * node.gxmin + (s.width / 2);
