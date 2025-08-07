@@ -486,7 +486,7 @@ test('tour:goto_stop', function (test) {
     t.tour.user_backward();  // Already at start so backward just resets tourstop
     return t.wait_for_tourstop_state(0, 'tsstate-transition_in');
   }).then(function () {
-    test.deepEqual(t.oz.tree_state.flying, 'fetch_details_and_leap_to', "Flying (not leaping) to same place");
+    test.deepEqual(t.oz.tree_state.flying, 'leap_to', "Flying (not leaping) to same place");
     t.finish_flight();
     return t.wait_for_tourstop_state(0, 'tsstate-active_wait');
   }).then(function () {
@@ -525,7 +525,7 @@ test('tour:goto_stop', function (test) {
       t.wait_for_tourstop_state(3, 'tsstate-transition_in'),
     ]);
   }).then(function () {
-    test.deepEqual(t.oz.tree_state.flying, 'fetch_details_and_leap_to', "Leaping to arbiary stop");
+    test.deepEqual(t.oz.tree_state.flying, 'leap_to', "Leaping to arbiary stop");
     t.finish_flight();
     return t.wait_for_tourstop_state(3, 'tsstate-active_wait');
   }).then(function () {
@@ -545,7 +545,7 @@ test('tour:goto_stop', function (test) {
       t.wait_for_tourstop_state(3, 'tsstate-transition_in'),
     ]);
   }).then(function () {
-    test.deepEqual(t.oz.tree_state.flying, 'fetch_details_and_leap_to', "Leaping to arbiary stop");
+    test.deepEqual(t.oz.tree_state.flying, 'leap_to', "Leaping to arbiary stop");
     t.finish_flight();
     return t.wait_for_tourstop_state(3, 'tsstate-active_wait');
   }).then(function () {

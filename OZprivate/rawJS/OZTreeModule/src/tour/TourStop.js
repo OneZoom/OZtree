@@ -306,8 +306,7 @@ class TourStopClass {
 
       if (this.setting.transition_in === 'leap' || this.direction === 'backward') {
         /* Leap */
-        // NB: Use fetch_details_and_leap_to() so one can load page mid-tour and go backwards.
-        return this.controller.fetch_details_and_leap_to(this.OZid, this.setting.pos, this.setting.fly_into_node)
+        return this.controller.leap_to(this.OZid, this.setting.pos, this.setting.fly_into_node)
       }
 
       /* Flight */

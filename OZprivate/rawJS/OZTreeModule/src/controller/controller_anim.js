@@ -192,17 +192,12 @@ export default function (Controller) {
       });
     }
 
-    return flight_promise(() => new Promise((resolve, reject) => {
+    return flight_promise(() => {
       this.develop_branch_to_and_target(dest_OZid);
-      position_helper.perform_actual_fly(
-        this, into_node, Infinity, 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
-    }))
-  }
-  Controller.prototype.fetch_details_and_leap_to = function(dest_OZid, position=null, into_node=false) {
-    this.develop_branch_to_and_target(dest_OZid);
-    return get_details_of_nodes_in_view_during_fly(this.root, 0).then(function () {
-        return this.leap_to(dest_OZid, position, into_node);
-    }.bind(this));
+      return get_details_of_nodes_in_view_during_fly(this.root, 0).then(new Promise((resolve, reject) => {
+        position_helper.perform_actual_fly(this, into_node, Infinity, 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
+      }));
+    });
   }
   
   /**
@@ -307,15 +302,10 @@ export default function (Controller) {
                 // Move to start location
                 // NB: Not using leap_to helper here, we want this to be part of the same flight
                 this.develop_branch_to_and_target(src_OZid);
-                return new Promise((resolve, reject) => position_helper.perform_actual_fly(
-                    this,
-                    into_node,
-                    Infinity,
-                    'linear',
-                    resolve,
-                    () => reject(new UserInterruptError('Fly is interrupted'))
-                ));
-           }
+                return get_details_of_nodes_in_view_during_fly(this.root, 0).then(new Promise((resolve, reject) => {
+                    position_helper.perform_actual_fly(this, into_node, Infinity, 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
+                }));
+            }
         }).then(() => {
             if (src_OZid === null) {
                 // Find largest visible node: use this as our starting point
@@ -421,7 +411,7 @@ export default function (Controller) {
     }
 
     // init == "leap"
-    return this.fetch_details_and_leap_to(dest_OZid, init, into_node=into_node);
+    return this.leap_to(dest_OZid, init, into_node=into_node);
   };
   
   /**
