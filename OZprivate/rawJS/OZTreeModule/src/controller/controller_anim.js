@@ -194,9 +194,9 @@ export default function (Controller) {
 
     return flight_promise(() => {
       this.develop_branch_to_and_target(dest_OZid);
-      return get_details_of_nodes_in_view_during_fly(this.root, 0).then(new Promise((resolve, reject) => {
-        position_helper.perform_actual_fly(this, into_node, Infinity, 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
-      }));
+      return get_details_of_nodes_in_view_during_fly(this.root, 0).then(() => {
+        return position_helper.perform_actual_fly(this, into_node, Infinity, 'linear');
+      });
     });
   }
   
@@ -222,11 +222,10 @@ export default function (Controller) {
    */
   Controller.prototype.fly_straight_to = function(
         dest_OZid, into_node, speed=1, accel_type='linear', allow_skip=false) {
-    return flight_promise(() => new Promise((resolve, reject) => {
+    return flight_promise(() => {
       this.develop_branch_to_and_target(dest_OZid);
-      position_helper.perform_actual_fly(
-        this, into_node, speed, accel_type || 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
-    }), allow_skip ? () => {
+      return position_helper.perform_actual_fly(this, into_node, speed, accel_type || 'linear');
+    }, allow_skip ? () => {
         this.leap_to(dest_OZid, null, into_node);
     } : undefined);
   }
@@ -302,9 +301,9 @@ export default function (Controller) {
                 // Move to start location
                 // NB: Not using leap_to helper here, we want this to be part of the same flight
                 this.develop_branch_to_and_target(src_OZid);
-                return get_details_of_nodes_in_view_during_fly(this.root, 0).then(new Promise((resolve, reject) => {
-                    position_helper.perform_actual_fly(this, into_node, Infinity, 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
-                }));
+                return get_details_of_nodes_in_view_during_fly(this.root, 0).then(() => {
+                    return position_helper.perform_actual_fly(this, into_node, Infinity, 'linear');
+                });
             }
         }).then(() => {
             if (src_OZid === null) {
@@ -341,12 +340,9 @@ export default function (Controller) {
                                : idx === 0 ? 'accel'
                                : null;
                 flight_p = flight_p.then(function () {
-                    return new Promise(function (resolve, reject) {
-                        position_helper.clear_target(this.root);
-                        position_helper.target_by_code(this.root, n.ozid);
-                        position_helper.perform_actual_fly(
-                          this, (accel_func === 'decel') ? into_node : false, speed, accel_func, resolve, () => reject(new UserInterruptError('Fly is interrupted')));
-                    }.bind(this));
+                    position_helper.clear_target(this.root);
+                    position_helper.target_by_code(this.root, n.ozid);
+                    return position_helper.perform_actual_fly(this, (accel_func === 'decel') ? into_node : false, speed, accel_func);
                 }.bind(this));
             }.bind(this));
 
