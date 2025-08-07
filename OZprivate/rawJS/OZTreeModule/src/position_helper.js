@@ -381,6 +381,9 @@ function reanchor_at_node(node, root_node) {
   // Set graphref false everywhere
   deanchor(root_node);
 
+  // Anchor to this node
+  tree_state.anchor_node = node;  // NB: Only saved for debugging purposes
+
   // Walk up tree from (node), setting graphref
   while (node.upnode) {
     node.graphref = true;
@@ -393,6 +396,11 @@ function reanchor_at_node(node, root_node) {
 /**
  * Walk tree, anchoring to the first node on-screen that has 2.2 < node.rvar < 22000
  * (i.e. set graphref on this node and it's ancestors)
+ *
+ * For debugging, you can draw the current anchor node with:
+ *   onezoom.config.debug_bounding_box = (node => node === onezoom.tree_state.anchor_node ? 0x03 : 0)
+ * ...or add a browser watch condition of:
+ *   onezoom.tree_state.anchored_node + ' ' + onezoom.tree_state.anchored_node.rvar
  */
 function reanchor(node) {
   // If this node (or it's desendents) aren't visible, don't bother
@@ -401,6 +409,7 @@ function reanchor(node) {
   node.graphref = true;
   if (node.gvar || !node.has_child || (node.rvar > 2.2 && node.rvar < 22000)) {
     // Anchor to this node
+    tree_state.anchor_node = node;  // NB: Only saved for debugging purposes
     tree_state.xp = node.xvar;
     tree_state.yp = node.yvar;
     tree_state.ws = node.rvar / 220;
