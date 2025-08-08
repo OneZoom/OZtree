@@ -1,5 +1,4 @@
 import api_manager from '../api/api_manager';
-import config from '../global_config';
 
 import DataStoreIUCN from './ds_iucn.js';
 import DataStoreCutMap from './ds_cutmap.js'
