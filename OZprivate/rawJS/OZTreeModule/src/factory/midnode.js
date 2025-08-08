@@ -43,9 +43,9 @@ class Midnode {
     this.arcr = 1.0;
     this.arcx = 1.0;
     this.arcy = 1.0;
-    this.nextr = new Array(config.factory.child_num);
-    this.nextx = new Array(config.factory.child_num);
-    this.nexty = new Array(config.factory.child_num);
+    this.nextr = new Array(config.factory.child_num);  // Relative radius/scale to assign to children, as decided by view _pre_calc() functions
+    this.nextx = new Array(config.factory.child_num);  // Relative x-location ...
+    this.nexty = new Array(config.factory.child_num);  // Relative y-location ...
     this.gxmin = 1.0;  // Node bounding box
     this.gymin = 1.0;  // Node bounding box
     this.hxmin = 1.0;  // Node-and-descendants bounding box
@@ -55,13 +55,13 @@ class Midnode {
     this.hxmax = 1.0;  // Node-and-descendants bounding box
     this.hymax = 1.0;  // Node-and-descendants bounding box
     
-    this.xvar = 1.0;
-    this.yvar = 1.0;
-    this.rvar = 1.0;
+    this.xvar = 1.0;  // x-location of node relative to graphref node updated by position_helper:drawreg_target()
+    this.yvar = 1.0;  // y-location of node ...
+    this.rvar = 1.0;  // radius/scale of node ...
     this.gvar = false;  // gvar is true if this node itself needs to be drawn on screen (i.e onezoom.config.debug_bounding_box = 1)
     this.dvar = false;  // dvar is true if this node (or a descendent node) needs to be drawn on the screen (i.e onezoom.config.debug_bounding_box = 4)
-    this.graphref = false;
-    this.targeted = false;
+    this.graphref = false;  // true if this node (or a descendent node) is the "referencing node", i.e. the node from which xvar/yvar/rvar are relative to
+    this.targeted = false;  // true if this node (or a descendent node) is the destination for the current flight
     
     this.child_leaf_meta_start = new Array(config.factory.child_num);
     this.child_leaf_meta_end = new Array(config.factory.child_num);
@@ -291,7 +291,20 @@ class Midnode {
     this._picID_credit = null;
     this._detail_fetched = false;
   }
-  
+
+  /**
+   * Text representation of node, for debugging purposes
+   *
+   * Use with console log, e.g: console.log("Reanchoring to " + node);
+   * (NB "+", not ",")
+   */
+  toString() {
+    return [
+      this.cname || this.latin_name || 'Node',
+      this.ott ? '@=' + this.ott : '@_ozid=' + this.ozid,
+    ].join(" ");
+  }
+
   /**
    * Returns the OZid
    * i.e. negative metacode for leaf, positive metacode for interior node

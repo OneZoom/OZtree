@@ -184,8 +184,7 @@ export default function (Controller) {
         let anchor_node = this.dynamic_load_and_calc(dest_OZid, {
           generation_at_searched_node: config.generation_at_searched_node
         });
-        position_helper.deanchor(this.root);
-        position_helper.reanchor_at_node(anchor_node);
+        position_helper.reanchor_at_node(anchor_node, this.root);
         this.re_calc();
         this.trigger_refresh_loop();
         resolve()

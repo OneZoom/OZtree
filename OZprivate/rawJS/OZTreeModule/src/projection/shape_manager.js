@@ -64,22 +64,6 @@ function draw_bounding_box(node, shapes) {
   }
 
   if (debug & 0x2) { // Bounding box for node + parent
-    s = TextShape.create();
-    s.text = "" + node.latin_name;
-    s.width = (node.xvar + node.rvar * node.gxmax) - (node.xvar + node.rvar * node.gxmin);
-    s.height = 5;
-    s.x = node.xvar + node.rvar * node.gxmin + (s.width / 2);
-    s.y = node.yvar + node.rvar * node.gymin + s.height;
-    s.defpt = 10;
-    s.line = 2;
-    s.do_stroke = true;
-    s.stroke = { line_width: 1, color: 'black' };
-    s.do_fill = true;
-    s.fill = {color: 'hsl(' + Math.sin(node.metacode) * 360 + ', 100%, 80%)'};
-    shapes.push(s);
-  }
-
-  if (debug & 0x1) { // Bounding box text label
     s = BezierShape.create();
     s.sx = s.sy = s.ex = s.ey = null;
     s.path_points.push(['move', node.xvar + node.rvar * node.gxmin, node.yvar + node.rvar * node.gymin]);
@@ -93,6 +77,23 @@ function draw_bounding_box(node, shapes) {
     s.stroke.color = 'hsl(' + Math.sin(node.metacode) * 360 + ', 100%, 80%)';
     shapes.push(s);
   }
+
+  if (debug & 0x1) { // Bounding box text label
+    s = TextShape.create();
+    s.text = "" + node.toString();
+    s.width = (node.xvar + node.rvar * node.gxmax) - (node.xvar + node.rvar * node.gxmin);
+    s.height = 5;
+    s.x = node.xvar + node.rvar * node.gxmin + (s.width / 2);
+    s.y = node.yvar + node.rvar * node.gymin + s.height;
+    s.defpt = 10;
+    s.line = 2;
+    s.do_stroke = true;
+    s.stroke = { line_width: 1, color: 'black' };
+    s.do_fill = true;
+    s.fill = {color: 'hsl(' + Math.sin(node.metacode) * 360 + ', 100%, 80%)'};
+    shapes.push(s);
+  }
+
 }
 
 function height_comparator(a, b) {

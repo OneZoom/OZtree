@@ -132,6 +132,9 @@ function get_xyr_target(node, x2,y2,r2,into_node) {
   }
 }
 
+/**
+ *  Walk tree from (node), probably root, turning graphref off
+ */
 function deanchor(node) {
   if (node.graphref) {
     let length = node.children.length;
@@ -370,36 +373,52 @@ function pan_zoom(prop_p, prop_z) {
   tree_state.yp = tree_centreY + y_add2*(1-prop_p) + (pre_yp2-y_add2-tree_centreY) * Math.pow(r_mult2,prop_z);
 }
 
-function reanchor_at_node(node) {
-  node.graphref = true;
-  if (node.upnode) {
-    reanchor_at_node(node.upnode);
+/**
+ * Force the anchor to be the given (node),
+ * (i.e. set graphref on node and all it's ancestors)
+ */
+function reanchor_at_node(node, root_node) {
+  // Set graphref false everywhere
+  deanchor(root_node);
+
+  // Walk up tree from (node), setting graphref
+  while (node.upnode) {
+    node.graphref = true;
+    node = node.upnode;
   }
+  // Set graphref on root node
+  node.graphref = true;
 }
 
+/**
+ * Walk tree, anchoring to the first node on-screen that has 2.2 < node.rvar < 22000
+ * (i.e. set graphref on this node and it's ancestors)
+ */
 function reanchor(node) {
-  if (node.dvar) {
-    node.graphref = true;
-    if (node.gvar || !node.has_child || (node.rvar > 2.2 && node.rvar < 22000)) {
-      tree_state.xp = node.xvar;
-      tree_state.yp = node.yvar;
-      tree_state.ws = node.rvar / 220;
-      let length = node.children.length; 
-      for (let i=0; i<length; i++) {
-        deanchor(node.children[i]);
-      }
-    } else {
-      let length = node.children.length;
-      for (let i=0; i<length; i++) {
-        if (node.children[i].dvar) {
-          reanchor(node.children[i]);
-          for (let j=0; j<length; j++) {
-            if (i !== j) {
-              deanchor(node.children[j]);
-            }
+  // If this node (or it's desendents) aren't visible, don't bother
+  if (!node.dvar) return;
+
+  node.graphref = true;
+  if (node.gvar || !node.has_child || (node.rvar > 2.2 && node.rvar < 22000)) {
+    // Anchor to this node
+    tree_state.xp = node.xvar;
+    tree_state.yp = node.yvar;
+    tree_state.ws = node.rvar / 220;
+    // Deanchor everything below this node
+    for (let i=0; i<node.children.length; i++) {
+      deanchor(node.children[i]);
+    }
+  } else {
+    // Recurse, anchoring to the first visible child
+    for (let i=0; i<node.children.length; i++) {
+      if (node.children[i].dvar) {
+        reanchor(node.children[i]);
+        for (let j=0; j<node.children.length; j++) {
+          if (i !== j) {
+            deanchor(node.children[j]);
           }
-          break;
         }
+        break;
       }
     }
   }
@@ -416,4 +435,4 @@ function set_anim_speed(val) {
   global_anim_speed = val;
 }
 
-export {deanchor, reanchor, reanchor_at_node, target_by_code, clear_target, perform_actual_fly, get_anim_speed, set_anim_speed};
+export {reanchor, reanchor_at_node, target_by_code, clear_target, perform_actual_fly, get_anim_speed, set_anim_speed};
