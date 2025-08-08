@@ -12,6 +12,7 @@ class DataStoreAPI {
     this._queue = {};
     this._notifyTimeoutMs = 100;  // How long before triggers, in ms
     this._subsequentTimeoutMs = 100;  // If there's still more to do, how long before we trigger, in ms
+    this._fails = {};
     this._batchSize = 5;  // How many we fetch in one go
     this._maxFails = 5;  // How many times we retry before start unleashing the error upstream
   }
@@ -50,13 +51,13 @@ class DataStoreAPI {
     }
     this._queue[sliceName] = dataStore;
 
-    this._startTimer(this.notifyTimeoutMs);
+    this._startTimer(this._notifyTimeoutMs);
   }
 
   // Start a timer if there isn't already one going
   _startTimer(timeout) {
     // Already waiting, don't bother
-    if (!this._timer) return;
+    if (this._timer) return;
 
     // Otherwise, start a new timer
     this._timer = window.setTimeout(() => {
@@ -71,19 +72,19 @@ class DataStoreAPI {
       return Promise.all(sliceNames.map((sliceName) => {
         return api_manager.static_tree_data(sliceName).then((response) => {
           if (!response.ok) throw new Error(`Data store fetch ${sliceName} failed ${response.status}:${response.statusText}`);
-          return queue[sliceName].incoming(sliceName, response);
+          return this._queue[sliceName].incoming(sliceName, response);
         }).then(() => {
           delete this._queue[sliceName];
         }).catch((error) => {
           // Note the failure & carry on
-          console.error(error);
+          console.error("Data store slice fetch error", error);
           this._fails[sliceName] = (this._fails[sliceName] || 0) + 1;
         });
       })).finally(() => {
         // Now we're done, let another timer start
         this._timer = undefined;
         // If there's more waiting (either added since we started, or over batchSize), go again
-        if (Object.keys(this._queue).length > 0) this.startTimer(this._subsequentTimeoutMs);
+        if (Object.keys(this._queue).length > 0) this._startTimer(this._subsequentTimeoutMs);
       });
     }, timeout);
   }

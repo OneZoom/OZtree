@@ -28,9 +28,9 @@ export default class DataStore {
    *
    * See: https://developer.mozilla.org/en-US/docs/Web/API/Response
    */
-  dataView(resp) {
+  dataView(response) {
     // Read as Uint8Array by default
-    return resp.bytes();
+    return response.bytes();
   }
 
   constructor(dataStoreApi) {
@@ -61,7 +61,7 @@ export default class DataStore {
    * This will be called by DataStoreAPI
    */
   incoming(sliceName, response) {
-    return this.dataView(resp).then((view) => {
+    return this.dataView(response).then((view) => {
       this._slices[sliceName] = view;
     });
   }
