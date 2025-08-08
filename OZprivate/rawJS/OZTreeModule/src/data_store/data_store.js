@@ -2,6 +2,8 @@
  * DataStore: Data manager for (mostly binary array) data
  */
 export default class DataStore {
+  name = "changeme";  /** The name this DataStore will be added to DataStoreAPI as */
+
   /**
    * Convert a node to a DataStore id (read: array offset)
    * By default use the metacode

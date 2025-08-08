@@ -2,34 +2,35 @@ import api_manager from '../api/api_manager';
 
 import DataStoreIUCN from './ds_iucn.js';
 import DataStoreCutMap from './ds_cutmap.js'
-const storeClasses = {
-  iucn: DataStoreIUCN,
-  cutmap: DataStoreCutMap,
-};
 
 /**
  * Background fetcher for data store slices
  */
 class DataStoreAPI {
   constructor() {
+    this._dsNames = [];
     this._queue = {};
     this._notifyTimeoutMs = 100;  // How long before triggers, in ms
     this._subsequentTimeoutMs = 100;  // If there's still more to do, how long before we trigger, in ms
     this._batchSize = 5;  // How many we fetch in one go
     this._maxFails = 5;  // How many times we retry before start unleashing the error upstream
+  }
 
-    // Instantiate all data stores, wiring up to api object
-    Object.keys(storeClasses).forEach((k) => {
-      this[k] = new storeClasses[k](this)
-    });
+  /**
+   * Create a DataStore instance from DsClass, add it to the API
+   */
+  inject(DsClass) {
+    const ds = new DsClass(this);
+    this._dsNames.push(ds.name);
+    this[ds.name] = ds;
   }
 
   /**
    * Clear all data stores, e.g. on visualisation change
    */
   clear() {
-    Object.keys(storeClasses).forEach((k) => {
-      this[k].clear();
+    Object.keys(this._dsNames).forEach((dsName) => {
+      this[dsName].clear();
     });
   }
 
@@ -88,4 +89,8 @@ class DataStoreAPI {
   }
 }
 
-export default new DataStoreAPI();
+// Return singleton instance with all DataStores added
+const ds_api = new DataStoreAPI();
+ds_api.inject(DataStoreIUCN);
+ds_api.inject(DataStoreCutMap);
+export default ds_api;

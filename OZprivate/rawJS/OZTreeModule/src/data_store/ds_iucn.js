@@ -1,6 +1,8 @@
 import DataStore from './data_store';
 
 export default class DataStoreIUCN extends DataStore {
+  name = "iucn";  /** The name that this will be availble from DataStoreApi under */
+
   constructor() {
     super();
 

@@ -1,6 +1,8 @@
 import DataStore from './data_store';
 
 export default class DataStoreCutMap extends DataStore {
+  name = "cutmap";  /** The name that this will be availble from DataStoreApi under */
+
   setCutMapType(type) {
     // NB: This will auto-trigger the new slice to be fetched, as the name to look-up will change
     self._sliceName = type === "polytomy" ? "poly_cut_position_map.json" : "cut_position_map.json";
