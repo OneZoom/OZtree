@@ -40,20 +40,23 @@ export default class DataStore {
 
   /**
    * Get value from DataStore for given node
+   * - missingValue: Value to return when node has no value in slice
+   * - missingSlice: Value to return when node has no slice assigned
    *
-   * If slice is missing, queue up request to fetch it
-   * If the node has no assigned slice, return null
+   * If slice is missing, queue up request to fetch it & return undefined
+   * Otherwise return value/missingValue/missingSlice (default null)
    */
-  get(node) {
+  get(node, missingValue = null, missingSlice = missingValue) {
     const sliceName = this.sliceNameFor(node);
-    if (sliceName === null) return null;
+    if (sliceName === null) return missingSlice;
     const view = this._slices[sliceName];
 
     if (!view) {
       this.dataStoreApi.notify(sliceName, this);
       return undefined;
     }
-    return view[this.nodeToId(node)];
+    const out = view[this.nodeToId(node)];
+    return out === undefined ? missingValue : out;
   }
 
   /**
