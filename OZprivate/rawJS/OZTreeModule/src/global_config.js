@@ -68,7 +68,10 @@ config.api = {
   tour_search_api: null,
 
   // Function to convert "completetree.js" -> "/OZtree/static/FinalOutputs/data/completetree_27400288.js", e.g.
-  static_data_url_func: function (data_name) { return data_name; },
+  static_data_url_func: function (data_name) {
+      const parts = data_name.split(".", 2);
+      return `/static/${parts[0]}_12345.${parts[1]}`;
+  },
 
   //The following are functions which take an OTT or a OneZoom id
   OZ_leaf_json_url_func: null,
