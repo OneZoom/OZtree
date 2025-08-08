@@ -16,20 +16,6 @@ When calling the entry function, you may want to have already defined
 3. The html id of the canvas used to hold the OneZoom visualization
 4. Initial tree config (see 
 5. Pagetitle function
-6. A string of brackets, in 'OneZoom-reduced-newick' format, giving the topology of the tree. This format is essentially a strictly binary tree in newick format, ladderized ascending, with all details except braces removed. Additionally, groups with 0-length branches (indicating arbitrarily resolved bifurcations) have their round braces removed and replaced with curly braces.
-7. A set of cut positions, defined in JSON format
-8. A set of polytomy cut positions, defined in JSON format
-9. A cut threshold for 3 and 4 above.
-10. A set of dates for the tree, 
-
-Items 1-5 are usually defined within the html of the page, and may change from . Items 6-11 are usually defined in .js files which are loaded from the tree viewer web page. 
-
-
-Item 6 are usually defined within the file `FinalOutputs/data/completetree_XXXXXXX.js` (XXXXXXX is a timestamp), in the variable `rawData`.
-
-Items (3), (4) and (5) are usually defined within the file `FinalOutputs/data/cut_position_map_XXXXXXX.js`, in the variables `cut_position_map_json_str`, `polytomy_cut_position_map_json_str`, and `cut_threshold` respectively.
-
-Items (
 
 ### Basic use
 
@@ -41,13 +27,7 @@ onezoom = OZentry.default(
 	UI_callbacks, 
 	pagetitle_func,
 	'OneZoomCanvasID', 
-	tree_config, 
-	rawData, 
-	null,  // NB: Legacy argument, leave null
-	cut_position_map_json_str, 
-	polytomy_cut_position_map_json_str, 
-	cut_threshold,
-	tree_date);
+	tree_config);
 onezoom.run()
 onezoom.controller.button_zoom_in()
 ```

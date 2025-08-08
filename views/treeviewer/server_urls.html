@@ -1,3 +1,4 @@
+{{from OZfunc import __check_version ; tree_version = __check_version()}}
 {{import img}}
   <script type="text/javascript">
 var server_urls = {
@@ -14,6 +15,12 @@ var server_urls = {
   tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
   tour_list_api: "{{=URL('tour', 'list.json', scheme=True, host=True)}}",
   tour_search_api: "{{=URL('tour','search.json', scheme=True, host=True)}}",
+
+  static_data_url_func: function (data_name) {
+      const buf_tmpl = '{{=URL("static", "FinalOutputs/data/BASEBASE_{}.EXTEXT".format(tree_version), scheme=True, host=True)}}';
+      const data_parts = data_name.split(".", 2);
+      return buf_tmpl.replace("BASEBASE", data_parts[0]).replace("EXTEXT", data_parts[1]);
+  },
 
   {{ # NB: Ideally we'd look up setup_params in vars(), but a lot of controllers set vars=request.vars
   try:
