@@ -109,10 +109,22 @@ function get_details_of_nodes_in_view_during_fly(root, subbranch_depth) {
   });
 }
 
-/** Collect a promise into tree_state, clear it once done */
-function flight_promise(p) {
-  tree_state.flight_promise = p.finally(() => {
-    tree_state.flight_promise = undefined;
+/** Cancel any previous flights, call do_flight_fn & save do_skip_fn if user wants to skip flight */
+function flight_promise(do_flight_fn, do_skip_fn) {
+  // Cancel any active flights first by turning off tree_state.flying
+  // NB: The flight will *not* be cancelled immediately. perform_fly_b2()
+  //     will notice on next setTimeout() and shut itself down, after
+  //     which it's safe to start new flights.
+  tree_state.flying = false;
+  const flight_promise = tree_state.flight_promise = (tree_state.flight_promise || Promise.resolve()).then(() => {
+    tree_state.flight_skip = do_skip_fn || undefined;
+    tree_state.flying = true;
+    return do_flight_fn();
+  }).finally(() => {
+    // NB: Only remove flight promise if it was ours. If we've been cancelled (and already replaced) leave alone
+    if (tree_state.flight_promise === flight_promise) tree_state.flight_promise = undefined;
+    tree_state.flight_skip = undefined;
+    tree_state.flying = false;
   }).catch((e) => {
     // Eat any errors. We don't care at this point, this branch of the promise
     // chain is just to make sure we've finished, but without we get unhandled
@@ -121,20 +133,7 @@ function flight_promise(p) {
       console.warn("Cancelled flight failed", e)
     }
   });
-  return tree_state.flight_promise;
-}
-
-/**
- * Make a function that can be used to skip the flight.
- */
-function make_skip_flight(controller, dest_OZid, into_node, finalize_func=null) {
-  return () => {
-    controller.leap_to(dest_OZid, null, into_node);
-    if (finalize_func != null) {
-      finalize_func();
-    }
-    controller.skip_flight = undefined;
-  }
+  return flight_promise;
 }
 
 /**
@@ -149,11 +148,16 @@ export default function (Controller) {
    * Returns promise which will resolve once flights are ready to happen again
    */
   Controller.prototype.cancel_flight = function () {
-    // NB: The flight will *not* be cancelled immediately. perform_fly_b2()
-    //     will notice on next setTimeout() and shut itself down, after
-    //     which it's safe to start new flights.
-    tree_state.flying = false;
-    return tree_state.flight_promise || Promise.resolve();
+    // Trigger a do-nothing flight, which will cancel any ongoing flights first
+    return flight_promise(() => { });
+  };
+
+  /**
+   * If a skippable flight is in progress, return a function to skip it
+   * otherwise, return undefined
+   */
+  Controller.prototype.get_flight_skip_fn = function () {
+    return tree_state.flight_skip || undefined;
   };
 
   /**
@@ -171,8 +175,6 @@ export default function (Controller) {
    *     shows the entire tree structure descended from that node.
    */   
   Controller.prototype.leap_to = function(dest_OZid, position=null, into_node=false) {
-    tree_state.flying = false;
-
     if (position && (typeof(position) === 'object')) {
       return new Promise((resolve) => {
         tree_state.xp = position.xp || position[0] || 0
@@ -190,18 +192,12 @@ export default function (Controller) {
       });
     }
 
-    this.develop_branch_to_and_target(dest_OZid);
-    return flight_promise(new Promise((resolve, reject) => {
-      position_helper.perform_actual_fly(
-        this, into_node, Infinity, 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
-      tree_state.flying = false;
-    }))
-  }
-  Controller.prototype.fetch_details_and_leap_to = function(dest_OZid, position=null, into_node=false) {
-    this.develop_branch_to_and_target(dest_OZid);
-    return get_details_of_nodes_in_view_during_fly(this.root, 0).then(function () {
-        return this.leap_to(dest_OZid, position, into_node);
-    }.bind(this));
+    return flight_promise(() => {
+      this.develop_branch_to_and_target(dest_OZid);
+      return get_details_of_nodes_in_view_during_fly(this.root, 0).then(() => {
+        return position_helper.perform_actual_fly(this, into_node, Infinity, 'linear');
+      });
+    });
   }
   
   /**
@@ -226,16 +222,12 @@ export default function (Controller) {
    */
   Controller.prototype.fly_straight_to = function(
         dest_OZid, into_node, speed=1, accel_type='linear', allow_skip=false) {
-    tree_state.flying = false;
-    this.develop_branch_to_and_target(dest_OZid);
-    if (allow_skip) {
-      this.skip_flight = make_skip_flight(this, dest_OZid, into_node)
-    }
-
-    return flight_promise(new Promise((resolve, reject) => {
-      position_helper.perform_actual_fly(
-        this, into_node, speed, accel_type || 'linear', resolve, () => reject(new UserInterruptError('Fly is interrupted')));
-    }).finally(() => this.skip_flight = undefined))
+    return flight_promise(() => {
+      this.develop_branch_to_and_target(dest_OZid);
+      return position_helper.perform_actual_fly(this, into_node, speed, accel_type || 'linear');
+    }, allow_skip ? () => {
+        this.leap_to(dest_OZid, null, into_node);
+    } : undefined);
   }
     
     
@@ -270,15 +262,6 @@ export default function (Controller) {
     Controller.prototype.fly_on_tree_to = function(
             src_OZid, dest_OZid,
             into_node=false, speed=1, accel_type="parabolic", finalize_func=null, allow_skip=false) {
-        if (allow_skip) {
-            this.skip_flight = make_skip_flight(this, dest_OZid, into_node, finalize_func)
-        }
-
-        var p = new Promise(function (resolve) {
-            config.ui.loadingMessage(true);
-            window.setTimeout(resolve, 200);
-        }.bind(this));
-
         // Return flight path (common ancestor, then target)
         function get_flight_path(node_start, node_end) {
             var n, visited_nodes = {};
@@ -310,27 +293,31 @@ export default function (Controller) {
             throw new Error("No common nodes for " + node_start + " and " + node_end);
         }
 
-        if (src_OZid == null) {
-            // Find largest visible node: use this as our starting point
-            let top_node = this.largest_visible_node(function(node) { return node.ott; }) || this.root;
-            src_OZid = top_node.ozid;
-        } else {
-            // Move to start location
-            p = p.then(function () {
-              return this.leap_to(src_OZid)
-            }.bind(this));
-        }
-
-        p = p.then(function () {
+        return flight_promise(() => new Promise((resolve) => {
+            config.ui.loadingMessage(true);
+            window.setTimeout(resolve, 200);
+        }).then(() => {
+            if (src_OZid !== null) {
+                // Move to start location
+                // NB: Not using leap_to helper here, we want this to be part of the same flight
+                this.develop_branch_to_and_target(src_OZid);
+                return get_details_of_nodes_in_view_during_fly(this.root, 0).then(() => {
+                    return position_helper.perform_actual_fly(this, into_node, Infinity, 'linear');
+                });
+            }
+        }).then(() => {
+            if (src_OZid === null) {
+                // Find largest visible node: use this as our starting point
+                let top_node = this.largest_visible_node(function(node) { return node.ott; }) || this.root;
+                src_OZid = top_node.ozid;
+            }
             var flight_path = get_flight_path(
                 this.develop_branch_to_and_target(src_OZid),
                 this.develop_branch_to_and_target(dest_OZid)
             );
             config.ui.loadingMessage(false);
             return flight_path;
-        }.bind(this));
-
-        p = p.then(function (flight_path) {
+        }).then((flight_path) => {
             var flight_p = Promise.resolve();
 
             flight_path.map(function (n) {
@@ -344,9 +331,7 @@ export default function (Controller) {
             }.bind(this));
 
             return flight_p.then(function () { return flight_path; });
-        }.bind(this));
-
-        p = p.then(function (flight_path) {
+        }).then((flight_path) => {
             var flight_p = Promise.resolve();
 
             flight_path.map(function (n, idx, arr) {
@@ -355,27 +340,22 @@ export default function (Controller) {
                                : idx === 0 ? 'accel'
                                : null;
                 flight_p = flight_p.then(function () {
-                    return new Promise(function (resolve, reject) {
-                        position_helper.clear_target(this.root);
-                        position_helper.target_by_code(this.root, n.ozid);
-                        position_helper.perform_actual_fly(
-                          this, (accel_func === 'decel') ? into_node : false, speed, accel_func, resolve, () => reject(new UserInterruptError('Fly is interrupted')));
-                    }.bind(this));
+                    position_helper.clear_target(this.root);
+                    position_helper.target_by_code(this.root, n.ozid);
+                    return position_helper.perform_actual_fly(this, (accel_func === 'decel') ? into_node : false, speed, accel_func);
                 }.bind(this));
             }.bind(this));
 
             return flight_p.then(function () { return flight_path; });
-        }.bind(this));
-
-        // Finished!
-        p = p.finally(() => this.skip_flight = undefined)
-        p = p.then(finalize_func);
-        p = p.catch(function (e) {
+        }).then(finalize_func).catch((e) => {
             config.ui.loadingMessage(false);
             throw e;
-        })
-
-        return flight_promise(p);
+        }), allow_skip ? () => {
+            this.leap_to(dest_OZid, null, into_node);
+            if (finalize_func != null) {
+                finalize_func();
+            }
+        } : undefined);
     };
 
   /**
@@ -427,7 +407,7 @@ export default function (Controller) {
     }
 
     // init == "leap"
-    return this.fetch_details_and_leap_to(dest_OZid, init, into_node=into_node);
+    return this.leap_to(dest_OZid, init, into_node=into_node);
   };
   
   /**

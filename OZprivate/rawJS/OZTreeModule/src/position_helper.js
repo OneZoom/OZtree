@@ -1,5 +1,6 @@
 import tree_state from './tree_state';
 import {max, min} from './util/index';
+import { UserInterruptError } from './errors';
 
 let x_add = null;
 let y_add = null;
@@ -211,12 +212,21 @@ function clear_target(node) {
  * @param {func} speed is optional, and gives the relative speed compared to the globally set
  *   animation speed (greater than 1 gives faster animations, less than one gives slower, Infinity is a leap)
  * @param {func} accel_type is optional, and gives the acceleration type ('accel', 'decel' or 'linear' (default)
- * @param {func} finalize_func is optional, and gives a function to call at the end of the zoom
- * @param {func} abrupt_func is optional, and gives a function to call when fly is abrupted
- * @return {boolean} returns false if the distance to codein_fly is too short so there is no animation performed.
+ * @return {Promise} resolved when flight is over, rejected with UserInterruptError() if cancelled
  */
-function perform_actual_fly(controller, into_node, speed=1, accel_type="linear", finalize_func=null, abrupt_func=null) {
-  tree_state.flying = true;
+function perform_actual_fly(controller, into_node, speed=1, accel_type="linear") {
+  return new Promise((resolve, reject) => perform_actual_fly_inner(
+    controller,
+    into_node,
+    speed,
+    accel_type,
+    resolve,
+    () => reject(new UserInterruptError('Fly is interrupted')
+  )));
+}
+
+// perform_actual_fly, but with old callback-based interface
+function perform_actual_fly_inner(controller, into_node, speed=1, accel_type="linear", finalize_func=null, abrupt_func=null) {
   more_flying_needed = false;
   drawreg_target(controller.root, tree_state.xp, tree_state.yp, 220*tree_state.ws);
   pre_xp = tree_state.xp;
@@ -226,9 +236,7 @@ function perform_actual_fly(controller, into_node, speed=1, accel_type="linear",
   fly_start_time = performance.now();
   if(((r_mult>0.9999)&&(r_mult<1.00001))&&(x_add*x_add<1)&&(y_add*y_add<1)) {
     // nothing to zoom to so better to do nothing and return false or it feels like a bug
-    if (typeof finalize_func === "function") {
-      finalize_func()
-    }
+    finalize_func()
     return false;
   } else if (speed === Infinity) {
     // Infinite speed, i.e. leap straight to destination
@@ -236,14 +244,11 @@ function perform_actual_fly(controller, into_node, speed=1, accel_type="linear",
     controller.re_calc();
     controller.reanchor();
     if (more_flying_needed) {
-      perform_actual_fly(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
+      perform_actual_fly_inner(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
       return true;
     }
     controller.trigger_refresh_loop();
-    tree_state.flying = false;
-    if (typeof finalize_func === "function") {
-      finalize_func()
-    }
+    finalize_func()
     return true;
   } else {
     fly_duration_s = Math.max(Math.abs(Math.log(r_mult)) * global_anim_speed, 12) / speed / original_flight_fps;
@@ -288,7 +293,11 @@ function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func,
          : time_proportion;
   }
 
-  if (more_flying_needed) {
+  if (!tree_state.flying) {
+    // If tree_state.flying has been cleared since we started, give up now
+    cancelAnimationFrame(fly_frame_request_id);
+    abrupt_func();
+  } else if (more_flying_needed) {
     //need to reanchor, this sometimes causes jerkiness
     //also we may not know how many steps we will need to take
     // NB: Approximate accel/decel by not panning at all, let the final non-reanchor step handle it
@@ -298,12 +307,7 @@ function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func,
     controller.reanchor();
     controller.trigger_refresh_loop();
 
-    if (tree_state.flying) {
-      perform_actual_fly(controller, into_node, speed, 'linear', finalize_func, abrupt_func);
-    } else if (typeof abrupt_func === 'function') {
-      abrupt_func()
-    }
-
+    perform_actual_fly_inner(controller, into_node, speed, 'linear', finalize_func, abrupt_func);
   } else {
     //don't need to reanchor - this is more normal, and is smoother
     pan_zoom(
@@ -318,18 +322,12 @@ function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func,
 
     if (time_proportion < 1) {
       fly_frame_request_id = requestAnimationFrame(function () {
-        if (tree_state.flying) {
-          perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
-        } else if (typeof abrupt_func === 'function') {
-          abrupt_func()
-        }
+        perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
       });
     } else {
-      tree_state.flying = false;
+      // Reached our destination, stop flying & trigger callback
       tree_state.set_action(null);
-      if (typeof finalize_func === "function") {
-          finalize_func()
-      }
+      finalize_func()
     }
   }
 }

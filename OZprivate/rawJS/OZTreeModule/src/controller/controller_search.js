@@ -35,7 +35,7 @@ export default function (Controller) {
             let flight_speed = parseFloat(config.search_jump_mode.split('-')[1]) || 1
             return p.then((pp) => this.fly_straight_to(pp.ozid, false, flight_speed, 'linear', true));
         } else {
-            return p.then((pp) => this.fetch_details_and_leap_to(pp.ozid));
+            return p.then((pp) => this.leap_to(pp.ozid));
         }
     }
 
