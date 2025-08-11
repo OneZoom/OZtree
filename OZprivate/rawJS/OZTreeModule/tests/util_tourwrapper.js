@@ -103,22 +103,6 @@ export function setup_tour(test, s, interaction = null, verbose_test = false) {
           fake_oz.cur_node = ozid;
         }));
       },
-      fetch_details_and_leap_to: function (ozid) {
-        log.push(["fetch_details_and_leap_to", Array.from(arguments)]);
-
-        // Cancel any previous flight
-        if (fake_oz.resolve_flight) fake_oz.controller.cancel_flight();
-
-        // Wait for test to "resolve" the flight, then continue
-        return flight_promise(new Promise(function (resolve) {
-          fake_oz.resolve_flight = resolve;
-          fake_oz.tree_state.flying = 'fetch_details_and_leap_to';
-        }).then(() => {
-          fake_oz.resolve_flight = null;
-          fake_oz.tree_state.flying = null;
-          fake_oz.cur_node = ozid;
-        }));
-      },
       set_treestate: function (treestate) {
         log.push(["set_treestate:", treestate]);
         fake_oz.treestate = treestate;

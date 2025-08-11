@@ -32,7 +32,7 @@ function drawreg(node, x, y, r) {
         }
       }
       
-      if(node_descendants_in_screen(node)) {
+      if(node_on_screen(node, true)) {
         if (node.rvar > tree_state.threshold) {
           for (let other=0; other<length; other++) {
             if (other !== index) {
@@ -66,7 +66,7 @@ function drawreg2(node, x, y, r) {
   node.rvar = r;
   node.dvar = false;	
   node.gvar = false;
-  if(node_descendants_in_screen(node)) {
+  if(node_on_screen(node, true)) {
     if (node.has_child) {
       if (r > tree_state.threshold) {
         let length = node.children.length;
@@ -101,26 +101,24 @@ function get_dvar_by_children(node) {
   return dvar;
 }
 
-/** Does the given node and it's descendants fit on screen? */
-function node_descendants_in_screen(node) {
-  if ((node.xvar + node.rvar * node.hxmax) < 0) return false;
-  else if ((node.xvar + node.rvar * node.hxmin) > tree_state.widthres) return false;
-  else if ((node.yvar + node.rvar * node.hymax) < 0) return false;
-  else if ((node.yvar + node.rvar * node.hymin) > tree_state.heightres) return false;
-  else return true;
-}
+/**
+ * Does the bounding box of the node / node-and-descendants fit on screen?
+ */
+function node_on_screen(node, inclDescendants) {
+  const x1 = node.xvar + node.rvar * (inclDescendants ? node.hxmin : node.gxmin);
+  const x2 = node.xvar + node.rvar * (inclDescendants ? node.hxmax : node.gxmax);
+  const y1 = node.yvar + node.rvar * (inclDescendants ? node.hymin : node.gymin);
+  const y2 = node.yvar + node.rvar * (inclDescendants ? node.hymax : node.gymax);
 
-/** Does the given node fit on screen? */
-function node_in_screen(node) {
-  if ((node.xvar + node.rvar * node.gxmax) < 0) return false;
-  else if ((node.xvar + node.rvar * node.gxmin) > tree_state.widthres) return false;
-  else if ((node.yvar + node.rvar * node.gymax) < 0) return false;
-  else if ((node.yvar + node.rvar * node.gymin) > tree_state.heightres) return false;
-  else return true;
+  if (x2 < 0) return false;
+  if (x1 > tree_state.widthres) return false;
+  if (y2 < 0) return false;
+  if (y1 > tree_state.heightres) return false;
+  return true;
 }
 
 function set_node_gvar_dvar(node) {
-  if(node_in_screen(node)) {
+  if(node_on_screen(node, false)) {
     node.gvar = true;        
     node.dvar = true;        
   } else {

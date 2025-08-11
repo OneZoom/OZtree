@@ -40,7 +40,6 @@ request.vars.links = setup_params['UI_layer']['vars'].get('links')
   </div>
 
   <!-- treeviewer constants -->
-  {{include 'treeviewer/dynamic_scripts.html' }}
   {{include 'treeviewer/server_urls.html' }}
   <script>var OZstrings={{include 'treeviewer/js_strings.json'}}</script>
   <script type="text/javascript">
@@ -612,16 +611,19 @@ function setupUI() {
         .click(function(){onezoom.controller.button_zoom_in()});
     $('#resetButton .icon-container')
         .click(function(){onezoom.controller.button_reset()});
-    $('.skip-animation-button')
-        .click(function(){onezoom.controller.skip_flight?.()});
+    $('.skip-animation-button').click(function(){
+        const fn = onezoom.controller.get_flight_skip_fn();
+        if (fn) fn();
+    });
     $(document).on('keydown', function(event){
         if (event.key === 'Escape') {
-            onezoom.controller.skip_flight?.();
+            const fn = onezoom.controller.get_flight_skip_fn();
+            if (fn) fn();
         }
     });
     
     const update_skip_button = () => {
-        if (onezoom.controller.skip_flight) {
+        if (onezoom.controller.get_flight_skip_fn()) {
             $('.skip-animation-button').fadeIn();
             if (onezoom.tree_state.flight_promise) {
                 onezoom.tree_state.flight_promise.finally(() => {
@@ -1057,13 +1059,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             window.globals.UI_callbacks,
             window.pagetitle_func,
             'OneZoomCanvasID',
-            window['tree_config'],
-            window.rawData,
-            null,
-            window.cut_position_map_json_str,
-            window.polytomy_cut_position_map_json_str,
-            window.cut_threshold,
-            window.tree_date);
+            window['tree_config']);
 
         /* The screensaver is a type of tour with a different calling signature */
         onezoom.add_hook('on_tree_loaded', () => {

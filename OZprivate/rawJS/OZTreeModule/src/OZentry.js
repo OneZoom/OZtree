@@ -35,14 +35,6 @@ functionality. At the moment, a single file is created, called OZentry.js
  *  3. Write your own "theme" object and pass it here e.g. use default_viz_settings = {colours:my_theme_object}
  *  4. Use an existing theme and modify it by passing additional parameters here, as described in tree_settings.set_default()
  *     e.g. use default_viz_settings = {cols:'natural', 'cols.branch.stroke':'rgb(190,0,0)'}
- * @param {string} rawData A 'condensed Newick' string, e.g. as defined in completetree_XXXXX.js
- * (condensed Newick is a ladderized-ascending binary newick tree with all characters except braces removed, 
- * and curly braces substituted where a bifurcation only exists order to randomly resolve polytomies.
- * @param {Object} unused - leave null
- * @param {Object} cut_position_map_json_str dichotomy cut map from the tree-build-generated cut_position_map.js
- * @param {Object} polytomy_cut_position_map_json_str polytomy cut map from the tree-build-generated cut_position_map.js
- * @param {Object} cut_threshold - Threshold used when generating (and defined in) cut_position_map.js
- * @param {Object} tree_date - Date stcture from the tree-build-generated dates.js
  * @return {Object} a OneZoom object which exposes OneZoom objects and functions to the user. In particular, .data_repo contains a DataRepo object, and .controller contains a Controller object.
  */
 function setup(
@@ -50,13 +42,7 @@ function setup(
   UI_functions,
   pagetitle_function,
   canvasID,
-  default_viz_settings,
-  rawData,
-  unused,
-  cut_position_map_json_str,
-  polytomy_cut_position_map_json_str,
-  cut_threshold,
-  tree_date) {
+  default_viz_settings) {
   // Set the server-specific URLs for API calls
   api_manager.set_urls(server_urls);
   // Set the URL for images
@@ -109,31 +95,35 @@ function setup(
   oz.config = config;
   oz.add_hook = add_hook;
 
-  // use setTimeout so that loading screen is displayed before build tree starts.
-  // TO DO - we should probably use promises here rather than rely on timeouts completing
-  setTimeout(() => {
-    if (oz.controller) {
-        //start fetching metadata for the tree, using global variables that have been defined in files 
-        data_repo.setup({
-          raw_data: rawData,
-          cut_map: JSON.parse(cut_position_map_json_str || "{}"),
-          poly_cut_map: JSON.parse(polytomy_cut_position_map_json_str || "{}"),
-          cut_threshold: cut_threshold || 10000,
-          tree_date: tree_date || "{}"
-        })
+  if (!oz.controller) {
+    // No controller, don't bother getting data
+    garbage_collection_start();
+    return oz;
+  }
 
-        //Jump or fly to a place in the tree marked by the url when the page loads.
-        oz.controller.set_treestate().then(function () {
-          oz.controller.find_proper_initial_threshold()
-        });
-        //listen to user mouse, touch, icon click, window resize and user navigation events.
-        oz.controller.bind_listener()
-        //start garbage collection of tree to keep the size of the tree in memory reasonable
-        call_hook("on_tree_loaded")
-    }
-    garbage_collection_start()
-  }, 50);
+  // Fetch the tree data (and give time for loading spinner to show)
+  api_manager.fetch_tree_data().then((tree_data) => {
+    data_repo.setup(tree_data);
 
+    //Jump or fly to a place in the tree marked by the url when the page loads.
+    oz.controller.set_treestate().then(function () {
+      oz.controller.find_proper_initial_threshold();
+    });
+    //listen to user mouse, touch, icon click, window resize and user navigation events.
+    oz.controller.bind_listener();
+    //start garbage collection of tree to keep the size of the tree in memory reasonable
+    garbage_collection_start();
+
+    call_hook("on_tree_loaded");
+  }).catch((err) => {
+    // As we're not returning the promise, pick up any problems parsing completetree.js (e.g.) here.
+    window.alert("Failed to initalize OneZoom:\n" + err.message);
+    console.error(err);
+    throw err;
+  });
+
+  // NB: Not returning promise for compatibilities' sake.
+  // There may be code that relies on window.onezoom existing before setup has finished
   return oz;
 }
 

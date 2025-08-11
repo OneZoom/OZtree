@@ -13,7 +13,6 @@ from collections import OrderedDict
 
 import ozmail
 import tour
-from embed import embedize_url
 from sponsorship import (
     sponsorship_enabled, reservation_total_counts, clear_reservation, get_reservation,
     reservation_validate_basket_fields,

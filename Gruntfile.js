@@ -76,6 +76,15 @@ module.exports = function (grunt) {
         cwd: "../../",
         command: exec_web2py_script("private/background_tasks.py"),
       },
+      show_errors: {
+        cwd: "../../",
+        command: function () {
+          return [].concat(
+            [venv_python, "applications/OZtree/private/show_errors.py"],
+            Array.from(arguments),
+          ).join(" ");
+        }
+      },
       db_fixtures: {
         command: function () {
             // Either accept a list of test filenames, or work it out ourselves and run all tests

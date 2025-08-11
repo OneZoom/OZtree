@@ -1,4 +1,5 @@
 import ozmail
+from embed import embedize_url
 
 from OZfunc import (
     __release_info,

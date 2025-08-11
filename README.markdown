@@ -345,6 +345,22 @@ If you wish to use your editor's debugger to debug the JavaScript code, you will
 1. Run `grunt dev` to perform the initial dev compilation.
 1. Run `npm run compile_js_dev:watch` to compile source maps and automatically recompile if files are changed. Note: this command will continue to run until it is killed.
 
+### Server side errors
+
+Server-side errors may be reported as:
+
+> Internal error
+> Ticket issued: OZtree/...
+
+The ticket links to the web2py management portal, which you could grant yourself access to, but when running locally you can inspect the error logs directly with:
+
+```
+./node_modules/.bin/grunt exec:show_errors
+```
+
+You can also use ``./node_modules/.bin/grunt exec:show_errors:clear``, which will automatically delete errors after displaying them.
+Thus you will only see errors since the previous run.
+
 # Documentation
 
 Documentation is partially compiled from the source code using Grunt, and lives in `OZprivate/rawJS/OZTreeModule/docs`. Once compiled, it can be viewed online using your web2py server. For example, if you are running web2py on http://127.0.0.1:8000, you should be able to visit [http://127.0.0.1:8000/OZtree/dev/DOCS](http://127.0.0.1:8000/OZtree/dev/DOCS), or (if you have manager access to the OneZoom site) at [http://onezoom.org/dev/DOCS](http://onezoom.org/dev/DOCS).

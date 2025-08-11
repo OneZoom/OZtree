@@ -23,7 +23,6 @@
     <div class="hp_tour_ui" id="tour_wrapper"></div>
     <canvas id="OneZoomCanvasID" class="embedded" style="width: 100%; height: 100%"></canvas>
     <!-- treeviewer constants -->
-    {{include 'treeviewer/dynamic_scripts.html' }}
     {{include 'treeviewer/server_urls.html' }}
     <script>
 $(document).ready(function() {    /* Mainly a place to attach JS event handlers */
@@ -39,13 +38,7 @@ $(document).ready(function() {    /* Mainly a place to attach JS event handlers 
             null, // No UI
             null, // No window title function
             'OneZoomCanvasID',
-            window['tree_config'],
-            window.rawData,
-            null,
-            window.cut_position_map_json_str,
-            window.polytomy_cut_position_map_json_str,
-            window.cut_threshold,
-            window.tree_date);
+            window['tree_config']);
         window.onezoom.add_hook('on_tree_loaded', () => {
             /* we use the 'screensaver' tour to provide a constant animation */
             onezoom.controller.set_screensaver('/tour/homepage_animation', 0, 'block')
