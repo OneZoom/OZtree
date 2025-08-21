@@ -205,7 +205,7 @@ auth.settings.actions_disabled.append('register')
 
 db.define_table('ordered_leaves',
     Field('parent', type='integer', notnull=True), #index number into ordered_nodes
-    Field('real_parent', type='integer', notnull=True), #index number into ordered_nodes, negative if this is a polytomy
+    Field('real_parent', type='integer', notnull=True), #index number into ordered_nodes, negative if this is a fake node
     Field('name', type='string', length=name_length_chars), #this is not genus and species because not everything conforms to that 
     Field('extinction_date', type='double'), #in Ma
     Field('ott', type='integer'),
