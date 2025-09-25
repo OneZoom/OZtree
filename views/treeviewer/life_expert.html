@@ -652,6 +652,11 @@ setup_params = {
                                     title="Remove highlight">
                                 <span uk-icon="trash"></span>
                             </button>
+                            <button class="uk-button uk-button-small uk-button-primary uk-margin-small-bottom" 
+                                    onclick="highlightsEditor.jumpToPinpoint('${highlightDetail.str}')"
+                                    title="Jump to last pinpoint">
+                                <span uk-icon="crosshairs"></span>
+                            </button>
                             <div class="uk-flex uk-flex-column">
                                 <button class="uk-button uk-button-small uk-button-default" 
                                         onclick="highlightsEditor.moveHighlight('${highlightDetail.str}', -1)" 
@@ -925,6 +930,37 @@ setup_params = {
                 onezoom.controller.highlight_replace([]).then(() => {
                     this.updateHighlightsList();
                 });
+            },
+            
+            jumpToPinpoint: function(highlightStr) {
+                // Parse the highlight string to get pinpoints
+                const match = highlightStr.match(/(path|fan):([^@]+)*(.*)/);
+                if (!match) {
+                    console.error('Failed to parse highlight string:', highlightStr);
+                    return;
+                }
+                
+                const pinpoints = match[3] || '';
+                const pinpointList = pinpoints.split(/(?=@)/).filter(p => p.trim());
+                
+                if (pinpointList.length === 0) {
+                    console.warn('No pinpoints found in highlight:', highlightStr);
+                    return;
+                }
+                
+                // Get the last pinpoint
+                const lastPinpoint = pinpointList[pinpointList.length - 1];
+                console.log('Jumping to last pinpoint:', lastPinpoint);
+
+                // Fallback: try to resolve the pinpoint and navigate
+                if (typeof onezoom.resolve_pinpoints === 'function') {
+                    onezoom.resolve_pinpoints([lastPinpoint]).then((resolved) => {
+                        if (resolved && resolved.length > 0) {
+                            const node = resolved[0];
+                            onezoom.controller.leap_to(node.ozid);
+                        }
+                    });
+                }
             },
         };
     
