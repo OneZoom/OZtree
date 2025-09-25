@@ -48,53 +48,921 @@ setup_params = {
     .ui-controls #screenshotButton {
         display: block;
     }
+    
+    /* Highlights editor styles */
+    .highlights-editor-button {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+    
+    .highlights-panel {
+        position: fixed;
+        top: 0;
+        right: -400px;
+        width: 400px;
+        height: 100vh;
+        background: white;
+        box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+        z-index: 1001;
+        transition: right 0.3s ease;
+        overflow-y: auto;
+    }
+    
+    .highlights-panel.open {
+        right: 0;
+    }
+    
+    .highlights-panel-content {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .highlights-panel-header {
+        padding: 20px;
+        border-bottom: 1px solid #e5e5e5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+    }
+    
+    .highlights-panel-header h3 {
+        margin: 0;
+        color: #333;
+        font-size: 1.2rem;
+    }
+    
+    .highlights-close-btn {
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: #666;
+        padding: 5px;
+    }
+    
+    .highlights-close-btn:hover {
+        color: #333;
+    }
+    
+    .highlights-panel-body {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+    }
+    
+    .highlights-info {
+        background: #e3f2fd;
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+    
+    .highlights-info p {
+        margin: 0;
+        color: #1976d2;
+        font-size: 0.9rem;
+    }
+    
+    .highlights-list {
+        margin-top: 20px;
+    }
+    
+    .highlight-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e5e5e5;
+        margin-bottom: 10px;
+    }
+    
+    .highlight-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .highlight-card .uk-badge {
+        background-color: #1e87f0;
+        color: white;
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 3px;
+    }
+    
+    .highlight-card input[type="color"] {
+        border: 1px solid #e5e5e5;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    
+    .highlight-card .uk-button-small {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
+    
+    .pinpoint-clickable {
+        cursor: pointer;
+        color: #1e87f0;
+        text-decoration: underline;
+        padding: 2px 4px;
+        border-radius: 3px;
+        transition: background-color 0.2s ease;
+    }
+    
+    .pinpoint-clickable:hover {
+        background-color: #e3f2fd;
+        color: #0d47a1;
+    }
+    
+    .highlight-card select {
+        border: 1px solid #e5e5e5;
+        border-radius: 3px;
+        font-size: 0.8rem;
+    }
+    
+    .highlights-url-section {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #e5e5e5;
+    }
+    
+    .highlights-url-section h5 {
+        margin: 0 0 10px 0;
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .highlights-url-display {
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 4px;
+        border: 1px solid #e5e5e5;
+        font-family: monospace;
+        font-size: 0.75rem;
+        word-break: break-all;
+        max-height: 100px;
+        overflow-y: auto;
+    }
+    
+    .highlights-url-display p {
+        margin: 0;
+    }
+    
+    .path-warning {
+        color: #f39c12;
+        font-size: 0.7rem;
+        font-style: italic;
+        display: inline-block;
+        margin-top: 4px;
+    }
+    
+    /* No overlay needed - panel allows interaction with tree */
 </style>
 <script src="{{=URL('static','js/canvas2svg.js')}}"></script>
+
+
+
+<!-- Highlights Editor Panel -->
+<div id="highlights-editor" class="highlights-panel">
+    <div class="highlights-panel-content">
+        <div class="highlights-panel-header">
+            <h3>Highlights Editor</h3>
+            <button id="highlights-editor-close" class="highlights-close-btn" type="button">
+                <span uk-icon="close"></span>
+            </button>
+        </div>
+
+        <div class="highlights-panel-body">
+            <div class="highlights-controls">
+                <div class="uk-flex uk-flex-between uk-flex-wrap uk-margin-bottom">
+                    <button id="toggle-add-highlight" class="uk-button uk-button-primary">
+                        Add Highlight
+                    </button>
+                    <button id="clear-all-highlights" class="uk-button uk-button-secondary">
+                        Clear All
+                    </button>
+                </div>
+                
+                <div class="highlights-info">
+                    <p>Click "Add Highlight" then click on any node in the tree to highlight it. Use the color picker to change colors and reorder with the arrows.</p>
+                </div>
+            </div>
+
+            <h4>Current Highlights</h4>
+            <div id="highlights-list" class="highlights-list">
+                <p class="uk-text-muted">No highlights</p>
+            </div>
+            
+            <div class="highlights-url-section">
+                <h5>URL Parameters</h5>
+                <div id="highlights-url" class="highlights-url-display">
+                    <p class="uk-text-muted uk-text-small">No highlights</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script type="text/javascript">
-<!-- could define js variables (specifically: pagetitle_func, tree_config, screensaver_config, tutorial_config) within <script> tags here -->
-
-    function make_screenshot(lnk) {
-        try {
-            context = new C2S({
-                width: document.getElementById("OneZoomCanvasID").width,
-                height: document.getElementById("OneZoomCanvasID").height,
+    <!-- could define js variables (specifically: pagetitle_func, tree_config, screensaver_config, tutorial_config) within <script> tags here -->
+    
+        function make_screenshot(lnk) {
+            try {
+                context = new C2S({
+                    width: document.getElementById("OneZoomCanvasID").width,
+                    height: document.getElementById("OneZoomCanvasID").height,
+                });
+                context.scale(window.devicePixelRatio, window.devicePixelRatio);
+                onezoom.controller.draw_single_frame(context);
+                lnk.href = URL.createObjectURL(new Blob([context.getSerializedSvg(true)], {
+                    type: "image/svg+xml",
+                }));
+                lnk.download = 'onezoom.svg';  // Download file, instead of opening in browser
+                window.setTimeout(function () {
+                    URL.revokeObjectURL(lnk.href);
+                }, 100);
+    
+                return true;
+            } catch (err) {
+                alert("You can't save pictures with embedded images unless you enable '-allow-file-access-from-files' in chrome, or equivalent in other browsers.")
+                console.error(err)
+                lnk.removeAttribute("href");
+                return false;
+            }
+        };
+    
+        // Highlights Editor
+        let highlightsEditor = {
+            isAddingHighlight: false,
+            mouseHookId: null,
+            
+            init: function() {
+                this.updateHighlightsList();
+                this.setupEventListeners();
+                this.setupLiveUpdates();
+            },
+            
+            setupEventListeners: function() {
+                // Close panel
+                document.getElementById('highlights-editor-close').addEventListener('click', () => {
+                    this.closePanel();
+                });
+                
+                // Toggle add highlight mode
+                document.getElementById('toggle-add-highlight').addEventListener('click', () => {
+                    this.toggleAddMode();
+                });
+                
+                // Clear all highlights
+                document.getElementById('clear-all-highlights').addEventListener('click', () => {
+                    this.clearAllHighlights();
+                });
+            },
+            
+            togglePanel: function() {
+                const panel = document.getElementById('highlights-editor');
+                
+                if (panel.classList.contains('open')) {
+                    this.closePanel();
+                } else {
+                    this.openPanel();
+                }
+            },
+            
+            openPanel: function() {
+                const panel = document.getElementById('highlights-editor');
+                panel.classList.add('open');
+            },
+            
+            closePanel: function() {
+                const panel = document.getElementById('highlights-editor');
+                panel.classList.remove('open');
+                
+                // Exit add mode if active
+                if (this.isAddingHighlight) {
+                    this.toggleAddMode();
+                }
+            },
+            
+            setupLiveUpdates: function() {
+                // Store the last known highlights to detect changes
+                this.lastKnownHighlights = onezoom.controller.highlight_list();
+                
+                // Check for highlight changes periodically
+                setInterval(() => {
+                    const currentHighlights = onezoom.controller.highlight_list();
+                    if (JSON.stringify(currentHighlights) !== JSON.stringify(this.lastKnownHighlights)) {
+                        this.lastKnownHighlights = currentHighlights;
+                        this.updateHighlightsList();
+                    }
+                }, 1000); // Check every second
+            },
+            
+            toggleAddMode: function() {
+                this.isAddingHighlight = !this.isAddingHighlight;
+                const button = document.getElementById('toggle-add-highlight');
+                
+                if (this.isAddingHighlight) {
+                    button.textContent = 'Cancel Adding';
+                    button.classList.add('uk-button-danger');
+                    this.startNodeSelection();
+                } else {
+                    button.textContent = 'Add Highlight';
+                    button.classList.remove('uk-button-danger');
+                    this.stopNodeSelection();
+                }
+            },
+            
+            startNodeSelection: function() {
+                console.log('Starting node selection mode...');
+                this.mouseHookId = onezoom.add_hook('mouse_down', (event) => {
+                    console.log('Mouse down detected in add mode');
+                    
+                    // Try multiple ways to get the node
+                    let node = null;
+                    
+                    // Method 1: Try global_button_action (if accessible)
+                    if (typeof onezoom.global_button_action !== 'undefined' && onezoom.global_button_action.node) {
+                        node = onezoom.global_button_action.node;
+                        console.log('Got node from global_button_action:', node);
+                    }
+                    
+                    // Method 2: Try to get from the controller's current state
+                    if (!node && onezoom.controller && onezoom.controller.largest_visible_node) {
+                        node = onezoom.controller.largest_visible_node();
+                        console.log('Got node from largest_visible_node:', node);
+                    }
+                    
+                    // Method 3: Try to get from tree_state
+                    if (!node && onezoom.tree_state && onezoom.tree_state.current_node) {
+                        node = onezoom.tree_state.current_node;
+                        console.log('Got node from tree_state:', node);
+                    }
+                    
+                    if (node) {
+                        console.log('Adding highlight for node:', node);
+                        this.addHighlightFromNode(node);
+                        this.toggleAddMode(); // Exit add mode after adding
+                        return false; // Prevent default behavior
+                    } else {
+                        console.log('No node found, trying alternative approach...');
+                        // Try to get node from click coordinates
+                        this.tryGetNodeFromCoordinates(event);
+                    }
+                    return true;
+                });
+            },
+            
+            tryGetNodeFromCoordinates: function(event) {
+                // This is a fallback method - we'll try to find a node near the click
+                console.log('Attempting to get node from coordinates:', event.clientX, event.clientY);
+                
+                // For now, let's just show a message to the user
+                alert('Node selection not working properly. Please try clicking directly on a tree node, or check the console for debugging info.');
+            },
+            
+            stopNodeSelection: function() {
+                if (this.mouseHookId) {
+                    onezoom.remove_hook('mouse_down', this.mouseHookId);
+                    this.mouseHookId = null;
+                }
+            },
+            
+        addHighlightFromNode: function(node) {
+            console.log('addHighlightFromNode called with:', node);
+            
+            // Check if we're editing an existing highlight
+            if (this.editingHighlight && this.editingPinpointIndex !== undefined) {
+                this.updatePinpointInHighlight(node);
+                return;
+            }
+            
+            // Otherwise, create a new highlight
+            const highlightStr = this.createHighlightString(node);
+            console.log('Created highlight string:', highlightStr);
+            
+            if (highlightStr) {
+                console.log('Adding highlight to controller...');
+                onezoom.controller.highlight_add(highlightStr).then(() => {
+                    console.log('Highlight added successfully, updating list...');
+                    this.updateHighlightsList();
+                }).catch((error) => {
+                    console.error('Error adding highlight:', error);
+                    alert('Error adding highlight: ' + error.message);
+                });
+            } else {
+                console.error('Failed to create highlight string from node:', node);
+                alert('Failed to create highlight from selected node. Node may not have required identifiers.');
+            }
+        },
+        
+        updatePinpointInHighlight: function(node) {
+            const newPinpoint = onezoom.node_to_pinpoint(node);
+            if (!newPinpoint) {
+                console.error('Failed to create pinpoint from node:', node);
+                alert('Failed to create pinpoint from selected node.');
+                return;
+            }
+            
+            console.log('Updating pinpoint in highlight:', this.editingHighlight, 'index:', this.editingPinpointIndex, 'new pinpoint:', newPinpoint);
+            
+            const match = this.editingHighlight.match(/(path|fan):([^@]+)*(.*)/);
+            if (!match) {
+                console.error('Failed to parse highlight string:', this.editingHighlight);
+                return;
+            }
+            
+            const type = match[1];
+            const color = match[2] || '';
+            const pinpoints = match[3] || '';
+            const pinpointList = pinpoints.split(/(?=@)/).filter(p => p.trim());
+            
+            let newHighlightStr;
+            
+            if (type === 'fan') {
+                // For fan highlights, replace the single pinpoint
+                newHighlightStr = `fan:${color}${newPinpoint}`;
+            } else if (type === 'path') {
+                // For path highlights, replace the specific pinpoint
+                if (this.editingPinpointIndex === 0) {
+                    // Replace start
+                    if (pinpointList.length === 1) {
+                        // Single pinpoint path - replace it
+                        newHighlightStr = `path:${color}${newPinpoint}${newPinpoint}`;
+                    } else {
+                        // Multiple pinpoints - replace first
+                        pinpointList[0] = newPinpoint;
+                        newHighlightStr = `path:${color}${pinpointList.join('')}`;
+                    }
+                } else {
+                    // Replace end
+                    if (pinpointList.length === 1) {
+                        // Single pinpoint path - add second
+                        newHighlightStr = `path:${color}${pinpointList[0]}${newPinpoint}`;
+                    } else {
+                        // Multiple pinpoints - replace last
+                        pinpointList[pinpointList.length - 1] = newPinpoint;
+                        newHighlightStr = `path:${color}${pinpointList.join('')}`;
+                    }
+                }
+            }
+            
+            console.log('New highlight string:', newHighlightStr);
+            
+            // Replace the highlight
+            this.replaceHighlight(this.editingHighlight, newHighlightStr);
+            
+            // Clear editing state
+            this.editingHighlight = null;
+            this.editingPinpointIndex = undefined;
+            this.editingType = null;
+        },
+            
+        createHighlightString: function(node) {
+            // Use OneZoom's built-in function to create pinpoint from node
+            let pinpoint = null;
+            
+            // Try to use the existing node_to_pinpoint function if available
+            if (typeof onezoom.node_to_pinpoint === 'function') {
+                pinpoint = onezoom.node_to_pinpoint(node);
+            }
+            
+            if (!pinpoint) {
+                console.warn('Cannot create pinpoint for node:', node);
+                return null;
+            }
+            
+            // Default to 'fan' type highlight
+            return `fan:${pinpoint}`;
+        },
+        
+        updateHighlightsList: function() {
+            const highlightDetails = onezoom.controller.highlight_detail();
+            const container = document.getElementById('highlights-list');
+            
+            if (highlightDetails.length === 0) {
+                container.innerHTML = '<p class="uk-text-muted">No highlights</p>';
+                this.updateHighlightsUrl([]);
+                return;
+            }
+            
+            // Get existing highlight elements
+            const existingElements = Array.from(container.querySelectorAll('[data-highlight]'));
+            const existingHighlights = existingElements.map(el => el.getAttribute('data-highlight'));
+            
+            // Check if we need to update anything
+            const highlightsStrs = highlightDetails.map(h => h.str);
+            const highlightsChanged = JSON.stringify(highlightsStrs) !== JSON.stringify(existingHighlights);
+            if (!highlightsChanged) {
+                // Just update the order and indices if needed
+                this.updateHighlightOrder(highlightsStrs, existingElements);
+                this.updateHighlightsUrl(highlightsStrs);
+                return;
+            }
+            
+            // Clear container and rebuild
+            container.innerHTML = '';
+            
+            highlightDetails.forEach((highlightDetail, index) => {
+                const highlightElement = this.createHighlightElement(highlightDetail, index);
+                container.appendChild(highlightElement);
             });
-            context.scale(window.devicePixelRatio, window.devicePixelRatio);
-            onezoom.controller.draw_single_frame(context);
-            lnk.href = URL.createObjectURL(new Blob([context.getSerializedSvg(true)], {
-                type: "image/svg+xml",
-            }));
-            lnk.download = 'onezoom.svg';  // Download file, instead of opening in browser
-            window.setTimeout(function () {
-                URL.revokeObjectURL(lnk.href);
-            }, 100);
+            
+            // Update URL display
+            this.updateHighlightsUrl(highlightsStrs);
+        },
+        
+        updateHighlightsUrl: function(highlightStrings) {
+            const urlContainer = document.getElementById('highlights-url');
+            
+            if (highlightStrings.length === 0) {
+                urlContainer.innerHTML = '<p class="uk-text-muted uk-text-small">No highlights</p>';
+                return;
+            }
+            
+            // Create URL parameters by prepending each highlight with "highlight=" and joining with "&"
+            const urlParams = highlightStrings.map(highlight => `highlight=${highlight}`).join('&');
+            
+            urlContainer.innerHTML = `<p class="uk-text-small">${urlParams}</p>`;
+        },
+        
+        updateHighlightOrder: function(highlights, existingElements) {
+            // Update the order of existing elements and their indices
+            highlights.forEach((highlightStr, index) => {
+                const element = existingElements.find(el => el.getAttribute('data-highlight') === highlightStr);
+                if (element) {
+                    // Update the element's position
+                    const container = document.getElementById('highlights-list');
+                    container.appendChild(element);
+                    
+                    // Update any index-dependent attributes
+                    const colorInput = element.querySelector('input[type="color"]');
+                    if (colorInput) {
+                        colorInput.setAttribute('data-highlight-index', index);
+                    }
+                    
+                    // Update button states
+                    const upButton = element.querySelector('button[onclick*="moveHighlight"][onclick*="-1"]');
+                    const downButton = element.querySelector('button[onclick*="moveHighlight"][onclick*="1"]');
+                    
+                    if (upButton) {
+                        upButton.disabled = index === 0;
+                    }
+                    if (downButton) {
+                        downButton.disabled = index === highlights.length - 1;
+                    }
+                }
+            });
+        },
+            
+        createHighlightElement: function(highlightDetail, index) {
+            const div = document.createElement('div');
+            div.className = 'uk-card uk-card-small uk-card-default uk-margin-small highlight-card';
+            div.setAttribute('data-highlight', highlightDetail.str);
+            
+            // Parse highlight string
+            const type = highlightDetail.type;
+            const color = highlightDetail.color;
+            const pinpointList = highlightDetail.pinpoints;
+                        
+            div.innerHTML = `
+                <div class="uk-card-body uk-padding-small">
+                    <div class="uk-flex uk-flex-between uk-flex-middle">
+                        <div class="uk-flex-1">
+                            <div class="uk-flex uk-flex-middle uk-margin-small-bottom">
+                                <select class="uk-select uk-form-small uk-width-auto uk-margin-small-right" 
+                                        data-highlight-index="${index}" 
+                                        style="width: 80px;">
+                                    <option value="fan" ${type === 'fan' ? 'selected' : ''}>Fan</option>
+                                    <option value="path" ${type === 'path' ? 'selected' : ''}>Path</option>
+                                </select>
+                                <input type="color" class="uk-input uk-form-small uk-width-auto uk-margin-small-right" 
+                                       value="${this.getColorValue(color)}" 
+                                       data-highlight-index="${index}"
+                                       style="width: 40px; height: 30px; padding: 2px;">
+                            </div>
+                            <div class="uk-text-small uk-text-muted">
+                                ${this.createPinpointDisplay(type, pinpointList, highlightDetail.str)}
+                            </div>
+                        </div>
+                        <div class="uk-flex uk-flex-column uk-flex-middle">
+                            <button class="uk-button uk-button-small uk-button-danger uk-margin-small-bottom" 
+                                    onclick="highlightsEditor.removeHighlight('${highlightDetail.str}')"
+                                    title="Remove highlight">
+                                <span uk-icon="trash"></span>
+                            </button>
+                            <div class="uk-flex uk-flex-column">
+                                <button class="uk-button uk-button-small uk-button-default" 
+                                        onclick="highlightsEditor.moveHighlight('${highlightDetail.str}', -1)" 
+                                        ${index === 0 ? 'disabled' : ''}
+                                        title="Move up">
+                                    <span uk-icon="chevron-up"></span>
+                                </button>
+                                <button class="uk-button uk-button-small uk-button-default" 
+                                        onclick="highlightsEditor.moveHighlight('${highlightDetail.str}', 1)" 
+                                        ${index === onezoom.controller.highlight_list().length - 1 ? 'disabled' : ''}
+                                        title="Move down">
+                                    <span uk-icon="chevron-down"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners
+            const colorInput = div.querySelector('input[type="color"]');
+            colorInput.addEventListener('change', (e) => {
+                this.updateHighlightColor(highlightDetail.str, e.target.value);
+            });
+            
+            const typeSelect = div.querySelector('select');
+            typeSelect.addEventListener('change', (e) => {
+                this.updateHighlightType(highlightDetail.str, e.target.value);
+            });
+            
+            // Add click listeners to pinpoints
+            const pinpointElements = div.querySelectorAll('.pinpoint-clickable');
+            pinpointElements.forEach((element, idx) => {
+                element.addEventListener('click', () => {
+                    this.startPinpointEdit(highlightDetail.str, idx, type);
+                });
+            });
+            
+            return div;
+        },
+        
+        createPinpointDisplay: function(type, pinpointList, highlightStr) {
+            if (pinpointList.length === 0) {
+                return 'No pinpoints';
+            }
+            
+            if (type === 'fan') {
+                return `<span class="pinpoint-clickable" title="Click to change">${pinpointList[0]}</span>`;
+            } else if (type === 'path') {
+                const display = pinpointList.map((pinpoint, idx) => 
+                        `<span class="pinpoint-clickable" title="Click to change ${idx === 0 ? 'start' : 'end'}">${pinpoint}</span>`
+                    ).join(' → ');
+                
+                // Only validate multi-pinpoint paths
+                this.validatePathHighlightAsync(pinpointList, highlightStr,(isValid) => {
+                    const highlightElement = document.querySelector(`[data-highlight="${highlightStr}"]`);
+                    if (highlightElement) {
+                        const warningElement = highlightElement.querySelector('.path-warning');
+                        if (!isValid) {
+                            if (!warningElement) {
+                                const warningDiv = document.createElement('div');
+                                warningDiv.className = 'path-warning';
+                                warningDiv.innerHTML = `⚠️ First pinpoint is not an ancestor of the second`;
+                                const pinpointDisplay = highlightElement.querySelector('.uk-text-small.uk-text-muted');
+                                if (pinpointDisplay) {
+                                    pinpointDisplay.appendChild(warningDiv);
+                                }
+                            }
+                        } else {
+                            if (warningElement) {
+                                warningElement.remove();
+                            }
+                        }
+                    }
+                });
+                
+                return display;
+            }
+            
+            return pinpointList.join(' → ');
+        },
+        
+        
+        // Enhanced validation that actually checks ancestry
+        validatePathHighlightAsync: function(pinpointList, highlightStr, callback) {
+            if (pinpointList.length < 2) {
+                callback(true);
+                return;
+            }
+            
+            const startPinpoint = pinpointList[0];
+            const endPinpoint = pinpointList[1];
+            
+            if (startPinpoint === endPinpoint) {
+                callback(true);
+                return;
+            }
+            
+            onezoom.resolve_pinpoints([startPinpoint, endPinpoint]).then((resolved) => {
+                if (resolved && resolved.length >= 2) {
+                    const startNode = resolved[0];
+                    const endNode = resolved[1];
+                    
+                    // Check if startNode is an ancestor of endNode
+                    if (this.isAncestor(startNode, endNode)) {
+                        callback(true); // Valid path
+                    } else {
+                        if (this.isAncestor(endNode, startNode)) {
+                            // Swap the endpoints - second node is ancestor of first
+                            this.swapPathEndpoints(highlightStr, startPinpoint, endPinpoint);
+                            callback(true); // Valid after swap
+                        } else {
+                            callback(false);
+                        }
+                    }
+                }
+            });
+        },
+        
+        // Helper function to check if one node is an ancestor of another
+        isAncestor: function(ancestorNode, descendantNode) {
+            if (!ancestorNode || !descendantNode || ancestorNode.ozid == null || descendantNode.ozid == null) {
+                return false;
+            }
 
-            return true;
-        } catch (err) {
-            alert("You can't save pictures with embedded images unless you enable '-allow-file-access-from-files' in chrome, or equivalent in other browsers.")
-            console.error(err)
-            lnk.removeAttribute("href");
-            return false;
+            let node = onezoom.controller.root;
+            while (node !== null && node.ozid !== ancestorNode.ozid) {
+                let next_idx = node.child_index_towards(descendantNode.ozid);
+                if (next_idx === null) {
+                    // Couldn't find ancestor node
+                    return false;
+                }
+                node = node.children[next_idx];
+            }
+            return node.child_index_towards(descendantNode.ozid) !== null;
+        },
+        
+        // Swap the endpoints of a path highlight
+        swapPathEndpoints: function(highlightStr, startPinpoint, endPinpoint) {
+            try {
+                // Parse the current highlight string
+                const match = highlightStr.match(/(path|fan):([^@]+)*(.*)/);
+                if (!match || match[1] !== 'path') {
+                    console.warn('Cannot swap endpoints of non-path highlight');
+                    return;
+                }
+                
+                const type = match[1];
+                const color = match[2];
+                const pinpoints = match[3];
+                
+                // Split pinpoints and swap them
+                const pinpointList = pinpoints ? pinpoints.split(/(?=@)/).filter(p => p.trim()) : [];
+                if (pinpointList.length >= 2) {
+                    // Swap the first two pinpoints
+                    const temp = pinpointList[0];
+                    pinpointList[0] = pinpointList[1];
+                    pinpointList[1] = temp;
+                    
+                    // Create new highlight string
+                    const newPinpoints = pinpointList.join('');
+                    const newHighlightStr = `${type}:${color ?? ""}${newPinpoints}`;
+                    
+                    // Replace the highlight in the controller
+                    this.replaceHighlight(highlightStr, newHighlightStr);
+                    
+                    console.log(`Swapped path endpoints: ${highlightStr} → ${newHighlightStr}`);
+                }
+            } catch (error) {
+                console.error('Error swapping path endpoints:', error);
+            }
+        },
+        
+        getColorValue: function(colorStr) {
+            if (!colorStr) return '#ff6b6b'; // Default color
+            if (colorStr.startsWith('rgb')) {
+                // Convert RGB to hex
+                const rgb = colorStr.match(/\d+/g);
+                if (rgb && rgb.length >= 3) {
+                    return `#${rgb.map(x => parseInt(x).toString(16).padStart(2, '0')).join('')}`;
+                }
+            }
+            return colorStr.startsWith('#') ? colorStr : '#ff6b6b';
+        },
+        
+        updateHighlightColor: function(highlightStr, newColor) {
+            // Parse and rebuild highlight string with new color
+            const match = highlightStr.match(/(path|fan):([^@]+)*(.*)/);
+            if (match) {
+                const newHighlightStr = `${match[1]}:${newColor}${match[3]}`;
+                this.replaceHighlight(highlightStr, newHighlightStr);
+            }
+        },
+        
+        updateHighlightType: function(highlightStr, newType) {
+            const match = highlightStr.match(/(path|fan):([^@]+)*(.*)/);
+            if (match) {
+                const currentType = match[1];
+                const color = match[2] || '';
+                const pinpoints = match[3] || '';
+                
+                let newHighlightStr;
+                
+                if (currentType === 'fan' && newType === 'path') {
+                    // Convert fan to path - keep single pinpoint (path from root to pinpoint)
+                    newHighlightStr = `path:${color}${pinpoints}`;
+                } else if (currentType === 'path' && newType === 'fan') {
+                    // Convert path to fan - take only the first pinpoint
+                    const pinpointList = pinpoints.split(/(?=@)/).filter(p => p.trim());
+                    newHighlightStr = `fan:${color}${pinpointList[0] || ''}`;
+                } else {
+                    // Same type, no change needed
+                    return;
+                }
+                
+                this.replaceHighlight(highlightStr, newHighlightStr);
+            }
+        },
+        
+        startPinpointEdit: function(highlightStr, pinpointIndex, type) {
+            console.log('Starting pinpoint edit for:', highlightStr, 'index:', pinpointIndex, 'type:', type);
+            
+            // Store the current highlight and pinpoint being edited
+            this.editingHighlight = highlightStr;
+            this.editingPinpointIndex = pinpointIndex;
+            this.editingType = type;
+            
+            // Start node selection mode
+            this.toggleAddMode();
+            
+            // Show a message to the user
+            const message = type === 'fan' ? 
+                'Click on a tree node to change the highlight target' :
+                `Click on a tree node to change the ${pinpointIndex === 0 ? 'start' : 'end'} of the path`;
+            
+            // You could show this in a better way, like a toast notification
+            console.log(message);
+        },
+        
+        replaceHighlight: function(oldStr, newStr) {
+            const currentHighlights = onezoom.controller.highlight_list();
+            const newHighlights = currentHighlights.map(h => h === oldStr ? newStr : h);
+            
+            onezoom.controller.highlight_replace(newHighlights).then(() => {
+                this.updateHighlightsList();
+            });
+        },
+        
+        removeHighlight: function(highlightStr) {
+            onezoom.controller.highlight_remove(highlightStr).then(() => {
+                this.updateHighlightsList();
+            });
+        },
+            
+            moveHighlight: function(highlightStr, direction) {
+                const currentHighlights = onezoom.controller.highlight_list();
+                const currentIndex = currentHighlights.indexOf(highlightStr);
+                const newIndex = currentIndex + direction;
+                
+                if (newIndex >= 0 && newIndex < currentHighlights.length) {
+                    const newHighlights = [...currentHighlights];
+                    [newHighlights[currentIndex], newHighlights[newIndex]] = [newHighlights[newIndex], newHighlights[currentIndex]];
+                    
+                    onezoom.controller.highlight_replace(newHighlights).then(() => {
+                        this.updateHighlightsList();
+                    });
+                }
+            },
+            
+            clearAllHighlights: function() {
+                onezoom.controller.highlight_replace([]).then(() => {
+                    this.updateHighlightsList();
+                });
+            },
+        };
+    
+        function edit_tour(lnk) {
+            // This function is now handled by highlightsEditor
+            console.log('Tour editor functionality moved to highlights editor');
         }
-    };
-
-document.body.addEventListener('keydown', function (e) {
-    if (event.keyCode == 17) {  // Ctrl
-        window.old_sensitivity = onezoom.config.sensitivity;
-        onezoom.config.sensitivity = 0.99;
-        onezoom.config.anim.zoom_sensitivity = 0.99;
-        document.querySelector('#inButton svg').style.width = '0.77rem';
-        document.querySelector('#outButton svg').style.width = '0.77rem';
-        document.getElementById('outButton').classList.add('no-tree-follow');
-    }
-});
-document.body.addEventListener('keyup', function (e) {
-    if (event.keyCode == 17) {  // Ctrl
-        onezoom.config.sensitivity = window.old_sensitivity;
-        onezoom.config.anim.zoom_sensitivity = window.old_sensitivity;
-        document.querySelector('#inButton svg').style.width = '';
-        document.querySelector('#outButton svg').style.width = '';
-        document.getElementById('outButton').classList.remove('no-tree-follow');
-    }
-});
+    
+    document.body.addEventListener('keydown', function (e) {
+        if (event.keyCode == 17) {  // Ctrl
+            window.old_sensitivity = onezoom.config.sensitivity;
+            onezoom.config.sensitivity = 0.99;
+            onezoom.config.anim.zoom_sensitivity = 0.99;
+            document.querySelector('#inButton svg').style.width = '0.77rem';
+            document.querySelector('#outButton svg').style.width = '0.77rem';
+            document.getElementById('outButton').classList.add('no-tree-follow');
+        }
+    });
+    document.body.addEventListener('keyup', function (e) {
+        if (event.keyCode == 17) {  // Ctrl
+            onezoom.config.sensitivity = window.old_sensitivity;
+            onezoom.config.anim.zoom_sensitivity = window.old_sensitivity;
+            document.querySelector('#inButton svg').style.width = '';
+            document.querySelector('#outButton svg').style.width = '';
+            document.getElementById('outButton').classList.remove('no-tree-follow');
+        }
+    });
+    
+    // Initialize highlights editor when OneZoom is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wait for OneZoom to be available
+        const checkOneZoom = setInterval(() => {
+            if (onezoom != null && onezoom.controller) {
+                clearInterval(checkOneZoom);
+                highlightsEditor.init();
+            }
+        }, 100);
+    });
+    
 </script>
+    

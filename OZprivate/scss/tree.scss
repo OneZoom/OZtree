@@ -214,12 +214,13 @@ body.loading #UI #loading_spinner {
 .ui-controls #showControlsButton,
 .ui-controls #hideControlsButton,
 .ui-controls #howToUseButton,
-.ui-controls #tourButton,
+.ui-controls #tourButton
 {
     display: none;
 }
 /* hide any "expert-mode" buttons */
-.ui-controls #screenshotButton
+.ui-controls #screenshotButton, 
+.ui-controls #tourEditorButton
 {
     display: none;
 }

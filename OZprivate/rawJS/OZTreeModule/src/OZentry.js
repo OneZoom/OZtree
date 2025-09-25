@@ -7,11 +7,13 @@ import api_manager from './api/api_manager';
 import process_taxon_list from './api/process_taxon_list';
 import { init as garbage_collection_start } from './factory/garbage_collection';
 import { spec_num_full, number_convert, view_richness } from './factory/utils'
-import { add_hook, call_hook } from './util/index';
+import { add_hook, remove_hook, call_hook } from './util/index';
 import config from './global_config';
 import tree_state from './tree_state';
 import data_repo from './factory/data_repo';
 import tree_settings from './tree_settings';
+import { global_button_action } from './button_manager';
+import { node_to_pinpoint, resolve_pinpoints } from './navigation/pinpoint';
 /**
  * Creates the main object that is exported to the browser. 
  * @todo This should possibly be separated so that 
@@ -94,6 +96,10 @@ function setup(
   oz.controller.public_oz = oz;  // Let the controller get at the public interface
   oz.config = config;
   oz.add_hook = add_hook;
+  oz.remove_hook = remove_hook;
+    oz.global_button_action = global_button_action;
+    oz.node_to_pinpoint = node_to_pinpoint;
+    oz.resolve_pinpoints = resolve_pinpoints;
 
   if (!oz.controller) {
     // No controller, don't bother getting data
