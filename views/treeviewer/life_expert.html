@@ -48,15 +48,11 @@ setup_params = {
     .ui-controls #screenshotButton {
         display: block;
     }
-    
-    /* Highlights editor styles */
-    .highlights-editor-button {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1000;
+
+    .ui-controls #tourEditorButton {
+        display: block;
     }
-    
+
     .highlights-panel {
         position: fixed;
         top: 0;
@@ -112,6 +108,7 @@ setup_params = {
         flex: 1;
         padding: 20px;
         overflow-y: auto;
+        user-select: text;
     }
     
     .highlights-info {
