@@ -628,7 +628,7 @@ setup_params = {
                         
             div.innerHTML = `
                 <div class="uk-card-body uk-padding-small">
-                    <div class="uk-flex uk-flex-between uk-flex-middle">
+                    <div class="uk-flex-column uk-flex-between uk-flex-middle">
                         <div class="uk-flex-1">
                             <div class="uk-flex uk-flex-middle uk-margin-small-bottom">
                                 <select class="uk-select uk-form-small uk-width-auto uk-margin-small-right" 
@@ -646,31 +646,29 @@ setup_params = {
                                 ${this.createPinpointDisplay(type, pinpointList, highlightDetail.str)}
                             </div>
                         </div>
-                        <div class="uk-flex uk-flex-column uk-flex-middle">
-                            <button class="uk-button uk-button-small uk-button-danger uk-margin-small-bottom" 
+                        <div class="uk-flex uk-flex uk-flex-middle uk-margin-small-top">
+                            <button class="uk-button uk-button-small uk-button-danger uk-margin-small-right" 
                                     onclick="highlightsEditor.removeHighlight('${highlightDetail.str}')"
                                     title="Remove highlight">
                                 <span uk-icon="trash"></span>
                             </button>
-                            <button class="uk-button uk-button-small uk-button-primary uk-margin-small-bottom" 
+                            <button class="uk-button uk-button-small uk-button-primary uk-margin-small-right" 
                                     onclick="highlightsEditor.jumpToPinpoint('${highlightDetail.str}')"
                                     title="Jump to last pinpoint">
                                 <span uk-icon="crosshairs"></span>
                             </button>
-                            <div class="uk-flex uk-flex-column">
-                                <button class="uk-button uk-button-small uk-button-default" 
-                                        onclick="highlightsEditor.moveHighlight('${highlightDetail.str}', -1)" 
-                                        ${index === 0 ? 'disabled' : ''}
-                                        title="Move up">
-                                    <span uk-icon="chevron-up"></span>
-                                </button>
-                                <button class="uk-button uk-button-small uk-button-default" 
-                                        onclick="highlightsEditor.moveHighlight('${highlightDetail.str}', 1)" 
-                                        ${index === onezoom.controller.highlight_list().length - 1 ? 'disabled' : ''}
-                                        title="Move down">
-                                    <span uk-icon="chevron-down"></span>
-                                </button>
-                            </div>
+                            <button class="uk-button uk-button-small uk-button-default uk-margin-small-right" 
+                                    onclick="highlightsEditor.moveHighlight('${highlightDetail.str}', -1)" 
+                                    ${index === 0 ? 'disabled' : ''}
+                                    title="Move up">
+                                <span uk-icon="chevron-up"></span>
+                            </button>
+                            <button class="uk-button uk-button-small uk-button-default uk-margin-small-right" 
+                                    onclick="highlightsEditor.moveHighlight('${highlightDetail.str}', 1)" 
+                                    ${index === onezoom.controller.highlight_list().length - 1 ? 'disabled' : ''}
+                                    title="Move down">
+                                <span uk-icon="chevron-down"></span>
+                            </button>
                         </div>
                     </div>
                 </div>
