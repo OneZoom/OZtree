@@ -603,8 +603,8 @@ setup_params = {
                     }
                     
                     // Update button states
-                    const upButton = element.querySelector('button[onclick*="moveHighlight"][onclick*="-1"]');
-                    const downButton = element.querySelector('button[onclick*="moveHighlight"][onclick*="1"]');
+                    const upButton = element.querySelector('button.move-highlight-up-button');
+                    const downButton = element.querySelector('button.move-highlight-down-button');
                     
                     if (upButton) {
                         upButton.disabled = index === 0;
@@ -657,13 +657,13 @@ setup_params = {
                                     title="Jump to last pinpoint">
                                 <span uk-icon="crosshairs"></span>
                             </button>
-                            <button class="uk-button uk-button-small uk-button-default uk-margin-small-right" 
+                            <button class="move-highlight-up-button uk-button uk-button-small uk-button-default uk-margin-small-right" 
                                     onclick="highlightsEditor.moveHighlight('${highlightDetail.str}', -1)" 
                                     ${index === 0 ? 'disabled' : ''}
                                     title="Move up">
                                 <span uk-icon="chevron-up"></span>
                             </button>
-                            <button class="uk-button uk-button-small uk-button-default uk-margin-small-right" 
+                            <button class="move-highlight-down-buttonuk-button uk-button-small uk-button-default uk-margin-small-right" 
                                     onclick="highlightsEditor.moveHighlight('${highlightDetail.str}', 1)" 
                                     ${index === onezoom.controller.highlight_list().length - 1 ? 'disabled' : ''}
                                     title="Move down">
