@@ -545,20 +545,20 @@ setup_params = {
             } else if (type === 'path') {
                 // For path highlights, replace the specific pinpoint
                 if (this.editingPinpointIndex === 0) {
-                    // Replace start
+                    // Replace start point
                     if (pinpointList.length === 1) {
-                        // Single pinpoint path - replace it
-                        newHighlightStr = `path:${color}${newPinpoint}${newPinpoint}`;
+                        // Single pinpoint path (root to node) - replace the root
+                        newHighlightStr = `path:${newPinpoint}${pinpointList[0]}`;
                     } else {
                         // Multiple pinpoints - replace first
                         pinpointList[0] = newPinpoint;
                         newHighlightStr = `path:${color}${pinpointList.join('')}`;
                     }
                 } else {
-                    // Replace end
+                    // Replace end point
                     if (pinpointList.length === 1) {
-                        // Single pinpoint path - add second
-                        newHighlightStr = `path:${color}${pinpointList[0]}${newPinpoint}`;
+                        // Single pinpoint path - add second pinpoint to make it node-to-node
+                        newHighlightStr = `path:${color}${newPinpoint}`;
                     } else {
                         // Multiple pinpoints - replace last
                         pinpointList[pinpointList.length - 1] = newPinpoint;
