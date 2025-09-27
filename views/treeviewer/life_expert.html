@@ -48,204 +48,203 @@ setup_params = {
     .ui-controls #screenshotButton {
         display: block;
     }
-
-    .ui-controls #tourEditorButton {
-        display: block;
-    }
-
-    .highlights-panel {
-        position: fixed;
-        top: 0;
-        right: -400px;
-        width: 400px;
-        height: 100vh;
-        background: white;
-        box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-        z-index: 1001;
-        transition: right 0.3s ease;
-        overflow-y: auto;
-    }
-    
-    .highlights-panel.open {
-        right: 0;
-    }
-    
-    .highlights-panel-content {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .highlights-panel-header {
-        padding: 20px;
-        border-bottom: 1px solid #e5e5e5;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #f8f9fa;
-    }
-    
-    .highlights-panel-header h3 {
-        margin: 0;
-        color: #333;
-        font-size: 1.2rem;
-    }
-    
-    .highlights-close-btn {
-        background: none;
-        border: none;
-        font-size: 1.2rem;
-        cursor: pointer;
-        color: #666;
-        padding: 5px;
-    }
-    
-    .highlights-close-btn:hover {
-        color: #333;
-    }
-    
-    .highlights-panel-body {
-        flex: 1;
-        padding: 20px;
-        overflow-y: auto;
-        user-select: text;
-    }
-    
-    .highlights-info {
-        background: #e3f2fd;
-        padding: 12px;
-        border-radius: 4px;
-        margin-bottom: 20px;
-    }
-    
-    .highlights-info p {
-        margin: 0;
-        color: #1976d2;
-        font-size: 0.9rem;
-    }
-    
-    .highlights-list {
-        margin-top: 20px;
-    }
-    
-    .highlight-card {
-        transition: all 0.3s ease;
-        border: 1px solid #e5e5e5;
-        margin-bottom: 10px;
-    }
-    
-    .highlight-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    .highlight-card .uk-badge {
-        background-color: #1e87f0;
-        color: white;
-        font-size: 0.75rem;
-        padding: 2px 8px;
-        border-radius: 3px;
-    }
-    
-    .highlight-card input[type="color"] {
-        border: 1px solid #e5e5e5;
-        border-radius: 3px;
-        cursor: pointer;
-    }
-    
-    .highlight-card .uk-button-small {
-        padding: 4px 8px;
-        font-size: 0.75rem;
-    }
-    
-    .pinpoint-clickable {
-        cursor: pointer;
-        color: #1e87f0;
-        text-decoration: underline;
-        padding: 2px 4px;
-        border-radius: 3px;
-        transition: background-color 0.2s ease;
-    }
-    
-    .pinpoint-clickable:hover {
-        background-color: #e3f2fd;
-        color: #0d47a1;
-    }
-    
-    .highlight-card select {
-        border: 1px solid #e5e5e5;
-        border-radius: 3px;
-        font-size: 0.8rem;
-    }
-    
-    .highlights-url-section {
-        margin-top: 20px;
-        padding-top: 15px;
-        border-top: 1px solid #e5e5e5;
-    }
-    
-    .highlights-url-section h5 {
-        margin: 0 0 10px 0;
-        font-size: 0.9rem;
-        color: #666;
-    }
-    
-    .highlights-url-display {
-        background: #f8f9fa;
-        padding: 8px 12px;
-        border-radius: 4px;
-        border: 1px solid #e5e5e5;
-        font-family: monospace;
-        font-size: 0.75rem;
-        word-break: break-all;
-        max-height: 100px;
-        overflow-y: auto;
-    }
-    
-    .highlights-url-display p {
-        margin: 0;
-    }
-    
-    .pinpoint-warning {
-        color: #f39c12;
-        font-size: 0.7rem;
-        font-style: italic;
-        display: inline-block;
-        margin-top: 4px;
-    }
-    
-    .exclusions-section {
-        margin-top: 8px;
-        padding: 6px;
-        background-color: #f8f9fa;
-        border-radius: 4px;
-        border: 1px solid #e5e5e5;
-    }
-    
-    .exclusion-item {
-        display: inline-block;
-        margin: 2px 0;
-        padding: 2px 4px;
-        background-color: #fff;
-        border-radius: 3px;
-        border: 1px solid #ddd;
-    }
-    
-    .add-exclusion-btn {
-        font-size: 0.7rem;
-        padding: 2px 6px;
-        height: 24px;
-        line-height: 1.2;
-    }
-    
-    .add-exclusion-btn:disabled {
-        opacity: 0.7;
-    }    
 </style>
-<script src="{{=URL('static','js/canvas2svg.js')}}"></script>
 
+<!-- Highlights Editor CSS -->
+<style>
+.ui-controls #highlightsEditorButton {
+    display: block;
+}
 
+.highlights-panel {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 400px;
+    height: 100vh;
+    background: white;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    z-index: 1001;
+    transition: right 0.3s ease;
+    overflow-y: auto;
+}
 
+.highlights-panel.open {
+    right: 0;
+}
+
+.highlights-panel-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.highlights-panel-header {
+    padding: 20px;
+    border-bottom: 1px solid #e5e5e5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+}
+
+.highlights-panel-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.highlights-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #666;
+    padding: 5px;
+}
+
+.highlights-close-btn:hover {
+    color: #333;
+}
+
+.highlights-panel-body {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    user-select: text;
+}
+
+.highlights-info {
+    background: #e3f2fd;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.highlights-info p {
+    margin: 0;
+    color: #1976d2;
+    font-size: 0.9rem;
+}
+
+.highlights-list {
+    margin-top: 20px;
+}
+
+.highlight-card {
+    transition: all 0.3s ease;
+    border: 1px solid #e5e5e5;
+    margin-bottom: 10px;
+}
+
+.highlight-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.highlight-card .uk-badge {
+    background-color: #1e87f0;
+    color: white;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 3px;
+}
+
+.highlight-card input[type="color"] {
+    border: 1px solid #e5e5e5;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.highlight-card .uk-button-small {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+}
+
+.pinpoint-clickable {
+    cursor: pointer;
+    color: #1e87f0;
+    text-decoration: underline;
+    padding: 2px 4px;
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+}
+
+.pinpoint-clickable:hover {
+    background-color: #e3f2fd;
+    color: #0d47a1;
+}
+
+.highlight-card select {
+    border: 1px solid #e5e5e5;
+    border-radius: 3px;
+    font-size: 0.8rem;
+}
+
+.highlights-url-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.highlights-url-section h5 {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.highlights-url-display {
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #e5e5e5;
+    font-family: monospace;
+    font-size: 0.75rem;
+    word-break: break-all;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.highlights-url-display p {
+    margin: 0;
+}
+
+.pinpoint-warning {
+    color: #f39c12;
+    font-size: 0.7rem;
+    font-style: italic;
+    display: inline-block;
+    margin-top: 4px;
+}
+
+.exclusions-section {
+    margin-top: 8px;
+    padding: 6px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #e5e5e5;
+}
+
+.exclusion-item {
+    display: inline-block;
+    margin: 2px 0;
+    padding: 2px 4px;
+    background-color: #fff;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+}
+
+.add-exclusion-btn {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    height: 24px;
+    line-height: 1.2;
+}
+
+.add-exclusion-btn:disabled {
+    opacity: 0.7;
+}    
+</style>
 <!-- Highlights Editor Panel -->
 <div id="highlights-editor" class="highlights-panel">
     <div class="highlights-panel-content">
@@ -286,35 +285,7 @@ setup_params = {
         </div>
     </div>
 </div>
-
-<script type="text/javascript">
-    <!-- could define js variables (specifically: pagetitle_func, tree_config, screensaver_config, tutorial_config) within <script> tags here -->
-    
-        function make_screenshot(lnk) {
-            try {
-                context = new C2S({
-                    width: document.getElementById("OneZoomCanvasID").width,
-                    height: document.getElementById("OneZoomCanvasID").height,
-                });
-                context.scale(window.devicePixelRatio, window.devicePixelRatio);
-                onezoom.controller.draw_single_frame(context);
-                lnk.href = URL.createObjectURL(new Blob([context.getSerializedSvg(true)], {
-                    type: "image/svg+xml",
-                }));
-                lnk.download = 'onezoom.svg';  // Download file, instead of opening in browser
-                window.setTimeout(function () {
-                    URL.revokeObjectURL(lnk.href);
-                }, 100);
-    
-                return true;
-            } catch (err) {
-                alert("You can't save pictures with embedded images unless you enable '-allow-file-access-from-files' in chrome, or equivalent in other browsers.")
-                console.error(err)
-                lnk.removeAttribute("href");
-                return false;
-            }
-        };
-</script>
+<!-- Highlights Editor Script -->
 <script type="text/javascript">
     let highlightsEditor = {
         isAddingHighlight: false,
@@ -840,8 +811,6 @@ setup_params = {
         },
         
         startPinpointEdit: function(highlightStr, pinpointIndex, type) {
-            console.log('Starting pinpoint edit for:', highlightStr, 'index:', pinpointIndex, 'type:', type);
-            
             // Store the current highlight and pinpoint being edited
             this.editingHighlight = highlightStr;
             this.editingPinpointIndex = pinpointIndex;
@@ -849,14 +818,6 @@ setup_params = {
             
             // Start node selection mode
             this.startAddMode();
-            
-            // Show a message to the user
-            const message = type === 'fan' ? 
-                'Click on a tree node to change the highlight target' :
-                `Click on a tree node to change the ${pinpointIndex === 0 ? 'start' : 'end'} of the path`;
-            
-            // You could show this in a better way, like a toast notification
-            console.log(message);
         },
         
         replaceHighlight: function(oldStr, newStr) {
@@ -993,7 +954,39 @@ setup_params = {
         }, 100);
     });
 
-
+</script>
+<!-- Screenshot Script -->
+<script src="{{=URL('static','js/canvas2svg.js')}}"></script>
+<script type="text/javascript">
+    <!-- could define js variables (specifically: pagetitle_func, tree_config, screensaver_config, tutorial_config) within <script> tags here -->
+    
+        function make_screenshot(lnk) {
+            try {
+                context = new C2S({
+                    width: document.getElementById("OneZoomCanvasID").width,
+                    height: document.getElementById("OneZoomCanvasID").height,
+                });
+                context.scale(window.devicePixelRatio, window.devicePixelRatio);
+                onezoom.controller.draw_single_frame(context);
+                lnk.href = URL.createObjectURL(new Blob([context.getSerializedSvg(true)], {
+                    type: "image/svg+xml",
+                }));
+                lnk.download = 'onezoom.svg';  // Download file, instead of opening in browser
+                window.setTimeout(function () {
+                    URL.revokeObjectURL(lnk.href);
+                }, 100);
+    
+                return true;
+            } catch (err) {
+                alert("You can't save pictures with embedded images unless you enable '-allow-file-access-from-files' in chrome, or equivalent in other browsers.")
+                console.error(err)
+                lnk.removeAttribute("href");
+                return false;
+            }
+        };
+</script>
+<!-- Special keyboard shortcuts for expert mode -->
+<script type="text/javascript">
     document.body.addEventListener('keydown', function (e) {
         if (event.keyCode == 17) {  // Ctrl
             window.old_sensitivity = onezoom.config.sensitivity;
