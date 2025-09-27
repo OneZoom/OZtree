@@ -97,9 +97,9 @@ function setup(
   oz.config = config;
   oz.add_hook = add_hook;
   oz.remove_hook = remove_hook;
-    oz.global_button_action = global_button_action;
-    oz.node_to_pinpoint = node_to_pinpoint;
-    oz.resolve_pinpoints = resolve_pinpoints;
+  oz.global_button_action = global_button_action;
+  oz.node_to_pinpoint = node_to_pinpoint;
+  oz.resolve_pinpoints = resolve_pinpoints;
 
   if (!oz.controller) {
     // No controller, don't bother getting data
