@@ -206,7 +206,7 @@ setup_params = {
         margin: 0;
     }
     
-    .path-warning {
+    .pinpoint-warning {
         color: #f39c12;
         font-size: 0.7rem;
         font-style: italic;
@@ -597,7 +597,7 @@ setup_params = {
                             </button>
                             <button class="uk-button uk-button-small uk-button-primary uk-margin-small-right" 
                                     onclick="highlightsEditor.jumpToPinpoint('${highlightDetail.str}')"
-                                    title="Jump to last pinpoint">
+                                    title="Jump">
                                 <span uk-icon="crosshairs"></span>
                             </button>
                             <button class="move-highlight-up-button uk-button uk-button-small uk-button-default uk-margin-small-right" 
@@ -649,8 +649,9 @@ setup_params = {
                 return 'No pinpoints';
             }
             
+            let display = '';
             if (type === 'fan') {
-                let display = `<span class="pinpoint-clickable" title="Click to change">${pinpointList[0]}</span>`;
+                display = `<span class="pinpoint-clickable" title="Click to change">${pinpointList[0]}</span>`;
                 
                 // Add exclusions if they exist
                 if (pinpointList.length > 1) {
@@ -677,76 +678,67 @@ setup_params = {
                                     title="Add exclusion">
                                 <span uk-icon="ban" ratio="0.6" class="uk-margin-small-right"></span> Add Exclusion
                             </button></div>`;
-                
-                return display;
             } else if (type === 'path') {
-                const display = pinpointList.map((pinpoint, idx) => 
+                display = pinpointList.map((pinpoint, idx) => 
                         `<span class="pinpoint-clickable" title="Click to change ${idx === 0 ? 'start' : 'end'}">${pinpoint}</span>`
                     ).join(' → ');
-                
-                this.validatePathHighlight(pinpointList, highlightStr, (isValid) => {
-                    const highlightElement = document.querySelector(`[data-highlight="${highlightStr}"]`);
-                    if (highlightElement) {
-                        const warningElement = highlightElement.querySelector('.path-warning');
-                        if (!isValid) {
-                            if (!warningElement) {
-                                const warningDiv = document.createElement('div');
-                                warningDiv.className = 'path-warning';
-                                warningDiv.innerHTML = `⚠️ First pinpoint is not an ancestor of the second`;
-                                const pinpointDisplay = highlightElement.querySelector('.uk-text-small.uk-text-muted');
-                                if (pinpointDisplay) {
-                                    pinpointDisplay.appendChild(warningDiv);
-                                }
-                            }
-                        } else {
-                            if (warningElement) {
-                                warningElement.remove();
+            }
+
+            this.validateHighlightPinpoints(pinpointList, highlightStr, (isValid) => {
+                const highlightElement = document.querySelector(`[data-highlight="${highlightStr}"]`);
+                if (highlightElement) {
+                    const warningElement = highlightElement.querySelector('.pinpoint-warning');
+                    if (!isValid) {
+                        if (!warningElement) {
+                            const warningDiv = document.createElement('div');
+                            warningDiv.className = 'pinpoint-warning';
+                            warningDiv.innerHTML = `⚠️ First pinpoint must be an ancestor of the others`;
+                            const pinpointDisplay = highlightElement.querySelector('.uk-text-small.uk-text-muted');
+                            if (pinpointDisplay) {
+                                pinpointDisplay.appendChild(warningDiv);
                             }
                         }
+                    } else {
+                        if (warningElement) {
+                            warningElement.remove();
+                        }
                     }
-                });
-                
-                return display;
-            }
+                }
+            });
             
-            return pinpointList.join(' → ');
+            return display;
         },
-        
-        validatePathHighlight: async function(pinpointList, highlightStr, callback) {
+        /**
+         * Check that subsequent pinpoints are descendents of the first pinpoint.
+         */
+        validateHighlightPinpoints: async function(pinpointList, highlightStr, callback) {
             if (pinpointList.length < 2) {
                 callback(true);
                 return;
             }
-            
-            const startPinpoint = pinpointList[0];
-            const endPinpoint = pinpointList[1];
-            
-            if (startPinpoint === endPinpoint) {
-                callback(true);
-                return;
-            }
-            
-            const resolvedPinpoints = await onezoom.resolve_pinpoints([startPinpoint, endPinpoint]);
 
-            if (!resolvedPinpoints || resolvedPinpoints.length < 2) {
+            const resolvedPinpoints = await onezoom.resolve_pinpoints(pinpointList);
+            if (!resolvedPinpoints || resolvedPinpoints.length < pinpointList.length) {
                 callback(false);
                 return;
             }
 
-            const [startNode, endNode] = resolvedPinpoints;
+            const startNode = resolvedPinpoints[0];
+            const isPath = highlightStr.startsWith("path:") && pinpointList.length === 2;
 
-            if (this.isAncestor(startNode, endNode)) {
-                callback(true);
-                return;
+            
+            for (const node of resolvedPinpoints.slice(1)) {
+                if (!this.isAncestor(startNode, node)) {
+                    callback(false);
+                    if (isPath && this.isAncestor(node, startNode)) {
+                        // the path as given is invalid but can flip to make it valid
+                        this.swapPathEndpoints(highlightStr);
+                    }
+                    return;
+                }
             }
 
-            if (this.isAncestor(endNode, startNode)) {
-                callback(false);
-                this.swapPathEndpoints(highlightStr);
-                return;
-            }
-
-            callback(false);
+            callback(true);
         },
         
         isAncestor: function(ancestorNode, descendantNode) {
@@ -800,28 +792,9 @@ setup_params = {
         },
         
         updateHighlightType: function(highlightStr, newType) {
-            const match = highlightStr.match(/(path|fan):([^@]+)*(.*)/);
-            if (match) {
-                const currentType = match[1];
-                const color = match[2] || '';
-                const pinpoints = match[3] || '';
-                
-                let newHighlightStr;
-                
-                if (currentType === 'fan' && newType === 'path') {
-                    // Convert fan to path - keep single pinpoint (path from root to pinpoint)
-                    newHighlightStr = `path:${color}${pinpoints}`;
-                } else if (currentType === 'path' && newType === 'fan') {
-                    // Convert path to fan - take only the first pinpoint
-                    const pinpointList = pinpoints.split(/(?=@)/).filter(p => p.trim());
-                    newHighlightStr = `fan:${color}${pinpointList[0] || ''}`;
-                } else {
-                    // Same type, no change needed
-                    return;
-                }
-                
-                this.replaceHighlight(highlightStr, newHighlightStr);
-            }
+            // Always trim to one pinpoint when changing type
+            const newHighlightStr = highlightStr.replace(/(path|fan):([^@]*)(@[^@]*).*/, `${newType}:$2$3`);
+            this.replaceHighlight(highlightStr, newHighlightStr);
         },
         
         startPinpointEdit: function(highlightStr, pinpointIndex, type) {
@@ -896,19 +869,20 @@ setup_params = {
                 return;
             }
             
-            // Get the last pinpoint
-            const lastPinpoint = pinpointList[pinpointList.length - 1];
-            console.log('Jumping to last pinpoint:', lastPinpoint);
-
-            // Fallback: try to resolve the pinpoint and navigate
-            if (typeof onezoom.resolve_pinpoints === 'function') {
-                onezoom.resolve_pinpoints([lastPinpoint]).then((resolved) => {
-                    if (resolved && resolved.length > 0) {
-                        const node = resolved[0];
-                        onezoom.controller.leap_to(node.ozid);
-                    }
-                });
+            // Get the first non-trivial pinpoint
+            for (const pinpoint of pinpointList) {
+                // This is the root endpoint, added by default to single-pinpoint paths
+                if (pinpoint !== "@_ozid=1") {
+                    onezoom.resolve_pinpoints([pinpoint]).then((resolved) => {
+                        if (resolved && resolved.length > 0) {
+                            const node = resolved[0];
+                            onezoom.controller.leap_to(node.ozid);
+                        }
+                    });
+                    return;
+                }
             }
+            onezoom.controller.leap_to(1);
         },
         
         addExclusion: function(highlightStr) {
