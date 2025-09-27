@@ -443,7 +443,7 @@ setup_params = {
         },
         
         updatePinpointInHighlight: function(node) {
-            const newPinpoint = onezoom.node_to_pinpoint(node);
+            const newPinpoint = this.stableNodeToPinpoint(node);
             if (!newPinpoint) {
                 console.error('Failed to create pinpoint from node:', node);
                 alert('Failed to create pinpoint from selected node.');
@@ -507,9 +507,51 @@ setup_params = {
             this.editingPinpointIndex = undefined;
             this.editingType = null;
         },
+
+        /**
+         * ozid pinpoints are no good for tours because they are not stable across versions of the OneZoom tree.
+         * Instead, we try to find two descendents on different children which have OTTs and describe the location as the common ancestor of those two stable nodes.
+         */
+        stableNodeToPinpoint: function(node) {
+            const basePinpoint = onezoom.node_to_pinpoint(node);
+            if (!basePinpoint.startsWith("@_ozid=")) {
+                return basePinpoint;
+            }
+            // Attempt to find two descendents on different children which have OTTs
+            const childOtts = []
+            for (const child of node.children) {
+                const ott = this.findFirstOttInSubtree(child);
+                if (ott) {
+                    childOtts.push(ott);
+                    if (childOtts.length >= 2) {
+                        break;
+                    }
+                }
+            }
+            if (childOtts.length < 2) {
+                return basePinpoint;
+            }
+            return "@_ancestor=" + childOtts.join("=");
+        },
+
+        findFirstOttInSubtree: function(node) {
+            if (node.ott) {
+                return node.ott;
+            }
+            if (!node.children || node.children.length === 0) {
+                return null;
+            }            
+            for (const child of node.children) {
+                const ott = this.findFirstOttInSubtree(child);
+                if (ott) {
+                    return ott;
+                }
+            }
+            return null;
+        },
             
         createHighlightString: function(node) {
-            pinpoint = onezoom.node_to_pinpoint(node);
+            pinpoint = this.stableNodeToPinpoint(node);
             
             if (!pinpoint) {
                 console.warn('Cannot create pinpoint for node:', node);
