@@ -268,14 +268,10 @@ setup_params = {
                 </div>
             </div>
 
-            <div id="highlights-list" class="highlights-list">
-                <p class="uk-text-muted">No highlights</p>
-            </div>
-            
-            <div class="highlights-url-section">
+            <div id="highlights-list" class="highlights-list"></div>
+            <div id="highlights-url-section" class="highlights-url-section">
                 <h5>URL Parameters</h5>
                 <div id="highlights-url" class="highlights-url-display">
-                    <p class="uk-text-muted uk-text-small">No highlights</p>
                 </div>
             </div>
         </div>
@@ -523,7 +519,7 @@ setup_params = {
             
             container.innerHTML = '';
 
-            if (highlightDetails.length === 0) {
+            if (highlightDetails.length === 0 && !this.isAddingHighlight) {
                 container.innerHTML = '<p class="uk-text-muted">No highlights</p>';
             } else {
                 highlightDetails.forEach((highlightDetail, index) => {
@@ -555,12 +551,15 @@ setup_params = {
         },
         
         updateHighlightsUrl: function(highlightStrings) {
+            const urlSection = document.getElementById('highlights-url-section');
             const urlContainer = document.getElementById('highlights-url');
             
             if (highlightStrings.length === 0) {
-                urlContainer.innerHTML = '<p class="uk-text-muted uk-text-small">No highlights</p>';
+                urlSection.style.display = 'none';
                 return;
             }
+
+            urlSection.style.display = 'block';
             
             const urlParams = highlightStrings.map(highlight => `highlight=${highlight}`).join('&');
             
