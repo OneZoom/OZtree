@@ -68,6 +68,8 @@ function setup(
       'number_convert': number_convert,
       'view_richness': view_richness,
       'process_taxon_list': process_taxon_list,
+      'node_to_stable_pinpoint': node_to_stable_pinpoint,
+      'resolve_pinpoints': resolve_pinpoints,
     }};
 
   if (canvasID) {
@@ -96,8 +98,6 @@ function setup(
   oz.config = config;
   oz.add_hook = add_hook;
   oz.remove_hook = remove_hook;
-  oz.node_to_stable_pinpoint = node_to_stable_pinpoint;
-  oz.resolve_pinpoints = resolve_pinpoints;
 
   if (!oz.controller) {
     // No controller, don't bother getting data

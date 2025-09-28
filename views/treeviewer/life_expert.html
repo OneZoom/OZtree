@@ -391,7 +391,7 @@ setup_params = {
         },
         
         updatePinpointInHighlight: function(node) {
-            const newPinpoint = onezoom.node_to_stable_pinpoint(node);
+            const newPinpoint = onezoom.utils.node_to_stable_pinpoint(node);
             if (!newPinpoint) {
                 console.error('Failed to create pinpoint from node:', node);
                 alert('Failed to create pinpoint from selected node.');
@@ -456,7 +456,7 @@ setup_params = {
         },
             
         createHighlightString: function(node) {
-            pinpoint = onezoom.node_to_stable_pinpoint(node);
+            pinpoint = onezoom.utils.node_to_stable_pinpoint(node);
             
             if (!pinpoint) {
                 console.warn('Cannot create pinpoint for node:', node);
@@ -728,7 +728,7 @@ setup_params = {
                 return;
             }
 
-            const resolvedPinpoints = await onezoom.resolve_pinpoints(pinpointList);
+            const resolvedPinpoints = await onezoom.utils.resolve_pinpoints(pinpointList);
             if (!resolvedPinpoints || resolvedPinpoints.length < pinpointList.length) {
                 callback(false);
                 return;
@@ -882,7 +882,7 @@ setup_params = {
             for (const pinpoint of pinpointList) {
                 // This is the root endpoint, added by default to single-pinpoint paths
                 if (pinpoint !== "@_ozid=1") {
-                    onezoom.resolve_pinpoints([pinpoint]).then((resolved) => {
+                    onezoom.utils.resolve_pinpoints([pinpoint]).then((resolved) => {
                         if (resolved && resolved.length > 0) {
                             const node = resolved[0];
                             onezoom.controller.leap_to(node.ozid);
