@@ -286,7 +286,7 @@ setup_params = {
         lastKnownHighlights: undefined,
         
         init: function() {
-            this.redrawIfChanged();
+            this.redraw();
             this.setupEventListeners();
             this.setupLiveUpdates();
         },
@@ -514,6 +514,13 @@ setup_params = {
         redraw: function() {
             const highlightDetails = onezoom.controller.highlight_detail();
             const container = document.getElementById('highlights-list');
+
+            const addButton = document.getElementById('toggle-add-highlight');
+            const clearAllButton = document.getElementById('clear-all-highlights');
+            
+            // Update Add Highlight button
+            addButton.disabled = this.isAddingHighlight;
+            clearAllButton.disabled = highlightDetails.length === 0;
             
             const highlightsStrs = highlightDetails.map(h => h.str);
             
