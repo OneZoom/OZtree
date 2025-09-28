@@ -175,6 +175,16 @@ setup_params = {
     color: #0d47a1;
 }
 
+.pinpoint-editing {
+    background-color: #0d47a1;
+    color: #e3f2fd;
+    text-decoration: none;
+}
+.pinpoint-editing:hover {
+    background-color: #0d47a1;
+    color: #e3f2fd;
+}
+
 .highlight-card select {
     border: 1px solid #e5e5e5;
     border-radius: 3px;
@@ -243,7 +253,11 @@ setup_params = {
 
 .add-exclusion-btn:disabled {
     opacity: 0.7;
-}    
+}
+
+.remove-exclusion-btn {
+    cursor: pointer;
+}
 </style>
 <!-- Highlights Editor Panel -->
 <div id="highlights-editor" class="highlights-panel">
@@ -271,7 +285,6 @@ setup_params = {
                 </div>
             </div>
 
-            <h4>Current Highlights</h4>
             <div id="highlights-list" class="highlights-list">
                 <p class="uk-text-muted">No highlights</p>
             </div>
@@ -294,7 +307,7 @@ setup_params = {
         lastKnownHighlights: undefined,
         
         init: function() {
-            this.updateHighlightsList();
+            this.redrawIfChanged();
             this.setupEventListeners();
             this.setupLiveUpdates();
         },
@@ -341,25 +354,21 @@ setup_params = {
                 const currentHighlights = onezoom.controller.highlight_list();
                 if (JSON.stringify(currentHighlights) !== JSON.stringify(this.lastKnownHighlights)) {
                     this.lastKnownHighlights = currentHighlights;
-                    this.updateHighlightsList();
+                    this.redrawIfChanged();
                 }
             }, 1000); // Check every second
         },
 
         startAddMode: function() {
             this.isAddingHighlight = true;
-            const button = document.getElementById('toggle-add-highlight');
-            button.textContent = 'Cancel Adding';
-            button.classList.add('uk-button-danger');
             this.startNodeSelection();
+            this.redraw();
         },
 
         stopAddMode: function() {
             this.isAddingHighlight = false;
-            const button = document.getElementById('toggle-add-highlight');
-            button.textContent = 'Add Highlight';
-            button.classList.remove('uk-button-danger');
             this.stopNodeSelection();
+            this.redraw();
         },
         
         toggleAddMode: function() {
@@ -386,14 +395,6 @@ setup_params = {
                 onezoom.remove_hook('mouse_down', this.mouseHookId);
                 this.mouseHookId = null;
             }
-            
-            // Reset "Add Exclusion" buttons
-            const addExclusionButtons = document.querySelectorAll('.add-exclusion-btn');
-            addExclusionButtons.forEach(button => {
-                button.innerHTML = '<span uk-icon="plus"></span> Add Exclusion';
-                button.disabled = false;
-                button.classList.remove('uk-button-primary');
-            });
         },
         
         addHighlightFromNode: function(node) {
@@ -408,7 +409,7 @@ setup_params = {
             
             if (highlightStr) {
                 onezoom.controller.highlight_add(highlightStr).then(() => {
-                    this.updateHighlightsList();
+                    this.redrawIfChanged();
                 });
             }
         },
@@ -476,7 +477,6 @@ setup_params = {
             // Clear editing state
             this.editingHighlight = null;
             this.editingPinpointIndex = undefined;
-            this.editingType = null;
         },
 
         /**
@@ -531,8 +531,35 @@ setup_params = {
             
             return `fan:${pinpoint}`;
         },
+
+        redraw: function() {
+            const button = document.getElementById('toggle-add-highlight');
+            button.textContent = this.isAddingHighlight ? 'Cancel Adding' : 'Add Highlight';
+            if (this.isAddingHighlight) {
+                button.classList.add('uk-button-danger');
+            } else {
+                button.classList.remove('uk-button-danger');
+            }
+
+            const highlightDetails = onezoom.controller.highlight_detail();
+            const container = document.getElementById('highlights-list');
+            
+            const highlightsStrs = highlightDetails.map(h => h.str);
+            
+            container.innerHTML = '';
+
+            if (highlightDetails.length === 0) {
+                container.innerHTML = '<p class="uk-text-muted">No highlights</p>';
+            } else {
+                highlightDetails.forEach((highlightDetail, index) => {
+                    const highlightElement = this.createHighlightElement(highlightDetail, index);
+                    container.appendChild(highlightElement);
+                });
+            }
+            this.updateHighlightsUrl(highlightsStrs);
+        },
         
-        updateHighlightsList: function() {
+        redrawIfChanged: function() {
             const highlightDetails = onezoom.controller.highlight_detail();
             const container = document.getElementById('highlights-list');
             
@@ -545,18 +572,7 @@ setup_params = {
                 return;
             }
             
-            container.innerHTML = '';
-
-            if (highlightDetails.length === 0) {
-                container.innerHTML = '<p class="uk-text-muted">No highlights</p>';
-            } else {
-                highlightDetails.forEach((highlightDetail, index) => {
-                    const highlightElement = this.createHighlightElement(highlightDetail, index);
-                    container.appendChild(highlightElement);
-                });
-            }
-                
-            this.updateHighlightsUrl(highlightsStrs);
+            this.redraw();
         },
         
         updateHighlightsUrl: function(highlightStrings) {
@@ -657,6 +673,10 @@ setup_params = {
             const color = highlightDetail.color;
             const pinpointList = highlightDetail.pinpoints;
             const highlightStr = highlightDetail.str;
+
+            const isEditingHighlight = this.editingHighlight === highlightStr;
+            console.log('isEditingHighlight', isEditingHighlight);
+            console.log('this.editingPinpointIndex', this.editingPinpointIndex);
             
             if (pinpointList.length === 0) {
                 return 'No pinpoints';
@@ -664,7 +684,8 @@ setup_params = {
             
             let display = '';
             if (type === 'fan') {
-                display = `<span class="pinpoint-clickable" title="Click to change">${pinpointList[0]}</span>`;
+                const isEditingFirstPinpoint = isEditingHighlight && 0 === this.editingPinpointIndex;
+                display = `<span class="pinpoint-clickable" ${isEditingFirstPinpoint ? 'pinpoint-editing' : ''}" title="Click to change">${isEditingFirstPinpoint ? 'Click a node' : pinpointList[0]}</span>`;
                 
                 // Add exclusions if they exist
                 if (pinpointList.length > 1) {
@@ -673,27 +694,34 @@ setup_params = {
                     display += '<small class="uk-text-muted">Exclusions:</small><br>';
                     exclusions.forEach((exclusion, idx) => {
                         const exclusionIndex = idx + 1; // +1 because index 0 is the main pinpoint
+                        const isEditingPinpoint = isEditingHighlight && exclusionIndex === this.editingPinpointIndex;
                         display += `<span class="exclusion-item">
-                            <span class="pinpoint-clickable" title="Click to change exclusion">${exclusion}</span>
-                            <button class="uk-button uk-button-small uk-button-danger uk-margin-small-left" 
-                                    onclick="highlightsEditor.removeExclusion('${highlightStr}', ${exclusionIndex})"
-                                    title="Remove exclusion">
-                                <span uk-icon="close"></span>
-                            </button>
+                            <span class="pinpoint-clickable ${isEditingPinpoint ? 'pinpoint-editing' : ''}" title="Click to change exclusion">${isEditingPinpoint ? 'Click a node' : exclusion}</span>
+                            <span class="remove-exclusion-btn" uk-icon="close" title="Remove exclusion" onclick="highlightsEditor.removeExclusion('${highlightStr}', ${exclusionIndex})"></span>
                         </span><br>`;
                     });
                     display += '</div>';
                 }
                 
-                // Add "Add Exclusion" button
-                display += `<div><button class="uk-button uk-button-small uk-button-default uk-margin-small-top add-exclusion-btn" 
+                const isAddingExclusion = isEditingHighlight && this.editingPinpointIndex === -1;
+                if (isAddingExclusion) {
+                    display += `<div><button class="uk-button uk-button-small uk-button-primary uk-margin-small-top add-exclusion-btn" 
+                                    title="Add exclusion"
+                                    disabled>
+                                Click on tree to add exclusion
+                            </button></div>`;
+                } else {
+                    display += `<div><button class="uk-button uk-button-small uk-button-default uk-margin-small-top add-exclusion-btn" 
                                     onclick="highlightsEditor.addExclusion('${highlightStr}')"
                                     title="Add exclusion">
                                 <span uk-icon="ban" ratio="0.6" class="uk-margin-small-right"></span> Add Exclusion
                             </button></div>`;
+                }
             } else if (type === 'path') {
-                display = pinpointList.map((pinpoint, idx) => 
-                        `<span class="pinpoint-clickable" title="Click to change ${idx === 0 ? 'start' : 'end'}">${pinpoint}</span>`
+                display = pinpointList.map((pinpoint, idx) => {
+                    const isEditingPinpoint = isEditingHighlight && idx === this.editingPinpointIndex;
+                    return `<span class="pinpoint-clickable ${isEditingPinpoint ? 'pinpoint-editing' : ''}" title="Click to change ${idx === 0 ? 'start' : 'end'}">${isEditingPinpoint ? 'Click a node' : pinpoint}</span>`;
+                }
                     ).join(' → ');
             }
 
@@ -814,10 +842,10 @@ setup_params = {
             // Store the current highlight and pinpoint being edited
             this.editingHighlight = highlightStr;
             this.editingPinpointIndex = pinpointIndex;
-            this.editingType = type;
             
             // Start node selection mode
-            this.startAddMode();
+            this.startNodeSelection();
+            this.redraw();
         },
         
         replaceHighlight: function(oldStr, newStr) {
@@ -825,13 +853,13 @@ setup_params = {
             const newHighlights = currentHighlights.map(h => h === oldStr ? newStr : h);
             
             onezoom.controller.highlight_replace(newHighlights).then(() => {
-                this.updateHighlightsList();
+                this.redrawIfChanged();
             });
         },
         
         removeHighlight: function(highlightStr) {
             onezoom.controller.highlight_remove(highlightStr).then(() => {
-                this.updateHighlightsList();
+                this.redrawIfChanged();
             });
         },
         
@@ -845,14 +873,14 @@ setup_params = {
                 [newHighlights[currentIndex], newHighlights[newIndex]] = [newHighlights[newIndex], newHighlights[currentIndex]];
                 
                 onezoom.controller.highlight_replace(newHighlights).then(() => {
-                    this.updateHighlightsList();
+                    this.redrawIfChanged();
                 });
             }
         },
         
         clearAllHighlights: function() {
             onezoom.controller.highlight_replace([]).then(() => {
-                this.updateHighlightsList();
+                this.redrawIfChanged();
             });
         },
         
@@ -888,24 +916,14 @@ setup_params = {
             onezoom.controller.leap_to(1);
         },
         
-        addExclusion: function(highlightStr) {
-            console.log('Adding exclusion to highlight:', highlightStr);
-            
+        addExclusion: function(highlightStr) {            
             // Store the highlight being edited and set it to add exclusion mode
             this.editingHighlight = highlightStr;
             this.editingPinpointIndex = -1; // -1 indicates adding exclusion
-            this.editingType = 'fan';
             
             // Enter node selection mode
             this.startNodeSelection();
-            
-            // Update the button state
-            const addButton = document.querySelector(`[onclick="highlightsEditor.addExclusion('${highlightStr}')"]`);
-            if (addButton) {
-                addButton.textContent = 'Click on tree to add exclusion';
-                addButton.disabled = true;
-                addButton.classList.add('uk-button-primary');
-            }
+            this.redraw();
         },
         
         removeExclusion: function(highlightStr, exclusionIndex) {
