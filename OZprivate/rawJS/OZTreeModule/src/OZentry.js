@@ -12,7 +12,6 @@ import config from './global_config';
 import tree_state from './tree_state';
 import data_repo from './factory/data_repo';
 import tree_settings from './tree_settings';
-import { global_button_action } from './button_manager';
 import { node_to_pinpoint, resolve_pinpoints } from './navigation/pinpoint';
 /**
  * Creates the main object that is exported to the browser. 
@@ -97,7 +96,6 @@ function setup(
   oz.config = config;
   oz.add_hook = add_hook;
   oz.remove_hook = remove_hook;
-  oz.global_button_action = global_button_action;
   oz.node_to_pinpoint = node_to_pinpoint;
   oz.resolve_pinpoints = resolve_pinpoints;
 

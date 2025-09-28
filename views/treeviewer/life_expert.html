@@ -359,19 +359,16 @@ setup_params = {
         },
         
         startNodeSelection: function() {
-            this.mouseHookId = onezoom.add_hook('mouse_down', (event) => {
-                if (typeof onezoom.global_button_action !== 'undefined' && onezoom.global_button_action.node) {
-                    this.addHighlightFromNode(onezoom.global_button_action.node);
-                    this.stopAddMode();
-                    return false;
-                }
-                return true;
+            this.mouseHookId = onezoom.add_hook('mouse_down_on_node', (node) => {
+                this.addHighlightFromNode(node);
+                this.stopAddMode();
+                return false;
             });
         },
         
         stopNodeSelection: function() {
             if (this.mouseHookId) {
-                onezoom.remove_hook('mouse_down', this.mouseHookId);
+                onezoom.remove_hook('mouse_down_on_node', this.mouseHookId);
                 this.mouseHookId = null;
             }
         },
@@ -692,8 +689,6 @@ setup_params = {
             const highlightStr = highlightDetail.str;
 
             const isEditingHighlight = this.editingHighlight === highlightStr;
-            console.log('isEditingHighlight', isEditingHighlight);
-            console.log('this.editingPinpointIndex', this.editingPinpointIndex);
             
             if (pinpointList.length === 0) {
                 return 'No pinpoints';
@@ -951,9 +946,7 @@ setup_params = {
             this.redraw();
         },
         
-        removeExclusion: function(highlightStr, exclusionIndex) {
-            console.log('Removing exclusion from highlight:', highlightStr, 'index:', exclusionIndex);
-            
+        removeExclusion: function(highlightStr, exclusionIndex) {            
             try {
                 // Parse the current highlight string
                 const match = highlightStr.match(/(path|fan):([^@]+)*(.*)/);
@@ -976,9 +969,7 @@ setup_params = {
                     const newHighlightStr = `${type}:${color}${newPinpoints}`;
                     
                     // Replace the highlight in the controller
-                    this.replaceHighlight(highlightStr, newHighlightStr);
-                    
-                    console.log(`Removed exclusion: ${highlightStr} → ${newHighlightStr}`);
+                    this.replaceHighlight(highlightStr, newHighlightStr);                    
                 }
             } catch (error) {
                 console.error('Error removing exclusion:', error);

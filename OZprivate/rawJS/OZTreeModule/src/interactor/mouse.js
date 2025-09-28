@@ -81,6 +81,7 @@ class MouseInteractor {
   
   mouse_down(event) {
     if (!call_hook('mouse_down')) return;
+    if (global_button_action.node && !call_hook('mouse_down_on_node', global_button_action.node)) return;
 
     this.controller.cancel_flight();
     set_mouse_position(this, event);
