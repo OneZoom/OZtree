@@ -516,14 +516,6 @@ setup_params = {
         },
 
         redraw: function() {
-            const button = document.getElementById('toggle-add-highlight');
-            button.textContent = this.isAddingHighlight ? 'Cancel Adding' : 'Add Highlight';
-            if (this.isAddingHighlight) {
-                button.classList.add('uk-button-danger');
-            } else {
-                button.classList.remove('uk-button-danger');
-            }
-
             const highlightDetails = onezoom.controller.highlight_detail();
             const container = document.getElementById('highlights-list');
             
@@ -538,6 +530,10 @@ setup_params = {
                     const highlightElement = this.createHighlightElement(highlightDetail, index);
                     container.appendChild(highlightElement);
                 });
+            }
+            if (this.isAddingHighlight) {
+                const placeholderElement = this.createPlaceholderHighlightElement();
+                container.appendChild(placeholderElement);
             }
             this.updateHighlightsUrl(highlightsStrs);
         },
@@ -644,10 +640,42 @@ setup_params = {
             const pinpointElements = div.querySelectorAll('.pinpoint-clickable');
             pinpointElements.forEach((element, idx) => {
                 element.addEventListener('click', () => {
-                    this.startPinpointEdit(highlightDetail.str, idx, type);
+                    this.togglePinpointEdit(highlightDetail.str, idx, type);
                 });
             });
             
+            return div;
+        },
+
+        createPlaceholderHighlightElement: function() {
+            const div = document.createElement('div');
+            div.className = 'uk-card uk-card-small uk-card-default uk-margin-small highlight-card';
+            div.innerHTML = `
+                <div class="uk-card-body">
+                    <div class="uk-flex-column uk-flex-between uk-flex-middle">
+                        <div class="uk-flex-1">
+                            <div class="uk-flex uk-flex-middle uk-margin-small-bottom">
+                                <select class="uk-select uk-form-small uk-width-auto uk-margin-small-right"
+                                    disabled
+                                    style="width: 80px;"
+                                >
+                                    <option value="fan" selected>Fan</option>
+                                </select>
+                            </div>
+                            <div class="uk-text-small uk-text-muted">
+                                <span class="pinpoint-clickable pinpoint-editing" title="Click to change">Click a node</span>
+                            </div>
+                        </div>
+                        <div class="uk-flex uk-flex uk-flex-middle uk-margin-small-top">
+                            <button class="uk-button uk-button-small uk-button-danger uk-margin-small-right" 
+                                    onclick="highlightsEditor.stopAddMode()"
+                                    title="Remove highlight">
+                                <span uk-icon="trash"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
             return div;
         },
         
@@ -668,7 +696,7 @@ setup_params = {
             let display = '';
             if (type === 'fan') {
                 const isEditingFirstPinpoint = isEditingHighlight && 0 === this.editingPinpointIndex;
-                display = `<span class="pinpoint-clickable" ${isEditingFirstPinpoint ? 'pinpoint-editing' : ''}" title="Click to change">${isEditingFirstPinpoint ? 'Click a node' : pinpointList[0]}</span>`;
+                display = `<span class="pinpoint-clickable ${isEditingFirstPinpoint ? 'pinpoint-editing' : ''}" title="Click to change">${isEditingFirstPinpoint ? 'Click a node' : pinpointList[0]}</span>`;
                 
                 // Add exclusions if they exist
                 if (pinpointList.length > 1) {
@@ -821,7 +849,15 @@ setup_params = {
             this.replaceHighlight(highlightStr, newHighlightStr);
         },
         
-        startPinpointEdit: function(highlightStr, pinpointIndex, type) {
+        togglePinpointEdit: function(highlightStr, pinpointIndex, type) {
+            if (this.editingHighlight === highlightStr && this.editingPinpointIndex === pinpointIndex) {
+                this.editingHighlight = null;
+                this.editingPinpointIndex = undefined;
+                this.stopNodeSelection();
+                this.redraw();
+                return;
+            }
+
             // Store the current highlight and pinpoint being edited
             this.editingHighlight = highlightStr;
             this.editingPinpointIndex = pinpointIndex;
