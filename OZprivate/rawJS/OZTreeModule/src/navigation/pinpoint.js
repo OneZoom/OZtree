@@ -143,6 +143,53 @@ export function node_to_pinpoint(node) {
 }
 
 /**
+ * Return a pinpoint string pointing at (node) that is stable across different versions of the OneZoom tree.
+ * Null if such a pinpoint can't be constructed. 
+ * Slower than a standard node_to_pinpoint.
+ */
+export function node_to_stable_pinpoint(node) {
+  const base_pinpoint = node_to_pinpoint(node);
+  if (base_pinpoint && !base_pinpoint.startsWith("@_ozid=")) {
+    return base_pinpoint;
+  }
+  
+  // Attempt to find two descendents on different children which have OTTs
+  const descendent_otts = []
+  if (!node.children || node.children.length === 0) {
+    return null;
+  }    
+  for (const child of node.children) {
+    const ott = find_ott_in_subtree(child);
+    if (ott) {
+      descendent_otts.push(ott);
+      if (descendent_otts.length >= 2) {
+        break;
+      }
+    }
+  }
+  if (descendent_otts.length !== 2) {
+    return null;
+  }
+  return "@_ancestor=" + descendent_otts.join("=");
+}
+
+function find_ott_in_subtree(node) {
+  if (node.ott) {
+      return node.ott;
+  }
+  if (!node.children || node.children.length === 0) {
+      return null;
+  }            
+  for (const child of node.children) {
+      const ott = find_ott_in_subtree(child);
+      if (ott) {
+          return ott;
+      }
+  }
+  return null;
+}
+
+/**
  * Convert latin name to pinpoint-friendly form
  *
  * Tidy latin doesn't contain any of /,=,_ or space
