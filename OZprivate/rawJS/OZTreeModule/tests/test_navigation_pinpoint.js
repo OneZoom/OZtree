@@ -1,7 +1,7 @@
 /**
   * Usage: npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/test_navigation_pinpoint.js
   */
-import { resolve_pinpoints, node_to_pinpoint, node_to_stable_pinpoint } from '../src/navigation/pinpoint.js';
+import { resolve_pinpoints, node_to_pinpoint } from '../src/navigation/pinpoint.js';
 import { populate_data_repo } from './util_data_repo.js'
 import { populate_factory } from './util_factory'
 import test from 'tape';
@@ -165,38 +165,9 @@ test('node_to_pinpoint:tidy_latin', function (test) {
   test.end();
 });
 
-test('node_to_stable_pinpoint:basic_cases', function (test) {
-  // Test cases that should return the same as node_to_pinpoint
+test('node_to_pinpoint:ancestor', function (test) {
   test.deepEqual(
-    node_to_stable_pinpoint({ ott: 12345 }),
-    '@=12345',
-    "Node with OTT should return standard pinpoint"
-  );
-
-  test.deepEqual(
-    node_to_stable_pinpoint({ latin_name: "Pteropus vampyrus" }),
-    '@Pteropus_vampyrus',
-    "Node with latin name should return standard pinpoint"
-  );
-
-  test.deepEqual(
-    node_to_stable_pinpoint({ latin_name: "Pteropus vampyrus", ott: 448935 }),
-    '@Pteropus_vampyrus=448935',
-    "Node with both latin name and OTT should return standard pinpoint"
-  );
-
-  test.deepEqual(
-    node_to_stable_pinpoint({}),
-    null,
-    "Empty node should return null"
-  );
-
-  test.end();
-});
-
-test('node_to_stable_pinpoint:ozid_only_cases', function (test) {
-  test.deepEqual(
-    node_to_stable_pinpoint({
+    node_to_pinpoint({
       ozid: 123456,
       children: [
         {
@@ -217,7 +188,7 @@ test('node_to_stable_pinpoint:ozid_only_cases', function (test) {
   );
 
   test.deepEqual(
-    node_to_stable_pinpoint({
+    node_to_pinpoint({
       ozid: 123456,
       children: [
         {
@@ -232,12 +203,12 @@ test('node_to_stable_pinpoint:ozid_only_cases', function (test) {
         }
       ]
     }),
-    null,
-    "Node with ozid only should return null when less than two descendants found"
+    "@_ozid=123456",
+    "Shouldn't return ancestor pinpoint when less than two descendants found"
   );
 
   test.deepEqual(
-    node_to_stable_pinpoint({
+    node_to_pinpoint({
       ozid: 123456,
       children: [
         {
@@ -252,21 +223,21 @@ test('node_to_stable_pinpoint:ozid_only_cases', function (test) {
         }
       ]
     }),
-    null,
-    "Node with ozid only should return null when no descendants have OTT"
+    "@_ozid=123456",
+    "Shouldn't return ancestor pinpoint when no descendants have OTT"
   );
 
   test.deepEqual(
-    node_to_stable_pinpoint({
+    node_to_pinpoint({
       ozid: 123456,
       children: []
     }),
-    null,
-    "Node with ozid only and no children should return null"
+    "@_ozid=123456",
+    "Shouldn't return ancestor pinpoint when no children"
   );
 
   test.deepEqual(
-    node_to_stable_pinpoint({
+    node_to_pinpoint({
       ozid: 123456,
       children: [
         { children: [{ children: [] }] },

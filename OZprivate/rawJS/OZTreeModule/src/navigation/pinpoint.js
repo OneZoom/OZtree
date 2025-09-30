@@ -131,31 +131,29 @@ export function resolve_pinpoints(pinpoint_or_pinpoints, extra_metadata={}) {
   * Return a pinpoint string pointing at (node)
   */
 export function node_to_pinpoint(node) {
-  if (!node.ott && !node.latin_name) {
-    if (node.ozid) return "@_ozid=" + node.ozid;
-    return null;
-  };
-  return [
-    "@",
-    node.latin_name ? tidy_latin(node.latin_name) : '',
-    node.ott ? "=" + node.ott : "",
-  ].join("")
+  if (node.ott || node.latin_name) {
+    return [
+      "@",
+      node.latin_name ? tidy_latin(node.latin_name) : '',
+      node.ott ? "=" + node.ott : "",
+    ].join("")
+  }
+
+  const ancestor_pinpoint = node_to_ancestor_pinpoint(node);
+  if (ancestor_pinpoint) return ancestor_pinpoint;
+  if (node.ozid) return "@_ozid=" + node.ozid;
+  return null;
 }
 
 /**
- * Return a pinpoint string pointing at (node) that is stable across different versions of the OneZoom tree.
- * Null if such a pinpoint can't be constructed. 
- * Slower than a standard node_to_pinpoint.
+ * Return a pinpoint string pointing at (node) by describing it as the common ancestor of two of its descendents.
+ * Preferable to using an @_ozid pinpoint alone because that is not stable across OneZoom releases.
+ * Null if such a pinpoint can't be constructed from the available data. 
  */
-export function node_to_stable_pinpoint(node) {
-  const base_pinpoint = node_to_pinpoint(node);
-  if (base_pinpoint && !base_pinpoint.startsWith("@_ozid=")) {
-    return base_pinpoint;
-  }
-  
+function node_to_ancestor_pinpoint(node) {
   // Attempt to find two descendents on different children which have OTTs
   const descendent_otts = []
-  if (!node.children || node.children.length === 0) {
+  if (!node.children || node.children.length < 2) {
     return null;
   }    
   for (const child of node.children) {
@@ -173,18 +171,20 @@ export function node_to_stable_pinpoint(node) {
   return "@_ancestor=" + descendent_otts.join("=");
 }
 
-function find_ott_in_subtree(node) {
-  if (node.ott) {
+/**
+ * Find the ott of any node in the given subtree.
+ * This will not develop any more children, and will return null if such a descendent has not been loaded.
+ */
+function find_ott_in_subtree(subtree_root_node) {
+  const queue = [subtree_root_node]
+  while (queue.length > 0) {
+    const node = queue.shift()
+    if (node.ott) {
       return node.ott;
-  }
-  if (!node.children || node.children.length === 0) {
-      return null;
-  }            
-  for (const child of node.children) {
-      const ott = find_ott_in_subtree(child);
-      if (ott) {
-          return ott;
-      }
+    }
+    if (node.children && node.children.length > 0) {
+      queue.push(...node.children);
+    }
   }
   return null;
 }

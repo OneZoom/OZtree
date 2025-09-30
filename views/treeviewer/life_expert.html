@@ -389,11 +389,21 @@ setup_params = {
                 });
             }
         },
+
+        nodeToStablePinpoint: function(node) {
+            // For creating tours we specifically want a stable pinpoint.
+            // Fail if we can't find one.
+            const pinpoint = onezoom.utils.node_to_pinpoint(node);
+            if (pinpoint.startsWith('@_ozid=')) {
+                return null;
+            }
+            return pinpoint;
+        },
         
         updatePinpointInHighlight: function(node) {
-            const newPinpoint = onezoom.utils.node_to_stable_pinpoint(node);
+            const newPinpoint = this.nodeToStablePinpoint(node);
             if (!newPinpoint) {
-                console.error('Failed to create pinpoint from node:', node);
+                console.error('Failed to create stable pinpoint from node:', node);
                 alert('Failed to create pinpoint from selected node.');
                 return;
             }
@@ -456,7 +466,7 @@ setup_params = {
         },
             
         createHighlightString: function(node) {
-            pinpoint = onezoom.utils.node_to_stable_pinpoint(node);
+            pinpoint = this.nodeToStablePinpoint(node);
             
             if (!pinpoint) {
                 console.warn('Cannot create pinpoint for node:', node);

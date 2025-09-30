@@ -12,7 +12,7 @@ import config from './global_config';
 import tree_state from './tree_state';
 import data_repo from './factory/data_repo';
 import tree_settings from './tree_settings';
-import { node_to_stable_pinpoint, resolve_pinpoints } from './navigation/pinpoint';
+import { node_to_pinpoint, resolve_pinpoints } from './navigation/pinpoint';
 /**
  * Creates the main object that is exported to the browser. 
  * @todo This should possibly be separated so that 
@@ -68,7 +68,7 @@ function setup(
       'number_convert': number_convert,
       'view_richness': view_richness,
       'process_taxon_list': process_taxon_list,
-      'node_to_stable_pinpoint': node_to_stable_pinpoint,
+      'node_to_pinpoint': node_to_pinpoint,
       'resolve_pinpoints': resolve_pinpoints,
     }};
 
