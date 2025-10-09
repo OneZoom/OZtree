@@ -170,6 +170,12 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
       </div><!-- inline-block: hide whitespace
       --><span class='button-label'>{{=T('Take an svg screenshot')}}</span><!-- inline-block: hide whitespace
     --></li>
+    <li id="highlightsEditorButton">
+      <div class='icon-container'>
+        <a uk-tooltip="pos: right" title="{{=T('Highlights')}}" onclick="highlightsEditor.togglePanel();" uk-icon="icon: paint-bucket" type="button"></a>
+      </div><!-- inline-block: hide whitespace
+      --><span class='button-label'>{{=T('Highlights')}}</span><!-- inline-block: hide whitespace
+    --></li>
     <li id="singleInfoButton">
       <div class='icon-container'>
         <a uk-tooltip="pos: right" title="{{=T('Information')}}" href="#info-modal" uk-toggle uk-icon="icon: info"></a>

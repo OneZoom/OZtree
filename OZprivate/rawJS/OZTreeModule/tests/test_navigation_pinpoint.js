@@ -165,6 +165,95 @@ test('node_to_pinpoint:tidy_latin', function (test) {
   test.end();
 });
 
+test('node_to_pinpoint:ancestor', function (test) {
+  test.deepEqual(
+    node_to_pinpoint({
+      ozid: 123456,
+      children: [
+        {
+          children: [
+            { ott: 1001 },
+            { ott: 1002 } 
+          ]
+        },
+        {
+          children: [
+            { ott: 1003 }
+          ]
+        }
+      ]
+    }),
+    '@_ancestor=1001=1003',
+    "Node with ozid only should return ancestor pinpoint when two descendants found"
+  );
+
+  test.deepEqual(
+    node_to_pinpoint({
+      ozid: 123456,
+      children: [
+        {
+          children: [
+            { ott: 1001 }
+          ]
+        },
+        {
+          children: [
+            { children: [] }
+          ]
+        }
+      ]
+    }),
+    "@_ozid=123456",
+    "Shouldn't return ancestor pinpoint when less than two descendants found"
+  );
+
+  test.deepEqual(
+    node_to_pinpoint({
+      ozid: 123456,
+      children: [
+        {
+          children: [
+            { children: [] }
+          ]
+        },
+        {
+          children: [
+            { children: [] }
+          ]
+        }
+      ]
+    }),
+    "@_ozid=123456",
+    "Shouldn't return ancestor pinpoint when no descendants have OTT"
+  );
+
+  test.deepEqual(
+    node_to_pinpoint({
+      ozid: 123456,
+      children: []
+    }),
+    "@_ozid=123456",
+    "Shouldn't return ancestor pinpoint when no children"
+  );
+
+  test.deepEqual(
+    node_to_pinpoint({
+      ozid: 123456,
+      children: [
+        { children: [{ children: [] }] },
+        { children: [{ ott: 4001 }] }, 
+        { children: [{ children: [] }] },
+        { children: [{ ott: 4002 }] }, 
+        { children: [{ ott: 4003 }] }    
+      ]
+    }),
+    '@_ancestor=4001=4002',
+    "Should use first two OTT descendants found, ignoring additional ones"
+  );
+
+  test.end();
+});
+
 test.onFinish(function() {
   // NB: Something data_repo includes in is holding node open.
   //     Can't find it so force our tests to end.
