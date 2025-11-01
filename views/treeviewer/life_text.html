@@ -1,4 +1,4 @@
-{{response.title='OneZoom: Text tree'}}
+{{response.title=base_title + ': ' + T('Text tree')}}
 {{response.files.append(URL('static', 'OZSite/life_text.css'))}}
 {{extend ('popup.html' if 'popup' in request.vars else 'layout.html')}}
 <div class="row-fluid text_tree">

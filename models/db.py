@@ -48,6 +48,11 @@ if request.vars.lang:
     T.force(request.vars.lang)
 
 try:
+    base_title = myconf.take('general.base_title')
+except:
+    base_title = T("OneZoom web software")
+
+try:
     thumb_base_url = myconf.take('images.url_base')
     if thumb_base_url.startswith("//"):
         # Add http: or https: to make it possible to view pages even from file:// urls

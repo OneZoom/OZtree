@@ -1,5 +1,5 @@
 {{
-response.title='OneZoom: ' + T('bad request')
+response.title=base_title + ': ' + T('bad request')
 response.status = request.vars.code if 'code' in request.vars else 200
 }}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}

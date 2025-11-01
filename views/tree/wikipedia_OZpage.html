@@ -18,7 +18,7 @@
         background-color: lightgrey;
     }
     </style>
-<title>{{=T('OneZoom wikipedia page')}}</title>
+<title>{{=base_title + ': ' + T('wikipedia page')}}</title>
 <head>
   <script type="text/javascript" src="{{=URL('static','js/jquery.min.js')}}"></script>
   <script>{{include 'popup.js' # ban zooming, right click if necessary, etc.}}</script>

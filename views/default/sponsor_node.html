@@ -1,4 +1,4 @@
-{{response.title='OneZoom: Choose a species to sponsor'}}
+{{response.title=base_title + ': ' + T('Choose a species to sponsor')}}
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}
 {{response.files.insert(0,URL('static','js/web2py.js')) #To allow =LOAD(ajax=True) to work}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}

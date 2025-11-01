@@ -1,4 +1,4 @@
-{{response.title='OneZoom: Search for a species to sponsor'}}
+{{response.title=base_title + ': ' + T('Search for a species to sponsor')}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
 {{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}
 
