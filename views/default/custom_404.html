@@ -1,5 +1,5 @@
 {{
-response.title='OneZoom: ' + T('page does not exist')
+response.title=base_title + ': ' + T('page does not exist')
 response.status = request.vars.code if 'code' in request.vars else 200
 }}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}

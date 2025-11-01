@@ -1,4 +1,4 @@
-{{response.title='OneZoom: Terms and conditions'}}
+{{response.title=base_title + ': ' + T('Terms and conditions')}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
 {{response.files.append(URL('static', 'css/OZ_shared.css'))}}
 {{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}

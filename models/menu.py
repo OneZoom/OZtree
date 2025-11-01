@@ -6,7 +6,8 @@
 #########################################################################
 
 response.logo = A('OneZoom',_class="navbar-brand",_href= URL('default', 'index'),_id="web2py-logo")
-response.title = 'OneZoom tree of life explorer'
+# This is the default title: normally it is overridden on a per-page basis
+response.title = base_title + " " +T('tree of life explorer')
 # response.subtitle = 'some subtitle'
 
 ## read more at http://dev.w3.org/html5/markup/meta.name.html

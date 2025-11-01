@@ -1,5 +1,5 @@
 {{
-    response.title='OneZoom: Picture information'
+    response.title=base_title + ': ' + T('Picture information')
     response.files.append(URL('static', 'css/content_pages.css'))
 }}
 {{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}

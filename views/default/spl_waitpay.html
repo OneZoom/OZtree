@@ -1,5 +1,5 @@
 {{
-    response.title='OneZoom: '+T('species awaiting sponsorship payment')
+    response.title=base_title + ': ' + T('species awaiting sponsorship payment')
     response.files.append(URL('static', 'css/content_pages.css'))
 }}
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}

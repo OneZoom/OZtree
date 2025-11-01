@@ -1,4 +1,4 @@
-{{response.title='OneZoom: Frequently Asked Questions'}}
+{{response.title=base_title + ': ' + T('Frequently Asked Questions')}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
 {{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}
 {{from OZfunc import fmt_pounds}}

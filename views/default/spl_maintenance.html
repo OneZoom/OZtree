@@ -1,5 +1,5 @@
 {{
-    response.title='OneZoom: '+T('Maintenance mode')
+    response.title=base_title + ': ' + T('Maintenance mode')
     response.files.append(URL('static','css/content_pages.css'))
 }}
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}

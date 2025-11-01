@@ -1,5 +1,5 @@
 {{
-    response.title='OneZoom: '+T('already sponsored species')
+    response.title=base_title + ': ' + T('already sponsored species')
     response.files.append(URL('static', 'css/content_pages.css'))
 }}
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}

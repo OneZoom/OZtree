@@ -1,8 +1,8 @@
-{{response.title='OneZoom: Search for a species to sponsor'}}
+{{response.title=base_title + ': ' + T('Tr-eCards')}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
 {{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}
 {{from OZfunc import fmt_pounds}}
-{{block masthead}}
+{{block masthead}} 
 <div class="home-heading uk-text-center uk-padding-small">
     <h1 class="full-title">Surprise someone with a Tr-eCard</h1>
 </div>

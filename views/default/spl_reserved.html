@@ -1,6 +1,6 @@
 {{from math import ceil}}
 {{
-    response.title='OneZoom: '+T('species sponsorship reserved')
+    response.title=base_title + ': ' + T('species sponsorship reserved')
     response.files.append(URL('static','css/content_pages.css'))
 }}
 {{if is_testing: response.meta.viewfile, response.meta.date_accessed = response.view, request.now}}{{pass}}

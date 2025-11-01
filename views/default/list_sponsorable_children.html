@@ -1,4 +1,4 @@
-{{response.title='OneZoom: Alphabetical list of children'}}
+{{response.title=base_title + ': ' + T('Alphabetical list of children')}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
 {{extend 'popup.html' if request.vars.get('popup') else 'uikit_layout.html'}}
 {{if len(species)==0:}} 
