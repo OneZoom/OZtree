@@ -214,8 +214,8 @@ function append_wikidata_page(selector, Qid, lang, restrict_links) {
     base_url: base_url,
     selector: selector,
     restrict_links: restrict_links,
-    //url: base_url + "api/rest_v1/page/html/" + Qid,
-    url: "http://cors-anywhere.herokuapp.com/" + base_url.replace(/https?:\/\//,'') + "wiki/" + Qid,
+    url: base_url + "api/rest_v1/page/html/" + Qid,
+    extra_style_url: "w/load.php?lang=" + lang + "&modules=ext.uls.pt%7Cext.visualEditor.desktopArticleTarget.noscript%7Cext.wikidata-org.badges%7Cext.wikimediamessages.styles%7Cjquery.makeCollapsible.styles%7Cjquery.wikibase.toolbar.styles%7Cskins.vector.icons%2Cstyles%7Cskins.vector.search.codex.styles%7Cwikibase.alltargets%2Cdesktop%7Cwikibase.vector.scopedTypeaheadSearchStyles&only=styles&skin=vector-2022",
     dataType: "html",
     data: {
         printable:'yes',
@@ -276,11 +276,18 @@ function append_wikipage(data) {
     }
 
     //inject stylesheet
-    var ss = $('link[rel~="stylesheet"]', html_to_inject).addClass('injected-stylesheet');
+    var array_of_styles = $('link[rel~="stylesheet"]', html_to_inject)
+    if (this.extra_style_url) {
+        // add to the array of styles to be injected
+        array_of_styles = array_of_styles.add(
+            $('<link rel="stylesheet" type="text/css" href="'+this.extra_style_url+'">')
+        );
+    }
+    array_of_styles.addClass('injected-stylesheet');
     //make stylesheet link into an absolute URL if necessary
     var self = this;
-    ss.attr('href',function(i,v) {if (/^https?:\/\//.test(v) || /\/\//.test(v)) {} else {return (self.base_url + v)};});
-    $('head').prepend(ss);
+    array_of_styles.attr('href',function(i,v) {if (/^https?:\/\//.test(v) || /\/\//.test(v)) {} else {return (self.base_url + v)};});
+    $('head').prepend(array_of_styles);
     
     //transform internal page links of the form ./<title>#internal_link to simply #internal_link
     var url_start = './'+this.pagetitle;
