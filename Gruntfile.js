@@ -1,3 +1,7 @@
+/* NB, to compile without requiring uwsgi to be build, use e.g.
+    grunt --requirements=requirements-minimal.txt dev
+*/
+
 const fs = require('fs');
 const sass = require('sass');
 const process = require('process');
