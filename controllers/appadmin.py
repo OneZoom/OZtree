@@ -10,7 +10,6 @@ import datetime
 import copy
 import gluon.contenttype
 import gluon.fileutils
-from gluon._compat import iteritems
 
 is_gae = request.env.web2py_runtime_gae or False
 
@@ -30,7 +29,10 @@ except:
 
 if request.is_https:
     session.secure()
-elif (remote_addr not in hosts) and (remote_addr != "127.0.0.1") and \
+elif request.env.trusted_lan_prefix and \
+     remote_addr.startswith(request.env.trusted_lan_prefix):
+    request.is_local = True
+elif (remote_addr not in hosts) and (remote_addr != '127.0.0.1') and \
     (request.function != 'manage'):
     raise HTTP(200, T('appadmin is disabled because insecure channel'))
 
@@ -46,7 +48,7 @@ if request.function == 'manage':
                                       auth.table_permission()])
     manager_role = manager_action.get('role', None) if manager_action else None
     if not (gluon.fileutils.check_credentials(request) or auth.has_membership(manager_role)):
-        raise HTTP(403, "Not authorized")
+        raise HTTP(403, 'Not authorized')
     menu = False
 elif (request.application == 'admin' and not session.authorized) or \
         (request.application != 'admin' and not gluon.fileutils.check_credentials(request)):
@@ -182,7 +184,7 @@ def select():
     db = get_database(request)
     dbname = request.args[0]
     try:
-        is_imap = db._uri.startswith("imap://")
+        is_imap = db._uri.startswith('imap://')
     except (KeyError, AttributeError, TypeError):
         is_imap = False
     regex = re.compile(r'(?P<table>\w+)\.(?P<field>\w+)=(?P<value>\d+)')
@@ -194,8 +196,6 @@ def select():
             request.vars.query = '%s.%s.%s==%s' % (request.args[0],
                                                    match.group('table'), match.group('field'),
                                                    match.group('value'))
-    else:
-        request.vars.query = session.last_query
     query = get_query(request)
     if request.vars.start:
         start = int(request.vars.start)
@@ -222,17 +222,16 @@ def select():
             else:
                 orderby = '~' + orderby
     session.last_orderby = orderby
-    session.last_query = request.vars.query
     form = FORM(TABLE(TR(T('Query:'), '', INPUT(_style='width:400px',
-                _name='query', _value=request.vars.query or '', _class="form-control",
+                _name='query', _value=request.vars.query or '', _class='form-control',
                 requires=IS_NOT_EMPTY(
-                    error_message=T("Cannot be empty")))), TR(T('Update:'),
+                    error_message=T('Cannot be empty')))), TR(T('Update:'),
                 INPUT(_name='update_check', _type='checkbox',
                 value=False), INPUT(_style='width:400px',
                 _name='update_fields', _value=request.vars.update_fields
-                                    or '', _class="form-control")), TR(T('Delete:'), INPUT(_name='delete_check',
+                                    or '', _class='form-control')), TR(T('Delete:'), INPUT(_name='delete_check',
                 _class='delete', _type='checkbox', value=False), ''),
-                TR('', '', INPUT(_type='submit', _value=T('submit'), _class="btn btn-primary"))),
+                TR('', '', INPUT(_type='submit', _value=T('Submit'), _class='btn btn-primary'))),
                 _action=URL(r=request, args=request.args))
 
     tb = None
@@ -254,8 +253,8 @@ def select():
 
             if is_imap:
                 fields = [db[table][name] for name in
-                    ("id", "uid", "created", "to",
-                     "sender", "subject")]
+                    ('id', 'uid', 'created', 'to',
+                     'sender', 'subject')]
             if orderby:
                 rows = db(query, ignore_common_filters=True).select(
                               *fields, limitby=(start, stop),
@@ -271,10 +270,10 @@ def select():
     # begin handle upload csv
     csv_table = table or request.vars.table
     if csv_table:
-        formcsv = FORM(str(T('or import from csv file')) + " ",
+        formcsv = FORM(str(T('or import from csv file')) + ' ',
                        INPUT(_type='file', _name='csvfile'),
                        INPUT(_type='hidden', _value=csv_table, _name='table'),
-                       INPUT(_type='submit', _value=T('import'), _class="btn btn-primary"))
+                       INPUT(_type='submit', _value=T('import'), _class='btn btn-primary'))
     else:
         formcsv = None
     if formcsv and formcsv.process().accepted:
@@ -356,26 +355,26 @@ def state():
 def ccache():
     if is_gae:
         form = FORM(
-            P(TAG.BUTTON(T("Clear CACHE?"), _type="submit", _name="yes", _value="yes")))
+            P(TAG.BUTTON(T('Clear CACHE?'), _type='submit', _name='yes', _value='yes')))
     else:
         cache.ram.initialize()
         cache.disk.initialize()
 
         form = FORM(
             P(TAG.BUTTON(
-                T("Clear CACHE?"), _type="submit", _name="yes", _value="yes")),
+                T('Clear CACHE?'), _type='submit', _name='yes', _value='yes')),
             P(TAG.BUTTON(
-                T("Clear RAM"), _type="submit", _name="ram", _value="ram")),
+                T('Clear RAM'), _type='submit', _name='ram', _value='ram')),
             P(TAG.BUTTON(
-                T("Clear DISK"), _type="submit", _name="disk", _value="disk")),
+                T('Clear DISK'), _type='submit', _name='disk', _value='disk')),
         )
 
     if form.accepts(request.vars, session):
-        session.flash = ""
+        session.flash = ''
         if is_gae:
             if request.vars.yes:
                 cache.ram.clear()
-                session.flash += T("Cache Cleared")
+                session.flash += T('Cache Cleared')
         else:
             clear_ram = False
             clear_disk = False
@@ -387,10 +386,10 @@ def ccache():
                 clear_disk = True
             if clear_ram:
                 cache.ram.clear()
-                session.flash += T("Ram Cleared")
+                session.flash += T('Ram Cleared')
             if clear_disk:
                 cache.disk.clear()
-                session.flash += T("Disk Cleared")
+                session.flash += T('Disk Cleared')
         redirect(URL(r=request))
 
     try:
@@ -436,7 +435,7 @@ def ccache():
             gae_stats['ratio'] = ((gae_stats['hits'] * 100) /
                 (gae_stats['hits'] + gae_stats['misses']))
         except ZeroDivisionError:
-            gae_stats['ratio'] = T("?")
+            gae_stats['ratio'] = T('?')
         gae_stats['oldest'] = GetInHMS(time.time() - gae_stats['oldest_item_age'])
         total.update(gae_stats)
     else:
@@ -449,7 +448,7 @@ def ccache():
         except (KeyError, ZeroDivisionError):
             ram['ratio'] = 0
 
-        for key, value in iteritems(cache.ram.storage):
+        for key, value in cache.ram.storage.items():
             if asizeof:
                 ram['bytes'] += asizeof(value[1])
                 ram['objects'] += 1
@@ -502,7 +501,7 @@ def ccache():
             TR(TD(B(T('Key'))), TD(B(T('Time in Cache (h:m:s)')))),
             *[TR(TD(k[0]), TD('%02d:%02d:%02d' % k[1])) for k in keys],
             **dict(_class='cache-keys',
-                   _style="border-collapse: separate; border-spacing: .5em;"))
+                   _style='border-collapse: separate; border-spacing: .5em;'))
 
     if not is_gae:
         ram['keys'] = key_table(ram['keys'])
@@ -536,26 +535,26 @@ def table_template(table):
     # This is horribe HTML but the only one graphiz understands
     rows = []
     cellpadding = 4
-    color = "#000000"
-    bgcolor = "#FFFFFF"
-    face = "Helvetica"
-    face_bold = "Helvetica Bold"
+    color = '#000000'
+    bgcolor = '#FFFFFF'
+    face = 'Helvetica'
+    face_bold = 'Helvetica Bold'
     border = 0
 
     rows.append(TR(TD(FONT(table, _face=face_bold, _color=bgcolor),
                            _colspan=3, _cellpadding=cellpadding,
-                           _align="center", _bgcolor=color)))
+                           _align='center', _bgcolor=color)))
     for row in db[table]:
         rows.append(TR(TD(FONT(row.name, _color=color, _face=face_bold),
-                              _align="left", _cellpadding=cellpadding,
+                              _align='left', _cellpadding=cellpadding,
                               _border=border),
                        TD(FONT(row.type, _color=color, _face=face),
-                               _align="left", _cellpadding=cellpadding,
+                               _align='left', _cellpadding=cellpadding,
                                _border=border),
                        TD(FONT(types(row), _color=color, _face=face),
-                               _align="center", _cellpadding=cellpadding,
+                               _align='center', _cellpadding=cellpadding,
                                _border=border)))
-    return "< %s >" % TABLE(*rows, **dict(_bgcolor=bgcolor, _border=1,
+    return '< %s >' % TABLE(*rows, **dict(_bgcolor=bgcolor, _border=1,
                                           _cellborder=0, _cellspacing=0)
                              ).xml()
 
@@ -632,15 +631,15 @@ def hooks():
                 if len(functions):
                     method_hooks.append({'name': op, 'functions':functions})
             if len(method_hooks):
-                tables.append({'name': "%s.%s" % (db_str, t), 'slug': IS_SLUG()("%s.%s" % (db_str,t))[0], 'method_hooks':method_hooks})
+                tables.append({'name': '%s.%s' % (db_str, t), 'slug': IS_SLUG()('%s.%s' % (db_str,t))[0], 'method_hooks':method_hooks})
     # Render
     ul_main = UL(_class='nav nav-list')
     for t in tables:
         ul_main.append(A(t['name'], _onclick="collapse('a_%s')" % t['slug']))
-        ul_t = UL(_class='nav nav-list', _id="a_%s" % t['slug'], _style='display:none')
+        ul_t = UL(_class='nav nav-list', _id='a_%s' % t['slug'], _style='display:none')
         for op in t['method_hooks']:
             ul_t.append(LI(op['name']))
-            ul_t.append(UL([LI(A(f['funcname'], _class="editor_filelink", _href=f['url']if 'url' in f else None, **{'_data-lineno':f['lineno']-1})) for f in op['functions']]))
+            ul_t.append(UL([LI(A(f['funcname'], _class='editor_filelink', _href=f['url']if 'url' in f else None, **{'_data-lineno':f['lineno']-1})) for f in op['functions']]))
         ul_main.append(ul_t)
     return ul_main
 
@@ -650,11 +649,11 @@ def hooks():
 # ###########################################################
 
 def d3_graph_model():
-    """ See https://www.facebook.com/web2py/posts/145613995589010 from Bruno Rocha
+    ''' See https://www.facebook.com/web2py/posts/145613995589010 from Bruno Rocha
     and also the app_admin bg_graph_model function
 
-    Create a list of table dicts, called "nodes"
-    """
+    Create a list of table dicts, called 'nodes'
+    '''
 
     nodes = []
     links = []
@@ -670,10 +669,10 @@ def d3_graph_model():
                 elif f_type == 'string':
                     disp = field.length
                 elif f_type == 'id':
-                    disp = "PK"
+                    disp = 'PK'
                 elif f_type.startswith('reference') or \
                     f_type.startswith('list:reference'):
-                    disp = "FK"
+                    disp = 'FK'
                 else:
                     disp = ' '
                 fields.append(dict(name=field.name, type=field.type, disp=disp))
@@ -685,7 +684,7 @@ def d3_graph_model():
 
                     links.append(dict(source=tablename, target = referenced_table))
 
-            nodes.append(dict(name=tablename, type="table", fields = fields))
+            nodes.append(dict(name=tablename, type='table', fields = fields))
 
     # d3 v4 allows individual modules to be specified.  The complete d3 library is included below.
     response.files.append(URL('admin','static','js/d3.min.js'))

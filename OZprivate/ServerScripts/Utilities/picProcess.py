@@ -15,8 +15,9 @@ import re
 import sys
 import argparse
 import math
-import copy
 import random
+
+import tqdm
 
 # FUNCTIONS FOR OUTPUTTING INFO AND WARNINGS
 
@@ -56,7 +57,7 @@ if args.database is None:
             if m:
                 conf_type = m.group(1)
             if conf_type == 'db':
-                m = re.match('uri\s*=\s*(\S+)', line)
+                m = re.match(r'uri\s*=\s*(\S+)', line)
                 if m:
                     args.database = m.group(1)
 
@@ -477,7 +478,7 @@ def save_data(image_cols):
 
     # SWITCHING FINAL OUTPUTS TO OTTID
     info("Transforming final output into OTTID format")
-    for row in range(len(node_images)):
+    for row in tqdm.trange(len(node_images), disable=(args.verbosity<1)):
         counter_temp = 0
         for element in range(8):
             if node_images[row][element] != None:
