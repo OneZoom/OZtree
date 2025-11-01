@@ -75,6 +75,13 @@ wiki_jumpout_url = /redirect/wikimedia_commons_QID/{src_id}
 ; * sponsorship_duration_days: The default length of time of a sponsorship.
 ; * sponsorship_renew_discount: The fraction by which the price of a sponsorship is
 ;   reduced when renewing a sponsorship.
+; * expiry_soon_days: Number of days before sponsorship expiry to start sending
+;   "your sponsorship is about to expire" emails.
+; * expiry_critical_days: Number of days before sponsorship expiry to start sending
+;   "your sponsorship is expiring very soon" emails.
+; * expiry_hysteresis: Number of days after sending an "expiry soon" email
+;   before sending a "critical expiry" email, to avoid sending both emails
+;   too close together.
 allow_sponsorship = 0
 maintenance_mins = 0
 reservation_time_limit_mins = 6
@@ -82,6 +89,10 @@ unpaid_time_limit_mins = 2880
 hmac_key = supersecretstring
 sponsorship_duration_days = 1461
 sponsorship_renew_discount = 0.2
+expiry_soon_days = 30
+expiry_critical_days = 15
+expiry_hysteresis = 5
+
 
 [api]
 ;If you want to get data from the Encyclopedia of Life, you need to put your own API key here.
