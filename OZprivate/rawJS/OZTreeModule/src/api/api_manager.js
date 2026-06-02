@@ -35,11 +35,11 @@ class APIManager {
   /**
    * Fetch all required data to call data_repo.setup()
    *
-   * (i.e raw_data, cut_map, poly_cut_map, cut_threshold, tree_date)
+   * (i.e raw_data, cut_map, poly_cut_map, cut_threshold)
    */
   fetch_tree_data() {
     // NB: rely on static_data_url_func() to add any tree version string
-    return Promise.all(['completetree.js', 'cut_position_map.js', 'dates.js'].map((data_file) => {
+    return Promise.all(['completetree.js', 'cut_position_map.js'].map((data_file) => {
       return new Promise((resolve, reject) => {
         // Assume all data_files are JavaScript that needs adding to page
         // https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement#dynamically_importing_scripts
@@ -56,7 +56,6 @@ class APIManager {
         cut_map: JSON.parse(window.cut_position_map_json_str || "{}"),
         poly_cut_map: JSON.parse(window.polytomy_cut_position_map_json_str || "{}"),
         cut_threshold: window.cut_threshold || 10000,
-        tree_date: window.tree_date || {},
       };
     });
   }
