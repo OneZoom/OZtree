@@ -72,14 +72,15 @@ name_rank_chars = 30 ##max length for a taxonomic rank, e.g. species, genus, ...
 
 ## if NOT running on Google App Engine use SQLite or other DB
 DALstring = myconf.take('db.uri')
-doMigration = myconf.take('db.migrate') in ['true', '1', 't', 'y', 'yes', 'True']
+doMigration = myconf.take('db.migrate') in ['true', '1', 't', 'y', 'yes', 'True', "fake"]
+doFakeMigrate = myconf.take('db.migrate') == "fake"
 if DALstring.startswith('mysql://'):
     db = DAL(DALstring, 
         driver_args={'read_default_file':os.path.join(request.folder, 'private','my.cnf')}, 
         pool_size=myconf.take('db.pool_size', cast=int), 
         check_reserved=['all'], 
         migrate=doMigration,
-        #fake_migrate_all=True, # uncomment to fix migration issues assuming correct DB fields exist
+        fake_migrate_all=doFakeMigrate,
         lazy_tables= not is_testing)
     ## allow mysql tinyint
     from gluon.dal import SQLCustomType
