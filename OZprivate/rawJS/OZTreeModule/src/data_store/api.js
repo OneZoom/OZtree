@@ -3,6 +3,7 @@ import { DataStoreNotReadyError } from '../errors';
 
 import DataStoreGeological from './ds_geological.js';
 import DataStoreSlidingWindow from './ds_sliding_window.js';
+import DataStoreWeightedMean from './ds_weighted_mean.js';
 
 /**
  * Abstract interface a set of raw array data files
@@ -142,4 +143,5 @@ class DataStoreAPI {
 const ds_api = new DataStoreAPI();
 ds_api.inject(DataStoreGeological);
 ds_api.inject(DataStoreSlidingWindow);
+ds_api.inject(DataStoreWeightedMean);
 export default ds_api;
