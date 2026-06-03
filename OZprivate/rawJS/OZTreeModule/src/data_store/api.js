@@ -2,6 +2,7 @@ import api_manager from '../api/api_manager';
 import { DataStoreNotReadyError } from '../errors';
 
 import DataStoreGeological from './ds_geological.js';
+import DataStoreSlidingWindow from './ds_sliding_window.js';
 
 /**
  * Abstract interface a set of raw array data files
@@ -140,4 +141,5 @@ class DataStoreAPI {
 // Return singleton instance with all DataStores added
 const ds_api = new DataStoreAPI();
 ds_api.inject(DataStoreGeological);
+ds_api.inject(DataStoreSlidingWindow);
 export default ds_api;
