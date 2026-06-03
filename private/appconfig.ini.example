@@ -5,6 +5,10 @@
 ;  characters etc into the database (e.g. for vernacular names)
 [db]
 uri       = mysql://oz:passwd@127.0.0.1/OneZoom?set_encoding=utf8mb4
+; migrate = 1 / 0 / fake
+; *    1 = Try to migrate tables that don't match web2py's stored CREATE TABLE hash on the filesystem
+; *    0 = Only try to recreate tables that don't have a stored CREATE TABLE hash on the filesystem
+; * fake = Pretend to migrate, assume DB is fine, only update web2py's stored CREATE TABLE hash
 migrate   = 1
 pool_size = 1
 

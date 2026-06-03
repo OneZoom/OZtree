@@ -53,7 +53,7 @@ test('DataRepo:update_metadata', function (t) {
         }).filter(function (x) { return x.ozid !== '0' && x.ozid !== 'temp' });
     }
 
-    data_repo.setup({raw_data: rawdata, cut_map: {}, poly_cut_map: {}, cut_threshold: 10000, tree_date: "{}"});
+    data_repo.setup({raw_data: rawdata, cut_map: {}, poly_cut_map: {}, cut_threshold: 10000});
     t.deepEqual(pic_metadata(["OTTid", "picID", "picID_src", "picID_rating", "picID_credit"]), [], "No leaves at start");
 
     // Add some leaves without images
