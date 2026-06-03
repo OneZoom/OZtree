@@ -4,6 +4,7 @@ import DataStoreIUCN from './ds_iucn.js';
 import DataStoreCutMap from './ds_cutmap.js'
 import DataStoreGeological from './ds_geological.js';
 import DataStoreSlidingWindow from './ds_sliding_window.js';
+import DataStoreWeightedMean from './ds_weighted_mean.js';
 
 /**
  * Background fetcher for data store slices
@@ -99,4 +100,5 @@ ds_api.inject(DataStoreIUCN);
 ds_api.inject(DataStoreCutMap);
 ds_api.inject(DataStoreGeological);
 ds_api.inject(DataStoreSlidingWindow);
+ds_api.inject(DataStoreWeightedMean);
 export default ds_api;
