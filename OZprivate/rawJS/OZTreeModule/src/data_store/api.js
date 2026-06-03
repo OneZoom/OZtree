@@ -2,6 +2,7 @@ import api_manager from '../api/api_manager';
 
 import DataStoreIUCN from './ds_iucn.js';
 import DataStoreCutMap from './ds_cutmap.js'
+import DataStoreGeological from './ds_geological.js';
 
 /**
  * Background fetcher for data store slices
@@ -95,4 +96,5 @@ class DataStoreAPI {
 const ds_api = new DataStoreAPI();
 ds_api.inject(DataStoreIUCN);
 ds_api.inject(DataStoreCutMap);
+ds_api.inject(DataStoreGeological);
 export default ds_api;
