@@ -30,7 +30,7 @@ function add_hook(key, handler) {
   return id.toString()
 }
 function remove_hook(key, id) {
-  if (id) {
+  if (!id) {
     hook[key] = {};
   } else {
     delete hook[key][id];
