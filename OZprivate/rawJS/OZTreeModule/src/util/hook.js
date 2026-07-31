@@ -27,14 +27,19 @@ function add_hook(key, handler) {
     id += 1
   }
   hook[key][id.toString()] = handler;
+  console.log(`[HOOK] add_hook("${key}", ...) -> id="${id}"`);
   return id.toString()
 }
 function remove_hook(key, id) {
   if (!id) {
+    console.log(`[HOOK] remove_hook("${key}", ${id}) -> clearing all hooks for key`);
     hook[key] = {};
   } else {
     if (hook[key]) {
+      console.log(`[HOOK] remove_hook("${key}", "${id}") -> deleting specific hook`);
       delete hook[key][id];
+    } else {
+      console.log(`[HOOK] remove_hook("${key}", "${id}") -> key does not exist, no-op`);
     }
   }
 }
