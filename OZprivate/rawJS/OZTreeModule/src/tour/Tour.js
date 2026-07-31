@@ -122,13 +122,9 @@ class Tour {
     // When playing we should be able to block interaction
     // Only add/remove on actual state transitions to avoid duplicate hook registration
     if (new_state === tstate.PLAYING && !was_playing) {
-      console.log(`[TOUR] state transition PLAYING (was=${was_playing}) -> calling add_canvas_interaction_callbacks()`);
       this.add_canvas_interaction_callbacks()
     } else if (new_state !== tstate.PLAYING && was_playing) {
-      console.log(`[TOUR] state transition non-PLAYING (was=${was_playing}) -> calling remove_canvas_interaction_callbacks()`);
       this.remove_canvas_interaction_callbacks()
-    } else {
-      console.log(`[TOUR] state set to ${new_state} (was=${was_playing}) -> no transition, skipping add/remove`);
     }
 
     // Inside a tour, leave room for tourstops during flights
@@ -267,7 +263,6 @@ class Tour {
   }
 
   add_canvas_interaction_callbacks() {
-    console.log(`[TOUR] add_canvas_interaction_callbacks() called`);
     let fn;
 
     /** 
@@ -319,13 +314,9 @@ class Tour {
   }
 
   remove_canvas_interaction_callbacks() {
-    console.log(`[TOUR] remove_canvas_interaction_callbacks() called`);
-    console.log(`[TOUR] interaction_hooks keys: ${Object.keys(this.interaction_hooks).join(', ')}`);
     for (let action_name in this.interaction_hooks) {
       const real_key = action_name.replace(/_custom$/, '')
-      const hook_id = this.interaction_hooks[action_name];
-      console.log(`[TOUR] removing hook: stored_key="${action_name}" -> real_key="${real_key}" id="${hook_id}"`);
-      remove_hook(real_key, hook_id)
+      remove_hook(real_key, this.interaction_hooks[action_name])
       delete this.interaction_hooks[action_name];
     }
   }
