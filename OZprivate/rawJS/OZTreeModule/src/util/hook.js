@@ -33,7 +33,9 @@ function remove_hook(key, id) {
   if (!id) {
     hook[key] = {};
   } else {
-    delete hook[key][id];
+    if (hook[key]) {
+      delete hook[key][id];
+    }
   }
 }
 function call_hook(key, arg) {
