@@ -313,7 +313,8 @@ class Tour {
 
   remove_canvas_interaction_callbacks() {
     for (let action_name in this.interaction_hooks) {
-      remove_hook(action_name, this.interaction_hooks[action_name])
+      const real_key = action_name.replace(/_custom$/, '')
+      remove_hook(real_key, this.interaction_hooks[action_name])
       delete this.interaction_hooks[action_name];
     }
   }
