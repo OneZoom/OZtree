@@ -105,6 +105,7 @@ class Tour {
     return this._state || tstate.INACTIVE;
   }
   set state(new_state) {
+    const was_playing = this._state === tstate.PLAYING;
     this._state = new_state;
 
     // Update container state based on our state
@@ -119,9 +120,10 @@ class Tour {
     }
 
     // When playing we should be able to block interaction
-    if (new_state === tstate.PLAYING) {
+    // Only add/remove on actual state transitions to avoid duplicate hook registration
+    if (new_state === tstate.PLAYING && !was_playing) {
       this.add_canvas_interaction_callbacks()
-    } else {
+    } else if (new_state !== tstate.PLAYING && was_playing) {
       this.remove_canvas_interaction_callbacks()
     }
 
