@@ -1,4 +1,3 @@
-import config from '../global_config';
 import {global_button_action} from '../button_manager';
 
 /**

@@ -1,6 +1,5 @@
 import BranchLayoutBase from '../branch_layout_base';
 import BezierShape from '../../shapes/bezier_shape';
-import ArcShape from '../../shapes/arc_shape';
 import {color_theme} from '../../../themes/color_theme';
 
 // make a new class for the special branch

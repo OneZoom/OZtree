@@ -1,5 +1,4 @@
 import config from '../global_config';
-import tree_state from '../tree_state';
 import {get_factory} from './factory';
 import {add_hook} from '../util/index';
 /**

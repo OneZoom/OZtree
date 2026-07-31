@@ -1,8 +1,7 @@
-import {pre_calc as _pre_calc, set_pre_calculator} from './pre_calc/pre_calc';
+import {pre_calc as _pre_calc} from './pre_calc/pre_calc';
 import _re_calc  from  './re_calc';
 import _get_shapes from './shape_manager';
-import {calc_horizon as _calc_horizon, update_parent_horizon as _update_parent_horizon, set_horizon_calculator} from './horizon_calc/horizon_calc';
-import data_repo from '../factory/data_repo';
+import {calc_horizon as _calc_horizon, update_parent_horizon as _update_parent_horizon} from './horizon_calc/horizon_calc';
 import { highlight_propogate as _highlight_propogate } from './highlight/highlight';
 
 class Projection {

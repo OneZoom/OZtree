@@ -1,5 +1,4 @@
 import NodeLayoutBase from '../node_layout_base';
-import config from '../../../global_config';
 
 class PolytomyNodeLayout extends NodeLayoutBase {
   calc_twh(node) {

@@ -1,5 +1,3 @@
-import tree_state from '../tree_state';
-
 export function spec_num_full(node) {
     let speciestext1 = node.richness_val.toString();
     if (node.richness_val >= 1000) {
