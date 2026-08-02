@@ -40,7 +40,6 @@ function remove_hook(key, id) {
 }
 function call_hook(key, arg) {
   const handlers = hook[key];
-  let rv;
   if (handlers) {
     for (let id in handlers) {
       if (handlers[id].call(this, arg) === false) return false;

@@ -58,7 +58,6 @@ function get_details_of_nodes_in_view_during_fly(root, subbranch_depth) {
 
     let fetched_nodes = 0;
     let total_nodes = nttoids.length;
-    let index;
     if (nttoids.length === 0 && lttoids.length === 0) {
       // Nothing to do
       resolve();
@@ -373,7 +372,7 @@ export default function (Controller) {
    * Return a promise for when the animation is finished
    */
   Controller.prototype.init_move_to = function (dest_OZid, init) {
-    var n, into_node;
+    var into_node;
 
     if (init && !isNaN(init.xp)) {
       // Leap to position
