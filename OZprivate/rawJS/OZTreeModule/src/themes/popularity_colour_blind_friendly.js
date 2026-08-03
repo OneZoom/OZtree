@@ -59,7 +59,6 @@ let gradient3 = [
 //got these two numbers from the database - they will likely need updating nad someday should be fetched automatically
 const min_popularity = 10826;
 const max_popularity = 170009;
-let count = 0;
 
 function get_color_by_popularity(node,colour_map) {
 

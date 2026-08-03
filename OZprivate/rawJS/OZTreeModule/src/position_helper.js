@@ -14,7 +14,6 @@ let global_anim_speed = 10; // set this to 15 for recoding smoother flight anima
 let fly_duration_s = null; 
 let more_flying_needed = null;
 let original_flight_fps = 1000/60; // the frame rate used when global_anim_speed was calibrated
-let into_node;
 let pre_xp, pre_yp, pre_ws;
 let fly_frame_request_id = null
 

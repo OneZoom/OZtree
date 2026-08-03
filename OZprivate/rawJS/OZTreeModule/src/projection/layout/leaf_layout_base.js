@@ -73,7 +73,6 @@ class LeafLayoutBase {
         add_mr(this.get_leaf_x(node), this.get_leaf_y(node), this.get_fullleaf_r(node));
         this.loadingLeaf(node.arcx, node.arcy, node.arcr, node.cname, node.latin_name, spec_num_full(node), node, shapes);
       } else {
-        let leafpic_drawn = false;
         let imageObject = get_image(node.pic_src, node.pic_filename); //here we could use preferred_px to get a higher-res photo
         let imageCredit = node.pic_credit;
         let [sponsorText, extraText, sponsored] = this.get_sponsor_text(node);
