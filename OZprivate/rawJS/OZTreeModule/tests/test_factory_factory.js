@@ -30,7 +30,7 @@ test('dynamic_loading_by_metacode', function (test) {
     // Nonexistant node
     var ozid = get_ozid({nonexistant: true})
     test.throws(() => {
-      var node = factory.dynamic_loading_by_metacode(ozid);
+      factory.dynamic_loading_by_metacode(ozid);
     }, ozid);
 
   }).then(function () {

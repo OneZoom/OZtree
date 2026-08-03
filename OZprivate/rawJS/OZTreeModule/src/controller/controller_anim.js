@@ -64,7 +64,7 @@ function get_details_of_nodes_in_view_during_fly(root, subbranch_depth) {
       return;
     }
     while (nttoids.length > 0 || lttoids.length > 0) {
-      let temp_func = function() {
+      (function() {
         //use function closure here to guarantee that temp_nodes_arr and temp_leaves_arr would not be replaced by next ajax call.
         let temp_nttoids = nttoids.splice(0,400);
         let temp_lttoids = lttoids.splice(0,400);
@@ -103,7 +103,7 @@ function get_details_of_nodes_in_view_during_fly(root, subbranch_depth) {
           }
         }
         api_manager.node_detail(params);
-      }();
+      })();
     }
   });
 }

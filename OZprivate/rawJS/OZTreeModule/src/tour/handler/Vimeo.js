@@ -66,7 +66,6 @@ function handler(tour) {
       });
       el_video.vimeoplayer.on('pause', function (data) {
         const tourstop = this.element.el_tourstop.tourstop;
-        const block_name = this.element.src;
 
         el_video.vimeoplayer.getEnded().then((ended) => {
           // If AV is ending (rather than pausing mid-video, do nothing and let the ended event handle things

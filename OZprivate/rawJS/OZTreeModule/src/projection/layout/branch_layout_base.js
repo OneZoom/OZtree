@@ -4,9 +4,6 @@ import ArcShape from '../shapes/arc_shape';
 import config from '../../global_config';
 import { highlights_for } from '../highlight/highlight.js';
 
-const THIN = true;
-const NORMAL = false;
-
 class BranchLayoutBase {
     
   // this is the main routine that draws the node

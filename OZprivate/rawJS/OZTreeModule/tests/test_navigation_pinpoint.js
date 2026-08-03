@@ -97,13 +97,10 @@ test('resolve_pinpoints:ozid', function (test) {
   })
 });
 
+// This test verifies common-ancestor 
+// pinpoint resolution after factory setup.
 test('resolve_pinpoints:common_ancestor', function (test) {
-  var factory;
-  return populate_factory().then((f) => {
-    // Init data_repo & factory
-    factory = f;
-
-  }).then(function () {
+  return populate_factory().then(function () {
     return test_pinpoint(test, '@_ancestor=988790=824869', {
       sub_pinpoints: [
         { pinpoint: '988790', ott: 988790, ozid: 836250 },

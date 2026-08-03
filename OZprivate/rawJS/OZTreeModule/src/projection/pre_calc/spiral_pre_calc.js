@@ -59,8 +59,9 @@ function _pre_calc(node) {
 
   if (node.has_child)
   {
-    let atanpre = Math.atan2(node.children[0].richness_val,node.children[1].richness_val);
-    let atanpowpre = Math.atan2(Math.pow(node.children[0].richness_val,0.5),Math.pow(node.children[1].richness_val,0.5));
+    // The following two calculations are unused but kept for reference
+    //let atanpre = Math.atan2(node.children[0].richness_val,node.children[1].richness_val);
+    //let atanpowpre = Math.atan2(Math.pow(node.children[0].richness_val,0.5),Math.pow(node.children[1].richness_val,0.5));
 
     const [leftChildIndex, rightChildIndex] = (node.children[0].richness_val) >= (node.children[1].richness_val) ? [1, 0] : [0, 1];
     const leftChild = node.children[leftChildIndex];

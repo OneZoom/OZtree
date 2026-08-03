@@ -42,7 +42,6 @@ function handler(tour) {
       });
       el.addEventListener('pause', (event) => {
         const tourstop = event.target.el_tourstop.tourstop;
-        const block_name = event.target.src;
 
         // If AV is ending (rather than pausing mid-video, do nothing and let the ended event handle things
         if (event.target.ended) return;
@@ -52,7 +51,6 @@ function handler(tour) {
         }
       });
       el.addEventListener('ended', (event) => {
-        const tourstop = event.target.el_tourstop.tourstop;
         const block_name = event.target.src;
 
         event.target.el_tourstop.tourstop.block_remove(block_name);
