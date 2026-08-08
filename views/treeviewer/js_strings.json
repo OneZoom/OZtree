@@ -20,8 +20,8 @@ OZstrings = {
                 'unnamed':   T("\n\nThe most recent common ancestor to")}
                 }
         },
-    'sp': T("species## singular"),
-    'spp': T("species## plural"),
+    'sp': T("taxon"),
+    'spp': T("taxa"),
     'Mya': T("{mya} million years ago"),
     'tya': T("{tya} thousand years ago"),
     'sciname': T("Scientific name: "),
