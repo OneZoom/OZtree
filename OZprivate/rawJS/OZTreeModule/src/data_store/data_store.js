@@ -1,5 +1,67 @@
 /**
- * DataStore: Data manager for (mostly binary array) data
+ * DataStore: Abstract data manager class for (mostly binary array) data
+ *
+ * A DataStore maps requests for data for a node back to binary array files.
+ * Before using, an implementation must be injected into the DataStoreAPI (see src/data_store/api.js).
+ *
+ * An implementation for IUCN using DataStore could look like:
+ *
+ *     import DataStore from './data_store';
+ *
+ *     export default class DataStoreIUCN extends DataStore {
+ *       name = "iucn";  // The name that this will be availble from DataStoreApi under
+ *
+ *       constructor(dataStoreApi) {
+ *         super(dataStoreApi);
+ *
+ *         if (!this.isLittleEndian()) {
+ *           throw new Error("Onezoom doesn't support big-endian CPUs");
+ *         }
+ *       }
+ *
+ *       // IUCN data indexed by ott
+ *       nodeToId(node) {
+ *         return node.ott;
+ *       }
+ *
+ *       // Only one array for all IUCN data
+ *       sliceNameFor(node) {
+ *         // NB: There is no data for nodes in IUCN, so we only have a slice for leaves
+ *         return node.is_leaf ? "iucn_le.dat" : null;
+ *       }
+ *
+ *       // We read iucn.dat as a Uint16Array() (CPU-endianness)
+ *       dataView(resp) {
+ *         return resp.arrayBuffer().then((ab) => new Uint16Array(ab));
+ *       }
+ *     }
+ *
+ * We can use DataStore for non-binary-array data too, e.g. a cutmap implementation:
+ *
+ *     import DataStore from './data_store';
+ *
+ *     export default class DataStoreCutMap extends DataStore {
+ *       name = "cutmap";  // The name that this will be availble from DataStoreApi under
+ *
+ *       setCutMapType(type) {
+ *         // NB: This will auto-trigger the new slice to be fetched, as the name to look-up will change
+ *         self._sliceName = type === "polytomy" ? "poly_cut_position_map.json" : "cut_position_map.json";
+ *       }
+ *
+ *       nodeToId(node) {
+ *         return node.end;
+ *       }
+ *
+ *       // Fetch JSON file to populate cut-position map
+ *       sliceNameFor(node) {
+ *         return self._sliceName || 'cut_position_map.json';
+ *       }
+ *
+ *       // Our "data array" is a JSON object
+ *       dataView(resp) {
+ *         return resp.json();
+ *       }
+ *     }
  */
 export default class DataStore {
   name = "changeme";  /** The name this DataStore will be added to DataStoreAPI as */

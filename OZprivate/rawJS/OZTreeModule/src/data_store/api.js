@@ -1,7 +1,23 @@
 import api_manager from '../api/api_manager';
 
 /**
- * Background fetcher for data store slices
+ * Abstract interface a set of raw array data files
+ *
+ * The DataStore singleton mediates access to a number of per-node/per-leaf
+ * data structures, downloading binary arrays as needed.
+ *
+ * To use a data store, access it via. the singleton, e.g:
+ *
+ *     import data_store_api from 'data_store/api';
+ *     console.log(data_store_api.geological.get(node));
+ *
+ * ...if the backing array hasn't yet been retrieved, then this will fetch in the background.
+ *
+ * To implement a data store, create a subclass of DataStore (see src/data_store/data_store.js)
+ * and inject it at the end of this file:
+ *
+ *     ds_api.inject(DataStoreIUCN);
+ *
  */
 class DataStoreAPI {
   constructor() {
