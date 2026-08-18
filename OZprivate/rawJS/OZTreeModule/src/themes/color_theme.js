@@ -15,7 +15,14 @@ class ColorTheme {
    * inside before returning. If the color already has an alpha channel this
    * will override anything the code provides.
    */
-  get_color(name, node, alpha, missing_okay = false) {
+  get_color(name, node, alpha, missing_okay = false, expect_array = false) {
+    function collapse_array(x) {
+      if (!Array.isArray(x)) {
+        return expect_array ? [x] : x;
+      }
+      return expect_array ? x : x[x.length - 1];
+    }
+
     //name here is like 'interior.text.stroke' or 'branch.stroke' .....
     let color = resolve(this.theme, name);
     if (!alpha) {
@@ -23,17 +30,17 @@ class ColorTheme {
     }
     
     if (typeof color === "function") {
-      return color(node, alpha);
+      return collapse_array(color(node, alpha));
     }
     if (typeof color === "string") {
       if (alpha !== 1) {
         // Add alpha to end of any rgb() or hsl() color
         color = color.replace(/(rgb|hsl)\((.*)\)/, "$1a($2," + alpha + ")");
       }
-      return color;
+      return collapse_array(color);
     }
     if (missing_okay) {
-      return undefined;
+      return collapse_array(undefined);
     }
     throw new Error(`Can't find color ${name}. Please make sure that you've defined ${name}`);
   }
