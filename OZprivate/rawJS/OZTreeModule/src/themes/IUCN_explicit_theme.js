@@ -1,3 +1,4 @@
+import data_store_api from '../data_store/api';
 // define colours that will be used
 
 let black = 'rgb(0,0,0)';
@@ -31,6 +32,20 @@ let pastel_magenta = 'rgb(200,100,200)';
 let pastel_yellow = 'rgb(200,200,100)';
 
 // define functions of a node that return different colours depending on node status
+
+function geological_color_range(node) {
+    try {
+      return data_store_api.geological.branch_periods_colors(node);
+    } catch (e) {
+      // data_store not ready, show fallback color for now
+      return ["#999999"];
+    }
+}
+
+function geological_color(node) {
+    const cs = geological_color_range(node);
+    return cs[cs.length - 1];
+}
 
 function outline_highlight(node) {
   if (node.richness_val > 1) {
@@ -288,7 +303,7 @@ function branch_colour(node) {
 
 const theme = {
   branch: {
-    stroke: branch_colour,
+    stroke: geological_color_range,
   
   // this pallette stores colours that are mapped to highlights
   marked_area_pallette: {
@@ -351,12 +366,12 @@ const theme = {
     
     
     circle_hover: {
-      stroke: light_grey,
-      fill: light_grey
+      stroke: grey,
+      fill: geological_color,
     },
     circle: {
       stroke: light_grey,
-      fill: grey
+      fill: geological_color,
     },
     circle_searchin: {
       stroke: half_transparent_white
