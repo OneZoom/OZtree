@@ -1,4 +1,5 @@
 <option value="spiral"> {{=T('Spiral')}}</option>
+<option value="propspiral"> {{=T('Spiral with branch length')}}</option>
 <option value="polytomy"> {{=T('Polytomy')}} </option>
 <option value="natural"> {{=T('Natural')}} </option>
 <option value="fern"> {{=T('Fern')}}</label> </option>

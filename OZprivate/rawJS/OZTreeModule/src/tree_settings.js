@@ -90,6 +90,7 @@ class TreeSettings {
       },
       vis: {
         spiral: 'spiral',
+        propspiral: 'propspiral',
         balanced: 'balanced',
         fern: 'fern',
         natural: 'natural',
@@ -312,7 +313,7 @@ class TreeSettings {
 
 
 function is_binary_viewtype(value) {
-  return value === "spiral" || value === "balanced" || value === "fern" || value === "natural";
+  return value === "spiral" || value === "propspiral" || value === "balanced" || value === "fern" || value === "natural";
 }
 
 function refetch_node_details(node) {

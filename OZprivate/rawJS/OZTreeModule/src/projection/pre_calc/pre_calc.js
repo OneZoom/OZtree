@@ -1,3 +1,4 @@
+import propspiral_pre_calc from './propspiral_pre_calc';
 import spiral_pre_calc from './spiral_pre_calc';
 import natural_pre_calc from './natural_pre_calc';
 import fern_pre_calc from './fern_pre_calc';
@@ -5,7 +6,7 @@ import balanced_pre_calc from './balanced_pre_calc';
 import polytomy_pre_calc from './polytomy_pre_calc';
 import {add_hook} from '../../util/index';
 
-let pre_calc_array = [spiral_pre_calc, natural_pre_calc, fern_pre_calc, balanced_pre_calc, polytomy_pre_calc];
+let pre_calc_array = [propspiral_pre_calc, spiral_pre_calc, natural_pre_calc, fern_pre_calc, balanced_pre_calc, polytomy_pre_calc];
 let pre_calculator;
 
 function set_pre_calculator(viewtype) {
