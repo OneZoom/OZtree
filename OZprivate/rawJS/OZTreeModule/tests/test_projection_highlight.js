@@ -3,7 +3,7 @@
   */
 import { resolve_pinpoints } from '../src/navigation/pinpoint.js';
 import { resolve_highlights, current_highlights, highlight_update, highlights_for } from '../src/projection/highlight/highlight.js';
-import { populate_data_repo, get_ozid } from './util_data_repo.js'
+import { populate_data_repo } from './util_data_repo.js'
 import { populate_factory } from './util_factory'
 import test from 'tape';
 

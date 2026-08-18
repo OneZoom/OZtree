@@ -2,7 +2,6 @@
   * Usage: TOUR_DEBUG=1 npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/test_tour_Screensaver.js
   */
 import test from 'tape';
-import { call_hook } from '../src/util';
 import { setup_screensaver } from './util_tourwrapper';
 import { getTimeoutValue, triggerTimeout } from './util_timeout';
 

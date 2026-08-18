@@ -1,5 +1,5 @@
 import { get_factory, set_factory_midnode } from '../src/factory/factory'
-import { populate_data_repo, get_ozid } from './util_data_repo'
+import { populate_data_repo } from './util_data_repo'
 import LifeMidnode from '../src/factory/life_midnode';
 
 import node_details_fruit_bat from './util_data_repo.node_details.fruit_bat.js';

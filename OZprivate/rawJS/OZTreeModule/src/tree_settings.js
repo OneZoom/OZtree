@@ -30,12 +30,6 @@ import PolytomySignpostLayout from './projection/layout/polytomy/signpost_layout
 import PolytomyBranchLayout from './projection/layout/polytomy/branch_layout';
 import PolytomyMidnode from './factory/polytomy_midnode';
 
-// creating a second different kind of polytomy view
-import Polytomy2NodeLayout from './projection/layout/polytomy2/node_layout';
-import Polytomy2LeafLayout from './projection/layout/polytomy2/leaf_layout';
-import Polytomy2SignpostLayout from './projection/layout/polytomy2/signpost_layout';
-import Polytomy2BranchLayout from './projection/layout/polytomy2/branch_layout';
-
 import * as themes from './themes'
 import config from './global_config';
 

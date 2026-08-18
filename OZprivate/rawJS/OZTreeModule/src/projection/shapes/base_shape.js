@@ -1,5 +1,4 @@
 import {set_data} from './utils';
-import {ObjectPool} from '../../util/index';
 
 let uid = 0;
 class BaseShape {

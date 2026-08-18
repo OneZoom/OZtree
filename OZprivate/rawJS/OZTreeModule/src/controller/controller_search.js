@@ -1,7 +1,4 @@
 /* add features to the OZ controller so that search can interact with the OZ vizualization */
-import tree_state from '../tree_state';
-import api_manager from '../api/api_manager'; //for pop species - can eventually be deleted
-import {record_url} from '../navigation/record';
 import { resolve_pinpoints } from '../navigation/pinpoint.js';
 import config from '../global_config';
 

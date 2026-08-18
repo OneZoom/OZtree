@@ -1,14 +1,8 @@
 import {color_theme} from '../../themes/color_theme';
 import BezierShape from '../shapes/bezier_shape';
 import ArcShape from '../shapes/arc_shape';
-import PathShape from '../shapes/path_shape';
-import LineToShape from '../shapes/line_to_shape';
-import MoveToShape from '../shapes/move_to_shape';
 import config from '../../global_config';
 import { highlights_for } from '../highlight/highlight.js';
-
-const THIN = true;
-const NORMAL = false;
 
 class BranchLayoutBase {
     

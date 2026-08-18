@@ -1,9 +1,7 @@
 /**
   * Usage: npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/test_tree_state.js
   */
-import { populate_factory } from './util_factory'
 import test from 'tape';
-
 import tree_state from '../src/tree_state.js'
 
 function test_focal_area(test, expected, message) {

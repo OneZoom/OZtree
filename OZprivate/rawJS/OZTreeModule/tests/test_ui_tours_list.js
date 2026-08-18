@@ -6,7 +6,6 @@ import test from 'tape';
 import { teaseTour } from '../src/ui/tours_list.js';
 
 test('teaseTour', function (test) {
-  var out;
   global.window = { fakeLs: {} };
 
   function tt (tourIds, progress) {

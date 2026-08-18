@@ -3,7 +3,6 @@ import ArcShape from '../../shapes/arc_shape';
 import BezierShape from '../../shapes/bezier_shape';
 import ImageShape from '../../shapes/image_shape';
 import {add_mr} from '../../move_restriction';
-import config from '../../../global_config';
 import data_repo from '../../../factory/data_repo';
 import tree_state from '../../../tree_state';
 import {color_theme} from '../../../themes/color_theme';

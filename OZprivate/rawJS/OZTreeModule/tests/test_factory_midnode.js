@@ -1,7 +1,6 @@
 /**
   * Usage: npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/test_factory_midnode.js
   */
-import { get_ozid } from './util_data_repo'
 import { populate_factory } from './util_factory'
 import data_repo from '../src/factory/data_repo.js';
 import test from 'tape';

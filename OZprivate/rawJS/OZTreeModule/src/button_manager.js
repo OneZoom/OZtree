@@ -1,6 +1,4 @@
 import config from './global_config';
-import tree_state from './tree_state';
-import {color_theme} from './themes/color_theme';
 import {node_to_pinpoint} from './navigation/pinpoint';
 
 

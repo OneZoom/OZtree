@@ -1,6 +1,4 @@
 /** @class Controller */
-import tree_state from '../tree_state';
-
 export default function (Controller) {
   /**
   * Get locations to be used to construct evolutionary path toolbar.

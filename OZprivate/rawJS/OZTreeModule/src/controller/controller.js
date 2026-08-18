@@ -17,7 +17,6 @@ import get_projection from '../projection/projection';
 import {get_factory} from '../factory/factory';
 import { record_url_delayed } from '../navigation/record';
 import { add_hook, call_hook} from '../util/index';
-import data_repo from '../factory/data_repo';
 
 /**
  * Controller is the hub of the app. It defines methods that would be used in other modules and possibly delegates these functions to its components, like factory, renderer, etc.

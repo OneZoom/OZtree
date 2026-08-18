@@ -68,6 +68,15 @@ test('remove_hook removes only the specified hook, not all hooks', function (t) 
   t.equal(handler1Called, false, 'Handler 1 was not called after removal');
   t.equal(handler2Called, true, 'Handler 2 was still called');
 
+  // Reset and remove second hook to prove id2 remains a valid removal handle
+  handler1Called = false;
+  handler2Called = false;
+  remove_hook('test_event', id2);
+
+  call_hook('test_event', null);
+  t.equal(handler1Called, false, 'Handler 1 was still not called after id2 removal');
+  t.equal(handler2Called, false, 'Handler 2 was not called after id2 removal');
+
   t.end();
 });
 
@@ -125,6 +134,15 @@ test('Tour use case: stopNodeSelection removes only its hook', function (t) {
   call_hook('mouse_down_on_node', null);
   t.equal(tourHookCalled, false, 'Tour hook was removed and not called');
   t.equal(otherHookCalled, true, 'Other hook was still called');
+
+  // Remove the remaining hook to prove otherHookId is still a valid removal handle
+  tourHookCalled = false;
+  otherHookCalled = false;
+  remove_hook('mouse_down_on_node', otherHookId);
+
+  call_hook('mouse_down_on_node', null);
+  t.equal(tourHookCalled, false, 'Tour hook remained removed after otherHookId removal');
+  t.equal(otherHookCalled, false, 'Other hook was removed via otherHookId');
 
   t.end();
 });
