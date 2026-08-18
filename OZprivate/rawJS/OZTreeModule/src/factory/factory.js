@@ -15,7 +15,7 @@ class Factory {
    * Builds the root node, called by controller.rebuild_tree()
    */
   build_tree() {
-    this.root = Midnode.create();
+    this.root = new Midnode();
     this.root.init(0, data_repo.raw_data.length-1, 1, 1, null, 0);
   }
   

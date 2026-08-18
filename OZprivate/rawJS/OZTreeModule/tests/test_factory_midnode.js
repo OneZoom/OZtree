@@ -47,14 +47,6 @@ test('sponsor_name,sponsor_kind,sponsor_extra', function (test) {
      extra: 'Don\'t panic'
    }, "Updated metadata, got a sponsorship");
 
-   node.release();
-   node.metacode = 5;  // NB: Unless we change metacode, we'd just fetch the same metadata again
-   test.deepEqual(sponsor(node), {
-     name: undefined,
-     kind: undefined,
-     extra: undefined
-   }, "Releasing cleared metadata");
-
   }).then(function () {
     test.end();
   }).catch(function (err) {
