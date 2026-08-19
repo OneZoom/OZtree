@@ -174,7 +174,7 @@ module.exports = function (grunt) {
       options: {
         implementation: sass,
         sourceMap: true,
-        outputStyle: 'compressed'
+        style: 'compressed'
       },
       dist: {
          files: [{
