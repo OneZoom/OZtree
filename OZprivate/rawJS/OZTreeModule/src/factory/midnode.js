@@ -540,13 +540,6 @@ class Midnode {
   get has_child() {
     return this.children.length > 0;
   }
-  get date() {
-    if (this.is_interior_node) {
-      return data_repo.tree_date.nodes[this.metacode];
-    } else {
-      return data_repo.tree_date.leaves[this.metacode];
-    }    
-  }
 }
 
 function calc_richness_of_node(node) {

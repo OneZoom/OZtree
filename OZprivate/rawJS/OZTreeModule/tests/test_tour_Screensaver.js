@@ -67,6 +67,8 @@ test('screensaver.autostart_after_seconds', function (test) {
     test.ok(Math.abs(getTimeoutValue(t.tour.auto_activate_timer) - (60000 - 22000) < 100), "auto_activate_timer configured, armed, allowing for our 22 secs inactivity")
 
   }).then(function () {
+    // Cleanup: ensure tour is back to INACTIVE to avoid leaking hooks to other tests
+    t.tour.clear();
     test.end();
   }).catch(function (err) {
     console.log(err.stack);
@@ -222,6 +224,8 @@ test('screensaver.loop_back_forth', function (test) {
 
 
   }).then(function () {
+    // Cleanup: ensure tour is back to INACTIVE to avoid leaking hooks to other tests
+    t.tour.clear();
     test.end();
   }).catch(function (err) {
     console.log(err.stack);
