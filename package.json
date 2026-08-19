@@ -60,7 +60,7 @@
     "tape": "^5.7.5",
     "terser-webpack-plugin": "^5.3.17",
     "typescript": "^5.9.3",
-    "webpack": "^5.94.0",
+    "webpack": "^5.105.0",
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
