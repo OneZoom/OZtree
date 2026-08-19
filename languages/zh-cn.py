@@ -344,7 +344,7 @@
 'Sure you want to delete this object?': '确定要删除此对象？',
 'Table': '数据表',
 'Table name': '数据表名称',
-'Take an svg screenshot': 'Take an svg screenshot',
+'Screenshot': 'Screenshot',
 'Team': 'Team',
 'Terms and conditions': 'Terms and conditions',
 'Terms and Cookies': 'Terms and Cookies',

@@ -280,7 +280,7 @@
 'Stenian': 'Stenian',
 'Submit': 'Submit',
 'Take a tour': 'Take a tour',
-'Take an svg screenshot': 'Take an svg screenshot',
+'Screenshot': 'Screenshot',
 'Team': 'Team',
 'Temporarily reserved': 'Temporarily reserved',
 'Terms and conditions': 'Terms and conditions',
