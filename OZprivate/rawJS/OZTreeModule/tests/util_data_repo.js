@@ -17,8 +17,6 @@ export function populate_data_repo(tree_serial = '25589581') {
        <script src="completetree_${tree_serial}.js" type="text/javascript"></script>
        <!-- cut_position_map_json_str, polytomy_cut_position_map_json_str, cut_thresholdcut_threshold -->
        <script src="cut_position_map_${tree_serial}.js" type="text/javascript"></script>
-       <!-- tree_date -->
-       <script src="dates_${tree_serial}.js" type="text/javascript"></script>
     </body>`, {
       resources: 'usable',
       runScripts: 'dangerously',
@@ -32,7 +30,6 @@ export function populate_data_repo(tree_serial = '25589581') {
         cut_map: JSON.parse(this.cut_position_map_json_str),
         poly_cut_map: JSON.parse(this.polytomy_cut_position_map_json_str),
         cut_threshold: this.cut_threshold,
-        tree_date: this.tree_date,
       });
 
       // Add some dummy data so we can look up some IDs / OTTs, captured output from node_details

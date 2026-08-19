@@ -78,8 +78,8 @@ function refresh(root) {
     let end = new Date().getTime();
     adjust_threshold(end-start);
     record_view_position();
-    release_shapes(shapes);
   }
+  release_shapes(shapes);
 }
 
 function update_cursor() {
