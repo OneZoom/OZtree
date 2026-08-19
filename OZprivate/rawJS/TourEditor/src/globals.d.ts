@@ -1,4 +1,4 @@
-import type { HighlightsEditorApi, HighlightDetail, HighlightStr, Pinpoint, ResolvedPinpoint, TreeNode } from './types';
+import type { HighlightsEditorApi, TourEditorApi, HighlightDetail, HighlightStr, Pinpoint, ResolvedPinpoint, TreeNode } from './types';
 
 interface OneZoomController {
     root: TreeNode;
@@ -32,6 +32,7 @@ interface UIkitGlobal {
 declare global {
     interface Window {
         onezoom: OneZoom;
+        tourEditor: TourEditorApi;
         highlightsEditor: HighlightsEditorApi;
         jQuery: JQueryStatic;
         UIkit?: UIkitGlobal;

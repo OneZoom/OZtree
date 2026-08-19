@@ -9,8 +9,8 @@ function OZTreeModule_src(x) {
     return path.resolve(__dirname, 'OZprivate', 'rawJS', 'OZTreeModule', 'src', x);
 }
 
-function HighlightsEditor_src(x) {
-    return path.resolve(__dirname, 'OZprivate', 'rawJS', 'HighlightsEditor', 'src', x);
+function TourEditor_src(x) {
+    return path.resolve(__dirname, 'OZprivate', 'rawJS', 'TourEditor', 'src', x);
 }
 
 function OZTreeModule_dist(x) {
@@ -34,7 +34,7 @@ var config = {
     //at: './OZprivate/rawJS/OZTreeModule/src/at.js',
     OZentry: OZTreeModule_src('OZentry.js'),
     OZui: OZTreeModule_src('OZui.js'),
-    HighlightsEditor: HighlightsEditor_src('index.tsx'),
+    TourEditor: TourEditor_src('index.tsx'),
   },
   optimization: {
     minimize: true,
@@ -85,8 +85,8 @@ var config = {
     }),
     new HtmlWebpackPlugin({
       scriptLoading: 'blocking',
-      filename: 'HighlightsEditor.html',
-      chunks: ['HighlightsEditor'],
+      filename: 'TourEditor.html',
+      chunks: ['TourEditor'],
       template: OZTreeModule_src('OZ_script_template.html')
     }),
     new FileManagerPlugin({
@@ -94,7 +94,7 @@ var config = {
         copy: [
           {source: OZTreeModule_dist("OZentry.[contenthash].js"), destination: OZTreeModule_dist("OZentry.js")},
           {source: OZTreeModule_dist("OZui.[contenthash].js"), destination: OZTreeModule_dist("OZui.js")},
-          {source: OZTreeModule_dist("HighlightsEditor.[contenthash].js"), destination: OZTreeModule_dist("HighlightsEditor.js")},
+          {source: OZTreeModule_dist("TourEditor.[contenthash].js"), destination: OZTreeModule_dist("TourEditor.js")},
         ]
       }
     }}),

@@ -1,8 +1,9 @@
+.ui-controls #tourEditorButton,
 .ui-controls #highlightsEditorButton {
     display: block;
 }
 
-.highlights-panel {
+.tour-editor-panel {
     position: fixed;
     top: 0;
     right: -400px;
@@ -15,32 +16,46 @@
     overflow-y: auto;
 }
 
-.highlights-panel.open {
+.tour-editor-panel.open {
     right: 0;
 }
 
-.highlights-panel-content {
+.tour-editor-panel-content {
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
-.highlights-panel-header {
+.tour-editor-panel-header {
     padding: 20px;
     border-bottom: 1px solid #e5e5e5;
     display: flex;
     justify-content: space-between;
     align-items: center;
     background: #f8f9fa;
+    gap: 8px;
 }
 
-.highlights-panel-header h3 {
+.tour-editor-panel-header h3 {
     margin: 0;
     color: #333;
     font-size: 1.2rem;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.highlights-close-btn {
+.tour-editor-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.tour-editor-close-btn,
+.tour-editor-back-btn {
     background: none;
     border: none;
     font-size: 1.2rem;
@@ -49,19 +64,64 @@
     padding: 5px;
 }
 
-.highlights-close-btn:hover {
+.tour-editor-close-btn:hover,
+.tour-editor-back-btn:hover {
     color: #333;
 }
 
-.highlights-panel-body {
+.tour-editor-panel-body {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
     user-select: text;
 }
 
-.highlights-list {
-    margin-top: 20px;
+.tour-editor-section {
+    margin-bottom: 24px;
+}
+
+.tour-editor-section h4 {
+    margin: 0 0 10px 0;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.tour-editor-stop-card {
+    cursor: pointer;
+}
+
+.tour-editor-stop-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.tour-editor-stop-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.tour-editor-stop-id {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+.tour-editor-stop-actions,
+.tour-editor-item-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.tour-editor-location-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
 }
 
 .highlight-card {
@@ -89,7 +149,8 @@
     cursor: pointer;
 }
 
-.highlight-card .uk-button-small {
+.highlight-card .uk-button-small,
+.tour-editor-item-actions .uk-button-small {
     padding: 4px 8px;
     font-size: 0.75rem;
 }
@@ -124,34 +185,6 @@
     font-size: 0.8rem;
 }
 
-.highlights-url-section {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid #e5e5e5;
-}
-
-.highlights-url-section h5 {
-    margin: 0 0 10px 0;
-    font-size: 0.9rem;
-    color: #666;
-}
-
-.highlights-url-display {
-    background: #f8f9fa;
-    padding: 8px 12px;
-    border-radius: 4px;
-    border: 1px solid #e5e5e5;
-    font-family: monospace;
-    font-size: 0.75rem;
-    word-break: break-all;
-    max-height: 100px;
-    overflow-y: auto;
-}
-
-.highlights-url-display p {
-    margin: 0;
-}
-
 .exclusions-section {
     margin-top: 8px;
     padding: 6px;
@@ -182,4 +215,37 @@
 
 .remove-exclusion-btn {
     cursor: pointer;
+}
+
+.tour-editor-speed-value {
+    min-width: 2.5em;
+    text-align: right;
+}
+
+.highlights-url-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.highlights-url-section h5 {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.highlights-url-display {
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #e5e5e5;
+    font-family: monospace;
+    font-size: 0.75rem;
+    word-break: break-all;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.highlights-url-display p {
+    margin: 0;
 }

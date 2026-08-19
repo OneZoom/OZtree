@@ -220,7 +220,8 @@ body.loading #UI #loading_spinner {
 }
 /* hide any "expert-mode" buttons */
 .ui-controls #screenshotButton, 
-.ui-controls #highlightsEditorButton
+.ui-controls #highlightsEditorButton,
+.ui-controls #tourEditorButton
 {
     display: none;
 }

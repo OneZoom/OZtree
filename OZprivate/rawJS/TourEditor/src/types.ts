@@ -42,9 +42,51 @@ export interface ResolvedPinpoint {
     ozid: number;
 }
 
-export interface HighlightsEditorApi {
+export interface EditorPanelApi {
     togglePanel: () => void;
 }
+
+export type TourEditorApi = EditorPanelApi;
+export type HighlightsEditorApi = EditorPanelApi;
+
+export type TransitionIn = 'fly' | 'leap' | 'fly_straight';
+
+export type TourLicense = 'all-rights-reserved' | 'cc-by-4.0' | 'cc0-1.0';
+
+export interface EditorTextBlock {
+    id: string;
+    text: string;
+}
+
+export interface EditorTour {
+    title: string;
+    description: string;
+    author: string;
+    license: TourLicense;
+    stops: EditorTourStop[];
+}
+
+export interface EditorTourStop {
+    id: string;
+    identifier: string;
+    location: Pinpoint | null;
+    fillScreen: boolean;
+    highlights: EditorHighlight[];
+    textBlocks: EditorTextBlock[];
+    transitionIn: TransitionIn;
+    flyInSpeed: number;
+    autoAdvance: boolean;
+    stopWaitSeconds: number;
+}
+
+export type LocationSelectionMode =
+    | { kind: 'idle' }
+    | { kind: 'location' };
+
+export type HighlightSelectionMode =
+    | { kind: 'idle' }
+    | { kind: 'add' }
+    | { kind: 'edit'; highlightId: string; pinpoint: EditingPinpointRef };
 
 export const DEFAULT_HIGHLIGHT_COLOR = '#ff6b6b';
 export const ROOT_PINPOINT = '@_ozid=1';

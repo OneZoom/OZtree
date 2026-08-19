@@ -48,18 +48,22 @@ export function nodeToStablePinpoint(node: TreeNode): Pinpoint | null {
     return pinpoint;
 }
 
-export function createHighlightFromNode(node: TreeNode): EditorHighlight | null {
-    const pinpoint = nodeToStablePinpoint(node);
-    if (!pinpoint) {
-        console.warn('Cannot create pinpoint for node:', node);
-        return null;
-    }
+export function createHighlightFromPinpoint(pinpoint: Pinpoint): EditorHighlight {
     return {
         id: newHighlightId(),
         type: 'fan',
         color: DEFAULT_HIGHLIGHT_COLOR,
         pinpoints: [pinpoint],
     };
+}
+
+export function createHighlightFromNode(node: TreeNode): EditorHighlight | null {
+    const pinpoint = nodeToStablePinpoint(node);
+    if (!pinpoint) {
+        console.warn('Cannot create pinpoint for node:', node);
+        return null;
+    }
+    return createHighlightFromPinpoint(pinpoint);
 }
 
 export function updatePinpoints(
@@ -96,6 +100,35 @@ export function updatePinpoints(
 
 export function pinpointsForTypeChange(pinpoints: Pinpoint[]): Pinpoint[] {
     return pinpoints.slice(0, 1);
+}
+
+export function patchHighlight(
+    highlights: EditorHighlight[],
+    id: string,
+    patch: Partial<EditorHighlight> | ((highlight: EditorHighlight) => Partial<EditorHighlight>),
+): EditorHighlight[] {
+    return highlights.map((highlight) => {
+        if (highlight.id !== id) return highlight;
+        const next = typeof patch === 'function' ? patch(highlight) : patch;
+        return { ...highlight, ...next };
+    });
+}
+
+export function applyHighlightTypeChange(
+    highlight: EditorHighlight,
+    type: HighlightType,
+): Partial<EditorHighlight> {
+    return { type, pinpoints: pinpointsForTypeChange(highlight.pinpoints) };
+}
+
+export function removeFanExclusion(
+    highlight: EditorHighlight,
+    exclusionIndex: number,
+): Partial<EditorHighlight> {
+    if (highlight.type !== 'fan' || exclusionIndex <= 0 || exclusionIndex >= highlight.pinpoints.length) {
+        return {};
+    }
+    return { pinpoints: highlight.pinpoints.filter((_, i) => i !== exclusionIndex) };
 }
 
 export function swapPathEndpoints(pinpoints: Pinpoint[]): Pinpoint[] {

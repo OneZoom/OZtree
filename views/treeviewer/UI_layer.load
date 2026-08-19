@@ -176,6 +176,12 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
       </div><!-- inline-block: hide whitespace
       --><span class='button-label'>{{=T('Highlights')}}</span><!-- inline-block: hide whitespace
     --></li>
+    <li id="tourEditorButton">
+      <div class='icon-container'>
+        <a uk-tooltip="pos: right" title="{{=T('Tour editor')}}" onclick="tourEditor.togglePanel();" uk-icon="icon: file-edit" type="button"></a>
+      </div><!-- inline-block: hide whitespace
+      --><span class='button-label'>{{=T('Tour editor')}}</span><!-- inline-block: hide whitespace
+    --></li>
     <li id="singleInfoButton">
       <div class='icon-container'>
         <a uk-tooltip="pos: right" title="{{=T('Information')}}" href="#info-modal" uk-toggle uk-icon="icon: info"></a>
