@@ -7,6 +7,10 @@
               "not ie <= 11",
           ]
         },
-    }]
+    }],
+    ["@babel/preset-react", {
+        "runtime": "automatic"
+    }],
+    "@babel/preset-typescript"
   ]
 }

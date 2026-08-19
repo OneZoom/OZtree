@@ -166,15 +166,21 @@ advSchbx='<li class="searchbox uk-search uk-search-default"><div><div class="sea
     --></li>
     <li id="screenshotButton">
       <div class='icon-container'>
-        <a uk-tooltip="pos: right" title="{{=T('Take an svg screenshot')}}" onclick="make_screenshot(this);" uk-icon="icon: camera"></a>
+        <a uk-tooltip="pos: right" title="{{=T('Screenshot')}}" onclick="make_screenshot(this);" uk-icon="icon: camera"></a>
       </div><!-- inline-block: hide whitespace
-      --><span class='button-label'>{{=T('Take an svg screenshot')}}</span><!-- inline-block: hide whitespace
+      --><span class='button-label'>{{=T('Screenshot')}}</span><!-- inline-block: hide whitespace
     --></li>
     <li id="highlightsEditorButton">
       <div class='icon-container'>
         <a uk-tooltip="pos: right" title="{{=T('Highlights')}}" onclick="highlightsEditor.togglePanel();" uk-icon="icon: paint-bucket" type="button"></a>
       </div><!-- inline-block: hide whitespace
       --><span class='button-label'>{{=T('Highlights')}}</span><!-- inline-block: hide whitespace
+    --></li>
+    <li id="tourEditorButton">
+      <div class='icon-container'>
+        <a uk-tooltip="pos: right" title="{{=T('Tour editor')}}" onclick="tourEditor.togglePanel();" uk-icon="icon: file-edit" type="button"></a>
+      </div><!-- inline-block: hide whitespace
+      --><span class='button-label'>{{=T('Tour editor')}}</span><!-- inline-block: hide whitespace
     --></li>
     <li id="singleInfoButton">
       <div class='icon-container'>

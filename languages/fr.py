@@ -365,7 +365,7 @@
 'Sure you want to delete this object?': 'Êtes-vous sûr de vouloir supprimer cet objet?',
 'Table': 'tableau',
 'Table name': 'Nom du tableau',
-'Take an svg screenshot': 'Take an svg screenshot',
+'Screenshot': 'Screenshot',
 'Team': 'Equipe',
 'Temporarily reserved': 'Temporairement réservé',
 'Terms and conditions': 'Termes et conditions',
