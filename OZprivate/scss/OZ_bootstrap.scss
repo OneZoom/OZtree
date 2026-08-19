@@ -10,53 +10,55 @@
 @use 'OZ_variables' as *;
 @use "sass:math";
 @use "sass:color";
-@import 'Boot-Sass/oz_partials/mixins';
+@use 'Boot-Sass/oz_partials/mixins';
 
 // Reset and dependencies
-@import 'Boot-Sass/oz_partials/normalize';
-@import 'Boot-Sass/oz_partials/print';
-//@import 'Boot-Sass/oz_partials/glyphicons';
+@use 'Boot-Sass/oz_partials/normalize';
+@use 'Boot-Sass/oz_partials/print';
+//@use 'Boot-Sass/oz_partials/glyphicons';
 
 // Core CSS
-@import 'Boot-Sass/oz_partials/scaffolding';
-@import 'Boot-Sass/oz_partials/type';
-//@import 'Boot-Sass/oz_partials/code';
-@import 'Boot-Sass/oz_partials/grid';
-@import 'Boot-Sass/oz_partials/tables';
-@import 'Boot-Sass/oz_partials/forms';
-@import 'Boot-Sass/oz_partials/buttons';
+@use 'Boot-Sass/oz_partials/scaffolding';
+@use 'Boot-Sass/oz_partials/type';
+//@use 'Boot-Sass/oz_partials/code';
+@use 'Boot-Sass/oz_partials/grid';
+@use 'Boot-Sass/oz_partials/tables';
+@use 'Boot-Sass/oz_partials/forms';
+@use 'Boot-Sass/oz_partials/buttons';
 
 // Components
-@import 'Boot-Sass/oz_partials/component-animations';
-@import 'Boot-Sass/oz_partials/dropdowns';
-.icon-beside-input button {padding: 0; border-width: 0};
-@import 'Boot-Sass/oz_partials/button-groups';
-@import 'Boot-Sass/oz_partials/input-groups';
-@import 'Boot-Sass/oz_partials/navs';
-@import 'Boot-Sass/oz_partials/navbar';
-@import 'Boot-Sass/oz_partials/breadcrumbs';
-@import 'Boot-Sass/oz_partials/pagination';
-@import 'Boot-Sass/oz_partials/pager';
-//@import 'Boot-Sass/oz_partials/labels';
-//@import 'Boot-Sass/oz_partials/badges';
-//@import 'Boot-Sass/oz_partials/jumbotron';
-@import 'OZ_thumbnails';
-//@import 'Boot-Sass/oz_partials/alerts';
-//@import 'Boot-Sass/oz_partials/progress-bars';
-//@import 'Boot-Sass/oz_partials/media';
-//@import 'Boot-Sass/oz_partials/list-group';
-@import 'Boot-Sass/oz_partials/panels';
-//@import 'Boot-Sass/oz_partials/responsive-embed';
-//@import 'Boot-Sass/oz_partials/wells';
-//@import 'Boot-Sass/oz_partials/close';
+@use 'Boot-Sass/oz_partials/component-animations';
+@use 'Boot-Sass/oz_partials/dropdowns';
+@use 'Boot-Sass/oz_partials/button-groups';
+@use 'Boot-Sass/oz_partials/input-groups';
+@use 'Boot-Sass/oz_partials/navs';
+@use 'Boot-Sass/oz_partials/navbar';
+@use 'Boot-Sass/oz_partials/breadcrumbs';
+@use 'Boot-Sass/oz_partials/pagination';
+@use 'Boot-Sass/oz_partials/pager';
+//@use 'Boot-Sass/oz_partials/labels';
+//@use 'Boot-Sass/oz_partials/badges';
+//@use 'Boot-Sass/oz_partials/jumbotron';
+@use 'OZ_thumbnails';
+//@use 'Boot-Sass/oz_partials/alerts';
+//@use 'Boot-Sass/oz_partials/progress-bars';
+//@use 'Boot-Sass/oz_partials/media';
+//@use 'Boot-Sass/oz_partials/list-group';
+@use 'Boot-Sass/oz_partials/panels';
+//@use 'Boot-Sass/oz_partials/responsive-embed';
+//@use 'Boot-Sass/oz_partials/wells';
+//@use 'Boot-Sass/oz_partials/close';
 
 // Components w/ JavaScript
-//@import 'Boot-Sass/oz_partials/modals';
-//@import 'Boot-Sass/oz_partials/tooltip';
-//@import 'Boot-Sass/oz_partials/popovers';
-//@import 'Boot-Sass/oz_partials/carousel';
+//@use 'Boot-Sass/oz_partials/modals';
+//@use 'Boot-Sass/oz_partials/tooltip';
+//@use 'Boot-Sass/oz_partials/popovers';
+//@use 'Boot-Sass/oz_partials/carousel';
 
 // Utility classes
-//@import 'Boot-Sass/oz_partials/utilities';
-//@import 'Boot-Sass/oz_partials/responsive-utilities';
-@import 'Boot-Sass/oz_partials/mixins/include-media';
+//@use 'Boot-Sass/oz_partials/utilities';
+//@use 'Boot-Sass/oz_partials/responsive-utilities';
+@use 'Boot-Sass/oz_partials/mixins/include-media';
+
+// Overrides applied after all imported component CSS
+.icon-beside-input button {padding: 0; border-width: 0};

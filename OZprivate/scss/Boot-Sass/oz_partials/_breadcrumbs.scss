@@ -1,14 +1,16 @@
+@use "../../OZ_variables";
+
 //
 // Breadcrumbs
 // --------------------------------------------------
 
 
 .breadcrumb {
-  padding: $breadcrumb-padding-vertical $breadcrumb-padding-horizontal;
-  margin-bottom: $line-height-computed;
+  padding: OZ_variables.$breadcrumb-padding-vertical OZ_variables.$breadcrumb-padding-horizontal;
+  margin-bottom: OZ_variables.$line-height-computed;
   list-style: none;
-  background-color: $breadcrumb-bg;
-  border-radius: $border-radius-base;
+  background-color: OZ_variables.$breadcrumb-bg;
+  border-radius: OZ_variables.$border-radius-base;
 
   > li {
     display: inline-block;
@@ -16,13 +18,13 @@
     + li:before {
       // [converter] Workaround for https://github.com/sass/libsass/issues/1115
       $nbsp: "\00a0";
-      content: "#{$breadcrumb-separator}#{$nbsp}"; // Unicode space added since inline-block means non-collapsing white-space
+      content: "#{OZ_variables.$breadcrumb-separator}#{$nbsp}"; // Unicode space added since inline-block means non-collapsing white-space
       padding: 0 5px;
-      color: $breadcrumb-color;
+      color: OZ_variables.$breadcrumb-color;
     }
   }
 
   > .active {
-    color: $breadcrumb-active-color;
+    color: OZ_variables.$breadcrumb-active-color;
   }
 }

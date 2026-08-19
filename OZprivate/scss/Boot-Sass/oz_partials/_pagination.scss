@@ -1,11 +1,15 @@
+@use "../../OZ_variables";
+@use "mixins/border-radius";
+@use "mixins/pagination";
+
 //
 // Pagination (multiple pages)
 // --------------------------------------------------
 .pagination {
   display: inline-block;
   padding-left: 0;
-  margin: $line-height-computed 0;
-  border-radius: $border-radius-base;
+  margin: OZ_variables.$line-height-computed 0;
+  border-radius: OZ_variables.$border-radius-base;
 
   > li {
     display: inline; // Remove list-style and block-level defaults
@@ -13,25 +17,25 @@
     > span {
       position: relative;
       float: left; // Collapse white-space
-      padding: $padding-base-vertical $padding-base-horizontal;
-      line-height: $line-height-base;
+      padding: OZ_variables.$padding-base-vertical OZ_variables.$padding-base-horizontal;
+      line-height: OZ_variables.$line-height-base;
       text-decoration: none;
-      color: $pagination-color;
-      background-color: $pagination-bg;
-      border: 1px solid $pagination-border;
+      color: OZ_variables.$pagination-color;
+      background-color: OZ_variables.$pagination-bg;
+      border: 1px solid OZ_variables.$pagination-border;
       margin-left: -1px;
     }
     &:first-child {
       > a,
       > span {
         margin-left: 0;
-        @include border-left-radius($border-radius-base);
+        @include border-radius.border-left-radius(OZ_variables.$border-radius-base);
       }
     }
     &:last-child {
       > a,
       > span {
-        @include border-right-radius($border-radius-base);
+        @include border-radius.border-right-radius(OZ_variables.$border-radius-base);
       }
     }
   }
@@ -41,9 +45,9 @@
     &:hover,
     &:focus {
       z-index: 2;
-      color: $pagination-hover-color;
-      background-color: $pagination-hover-bg;
-      border-color: $pagination-hover-border;
+      color: OZ_variables.$pagination-hover-color;
+      background-color: OZ_variables.$pagination-hover-bg;
+      border-color: OZ_variables.$pagination-hover-border;
     }
   }
 
@@ -53,9 +57,9 @@
     &:hover,
     &:focus {
       z-index: 3;
-      color: $pagination-active-color;
-      background-color: $pagination-active-bg;
-      border-color: $pagination-active-border;
+      color: OZ_variables.$pagination-active-color;
+      background-color: OZ_variables.$pagination-active-bg;
+      border-color: OZ_variables.$pagination-active-border;
       cursor: default;
     }
   }
@@ -67,10 +71,10 @@
     > a,
     > a:hover,
     > a:focus {
-      color: $pagination-disabled-color;
-      background-color: $pagination-disabled-bg;
-      border-color: $pagination-disabled-border;
-      cursor: $cursor-disabled;
+      color: OZ_variables.$pagination-disabled-color;
+      background-color: OZ_variables.$pagination-disabled-bg;
+      border-color: OZ_variables.$pagination-disabled-border;
+      cursor: OZ_variables.$cursor-disabled;
     }
   }
 }
@@ -80,10 +84,10 @@
 
 // Large
 .pagination-lg {
-  @include pagination-size($padding-large-vertical, $padding-large-horizontal, $font-size-large, $line-height-large, $border-radius-large);
+  @include pagination.pagination-size(OZ_variables.$padding-large-vertical, OZ_variables.$padding-large-horizontal, OZ_variables.$font-size-large, OZ_variables.$line-height-large, OZ_variables.$border-radius-large);
 }
 
 // Small
 .pagination-sm {
-  @include pagination-size($padding-small-vertical, $padding-small-horizontal, $font-size-small, $line-height-small, $border-radius-small);
+  @include pagination.pagination-size(OZ_variables.$padding-small-vertical, OZ_variables.$padding-small-horizontal, OZ_variables.$font-size-small, OZ_variables.$line-height-small, OZ_variables.$border-radius-small);
 }

@@ -1,3 +1,5 @@
+@use "border-radius";
+
 // Pagination
 
 @mixin pagination-size($padding-vertical, $padding-horizontal, $font-size, $line-height, $border-radius) {
@@ -11,13 +13,13 @@
     &:first-child {
       > a,
       > span {
-        @include border-left-radius($border-radius);
+        @include border-radius.border-left-radius($border-radius);
       }
     }
     &:last-child {
       > a,
       > span {
-        @include border-right-radius($border-radius);
+        @include border-radius.border-right-radius($border-radius);
       }
     }
   }

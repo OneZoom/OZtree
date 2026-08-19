@@ -1,3 +1,8 @@
+@use "../../OZ_variables";
+@use "mixins/border-radius";
+@use "mixins/clearfix";
+@use "mixins/nav-divider";
+
 //
 // Navs
 // --------------------------------------------------
@@ -10,7 +15,7 @@
   margin-bottom: 0;
   padding-left: 0; // Override default ul/ol
   list-style: none;
-  @include clearfix;
+  @include clearfix.clearfix;
 
   > li {
     position: relative;
@@ -19,24 +24,24 @@
     > a {
       position: relative;
       display: block;
-      padding: $nav-link-padding;
+      padding: OZ_variables.$nav-link-padding;
       &:hover,
       &:focus {
         text-decoration: none;
-        background-color: $nav-link-hover-bg;
+        background-color: OZ_variables.$nav-link-hover-bg;
       }
     }
 
     // Disabled state sets text to gray and nukes hover/tab effects
     &.disabled > a {
-      color: $nav-disabled-link-color;
+      color: OZ_variables.$nav-disabled-link-color;
 
       &:hover,
       &:focus {
-        color: $nav-disabled-link-hover-color;
+        color: OZ_variables.$nav-disabled-link-hover-color;
         text-decoration: none;
         background-color: transparent;
-        cursor: $cursor-disabled;
+        cursor: OZ_variables.$cursor-disabled;
       }
     }
   }
@@ -46,8 +51,8 @@
     &,
     &:hover,
     &:focus {
-      background-color: $nav-link-hover-bg;
-      border-color: $link-color;
+      background-color: OZ_variables.$nav-link-hover-bg;
+      border-color: OZ_variables.$link-color;
     }
   }
 
@@ -57,7 +62,7 @@
   // we missed it. We don't currently support this anywhere, but in the interest
   // of maintaining backward compatibility in case you use it, it's deprecated.
   .nav-divider {
-    @include nav-divider;
+    @include nav-divider.nav-divider;
   }
 
   // Prevent IE8 from misplacing imgs
@@ -74,7 +79,7 @@
 
 // Give the tabs something to sit on
 .nav-tabs {
-  border-bottom: 1px solid $nav-tabs-border-color;
+  border-bottom: 1px solid OZ_variables.$nav-tabs-border-color;
   > li {
     float: left;
     // Make the list-items overlay the bottom border
@@ -83,11 +88,11 @@
     // Actual tabs (as links)
     > a {
       margin-right: 2px;
-      line-height: $line-height-base;
+      line-height: OZ_variables.$line-height-base;
       border: 1px solid transparent;
-      border-radius: $border-radius-base $border-radius-base 0 0;
+      border-radius: OZ_variables.$border-radius-base OZ_variables.$border-radius-base 0 0;
       &:hover {
-        border-color: $nav-tabs-link-hover-border-color $nav-tabs-link-hover-border-color $nav-tabs-border-color;
+        border-color: OZ_variables.$nav-tabs-link-hover-border-color OZ_variables.$nav-tabs-link-hover-border-color OZ_variables.$nav-tabs-border-color;
       }
     }
 
@@ -96,9 +101,9 @@
       &,
       &:hover,
       &:focus {
-        color: $nav-tabs-active-link-hover-color;
-        background-color: $nav-tabs-active-link-hover-bg;
-        border: 1px solid $nav-tabs-active-link-hover-border-color;
+        color: OZ_variables.$nav-tabs-active-link-hover-color;
+        background-color: OZ_variables.$nav-tabs-active-link-hover-bg;
+        border: 1px solid OZ_variables.$nav-tabs-active-link-hover-border-color;
         border-bottom-color: transparent;
         cursor: default;
       }
@@ -120,7 +125,7 @@
 
     // Links rendered as pills
     > a {
-      border-radius: $nav-pills-border-radius;
+      border-radius: OZ_variables.$nav-pills-border-radius;
     }
     + li {
       margin-left: 2px;
@@ -131,8 +136,8 @@
       &,
       &:hover,
       &:focus {
-        color: $nav-pills-active-link-hover-color;
-        background-color: $nav-pills-active-link-hover-bg;
+        color: OZ_variables.$nav-pills-active-link-hover-color;
+        background-color: OZ_variables.$nav-pills-active-link-hover-bg;
       }
     }
   }
@@ -173,7 +178,7 @@
     left: auto;
   }
 
-  @media (min-width: $screen-sm-min) {
+  @media (min-width: OZ_variables.$screen-sm-min) {
     > li {
       display: table-cell;
       width: 1%;
@@ -193,24 +198,24 @@
   > li > a {
     // Override margin from .nav-tabs
     margin-right: 0;
-    border-radius: $border-radius-base;
+    border-radius: OZ_variables.$border-radius-base;
   }
 
   > .active > a,
   > .active > a:hover,
   > .active > a:focus {
-    border: 1px solid $nav-tabs-justified-link-border-color;
+    border: 1px solid OZ_variables.$nav-tabs-justified-link-border-color;
   }
 
-  @media (min-width: $screen-sm-min) {
+  @media (min-width: OZ_variables.$screen-sm-min) {
     > li > a {
-      border-bottom: 1px solid $nav-tabs-justified-link-border-color;
-      border-radius: $border-radius-base $border-radius-base 0 0;
+      border-bottom: 1px solid OZ_variables.$nav-tabs-justified-link-border-color;
+      border-radius: OZ_variables.$border-radius-base OZ_variables.$border-radius-base 0 0;
     }
     > .active > a,
     > .active > a:hover,
     > .active > a:focus {
-      border-bottom-color: $nav-tabs-justified-active-link-border-color;
+      border-bottom-color: OZ_variables.$nav-tabs-justified-active-link-border-color;
     }
   }
 }
@@ -238,5 +243,5 @@
   // make dropdown border overlap tab border
   margin-top: -1px;
   // Remove the top rounded corners here since there is a hard edge above the menu
-  @include border-top-radius(0);
+  @include border-radius.border-top-radius(0);
 }

@@ -1,3 +1,10 @@
+@use "../../OZ_variables";
+@use "mixins/background-variant";
+@use "mixins/clearfix";
+@use "mixins/text-emphasis";
+@use "mixins/text-overflow";
+@use "sass:math";
+
 //
 // Typography
 // --------------------------------------------------
@@ -8,24 +15,24 @@
 
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6 {
-  font-family: $headings-font-family;
-  font-weight: $headings-font-weight;
-  line-height: $headings-line-height;
-  color: $headings-color;
+  font-family: OZ_variables.$headings-font-family;
+  font-weight: OZ_variables.$headings-font-weight;
+  line-height: OZ_variables.$headings-line-height;
+  color: OZ_variables.$headings-color;
 
   small,
   .small {
     font-weight: normal;
     line-height: 1;
-    color: $headings-small-color;
+    color: OZ_variables.$headings-small-color;
   }
 }
 
 h1, .h1,
 h2, .h2,
 h3, .h3 {
-  margin-top: $line-height-computed;
-  margin-bottom: calc($line-height-computed / 2);
+  margin-top: OZ_variables.$line-height-computed;
+  margin-bottom: calc(OZ_variables.$line-height-computed / 2);
 
   small,
   .small {
@@ -35,8 +42,8 @@ h3, .h3 {
 h4, .h4,
 h5, .h5,
 h6, .h6 {
-  margin-top: calc($line-height-computed / 2);
-  margin-bottom: calc($line-height-computed / 2);
+  margin-top: calc(OZ_variables.$line-height-computed / 2);
+  margin-bottom: calc(OZ_variables.$line-height-computed / 2);
 
   small,
   .small {
@@ -44,29 +51,29 @@ h6, .h6 {
   }
 }
 
-h1, .h1 { font-size: $font-size-h1; }
-h2, .h2 { font-size: $font-size-h2; }
-h3, .h3 { font-size: $font-size-h3; }
-h4, .h4 { font-size: $font-size-h4; }
-h5, .h5 { font-size: $font-size-h5; }
-h6, .h6 { font-size: $font-size-h6; }
+h1, .h1 { font-size: OZ_variables.$font-size-h1; }
+h2, .h2 { font-size: OZ_variables.$font-size-h2; }
+h3, .h3 { font-size: OZ_variables.$font-size-h3; }
+h4, .h4 { font-size: OZ_variables.$font-size-h4; }
+h5, .h5 { font-size: OZ_variables.$font-size-h5; }
+h6, .h6 { font-size: OZ_variables.$font-size-h6; }
 
 
 // Body text
 // -------------------------
 
 p {
-  margin: 0 0 calc($line-height-computed / 2);
+  margin: 0 0 calc(OZ_variables.$line-height-computed / 2);
 }
 
 .lead {
-  margin-bottom: $line-height-computed;
-  font-size: math.floor(($font-size-base * 1.15));
+  margin-bottom: OZ_variables.$line-height-computed;
+  font-size: math.floor((OZ_variables.$font-size-base * 1.15));
   font-weight: 300;
   line-height: 1.4;
 
-  @media (min-width: $screen-sm-min) {
-    font-size: ($font-size-base * 1.5);
+  @media (min-width: OZ_variables.$screen-sm-min) {
+    font-size: (OZ_variables.$font-size-base * 1.5);
   }
 }
 
@@ -77,12 +84,12 @@ p {
 // Ex: (12px small font / 14px base font) * 100% = about 85%
 small,
 .small {
-  font-size: math.floor(calc(100% * $font-size-small / $font-size-base));
+  font-size: math.floor(calc(100% * OZ_variables.$font-size-small / OZ_variables.$font-size-base));
 }
 
 mark,
 .mark {
-  background-color: $state-warning-bg;
+  background-color: OZ_variables.$state-warning-bg;
   padding: .2em;
 }
 
@@ -100,18 +107,18 @@ mark,
 
 // Contextual colors
 .text-muted {
-  color: $text-muted;
+  color: OZ_variables.$text-muted;
 }
 
-@include text-emphasis-variant('.text-primary', $brand-primary);
+@include text-emphasis.text-emphasis-variant('.text-primary', OZ_variables.$brand-primary);
 
-@include text-emphasis-variant('.text-success', $state-success-text);
+@include text-emphasis.text-emphasis-variant('.text-success', OZ_variables.$state-success-text);
 
-@include text-emphasis-variant('.text-info', $state-info-text);
+@include text-emphasis.text-emphasis-variant('.text-info', OZ_variables.$state-info-text);
 
-@include text-emphasis-variant('.text-warning', $state-warning-text);
+@include text-emphasis.text-emphasis-variant('.text-warning', OZ_variables.$state-warning-text);
 
-@include text-emphasis-variant('.text-danger', $state-danger-text);
+@include text-emphasis.text-emphasis-variant('.text-danger', OZ_variables.$state-danger-text);
 
 // Contextual backgrounds
 // For now we'll leave these alongside the text classes until v4 when we can
@@ -121,24 +128,24 @@ mark,
   // automatically.
   color: #fff;
 }
-@include bg-variant('.bg-primary', $brand-primary);
+@include background-variant.bg-variant('.bg-primary', OZ_variables.$brand-primary);
 
-@include bg-variant('.bg-success', $state-success-bg);
+@include background-variant.bg-variant('.bg-success', OZ_variables.$state-success-bg);
 
-@include bg-variant('.bg-info', $state-info-bg);
+@include background-variant.bg-variant('.bg-info', OZ_variables.$state-info-bg);
 
-@include bg-variant('.bg-warning', $state-warning-bg);
+@include background-variant.bg-variant('.bg-warning', OZ_variables.$state-warning-bg);
 
-@include bg-variant('.bg-danger', $state-danger-bg);
+@include background-variant.bg-variant('.bg-danger', OZ_variables.$state-danger-bg);
 
 
 // Page header
 // -------------------------
 
 .page-header {
-  padding-bottom: calc(($line-height-computed / 2) - 1px);
-  margin: ($line-height-computed * 2) 0 $line-height-computed;
-  border-bottom: 1px solid $page-header-border-color;
+  padding-bottom: calc((OZ_variables.$line-height-computed / 2) - 1px);
+  margin: (OZ_variables.$line-height-computed * 2) 0 OZ_variables.$line-height-computed;
+  border-bottom: 1px solid OZ_variables.$page-header-border-color;
 }
 
 
@@ -149,7 +156,7 @@ mark,
 ul,
 ol {
   margin-top: 0;
-  margin-bottom: calc($line-height-computed / 2);
+  margin-bottom: calc(OZ_variables.$line-height-computed / 2);
   ul,
   ol {
     margin-bottom: 0;
@@ -184,11 +191,11 @@ ol {
 // Description Lists
 dl {
   margin-top: 0; // Remove browser default
-  margin-bottom: $line-height-computed;
+  margin-bottom: OZ_variables.$line-height-computed;
 }
 dt,
 dd {
-  line-height: $line-height-base;
+  line-height: OZ_variables.$line-height-base;
 }
 dt {
   font-weight: bold;
@@ -204,19 +211,19 @@ dd {
 
 .dl-horizontal {
   dd {
-    @include clearfix; // Clear the floated `dt` if an empty `dd` is present
+    @include clearfix.clearfix; // Clear the floated `dt` if an empty `dd` is present
   }
 
-  @media (min-width: $dl-horizontal-breakpoint) {
+  @media (min-width: OZ_variables.$dl-horizontal-breakpoint) {
     dt {
       float: left;
-      width: ($dl-horizontal-offset - 20);
+      width: (OZ_variables.$dl-horizontal-offset - 20);
       clear: left;
       text-align: right;
-      @include text-overflow;
+      @include text-overflow.text-overflow;
     }
     dd {
-      margin-left: $dl-horizontal-offset;
+      margin-left: OZ_variables.$dl-horizontal-offset;
     }
   }
 }
@@ -230,7 +237,7 @@ abbr[title],
 // Add data-* attribute to help out our tooltip plugin, per https://github.com/twbs/bootstrap/issues/5257
 abbr[data-original-title] {
   cursor: help;
-  border-bottom: 1px dotted $abbr-border-color;
+  border-bottom: 1px dotted OZ_variables.$abbr-border-color;
 }
 .initialism {
   font-size: 90%;
@@ -240,9 +247,9 @@ abbr[data-original-title] {
 // Blockquotes
 blockquote {
   padding: 0 0 0 0.5em;
-  margin: 0 0 $line-height-computed;
-  font-size: $blockquote-font-size;
-  border-left: 5px solid $blockquote-border-color;
+  margin: 0 0 OZ_variables.$line-height-computed;
+  font-size: OZ_variables.$blockquote-font-size;
+  border-left: 5px solid OZ_variables.$blockquote-border-color;
 
   p,
   ul,
@@ -257,8 +264,8 @@ blockquote {
   footer {
     display: block;
     //font-size: 80%; // back to default font-size
-    line-height: $line-height-base;
-    color: $blockquote-cite-color;
+    line-height: OZ_variables.$line-height-base;
+    color: OZ_variables.$blockquote-cite-color;
 
     &:before {
       content: '\2014 \00A0'; // em dash, nbsp
@@ -273,7 +280,7 @@ blockquote {
 blockquote.pull-right {
   padding-right: 15px;
   padding-left: 0;
-  border-right: 5px solid $blockquote-border-color;
+  border-right: 5px solid OZ_variables.$blockquote-border-color;
   border-left: 0;
   text-align: right;
 
@@ -290,7 +297,7 @@ blockquote.pull-right {
 
 // Addresses
 address {
-  margin-bottom: $line-height-computed;
+  margin-bottom: OZ_variables.$line-height-computed;
   font-style: normal;
-  line-height: $line-height-base;
+  line-height: OZ_variables.$line-height-base;
 }

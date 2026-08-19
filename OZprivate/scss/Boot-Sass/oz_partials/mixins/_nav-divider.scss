@@ -1,10 +1,12 @@
+@use "../../../OZ_variables";
+
 // Horizontal dividers
 //
 // Dividers (basically an hr) within dropdowns and nav lists
 
 @mixin nav-divider($color: #e5e5e5) {
   height: 1px;
-  margin: calc(($line-height-computed / 2) - 1px) 0;
+  margin: calc((OZ_variables.$line-height-computed / 2) - 1px) 0;
   overflow: hidden;
   background-color: $color;
 }

@@ -1,3 +1,5 @@
+@use "../../../OZ_variables";
+
 // Vendor Prefixes
 //
 // All vendor mixins are deprecated as of v3.2.0 due to the introduction of
@@ -78,7 +80,7 @@
 }
 
 // CSS3 Content Columns
-@mixin content-columns($column-count, $column-gap: $grid-gutter-width) {
+@mixin content-columns($column-count, $column-gap: OZ_variables.$grid-gutter-width) {
   -webkit-column-count: $column-count;
      -moz-column-count: $column-count;
           column-count: $column-count;
@@ -98,7 +100,7 @@
 }
 
 // Placeholder text
-@mixin placeholder($color: $input-color-placeholder) {
+@mixin placeholder($color: OZ_variables.$input-color-placeholder) {
   // Firefox
   &::-moz-placeholder {
     color: $color;

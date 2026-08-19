@@ -1,3 +1,11 @@
+@use "../../OZ_variables";
+@use "mixins/forms";
+@use "mixins/grid";
+@use "mixins/tab-focus";
+@use "mixins/vendor-prefixes";
+@use "sass:math";
+@use "sass:color";
+
 //
 // Forms
 // --------------------------------------------------
@@ -22,12 +30,12 @@ legend {
   text-align:left;
   width: 100%;
   padding: 0;
-  margin-bottom: $line-height-computed;
-  font-size: ($font-size-base * 1.5);
+  margin-bottom: OZ_variables.$line-height-computed;
+  font-size: (OZ_variables.$font-size-base * 1.5);
   line-height: inherit;
-  color: $legend-color;
+  color: OZ_variables.$legend-color;
   border: 0;
-  border-bottom: 1px solid $legend-border-color;
+  border-bottom: 1px solid OZ_variables.$legend-border-color;
 }
 
 label {
@@ -46,7 +54,7 @@ label {
 
 // Override content-box in Normalize (* isn't specific enough)
 input[type="search"] {
-  @include box-sizing(border-box);
+  @include vendor-prefixes.box-sizing(border-box);
 }
 
 // Search inputs in iOS
@@ -91,16 +99,16 @@ select[size] {
 input[type="file"]:focus,
 input[type="radio"]:focus,
 input[type="checkbox"]:focus {
-  @include tab-focus;
+  @include tab-focus.tab-focus;
 }
 
 // Adjust output element
 output {
   display: block;
-  padding-top: ($padding-base-vertical + 1);
-  font-size: $font-size-base;
-  line-height: $line-height-base;
-  color: $input-color;
+  padding-top: (OZ_variables.$padding-base-vertical + 1);
+  font-size: OZ_variables.$font-size-base;
+  line-height: OZ_variables.$line-height-base;
+  color: OZ_variables.$input-color;
 }
 
 
@@ -129,23 +137,23 @@ output {
 .form-control {
   display: block;
   width: 100%;
-  height: $input-height-base; // Make inputs at least the height of their button counterpart (base line-height + padding + border)
-  padding: $padding-base-vertical $padding-base-horizontal;
-  font-size: $font-size-base;
-  line-height: $line-height-base;
-  color: $input-color;
-  background-color: $input-bg;
+  height: OZ_variables.$input-height-base; // Make inputs at least the height of their button counterpart (base line-height + padding + border)
+  padding: OZ_variables.$padding-base-vertical OZ_variables.$padding-base-horizontal;
+  font-size: OZ_variables.$font-size-base;
+  line-height: OZ_variables.$line-height-base;
+  color: OZ_variables.$input-color;
+  background-color: OZ_variables.$input-bg;
   background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
-  border: 1px solid $input-border;
-  border-radius: $input-border-radius; // Note: This has no effect on <select>s in some browsers, due to the limited stylability of <select>s in CSS.
-  @include box-shadow(inset 0 1px 1px rgba(0,0,0,.075));
-  @include transition(border-color ease-in-out .15s, box-shadow ease-in-out .15s);
+  border: 1px solid OZ_variables.$input-border;
+  border-radius: OZ_variables.$input-border-radius; // Note: This has no effect on <select>s in some browsers, due to the limited stylability of <select>s in CSS.
+  @include vendor-prefixes.box-shadow(inset 0 1px 1px rgba(0,0,0,.075));
+  @include vendor-prefixes.transition(border-color ease-in-out .15s, box-shadow ease-in-out .15s);
 
   // Customize the `:focus` state to imitate native WebKit styles.
-  @include form-control-focus;
+  @include forms.form-control-focus;
 
   // Placeholder
-  @include placeholder;
+  @include vendor-prefixes.placeholder;
 
   // Unstyle the caret on `<select>`s in IE10+.
   &::-ms-expand {
@@ -161,13 +169,13 @@ output {
   &[disabled],
   &[readonly],
   fieldset[disabled] & {
-    background-color: $input-bg-disabled;
+    background-color: OZ_variables.$input-bg-disabled;
     opacity: 1; // iOS fix for unreadable disabled content; see https://github.com/twbs/bootstrap/issues/11655
   }
 
   &[disabled],
   fieldset[disabled] & {
-    cursor: $cursor-disabled;
+    cursor: OZ_variables.$cursor-disabled;
   }
 
   // [converter] extracted textarea& to textarea.form-control
@@ -194,17 +202,17 @@ textarea.form-control {
   input[type="datetime-local"],
   input[type="month"] {
     &.form-control {
-      line-height: $input-height-base;
+      line-height: OZ_variables.$input-height-base;
     }
 
     &.input-sm,
     .input-group-sm & {
-      line-height: $input-height-small;
+      line-height: OZ_variables.$input-height-small;
     }
 
     &.input-lg,
     .input-group-lg & {
-      line-height: $input-height-large;
+      line-height: OZ_variables.$input-height-large;
     }
   }
 }
@@ -216,7 +224,7 @@ textarea.form-control {
 // horizontal forms, use the predefined grid classes.
 
 .form-group {
-  margin-bottom: $form-group-margin-bottom;
+  margin-bottom: OZ_variables.$form-group-margin-bottom;
 }
 
 
@@ -232,7 +240,7 @@ textarea.form-control {
   margin-bottom: 10px;
 
   label {
-    min-height: $line-height-computed; // Ensure the input doesn't jump when there is no text
+    min-height: OZ_variables.$line-height-computed; // Ensure the input doesn't jump when there is no text
     padding-left: 20px;
     margin-bottom: 0;
     font-weight: normal;
@@ -279,7 +287,7 @@ input[type="checkbox"] {
   &[disabled],
   &.disabled,
   fieldset[disabled] & {
-    cursor: $cursor-disabled;
+    cursor: OZ_variables.$cursor-disabled;
   }
 }
 // These classes are used directly on <label>s
@@ -287,7 +295,7 @@ input[type="checkbox"] {
 .checkbox-inline {
   &.disabled,
   fieldset[disabled] & {
-    cursor: $cursor-disabled;
+    cursor: OZ_variables.$cursor-disabled;
   }
 }
 // These classes are used on elements with <label> descendants
@@ -296,7 +304,7 @@ input[type="checkbox"] {
   &.disabled,
   fieldset[disabled] & {
     label {
-      cursor: $cursor-disabled;
+      cursor: OZ_variables.$cursor-disabled;
     }
   }
 }
@@ -309,11 +317,11 @@ input[type="checkbox"] {
 
 .form-control-static {
   // Size it appropriately next to real form controls
-  padding-top: ($padding-base-vertical + 1);
-  padding-bottom: ($padding-base-vertical + 1);
+  padding-top: (OZ_variables.$padding-base-vertical + 1);
+  padding-bottom: (OZ_variables.$padding-base-vertical + 1);
   // Remove default margin from `p`
   margin-bottom: 0;
-  min-height: ($line-height-computed + $font-size-base);
+  min-height: (OZ_variables.$line-height-computed + OZ_variables.$font-size-base);
 
   &.input-lg,
   &.input-sm {
@@ -331,55 +339,55 @@ input[type="checkbox"] {
 // The `.form-group-* form-control` variations are sadly duplicated to avoid the
 // issue documented in https://github.com/twbs/bootstrap/issues/15074.
 
-@include input-size('.input-sm', $input-height-small, $padding-small-vertical, $padding-small-horizontal, $font-size-small, $line-height-small, $input-border-radius-small);
+@include forms.input-size('.input-sm', OZ_variables.$input-height-small, OZ_variables.$padding-small-vertical, OZ_variables.$padding-small-horizontal, OZ_variables.$font-size-small, OZ_variables.$line-height-small, OZ_variables.$input-border-radius-small);
 .form-group-sm {
   .form-control {
-    height: $input-height-small;
-    padding: $padding-small-vertical $padding-small-horizontal;
-    font-size: $font-size-small;
-    line-height: $line-height-small;
-    border-radius: $input-border-radius-small;
+    height: OZ_variables.$input-height-small;
+    padding: OZ_variables.$padding-small-vertical OZ_variables.$padding-small-horizontal;
+    font-size: OZ_variables.$font-size-small;
+    line-height: OZ_variables.$line-height-small;
+    border-radius: OZ_variables.$input-border-radius-small;
   }
   select.form-control {
-    height: $input-height-small;
-    line-height: $input-height-small;
+    height: OZ_variables.$input-height-small;
+    line-height: OZ_variables.$input-height-small;
   }
   textarea.form-control,
   select[multiple].form-control {
     height: auto;
   }
   .form-control-static {
-    height: $input-height-small;
-    min-height: ($line-height-computed + $font-size-small);
-    padding: ($padding-small-vertical + 1) $padding-small-horizontal;
-    font-size: $font-size-small;
-    line-height: $line-height-small;
+    height: OZ_variables.$input-height-small;
+    min-height: (OZ_variables.$line-height-computed + OZ_variables.$font-size-small);
+    padding: (OZ_variables.$padding-small-vertical + 1) OZ_variables.$padding-small-horizontal;
+    font-size: OZ_variables.$font-size-small;
+    line-height: OZ_variables.$line-height-small;
   }
 }
 
-@include input-size('.input-lg', $input-height-large, $padding-large-vertical, $padding-large-horizontal, $font-size-large, $line-height-large, $input-border-radius-large);
+@include forms.input-size('.input-lg', OZ_variables.$input-height-large, OZ_variables.$padding-large-vertical, OZ_variables.$padding-large-horizontal, OZ_variables.$font-size-large, OZ_variables.$line-height-large, OZ_variables.$input-border-radius-large);
 .form-group-lg {
   .form-control {
-    height: $input-height-large;
-    padding: $padding-large-vertical $padding-large-horizontal;
-    font-size: $font-size-large;
-    line-height: $line-height-large;
-    border-radius: $input-border-radius-large;
+    height: OZ_variables.$input-height-large;
+    padding: OZ_variables.$padding-large-vertical OZ_variables.$padding-large-horizontal;
+    font-size: OZ_variables.$font-size-large;
+    line-height: OZ_variables.$line-height-large;
+    border-radius: OZ_variables.$input-border-radius-large;
   }
   select.form-control {
-    height: $input-height-large;
-    line-height: $input-height-large;
+    height: OZ_variables.$input-height-large;
+    line-height: OZ_variables.$input-height-large;
   }
   textarea.form-control,
   select[multiple].form-control {
     height: auto;
   }
   .form-control-static {
-    height: $input-height-large;
-    min-height: ($line-height-computed + $font-size-large);
-    padding: ($padding-large-vertical + 1) $padding-large-horizontal;
-    font-size: $font-size-large;
-    line-height: $line-height-large;
+    height: OZ_variables.$input-height-large;
+    min-height: (OZ_variables.$line-height-computed + OZ_variables.$font-size-large);
+    padding: (OZ_variables.$padding-large-vertical + 1) OZ_variables.$padding-large-horizontal;
+    font-size: OZ_variables.$font-size-large;
+    line-height: OZ_variables.$line-height-large;
   }
 }
 
@@ -394,7 +402,7 @@ input[type="checkbox"] {
 
   // Ensure icons don't overlap text
   .form-control {
-    padding-right: ($input-height-base * 1.25);
+    padding-right: (OZ_variables.$input-height-base * 1.25);
   }
 }
 // Feedback icon (requires .glyphicon classes)
@@ -404,43 +412,43 @@ input[type="checkbox"] {
   right: 0;
   z-index: 2; // Ensure icon is above input groups
   display: block;
-  width: $input-height-base;
-  height: $input-height-base;
-  line-height: $input-height-base;
+  width: OZ_variables.$input-height-base;
+  height: OZ_variables.$input-height-base;
+  line-height: OZ_variables.$input-height-base;
   text-align: center;
   pointer-events: none;
 }
 .input-lg + .form-control-feedback,
 .input-group-lg + .form-control-feedback,
 .form-group-lg .form-control + .form-control-feedback {
-  width: $input-height-large;
-  height: $input-height-large;
-  line-height: $input-height-large;
+  width: OZ_variables.$input-height-large;
+  height: OZ_variables.$input-height-large;
+  line-height: OZ_variables.$input-height-large;
 }
 .input-sm + .form-control-feedback,
 .input-group-sm + .form-control-feedback,
 .form-group-sm .form-control + .form-control-feedback {
-  width: $input-height-small;
-  height: $input-height-small;
-  line-height: $input-height-small;
+  width: OZ_variables.$input-height-small;
+  height: OZ_variables.$input-height-small;
+  line-height: OZ_variables.$input-height-small;
 }
 
 // Feedback states
 .has-success {
-  @include form-control-validation($state-success-text, $state-success-text, $state-success-bg);
+  @include forms.form-control-validation(OZ_variables.$state-success-text, OZ_variables.$state-success-text, OZ_variables.$state-success-bg);
 }
 .has-warning {
-  @include form-control-validation($state-warning-text, $state-warning-text, $state-warning-bg);
+  @include forms.form-control-validation(OZ_variables.$state-warning-text, OZ_variables.$state-warning-text, OZ_variables.$state-warning-bg);
 }
 .has-error {
-  @include form-control-validation($state-danger-text, $state-danger-text, $state-danger-bg);
+  @include forms.form-control-validation(OZ_variables.$state-danger-text, OZ_variables.$state-danger-text, OZ_variables.$state-danger-bg);
 }
 
 // Reposition feedback icon if input has visible label above
 .has-feedback label {
 
   & ~ .form-control-feedback {
-    top: ($line-height-computed + 5); // Height of the `label` and its margin
+    top: (OZ_variables.$line-height-computed + 5); // Height of the `label` and its margin
   }
   &.sr-only ~ .form-control-feedback {
     top: 0;
@@ -457,7 +465,7 @@ input[type="checkbox"] {
   display: block; // account for any element using help-block
   margin-top: 5px;
   margin-bottom: 10px;
-  color: color.adjust($text-color, $lightness: 25%); // lighten the text some for contrast
+  color: color.adjust(OZ_variables.$text-color, $lightness: 25%); // lighten the text some for contrast
 }
 
 
@@ -476,7 +484,7 @@ input[type="checkbox"] {
 @mixin form-inline {
 
   // Kick in the inline
-  @media (min-width: $screen-sm-min) {
+  @media (min-width: OZ_variables.$screen-sm-min) {
     // Inline-block all the things for "inline"
     .form-group {
       display: inline-block;
@@ -565,27 +573,27 @@ input[type="checkbox"] {
   .checkbox-inline {
     margin-top: 0;
     margin-bottom: 0;
-    padding-top: ($padding-base-vertical + 1); // Default padding plus a border
+    padding-top: (OZ_variables.$padding-base-vertical + 1); // Default padding plus a border
   }
   // Account for padding we're adding to ensure the alignment and of help text
   // and other content below items
   .radio,
   .checkbox {
-    min-height: ($line-height-computed + ($padding-base-vertical + 1));
+    min-height: (OZ_variables.$line-height-computed + (OZ_variables.$padding-base-vertical + 1));
   }
 
   // Make form groups behave like rows
   .form-group {
-    @include make-row;
+    @include grid.make-row;
   }
 
   // Reset spacing and right align labels, but scope to media queries so that
   // labels on narrow viewports stack the same as a default form example.
-  @media (min-width: $screen-sm-min) {
+  @media (min-width: OZ_variables.$screen-sm-min) {
     .control-label {
       text-align: right;
       margin-bottom: 0;
-      padding-top: ($padding-base-vertical + 1); // Default padding plus a border
+      padding-top: (OZ_variables.$padding-base-vertical + 1); // Default padding plus a border
     }
   }
 
@@ -594,7 +602,7 @@ input[type="checkbox"] {
   // Reposition the icon because it's now within a grid column and columns have
   // `position: relative;` on them. Also accounts for the grid gutter padding.
   .has-feedback .form-control-feedback {
-    right: math.floor(math.div($grid-gutter-width, 2));
+    right: math.floor(math.div(OZ_variables.$grid-gutter-width, 2));
   }
 
   // Form group sizes
@@ -602,18 +610,18 @@ input[type="checkbox"] {
   // Quick utility class for applying `.input-lg` and `.input-sm` styles to the
   // inputs and labels within a `.form-group`.
   .form-group-lg {
-    @media (min-width: $screen-sm-min) {
+    @media (min-width: OZ_variables.$screen-sm-min) {
       .control-label {
-        padding-top: ($padding-large-vertical + 1);
-        font-size: $font-size-large;
+        padding-top: (OZ_variables.$padding-large-vertical + 1);
+        font-size: OZ_variables.$font-size-large;
       }
     }
   }
   .form-group-sm {
-    @media (min-width: $screen-sm-min) {
+    @media (min-width: OZ_variables.$screen-sm-min) {
       .control-label {
-        padding-top: ($padding-small-vertical + 1);
-        font-size: $font-size-small;
+        padding-top: (OZ_variables.$padding-small-vertical + 1);
+        font-size: OZ_variables.$font-size-small;
       }
     }
   }

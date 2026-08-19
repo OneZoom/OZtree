@@ -1,3 +1,11 @@
+@use "../../OZ_variables";
+@use "forms";
+@use "mixins/border-radius";
+@use "mixins/clearfix";
+@use "mixins/nav-vertical-align";
+@use "mixins/vendor-prefixes";
+@use "sass:color";
+
 //
 // Navbars
 // --------------------------------------------------
@@ -10,15 +18,15 @@
 
 .navbar {
   position: relative;
-  min-height: $navbar-height; // Ensure a navbar always shows (e.g., without a .navbar-brand in collapsed mode)
-  margin-bottom: $navbar-margin-bottom;
+  min-height: OZ_variables.$navbar-height; // Ensure a navbar always shows (e.g., without a .navbar-brand in collapsed mode)
+  margin-bottom: OZ_variables.$navbar-margin-bottom;
   border: 1px solid transparent;
 
   // Prevent floats from breaking the navbar
-  @include clearfix;
+  @include clearfix.clearfix;
 
-  @media (min-width: $grid-float-breakpoint) {
-    border-radius: $navbar-border-radius;
+  @media (min-width: OZ_variables.$grid-float-breakpoint) {
+    border-radius: OZ_variables.$navbar-border-radius;
   }
 }
 
@@ -29,9 +37,9 @@
 // styling of responsive aspects.
 
 .navbar-header {
-  @include clearfix;
+  @include clearfix.clearfix;
 
-  @media (min-width: $grid-float-breakpoint) {
+  @media (min-width: OZ_variables.$grid-float-breakpoint) {
     float: left;
   }
 }
@@ -49,18 +57,18 @@
 
 .navbar-collapse {
   overflow-x: visible;
-  padding-right: $navbar-padding-horizontal;
-  padding-left:  $navbar-padding-horizontal;
+  padding-right: OZ_variables.$navbar-padding-horizontal;
+  padding-left:  OZ_variables.$navbar-padding-horizontal;
   border-top: 1px solid transparent;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.1);
-  @include clearfix;
+  @include clearfix.clearfix;
   -webkit-overflow-scrolling: touch;
 
   &.in {
     overflow-y: auto;
   }
 
-  @media (min-width: $grid-float-breakpoint) {
+  @media (min-width: OZ_variables.$grid-float-breakpoint) {
     width: auto;
     border-top: 0;
     box-shadow: none;
@@ -90,9 +98,9 @@
 .navbar-fixed-top,
 .navbar-fixed-bottom {
   .navbar-collapse {
-    max-height: $navbar-collapse-max-height;
+    max-height: OZ_variables.$navbar-collapse-max-height;
 
-    @media (max-device-width: $screen-xs) and (orientation: landscape) {
+    @media (max-device-width: OZ_variables.$screen-xs) and (orientation: landscape) {
       max-height: 200px;
     }
   }
@@ -107,10 +115,10 @@
 .container-fluid {
   > .navbar-header,
   > .navbar-collapse {
-    margin-right: -$navbar-padding-horizontal;
-    margin-left:  -$navbar-padding-horizontal;
+    margin-right: -(OZ_variables.$navbar-padding-horizontal);
+    margin-left:  -(OZ_variables.$navbar-padding-horizontal);
 
-    @media (min-width: $grid-float-breakpoint) {
+    @media (min-width: OZ_variables.$grid-float-breakpoint) {
       margin-right: 0;
       margin-left:  0;
     }
@@ -126,10 +134,10 @@
 
 // Static top (unfixed, but 100% wide) navbar
 .navbar-static-top {
-  z-index: $zindex-navbar;
+  z-index: OZ_variables.$zindex-navbar;
   border-width: 0 0 1px;
 
-  @media (min-width: $grid-float-breakpoint) {
+  @media (min-width: OZ_variables.$grid-float-breakpoint) {
     border-radius: 0;
   }
 }
@@ -140,10 +148,10 @@
   position: fixed;
   right: 0;
   left: 0;
-  z-index: $zindex-navbar-fixed;
+  z-index: OZ_variables.$zindex-navbar-fixed;
 
   // Undo the rounded corners
-  @media (min-width: $grid-float-breakpoint) {
+  @media (min-width: OZ_variables.$grid-float-breakpoint) {
     border-radius: 0;
   }
 }
@@ -162,10 +170,10 @@
 
 .navbar-brand {
   float: left;
-  padding: $navbar-padding-vertical $navbar-padding-horizontal;
-  font-size: $font-size-large;
-  line-height: $line-height-computed;
-  height: $navbar-height;
+  padding: OZ_variables.$navbar-padding-vertical OZ_variables.$navbar-padding-horizontal;
+  font-size: OZ_variables.$font-size-large;
+  line-height: OZ_variables.$line-height-computed;
+  height: OZ_variables.$navbar-height;
 
   &:hover,
   &:focus {
@@ -176,10 +184,10 @@
     display: block;
   }
 
-  @media (min-width: $grid-float-breakpoint) {
+  @media (min-width: OZ_variables.$grid-float-breakpoint) {
     .navbar > .container &,
     .navbar > .container-fluid & {
-      margin-left: -$navbar-padding-horizontal;
+      margin-left: -(OZ_variables.$navbar-padding-horizontal);
     }
   }
 }
@@ -193,13 +201,13 @@
 .navbar-toggle {
   position: relative;
   float: right;
-  margin-right: $navbar-padding-horizontal;
+  margin-right: OZ_variables.$navbar-padding-horizontal;
   padding: 9px 10px;
-  @include navbar-vertical-align(34px);
+  @include nav-vertical-align.navbar-vertical-align(34px);
   background-color: transparent;
   background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
   border: 1px solid transparent;
-  border-radius: $border-radius-base;
+  border-radius: OZ_variables.$border-radius-base;
 
   // We remove the `outline` here, but later compensate by attaching `:hover`
   // styles to `:focus`.
@@ -218,7 +226,7 @@
     margin-top: 4px;
   }
 
-  @media (min-width: $grid-float-breakpoint) {
+  @media (min-width: OZ_variables.$grid-float-breakpoint) {
     display: none;
   }
 }
@@ -230,15 +238,15 @@
 // the nav the full height of the horizontal nav (above 768px).
 
 .navbar-nav {
-  margin: calc(($navbar-padding-vertical / 2) - $navbar-padding-horizontal);
+  margin: calc((OZ_variables.$navbar-padding-vertical / 2) - OZ_variables.$navbar-padding-horizontal);
 
   > li > a {
     padding-top:    10px;
     padding-bottom: 10px;
-    line-height: $line-height-computed;
+    line-height: OZ_variables.$line-height-computed;
   }
 
-  @media (max-width: $grid-float-breakpoint-max) {
+  @media (max-width: OZ_variables.$grid-float-breakpoint-max) {
     // Dropdowns get custom display when collapsed
     .open .dropdown-menu {
       position: static;
@@ -253,7 +261,7 @@
         padding: 5px 15px 5px 25px;
       }
       > li > a {
-        line-height: $line-height-computed;
+        line-height: OZ_variables.$line-height-computed;
         &:hover,
         &:focus {
           background-image: none;
@@ -263,15 +271,15 @@
   }
 
   // Uncollapse the nav
-  @media (min-width: $grid-float-breakpoint) {
+  @media (min-width: OZ_variables.$grid-float-breakpoint) {
     float: left;
     margin: 0;
 
     > li {
       float: left;
       > a {
-        padding-top:    $navbar-padding-vertical;
-        padding-bottom: $navbar-padding-vertical;
+        padding-top:    OZ_variables.$navbar-padding-vertical;
+        padding-bottom: OZ_variables.$navbar-padding-vertical;
       }
     }
   }
@@ -284,19 +292,19 @@
 // our navbars.
 
 .navbar-form {
-  margin-left: -$navbar-padding-horizontal;
-  margin-right: -$navbar-padding-horizontal;
-  padding: 10px $navbar-padding-horizontal;
+  margin-left: -(OZ_variables.$navbar-padding-horizontal);
+  margin-right: -(OZ_variables.$navbar-padding-horizontal);
+  padding: 10px OZ_variables.$navbar-padding-horizontal;
   border-top: 1px solid transparent;
   border-bottom: 1px solid transparent;
   $shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 1px 0 rgba(255,255,255,.1);
-  @include box-shadow($shadow);
+  @include vendor-prefixes.box-shadow($shadow);
 
   // Mixin behavior for optimum display
-  @include form-inline;
+  @include forms.form-inline;
 
   .form-group {
-    @media (max-width: $grid-float-breakpoint-max) {
+    @media (max-width: OZ_variables.$grid-float-breakpoint-max) {
       margin-bottom: 5px;
 
       &:last-child {
@@ -306,17 +314,17 @@
   }
 
   // Vertically center in expanded, horizontal navbar
-  @include navbar-vertical-align($input-height-base);
+  @include nav-vertical-align.navbar-vertical-align(OZ_variables.$input-height-base);
 
   // Undo 100% width for pull classes
-  @media (min-width: $grid-float-breakpoint) {
+  @media (min-width: OZ_variables.$grid-float-breakpoint) {
     width: auto;
     border: 0;
     margin-left: 0;
     margin-right: 0;
     padding-top: 0;
     padding-bottom: 0;
-    @include box-shadow(none);
+    @include vendor-prefixes.box-shadow(none);
   }
 }
 
@@ -326,13 +334,13 @@
 // Menu position and menu carets
 .navbar-nav > li > .dropdown-menu {
   margin-top: 0;
-  @include border-top-radius(0);
+  @include border-radius.border-top-radius(0);
 }
 // Menu position and menu caret support for dropups via extra dropup class
 .navbar-fixed-bottom .navbar-nav > li > .dropdown-menu {
   margin-bottom: 0;
-  @include border-top-radius($navbar-border-radius);
-  @include border-bottom-radius(0);
+  @include border-radius.border-top-radius(OZ_variables.$navbar-border-radius);
+  @include border-radius.border-bottom-radius(0);
 }
 
 
@@ -341,13 +349,13 @@
 // Vertically center a button within a navbar (when *not* in a form).
 
 .navbar-btn {
-  @include navbar-vertical-align($input-height-base);
+  @include nav-vertical-align.navbar-vertical-align(OZ_variables.$input-height-base);
 
   &.btn-sm {
-    @include navbar-vertical-align($input-height-small);
+    @include nav-vertical-align.navbar-vertical-align(OZ_variables.$input-height-small);
   }
   &.btn-xs {
-    @include navbar-vertical-align(22px);
+    @include nav-vertical-align.navbar-vertical-align(22px);
   }
 }
 
@@ -357,12 +365,12 @@
 // Add a class to make any element properly align itself vertically within the navbars.
 
 .navbar-text {
-  @include navbar-vertical-align($line-height-computed);
+  @include nav-vertical-align.navbar-vertical-align(OZ_variables.$line-height-computed);
 
-  @media (min-width: $grid-float-breakpoint) {
+  @media (min-width: OZ_variables.$grid-float-breakpoint) {
     float: left;
-    margin-left: $navbar-padding-horizontal;
-    margin-right: $navbar-padding-horizontal;
+    margin-left: OZ_variables.$navbar-padding-horizontal;
+    margin-right: OZ_variables.$navbar-padding-horizontal;
   }
 }
 
@@ -375,13 +383,13 @@
 //
 // Declared after the navbar components to ensure more specificity on the margins.
 
-@media (min-width: $grid-float-breakpoint) {
+@media (min-width: OZ_variables.$grid-float-breakpoint) {
   .navbar-left {
     float: left !important;
   }
   .navbar-right {
     float: right !important;
-  margin-right: -$navbar-padding-horizontal;
+  margin-right: -(OZ_variables.$navbar-padding-horizontal);
 
     ~ .navbar-right {
       margin-right: 0;
@@ -395,64 +403,64 @@
 
 // Default navbar
 .navbar-default {
-  background-color: $navbar-default-bg;
-  border-color: $navbar-default-border;
+  background-color: OZ_variables.$navbar-default-bg;
+  border-color: OZ_variables.$navbar-default-border;
 
   .navbar-brand {
-    color: $navbar-default-brand-color;
+    color: OZ_variables.$navbar-default-brand-color;
     &:hover,
     &:focus {
-      color: $navbar-default-brand-hover-color;
-      background-color: $navbar-default-brand-hover-bg;
+      color: OZ_variables.$navbar-default-brand-hover-color;
+      background-color: OZ_variables.$navbar-default-brand-hover-bg;
     }
   }
 
   .navbar-text {
-    color: $navbar-default-color;
+    color: OZ_variables.$navbar-default-color;
   }
 
   .navbar-nav {
     > li > a {
-      color: $navbar-default-link-color;
+      color: OZ_variables.$navbar-default-link-color;
 
       &:hover,
       &:focus {
-        color: $navbar-default-link-hover-color;
-        background-color: $navbar-default-link-hover-bg;
+        color: OZ_variables.$navbar-default-link-hover-color;
+        background-color: OZ_variables.$navbar-default-link-hover-bg;
       }
     }
     > .active > a {
       &,
       &:hover,
       &:focus {
-        color: $navbar-default-link-active-color;
-        background-color: $navbar-default-link-active-bg;
+        color: OZ_variables.$navbar-default-link-active-color;
+        background-color: OZ_variables.$navbar-default-link-active-bg;
       }
     }
     > .disabled > a {
       &,
       &:hover,
       &:focus {
-        color: $navbar-default-link-disabled-color;
-        background-color: $navbar-default-link-disabled-bg;
+        color: OZ_variables.$navbar-default-link-disabled-color;
+        background-color: OZ_variables.$navbar-default-link-disabled-bg;
       }
     }
   }
 
   .navbar-toggle {
-    border-color: $navbar-default-toggle-border-color;
+    border-color: OZ_variables.$navbar-default-toggle-border-color;
     &:hover,
     &:focus {
-      background-color: $navbar-default-toggle-hover-bg;
+      background-color: OZ_variables.$navbar-default-toggle-hover-bg;
     }
     .icon-bar {
-      background-color: $navbar-default-toggle-icon-bar-bg;
+      background-color: OZ_variables.$navbar-default-toggle-icon-bar-bg;
     }
   }
 
   .navbar-collapse,
   .navbar-form {
-    border-color: $navbar-default-border;
+    border-color: OZ_variables.$navbar-default-border;
   }
 
   // Dropdown menu items
@@ -462,36 +470,36 @@
       &,
       &:hover,
       &:focus {
-        background-color: $navbar-default-link-active-bg;
-        color: $navbar-default-link-active-color;
+        background-color: OZ_variables.$navbar-default-link-active-bg;
+        color: OZ_variables.$navbar-default-link-active-color;
       }
     }
 
-    @media (max-width: $grid-float-breakpoint-max) {
+    @media (max-width: OZ_variables.$grid-float-breakpoint-max) {
       // Dropdowns get custom display when collapsed
       .open .dropdown-menu {
         > li > a {
-          color: $navbar-default-link-color;
+          color: OZ_variables.$navbar-default-link-color;
           &:hover,
           &:focus {
-            color: $navbar-default-link-hover-color;
-            background-color: $navbar-default-link-hover-bg;
+            color: OZ_variables.$navbar-default-link-hover-color;
+            background-color: OZ_variables.$navbar-default-link-hover-bg;
           }
         }
         > .active > a {
           &,
           &:hover,
           &:focus {
-            color: $navbar-default-link-active-color;
-            background-color: $navbar-default-link-active-bg;
+            color: OZ_variables.$navbar-default-link-active-color;
+            background-color: OZ_variables.$navbar-default-link-active-bg;
           }
         }
         > .disabled > a {
           &,
           &:hover,
           &:focus {
-            color: $navbar-default-link-disabled-color;
-            background-color: $navbar-default-link-disabled-bg;
+            color: OZ_variables.$navbar-default-link-disabled-color;
+            background-color: OZ_variables.$navbar-default-link-disabled-bg;
           }
         }
       }
@@ -504,23 +512,23 @@
   // Add a class to ensure links outside the navbar nav are colored correctly.
 
   .navbar-link {
-    color: $navbar-default-link-color;
+    color: OZ_variables.$navbar-default-link-color;
     &:hover {
-      color: $navbar-default-link-hover-color;
+      color: OZ_variables.$navbar-default-link-hover-color;
     }
   }
 
   .btn-link {
-    color: $navbar-default-link-color;
+    color: OZ_variables.$navbar-default-link-color;
     &:hover,
     &:focus {
-      color: $navbar-default-link-hover-color;
+      color: OZ_variables.$navbar-default-link-hover-color;
     }
     &[disabled],
     fieldset[disabled] & {
       &:hover,
       &:focus {
-        color: $navbar-default-link-disabled-color;
+        color: OZ_variables.$navbar-default-link-disabled-color;
       }
     }
   }
@@ -529,65 +537,65 @@
 // Inverse navbar
 
 .navbar-inverse {
-  background-color: $navbar-inverse-bg;
-  border-color: $navbar-inverse-border;
+  background-color: OZ_variables.$navbar-inverse-bg;
+  border-color: OZ_variables.$navbar-inverse-border;
 
   .navbar-brand {
-    color: $navbar-inverse-brand-color;
+    color: OZ_variables.$navbar-inverse-brand-color;
     &:hover,
     &:focus {
-      color: $navbar-inverse-brand-hover-color;
-      background-color: $navbar-inverse-brand-hover-bg;
+      color: OZ_variables.$navbar-inverse-brand-hover-color;
+      background-color: OZ_variables.$navbar-inverse-brand-hover-bg;
     }
   }
 
   .navbar-text {
-    color: $navbar-inverse-color;
+    color: OZ_variables.$navbar-inverse-color;
   }
 
   .navbar-nav {
     > li > a {
-      color: $navbar-inverse-link-color;
+      color: OZ_variables.$navbar-inverse-link-color;
 
       &:hover,
       &:focus {
-        color: $navbar-inverse-link-hover-color;
-        background-color: $navbar-inverse-link-hover-bg;
+        color: OZ_variables.$navbar-inverse-link-hover-color;
+        background-color: OZ_variables.$navbar-inverse-link-hover-bg;
       }
     }
     > .active > a {
       &,
       &:hover,
       &:focus {
-        color: $navbar-inverse-link-active-color;
-        background-color: $navbar-inverse-link-active-bg;
+        color: OZ_variables.$navbar-inverse-link-active-color;
+        background-color: OZ_variables.$navbar-inverse-link-active-bg;
       }
     }
     > .disabled > a {
       &,
       &:hover,
       &:focus {
-        color: $navbar-inverse-link-disabled-color;
-        background-color: $navbar-inverse-link-disabled-bg;
+        color: OZ_variables.$navbar-inverse-link-disabled-color;
+        background-color: OZ_variables.$navbar-inverse-link-disabled-bg;
       }
     }
   }
 
   // Darken the responsive nav toggle
   .navbar-toggle {
-    border-color: $navbar-inverse-toggle-border-color;
+    border-color: OZ_variables.$navbar-inverse-toggle-border-color;
     &:hover,
     &:focus {
-      background-color: $navbar-inverse-toggle-hover-bg;
+      background-color: OZ_variables.$navbar-inverse-toggle-hover-bg;
     }
     .icon-bar {
-      background-color: $navbar-inverse-toggle-icon-bar-bg;
+      background-color: OZ_variables.$navbar-inverse-toggle-icon-bar-bg;
     }
   }
 
   .navbar-collapse,
   .navbar-form {
-    border-color: color.adjust($navbar-inverse-bg, $lightness: -7%);
+    border-color: color.adjust(OZ_variables.$navbar-inverse-bg, $lightness: -7%);
   }
 
   // Dropdowns
@@ -596,42 +604,42 @@
       &,
       &:hover,
       &:focus {
-        background-color: $navbar-inverse-link-active-bg;
-        color: $navbar-inverse-link-active-color;
+        background-color: OZ_variables.$navbar-inverse-link-active-bg;
+        color: OZ_variables.$navbar-inverse-link-active-color;
       }
     }
 
-    @media (max-width: $grid-float-breakpoint-max) {
+    @media (max-width: OZ_variables.$grid-float-breakpoint-max) {
       // Dropdowns get custom display
       .open .dropdown-menu {
         > .dropdown-header {
-          border-color: $navbar-inverse-border;
+          border-color: OZ_variables.$navbar-inverse-border;
         }
         .divider {
-          background-color: $navbar-inverse-border;
+          background-color: OZ_variables.$navbar-inverse-border;
         }
         > li > a {
-          color: $navbar-inverse-link-color;
+          color: OZ_variables.$navbar-inverse-link-color;
           &:hover,
           &:focus {
-            color: $navbar-inverse-link-hover-color;
-            background-color: $navbar-inverse-link-hover-bg;
+            color: OZ_variables.$navbar-inverse-link-hover-color;
+            background-color: OZ_variables.$navbar-inverse-link-hover-bg;
           }
         }
         > .active > a {
           &,
           &:hover,
           &:focus {
-            color: $navbar-inverse-link-active-color;
-            background-color: $navbar-inverse-link-active-bg;
+            color: OZ_variables.$navbar-inverse-link-active-color;
+            background-color: OZ_variables.$navbar-inverse-link-active-bg;
           }
         }
         > .disabled > a {
           &,
           &:hover,
           &:focus {
-            color: $navbar-inverse-link-disabled-color;
-            background-color: $navbar-inverse-link-disabled-bg;
+            color: OZ_variables.$navbar-inverse-link-disabled-color;
+            background-color: OZ_variables.$navbar-inverse-link-disabled-bg;
           }
         }
       }
@@ -639,23 +647,23 @@
   }
 
   .navbar-link {
-    color: $navbar-inverse-link-color;
+    color: OZ_variables.$navbar-inverse-link-color;
     &:hover {
-      color: $navbar-inverse-link-hover-color;
+      color: OZ_variables.$navbar-inverse-link-hover-color;
     }
   }
 
   .btn-link {
-    color: $navbar-inverse-link-color;
+    color: OZ_variables.$navbar-inverse-link-color;
     &:hover,
     &:focus {
-      color: $navbar-inverse-link-hover-color;
+      color: OZ_variables.$navbar-inverse-link-hover-color;
     }
     &[disabled],
     fieldset[disabled] & {
       &:hover,
       &:focus {
-        color: $navbar-inverse-link-disabled-color;
+        color: OZ_variables.$navbar-inverse-link-disabled-color;
       }
     }
   }
