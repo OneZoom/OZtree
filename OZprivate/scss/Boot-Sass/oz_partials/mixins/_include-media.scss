@@ -306,7 +306,11 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
 /// @return {String} - `min` or `max`
 ///
 @function get-expression-prefix($operator) {
-  @return if(index(('<', '<=', '≤'), $operator), 'max', 'min');
+  @if index(('<', '<=', '≤'), $operator) {
+    @return 'max';
+  }
+
+  @return 'min';
 }
 
 
@@ -432,7 +436,11 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
     $character: str-slice($value, $i, $i);
 
     @if not (index(map-keys($numbers), $character) or $character == '.') {
-      @return to-length(if($minus, -$result, $result), str-slice($value, $i))
+      @if $minus {
+        @return to-length(-$result, str-slice($value, $i))
+      }
+
+      @return to-length($result, str-slice($value, $i))
     }
 
     @if $character == '.' {
@@ -445,7 +453,11 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
     }
   }
 
-  @return if($minus, -$result, $result);
+  @if $minus {
+    @return -$result;
+  }
+
+  @return $result;
 }
 
 
