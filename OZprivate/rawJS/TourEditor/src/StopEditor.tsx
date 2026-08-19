@@ -7,6 +7,7 @@ import { identifierIsDuplicate } from './tour';
 import { useNodePinpointSelection } from './treeSelection';
 import { useHighlightTreeSync } from './useHighlightTreeSync';
 import type { EditorTourStop, LocationSelectionMode, Pinpoint } from './types';
+import UkIcon from './UkIcon';
 
 interface StopEditorProps {
     stop: EditorTourStop;
@@ -14,9 +15,10 @@ interface StopEditorProps {
     onChange: (
         patch: Partial<EditorTourStop> | ((stop: EditorTourStop) => Partial<EditorTourStop>),
     ) => void;
+    onPreview: () => void;
 }
 
-export default function StopEditor({ stop, stops, onChange }: StopEditorProps) {
+export default function StopEditor({ stop, stops, onChange, onPreview }: StopEditorProps) {
     const [mode, setMode] = useState<LocationSelectionMode>({ kind: 'idle' });
 
     useHighlightTreeSync(stop.highlights, true, { clearOnDisable: true });
@@ -100,6 +102,15 @@ export default function StopEditor({ stop, stops, onChange }: StopEditorProps) {
                     onChange={onChange}
                 />
             </div>
+
+            <button
+                className="uk-button uk-button-primary"
+                type="button"
+                onClick={onPreview}
+            >
+                <UkIcon icon="play" className="uk-margin-small-right" />
+                Preview stop
+            </button>
         </div>
     );
 }

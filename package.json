@@ -12,7 +12,7 @@
     "old_css_dest_and_dist": "static/OZSponsor"
   },
   "scripts": {
-    "test": "npx babel-tape-runner OZprivate/rawJS/OZTreeModule/tests/*.js",
+    "test": "node OZprivate/rawJS/run_tape.js OZprivate/rawJS/OZTreeModule/tests/*.js OZprivate/rawJS/TourEditor/tests/*.js",
     "comment": "openssl-legacy-provider is needed for node 18 until we upgrade webpack - https://stackoverflow.com/a/69699772",
     "compile_js": "webpack --mode production",
     "compile_js_dev:watch": "webpack --mode development --watch --config webpack.config.dev.js",

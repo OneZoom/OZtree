@@ -16,6 +16,7 @@ function ExpertEditors() {
     const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
 
     const closePanels = useCallback(() => setOpenPanel(null), []);
+    const openTour = useCallback(() => setOpenPanel('tour'), []);
     const toggleTour = useCallback(() => {
         setOpenPanel((current) => (current === 'tour' ? null : 'tour'));
     }, []);
@@ -28,6 +29,7 @@ function ExpertEditors() {
             <TourEditor
                 isOpen={openPanel === 'tour'}
                 onClose={closePanels}
+                onOpen={openTour}
                 onToggle={toggleTour}
             />
             <HighlightsEditor

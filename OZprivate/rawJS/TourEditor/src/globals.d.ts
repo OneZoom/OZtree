@@ -5,6 +5,11 @@ interface OneZoomController {
     highlight_detail: () => HighlightDetail[];
     highlight_replace: (highlightStrs: HighlightStr[]) => Promise<void>;
     leap_to: (ozid: number) => void;
+    tour_start: (
+        tourSetting: Text | string,
+        options?: { on_complete?: () => void },
+    ) => Promise<void>;
+    tour_goto_stop: (step: number) => void;
 }
 
 interface OneZoom {

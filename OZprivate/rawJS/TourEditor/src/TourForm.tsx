@@ -10,6 +10,7 @@ interface TourFormProps {
     onAddStop: () => void;
     onRemoveStop: (stopId: string) => void;
     onMoveStop: (stopId: string, direction: number) => void;
+    onPreview: () => void;
 }
 
 export default function TourForm({
@@ -19,6 +20,7 @@ export default function TourForm({
     onAddStop,
     onRemoveStop,
     onMoveStop,
+    onPreview,
 }: TourFormProps) {
     return (
         <div className="uk-form-stacked">
@@ -81,6 +83,16 @@ export default function TourForm({
                 >
                     <UkIcon icon="plus" className="uk-margin-small-right" />
                     Add stop
+                </button>
+                <button
+                    className="uk-button uk-button-primary uk-margin-small-top uk-margin-small-left"
+                    type="button"
+                    disabled={tour.stops.length === 0}
+                    title={tour.stops.length === 0 ? 'Add a stop to preview' : 'Preview tour'}
+                    onClick={onPreview}
+                >
+                    <UkIcon icon="play" className="uk-margin-small-right" />
+                    Preview tour
                 </button>
             </div>
         </div>

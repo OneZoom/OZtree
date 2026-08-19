@@ -61,7 +61,19 @@ export default function (Controller) {
     return this._tour ? this._tour.get_active_setting() : null
   }
 
-  Controller.prototype.tour_start = function (tour_setting) {
+  /**
+   * Start a tour from a URL string or a Text node of tour HTML.
+   * Returns a promise that resolves once the first stop begins playing.
+   *
+   * @param {String|Text} tour_setting URL or Text node of tour HTML
+   * @param {Object} [options]
+   * @param {function} [options.on_complete] Called when the tour finishes or is exited
+   */
+  Controller.prototype.tour_start = function (tour_setting, options) {
+    const on_complete = options && typeof options.on_complete === 'function'
+        ? options.on_complete
+        : () => {};
+
     if (!this._tour || this._tour.tour_setting !== tour_setting) {
       if (this._tour) {
         this._tour.remove()
@@ -74,14 +86,20 @@ export default function (Controller) {
               config.ui.closeAll()
               record_url_delayed(this, { replaceURL: true }, true)
           },
-          null,
+          on_complete,  // Natural end (last stop → next)
           () => {  // On shutdown, restart any screensaver
               if (this._screensaver) this._screensaver.set_auto_start()
               record_url(this, { replaceURL: true }, true)
+              on_complete()
           },
       )
     }
-    this._tour.start()
+    return this._tour.start()
+  }
+
+  /** Jump the active tour to a 0-based stop index. No-op if no tour is loaded. */
+  Controller.prototype.tour_goto_stop = function (step) {
+    if (this._tour) this._tour.goto_stop(step)
   }
 
   Controller.prototype.set_screensaver = function (tour_setting, timeout, interaction) {

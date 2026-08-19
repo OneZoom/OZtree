@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import StopEditor from './StopEditor';
 import TourForm from './TourForm';
 import UkIcon from './UkIcon';
+import { editorTourToJson, tourJsonToHtml } from './compile';
 import {
     createEmptyStop,
     createEmptyTour,
@@ -14,12 +15,36 @@ import type { EditorTour, EditorTourStop } from './types';
 interface TourEditorProps {
     isOpen: boolean;
     onClose: () => void;
+    onOpen: () => void;
     onToggle: () => void;
 }
 
-export default function TourEditor({ isOpen, onClose, onToggle }: TourEditorProps) {
+type PendingPreview = { stopId?: string };
+
+function playEditorTour(
+    tour: EditorTour,
+    startStopId: string | undefined,
+    onComplete: () => void,
+): Promise<void> {
+    const html = tourJsonToHtml(editorTourToJson(tour));
+    const index = startStopId
+        ? tour.stops.findIndex((stop) => stop.id === startStopId)
+        : 0;
+    const started = window.onezoom.controller.tour_start(document.createTextNode(html), {
+        on_complete: onComplete,
+    });
+    return Promise.resolve(started).then(() => {
+        // start() already plays stop 0; jumping to 0 would restart it as a leap.
+        if (index > 0) {
+            window.onezoom.controller.tour_goto_stop(index);
+        }
+    });
+}
+
+export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEditorProps) {
     const [tour, setTour] = useState<EditorTour | null>(null);
     const [selectedStopId, setSelectedStopId] = useState<string | null>(null);
+    const [pendingPreview, setPendingPreview] = useState<PendingPreview | null>(null);
 
     const closePanel = useCallback(() => {
         onClose();
@@ -38,7 +63,21 @@ export default function TourEditor({ isOpen, onClose, onToggle }: TourEditorProp
         }
     }, [isOpen]);
 
+    useEffect(() => {
+        if (isOpen || !pendingPreview || !tour) return;
+        /** The panel is closed so e.g. highlight sync is now unmounted. Play any pending preview. */
+        const { stopId } = pendingPreview;
+        setPendingPreview(null);
+        void playEditorTour(tour, stopId, onOpen);
+    }, [isOpen, pendingPreview, tour, onOpen]);
+
     const selectedStop = tour?.stops.find((stop) => stop.id === selectedStopId) ?? null;
+
+    const requestPreview = (stopId?: string) => {
+        if (!tour || tour.stops.length === 0) return;
+        setPendingPreview({ stopId });
+        onClose();
+    };
 
     const addStop = () => {
         setTour((current) => {
@@ -107,6 +146,7 @@ export default function TourEditor({ isOpen, onClose, onToggle }: TourEditorProp
                             stop={selectedStop}
                             stops={tour.stops}
                             onChange={patchSelectedStop}
+                            onPreview={() => requestPreview(selectedStop.id)}
                         />
                     )}
                     {isOpen && tour && !selectedStop && (
@@ -117,6 +157,7 @@ export default function TourEditor({ isOpen, onClose, onToggle }: TourEditorProp
                             onAddStop={addStop}
                             onRemoveStop={removeStop}
                             onMoveStop={moveStop}
+                            onPreview={() => requestPreview()}
                         />
                     )}
                 </div>
