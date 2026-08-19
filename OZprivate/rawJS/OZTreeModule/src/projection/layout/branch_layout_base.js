@@ -1,5 +1,6 @@
 import {color_theme} from '../../themes/color_theme';
 import BezierShape from '../shapes/bezier_shape';
+import SegmentedShape from '../shapes/segmented_shape';
 import ArcShape from '../shapes/arc_shape';
 import PathShape from '../shapes/path_shape';
 import LineToShape from '../shapes/line_to_shape';
@@ -44,7 +45,27 @@ class BranchLayoutBase {
 
   get_bezier_shapes(node, shapes, markings_list) {
     if (node.branch_points.length > 2) {
-      throw new Error("More than 1 branch point unsupported");
+      let shape = SegmentedShape.create();
+      shape.sx = node.branch_start.x * node.rvar + node.xvar;
+      shape.sy = node.branch_start.y * node.rvar + node.yvar;
+      shape.path_points = node.branch_points.slice(1).map((p) => ({
+          fn: "bezier",
+          cp1x: p.cp1x * node.rvar + node.xvar,
+          cp1y: p.cp1y * node.rvar + node.yvar,
+          cp2x: p.cp2x * node.rvar + node.xvar,
+          cp2y: p.cp2y * node.rvar + node.yvar,
+          x: p.x * node.rvar + node.xvar,
+          y: p.y * node.rvar + node.yvar,
+      }));
+      shape.stroke.line_cap = 'round';
+      shape.height = 1;
+      shape.markings_list = markings_list || [];
+
+      shape.do_stroke = true;
+      shape.stroke.line_width = this.node_line_width(node, markings_list);
+      shape.height = 0;
+      shape.stroke.color = color_theme.get_color('branch.stroke', node);
+      shapes.push(shape);
     } else {
       let bezier_shape = BezierShape.create();
 
