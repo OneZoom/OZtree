@@ -31,7 +31,6 @@ export function fromControllerDetail(detail: HighlightDetail): EditorHighlight {
         type: detail.type,
         color: getColorValue(detail.color),
         pinpoints: [...(detail.pinpoints || [])],
-        invalid: false,
     };
 }
 
@@ -60,7 +59,6 @@ export function createHighlightFromNode(node: TreeNode): EditorHighlight | null 
         type: 'fan',
         color: DEFAULT_HIGHLIGHT_COLOR,
         pinpoints: [pinpoint],
-        invalid: false,
     };
 }
 
@@ -155,6 +153,31 @@ export async function validateHighlightPinpoints(
     }
 
     return { valid: true, shouldSwap: false };
+}
+
+/**
+ * Pinpoints to commit after validation. Swaps path endpoints when needed.
+ * Returns null when the pinpoints are invalid and cannot be repaired.
+ */
+export async function pinpointsToCommit(
+    pinpoints: Pinpoint[],
+    type: HighlightType,
+): Promise<Pinpoint[] | null> {
+    const { valid, shouldSwap } = await validateHighlightPinpoints(pinpoints, type);
+    if (shouldSwap) return swapPathEndpoints(pinpoints);
+    if (!valid) return null;
+    return pinpoints;
+}
+
+export async function pinpointsAfterEdit(
+    highlight: EditorHighlight,
+    editingPinpoint: EditingPinpointRef,
+    newPinpoint: Pinpoint,
+): Promise<Pinpoint[] | null> {
+    return pinpointsToCommit(
+        updatePinpoints(highlight, editingPinpoint, newPinpoint),
+        highlight.type,
+    );
 }
 
 export function jumpToPinpoints(pinpoints: Pinpoint[]): void {

@@ -6,11 +6,10 @@ import {
     fromControllerDetail,
     jumpToPinpoints,
     nodeToStablePinpoint,
+    pinpointsAfterEdit,
     pinpointsForTypeChange,
-    swapPathEndpoints,
+    pinpointsToCommit,
     toHighlightStr,
-    updatePinpoints,
-    validateHighlightPinpoints,
 } from './highlights';
 import type { EditingPinpointRef, EditorHighlight, HighlightType } from './types';
 
@@ -33,20 +32,22 @@ export default function HighlightsEditor() {
     const [isAddingHighlight, setIsAddingHighlight] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editingPinpoint, setEditingPinpoint] = useState<EditingPinpointRef | null>(null);
-    const [highlights, setHighlights] = useState<EditorHighlight[]>(() =>
-        window.onezoom.controller.highlight_detail().map(fromControllerDetail),
-    );
+    const [highlights, setHighlights] = useState<EditorHighlight[]>(() => []);
 
     const skipNextWrite = useRef(true);
     const lastWritten = useRef<string[]>([]);
+    const editGeneration = useRef(0);
+    const highlightsRef = useRef(highlights);
     const stateRef = useRef<EditorSelectionState>({
         isAddingHighlight: false,
         editingId: null,
         editingPinpoint: null,
     });
+    highlightsRef.current = highlights;
     stateRef.current = { isAddingHighlight, editingId, editingPinpoint };
 
     const stopAddAndEdit = useCallback(() => {
+        editGeneration.current += 1;
         setIsAddingHighlight(false);
         setEditingId(null);
         setEditingPinpoint(null);
@@ -91,35 +92,6 @@ export default function HighlightsEditor() {
     }, [highlights]);
 
     useEffect(() => {
-        // Asychronoushly update the validity of the highlights
-        let cancelled = false;
-        highlights.forEach((h) => {
-            validateHighlightPinpoints(h.pinpoints, h.type).then(({ valid, shouldSwap }) => {
-                if (cancelled) return;
-                if (shouldSwap) {
-                    setHighlights((prev) => {
-                        const current = prev.find((row) => row.id === h.id);
-                        if (!current) return prev;
-                        return patchHighlight(prev, h.id, () => ({
-                            pinpoints: swapPathEndpoints(current.pinpoints),
-                            invalid: false,
-                        }));
-                    });
-                    return;
-                }
-                setHighlights((prev) => {
-                    const current = prev.find((row) => row.id === h.id);
-                    if (!current || current.invalid === !valid) return prev;
-                    return patchHighlight(prev, h.id, () => ({ invalid: !valid }));
-                });
-            });
-        });
-        return () => {
-            cancelled = true;
-        };
-    }, [highlights]);
-
-    useEffect(() => {
         // handle clicking on a node when necessary
         const selecting = isAddingHighlight || (editingId != null && editingPinpoint != null);
         if (!selecting) return undefined;
@@ -131,18 +103,32 @@ export default function HighlightsEditor() {
                 if (!newPinpoint) {
                     console.error('Failed to create stable pinpoint from node:', node);
                     alert('Failed to create pinpoint from selected node.');
-                } else {
-                    setHighlights((prev) => patchHighlight(prev, editingId, (h) => ({
-                        pinpoints: updatePinpoints(h, editingPinpoint, newPinpoint),
-                    })));
+                    return false;
                 }
-            } else if (isAddingHighlight) {
+                const highlight = highlightsRef.current.find((h) => h.id === editingId);
+                if (!highlight) {
+                    stopAddAndEdit();
+                    return false;
+                }
+                const generation = ++editGeneration.current;
+                void pinpointsAfterEdit(highlight, editingPinpoint, newPinpoint).then((pinpoints) => {
+                    if (generation !== editGeneration.current) return;
+                    if (!pinpoints) {
+                        // Wasn't a valid edit, ignore it
+                        return;
+                    }
+                    setHighlights((prev) => patchHighlight(prev, editingId, () => ({ pinpoints })));
+                    stopAddAndEdit();
+                });
+                return false;
+            }
+            if (isAddingHighlight) {
                 const created = createHighlightFromNode(node);
                 if (created) {
                     setHighlights((prev) => [...prev, created]);
+                    stopAddAndEdit();
                 }
             }
-            stopAddAndEdit();
             return false;
         });
 

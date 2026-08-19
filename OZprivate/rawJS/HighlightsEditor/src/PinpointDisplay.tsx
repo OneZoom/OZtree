@@ -131,14 +131,5 @@ export default function PinpointDisplay({
         });
     }
 
-    return (
-        <>
-            {body}
-            {highlight.invalid && (
-                <div className="pinpoint-warning">
-                    ⚠️ First pinpoint must be an ancestor of the others
-                </div>
-            )}
-        </>
-    );
+    return <>{body}</>;
 }

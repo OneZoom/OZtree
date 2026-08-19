@@ -24,7 +24,6 @@ export interface EditorHighlight {
     type: HighlightType;
     color: string;
     pinpoints: Pinpoint[];
-    invalid: boolean;
 }
 
 export interface ValidationResult {
