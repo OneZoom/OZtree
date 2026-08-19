@@ -9,6 +9,10 @@ function OZTreeModule_src(x) {
     return path.resolve(__dirname, 'OZprivate', 'rawJS', 'OZTreeModule', 'src', x);
 }
 
+function HighlightsEditor_src(x) {
+    return path.resolve(__dirname, 'OZprivate', 'rawJS', 'HighlightsEditor', 'src', x);
+}
+
 function OZTreeModule_dist(x) {
     if (x) {
         return path.resolve(__dirname, 'OZprivate', 'rawJS', 'OZTreeModule', 'dist', x);
@@ -30,6 +34,7 @@ var config = {
     //at: './OZprivate/rawJS/OZTreeModule/src/at.js',
     OZentry: OZTreeModule_src('OZentry.js'),
     OZui: OZTreeModule_src('OZui.js'),
+    HighlightsEditor: HighlightsEditor_src('index.tsx'),
   },
   optimization: {
     minimize: true,
@@ -49,10 +54,13 @@ var config = {
   externals: {
     'jquery': 'jQuery'
   },
+  resolve: {
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
+  },
   module: {
     rules: [
       {
-        test: /\.js/,
+        test: /\.[jt]sx?$/,
         exclude: /(node_modules|bower_components)/,
         loader: 'babel-loader'
       }
@@ -75,11 +83,18 @@ var config = {
       // the webpack compile command, but only for the UI components
       template: OZTreeModule_src('OZ_script_template.html')
     }),
+    new HtmlWebpackPlugin({
+      scriptLoading: 'blocking',
+      filename: 'HighlightsEditor.html',
+      chunks: ['HighlightsEditor'],
+      template: OZTreeModule_src('OZ_script_template.html')
+    }),
     new FileManagerPlugin({
       events: { onEnd: {
         copy: [
           {source: OZTreeModule_dist("OZentry.[contenthash].js"), destination: OZTreeModule_dist("OZentry.js")},
           {source: OZTreeModule_dist("OZui.[contenthash].js"), destination: OZTreeModule_dist("OZui.js")},
+          {source: OZTreeModule_dist("HighlightsEditor.[contenthash].js"), destination: OZTreeModule_dist("HighlightsEditor.js")},
         ]
       }
     }}),
