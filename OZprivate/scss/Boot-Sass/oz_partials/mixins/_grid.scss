@@ -6,15 +6,15 @@
 @mixin container-fixed($gutter: $grid-gutter-width) {
   margin-right: auto;
   margin-left: auto;
-  padding-left:  floor(calc($gutter / 2));
-  padding-right: ceil(calc($gutter / 2));
+  padding-left:  math.floor(calc($gutter / 2));
+  padding-right: math.ceil(calc($gutter / 2));
   @include clearfix;
 }
 
 // Creates a wrapper for a series of columns
 @mixin make-row($gutter: $grid-gutter-width) {
-  margin-left:  ceil(calc($gutter / -2));
-  margin-right: floor(calc($gutter / -2));
+  margin-left:  math.ceil(calc($gutter / -2));
+  margin-right: math.floor(calc($gutter / -2));
   @include clearfix;
 }
 

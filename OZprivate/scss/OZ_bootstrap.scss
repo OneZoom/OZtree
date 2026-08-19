@@ -8,6 +8,8 @@
 
 // Core variables and mixins
 @use 'OZ_variables' as *;
+@use "sass:math";
+@use "sass:color";
 @import 'Boot-Sass/oz_partials/mixins';
 
 // Reset and dependencies
