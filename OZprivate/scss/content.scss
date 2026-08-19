@@ -1,7 +1,7 @@
 /* CSS entry point for UIKit-based content pages */
-@import "colour_scheme.scss";
-@import "ui_widgets.scss";
-@import "search_ui.scss";
+@use "colour_scheme" as *;
+@use "ui_widgets" as *;
+@use "search_ui" as *;
 
 h1, h2, h3, h4, h5, h6,
 .uk-h1, .uk-h2, .uk-h3, .uk-h4, .uk-h5, .uk-h6 {

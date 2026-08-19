@@ -7,7 +7,7 @@
 // Comment-out unwanted components...
 
 // Core variables and mixins
-@import 'OZ_variables';
+@use 'OZ_variables' as *;
 @import 'Boot-Sass/oz_partials/mixins';
 
 // Reset and dependencies

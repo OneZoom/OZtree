@@ -1,4 +1,4 @@
-@import 'OZ_variables';
+@use 'OZ_variables' as *;
 
 html {
     position: relative;
@@ -438,7 +438,6 @@ header {
   }
 
 }
-
 
 
 

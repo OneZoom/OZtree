@@ -1,4 +1,4 @@
-@import "colour_scheme.scss";
+@use "colour_scheme" as *;
 
 #advanced_search_toggle, .search-nav {
     float: right;

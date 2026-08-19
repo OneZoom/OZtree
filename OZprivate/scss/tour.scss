@@ -1,4 +1,4 @@
-@import "colour_scheme.scss";
+@use "colour_scheme" as *;
 
 #tour_wrapper {
   position: absolute;
