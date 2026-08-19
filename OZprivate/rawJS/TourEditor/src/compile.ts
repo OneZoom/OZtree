@@ -37,11 +37,11 @@ export function editorTourToJson(tour: EditorTour): ProductionTourJson {
         description: tour.description,
         author: tour.author,
         license: tour.license,
-        tourstops: tour.stops.map((stop) => editorStopToJson(stop, tour.title)),
+        tourstops: tour.stops.map((stop) => editorStopToJson(stop)),
     };
 }
 
-function editorStopToJson(stop: EditorTourStop, tourTitle: string): ProductionTourStopJson {
+function editorStopToJson(stop: EditorTourStop): ProductionTourStopJson {
     const qs_opts = stopQsOpts(stop);
     const window_text = stop.textBlocks
         .map((block) => block.text)
@@ -49,7 +49,7 @@ function editorStopToJson(stop: EditorTourStop, tourTitle: string): ProductionTo
     const out: ProductionTourStopJson = {
         identifier: stop.identifier,
         template_data: {
-            title: tourTitle || stop.identifier,
+            ...(stop.title ? { title: stop.title } : {}),
             ...(window_text.length > 0 ? { window_text } : {}),
         },
     };
@@ -113,7 +113,7 @@ function stopToHtml(
         : '';
     const windowText = windowTextHtml(tdata.window_text);
     const options = stops.map((other, i) => {
-        const label = escapeHtml((other.template_data || {}).title || other.identifier || '');
+        const label = escapeHtml((other.template_data || {}).title || '');
         const disabled = i === tsIdx ? ' disabled' : '';
         return `<option value="${i}"${disabled}>${label}</option>`;
     }).join('');

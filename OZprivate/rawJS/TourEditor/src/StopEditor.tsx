@@ -3,7 +3,6 @@ import HighlightListEditor from './HighlightListEditor';
 import LocationPicker from './LocationPicker';
 import TextBlocks from './TextBlocks';
 import TransitionFields from './TransitionFields';
-import { identifierIsDuplicate } from './tour';
 import { useNodePinpointSelection } from './treeSelection';
 import { useHighlightTreeSync } from './useHighlightTreeSync';
 import type { EditorTourStop, LocationSelectionMode, Pinpoint } from './types';
@@ -11,14 +10,13 @@ import UkIcon from './UkIcon';
 
 interface StopEditorProps {
     stop: EditorTourStop;
-    stops: EditorTourStop[];
     onChange: (
         patch: Partial<EditorTourStop> | ((stop: EditorTourStop) => Partial<EditorTourStop>),
     ) => void;
     onPreview: () => void;
 }
 
-export default function StopEditor({ stop, stops, onChange, onPreview }: StopEditorProps) {
+export default function StopEditor({ stop, onChange, onPreview }: StopEditorProps) {
     const [mode, setMode] = useState<LocationSelectionMode>({ kind: 'idle' });
 
     useHighlightTreeSync(stop.highlights, true, { clearOnDisable: true });
@@ -42,24 +40,17 @@ export default function StopEditor({ stop, stops, onChange, onPreview }: StopEdi
         setMode({ kind: 'location' });
     };
 
-    const duplicate = identifierIsDuplicate(stops, stop.identifier, stop.id);
-
     return (
         <div className="uk-form-stacked">
             <div className="uk-margin">
-                <label className="uk-form-label" htmlFor="stop-identifier">Identifier</label>
+                <label className="uk-form-label" htmlFor="stop-title">Title</label>
                 <input
-                    id="stop-identifier"
-                    className={`uk-input${duplicate ? ' uk-form-danger' : ''}`}
+                    id="stop-title"
+                    className="uk-input"
                     type="text"
-                    value={stop.identifier}
-                    onChange={(e) => onChange({ identifier: e.target.value })}
+                    value={stop.title}
+                    onChange={(e) => onChange({ title: e.target.value })}
                 />
-                {duplicate && (
-                    <p className="uk-text-danger uk-text-small uk-margin-small-top">
-                        Identifier must be unique within this tour
-                    </p>
-                )}
             </div>
 
             <div className="tour-editor-section">

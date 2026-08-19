@@ -69,6 +69,7 @@ export interface EditorTour {
 export interface EditorTourStop {
     id: string;
     identifier: string;
+    title: string;
     location: Pinpoint | null;
     fillScreen: boolean;
     highlights: EditorHighlight[];

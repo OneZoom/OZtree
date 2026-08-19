@@ -17,7 +17,7 @@ export function newEditorId(): string {
     return crypto.randomUUID();
 }
 
-export function nextStopIdentifier(stops: EditorTourStop[]): string {
+function nextStopIdentifier(stops: EditorTourStop[]): string {
     const used = new Set(stops.map((stop) => stop.identifier));
     let n = 1;
     while (used.has(`stop_${n}`)) {
@@ -36,10 +36,11 @@ export function createEmptyTour(): EditorTour {
     };
 }
 
-export function createEmptyStop(identifier: string): EditorTourStop {
+export function createEmptyStop(existingStops: EditorTourStop[] = []): EditorTourStop {
     return {
         id: newEditorId(),
-        identifier,
+        identifier: nextStopIdentifier(existingStops),
+        title: '',
         location: null,
         fillScreen: false,
         highlights: [],
@@ -53,14 +54,6 @@ export function createEmptyStop(identifier: string): EditorTourStop {
 
 export function createTextBlock(text = ''): EditorTextBlock {
     return { id: newEditorId(), text };
-}
-
-export function identifierIsDuplicate(
-    stops: EditorTourStop[],
-    identifier: string,
-    stopId: string,
-): boolean {
-    return stops.some((stop) => stop.id !== stopId && stop.identifier === identifier);
 }
 
 export function moveItem<T>(items: T[], index: number, direction: number): T[] {

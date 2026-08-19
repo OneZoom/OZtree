@@ -7,7 +7,6 @@ import {
     createEmptyStop,
     createEmptyTour,
     moveItem,
-    nextStopIdentifier,
     updateTourStop,
 } from './tour';
 import type { EditorTour, EditorTourStop } from './types';
@@ -82,7 +81,7 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
     const addStop = () => {
         setTour((current) => {
             if (!current) return current;
-            const stop = createEmptyStop(nextStopIdentifier(current.stops));
+            const stop = createEmptyStop(current.stops);
             return { ...current, stops: [...current.stops, stop] };
         });
     };
@@ -111,7 +110,7 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
     };
 
     const headerTitle = selectedStop
-        ? `Editing ${selectedStop.identifier}`
+        ? `Editing ${selectedStop.title || selectedStop.identifier}`
         : 'Edit Your Tour';
 
     return (
@@ -144,7 +143,6 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
                     {isOpen && tour && selectedStop && (
                         <StopEditor
                             stop={selectedStop}
-                            stops={tour.stops}
                             onChange={patchSelectedStop}
                             onPreview={() => requestPreview(selectedStop.id)}
                         />

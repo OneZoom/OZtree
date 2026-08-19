@@ -8,7 +8,7 @@ import { createEmptyStop, createEmptyTour } from '../src/tour';
 
 function stop(partial) {
     return {
-        ...createEmptyStop(partial.identifier || 'stop_1'),
+        ...createEmptyStop(),
         ...partial,
     };
 }
@@ -40,6 +40,7 @@ test('editorTourToJson: maps stop fields to production JSON', (t) => {
         stops: [
             stop({
                 identifier: 'cats',
+                title: 'Cats',
                 location: '@Felidae',
                 fillScreen: true,
                 highlights: [{
@@ -73,16 +74,14 @@ test('editorTourToJson: maps stop fields to production JSON', (t) => {
         fly_in_speed: 2,
         stop_wait: 5000,
         template_data: {
-            title: 'Mammals',
+            title: 'Cats',
             window_text: ['Look at cats', 'And more cats'],
         },
     });
     t.deepEqual(json.tourstops[1], {
         identifier: 'dogs',
         ott: '@Canidae',
-        template_data: {
-            title: 'Mammals',
-        },
+        template_data: {},
     });
     t.equal(json.license, 'cc-by-4.0');
     t.end();
@@ -94,7 +93,7 @@ test('editorTourToJson: omits defaults and empty location', (t) => {
     }));
     t.deepEqual(json.tourstops[0], {
         identifier: 'empty',
-        template_data: { title: 'empty' },
+        template_data: {},
     });
     t.end();
 });

@@ -31,7 +31,7 @@ export default function StopList({ stops, onEdit, onRemove, onMove }: StopListPr
                 >
                     <div className="uk-card-body">
                         <div className="tour-editor-stop-row">
-                            <span className="tour-editor-stop-id">{stop.identifier}</span>
+                            <span className="tour-editor-stop-id">{stop.title || stop.identifier}</span>
                             <div
                                 className="tour-editor-stop-actions"
                                 onClick={(e) => e.stopPropagation()}
