@@ -96,13 +96,12 @@
 
 .tour-editor-stop-row {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
     gap: 8px;
 }
 
 .tour-editor-stop-id {
-    flex: 1;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
