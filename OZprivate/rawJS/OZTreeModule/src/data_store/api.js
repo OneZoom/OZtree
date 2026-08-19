@@ -43,7 +43,7 @@ class DataStoreAPI {
    * Clear all data stores, e.g. on visualisation change
    */
   clear() {
-    Object.keys(this._dsNames).forEach((dsName) => {
+    this._dsNames.forEach((dsName) => {
       this[dsName].clear();
     });
   }
