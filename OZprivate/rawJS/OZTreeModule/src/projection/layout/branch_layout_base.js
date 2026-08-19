@@ -1,5 +1,5 @@
 import {color_theme} from '../../themes/color_theme';
-import BezierShape from '../shapes/bezier_shape';
+import SegmentedShape from '../shapes/segmented_shape';
 import ArcShape from '../shapes/arc_shape';
 import PathShape from '../shapes/path_shape';
 import LineToShape from '../shapes/line_to_shape';
@@ -43,25 +43,40 @@ class BranchLayoutBase {
   }
 
   get_bezier_shapes(node, shapes, markings_list) {
-    let bezier_shape = BezierShape.create();
+    let shape = SegmentedShape.create();
 
-    bezier_shape.sx = node.bezsx * node.rvar + node.xvar;
-    bezier_shape.sy = node.bezsy * node.rvar + node.yvar;
-    bezier_shape.c1x = node.bezc1x * node.rvar + node.xvar;
-    bezier_shape.c1y = node.bezc1y * node.rvar + node.yvar;
-    bezier_shape.c2x = node.bezc2x * node.rvar + node.xvar;
-    bezier_shape.c2y = node.bezc2y * node.rvar + node.yvar;
-    bezier_shape.ex = node.bezex * node.rvar + node.xvar;
-    bezier_shape.ey = node.bezey * node.rvar + node.yvar;
-    bezier_shape.stroke.line_cap = 'round';
-    bezier_shape.height = 1;
-    bezier_shape.markings_list = markings_list || [];
+    shape.sx = node.bezsx * node.rvar + node.xvar;
+    shape.sy = node.bezsy * node.rvar + node.yvar;
+    if (node.path_points) {
+      shape.path_points = node.path_points.map((p) => ({
+          fn: "bezier",
+          cp1x: p.c1x * node.rvar + node.xvar,
+          cp1y: p.c1y * node.rvar + node.yvar,
+          cp2x: p.c2x * node.rvar + node.xvar,
+          cp2y: p.c2y * node.rvar + node.yvar,
+          x: p.x * node.rvar + node.xvar,
+          y: p.y * node.rvar + node.yvar,
+      }));
+    } else {
+      shape.path_points = [({
+          fn: "bezier",
+          cp1x: node.bezc1x * node.rvar + node.xvar,
+          cp1y: node.bezc1y * node.rvar + node.yvar,
+          cp2x: node.bezc2x * node.rvar + node.xvar,
+          cp2y: node.bezc2y * node.rvar + node.yvar,
+          x: node.bezex * node.rvar + node.xvar,
+          y: node.bezey * node.rvar + node.yvar,
+      })];
+    }
+    shape.stroke.line_cap = 'round';
+    shape.height = 1;
+    shape.markings_list = markings_list || [];
 
-    bezier_shape.do_stroke = true;
-    bezier_shape.stroke.line_width = this.node_line_width(node, markings_list);
-    bezier_shape.height = 0;
-    bezier_shape.stroke.color = color_theme.get_color('branch.stroke', node);
-    shapes.push(bezier_shape);
+    shape.do_stroke = true;
+    shape.stroke.line_width = this.node_line_width(node, markings_list);
+    shape.height = 0;
+    shape.stroke.color = color_theme.get_color('branch.stroke', node);
+    shapes.push(shape);
   }
     
   /**
@@ -81,10 +96,8 @@ class BranchLayoutBase {
         arc_shape.fill.color =  color_theme.get_color('interior.undeveloped.fill', node);
         arc_shape.stroke.color = color_theme.get_color('interior.undeveloped.stroke', node);
         shapes.push(arc_shape);
-        
     }
-    
-    
+
 }
 
 export default BranchLayoutBase;
