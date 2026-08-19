@@ -1,4 +1,4 @@
-@import "colour_scheme.scss";
+@use "colour_scheme" as *;
 
 .main_content {
     margin: 0.5rem;  // Make some space around the page (does not apply to embedded pages)

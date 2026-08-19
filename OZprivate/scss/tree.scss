@@ -1,8 +1,9 @@
 /* UIkit-skin scss file for OneZoom. Author: Yan Wong for OneZoom CIO. License: MIT */
-@import "colour_scheme.scss";
-@import "ui_widgets.scss";
-@import "search_ui.scss";
-@import "tour.scss";
+@use "sass:color";
+@use "colour_scheme" as *;
+@use "ui_widgets" as *;
+@use "search_ui" as *;
+@use "tour" as *;
 
 html {
     background: none;
@@ -139,7 +140,7 @@ body.loading #UI #loading_spinner {
         display: inline-block;
         background-color: $oz_dark_bg;
         color: $oz_green_fg;
-        > a:hover { color: lighten($oz_green_fg, 30%) }
+        > a:hover { color: color.adjust($oz_green_fg, $lightness: 30%) }
 
         > a {
             display: inline-block;
@@ -179,7 +180,7 @@ body.loading #UI #loading_spinner {
     color: $oz_green_fg;
     a {
         color: inherit;
-        &:hover { color: lighten($oz_green_fg, 30%); }
+        &:hover { color: color.adjust($oz_green_fg, $lightness: 30%); }
     }
 
     a {

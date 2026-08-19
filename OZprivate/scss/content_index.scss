@@ -1,4 +1,4 @@
-@import "colour_scheme.scss";
+@use "colour_scheme" as *;
 
 /* ********** Grid modifications for homepage  ********** */
 
@@ -90,4 +90,3 @@
 .news-list img.non-default {
     border: 1px solid lightgray;
 }
-
