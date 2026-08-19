@@ -9,6 +9,12 @@ require('@babel/register')({
 });
 require('@babel/polyfill');
 
+/** Node 18 has ``crypto.randomUUID`` on the module, not as a global (that is Node 19+). */
+const nodeCrypto = require('crypto');
+if (typeof globalThis.crypto?.randomUUID !== 'function') {
+    globalThis.crypto = nodeCrypto.webcrypto;
+}
+
 const Module = require('module');
 const origResolve = Module._resolveFilename;
 Module._resolveFilename = function (request, parent, isMain, options) {
