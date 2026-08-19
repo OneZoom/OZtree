@@ -249,3 +249,73 @@
 .highlights-url-display p {
     margin: 0;
 }
+
+.tour-open-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tour-open-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.tour-open-modal-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(440px, calc(100vw - 32px));
+    background: #f3f3f3;
+    text-align: center;
+    padding: 1.75rem;
+}
+
+.tour-open-file-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 1.5rem 0 1.25rem;
+}
+
+.tour-open-filename {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tour-open-warning {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 0 1.25rem;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: #444;
+    text-align: left;
+}
+
+.tour-open-warning-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.tour-open-error {
+    margin: 0 0 1rem;
+    font-size: 0.85rem;
+}
+
+.tour-open-actions {
+    margin-top: 0.5rem;
+}
+
+.tour-open-actions .oz-pill.uk-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

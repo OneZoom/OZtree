@@ -11,6 +11,8 @@ interface TourFormProps {
     onRemoveStop: (stopId: string) => void;
     onMoveStop: (stopId: string, direction: number) => void;
     onPreview: () => void;
+    onOpenFile: () => void;
+    onDownloadFile: () => void;
 }
 
 export default function TourForm({
@@ -21,6 +23,8 @@ export default function TourForm({
     onRemoveStop,
     onMoveStop,
     onPreview,
+    onOpenFile,
+    onDownloadFile,
 }: TourFormProps) {
     return (
         <div className="uk-form-stacked">
@@ -93,6 +97,24 @@ export default function TourForm({
                 >
                     <UkIcon icon="play" className="uk-margin-small-right" />
                     Preview tour
+                </button>
+            </div>
+            <div className="uk-margin">
+                <button
+                    className="uk-button uk-button-default"
+                    type="button"
+                    onClick={onOpenFile}
+                >
+                    <UkIcon icon="upload" className="uk-margin-small-right" />
+                    Open file
+                </button>
+                <button
+                    className="uk-button uk-button-default uk-margin-small-left"
+                    type="button"
+                    onClick={onDownloadFile}
+                >
+                    <UkIcon icon="download" className="uk-margin-small-right" />
+                    Download file
                 </button>
             </div>
         </div>

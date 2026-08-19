@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
+import OpenTourModal from './OpenTourModal';
 import StopEditor from './StopEditor';
 import TourForm from './TourForm';
 import UkIcon from './UkIcon';
 import { editorTourToJson, tourJsonToHtml } from './compile';
+import { downloadFilename, packOzTour } from './oztour';
 import {
     createEmptyStop,
     createEmptyTour,
@@ -44,6 +46,7 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
     const [tour, setTour] = useState<EditorTour | null>(null);
     const [selectedStopId, setSelectedStopId] = useState<string | null>(null);
     const [pendingPreview, setPendingPreview] = useState<PendingPreview | null>(null);
+    const [openFileModal, setOpenFileModal] = useState(false);
 
     const closePanel = useCallback(() => {
         onClose();
@@ -109,57 +112,90 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
         setTour((current) => (current ? updateTourStop(current, selectedStopId, patch) : current));
     };
 
+    const downloadTour = () => {
+        if (!tour) return;
+        const bytes = packOzTour(tour);
+        const buffer = new ArrayBuffer(bytes.byteLength);
+        new Uint8Array(buffer).set(bytes);
+        const blob = new Blob([buffer], { type: 'application/zip' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = downloadFilename(tour);
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 100);
+    };
+
+    const loadTour = (loaded: EditorTour) => {
+        setTour(loaded);
+        setSelectedStopId(null);
+        setOpenFileModal(false);
+    };
+
     const headerTitle = selectedStop
         ? `Editing ${selectedStop.title || selectedStop.identifier}`
         : 'Edit Your Tour';
 
     return (
-        <div id="tour-editor" className={`tour-editor-panel${isOpen ? ' open' : ''}`}>
-            <div className="tour-editor-panel-content">
-                <div className="tour-editor-panel-header">
-                    {selectedStop && (
-                        <button
-                            className="tour-editor-back-btn"
-                            type="button"
-                            title="Back"
-                            onClick={() => setSelectedStopId(null)}
-                        >
-                            <UkIcon icon="chevron-left" />
-                        </button>
-                    )}
-                    <h3>{headerTitle}</h3>
-                    <div className="tour-editor-header-actions">
-                        <button
-                            id="tour-editor-close"
-                            className="tour-editor-close-btn"
-                            type="button"
-                            onClick={closePanel}
-                        >
-                            <UkIcon icon="close" />
-                        </button>
+        <>
+            <div id="tour-editor" className={`tour-editor-panel${isOpen ? ' open' : ''}`}>
+                <div className="tour-editor-panel-content">
+                    <div className="tour-editor-panel-header">
+                        {selectedStop && (
+                            <button
+                                className="tour-editor-back-btn"
+                                type="button"
+                                title="Back"
+                                onClick={() => setSelectedStopId(null)}
+                            >
+                                <UkIcon icon="chevron-left" />
+                            </button>
+                        )}
+                        <h3>{headerTitle}</h3>
+                        <div className="tour-editor-header-actions">
+                            <button
+                                id="tour-editor-close"
+                                className="tour-editor-close-btn"
+                                type="button"
+                                onClick={closePanel}
+                            >
+                                <UkIcon icon="close" />
+                            </button>
+                        </div>
+                    </div>
+                    <div className="tour-editor-panel-body">
+                        {isOpen && tour && selectedStop && (
+                            <StopEditor
+                                stop={selectedStop}
+                                onChange={patchSelectedStop}
+                                onPreview={() => requestPreview(selectedStop.id)}
+                            />
+                        )}
+                        {isOpen && tour && !selectedStop && (
+                            <TourForm
+                                tour={tour}
+                                onChange={(patch) => setTour((current) => (current ? { ...current, ...patch } : current))}
+                                onEditStop={setSelectedStopId}
+                                onAddStop={addStop}
+                                onRemoveStop={removeStop}
+                                onMoveStop={moveStop}
+                                onPreview={() => requestPreview()}
+                                onOpenFile={() => setOpenFileModal(true)}
+                                onDownloadFile={downloadTour}
+                            />
+                        )}
                     </div>
                 </div>
-                <div className="tour-editor-panel-body">
-                    {isOpen && tour && selectedStop && (
-                        <StopEditor
-                            stop={selectedStop}
-                            onChange={patchSelectedStop}
-                            onPreview={() => requestPreview(selectedStop.id)}
-                        />
-                    )}
-                    {isOpen && tour && !selectedStop && (
-                        <TourForm
-                            tour={tour}
-                            onChange={(patch) => setTour((current) => (current ? { ...current, ...patch } : current))}
-                            onEditStop={setSelectedStopId}
-                            onAddStop={addStop}
-                            onRemoveStop={removeStop}
-                            onMoveStop={moveStop}
-                            onPreview={() => requestPreview()}
-                        />
-                    )}
-                </div>
             </div>
-        </div>
+            {openFileModal && (
+                <OpenTourModal
+                    onClose={() => setOpenFileModal(false)}
+                    onOpen={loadTour}
+                />
+            )}
+        </>
     );
 }
