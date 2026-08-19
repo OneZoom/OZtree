@@ -1,0 +1,13 @@
+{
+  "notes": "Published per the Wikimedia robot policy (https://wikitech.wikimedia.org/wiki/Robot_policy) so that requests from this user agent can be identified as coming from OneZoom rather than being treated as spoofed/anonymous traffic.",
+  "user_agent": "OneZoom-bot/1.0 (https://www.onezoom.org/; mail@onezoom.org)",
+  "contact": "mail@onezoom.org",
+  "website": "https://www.onezoom.org/",
+  "updated": "2026-08-12",
+  "cidrs": [
+    "185.98.212.119/32",
+    "185.98.214.119/32",
+    "185.98.212.105/32",
+    "185.98.214.105/32"
+  ]
+}

@@ -154,6 +154,22 @@ USE OneZoom
 SOURCE ${WEB2PY_PATH}/applications/OZtree/OZprivate/ServerScripts/SQL/create_db_indexes.sql
 ```
 
+### Migrate / clone DB
+
+Clone the database by duming & restoring:
+
+```
+mysqldump -p --routines --triggers OneZoom | mysql -p OneZoom_Other
+```
+
+Edit the DB connection string in ``private/appconfig.ini``.
+
+Run a fake migration, as all tables will exist, but web2py won't be aware of it.
+
+* Edit private/appconfig.ini, setting ``migrate=fake``
+* ``./web2py-run tests/unit/test_modules_embed.py``, on startup this will create tables as necessary
+* Edit private/appconfig.ini, migrate=0
+
 ## Production installation
 
 For a production installation of OneZoom, you also need nginx & supervisor:
