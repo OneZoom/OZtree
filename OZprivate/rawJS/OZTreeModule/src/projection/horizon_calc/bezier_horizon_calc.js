@@ -38,27 +38,31 @@ class BezierHorizonCalc {
   calc_horizon(node) {
     // jamestodo
     // find the bounding box for the bezier curve
+    // A layout can taper its branches, drawing one wider where it starts than where it ends
+    // (bezsr, see propspiral_pre_calc), so pad by the widest the curve gets, not its end
+    let half_width = (node.bezsr > node.bezr ? node.bezsr : node.bezr) / 2;
+
     node.hxmax = max(
                       node.bezsx, 
                       node.bezc1x, 
                       node.bezc2x, 
-                      node.bezex) + node.bezr/2;
+                      node.bezex) + half_width;
     node.hxmin = min(
                       node.bezsx, 
                       node.bezc1x, 
                       node.bezc2x, 
-                      node.bezex) - node.bezr/2;
+                      node.bezex) - half_width;
                           
     node.hymax = max(
                       node.bezsy,
                       node.bezc1y,
                       node.bezc2y,
-                      node.bezey) + node.bezr/2;
+                      node.bezey) + half_width;
     node.hymin = min(
                       node.bezsy,
                       node.bezc1y,
                       node.bezc2y,
-                      node.bezey) - node.bezr/2;
+                      node.bezey) - half_width;
 
     //expand the bounding box to include the arc if necessary // 1.305 = 0.9*1.45 is to allow for leaves with points that stick out from their main circle
     node.hxmax = max(node.hxmax, node.arcx+node.arcr*1.305);
