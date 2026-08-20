@@ -56,7 +56,21 @@ class BranchLayoutBase {
           cp2y: p.c2y * node.rvar + node.yvar,
           x: p.x * node.rvar + node.xvar,
           y: p.y * node.rvar + node.yvar,
+          // A layout that tapers its branches says how wide the line is at each point and
+          // which way it is travelling there, and the shape fills the outline that describes
+          // instead of stroking at a single width. A width scales with the node as any other
+          // length does; a tangent is a unit vector, so scaling and moving leave it alone
+          line_width: p.line_width === undefined ? undefined : p.line_width * node.rvar,
+          tx: p.tx,
+          ty: p.ty,
       }));
+      if (node.bezsr !== undefined) {
+        // Where the branch starts is a point of the line too, and the only one no segment
+        // ends on, so it carries its own width and tangent
+        shape.start_line_width = node.bezsr * node.rvar;
+        shape.start_tx = node.bezstx;
+        shape.start_ty = node.bezsty;
+      }
     } else {
       shape.path_points = [({
           fn: "bezier",
