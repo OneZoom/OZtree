@@ -64,8 +64,11 @@ function shape_render(context, shape) {
   }
   // Where the edges of the line run, worked out once and reused at every width it is drawn at
   const edges = tapered ? shape_outline_edges(shape) : null;
+  // The stretches of it that get filled in one go, likewise
+  const runs = tapered ? shape_runs(shape) : null;
 
   if (!tapered) {
+    // One path, laid out once here and stroked again for each marking over the top of it
     context.beginPath();
     shape_follow_path(context, shape);
   }
@@ -77,8 +80,9 @@ function shape_render(context, shape) {
       context.shadowColor = shape.shadow.color || shape.stroke.color;
     }
     if (tapered) {
-      context.fillStyle = shape.stroke.color;
-      shape_fill_outline(context, shape, edges, 1);
+      // Each stretch in the colour it carries, and a line of one colour is a single fill
+      // however many stretches it was divided into
+      shape_fill_outline(context, shape, edges, runs, 1);
     } else {
       context.lineWidth = shape.stroke.line_width;
       context.stroke();
@@ -103,8 +107,9 @@ function shape_render(context, shape) {
       context.shadowColor = shape.markings_list[i].shadow.color || shape.markings_list[i].strokeStyle;
     }
     if (tapered && !shape.markings_list[i].dashSize) {
-      context.fillStyle = shape.markings_list[i].strokeStyle;
-      shape_fill_outline(context, shape, edges, shape.markings_list[i].widthProportion || 1);
+      // A marking is one colour all the way along, whatever the line under it is doing
+      shape_fill_outline(context, shape, edges, runs,
+        shape.markings_list[i].widthProportion || 1, shape.markings_list[i].strokeStyle);
     } else {
       if (tapered) {
         // Nothing has drawn the line down the middle, and filling the outline left our own
@@ -184,6 +189,41 @@ function shape_outline_edges(shape) {
 }
 
 /**
+ * The line divided into the stretches that get outlined in one go, each {from, to, color}: the
+ * points it runs between, as indices into the points of the line (so the same numbering
+ * shape_outline_edges() works in, with 0 the path's own start), and the colour to fill it in.
+ *
+ * A stretch ends where the line is picked up and moved somewhere else, there being nothing
+ * to join what follows to it, and where its colour changes, a fill having one colour
+ * throughout. A point carries the colour of the line arriving at it, so a change of colour
+ * ends one stretch at the point before the change and starts the next one there: the two
+ * share that point rather than meeting across a gap, and are filled in path order, each
+ * rounded end lapping over the stretch before it.
+ */
+function shape_runs(shape) {
+  const runs = [];
+  let current = null;
+
+  for (let i = 0; i < shape.path_points.length; i++) {
+    if (shape.path_points[i].fn === 'move') {
+      // Draws nothing itself, and nothing after it carries on from what came before it
+      current = null;
+      continue;
+    }
+    const color = shape.path_points[i].color === undefined ?
+      shape.stroke.color : shape.path_points[i].color;
+
+    if (current === null || color !== current.color) {
+      current = { from: i, to: i + 1, color: color };
+      runs.push(current);
+    } else {
+      current.to = i + 1;
+    }
+  }
+  return runs;
+}
+
+/**
  * Fill the region the line covers at width_proportion of its width, i.e. its outline: out
  * along one side of the path, round the end, and back along the other side.
  *
@@ -198,20 +238,31 @@ function shape_outline_edges(shape) {
  * out along its own normal and take the control points with the end they belong to. The
  * error grows with how far round a segment bends, so the same division into shallow segments
  * that keeps a path faithful to the curve it follows keeps its outline faithful too.
+ *
+ * color is the colour to fill the whole line in, or undefined to give each stretch of it the
+ * colour it carries: either way everything of one colour goes into a single path, so a line
+ * that doesn't change colour -- and any marking, which never does -- is one fill however many
+ * stretches it was divided into.
  */
-function shape_fill_outline(context, shape, edges, width_proportion) {
-  let start = 0;
+function shape_fill_outline(context, shape, edges, runs, width_proportion, color) {
+  let filling = null;
 
   context.beginPath();
-  for (let i = 1; i <= edges.length; i++) {
-    // A move breaks the line: the outline closes around what we have and starts again there
-    if (i === edges.length || shape.path_points[i - 1].fn === 'move') {
-      // A stretch of one point has no length to run an outline along, so nothing to fill
-      if (i - start > 1) outline_run(context, shape, edges, start, i - 1, width_proportion);
-      start = i;
+  for (let i = 0; i < runs.length; i++) {
+    const run_color = color === undefined ? runs[i].color : color;
+
+    if (filling !== null && run_color !== filling) {
+      context.fillStyle = filling;
+      context.fill();
+      context.beginPath();
     }
+    filling = run_color;
+    outline_run(context, shape, edges, runs[i].from, runs[i].to, width_proportion);
   }
-  context.fill();
+  if (filling !== null) {
+    context.fillStyle = filling;
+    context.fill();
+  }
 }
 
 /**
