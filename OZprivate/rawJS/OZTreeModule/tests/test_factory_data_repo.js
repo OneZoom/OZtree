@@ -115,9 +115,3 @@ test('DataRepo:update_metadata', function (t) {
 
     t.end();
 });
-
-test.onFinish(function() { 
-  // NB: Something data_repo includes in is holding node open.
-  //     Can't find it so force our tests to end.
-  process.exit(0)
-});
