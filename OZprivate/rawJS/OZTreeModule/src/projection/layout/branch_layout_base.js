@@ -74,7 +74,19 @@ class BranchLayoutBase {
       shape.do_stroke = true;
       shape.stroke.line_width = this.node_line_width(node, markings_list);
       shape.height = 0;
-      shape.stroke.color = color_theme.get_color('branch.stroke', node);
+
+      // Request array of colours from color scheme, interpolate them over available segments
+      const colors = color_theme.get_color('branch.stroke', node, undefined, false, true);
+      shape.stroke.color = colors[colors.length - 1];
+      if (colors.length > 1) {
+        for (let i = 0; i < shape.path_points.length; i++) {
+          shape.path_points[i].color = colors[Math.min(
+            colors.length - 1,
+            Math.floor(colors.length * (i + 0.5) / shape.path_points.length),
+          )];
+        }
+      }
+
       shapes.push(shape);
     } else {
       let bezier_shape = BezierShape.create();
