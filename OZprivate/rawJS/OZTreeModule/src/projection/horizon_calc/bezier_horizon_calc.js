@@ -42,27 +42,48 @@ class BezierHorizonCalc {
     // (bezsr, see propspiral_pre_calc), so pad by the widest the curve gets, not its end
     let half_width = (node.bezsr > node.bezr ? node.bezsr : node.bezr) / 2;
 
-    node.hxmax = max(
-                      node.bezsx, 
-                      node.bezc1x, 
-                      node.bezc2x, 
-                      node.bezex) + half_width;
-    node.hxmin = min(
-                      node.bezsx, 
-                      node.bezc1x, 
-                      node.bezc2x, 
-                      node.bezex) - half_width;
-                          
-    node.hymax = max(
-                      node.bezsy,
-                      node.bezc1y,
-                      node.bezc2y,
-                      node.bezey) + half_width;
-    node.hymin = min(
-                      node.bezsy,
-                      node.bezc1y,
-                      node.bezc2y,
-                      node.bezey) - half_width;
+    if (node.path_points) {
+      // A path's segments each lie inside their own control points, so the box around all of
+      // them is one the whole curve fits in --- and a tighter one than the single coarse cubic
+      // below gives, whose control points swing well outside the curve on a wide turn
+      let xmin = node.bezsx, xmax = node.bezsx;
+      let ymin = node.bezsy, ymax = node.bezsy;
+
+      for (const p of node.path_points) {
+        if (p.c1x < xmin) xmin = p.c1x; if (p.c1x > xmax) xmax = p.c1x;
+        if (p.c2x < xmin) xmin = p.c2x; if (p.c2x > xmax) xmax = p.c2x;
+        if (p.x   < xmin) xmin = p.x;   if (p.x   > xmax) xmax = p.x;
+        if (p.c1y < ymin) ymin = p.c1y; if (p.c1y > ymax) ymax = p.c1y;
+        if (p.c2y < ymin) ymin = p.c2y; if (p.c2y > ymax) ymax = p.c2y;
+        if (p.y   < ymin) ymin = p.y;   if (p.y   > ymax) ymax = p.y;
+      }
+
+      node.hxmax = xmax + half_width;
+      node.hxmin = xmin - half_width;
+      node.hymax = ymax + half_width;
+      node.hymin = ymin - half_width;
+    } else {
+      node.hxmax = max(
+        node.bezsx,
+        node.bezc1x,
+        node.bezc2x,
+        node.bezex) + half_width;
+      node.hxmin = min(
+        node.bezsx,
+        node.bezc1x,
+        node.bezc2x,
+        node.bezex) - half_width;
+      node.hymax = max(
+        node.bezsy,
+        node.bezc1y,
+        node.bezc2y,
+        node.bezey) + half_width;
+      node.hymin = min(
+        node.bezsy,
+        node.bezc1y,
+        node.bezc2y,
+        node.bezey) - half_width;
+    }
 
     //expand the bounding box to include the arc if necessary // 1.305 = 0.9*1.45 is to allow for leaves with points that stick out from their main circle
     node.hxmax = max(node.hxmax, node.arcx+node.arcr*1.305);
