@@ -80,15 +80,6 @@ export interface EditorTourStop {
     stopWaitSeconds: number;
 }
 
-export type LocationSelectionMode =
-    | { kind: 'idle' }
-    | { kind: 'location' };
-
-export type HighlightSelectionMode =
-    | { kind: 'idle' }
-    | { kind: 'add' }
-    | { kind: 'edit'; highlightId: string; pinpoint: EditingPinpointRef };
-
 export const DEFAULT_HIGHLIGHT_COLOR = '#ff6b6b';
 export const ROOT_PINPOINT = '@_ozid=1';
 

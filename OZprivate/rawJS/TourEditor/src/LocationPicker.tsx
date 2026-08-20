@@ -1,27 +1,30 @@
+import { useNodePinpointSelection } from './treeSelection';
 import type { Pinpoint } from './types';
 
 interface LocationPickerProps {
     location: Pinpoint | null;
-    isPicking: boolean;
     fillScreen: boolean;
-    onStartPick: () => void;
+    onChange: (location: Pinpoint) => void;
     onFillScreenChange: (fillScreen: boolean) => void;
 }
 
 export default function LocationPicker({
     location,
-    isPicking,
     fillScreen,
-    onStartPick,
+    onChange,
     onFillScreenChange,
 }: LocationPickerProps) {
-    const label = isPicking || !location ? 'Click a node' : location;
-    const className = `pinpoint-clickable${isPicking ? ' pinpoint-editing' : ''}`;
+    const { active, setActive } = useNodePinpointSelection((pinpoint) => {
+        onChange(pinpoint);
+        setActive(false);
+    });
+    const label = active || !location ? 'Click a node' : location;
+    const className = `pinpoint-clickable${active ? ' pinpoint-editing' : ''}`;
 
     return (
         <div>
             <div className="tour-editor-location-row">
-                <span className={className} title="Click to change" onClick={onStartPick}>
+                <span className={className} title="Click to change" onClick={() => setActive(!active)}>
                     {label}
                 </span>
             </div>
