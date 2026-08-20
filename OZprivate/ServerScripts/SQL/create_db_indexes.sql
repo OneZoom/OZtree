@@ -9,11 +9,12 @@ CREATE PROCEDURE MakeFullUnicode(tablename CHAR(50), columnname CHAR(50))
   BEGIN
     DECLARE char_set TEXT;
     DECLARE vtype TEXT;
+    DECLARE coll_name TEXT;
     
-    SELECT character_set_name, column_type INTO char_set, vtype FROM information_schema.`COLUMNS` 
+    SELECT character_set_name, column_type, collation_name INTO char_set, vtype, coll_name FROM information_schema.`COLUMNS`
         WHERE table_schema = SCHEMA() AND table_name = tablename AND column_name = columnname;
-    IF char_set != 'utf8mb4' THEN 
-      SET @sql_cmd = CONCAT('ALTER TABLE ', tablename,' CONVERT TO CHARACTER SET utf8mb4;');
+    IF char_set != 'utf8mb4' OR coll_name != 'utf8mb4_unicode_ci' THEN
+      SET @sql_cmd = CONCAT('ALTER TABLE ', tablename,' DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;');
       PREPARE stmt FROM @sql_cmd;
       EXECUTE stmt;
       SET @sql_cmd = CONCAT('ALTER TABLE ', tablename,' CHANGE ', columnname, ' ', columnname, ' ', vtype, ' CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;');
@@ -29,6 +30,11 @@ CREATE PROCEDURE MakeFullUnicode(tablename CHAR(50), columnname CHAR(50))
   END //
 
 DELIMITER ;
+
+call MakeFullUnicode('vernacular_by_name', 'name');
+call MakeFullUnicode('images_by_name', 'name');
+call MakeFullUnicode('ordered_leaves', 'name');
+call MakeFullUnicode('ordered_nodes', 'name');
 
 #with an innoDB server, you may get ignorable errors like 'The storage engine for the table doesn't support repair'
 call MakeFullUnicode('vernacular_by_ott', 'vernacular');
