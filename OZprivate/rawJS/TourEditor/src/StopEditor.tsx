@@ -1,11 +1,10 @@
-import { useCallback, useState } from 'react';
 import HighlightListEditor from './HighlightListEditor';
 import LocationPicker from './LocationPicker';
+import MediaBlocks from './MediaBlocks';
 import TextBlocks from './TextBlocks';
 import TransitionFields from './TransitionFields';
-import { useNodePinpointSelection } from './treeSelection';
 import { useHighlightTreeSync } from './useHighlightTreeSync';
-import type { EditorTourStop, LocationSelectionMode, Pinpoint } from './types';
+import type { EditorTourStop } from './types';
 import UkIcon from './UkIcon';
 
 interface StopEditorProps {
@@ -17,28 +16,7 @@ interface StopEditorProps {
 }
 
 export default function StopEditor({ stop, onChange, onPreview }: StopEditorProps) {
-    const [mode, setMode] = useState<LocationSelectionMode>({ kind: 'idle' });
-
     useHighlightTreeSync(stop.highlights, true, { clearOnDisable: true });
-
-    const setIdle = useCallback(() => {
-        setMode({ kind: 'idle' });
-    }, []);
-
-    const onPickLocation = useCallback((pinpoint: Pinpoint) => {
-        onChange({ location: pinpoint });
-        setIdle();
-    }, [onChange, setIdle]);
-
-    useNodePinpointSelection(mode.kind === 'location', onPickLocation);
-
-    const startLocationPick = () => {
-        if (mode.kind === 'location') {
-            setIdle();
-            return;
-        }
-        setMode({ kind: 'location' });
-    };
 
     return (
         <div className="uk-form-stacked">
@@ -57,9 +35,8 @@ export default function StopEditor({ stop, onChange, onPreview }: StopEditorProp
                 <h4>Location</h4>
                 <LocationPicker
                     location={stop.location}
-                    isPicking={mode.kind === 'location'}
                     fillScreen={stop.fillScreen}
-                    onStartPick={startLocationPick}
+                    onChange={(location) => onChange({ location })}
                     onFillScreenChange={(fillScreen) => onChange({ fillScreen })}
                 />
             </div>
@@ -69,8 +46,6 @@ export default function StopEditor({ stop, onChange, onPreview }: StopEditorProp
                 <HighlightListEditor
                     highlights={stop.highlights}
                     onChange={(highlights) => onChange({ highlights })}
-                    active={mode.kind !== 'location'}
-                    onRequestActive={setIdle}
                     addButton="bottom"
                 />
             </div>
@@ -80,6 +55,14 @@ export default function StopEditor({ stop, onChange, onPreview }: StopEditorProp
                 <TextBlocks
                     blocks={stop.textBlocks}
                     onChange={(textBlocks) => onChange({ textBlocks })}
+                />
+            </div>
+
+            <div className="tour-editor-section">
+                <h4>Media</h4>
+                <MediaBlocks
+                    blocks={stop.mediaBlocks}
+                    onChange={(mediaBlocks) => onChange({ mediaBlocks })}
                 />
             </div>
 

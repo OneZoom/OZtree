@@ -35,6 +35,8 @@ export interface TreeNode {
     ozid: number;
     children?: TreeNode[];
     child_index_towards: (ozid: number) => number | null;
+    pic_src?: number | string;
+    pic_filename?: number | string;
 }
 
 export interface ResolvedPinpoint {
@@ -58,6 +60,82 @@ export interface EditorTextBlock {
     text: string;
 }
 
+interface EditorMediaBlockBase {
+    id: string;
+}
+
+/** OneZoom image: ``imgsrc:{src}:{srcId}``. ``src`` is a ``src_flags`` value, e.g. 99 for ``eol_old``. */
+export interface EditorOneZoomImageMedia extends EditorMediaBlockBase {
+    kind: 'onezoom';
+    src: number;
+    srcId: number;
+}
+
+/** YouTube embed: ``https://www.youtube.com/embed/{videoId}``. Times are seconds. */
+export interface EditorYoutubeMedia extends EditorMediaBlockBase {
+    kind: 'youtube';
+    videoId: string;
+    start?: number;
+    end?: number;
+}
+
+/** Vimeo embed: ``https://player.vimeo.com/video/{videoId}``. */
+export interface EditorVimeoMedia extends EditorMediaBlockBase {
+    kind: 'vimeo';
+    videoId: string;
+}
+
+/**
+ * Wikimedia Commons file page: ``https://commons.wikimedia.org/wiki/File:{filename}``.
+ * Extension determines if image (gif/jpg/jpeg/png/svg), audio (ogg/mp3), or video (ogv/webm/mpg/mpeg).
+ */
+export interface EditorWikimediaMedia extends EditorMediaBlockBase {
+    kind: 'wikimedia';
+    filename: string;
+}
+
+/**
+ * Asset on ``https://onezoom.github.io/tours/{path}``.
+ * Extension determines if image, audio, or video, same as Wikimedia.
+ */
+export interface EditorToursMedia extends EditorMediaBlockBase {
+    kind: 'tours';
+    path: string;
+}
+
+/** Generic image URL ending in gif/jpg/jpeg/png/svg. */
+export interface EditorImageUrlMedia extends EditorMediaBlockBase {
+    kind: 'image';
+    url: string;
+}
+
+/** Generic audio URL ending in ogg/mp3. */
+export interface EditorAudioUrlMedia extends EditorMediaBlockBase {
+    kind: 'audio';
+    url: string;
+}
+
+/** Unrecognised http(s) URL. Production embed is a bold link. */
+export interface EditorExternalLinkMedia extends EditorMediaBlockBase {
+    kind: 'link';
+    url: string;
+}
+
+export type EditorMediaBlock =
+    | EditorOneZoomImageMedia
+    | EditorYoutubeMedia
+    | EditorVimeoMedia
+    | EditorWikimediaMedia
+    | EditorToursMedia
+    | EditorImageUrlMedia
+    | EditorAudioUrlMedia
+    | EditorExternalLinkMedia;
+
+export type EditorMediaKind = EditorMediaBlock['kind'];
+
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+export type EditorMediaBlockNoId = DistributiveOmit<EditorMediaBlock, 'id'>;
+
 export interface EditorTour {
     title: string;
     description: string;
@@ -74,20 +152,12 @@ export interface EditorTourStop {
     fillScreen: boolean;
     highlights: EditorHighlight[];
     textBlocks: EditorTextBlock[];
+    mediaBlocks: EditorMediaBlock[];
     transitionIn: TransitionIn;
     flyInSpeed: number;
     autoAdvance: boolean;
     stopWaitSeconds: number;
 }
-
-export type LocationSelectionMode =
-    | { kind: 'idle' }
-    | { kind: 'location' };
-
-export type HighlightSelectionMode =
-    | { kind: 'idle' }
-    | { kind: 'add' }
-    | { kind: 'edit'; highlightId: string; pinpoint: EditingPinpointRef };
 
 export const DEFAULT_HIGHLIGHT_COLOR = '#ff6b6b';
 export const ROOT_PINPOINT = '@_ozid=1';

@@ -121,16 +121,6 @@ export function applyHighlightTypeChange(
     return { type, pinpoints: pinpointsForTypeChange(highlight.pinpoints) };
 }
 
-export function removeFanExclusion(
-    highlight: EditorHighlight,
-    exclusionIndex: number,
-): Partial<EditorHighlight> {
-    if (highlight.type !== 'fan' || exclusionIndex <= 0 || exclusionIndex >= highlight.pinpoints.length) {
-        return {};
-    }
-    return { pinpoints: highlight.pinpoints.filter((_, i) => i !== exclusionIndex) };
-}
-
 export function swapPathEndpoints(pinpoints: Pinpoint[]): Pinpoint[] {
     if (pinpoints.length < 2) return pinpoints;
     const next = [...pinpoints];

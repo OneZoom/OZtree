@@ -54,6 +54,13 @@ test('editorTourToJson: maps stop fields to production JSON', (t) => {
                     { id: 't2', text: '' },
                     { id: 't3', text: 'And more cats' },
                 ],
+                mediaBlocks: [
+                    { id: 'm1', kind: 'youtube', videoId: 'W86cTIoMv2U' },
+                    { id: 'm2', kind: 'wikimedia', filename: 'Rose_of_Jericho.gif' },
+                    { id: 'm3', kind: 'tours', path: 'frogs/Various_frogs_and_toads.jpeg' },
+                    { id: 'm4', kind: 'image', url: '' },
+                    { id: 'm5', kind: 'link', url: 'https://example.com/about' },
+                ],
                 transitionIn: 'leap',
                 flyInSpeed: 2,
                 autoAdvance: true,
@@ -76,6 +83,12 @@ test('editorTourToJson: maps stop fields to production JSON', (t) => {
         template_data: {
             title: 'Cats',
             window_text: ['Look at cats', 'And more cats'],
+            media: [
+                'https://www.youtube.com/embed/W86cTIoMv2U',
+                'https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif',
+                'frogs/Various_frogs_and_toads.jpeg',
+                'https://example.com/about',
+            ],
         },
     });
     t.deepEqual(json.tourstops[1], {
@@ -114,6 +127,12 @@ test('tourJsonToHtml: production-like markup', (t) => {
                 template_data: {
                     title: 'Cats',
                     window_text: ['Look at <cats>', 'Line 2'],
+                    media: [
+                        'https://www.youtube.com/embed/W86cTIoMv2U',
+                        'https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif',
+                        'frogs/Various_frogs_and_toads.jpeg',
+                        'imgsrc:99:27732437',
+                    ],
                 },
             },
             {
@@ -135,6 +154,12 @@ test('tourJsonToHtml: production-like markup', (t) => {
     t.match(html, /data-stop_wait="5000"/);
     t.match(html, /<h2 class="title">Cats<\/h2>/);
     t.match(html, /<div class="window_text">Look at &lt;cats&gt;<\/div>/);
+    t.match(html, /class="embed-youtube"/);
+    t.match(html, /data-ts_autoplay="tsstate-active_wait"/);
+    t.match(html, /class="embed-image"/);
+    t.match(html, /Special:Redirect\/file\/Rose_of_Jericho\.gif/);
+    t.match(html, /src="https:\/\/onezoom\.github\.io\/tours\/frogs\/Various_frogs_and_toads\.jpeg"/);
+    t.match(html, /href="\/tree\/pic_info\/99\/27732437"/);
     t.match(html, /class="tour_forward"/);
     t.match(html, /class="button tour_exit"/);
     t.match(html, /<option hidden selected value="">1 of 2<\/option>/);
@@ -166,7 +191,12 @@ test('compile: editor tour becomes playable HTML', (t) => {
     const html = tourJsonToHtml(editorTourToJson(tour({
         title: 'Editor to HTML',
         stops: [
-            stop({ identifier: 'a', location: '@Aves', textBlocks: [{ id: '1', text: 'Birds' }] }),
+            stop({
+                identifier: 'a',
+                location: '@Aves',
+                textBlocks: [{ id: '1', text: 'Birds' }],
+                mediaBlocks: [{ id: 'm1', kind: 'vimeo', videoId: '12345' }],
+            }),
             stop({ identifier: 'b', location: '@Mammalia', transitionIn: 'fly_straight' }),
         ],
     })));
@@ -174,5 +204,7 @@ test('compile: editor tour becomes playable HTML', (t) => {
     t.match(html, /data-ott="@Mammalia"/);
     t.match(html, /data-transition_in="fly_straight"/);
     t.match(html, /<div class="window_text">Birds<\/div>/);
+    t.match(html, /class="embed-vimeo"/);
+    t.match(html, /src="https:\/\/player\.vimeo\.com\/video\/12345"/);
     t.end();
 });

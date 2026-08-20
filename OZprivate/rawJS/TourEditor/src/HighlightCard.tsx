@@ -1,6 +1,7 @@
 import PinpointDisplay from './PinpointDisplay';
 import UkIcon from './UkIcon';
-import type { EditorHighlight, EditingPinpointRef, HighlightType } from './types';
+import { applyHighlightTypeChange } from './highlights';
+import type { EditorHighlight, HighlightType } from './types';
 
 interface PlaceholderHighlightCardProps {
     onCancel: () => void;
@@ -46,36 +47,24 @@ export function PlaceholderHighlightCard({ onCancel }: PlaceholderHighlightCardP
 
 interface HighlightCardProps {
     highlight: EditorHighlight;
-    isEditingHighlight: boolean;
-    editingPinpoint: EditingPinpointRef | null;
-    onTypeChange: (newType: HighlightType) => void;
-    onColorChange: (newColor: string) => void;
+    onChange: (patch: Partial<EditorHighlight>) => void;
     onRemove: () => void;
     onJump: () => void;
     canMoveUp: boolean;
     onMoveUp: () => void;
     canMoveDown: boolean;
     onMoveDown: () => void;
-    onTogglePinpointEdit: (pinpointIndex: number) => void;
-    onAddExclusion: () => void;
-    onRemoveExclusion: (exclusionIndex: number) => void;
 }
 
 export default function HighlightCard({
     highlight,
-    isEditingHighlight,
-    editingPinpoint,
-    onTypeChange,
-    onColorChange,
+    onChange,
     onRemove,
     onJump,
     canMoveUp,
     onMoveUp,
     canMoveDown,
     onMoveDown,
-    onTogglePinpointEdit,
-    onAddExclusion,
-    onRemoveExclusion,
 }: HighlightCardProps) {
     return (
         <div className="uk-card uk-card-small uk-card-default uk-margin-small highlight-card">
@@ -87,7 +76,9 @@ export default function HighlightCard({
                                 className="uk-select uk-form-small uk-width-auto uk-margin-small-right"
                                 style={{ width: 80 }}
                                 value={highlight.type}
-                                onChange={(e) => onTypeChange(e.target.value as HighlightType)}
+                                onChange={(e) => onChange(
+                                    applyHighlightTypeChange(highlight, e.target.value as HighlightType),
+                                )}
                             >
                                 <option value="fan">Fan</option>
                                 <option value="path">Path</option>
@@ -97,17 +88,13 @@ export default function HighlightCard({
                                 className="uk-input uk-form-small uk-width-auto uk-margin-small-right"
                                 value={highlight.color}
                                 style={{ width: 40, height: 30, padding: 2 }}
-                                onChange={(e) => onColorChange(e.target.value)}
+                                onChange={(e) => onChange({ color: e.target.value })}
                             />
                         </div>
                         <div className="uk-text-small uk-text-muted">
                             <PinpointDisplay
                                 highlight={highlight}
-                                isEditingHighlight={isEditingHighlight}
-                                editingPinpoint={editingPinpoint}
-                                onTogglePinpointEdit={onTogglePinpointEdit}
-                                onAddExclusion={onAddExclusion}
-                                onRemoveExclusion={onRemoveExclusion}
+                                onChange={(pinpoints) => onChange({ pinpoints })}
                             />
                         </div>
                     </div>

@@ -42,13 +42,14 @@ export default function HighlightsEditor({ isOpen, onClose, onToggle }: Highligh
                     </div>
                 </div>
                 <div className="tour-editor-panel-body">
-                    <HighlightListEditor
-                        highlights={highlights}
-                        onChange={setHighlights}
-                        active={isOpen}
-                        addButton="top"
-                        showClearAll
-                    />
+                    {isOpen && (
+                        <HighlightListEditor
+                            highlights={highlights}
+                            onChange={setHighlights}
+                            addButton="top"
+                            showClearAll
+                        />
+                    )}
                     {highlights.length > 0 && (
                         <div id="highlights-url-section" className="highlights-url-section">
                             <h5>URL Parameters</h5>
