@@ -1,5 +1,6 @@
 import HighlightListEditor from './HighlightListEditor';
 import LocationPicker from './LocationPicker';
+import MediaBlocks from './MediaBlocks';
 import TextBlocks from './TextBlocks';
 import TransitionFields from './TransitionFields';
 import { useHighlightTreeSync } from './useHighlightTreeSync';
@@ -54,6 +55,14 @@ export default function StopEditor({ stop, onChange, onPreview }: StopEditorProp
                 <TextBlocks
                     blocks={stop.textBlocks}
                     onChange={(textBlocks) => onChange({ textBlocks })}
+                />
+            </div>
+
+            <div className="tour-editor-section">
+                <h4>Media</h4>
+                <MediaBlocks
+                    blocks={stop.mediaBlocks}
+                    onChange={(mediaBlocks) => onChange({ mediaBlocks })}
                 />
             </div>
 

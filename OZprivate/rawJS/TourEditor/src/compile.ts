@@ -1,4 +1,12 @@
 import { toHighlightStr } from './highlights';
+import {
+    AUDIO_EXT,
+    IMAGE_EXT,
+    MEDIA_EXT,
+    TOURS_URL_BASE,
+    mediaBlockToUrl,
+    oneZoomThumbUrl,
+} from './media';
 import type { EditorTour, EditorTourStop, TourLicense } from './types';
 
 /**
@@ -18,6 +26,10 @@ export type ProductionWindowText =
     | string
     | { text: string; [flag: string]: string | boolean };
 
+export type ProductionMedia =
+    | string
+    | { url: string; [key: string]: string | boolean | null | undefined };
+
 export interface ProductionTourStopJson {
     identifier: string;
     ott?: string;
@@ -28,6 +40,7 @@ export interface ProductionTourStopJson {
     template_data: {
         title?: string;
         window_text?: ProductionWindowText | ProductionWindowText[];
+        media?: ProductionMedia[];
     };
 }
 
@@ -46,11 +59,15 @@ function editorStopToJson(stop: EditorTourStop): ProductionTourStopJson {
     const window_text = stop.textBlocks
         .map((block) => block.text)
         .filter((text) => text.length > 0);
+    const media = stop.mediaBlocks
+        .map((block) => mediaBlockToUrl(block))
+        .filter((url) => url.length > 0);
     const out: ProductionTourStopJson = {
         identifier: stop.identifier,
         template_data: {
             ...(stop.title ? { title: stop.title } : {}),
             ...(window_text.length > 0 ? { window_text } : {}),
+            ...(media.length > 0 ? { media } : {}),
         },
     };
 
@@ -112,6 +129,7 @@ function stopToHtml(
         ? `<h2 class="title">${escapeHtml(tdata.title)}</h2>`
         : '';
     const windowText = windowTextHtml(tdata.window_text);
+    const media = mediaHtml(tdata.media);
     const options = stops.map((other, i) => {
         const label = escapeHtml((other.template_data || {}).title || '');
         const disabled = i === tsIdx ? ' disabled' : '';
@@ -125,6 +143,7 @@ function stopToHtml(
       ${title}
     </div>
     ${windowText}
+    ${media}
     <div class="footer">
       <button class="tour_backward">Back</button>
       <span class="grow">
@@ -138,6 +157,133 @@ function stopToHtml(
       <button class="tour_final">Exit</button>
     </div>
   </div>`;
+}
+
+function mediaHtml(media: ProductionTourStopJson['template_data']['media']): string {
+    if (!media || media.length === 0) return '';
+    return media.map((item) => mediaEmbed(item, {
+        ts_autoplay: 'tsstate-active_wait',
+        url_base: TOURS_URL_BASE,
+    })).join('');
+}
+
+/**
+ * Generate embed HTML for a media URL, mirroring ``modules/embed.py:media_embed``.
+ */
+function mediaEmbed(
+    url: ProductionMedia,
+    defaults: Record<string, string | boolean | null | undefined> = {},
+): string {
+    const opts: Record<string, string | boolean | null | undefined> = typeof url === 'object' && url !== null
+        ? { ...defaults, ...url }
+        : { ...defaults, url };
+    let href = String(opts.url || '');
+    if (opts.url_base) {
+        href = joinUrl(String(opts.url_base), href);
+        opts.url = href;
+    }
+
+    const elementData = Object.entries(opts)
+        .filter(([key, value]) => (
+            key !== 'url' && key !== 'url_base' && key !== 'alt' && key !== 'title'
+            && value !== undefined && value !== null && value !== true
+        ))
+        .map(([key, value]) => `data-${key}="${escapeHtml(String(value))}"`)
+        .join(' ');
+    const extraClass = Object.entries(opts)
+        .filter(([key, value]) => key !== 'url' && value === true)
+        .map(([key]) => escapeHtml(key))
+        .join(' ');
+    const klass = extraClass ? ` ${extraClass}` : '';
+    const dataAttrs = elementData ? ` ${elementData}` : '';
+    const alt = opts.alt !== undefined ? String(opts.alt) : '';
+    const title = opts.title !== undefined ? String(opts.title) : '';
+
+    const imgsrc = href.match(/^imgsrc:(\d+):(\d+)$/);
+    if (imgsrc) {
+        const srcUrl = oneZoomThumbUrl(Number(imgsrc[1]), Number(imgsrc[2]));
+        const infoUrl = `/tree/pic_info/${imgsrc[1]}/${imgsrc[2]}`;
+        return `<a class="embed-image${klass}" title="${escapeHtml(title)}" href="${escapeHtml(infoUrl)}"${dataAttrs}><img src="${escapeHtml(srcUrl)}" alt="${escapeHtml(alt)}" /><span class="copyright">©</span></a>`;
+    }
+
+    const youtube = href.match(/^https:\/\/www\.youtube\.com\/embed\/(.+)$/);
+    if (youtube) {
+        const sep = href.includes('?') ? '&' : '?';
+        const origin = youtubeOrigin();
+        const src = `${href}${sep}enablejsapi=1&playsinline=1${origin ? `&origin=${encodeURIComponent(origin)}` : ''}`;
+        return `<div class="embed-video${klass}"><iframe class="embed-youtube" type="text/html" src="${escapeHtml(src)}" frameborder="0" allow="autoplay; fullscreen" allowfullscreen${dataAttrs}></iframe></div>`;
+    }
+
+    if (/^https:\/\/player\.vimeo\.com\/video\/(.+)$/.test(href)) {
+        return `<div class="embed-video${klass}"><iframe class="embed-vimeo" src="${escapeHtml(href)}" frameborder="0" allow="autoplay; fullscreen" allowfullscreen${dataAttrs}></iframe></div>`;
+    }
+
+    const hosted = href.match(
+        new RegExp(`^(https://commons\\.wikimedia\\.org/wiki/File:(.+)\\.(${MEDIA_EXT})|https://onezoom\\.github\\.io/tours/(.+)\\.(${MEDIA_EXT}))$`, 'i'),
+    );
+    if (hosted) {
+        return hostedMediaHtml(href, klass, dataAttrs, alt, title);
+    }
+
+    const image = href.match(new RegExp(`^(.+\\.(?:${IMAGE_EXT}))$`, 'i'));
+    if (image) {
+        const imageAlt = alt || humaniseUrl(href);
+        return `<a class="embed-image${klass}"${dataAttrs}><img src="${escapeHtml(href)}" alt="${escapeHtml(imageAlt)}" /></a>`;
+    }
+    if (new RegExp(`\\.(?:${AUDIO_EXT})$`, 'i').test(href)) {
+        return `<div class="embed-audio${klass}"><audio controls src="${escapeHtml(href)}"${dataAttrs}></audio></div>`;
+    }
+
+    return `<a href="${escapeHtml(href)}" style="font-weight:bold">${escapeHtml(href)}</a>`;
+}
+
+function hostedMediaHtml(
+    href: string,
+    klass: string,
+    dataAttrs: string,
+    alt: string,
+    title: string,
+): string {
+    const commons = href.match(
+        new RegExp(`^https://commons\\.wikimedia\\.org/wiki/File:(.+)\\.(${MEDIA_EXT})$`, 'i'),
+    );
+    const tours = href.match(
+        new RegExp(`^https://onezoom\\.github\\.io/tours/(.+)\\.(${MEDIA_EXT})$`, 'i'),
+    );
+    const name = commons ? `${commons[1]}.${commons[2]}` : `${tours![1]}.${tours![2]}`;
+    const ext = (commons ? commons[2] : tours![2]).toLowerCase();
+    const srcUrl = commons
+        ? `https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/${name}`
+        : href;
+    const copyrightUrl = commons ? href : `${TOURS_URL_BASE}${tours![1]}.html`;
+    const resolvedAlt = alt || humaniseUrl(commons ? name : tours![1]);
+    const resolvedTitle = title || name;
+
+    if (new RegExp(`^(?:${IMAGE_EXT})$`, 'i').test(ext)) {
+        return `<a class="embed-image${klass}" title="${escapeHtml(resolvedTitle)}" href="${escapeHtml(copyrightUrl)}"${dataAttrs}><img src="${escapeHtml(srcUrl)}" alt="${escapeHtml(resolvedAlt)}" /><span class="copyright">©</span></a>`;
+    }
+    if (new RegExp(`^(?:${AUDIO_EXT})$`, 'i').test(ext)) {
+        return `<div class="embed-audio${klass}"><audio controls src="${escapeHtml(srcUrl)}"${dataAttrs}></audio><a class="copyright" href="${escapeHtml(copyrightUrl)}">©</a></div>`;
+    }
+    return `<div class="embed-video${klass}"><video controls src="${escapeHtml(srcUrl)}"${dataAttrs}></video><a class="copyright" href="${escapeHtml(copyrightUrl)}">©</a></div>`;
+}
+
+function joinUrl(base: string, url: string): string {
+    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(url)) return url;
+    const normalisedBase = base.endsWith('/') ? base : `${base}/`;
+    return new URL(url, normalisedBase).href;
+}
+
+function youtubeOrigin(): string {
+    if (typeof window !== 'undefined' && window.location && window.location.origin !== 'null') {
+        return window.location.origin;
+    }
+    return '';
+}
+
+function humaniseUrl(url: string): string {
+    const base = url.split('/').pop() || url;
+    return base.replace(/\.[^.]+$/, '').replace(/_/g, ' ');
 }
 
 function windowTextHtml(window_text: ProductionTourStopJson['template_data']['window_text']): string {

@@ -90,3 +90,21 @@ export function useNodePinpointSelection(
         onPick(pinpoint);
     }, onActiveChanged);
 }
+
+/**
+ * Intercept tree node clicks and report that node's image.
+ * Nodes with no image stay active so the user can click again.
+ */
+export function useNodeImageSelection(
+    onPick: (src: number, srcId: number) => void,
+): NodeSelection {
+    const selection = useNodeSelection((node) => {
+        const src = Number(node.pic_src);
+        const srcId = Number(node.pic_filename);
+        if (Number.isFinite(src) && src > 0 && Number.isFinite(srcId) && srcId > 0) {
+            onPick(src, srcId);
+            selection.setActive(false);
+        }
+    });
+    return selection;
+}

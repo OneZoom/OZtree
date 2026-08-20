@@ -2,9 +2,12 @@ import { DEFAULT_LICENSE, LICENSE_OPTIONS, newEditorId } from './tour';
 import {
     DEFAULT_HIGHLIGHT_COLOR,
     type EditorHighlight,
+    type EditorMediaBlock,
+    type EditorMediaKind,
     type EditorTextBlock,
     type EditorTour,
     type EditorTourStop,
+    type EditorYoutubeMedia,
     type HighlightType,
     type Pinpoint,
     type TourLicense,
@@ -14,6 +17,16 @@ import {
 const LICENSE_VALUES = new Set<string>(LICENSE_OPTIONS.map((option) => option.value));
 const TRANSITION_VALUES = new Set<TransitionIn>(['fly', 'leap', 'fly_straight']);
 const HIGHLIGHT_TYPES = new Set<HighlightType>(['fan', 'path']);
+const MEDIA_KINDS = new Set<EditorMediaKind>([
+    'onezoom',
+    'youtube',
+    'vimeo',
+    'wikimedia',
+    'tours',
+    'image',
+    'audio',
+    'link',
+]);
 
 export class TourParseError extends Error {
     constructor(message: string) {
@@ -60,6 +73,9 @@ function parseStop(value: unknown, index: number): EditorTourStop {
     const textBlocks = asArray(value.textBlocks, `Stop ${identifier} text`).map(
         (block, blockIndex) => parseTextBlock(block, identifier, blockIndex),
     );
+    const mediaBlocks = asArray(value.mediaBlocks, `Stop ${identifier} media`).map(
+        (block, blockIndex) => parseMediaBlock(block, identifier, blockIndex),
+    );
 
     return {
         id: asString(value.id) || newEditorId(),
@@ -69,6 +85,7 @@ function parseStop(value: unknown, index: number): EditorTourStop {
         fillScreen: asBoolean(value.fillScreen),
         highlights,
         textBlocks,
+        mediaBlocks,
         transitionIn: parseTransition(value.transitionIn),
         flyInSpeed: asFiniteNumber(value.flyInSpeed, 1),
         autoAdvance: asBoolean(value.autoAdvance),
@@ -110,6 +127,49 @@ function parseTextBlock(
     };
 }
 
+function parseMediaBlock(
+    value: unknown,
+    stopIdentifier: string,
+    index: number,
+): EditorMediaBlock {
+    if (!isRecord(value)) {
+        throw new TourParseError(`Media block ${index + 1} on ${stopIdentifier} is not valid.`);
+    }
+    const kind = value.kind as EditorMediaKind;
+    if (!MEDIA_KINDS.has(kind)) {
+        throw new TourParseError(`Media block ${index + 1} on ${stopIdentifier} is not valid.`);
+    }
+
+    const id = asString(value.id) || newEditorId();
+    switch (kind) {
+        case 'onezoom':
+            return {
+                id,
+                kind,
+                src: asFiniteNumber(value.src, 0),
+                srcId: asFiniteNumber(value.srcId, 0),
+            };
+        case 'youtube': {
+            const block: EditorYoutubeMedia = { id, kind, videoId: asString(value.videoId) };
+            const start = optionalFiniteNumber(value.start);
+            const end = optionalFiniteNumber(value.end);
+            if (start !== undefined) block.start = start;
+            if (end !== undefined) block.end = end;
+            return block;
+        }
+        case 'vimeo':
+            return { id, kind, videoId: asString(value.videoId) };
+        case 'wikimedia':
+            return { id, kind, filename: asString(value.filename) };
+        case 'tours':
+            return { id, kind, path: asString(value.path) };
+        case 'image':
+        case 'audio':
+        case 'link':
+            return { id, kind, url: asString(value.url) };
+    }
+}
+
 function parseLicense(value: unknown): TourLicense {
     return LICENSE_VALUES.has(value as string) ? (value as TourLicense) : DEFAULT_LICENSE;
 }
@@ -136,6 +196,10 @@ function asBoolean(value: unknown): boolean {
 
 function asFiniteNumber(value: unknown, fallback: number): number {
     return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+function optionalFiniteNumber(value: unknown): number | undefined {
+    return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
 function asArray(value: unknown, label: string): unknown[] {

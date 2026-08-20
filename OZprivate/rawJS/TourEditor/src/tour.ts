@@ -45,6 +45,7 @@ export function createEmptyStop(existingStops: EditorTourStop[] = []): EditorTou
         fillScreen: false,
         highlights: [],
         textBlocks: [],
+        mediaBlocks: [],
         transitionIn: 'fly',
         flyInSpeed: 1,
         autoAdvance: false,

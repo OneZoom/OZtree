@@ -22,6 +22,10 @@ interface OneZoom {
     remove_hook: (name: string, id: number) => void;
 }
 
+interface ServerUrls {
+    data_path_pics: (src: number | string, srcId: number | string) => string;
+}
+
 interface JQueryOn {
     one: (event: string, handler: () => void) => void;
 }
@@ -41,6 +45,7 @@ declare global {
         highlightsEditor: HighlightsEditorApi;
         jQuery: JQueryStatic;
         UIkit?: UIkitGlobal;
+        server_urls?: ServerUrls;
     }
 
     const onezoom: OneZoom;
