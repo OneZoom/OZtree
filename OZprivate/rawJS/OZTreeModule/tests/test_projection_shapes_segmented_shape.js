@@ -166,6 +166,59 @@ test('segmented_shape:tapering_markings_and_dashes', function (t) {
   t.end();
 });
 
+test('segmented_shape:colors_are_filled_a_stretch_at_a_time', function (t) {
+  const context = mk_context();
+  const shape = mk_shape([
+    { fn: 'line', x: 10, y: 0, line_width: 2, tx: 1, ty: 0, color: 'the-early' },
+    { fn: 'line', x: 20, y: 0, line_width: 2, tx: 1, ty: 0, color: 'the-late' },
+    { fn: 'line', x: 30, y: 0, line_width: 2, tx: 1, ty: 0, color: 'the-late' },
+    { fn: 'line', x: 40, y: 0, line_width: 2, tx: 1, ty: 0 },
+  ], { start_line_width: 4, start_tx: 1, start_ty: 0 });
+
+  // A line that changes colour is a tapering one, so it is filled rather than stroked, and a
+  // fill is one colour throughout just as it is one width: each colour is one outline, the two
+  // neighbouring stretches of the same colour making a single one between them, and a point
+  // that doesn't name a colour taking the line's own. Both ends of each are rounded off as a
+  // stroke's cap would be, so the stretch a colour change starts laps over the one it ended
+  // rather than leaving a seam
+  shape.render(context);
+  t.deepEqual(drawing_calls(context, ['beginPath', 'moveTo', 'lineTo', 'closePath', 'fill']), [
+    ['beginPath'],
+    ['moveTo', 0, 2],
+    ['lineTo', 10, 1],
+    ['lineTo', 0, -2],
+    ['closePath'],
+    ['fill', 'the-early'],
+    ['beginPath'],
+    ['moveTo', 10, 1],
+    ['lineTo', 20, 1],
+    ['lineTo', 30, 1],
+    ['lineTo', 20, -1],
+    ['lineTo', 10, -1],
+    ['closePath'],
+    ['fill', 'the-late'],
+    ['beginPath'],
+    ['moveTo', 30, 1],
+    ['lineTo', 40, 1],
+    ['lineTo', 30, -1],
+    ['closePath'],
+    ['fill', 'the-branch'],
+  ]);
+
+  // A marking is one colour, so it is the whole line in one outline and one fill
+  const marked = mk_context();
+  shape.markings_list = [{ strokeStyle: 'the-marking', widthProportion: 0.5 }];
+  shape.render(marked);
+  t.deepEqual(drawing_calls(marked, ['fill']), [
+    ['fill', 'the-early'],
+    ['fill', 'the-late'],
+    ['fill', 'the-branch'],
+    ['fill', 'the-marking'],
+  ]);
+
+  t.end();
+});
+
 test('segmented_shape:tapering_breaks_at_a_move', function (t) {
   const context = mk_context();
   const shape = mk_shape([
