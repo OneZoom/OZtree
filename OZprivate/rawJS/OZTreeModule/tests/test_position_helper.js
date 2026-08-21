@@ -4,6 +4,7 @@
 import * as position_helper from '../src/position_helper.js';
 import { resolve_pinpoints } from '../src/navigation/pinpoint.js';
 import { populate_factory } from './util_factory'
+import { setup_dom } from './util_dom';
 import test from 'tape';
 
 import tree_state from '../src/tree_state.js'
@@ -100,6 +101,9 @@ function test_cur_location(test, controller, node_latin_name, exp_xp, exp_yp, ex
 }
 
 test('perform_actual_fly', function (test) {
+  // NB: setup_canvas fires window_size_change hooks, which may read (window)
+  setup_dom(test);
+
   global.requestAnimationFrame = (callback) => setTimeout(callback, 16);
   global.cancelAnimationFrame = clearTimeout;
   var nodes = {};

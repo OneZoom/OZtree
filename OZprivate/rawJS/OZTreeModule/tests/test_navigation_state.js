@@ -4,6 +4,8 @@
 import { parse_state, deparse_state } from '../src/navigation/state.js';
 import test from 'tape';
 
+import { setup_fake_window } from './util_dom';
+
 test('parse_state', function (t) {
     function pwl(href) {
         return parse_state(new URL(href));
@@ -65,7 +67,7 @@ test('parse_state', function (t) {
     t.deepEqual(parse_state("?"), {
     }, "A single question mark generates a do-nothing state");
 
-    global.window = { location: new URL("http://onezoom.example.com/cake/@pinpoint") };
+    setup_fake_window(t, { location: new URL("http://onezoom.example.com/cake/@pinpoint") });
     t.deepEqual(parse_state("@Myzopoda_aurita?pop=ol_6794"), {
       url_base: 'http://onezoom.example.com/cake/',
       pinpoint: '@Myzopoda_aurita',

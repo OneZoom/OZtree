@@ -1,6 +1,4 @@
-var jsdom = require('jsdom');
-const { JSDOM } = jsdom;
-
+import { setup_dom } from './util_dom';
 import { UserInterruptError } from '../src/errors';
 import config from '../src/global_config';
 
@@ -25,20 +23,29 @@ export function setup_tour(test, s, interaction = null, verbose_test = false) {
           log.push([n, ...arguments]);
       }
   }
-  let dom = new JSDOM(`
+  // NB: Registered before setup_dom's teardown, since tape runs teardowns in the
+  //     order they were added and this still needs the window to be around
+  test.teardown(function () {
+    // TourStop.exit() doesn't cancel its wait timer, so do it here. Otherwise a
+    // timer outlives the test and explodes once the window has gone away.
+    tour.tourstop_array.forEach((ts) => clearTimeout(ts.goto_next_timer));
+    state_observer.disconnect();
+
+    delete global.alert;
+    delete global.$;
+  });
+
+  let dom = setup_dom(test, `
 <html>
   <body>
     <div id="tour_wrapper">
     </div>
   </body>
 </html>`);
-  test.teardown(function () { dom.window.close() });
 
   verbose_test = verbose_test || process.env.TOUR_DEBUG;
-  global.window = dom.window;
   global.window.is_testing = verbose_test;
   global.window.tour_trace = verbose_test;
-  global.document = dom.window.document;
   global.alert = callback_to_log('alert');
   global.$ = require('../../../../static/js/jquery.js');
   global.window.jQuery = global.$;
