@@ -1,4 +1,5 @@
 import api_manager from '../api/api_manager';
+import { DataStoreNotReadyError } from '../errors';
 
 /**
  * Abstract interface a set of raw array data files
@@ -28,6 +29,7 @@ class DataStoreAPI {
     this._fails = {};
     this._batchSize = 5;  // How many we fetch in one go
     this._maxFails = 5;  // How many times we retry before start unleashing the error upstream
+    this._drainResolves = [];  // resolve() of every promise awaitQueue() is holding open
   }
 
   /**
@@ -67,6 +69,27 @@ class DataStoreAPI {
     this._startTimer(this._notifyTimeoutMs);
   }
 
+
+  /**
+   * Call fn(), if it throws DataStoreNotReadyError (triggered by get_or_fail)
+   * then wait for queues to empty and retry
+   */
+  retryWhenDataStoreReady(fn) {
+    try {
+      fn();
+    } catch (e) {
+      if (!(e instanceof DataStoreNotReadyError)) return Promise.reject(e);
+
+      // Nothing queued and nothing in flight, so nothing to wait for
+      if (!this._timer && Object.keys(this._queue).length === 0) return Promise.resolve();
+
+      return (new Promise((resolve) => this._drainResolves.push(resolve))).then(() => {
+        return this.retryWhenDataStoreReady(fn);
+      });
+    }
+    return Promise.resolve();
+  }
+
   // Start a timer if there isn't already one going
   _startTimer(timeout) {
     // Already waiting, don't bother
@@ -98,7 +121,15 @@ class DataStoreAPI {
         // Now we're done, let another timer start
         this._timer = undefined;
         // If there's more waiting (either added since we started, or over batchSize), go again
-        if (Object.keys(this._queue).length > 0) this._startTimer(this._subsequentTimeoutMs);
+        if (Object.keys(this._queue).length > 0) {
+          this._startTimer(this._subsequentTimeoutMs);
+        } else {
+          // Queue empty, wake anything waiting on it (see awaitQueue). Take the list first:
+          // a resolved promise may well queue up more work, and that has its own wait
+          const drainResolves = this._drainResolves;
+          this._drainResolves = [];
+          drainResolves.forEach((resolve) => resolve());
+        }
       });
     }, timeout);
   }
