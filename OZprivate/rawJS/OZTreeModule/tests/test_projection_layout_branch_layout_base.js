@@ -54,6 +54,35 @@ test('branch_layout_base:colors_spread_along_the_branch', function (t) {
   t.end();
 });
 
+test('branch_layout_base:points_are_filled_in_again_not_made_afresh', function (t) {
+  const shapes = [];
+
+  // A tapered branch of 3 segments, with colours spread along it: every field a point can
+  // carry is in use here
+  const tapered = mk_node(3);
+  tapered.path_points.forEach((p, i) => Object.assign(p, { line_width: i + 1, tx: 1, ty: 0 }));
+  set_theme({ branch: { stroke: () => ['the-early', 'the-late'] } });
+  new BranchLayoutBase().get_bezier_shapes(tapered, shapes, []);
+  const points = shapes[0].path_points.slice();
+  t.deepEqual(points.map((p) => [p.color, p.line_width, p.tx]),
+    [['the-early', 1, 1], ['the-late', 2, 1], ['the-late', 3, 1]], "Tapered, coloured branch");
+
+  // Once the shape is freed, the next one to be drawn gets those same points back
+  shapes[0].free();
+  set_theme({ branch: { stroke: () => 'the-only' } });
+  new BranchLayoutBase().get_bezier_shapes(mk_node(2), shapes, []);
+  t.deepEqual(shapes[1].path_points.filter((p) => points.indexOf(p) > -1).length, 2,
+    "Both points of the next branch are ones the last branch was using");
+
+  // ...saying nothing about colour, width or direction, none of which this branch asked for.
+  // Anything left behind here would be a stray colour or taper picked up from the last one
+  t.deepEqual(shapes[1].path_points.map((p) => [p.color, p.line_width, p.tx, p.ty]),
+    [[undefined, undefined, undefined, undefined], [undefined, undefined, undefined, undefined]],
+    "Nothing left over from the branch that had them before");
+
+  t.end();
+});
+
 test('branch_layout_base:colors_a_branch_drawn_as_a_single_curve', function (t) {
   // A layout that gives no path_points of its own has its branch drawn as one cubic, which
   // leaves one place to put a colour: the colour at the node
