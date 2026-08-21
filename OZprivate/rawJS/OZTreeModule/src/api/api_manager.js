@@ -68,10 +68,13 @@ class APIManager {
    */
   static_tree_data(data_file) {
     const abortController = new AbortController();
-    setTimeout(() => { abortController.abort()}, config.api.abort_request_threshold);
+    const abort_timer = setTimeout(() => { abortController.abort()}, config.api.abort_request_threshold);
 
     return window.fetch(config.api.static_data_url_func(data_file), {
       signal: abortController.signal
+    }).finally(() => {
+      // Request is done with, no point still holding onto a timer to abort it
+      clearTimeout(abort_timer);
     });
   }
 
