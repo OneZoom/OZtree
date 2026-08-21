@@ -351,10 +351,12 @@
 .navbar-btn {
   @include nav-vertical-align.navbar-vertical-align(OZ_variables.$input-height-base);
 
-  &.btn-sm {
+  &.btn-sm,
+  .btn-group-sm > &.btn {
     @include nav-vertical-align.navbar-vertical-align(OZ_variables.$input-height-small);
   }
-  &.btn-xs {
+  &.btn-xs,
+  .btn-group-xs > &.btn {
     @include nav-vertical-align.navbar-vertical-align(22px);
   }
 }

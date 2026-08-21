@@ -47,12 +47,60 @@
 .input-group-lg > .form-control,
 .input-group-lg > .input-group-addon,
 .input-group-lg > .input-group-btn > .btn {
-  @extend .input-lg;
+  height: OZ_variables.$input-height-large;
+  padding: OZ_variables.$padding-large-vertical OZ_variables.$padding-large-horizontal;
+  font-size: OZ_variables.$font-size-large;
+  line-height: OZ_variables.$line-height-large;
+  border-radius: OZ_variables.$input-border-radius-large;
 }
+.input-group-lg > select.form-control,
+.input-group-lg > select.input-group-addon,
+.input-group-lg > .input-group-btn > select.btn {
+  height: OZ_variables.$input-height-large;
+  line-height: OZ_variables.$input-height-large;
+}
+.input-group-lg > textarea.form-control,
+.input-group-lg > textarea.input-group-addon,
+.input-group-lg > .input-group-btn > textarea.btn,
+.input-group-lg > select[multiple].form-control,
+.input-group-lg > select[multiple].input-group-addon,
+.input-group-lg > .input-group-btn > select[multiple].btn {
+  height: auto;
+}
+
 .input-group-sm > .form-control,
 .input-group-sm > .input-group-addon,
 .input-group-sm > .input-group-btn > .btn {
-  @extend .input-sm;
+  height: OZ_variables.$input-height-small;
+  padding: OZ_variables.$padding-small-vertical OZ_variables.$padding-small-horizontal;
+  font-size: OZ_variables.$font-size-small;
+  line-height: OZ_variables.$line-height-small;
+  border-radius: OZ_variables.$input-border-radius-small;
+}
+.input-group-sm > select.form-control,
+.input-group-sm > select.input-group-addon,
+.input-group-sm > .input-group-btn > select.btn {
+  height: OZ_variables.$input-height-small;
+  line-height: OZ_variables.$input-height-small;
+}
+.input-group-sm > textarea.form-control,
+.input-group-sm > textarea.input-group-addon,
+.input-group-sm > .input-group-btn > textarea.btn,
+.input-group-sm > select[multiple].form-control,
+.input-group-sm > select[multiple].input-group-addon,
+.input-group-sm > .input-group-btn > select[multiple].btn {
+  height: auto;
+}
+
+// form-control-static sizing within input-groups (replaces cascaded @extend effect)
+.input-group-lg > .form-control-static.form-control,
+.input-group-lg > .form-control-static.input-group-addon,
+.input-group-lg > .input-group-btn > .form-control-static.btn,
+.input-group-sm > .form-control-static.form-control,
+.input-group-sm > .form-control-static.input-group-addon,
+.input-group-sm > .input-group-btn > .form-control-static.btn {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 
@@ -89,12 +137,16 @@
   border-radius: OZ_variables.$input-border-radius;
 
   // Sizing
-  &.input-sm {
+  &.input-sm,
+  .input-group-sm > &,
+  .input-group-sm > .input-group-btn > &.btn {
     padding: OZ_variables.$padding-small-vertical OZ_variables.$padding-small-horizontal;
     font-size: OZ_variables.$font-size-small;
     border-radius: OZ_variables.$input-border-radius-small;
   }
-  &.input-lg {
+  &.input-lg,
+  .input-group-lg > &,
+  .input-group-lg > .input-group-btn > &.btn {
     padding: OZ_variables.$padding-large-vertical OZ_variables.$padding-large-horizontal;
     font-size: OZ_variables.$font-size-large;
     border-radius: OZ_variables.$input-border-radius-large;

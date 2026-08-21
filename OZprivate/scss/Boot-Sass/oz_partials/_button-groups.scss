@@ -112,7 +112,8 @@
   padding-left: 8px;
   padding-right: 8px;
 }
-.btn-group > .btn-lg + .dropdown-toggle {
+.btn-group > .btn-lg + .dropdown-toggle,
+.btn-group.btn-group-lg > .btn + .dropdown-toggle {
   padding-left: 12px;
   padding-right: 12px;
 }
@@ -134,12 +135,14 @@
   margin-left: 0;
 }
 // Carets in other button sizes
-.btn-lg .caret {
+.btn-lg .caret,
+.btn-group-lg > .btn .caret {
   border-width: OZ_variables.$caret-width-large OZ_variables.$caret-width-large 0;
   border-bottom-width: 0;
 }
 // Upside down carets for .dropup
-.dropup .btn-lg .caret {
+.dropup .btn-lg .caret,
+.dropup .btn-group-lg > .btn .caret {
   border-width: 0 OZ_variables.$caret-width-large OZ_variables.$caret-width-large;
 }
 
