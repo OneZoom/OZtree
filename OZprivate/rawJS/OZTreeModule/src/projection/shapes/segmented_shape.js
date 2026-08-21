@@ -20,6 +20,11 @@ class SegmentedShape extends BaseShape {
     // own start carries the same two in start_line_width and (start_tx, start_ty), being the
     // one point of the line no segment ends on. See shape_fill_outline() below.
     this.path_points = [];
+    // Points we have finished with, kept to be filled in again rather than making a new one
+    // for every point of every branch on every frame (see path_point()). They belong to the
+    // shape, which is itself pooled, so a shape settles at however many points it has ever
+    // needed and nothing here is allocated again once the view has been drawn a few times.
+    this._spare_points = [];
     this.stroke  = {
       line_cap: 'round',
       line_width : 1.0,
@@ -35,9 +40,35 @@ class SegmentedShape extends BaseShape {
     this.start_tx = undefined;
     this.start_ty = undefined;
     this.do_stroke = false;
-    this.path_points = [];
+    // Keep the points themselves for whoever gets this shape next. Nothing may hold on to
+    // one past the free() that brought us here, which is the same of the shape itself
+    while (this.path_points.length > 0) this._spare_points.push(this.path_points.pop());
     this.markings_list = [];
     this.shadow = false;
+  }
+  /**
+   * Add a point to the end of the path, and return it for the caller to fill in.
+   *
+   * Every field a point can carry is set here, whether the point is a new one or one being
+   * filled in again: what a caller doesn't set has to read as absent rather than as whatever
+   * the point was last time round, or a line picks up a stray colour or a taper from the
+   * branch that used it before. Listing them all in one place also keeps every point the one
+   * shape as far as the JS engine is concerned, which is what makes filling one in cheap.
+   *
+   * @param {string} fn Which of path_functions draws it: "move", "line" or "bezier"
+   */
+  path_point(fn) {
+    const p = this._spare_points.pop() || {
+      fn: undefined,
+      cp1x: 0, cp1y: 0, cp2x: 0, cp2y: 0, x: 0, y: 0,
+      line_width: undefined, tx: undefined, ty: undefined, color: undefined,
+    };
+
+    p.fn = fn;
+    p.cp1x = 0; p.cp1y = 0; p.cp2x = 0; p.cp2y = 0; p.x = 0; p.y = 0;
+    p.line_width = undefined; p.tx = undefined; p.ty = undefined; p.color = undefined;
+    this.path_points.push(p);
+    return p;
   }
   render(context) {
     return shape_render(context, this);

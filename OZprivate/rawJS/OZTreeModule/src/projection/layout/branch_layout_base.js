@@ -55,18 +55,23 @@ class BranchLayoutBase {
         undefined : node.branch_start.line_width * node.rvar;
       shape.start_tx = node.branch_start.tx;
       shape.start_ty = node.branch_start.ty;
-      shape.path_points = node.branch_points.slice(1).map((p) => ({
-          fn: "bezier",
-          cp1x: p.cp1x * node.rvar + node.xvar,
-          cp1y: p.cp1y * node.rvar + node.yvar,
-          cp2x: p.cp2x * node.rvar + node.xvar,
-          cp2y: p.cp2y * node.rvar + node.yvar,
-          x: p.x * node.rvar + node.xvar,
-          y: p.y * node.rvar + node.yvar,
-          line_width: p.line_width === undefined ? undefined : p.line_width * node.rvar,
-          tx: p.tx,
-          ty: p.ty,
-      }));
+      for (const p of node.branch_points.slice(1)) {
+        const q = shape.path_point("bezier");
+
+        q.cp1x = p.cp1x * node.rvar + node.xvar;
+        q.cp1y = p.cp1y * node.rvar + node.yvar;
+        q.cp2x = p.cp2x * node.rvar + node.xvar;
+        q.cp2y = p.cp2y * node.rvar + node.yvar;
+        q.x = p.x * node.rvar + node.xvar;
+        q.y = p.y * node.rvar + node.yvar;
+        // A layout that tapers its branches says how wide the line is at each point and
+        // which way it is travelling there, and the shape fills the outline that describes
+        // instead of stroking at a single width. A width scales with the node as any other
+        // length does; a tangent is a unit vector, so scaling and moving leave it alone
+        if (p.line_width !== undefined) q.line_width = p.line_width * node.rvar;
+        q.tx = p.tx;
+        q.ty = p.ty;
+      }
       shape.stroke.line_cap = 'round';
       shape.height = 1;
       shape.markings_list = markings_list || [];
