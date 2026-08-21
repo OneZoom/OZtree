@@ -72,35 +72,6 @@ class Midnode {
     
     this.full_children_length = 0;
   }
-  static create(obj) {
-    return this.obj_pool.get();
-  }
-  free() {
-    this.constructor.obj_pool.release(this);
-  }
-  release() {
-    this.children = [];
-    this._meta = undefined;
-    this._detail_fetched = false;
-    this._cname = null;
-    this._latin_name = null;
-    this._age = null;
-    this._spec_num_full = null;
-    this._picset_len = null;
-    this._picset_codes = null;
-    this._signpost_common = false;
-    this._threatened_branch = null;
-    this._redlist = null;
-    this._pic_filename = null;
-    this._picID_credit = null;
-    this._picID_src = null;
-    this._ott = null;
-    this._region = null;
-    this._date = null;
-    this._popularity = null;
-    this._is_polytomy = null;
-    delete this.highlight_status;
-  }
     
   // called initially with
   // this.root.init(0, data_repo.raw_data.length-1, 1, 1, null, 20);
@@ -144,7 +115,7 @@ class Midnode {
           this.children[i].develop_children(default_depth - 1);
         }
       } else {
-        this.children[i] = this.constructor.create();
+        this.children[i] = new this.constructor();
         this.children[i].init(this.child_start_pos[i], this.child_end_pos[i], this.child_node_meta_start[i], this.child_leaf_meta_start[i], this, depth);
       }
     }

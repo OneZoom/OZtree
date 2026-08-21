@@ -1,5 +1,4 @@
 import Midnode from './midnode';
-import {ObjectPool} from '../util/index';
 import data_repo from './data_repo';
 
 class PolytomyMidnode extends Midnode {
@@ -82,7 +81,5 @@ function split_string_and_record_in_cuts(start, end, cuts, first_cut=true) {
     }
   }
 }
-
-PolytomyMidnode.obj_pool = new ObjectPool(PolytomyMidnode, 100000);
 
 export default PolytomyMidnode;

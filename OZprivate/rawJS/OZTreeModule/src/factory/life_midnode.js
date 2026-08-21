@@ -1,5 +1,4 @@
 import Midnode from './midnode';
-import {ObjectPool} from '../util/index';
 
 class LifeMidnode extends Midnode {
   constructor() {
@@ -15,7 +14,5 @@ class LifeMidnode extends Midnode {
     this.bezr = undefined;
   }
 }
-
-LifeMidnode.obj_pool = new ObjectPool(LifeMidnode, 25000);
 
 export default LifeMidnode;

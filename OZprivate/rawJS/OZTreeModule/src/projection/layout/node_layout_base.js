@@ -34,14 +34,34 @@ class NodeLayoutBase {
     this.hovering = false;
   }
   
+  /**
+   * node.rvar, corrected for how big a circle this view draws at the end of a branch.
+   */
+  detail_rvar(node) {
+    /**
+     * The interior-node circle the sizes in this file were originally measured against: the
+     * joint at the end of a branch in the spiral / natural / fern / balanced views, which is
+     * bezr/2 with bezr the fixed partl1 of 0.55.
+     *
+     * Those views all draw the same size of circle for a given rvar, so sizing a node's
+     * contents and gating its detail on rvar alone worked. A view free to stroke its branches
+     * thinner (propspiral) draws a smaller circle for the same rvar, so we divide this out and
+     * work from the circle actually in front of us.
+     */
+    const reference_arcr = 0.55 / 2;
+
+    return node.rvar * node.arcr / reference_arcr;
+  }
+
   calc_twh(node) {
-    this.twidth = config.projection.Twidth * (config.projection.partc - config.projection.partl2) * node.rvar;  
-    this.theight = config.projection.Tsize  * (config.projection.partc - config.projection.partl2) / 2.0 * node.rvar;
-    this.theight2 = config.projection.Tsize  * (config.projection.partc - config.projection.partl2) / 3.0 * node.rvar;
+    let rvar = this.detail_rvar(node);
+    this.twidth = config.projection.Twidth * (config.projection.partc - config.projection.partl2) * rvar;
+    this.theight = config.projection.Tsize  * (config.projection.partc - config.projection.partl2) / 2.0 * rvar;
+    this.theight2 = config.projection.Tsize  * (config.projection.partc - config.projection.partl2) / 3.0 * rvar;
   }
   
   high_res_shapes(node, shapes) {
-    if ((config.projection.draw_all_details && node.rvar >= config.projection.node_high_res_thres)) {
+    if ((config.projection.draw_all_details && this.detail_rvar(node) >= config.projection.node_high_res_thres)) {
       this.high_res_sponsor_shapes(node, shapes);
       this.high_res_image_shapes(node, shapes);
       this.high_res_text_shapes(node, shapes);
@@ -483,8 +503,9 @@ class NodeLayoutBase {
   }
 
   low_res_shapes(node, shapes) {
-    let condition = config.projection.draw_all_details 
-      && node.rvar > config.projection.node_low_res_thres && node.rvar < config.projection.node_high_res_thres;
+    let rvar = this.detail_rvar(node);
+    let condition = config.projection.draw_all_details
+      && rvar > config.projection.node_low_res_thres && rvar < config.projection.node_high_res_thres;
     if (condition) {
       this.low_res_text_shapes(node, shapes);
       this.low_res_date_shapes(node, shapes);
@@ -539,7 +560,7 @@ class NodeLayoutBase {
   }
 
   live_area_interior_circle_test(node) {
-    return node.rvar < config.projection.node_high_res_thres && this.is_mouse_over_node(node);
+    return this.detail_rvar(node) < config.projection.node_high_res_thres && this.is_mouse_over_node(node);
   }
 
   interior_circle_shapes(node, shapes) {
@@ -561,8 +582,8 @@ class NodeLayoutBase {
 
     
   interior_circle_full_shapes(node, shapes) {
-    let condition = node.rvar > config.projection.node_low_res_thres && config.projection.interior_circle_draw;
-      if (condition) {          
+    let condition = this.detail_rvar(node) > config.projection.node_low_res_thres && config.projection.interior_circle_draw;
+      if (condition) {
     let arc_shape = ArcShape.create();
     if (!this.hovered && this.live_area_interior_circle_test(node)) {
       this.hovered = true;
@@ -669,7 +690,7 @@ class NodeLayoutBase {
 
   is_mouse_over_high_res_inner_circle(node) {
     let mouse_over = false;
-    if (node.rvar >= config.projection.node_high_res_thres && tree_state.button_x && tree_state.button_y) {
+    if (this.detail_rvar(node) >= config.projection.node_high_res_thres && tree_state.button_x && tree_state.button_y) {
       let dx_to_node_center = get_abs_x(node, node.arcx) - tree_state.button_x;
       let dy_to_node_center = get_abs_y(node, node.arcy) - tree_state.button_y;
       let button_to_node_center_sqr = dx_to_node_center * dx_to_node_center + dy_to_node_center * dy_to_node_center;

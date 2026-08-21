@@ -2,11 +2,17 @@ import config from './global_config';
 
 let pic_map = {};
 let count = 0;
+let clear_timer = null;
 
 export function get_image(src, filename, preferred_px=null) {
   if (filename && src) {
     let url = config.pic.data_path_pics(src, filename, preferred_px); //use url as key into the cache array
     if (!pic_map[url]) {
+      // Only start emptying the cache once there's something in it to empty, so
+      // merely importing this module doesn't leave a timer keeping node alive
+      if (clear_timer === null) {
+        clear_timer = setInterval(clear_least_used_image, config.pic.clear_image_cache_interval);
+      }
       pic_map[url] = {};
       pic_map[url].image = new Image();
       pic_map[url].image.src = url;
@@ -21,9 +27,6 @@ export function get_image(src, filename, preferred_px=null) {
 export function image_ready(image) {
   return image && image.complete && !isNaN(image.naturalWidth) && image.naturalWidth > 0;
 }
-
-
-setInterval(clear_least_used_image, config.pic.clear_image_cache_interval);
 
 //sort images by its last used time. Delete least used images so that the pic_map size won't exceed the max allowed pic_map size.
 function clear_least_used_image() {

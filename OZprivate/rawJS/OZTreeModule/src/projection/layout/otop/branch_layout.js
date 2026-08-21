@@ -18,7 +18,19 @@ class BranchLayout extends BranchLayoutBase {
    */
   get_bezier_shapes(node, shapes, markings_list) {
     let bezier_shape = BezierShape.create();
-    this.set_bezier_shape(bezier_shape, node, markings_list);
+
+    bezier_shape.sx = node.bezsx * node.rvar + node.xvar;
+    bezier_shape.sy = node.bezsy * node.rvar + node.yvar;
+    bezier_shape.c1x = node.bezc1x * node.rvar + node.xvar;
+    bezier_shape.c1y = node.bezc1y * node.rvar + node.yvar;
+    bezier_shape.c2x = node.bezc2x * node.rvar + node.xvar;
+    bezier_shape.c2y = node.bezc2y * node.rvar + node.yvar;
+    bezier_shape.ex = node.bezex * node.rvar + node.xvar;
+    bezier_shape.ey = node.bezey * node.rvar + node.yvar;
+    bezier_shape.stroke.line_cap = 'round';
+    bezier_shape.height = 1;
+    bezier_shape.markings_list = markings_list || [];
+
     bezier_shape.do_stroke = true;
     bezier_shape.stroke.line_width = this.node_line_width(node, markings_list);
     bezier_shape.height = 0;

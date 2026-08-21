@@ -4,6 +4,7 @@
 import handler_qsopts from '../src/tour/handler/QsOpts.js';
 import test from 'tape';
 
+import { setup_fake_window } from './util_dom';
 import { setup_tour } from './util_tourwrapper';
 
 function fake_tour() {
@@ -29,10 +30,11 @@ function fake_tour() {
 }
 
 function set_location_search(qs) {
-  global.window = { location: { search: qs } };
+  global.window.location = { search: qs };
 }
 
 test('handler_qsopts', function (test) {
+  setup_fake_window(test);
   var ft = fake_tour();
   handler_qsopts(ft).then(function () {
     // into_node gets ignored, we don't do anything
@@ -166,9 +168,3 @@ test('handler_qsopts:event_ordering', function (test) {
   })
 });
 
-
-test.onFinish(function() {
-  // NB: Something data_repo includes in is holding node open.
-  //     Can't find it so force our tests to end.
-  process.exit(0)
-});

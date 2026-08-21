@@ -3,15 +3,15 @@
   */
 import test from 'tape';
 
+import { setup_dom } from './util_dom';
 import { teaseTour } from '../src/ui/tours_list.js';
 
 test('teaseTour', function (test) {
-  var out;
-  global.window = { fakeLs: {} };
+  setup_dom(test);
 
   function tt (tourIds, progress) {
     Object.keys(progress || {}).forEach((k) => {
-      global.window.fakeLs['ts-progress-' + k] = progress[k];
+      global.localStorage.setItem('ts-progress-' + k, JSON.stringify(progress[k]));
     });
     const out = teaseTour(tourIds.map((id) => ({ identifier: id })));
     return out ? out['identifier'] : out;

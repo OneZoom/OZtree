@@ -53,7 +53,14 @@ test('DataRepo:update_metadata', function (t) {
         }).filter(function (x) { return x.ozid !== '0' && x.ozid !== 'temp' });
     }
 
-    data_repo.setup({raw_data: rawdata, cut_map: {}, poly_cut_map: {}, cut_threshold: 10000});
+    data_repo.setup({
+        raw_data: rawdata, cut_map: {}, poly_cut_map: {}, cut_threshold: 10000,
+        // NB: data_repo is a module-level singleton, so start from a clean slate
+        //     rather than inheriting whatever another test populated
+        metadata: { leaf_meta: [], node_meta: [] },
+        ott_id_map: {},
+        name_id_map: {},
+    });
     t.deepEqual(pic_metadata(["OTTid", "picID", "picID_src", "picID_rating", "picID_credit"]), [], "No leaves at start");
 
     // Add some leaves without images
@@ -114,10 +121,4 @@ test('DataRepo:update_metadata', function (t) {
     ], "Removed 1 image");
 
     t.end();
-});
-
-test.onFinish(function() { 
-  // NB: Something data_repo includes in is holding node open.
-  //     Can't find it so force our tests to end.
-  process.exit(0)
 });

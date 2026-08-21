@@ -4,6 +4,7 @@
 import { populate_factory } from './util_factory'
 import test from 'tape';
 
+import { setup_dom } from './util_dom';
 import tree_state from '../src/tree_state.js'
 
 function test_focal_area(test, expected, message) {
@@ -23,6 +24,11 @@ function test_focal_area(test, expected, message) {
 }
 
 test('focal_area', function (test) {
+  // NB: setup_canvas fires window_size_change hooks, which may read (window)
+  setup_dom(test);
+  // tree_state is a module-level singleton, so put the constraint back as we found it
+  test.teardown(function () { tree_state.constrain_focal_area(1, 1) });
+
   tree_state.setup_canvas({ width: 2000, height: 1000 }, 2000, 1000);
   test_focal_area(test, {
     xmin: 2000 * 0.025,
@@ -68,9 +74,3 @@ test('focal_area', function (test) {
   test.end();
 });
 
-
-test.onFinish(function() {
-  // NB: Something data_repo includes in is holding node open.
-  //     Can't find it so force our tests to end.
-  process.exit(0)
-});

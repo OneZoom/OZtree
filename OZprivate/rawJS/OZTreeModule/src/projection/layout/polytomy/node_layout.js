@@ -20,6 +20,16 @@ class PolytomyNodeLayout extends NodeLayoutBase {
     this.theight = node.rvar * node.arcr * 0.53;
     this.theight2 = node.rvar * node.arcr * 0.37;
   }
+
+  /**
+   * The base class corrects the detail thresholds for how big a circle a view draws, but
+   * polytomy's interior circle is a fixed dot far smaller than the one it works from
+   * (arcr = 0.08 against 0.275), and its sizes above are already measured against it. Keep
+   * the thresholds on plain rvar, which is what they were tuned against here
+   */
+  detail_rvar(node) {
+    return node.rvar;
+  }
     
     interior_circle_shapes(node, shapes) {
         

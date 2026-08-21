@@ -1,5 +1,20 @@
 import {set_horizon_calculator} from '../horizon_calc/horizon_calc';
 
+/**
+ * Layout pre-calculation for the "spiral" view.
+ *
+ * Each node is drawn as a bezier curve (its branch) with a circle at the end of it,
+ * either a leaf blob, or a joint covering the gap where its children's branches begin.
+ * A node's 2 children are drawn at an angle to their parent: the richer of the 2, the
+ * trunk child, carries on around the spiral, while the poorer, the offshoot, branches
+ * off more sharply.
+ *
+ * Every value below is in the node's own co-ordinate space, i.e. the branch always
+ * runs from (bezsx, bezsy) to (bezex, bezey), whatever the node's size or position on
+ * screen. The layout code converts a point to screen co-ordinates with
+ * (node.xvar + node.rvar * x), and a width or radius with (node.rvar * r), where
+ * xvar/yvar/rvar are maintained by position_helper as the tree is zoomed.
+ */
 class SpiralPreCalc {
   constructor() {
     this._viewtype = "spiral";
@@ -8,19 +23,41 @@ class SpiralPreCalc {
     if (!this._viewtype) throw new Error("viewtype not defined in SpiralPreCalc.");
     else return this._viewtype;
   }
+  /**
+   * Calculate the spiral layout for node and all its descendants, setting on each:
+   *
+   * The branch, a bezier curve drawn by projection/layout/branch_layout_base:
+   * * bezsx, bezsy: Start point of the curve
+   * * bezc1x, bezc1y: First bezier control point
+   * * bezc2x, bezc2y: Second bezier control point
+   * * bezex, bezey: End point of the curve
+   * * bezr: Width the curve is stroked at
+   *
+   * The circle at the end of the branch:
+   * * arcx, arcy: Centre of the circle
+   * * arcr: Radius of the circle. A node with children gets a small joint over the end
+   *   of its branch (bezr/2); a node without gets a leaf blob, much wider than its branch
+   * * arca: Angle in radians the branch points in, used to orient the leaf drawn there
+   *   (see projection/layout/leaf_layout_base) as well as to place the node's children
+   *
+   * How to get from this node's co-ordinate space to each child's, used by
+   * position_helper to position children, and by the horizon calculator to combine
+   * their bounding boxes into this node's:
+   * * nextr[i]: Scale of child i relative to this node
+   * * nextx[i], nexty[i]: Position of child i's origin in this node's co-ordinates
+   *
+   * Note that a node's own branch is decided by its parent, so only nextr/nextx/nexty,
+   * arcx/arcy/arcr are set for node itself here. The exception is the root, which has no
+   * parent to do this for it, and so gets a fixed branch pointing straight up the screen.
+   *
+   * @param {Object} node The (sub)tree root to lay out. If node.is_root, generate the
+   *                      fixed root branch first, otherwise the branch values already on
+   *                      node are kept, and only its descendants' are (re)calculated.
+   */
   pre_calc(node) {
-    let partl1 = 0.55;
     if (node.is_root) {
-      node.bezsx =  0;
-      node.bezsy =  0; // start y position
-      node.bezex =  0; // end x position
-      node.bezey =  -1; // end y position
-      node.bezc1x=  0; // control point 1 x position 
-      node.bezc1y=  -0.05; // control point 2 y position
-      node.bezc2x=  0; // control point 2 x position
-      node.bezc2y=  -0.95; // control point 2 y position
-      node.bezr  =  partl1; // line width
-      node.arca = Math.PI*(3/2);
+      Object.assign(node, root_branch);
+      node.arca = root_arca;
     }
     _pre_calc(node);
   }
@@ -29,80 +66,146 @@ class SpiralPreCalc {
   }
 }
 
+/**
+ * Leaf blob dimensions: a blob of radius (leafmult * partc), sitting posmult beyond the
+ * end of the branch it hangs off. A branch always reaches exactly 1 in its own
+ * co-ordinate space, so these are in effect fractions of a branch's length: a blob comes
+ * out 1.28 in radius, sitting 0.9 past the tip of the branch it caps.
+ */
+const leafmult = 3.2;
+const partc = 0.4;
+const posmult = 0.9;
+
+/**
+ * How thick a branch is drawn, again as a fraction of the 1 it reaches. Every node in the
+ * view is the same partl1 wide (a node is only ever given a width by the fallback in
+ * _pre_calc below), so a branch is a line of constant width rather than a tapering one;
+ * what makes the tree narrow towards the leaves is each child being drawn smaller than its
+ * parent, not the width changing along a branch.
+ */
+const partl1 = 0.55;
+
+/**
+ * How far along its own angle a node places its children's origins. Each child's branch
+ * then starts child_start back along that same angle, i.e. child_origin_dist +
+ * child_start = 1 along it, which is exactly where the node's own branch ends: the child's
+ * curve begins on its parent's tip however the 2 are scaled or angled.
+ */
+const child_origin_dist = 1.3;
+const child_start = -0.3;
+
+/**
+ * How far past the end of its branch a node's joint sits, as a fraction of the branch. Just
+ * beyond it, so the circle covers the gap where the children's branches begin.
+ */
+const joint_overshoot = 1.01;
+
+/**
+ * The 2 kinds of child. The richer of a node's 2 children is the trunk child, carrying on
+ * around the spiral: it turns by the smaller angle, to the right, and is drawn at the
+ * larger scale. The poorer is the offshoot, branching off to the left more sharply and
+ * drawn much smaller. Each kind gives:
+ * * turn: How far the child's angle is turned from its parent's, positive being to the right
+ * * ratio: How much smaller the child is drawn than its parent, i.e. its nextr
+ * * side: Which way the child is pushed off its parent's centre line (see nextx/nexty below)
+ * * control_points: The child's 2 bezier control points, each measured either along its
+ *   parent's angle or along its own (see _pre_calc)
+ */
+const trunk_child = {
+  turn: Math.PI * 0.22,
+  ratio: 1 / 1.3,
+  side: 1,
+  // Both control points lie along the parent's angle, the first sitting exactly on the
+  // start point, so the curve leaves the tip travelling just the way the parent was
+  control_points: (along_parent, along_self) => [along_parent(child_start), along_parent(0.15)],
+};
+const offshoot_child = {
+  turn: Math.PI * -0.46,
+  ratio: 1 / 2.25,
+  side: -1,
+  // Only the first control point follows the parent's angle, and only just: the second sits
+  // back along the child's own angle, pulling the curve straight into its end point, so the
+  // sharper turn is made close to the parent's tip rather than spread over the branch
+  control_points: (along_parent, along_self) => [along_parent(0.1), along_self(0.9)],
+};
+
+/**
+ * The branch the root is drawn with: straight up the screen from the origin to (0, -1),
+ * with the control points spaced along it so the curve comes out as good as straight.
+ *
+ * It doubles as the fallback for any part of a branch a node hasn't been given (see
+ * _pre_calc). A child is given every part of its curve by its parent bar its width, so in
+ * practice bezr is the only one of these an ordinary node takes.
+ */
+const root_arca = Math.PI * (3 / 2); // Straight up the screen
+const root_branch = {
+  bezsx: 0, bezsy: 0, // start position
+  bezc1x: 0, bezc1y: -0.05, // control point 1 position
+  bezc2x: 0, bezc2y: -0.95, // control point 2 position
+  bezex: 0, bezey: -1, // end position
+  bezr: partl1, // line width
+};
+
+/**
+ * Recursively lay out node and its descendants.
+ * @see SpiralPreCalc.pre_calc for the values this sets on each node
+ */
 function _pre_calc(node) {
-  let leafmult = 3.2;
-  let posmult = 0.9;
-  let partc = 0.4;
-  let thisangleleft = 0.46;
-  let thisangleright = 0.22;
-  let thisratio1 = 1/1.3;
-  let thisratio2 = 1/2.25;
-  let partl1 = 0.55;
-  let tempsinpre = Math.sin(node.arca);
-  let tempcospre = Math.cos(node.arca);
-  let tempsin90pre = Math.sin(node.arca + Math.PI/2.0);
-  let tempcos90pre = Math.cos(node.arca + Math.PI/2.0);
-  let tempsin2 = Math.sin(node.arca + Math.PI*thisangleright);
-  let tempcos2 = Math.cos(node.arca + Math.PI*thisangleright);
-  let tempsin3 = Math.sin(node.arca - Math.PI*thisangleleft);
-  let tempcos3 = Math.cos(node.arca - Math.PI*thisangleleft);
-  
-  node.bezsx = node.bezsx  !== undefined ? node.bezsx : 0;
-  node.bezsy = node.bezsy  !== undefined ? node.bezsy : 0; // start y position
-  node.bezex = node.bezex  !== undefined ? node.bezex : 0; // end x position
-  node.bezey = node.bezey  !== undefined ? node.bezey : -1; // end y position
-  node.bezc1x= node.bezc1x !== undefined ? node.bezc1x: 0; // control point 1 x position 
-  node.bezc1y= node.bezc1y !== undefined ? node.bezc1y: -0.05; // control point 2 y position
-  node.bezc2x= node.bezc2x !== undefined ? node.bezc2x: 0; // control point 2 x position
-  node.bezc2y= node.bezc2y !== undefined ? node.bezc2y: -0.95; // control point 2 y position
-  node.bezr  = node.bezr   !== undefined ? node.bezr  : partl1; // line width
+  // The direction our own branch points in, and the same turned a quarter-turn to the
+  // right, which is the direction our children are pushed apart along
+  const dirx = Math.cos(node.arca), diry = Math.sin(node.arca);
+  const perpx = Math.cos(node.arca + Math.PI / 2.0), perpy = Math.sin(node.arca + Math.PI / 2.0);
+
+  // Keep the branch our parent gave us, filling in anything it left unset from the root
+  // branch: a node's width always comes from there, and a node we have been asked to lay a
+  // subtree out from may have no branch at all yet
+  for (const name in root_branch) {
+    if (node[name] === undefined) node[name] = root_branch[name];
+  }
 
   if (node.has_child)
   {
-    let atanpre = Math.atan2(node.children[0].richness_val,node.children[1].richness_val);
-    let atanpowpre = Math.atan2(Math.pow(node.children[0].richness_val,0.5),Math.pow(node.children[1].richness_val,0.5));
+    // The richer child carries on around the spiral as the trunk, the poorer offshoots
+    const [offshootChildIndex, trunkChildIndex] = (node.children[0].richness_val) >= (node.children[1].richness_val) ? [1, 0] : [0, 1];
 
-    const [leftChildIndex, rightChildIndex] = (node.children[0].richness_val) >= (node.children[1].richness_val) ? [1, 0] : [0, 1];
-    const leftChild = node.children[leftChildIndex];
-    const rightChild = node.children[rightChildIndex];
-    
-    node.nextr[rightChildIndex] = thisratio1; // r (scale) reference for child 1
-    node.nextr[leftChildIndex] = thisratio2; // r (scale) reference for child 2
-    rightChild.bezsx = -(0.3)*(tempcospre)/thisratio1;
-    rightChild.bezsy = -(0.3)*(tempsinpre)/thisratio1;
-    rightChild.bezex = tempcos2;
-    rightChild.bezey = tempsin2;
-    rightChild.bezc1x = -0.3*(tempcospre)/thisratio1;
-    rightChild.bezc1y = -0.3*(tempsinpre)/thisratio1;
-    rightChild.bezc2x = 0.15*(tempcospre)/thisratio1;
-    rightChild.bezc2y = 0.15*(tempsinpre)/thisratio1;
-    rightChild.arca = node.arca + Math.PI*thisangleright;
-    
-    leftChild.bezsx = -(0.3)*(tempcospre)/thisratio2;
-    leftChild.bezsy = -(0.3)*(tempsinpre)/thisratio2;
-    leftChild.bezex = tempcos3;
-    leftChild.bezey = tempsin3;
-    leftChild.bezc1x = 0.1*(tempcospre)/thisratio2;
-    leftChild.bezc1y = 0.1*(tempsinpre)/thisratio2;
-    leftChild.bezc2x = 0.9*tempcos3;
-    leftChild.bezc2y = 0.9*tempsin3;
-    leftChild.arca = node.arca - Math.PI*thisangleleft;
-    
-    node.nextx[rightChildIndex] = (1.3*Math.cos(node.arca))+(((node.bezr)-(partl1*thisratio1))/2.0)*tempcos90pre; // x refernece point for both children
-    node.nexty[rightChildIndex] = (1.3*Math.sin(node.arca))+(((node.bezr)-(partl1*thisratio1))/2.0)*tempsin90pre; // y reference point for both children
-    node.nextx[leftChildIndex] = (1.3*Math.cos(node.arca))-(((node.bezr)-(partl1*thisratio2))/2.0)*tempcos90pre; // x refernece point for both children
-    node.nexty[leftChildIndex] = (1.3*Math.sin(node.arca))-(((node.bezr)-(partl1*thisratio2))/2.0)*tempsin90pre; // y reference point for both children
-    
-    node.arcx = node.bezex*1.01;
-    node.arcy = node.bezey*1.01;
-    node.arcr = node.bezr/2;
-    
+    for (const [childIndex, kind] of [[trunkChildIndex, trunk_child], [offshootChildIndex, offshoot_child]]) {
+      const child = node.children[childIndex];
+      const child_arca = node.arca + kind.turn;
+      const child_dirx = Math.cos(child_arca), child_diry = Math.sin(child_arca);
+      // The 2 ways a point on the child's branch is measured, both in the child's own
+      // co-ordinate space: a distance along the child's angle, or one back along ours --
+      // which, the child being drawn ratio times smaller than us, is that much longer there
+      const along_self = (dist) => [dist * child_dirx, dist * child_diry];
+      const along_parent = (dist) => [dist * dirx / kind.ratio, dist * diry / kind.ratio];
+      const [c1, c2] = kind.control_points(along_parent, along_self);
+
+      node.nextr[childIndex] = kind.ratio; // r (scale) reference for the child
+      child.arca = child_arca;
+      // The branch runs from our own tip (see child_start) to 1 along the child's angle
+      [child.bezsx, child.bezsy] = along_parent(child_start);
+      [child.bezc1x, child.bezc1y] = c1;
+      [child.bezc2x, child.bezc2y] = c2;
+      [child.bezex, child.bezey] = along_self(1);
+
+      // Both children start child_origin_dist along our own angle, then are pushed apart at
+      // right-angles to it, by half the difference between our branch width and theirs
+      const bias = kind.side * ((node.bezr - (partl1 * kind.ratio)) / 2.0);
+      node.nextx[childIndex] = (child_origin_dist * dirx) + (bias * perpx); // x reference point for the child
+      node.nexty[childIndex] = (child_origin_dist * diry) + (bias * perpy); // y reference point for the child
+    }
+
+    // Joint just beyond the end of our branch, covering the gap where the children start
+    node.arcx = node.bezex * joint_overshoot;
+    node.arcy = node.bezey * joint_overshoot;
+    node.arcr = node.bezr / 2;
+
     _pre_calc(node.children[0]);
     _pre_calc(node.children[1]);
   } else {
-    node.arcx = node.bezex+posmult*(tempcospre);
-    node.arcy = node.bezey+posmult*(tempsinpre);
-    node.arcr = leafmult*partc;
+    // Leaf blob, sitting posmult beyond the end of our branch, in the direction we point
+    node.arcx = node.bezex + (posmult * dirx);
+    node.arcy = node.bezey + (posmult * diry);
+    node.arcr = leafmult * partc;
   }
 }
 

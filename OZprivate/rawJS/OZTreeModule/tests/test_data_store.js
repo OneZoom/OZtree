@@ -141,9 +141,3 @@ test('data_store:uint16', function (test) {
     return global.window.fetch.waitingWithTimeout().then((w) => test.deepEqual(w, {}, "No requests left in queue"));
   });
 });
-
-test.onFinish(function() {
-  // NB: Something data_repo includes in is holding node open.
-  //     Can't find it so force our tests to end.
-  process.exit(0)
-});

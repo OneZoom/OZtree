@@ -45,9 +45,6 @@ function _pre_calc(node) {
   let tempcos90pre = Math.cos(node.arca + Math.PI/2.0);
 
   if (node.has_child) {
-    let atanpre = Math.atan2(node.children[0].richness_val, node.children[1].richness_val);
-    let atanpowpre = Math.atan2(Math.pow(node.children[0].richness_val, 0.5),Math.pow(node.children[1].richness_val, 0.5));
-    
     let tempsin2 = Math.sin(node.arca + Math.PI*thisangleright);
     let tempcos2 = Math.cos(node.arca + Math.PI*thisangleright);
     let tempsin3 = Math.sin(node.arca - Math.PI*thisangleleft);

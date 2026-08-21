@@ -1,5 +1,4 @@
 import Midnode from './midnode';
-import {ObjectPool} from '../util/index';
 
 class ATMidnode extends Midnode {
   constructor() {
@@ -82,7 +81,5 @@ let mapping = {
   "AllArchaeaAndEukaryotes_":"39d"
   
 };
-
-ATMidnode.obj_pool = new ObjectPool(ATMidnode, 25000);
 
 export default ATMidnode;

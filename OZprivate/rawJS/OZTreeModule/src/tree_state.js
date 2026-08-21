@@ -30,11 +30,11 @@ class TreeState {
     this.last_render_at = new Date();
     this.button_x = null;
     this.button_y = null;
-    let self = this;
-    setTimeout(function() {
-      self.url_parsed = true;
-    }, 5000);
     if (global.document) {
+      // NB: Only in a browser, otherwise this timer keeps node alive for no reason
+      setTimeout(() => {
+        this.url_parsed = true;
+      }, 5000);
       document.onmousemove = (ev) => {
         this.last_active_at = new Date()
       }
