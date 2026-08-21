@@ -26,6 +26,8 @@ function test_focal_area(test, expected, message) {
 test('focal_area', function (test) {
   // NB: setup_canvas fires window_size_change hooks, which may read (window)
   setup_dom(test);
+  // tree_state is a module-level singleton, so put the constraint back as we found it
+  test.teardown(function () { tree_state.constrain_focal_area(1, 1) });
 
   tree_state.setup_canvas({ width: 2000, height: 1000 }, 2000, 1000);
   test_focal_area(test, {
