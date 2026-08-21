@@ -1,3 +1,6 @@
+@use "../../OZ_variables";
+@use "mixins/clearfix";
+
 //
 // Pager pagination
 // --------------------------------------------------
@@ -5,25 +8,25 @@
 
 .pager {
   padding-left: 0;
-  margin: $line-height-computed 0;
+  margin: OZ_variables.$line-height-computed 0;
   list-style: none;
   text-align: center;
-  @include clearfix;
+  @include clearfix.clearfix;
   li {
     display: inline;
     > a,
     > span {
       display: inline-block;
       padding: 5px 14px;
-      background-color: $pager-bg;
-      border: 1px solid $pager-border;
-      border-radius: $pager-border-radius;
+      background-color: OZ_variables.$pager-bg;
+      border: 1px solid OZ_variables.$pager-border;
+      border-radius: OZ_variables.$pager-border-radius;
     }
 
     > a:hover,
     > a:focus {
       text-decoration: none;
-      background-color: $pager-hover-bg;
+      background-color: OZ_variables.$pager-hover-bg;
     }
   }
 
@@ -46,9 +49,9 @@
     > a:hover,
     > a:focus,
     > span {
-      color: $pager-disabled-color;
-      background-color: $pager-bg;
-      cursor: $cursor-disabled;
+      color: OZ_variables.$pager-disabled-color;
+      background-color: OZ_variables.$pager-bg;
+      cursor: OZ_variables.$cursor-disabled;
     }
   }
 }

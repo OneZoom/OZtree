@@ -1,3 +1,9 @@
+@use "../../OZ_variables";
+@use "mixins/buttons";
+@use "mixins/opacity";
+@use "mixins/tab-focus";
+@use "mixins/vendor-prefixes";
+
 //
 // Buttons
 // --------------------------------------------------
@@ -9,7 +15,7 @@
 .btn {
   display: inline-block;
   margin-bottom: 0; // For input.btn
-  font-weight: $btn-font-weight;
+  font-weight: OZ_variables.$btn-font-weight;
   text-align: center;
   vertical-align: middle;
   touch-action: manipulation;
@@ -17,22 +23,22 @@
   background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
   border: 1px solid transparent;
   white-space: nowrap;
-  @include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
-  @include user-select(none);
+  @include buttons.button-size(OZ_variables.$padding-base-vertical, OZ_variables.$padding-base-horizontal, OZ_variables.$font-size-base, OZ_variables.$line-height-base, OZ_variables.$btn-border-radius-base);
+  @include vendor-prefixes.user-select(none);
 
   &,
   &:active,
   &.active {
     &:focus,
     &.focus {
-      @include tab-focus;
+      @include tab-focus.tab-focus;
     }
   }
 
   &:hover,
   &:focus,
   &.focus {
-    color: $btn-default-color;
+    color: OZ_variables.$btn-default-color;
     text-decoration: none;
   }
 
@@ -40,15 +46,15 @@
   &.active {
     outline: 0;
     background-image: none;
-    @include box-shadow(inset 0 3px 5px rgba(0,0,0,.125));
+    @include vendor-prefixes.box-shadow(inset 0 3px 5px rgba(0,0,0,.125));
   }
 
   &.disabled,
   &[disabled],
   fieldset[disabled] & {
-    cursor: $cursor-disabled;
-    @include opacity(.65);
-    @include box-shadow(none);
+    cursor: OZ_variables.$cursor-disabled;
+    @include opacity.opacity(.65);
+    @include vendor-prefixes.box-shadow(none);
   }
 
   // [converter] extracted a& to a.btn
@@ -66,26 +72,26 @@ a.btn {
 // --------------------------------------------------
 
 .btn-default {
-  @include button-variant($btn-default-color, $btn-default-bg, $btn-default-border);
+  @include buttons.button-variant(OZ_variables.$btn-default-color, OZ_variables.$btn-default-bg, OZ_variables.$btn-default-border);
 }
 .btn-primary {
-  @include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
+  @include buttons.button-variant(OZ_variables.$btn-primary-color, OZ_variables.$btn-primary-bg, OZ_variables.$btn-primary-border);
 }
 // Success appears as green
 .btn-success {
-  @include button-variant($btn-success-color, $btn-success-bg, $btn-success-border);
+  @include buttons.button-variant(OZ_variables.$btn-success-color, OZ_variables.$btn-success-bg, OZ_variables.$btn-success-border);
 }
 // Info appears as blue-green
 .btn-info {
-  @include button-variant($btn-info-color, $btn-info-bg, $btn-info-border);
+  @include buttons.button-variant(OZ_variables.$btn-info-color, OZ_variables.$btn-info-bg, OZ_variables.$btn-info-border);
 }
 // Warning appears as orange
 .btn-warning {
-  @include button-variant($btn-warning-color, $btn-warning-bg, $btn-warning-border);
+  @include buttons.button-variant(OZ_variables.$btn-warning-color, OZ_variables.$btn-warning-bg, OZ_variables.$btn-warning-border);
 }
 // Danger and error appear as red
 .btn-danger {
-  @include button-variant($btn-danger-color, $btn-danger-bg, $btn-danger-border);
+  @include buttons.button-variant(OZ_variables.$btn-danger-color, OZ_variables.$btn-danger-bg, OZ_variables.$btn-danger-border);
 }
 
 
@@ -94,7 +100,7 @@ a.btn {
 
 // Make a button look and behave like a link
 .btn-link {
-  color: $link-color;
+  color: OZ_variables.$link-color;
   font-weight: normal;
   border-radius: 0;
 
@@ -104,7 +110,7 @@ a.btn {
   &[disabled],
   fieldset[disabled] & {
     background-color: transparent;
-    @include box-shadow(none);
+    @include vendor-prefixes.box-shadow(none);
   }
   &,
   &:hover,
@@ -114,15 +120,15 @@ a.btn {
   }
   &:hover,
   &:focus {
-    color: $link-hover-color;
-    text-decoration: $link-hover-decoration;
+    color: OZ_variables.$link-hover-color;
+    text-decoration: OZ_variables.$link-hover-decoration;
     background-color: transparent;
   }
   &[disabled],
   fieldset[disabled] & {
     &:hover,
     &:focus {
-      color: $btn-link-disabled-color;
+      color: OZ_variables.$btn-link-disabled-color;
       text-decoration: none;
     }
   }
@@ -134,14 +140,14 @@ a.btn {
 
 .btn-lg {
   // line-height: ensure even-numbered height of button next to large input
-  @include button-size($padding-large-vertical, $padding-large-horizontal, $font-size-large, $line-height-large, $btn-border-radius-large);
+  @include buttons.button-size(OZ_variables.$padding-large-vertical, OZ_variables.$padding-large-horizontal, OZ_variables.$font-size-large, OZ_variables.$line-height-large, OZ_variables.$btn-border-radius-large);
 }
 .btn-sm {
   // line-height: ensure proper height of button next to small input
-  @include button-size($padding-small-vertical, $padding-small-horizontal, $font-size-small, $line-height-small, $btn-border-radius-small);
+  @include buttons.button-size(OZ_variables.$padding-small-vertical, OZ_variables.$padding-small-horizontal, OZ_variables.$font-size-small, OZ_variables.$line-height-small, OZ_variables.$btn-border-radius-small);
 }
 .btn-xs {
-  @include button-size($padding-xs-vertical, $padding-xs-horizontal, $font-size-small, $line-height-small, $btn-border-radius-small);
+  @include buttons.button-size(OZ_variables.$padding-xs-vertical, OZ_variables.$padding-xs-horizontal, OZ_variables.$font-size-small, OZ_variables.$line-height-small, OZ_variables.$btn-border-radius-small);
 }
 
 

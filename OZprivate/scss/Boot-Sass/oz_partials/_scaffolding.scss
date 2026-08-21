@@ -1,3 +1,8 @@
+@use "../../OZ_variables";
+@use "mixins/image";
+@use "mixins/tab-focus";
+@use "mixins/vendor-prefixes";
+
 //
 // Scaffolding
 // --------------------------------------------------
@@ -9,11 +14,11 @@
 // For recommendations on resolving such conflicts, see
 // http://getbootstrap.com/getting-started/#third-box-sizing
 * {
-  @include box-sizing(border-box);
+  @include vendor-prefixes.box-sizing(border-box);
 }
 *:before,
 *:after {
-  @include box-sizing(border-box);
+  @include vendor-prefixes.box-sizing(border-box);
 }
 
 
@@ -25,11 +30,11 @@ html {
 }
 
 body {
-  font-family: $font-family-base;
-  font-size: $font-size-base;
-  line-height: $line-height-base;
-  color: $text-color;
-  background-color: $body-bg;
+  font-family: OZ_variables.$font-family-base;
+  font-size: OZ_variables.$font-size-base;
+  line-height: OZ_variables.$line-height-base;
+  color: OZ_variables.$text-color;
+  background-color: OZ_variables.$body-bg;
 }
 
 // Reset fonts for relevant elements
@@ -46,17 +51,17 @@ textarea {
 // Links
 
 a {
-  color: $link-color;
+  color: OZ_variables.$link-color;
   text-decoration: none;
 
   &:hover,
   &:focus {
-    color: $link-hover-color;
-    text-decoration: $link-hover-decoration;
+    color: OZ_variables.$link-hover-color;
+    text-decoration: OZ_variables.$link-hover-decoration;
   }
 
   &:focus {
-    @include tab-focus;
+    @include tab-focus.tab-focus;
   }
 }
 
@@ -79,27 +84,27 @@ img {
 
 // Responsive images (ensure images don't scale beyond their parents)
 .img-responsive {
-  @include img-responsive;
+  @include image.img-responsive;
 }
 
 // Rounded corners
 .img-rounded {
-  border-radius: $border-radius-large;
+  border-radius: OZ_variables.$border-radius-large;
 }
 
 // Image thumbnails
 //
 // Heads up! This is mixin-ed into thumbnails.less for `.thumbnail`.
 .img-thumbnail {
-  padding: $thumbnail-padding;
-  line-height: $line-height-base;
-  background-color: $thumbnail-bg;
-  border: 1px solid $thumbnail-border-color;
-  border-radius: $thumbnail-border-radius;
-  @include transition(all .2s ease-in-out);
+  padding: OZ_variables.$thumbnail-padding;
+  line-height: OZ_variables.$line-height-base;
+  background-color: OZ_variables.$thumbnail-bg;
+  border: 1px solid OZ_variables.$thumbnail-border-color;
+  border-radius: OZ_variables.$thumbnail-border-radius;
+  @include vendor-prefixes.transition(all .2s ease-in-out);
 
   // Keep them at most 100% wide
-  @include img-responsive(inline-block);
+  @include image.img-responsive(inline-block);
 }
 
 // Perfect circle
@@ -111,10 +116,10 @@ img {
 // Horizontal rules
 
 hr {
-  margin-top:    $line-height-computed;
-  margin-bottom: $line-height-computed;
+  margin-top:    OZ_variables.$line-height-computed;
+  margin-bottom: OZ_variables.$line-height-computed;
   border: 0;
-  border-top: 1px solid $hr-border;
+  border-top: 1px solid OZ_variables.$hr-border;
 }
 
 

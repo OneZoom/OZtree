@@ -1,3 +1,9 @@
+@use "../../OZ_variables";
+@use "mixins/border-radius";
+@use "mixins/buttons";
+@use "mixins/clearfix";
+@use "mixins/vendor-prefixes";
+
 //
 // Button groups
 // --------------------------------------------------
@@ -34,7 +40,7 @@
 // Optional: Group multiple button groups together for a toolbar
 .btn-toolbar {
   margin-left: -5px; // Offset the first child's margin
-  @include clearfix;
+  @include clearfix.clearfix;
 
   .btn,
   .btn-group,
@@ -56,13 +62,13 @@
 .btn-group > .btn:first-child {
   margin-left: 0;
   &:not(:last-child):not(.dropdown-toggle) {
-    @include border-right-radius(0);
+    @include border-radius.border-right-radius(0);
   }
 }
 // Need .dropdown-toggle since :last-child doesn't apply given a .dropdown-menu immediately after it
 .btn-group > .btn:last-child:not(:first-child),
 .btn-group > .dropdown-toggle:not(:first-child) {
-  @include border-left-radius(0);
+  @include border-radius.border-left-radius(0);
 }
 
 // Custom edits for including btn-groups within btn-groups (useful for including dropdown buttons within a btn-group)
@@ -75,11 +81,11 @@
 .btn-group > .btn-group:first-child:not(:last-child) {
   > .btn:last-child,
   > .dropdown-toggle {
-    @include border-right-radius(0);
+    @include border-radius.border-right-radius(0);
   }
 }
 .btn-group > .btn-group:last-child:not(:first-child) > .btn:first-child {
-  @include border-left-radius(0);
+  @include border-radius.border-left-radius(0);
 }
 
 // On active and open, don't show outline
@@ -93,9 +99,9 @@
 //
 // Remix the default button sizing classes into new ones for easier manipulation.
 
-.btn-group-xs > .btn { @extend .btn-xs; }
-.btn-group-sm > .btn { @extend .btn-sm; }
-.btn-group-lg > .btn { @extend .btn-lg; }
+.btn-group-xs > .btn { @include buttons.button-size(OZ_variables.$padding-xs-vertical, OZ_variables.$padding-xs-horizontal, OZ_variables.$font-size-small, OZ_variables.$line-height-small, OZ_variables.$btn-border-radius-small); }
+.btn-group-sm > .btn { @include buttons.button-size(OZ_variables.$padding-small-vertical, OZ_variables.$padding-small-horizontal, OZ_variables.$font-size-small, OZ_variables.$line-height-small, OZ_variables.$btn-border-radius-small); }
+.btn-group-lg > .btn { @include buttons.button-size(OZ_variables.$padding-large-vertical, OZ_variables.$padding-large-horizontal, OZ_variables.$font-size-large, OZ_variables.$line-height-large, OZ_variables.$btn-border-radius-large); }
 
 
 // Split button dropdowns
@@ -106,7 +112,8 @@
   padding-left: 8px;
   padding-right: 8px;
 }
-.btn-group > .btn-lg + .dropdown-toggle {
+.btn-group > .btn-lg + .dropdown-toggle,
+.btn-group.btn-group-lg > .btn + .dropdown-toggle {
   padding-left: 12px;
   padding-right: 12px;
 }
@@ -114,11 +121,11 @@
 // The clickable button for toggling the menu
 // Remove the gradient and set the same inset shadow as the :active state
 .btn-group.open .dropdown-toggle {
-  @include box-shadow(inset 0 3px 5px rgba(0,0,0,.125));
+  @include vendor-prefixes.box-shadow(inset 0 3px 5px rgba(0,0,0,.125));
 
   // Show no shadow for `.btn-link` since it has no other button styles.
   &.btn-link {
-    @include box-shadow(none);
+    @include vendor-prefixes.box-shadow(none);
   }
 }
 
@@ -128,13 +135,15 @@
   margin-left: 0;
 }
 // Carets in other button sizes
-.btn-lg .caret {
-  border-width: $caret-width-large $caret-width-large 0;
+.btn-lg .caret,
+.btn-group-lg > .btn .caret {
+  border-width: OZ_variables.$caret-width-large OZ_variables.$caret-width-large 0;
   border-bottom-width: 0;
 }
 // Upside down carets for .dropup
-.dropup .btn-lg .caret {
-  border-width: 0 $caret-width-large $caret-width-large;
+.dropup .btn-lg .caret,
+.dropup .btn-group-lg > .btn .caret {
+  border-width: 0 OZ_variables.$caret-width-large OZ_variables.$caret-width-large;
 }
 
 
@@ -153,7 +162,7 @@
 
   // Clear floats so dropdown menus can be properly placed
   > .btn-group {
-    @include clearfix;
+    @include clearfix.clearfix;
     > .btn {
       float: none;
     }
@@ -173,12 +182,12 @@
     border-radius: 0;
   }
   &:first-child:not(:last-child) {
-    @include border-top-radius($btn-border-radius-base);
-    @include border-bottom-radius(0);
+    @include border-radius.border-top-radius(OZ_variables.$btn-border-radius-base);
+    @include border-radius.border-bottom-radius(0);
   }
   &:last-child:not(:first-child) {
-    @include border-top-radius(0);
-    @include border-bottom-radius($btn-border-radius-base);
+    @include border-radius.border-top-radius(0);
+    @include border-radius.border-bottom-radius(OZ_variables.$btn-border-radius-base);
   }
 }
 .btn-group-vertical > .btn-group:not(:first-child):not(:last-child) > .btn {
@@ -187,11 +196,11 @@
 .btn-group-vertical > .btn-group:first-child:not(:last-child) {
   > .btn:last-child,
   > .dropdown-toggle {
-    @include border-bottom-radius(0);
+    @include border-radius.border-bottom-radius(0);
   }
 }
 .btn-group-vertical > .btn-group:last-child:not(:first-child) > .btn:first-child {
-  @include border-top-radius(0);
+  @include border-radius.border-top-radius(0);
 }
 
 

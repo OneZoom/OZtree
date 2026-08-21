@@ -1,3 +1,7 @@
+@use "Boot-Sass/oz_partials/mixins/image";
+@use "Boot-Sass/oz_partials/mixins/vendor-prefixes";
+@use "OZ_variables";
+
 //
 // OZ Thumbnails
 // --------------------------------------------------
@@ -6,18 +10,18 @@
 // Mixin and adjust the regular image class
 .thumbnail {
   display: block;
-  padding: $thumbnail-padding;
-  margin-top: calc($line-height-computed / 2);
-  margin-bottom: $line-height-computed;
-  line-height: $line-height-base;
-  background-color: $thumbnail-bg;
-  border: 1px solid $thumbnail-border-color;
-  border-radius: $thumbnail-border-radius;
-  @include transition(border .2s ease-in-out);
+  padding: OZ_variables.$thumbnail-padding;
+  margin-top: calc(OZ_variables.$line-height-computed / 2);
+  margin-bottom: OZ_variables.$line-height-computed;
+  line-height: OZ_variables.$line-height-base;
+  background-color: OZ_variables.$thumbnail-bg;
+  border: 1px solid OZ_variables.$thumbnail-border-color;
+  border-radius: OZ_variables.$thumbnail-border-radius;
+  @include vendor-prefixes.transition(border .2s ease-in-out);
 
   > img,
   a > img {
-    @include img-responsive;
+    @include image.img-responsive;
     margin-left: auto;
     margin-right: auto;
   }
@@ -26,23 +30,23 @@
 
   // Image captions
   .caption {
-    padding: $thumbnail-caption-padding;
-    color: $thumbnail-caption-color;
+    padding: OZ_variables.$thumbnail-caption-padding;
+    color: OZ_variables.$thumbnail-caption-color;
   }
 }
 
 // Remove border and put around whole figure if img is in a <figure> tag
 figure {
-  border: 1px solid $thumbnail-border-color;
-  border-radius: $thumbnail-border-radius;
+  border: 1px solid OZ_variables.$thumbnail-border-color;
+  border-radius: OZ_variables.$thumbnail-border-radius;
   .thumbnail {
     border: 0;
     border-radius: 0;
-    margin-bottom: calc($line-height-computed / 2);
+    margin-bottom: calc(OZ_variables.$line-height-computed / 2);
   }
   figcaption {
     text-align: center;
-    margin-bottom: calc($line-height-computed / 2);
+    margin-bottom: calc(OZ_variables.$line-height-computed / 2);
   }
 }
 
@@ -54,5 +58,5 @@ figure {
 a.thumbnail:hover,
 a.thumbnail:focus,
 a.thumbnail.active {
-  border-color: $link-color;
+  border-color: OZ_variables.$link-color;
 }

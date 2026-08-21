@@ -1,3 +1,7 @@
+@use "../../OZ_variables";
+@use "mixins/grid";
+@use "mixins/grid-framework";
+
 //
 // Grid system
 // --------------------------------------------------
@@ -8,16 +12,16 @@
 // Set the container width, and override it for fixed navbars in media queries.
 
 .container {
-  @include container-fixed;
+  @include grid.container-fixed;
 
-  @media (min-width: $screen-sm-min) {
-    width: $container-sm;
+  @media (min-width: OZ_variables.$screen-sm-min) {
+    width: OZ_variables.$container-sm;
   }
-  @media (min-width: $screen-md-min) {
-    width: $container-md;
+  @media (min-width: OZ_variables.$screen-md-min) {
+    width: OZ_variables.$container-md;
   }
-  @media (min-width: $screen-lg-min) {
-    width: $container-lg;
+  @media (min-width: OZ_variables.$screen-lg-min) {
+    width: OZ_variables.$container-lg;
   }
 }
 
@@ -28,7 +32,7 @@
 // width for fluid, full width layouts.
 
 .container-fluid {
-  @include container-fixed;
+  @include grid.container-fixed;
 }
 
 
@@ -37,7 +41,7 @@
 // Rows contain and clear the floats of your columns.
 
 .row {
-  @include make-row;
+  @include grid.make-row;
 }
 
 
@@ -45,7 +49,7 @@
 //
 // Common styles for small and large grid columns
 
-@include make-grid-columns;
+@include grid-framework.make-grid-columns;
 
 
 // Extra small grid
@@ -53,7 +57,7 @@
 // Columns, offsets, pushes, and pulls for extra small devices like
 // smartphones.
 
-@include make-grid(xs);
+@include grid-framework.make-grid(xs);
 
 
 // Small grid
@@ -61,8 +65,8 @@
 // Columns, offsets, pushes, and pulls for the small device range, from phones
 // to tablets.
 
-@media (min-width: $screen-sm-min) {
-  @include make-grid(sm);
+@media (min-width: OZ_variables.$screen-sm-min) {
+  @include grid-framework.make-grid(sm);
 }
 
 
@@ -70,8 +74,8 @@
 //
 // Columns, offsets, pushes, and pulls for the desktop device range.
 
-@media (min-width: $screen-md-min) {
-  @include make-grid(md);
+@media (min-width: OZ_variables.$screen-md-min) {
+  @include grid-framework.make-grid(md);
 }
 
 
@@ -79,6 +83,6 @@
 //
 // Columns, offsets, pushes, and pulls for the large desktop device range.
 
-@media (min-width: $screen-lg-min) {
-  @include make-grid(lg);
+@media (min-width: OZ_variables.$screen-lg-min) {
+  @include grid-framework.make-grid(lg);
 }

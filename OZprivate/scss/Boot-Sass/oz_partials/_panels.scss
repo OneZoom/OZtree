@@ -1,3 +1,9 @@
+@use "../../OZ_variables";
+@use "mixins/border-radius";
+@use "mixins/clearfix";
+@use "mixins/panels";
+@use "sass:math";
+
 //
 // Panels
 // --------------------------------------------------
@@ -5,8 +11,8 @@
 
 // Base class
 .panel {
-  margin-bottom: $line-height-computed;
-  background-color: $panel-bg;
+  margin-bottom: OZ_variables.$line-height-computed;
+  background-color: OZ_variables.$panel-bg;
   border: 1px solid transparent;
   //border-radius: $panel-border-radius;
   //@include box-shadow(0 1px 1px rgba(0,0,0,.05));
@@ -14,15 +20,15 @@
 
 // Panel contents
 .panel-body {
-  padding: $panel-body-padding;
-  @include clearfix;
+  padding: OZ_variables.$panel-body-padding;
+  @include clearfix.clearfix;
 }
 
 // Optional heading
 .panel-heading {
-  padding: $panel-heading-padding;
+  padding: OZ_variables.$panel-heading-padding;
   border-bottom: 1px solid transparent;
-  @include border-top-radius(($panel-border-radius - 1));
+  @include border-radius.border-top-radius((OZ_variables.$panel-border-radius - 1));
 
   > .dropdown .dropdown-toggle {
     color: inherit;
@@ -33,7 +39,7 @@
 .panel-title {
   margin-top: 0;
   margin-bottom: 0;
-  font-size: math.ceil($font-size-base * 1.125);
+  font-size: math.ceil(OZ_variables.$font-size-base * 1.125);
   color: inherit;
 
   > a,
@@ -47,10 +53,10 @@
 
 // Optional footer (stays gray in every modifier class)
 .panel-footer {
-  padding: $panel-footer-padding;
-  background-color: $panel-footer-bg;
-  border-top: 1px solid $panel-inner-border;
-  @include border-bottom-radius(($panel-border-radius - 1));
+  padding: OZ_variables.$panel-footer-padding;
+  background-color: OZ_variables.$panel-footer-bg;
+  border-top: 1px solid OZ_variables.$panel-inner-border;
+  @include border-radius.border-bottom-radius((OZ_variables.$panel-border-radius - 1));
 }
 
 
@@ -73,7 +79,7 @@
     &:first-child {
       .list-group-item:first-child {
         border-top: 0;
-        @include border-top-radius(($panel-border-radius - 1));
+        @include border-radius.border-top-radius((OZ_variables.$panel-border-radius - 1));
       }
     }
 
@@ -81,13 +87,13 @@
     &:last-child {
       .list-group-item:last-child {
         border-bottom: 0;
-        @include border-bottom-radius(($panel-border-radius - 1));
+        @include border-radius.border-bottom-radius((OZ_variables.$panel-border-radius - 1));
       }
     }
   }
   > .panel-heading + .panel-collapse > .list-group {
     .list-group-item:first-child {
-      @include border-top-radius(0);
+      @include border-radius.border-top-radius(0);
     }
   }
 }
@@ -113,28 +119,28 @@
     margin-bottom: 0;
 
     caption {
-      padding-left: $panel-body-padding;
-      padding-right: $panel-body-padding;
+      padding-left: OZ_variables.$panel-body-padding;
+      padding-right: OZ_variables.$panel-body-padding;
     }
   }
   // Add border top radius for first one
   > .table:first-child,
   > .table-responsive:first-child > .table:first-child {
-    @include border-top-radius(($panel-border-radius - 1));
+    @include border-radius.border-top-radius((OZ_variables.$panel-border-radius - 1));
 
     > thead:first-child,
     > tbody:first-child {
       > tr:first-child {
-        border-top-left-radius: ($panel-border-radius - 1);
-        border-top-right-radius: ($panel-border-radius - 1);
+        border-top-left-radius: (OZ_variables.$panel-border-radius - 1);
+        border-top-right-radius: (OZ_variables.$panel-border-radius - 1);
 
         td:first-child,
         th:first-child {
-          border-top-left-radius: ($panel-border-radius - 1);
+          border-top-left-radius: (OZ_variables.$panel-border-radius - 1);
         }
         td:last-child,
         th:last-child {
-          border-top-right-radius: ($panel-border-radius - 1);
+          border-top-right-radius: (OZ_variables.$panel-border-radius - 1);
         }
       }
     }
@@ -142,21 +148,21 @@
   // Add border bottom radius for last one
   > .table:last-child,
   > .table-responsive:last-child > .table:last-child {
-    @include border-bottom-radius(($panel-border-radius - 1));
+    @include border-radius.border-bottom-radius((OZ_variables.$panel-border-radius - 1));
 
     > tbody:last-child,
     > tfoot:last-child {
       > tr:last-child {
-        border-bottom-left-radius: ($panel-border-radius - 1);
-        border-bottom-right-radius: ($panel-border-radius - 1);
+        border-bottom-left-radius: (OZ_variables.$panel-border-radius - 1);
+        border-bottom-right-radius: (OZ_variables.$panel-border-radius - 1);
 
         td:first-child,
         th:first-child {
-          border-bottom-left-radius: ($panel-border-radius - 1);
+          border-bottom-left-radius: (OZ_variables.$panel-border-radius - 1);
         }
         td:last-child,
         th:last-child {
-          border-bottom-right-radius: ($panel-border-radius - 1);
+          border-bottom-right-radius: (OZ_variables.$panel-border-radius - 1);
         }
       }
     }
@@ -165,7 +171,7 @@
   > .panel-body + .table-responsive,
   > .table + .panel-body,
   > .table-responsive + .panel-body {
-    border-top: 1px solid $table-border-color;
+    border-top: 1px solid OZ_variables.$table-border-color;
   }
   > .table > tbody:first-child > tr:first-child th,
   > .table > tbody:first-child > tr:first-child td {
@@ -220,12 +226,12 @@
 // the help of our collapse JavaScript plugin.
 
 .panel-group {
-  margin-bottom: $line-height-computed;
+  margin-bottom: OZ_variables.$line-height-computed;
 
   // Tighten up margin so it's only between panels
   .panel {
     margin-bottom: 0;
-    border-radius: $panel-border-radius;
+    border-radius: OZ_variables.$panel-border-radius;
 
     + .panel {
       margin-top: 5px;
@@ -237,14 +243,14 @@
 
     + .panel-collapse > .panel-body,
     + .panel-collapse > .list-group {
-      border-top: 1px solid $panel-inner-border;
+      border-top: 1px solid OZ_variables.$panel-inner-border;
     }
   }
 
   .panel-footer {
     border-top: 0;
     + .panel-collapse .panel-body {
-      border-bottom: 1px solid $panel-inner-border;
+      border-bottom: 1px solid OZ_variables.$panel-inner-border;
     }
   }
 }
@@ -252,20 +258,20 @@
 
 // Contextual variations
 .panel-default {
-  @include panel-variant($panel-default-border, $panel-default-text, $panel-default-heading-bg, $panel-default-border);
+  @include panels.panel-variant(OZ_variables.$panel-default-border, OZ_variables.$panel-default-text, OZ_variables.$panel-default-heading-bg, OZ_variables.$panel-default-border);
 }
 .panel-primary {
-  @include panel-variant($panel-primary-border, $panel-primary-text, $panel-primary-heading-bg, $panel-primary-border);
+  @include panels.panel-variant(OZ_variables.$panel-primary-border, OZ_variables.$panel-primary-text, OZ_variables.$panel-primary-heading-bg, OZ_variables.$panel-primary-border);
 }
 .panel-success {
-  @include panel-variant($panel-success-border, $panel-success-text, $panel-success-heading-bg, $panel-success-border);
+  @include panels.panel-variant(OZ_variables.$panel-success-border, OZ_variables.$panel-success-text, OZ_variables.$panel-success-heading-bg, OZ_variables.$panel-success-border);
 }
 .panel-info {
-  @include panel-variant($panel-info-border, $panel-info-text, $panel-info-heading-bg, $panel-info-border);
+  @include panels.panel-variant(OZ_variables.$panel-info-border, OZ_variables.$panel-info-text, OZ_variables.$panel-info-heading-bg, OZ_variables.$panel-info-border);
 }
 .panel-warning {
-  @include panel-variant($panel-warning-border, $panel-warning-text, $panel-warning-heading-bg, $panel-warning-border);
+  @include panels.panel-variant(OZ_variables.$panel-warning-border, OZ_variables.$panel-warning-text, OZ_variables.$panel-warning-heading-bg, OZ_variables.$panel-warning-border);
 }
 .panel-danger {
-  @include panel-variant($panel-danger-border, $panel-danger-text, $panel-danger-heading-bg, $panel-danger-border);
+  @include panels.panel-variant(OZ_variables.$panel-danger-border, OZ_variables.$panel-danger-text, OZ_variables.$panel-danger-heading-bg, OZ_variables.$panel-danger-border);
 }

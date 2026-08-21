@@ -1,3 +1,8 @@
+@use "sass:list";
+@use "sass:map";
+@use "sass:math";
+@use "sass:meta";
+@use "sass:string";
 @charset "UTF-8";
 
 //     _            _           _                           _ _
@@ -184,7 +189,7 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
 /// @param {String} $message - Message to log
 ///
 @function log($message) {
-  @if feature-exists('at-error') {
+  @if meta.feature-exists('at-error') {
     @error $message;
   } @else {
     @warn $message;
@@ -222,14 +227,14 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
 /// @return {Boolean} - Returns true if the conditions are intercepted by the static breakpoint
 ///
 @function im-intercepts-static-breakpoint($conditions...) {
-  $no-media-breakpoint-value: map-get($breakpoints, $im-no-media-breakpoint);
+  $no-media-breakpoint-value: map.get($breakpoints, $im-no-media-breakpoint);
 
   @if not $no-media-breakpoint-value {
     @if log('`#{$im-no-media-breakpoint}` is not a valid breakpoint.') {}
   }
 
   @each $condition in $conditions {
-    @if not map-has-key($media-expressions, $condition) {
+    @if not map.has-key($media-expressions, $condition) {
       $operator: get-expression-operator($condition);
       $prefix: get-expression-prefix($operator);
       $value: get-expression-value($condition, $operator);
@@ -239,7 +244,7 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
           ($prefix == 'min' and $value > $no-media-breakpoint-value) {
         @return false;
       }
-    } @else if not index($im-no-media-expressions, $condition) {
+    } @else if not list.index($im-no-media-expressions, $condition) {
       @return false;
     }
   }
@@ -263,7 +268,7 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
 ///
 @function get-expression-operator($expression) {
   @each $operator in ('>=', '>', '<=', '<', '≥', '≤') {
-    @if str-index($expression, $operator) {
+    @if string.index($expression, $operator) {
       @return $operator;
     }
   }
@@ -286,11 +291,11 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
 /// @return {String} - `width` or `height` (or potentially anything else)
 ///
 @function get-expression-dimension($expression, $operator) {
-  $operator-index: str-index($expression, $operator);
-  $parsed-dimension: str-slice($expression, 0, $operator-index - 1);
+  $operator-index: string.index($expression, $operator);
+  $parsed-dimension: string.slice($expression, 0, $operator-index - 1);
   $dimension: 'width';
 
-  @if str-length($parsed-dimension) > 0 {
+  @if string.length($parsed-dimension) > 0 {
     $dimension: $parsed-dimension;
   }
 
@@ -306,7 +311,7 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
 /// @return {String} - `min` or `max`
 ///
 @function get-expression-prefix($operator) {
-  @if index(('<', '<=', '≤'), $operator) {
+  @if list.index(('<', '<=', '≤'), $operator) {
     @return 'max';
   }
 
@@ -323,16 +328,16 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
 /// @return {Number} - A numeric value
 ///
 @function get-expression-value($expression, $operator) {
-  $operator-index: str-index($expression, $operator);
-  $value: str-slice($expression, $operator-index + str-length($operator));
+  $operator-index: string.index($expression, $operator);
+  $value: string.slice($expression, $operator-index + string.length($operator));
 
-  @if map-has-key($breakpoints, $value) {
-    $value: map-get($breakpoints, $value);
+  @if map.has-key($breakpoints, $value) {
+    $value: map.get($breakpoints, $value);
   } @else {
     $value: to-number($value);
   }
 
-  $interval: map-get($unit-intervals, unit($value));
+  $interval: map.get($unit-intervals, math.unit($value));
 
   @if not $interval {
     // It is not possible to include a mixin inside a function, so we have to
@@ -340,7 +345,7 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
     // functions cannot be called anywhere in Sass, we need to hack the call in
     // a dummy variable, such as `$_`. If anybody ever raise a scoping issue with
     // Sass 3.3, change this line in `@if log(..) {}` instead.
-    $_: log('Unknown unit `#{unit($value)}`.');
+    $_: log('Unknown unit `#{math.unit($value)}`.');
   }
 
   @if $operator == '>' {
@@ -363,8 +368,8 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
 @function parse-expression($expression) {
   // If it is part of $media-expressions, it has no operator
   // then there is no need to go any further, just return the value
-  @if map-has-key($media-expressions, $expression) {
-    @return map-get($media-expressions, $expression);
+  @if map.has-key($media-expressions, $expression) {
+    @return map.get($media-expressions, $expression);
   }
 
   $operator: get-expression-operator($expression);
@@ -386,15 +391,15 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
 ///
 /// @return {List} Sliced list
 ///
-@function slice($list, $start: 1, $end: length($list)) {
-  @if length($list) < 1 or $start > $end {
+@function slice($list, $start: 1, $end: list.length($list)) {
+  @if list.length($list) < 1 or $start > $end {
     @return ();
   }
 
   $result: ();
 
   @for $i from $start through $end {
-    $result: append($result, nth($list, $i));
+    $result: list.append($result, list.nth($list, $i));
   }
 
   @return $result;
@@ -415,13 +420,13 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
 /// @return {Number}
 ///
 @function to-number($value) {
-  @if type-of($value) == 'number' {
+  @if meta.type-of($value) == 'number' {
     @return $value;
-  } @else if type-of($value) != 'string' {
+  } @else if meta.type-of($value) != 'string' {
     $_: log('Value for `to-number` should be a number or a string.');
   }
 
-  $first-character: str-slice($value, 1, 1);
+  $first-character: string.slice($value, 1, 1);
   $result: 0;
   $digits: 0;
   $minus: ($first-character == '-');
@@ -429,27 +434,27 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
 
   // Remove +/- sign if present at first character
   @if ($first-character == '+' or $first-character == '-') {
-    $value: str-slice($value, 2);
+    $value: string.slice($value, 2);
   }
 
-  @for $i from 1 through str-length($value) {
-    $character: str-slice($value, $i, $i);
+  @for $i from 1 through string.length($value) {
+    $character: string.slice($value, $i, $i);
 
-    @if not (index(map-keys($numbers), $character) or $character == '.') {
+    @if not (list.index(map.keys($numbers), $character) or $character == '.') {
       @if $minus {
-        @return to-length(-$result, str-slice($value, $i))
+        @return to-length(-$result, string.slice($value, $i))
       }
 
-      @return to-length($result, str-slice($value, $i))
+      @return to-length($result, string.slice($value, $i))
     }
 
     @if $character == '.' {
       $digits: 1;
     } @else if $digits == 0 {
-      $result: $result * 10 + map-get($numbers, $character);
+      $result: $result * 10 + map.get($numbers, $character);
     } @else {
       $digits: $digits * 10;
-      $result: $result + map-get($numbers, $character) / $digits;
+      $result: $result + map.get($numbers, $character) / $digits;
     }
   }
 
@@ -472,11 +477,11 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
 @function to-length($value, $unit) {
   $units: ('px': 1px, 'cm': 1cm, 'mm': 1mm, '%': 1%, 'ch': 1ch, 'pc': 1pc, 'in': 1in, 'em': 1em, 'rem': 1rem, 'pt': 1pt, 'ex': 1ex, 'vw': 1vw, 'vh': 1vh, 'vmin': 1vmin, 'vmax': 1vmax);
 
-  @if not index(map-keys($units), $unit) {
+  @if not list.index(map.keys($units), $unit) {
     $_: log('Invalid unit `#{$unit}`.');
   }
 
-  @return $value * map-get($units, $unit);
+  @return $value * map.get($units, $unit);
 }
 
 ///
@@ -523,8 +528,8 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
   $global-media-expressions: $media-expressions;
 
   // Update global configuration
-  $breakpoints: map-merge($breakpoints, $tweakpoints) !global;
-  $media-expressions: map-merge($media-expressions, $tweak-media-expressions) !global;
+  $breakpoints: map.merge($breakpoints, $tweakpoints) !global;
+  $media-expressions: map.merge($media-expressions, $tweak-media-expressions) !global;
 
   @content;
 
@@ -565,11 +570,11 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
 ///
 @mixin media($conditions...) {
   // scss-lint:disable SpaceAroundOperator
-  @if ($im-media-support and length($conditions) == 0) or
+  @if ($im-media-support and list.length($conditions) == 0) or
       (not $im-media-support and im-intercepts-static-breakpoint($conditions...)) {
     @content;
-  } @else if ($im-media-support and length($conditions) > 0) {
-    @media #{unquote(parse-expression(nth($conditions, 1)))} {
+  } @else if ($im-media-support and list.length($conditions) > 0) {
+    @media #{string.unquote(parse-expression(list.nth($conditions, 1)))} {
       // Recursive call
       @include media(slice($conditions, 2)...) {
         @content;

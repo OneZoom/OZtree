@@ -1,3 +1,8 @@
+@use "../../OZ_variables";
+@use "mixins/nav-divider";
+@use "mixins/reset-filter";
+@use "mixins/vendor-prefixes";
+
 //
 // Dropdown menus
 // --------------------------------------------------
@@ -10,10 +15,10 @@
   height: 0;
   margin-left: 2px;
   vertical-align: middle;
-  border-top:   $caret-width-base dashed;
-  border-top:   $caret-width-base solid \9; // IE8
-  border-right: $caret-width-base solid transparent;
-  border-left:  $caret-width-base solid transparent;
+  border-top:   OZ_variables.$caret-width-base dashed;
+  border-top:   OZ_variables.$caret-width-base solid \9; // IE8
+  border-right: OZ_variables.$caret-width-base solid transparent;
+  border-left:  OZ_variables.$caret-width-base solid transparent;
 }
 
 // The dropdown wrapper (div)
@@ -32,20 +37,20 @@
   position: absolute;
   top: 100%;
   left: 0;
-  z-index: $zindex-dropdown;
+  z-index: OZ_variables.$zindex-dropdown;
   display: none; // none by default, but block on "open" of the menu
   float: left;
   min-width: 160px;
   padding: 5px 0;
   margin: 2px 0 0; // override default ul
   list-style: none;
-  font-size: $font-size-base;
+  font-size: OZ_variables.$font-size-base;
   text-align: left; // Ensures proper alignment if parent has it changed (e.g., modal footer)
-  background-color: $dropdown-bg;
-  border: 1px solid $dropdown-fallback-border; // IE8 fallback
-  border: 1px solid $dropdown-border;
-  border-radius: $border-radius-base;
-  @include box-shadow(0 6px 12px rgba(0,0,0,.175));
+  background-color: OZ_variables.$dropdown-bg;
+  border: 1px solid OZ_variables.$dropdown-fallback-border; // IE8 fallback
+  border: 1px solid OZ_variables.$dropdown-border;
+  border-radius: OZ_variables.$border-radius-base;
+  @include vendor-prefixes.box-shadow(0 6px 12px rgba(0,0,0,.175));
   background-clip: padding-box;
 
   // Aligns the dropdown menu to right
@@ -58,7 +63,7 @@
 
   // Dividers (basically an hr) within the dropdown
   .divider {
-    @include nav-divider($dropdown-divider-bg);
+    @include nav-divider.nav-divider(OZ_variables.$dropdown-divider-bg);
   }
 
   // Links within the dropdown menu
@@ -67,8 +72,8 @@
     padding: 3px 20px;
     clear: both;
     font-weight: normal;
-    line-height: $line-height-base;
-    color: $dropdown-link-color;
+    line-height: OZ_variables.$line-height-base;
+    color: OZ_variables.$dropdown-link-color;
     white-space: nowrap; // prevent links from randomly breaking onto new lines
   }
 }
@@ -78,8 +83,8 @@
   &:hover,
   &:focus {
     text-decoration: none;
-    color: $dropdown-link-hover-color;
-    background-color: $dropdown-link-hover-bg;
+    color: OZ_variables.$dropdown-link-hover-color;
+    background-color: OZ_variables.$dropdown-link-hover-bg;
   }
 }
 
@@ -88,10 +93,10 @@
   &,
   &:hover,
   &:focus {
-    color: $dropdown-link-active-color;
+    color: OZ_variables.$dropdown-link-active-color;
     text-decoration: none;
     outline: 0;
-    background-color: $dropdown-link-active-bg;
+    background-color: OZ_variables.$dropdown-link-active-bg;
   }
 }
 
@@ -103,7 +108,7 @@
   &,
   &:hover,
   &:focus {
-    color: $dropdown-link-disabled-color;
+    color: OZ_variables.$dropdown-link-disabled-color;
   }
 
   // Nuke hover/focus effects
@@ -112,8 +117,8 @@
     text-decoration: none;
     background-color: transparent;
     background-image: none; // Remove CSS gradient
-    @include reset-filter;
-    cursor: $cursor-disabled;
+    @include reset-filter.reset-filter;
+    cursor: OZ_variables.$cursor-disabled;
   }
 }
 
@@ -153,9 +158,9 @@
 .dropdown-header {
   display: block;
   padding: 3px 20px;
-  font-size: $font-size-small;
-  line-height: $line-height-base;
-  color: $dropdown-header-color;
+  font-size: OZ_variables.$font-size-small;
+  line-height: OZ_variables.$line-height-base;
+  color: OZ_variables.$dropdown-header-color;
   white-space: nowrap; // as with > li > a
 }
 
@@ -166,7 +171,7 @@
   right: 0;
   bottom: 0;
   top: 0;
-  z-index: ($zindex-dropdown - 10);
+  z-index: (OZ_variables.$zindex-dropdown - 10);
 }
 
 // Right aligned dropdowns
@@ -185,8 +190,8 @@
   // Reverse the caret
   .caret {
     border-top: 0;
-    border-bottom: $caret-width-base dashed;
-    border-bottom: $caret-width-base solid \9; // IE8
+    border-bottom: OZ_variables.$caret-width-base dashed;
+    border-bottom: OZ_variables.$caret-width-base solid \9; // IE8
     content: "";
   }
   // Different positioning for bottom up menu
@@ -202,7 +207,7 @@
 //
 // Reiterate per navbar.less and the modified component alignment there.
 
-@media (min-width: $grid-float-breakpoint) {
+@media (min-width: OZ_variables.$grid-float-breakpoint) {
   .navbar-right {
     .dropdown-menu {
       right: 0; left: auto;
