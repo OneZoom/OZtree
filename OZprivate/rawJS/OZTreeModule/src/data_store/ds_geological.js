@@ -82,4 +82,19 @@ export default class DataStoreGeological extends DataStore {
     if (out === undefined || out === null) return {"period": "Loading", "epoch": "Loading", "color": "#1A1A1A"};
     return GEOLOGICAL_PERIODS[out] || GEOLOGICAL_PERIODS[0];
   }
+
+  /**
+   * Get list of geological periods containing `node_a`..`node_b` in date order, oldest first
+   */
+  range(node_a, node_b) {
+    const vals = [super.get(node_a, null, null), super.get(node_b, null, null)];
+    if (vals[0] === undefined || vals[0] === null || vals[1] === undefined || vals[1] === null) {
+      return [{"period": "Loading", "epoch": "Loading", "color": "#1A1A1A"}];
+    }
+    const out = [];
+    for (let i = Math.max(...vals); i >= Math.min(...vals); i--) {
+      out.push(GEOLOGICAL_PERIODS[i] || GEOLOGICAL_PERIODS[i])
+    }
+    return out;
+  }
 }
