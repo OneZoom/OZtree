@@ -3,6 +3,11 @@ import DataStore from './data_store';
 export default class DataStoreWeightedMean extends DataStore {
   name = "weighted_mean";  /** The name that this will be availble from DataStoreApi under */
 
+  static slice_names = {
+    leaf: "weighted_mean_ratio_leaves_f16.dat",
+    node: "weighted_mean_ratio_nodes_f16.dat",
+  };
+
   constructor(dataStoreApi) {
     super(dataStoreApi);
 
@@ -17,7 +22,7 @@ export default class DataStoreWeightedMean extends DataStore {
   }
 
   sliceNameFor(node) {
-    return node.is_leaf ? "weighted_mean_ratio_leaves_f16.dat" : "weighted_mean_ratio_nodes_f16.dat";
+    return DataStoreWeightedMean.slice_names[node.is_leaf ? 'leaf' : 'node'];
   }
 
   // We read iucn.dat as a Float16Array() (CPU-endianness)
@@ -26,6 +31,17 @@ export default class DataStoreWeightedMean extends DataStore {
   }
 
   get(node) {
-    return super.get(node, 0, 0);
+    const out = super.get(node, 0, 0);
+
+    if (out === undefined) {
+      // Whoever is asking is laying out a tree, and won't get far without both halves of
+      // this: a node's 2 children can be one of each kind. So queue up the other one now
+      // rather than have them lay out as far as the first child of the other kind and stop
+      // all over again (see projection/pre_calc/spiral_pre_calc's DataStoreNotReadyError)
+      Object.values(DataStoreWeightedMean.slice_names).forEach((sliceName) => {
+        if (!this._slices[sliceName]) this.dataStoreApi.notify(sliceName, this);
+      });
+    }
+    return out;
   }
 }
