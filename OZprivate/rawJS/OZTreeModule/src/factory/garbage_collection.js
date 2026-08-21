@@ -8,6 +8,8 @@ import {add_hook} from '../util/index';
 function init() {
   //Each time after canvas refresh, call reset_timer_after_draw_gc.
   add_hook("after_draw", clear_garbage);
+  // ...and once a flight has landed, since we skip collecting during one (see below)
+  add_hook("flying_finish", clear_garbage);
 }
 
 
@@ -15,8 +17,19 @@ function init() {
  * Execute garbage collection. Restart next garbage collection at the end of the function.
  */
 function clear_garbage() {
+  // Don't collect mid-flight. A flight develops every branch it will need up-front, in
+  // develop_branch_to_and_target(), but only targets one leg of the flight at a time---so
+  // whatever the later legs need looks like garbage while an earlier leg is in the air, and
+  // gets destroyed. The next leg then has nothing to target, and position_helper's
+  // get_xyr_target() flies to wherever the previous leg was aiming instead.
+  // Nothing is developed during a flight either (see renderer:reanchor_and_dynamic_load_tree),
+  // so there is nothing here for us to keep pace with until it lands.
+  if (tree_state.flying) return;
+
   let factory = get_factory();
-  find_unused_node_and_clear(factory.root, 0, 0);  
+  // flying_finish can fire before there is a tree to collect, e.g. cancel_flight() on resize
+  if (!factory.root) return;
+  find_unused_node_and_clear(factory.root, 0, 0);
 }
 
 

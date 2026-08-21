@@ -63,6 +63,8 @@
  *       }
  *     }
  */
+import { DataStoreNotReadyError } from '../errors';
+
 export default class DataStore {
   name = "changeme";  /** The name this DataStore will be added to DataStoreAPI as */
 
@@ -119,6 +121,20 @@ export default class DataStore {
     }
     const out = view[this.nodeToId(node)];
     return out === undefined ? missingValue : out;
+  }
+
+  /**
+   * As get, but throws DataStoreNotReadyError if we need to request a slice
+   *
+   * NB: An undefined from get() can only mean a missing slice: the missingValue/missingSlice
+   * defaults mean there's no way to ask it to return undefined for anything else
+   */
+  get_or_fail(node, missingValue = null, missingSlice = missingValue) {
+    const out = this.get(node, missingValue, missingSlice);
+    if (out === undefined) {
+      throw new DataStoreNotReadyError(`${this.name} not yet available for node ${node.toString()}`);
+    }
+    return out;
   }
 
   /**

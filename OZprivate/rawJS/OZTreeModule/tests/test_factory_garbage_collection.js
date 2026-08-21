@@ -25,6 +25,15 @@ function with_gc_config(test, detach_level, generations) {
 }
 
 /**
+  * Remove every hook init() registers, so a leftover one doesn't collect the
+  * tree out from under a later test file
+  */
+function remove_gc_hooks() {
+  remove_hook('after_draw');
+  remove_hook('flying_finish');
+}
+
+/**
   * Return a fresh tree with (depth) generations of children developed, and
   * nothing else (build_tree() develops no children of its own)
   */
@@ -58,7 +67,7 @@ function max_depth(node) {
 test('init: Adds an after_draw hook that collects garbage', function (test) {
   return populate_factory().then((factory) => {
     with_gc_config(test, 1, 1);
-    test.teardown(() => remove_hook('after_draw'));
+    test.teardown(remove_gc_hooks);
     let root = fresh_tree(factory, 4);
 
     // Before init() the after_draw hook does nothing
@@ -82,7 +91,7 @@ test('init: Adds an after_draw hook that collects garbage', function (test) {
 test('clear_garbage: Collects generations beyond the configured levels', function (test) {
   return populate_factory().then((factory) => {
     with_gc_config(test, 2, 2);
-    test.teardown(() => remove_hook('after_draw'));
+    test.teardown(remove_gc_hooks);
     gc_init();
     let root = fresh_tree(factory, 4);
 
@@ -109,7 +118,7 @@ test('clear_garbage: Collects generations beyond the configured levels', functio
 test('clear_garbage: Keeps the greater of detach_level / generation_on_subbranch_during_fly', function (test) {
   return populate_factory().then((factory) => {
     with_gc_config(test, 1, 3);
-    test.teardown(() => remove_hook('after_draw'));
+    test.teardown(remove_gc_hooks);
     gc_init();
 
     // Both conditions have to be met to collect, so the larger config option wins
@@ -135,7 +144,7 @@ test('clear_garbage: Keeps the greater of detach_level / generation_on_subbranch
 test('clear_garbage: Undevelops the whole node, leaving it for develop_children() to rebuild', function (test) {
   return populate_factory().then((factory) => {
     with_gc_config(test, 1, 1);
-    test.teardown(() => remove_hook('after_draw'));
+    test.teardown(remove_gc_hooks);
     gc_init();
     let root = fresh_tree(factory, 4);
 
@@ -169,7 +178,7 @@ test('clear_garbage: Undevelops the whole node, leaving it for develop_children(
 test('clear_garbage: A dvar or targeted node protects the generation below it', function (test) {
   return populate_factory().then((factory) => {
     with_gc_config(test, 1, 1);
-    test.teardown(() => remove_hook('after_draw'));
+    test.teardown(remove_gc_hooks);
     gc_init();
 
     // Without anything drawn only the 1st generation survives (see above), but being
@@ -214,7 +223,7 @@ test('clear_garbage: A dvar or targeted node protects the generation below it', 
 test('clear_garbage: Collects out-of-reach nodes below a dvar node', function (test) {
   return populate_factory().then((factory) => {
     with_gc_config(test, 2, 2);
-    test.teardown(() => remove_hook('after_draw'));
+    test.teardown(remove_gc_hooks);
     gc_init();
     let root = fresh_tree(factory, 4);
 
@@ -242,7 +251,7 @@ test('clear_garbage: Collects out-of-reach nodes below a dvar node', function (t
 test('clear_garbage: Walks into subtrees collected by a previous pass', function (test) {
   return populate_factory().then((factory) => {
     with_gc_config(test, 3, 3);
-    test.teardown(() => remove_hook('after_draw'));
+    test.teardown(remove_gc_hooks);
     gc_init();
     let root = fresh_tree(factory, 4);
 

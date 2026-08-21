@@ -38,6 +38,8 @@ import Polytomy2BranchLayout from './projection/layout/polytomy2/branch_layout';
 
 import * as themes from './themes'
 import config from './global_config';
+import data_store_api from './data_store/api';
+import { DataStoreNotReadyError } from './errors';
 
 export let pic_src_order;
 
@@ -274,15 +276,24 @@ class TreeSettings {
       }
 
       let next_tree = is_binary_viewtype(curr) ? controller.binary_tree : controller.polytomy_tree;
+      controller.stop_refresh_loop();
+      controller.draw_loading();
       if (next_tree) {
+        // The tree is re-usable, but the layout hung off it isn't: the new view places
+        // branches its own way, and any data it does that from may have been dropped along
+        // with the old view's (see controller_navigation:change_view_type). So lay the whole
+        // thing out again before handing it back, rather than leaving the first thing to ask
+        // for a position to trip over a half-calculated tree
         controller.factory.root = next_tree;
-        resolve();
+        resolve(data_store_api.retryWhenDataStoreReady(function () {
+          controller.dynamic_load_and_calc(controller.root.ozid);
+          controller.re_calc();
+        }));
       } else {
-        controller.stop_refresh_loop();
-        controller.draw_loading();
         setTimeout(function () {
-          controller.rebuild_tree();
-          resolve();
+          resolve(data_store_api.retryWhenDataStoreReady(function () {
+            controller.rebuild_tree();
+          }));
         }, 10);
       }
     }.bind(this));
