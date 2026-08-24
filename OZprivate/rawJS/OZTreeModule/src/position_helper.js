@@ -121,11 +121,17 @@ function get_xyr_target(node, x2,y2,r2,into_node) {
     }
   }
 
-  // If we didn't find a target child, use graphref/gvar to recurse
+  // If we didn't find a target child, walk on down the anchor path to pick somewhere nearer
+  // to fly to first, the way the r_mult cap above does for a flight going the other way.
+  //
+  // NB: How far down we walk is the check at the top's to say, which stops us as soon as the
+  //     node we have reached is a small enough step to take in one go. Don't stop at the first
+  //     child that is drawn on screen: a node high up the tree has a branch long enough to
+  //     cross the screen whatever we are looking at, so that leaves the step uncapped.
   if (r_mult < 0.00000001) more_flying_needed = true;
   for (let i=0; i<node.children.length; i++) {
     let child = node.children[i];
-    if (child.graphref && !child.gvar) {
+    if (child.graphref) {
       get_xyr_target(child, x+r*node.nextx[i],y+r*node.nexty[i],r*node.nextr[i],into_node);
       return;
     }

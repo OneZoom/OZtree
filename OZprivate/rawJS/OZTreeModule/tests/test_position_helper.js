@@ -9,6 +9,7 @@ import test from 'tape';
 
 import tree_state from '../src/tree_state.js'
 import get_projection from '../src/projection/projection.js';
+import re_calc from '../src/projection/re_calc.js';
 import { set_pre_calculator } from '../src/projection/pre_calc/pre_calc';
 import { set_horizon_calculator } from '../src/projection/horizon_calc/horizon_calc';
 
@@ -277,6 +278,144 @@ test('perform_actual_fly: flying out from a deep zoom keeps hold of the view', f
 
   }).finally(function () {
     global.performance = real_performance;
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
+
+/**
+ * A chain of (depth) nodes, each drawn (ratio) of the size of its parent and sharing its
+ * origin. Every node also gets a second child to hang off it, so that the layout is the
+ * pair of children the rest of the code expects.
+ *
+ * The point of it is the scale range: the tracked test tree spans a few million between
+ * root and leaf, which is not enough for a flight across it to need breaking up. A real
+ * tree is far deeper than that, and this is the cheapest way to get somewhere that has to
+ * be flown in stages.
+ */
+function chain_tree(depth, ratio) {
+  function blank(metacode, is_leaf) {
+    return {
+      metacode: metacode, is_leaf: is_leaf, is_interior_node: !is_leaf,
+      has_child: false, children: [], upnode: null,
+      nextr: [], nextx: [], nexty: [],
+      // Bounding box of the node and its descendants, and of the node on its own
+      hxmin: -1, hxmax: 1, hymin: -1, hymax: 1,
+      gxmin: -1, gxmax: 1, gymin: -1, gymax: 1,
+      arcx: 0, arcy: 0, arcr: 1,
+      graphref: false, gvar: false, dvar: false, targeted: false,
+      rvar: 0, xvar: 0, yvar: 0,
+    };
+  }
+
+  const nodes = [];
+  let node = blank(1, false);
+  nodes.push(node);
+  for (let i = 1; i < depth; i++) {
+    const next = blank(i + 1, i === depth - 1);
+    const spare = blank(1000 + i, true);
+
+    node.has_child = true;
+    node.children = [next, spare];
+    node.nextr = [ratio, ratio];
+    node.nextx = [0, 0];
+    node.nexty = [0, 0];
+    next.upnode = node;
+    spare.upnode = node;
+
+    nodes.push(next);
+    node = next;
+  }
+  return { root: nodes[0], leaf: node };
+}
+
+/**
+ * get_xyr_target() only goes so far at a time, breaking a flight that spans more than that
+ * into steps it can take one at a time. That cap is meant to apply to a flight going
+ * outwards as much as to one going in.
+ */
+test('perform_actual_fly: a flight outwards is broken into capped steps', function (test) {
+  setup_dom(test);
+
+  global.requestAnimationFrame = (callback) => setTimeout(callback, 0);
+  global.cancelAnimationFrame = clearTimeout;
+  tree_state.setup_canvas({ width: 2000, height: 1000 }, 2000, 1000);
+
+  const tree = chain_tree(12, 1e-3);
+  const steps = [];
+
+  function anchor_node() {
+    let node = tree.root;
+    for (;;) {
+      let next = null;
+      for (let i = 0; i < node.children.length; i++) {
+        if (node.children[i].graphref) next = node.children[i];
+      }
+      if (!next) return node;
+      node = next;
+    }
+  }
+
+  /** Screen size of the leaf, worked down from the anchor so a re-anchor doesn't show */
+  function leaf_r() {
+    const path = [];
+    for (let n = tree.leaf; n; n = n.upnode) path.push(n);
+
+    let r = 220 * tree_state.ws;
+    for (let i = path.indexOf(anchor_node()) - 1; i >= 0; i--) {
+      const parent = path[i + 1];
+      r = r * parent.nextr[parent.children.indexOf(path[i])];
+    }
+    return r;
+  }
+
+  const controller = {
+    root: tree.root,
+    re_calc: () => re_calc(tree.root, tree_state.xp, tree_state.yp, tree_state.ws),
+    // A leap lands on one step's destination at a time, re-anchoring between each, so
+    // this catches the intermediate places a flight out of here would have aimed for
+    reanchor: () => {
+      position_helper.reanchor(tree.root);
+      steps.push(leaf_r());
+    },
+    trigger_refresh_loop: () => {},
+  };
+
+  // Park on the leaf, then head all the way out to the root
+  position_helper.reanchor_at_node(tree.leaf, tree.root);
+  tree_state.xp = tree_state.focal_area.xcentre;
+  tree_state.yp = tree_state.focal_area.ycentre;
+  tree_state.ws = 1;
+  controller.re_calc();
+
+  const started_at = leaf_r();
+  tree_state.flying = true;
+  position_helper.clear_target(tree.root);
+  position_helper.target_by_code(tree.root, tree.root.metacode);
+
+  return position_helper.perform_actual_fly(controller, false, Infinity, 'linear').then(() => {
+    let worst = 0;
+    steps.forEach((r, i) => {
+      const zoomed_out_by = (i === 0 ? started_at : steps[i - 1]) / r;
+      if (zoomed_out_by > worst) worst = zoomed_out_by;
+    });
+
+    test.ok(steps.length > 1, "Took " + steps.length + " steps to get out, not one leap");
+    test.ok(worst <= 1e8, "No step goes further than the cap: worst zooms out by " +
+      worst.toExponential(2) + " over " + steps.length + " steps");
+    // ...and it did get there: the root's children, which are what a flight to it aims to
+    // fit on screen, end up filling the focal area
+    const box_height = 2 * tree.root.rvar * tree.root.nextr[0];
+    test.ok(Math.abs(box_height - tree_state.focal_area.height) < 1,
+      "Root fills the screen at the end (" + box_height.toFixed(2) +
+      "px against a focal area of " + tree_state.focal_area.height + "px)");
+  }).finally(() => {
+    tree_state.flying = false;
   }).then(function () {
     test.end();
   }).catch(function (err) {
