@@ -80,10 +80,11 @@ function move_to(controller, node, opts) {
     controller.tree_state.flying = false;
   })
 }
+function round(x) {
+  return Math.round(x * 10000) / 10000;
+}
+
 function test_cur_location(test, controller, node_latin_name, exp_xp, exp_yp, exp_ws, message) {
-  function round(x) {
-    return Math.round(x * 10000) / 10000;
-  }
   const target = controller.get_graphref_node();
 
   test.deepEqual({
@@ -97,7 +98,27 @@ function test_cur_location(test, controller, node_latin_name, exp_xp, exp_yp, ex
     yp: round(exp_yp),
     ws: round(exp_ws),
   }, "At " + node_latin_name + " - " + message);
-  exp_xp = round(exp_xp);
+}
+
+/**
+ * Where (node) ended up on screen, which is what the viewer actually sees.
+ *
+ * xp/yp/ws above are only meaningful next to the node they are anchored on, so a change to
+ * which node that is rewrites all of them without the view having moved at all. Check both,
+ * and the pair tells you which of the two you have changed.
+ */
+function test_node_on_screen(test, controller, node, exp_x, exp_y, exp_r, message) {
+  controller.re_calc();
+
+  test.deepEqual({
+    x: round(node.xvar),
+    y: round(node.yvar),
+    r: round(node.rvar),
+  }, {
+    x: round(exp_x),
+    y: round(exp_y),
+    r: round(exp_r),
+  }, "On screen: " + (node.latin_name || node.ozid) + " - " + message);
 }
 
 test('perform_actual_fly', function (test) {
@@ -127,22 +148,27 @@ test('perform_actual_fly', function (test) {
     return Promise.resolve().then(() => {
       return move_to(controller, nodes['Dobsonia'], {speed: Infinity}).then(() => {
         test_cur_location(test, controller, "Laurasiatheria", 28826.0739, -18858.2284, 48.0688, "Retargeted, jumped");
+        test_node_on_screen(test, controller, nodes['Dobsonia'], 1069.8041, 978.1592, 256.0792, "Retargeted, jumped");
       });
     }).then(() => {
       return move_to(controller, nodes['biota'], {speed: Infinity}).then(() => {
         test_cur_location(test, controller, "biota", 801.3117, 1170.5032, 1.5371, "Retargeted, jumped");
+        test_node_on_screen(test, controller, nodes['biota'], 801.3117, 1170.5032, 338.1551, "Retargeted, jumped");
       });
     }).then(() => {
       return move_to(controller, nodes['Dobsonia'], {speed: Infinity}).then(() => {
         test_cur_location(test, controller, "Laurasiatheria", 28826.0739, -18858.2284, 48.0688, "Went back again, Dobsonia in same place");
+        test_node_on_screen(test, controller, nodes['Dobsonia'], 1069.8041, 978.1592, 256.0792, "Went back again, Dobsonia in same place");
       });
     }).then(() => {
       return move_to(controller, nodes['Acerodon'], {speed: 1}).then(() => {
         test_cur_location(test, controller, "Laurasiatheria", 42907.5839, -32331.2601, 79.3102, "Flights to nearby location");
+        test_node_on_screen(test, controller, nodes['Acerodon'], 594.6564, 625.457, 250.0075, "Flights to nearby location");
       });
     }).then(() => {
       return move_to(controller, nodes['Dobsonia'], {speed: 1}).then(() => {
         test_cur_location(test, controller, "Laurasiatheria", 28826.0739, -18858.2284, 48.0688, "Flight back");
+        test_node_on_screen(test, controller, nodes['Dobsonia'], 1069.8041, 978.1592, 256.0792, "Flight back");
       });
     });
 
@@ -155,9 +181,8 @@ test('perform_actual_fly', function (test) {
   })
 });
 
-
 test.onFinish(function() {
-  
+
   global.requestAnimationFrame = undefined;
   global.cancelAnimationFrame = undefined;
 });
