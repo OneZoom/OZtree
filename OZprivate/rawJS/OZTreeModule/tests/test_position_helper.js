@@ -188,6 +188,105 @@ test('perform_actual_fly', function (test) {
   })
 });
 
+/**
+ * A flight outwards from deep in the tree has to hold onto where it is whilst it works in
+ * numbers the size of the node it is flying to, which is enormous next to the screen when
+ * we are a long way inside it. Get that wrong and the view lurches about instead of
+ * drawing back smoothly.
+ */
+test('perform_actual_fly: flying out from a deep zoom keeps hold of the view', function (test) {
+  setup_dom(test);
+
+  // Drive the flight off a clock of our own, one frame's worth at a time, so that the
+  // flight is the same length however fast the machine running the tests happens to be
+  const real_performance = global.performance;
+  let fake_now = 0;
+  global.performance = { now: () => fake_now };
+  global.requestAnimationFrame = (callback) => setTimeout(() => {
+    fake_now += 1000 / 60;
+    callback();
+  }, 0);
+  global.cancelAnimationFrame = clearTimeout;
+  var nodes = {}, frames = [], watch = null;
+
+  /**
+   * Screen size/position of (watch), worked down from whatever we are anchored on.
+   *
+   * The anchor is always one of its ancestors here, so this is a plain walk down the tree,
+   * and unlike xp/yp/ws it means the same thing either side of a re-anchor.
+   */
+  function watch_on_screen(controller) {
+    const path = [];
+    for (let n = watch; n; n = n.upnode) path.push(n);
+
+    let x = tree_state.xp, y = tree_state.yp, r = 220 * tree_state.ws;
+    for (let i = path.indexOf(controller.get_graphref_node()) - 1; i >= 0; i--) {
+      const parent = path[i + 1], ci = parent.children.indexOf(path[i]);
+      x = x + r * parent.nextx[ci];
+      y = y + r * parent.nexty[ci];
+      r = r * parent.nextr[ci];
+    }
+    return { x: x, y: y, r: r };
+  }
+
+  return populate_factory().then((factory) => {
+    return resolve_pinpoints([
+      '@biota=93302',
+      '@Pteralopex_atrata=164526', // Monkey-faced bat
+    ]).then((pps) => pps.forEach((pp) => {
+      nodes[pp.sciname] = factory.dynamic_loading_by_metacode(pp.ozid)
+    })).then(() => factory);
+
+  }).then(function (factory) {
+    var controller = fake_controller(factory, 2000, 1000);
+    controller.trigger_refresh_loop = function () {
+      frames.push(watch_on_screen(controller));
+    };
+
+    return move_to(controller, nodes['Pteralopex atrata'], {speed: Infinity}).then(() => {
+      // Park on the leaf, zoomed as far in as we would be inside the real tree. The test
+      // tree is too shallow to get here by flying, but the arithmetic doesn't care how we
+      // arrived, only how big the node we then fly to is next to the screen
+      watch = nodes['Pteralopex atrata'];
+      position_helper.reanchor_at_node(watch, controller.root);
+      tree_state.xp = tree_state.focal_area.xcentre;
+      tree_state.yp = tree_state.focal_area.ycentre;
+      tree_state.ws = 1e15;
+      controller.re_calc();
+
+      frames = [watch_on_screen(controller)];
+      return move_to(controller, nodes['biota'], {speed: 1});
+    }).then(() => {
+      // The leaf we set off from should draw back steadily. Any frame that moves it a long
+      // way is the view jumping, however smooth the zoom either side of it looks
+      let worst = 0, worst_at = -1;
+      frames.forEach((f, i) => {
+        if (i === 0) return;
+        const moved = Math.hypot(f.x - frames[i - 1].x, f.y - frames[i - 1].y);
+        if (moved > worst) { worst = moved; worst_at = i; }
+      });
+
+      test.ok(frames.length > 100, "Flew out over " + frames.length + " frames");
+      test.ok(worst < 25, "Leaf never jumps: worst frame moves it " +
+        worst.toFixed(1) + "px, at frame " + worst_at + " of " + frames.length);
+      // ...and it did actually draw back, rather than staying put
+      test.ok(frames[frames.length - 1].r < frames[0].r * 1e-6,
+        "Leaf shrank from " + frames[0].r.toExponential(2) + " to " +
+        frames[frames.length - 1].r.toExponential(2) + "px");
+    });
+
+  }).finally(function () {
+    global.performance = real_performance;
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
+
 test.onFinish(function() {
 
   global.requestAnimationFrame = undefined;

@@ -341,36 +341,26 @@ function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func,
  * @param {float} prop_z Proportion of r_mult to zoom (0 - start, 1 - end)
  */
 function pan_zoom(prop_p, prop_z) {
-  // Copy globals so we can modify
-  let pre_xp2 = pre_xp;
-  let pre_yp2 = pre_yp;
-  let pre_ws2 = pre_ws;
-  let y_add2 = y_add;
-  let x_add2 = x_add;
-  let r_mult2 = r_mult;
-
   const tree_centreX = tree_state.focal_area.xcentre;
   const tree_centreY = tree_state.focal_area.ycentre;
+  const zoom = Math.pow(r_mult, prop_z);
 
-  if (r_mult2 < 1) { // Zooming outwards
-    pre_xp2 = tree_centreX + (pre_xp2-x_add2-tree_centreX)*r_mult2;
-    pre_yp2 = tree_centreY + (pre_yp2-y_add2-tree_centreY)*r_mult2;
-    pre_ws2 = pre_ws2 * r_mult2;
-
-    prop_p = 1-prop_p;
-    prop_z = 1-prop_z;
-
-    y_add2 = (-y_add2)*r_mult2;
-    x_add2 = (-x_add2)*r_mult2;
-    r_mult2 = 1/r_mult2;
-    // todo - getting there, but need to play with the function still - it's not right
-    // also can transform the prop_p and prop_z components of this to make it non linear and more zooming initially
-    // could change to measure x and y add in terms of the zoomed out version
+  tree_state.ws = pre_ws * zoom;
+  if (r_mult < 1) { // Zooming outwards
+    // The flight run backwards: we are at the far end of a zoom in, flying back to where it
+    // started, so the pan is a fixed offset measured at the scale we are flying *to*.
+    //
+    // NB: Worked out here rather than by re-expressing pre_xp/x_add/r_mult at the destination
+    //     and inverting the zoom. (pre_xp - x_add) is swamped by x_add whenever the node we
+    //     are flying to has its centre a long way off screen, so that round trip loses where
+    //     we actually are, and multiplying back up by 1/r_mult turns the rounding error left
+    //     behind into a jump of millions of pixels.
+    tree_state.xp = tree_centreX + (pre_xp - tree_centreX) * zoom - x_add * r_mult * prop_p;
+    tree_state.yp = tree_centreY + (pre_yp - tree_centreY) * zoom - y_add * r_mult * prop_p;
+  } else {
+    tree_state.xp = tree_centreX + x_add * (1 - prop_p) + (pre_xp - x_add - tree_centreX) * zoom;
+    tree_state.yp = tree_centreY + y_add * (1 - prop_p) + (pre_yp - y_add - tree_centreY) * zoom;
   }
-
-  tree_state.ws = pre_ws2 * Math.pow(r_mult2,prop_z);
-  tree_state.xp = tree_centreX + x_add2*(1-prop_p) + (pre_xp2-x_add2-tree_centreX) * Math.pow(r_mult2,prop_z);
-  tree_state.yp = tree_centreY + y_add2*(1-prop_p) + (pre_yp2-y_add2-tree_centreY) * Math.pow(r_mult2,prop_z);
 }
 
 /**
