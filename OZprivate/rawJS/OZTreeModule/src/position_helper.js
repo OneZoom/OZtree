@@ -391,15 +391,23 @@ function reanchor_at_node(node, root_node) {
 }
 
 /**
- * Walk tree, anchoring to the first node on-screen that has 2.2 < node.rvar < 22000
+ * Walk tree, anchoring to the first node that is both on screen and of a reasonable size
  * (i.e. set graphref on this node and it's ancestors)
+ *
+ * Reasonable size here means we should ignore high-up nodes whose bounding boxes encompass half of
+ * insects in a balanced tree (e.g.)
+ *
+ * For debugging, you can draw the current anchor node with:
+ *   onezoom.config.debug_bounding_box = (node => node === onezoom.tree_state.anchor_node ? 0x03 : 0)
+ * ...or add a browser watch condition of:
+ *   onezoom.tree_state.anchor_node + ' ' + onezoom.tree_state.anchor_node.rvar
  */
 function reanchor(node) {
   // If this node (or it's desendents) aren't visible, don't bother
   if (!node.dvar) return;
 
   node.graphref = true;
-  if (node.gvar || !node.has_child || (node.rvar > 2.2 && node.rvar < 22000)) {
+  if (!node.has_child || node.gvar && (node.rvar > 1 && node.rvar < 2200)) {
     // Anchor to this node
     tree_state.xp = node.xvar;
     tree_state.yp = node.yvar;

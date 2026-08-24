@@ -98,6 +98,13 @@ function test_cur_location(test, controller, node_latin_name, exp_xp, exp_yp, ex
     yp: round(exp_yp),
     ws: round(exp_ws),
   }, "At " + node_latin_name + " - " + message);
+
+  // Anchoring on a node far bigger than the screen leaves every position we work out from
+  // it a small difference between large numbers, so reanchor() should have come down to
+  // something of a workable size before settling on it
+  const anchor_size = 220 * controller.tree_state.ws;
+  test.ok(!target.has_child || (anchor_size > 1 && anchor_size < 2200),
+    "Anchored on a node of a workable size (" + round(anchor_size) + "px) - " + message);
 }
 
 /**
@@ -147,7 +154,7 @@ test('perform_actual_fly', function (test) {
     var controller = fake_controller(factory, 2000, 1000);
     return Promise.resolve().then(() => {
       return move_to(controller, nodes['Dobsonia'], {speed: Infinity}).then(() => {
-        test_cur_location(test, controller, "Laurasiatheria", 28826.0739, -18858.2284, 48.0688, "Retargeted, jumped");
+        test_cur_location(test, controller, 836249, 1464.4098, 1157.1168, 1.5132, "Retargeted, jumped");
         test_node_on_screen(test, controller, nodes['Dobsonia'], 1069.8041, 978.1592, 256.0792, "Retargeted, jumped");
       });
     }).then(() => {
@@ -157,17 +164,17 @@ test('perform_actual_fly', function (test) {
       });
     }).then(() => {
       return move_to(controller, nodes['Dobsonia'], {speed: Infinity}).then(() => {
-        test_cur_location(test, controller, "Laurasiatheria", 28826.0739, -18858.2284, 48.0688, "Went back again, Dobsonia in same place");
+        test_cur_location(test, controller, 836249, 1464.4098, 1157.1168, 1.5132, "Went back again, Dobsonia in same place");
         test_node_on_screen(test, controller, nodes['Dobsonia'], 1069.8041, 978.1592, 256.0792, "Went back again, Dobsonia in same place");
       });
     }).then(() => {
       return move_to(controller, nodes['Acerodon'], {speed: 1}).then(() => {
-        test_cur_location(test, controller, "Laurasiatheria", 42907.5839, -32331.2601, 79.3102, "Flights to nearby location");
+        test_cur_location(test, controller, 836249, -2237.239, 692.653, 2.4967, "Flights to nearby location");
         test_node_on_screen(test, controller, nodes['Acerodon'], 594.6564, 625.457, 250.0075, "Flights to nearby location");
       });
     }).then(() => {
       return move_to(controller, nodes['Dobsonia'], {speed: 1}).then(() => {
-        test_cur_location(test, controller, "Laurasiatheria", 28826.0739, -18858.2284, 48.0688, "Flight back");
+        test_cur_location(test, controller, 836249, 1464.4098, 1157.1168, 1.5132, "Flight back");
         test_node_on_screen(test, controller, nodes['Dobsonia'], 1069.8041, 978.1592, 256.0792, "Flight back");
       });
     });
