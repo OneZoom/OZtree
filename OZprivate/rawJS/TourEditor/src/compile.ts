@@ -7,6 +7,7 @@ import {
     mediaBlockToUrl,
     oneZoomThumbUrl,
 } from './media';
+import { sanitizeTourIdentifier, tourFileSlug } from './tour';
 import type { EditorTour, EditorTourStop, TourLicense } from './types';
 
 /**
@@ -48,6 +49,7 @@ export interface ProductionTourStopJson {
 export function editorTourToJson(tour: EditorTour): ProductionTourJson {
     const image_url = mediaBlockToUrl(tour.thumbnail);
     return {
+        identifier: sanitizeTourIdentifier(tour.identifier || tourFileSlug(tour)),
         title: tour.title,
         description: tour.description,
         author: tour.author,

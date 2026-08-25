@@ -119,6 +119,7 @@ test('unpackOzTour: rejects invalid zip bytes', (t) => {
 
 test('downloadFilename: slugs the tour title', (t) => {
     t.equal(downloadFilename(tour({ title: 'My Nice Tour!' })), 'my_nice_tour.oztour');
+    t.equal(downloadFilename(tour({ title: 'Tour 2024' })), 'tour_2024.oztour');
     t.equal(downloadFilename(createEmptyTour()), 'untitled.oztour');
     t.end();
 });

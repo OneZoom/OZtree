@@ -1,7 +1,7 @@
 import MediaBlockCard from './MediaBlockCard';
 import UkIcon from './UkIcon';
 import { isThumbnailMedia, THUMBNAIL_MEDIA_KINDS } from './media';
-import { LICENSE_OPTIONS } from './tour';
+import { LICENSE_OPTIONS, sanitizePartialTourIdentifier, sanitizeTourIdentifier, tourFileSlug } from './tour';
 import type { EditorTour, TourLicense } from './types';
 import StopList from './StopList';
 
@@ -38,6 +38,24 @@ export default function TourForm({
                     type="text"
                     value={tour.title}
                     onChange={(e) => onChange({ title: e.target.value })}
+                />
+            </div>
+            <div className="uk-margin">
+                <label className="uk-form-label" htmlFor="tour-identifier">Identifier</label>
+                <input
+                    id="tour-identifier"
+                    className="uk-input"
+                    type="text"
+                    spellCheck={false}
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    autoComplete="off"
+                    pattern="[a-z0-9_]*"
+                    title="Lowercase letters, numbers, and underscores"
+                    value={tour.identifier}
+                    placeholder={tour.identifier ? undefined : tourFileSlug(tour)}
+                    onChange={(e) => onChange({ identifier: sanitizePartialTourIdentifier(e.target.value) })}
+                    onBlur={() => onChange({ identifier: sanitizeTourIdentifier(tour.identifier) })}
                 />
             </div>
             <div className="uk-margin">

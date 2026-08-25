@@ -1,5 +1,5 @@
 import { createMediaBlock, isThumbnailMedia } from './media';
-import { DEFAULT_LICENSE, LICENSE_OPTIONS, newEditorId } from './tour';
+import { DEFAULT_LICENSE, LICENSE_OPTIONS, isTourIdentifier, newEditorId } from './tour';
 import {
     DEFAULT_HIGHLIGHT_COLOR,
     type EditorHighlight,
@@ -55,6 +55,7 @@ export function parseEditorTour(json: unknown): EditorTour {
     }
 
     return {
+        identifier: parseTourIdentifier(json.identifier),
         title: asString(json.title),
         description: asString(json.description),
         author: asString(json.author),
@@ -179,6 +180,15 @@ function parseMediaBlock(
         case 'link':
             return { id, kind, url: asString(value.url) };
     }
+}
+
+function parseTourIdentifier(value: unknown): string {
+    const identifier = asString(value);
+    if (!identifier) return '';
+    if (!isTourIdentifier(identifier)) {
+        throw new TourParseError('Tour identifier must be lowercase letters, numbers and underscores.');
+    }
+    return identifier;
 }
 
 function parseLicense(value: unknown): TourLicense {

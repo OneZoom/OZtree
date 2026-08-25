@@ -17,13 +17,28 @@ export function newEditorId(): string {
     return crypto.randomUUID();
 }
 
-/** Filesystem-safe stem from a tour title, e.g. ``My Nice Tour!`` → ``my_nice_tour``. */
-export function tourFileSlug(tour: EditorTour): string {
-    const slug = tour.title
+const TOUR_IDENTIFIER_MAX = 20;
+
+export function sanitizeTourIdentifier(value: string): string {
+    return sanitizePartialTourIdentifier(value)
+      .replace(/^_+|_+$/g, '');
+}
+
+// Allow identifiers with underscores to be typed out
+export function sanitizePartialTourIdentifier(value: string): string {
+    return value
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '_')
-        .replace(/^_+|_+$/g, '')
-        .slice(0, 60);
+        .replace(/[^a-z0-9_]+/g, '_')
+        .slice(0, TOUR_IDENTIFIER_MAX);
+}
+
+export function isTourIdentifier(value: string): boolean {
+    return value.length > 0 && sanitizeTourIdentifier(value) === value;
+}
+
+/** Filesystem-safe stem from a tour identifier or title, e.g. ``My Nice Tour!`` → ``my_nice_tour``. */
+export function tourFileSlug(tour: EditorTour): string {
+    const slug = sanitizeTourIdentifier(tour.identifier || tour.title).replace(/^_+|_+$/g, '');
     return slug || 'untitled';
 }
 
@@ -38,6 +53,7 @@ function nextStopIdentifier(stops: EditorTourStop[]): string {
 
 export function createEmptyTour(): EditorTour {
     return {
+        identifier: '',
         title: '',
         description: '',
         author: '',

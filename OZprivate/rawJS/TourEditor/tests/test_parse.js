@@ -22,6 +22,7 @@ function tour(partial) {
 
 test('parseEditorTour: round-trips a complete editor tour', (t) => {
     const original = tour({
+        identifier: 'mammal_tour',
         title: 'Mammals',
         description: 'A walk',
         author: 'OZ',
@@ -62,6 +63,24 @@ test('parseEditorTour: round-trips a complete editor tour', (t) => {
     t.end();
 });
 
+test('parseEditorTour: retains a tour identifier', (t) => {
+    const loaded = parseEditorTour({
+        identifier: 'mammal_tour_2',
+        title: 'Mammals',
+        stops: [],
+    });
+    t.equal(loaded.identifier, 'mammal_tour_2');
+    t.end();
+});
+
+test('parseEditorTour: rejects an invalid tour identifier', (t) => {
+    t.throws(
+        () => parseEditorTour({ identifier: 'My-Tour', stops: [] }),
+        /lowercase letters/,
+    );
+    t.end();
+});
+
 test('parseEditorTour: regenerates missing IDs', (t) => {
     const loaded = parseEditorTour({
         title: 'Cats',
@@ -77,6 +96,7 @@ test('parseEditorTour: regenerates missing IDs', (t) => {
     t.equal(typeof loaded.stops[0].id, 'string');
     t.equal(loaded.stops[0].identifier, 'cats');
     t.equal(loaded.stops[0].title, 'Cats');
+    t.equal(loaded.identifier, '');
     t.equal(loaded.license, 'all-rights-reserved');
     t.equal(loaded.thumbnail.kind, 'image');
     t.equal(loaded.thumbnail.url, '');

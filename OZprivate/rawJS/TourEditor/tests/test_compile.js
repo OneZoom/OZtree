@@ -22,6 +22,7 @@ function tour(partial) {
 
 test('editorTourToJson: empty tour', (t) => {
     t.deepEqual(editorTourToJson(createEmptyTour()), {
+        identifier: 'untitled',
         title: '',
         description: '',
         author: '',
@@ -99,6 +100,7 @@ test('editorTourToJson: maps stop fields to production JSON', (t) => {
     });
     t.equal(json.license, 'cc-by-4.0');
     t.equal(json.image_url, 'imgsrc:99:27732437');
+    t.equal(json.identifier, 'mammals');
     t.end();
 });
 
