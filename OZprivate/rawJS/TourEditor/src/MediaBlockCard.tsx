@@ -33,11 +33,11 @@ interface MediaBlockCardProps {
     block: EditorMediaBlock;
     kinds: readonly EditorMediaKind[];
     onChange: (block: EditorMediaBlock) => void;
-    onRemove: () => void;
-    canMoveUp: boolean;
-    onMoveUp: () => void;
-    canMoveDown: boolean;
-    onMoveDown: () => void;
+    onRemove?: () => void;
+    canMoveUp?: boolean;
+    onMoveUp?: () => void;
+    canMoveDown?: boolean;
+    onMoveDown?: () => void;
 }
 
 interface KindCardProps<T extends EditorMediaBlock> {
@@ -90,34 +90,42 @@ export default function MediaBlockCard({
                 <div className="tour-editor-media-preview">
                     <MediaPreviewView preview={mediaPreview(block)} />
                 </div>
-                <div className="tour-editor-item-actions uk-flex-right uk-margin-small-top">
-                    <button
-                        className="uk-button uk-button-small uk-button-default uk-margin-small-right"
-                        title="Move down"
-                        type="button"
-                        disabled={!canMoveDown}
-                        onClick={onMoveDown}
-                    >
-                        <UkIcon icon="chevron-down" />
-                    </button>
-                    <button
-                        className="uk-button uk-button-small uk-button-default uk-margin-small-right"
-                        title="Move up"
-                        type="button"
-                        disabled={!canMoveUp}
-                        onClick={onMoveUp}
-                    >
-                        <UkIcon icon="chevron-up" />
-                    </button>
-                    <button
-                        className="uk-button uk-button-small uk-button-danger"
-                        title="Remove media"
-                        type="button"
-                        onClick={onRemove}
-                    >
-                        <UkIcon icon="close" />
-                    </button>
-                </div>
+                {(onMoveDown || onMoveUp || onRemove) && (
+                    <div className="tour-editor-item-actions uk-flex-right uk-margin-small-top">
+                        {onMoveDown && (
+                            <button
+                                className="uk-button uk-button-small uk-button-default uk-margin-small-right"
+                                title="Move down"
+                                type="button"
+                                disabled={!canMoveDown}
+                                onClick={onMoveDown}
+                            >
+                                <UkIcon icon="chevron-down" />
+                            </button>
+                        )}
+                        {onMoveUp && (
+                            <button
+                                className="uk-button uk-button-small uk-button-default uk-margin-small-right"
+                                title="Move up"
+                                type="button"
+                                disabled={!canMoveUp}
+                                onClick={onMoveUp}
+                            >
+                                <UkIcon icon="chevron-up" />
+                            </button>
+                        )}
+                        {onRemove && (
+                            <button
+                                className="uk-button uk-button-small uk-button-danger"
+                                title="Remove media"
+                                type="button"
+                                onClick={onRemove}
+                            >
+                                <UkIcon icon="close" />
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

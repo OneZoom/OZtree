@@ -7,6 +7,8 @@ import type {
     EditorMediaBlockNoId,
     EditorMediaKind,
     EditorOneZoomImageMedia,
+    EditorThumbnailKind,
+    EditorThumbnailMedia,
     EditorToursMedia,
     EditorVimeoMedia,
     EditorWikimediaMedia,
@@ -29,6 +31,13 @@ export const MEDIA_KIND_OPTIONS: { value: EditorMediaKind; label: string }[] = [
 
 export const ALL_MEDIA_KINDS: readonly EditorMediaKind[] = MEDIA_KIND_OPTIONS.map((option) => option.value);
 
+// Thumbnails don't have the same runtime options as tourstop media.
+// So we restrict the available types.
+export const THUMBNAIL_MEDIA_KINDS: readonly EditorThumbnailKind[] = ['onezoom', 'image'];
+export function isThumbnailMedia(block: EditorMediaBlock): block is EditorThumbnailMedia {
+    return (THUMBNAIL_MEDIA_KINDS as readonly EditorMediaKind[]).includes(block.kind);
+}
+
 const MEDIA_PARSERS: Record<EditorMediaKind, (url: string) => EditorMediaBlockNoId | null> = {
     onezoom: parseOneZoom,
     youtube: parseYoutube,
@@ -45,11 +54,6 @@ export function mediaKindOptions(kinds: readonly EditorMediaKind[] = ALL_MEDIA_K
     return MEDIA_KIND_OPTIONS.filter((option) => allowed.has(option.value));
 }
 
-/** First supported kind, preferring ``image`` to match ``createMediaBlock()``. */
-export function defaultMediaKind(kinds: readonly EditorMediaKind[] = ALL_MEDIA_KINDS): EditorMediaKind {
-    return kinds.includes('image') ? 'image' : (kinds[0] ?? 'image');
-}
-
 export const IMAGE_EXT = 'gif|jpe?g|png|svg';
 export const AUDIO_EXT = 'ogg|mp3';
 export const VIDEO_EXT = 'ogv|webm|mpg|mpeg';
@@ -63,7 +67,13 @@ export type MediaPreview =
     | { type: 'iframe'; src: string }
     | { type: 'link'; href: string };
 
-export function createMediaBlock(kind: EditorMediaKind = 'image'): EditorMediaBlock {
+export function createMediaBlock<K extends EditorMediaKind = 'image'>(
+    kind: K = 'image' as K,
+): Extract<EditorMediaBlock, { kind: K }> {
+    return emptyMediaBlock(kind) as Extract<EditorMediaBlock, { kind: K }>;
+}
+
+function emptyMediaBlock(kind: EditorMediaKind): EditorMediaBlock {
     const id = newEditorId();
     switch (kind) {
         case 'onezoom':

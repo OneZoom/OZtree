@@ -1,6 +1,6 @@
 import MediaBlockCard from './MediaBlockCard';
 import UkIcon from './UkIcon';
-import { ALL_MEDIA_KINDS, createMediaBlock, defaultMediaKind } from './media';
+import { ALL_MEDIA_KINDS, createMediaBlock } from './media';
 import { moveItem } from './tour';
 import type { EditorMediaBlock, EditorMediaKind } from './types';
 
@@ -37,7 +37,7 @@ export default function MediaBlocks({
             <button
                 className="uk-button uk-button-default uk-margin-small-top"
                 type="button"
-                onClick={() => onChange([...blocks, createMediaBlock(defaultMediaKind(kinds))])}
+                onClick={() => onChange([...blocks, createMediaBlock(kinds[0])])}
             >
                 <UkIcon icon="plus" className="uk-margin-small-right" />
                 Add media

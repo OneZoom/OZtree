@@ -26,6 +26,7 @@ test('parseEditorTour: round-trips a complete editor tour', (t) => {
         description: 'A walk',
         author: 'OZ',
         license: 'cc-by-4.0',
+        thumbnail: { id: 'th1', kind: 'image', url: 'https://example.com/cat.jpg' },
         stops: [
             stop({
                 identifier: 'cats',
@@ -77,6 +78,9 @@ test('parseEditorTour: regenerates missing IDs', (t) => {
     t.equal(loaded.stops[0].identifier, 'cats');
     t.equal(loaded.stops[0].title, 'Cats');
     t.equal(loaded.license, 'all-rights-reserved');
+    t.equal(loaded.thumbnail.kind, 'image');
+    t.equal(loaded.thumbnail.url, '');
+    t.ok(loaded.thumbnail.id);
     t.equal(loaded.stops[0].transitionIn, 'fly');
     t.equal(loaded.stops[0].location, null);
     t.ok(loaded.stops[0].highlights[0].id);
@@ -118,6 +122,17 @@ test('parseEditorTour: rejects an invalid highlight', (t) => {
     t.end();
 });
 
+test('parseEditorTour: rejects a non-image thumbnail', (t) => {
+    t.throws(
+        () => parseEditorTour({
+            thumbnail: { kind: 'youtube', videoId: 'W86cTIoMv2U' },
+            stops: [],
+        }),
+        /Thumbnail is not valid/,
+    );
+    t.end();
+});
+
 test('parseEditorTour: rejects an invalid media block', (t) => {
     t.throws(
         () => parseEditorTour({
@@ -127,3 +142,4 @@ test('parseEditorTour: rejects an invalid media block', (t) => {
     );
     t.end();
 });
+

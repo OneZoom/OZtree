@@ -32,6 +32,7 @@ export function createEmptyTour(): EditorTour {
         description: '',
         author: '',
         license: DEFAULT_LICENSE,
+        thumbnail: { id: newEditorId(), kind: 'image', url: '' },
         stops: [],
     };
 }

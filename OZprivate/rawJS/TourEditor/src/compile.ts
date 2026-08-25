@@ -19,6 +19,7 @@ export interface ProductionTourJson {
     description: string;
     author: string;
     license?: TourLicense;
+    image_url?: string;
     tourstops: ProductionTourStopJson[];
 }
 
@@ -45,11 +46,13 @@ export interface ProductionTourStopJson {
 }
 
 export function editorTourToJson(tour: EditorTour): ProductionTourJson {
+    const image_url = mediaBlockToUrl(tour.thumbnail);
     return {
         title: tour.title,
         description: tour.description,
         author: tour.author,
         license: tour.license,
+        ...(image_url ? { image_url } : {}),
         tourstops: tour.stops.map((stop) => editorStopToJson(stop)),
     };
 }
@@ -104,6 +107,7 @@ export function tourJsonToHtml(tour: ProductionTourJson): string {
         optionalDataAttr('author', tour.author),
         optionalDataAttr('title', tour.title),
         optionalDataAttr('description', tour.description),
+        optionalDataAttr('image_url', tour.image_url),
     ].filter(Boolean);
 
     const stopHtml = stops.map((stop, tsIdx) => stopToHtml(stop, tsIdx, stops)).join('');
