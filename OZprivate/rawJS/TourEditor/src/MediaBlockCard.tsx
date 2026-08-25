@@ -6,12 +6,12 @@ import {
     mediaBlockToUrl,
     mediaBlockWithKind,
     mediaBlockWithYoutubeTimes,
+    mediaKindOptions,
     mediaPreview,
     optionalYoutubeSeconds,
     parseMediaUrl,
     parseMediaUrlAsKind,
     type MediaPreview,
-    MEDIA_KIND_OPTIONS
 } from './media';
 import { useNodeImageSelection } from './treeSelection';
 import type {
@@ -31,6 +31,7 @@ import type {
 
 interface MediaBlockCardProps {
     block: EditorMediaBlock;
+    kinds: readonly EditorMediaKind[];
     onChange: (block: EditorMediaBlock) => void;
     onRemove: () => void;
     canMoveUp: boolean;
@@ -41,11 +42,13 @@ interface MediaBlockCardProps {
 
 interface KindCardProps<T extends EditorMediaBlock> {
     block: T;
+    kinds: readonly EditorMediaKind[];
     onChange: (block: EditorMediaBlock) => void;
 }
 
 export default function MediaBlockCard({
     block,
+    kinds,
     onChange,
     onRemove,
     canMoveUp,
@@ -67,7 +70,7 @@ export default function MediaBlockCard({
             onChange(mediaBlockFromFields(parseMediaUrlAsKind('', block.kind), block.id));
             return;
         }
-        const parsed = parseMediaUrl(value);
+        const parsed = parseMediaUrl(value, kinds);
         if (parsed) onChange(mediaBlockFromFields(parsed, block.id));
     };
 
@@ -83,7 +86,7 @@ export default function MediaBlockCard({
                     placeholder="Paste a URL"
                     aria-label="Media URL"
                 />
-                <KindFields block={block} onChange={onChange} />
+                <KindFields block={block} kinds={kinds} onChange={onChange} />
                 <div className="tour-editor-media-preview">
                     <MediaPreviewView preview={mediaPreview(block)} />
                 </div>
@@ -122,38 +125,40 @@ export default function MediaBlockCard({
 
 function KindFields({
     block,
+    kinds,
     onChange,
 }: {
     block: EditorMediaBlock;
+    kinds: readonly EditorMediaKind[];
     onChange: (block: EditorMediaBlock) => void;
 }) {
     switch (block.kind) {
         case 'onezoom':
-            return <OneZoomMediaBlockCard block={block} onChange={onChange} />;
+            return <OneZoomMediaBlockCard block={block} kinds={kinds} onChange={onChange} />;
         case 'youtube':
-            return <YoutubeMediaBlockCard block={block} onChange={onChange} />;
+            return <YoutubeMediaBlockCard block={block} kinds={kinds} onChange={onChange} />;
         case 'vimeo':
-            return <VimeoMediaBlockCard block={block} onChange={onChange} />;
+            return <VimeoMediaBlockCard block={block} kinds={kinds} onChange={onChange} />;
         case 'wikimedia':
-            return <WikimediaMediaBlockCard block={block} onChange={onChange} />;
+            return <WikimediaMediaBlockCard block={block} kinds={kinds} onChange={onChange} />;
         case 'tours':
-            return <ToursMediaBlockCard block={block} onChange={onChange} />;
+            return <ToursMediaBlockCard block={block} kinds={kinds} onChange={onChange} />;
         case 'image':
-            return <ImageMediaBlockCard block={block} onChange={onChange} />;
+            return <ImageMediaBlockCard block={block} kinds={kinds} onChange={onChange} />;
         case 'audio':
-            return <AudioMediaBlockCard block={block} onChange={onChange} />;
+            return <AudioMediaBlockCard block={block} kinds={kinds} onChange={onChange} />;
         case 'link':
-            return <LinkMediaBlockCard block={block} onChange={onChange} />;
+            return <LinkMediaBlockCard block={block} kinds={kinds} onChange={onChange} />;
     }
 }
 
-function OneZoomMediaBlockCard({ block, onChange }: KindCardProps<EditorOneZoomImageMedia>) {
+function OneZoomMediaBlockCard({ block, kinds, onChange }: KindCardProps<EditorOneZoomImageMedia>) {
     const { active, setActive } = useNodeImageSelection((src, srcId) => {
         onChange({ ...block, src, srcId });
     });
     const chosen = block.src && block.srcId ? `${block.src}:${block.srcId}` : '';
     return (
-        <MediaKindRow block={block} onChange={onChange}>
+        <MediaKindRow block={block} kinds={kinds} onChange={onChange}>
             <button
                 className={`uk-button uk-button-small ${active ? 'uk-button-primary' : 'uk-button-default'}`}
                 type="button"
@@ -168,9 +173,9 @@ function OneZoomMediaBlockCard({ block, onChange }: KindCardProps<EditorOneZoomI
     );
 }
 
-function YoutubeMediaBlockCard({ block, onChange }: KindCardProps<EditorYoutubeMedia>) {
+function YoutubeMediaBlockCard({ block, kinds, onChange }: KindCardProps<EditorYoutubeMedia>) {
     const onVideoIdChange = (value: string) => {
-        const parsed = parseMediaUrl(value);
+        const parsed = parseMediaUrl(value, kinds);
         if (parsed?.kind === 'youtube') {
             onChange(mediaBlockFromFields(parsed, block.id));
             return;
@@ -180,7 +185,7 @@ function YoutubeMediaBlockCard({ block, onChange }: KindCardProps<EditorYoutubeM
 
     return (
         <>
-            <MediaKindRow block={block} onChange={onChange}>
+            <MediaKindRow block={block} kinds={kinds} onChange={onChange}>
                 <input
                     className="uk-input uk-form-small"
                     type="text"
@@ -195,9 +200,9 @@ function YoutubeMediaBlockCard({ block, onChange }: KindCardProps<EditorYoutubeM
     );
 }
 
-function VimeoMediaBlockCard({ block, onChange }: KindCardProps<EditorVimeoMedia>) {
+function VimeoMediaBlockCard({ block, kinds, onChange }: KindCardProps<EditorVimeoMedia>) {
     const onVideoIdChange = (value: string) => {
-        const parsed = parseMediaUrl(value);
+        const parsed = parseMediaUrl(value, kinds);
         if (parsed?.kind === 'vimeo') {
             onChange(mediaBlockFromFields(parsed, block.id));
             return;
@@ -206,7 +211,7 @@ function VimeoMediaBlockCard({ block, onChange }: KindCardProps<EditorVimeoMedia
     };
 
     return (
-        <MediaKindRow block={block} onChange={onChange}>
+        <MediaKindRow block={block} kinds={kinds} onChange={onChange}>
             <input
                 className="uk-input uk-form-small"
                 type="text"
@@ -219,9 +224,9 @@ function VimeoMediaBlockCard({ block, onChange }: KindCardProps<EditorVimeoMedia
     );
 }
 
-function WikimediaMediaBlockCard({ block, onChange }: KindCardProps<EditorWikimediaMedia>) {
+function WikimediaMediaBlockCard({ block, kinds, onChange }: KindCardProps<EditorWikimediaMedia>) {
     const onFilenameChange = (value: string) => {
-        const parsed = parseMediaUrl(value);
+        const parsed = parseMediaUrl(value, kinds);
         if (parsed?.kind === 'wikimedia') {
             onChange(mediaBlockFromFields(parsed, block.id));
             return;
@@ -231,7 +236,7 @@ function WikimediaMediaBlockCard({ block, onChange }: KindCardProps<EditorWikime
 
     return (
         <>
-            <MediaKindRow block={block} onChange={onChange}>
+            <MediaKindRow block={block} kinds={kinds} onChange={onChange}>
                 <input
                     className="uk-input uk-form-small"
                     type="text"
@@ -254,9 +259,9 @@ function WikimediaMediaBlockCard({ block, onChange }: KindCardProps<EditorWikime
     );
 }
 
-function ToursMediaBlockCard({ block, onChange }: KindCardProps<EditorToursMedia>) {
+function ToursMediaBlockCard({ block, kinds, onChange }: KindCardProps<EditorToursMedia>) {
     const onPathChange = (value: string) => {
-        const parsed = parseMediaUrl(value);
+        const parsed = parseMediaUrl(value, kinds);
         if (parsed?.kind === 'tours') {
             onChange(mediaBlockFromFields(parsed, block.id));
             return;
@@ -268,7 +273,7 @@ function ToursMediaBlockCard({ block, onChange }: KindCardProps<EditorToursMedia
     };
 
     return (
-        <MediaKindRow block={block} onChange={onChange}>
+        <MediaKindRow block={block} kinds={kinds} onChange={onChange}>
             <input
                 className="uk-input uk-form-small"
                 type="text"
@@ -281,24 +286,27 @@ function ToursMediaBlockCard({ block, onChange }: KindCardProps<EditorToursMedia
     );
 }
 
-function ImageMediaBlockCard({ block, onChange }: KindCardProps<EditorImageUrlMedia>) {
-    return <MediaKindRow block={block} onChange={onChange} />;
+function ImageMediaBlockCard({ block, kinds, onChange }: KindCardProps<EditorImageUrlMedia>) {
+    return <MediaKindRow block={block} kinds={kinds} onChange={onChange} />;
 }
 
-function AudioMediaBlockCard({ block, onChange }: KindCardProps<EditorAudioUrlMedia>) {
-    return <MediaKindRow block={block} onChange={onChange} />;
+function AudioMediaBlockCard({ block, kinds, onChange }: KindCardProps<EditorAudioUrlMedia>) {
+    return <MediaKindRow block={block} kinds={kinds} onChange={onChange} />;
 }
 
-function LinkMediaBlockCard({ block, onChange }: KindCardProps<EditorExternalLinkMedia>) {
-    return <MediaKindRow block={block} onChange={onChange} />;
+function LinkMediaBlockCard({ block, kinds, onChange }: KindCardProps<EditorExternalLinkMedia>) {
+    return <MediaKindRow block={block} kinds={kinds} onChange={onChange} />;
 }
 
 interface MediaKindSelectorProps {
     kind: EditorMediaKind;
+    kinds: readonly EditorMediaKind[];
     onKindChange: (kind: EditorMediaKind) => void;
 }
 
-export function MediaKindSelector({ kind, onKindChange }: MediaKindSelectorProps) {
+export function MediaKindSelector({ kind, kinds, onKindChange }: MediaKindSelectorProps) {
+    const options = mediaKindOptions(kinds);
+    if (options.length < 2) return null;
     return (
         <select
             className="uk-select uk-form-small"
@@ -306,7 +314,7 @@ export function MediaKindSelector({ kind, onKindChange }: MediaKindSelectorProps
             onChange={(e) => onKindChange(e.target.value as EditorMediaKind)}
             aria-label="Media type"
         >
-            {MEDIA_KIND_OPTIONS.map((option) => (
+            {options.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
             ))}
         </select>
@@ -316,13 +324,16 @@ export function MediaKindSelector({ kind, onKindChange }: MediaKindSelectorProps
 
 function MediaKindRow({
     block,
+    kinds,
     onChange,
     children,
 }: KindCardProps<EditorMediaBlock> & { children?: ReactNode }) {
+    if (mediaKindOptions(kinds).length < 2 && !children) return null;
     return (
         <div className="tour-editor-media-row">
             <MediaKindSelector
                 kind={block.kind}
+                kinds={kinds}
                 onKindChange={(kind) => onChange(mediaBlockWithKind(block, kind))}
             />
             {children}

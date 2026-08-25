@@ -4,9 +4,11 @@
  */
 import test from 'tape';
 import {
+    defaultMediaKind,
     mediaBlockToUrl,
     mediaBlockWithKind,
     mediaBlockWithYoutubeTimes,
+    mediaKindOptions,
     mediaPreview,
     optionalYoutubeSeconds,
     parseMediaUrl,
@@ -101,6 +103,27 @@ test('parseMediaUrl: Wikimedia, tours, image, audio', (t) => {
         { kind: 'link', url: 'https://de.wikipedia.org/wiki/File:Sponges_in_Caribbean_Sea,_Cayman_Islands.jpg' },
     );
     t.equal(parseMediaUrl('not a url'), null);
+    t.end();
+});
+
+test('parseMediaUrl: kinds limits which parsers run', (t) => {
+    t.deepEqual(
+        parseMediaUrl('https://www.youtube.com/embed/W86cTIoMv2U', ['image', 'link']),
+        { kind: 'link', url: 'https://www.youtube.com/embed/W86cTIoMv2U' },
+    );
+    t.equal(parseMediaUrl('https://www.youtube.com/embed/W86cTIoMv2U', ['image']), null);
+    t.deepEqual(
+        parseMediaUrl('https://example.com/cat.jpg', ['image']),
+        { kind: 'image', url: 'https://example.com/cat.jpg' },
+    );
+    t.deepEqual(
+        parseMediaUrl('frogs/Various_frogs_and_toads.jpeg', ['image']),
+        { kind: 'image', url: 'frogs/Various_frogs_and_toads.jpeg' },
+    );
+    t.equal(parseMediaUrl('frogs/Various_frogs_and_toads.jpeg', ['youtube']), null);
+    t.deepEqual(mediaKindOptions(['youtube', 'image']).map((option) => option.value), ['youtube', 'image']);
+    t.equal(defaultMediaKind(['youtube', 'vimeo']), 'youtube');
+    t.equal(defaultMediaKind(['youtube', 'image']), 'image');
     t.end();
 });
 
