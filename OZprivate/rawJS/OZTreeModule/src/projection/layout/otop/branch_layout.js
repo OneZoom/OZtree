@@ -17,16 +17,19 @@ class BranchLayout extends BranchLayoutBase {
    *  Add shadowBlur to all branches
    */
   get_bezier_shapes(node, shapes, markings_list) {
+    if (node.branch_points.length > 2) {
+      throw new Error("More than 1 branch point unsupported");
+    }
     let bezier_shape = BezierShape.create();
 
-    bezier_shape.sx = node.bezsx * node.rvar + node.xvar;
-    bezier_shape.sy = node.bezsy * node.rvar + node.yvar;
-    bezier_shape.c1x = node.bezc1x * node.rvar + node.xvar;
-    bezier_shape.c1y = node.bezc1y * node.rvar + node.yvar;
-    bezier_shape.c2x = node.bezc2x * node.rvar + node.xvar;
-    bezier_shape.c2y = node.bezc2y * node.rvar + node.yvar;
-    bezier_shape.ex = node.bezex * node.rvar + node.xvar;
-    bezier_shape.ey = node.bezey * node.rvar + node.yvar;
+    bezier_shape.sx = node.branch_start.x * node.rvar + node.xvar;
+    bezier_shape.sy = node.branch_start.y * node.rvar + node.yvar;
+    bezier_shape.c1x = node.branch_points[1].cp1x * node.rvar + node.xvar;
+    bezier_shape.c1y = node.branch_points[1].cp1y * node.rvar + node.yvar;
+    bezier_shape.c2x = node.branch_points[1].cp2x * node.rvar + node.xvar;
+    bezier_shape.c2y = node.branch_points[1].cp2y * node.rvar + node.yvar;
+    bezier_shape.ex = node.branch_points[1].x * node.rvar + node.xvar;
+    bezier_shape.ey = node.branch_points[1].y * node.rvar + node.yvar;
     bezier_shape.stroke.line_cap = 'round';
     bezier_shape.height = 1;
     bezier_shape.markings_list = markings_list || [];

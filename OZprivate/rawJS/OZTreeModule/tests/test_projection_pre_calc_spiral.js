@@ -6,6 +6,7 @@ import almostEqual from 'almost-equal';
 
 import spiral_pre_calc from '../src/projection/pre_calc/spiral_pre_calc';
 import {calc_horizon} from '../src/projection/horizon_calc/horizon_calc';
+import {mk_node as mk_mock_node} from './util_midnode_mock';
 
 // Constants baked into spiral_pre_calc, repeated here so expectations read as geometry
 const ROOT_ARCA = Math.PI * (3 / 2);  // Root points straight up
@@ -24,18 +25,18 @@ function close(t, actual, expected, msg) {
 }
 
 function mk_leaf(richness_val) {
-  return { richness_val: richness_val };
+  return mk_mock_node({ richness_val: richness_val });
 }
 
 function mk_node(richness_val, children) {
-  return {
+  return mk_mock_node({
     richness_val: richness_val,
     has_child: true,
     children: children,
     nextr: [],
     nextx: [],
     nexty: [],
-  };
+  });
 }
 
 function mk_root(children) {
@@ -76,8 +77,9 @@ test('spiral_pre_calc:setup', function (t) {
   calc_horizon(root);
 
   // Root's own box covers its bezier curve (padded by half its width) and its arc
-  let bez_xmin = Math.min(root.bezsx, root.bezc1x, root.bezc2x, root.bezex) - root.bezr / 2;
-  let bez_xmax = Math.max(root.bezsx, root.bezc1x, root.bezc2x, root.bezex) + root.bezr / 2;
+  let start = root.branch_start, end = root.branch_end;
+  let bez_xmin = Math.min(start.x, end.cp1x, end.cp2x, end.x) - root.bezr / 2;
+  let bez_xmax = Math.max(start.x, end.cp1x, end.cp2x, end.x) + root.bezr / 2;
   close(t, root.gxmin, Math.min(bez_xmin, root.arcx - root.arcr * 1.305), 'gxmin');
   close(t, root.gxmax, Math.max(bez_xmax, root.arcx + root.arcr * 1.305), 'gxmax');
   // ...and the horizon grows to contain the children too
@@ -94,15 +96,16 @@ test('spiral_pre_calc:root', function (t) {
 
   spiral_pre_calc.pre_calc(root);
   close(t, root.arca, ROOT_ARCA, 'arca points straight up');
-  t.deepEqual([root.bezsx, root.bezsy], [0, 0], 'Curve starts at the origin');
-  t.deepEqual([root.bezex, root.bezey], [0, -1], 'Curve ends one unit up');
-  t.deepEqual([root.bezc1x, root.bezc1y], [0, -0.05], 'Control point 1');
-  t.deepEqual([root.bezc2x, root.bezc2y], [0, -0.95], 'Control point 2');
+  t.equal(root.branch_points.length, 2, 'Branch is a single cubic');
+  t.deepEqual([root.branch_start.x, root.branch_start.y], [0, 0], 'Curve starts at the origin');
+  t.deepEqual([root.branch_end.x, root.branch_end.y], [0, -1], 'Curve ends one unit up');
+  t.deepEqual([root.branch_end.cp1x, root.branch_end.cp1y], [0, -0.05], 'Control point 1');
+  t.deepEqual([root.branch_end.cp2x, root.branch_end.cp2y], [0, -0.95], 'Control point 2');
   t.equal(root.bezr, DEFAULT_BEZR, 'Branch width');
 
   // Leaf circle sits posmult beyond the end of the branch, in the direction of arca
-  close(t, root.arcx, root.bezex + 0.9 * Math.cos(ROOT_ARCA), 'arcx');
-  close(t, root.arcy, root.bezey + 0.9 * Math.sin(ROOT_ARCA), 'arcy');
+  close(t, root.arcx, root.branch_end.x + 0.9 * Math.cos(ROOT_ARCA), 'arcx');
+  close(t, root.arcy, root.branch_end.y + 0.9 * Math.sin(ROOT_ARCA), 'arcy');
   close(t, root.arcr, LEAF_ARCR, 'arcr');
 
   t.end();
@@ -116,8 +119,8 @@ test('spiral_pre_calc:children', function (t) {
   let rich = root.children[1], poor = root.children[0];
 
   // An internal node's arc is a joint at the end of its branch, not a leaf circle
-  close(t, root.arcx, root.bezex * 1.01, 'root arcx');
-  close(t, root.arcy, root.bezey * 1.01, 'root arcy');
+  close(t, root.arcx, root.branch_end.x * 1.01, 'root arcx');
+  close(t, root.arcy, root.branch_end.y * 1.01, 'root arcy');
   close(t, root.arcr, root.bezr / 2, 'root arcr');
 
   close(t, rich.arca, ROOT_ARCA + ANGLE_RIGHT, 'Richer child turns right by the smaller angle');
@@ -128,20 +131,20 @@ test('spiral_pre_calc:children', function (t) {
   check_next_point(t, root, 0, RATIO_LEFT, -1, 'Poorer child');
 
   // Both children's curves end one unit along their own angle
-  close(t, rich.bezex, Math.cos(rich.arca), 'Richer child bezex');
-  close(t, rich.bezey, Math.sin(rich.arca), 'Richer child bezey');
-  close(t, poor.bezex, Math.cos(poor.arca), 'Poorer child bezex');
-  close(t, poor.bezey, Math.sin(poor.arca), 'Poorer child bezey');
+  close(t, rich.branch_end.x, Math.cos(rich.arca), 'Richer child end x');
+  close(t, rich.branch_end.y, Math.sin(rich.arca), 'Richer child end y');
+  close(t, poor.branch_end.x, Math.cos(poor.arca), 'Poorer child end x');
+  close(t, poor.branch_end.y, Math.sin(poor.arca), 'Poorer child end y');
 
   // Both start back down the parent's branch, scaled into the child's own co-ordinates
-  close(t, rich.bezsx, -0.3 * Math.cos(ROOT_ARCA) / RATIO_RIGHT, 'Richer child bezsx');
-  close(t, rich.bezsy, -0.3 * Math.sin(ROOT_ARCA) / RATIO_RIGHT, 'Richer child bezsy');
-  close(t, poor.bezsx, -0.3 * Math.cos(ROOT_ARCA) / RATIO_LEFT, 'Poorer child bezsx');
-  close(t, poor.bezsy, -0.3 * Math.sin(ROOT_ARCA) / RATIO_LEFT, 'Poorer child bezsy');
+  close(t, rich.branch_start.x, -0.3 * Math.cos(ROOT_ARCA) / RATIO_RIGHT, 'Richer child start x');
+  close(t, rich.branch_start.y, -0.3 * Math.sin(ROOT_ARCA) / RATIO_RIGHT, 'Richer child start y');
+  close(t, poor.branch_start.x, -0.3 * Math.cos(ROOT_ARCA) / RATIO_LEFT, 'Poorer child start x');
+  close(t, poor.branch_start.y, -0.3 * Math.sin(ROOT_ARCA) / RATIO_LEFT, 'Poorer child start y');
 
   // The poorer child's second control point pulls its curve straight towards its end point
-  close(t, poor.bezc2x, 0.9 * poor.bezex, 'Poorer child bezc2x');
-  close(t, poor.bezc2y, 0.9 * poor.bezey, 'Poorer child bezc2y');
+  close(t, poor.branch_end.cp2x, 0.9 * poor.branch_end.x, 'Poorer child cp2x');
+  close(t, poor.branch_end.cp2y, 0.9 * poor.branch_end.y, 'Poorer child cp2y');
 
   // Children aren't given a width, so fall back to the default
   t.equal(rich.bezr, DEFAULT_BEZR, 'Richer child bezr');
@@ -150,8 +153,8 @@ test('spiral_pre_calc:children', function (t) {
   // Both children are leaves
   close(t, rich.arcr, LEAF_ARCR, 'Richer child arcr');
   close(t, poor.arcr, LEAF_ARCR, 'Poorer child arcr');
-  close(t, rich.arcx, rich.bezex + 0.9 * Math.cos(rich.arca), 'Richer child arcx');
-  close(t, rich.arcy, rich.bezey + 0.9 * Math.sin(rich.arca), 'Richer child arcy');
+  close(t, rich.arcx, rich.branch_end.x + 0.9 * Math.cos(rich.arca), 'Richer child arcx');
+  close(t, rich.arcy, rich.branch_end.y + 0.9 * Math.sin(rich.arca), 'Richer child arcy');
 
   t.end();
 });
@@ -221,24 +224,29 @@ test('spiral_pre_calc:existing_values_preserved', function (t) {
   let default_width_node = mk_node(0.3, [mk_leaf(0.1), mk_leaf(0.2)]);
   node.arca = 0;
   default_width_node.arca = 0;
-  node.bezsx = 0.1;
-  node.bezsy = 0.2;
-  node.bezex = 0.3;
-  node.bezey = 0.4;
-  node.bezc1x = 0.5;
-  node.bezc1y = 0.6;
-  node.bezc2x = 0.7;
-  node.bezc2y = 0.8;
+  node.branch_cubic({
+    sx: 0.1, sy: 0.2,
+    cp1x: 0.5, cp1y: 0.6,
+    cp2x: 0.7, cp2y: 0.8,
+    ex: 0.3, ey: 0.4,
+  });
   node.bezr = 1;
 
   spiral_pre_calc.pre_calc(node);
   spiral_pre_calc.pre_calc(default_width_node);
 
   t.deepEqual([
-    node.bezsx, node.bezsy, node.bezex, node.bezey,
-    node.bezc1x, node.bezc1y, node.bezc2x, node.bezc2y, node.bezr,
+    node.branch_start.x, node.branch_start.y,
+    node.branch_end.x, node.branch_end.y,
+    node.branch_end.cp1x, node.branch_end.cp1y,
+    node.branch_end.cp2x, node.branch_end.cp2y,
+    node.bezr,
   ], [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1], 'Bezier left as-is, not reset to the root defaults');
-  t.equal(default_width_node.bezr, DEFAULT_BEZR, 'Missing values filled in with the defaults');
+  t.deepEqual([
+    default_width_node.branch_start.x, default_width_node.branch_start.y,
+    default_width_node.branch_end.x, default_width_node.branch_end.y,
+    default_width_node.bezr,
+  ], [0, 0, 0, -1, DEFAULT_BEZR], 'Missing values filled in with the defaults');
 
   // ...and the wider branch feeds through into where the children are placed
   check_next_point(t, node, 1, RATIO_RIGHT, 1, 'Richer child');

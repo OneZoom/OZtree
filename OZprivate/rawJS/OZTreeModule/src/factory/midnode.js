@@ -243,7 +243,76 @@ class Midnode {
     }
   }
 
+  /**
+   * Clear the nodes' branch, and start again.
+   * Return initial point object for caller to fill in
+   */
+  branch_restart() {
+    if (this.branch_points === undefined) {
+      this.branch_points = [{x: 0, y: 0}];
+      this._spare_points = [];
+    } else {
+      while (this.branch_points.length > 1) this._spare_points.push(this.branch_points.pop());
+      this.branch_points[0].x = 0;
+      this.branch_points[0].y = 0;
+    }
+    return this.branch_points[0];
+  }
+
+  /**
+   * Fetch a new branch_point object for caller to fill in
+   */
+  branch_point() {
+    const p = this._spare_points.pop() || {
+      cp1x: 0, cp1y: 0, cp2x: 0, cp2y: 0, x: 0, y: 0,
+    };
   
+    p.cp1x = 0; p.cp1y = 0; p.cp2x = 0; p.cp2y = 0; p.x = 0; p.y = 0;
+    this.branch_points.push(p);
+    return p;
+  }
+
+  /**
+   * Fills branch_points with a single bezier curve, equivalent to old
+   * this.bezsx/this.bezsy/this.bezex/this.bezey
+   */
+  branch_cubic({sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey}) {
+    const sp = this.branch_restart();
+    sp.x = sx;
+    sp.y = sy;
+    const ep = this.branch_point();
+    ep.x = ex;
+    ep.y = ey;
+    ep.cp1x = cp1x;
+    ep.cp1y = cp1y;
+    ep.cp2x = cp2x;
+    ep.cp2y = cp2y;
+  }
+
+  /**
+   * The point the branch starts at, equivalent to old this.bezsx/this.bezsy
+   *
+   * NB: The object returned is reused by the next branch_restart(), so read the values out
+   * rather than keeping hold of it.
+   */
+  get branch_start() {
+    return this.branch_points[0];
+  }
+
+  /**
+   * The point the branch finishes at, i.e. where this node's joint or leaf blob sits,
+   * equivalent to old this.bezex/this.bezey
+   *
+   * NB: The object returned is reused by the next branch_restart(), so read the values out
+   * rather than keeping hold of it.
+   */
+  get branch_end() {
+    if (!this.branch_points || this.branch_points.length < 2) {
+      throw new Error("Branch does not have an end yet");
+    }
+    return this.branch_points[this.branch_points.length - 1];
+  }
+
   /**
    * Get attribute of node by key name. Use this function to fetch metadata of node only.
    */

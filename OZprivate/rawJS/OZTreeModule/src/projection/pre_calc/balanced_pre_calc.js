@@ -11,14 +11,12 @@ class BalancedPreCalc {
   pre_calc(node) {
     let partl1 = 0.55;
     if (node.is_root) {
-      node.bezsx =  0;
-      node.bezsy =  0; // start y position
-      node.bezex =  0; // end x position
-      node.bezey =  -1; // end y position
-      node.bezc1x=  0; // control point 1 x position 
-      node.bezc1y=  -0.05; // control point 2 y position
-      node.bezc2x=  0; // control point 2 x position
-      node.bezc2y=  -0.95; // control point 2 y position
+      node.branch_cubic({
+        sx: 0, sy: 0, // start position
+        cp1x: 0, cp1y: -0.05, // control point 1 position
+        cp2x: 0, cp2y: -0.95, // control point 2 position
+        ex: 0, ey: -1, // end position
+      });
       node.bezr  =  partl1; // line width
       node.arca = Math.PI*(3/2);
     }
@@ -55,25 +53,29 @@ function _pre_calc(node) {
     node.nextr[richest_child] = thisratio1; // r (scale) reference for child 1
     node.nextr[other_child] = thisratio2; // r (scale) reference for child 2
       
-    node.children[richest_child].bezsx = -(0.3)*(tempcospre)/thisratio1;
-    node.children[richest_child].bezsy = -(0.3)*(tempsinpre)/thisratio1;
-    node.children[richest_child].bezex = tempcos2;
-    node.children[richest_child].bezey = tempsin2;
-    node.children[richest_child].bezc1x = (richest_child === 0 ? -0.3 : -0.2) * tempcospre/thisratio1;
-    node.children[richest_child].bezc1y = (richest_child === 0 ? -0.3 : -0.2) * tempsinpre/thisratio1;
-    node.children[richest_child].bezc2x = 0.15*(tempcospre)/thisratio1;
-    node.children[richest_child].bezc2y = 0.15*(tempsinpre)/thisratio1;
+    node.children[richest_child].branch_cubic({
+      sx: -(0.3)*(tempcospre)/thisratio1,
+      sy: -(0.3)*(tempsinpre)/thisratio1,
+      cp1x: (richest_child === 0 ? -0.3 : -0.2) * tempcospre/thisratio1,
+      cp1y: (richest_child === 0 ? -0.3 : -0.2) * tempsinpre/thisratio1,
+      cp2x: 0.15*(tempcospre)/thisratio1,
+      cp2y: 0.15*(tempsinpre)/thisratio1,
+      ex: tempcos2,
+      ey: tempsin2,
+    });
     node.children[richest_child].bezr = partl1;
     node.children[richest_child].arca = node.arca + Math.PI*thisangleright;
-      
-    node.children[other_child].bezsx = -(0.3)*(tempcospre)/thisratio2;
-    node.children[other_child].bezsy = -(0.3)*(tempsinpre)/thisratio2;
-    node.children[other_child].bezex = tempcos3;
-    node.children[other_child].bezey = tempsin3;
-    node.children[other_child].bezc1x = 0.1*(tempcospre)/thisratio2;
-    node.children[other_child].bezc1y = 0.1*(tempsinpre)/thisratio2;
-    node.children[other_child].bezc2x = 0.9*tempcos3;
-    node.children[other_child].bezc2y = 0.9*tempsin3;
+
+    node.children[other_child].branch_cubic({
+      sx: -(0.3)*(tempcospre)/thisratio2,
+      sy: -(0.3)*(tempsinpre)/thisratio2,
+      cp1x: 0.1*(tempcospre)/thisratio2,
+      cp1y: 0.1*(tempsinpre)/thisratio2,
+      cp2x: 0.9*tempcos3,
+      cp2y: 0.9*tempsin3,
+      ex: tempcos3,
+      ey: tempsin3,
+    });
     node.children[other_child].bezr = partl1;
     node.children[other_child].arca = node.arca - Math.PI*thisangleleft;
       
@@ -82,8 +84,8 @@ function _pre_calc(node) {
     node.nextx[other_child] = (1.3*Math.cos(node.arca))-(((node.bezr)-(partl1*thisratio2))/2.0)*tempcos90pre; // x refernece point for both children
     node.nexty[other_child] = (1.3*Math.sin(node.arca))-(((node.bezr)-(partl1*thisratio2))/2.0)*tempsin90pre; // y reference point for both children
     
-    node.arcx = node.bezex*1.01;
-    node.arcy = node.bezey*1.01;
+    node.arcx = node.branch_end.x*1.01;
+    node.arcy = node.branch_end.y*1.01;
     node.arcr = (node.bezr)/2;
     
     if (node.has_child)
@@ -93,8 +95,8 @@ function _pre_calc(node) {
     }
   }
   else {
-    node.arcx = node.bezex+posmult*(tempcospre);
-    node.arcy = node.bezey+posmult*(tempsinpre);
+    node.arcx = node.branch_end.x+posmult*(tempcospre);
+    node.arcy = node.branch_end.y+posmult*(tempsinpre);
     node.arcr = leafmult*partc;
   }
 }

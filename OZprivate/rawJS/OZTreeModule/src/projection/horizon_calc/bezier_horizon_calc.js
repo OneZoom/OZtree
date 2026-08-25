@@ -38,27 +38,30 @@ class BezierHorizonCalc {
   calc_horizon(node) {
     // jamestodo
     // find the bounding box for the bezier curve
-    node.hxmax = max(
-                      node.bezsx, 
-                      node.bezc1x, 
-                      node.bezc2x, 
-                      node.bezex) + node.bezr/2;
-    node.hxmin = min(
-                      node.bezsx, 
-                      node.bezc1x, 
-                      node.bezc2x, 
-                      node.bezex) - node.bezr/2;
-                          
-    node.hymax = max(
-                      node.bezsy,
-                      node.bezc1y,
-                      node.bezc2y,
-                      node.bezey) + node.bezr/2;
-    node.hymin = min(
-                      node.bezsy,
-                      node.bezc1y,
-                      node.bezc2y,
-                      node.bezey) - node.bezr/2;
+
+    const half_width = node.bezr / 2;
+
+    // A branch is a path of cubic segments, however many of them the view it belongs to takes
+    // to draw one (see projection/pre_calc/branch_path). Each segment lies inside its own
+    // control points, so the box around all of them is one the whole curve fits in --- and a
+    // tighter one than the branch's single coarse cubic gives, whose control points swing well
+    // outside the curve on a wide turn
+    let xmin = node.branch_start.x, xmax = node.branch_start.x;
+    let ymin = node.branch_start.y, ymax = node.branch_start.y;
+
+    for (const p of node.branch_points.slice(1)) {
+      if (p.cp1x < xmin) xmin = p.cp1x; if (p.cp1x > xmax) xmax = p.cp1x;
+      if (p.cp2x < xmin) xmin = p.cp2x; if (p.cp2x > xmax) xmax = p.cp2x;
+      if (p.x    < xmin) xmin = p.x;    if (p.x   > xmax) xmax = p.x;
+      if (p.cp1y < ymin) ymin = p.cp1y; if (p.cp1y > ymax) ymax = p.cp1y;
+      if (p.cp2y < ymin) ymin = p.cp2y; if (p.cp2y > ymax) ymax = p.cp2y;
+      if (p.y    < ymin) ymin = p.y;    if (p.y   > ymax) ymax = p.y;
+    }
+
+    node.hxmax = xmax + half_width;
+    node.hxmin = xmin - half_width;
+    node.hymax = ymax + half_width;
+    node.hymin = ymin - half_width;
 
     //expand the bounding box to include the arc if necessary // 1.305 = 0.9*1.45 is to allow for leaves with points that stick out from their main circle
     node.hxmax = max(node.hxmax, node.arcx+node.arcr*1.305);

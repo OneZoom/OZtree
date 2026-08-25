@@ -72,11 +72,12 @@ class PolytomyLeafLayoutBase extends LeafLayoutBase {
       if (node.children.length > 0) {
         // We have children, but got forced not to render them. Draw a fan around all the children
         for (let i = 0; i < node.children.length; i++) {
+          let child_end = node.children[i].branch_end;
           s.path_points.push(['move', start_x, start_y]);
           s.path_points.push([
             'line',
-            start_x + node.rvar * node.nextr[i] * node.children[i].bezex,
-            start_y + node.rvar * node.nextr[i] * node.children[i].bezey,
+            start_x + node.rvar * node.nextr[i] * child_end.x,
+            start_y + node.rvar * node.nextr[i] * child_end.y,
           ]);
         }
       } else {

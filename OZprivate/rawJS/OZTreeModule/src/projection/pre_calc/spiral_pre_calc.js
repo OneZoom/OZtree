@@ -10,8 +10,8 @@ import {set_horizon_calculator} from '../horizon_calc/horizon_calc';
  * off more sharply.
  *
  * Every value below is in the node's own co-ordinate space, i.e. the branch always
- * runs from (bezsx, bezsy) to (bezex, bezey), whatever the node's size or position on
- * screen. The layout code converts a point to screen co-ordinates with
+ * runs from the first of its branch_points to the last, whatever the node's size or
+ * position on screen. The layout code converts a point to screen co-ordinates with
  * (node.xvar + node.rvar * x), and a width or radius with (node.rvar * r), where
  * xvar/yvar/rvar are maintained by position_helper as the tree is zoomed.
  */
@@ -27,10 +27,7 @@ class SpiralPreCalc {
    * Calculate the spiral layout for node and all its descendants, setting on each:
    *
    * The branch, a bezier curve drawn by projection/layout/branch_layout_base:
-   * * bezsx, bezsy: Start point of the curve
-   * * bezc1x, bezc1y: First bezier control point
-   * * bezc2x, bezc2y: Second bezier control point
-   * * bezex, bezey: End point of the curve
+   * * branch_points: The curve, set with node.branch_cubic() (see factory/midnode)
    * * bezr: Width the curve is stroked at
    *
    * The circle at the end of the branch:
@@ -56,7 +53,8 @@ class SpiralPreCalc {
    */
   pre_calc(node) {
     if (node.is_root) {
-      Object.assign(node, root_branch);
+      node.branch_cubic(root_branch);
+      node.bezr = root_bezr;
       node.arca = root_arca;
     }
     _pre_calc(node);
@@ -133,18 +131,18 @@ const offshoot_child = {
  * The branch the root is drawn with: straight up the screen from the origin to (0, -1),
  * with the control points spaced along it so the curve comes out as good as straight.
  *
- * It doubles as the fallback for any part of a branch a node hasn't been given (see
- * _pre_calc). A child is given every part of its curve by its parent bar its width, so in
- * practice bezr is the only one of these an ordinary node takes.
+ * It doubles as the fallback for a branch a node hasn't been given (see _pre_calc). A
+ * child is given its whole curve by its parent bar its width, so in practice root_bezr is
+ * the only fallback an ordinary node takes.
  */
 const root_arca = Math.PI * (3 / 2); // Straight up the screen
 const root_branch = {
-  bezsx: 0, bezsy: 0, // start position
-  bezc1x: 0, bezc1y: -0.05, // control point 1 position
-  bezc2x: 0, bezc2y: -0.95, // control point 2 position
-  bezex: 0, bezey: -1, // end position
-  bezr: partl1, // line width
+  sx: 0, sy: 0, // start position
+  cp1x: 0, cp1y: -0.05, // control point 1 position
+  cp2x: 0, cp2y: -0.95, // control point 2 position
+  ex: 0, ey: -1, // end position
 };
+const root_bezr = partl1; // line width
 
 /**
  * Recursively lay out node and its descendants.
@@ -159,9 +157,8 @@ function _pre_calc(node) {
   // Keep the branch our parent gave us, filling in anything it left unset from the root
   // branch: a node's width always comes from there, and a node we have been asked to lay a
   // subtree out from may have no branch at all yet
-  for (const name in root_branch) {
-    if (node[name] === undefined) node[name] = root_branch[name];
-  }
+  if (node.branch_points === undefined) node.branch_cubic(root_branch);
+  if (node.bezr === undefined) node.bezr = root_bezr;
 
   if (node.has_child)
   {
@@ -182,10 +179,14 @@ function _pre_calc(node) {
       node.nextr[childIndex] = kind.ratio; // r (scale) reference for the child
       child.arca = child_arca;
       // The branch runs from our own tip (see child_start) to 1 along the child's angle
-      [child.bezsx, child.bezsy] = along_parent(child_start);
-      [child.bezc1x, child.bezc1y] = c1;
-      [child.bezc2x, child.bezc2y] = c2;
-      [child.bezex, child.bezey] = along_self(1);
+      const [sx, sy] = along_parent(child_start);
+      const [ex, ey] = along_self(1);
+      child.branch_cubic({
+        sx: sx, sy: sy,
+        cp1x: c1[0], cp1y: c1[1],
+        cp2x: c2[0], cp2y: c2[1],
+        ex: ex, ey: ey,
+      });
 
       // Both children start child_origin_dist along our own angle, then are pushed apart at
       // right-angles to it, by half the difference between our branch width and theirs
@@ -195,16 +196,16 @@ function _pre_calc(node) {
     }
 
     // Joint just beyond the end of our branch, covering the gap where the children start
-    node.arcx = node.bezex * joint_overshoot;
-    node.arcy = node.bezey * joint_overshoot;
+    node.arcx = node.branch_end.x * joint_overshoot;
+    node.arcy = node.branch_end.y * joint_overshoot;
     node.arcr = node.bezr / 2;
 
     _pre_calc(node.children[0]);
     _pre_calc(node.children[1]);
   } else {
     // Leaf blob, sitting posmult beyond the end of our branch, in the direction we point
-    node.arcx = node.bezex + (posmult * dirx);
-    node.arcy = node.bezey + (posmult * diry);
+    node.arcx = node.branch_end.x + (posmult * dirx);
+    node.arcy = node.branch_end.y + (posmult * diry);
     node.arcr = leafmult * partc;
   }
 }

@@ -19,10 +19,12 @@ class PolytomyPreCalc {
     if (node.is_root) {
       // Control points on top of start/end, i.e. line should be straight
       node.arca = Math.PI*(3/2);
-      node.bezex = node.bezc2x = Math.cos(node.arca);
-      node.bezey = node.bezc2y = Math.sin(node.arca);
-      node.bezsx = node.bezc1x = 0;
-      node.bezsy = node.bezc1y = -0.4;
+      node.branch_cubic({
+        sx: 0, sy: -0.4,
+        cp1x: 0, cp1y: -0.4,
+        cp2x: Math.cos(node.arca), cp2y: Math.sin(node.arca),
+        ex: Math.cos(node.arca), ey: Math.sin(node.arca),
+      });
       node.bezr = 0.02;
     }
     _pre_calc(node);
@@ -35,8 +37,8 @@ class PolytomyPreCalc {
 }
 
 function _pre_calc(node) {
-  node.arcx = node.bezex;
-  node.arcy = node.bezey;
+  node.arcx = node.branch_end.x;
+  node.arcy = node.branch_end.y;
   // James
   //node.arcr = 0.01; // this is the size of the node arc compared to the size of the node itself
   // Kai
@@ -71,8 +73,8 @@ function _pre_calc(node) {
       let child_angle = new_angle_base + angle_assigned/2
 
       new_angle_base += angle_assigned;
-      node.nextx[i] = node.bezex; // position in x to pass to child i
-      node.nexty[i] = node.bezey; // position in y to pass to child i
+      node.nextx[i] = node.branch_end.x; // position in x to pass to child i
+      node.nexty[i] = node.branch_end.y; // position in y to pass to child i
 
       let tana = Math.tan(angle_assigned/2);
       let newscale = (tana)/(1+tana);
@@ -84,16 +86,18 @@ function _pre_calc(node) {
 
       node.nextr[i] = newscale; // scale to pass to child node i
             
-      // bezex and bezey are the start and end positions of the line belonging to the child.
-      // their position starts at position of the parent
-      // it's all as a multiple of the ratio.
+      // The child's branch is a straight line, running from the position of the parent to
+      // its end point. It's all as a multiple of the ratio.
 
-      node.children[i].bezex = node.children[i].bezc2x = Math.cos(child_angle) * (distance)/newscale;
-      node.children[i].bezey = node.children[i].bezc2y =  Math.sin(child_angle) * (distance)/newscale;
+      let child_ex = Math.cos(child_angle) * (distance)/newscale;
+      let child_ey = Math.sin(child_angle) * (distance)/newscale;
+      node.children[i].branch_cubic({
+        sx: 0, sy: 0, // same position as the node itself, this is where it connects to the parent.
+        cp1x: 0, cp1y: 0,
+        cp2x: child_ex, cp2y: child_ey,
+        ex: child_ex, ey: child_ey,
+      });
       node.children[i].arca = child_angle;
-
-      node.children[i].bezsx = node.children[i].bezc1x =  0; // same position as the node itself.
-      node.children[i].bezsy = node.children[i].bezc1y =  0; // this is where it connects to the parent.
       node.children[i].bezr = node.bezr;
       _pre_calc(node.children[i]);
     }
