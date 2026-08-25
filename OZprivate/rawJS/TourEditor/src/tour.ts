@@ -17,6 +17,16 @@ export function newEditorId(): string {
     return crypto.randomUUID();
 }
 
+/** Filesystem-safe stem from a tour title, e.g. ``My Nice Tour!`` → ``my_nice_tour``. */
+export function tourFileSlug(tour: EditorTour): string {
+    const slug = tour.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .slice(0, 60);
+    return slug || 'untitled';
+}
+
 function nextStopIdentifier(stops: EditorTourStop[]): string {
     const used = new Set(stops.map((stop) => stop.identifier));
     let n = 1;

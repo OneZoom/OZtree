@@ -2,6 +2,7 @@
 
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import { parseEditorTour } from './parse';
+import { tourFileSlug } from './tour';
 import type { EditorTour } from './types';
 
 /** Format version stored in ``manifest.json`` inside a ``.oztour`` zip. */
@@ -40,12 +41,7 @@ export function unpackOzTour(bytes: Uint8Array): EditorTour {
 }
 
 export function downloadFilename(tour: EditorTour): string {
-    const slug = tour.title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '_')
-        .replace(/^_+|_+$/g, '')
-        .slice(0, 60);
-    return `${slug || 'untitled'}.oztour`;
+    return `${tourFileSlug(tour)}.oztour`;
 }
 
 function readZipJson(files: Record<string, Uint8Array>, name: string): unknown {
