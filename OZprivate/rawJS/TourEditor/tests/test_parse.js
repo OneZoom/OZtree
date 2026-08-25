@@ -3,6 +3,7 @@
  *        node OZprivate/rawJS/run_tape.js OZprivate/rawJS/TourEditor/tests/test_parse.js
  */
 import test from 'tape';
+import { editorTourToJson } from '../src/compile';
 import { parseEditorTour } from '../src/parse';
 import { createEmptyStop, createEmptyTour } from '../src/tour';
 
@@ -20,8 +21,8 @@ function tour(partial) {
     };
 }
 
-test('parseEditorTour: round-trips a complete editor tour', (t) => {
-    const original = tour({
+function completeTour() {
+    return tour({
         identifier: 'mammal_tour',
         title: 'Mammals',
         description: 'A walk',
@@ -58,8 +59,30 @@ test('parseEditorTour: round-trips a complete editor tour', (t) => {
             }),
         ],
     });
+}
 
-    t.deepEqual(parseEditorTour(JSON.parse(JSON.stringify(original))), original);
+test('parseEditorTour: round-trips compiled production JSON', (t) => {
+    const original = completeTour();
+    const loaded = parseEditorTour(editorTourToJson(original));
+    t.deepEqual(editorTourToJson(loaded), editorTourToJson(original));
+    t.equal(loaded.identifier, 'mammal_tour');
+    t.equal(loaded.title, 'Mammals');
+    t.equal(loaded.stops[0].title, 'Cats');
+    t.equal(loaded.stops[0].location, '@Felidae');
+    t.equal(loaded.stops[0].fillScreen, true);
+    t.equal(loaded.stops[0].highlights[0].type, 'fan');
+    t.equal(loaded.stops[0].highlights[0].color, '#ff6b6b');
+    t.deepEqual(loaded.stops[0].highlights[0].pinpoints, ['@Felidae']);
+    t.equal(loaded.stops[0].textBlocks[0].text, 'Look at cats');
+    t.equal(loaded.stops[0].mediaBlocks[1].kind, 'youtube');
+    t.equal(loaded.stops[0].mediaBlocks[1].videoId, 'ORV3qV8GFF4');
+    t.equal(loaded.stops[0].mediaBlocks[1].start, 30);
+    t.equal(loaded.stops[0].transitionIn, 'leap');
+    t.equal(loaded.stops[0].flyInSpeed, 2);
+    t.equal(loaded.stops[0].autoAdvance, true);
+    t.equal(loaded.stops[0].stopWaitSeconds, 5);
+    t.ok(loaded.stops[0].id);
+    t.ok(loaded.thumbnail.id);
     t.end();
 });
 
@@ -67,7 +90,7 @@ test('parseEditorTour: retains a tour identifier', (t) => {
     const loaded = parseEditorTour({
         identifier: 'mammal_tour_2',
         title: 'Mammals',
-        stops: [],
+        tourstops: [],
     });
     t.equal(loaded.identifier, 'mammal_tour_2');
     t.end();
@@ -75,21 +98,23 @@ test('parseEditorTour: retains a tour identifier', (t) => {
 
 test('parseEditorTour: rejects an invalid tour identifier', (t) => {
     t.throws(
-        () => parseEditorTour({ identifier: 'My-Tour', stops: [] }),
+        () => parseEditorTour({ identifier: 'My-Tour', tourstops: [] }),
         /lowercase letters/,
     );
     t.end();
 });
 
-test('parseEditorTour: regenerates missing IDs', (t) => {
+test('parseEditorTour: generates editor IDs and applies defaults', (t) => {
     const loaded = parseEditorTour({
         title: 'Cats',
-        stops: [{
+        tourstops: [{
             identifier: 'cats',
-            title: 'Cats',
-            highlights: [{ type: 'path', pinpoints: ['@Felidae'] }],
-            textBlocks: [{ text: 'Look at cats' }],
-            mediaBlocks: [{ kind: 'youtube', videoId: 'W86cTIoMv2U' }],
+            qs_opts: '?highlight=path:@Felidae',
+            template_data: {
+                title: 'Cats',
+                window_text: ['Look at cats'],
+                media: ['https://www.youtube.com/embed/W86cTIoMv2U'],
+            },
         }],
     });
     t.ok(loaded.stops[0].id);
@@ -103,14 +128,52 @@ test('parseEditorTour: regenerates missing IDs', (t) => {
     t.ok(loaded.thumbnail.id);
     t.equal(loaded.stops[0].transitionIn, 'fly');
     t.equal(loaded.stops[0].location, null);
+    t.equal(loaded.stops[0].autoAdvance, false);
+    t.equal(loaded.stops[0].stopWaitSeconds, 5);
     t.ok(loaded.stops[0].highlights[0].id);
     t.equal(loaded.stops[0].highlights[0].type, 'path');
     t.equal(loaded.stops[0].highlights[0].color, '#ff6b6b');
+    t.deepEqual(loaded.stops[0].highlights[0].pinpoints, ['@Felidae']);
     t.ok(loaded.stops[0].textBlocks[0].id);
     t.equal(loaded.stops[0].textBlocks[0].text, 'Look at cats');
     t.ok(loaded.stops[0].mediaBlocks[0].id);
     t.equal(loaded.stops[0].mediaBlocks[0].kind, 'youtube');
     t.equal(loaded.stops[0].mediaBlocks[0].videoId, 'W86cTIoMv2U');
+    t.end();
+});
+
+test('parseEditorTour: reads window_text, media objects, and qs_opts', (t) => {
+    const loaded = parseEditorTour({
+        identifier: 'demo',
+        image_url: 'imgsrc:99:27732437',
+        tourstops: [{
+            identifier: 'cats',
+            ott: '@Felidae',
+            qs_opts: '?into_node=max&highlight=fan:#00aa00@Felidae@Canidae',
+            stop_wait: 2500,
+            template_data: {
+                window_text: [
+                    'Always visible',
+                    { text: 'Only on fly-in', 'visible-transition_in': true },
+                ],
+                media: [
+                    { url: 'https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif' },
+                ],
+            },
+        }],
+    });
+    t.equal(loaded.thumbnail.kind, 'onezoom');
+    t.equal(loaded.thumbnail.src, 99);
+    t.equal(loaded.thumbnail.srcId, 27732437);
+    t.equal(loaded.stops[0].fillScreen, true);
+    t.equal(loaded.stops[0].autoAdvance, true);
+    t.equal(loaded.stops[0].stopWaitSeconds, 2.5);
+    t.deepEqual(loaded.stops[0].highlights[0].pinpoints, ['@Felidae', '@Canidae']);
+    t.equal(loaded.stops[0].highlights[0].color, '#00aa00');
+    t.equal(loaded.stops[0].textBlocks[0].text, 'Always visible');
+    t.equal(loaded.stops[0].textBlocks[1].text, 'Only on fly-in');
+    t.equal(loaded.stops[0].mediaBlocks[0].kind, 'wikimedia');
+    t.equal(loaded.stops[0].mediaBlocks[0].filename, 'Rose_of_Jericho.gif');
     t.end();
 });
 
@@ -122,9 +185,9 @@ test('parseEditorTour: rejects a tour without stops', (t) => {
 test('parseEditorTour: rejects duplicate stop identifiers', (t) => {
     t.throws(
         () => parseEditorTour({
-            stops: [
-                { identifier: 'cats', title: 'Cats' },
-                { identifier: 'cats', title: 'More cats' },
+            tourstops: [
+                { identifier: 'cats', template_data: { title: 'Cats' } },
+                { identifier: 'cats', template_data: { title: 'More cats' } },
             ],
         }),
         /Stop identifier "cats" is not unique/,
@@ -132,34 +195,22 @@ test('parseEditorTour: rejects duplicate stop identifiers', (t) => {
     t.end();
 });
 
-test('parseEditorTour: rejects an invalid highlight', (t) => {
+test('parseEditorTour: rejects invalid media', (t) => {
     t.throws(
         () => parseEditorTour({
-            stops: [{ identifier: 'cats', highlights: ['not-an-object'] }],
-        }),
-        /Highlight 1 on cats is not valid/,
-    );
-    t.end();
-});
-
-test('parseEditorTour: rejects a non-image thumbnail', (t) => {
-    t.throws(
-        () => parseEditorTour({
-            thumbnail: { kind: 'youtube', videoId: 'W86cTIoMv2U' },
-            stops: [],
-        }),
-        /Thumbnail is not valid/,
-    );
-    t.end();
-});
-
-test('parseEditorTour: rejects an invalid media block', (t) => {
-    t.throws(
-        () => parseEditorTour({
-            stops: [{ identifier: 'cats', mediaBlocks: [{ kind: 'flash' }] }],
+            tourstops: [{ identifier: 'cats', template_data: { media: [123] } }],
         }),
         /Media block 1 on cats is not valid/,
     );
     t.end();
 });
 
+test('parseEditorTour: rejects invalid window_text', (t) => {
+    t.throws(
+        () => parseEditorTour({
+            tourstops: [{ identifier: 'cats', template_data: { window_text: [123] } }],
+        }),
+        /Text block 1 on cats is not valid/,
+    );
+    t.end();
+});

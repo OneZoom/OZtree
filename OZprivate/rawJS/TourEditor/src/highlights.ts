@@ -38,6 +38,20 @@ export function toHighlightStr(highlight: EditorHighlight): HighlightStr {
     return `${highlight.type}:${highlight.color}${highlight.pinpoints.join('')}`;
 }
 
+/** Parse ``fan:#ff6b6b@Mammalia`` / ``path:#ff6b6b@Aves@Mammalia`` back into an editor highlight. */
+export function fromHighlightStr(str: HighlightStr): EditorHighlight | null {
+    const match = str.match(/^(path|fan):([^@]*)(.*)$/);
+    if (!match) return null;
+    return {
+        id: newHighlightId(),
+        type: match[1] as HighlightType,
+        color: getColorValue(match[2] || undefined),
+        pinpoints: match[3]
+            .split(/(?=@)/)
+            .filter((pinpoint): pinpoint is Pinpoint => pinpoint.length > 0),
+    };
+}
+
 export function nodeToStablePinpoint(node: TreeNode): Pinpoint | null {
     // For creating tours we specifically want a stable pinpoint.
     // Fail if we can't find one.

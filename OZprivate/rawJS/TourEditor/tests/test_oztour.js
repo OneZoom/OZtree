@@ -3,7 +3,8 @@
  *        node OZprivate/rawJS/run_tape.js OZprivate/rawJS/TourEditor/tests/test_oztour.js
  */
 import test from 'tape';
-import { strToU8, zipSync } from 'fflate';
+import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
+import { editorTourToJson } from '../src/compile';
 import {
     downloadFilename,
     packOzTour,
@@ -33,12 +34,29 @@ function zipFiles(files) {
     return zipSync(entries);
 }
 
+test('packOzTour: writes production JSON', (t) => {
+    const bytes = packOzTour(tour({
+        identifier: 'mammal_tour',
+        title: 'Mammals',
+        stops: [stop({ identifier: 'cats', title: 'Cats' })],
+    }));
+    const json = JSON.parse(strFromU8(unzipSync(bytes)['tour.json']));
+    t.equal(json.identifier, 'mammal_tour');
+    t.ok(Array.isArray(json.tourstops));
+    t.equal(json.tourstops[0].identifier, 'cats');
+    t.equal(json.tourstops[0].template_data.title, 'Cats');
+    t.equal('stops' in json, false);
+    t.end();
+});
+
 test('packOzTour/unpackOzTour: round-trips an editor tour', (t) => {
     const original = tour({
+        identifier: 'mammal_tour',
         title: 'Mammals',
         description: 'A walk',
         author: 'OZ',
         license: 'cc-by-4.0',
+        thumbnail: { id: 'th1', kind: 'onezoom', src: 99, srcId: 27732437 },
         stops: [
             stop({
                 identifier: 'cats',
@@ -52,6 +70,7 @@ test('packOzTour/unpackOzTour: round-trips an editor tour', (t) => {
                     pinpoints: ['@Felidae'],
                 }],
                 textBlocks: [{ id: 't1', text: 'Look at cats' }],
+                mediaBlocks: [{ id: 'm1', kind: 'youtube', videoId: 'W86cTIoMv2U' }],
                 transitionIn: 'leap',
                 flyInSpeed: 2,
                 autoAdvance: true,
@@ -60,12 +79,19 @@ test('packOzTour/unpackOzTour: round-trips an editor tour', (t) => {
         ],
     });
 
-    t.deepEqual(unpackOzTour(packOzTour(original)), original);
+    const loaded = unpackOzTour(packOzTour(original));
+    t.deepEqual(editorTourToJson(loaded), editorTourToJson(original));
+    t.equal(loaded.identifier, 'mammal_tour');
+    t.equal(loaded.stops[0].title, 'Cats');
+    t.equal(loaded.stops[0].fillScreen, true);
+    t.equal(loaded.stops[0].mediaBlocks[0].kind, 'youtube');
+    t.ok(loaded.stops[0].id);
     t.end();
 });
 
 test('packOzTour/unpackOzTour: emoji survive the round-trip', (t) => {
     const original = tour({
+        identifier: 'tree_of_life',
         title: '🌳 Tree of life',
         description: 'A walk among 🦁s and 🦜s',
         author: 'OneZoom 🔍',
@@ -88,7 +114,7 @@ test('packOzTour/unpackOzTour: emoji survive the round-trip', (t) => {
 
 test('unpackOzTour: rejects missing manifest', (t) => {
     const bytes = zipFiles({
-        'tour.json': JSON.stringify(createEmptyTour()),
+        'tour.json': JSON.stringify(editorTourToJson(createEmptyTour())),
     });
     t.throws(() => unpackOzTour(bytes), /missing manifest\.json/);
     t.end();
@@ -97,7 +123,7 @@ test('unpackOzTour: rejects missing manifest', (t) => {
 test('unpackOzTour: rejects unknown version', (t) => {
     const bytes = zipFiles({
         'manifest.json': JSON.stringify({ version: 99 }),
-        'tour.json': JSON.stringify(createEmptyTour()),
+        'tour.json': JSON.stringify(editorTourToJson(createEmptyTour())),
     });
     t.throws(() => unpackOzTour(bytes), /version is not supported/);
     t.end();

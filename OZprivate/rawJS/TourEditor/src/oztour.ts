@@ -1,6 +1,7 @@
 /** For dealing with the .oztour file format */
 
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
+import { editorTourToJson } from './compile';
 import { parseEditorTour } from './parse';
 import { tourFileSlug } from './tour';
 import type { EditorTour } from './types';
@@ -20,7 +21,7 @@ export class OzTourError extends Error {
 export function packOzTour(tour: EditorTour): Uint8Array {
     return zipSync({
         [MANIFEST_FILENAME]: strToU8(`${JSON.stringify({ version: TOUR_FILE_VERSION }, null, 2)}\n`),
-        [TOUR_FILENAME]: strToU8(`${JSON.stringify(tour, null, 2)}\n`),
+        [TOUR_FILENAME]: strToU8(`${JSON.stringify(editorTourToJson(tour), null, 2)}\n`),
     });
 }
 
