@@ -38,6 +38,16 @@ interface UIkitGlobal {
     update: (el: Element) => void;
 }
 
+interface SaveFilePickerAcceptType {
+    description?: string;
+    accept: Record<string, string[]>;
+}
+
+interface SaveFilePickerOptions {
+    suggestedName?: string;
+    types?: SaveFilePickerAcceptType[];
+}
+
 declare global {
     interface Window {
         onezoom: OneZoom;
@@ -46,6 +56,7 @@ declare global {
         jQuery: JQueryStatic;
         UIkit?: UIkitGlobal;
         server_urls?: ServerUrls;
+        showSaveFilePicker?: (options?: SaveFilePickerOptions) => Promise<FileSystemFileHandle>;
     }
 
     const onezoom: OneZoom;

@@ -21,6 +21,39 @@ interface TourEditorProps {
 
 type PendingPreview = { stopId?: string };
 
+async function saveTourJsonFile(contents: string, filename: string): Promise<void> {
+    const picker = window.showSaveFilePicker;
+    if (picker) {
+        try {
+            const handle = await picker({
+                suggestedName: filename,
+                types: [{
+                    description: 'Tour JSON',
+                    accept: { 'application/json': ['.json'] },
+                }],
+            });
+            const writable = await handle.createWritable();
+            await writable.write(contents);
+            await writable.close();
+        } catch (err) {
+            if (err instanceof Error && err.name === 'AbortError') return;
+            throw err;
+        }
+        return;
+    }
+
+    const blob = new Blob([contents], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
 function playEditorTour(
     tour: EditorTour,
     startStopId: string | undefined,
@@ -113,16 +146,7 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
 
     const downloadTour = () => {
         if (!tour) return;
-        const blob = new Blob([tourJsonString(tour)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = tourJsonFilename(tour);
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.setTimeout(() => URL.revokeObjectURL(url), 100);
+        void saveTourJsonFile(tourJsonString(tour), tourJsonFilename(tour));
     };
 
     const loadTour = (loaded: EditorTour) => {
