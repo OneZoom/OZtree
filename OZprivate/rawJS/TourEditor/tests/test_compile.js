@@ -37,6 +37,7 @@ test('editorTourToJson: maps stop fields to production JSON', (t) => {
         description: 'A walk',
         author: 'OZ',
         license: 'cc-by-4.0',
+        thumbnail: { id: 'th1', kind: 'onezoom', src: 99, srcId: 27732437 },
         stops: [
             stop({
                 identifier: 'cats',
@@ -97,6 +98,21 @@ test('editorTourToJson: maps stop fields to production JSON', (t) => {
         template_data: {},
     });
     t.equal(json.license, 'cc-by-4.0');
+    t.equal(json.image_url, 'imgsrc:99:27732437');
+    t.end();
+});
+
+test('editorTourToJson: omits empty thumbnail', (t) => {
+    const json = editorTourToJson(createEmptyTour());
+    t.equal('image_url' in json, false);
+    t.end();
+});
+
+test('editorTourToJson: writes a direct image thumbnail', (t) => {
+    const json = editorTourToJson(tour({
+        thumbnail: { id: 'th1', kind: 'image', url: 'https://example.com/cat.jpg' },
+    }));
+    t.equal(json.image_url, 'https://example.com/cat.jpg');
     t.end();
 });
 
@@ -117,6 +133,7 @@ test('tourJsonToHtml: production-like markup', (t) => {
         title: 'Demo',
         description: 'Desc',
         author: 'OZ',
+        image_url: 'imgsrc:99:27732437',
         tourstops: [
             {
                 identifier: 'cats',
@@ -148,6 +165,7 @@ test('tourJsonToHtml: production-like markup', (t) => {
     t.match(html, /data-focal-area="0.5 0.5"/);
     t.match(html, /data-author="OZ"/);
     t.match(html, /data-title="Demo"/);
+    t.match(html, /data-image_url="imgsrc:99:27732437"/);
     t.match(html, /data-ott="@Felidae"/);
     t.match(html, /data-qs_opts="\?highlight=fan:#ff6b6b@Felidae"/);
     t.match(html, /data-transition_in="leap"/);

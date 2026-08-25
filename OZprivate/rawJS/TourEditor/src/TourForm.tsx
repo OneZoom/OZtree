@@ -1,4 +1,6 @@
+import MediaBlockCard from './MediaBlockCard';
 import UkIcon from './UkIcon';
+import { isThumbnailMedia, THUMBNAIL_MEDIA_KINDS } from './media';
 import { LICENSE_OPTIONS } from './tour';
 import type { EditorTour, TourLicense } from './types';
 import StopList from './StopList';
@@ -46,6 +48,16 @@ export default function TourForm({
                     rows={4}
                     value={tour.description}
                     onChange={(e) => onChange({ description: e.target.value })}
+                />
+            </div>
+            <div className="uk-margin">
+                <div className="uk-form-label">Thumbnail</div>
+                <MediaBlockCard
+                    block={tour.thumbnail}
+                    kinds={THUMBNAIL_MEDIA_KINDS}
+                    onChange={(block) => {
+                        if (isThumbnailMedia(block)) onChange({ thumbnail: block });
+                    }}
                 />
             </div>
             <div className="uk-margin">

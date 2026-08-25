@@ -1,9 +1,11 @@
+import { createMediaBlock, isThumbnailMedia } from './media';
 import { DEFAULT_LICENSE, LICENSE_OPTIONS, newEditorId } from './tour';
 import {
     DEFAULT_HIGHLIGHT_COLOR,
     type EditorHighlight,
     type EditorMediaBlock,
     type EditorMediaKind,
+    type EditorThumbnailMedia,
     type EditorTextBlock,
     type EditorTour,
     type EditorTourStop,
@@ -57,6 +59,7 @@ export function parseEditorTour(json: unknown): EditorTour {
         description: asString(json.description),
         author: asString(json.author),
         license: parseLicense(json.license),
+        thumbnail: parseThumbnail(json.thumbnail),
         stops,
     };
 }
@@ -74,7 +77,7 @@ function parseStop(value: unknown, index: number): EditorTourStop {
         (block, blockIndex) => parseTextBlock(block, identifier, blockIndex),
     );
     const mediaBlocks = asArray(value.mediaBlocks, `Stop ${identifier} media`).map(
-        (block, blockIndex) => parseMediaBlock(block, identifier, blockIndex),
+        (block, blockIndex) => parseMediaBlock(block, `Media block ${blockIndex + 1} on ${identifier}`),
     );
 
     return {
@@ -127,17 +130,25 @@ function parseTextBlock(
     };
 }
 
+function parseThumbnail(value: unknown): EditorThumbnailMedia {
+    if (value === undefined) return createMediaBlock('image');
+    const block = parseMediaBlock(value, 'Thumbnail');
+    if (!isThumbnailMedia(block)) {
+        throw new TourParseError('Thumbnail is not valid.');
+    }
+    return block;
+}
+
 function parseMediaBlock(
     value: unknown,
-    stopIdentifier: string,
-    index: number,
+    label: string,
 ): EditorMediaBlock {
     if (!isRecord(value)) {
-        throw new TourParseError(`Media block ${index + 1} on ${stopIdentifier} is not valid.`);
+        throw new TourParseError(`${label} is not valid.`);
     }
     const kind = value.kind as EditorMediaKind;
     if (!MEDIA_KINDS.has(kind)) {
-        throw new TourParseError(`Media block ${index + 1} on ${stopIdentifier} is not valid.`);
+        throw new TourParseError(`${label} is not valid.`);
     }
 
     const id = asString(value.id) || newEditorId();

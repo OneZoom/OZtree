@@ -7,6 +7,8 @@ import type {
     EditorMediaBlockNoId,
     EditorMediaKind,
     EditorOneZoomImageMedia,
+    EditorThumbnailKind,
+    EditorThumbnailMedia,
     EditorToursMedia,
     EditorVimeoMedia,
     EditorWikimediaMedia,
@@ -27,6 +29,31 @@ export const MEDIA_KIND_OPTIONS: { value: EditorMediaKind; label: string }[] = [
     { value: 'link', label: 'Link' },
 ];
 
+export const ALL_MEDIA_KINDS: readonly EditorMediaKind[] = MEDIA_KIND_OPTIONS.map((option) => option.value);
+
+// Thumbnails don't have the same runtime options as tourstop media.
+// So we restrict the available types.
+export const THUMBNAIL_MEDIA_KINDS: readonly EditorThumbnailKind[] = ['onezoom', 'image'];
+export function isThumbnailMedia(block: EditorMediaBlock): block is EditorThumbnailMedia {
+    return (THUMBNAIL_MEDIA_KINDS as readonly EditorMediaKind[]).includes(block.kind);
+}
+
+const MEDIA_PARSERS: Record<EditorMediaKind, (url: string) => EditorMediaBlockNoId | null> = {
+    onezoom: parseOneZoom,
+    youtube: parseYoutube,
+    vimeo: parseVimeo,
+    wikimedia: parseWikimedia,
+    tours: parseTours,
+    image: parseImageUrl,
+    audio: parseAudioUrl,
+    link: parseExternalLink,
+};
+
+export function mediaKindOptions(kinds: readonly EditorMediaKind[] = ALL_MEDIA_KINDS) {
+    const allowed = new Set(kinds);
+    return MEDIA_KIND_OPTIONS.filter((option) => allowed.has(option.value));
+}
+
 export const IMAGE_EXT = 'gif|jpe?g|png|svg';
 export const AUDIO_EXT = 'ogg|mp3';
 export const VIDEO_EXT = 'ogv|webm|mpg|mpeg';
@@ -40,7 +67,13 @@ export type MediaPreview =
     | { type: 'iframe'; src: string }
     | { type: 'link'; href: string };
 
-export function createMediaBlock(kind: EditorMediaKind = 'image'): EditorMediaBlock {
+export function createMediaBlock<K extends EditorMediaKind = 'image'>(
+    kind: K = 'image' as K,
+): Extract<EditorMediaBlock, { kind: K }> {
+    return emptyMediaBlock(kind) as Extract<EditorMediaBlock, { kind: K }>;
+}
+
+function emptyMediaBlock(kind: EditorMediaKind): EditorMediaBlock {
     const id = newEditorId();
     switch (kind) {
         case 'onezoom':
@@ -87,20 +120,20 @@ export function mediaBlockToUrl(block: EditorMediaBlock): string {
     }
 }
 
-/** Parse a pasted URL into a media block, detecting kind. */
-export function parseMediaUrl(url: string): EditorMediaBlockNoId | null {
+/** Parse a pasted URL into a media block, detecting kind. ``kinds`` limits which parsers run. */
+export function parseMediaUrl(
+    url: string,
+    kinds: readonly EditorMediaKind[] = ALL_MEDIA_KINDS,
+): EditorMediaBlockNoId | null {
     const trimmed = url.trim();
     if (!trimmed) return null;
-    return (
-        parseOneZoom(trimmed)
-        || parseYoutube(trimmed)
-        || parseVimeo(trimmed)
-        || parseWikimedia(trimmed)
-        || parseTours(trimmed)
-        || parseImageUrl(trimmed)
-        || parseAudioUrl(trimmed)
-        || parseExternalLink(trimmed)
-    );
+    const allowed = new Set(kinds);
+    for (const { value: kind } of MEDIA_KIND_OPTIONS) {
+        if (!allowed.has(kind)) continue;
+        const parsed = MEDIA_PARSERS[kind](trimmed);
+        if (parsed) return parsed;
+    }
+    return null;
 }
 
 /** Interpret ``url`` as ``kind``. Unrecognised values become an empty block of that kind. */
