@@ -3,7 +3,7 @@
  *        node OZprivate/rawJS/run_tape.js OZprivate/rawJS/TourEditor/tests/test_compile.js
  */
 import test from 'tape';
-import { editorTourToJson, tourJsonToHtml } from '../src/compile';
+import { editorTourToJson, tourJsonFilename, tourJsonString, tourJsonToHtml } from '../src/compile';
 import { createEmptyStop, createEmptyTour } from '../src/tour';
 
 function stop(partial) {
@@ -19,6 +19,18 @@ function tour(partial) {
         ...partial,
     };
 }
+
+test('tourJsonFilename: slugs the tour title', (t) => {
+    t.equal(tourJsonFilename(tour({ title: 'My Nice Tour!' })), 'my_nice_tour.json');
+    t.equal(tourJsonFilename(createEmptyTour()), 'untitled.json');
+    t.end();
+});
+
+test('tourJsonString: pretty-prints production JSON', (t) => {
+    const json = tourJsonString(createEmptyTour());
+    t.equal(json, `${JSON.stringify(editorTourToJson(createEmptyTour()), null, 2)}\n`);
+    t.end();
+});
 
 test('editorTourToJson: empty tour', (t) => {
     t.deepEqual(editorTourToJson(createEmptyTour()), {

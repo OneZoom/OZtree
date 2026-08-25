@@ -46,6 +46,14 @@ export interface ProductionTourStopJson {
     };
 }
 
+export function tourJsonFilename(tour: EditorTour): string {
+    return `${tourFileSlug(tour)}.json`;
+}
+
+export function tourJsonString(tour: EditorTour): string {
+    return `${JSON.stringify(editorTourToJson(tour), null, 2)}\n`;
+}
+
 export function editorTourToJson(tour: EditorTour): ProductionTourJson {
     const image_url = mediaBlockToUrl(tour.thumbnail);
     return {

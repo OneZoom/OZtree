@@ -3,8 +3,8 @@
  *        node OZprivate/rawJS/run_tape.js OZprivate/rawJS/TourEditor/tests/test_parse.js
  */
 import test from 'tape';
-import { editorTourToJson } from '../src/compile';
-import { parseEditorTour } from '../src/parse';
+import { editorTourToJson, tourJsonString } from '../src/compile';
+import { parseEditorTour, parseTourJsonString } from '../src/parse';
 import { createEmptyStop, createEmptyTour } from '../src/tour';
 
 function stop(partial) {
@@ -212,5 +212,35 @@ test('parseEditorTour: rejects invalid window_text', (t) => {
         }),
         /Text block 1 on cats is not valid/,
     );
+    t.end();
+});
+
+test('parseTourJsonString: round-trips compiled JSON text', (t) => {
+    const original = completeTour();
+    const loaded = parseTourJsonString(tourJsonString(original));
+    t.deepEqual(editorTourToJson(loaded), editorTourToJson(original));
+    t.end();
+});
+
+test('parseTourJsonString: uses a sanitized filename when the file has no identifier', (t) => {
+    const loaded = parseTourJsonString(JSON.stringify({
+        title: 'Mammals',
+        tourstops: [],
+    }), 'My Nice Tour!.json');
+    t.equal(loaded.identifier, 'my_nice_tour');
+    t.end();
+});
+
+test('parseTourJsonString: keeps a file identifier over the filename', (t) => {
+    const loaded = parseTourJsonString(JSON.stringify({
+        identifier: 'mammal_tour',
+        tourstops: [],
+    }), 'other_name.json');
+    t.equal(loaded.identifier, 'mammal_tour');
+    t.end();
+});
+
+test('parseTourJsonString: rejects invalid JSON', (t) => {
+    t.throws(() => parseTourJsonString('{not json'), /not valid JSON/);
     t.end();
 });

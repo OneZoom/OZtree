@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import UkIcon from './UkIcon';
-import { unpackOzTour } from './oztour';
+import { parseTourJsonString } from './parse';
 import type { EditorTour } from './types';
 
 interface OpenTourModalProps {
@@ -27,7 +27,7 @@ export default function OpenTourModal({ onClose, onOpen }: OpenTourModalProps) {
         setOpening(true);
         setError(null);
         try {
-            const tour = unpackOzTour(new Uint8Array(await file.arrayBuffer()));
+            const tour = parseTourJsonString(await file.text(), file.name);
             onOpen(tour);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Could not open this tour file.');
@@ -59,7 +59,7 @@ export default function OpenTourModal({ onClose, onOpen }: OpenTourModalProps) {
                 <input
                     ref={inputRef}
                     type="file"
-                    accept=".oztour,.zip,application/zip"
+                    accept=".json,application/json"
                     hidden
                     onChange={(event) => {
                         setError(null);

@@ -6,7 +6,7 @@ import {
     mediaBlockFromFields,
     parseMediaUrl,
 } from './media';
-import { DEFAULT_LICENSE, LICENSE_OPTIONS, isTourIdentifier, newEditorId } from './tour';
+import { DEFAULT_LICENSE, LICENSE_OPTIONS, isTourIdentifier, newEditorId, sanitizeTourIdentifier } from './tour';
 import {
     type EditorHighlight,
     type EditorMediaBlock,
@@ -29,8 +29,18 @@ export class TourParseError extends Error {
     }
 }
 
+export function parseTourJsonString(text: string, filename?: string): EditorTour {
+    let json: unknown;
+    try {
+        json = JSON.parse(text);
+    } catch {
+        throw new TourParseError('Tour file is not valid JSON.');
+    }
+    return parseEditorTour(json, filename);
+}
+
 /** Parse production tour JSON (as compiled by ``editorTourToJson``) into an editor tour. */
-export function parseEditorTour(json: unknown): EditorTour {
+export function parseEditorTour(json: unknown, filename?: string): EditorTour {
     if (!isRecord(json)) {
         throw new TourParseError('Tour file is not valid.');
     }
@@ -48,7 +58,7 @@ export function parseEditorTour(json: unknown): EditorTour {
     }
 
     return {
-        identifier: parseTourIdentifier(json.identifier),
+        identifier: parseTourIdentifier(json.identifier, filename),
         title: asString(json.title),
         description: asString(json.description),
         author: asString(json.author),
@@ -154,13 +164,16 @@ function parseThumbnail(value: unknown): EditorThumbnailMedia {
     return isThumbnailMedia(block) ? block : createMediaBlock('image');
 }
 
-function parseTourIdentifier(value: unknown): string {
+function parseTourIdentifier(value: unknown, filename?: string): string {
     const identifier = asString(value);
-    if (!identifier) return '';
-    if (!isTourIdentifier(identifier)) {
-        throw new TourParseError('Tour identifier must be lowercase letters, numbers and underscores.');
+    if (identifier) {
+        if (!isTourIdentifier(identifier)) {
+            throw new TourParseError('Tour identifier must be lowercase letters, numbers and underscores.');
+        }
+        return identifier;
     }
-    return identifier;
+    if (!filename) return '';
+    return sanitizeTourIdentifier(filename.replace(/\.[^.]+$/, ''));
 }
 
 function parseLicense(value: unknown): TourLicense {

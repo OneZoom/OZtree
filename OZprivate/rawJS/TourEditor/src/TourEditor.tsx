@@ -3,8 +3,7 @@ import OpenTourModal from './OpenTourModal';
 import StopEditor from './StopEditor';
 import TourForm from './TourForm';
 import UkIcon from './UkIcon';
-import { editorTourToJson, tourJsonToHtml } from './compile';
-import { downloadFilename, packOzTour } from './oztour';
+import { editorTourToJson, tourJsonFilename, tourJsonString, tourJsonToHtml } from './compile';
 import {
     createEmptyStop,
     createEmptyTour,
@@ -114,14 +113,11 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
 
     const downloadTour = () => {
         if (!tour) return;
-        const bytes = packOzTour(tour);
-        const buffer = new ArrayBuffer(bytes.byteLength);
-        new Uint8Array(buffer).set(bytes);
-        const blob = new Blob([buffer], { type: 'application/zip' });
+        const blob = new Blob([tourJsonString(tour)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = downloadFilename(tour);
+        link.download = tourJsonFilename(tour);
         link.style.display = 'none';
         document.body.appendChild(link);
         link.click();
