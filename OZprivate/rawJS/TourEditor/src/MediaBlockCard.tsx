@@ -91,16 +91,15 @@ export default function MediaBlockCard({
                     <MediaPreviewView preview={mediaPreview(block)} />
                 </div>
                 {(onMoveDown || onMoveUp || onRemove) && (
-                    <div className="tour-editor-item-actions uk-flex-right uk-margin-small-top">
-                        {onMoveDown && (
+                    <div className="tour-editor-item-actions uk-margin-small-top">
+                        {onRemove && (
                             <button
-                                className="uk-button uk-button-small uk-button-default uk-margin-small-right"
-                                title="Move down"
+                                className="uk-button uk-button-small uk-button-danger uk-margin-small-right"
+                                title="Remove media"
                                 type="button"
-                                disabled={!canMoveDown}
-                                onClick={onMoveDown}
+                                onClick={onRemove}
                             >
-                                <UkIcon icon="chevron-down" />
+                                <UkIcon icon="trash" />
                             </button>
                         )}
                         {onMoveUp && (
@@ -114,14 +113,15 @@ export default function MediaBlockCard({
                                 <UkIcon icon="chevron-up" />
                             </button>
                         )}
-                        {onRemove && (
+                        {onMoveDown && (
                             <button
-                                className="uk-button uk-button-small uk-button-danger"
-                                title="Remove media"
+                                className="uk-button uk-button-small uk-button-default"
+                                title="Move down"
                                 type="button"
-                                onClick={onRemove}
+                                disabled={!canMoveDown}
+                                onClick={onMoveDown}
                             >
-                                <UkIcon icon="close" />
+                                <UkIcon icon="chevron-down" />
                             </button>
                         )}
                     </div>

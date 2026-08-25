@@ -112,6 +112,7 @@
 .tour-editor-stop-actions,
 .tour-editor-item-actions {
     display: flex;
+    justify-content: end;
     align-items: center;
     flex-shrink: 0;
 }
