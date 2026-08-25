@@ -361,27 +361,12 @@
     padding: 1.75rem;
 }
 
-.tour-open-file-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin: 1.5rem 0 1.25rem;
-}
-
-.tour-open-filename {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 .tour-open-warning {
     display: flex;
     align-items: flex-start;
     justify-content: center;
     gap: 8px;
-    margin: 0 0 1.25rem;
+    margin: 1.5rem 0 1.25rem;
     font-size: 0.8rem;
     line-height: 1.4;
     color: #444;

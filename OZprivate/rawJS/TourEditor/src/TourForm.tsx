@@ -144,7 +144,7 @@ export default function TourForm({
                     onClick={onDownloadFile}
                 >
                     <UkIcon icon="download" className="uk-margin-small-right" />
-                    Download file
+                    Save file
                 </button>
             </div>
         </div>
