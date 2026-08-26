@@ -3,7 +3,7 @@
  *        node OZprivate/rawJS/run_tape.js OZprivate/rawJS/TourEditor/tests/test_compile.js
  */
 import test from 'tape';
-import { editorTourToJson, tourJsonToHtml } from '../src/compile';
+import { editorTourToJson, tourJsonFilename, tourJsonString, tourJsonToHtml } from '../src/compile';
 import { createEmptyStop, createEmptyTour } from '../src/tour';
 
 function stop(partial) {
@@ -20,8 +20,21 @@ function tour(partial) {
     };
 }
 
+test('tourJsonFilename: slugs the tour title', (t) => {
+    t.equal(tourJsonFilename(tour({ title: 'My Nice Tour!' })), 'my_nice_tour.json');
+    t.equal(tourJsonFilename(createEmptyTour()), 'untitled.json');
+    t.end();
+});
+
+test('tourJsonString: pretty-prints production JSON', (t) => {
+    const json = tourJsonString(createEmptyTour());
+    t.equal(json, `${JSON.stringify(editorTourToJson(createEmptyTour()), null, 2)}\n`);
+    t.end();
+});
+
 test('editorTourToJson: empty tour', (t) => {
     t.deepEqual(editorTourToJson(createEmptyTour()), {
+        identifier: 'untitled',
         title: '',
         description: '',
         author: '',
@@ -99,6 +112,7 @@ test('editorTourToJson: maps stop fields to production JSON', (t) => {
     });
     t.equal(json.license, 'cc-by-4.0');
     t.equal(json.image_url, 'imgsrc:99:27732437');
+    t.equal(json.identifier, 'mammals');
     t.end();
 });
 
@@ -184,6 +198,22 @@ test('tourJsonToHtml: production-like markup', (t) => {
     t.match(html, /<option value="0" disabled>Cats<\/option>/);
     t.match(html, /<option value="1">Dogs<\/option>/);
     t.equal(/data-ott="@Canidae"[\s\S]*data-transition_in/.test(html), false);
+    t.end();
+});
+
+test('tourJsonToHtml: OneZoom imgsrc with a negative srcId', (t) => {
+    const html = tourJsonToHtml({
+        title: 'Demo',
+        description: '',
+        author: '',
+        tourstops: [{
+            identifier: 's',
+            template_data: {
+                media: ['imgsrc:3:-27123592'],
+            },
+        }],
+    });
+    t.match(html, /href="\/tree\/pic_info\/3\/-27123592"/);
     t.end();
 });
 

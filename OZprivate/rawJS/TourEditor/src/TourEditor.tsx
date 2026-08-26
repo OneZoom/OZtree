@@ -3,8 +3,7 @@ import OpenTourModal from './OpenTourModal';
 import StopEditor from './StopEditor';
 import TourForm from './TourForm';
 import UkIcon from './UkIcon';
-import { editorTourToJson, tourJsonToHtml } from './compile';
-import { downloadFilename, packOzTour } from './oztour';
+import { editorTourToJson, tourJsonFilename, tourJsonString, tourJsonToHtml } from './compile';
 import {
     createEmptyStop,
     createEmptyTour,
@@ -21,6 +20,40 @@ interface TourEditorProps {
 }
 
 type PendingPreview = { stopId?: string };
+
+async function saveTourJsonFile(contents: string, filename: string): Promise<boolean> {
+    const picker = window.showSaveFilePicker;
+    if (picker) {
+        try {
+            const handle = await picker({
+                suggestedName: filename,
+                types: [{
+                    description: 'Tour JSON',
+                    accept: { 'application/json': ['.json'] },
+                }],
+            });
+            const writable = await handle.createWritable();
+            await writable.write(contents);
+            await writable.close();
+            return true;
+        } catch (err) {
+            if (err instanceof Error && err.name === 'AbortError') return false;
+            throw err;
+        }
+    }
+
+    const blob = new Blob([contents], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 100);
+    return true;
+}
 
 function playEditorTour(
     tour: EditorTour,
@@ -43,10 +76,15 @@ function playEditorTour(
 }
 
 export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEditorProps) {
-    const [tour, setTour] = useState<EditorTour | null>(null);
+    const [tour, _setTour] = useState<EditorTour | null>(null);
     const [selectedStopId, setSelectedStopId] = useState<string | null>(null);
     const [pendingPreview, setPendingPreview] = useState<PendingPreview | null>(null);
     const [openFileModal, setOpenFileModal] = useState(false);
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const setTour: typeof _setTour = (action) => {
+        setHasUnsavedChanges(true);
+        _setTour(action);
+    };
 
     const closePanel = useCallback(() => {
         onClose();
@@ -60,8 +98,17 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
     }, [onToggle]);
 
     useEffect(() => {
+        if (!hasUnsavedChanges) return;
+        const onBeforeUnload = (event: BeforeUnloadEvent) => {
+            event.preventDefault();
+        };
+        window.addEventListener('beforeunload', onBeforeUnload);
+        return () => window.removeEventListener('beforeunload', onBeforeUnload);
+    }, [hasUnsavedChanges]);
+
+    useEffect(() => {
         if (isOpen) {
-            setTour((current) => current ?? createEmptyTour());
+            _setTour((current) => current ?? createEmptyTour());
         }
     }, [isOpen]);
 
@@ -114,25 +161,16 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
 
     const downloadTour = () => {
         if (!tour) return;
-        const bytes = packOzTour(tour);
-        const buffer = new ArrayBuffer(bytes.byteLength);
-        new Uint8Array(buffer).set(bytes);
-        const blob = new Blob([buffer], { type: 'application/zip' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = downloadFilename(tour);
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.setTimeout(() => URL.revokeObjectURL(url), 100);
+        void saveTourJsonFile(tourJsonString(tour), tourJsonFilename(tour)).then((saved) => {
+            if (saved) setHasUnsavedChanges(false);
+        });
     };
 
     const loadTour = (loaded: EditorTour) => {
-        setTour(loaded);
+        _setTour(loaded);
         setSelectedStopId(null);
         setOpenFileModal(false);
+        setHasUnsavedChanges(false);
     };
 
     const headerTitle = selectedStop

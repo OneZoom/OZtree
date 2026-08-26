@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import UkIcon from './UkIcon';
-import { unpackOzTour } from './oztour';
+import { parseTourJsonString } from './parse';
 import type { EditorTour } from './types';
 
 interface OpenTourModalProps {
@@ -9,7 +9,6 @@ interface OpenTourModalProps {
 }
 
 export default function OpenTourModal({ onClose, onOpen }: OpenTourModalProps) {
-    const [file, setFile] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [opening, setOpening] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -22,17 +21,18 @@ export default function OpenTourModal({ onClose, onOpen }: OpenTourModalProps) {
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [onClose]);
 
-    const openFile = async () => {
-        if (!file || opening) return;
+    const openFile = async (file: File) => {
+        if (opening) return;
         setOpening(true);
         setError(null);
         try {
-            const tour = unpackOzTour(new Uint8Array(await file.arrayBuffer()));
+            const tour = parseTourJsonString(await file.text(), file.name);
             onOpen(tour);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Could not open this tour file.');
         } finally {
             setOpening(false);
+            if (inputRef.current) inputRef.current.value = '';
         }
     };
 
@@ -59,25 +59,13 @@ export default function OpenTourModal({ onClose, onOpen }: OpenTourModalProps) {
                 <input
                     ref={inputRef}
                     type="file"
-                    accept=".oztour,.zip,application/zip"
+                    accept=".json,application/json"
                     hidden
                     onChange={(event) => {
-                        setError(null);
-                        setFile(event.target.files?.[0] ?? null);
+                        const selected = event.target.files?.[0];
+                        if (selected) void openFile(selected);
                     }}
                 />
-                <div className="tour-open-file-row">
-                    <button
-                        className="oz-pill uk-button"
-                        type="button"
-                        onClick={() => inputRef.current?.click()}
-                    >
-                        Browse
-                    </button>
-                    <span className="tour-open-filename">
-                        {file ? file.name : ''}
-                    </span>
-                </div>
                 <p className="tour-open-warning">
                     <UkIcon icon="warning" className="tour-open-warning-icon" />
                     <span>
@@ -90,10 +78,10 @@ export default function OpenTourModal({ onClose, onOpen }: OpenTourModalProps) {
                     <button
                         className="oz-pill uk-button"
                         type="button"
-                        disabled={!file || opening}
-                        onClick={() => { void openFile(); }}
+                        disabled={opening}
+                        onClick={() => inputRef.current?.click()}
                     >
-                        Open
+                        Browse
                     </button>
                 </div>
             </div>

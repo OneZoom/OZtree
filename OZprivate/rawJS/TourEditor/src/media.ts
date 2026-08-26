@@ -231,7 +231,7 @@ export function oneZoomThumbUrl(src: number, srcId: number): string {
 }
 
 function parseOneZoom(url: string): Omit<EditorOneZoomImageMedia, 'id'> | null {
-    const match = url.match(/^(?:imgsrc:)?(\d+):(\d+)$/);
+    const match = url.match(/^(?:imgsrc:)?(-?\d+):(-?\d+)$/);
     if (!match) return null;
     return { kind: 'onezoom', src: Number(match[1]), srcId: Number(match[2]) };
 }

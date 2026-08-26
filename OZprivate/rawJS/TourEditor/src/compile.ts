@@ -7,6 +7,7 @@ import {
     mediaBlockToUrl,
     oneZoomThumbUrl,
 } from './media';
+import { sanitizeTourIdentifier, tourFileSlug } from './tour';
 import type { EditorTour, EditorTourStop, TourLicense } from './types';
 
 /**
@@ -45,9 +46,18 @@ export interface ProductionTourStopJson {
     };
 }
 
+export function tourJsonFilename(tour: EditorTour): string {
+    return `${tourFileSlug(tour)}.json`;
+}
+
+export function tourJsonString(tour: EditorTour): string {
+    return `${JSON.stringify(editorTourToJson(tour), null, 2)}\n`;
+}
+
 export function editorTourToJson(tour: EditorTour): ProductionTourJson {
     const image_url = mediaBlockToUrl(tour.thumbnail);
     return {
+        identifier: sanitizeTourIdentifier(tour.identifier || tourFileSlug(tour)),
         title: tour.title,
         description: tour.description,
         author: tour.author,
@@ -203,7 +213,7 @@ function mediaEmbed(
     const alt = opts.alt !== undefined ? String(opts.alt) : '';
     const title = opts.title !== undefined ? String(opts.title) : '';
 
-    const imgsrc = href.match(/^imgsrc:(\d+):(\d+)$/);
+    const imgsrc = href.match(/^imgsrc:(-?\d+):(-?\d+)$/);
     if (imgsrc) {
         const srcUrl = oneZoomThumbUrl(Number(imgsrc[1]), Number(imgsrc[2]));
         const infoUrl = `/tree/pic_info/${imgsrc[1]}/${imgsrc[2]}`;

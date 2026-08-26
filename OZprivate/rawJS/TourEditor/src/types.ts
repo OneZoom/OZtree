@@ -140,6 +140,7 @@ type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K>
 export type EditorMediaBlockNoId = DistributiveOmit<EditorMediaBlock, 'id'>;
 
 export interface EditorTour {
+    identifier: string;
     title: string;
     description: string;
     author: string;
