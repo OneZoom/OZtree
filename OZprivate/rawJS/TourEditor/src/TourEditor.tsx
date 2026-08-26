@@ -21,7 +21,7 @@ interface TourEditorProps {
 
 type PendingPreview = { stopId?: string };
 
-async function saveTourJsonFile(contents: string, filename: string): Promise<void> {
+async function saveTourJsonFile(contents: string, filename: string): Promise<boolean> {
     const picker = window.showSaveFilePicker;
     if (picker) {
         try {
@@ -35,11 +35,11 @@ async function saveTourJsonFile(contents: string, filename: string): Promise<voi
             const writable = await handle.createWritable();
             await writable.write(contents);
             await writable.close();
+            return true;
         } catch (err) {
-            if (err instanceof Error && err.name === 'AbortError') return;
+            if (err instanceof Error && err.name === 'AbortError') return false;
             throw err;
         }
-        return;
     }
 
     const blob = new Blob([contents], { type: 'application/json' });
@@ -52,6 +52,7 @@ async function saveTourJsonFile(contents: string, filename: string): Promise<voi
     link.click();
     link.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 100);
+    return true;
 }
 
 function playEditorTour(
@@ -75,10 +76,15 @@ function playEditorTour(
 }
 
 export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEditorProps) {
-    const [tour, setTour] = useState<EditorTour | null>(null);
+    const [tour, _setTour] = useState<EditorTour | null>(null);
     const [selectedStopId, setSelectedStopId] = useState<string | null>(null);
     const [pendingPreview, setPendingPreview] = useState<PendingPreview | null>(null);
     const [openFileModal, setOpenFileModal] = useState(false);
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const setTour: typeof _setTour = (action) => {
+        setHasUnsavedChanges(true);
+        _setTour(action);
+    };
 
     const closePanel = useCallback(() => {
         onClose();
@@ -92,8 +98,17 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
     }, [onToggle]);
 
     useEffect(() => {
+        if (!hasUnsavedChanges) return;
+        const onBeforeUnload = (event: BeforeUnloadEvent) => {
+            event.preventDefault();
+        };
+        window.addEventListener('beforeunload', onBeforeUnload);
+        return () => window.removeEventListener('beforeunload', onBeforeUnload);
+    }, [hasUnsavedChanges]);
+
+    useEffect(() => {
         if (isOpen) {
-            setTour((current) => current ?? createEmptyTour());
+            _setTour((current) => current ?? createEmptyTour());
         }
     }, [isOpen]);
 
@@ -146,13 +161,16 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
 
     const downloadTour = () => {
         if (!tour) return;
-        void saveTourJsonFile(tourJsonString(tour), tourJsonFilename(tour));
+        void saveTourJsonFile(tourJsonString(tour), tourJsonFilename(tour)).then((saved) => {
+            if (saved) setHasUnsavedChanges(false);
+        });
     };
 
     const loadTour = (loaded: EditorTour) => {
-        setTour(loaded);
+        _setTour(loaded);
         setSelectedStopId(null);
         setOpenFileModal(false);
+        setHasUnsavedChanges(false);
     };
 
     const headerTitle = selectedStop
