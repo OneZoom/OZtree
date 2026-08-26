@@ -48,6 +48,13 @@ class BranchLayoutBase {
       let shape = SegmentedShape.create();
       shape.sx = node.branch_start.x * node.rvar + node.xvar;
       shape.sy = node.branch_start.y * node.rvar + node.yvar;
+      // The start of the branch carries its own width and tangent, as every other point of
+      // it does, a width scaling with the node as any other length does. A layout that
+      // doesn't taper its branches sets neither, and the shape strokes at a single width
+      shape.start_line_width = node.branch_start.line_width === undefined ?
+        undefined : node.branch_start.line_width * node.rvar;
+      shape.start_tx = node.branch_start.tx;
+      shape.start_ty = node.branch_start.ty;
       shape.path_points = node.branch_points.slice(1).map((p) => ({
           fn: "bezier",
           cp1x: p.cp1x * node.rvar + node.xvar,
@@ -56,6 +63,9 @@ class BranchLayoutBase {
           cp2y: p.cp2y * node.rvar + node.yvar,
           x: p.x * node.rvar + node.xvar,
           y: p.y * node.rvar + node.yvar,
+          line_width: p.line_width === undefined ? undefined : p.line_width * node.rvar,
+          tx: p.tx,
+          ty: p.ty,
       }));
       shape.stroke.line_cap = 'round';
       shape.height = 1;
