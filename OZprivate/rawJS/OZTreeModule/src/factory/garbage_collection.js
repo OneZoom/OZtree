@@ -41,17 +41,29 @@ function clear_garbage() {
 function find_unused_node_and_clear(node, last_dvar_height, last_target_height) {
   if (!node.has_child) return;
 
-  if (!node.dvar && !node.targeted) {
-    // Out of reach of both the visible branch and the flight path. Both propagate up
-    // towards the root---re_calc() ORs dvar from a node's children, target_by_code()
-    // marks the whole root-to-target path---so we don't have to look below for more.
+  if (!node.dvar && !node.targeted && !node.graphref) {
+    // Out of reach of the visible branch, the flight path, and the anchor path. All 3
+    // propagate up towards the root---re_calc() ORs dvar from a node's children,
+    // target_by_code() marks the whole root-to-target path, and position_helper's
+    // reanchor() marks root-to-anchor---so we don't have to look below for more.
     // (re_calc() can leave a stale dvar on a subtree it didn't visit this frame, but
     // that subtree is offscreen, so collecting it is what we want anyway)
+    //
+    // The anchor is the one node we can't do without: tree_state's xp/yp/ws are its
+    // position, and re_calc() works everything else out from there. Collect it and the
+    // deepest graphref node left standing inherits those co-ordinates instead, which
+    // drops the view somewhere else in the tree entirely.
+    //
+    // Nor is it safe to assume the anchor is one of the nodes we can see: the renderer
+    // doesn't reanchor mid-flight (see renderer:reanchor_and_dynamic_load_tree) and a
+    // flight only does it itself on the steps that have to (position_helper's
+    // more_flying_needed), so on landing we may still be anchored to a branch we set off
+    // from and have long since left the screen.
     return find_unused_node_and_clear2(node, last_dvar_height, last_target_height);
   }
 
-  // Still on the visible branch / flight path, so nothing to collect here. Look below
-  // for nodes that aren't, restarting the count for whichever of the 2 a child renews
+  // Still on the visible branch / flight path / anchor path, so nothing to collect here.
+  // Look below for nodes that aren't, restarting the count
   for (let i=0; i<node.children.length; i++) {
     find_unused_node_and_clear(
       node.children[i],

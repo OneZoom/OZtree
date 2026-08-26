@@ -5,6 +5,7 @@ import test from 'tape';
 
 import config from '../src/global_config';
 import { init as gc_init } from '../src/factory/garbage_collection';
+import { reanchor_at_node } from '../src/position_helper';
 import { call_hook, remove_hook } from '../src/util/hook';
 import { populate_factory } from './util_factory'
 
@@ -210,6 +211,39 @@ test('clear_garbage: A dvar or targeted node protects the generation below it', 
     test.deepEqual(factory.root.has_child, false, 'Undeveloped root reports no children');
     call_hook('after_draw');
     test.deepEqual(developed_paths(factory.root), ['root'], 'Undeveloped root left alone');
+
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
+test('clear_garbage: Keeps the anchor path, which nothing is drawn without', function (test) {
+  return populate_factory().then((factory) => {
+    with_gc_config(test, 1, 1);
+    test.teardown(remove_gc_hooks);
+    gc_init();
+    let root = fresh_tree(factory, 4);
+
+    // Anchor down one branch, without drawing or targeting anything: a flight only
+    // reanchors on the steps that have to, so on landing the anchor can still be back in
+    // the branch we set off from, with nothing to say it is in view
+    reanchor_at_node(root.children[1].children[0].children[1], root);
+
+    // tree_state's xp/yp/ws are the anchor's position and re_calc() works everything else
+    // out from it, so collecting it would drop the view somewhere else entirely
+    // NB: Only the path itself is spared. Everything hanging off it is collected on the
+    //     usual terms, which at detach_level 1 leaves the children either side of it
+    //     standing but empties them
+    call_hook('after_draw');
+    test.deepEqual(developed_paths(root), [
+      'root',
+      '0',
+      '1', '1.0', '1.0.0', '1.0.1', '1.0.1.0', '1.0.1.1', '1.1',
+    ], 'Kept the path down to the anchor, collected around it as usual');
 
   }).then(function () {
     test.end();
