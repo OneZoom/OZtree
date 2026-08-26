@@ -298,21 +298,21 @@ test('perform_actual_fly: flying out from a deep zoom keeps hold of the view', f
  * tree is far deeper than that, and this is the cheapest way to get somewhere that has to
  * be flown in stages.
  */
-function chain_tree(depth, ratio) {
-  function blank(metacode, is_leaf) {
-    return {
-      metacode: metacode, is_leaf: is_leaf, is_interior_node: !is_leaf,
-      has_child: false, children: [], upnode: null,
-      nextr: [], nextx: [], nexty: [],
-      // Bounding box of the node and its descendants, and of the node on its own
-      hxmin: -1, hxmax: 1, hymin: -1, hymax: 1,
-      gxmin: -1, gxmax: 1, gymin: -1, gymax: 1,
-      arcx: 0, arcy: 0, arcr: 1,
-      graphref: false, gvar: false, dvar: false, targeted: false,
-      rvar: 0, xvar: 0, yvar: 0,
-    };
-  }
+function blank(metacode, is_leaf) {
+  return {
+    metacode: metacode, is_leaf: is_leaf, is_interior_node: !is_leaf,
+    has_child: false, children: [], upnode: null,
+    nextr: [], nextx: [], nexty: [],
+    // Bounding box of the node and its descendants, and of the node on its own
+    hxmin: -1, hxmax: 1, hymin: -1, hymax: 1,
+    gxmin: -1, gxmax: 1, gymin: -1, gymax: 1,
+    arcx: 0, arcy: 0, arcr: 1,
+    graphref: false, gvar: false, dvar: false, targeted: false,
+    rvar: 0, xvar: 0, yvar: 0,
+  };
+}
 
+function chain_tree(depth, ratio) {
   const nodes = [];
   let node = blank(1, false);
   nodes.push(node);
@@ -423,6 +423,121 @@ test('perform_actual_fly: a flight outwards is broken into capped steps', functi
     test.fail(err);
     test.end();
   })
+});
+
+
+/**
+ * Re-anchoring only changes what xp/yp/ws are measured against, never where the tree is
+ * drawn, so this is the whole view in one number: unlike xp/yp/ws it means the same thing
+ * either side of a re-anchor, and any change to it is the view lurching.
+ */
+function view_frame(root) {
+  let node = root;
+  for (;;) {
+    let next = null;
+    for (let i = 0; i < node.children.length; i++) {
+      if (node.children[i].graphref) { next = node.children[i]; break; }
+    }
+    if (!next) break;
+    node = next;
+  }
+
+  // Work up from the anchor to the root, the way re_calc's drawreg does on the way back out
+  let x = tree_state.xp, y = tree_state.yp, r = 220 * tree_state.ws;
+  for (let n = node; n.upnode; n = n.upnode) {
+    const parent = n.upnode, ci = parent.children.indexOf(n);
+    const pr = r / parent.nextr[ci];
+    x = x - pr * parent.nextx[ci];
+    y = y - pr * parent.nexty[ci];
+    r = pr;
+  }
+  return { x: x, y: y, r: r, anchor: node, toString: () => (
+    node.metacode + ' @ ' + Math.round(x) + ',' + Math.round(y) + ' r=' + r.toExponential(3)) };
+}
+
+/**
+ * reanchor() picks the first drawn child and works down from there, and whether it settles
+ * on a node depends on that node's size. Those two can disagree: the child it commits to
+ * may be the wrong size to anchor on and have nothing drawn below it to hand over to.
+ *
+ * It can't leave that branch without an anchor. By the time it knows, its caller has
+ * deanchored the branch the old anchor was on, so there would be nothing left describing
+ * where xp/yp/ws are measured from, and the view would lurch as re_calc() worked from
+ * whatever was left of the graphref path instead.
+ */
+test('reanchor: a child too big to anchor on still takes the anchor', function (test) {
+  setup_dom(test);
+  tree_state.setup_canvas({ width: 1000, height: 600 }, 1000, 600);
+
+  /* root
+   *  +- A          a big node whose own circle is on screen...
+   *  |   +- A0     ...but whose children are drawn far enough off it to be off screen
+   *  |   +- A1
+   *  +- B          the branch we are anchored inside
+   *      +- B0     <- the anchor
+   *      +- B1
+   */
+  const root = blank('root', false);
+  const A = blank('A', false), A0 = blank('A0', true), A1 = blank('A1', true);
+  const B = blank('B', false), B0 = blank('B0', true), B1 = blank('B1', true);
+
+  function add_children(node, kids, xs, ys, rs) {
+    node.has_child = true;
+    node.children = kids;
+    node.nextx = xs;
+    node.nexty = ys;
+    node.nextr = rs;
+    kids.forEach((k) => { k.upnode = node; });
+  }
+
+  /** Bounding box of node-and-descendants, which is what re_calc tests against the screen */
+  function set_horizons(node) {
+    if (!node.has_child) return;
+    let box = [node.gxmin, node.gxmax, node.gymin, node.gymax];
+    node.children.forEach((child, i) => {
+      set_horizons(child);
+      box = [
+        Math.min(box[0], node.nextx[i] + node.nextr[i] * child.hxmin),
+        Math.max(box[1], node.nextx[i] + node.nextr[i] * child.hxmax),
+        Math.min(box[2], node.nexty[i] + node.nextr[i] * child.hymin),
+        Math.max(box[3], node.nexty[i] + node.nextr[i] * child.hymax),
+      ];
+    });
+    [node.hxmin, node.hxmax, node.hymin, node.hymax] = box;
+  }
+
+  // Everything shares an origin, so whatever we anchor on is drawn in the middle of the
+  // screen and stays there. A's children are the exception: they hang far enough off it to
+  // leave the screen while A's own circle is still drawn, the way a long branch does
+  add_children(A, [A0, A1], [40, -40], [40, -40], [0.02, 0.02]);
+  add_children(B, [B0, B1], [0, 0], [0, 0], [0.1, 0.1]);
+  add_children(root, [A, B], [0, 0], [0, 0], [1e-4, 1e-4]);
+  set_horizons(root);
+
+  // Anchor inside B, as we would be having flown there
+  position_helper.reanchor_at_node(B0, root);
+  tree_state.xp = 500;
+  tree_state.yp = 300;
+  tree_state.ws = 10;
+  re_calc(root, tree_state.xp, tree_state.yp, tree_state.ws);
+
+  // A is drawn, so reanchor() will commit to it over B, but at 2200px it is too big to
+  // anchor on and neither of its children is drawn
+  test.deepEqual([A.dvar, A.gvar, A0.dvar, A1.dvar], [true, true, false, false],
+    "A is drawn but its children are not");
+  test.ok(A.rvar >= 2200, "A is too big to anchor on (" + A.rvar + "px)");
+
+  const before = view_frame(root);
+  test.ok(before.anchor === B0, "Anchored on B0 to start with");
+
+  position_helper.reanchor(root);
+
+  const after = view_frame(root);
+  test.ok(Math.hypot(after.x - before.x, after.y - before.y) < 0.5 &&
+          Math.abs(Math.log(after.r / before.r)) < 1e-6,
+    "The view didn't move: " + before + " -> " + after);
+  test.ok(after.anchor.dvar, "Anchored on a node that is actually drawn");
+  test.end();
 });
 
 

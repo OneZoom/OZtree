@@ -397,34 +397,57 @@ function reanchor_at_node(node, root_node) {
  *   onezoom.config.debug_bounding_box = (node => node === onezoom.tree_state.anchor_node ? 0x03 : 0)
  * ...or add a browser watch condition of:
  *   onezoom.tree_state.anchor_node + ' ' + onezoom.tree_state.anchor_node.rvar
+ *
+ * @return {boolean} true if the anchor is now (node) or something below it, false if
+ *   there was nothing here to anchor on and tree_state has been left as it was
  */
 function reanchor(node) {
   // If this node (or it's desendents) aren't visible, don't bother
-  if (!node.dvar) return;
+  if (!node.dvar) return false;
 
   node.graphref = true;
   if (!node.has_child || node.gvar && (node.rvar > 1 && node.rvar < 2200)) {
-    // Anchor to this node
-    tree_state.xp = node.xvar;
-    tree_state.yp = node.yvar;
-    tree_state.ws = node.rvar / 220;
-    // Deanchor everything below this node
-    for (let i=0; i<node.children.length; i++) {
-      deanchor(node.children[i]);
-    }
-  } else {
-    // Recurse, anchoring to the first visible child
-    for (let i=0; i<node.children.length; i++) {
-      if (node.children[i].dvar) {
-        reanchor(node.children[i]);
-        for (let j=0; j<node.children.length; j++) {
-          if (i !== j) {
-            deanchor(node.children[j]);
-          }
-        }
-        break;
+    anchor_at(node);
+    return true;
+  }
+
+  // Recurse, anchoring to the first visible child
+  for (let i=0; i<node.children.length; i++) {
+    if (node.children[i].dvar) {
+      if (!reanchor(node.children[i])) {
+        // The child is drawn but nothing at or below it would take the anchor. We can't
+        // deanchor our other children and leave it at that: the anchor we already have
+        // may well be on one of them, and sweeping it off the graphref path leaves
+        // tree_state's xp/yp/ws describing a node re_calc() no longer works from, which
+        // lurches the view. A child of a worse size than we would like beats that, and it
+        // is drawn, so its position is this frame's and anchoring there moves nothing.
+        anchor_at(node.children[i]);
       }
+      for (let j=0; j<node.children.length; j++) {
+        if (i !== j) {
+          deanchor(node.children[j]);
+        }
+      }
+      return true;
     }
+  }
+
+  // Nothing here is drawn at all, so there is nowhere better to be. Our caller hasn't
+  // deanchored anything yet, so leaving well alone keeps the anchor we already have
+  return false;
+}
+
+/**
+ * Make (node) the anchor: tree_state's xp/yp/ws become its position, and it becomes the
+ * deepest graphref node, which is what re_calc() then works everything else out from
+ */
+function anchor_at(node) {
+  tree_state.xp = node.xvar;
+  tree_state.yp = node.yvar;
+  tree_state.ws = node.rvar / 220;
+  // Deanchor everything below this node
+  for (let i=0; i<node.children.length; i++) {
+    deanchor(node.children[i]);
   }
 }
 
