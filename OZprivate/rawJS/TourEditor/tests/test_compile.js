@@ -201,6 +201,22 @@ test('tourJsonToHtml: production-like markup', (t) => {
     t.end();
 });
 
+test('tourJsonToHtml: OneZoom imgsrc with a negative srcId', (t) => {
+    const html = tourJsonToHtml({
+        title: 'Demo',
+        description: '',
+        author: '',
+        tourstops: [{
+            identifier: 's',
+            template_data: {
+                media: ['imgsrc:3:-27123592'],
+            },
+        }],
+    });
+    t.match(html, /href="\/tree\/pic_info\/3\/-27123592"/);
+    t.end();
+});
+
 test('tourJsonToHtml: escapes attributes and newlines', (t) => {
     const html = tourJsonToHtml({
         title: 'A "quoted" title',

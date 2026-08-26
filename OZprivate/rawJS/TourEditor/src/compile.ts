@@ -213,7 +213,7 @@ function mediaEmbed(
     const alt = opts.alt !== undefined ? String(opts.alt) : '';
     const title = opts.title !== undefined ? String(opts.title) : '';
 
-    const imgsrc = href.match(/^imgsrc:(\d+):(\d+)$/);
+    const imgsrc = href.match(/^imgsrc:(-?\d+):(-?\d+)$/);
     if (imgsrc) {
         const srcUrl = oneZoomThumbUrl(Number(imgsrc[1]), Number(imgsrc[2]));
         const infoUrl = `/tree/pic_info/${imgsrc[1]}/${imgsrc[2]}`;

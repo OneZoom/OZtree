@@ -19,6 +19,7 @@ import {
 test('parseMediaUrl: OneZoom imgsrc', (t) => {
     t.deepEqual(parseMediaUrl('imgsrc:99:27732437'), { kind: 'onezoom', src: 99, srcId: 27732437 });
     t.deepEqual(parseMediaUrl('99:192836'), { kind: 'onezoom', src: 99, srcId: 192836 });
+    t.deepEqual(parseMediaUrl('imgsrc:3:-27123592'), { kind: 'onezoom', src: 3, srcId: -27123592 });
     t.end();
 });
 
@@ -139,6 +140,7 @@ test('parseMediaUrl: kinds limits which parsers run', (t) => {
 test('mediaBlockToUrl: round-trips recognised kinds', (t) => {
     const cases = [
         { kind: 'onezoom', src: 99, srcId: 27732437 },
+        { kind: 'onezoom', src: 3, srcId: -27123592 },
         { kind: 'youtube', videoId: 'ORV3qV8GFF4', start: 30 },
         { kind: 'vimeo', videoId: '12345' },
         { kind: 'wikimedia', filename: 'Rose_of_Jericho.gif' },
