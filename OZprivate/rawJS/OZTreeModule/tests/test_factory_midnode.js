@@ -269,4 +269,40 @@ test('branch_cubic', function (test) {
   test.end();
 });
 
+test('branch_restart,branch_point:taper', function (test) {
+  let node = new Midnode();
+
+  // A tapering layout gives every point of the branch, its start included, the width the
+  // branch has there and the direction it is travelling in
+  let sp = node.branch_restart();
+  sp.line_width = 0.9; sp.tx = 1; sp.ty = 0;
+  let p1 = node.branch_point();
+  p1.line_width = 0.55; p1.tx = 0; p1.ty = 1;
+  test.deepEqual(
+    [node.branch_start.line_width, node.branch_start.tx, node.branch_start.ty],
+    [0.9, 1, 0], "The branch starts 0.9 wide, heading right");
+  test.deepEqual(
+    [node.branch_end.line_width, node.branch_end.tx, node.branch_end.ty],
+    [0.55, 0, 1], "...and ends 0.55 wide, heading down");
+
+  // Laying the node out again in a view that doesn't taper leaves none of that behind, or
+  // the branch would pick up a taper from whoever drew it last
+  node.branch_cubic({
+    sx: 0, sy: 0,
+    cp1x: 0, cp1y: -0.05,
+    cp2x: 0, cp2y: -0.95,
+    ex: 0, ey: -1,
+  });
+  test.equal(node.branch_start, sp, "The same start point, re-used");
+  test.deepEqual(
+    [node.branch_start.line_width, node.branch_start.tx, node.branch_start.ty],
+    [undefined, undefined, undefined], "...with the old taper cleared off it");
+  test.equal(node.branch_end, p1, "The same end point, recycled back into the branch");
+  test.deepEqual(
+    [node.branch_end.line_width, node.branch_end.tx, node.branch_end.ty],
+    [undefined, undefined, undefined], "...likewise cleared");
+
+  test.end();
+});
+
 

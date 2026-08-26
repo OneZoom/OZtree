@@ -246,28 +246,42 @@ class Midnode {
   /**
    * Clear the nodes' branch, and start again.
    * Return initial point object for caller to fill in
+   *
+   * The start point is the one point of the branch no segment ends on, so it carries the
+   * width and tangent the branch has where it leaves rather than where it arrives.
    */
   branch_restart() {
     if (this.branch_points === undefined) {
-      this.branch_points = [{x: 0, y: 0}];
+      this.branch_points = [{
+        x: 0, y: 0,
+        line_width: undefined, tx: undefined, ty: undefined,
+      }];
       this._spare_points = [];
     } else {
       while (this.branch_points.length > 1) this._spare_points.push(this.branch_points.pop());
-      this.branch_points[0].x = 0;
-      this.branch_points[0].y = 0;
+      const p = this.branch_points[0];
+
+      p.x = 0; p.y = 0;
+      p.line_width = undefined; p.tx = undefined; p.ty = undefined;
     }
     return this.branch_points[0];
   }
 
   /**
    * Fetch a new branch_point object for caller to fill in
+   *
+   * A point gives the 2 control points of the segment arriving at it and where that segment
+   * ends, and may also give the width the branch has there and (tx, ty), the unit tangent,
+   * for a layout that tapers its branches (see projection/pre_calc/propspiral_pre_calc).
    */
   branch_point() {
     const p = this._spare_points.pop() || {
       cp1x: 0, cp1y: 0, cp2x: 0, cp2y: 0, x: 0, y: 0,
+      line_width: undefined, tx: undefined, ty: undefined,
     };
-  
+
     p.cp1x = 0; p.cp1y = 0; p.cp2x = 0; p.cp2y = 0; p.x = 0; p.y = 0;
+    p.line_width = undefined; p.tx = undefined; p.ty = undefined;
     this.branch_points.push(p);
     return p;
   }
