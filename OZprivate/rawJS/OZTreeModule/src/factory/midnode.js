@@ -328,6 +328,36 @@ class Midnode {
   }
 
   /**
+   * How much of the node's own circle is on screen -- the joint or leaf blob at the end of
+   * its branch, i.e. the node itself, as opposed to the branch that reaches it
+   *
+   * A node's gvar only says that some part of its graphics is in the view, its branch
+   * included, and a branch can sweep a long way from the node it belongs to: in the
+   * propspiral view one stands in for a whole chain of nodes, turning as far as half a
+   * circle. So a node can have gvar set while being drawn nowhere near the view. Ask this
+   * instead to find the node a viewer would say they are looking at (see navigation/utils).
+   *
+   * @param width Width of treeviewer, tree_state.widthres
+   * @param height Height of treeviewer, tree_state.heightres
+   * @return The area of the circle's bounding box that falls on screen, 0 if none of it does
+   */
+  anchor_area_on_screen(width, height) {
+    // Node isn't drawn at all, so its xvar/yvar/rvar may be left over from an earlier frame
+    if (!this.gvar) return 0;
+
+    // NB: 1.305 = 0.9*1.45 is to allow for leaves with points that stick out from their main circle
+    const arc_overhang = 1.305;
+
+    const r = this.rvar * this.arcr * arc_overhang;
+    const cx = this.xvar + (this.rvar * this.arcx);
+    const cy = this.yvar + (this.rvar * this.arcy);
+    const w = Math.min(cx + r, width) - Math.max(cx - r, 0);
+    const h = Math.min(cy + r, height) - Math.max(cy - r, 0);
+
+    return w > 0 && h > 0 ? w * h : 0;
+  }
+
+  /**
    * Get attribute of node by key name. Use this function to fetch metadata of node only.
    */
   get_attribute(key_name) {
