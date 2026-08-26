@@ -39,8 +39,6 @@ class BezierHorizonCalc {
     // jamestodo
     // find the bounding box for the bezier curve
 
-    const half_width = node.bezr / 2;
-
     // A branch is a path of cubic segments, however many of them the view it belongs to takes
     // to draw one (see projection/pre_calc/branch_path). Each segment lies inside its own
     // control points, so the box around all of them is one the whole curve fits in --- and a
@@ -48,6 +46,13 @@ class BezierHorizonCalc {
     // outside the curve on a wide turn
     let xmin = node.branch_start.x, xmax = node.branch_start.x;
     let ymin = node.branch_start.y, ymax = node.branch_start.y;
+    // A layout can taper its branches, every point of the path giving the width the branch has
+    // there (see propspiral_pre_calc), so pad by the widest it ever gets rather than by its
+    // end. A point that gives no width of its own is drawn at the width the branch is stroked
+    // at, which is where this starts from
+    let widest = node.bezr;
+
+    if (node.branch_start.line_width > widest) widest = node.branch_start.line_width;
 
     for (const p of node.branch_points.slice(1)) {
       if (p.cp1x < xmin) xmin = p.cp1x; if (p.cp1x > xmax) xmax = p.cp1x;
@@ -56,7 +61,10 @@ class BezierHorizonCalc {
       if (p.cp1y < ymin) ymin = p.cp1y; if (p.cp1y > ymax) ymax = p.cp1y;
       if (p.cp2y < ymin) ymin = p.cp2y; if (p.cp2y > ymax) ymax = p.cp2y;
       if (p.y    < ymin) ymin = p.y;    if (p.y   > ymax) ymax = p.y;
+      if (p.line_width > widest) widest = p.line_width;
     }
+
+    const half_width = widest / 2;
 
     node.hxmax = xmax + half_width;
     node.hxmin = xmin - half_width;
