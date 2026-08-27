@@ -34,9 +34,21 @@ sudo chown root:wheel /opt/deploy/run.sh
 sudo chown root:wheel /opt/deploy
 sudo chmod 755 /opt/deploy
 
+# sudo only reads sudoers.d if the main file has this directive (often missing on FreeBSD)
+sudoers=/usr/local/etc/sudoers
+if ! sudo grep -qE '^[@#]includedir[[:space:]]+/usr/local/etc/sudoers.d' "$sudoers"; then
+  tmp_sudoers=/tmp/sudoers.new
+  sudo cp "$sudoers" "$tmp_sudoers"
+  printf '\n@includedir /usr/local/etc/sudoers.d\n' | sudo tee -a "$tmp_sudoers" >/dev/null
+  sudo visudo -cf "$tmp_sudoers"
+  sudo install -m 440 -o root -g wheel "$tmp_sudoers" "$sudoers"
+  sudo rm -f "$tmp_sudoers"
+fi
+
 # `deploy` user may sudo only this command, with no arguments
 cat > /tmp/deploy_sudoers <<'EOF'
 Defaults:deploy !requiretty
+Defaults:deploy lecture=never
 Defaults:deploy secure_path="/usr/sbin:/usr/bin:/sbin:/bin"
 deploy ALL=(root) NOPASSWD: /opt/deploy/run.sh
 EOF
@@ -44,5 +56,7 @@ sudo visudo -cf /tmp/deploy_sudoers
 sudo mkdir -p /usr/local/etc/sudoers.d
 sudo install -m 440 -o root -g wheel /tmp/deploy_sudoers /usr/local/etc/sudoers.d/deploy
 rm -f /tmp/deploy_sudoers
+sudo visudo -c
+sudo -l -U deploy | grep /opt/deploy/run.sh
 
 rm -f /tmp/deploy_setup.sh
