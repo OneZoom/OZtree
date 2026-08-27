@@ -179,16 +179,16 @@ test('segmented_shape:colors_are_filled_a_stretch_at_a_time', function (t) {
   // fill is one colour throughout just as it is one width: each colour is one outline, the two
   // neighbouring stretches of the same colour making a single one between them, and a point
   // that doesn't name a colour taking the line's own. Both ends of each are rounded off as a
-  // stroke's cap would be, so the stretch a colour change starts laps over the one it ended
-  // rather than leaving a seam
+  // stroke's cap would be, and they go down back to front, so the stretch a colour change ends
+  // laps forward over the one it starts rather than leaving a seam
   shape.render(context);
   t.deepEqual(drawing_calls(context, ['beginPath', 'moveTo', 'lineTo', 'closePath', 'fill']), [
     ['beginPath'],
-    ['moveTo', 0, 2],
-    ['lineTo', 10, 1],
-    ['lineTo', 0, -2],
+    ['moveTo', 30, 1],
+    ['lineTo', 40, 1],
+    ['lineTo', 30, -1],
     ['closePath'],
-    ['fill', 'the-early'],
+    ['fill', 'the-branch'],
     ['beginPath'],
     ['moveTo', 10, 1],
     ['lineTo', 20, 1],
@@ -198,11 +198,11 @@ test('segmented_shape:colors_are_filled_a_stretch_at_a_time', function (t) {
     ['closePath'],
     ['fill', 'the-late'],
     ['beginPath'],
-    ['moveTo', 30, 1],
-    ['lineTo', 40, 1],
-    ['lineTo', 30, -1],
+    ['moveTo', 0, 2],
+    ['lineTo', 10, 1],
+    ['lineTo', 0, -2],
     ['closePath'],
-    ['fill', 'the-branch'],
+    ['fill', 'the-early'],
   ]);
 
   // A marking is one colour, so it is the whole line in one outline and one fill
@@ -210,9 +210,9 @@ test('segmented_shape:colors_are_filled_a_stretch_at_a_time', function (t) {
   shape.markings_list = [{ strokeStyle: 'the-marking', widthProportion: 0.5 }];
   shape.render(marked);
   t.deepEqual(drawing_calls(marked, ['fill']), [
-    ['fill', 'the-early'],
-    ['fill', 'the-late'],
     ['fill', 'the-branch'],
+    ['fill', 'the-late'],
+    ['fill', 'the-early'],
     ['fill', 'the-marking'],
   ]);
 
@@ -232,9 +232,9 @@ test('segmented_shape:tapering_breaks_at_a_move', function (t) {
   shape.render(context);
   t.deepEqual(drawing_calls(context, ['beginPath', 'moveTo', 'closePath', 'fill']), [
     ['beginPath'],
-    ['moveTo', 0, 2],
-    ['closePath'],
     ['moveTo', 20, 1],
+    ['closePath'],
+    ['moveTo', 0, 2],
     ['closePath'],
     ['fill', 'the-branch'],
   ]);

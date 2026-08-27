@@ -228,8 +228,8 @@ function shape_outline_edges(shape) {
  * to join what follows to it, and where its colour changes, a fill having one colour
  * throughout. A point carries the colour of the line arriving at it, so a change of colour
  * ends one stretch at the point before the change and starts the next one there: the two
- * share that point rather than meeting across a gap, and are filled in path order, each
- * rounded end lapping over the stretch before it.
+ * share that point rather than meeting across a gap, and their rounded ends overlap around
+ * it, one lapping over the other rather than leaving a seam (see shape_fill_outline()).
  */
 function shape_runs(shape) {
   const runs = [];
@@ -274,12 +274,16 @@ function shape_runs(shape) {
  * colour it carries: either way everything of one colour goes into a single path, so a line
  * that doesn't change colour -- and any marking, which never does -- is one fill however many
  * stretches it was divided into.
+ *
+ * The stretches are filled back to front, so that where two of them meet at a colour change
+ * the earlier one goes down last and its rounded end laps forward over the start of the later
+ * one.
  */
 function shape_fill_outline(context, shape, edges, runs, width_proportion, color) {
   let filling = null;
 
   context.beginPath();
-  for (let i = 0; i < runs.length; i++) {
+  for (let i = runs.length - 1; i >= 0; i--) {
     const run_color = color === undefined ? runs[i].color : color;
 
     if (filling !== null && run_color !== filling) {
