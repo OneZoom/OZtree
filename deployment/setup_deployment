@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# This script sets up the deploy user on the remote server.
+# It only needs to be run once from an admins LOCAL machine.
+
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  echo "Usage: $0 SSH_USERNAME" >&2
+  exit 1
+fi
+
+ssh_user=$1
+script_dir=$(cd "$(dirname "$0")" && pwd)
+
+set -x
+
+ssh-keygen -t ed25519 -f ./deploy_actions_key -C "github-actions-deploy" -N ""
+
+# copy scripts and the new public key to the remote, then install/run them in one sudo TTY session
+scp -P 7777 "${script_dir}/remote_deploy_script" "${ssh_user}@a.onezoom.org:/tmp/deploy_run.sh"
+scp -P 7777 "${script_dir}/remote_setup_script" "${ssh_user}@a.onezoom.org:/tmp/deploy_setup.sh"
+scp -P 7777 ./deploy_actions_key.pub "${ssh_user}@a.onezoom.org:/tmp/deploy_actions_key.pub"
+ssh -t -p 7777 "${ssh_user}@a.onezoom.org" '/bin/sh /tmp/deploy_setup.sh'
+
+gh secret set DEPLOY_PRIVATE_KEY --env a -R github.com/OneZoom/OZtree < deploy_actions_key
+rm ./deploy_actions_key
+rm ./deploy_actions_key.pub

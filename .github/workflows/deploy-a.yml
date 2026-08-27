@@ -1,0 +1,27 @@
+name: Deploy a
+
+on:
+  push:
+    branches:
+      - a
+
+concurrency:
+  group: deploy-a
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+    environment: a
+
+    steps:
+      - name: Run deploy script via SSH
+        env:
+          DEPLOY_PRIVATE_KEY: ${{ secrets.DEPLOY_PRIVATE_KEY }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p 7777 a.onezoom.org >> ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key -p 7777 -o IdentitiesOnly=yes -o BatchMode=yes deploy@a.onezoom.org 'sudo /opt/deploy/run.sh'

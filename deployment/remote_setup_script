@@ -1,0 +1,48 @@
+#!/bin/sh
+
+# This script sets up the deploy user on the remote server.
+# It is sent to the server and run by the setup_deployment script.
+
+set -eu
+
+sudo mkdir -p /opt/deploy
+sudo mv /tmp/deploy_run.sh /opt/deploy/run.sh
+
+# only create the user if they don't already exist.
+# /bin/sh is required so sshd can run the authorized_keys command=; restrict+command lock the account down.
+if id deploy >/dev/null 2>&1; then
+  sudo pw usermod deploy -d /home/deploy -s /bin/sh -m -w no
+else
+  sudo pw useradd deploy -d /home/deploy -s /bin/sh -m -w no
+fi
+
+# GitHub Actions may authenticate with this key only to run this command
+{
+  printf 'restrict,command="sudo /opt/deploy/run.sh" '
+  cat /tmp/deploy_actions_key.pub
+} > /tmp/deploy_authorized_keys
+sudo mkdir -p /home/deploy/.ssh
+sudo chmod 755 /home/deploy
+sudo chown root:wheel /home/deploy/.ssh
+sudo chmod 755 /home/deploy/.ssh
+sudo install -m 644 -o root -g wheel /tmp/deploy_authorized_keys /home/deploy/.ssh/authorized_keys
+rm -f /tmp/deploy_authorized_keys /tmp/deploy_actions_key.pub
+
+# `deploy` user must not be able to write the script or containing dir
+sudo chmod 750 /opt/deploy/run.sh
+sudo chown root:wheel /opt/deploy/run.sh
+sudo chown root:wheel /opt/deploy
+sudo chmod 755 /opt/deploy
+
+# `deploy` user may sudo only this command, with no arguments
+cat > /tmp/deploy_sudoers <<'EOF'
+Defaults:deploy !requiretty
+Defaults:deploy secure_path="/usr/sbin:/usr/bin:/sbin:/bin"
+deploy ALL=(root) NOPASSWD: /opt/deploy/run.sh
+EOF
+sudo visudo -cf /tmp/deploy_sudoers
+sudo mkdir -p /usr/local/etc/sudoers.d
+sudo install -m 440 -o root -g wheel /tmp/deploy_sudoers /usr/local/etc/sudoers.d/deploy
+rm -f /tmp/deploy_sudoers
+
+rm -f /tmp/deploy_setup.sh
