@@ -7,7 +7,7 @@
 2.) zooming UI basics
 -->
 <h3>What is the tree of life?</h3>
-<p> Everything that is alive, or has ever been alive has a place somewhere on the complete tree of life.  Each leaf represents a different species and the branches show how they are evolved from common ancestors over billions of years. </p>
+<p> Everything that is alive, or has ever been alive, has a place somewhere on the complete tree of life.  Each leaf represents a different species and the branches show how they evolved from common ancestors over billions of years. </p>
 
 <img src= "{{=URL('static','images/Screenshots/Life_spiral_IUCN.jpg')}}" alt="">
 

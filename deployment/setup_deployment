@@ -28,7 +28,8 @@ scp -P 7777 "${script_dir}/remote_setup_script" "${ssh_user}@${ssh_hostname}:/tm
 scp -P 7777 ./deploy_actions_key.pub "${ssh_user}@${ssh_hostname}:/tmp/deploy_actions_key.pub"
 ssh -t -p 7777 "${ssh_user}@${ssh_hostname}" '/bin/sh /tmp/deploy_setup.sh'
 
-gh secret set DEPLOY_PRIVATE_KEY --env "${github_env}" -R github.com/OneZoom/OZtree < deploy_actions_key
+gh api --method PUT "/repos/OneZoom/OZtree/environments/${github_env}"
 gh variable set DEPLOY_SSH_HOST --env "${github_env}" -R github.com/OneZoom/OZtree --body "${ssh_hostname}"
+gh secret set DEPLOY_PRIVATE_KEY --env "${github_env}" -R github.com/OneZoom/OZtree < deploy_actions_key
 rm ./deploy_actions_key
 rm ./deploy_actions_key.pub
