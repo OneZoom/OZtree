@@ -1,0 +1,21 @@
+name: Deploy to beta
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: deploy-beta
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: beta
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/deploy-via-ssh
+        with:
+          private-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
+          host: ${{ vars.DEPLOY_SSH_HOST }}

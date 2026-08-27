@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# This script is installed on the server by setup_deployment (as /opt/deploy/run.sh).
+# __SSH_HOSTNAME__ and __GRUNT_TASK__ are substituted at install time.
+# It is run by a GitHub Action on push.
+# CI passes the git SHA as the SSH command; authorized_keys forwards it as $1.
+
+set -eu
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+cd /home/web2py/__SSH_HOSTNAME__/applications/OZtree
+echo "Checking out $1"
+GIT_SHA=$1
+export GIT_SHA
+su web2py -c 'git fetch origin && git checkout --detach "$GIT_SHA"'
+su web2py -c 'npm ci'
+su web2py -c 'grunt __GRUNT_TASK__'
+supervisorctl restart '__SSH_HOSTNAME__:*'
+
