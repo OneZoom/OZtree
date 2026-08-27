@@ -16,9 +16,10 @@ else
   sudo pw useradd deploy -d /home/deploy -s /bin/sh -m -w no
 fi
 
-# GitHub Actions may authenticate with this key only to run this command
+# GitHub Actions may authenticate with this key only to run this command.
+# command= replaces the client command; $SSH_ORIGINAL_COMMAND is the SHA they sent.
 {
-  printf 'restrict,command="sudo /opt/deploy/run.sh" '
+  printf '%s' 'restrict,command="sudo /opt/deploy/run.sh \"$SSH_ORIGINAL_COMMAND\"" '
   cat /tmp/deploy_actions_key.pub
 } > /tmp/deploy_authorized_keys
 sudo mkdir -p /home/deploy/.ssh
@@ -45,12 +46,12 @@ if ! sudo grep -qE '^[@#]includedir[[:space:]]+/usr/local/etc/sudoers.d' "$sudoe
   sudo rm -f "$tmp_sudoers"
 fi
 
-# `deploy` user may sudo only this command, with no arguments
+# `deploy` user may sudo only this command, with a git SHA argument from CI
 cat > /tmp/deploy_sudoers <<'EOF'
 Defaults:deploy !requiretty
 Defaults:deploy lecture=never
 Defaults:deploy secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-deploy ALL=(root) NOPASSWD: /opt/deploy/run.sh
+deploy ALL=(root) NOPASSWD: /opt/deploy/run.sh *
 EOF
 sudo visudo -cf /tmp/deploy_sudoers
 sudo mkdir -p /usr/local/etc/sudoers.d

@@ -20,9 +20,10 @@ jobs:
         env:
           DEPLOY_PRIVATE_KEY: ${{ secrets.DEPLOY_PRIVATE_KEY }}
           DEPLOY_SSH_HOST: ${{ vars.DEPLOY_SSH_HOST }}
+          DEPLOY_SHA: ${{ github.sha }}
         run: |
           install -d -m 700 ~/.ssh
           printf '%s\n' "$DEPLOY_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -p 7777 "$DEPLOY_SSH_HOST" >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/deploy_key -p 7777 -o IdentitiesOnly=yes -o BatchMode=yes "deploy@${DEPLOY_SSH_HOST}" 'sudo /opt/deploy/run.sh'
+          ssh -i ~/.ssh/deploy_key -p 7777 -o IdentitiesOnly=yes -o BatchMode=yes "deploy@${DEPLOY_SSH_HOST}" "$DEPLOY_SHA"
