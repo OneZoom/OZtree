@@ -44,7 +44,7 @@ There are two ways in which you can install OneZoom on a personal computer: full
 
 ## Requirements and packages
 
-For any installation, OneZoom requires node (18+) & python (3.10).
+For any installation, OneZoom requires node (24+) & python (3.14+).
 
 #### Debian/Ubuntu
 
@@ -57,7 +57,7 @@ apt install python3 python3-dev python3-venv
 
 ```
 # NB: rust is required to build the python cryptography package
-sudo pkg install lang/python310 node18 npm-node18 rust
+sudo pkg install lang/python314 node24 npm-node24 rust
 ```
 
 In addition, for a full installation you also need MySQL:
@@ -95,7 +95,7 @@ Firstly, you need to check out the web2py / OneZoom repositories, and run npm:
 export WEB2PY_PATH="/srv/.../onezoom.myhostname.org"
 mkdir -p ${WEB2PY_PATH}
 chown deploy:staff ${WEB2PY_PATH}
-git clone https://github.com/web2py/web2py ${WEB2PY_PATH} --branch v2.27.1
+git clone https://github.com/web2py/web2py ${WEB2PY_PATH} --branch v3.3.3
 git clone https://github.com/OneZoom/OZtree.git ${WEB2PY_PATH}/applications/OZtree --branch production
 cd ${WEB2PY_PATH}/applications/OZtree
 npm ci
@@ -133,7 +133,7 @@ For full installations, you need to setup your database.
 
 To create required tables, use web2py migrate:
 
-* Edit private/appconfig.ini, setting ``migrate=1``
+* Edit private/appconfig.ini, setting ``migrate=1`` (or ``migrate=fake`` if using an already set-up DB)
 * ``./web2py-run tests/unit/test_modules_embed.py``, on startup this will create tables as necessary
 * Edit private/appconfig.ini, migrate=0
 
@@ -183,7 +183,7 @@ apt install nginx supervisor
 #### FreeBSD
 
 ```
-sudo pkg install nginx py39-supervisor lang/python310
+sudo pkg install nginx py312-supervisor lang/python312
 ```
 
 ### Installation
@@ -218,7 +218,7 @@ installing SQL Workbench on Windows works great to connect to the Ubuntu MySQL i
 
 ## Starting and shutting down web2py
 
-On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. This is complete overkill if you just want to run a local copy of OneZoom for testing purposes. You can simply run a [temporary and basic web2py server using Python 3](http://www.web2py.com/books/default/chapter/29/03/overview#Startup). The simplest is to open a command-line prompt in the root web2py folder, and run the following (assuming the command `python3` is linked to something like Python 3.7)
+On the OneZoom main site, web2py is run using a combination of nginx and uwsgi. This is complete overkill if you just want to run a local copy of OneZoom for testing purposes. You can simply run a [temporary and basic web2py server using Python 3](http://www.web2py.com/books/default/chapter/29/03/overview#Startup). The simplest is to open a command-line prompt in the root web2py folder, and run the following (assuming the command `python3` is linked to something like Python 3.14)
 
 ```
 ./web2py-run
