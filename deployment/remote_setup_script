@@ -49,7 +49,7 @@ fi
 cat > /tmp/deploy_sudoers <<'EOF'
 Defaults:deploy !requiretty
 Defaults:deploy lecture=never
-Defaults:deploy secure_path="/usr/sbin:/usr/bin:/sbin:/bin"
+Defaults:deploy secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 deploy ALL=(root) NOPASSWD: /opt/deploy/run.sh
 EOF
 sudo visudo -cf /tmp/deploy_sudoers

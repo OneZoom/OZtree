@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 
 # This script is a placeholder for a deploy script on the server.
-# It should be run by a github action very time the relevant branch is pushed.
+# It should be run by a github action every time the relevant branch is pushed.
 
-set -euo pipefail
-PATH=/usr/bin:/bin
+set -eu
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 echo "testing"
