@@ -16,8 +16,8 @@ const { execSync } = require('child_process');
 
 let preferred_python3;
 try {
-  execSync('python3.10 --version', { stdio: 'ignore' });
-  preferred_python3 = "python3.10";  // in case you have multiple python3 versions installed
+  execSync('python3.14 --version', { stdio: 'ignore' });
+  preferred_python3 = "python3.14";  // in case you have multiple python3 versions installed
 } catch (error) {
   preferred_python3 = "python3";
 }
