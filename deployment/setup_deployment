@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 
 # This script sets up the deploy user on the remote server.
-# It only needs to be run once from an admins LOCAL machine.
+# It only needs to be run once after any changes from an admins LOCAL machine.
 
 set -euo pipefail
 
-if [[ $# -ne 1 ]]; then
-  echo "Usage: $0 SSH_USERNAME" >&2
+if [[ $# -ne 3 ]]; then
+  echo "Usage: $0 SSH_USERNAME SSH_HOSTNAME GITHUB_ENV" >&2
   exit 1
 fi
 
 ssh_user=$1
+ssh_hostname=$2
+github_env=$3
 script_dir=$(cd "$(dirname "$0")" && pwd)
 
 set -x
@@ -18,11 +20,15 @@ set -x
 ssh-keygen -t ed25519 -f ./deploy_actions_key -C "github-actions-deploy" -N ""
 
 # copy scripts and the new public key to the remote, then install/run them in one sudo TTY session
-scp -P 7777 "${script_dir}/remote_deploy_script" "${ssh_user}@a.onezoom.org:/tmp/deploy_run.sh"
-scp -P 7777 "${script_dir}/remote_setup_script" "${ssh_user}@a.onezoom.org:/tmp/deploy_setup.sh"
-scp -P 7777 ./deploy_actions_key.pub "${ssh_user}@a.onezoom.org:/tmp/deploy_actions_key.pub"
-ssh -t -p 7777 "${ssh_user}@a.onezoom.org" '/bin/sh /tmp/deploy_setup.sh'
+tmp_deploy_run=$(mktemp)
+sed "s|__SSH_HOSTNAME__|${ssh_hostname}|g" "${script_dir}/remote_deploy_script" > "$tmp_deploy_run"
+scp -P 7777 "$tmp_deploy_run" "${ssh_user}@${ssh_hostname}:/tmp/deploy_run.sh"
+rm -f "$tmp_deploy_run"
+scp -P 7777 "${script_dir}/remote_setup_script" "${ssh_user}@${ssh_hostname}:/tmp/deploy_setup.sh"
+scp -P 7777 ./deploy_actions_key.pub "${ssh_user}@${ssh_hostname}:/tmp/deploy_actions_key.pub"
+ssh -t -p 7777 "${ssh_user}@${ssh_hostname}" '/bin/sh /tmp/deploy_setup.sh'
 
-gh secret set DEPLOY_PRIVATE_KEY --env a -R github.com/OneZoom/OZtree < deploy_actions_key
+gh secret set DEPLOY_PRIVATE_KEY --env "${github_env}" -R github.com/OneZoom/OZtree < deploy_actions_key
+gh variable set DEPLOY_SSH_HOST --env "${github_env}" -R github.com/OneZoom/OZtree --body "${ssh_hostname}"
 rm ./deploy_actions_key
 rm ./deploy_actions_key.pub
