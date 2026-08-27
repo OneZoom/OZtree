@@ -1,0 +1,28 @@
+name: Deploy to beta
+
+on:
+  push:
+    branches:
+      - a  # by default we test the main branch on beta
+
+concurrency:
+  group: deploy-beta
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+    environment: beta
+
+    steps:
+      - name: Run deploy script via SSH
+        env:
+          DEPLOY_PRIVATE_KEY: ${{ secrets.DEPLOY_PRIVATE_KEY }}
+          DEPLOY_SSH_HOST: ${{ vars.DEPLOY_SSH_HOST }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p 7777 "$DEPLOY_SSH_HOST" >> ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key -p 7777 -o IdentitiesOnly=yes -o BatchMode=yes "deploy@${DEPLOY_SSH_HOST}" 'sudo /opt/deploy/run.sh'
