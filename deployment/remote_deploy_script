@@ -6,4 +6,8 @@
 set -eu
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-echo "testing"
+cd /home/web2py/a.onezoom.org/applications/OZtree
+su -m web2py -c 'git pull'
+su -m web2py -c 'grunt dev'
+supervisorctl restart 'a.onezoom.org:*'
+
