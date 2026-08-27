@@ -17,8 +17,15 @@ class Interactor {
     this.touch_interactor = get_touch_interactor();
   }
   bind_listener(canvas) {
-    window.addEventListener('resize', this.window_resize.bind(this), false);
-    listenForDevicePixelRatioChanges(this.window_resize.bind(this));
+    const on_resize = this.window_resize.bind(this);
+    listenForDevicePixelRatioChanges(on_resize);
+    // canvas size can change without a window resize (e.g. editor sidebar).
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resize_observer = new ResizeObserver(on_resize);
+      this.resize_observer.observe(canvas);
+    } else {
+      window.addEventListener('resize', on_resize, false);
+    }
     this.mouse_interactor.bind_listener(canvas);
     this.touch_interactor.bind_listener(canvas);
   }
@@ -28,6 +35,17 @@ class Interactor {
     this.touch_interactor.add_controller(controller);
   }
   window_resize() {
+    if (!this.controller || !this.controller.canvas) return;
+    const canvas = this.controller.canvas;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    const dpr = window.devicePixelRatio;
+    if (this._observed_width === width && this._observed_height === height && this._observed_dpr === dpr) {
+      return;
+    }
+    this._observed_width = width;
+    this._observed_height = height;
+    this._observed_dpr = dpr;
     this.controller.resize_canvas();
     // Draw immediately so that there's no blank frames
     this.controller.draw_single_frame();
