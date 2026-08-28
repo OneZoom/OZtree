@@ -841,7 +841,195 @@ def otts2identifiers():
         headers=colname_map,
         ids=ret)
 
+def ascend_ancestors():
+    """
+    Used to return details of all the ancestors of a particular node, in particular
+    - number of million years of each ancestor
+    - the total number of species that are descendants on each side of the bifurcation
+    - the name of the period/era/eon
+    - a name (if it exists) for the ancestor
+    
+    NB: finding the name for the other descendant group is a lot more tricky!
+    
+    """
+    session.forget(response)
+    lang = request.vars.lang or request.env.http_accept_language or 'en'
+    response.headers["Access-Control-Allow-Origin"] = '*'
 
+    if "." not in request.env.path_info.split('/')[2]:
+        request.extension = "json"
+    response.view = request.controller + "/" + request.function + "." + request.extension
+    
+    if request.vars.key is None:
+        redirect(URL('error', vars=dict(
+            code=400,
+            text="Please use an API key (use 0 for the public API key)"
+        )))
+
+    try:
+        ott = int(request.vars.ott)
+    except:
+        redirect(URL('error', vars=dict(code=400, text="Invalid OTT")))
+        
+    include_otts = request.vars.include_otts
+    include_fake_nodes = request.vars.include_fake_nodes
+    rows = db(db.ordered_leaves.ott == ott).select(
+        db.ordered_leaves.id,
+        db.ordered_leaves.parent,
+        db.ordered_leaves.real_parent,
+        db.ordered_leaves.name,
+        db.ordered_leaves.extinction_date,
+    )
+    if rows:
+        row = rows.first()
+        date = row.extinction_date or 0
+        prev_n_leaves = n_leaves = 1
+        prev_leaf_lft = row.id
+    else:
+        rows = db(db.ordered_nodes.ott == ott).select(
+            db.ordered_nodes.parent,
+            db.ordered_nodes.real_parent,
+            db.ordered_nodes.name,
+            db.ordered_nodes.age,
+            db.ordered_nodes.leaf_lft,
+            db.ordered_nodes.leaf_rgt,
+        )
+        if not rows:
+            redirect(URL('error', vars=dict(code=400, text="No matching OTT found")))
+        row = rows.first()
+        date = None if row.age is None else round(row.age, 1)
+        prev_n_leaves = n_leaves = row.leaf_rgt - row.leaf_lft + 1
+        prev_leaf_lft = row.leaf_lft
+    
+    step = 0
+    ancestors = []
+    data_by_sib_node_id = {}
+    data_by_sib_leaf_id = {}
+    ret = dict(
+        step=step,
+        date_MYA=date,
+        n_spp=n_leaves,
+        name=row.name,
+    )
+    if include_otts:
+        ret["input_ott"] = ott
+
+    data_by_ott = {ott: ret}
+    data_by_name = {}
+    prev_was_fake_node = row.real_parent < 0
+    
+    while row.parent >= 0:
+        rows = db(db.ordered_nodes.id == row.parent).select(
+            db.ordered_nodes.id,
+            db.ordered_nodes.parent,
+            db.ordered_nodes.real_parent,
+            db.ordered_nodes.name,
+            db.ordered_nodes.ott,
+            db.ordered_nodes.age,
+            db.ordered_nodes.leaf_lft,
+            db.ordered_nodes.leaf_rgt,
+        )
+        if not rows:
+            break
+        row = rows.first()
+        n_leaves = row.leaf_rgt - row.leaf_lft + 1
+        if row.real_parent < 0:
+            # This is a fake node, inserted to break polytomies
+            prev_was_fake_node = True
+            prev_leaf_lft = row.leaf_lft
+            if not include_fake_nodes:
+                continue
+
+        step += 1
+        row_data = dict(
+            step=step,
+            date_MYA=None if row.age is None else round(row.age, 1),
+            n_spp=n_leaves,
+            tracked_branch_n_spp=prev_n_leaves,
+        )
+        sib_n_leaves = n_leaves - prev_n_leaves # may include multiple sibs in a polytomy
+        row_data["name"] = row.name if row.name and not row.name.endswith("_") else None
+        row_data["vernacular"] = None
+        if include_otts:
+            row_data["ott"] = row.ott
+        row_data["sib_branches"]={"n_spp": sib_n_leaves, "single_sib": True}
+
+        # If either the previous node on the tracked branch or on the sib branch
+        # is a "fake node" it means that the current node is a polytomy
+        if prev_was_fake_node and not include_fake_nodes: 
+            row_data["sib_branches"]["single_sib"] = False
+        else:
+            # Could be a valid node
+            if prev_leaf_lft == row.leaf_lft:
+                # the tracked branch is the left-hand branch from this node
+                if sib_n_leaves > 1:
+                    data_by_sib_node_id[row.id + prev_n_leaves] = row_data
+                else:
+                    data_by_sib_leaf_id[row.leaf_rgt] = row_data
+            else:
+                # the tracked branch is the right-hand branch from this node
+                if sib_n_leaves > 1:
+                    data_by_sib_node_id[row.id + 1] = row_data
+                else:
+                    data_by_sib_leaf_id[row.leaf_lft] = row_data
+
+        prev_n_leaves = n_leaves
+        ancestors.append(row_data)
+        if row.ott is not None:
+            data_by_ott[row.ott] = row_data
+        elif row.name is not None:
+            data_by_name[row.name] = row_data
+        prev_was_fake_node = False
+        prev_leaf_lft = row.leaf_lft
+
+    # Get data on the siblings
+    for sib_data_dict, db_table in zip(
+        (data_by_sib_node_id, data_by_sib_leaf_id),
+        (db.ordered_nodes, db.ordered_leaves)
+    ):
+        if len(sib_data_dict) > 0:
+            rows = db(db_table.id.belongs(sib_data_dict.keys())).select(
+                db_table.id, db_table.real_parent, db_table.ott, db_table.name)
+            if rows:
+                for row in rows:
+                    parent_data = sib_data_dict[row.id]
+                    if row.real_parent >= 0 or include_fake_nodes:
+                        # The sib node should be included
+                        # if name ends in _ it's not scientific, but a OZ nickname
+                        if row.name and not row.name.endswith("_"):
+                            parent_data["sib_branches"]["name"] = row.name
+                        if row.ott is not None:
+                            data_by_ott[row.ott] = parent_data["sib_branches"]
+                        elif row.name is not None:
+                            data_by_name[row.name] = parent_data["sib_branches"]
+                    else:
+                        parent_data["sib_branches"]["single_sib"] = False
+
+    for ott, vernacular in OZfunc.get_common_names(
+        data_by_ott.keys(),
+        return_nulls=False,
+        prefer_short_name=False,
+        include_unpreferred=False,
+        return_all=False,
+        lang=lang,
+    ).items():
+        data_by_ott[ott]["vernacular"] = vernacular
+    
+    for name, vernacular in OZfunc.get_common_names(
+        data_by_name.keys(),
+        OTT=False,
+        return_nulls=False,
+        prefer_short_name=False,
+        include_unpreferred=False,
+        return_all=False,
+        lang=lang,
+    ).items():
+        data_by_name[name]["vernacular"] = vernacular
+    ret["ancestors"] = ancestors
+    
+    return ret
+    
+        
 #PRIVATE FUNCTIONS
 
 
