@@ -11,7 +11,7 @@ cd /home/web2py/__SSH_HOSTNAME__/applications/OZtree
 echo "Checking out $1"
 GIT_SHA=$1
 export GIT_SHA
-su -m web2py -c 'git fetch origin && git reset --hard -- "$GIT_SHA"'
+su -m web2py -c 'git fetch origin && git checkout --detach "$GIT_SHA"'
 su -m web2py -c 'grunt dev'
 supervisorctl restart '__SSH_HOSTNAME__:*'
 
