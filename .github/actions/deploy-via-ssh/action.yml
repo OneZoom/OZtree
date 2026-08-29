@@ -1,0 +1,26 @@
+name: Deploy via SSH
+description: SSH to the deploy host and run the remote deploy script for this commit
+
+inputs:
+  private-key:
+    description: SSH private key for the deploy user
+    required: true
+  host:
+    description: SSH hostname
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Run deploy script via SSH
+      shell: bash
+      env:
+        DEPLOY_PRIVATE_KEY: ${{ inputs.private-key }}
+        DEPLOY_SSH_HOST: ${{ inputs.host }}
+        DEPLOY_SHA: ${{ github.sha }}
+      run: |
+        install -d -m 700 ~/.ssh
+        printf '%s\n' "$DEPLOY_PRIVATE_KEY" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        ssh-keyscan -p 7777 "$DEPLOY_SSH_HOST" >> ~/.ssh/known_hosts
+        ssh -i ~/.ssh/deploy_key -p 7777 -o IdentitiesOnly=yes -o BatchMode=yes "deploy@${DEPLOY_SSH_HOST}" "$DEPLOY_SHA"
