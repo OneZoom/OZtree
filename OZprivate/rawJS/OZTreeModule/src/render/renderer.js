@@ -8,6 +8,9 @@ import {global_button_action} from '../button_manager';
 let last_xp = null;
 let last_yp = null;
 let last_ws = null;
+let last_widthres = null;
+let last_heightres = null;
+let last_scale_factor = null;
 let last_btn_data = null;
 let last_btn_action = null;
 let last_button_x = null;
@@ -124,6 +127,7 @@ function need_refresh() {
 
   if (render_id % 60 === 0) return true;
   if (tree_state.xp != last_xp || tree_state.yp != last_yp || tree_state.ws != last_ws) return true;
+  if (tree_state.widthres != last_widthres || tree_state.heightres != last_heightres || scale_factor != last_scale_factor) return true;
   if (!areEqual(global_button_action.action,last_btn_action)) return true;
   if (!areEqual(global_button_action.data,last_btn_data)) return true;
   return false;
@@ -200,6 +204,9 @@ function record_view_position() {
   last_xp = tree_state.xp;
   last_yp = tree_state.yp;
   last_ws = tree_state.ws;
+  last_widthres = tree_state.widthres;
+  last_heightres = tree_state.heightres;
+  last_scale_factor = scale_factor;
   last_btn_data = global_button_action.data;
   last_btn_action = global_button_action.action;
 }
