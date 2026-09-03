@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+
+# This script sets up the deploy user and script on the remote server, ready for the CI to call.
+# It should be run by an admin on their local machine whenever the settings have changed.
+# It assumes that only one deployment lives on each host.
+
+set -euo pipefail
+
+if [[ $# -ne 4 ]]; then
+  echo "Usage: $0 SSH_USERNAME SSH_HOSTNAME GITHUB_ENV GRUNT_TASK" >&2
+  echo "GRUNT_TASK must be 'dev' or 'prod'" >&2
+  exit 1
+fi
+
+ssh_user=$1
+ssh_hostname=$2
+github_env=$3
+grunt_task=$4
+script_dir=$(cd "$(dirname "$0")" && pwd)
+
+case "$grunt_task" in
+  dev|prod) ;;
+  *)
+    echo "GRUNT_TASK must be 'dev' or 'prod', got: ${grunt_task}" >&2
+    exit 1
+    ;;
+esac
+
+if ! command -v gh &>/dev/null; then
+  echo "gh CLI is not installed. See https://cli.github.com/" >&2
+  exit 1
+fi
+
+if ! gh auth status &>/dev/null; then
+  echo "gh CLI is not authenticated. Run 'gh auth login' first." >&2
+  exit 1
+fi
+
+set -x
+
+# generate keys outside the repo so they cannot be committed by accident
+key_dir=$(mktemp -d)
+ssh-keygen -t ed25519 -f "${key_dir}/deploy_actions_key" -C "github-actions-deploy" -N ""
+
+# reuse one authenticated connection to minimise password prompts
+control_path="/tmp/oztree-deploy-setup-$$-%r@%h:%p"
+ssh_opts=(-o "Port=7777" -o "ControlMaster=auto" -o "ControlPath=${control_path}" -o "ControlPersist=60")
+trap 'ssh -O exit "${ssh_opts[@]}" "${ssh_user}@${ssh_hostname}" 2>/dev/null || true' EXIT
+
+# copy scripts and the new public key to the remote, then install/run them in one sudo TTY session
+tmp_deploy_run=$(mktemp)
+sed \
+  -e "s|__SSH_HOSTNAME__|${ssh_hostname}|g" \
+  -e "s|__GRUNT_TASK__|${grunt_task}|g" \
+  "${script_dir}/remote_deploy_script" > "$tmp_deploy_run"
+scp "${ssh_opts[@]}" "$tmp_deploy_run" "${ssh_user}@${ssh_hostname}:/tmp/deploy_run.sh"
+rm -f "$tmp_deploy_run"
+scp "${ssh_opts[@]}" "${script_dir}/remote_setup_script" "${ssh_user}@${ssh_hostname}:/tmp/deploy_setup.sh"
+scp "${ssh_opts[@]}" "${key_dir}/deploy_actions_key.pub" "${ssh_user}@${ssh_hostname}:/tmp/deploy_actions_key.pub"
+ssh -t "${ssh_opts[@]}" "${ssh_user}@${ssh_hostname}" '/bin/sh /tmp/deploy_setup.sh'
+
+gh api --silent --method PUT "/repos/OneZoom/OZtree/environments/${github_env}"
+gh variable set DEPLOY_SSH_HOST --env "${github_env}" -R github.com/OneZoom/OZtree --body "${ssh_hostname}"
+gh secret set DEPLOY_PRIVATE_KEY --env "${github_env}" -R github.com/OneZoom/OZtree < "${key_dir}/deploy_actions_key"

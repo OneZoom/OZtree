@@ -1,0 +1,63 @@
+#!/bin/sh
+
+# DO NOT run this script directly
+# It is sent to the server and run by the setup_deployment script.
+
+set -eu
+
+sudo mkdir -p /opt/deploy
+sudo mv /tmp/deploy_run.sh /opt/deploy/run.sh
+
+# only create the user if they don't already exist.
+# /bin/sh is required so sshd can run the authorized_keys command=; restrict+command lock the account down.
+if id deploy >/dev/null 2>&1; then
+  sudo pw usermod deploy -d /home/deploy -s /bin/sh -m -w no
+else
+  sudo pw useradd deploy -d /home/deploy -s /bin/sh -m -w no
+fi
+
+# GitHub Actions may authenticate with this key only to run this command.
+# command= replaces the client command; $SSH_ORIGINAL_COMMAND is the SHA they sent.
+{
+  printf '%s' 'restrict,command="sudo /opt/deploy/run.sh \"$SSH_ORIGINAL_COMMAND\"" '
+  cat /tmp/deploy_actions_key.pub
+} > /tmp/deploy_authorized_keys
+sudo mkdir -p /home/deploy/.ssh
+sudo chmod 755 /home/deploy
+sudo chown root:wheel /home/deploy/.ssh
+sudo chmod 755 /home/deploy/.ssh
+sudo install -m 644 -o root -g wheel /tmp/deploy_authorized_keys /home/deploy/.ssh/authorized_keys
+rm -f /tmp/deploy_authorized_keys /tmp/deploy_actions_key.pub
+
+# `deploy` user must not be able to write the script or containing dir
+sudo chmod 750 /opt/deploy/run.sh
+sudo chown root:wheel /opt/deploy/run.sh
+sudo chown root:wheel /opt/deploy
+sudo chmod 755 /opt/deploy
+
+# sudo only reads sudoers.d if the main file has this directive (often missing on FreeBSD)
+sudoers=/usr/local/etc/sudoers
+if ! sudo grep -qE '^[@#]includedir[[:space:]]+/usr/local/etc/sudoers.d' "$sudoers"; then
+  tmp_sudoers=/tmp/sudoers.new
+  sudo cp "$sudoers" "$tmp_sudoers"
+  printf '\n@includedir /usr/local/etc/sudoers.d\n' | sudo tee -a "$tmp_sudoers" >/dev/null
+  sudo visudo -cf "$tmp_sudoers"
+  sudo install -m 440 -o root -g wheel "$tmp_sudoers" "$sudoers"
+  sudo rm -f "$tmp_sudoers"
+fi
+
+# `deploy` user may sudo only this command, with a git SHA argument from CI
+cat > /tmp/deploy_sudoers <<'EOF'
+Defaults:deploy !requiretty
+Defaults:deploy lecture=never
+Defaults:deploy secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+deploy ALL=(root) NOPASSWD: /opt/deploy/run.sh *
+EOF
+sudo visudo -cf /tmp/deploy_sudoers
+sudo mkdir -p /usr/local/etc/sudoers.d
+sudo install -m 440 -o root -g wheel /tmp/deploy_sudoers /usr/local/etc/sudoers.d/deploy
+rm -f /tmp/deploy_sudoers
+sudo visudo -c
+sudo -l -U deploy | grep /opt/deploy/run.sh
+
+rm -f /tmp/deploy_setup.sh
