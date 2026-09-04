@@ -1084,6 +1084,18 @@ class TestSponsorship(unittest.TestCase):
         self.assertEqual(days_left(user_1, days=0, hours=-1)[r1.OTT_ID], -1, test_msg(r1))
         self.assertEqual(days_left(user_1, days=-1, hours=-1)[r1.OTT_ID], -2, test_msg(r1))
 
+    def test_sponsorship_email_reminders_without_email(self):
+        """Users without an e-mail address cannot receive reminders."""
+        expiry_time = current.request.now + datetime.timedelta(days=10*365)
+        current.request.now = expiry_time - datetime.timedelta(days=sponsorship_config()['duration_days'])
+        reservation = util.purchase_reservation(
+            basket_details=dict(user_sponsor_name='Billy-no-email'),
+            paypal_details=dict(PP_e_mail=None),
+        )[0]
+
+        current.request.now = expiry_time - datetime.timedelta(days=1)
+        self.assertEqual(list(sponsorship_email_reminders([reservation.username])), [])
+
     def test_sponsorship_email_reminders_null_sponsorship_ends(self):
         """NULL sponsorship_ends ==> permanently sponsored"""
         db = current.db
