@@ -65,7 +65,7 @@ class Controller {
   }
   resize_canvas() {
     this.setup_canvas(this.canvas);
-    this.cancel_flight();
+    position_helper.retarget_current_flight(this);
     this.re_calc();
   }
   reset() {

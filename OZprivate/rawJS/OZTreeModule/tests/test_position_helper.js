@@ -426,6 +426,106 @@ test('perform_actual_fly: a flight outwards is broken into capped steps', functi
 });
 
 
+/**
+ * Resize must not abort a flight: keep the same tree point under the focal-area centre,
+ * rebuild the remaining interpolation, and still land filling the new viewport.
+ */
+test('perform_actual_fly: retarget_current_flight keeps a flight alive across resize', function (test) {
+  setup_dom(test);
+
+  const real_performance = global.performance;
+  let fake_now = 0;
+  global.performance = { now: () => fake_now };
+  global.requestAnimationFrame = (callback) => setTimeout(() => {
+    fake_now += 1000 / 60;
+    callback();
+  }, 0);
+  global.cancelAnimationFrame = clearTimeout;
+
+  function wait_frames(n) {
+    let p = Promise.resolve();
+    for (let i = 0; i < n; i++) {
+      p = p.then(() => new Promise((r) => setTimeout(r, 0)));
+    }
+    return p;
+  }
+
+  function node_rel_focal(node) {
+    return {
+      x: round(node.xvar - tree_state.focal_area.xcentre),
+      y: round(node.yvar - tree_state.focal_area.ycentre),
+      r: round(node.rvar),
+    };
+  }
+
+  var nodes = {};
+
+  return populate_factory().then((factory) => {
+    return resolve_pinpoints([
+      '@Dobsonia=988790',
+      '@Acerodon=635024',
+    ]).then((pps) => pps.forEach((pp) => {
+      nodes[pp.sciname] = factory.dynamic_loading_by_metacode(pp.ozid)
+    })).then(() => factory);
+
+  }).then(function (factory) {
+    var controller = fake_controller(factory, 2000, 1000);
+    const dest = nodes['Acerodon'];
+
+    return move_to(controller, nodes['Dobsonia'], {speed: Infinity}).then(() => {
+      tree_state.flying = true;
+      controller.factory.dynamic_loading_by_metacode(dest.ozid);
+      position_helper.clear_target(controller.root);
+      position_helper.target_by_code(controller.root, dest.ozid);
+      const flight = position_helper.perform_actual_fly(controller, false, 1, 'accel');
+
+      return wait_frames(10).then(() => {
+        controller.re_calc();
+        const before = node_rel_focal(nodes['Dobsonia']);
+        test.ok(tree_state.flying, "Still flying before resize");
+
+        tree_state.setup_canvas({ width: 1000, height: 800 }, 1000, 800);
+        position_helper.retarget_current_flight(controller);
+        controller.re_calc();
+
+        test.ok(tree_state.flying, "Resize did not cancel the flight");
+        test.deepEqual(node_rel_focal(nodes['Dobsonia']), before,
+          "Watched node stays put relative to the focal-area centre");
+
+        return flight;
+      }).then(() => {
+        const landed = {
+          x: round(dest.xvar),
+          y: round(dest.yvar),
+          r: round(dest.rvar),
+        };
+        return move_to(controller, dest, {speed: Infinity}).then(() => {
+          test.ok(
+            Math.abs(dest.xvar - landed.x) < 1 &&
+            Math.abs(dest.yvar - landed.y) < 1 &&
+            Math.abs(dest.rvar - landed.r) < 1,
+            "Landed filling the new focal area (same as a leap there): flew to " +
+              JSON.stringify(landed) + ", leap at " +
+              JSON.stringify({ x: round(dest.xvar), y: round(dest.yvar), r: round(dest.rvar) })
+          );
+        });
+      }).finally(() => {
+        tree_state.flying = false;
+      });
+    });
+
+  }).finally(function () {
+    global.performance = real_performance;
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  });
+});
+
+
 test.onFinish(function() {
 
   global.requestAnimationFrame = undefined;

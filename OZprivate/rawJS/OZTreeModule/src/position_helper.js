@@ -15,6 +15,7 @@ let fly_duration_s = null;
 let more_flying_needed = null;
 let original_flight_fps = 1000/60; // the frame rate used when global_anim_speed was calibrated
 let into_node;
+let fly_accel_type;
 let pre_xp, pre_yp, pre_ws;
 let fly_frame_request_id = null
 
@@ -223,10 +224,10 @@ function clear_target(node) {
  * @param {func} accel_type is optional, and gives the acceleration type ('accel', 'decel' or 'linear' (default)
  * @return {Promise} resolved when flight is over, rejected with UserInterruptError() if cancelled
  */
-function perform_actual_fly(controller, into_node, speed=1, accel_type="linear") {
+function perform_actual_fly(controller, into_node_arg, speed=1, accel_type="linear") {
   return new Promise((resolve, reject) => perform_actual_fly_inner(
     controller,
-    into_node,
+    into_node_arg,
     speed,
     accel_type,
     resolve,
@@ -234,8 +235,14 @@ function perform_actual_fly(controller, into_node, speed=1, accel_type="linear")
   )));
 }
 
+function end_flight_clock() {
+  fly_start_time = null;
+}
+
 // perform_actual_fly, but with old callback-based interface
-function perform_actual_fly_inner(controller, into_node, speed=1, accel_type="linear", finalize_func=null, abrupt_func=null) {
+function perform_actual_fly_inner(controller, into_node_arg, speed=1, accel_type="linear", finalize_func=null, abrupt_func=null) {
+  into_node = into_node_arg;
+  fly_accel_type = accel_type;
   more_flying_needed = false;
   drawreg_target(controller.root, tree_state.xp, tree_state.yp, 220*tree_state.ws);
   pre_xp = tree_state.xp;
@@ -245,6 +252,7 @@ function perform_actual_fly_inner(controller, into_node, speed=1, accel_type="li
   fly_start_time = performance.now();
   if(((r_mult>0.9999)&&(r_mult<1.00001))&&(x_add*x_add<1)&&(y_add*y_add<1)) {
     // nothing to zoom to so better to do nothing and return false or it feels like a bug
+    end_flight_clock();
     finalize_func()
     return false;
   } else if (speed === Infinity) {
@@ -257,15 +265,41 @@ function perform_actual_fly_inner(controller, into_node, speed=1, accel_type="li
       return true;
     }
     controller.trigger_refresh_loop();
+    end_flight_clock();
     finalize_func()
     return true;
   } else {
     fly_duration_s = Math.max(Math.abs(Math.log(r_mult)) * global_anim_speed, 12) / speed / original_flight_fps;
     fly_frame_request_id = requestAnimationFrame(function () {
-      perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
+      perform_fly_b2(controller, speed, finalize_func, abrupt_func);
     });
     return true;
   }
+}
+
+/**
+ * Rebuild the in-flight interpolation for a new viewport, without cancelling the flight.
+ *
+ * Snapshots the current view as the new origin, aims at the same target in the current
+ * focal_area, and spends the remaining duration getting there with linear easing.
+ * The existing requestAnimationFrame loop keeps running, so the flight promise stays alive.
+ */
+function retarget_current_flight(controller) {
+  if (!tree_state.flying || fly_start_time == null || !fly_duration_s) return;
+  const elapsed_s = (performance.now() - fly_start_time) / 1000;
+  const remaining_s = fly_duration_s * (1 - Math.max(0, Math.min(elapsed_s / fly_duration_s, 1)));
+  if (remaining_s < 1 / 60) return;
+
+  more_flying_needed = false;
+  drawreg_target(controller.root, tree_state.xp, tree_state.yp, 220 * tree_state.ws);
+  pre_xp = tree_state.xp;
+  pre_yp = tree_state.yp;
+  pre_ws = tree_state.ws;
+  get_xyr_target(controller.root, tree_state.xp, tree_state.yp, 220 * tree_state.ws, into_node);
+
+  fly_start_time = performance.now();
+  fly_duration_s = remaining_s;
+  fly_accel_type = 'linear';
 }
 
 
@@ -273,18 +307,12 @@ function perform_actual_fly_inner(controller, into_node, speed=1, accel_type="li
 /**
  * Perform flight set up in globals.
  * @param {controller} controller OneZoom Controller object
- * @param {boolean} into_node Set this to 'true' to end up zoomed so the interior node fills the screen, rather than
- * the wider-angle viewpoint that to show the entire tree structure descended from that node.
  * @param {func} speed gives the relative speed compared to the globally set animation speed
- * @param {string} accel_type Acceleration curve to use for this flight
- *    - 'accel': Accelerate away from node
- *    - 'decel': Decelerate into node
- *    - '' (or anything else): Linear
  * @param {func} finalize_func is optional, and gives a function to call at the end of the zoom
  * @param {func} abrupt_func is optional, and gives a function to call when fly is abrupted
  */
-function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func) {
-
+function perform_fly_b2(controller, speed, finalize_func, abrupt_func) {
+  const accel_type = fly_accel_type;
   const time_proportion = Math.max(0, Math.min((performance.now() - fly_start_time) / 1000 / fly_duration_s, 1));
 
   function pan_proportion() {
@@ -305,6 +333,7 @@ function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func,
   if (!tree_state.flying) {
     // If tree_state.flying has been cleared since we started, give up now
     cancelAnimationFrame(fly_frame_request_id);
+    end_flight_clock();
     abrupt_func();
   } else if (more_flying_needed) {
     //need to reanchor, this sometimes causes jerkiness
@@ -331,11 +360,12 @@ function perform_fly_b2(controller, into_node, speed, accel_type, finalize_func,
 
     if (time_proportion < 1) {
       fly_frame_request_id = requestAnimationFrame(function () {
-        perform_fly_b2(controller, into_node, speed, accel_type, finalize_func, abrupt_func);
+        perform_fly_b2(controller, speed, finalize_func, abrupt_func);
       });
     } else {
       // Reached our destination, stop flying & trigger callback
       tree_state.set_action(null);
+      end_flight_clock();
       finalize_func()
     }
   }
@@ -439,4 +469,4 @@ function set_anim_speed(val) {
   global_anim_speed = val;
 }
 
-export {reanchor, reanchor_at_node, target_by_code, clear_target, perform_actual_fly, get_anim_speed, set_anim_speed};
+export {reanchor, reanchor_at_node, target_by_code, clear_target, perform_actual_fly, retarget_current_flight, get_anim_speed, set_anim_speed};
