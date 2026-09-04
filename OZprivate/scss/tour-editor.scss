@@ -3,21 +3,53 @@
     display: block;
 }
 
+$editor-sidebar-width: 400px;
+$editor-sidebar-duration: 0.3s;
+$editor-sidebar-easing: ease;
+
+
+body.tree-viewer {
+    --editor-sidebar-duration: #{$editor-sidebar-duration};
+
+    #OneZoomCanvasID, .background-layer, #UI {
+        width: calc(100% - 0px);
+        right: 0;
+        transition: width $editor-sidebar-duration $editor-sidebar-easing,
+                    right $editor-sidebar-duration $editor-sidebar-easing;
+    }
+
+    &.editor-sidebar-open {
+        #OneZoomCanvasID, .background-layer, #UI {
+            width: calc(100% - #{$editor-sidebar-width});
+            right: $editor-sidebar-width;
+        }
+    }
+}
+
 .tour-editor-panel {
     position: fixed;
     top: 0;
-    right: -400px;
-    width: 400px;
+    right: 0;
+    width: $editor-sidebar-width;
     height: 100vh;
     background: white;
     box-shadow: -2px 0 10px rgba(0,0,0,0.1);
     z-index: 1001;
-    transition: right 0.3s ease;
     overflow-y: auto;
+    // Keep the editor at a fixed width and slide it in
+    transform: translateX(100%);
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform $editor-sidebar-duration $editor-sidebar-easing,
+                visibility 0s linear $editor-sidebar-duration;
 }
 
 .tour-editor-panel.open {
-    right: 0;
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+    transition: transform $editor-sidebar-duration $editor-sidebar-easing,
+                visibility 0s linear 0s;
 }
 
 .tour-editor-panel-content {

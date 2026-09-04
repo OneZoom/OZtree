@@ -26,7 +26,11 @@ export default function HighlightsEditor({ isOpen, onClose, onToggle }: Highligh
     const urlParams = highlights.map((h) => `highlight=${toHighlightStr(h)}`).join('&');
 
     return (
-        <div id="highlights-editor" className={`tour-editor-panel${isOpen ? ' open' : ''}`}>
+        <div
+            id="highlights-editor"
+            className={`tour-editor-panel${isOpen ? ' open' : ''}`}
+            inert={!isOpen ? 'true' : undefined}
+        >
             <div className="tour-editor-panel-content">
                 <div className="tour-editor-panel-header">
                     <h3>Highlights Editor</h3>

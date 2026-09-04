@@ -179,7 +179,11 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
 
     return (
         <>
-            <div id="tour-editor" className={`tour-editor-panel${isOpen ? ' open' : ''}`}>
+            <div
+                id="tour-editor"
+                className={`tour-editor-panel${isOpen ? ' open' : ''}`}
+                inert={!isOpen ? 'true' : undefined}
+            >
                 <div className="tour-editor-panel-content">
                     <div className="tour-editor-panel-header">
                         {selectedStop && (

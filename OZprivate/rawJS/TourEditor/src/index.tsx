@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import HighlightsEditor from './HighlightsEditor';
 import TourEditor from './TourEditor';
@@ -14,6 +14,11 @@ type OpenPanel = 'tour' | 'highlights' | null;
 
 function ExpertEditors() {
     const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
+
+    useEffect(() => {
+        document.body.classList.toggle('editor-sidebar-open', openPanel !== null);
+        return () => document.body.classList.remove('editor-sidebar-open');
+    }, [openPanel]);
 
     const closePanels = useCallback(() => setOpenPanel(null), []);
     const openTour = useCallback(() => setOpenPanel('tour'), []);

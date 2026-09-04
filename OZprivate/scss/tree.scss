@@ -30,7 +30,12 @@ body.tree-viewer {
 
     #UI {
         z-index: 200; /* overlay the canvas & tour UI with the UI */
-        height: 0; /* UI layer can't cover page, then we can't interact with canvas */
+        /* Fill the tree area so descendants can position against it, but don't
+           intercept canvas clicks. */
+        pointer-events: none;
+        > * {
+            pointer-events: auto;
+        }
     }
 }
 #OneZoomCanvasID {
@@ -47,7 +52,7 @@ body.tree-viewer {
 }
 body.loading #UI #loading_spinner {
   display: block;
-  position: fixed;
+  position: absolute;
   top: 50%;
   left: 50%;
   /* NB: spinner is 90px wide, center it */
@@ -59,7 +64,7 @@ body.loading #UI #loading_spinner {
     margin: 0.5rem;
   }
   .ui-topleft {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     margin-right: 0;
@@ -69,13 +74,13 @@ body.loading #UI #loading_spinner {
     margin-left: 0;
   }
   .ui-bottomleft {
-    position: fixed;
+    position: absolute;
     bottom: 0;
     left: 0;
     margin-right: 0;
   }
   .ui-bottomright {
-    position: fixed;
+    position: absolute;
     bottom: 0;
     right: 0;
     margin-left: 0;

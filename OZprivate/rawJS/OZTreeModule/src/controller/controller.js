@@ -65,7 +65,8 @@ class Controller {
   }
   resize_canvas() {
     this.setup_canvas(this.canvas);
-    this.cancel_flight();
+    if (!this.root) return;  // ResizeObserver can fire before the tree is built
+    position_helper.retarget_current_flight(this);
     this.re_calc();
   }
   reset() {
@@ -192,6 +193,7 @@ class Controller {
    * Recalculate all positions, e.g. after a tree move
    */
   re_calc() {
+    if (!this.root) return;
     this.projection.re_calc(this.root, tree_state.xp, tree_state.yp, tree_state.ws);
   }
   reanchor() {

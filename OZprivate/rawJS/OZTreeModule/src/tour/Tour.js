@@ -65,7 +65,7 @@ import tree_state from '../tree_state';
 import { add_hook, remove_hook } from '../util';
 import { resolve_pinpoints } from '../navigation/pinpoint';
 
-const Interaction_Action_Arr = ['mouse_down', 'mouse_wheel', 'touch_start', 'touch_move', 'touch_end', 'window_size_change']
+const Interaction_Action_Arr = ['mouse_down', 'mouse_wheel', 'touch_start', 'touch_move', 'touch_end']
 
 //Tour State classes
 const tstate = {
