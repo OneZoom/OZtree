@@ -29,7 +29,8 @@ class Interactor {
   }
   window_resize() {
     this.controller.resize_canvas();
-    this.controller.trigger_refresh_loop();
+    // Draw immediately so that there's no blank frames
+    this.controller.draw_single_frame();
   }
 }
 
