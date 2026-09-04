@@ -74,3 +74,27 @@ test('focal_area', function (test) {
   test.end();
 });
 
+test('setup_canvas preserves focal-area world point', function (test) {
+  setup_dom(test);
+  test.teardown(function () { tree_state.constrain_focal_area(1, 1) });
+
+  // 2000x1000 focal centre is (1000, 500). Park a tree point 200px left and 100px above it.
+  tree_state.setup_canvas({ width: 2000, height: 1000 }, 2000, 1000);
+  tree_state.xp = 800;
+  tree_state.yp = 400;
+  tree_state.ws = 2;
+
+  tree_state.setup_canvas({ width: 4000, height: 2000 }, 2000, 1000);
+  test.equal(tree_state.xp, 800, "Same logical size leaves xp unchanged");
+  test.equal(tree_state.yp, 400, "Same logical size leaves yp unchanged");
+  test.equal(tree_state.ws, 2, "Same logical size leaves ws unchanged");
+
+  // 800x600 focal centre is (400, 300). Same offset from centre: (200, 200).
+  tree_state.setup_canvas({ width: 800, height: 600 }, 800, 600);
+  test.equal(tree_state.xp, 200, "xp keeps the tree point 200px left of the new centre");
+  test.equal(tree_state.yp, 200, "yp keeps the tree point 100px above the new centre");
+  test.equal(tree_state.ws, 2, "ws is unchanged on resize");
+
+  test.end();
+});
+

@@ -42,6 +42,9 @@ class TreeState {
   }
   setup_canvas(canvas, width_logical_pixels, height_logical_pixels) {
     this._canvas = canvas;
+    const had_view = this._xp !== null && this.focal_area;
+    const old_cx = had_view ? this.focal_area.xcentre : 0;
+    const old_cy = had_view ? this.focal_area.ycentre : 0;
     if (this._xp === null) {
       this._xp = width_logical_pixels / 3;
       this._yp = height_logical_pixels - 200;
@@ -50,6 +53,11 @@ class TreeState {
     this.widthres = width_logical_pixels;
     this.heightres = height_logical_pixels;
     this._update_focal_area()
+    if (had_view) {
+      // Keep the same tree point under the focal-area centre when the canvas size changes
+      this._xp += this.focal_area.xcentre - old_cx;
+      this._yp += this.focal_area.ycentre - old_cy;
+    }
     call_hook("window_size_change");
   }
   get flying() {
