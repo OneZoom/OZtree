@@ -44,8 +44,8 @@ T.set_current_languages('en', 'en-en')
 # Allow translators to add new languages e.g. on the test (beta) site, but not on prod
 T.is_writable = is_testing and myconf.get('general.allow_translation_string_writing')
 #ALL pages can set ?lang=XXX to override the browser default for translating strings
-if request.vars.lang:
-    T.force(request.vars.lang)
+if request.get_vars and request.get_vars.lang:
+    T.force(request.get_vars.lang)
 
 try:
     base_title = myconf.take('general.base_title')

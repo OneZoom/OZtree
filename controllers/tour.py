@@ -90,6 +90,51 @@ from OZfunc import (
 import tour
 
 
+def _db_error_message(e):
+    """Human-readable message from a DB-API IntegrityError."""
+    args = getattr(e, 'args', ())
+    if len(args) > 1:
+        return args[1]
+    if args:
+        return args[0]
+    return str(e)
+
+
+def _tourstop_label(ts, index):
+    """Identifier if present, otherwise 1-based index."""
+    ident = ts.get('identifier') if isinstance(ts, dict) else None
+    return ident if ident else str(index)
+
+
+def _parse_tourstop_ott(ts, label):
+    """Normalise ts['ott'] to an integer OTT (or None).
+
+    Accepts an int, numeric string, empty/None (return to start), or
+    ``@_ancestor=OTT=OTT``. Raises HTTP(422) for anything else.
+    """
+    ott = ts.get('ott')
+    if ott in (None, ''):
+        ts['ott'] = None
+        return
+    ott_str = str(ott)
+    if ott_str.startswith('@_ancestor'):
+        parts = ott_str.split('=')
+        if len(parts) != 3:
+            raise HTTP(422, "Tourstop %s: ott ancestor pinpoint must be @_ancestor=OTT=OTT, got %r" % (label, ott))
+        try:
+            ts['ott'] = int(parts[1])
+            ts['secondary_ott'] = int(parts[2])
+        except (TypeError, ValueError):
+            raise HTTP(422, "Tourstop %s: ott ancestor pinpoint must be @_ancestor=OTT=OTT, got %r" % (label, ott))
+        return
+    try:
+        ts['ott'] = int(ott_str)
+    except (TypeError, ValueError):
+        raise HTTP(422, "Tourstop %s: ott must be an integer OTT or @_ancestor=OTT=OTT, got %r" % (
+            label, ott,
+        ))
+
+
 def homepage_animation():
     # OTTs from the tree_startpoints table
     startpoints_ott_map, hrefs, titles, text_titles = {}, {}, {}, {}
@@ -178,23 +223,25 @@ def screensaver():
 def data():
     """Fetch generic tour name from database"""
     if len(request.args) < 1:
-        raise HTTP(400, "Expect a tour identifier at the end of the URL")
+        raise HTTP(422, "Expect a tour identifier at the end of the URL")
     tour_identifier = request.args[0]
 
     if request.env.request_method == 'PUT':
-        # Need to be logged in before you can create tours
         auth.basic()
         if not auth.user:
-            raise HTTP(403)
+            raise HTTP(403, "Login required to create or update tours")
         if len(request.vars.get('tourstops', [])) == 0:
-            raise HTTP(400, "Must have at least one tourstop")
+            raise HTTP(422, "Must have at least one tourstop")
 
         try:
             # Check that tourstop identifiers are unique within the tour
             # TODO: Ideally we'd make a DB constraint for this, but is beyond the abilities of PyDAL
+            for i, ts in enumerate(request.vars['tourstops']):
+                if 'symlink_tourstop' not in ts and not ts.get('identifier'):
+                    raise HTTP(422, "Tourstop %d: missing identifier" % (i + 1))
             ts_identifiers = [ts['identifier'] for ts in request.vars['tourstops'] if 'symlink_tourstop' not in ts]
             if len(ts_identifiers) != len(set(ts_identifiers)):
-                raise HTTP(400, "All tourstops should have a unique identifier")
+                raise HTTP(422, "All tourstops should have a unique identifier")
 
             # Upsert the tour data
             db.tour.update_or_insert(
@@ -216,31 +263,31 @@ def data():
             ts_shared = request.vars.get('tourstop_shared', {})
             tss_targets = {}
             for i, ts in enumerate(request.vars['tourstops']):
-                ts = {
-                    # All fields not otherwise specfied return to their default
-                    **{k:db.tourstop.get(k).default for k in db.tourstop.fields if k not in ['created', 'updated']},
-                    **ts_shared,
-                    **ts,
-                    # Deep-clone template_data, should always exist
-                    "template_data": {**ts_shared.get("template_data", {}), **ts.get("template_data", {})},
-                    # Add DB references
-                    "tour": tour_id,
-                    "ord": i + 1,
-                }
-                if str(ts.get('ott', "")).startswith('@_ancestor'):
-                    parts = ts['ott'].split("=")
-                    assert len(parts) == 3
-                    ts['ott'] = int(parts[1])
-                    ts['secondary_ott'] = int(parts[2])
-                if 'symlink_tourstop' in ts:
-                    if 'symlink_tour' not in ts:
-                        ts['symlink_tour'] = tour_identifier
-                    tss_targets[ts['ord']] = ts
-                else:
-                    db.tourstop.update_or_insert(
-                        (db.tourstop.tour == tour_id) & (db.tourstop.identifier == ts['identifier']),
+                label = _tourstop_label(ts, i + 1)
+                try:
+                    ts = {
+                        # All fields not otherwise specfied return to their default
+                        **{k:db.tourstop.get(k).default for k in db.tourstop.fields if k not in ['created', 'updated']},
+                        **ts_shared,
                         **ts,
-                    )
+                        # Deep-clone template_data, should always exist
+                        "template_data": {**ts_shared.get("template_data", {}), **ts.get("template_data", {})},
+                        # Add DB references
+                        "tour": tour_id,
+                        "ord": i + 1,
+                    }
+                    _parse_tourstop_ott(ts, label)
+                    if 'symlink_tourstop' in ts:
+                        if 'symlink_tour' not in ts:
+                            ts['symlink_tour'] = tour_identifier
+                        tss_targets[ts['ord']] = ts
+                    else:
+                        db.tourstop.update_or_insert(
+                            (db.tourstop.tour == tour_id) & (db.tourstop.identifier == ts['identifier']),
+                            **ts,
+                        )
+                except (ValueError, TypeError, KeyError) as e:
+                    raise HTTP(422, "Tourstop %s: %s" % (label, e))
 
             # Resolve tss_target dicts to DB entries, now they should be in the database
             for ord in tss_targets.keys():
@@ -249,7 +296,7 @@ def data():
                     (db.tour.identifier == tss_targets[ord]['symlink_tour']) &
                     (db.tourstop.identifier == tss_targets[ord]['symlink_tourstop'])).select().first()
                 if target_ts is None:
-                    raise HTTP(400, "Unknown tourstop %s in tour %s" % (
+                    raise HTTP(422, "Unknown tourstop %s in tour %s" % (
                         tss_targets[ord]['symlink_tourstop'],
                         tss_targets[ord]['symlink_tour'],
                     ))
@@ -270,12 +317,14 @@ def data():
                 db.tourstop_symlink.insert(tour=tour_id, tourstop=ts_target, ord=ord)
         except IntegrityError as e:
             # Assume any IntegrityError is the user's fault
-            raise HTTP(400, "Tour invalid: %s" % e.args[1])
+            raise HTTP(422, "Tour invalid: %s" % _db_error_message(e))
+        except (ValueError, TypeError, KeyError) as e:
+            raise HTTP(422, "Tour invalid: %s" % e)
 
     # Fetch tour from DB
     tour = db(db.tour.identifier == tour_identifier).select()
     if len(tour) < 1:
-        raise HTTP(404)
+        raise HTTP(404, "Tour '%s' not found" % tour_identifier)
     tour = tour[0]
 
     def munge_tourstop(ts):
