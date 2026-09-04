@@ -326,7 +326,7 @@ test('tour:block-tourpaused', function (test) {
       '</div>'
     ], "Transitioning to tourstop again (HTML)");
     // Pause tour by triggering interaction hook, wait for promise to settle
-    call_hook('window_size_change');
+    call_hook('mouse_down');
     return new Promise(function (resolve) {
       setTimeout(() => {
         resolve();
