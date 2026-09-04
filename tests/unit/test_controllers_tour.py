@@ -37,14 +37,14 @@ class TestControllersTour(unittest.TestCase):
         if 'author' not in tour_body:
             tour_body['author'] = 'UT::Author'
         if isinstance(tour_body.get('tourstops', None), int):
-            tour_body['tourstops'] = [dict(
-                ott=ott,
-                identifier="ott%d" % ott,
-                template_data=dict(title="Tour %s OTT %d" % (
+            tour_body['tourstops'] = [{
+                'ott': ott,
+                'identifier': "ott%d" % ott,
+                'template_data': {'title': "Tour %s OTT %d" % (
                     tour_identifier,
                     ott
-                )),
-            ) for ott in util.find_unsponsored_otts(tour_body['tourstops'])]
+                )},
+            } for ott in util.find_unsponsored_otts(tour_body['tourstops'])]
 
         out = util.call_controller(
             tour,
@@ -64,7 +64,7 @@ class TestControllersTour(unittest.TestCase):
     def test_data_errors(self):
         """Error conditions handled appropriately?"""
         # Have to include a tour identifier
-        with self.assertRaisesRegex(HTTP, r'400'):
+        with self.assertRaisesRegex(HTTP, r'422'):
             util.call_controller(tour, 'data')
 
         # Can't PUT without being logged in
@@ -72,39 +72,63 @@ class TestControllersTour(unittest.TestCase):
             util.call_controller(tour, 'data', method='PUT', args=['UT::TOUR'], vars={})
 
         # Can't PUT a tour with no tourstops
-        with self.assertRaisesRegex(HTTP, r'400'):
-            out = self.tour_put('UT::TOUR', dict(
-                title="A Unit test tour",
-            ))
+        with self.assertRaisesRegex(HTTP, r'422'):
+            out = self.tour_put('UT::TOUR', {
+                'title': "A Unit test tour",
+            })
 
-        # Missing author also alerted
-        with self.assertRaisesRegex(HTTP, r'400'):
-            out = self.tour_put('UT::TOUR', dict(
-                title="A Unit test tour",
-                author=None,
-                tourstops=1,
-            ))
+        # Missing tour
+        with self.assertRaisesRegex(HTTP, r'404') as cm:
+            util.call_controller(tour, 'data', args=['UT::MISSING'])
+        self.assertRegex(str(cm.exception.body), r"Tour 'UT::MISSING' not found")
+
+        # Missing tourstop identifier
+        with self.assertRaisesRegex(HTTP, r'422') as cm:
+            self.tour_put('UT::TOUR', {
+                'tourstops': [{'ott': 67819}],
+            })
+        self.assertRegex(str(cm.exception.body), r'missing identifier')
+
+        # Non-integer ott is rejected
+        with self.assertRaisesRegex(HTTP, r'422') as cm:
+            self.tour_put('UT::TOUR', {
+                'tourstops': [{
+                    'ott': "highlight=fan:rgb(130,130,247)@=67819",
+                    'identifier': "badstop",
+                }],
+            })
+        self.assertRegex(str(cm.exception.body), r'badstop.*integer OTT')
+
+        # Malformed ancestor pinpoint
+        with self.assertRaisesRegex(HTTP, r'422') as cm:
+            self.tour_put('UT::TOUR', {
+                'tourstops': [{
+                    'ott': "@_ancestor=123",
+                    'identifier': "badanc",
+                }],
+            })
+        self.assertRegex(str(cm.exception.body), r'ott ancestor')
 
     def test_data_storerestore(self):
         """Can we store/restore tours in the database?"""
         otts = util.find_unsponsored_otts(10)
 
         # Can insert new tours
-        t = self.tour_put('UT::TOUR', dict(
-            title="A unit test tour",
-            description="It's a nice tour",
-            author="UT::Author",
-            tourstops=[
-                dict(
-                    ott=otts[0],
-                    identifier="ott0",
-                ),
-                dict(
-                    ott=otts[5],
-                    identifier="ott5",
-                ),
+        t = self.tour_put('UT::TOUR', {
+            'title': "A unit test tour",
+            'description': "It's a nice tour",
+            'author': "UT::Author",
+            'tourstops': [
+                {
+                    'ott': otts[0],
+                    'identifier': "ott0",
+                },
+                {
+                    'ott': otts[5],
+                    'identifier': "ott5",
+                },
             ],
-        ))
+        })
         self.assertEqual(t['title'], "A unit test tour")
         self.assertEqual(t['description'], "It's a nice tour")
         self.assertEqual(t['author'], "UT::Author")
@@ -112,23 +136,23 @@ class TestControllersTour(unittest.TestCase):
             [ts['ott'] for ts in t['tourstops']],
             [otts[0], otts[5]],
         )
-        t_alt = self.tour_put('UT::TOUR-ALT', dict(
-            title="An alternative unit test tour",
-            description="An alternative tour that won't be fetched at the same time",
-            author="UT::Author",
-            tourstops=[
-                dict(
+        t_alt = self.tour_put('UT::TOUR-ALT', {
+            'title': "An alternative unit test tour",
+            'description': "An alternative tour that won't be fetched at the same time",
+            'author': "UT::Author",
+            'tourstops': [
+                {
                     # NB: Share an identifier, which is fine
-                    ott=otts[0],
-                    identifier="ott0",
-                    template_data=dict(title="We still start in the same place"),
-                ),
-                dict(
-                    ott=otts[9],
-                    identifier="ott9",
-                ),
+                    'ott': otts[0],
+                    'identifier': "ott0",
+                    'template_data': {'title': "We still start in the same place"},
+                },
+                {
+                    'ott': otts[9],
+                    'identifier': "ott9",
+                },
             ],
-        ))
+        })
         self.assertEqual(t_alt['title'], "An alternative unit test tour")
         self.assertEqual(t_alt['description'], "An alternative tour that won't be fetched at the same time")
         self.assertEqual(t_alt['author'], "UT::Author")
@@ -144,29 +168,29 @@ class TestControllersTour(unittest.TestCase):
         self.assertEqual(t_alt, self.tour_get('UT::TOUR-ALT'))
 
         # Updating tour will re-use existing tourstops where possible
-        t2 = self.tour_put('UT::TOUR', dict(
-            title="A unit test tour",
-            description="It's a nice tour",
-            author="UT::Author",
-            tourstops=[
-                dict(
+        t2 = self.tour_put('UT::TOUR', {
+            'title': "A unit test tour",
+            'description': "It's a nice tour",
+            'author': "UT::Author",
+            'tourstops': [
+                {
                     # Change metadata, keep existing entry
-                    ott=otts[0],
-                    identifier="ott0",
-                    template_data=dict(title="The first tourstop"),
-                ),
-                dict(
+                    'ott': otts[0],
+                    'identifier': "ott0",
+                    'template_data': {'title': "The first tourstop"},
+                },
+                {
                     # The OTT matches, but is a different identifier, so gets a new entry
-                    ott=otts[5],
-                    identifier="ott5first",
-                ),
-                dict(
+                    'ott': otts[5],
+                    'identifier': "ott5first",
+                },
+                {
                     # Recycling identifier in a new location, keeps existing entry
-                    ott=otts[5],
-                    identifier="ott5",
-                ),
+                    'ott': otts[5],
+                    'identifier': "ott5",
+                },
             ],
-        ))
+        })
         self.assertEqual(
             [ts['ott'] for ts in t2['tourstops']],
             [otts[0], otts[5], otts[5]],
@@ -178,21 +202,21 @@ class TestControllersTour(unittest.TestCase):
         ])
 
         # Can remove tourstops by getting rid of reference to them
-        t2 = self.tour_put('UT::TOUR', dict(
-            title="A unit test tour",
-            description="It's a nice tour",
-            author="UT::Author",
-            tourstops=[
-                dict(
-                    ott=otts[5],
-                    identifier="ott5first",
-                ),
-                dict(
-                    ott=otts[5],
-                    identifier="ott5",
-                ),
+        t2 = self.tour_put('UT::TOUR', {
+            'title': "A unit test tour",
+            'description': "It's a nice tour",
+            'author': "UT::Author",
+            'tourstops': [
+                {
+                    'ott': otts[5],
+                    'identifier': "ott5first",
+                },
+                {
+                    'ott': otts[5],
+                    'identifier': "ott5",
+                },
             ],
-        ))
+        })
         self.assertEqual(
             [ts['ott'] for ts in t2['tourstops']],
             [otts[5], otts[5]],
@@ -201,20 +225,20 @@ class TestControllersTour(unittest.TestCase):
     def test_data_symlinks(self):
         """Can we symlink tours from one to another?"""
         # Insert 2 tours
-        t = self.tour_put('UT::TOUR', dict(tourstops=3))
+        t = self.tour_put('UT::TOUR', {'tourstops': 3})
         orig_ts = t['tourstops']
-        t2 = self.tour_put('UT::TOUR2', dict(tourstops=3))
+        t2 = self.tour_put('UT::TOUR2', {'tourstops': 3})
         orig_ts2 = t2['tourstops']
 
         # Symlinks point at own tour by default
-        t2 = self.tour_put('UT::TOUR2', dict(tourstops=[
+        t2 = self.tour_put('UT::TOUR2', {'tourstops': [
             t2['tourstops'][0],
             t2['tourstops'][1],
-            dict(
-                symlink_tourstop=t2['tourstops'][2]['identifier'],
-            ),
+            {
+                'symlink_tourstop': t2['tourstops'][2]['identifier'],
+            },
             t2['tourstops'][2],
-        ]))
+        ]})
         self.assertEqual([ts['ott'] for ts in t2['tourstops']], [
             orig_ts2[0]['ott'],
             orig_ts2[1]['ott'],
@@ -223,26 +247,26 @@ class TestControllersTour(unittest.TestCase):
         ])
 
         # Dangling symlinks are noticed
-        with self.assertRaisesRegex(HTTP, r'400'):
-            t2 = self.tour_put('UT::TOUR2', dict(tourstops=[
+        with self.assertRaisesRegex(HTTP, r'422'):
+            t2 = self.tour_put('UT::TOUR2', {'tourstops': [
                 t2['tourstops'][0],
                 t2['tourstops'][1],
-                dict(
-                    symlink_tourstop='parrotparrot',
-                ),
+                {
+                    'symlink_tourstop': 'parrotparrot',
+                },
                 t2['tourstops'][2],
-            ]))
+            ]})
 
         # Add symlink to first tour
-        t2 = self.tour_put('UT::TOUR2', dict(tourstops=[
+        t2 = self.tour_put('UT::TOUR2', {'tourstops': [
             orig_ts2[0],
             orig_ts2[1],
-            dict(
-                symlink_tour="UT::TOUR",
-                symlink_tourstop=t['tourstops'][0]['identifier'],
-            ),
+            {
+                'symlink_tour': "UT::TOUR",
+                'symlink_tourstop': t['tourstops'][0]['identifier'],
+            },
             orig_ts2[2],
-        ]))
+        ]})
         # t2 has OTTs in the order we expect
         self.assertEqual([ts['ott'] for ts in t2['tourstops']], [
             orig_ts2[0]['ott'],
@@ -257,15 +281,15 @@ class TestControllersTour(unittest.TestCase):
         )
 
         # Can move symlink
-        t2 = self.tour_put('UT::TOUR2', dict(tourstops=[
+        t2 = self.tour_put('UT::TOUR2', {'tourstops': [
             orig_ts2[0],
             orig_ts2[1],
             orig_ts2[2],
-            dict(
-                symlink_tour="UT::TOUR",
-                symlink_tourstop=t['tourstops'][0]['identifier'],
-            ),
-        ]))
+            {
+                'symlink_tour': "UT::TOUR",
+                'symlink_tourstop': t['tourstops'][0]['identifier'],
+            },
+        ]})
         self.assertEqual([ts['ott'] for ts in t2['tourstops']], [
             orig_ts2[0]['ott'],
             orig_ts2[1]['ott'],
@@ -274,9 +298,9 @@ class TestControllersTour(unittest.TestCase):
         ])
 
         # Removing from t cascades & removes from t2
-        t = self.tour_put('UT::TOUR', dict(tourstops=[
+        t = self.tour_put('UT::TOUR', {'tourstops': [
             orig_ts[1],
-        ]))
+        ]})
         self.assertEqual([ts['ott'] for ts in t['tourstops']], [
             orig_ts[1]['ott'],
         ])
@@ -292,17 +316,17 @@ class TestControllersTour(unittest.TestCase):
         otts = util.find_unsponsored_otts(10)
 
         # Can insert a tour with a common ancestor pinpoint
-        t = self.tour_put('UT::TOUR', dict(
-            title="A unit test tour",
-            description="It's a nice tour",
-            author="UT::Author",
-            tourstops=[
-                dict(
-                    ott='@_ancestor=%d=%d' % (otts[0], otts[1]),
-                    identifier="ott0",
-                ),
+        t = self.tour_put('UT::TOUR', {
+            'title': "A unit test tour",
+            'description': "It's a nice tour",
+            'author': "UT::Author",
+            'tourstops': [
+                {
+                    'ott': '@_ancestor=%d=%d' % (otts[0], otts[1]),
+                    'identifier': "ott0",
+                },
             ],
-        ))
+        })
 
         # Get back the same pinpoint
         self.assertEqual(
@@ -320,33 +344,33 @@ class TestControllersTour(unittest.TestCase):
         otts = util.find_unsponsored_otts(10)
 
         # Can insert a tour with a common ancestor pinpoint
-        t = self.tour_put('UT::TOUR', dict(
-            title="A unit test tour",
-            description="It's a nice tour",
-            author="UT::Author",
-            tourstop_shared=dict(
-                stop_wait=1234,
-                template_data={
+        t = self.tour_put('UT::TOUR', {
+            'title': "A unit test tour",
+            'description': "It's a nice tour",
+            'author': "UT::Author",
+            'tourstop_shared': {
+                'stop_wait': 1234,
+                'template_data': {
                     "title": "Some tourstop",
                     "visible-transition_in": True,
                 },
-            ),
-            tourstops=[
-                dict(
-                    ott='@_ancestor=%d=%d' % (otts[0], otts[1]),
-                    identifier="ott0",
-                    stop_wait=3,
-                    template_data=dict(title="The first tourstop"),
-                ),
-                dict(
-                    ott='@_ancestor=%d=%d' % (otts[0], otts[1]),
-                    identifier="ott1",
-                    template_data={
+            },
+            'tourstops': [
+                {
+                    'ott': '@_ancestor=%d=%d' % (otts[0], otts[1]),
+                    'identifier': "ott0",
+                    'stop_wait': 3,
+                    'template_data': {'title': "The first tourstop"},
+                },
+                {
+                    'ott': '@_ancestor=%d=%d' % (otts[0], otts[1]),
+                    'identifier': "ott1",
+                    'template_data': {
                         "visible-transition_in": False,
                     },
-                ),
+                },
             ],
-        ))
+        })
         # Tourstop wins for top-level items
         self.assertEqual(
             [ts['stop_wait'] for ts in t['tourstops']],
@@ -366,27 +390,27 @@ class TestControllersTour(unittest.TestCase):
         otts = util.find_unsponsored_otts(10)
 
         # Can insert a tour with a common ancestor pinpoint
-        t = self.tour_put('UT::TOUR', dict(
-            title="A unit test tour",
-            description="It's a nice tour",
-            author="UT::Author",
-            tourstop_shared=dict(
-                stop_wait=1234,
-            ),
-            tourstops=[
-                dict(
-                    ott=otts[0],
-                    identifier="ott0",
-                    stop_wait=3,
-                    author="Frank",
-                ),
-                dict(
-                    ott=otts[1],
-                    identifier="ott1",
-                    author="Gelda",
-                ),
+        t = self.tour_put('UT::TOUR', {
+            'title': "A unit test tour",
+            'description': "It's a nice tour",
+            'author': "UT::Author",
+            'tourstop_shared': {
+                'stop_wait': 1234,
+            },
+            'tourstops': [
+                {
+                    'ott': otts[0],
+                    'identifier': "ott0",
+                    'stop_wait': 3,
+                    'author': "Frank",
+                },
+                {
+                    'ott': otts[1],
+                    'identifier': "ott1",
+                    'author': "Gelda",
+                },
             ],
-        ))
+        })
         # One entry uses default
         self.assertEqual(
             [ts['stop_wait'] for ts in self.tour_get('UT::TOUR')['tourstops']],
@@ -399,24 +423,24 @@ class TestControllersTour(unittest.TestCase):
         )
 
         # Clear author, stop_wait. Get set back to their DB defaults
-        t = self.tour_put('UT::TOUR', dict(
-            title="A unit test tour",
-            description="It's a nice tour",
-            author="UT::Author",
-            tourstop_shared=dict(
-            ),
-            tourstops=[
-                dict(
-                    ott=otts[0],
-                    identifier="ott0",
-                    stop_wait=3,
-                ),
-                dict(
-                    ott=otts[1],
-                    identifier="ott1",
-                ),
+        t = self.tour_put('UT::TOUR', {
+            'title': "A unit test tour",
+            'description': "It's a nice tour",
+            'author': "UT::Author",
+            'tourstop_shared': {
+            },
+            'tourstops': [
+                {
+                    'ott': otts[0],
+                    'identifier': "ott0",
+                    'stop_wait': 3,
+                },
+                {
+                    'ott': otts[1],
+                    'identifier': "ott1",
+                },
             ],
-        ))
+        })
         self.assertEqual(
             [ts['stop_wait'] for ts in self.tour_get('UT::TOUR')['tourstops']],
             [3, None],
@@ -433,7 +457,7 @@ class TestControllersTour(unittest.TestCase):
                 'list',
                 method='GET',
                 args=[],
-                vars=dict(tours=",".join(tours), include_rest=str(include_rest)),
+                vars={'tours': ",".join(tours), 'include_rest': str(include_rest)},
             )
 
         def t_filter(out, list_name):
