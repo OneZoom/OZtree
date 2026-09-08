@@ -47,7 +47,7 @@
  * Other modules provide extra functionality useful when writing tours, in particular:
  * * {@link tour/handler/HtmlAV} Autoplays/stops HTML ``<audio>`` / ``<video>`` in a tourstop based on ``data-ts_autoplay``.
  * * {@link tour/handler/QsOpts} Applies/reverts tree state based on ``data-qs_opts``, e.g. highlights, colour schemes, language.
- * * {@link tour/handler/UiEvents} Behavioural CSS classes to add to tour forward/backward/etc buttons.
+ * * {@link tour/handler/UiEvents} Behavioural CSS classes to add to tour forward/backward/etc buttons, plus Escape / arrow-key shortcuts.
  * * {@link tour/handler/TsProgress} Individual links to tourstops, showing currently visited stops.
  * * {@link tour/handler/Vimeo} Autoplays/stops embedded Vimeo in a tourstop based on ``data-ts_autoplay``.
  * * {@link tour/handler/Youtube} Autoplays/stops embedded Youtube in a tourstop based on ``data-ts_autoplay``.
