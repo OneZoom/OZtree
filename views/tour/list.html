@@ -16,7 +16,7 @@
          class="block uk-flex uk-flex-column"
          style="min-height: 150px; padding-left: calc(150px + 1rem); position: relative;"
          href="{{=URL('default', 'life', vars=dict(tour=tour.url))}}">
-          <img src="{{=img.url(tour.image_url)}}"
+          <img src="{{=img.url(tour.image_url) if tour.image_url else URL('static','images/notAvailable.png')}}"
            onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'"
               width="150" height="150"
               alt="" style="position: absolute; left: 0; border: 1px solid #242A22; border-radius: 10px" />
