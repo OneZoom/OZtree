@@ -471,6 +471,8 @@ def save_data(image_cols):
             "save_data() needs 8 columns to save pictures into, but got {}: {}".format(
                 len(image_cols), image_cols))
 
+    # Name of a staging table. 
+    # The table can safely be removed whilst picprocess is not running.
     staging = "reps_staging"
 
     # SWITCHING FINAL OUTPUTS TO OTTID
@@ -488,9 +490,9 @@ def save_data(image_cols):
 
     # BULK LOAD THE OTTS INTO A STAGING TABLE
     info("Loading {} rows of picture summaries into {}".format(len(rows), staging))
-    db_curs.execute("DROP TEMPORARY TABLE IF EXISTS `{}`".format(staging))
+    db_curs.execute("DROP TABLE IF EXISTS `{}`".format(staging))
     db_curs.execute("""
-        CREATE TEMPORARY TABLE `{}` (
+        CREATE TABLE `{}` (
             id INT NOT NULL PRIMARY KEY,
             c1 INT, c2 INT, c3 INT, c4 INT, c5 INT, c6 INT, c7 INT, c8 INT
         ) ENGINE=InnoDB;
@@ -498,6 +500,7 @@ def save_data(image_cols):
     db_curs.executemany(
         "INSERT INTO `{}` VALUES ({})".format(staging, ','.join(["%s"]*9)),
         rows)
+    db_connection.commit()
 
     # APPLY THE LOT IN ONE STATEMENT
     # this way, readers never see an intermediate case of missing reps
@@ -510,7 +513,7 @@ def save_data(image_cols):
             nodes=args.OTT_node_table, staging=staging, assignment=assignment))
     info("{} rows changed".format(db_curs.rowcount))
     db_connection.commit()
-    db_curs.execute("DROP TEMPORARY TABLE IF EXISTS `{}`".format(staging))
+    db_curs.execute("DROP TABLE IF EXISTS `{}`".format(staging))
 
 # NOW CALL THE FUNCTIONS AND DO THE WORK
 
