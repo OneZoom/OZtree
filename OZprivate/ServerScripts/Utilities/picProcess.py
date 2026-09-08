@@ -17,8 +17,6 @@ import argparse
 import math
 import random
 
-import tqdm
-
 # FUNCTIONS FOR OUTPUTTING INFO AND WARNINGS
 
 def warning(*objs):
@@ -81,7 +79,7 @@ elif args.database.startswith("mysql://"): #mysql://<mysql_user>:<mysql_password
         pw = getpass("Enter the sql database password")
     else:
         pw = match.group(2)
-    db_connection = pymysql.connect(user=match.group(1), passwd=pw, host=match.group(3), db=match.group(4), port=3306)
+    db_connection = pymysql.connect(user=match.group(1), password=pw, host=match.group(3), database=match.group(4), port=3306)
 else:
     warning("No recognized database specified: {}".format(args.database))
     sys.exit()
@@ -466,27 +464,53 @@ def ripple_node():
                 node_images[parent_node] = temp_node_images.copy()
 
 # SAVE WHAT WE'VE DONE TO THE DATABASE
-# parse in image_cols so that we know where to save the data
+# pass in image_cols so that we know where to save the data
 def save_data(image_cols):
+    if len(image_cols) != 8:
+        raise ValueError(
+            "save_data() needs 8 columns to save pictures into, but got {}: {}".format(
+                len(image_cols), image_cols))
 
-    # NULL OUT THE DATABASE FIRST
-    info("Setting all picture summaries for all nodes to NULL")
-    assignment = ["`{}`=NULL".format(col) for col in image_cols]
-    sql = "UPDATE {} SET {};".format(args.OTT_node_table, ','.join(assignment))
-    db_curs.execute(sql)
-    db_connection.commit()
+    staging = "reps_staging"
 
     # SWITCHING FINAL OUTPUTS TO OTTID
+    # node_images holds indexes into Images_OTT_data_T
     info("Transforming final output into OTTID format")
-    for row in tqdm.trange(len(node_images), disable=(args.verbosity<1)):
-        counter_temp = 0
-        for element in range(8):
-            if node_images[row][element] != None:
-                node_images[row][element] = Images_OTT_data_T[node_images[row][element]][2]
-                counter_temp += 1
-                sql = "UPDATE ordered_nodes SET {} = '{}' WHERE id = '{}'".format(image_cols[element],node_images[row][element],row+1)
-                db_curs.execute(sql)
+    # each row is 9 elements: the id of a node, followed by the 8 optional otts representing it
+    rows = []
+    for row in range(len(node_images)):
+        otts = [
+            None if pic is None else Images_OTT_data_T[pic][2]
+            for pic in node_images[row]
+        ]
+        if any(ott is not None for ott in otts):
+            rows.append((row+1, *otts))
+
+    # BULK LOAD THE OTTS INTO A STAGING TABLE
+    info("Loading {} rows of picture summaries into {}".format(len(rows), staging))
+    db_curs.execute("DROP TEMPORARY TABLE IF EXISTS `{}`".format(staging))
+    db_curs.execute("""
+        CREATE TEMPORARY TABLE `{}` (
+            id INT NOT NULL PRIMARY KEY,
+            c1 INT, c2 INT, c3 INT, c4 INT, c5 INT, c6 INT, c7 INT, c8 INT
+        ) ENGINE=InnoDB;
+        """.format(staging))
+    db_curs.executemany(
+        "INSERT INTO `{}` VALUES ({})".format(staging, ','.join(["%s"]*9)),
+        rows)
+
+    # APPLY THE LOT IN ONE STATEMENT
+    # this way, readers never see an intermediate case of missing reps
+    info("Applying picture summaries to {}".format(args.OTT_node_table))
+    assignment = ','.join(
+        "n.`{}`=s.c{}".format(col, i+1) for i, col in enumerate(image_cols))
+    db_curs.execute("""
+        UPDATE {nodes} n LEFT JOIN `{staging}` s ON n.id=s.id SET {assignment};
+        """.format(
+            nodes=args.OTT_node_table, staging=staging, assignment=assignment))
+    info("{} rows changed".format(db_curs.rowcount))
     db_connection.commit()
+    db_curs.execute("DROP TEMPORARY TABLE IF EXISTS `{}`".format(staging))
 
 # NOW CALL THE FUNCTIONS AND DO THE WORK
 
