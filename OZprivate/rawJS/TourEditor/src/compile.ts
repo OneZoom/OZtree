@@ -10,7 +10,7 @@ import {
 import { sanitizeTourIdentifier, tourFileSlug } from './tour';
 import { stopVisibilityClassNames, stopVisibilityFlags, defaultStopVisibility } from './stopVisibility';
 import { contentVisibilityFlags, defaultContentVisibility } from './tourContentVisibility';
-import type { EditorTextBlock, EditorTour, EditorTourStop, TourLicense } from './types';
+import type { EditorMediaBlock, EditorTextBlock, EditorTour, EditorTourStop, TourLicense } from './types';
 import { PhaseSelection } from './phases';
 
 /**
@@ -81,8 +81,8 @@ function editorStopToJson(stop: EditorTourStop): ProductionTourStopJson {
         .filter((block) => block.text.length > 0)
         .map((block) => windowTextValue(block, stopVisibility));
     const media = stop.mediaBlocks
-        .map((block) => mediaBlockToUrl(block))
-        .filter((url) => url.length > 0);
+        .map((block) => mediaValue(block, stopVisibility))
+        .filter((item): item is ProductionMedia => item !== null);
     const out: ProductionTourStopJson = {
         identifier: stop.identifier,
         template_data: {
@@ -119,6 +119,17 @@ function windowTextValue(block: EditorTextBlock, stopVisibility: PhaseSelection)
     );
     if (Object.keys(flags).length === 0) return block.text;
     return { text: block.text, ...flags };
+}
+
+function mediaValue(block: EditorMediaBlock, stopVisibility: PhaseSelection): ProductionMedia | null {
+    const url = mediaBlockToUrl(block);
+    if (!url) return null;
+    const flags = contentVisibilityFlags(
+        block.visibility ?? defaultContentVisibility,
+        stopVisibility,
+    );
+    if (Object.keys(flags).length === 0) return url;
+    return { url, ...flags };
 }
 
 /**

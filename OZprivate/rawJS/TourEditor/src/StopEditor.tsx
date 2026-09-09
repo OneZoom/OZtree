@@ -73,6 +73,7 @@ export default function StopEditor({ stop, onChange, onPreview }: StopEditorProp
                 <MediaBlocks
                     blocks={stop.mediaBlocks}
                     onChange={(mediaBlocks) => onChange({ mediaBlocks })}
+                    containerVisibility={stop.visibility ?? defaultStopVisibility}
                 />
             </div>
 

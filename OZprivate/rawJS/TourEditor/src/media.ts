@@ -154,17 +154,17 @@ export function parseMediaUrlAsKind(url: string, kind: EditorMediaKind): EditorM
     }
 }
 
-/** Reattach the editor ``id``. Object-spread of the fields union would keep only ``kind``. */
+/** Reattach editor-owned fields. Object-spread of the fields union would keep only ``kind``. */
 export function mediaBlockFromFields<T extends EditorMediaSource>(
     fields: T,
-    id: string,
-): T & { id: string } {
-    return { ...fields, id };
+    previous: { id: string; visibility?: EditorMediaBlock['visibility'] },
+): T & { id: string; visibility?: EditorMediaBlock['visibility'] } {
+    return { ...fields, id: previous.id, visibility: previous.visibility };
 }
 
 export function mediaBlockWithKind(block: EditorMediaBlock, kind: EditorMediaKind): EditorMediaBlock {
     if (block.kind === kind) return block;
-    return mediaBlockFromFields(parseMediaUrlAsKind(mediaBlockToUrl(block), kind), block.id);
+    return mediaBlockFromFields(parseMediaUrlAsKind(mediaBlockToUrl(block), kind), block);
 }
 
 export function mediaBlockWithYoutubeTimes(
@@ -172,10 +172,7 @@ export function mediaBlockWithYoutubeTimes(
     start: number | undefined,
     end: number | undefined,
 ): EditorYoutubeMedia {
-    const next: EditorYoutubeMedia = { id: block.id, kind: 'youtube', videoId: block.videoId };
-    if (start !== undefined) next.start = start;
-    if (end !== undefined) next.end = end;
-    return next;
+    return { ...block, start, end };
 }
 
 /** Empty or invalid input clears the time; otherwise a non-negative whole number of seconds. */

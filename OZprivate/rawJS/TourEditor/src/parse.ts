@@ -20,6 +20,7 @@ import {
     type TourLicense,
     type TransitionIn,
 } from './types';
+import { PhaseSelection } from './phases';
 
 const LICENSE_VALUES = new Set<string>(LICENSE_OPTIONS.map((option) => option.value));
 const TRANSITION_VALUES = new Set<TransitionIn>(['fly', 'leap', 'fly_straight']);
@@ -151,23 +152,25 @@ function parseMediaList(value: unknown, stopIdentifier: string): EditorMediaBloc
 
 function parseProductionMedia(value: unknown, label: string): EditorMediaBlock | null {
     let url = '';
+    let visibility: PhaseSelection | undefined;
     if (typeof value === 'string') {
         url = value;
     } else if (isRecord(value)) {
         url = asString(value.url);
+        visibility = parseContentVisibility(value);
     } else {
         throw new TourParseError(`${label} is not valid.`);
     }
     if (!url) return null;
     const parsed = parseMediaUrl(url);
-    return mediaBlockFromFields(parsed || { kind: 'link', url }, newEditorId());
+    return mediaBlockFromFields(parsed || { kind: 'link', url }, { id: newEditorId(), visibility });
 }
 
 function parseThumbnail(value: unknown): EditorThumbnailMedia {
     if (typeof value !== 'string' || !value) return createMediaBlock('image');
     const parsed = parseMediaUrl(value, THUMBNAIL_MEDIA_KINDS);
     if (!parsed) return createMediaBlock('image');
-    const block = mediaBlockFromFields(parsed, newEditorId());
+    const block = mediaBlockFromFields(parsed, { id: newEditorId() });
     return isThumbnailMedia(block) ? block : createMediaBlock('image');
 }
 

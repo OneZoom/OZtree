@@ -180,6 +180,51 @@ test('editorTourToJson: writes text visibility flags only when narrower than the
     t.end();
 });
 
+test('editorTourToJson: writes media visibility flags only when narrower than the stop', (t) => {
+    const json = editorTourToJson(tour({
+        stops: [stop({
+            identifier: 'cats',
+            visibility: { transitionIn: true, active: true, transitionOut: false },
+            mediaBlocks: [
+                { id: 'm1', kind: 'image', url: 'https://example.com/follow.jpg' },
+                { id: 'm2', kind: 'image', url: 'https://example.com/in.jpg', visibility: {
+                    transitionIn: true, active: false, transitionOut: false,
+                } },
+                { id: 'm3', kind: 'youtube', videoId: 'W86cTIoMv2U', visibility: {
+                    transitionIn: false, active: true, transitionOut: false,
+                } },
+            ],
+        })],
+    }));
+    t.deepEqual(json.tourstops[0].template_data.media, [
+        'https://example.com/follow.jpg',
+        { url: 'https://example.com/in.jpg', 'visible-transition_in': true },
+        { url: 'https://www.youtube.com/embed/W86cTIoMv2U', 'visible-active_wait': true },
+    ]);
+    t.end();
+});
+
+test('editorTourToJson: omits media visibility flags that match a default stop', (t) => {
+    const json = editorTourToJson(tour({
+        stops: [stop({
+            identifier: 'cats',
+            mediaBlocks: [
+                { id: 'm1', kind: 'image', url: 'https://example.com/always.jpg', visibility: {
+                    transitionIn: true, active: true, transitionOut: true,
+                } },
+                { id: 'm2', kind: 'image', url: 'https://example.com/active.jpg', visibility: {
+                    transitionIn: false, active: true, transitionOut: false,
+                } },
+            ],
+        })],
+    }));
+    t.deepEqual(json.tourstops[0].template_data.media, [
+        'https://example.com/always.jpg',
+        'https://example.com/active.jpg',
+    ]);
+    t.end();
+});
+
 test('editorTourToJson: omits text visibility flags that match a default stop', (t) => {
     const json = editorTourToJson(tour({
         stops: [stop({
@@ -310,6 +355,28 @@ test('tourJsonToHtml: window_text visibility classes', (t) => {
     t.match(html, /<div class="window_text">Always<\/div>/);
     t.match(html, /<div class="window_text visible-transition_in">Fly in<\/div>/);
     t.match(html, /<div class="window_text visible-active_wait">Wait<\/div>/);
+    t.end();
+});
+
+test('tourJsonToHtml: media visibility classes', (t) => {
+    const html = tourJsonToHtml({
+        title: '',
+        description: '',
+        author: '',
+        tourstops: [{
+            identifier: 's',
+            template_data: {
+                media: [
+                    'https://example.com/always.jpg',
+                    { url: 'https://example.com/in.jpg', 'visible-transition_in': true },
+                    { url: 'https://example.com/wait.jpg', 'visible-active_wait': true },
+                ],
+            },
+        }],
+    });
+    t.match(html, /class="embed-image"[^>]*><img src="https:\/\/example\.com\/always\.jpg"/);
+    t.match(html, /class="embed-image visible-transition_in"/);
+    t.match(html, /class="embed-image visible-active_wait"/);
     t.end();
 });
 

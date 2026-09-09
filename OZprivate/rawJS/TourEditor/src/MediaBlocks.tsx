@@ -1,18 +1,21 @@
 import MediaBlockCard from './MediaBlockCard';
 import UkIcon from './UkIcon';
 import { ALL_MEDIA_KINDS, createMediaBlock } from './media';
+import type { PhaseSelection } from './phases';
 import { moveItem } from './tour';
 import type { EditorMediaBlock, EditorMediaKind } from './types';
 
 interface MediaBlocksProps {
     blocks: EditorMediaBlock[];
     onChange: (blocks: EditorMediaBlock[]) => void;
+    containerVisibility: PhaseSelection;
     kinds?: readonly EditorMediaKind[];
 }
 
 export default function MediaBlocks({
     blocks,
     onChange,
+    containerVisibility,
     kinds = ALL_MEDIA_KINDS,
 }: MediaBlocksProps) {
     const updateBlock = (next: EditorMediaBlock) => {
@@ -32,6 +35,7 @@ export default function MediaBlocks({
                     onMoveUp={() => onChange(moveItem(blocks, index, -1))}
                     canMoveDown={index < blocks.length - 1}
                     onMoveDown={() => onChange(moveItem(blocks, index, 1))}
+                    containerVisibility={containerVisibility}
                 />
             ))}
             <button

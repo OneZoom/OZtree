@@ -304,12 +304,18 @@ body.tree-viewer {
     color: #222;
 }
 
-.tour-editor-phase-toggle:hover {
+.tour-editor-phase-toggle:hover:not(.is-disabled) {
     background: rgba(255, 255, 255, 0.6);
 }
 
-.tour-editor-phase-toggle.is-active {
+.tour-editor-phase-toggle.is-active:not(.is-disabled) {
     background: #7eb8ea;
+}
+
+.tour-editor-phase-toggle.is-disabled {
+    color: #9a9a9a;
+    cursor: default;
+    pointer-events: none;
 }
 
 .tour-editor-media-row .uk-select {

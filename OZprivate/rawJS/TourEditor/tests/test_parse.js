@@ -178,6 +178,9 @@ test('parseEditorTour: reads window_text, media objects, and qs_opts', (t) => {
     });
     t.equal(loaded.stops[0].mediaBlocks[0].kind, 'wikimedia');
     t.equal(loaded.stops[0].mediaBlocks[0].filename, 'Rose_of_Jericho.gif');
+    t.deepEqual(loaded.stops[0].mediaBlocks[0].visibility, {
+        transitionIn: true, active: true, transitionOut: true,
+    });
     t.deepEqual(loaded.stops[0].visibility, {
         transitionIn: false, active: true, transitionOut: false,
     });
@@ -219,6 +222,27 @@ test('parseEditorTour: round-trips text visibility flags against a visible-in st
     t.deepEqual(editorTourToJson(loaded), editorTourToJson(original));
     t.equal(loaded.stops[0].textBlocks[1].visibility.transitionIn, true);
     t.equal(loaded.stops[0].textBlocks[1].visibility.active, false);
+    t.end();
+});
+
+test('parseEditorTour: round-trips media visibility flags against a visible-in stop', (t) => {
+    const original = tour({
+        identifier: 'demo',
+        stops: [stop({
+            identifier: 'cats',
+            visibility: { transitionIn: true, active: true, transitionOut: false },
+            mediaBlocks: [
+                { id: 'm1', kind: 'image', url: 'https://example.com/follow.jpg' },
+                { id: 'm2', kind: 'image', url: 'https://example.com/in.jpg', visibility: {
+                    transitionIn: true, active: false, transitionOut: false,
+                } },
+            ],
+        })],
+    });
+    const loaded = parseEditorTour(editorTourToJson(original));
+    t.deepEqual(editorTourToJson(loaded), editorTourToJson(original));
+    t.equal(loaded.stops[0].mediaBlocks[1].visibility.transitionIn, true);
+    t.equal(loaded.stops[0].mediaBlocks[1].visibility.active, false);
     t.end();
 });
 
