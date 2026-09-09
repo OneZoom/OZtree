@@ -1,14 +1,7 @@
 import { toHighlightStr } from './highlights';
-import {
-    AUDIO_EXT,
-    IMAGE_EXT,
-    MEDIA_EXT,
-    TOURS_URL_BASE,
-    mediaBlockToUrl,
-    oneZoomThumbUrl,
-} from './media';
+import { mediaBlockToUrl } from './media';
 import { sanitizeTourIdentifier, tourFileSlug } from './tour';
-import { stopVisibilityClassNames, stopVisibilityFlags, defaultStopVisibility } from './stopVisibility';
+import { stopVisibilityFlags, defaultStopVisibility } from './stopVisibility';
 import { contentVisibilityFlags, defaultContentVisibility } from './tourContentVisibility';
 import type { EditorMediaBlock, EditorTextBlock, EditorTour, EditorTourStop, TourLicense } from './types';
 import { PhaseSelection } from './phases';
@@ -149,229 +142,26 @@ function mediaEmbedExtras(block: EditorMediaBlock): Record<string, string | null
 }
 
 /**
- * Compile production tour JSON to the HTML the tour engine parses.
- * Mirrors ``views/tour/data.html`` for the subset the editor can produce.
+ * Turn production tour JSON into the HTML the tour engine parses.
+ *
+ * ``/tour/preview.html`` renders the document with ``views/tour/data.html``, the same
+ * template a saved tour goes through, so an unsaved tour previews exactly as it will
+ * once published. Nothing is written to the database.
  */
-export function tourJsonToHtml(tour: ProductionTourJson): string {
-    const identifier = tour.identifier || 'preview';
-    const stops = tour.tourstops || [];
-    const tourAttrs = [
-        `class="tour tour-data layout-def ${escapeHtml(identifier)}"`,
-        `data-identifier="${escapeHtml(identifier)}"`,
-        'data-focal-area="0.5 0.5"',
-        optionalDataAttr('author', tour.author),
-        optionalDataAttr('title', tour.title),
-        optionalDataAttr('description', tour.description),
-        optionalDataAttr('image_url', tour.image_url),
-    ].filter(Boolean);
-
-    const stopHtml = stops.map((stop, tsIdx) => stopToHtml(stop, tsIdx, stops)).join('');
-    return `<div ${tourAttrs.join(' ')}>${stopHtml}</div>`;
-}
-
-function stopToHtml(
-    stop: ProductionTourStopJson,
-    tsIdx: number,
-    stops: ProductionTourStopJson[],
-): string {
-    const tdata = stop.template_data || {};
-    const visClass = stopVisibilityClassNames(tdata);
-    const extraClass = typeof tdata.class === 'string' ? tdata.class : '';
-    const className = ['container', 'tour_container', extraClass, visClass].filter(Boolean).join(' ');
-    const stopAttrs = [
-        `class="${escapeHtml(className)}"`,
-        optionalDataAttr('ott', stop.ott),
-        optionalDataAttr('qs_opts', stop.qs_opts),
-        optionalDataAttr('transition_in', stop.transition_in),
-        optionalDataAttr('fly_in_speed', stop.fly_in_speed),
-        optionalDataAttr('stop_wait', stop.stop_wait),
-    ].filter(Boolean);
-
-    const title = tdata.title
-        ? `<h2 class="title">${escapeHtml(tdata.title)}</h2>`
-        : '';
-    const windowText = windowTextHtml(tdata.window_text);
-    const media = mediaHtml(tdata.media);
-    const options = stops.map((other, i) => {
-        const label = escapeHtml((other.template_data || {}).title || '');
-        const disabled = i === tsIdx ? ' disabled' : '';
-        return `<option value="${i}"${disabled}>${label}</option>`;
-    }).join('');
-
-    return `<div ${stopAttrs.join(' ')}>
-    <div class="header">
-      <button type="button" class="button tour_exit" uk-icon="icon: close" aria-label="Exit tour"></button>
-      <button type="button" class="handle" aria-label="Exit tour"></button>
-      ${title}
-    </div>
-    ${windowText}
-    ${media}
-    <div class="footer">
-      <button class="tour_backward">Back</button>
-      <span class="grow">
-        <select name="tourstop" class="ts-progress uk-select tour_goto" style="height: 35px; text-align-last: center;">
-          <option hidden selected value="">${tsIdx + 1} of ${stops.length}</option>
-          ${options}
-        </select>
-      </span>
-      <button class="tour_resume">Resume</button>
-      <button class="tour_forward">Next</button>
-      <button class="tour_final">Exit</button>
-    </div>
-  </div>`;
-}
-
-function mediaHtml(media: ProductionTourStopJson['template_data']['media']): string {
-    if (!media || media.length === 0) return '';
-    return media.map((item) => mediaEmbed(item, {
-        ts_autoplay: 'tsstate-active_wait',
-        url_base: TOURS_URL_BASE,
-    })).join('');
-}
-
-/**
- * Generate embed HTML for a media URL, mirroring ``modules/embed.py:media_embed``.
- */
-function mediaEmbed(
-    url: ProductionMedia,
-    defaults: Record<string, string | boolean | null | undefined> = {},
-): string {
-    const opts: Record<string, string | boolean | null | undefined> = typeof url === 'object' && url !== null
-        ? { ...defaults, ...url }
-        : { ...defaults, url };
-    let href = String(opts.url || '');
-    if (opts.url_base) {
-        href = joinUrl(String(opts.url_base), href);
-        opts.url = href;
+export async function tourPreviewHtml(tour: ProductionTourJson): Promise<string> {
+    const url = window.server_urls?.tour_preview_api ?? '/tour/preview.html';
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tour),
+    });
+    if (!response.ok) {
+        // Our own refusals come back as a plain-text reason; anything else is a
+        // framework error page that would be no help to a tour author.
+        const reason = (await response.text().catch(() => '')).trim();
+        throw new Error(reason && !reason.startsWith('<')
+            ? reason
+            : `The server could not render this tour (error ${response.status}).`);
     }
-
-    const elementData = Object.entries(opts)
-        .filter(([key, value]) => (
-            key !== 'url' && key !== 'url_base' && key !== 'alt' && key !== 'title'
-            && value !== undefined && value !== null && value !== true
-        ))
-        .map(([key, value]) => `data-${key}="${escapeHtml(String(value))}"`)
-        .join(' ');
-    const extraClass = Object.entries(opts)
-        .filter(([key, value]) => key !== 'url' && value === true)
-        .map(([key]) => escapeHtml(key))
-        .join(' ');
-    const klass = extraClass ? ` ${extraClass}` : '';
-    const dataAttrs = elementData ? ` ${elementData}` : '';
-    const alt = opts.alt !== undefined ? String(opts.alt) : '';
-    const title = opts.title !== undefined ? String(opts.title) : '';
-
-    const imgsrc = href.match(/^imgsrc:(-?\d+):(-?\d+)$/);
-    if (imgsrc) {
-        const srcUrl = oneZoomThumbUrl(Number(imgsrc[1]), Number(imgsrc[2]));
-        const infoUrl = `/tree/pic_info/${imgsrc[1]}/${imgsrc[2]}`;
-        return `<a class="embed-image${klass}" title="${escapeHtml(title)}" href="${escapeHtml(infoUrl)}"${dataAttrs}><img src="${escapeHtml(srcUrl)}" alt="${escapeHtml(alt)}" /><span class="copyright">©</span></a>`;
-    }
-
-    const youtube = href.match(/^https:\/\/www\.youtube\.com\/embed\/(.+)$/);
-    if (youtube) {
-        const sep = href.includes('?') ? '&' : '?';
-        const origin = youtubeOrigin();
-        const src = `${href}${sep}enablejsapi=1&playsinline=1${origin ? `&origin=${encodeURIComponent(origin)}` : ''}`;
-        return `<div class="embed-video${klass}"><iframe class="embed-youtube" type="text/html" src="${escapeHtml(src)}" frameborder="0" allow="autoplay; fullscreen" allowfullscreen${dataAttrs}></iframe></div>`;
-    }
-
-    if (/^https:\/\/player\.vimeo\.com\/video\/(.+)$/.test(href)) {
-        return `<div class="embed-video${klass}"><iframe class="embed-vimeo" src="${escapeHtml(href)}" frameborder="0" allow="autoplay; fullscreen" allowfullscreen${dataAttrs}></iframe></div>`;
-    }
-
-    const hosted = href.match(
-        new RegExp(`^(https://commons\\.wikimedia\\.org/wiki/File:(.+)\\.(${MEDIA_EXT})|https://onezoom\\.github\\.io/tours/(.+)\\.(${MEDIA_EXT}))$`, 'i'),
-    );
-    if (hosted) {
-        return hostedMediaHtml(href, klass, dataAttrs, alt, title);
-    }
-
-    const image = href.match(new RegExp(`^(.+\\.(?:${IMAGE_EXT}))$`, 'i'));
-    if (image) {
-        const imageAlt = alt || humaniseUrl(href);
-        return `<a class="embed-image${klass}"${dataAttrs}><img src="${escapeHtml(href)}" alt="${escapeHtml(imageAlt)}" /></a>`;
-    }
-    if (new RegExp(`\\.(?:${AUDIO_EXT})$`, 'i').test(href)) {
-        return `<div class="embed-audio${klass}"><audio controls src="${escapeHtml(href)}"${dataAttrs}></audio></div>`;
-    }
-
-    return `<a href="${escapeHtml(href)}" style="font-weight:bold">${escapeHtml(href)}</a>`;
-}
-
-function hostedMediaHtml(
-    href: string,
-    klass: string,
-    dataAttrs: string,
-    alt: string,
-    title: string,
-): string {
-    const commons = href.match(
-        new RegExp(`^https://commons\\.wikimedia\\.org/wiki/File:(.+)\\.(${MEDIA_EXT})$`, 'i'),
-    );
-    const tours = href.match(
-        new RegExp(`^https://onezoom\\.github\\.io/tours/(.+)\\.(${MEDIA_EXT})$`, 'i'),
-    );
-    const name = commons ? `${commons[1]}.${commons[2]}` : `${tours![1]}.${tours![2]}`;
-    const ext = (commons ? commons[2] : tours![2]).toLowerCase();
-    const srcUrl = commons
-        ? `https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/${name}`
-        : href;
-    const copyrightUrl = commons ? href : `${TOURS_URL_BASE}${tours![1]}.html`;
-    const resolvedAlt = alt || humaniseUrl(commons ? name : tours![1]);
-    const resolvedTitle = title || name;
-
-    if (new RegExp(`^(?:${IMAGE_EXT})$`, 'i').test(ext)) {
-        return `<a class="embed-image${klass}" title="${escapeHtml(resolvedTitle)}" href="${escapeHtml(copyrightUrl)}"${dataAttrs}><img src="${escapeHtml(srcUrl)}" alt="${escapeHtml(resolvedAlt)}" /><span class="copyright">©</span></a>`;
-    }
-    if (new RegExp(`^(?:${AUDIO_EXT})$`, 'i').test(ext)) {
-        return `<div class="embed-audio${klass}"><audio controls src="${escapeHtml(srcUrl)}"${dataAttrs}></audio><a class="copyright" href="${escapeHtml(copyrightUrl)}">©</a></div>`;
-    }
-    return `<div class="embed-video${klass}"><video controls src="${escapeHtml(srcUrl)}"${dataAttrs}></video><a class="copyright" href="${escapeHtml(copyrightUrl)}">©</a></div>`;
-}
-
-function joinUrl(base: string, url: string): string {
-    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(url)) return url;
-    const normalisedBase = base.endsWith('/') ? base : `${base}/`;
-    return new URL(url, normalisedBase).href;
-}
-
-function youtubeOrigin(): string {
-    if (typeof window !== 'undefined' && window.location && window.location.origin !== 'null') {
-        return window.location.origin;
-    }
-    return '';
-}
-
-function humaniseUrl(url: string): string {
-    const base = url.split('/').pop() || url;
-    return base.replace(/\.[^.]+$/, '').replace(/_/g, ' ');
-}
-
-function windowTextHtml(window_text: ProductionTourStopJson['template_data']['window_text']): string {
-    if (!window_text) return '';
-    const items = Array.isArray(window_text) ? window_text : [window_text];
-    return items.map((value) => {
-        const content = typeof value === 'string' ? { text: value } : value;
-        const flags = Object.keys(content).filter((key) => key !== 'text' && content[key] === true);
-        const className = ['window_text', ...flags].join(' ');
-        return `<div class="${escapeHtml(className)}">${formatWindowText(content.text)}</div>`;
-    }).join('');
-}
-
-function formatWindowText(text: string): string {
-    return escapeHtml(text).replace(/\r\n|\r|\n/g, '<br>');
-}
-
-function optionalDataAttr(name: string, value: string | number | undefined | null): string {
-    if (value === undefined || value === null || value === '') return '';
-    return `data-${name}="${escapeHtml(String(value))}"`;
-}
-
-function escapeHtml(value: string): string {
-    return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
+    return response.text();
 }

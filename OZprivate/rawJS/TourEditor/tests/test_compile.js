@@ -3,7 +3,7 @@
  *        node OZprivate/rawJS/run_tape.js OZprivate/rawJS/TourEditor/tests/test_compile.js
  */
 import test from 'tape';
-import { editorTourToJson, tourJsonFilename, tourJsonString, tourJsonToHtml } from '../src/compile';
+import { editorTourToJson, tourJsonFilename, tourJsonString, tourPreviewHtml } from '../src/compile';
 import { createEmptyStop, createEmptyTour } from '../src/tour';
 
 function stop(partial) {
@@ -285,202 +285,69 @@ test('editorTourToJson: omits text visibility flags that match a default stop', 
     t.end();
 });
 
-test('tourJsonToHtml: production-like markup', (t) => {
-    const html = tourJsonToHtml({
-        identifier: 'demo',
-        title: 'Demo',
-        description: 'Desc',
-        author: 'OZ',
-        image_url: 'imgsrc:99:27732437',
-        tourstops: [
-            {
-                identifier: 'cats',
-                ott: '@Felidae',
-                qs_opts: '?highlight=fan:#ff6b6b@Felidae',
-                transition_in: 'leap',
-                stop_wait: 5000,
-                template_data: {
-                    title: 'Cats',
-                    window_text: ['Look at <cats>', 'Line 2'],
-                    media: [
-                        'https://www.youtube.com/embed/W86cTIoMv2U',
-                        'https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif',
-                        'frogs/Various_frogs_and_toads.jpeg',
-                        'imgsrc:99:27732437',
-                    ],
-                },
-            },
-            {
-                identifier: 'dogs',
-                ott: '@Canidae',
-                template_data: { title: 'Dogs' },
-            },
-        ],
-    });
+/** Run (fn) with window / fetch stubbed out, collecting the requests fetch was given. */
+async function withFetch(response, fn) {
+    const calls = [];
+    const oldWindow = global.window;
+    const oldFetch = global.fetch;
+    global.window = { server_urls: { tour_preview_api: 'https://oz.example.com/tour/preview.html' } };
+    global.fetch = (url, options) => {
+        calls.push({ url, options });
+        return Promise.resolve(response);
+    };
+    try {
+        return { calls, result: await fn() };
+    } finally {
+        global.window = oldWindow;
+        global.fetch = oldFetch;
+    }
+}
 
-    t.match(html, /class="tour tour-data layout-def demo"/);
-    t.match(html, /data-identifier="demo"/);
-    t.match(html, /data-focal-area="0.5 0.5"/);
-    t.match(html, /data-author="OZ"/);
-    t.match(html, /data-title="Demo"/);
-    t.match(html, /data-image_url="imgsrc:99:27732437"/);
-    t.match(html, /data-ott="@Felidae"/);
-    t.match(html, /data-qs_opts="\?highlight=fan:#ff6b6b@Felidae"/);
-    t.match(html, /data-transition_in="leap"/);
-    t.match(html, /data-stop_wait="5000"/);
-    t.match(html, /<h2 class="title">Cats<\/h2>/);
-    t.match(html, /<div class="window_text">Look at &lt;cats&gt;<\/div>/);
-    t.match(html, /class="embed-youtube"/);
-    t.match(html, /data-ts_autoplay="tsstate-active_wait"/);
-    t.match(html, /class="embed-image"/);
-    t.match(html, /Special:Redirect\/file\/Rose_of_Jericho\.gif/);
-    t.match(html, /src="https:\/\/onezoom\.github\.io\/tours\/frogs\/Various_frogs_and_toads\.jpeg"/);
-    t.match(html, /href="\/tree\/pic_info\/99\/27732437"/);
-    t.match(html, /class="tour_forward"/);
-    t.match(html, /class="button tour_exit"/);
-    t.match(html, /<option hidden selected value="">1 of 2<\/option>/);
-    t.match(html, /<option value="0" disabled>Cats<\/option>/);
-    t.match(html, /<option value="1">Dogs<\/option>/);
-    t.equal(/data-ott="@Canidae"[\s\S]*data-transition_in/.test(html), false);
+test('tourPreviewHtml: POSTs the document as JSON and returns the rendered HTML', async (t) => {
+    const { calls, result } = await withFetch({
+        ok: true,
+        status: 200,
+        text: () => Promise.resolve('<div class="tour tour-preview">...</div>'),
+    }, () => tourPreviewHtml(editorTourToJson(tour({ title: 'Mammals', stops: [stop({})] }))));
+
+    t.equal(calls.length, 1);
+    t.equal(calls[0].url, 'https://oz.example.com/tour/preview.html');
+    t.equal(calls[0].options.method, 'POST');
+    // The server refuses anything else, so that a cross-origin form cannot reach it
+    t.equal(calls[0].options.headers['Content-Type'], 'application/json');
+    t.deepEqual(JSON.parse(calls[0].options.body).identifier, 'mammals');
+    t.equal(result, '<div class="tour tour-preview">...</div>');
     t.end();
 });
 
-test('tourJsonToHtml: OneZoom imgsrc with a negative srcId', (t) => {
-    const html = tourJsonToHtml({
-        title: 'Demo',
-        description: '',
-        author: '',
-        tourstops: [{
-            identifier: 's',
-            template_data: {
-                media: ['imgsrc:3:-27123592'],
-            },
-        }],
+test('tourPreviewHtml: reports the reason the server gave', async (t) => {
+    await withFetch({
+        ok: false,
+        status: 422,
+        text: () => Promise.resolve('Must have at least one tourstop'),
+    }, async () => {
+        try {
+            await tourPreviewHtml(editorTourToJson(createEmptyTour()));
+            t.fail('should have thrown');
+        } catch (err) {
+            t.equal(err.message, 'Must have at least one tourstop');
+        }
     });
-    t.match(html, /href="\/tree\/pic_info\/3\/-27123592"/);
     t.end();
 });
 
-test('tourJsonToHtml: stop visibility classes', (t) => {
-    const html = tourJsonToHtml({
-        title: '',
-        description: '',
-        author: '',
-        tourstops: [{
-            identifier: 's',
-            template_data: {
-                'visible-transition_in': true,
-                'hidden-active_wait': true,
-            },
-        }],
+test('tourPreviewHtml: ignores an error page a tour author cannot act on', async (t) => {
+    await withFetch({
+        ok: false,
+        status: 500,
+        text: () => Promise.resolve('<html><body>Internal error</body></html>'),
+    }, async () => {
+        try {
+            await tourPreviewHtml(editorTourToJson(createEmptyTour()));
+            t.fail('should have thrown');
+        } catch (err) {
+            t.equal(err.message, 'The server could not render this tour (error 500).');
+        }
     });
-    t.match(html, /class="container tour_container visible-transition_in hidden-active_wait"/);
-    t.end();
-});
-
-test('tourJsonToHtml: window_text visibility classes', (t) => {
-    const html = tourJsonToHtml({
-        title: '',
-        description: '',
-        author: '',
-        tourstops: [{
-            identifier: 's',
-            template_data: {
-                window_text: [
-                    'Always',
-                    { text: 'Fly in', 'visible-transition_in': true },
-                    { text: 'Wait', 'visible-active_wait': true },
-                ],
-            },
-        }],
-    });
-    t.match(html, /<div class="window_text">Always<\/div>/);
-    t.match(html, /<div class="window_text visible-transition_in">Fly in<\/div>/);
-    t.match(html, /<div class="window_text visible-active_wait">Wait<\/div>/);
-    t.end();
-});
-
-test('tourJsonToHtml: media ts_autoplay, alt, and title', (t) => {
-    const html = tourJsonToHtml({
-        title: '',
-        description: '',
-        author: '',
-        tourstops: [{
-            identifier: 's',
-            template_data: {
-                media: [{
-                    url: 'https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif',
-                    ts_autoplay: 'tsstate-transition_in tsstate-active_wait',
-                    alt: 'A resurrection plant',
-                    title: 'Rose of Jericho',
-                }],
-            },
-        }],
-    });
-    t.match(html, /data-ts_autoplay="tsstate-transition_in tsstate-active_wait"/);
-    t.match(html, /alt="A resurrection plant"/);
-    t.match(html, /title="Rose of Jericho"/);
-    t.end();
-});
-
-test('tourJsonToHtml: media visibility classes', (t) => {
-    const html = tourJsonToHtml({
-        title: '',
-        description: '',
-        author: '',
-        tourstops: [{
-            identifier: 's',
-            template_data: {
-                media: [
-                    'https://example.com/always.jpg',
-                    { url: 'https://example.com/in.jpg', 'visible-transition_in': true },
-                    { url: 'https://example.com/wait.jpg', 'visible-active_wait': true },
-                ],
-            },
-        }],
-    });
-    t.match(html, /class="embed-image"[^>]*><img src="https:\/\/example\.com\/always\.jpg"/);
-    t.match(html, /class="embed-image visible-transition_in"/);
-    t.match(html, /class="embed-image visible-active_wait"/);
-    t.end();
-});
-
-test('tourJsonToHtml: escapes attributes and newlines', (t) => {
-    const html = tourJsonToHtml({
-        title: 'A "quoted" title',
-        description: '',
-        author: '',
-        tourstops: [{
-            identifier: 's',
-            template_data: {
-                window_text: 'Hello\nworld',
-            },
-        }],
-    });
-    t.match(html, /data-identifier="preview"/);
-    t.match(html, /data-title="A &quot;quoted&quot; title"/);
-    t.match(html, /<div class="window_text">Hello<br>world<\/div>/);
-    t.end();
-});
-
-test('compile: editor tour becomes playable HTML', (t) => {
-    const html = tourJsonToHtml(editorTourToJson(tour({
-        title: 'Editor to HTML',
-        stops: [
-            stop({
-                identifier: 'a',
-                location: '@Aves',
-                textBlocks: [{ id: '1', text: 'Birds' }],
-                mediaBlocks: [{ id: 'm1', kind: 'vimeo', videoId: '12345' }],
-            }),
-            stop({ identifier: 'b', location: '@Mammalia', transitionIn: 'fly_straight' }),
-        ],
-    })));
-    t.match(html, /data-ott="@Aves"/);
-    t.match(html, /data-ott="@Mammalia"/);
-    t.match(html, /data-transition_in="fly_straight"/);
-    t.match(html, /<div class="window_text">Birds<\/div>/);
-    t.match(html, /class="embed-vimeo"/);
-    t.match(html, /src="https:\/\/player\.vimeo\.com\/video\/12345"/);
     t.end();
 });

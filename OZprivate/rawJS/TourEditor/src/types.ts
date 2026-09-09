@@ -35,6 +35,8 @@ export interface ValidationResult {
 
 export interface TreeNode {
     ozid: number;
+    ott?: number;
+    latin_name?: string;
     children?: TreeNode[];
     child_index_towards: (ozid: number) => number | null;
     pic_src?: number | string;

@@ -3,7 +3,7 @@ import OpenTourModal from './OpenTourModal';
 import StopEditor from './StopEditor';
 import TourForm from './TourForm';
 import UkIcon from './UkIcon';
-import { editorTourToJson, tourJsonFilename, tourJsonString, tourJsonToHtml } from './compile';
+import { editorTourToJson, tourJsonFilename, tourJsonString, tourPreviewHtml } from './compile';
 import {
     createEmptyStop,
     createEmptyTour,
@@ -55,30 +55,29 @@ async function saveTourJsonFile(contents: string, filename: string): Promise<boo
     return true;
 }
 
-function playEditorTour(
+async function playEditorTour(
     tour: EditorTour,
     startStopId: string | undefined,
     onComplete: () => void,
 ): Promise<void> {
-    const html = tourJsonToHtml(editorTourToJson(tour));
+    const html = await tourPreviewHtml(editorTourToJson(tour));
     const index = startStopId
         ? tour.stops.findIndex((stop) => stop.id === startStopId)
         : 0;
-    const started = window.onezoom.controller.tour_start(document.createTextNode(html), {
+    await window.onezoom.controller.tour_start(document.createTextNode(html), {
         on_complete: onComplete,
     });
-    return Promise.resolve(started).then(() => {
-        // start() already plays stop 0; jumping to 0 would restart it as a leap.
-        if (index > 0) {
-            window.onezoom.controller.tour_goto_stop(index);
-        }
-    });
+    // start() already plays stop 0; jumping to 0 would restart it as a leap.
+    if (index > 0) {
+        window.onezoom.controller.tour_goto_stop(index);
+    }
 }
 
 export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEditorProps) {
     const [tour, _setTour] = useState<EditorTour | null>(null);
     const [selectedStopId, setSelectedStopId] = useState<string | null>(null);
     const [pendingPreview, setPendingPreview] = useState<PendingPreview | null>(null);
+    const [previewError, setPreviewError] = useState<string | null>(null);
     const [openFileModal, setOpenFileModal] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const setTour: typeof _setTour = (action) => {
@@ -117,13 +116,17 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
         /** The panel is closed so e.g. highlight sync is now unmounted. Play any pending preview. */
         const { stopId } = pendingPreview;
         setPendingPreview(null);
-        void playEditorTour(tour, stopId, onOpen);
+        void playEditorTour(tour, stopId, onOpen).catch((err: unknown) => {
+            setPreviewError(err instanceof Error ? err.message : String(err));
+            onOpen();
+        });
     }, [isOpen, pendingPreview, tour, onOpen]);
 
     const selectedStop = tour?.stops.find((stop) => stop.id === selectedStopId) ?? null;
 
     const requestPreview = (stopId?: string) => {
         if (!tour || tour.stops.length === 0) return;
+        setPreviewError(null);
         setPendingPreview({ stopId });
         onClose();
     };
@@ -209,6 +212,9 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
                         </div>
                     </div>
                     <div className="tour-editor-panel-body">
+                        {isOpen && previewError && (
+                            <p className="uk-text-danger uk-text-small">{previewError}</p>
+                        )}
                         {isOpen && tour && selectedStop && (
                             <StopEditor
                                 stop={selectedStop}

@@ -6,7 +6,6 @@ import test from 'tape';
 import {
     defaultStopVisibility,
     parseStopVisibility,
-    stopVisibilityClassNames,
     stopVisibilityFlags,
 } from '../src/stopVisibility';
 
@@ -32,9 +31,5 @@ test('stop visibility: default active, hidden-active_wait turns it off', (t) => 
         'hidden-active_wait': true,
         'visible-transition_out': true,
     });
-    t.equal(
-        stopVisibilityClassNames({ 'visible-transition_in': true, 'hidden-active_wait': true }),
-        'visible-transition_in hidden-active_wait',
-    );
     t.end();
 });
