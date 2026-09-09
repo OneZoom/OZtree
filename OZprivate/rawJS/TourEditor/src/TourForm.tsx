@@ -28,6 +28,8 @@ export default function TourForm({
     onOpenFile,
     onDownloadFile,
 }: TourFormProps) {
+    const selectedLicense = LICENSE_OPTIONS.find((option) => option.value === tour.license);
+
     return (
         <div className="uk-form-stacked">
             <div className="uk-margin">
@@ -94,12 +96,26 @@ export default function TourForm({
                     id="tour-license"
                     className="uk-select"
                     value={tour.license}
+                    aria-describedby="tour-license-description"
                     onChange={(e) => onChange({ license: e.target.value as TourLicense })}
                 >
                     {LICENSE_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                 </select>
+                {selectedLicense && (
+                    <p className="uk-text-small uk-text-muted uk-margin-small-top" id="tour-license-description">
+                        {selectedLicense.description}
+                        {selectedLicense.infoUrl && (
+                            <>
+                                {' '}
+                                <a href={selectedLicense.infoUrl} target="_blank" rel="noopener noreferrer">
+                                    More info
+                                </a>
+                            </>
+                        )}
+                    </p>
+                )}
             </div>
 
             <div className="tour-editor-section">
