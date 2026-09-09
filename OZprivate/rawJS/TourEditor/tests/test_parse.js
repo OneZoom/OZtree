@@ -56,6 +56,7 @@ function completeTour() {
                 flyInSpeed: 2,
                 autoAdvance: true,
                 stopWaitSeconds: 5,
+                comment: 'needs a nicer photo',
             }),
         ],
     });
@@ -81,6 +82,7 @@ test('parseEditorTour: round-trips compiled production JSON', (t) => {
     t.equal(loaded.stops[0].flyInSpeed, 2);
     t.equal(loaded.stops[0].autoAdvance, true);
     t.equal(loaded.stops[0].stopWaitSeconds, 5);
+    t.equal(loaded.stops[0].comment, 'needs a nicer photo');
     t.ok(loaded.stops[0].id);
     t.ok(loaded.thumbnail.id);
     t.end();
@@ -296,6 +298,26 @@ test('parseEditorTour: flattens tourstop_shared into every stop', (t) => {
     t.deepEqual(loaded.stops[1].visibility, {
         transitionIn: true, active: true, transitionOut: false,
     });
+    t.end();
+});
+
+test('parseEditorTour: retains both stop and template_data comments', (t) => {
+    const original = tour({
+        identifier: 'demo',
+        stops: [stop({
+            identifier: 'cats',
+            comment: 'stop comment',
+            templateComment: 'template comment',
+        })],
+    });
+    const json = editorTourToJson(original);
+    t.equal(json.tourstops[0].comment, 'stop comment');
+    t.equal(json.tourstops[0].template_data.comment, 'template comment');
+
+    const loaded = parseEditorTour(json);
+    t.equal(loaded.stops[0].comment, 'stop comment');
+    t.equal(loaded.stops[0].templateComment, 'template comment');
+    t.deepEqual(editorTourToJson(loaded), json);
     t.end();
 });
 

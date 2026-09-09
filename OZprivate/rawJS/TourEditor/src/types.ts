@@ -167,6 +167,9 @@ export interface EditorTourStop {
     flyInSpeed: number;
     autoAdvance: boolean;
     stopWaitSeconds: number;
+    // Some fields just need to survive the round-trip, no UI:
+    comment?: string;
+    templateComment?: string;
 }
 
 export const DEFAULT_HIGHLIGHT_COLOR = '#ff6b6b';

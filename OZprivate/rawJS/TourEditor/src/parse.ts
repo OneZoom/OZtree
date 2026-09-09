@@ -110,6 +110,8 @@ function parseStop(value: unknown, index: number): EditorTourStop {
     const tdata = isRecord(value.template_data) ? value.template_data : {};
     const { fillScreen, highlights } = parseQsOpts(value.qs_opts);
     const stopWaitMs = optionalFiniteNumber(value.stop_wait);
+    const comment = asString(value.comment);
+    const templateComment = asString(tdata.comment);
 
     return {
         id: newEditorId(),
@@ -125,6 +127,8 @@ function parseStop(value: unknown, index: number): EditorTourStop {
         flyInSpeed: asFiniteNumber(value.fly_in_speed, 1),
         autoAdvance: stopWaitMs !== undefined,
         stopWaitSeconds: stopWaitMs !== undefined ? stopWaitMs / 1000 : 5,
+        ...(comment ? { comment } : {}),
+        ...(templateComment ? { templateComment } : {}),
     };
 }
 

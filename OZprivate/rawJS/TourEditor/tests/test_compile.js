@@ -79,6 +79,8 @@ test('editorTourToJson: maps stop fields to production JSON', (t) => {
                 flyInSpeed: 2,
                 autoAdvance: true,
                 stopWaitSeconds: 5,
+                comment: 'needs a nicer photo',
+                templateComment: 'this sound should autoplay',
             }),
             stop({
                 identifier: 'dogs',
@@ -94,8 +96,10 @@ test('editorTourToJson: maps stop fields to production JSON', (t) => {
         transition_in: 'leap',
         fly_in_speed: 2,
         stop_wait: 5000,
+        comment: 'needs a nicer photo',
         template_data: {
             title: 'Cats',
+            comment: 'this sound should autoplay',
             window_text: ['Look at cats', 'And more cats'],
             media: [
                 'https://www.youtube.com/embed/W86cTIoMv2U',
