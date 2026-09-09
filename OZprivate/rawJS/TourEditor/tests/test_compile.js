@@ -134,6 +134,29 @@ test('editorTourToJson: writes a direct image thumbnail', (t) => {
     t.end();
 });
 
+test('editorTourToJson: writes media embed extras', (t) => {
+    const json = editorTourToJson(tour({
+        stops: [stop({
+            identifier: 'cats',
+            mediaBlocks: [{
+                id: 'm1',
+                kind: 'image',
+                url: 'https://example.com/cat.jpg',
+                ts_autoplay: 'tsstate-transition_in tsstate-active_wait',
+                alt: 'A cat',
+                title: 'Cat photo',
+            }],
+        })],
+    }));
+    t.deepEqual(json.tourstops[0].template_data.media, [{
+        url: 'https://example.com/cat.jpg',
+        ts_autoplay: 'tsstate-transition_in tsstate-active_wait',
+        alt: 'A cat',
+        title: 'Cat photo',
+    }]);
+    t.end();
+});
+
 test('editorTourToJson: writes extraQueryStrings into qs_opts', (t) => {
     const json = editorTourToJson(tour({
         stops: [stop({
@@ -374,6 +397,29 @@ test('tourJsonToHtml: window_text visibility classes', (t) => {
     t.match(html, /<div class="window_text">Always<\/div>/);
     t.match(html, /<div class="window_text visible-transition_in">Fly in<\/div>/);
     t.match(html, /<div class="window_text visible-active_wait">Wait<\/div>/);
+    t.end();
+});
+
+test('tourJsonToHtml: media ts_autoplay, alt, and title', (t) => {
+    const html = tourJsonToHtml({
+        title: '',
+        description: '',
+        author: '',
+        tourstops: [{
+            identifier: 's',
+            template_data: {
+                media: [{
+                    url: 'https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif',
+                    ts_autoplay: 'tsstate-transition_in tsstate-active_wait',
+                    alt: 'A resurrection plant',
+                    title: 'Rose of Jericho',
+                }],
+            },
+        }],
+    });
+    t.match(html, /data-ts_autoplay="tsstate-transition_in tsstate-active_wait"/);
+    t.match(html, /alt="A resurrection plant"/);
+    t.match(html, /title="Rose of Jericho"/);
     t.end();
 });
 

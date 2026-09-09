@@ -201,17 +201,39 @@ function parseMediaList(value: unknown, stopIdentifier: string): EditorMediaBloc
 function parseProductionMedia(value: unknown, label: string): EditorMediaBlock | null {
     let url = '';
     let visibility: PhaseSelection | undefined;
+    let ts_autoplay: string | null | undefined;
+    let alt: string | undefined;
+    let title: string | undefined;
     if (typeof value === 'string') {
         url = value;
     } else if (isRecord(value)) {
         url = asString(value.url);
         visibility = parseContentVisibility(value);
+        ts_autoplay = parseTsAutoplay(value.ts_autoplay);
+        alt = optionalNonEmptyString(value.alt);
+        title = optionalNonEmptyString(value.title);
     } else {
         throw new TourParseError(`${label} is not valid.`);
     }
     if (!url) return null;
     const parsed = parseMediaUrl(url);
-    return mediaBlockFromFields(parsed || { kind: 'link', url }, { id: newEditorId(), visibility });
+    return mediaBlockFromFields(parsed || { kind: 'link', url }, {
+        id: newEditorId(),
+        visibility,
+        ts_autoplay,
+        alt,
+        title,
+    });
+}
+
+function parseTsAutoplay(value: unknown): string | null | undefined {
+    if (value === null) return null;
+    if (typeof value === 'string') return value;
+    return undefined;
+}
+
+function optionalNonEmptyString(value: unknown): string | undefined {
+    return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
 function parseThumbnail(value: unknown): EditorThumbnailMedia {

@@ -66,6 +66,10 @@ export interface EditorTextBlock {
 interface EditorMediaBlockBase {
     id: string;
     visibility?: PhaseSelection;
+    // Some fields just need to survive the round-trip, no UI:
+    ts_autoplay?: string | null;
+    alt?: string;
+    title?: string;
 }
 
 /** OneZoom image: ``imgsrc:{src}:{srcId}``. ``src`` is a ``src_flags`` value, e.g. 99 for ``eol_old``. */
@@ -141,7 +145,8 @@ export type EditorThumbnailKind = 'onezoom' | 'image';
 export type EditorThumbnailMedia = Extract<EditorMediaBlock, { kind: EditorThumbnailKind }>;
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
-export type EditorMediaSource = DistributiveOmit<EditorMediaBlock, 'id' | 'visibility'>;
+export type EditorMediaNonSourceKey = 'id' | 'visibility' | 'ts_autoplay' | 'alt' | 'title';
+export type EditorMediaSource = DistributiveOmit<EditorMediaBlock, EditorMediaNonSourceKey>;
 
 export interface EditorTour {
     identifier: string;

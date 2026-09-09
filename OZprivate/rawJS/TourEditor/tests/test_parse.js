@@ -348,6 +348,70 @@ test('parseEditorTour: round-trips extraQueryStrings', (t) => {
     t.end();
 });
 
+test('parseEditorTour: reads ts_autoplay, alt, and title', (t) => {
+    const loaded = parseEditorTour({
+        identifier: 'demo',
+        tourstops: [{
+            identifier: 'cats',
+            template_data: {
+                media: [{
+                    url: 'https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg',
+                    ts_autoplay: 'tsstate-transition_in tsstate-active_wait',
+                    alt: 'Song thrush',
+                    title: 'Turdus philomelos.ogg',
+                }],
+            },
+        }],
+    });
+    t.equal(loaded.stops[0].mediaBlocks[0].ts_autoplay, 'tsstate-transition_in tsstate-active_wait');
+    t.equal(loaded.stops[0].mediaBlocks[0].alt, 'Song thrush');
+    t.equal(loaded.stops[0].mediaBlocks[0].title, 'Turdus philomelos.ogg');
+    t.end();
+});
+
+test('parseEditorTour: round-trips ts_autoplay, alt, and title', (t) => {
+    const original = tour({
+        identifier: 'demo',
+        stops: [stop({
+            identifier: 'cats',
+            mediaBlocks: [{
+                id: 'm1',
+                kind: 'wikimedia',
+                filename: 'Turdus_philomelos.ogg',
+                ts_autoplay: 'tsstate-transition_in tsstate-active_wait',
+                alt: 'Song thrush',
+                title: 'Turdus philomelos.ogg',
+            }, {
+                id: 'm2',
+                kind: 'image',
+                url: 'https://example.com/quiet.jpg',
+                ts_autoplay: null,
+            }],
+        })],
+    });
+    const json = editorTourToJson(original);
+    t.deepEqual(json.tourstops[0].template_data.media, [
+        {
+            url: 'https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg',
+            ts_autoplay: 'tsstate-transition_in tsstate-active_wait',
+            alt: 'Song thrush',
+            title: 'Turdus philomelos.ogg',
+        },
+        {
+            url: 'https://example.com/quiet.jpg',
+            ts_autoplay: null,
+        },
+    ]);
+
+    const loaded = parseEditorTour(json);
+    t.equal(loaded.stops[0].mediaBlocks[0].ts_autoplay, 'tsstate-transition_in tsstate-active_wait');
+    t.equal(loaded.stops[0].mediaBlocks[0].alt, 'Song thrush');
+    t.equal(loaded.stops[0].mediaBlocks[0].title, 'Turdus philomelos.ogg');
+    t.equal(loaded.stops[0].mediaBlocks[1].ts_autoplay, null);
+    t.deepEqual(editorTourToJson(loaded), json);
+    t.end();
+});
+
 test('parseEditorTour: retains both stop and template_data comments', (t) => {
     const original = tour({
         identifier: 'demo',

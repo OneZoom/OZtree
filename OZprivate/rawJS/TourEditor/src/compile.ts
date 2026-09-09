@@ -135,8 +135,17 @@ function mediaValue(block: EditorMediaBlock, stopVisibility: PhaseSelection): Pr
         block.visibility ?? defaultContentVisibility,
         stopVisibility,
     );
-    if (Object.keys(flags).length === 0) return url;
-    return { url, ...flags };
+    const extras = mediaEmbedExtras(block);
+    if (Object.keys(flags).length === 0 && Object.keys(extras).length === 0) return url;
+    return { url, ...flags, ...extras };
+}
+
+function mediaEmbedExtras(block: EditorMediaBlock): Record<string, string | null> {
+    const extras: Record<string, string | null> = {};
+    if (block.ts_autoplay !== undefined) extras.ts_autoplay = block.ts_autoplay;
+    if (block.alt) extras.alt = block.alt;
+    if (block.title) extras.title = block.title;
+    return extras;
 }
 
 /**
