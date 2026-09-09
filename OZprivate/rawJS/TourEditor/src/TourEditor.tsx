@@ -204,7 +204,7 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
                                 type="button"
                                 onClick={closePanel}
                             >
-                                <UkIcon icon="chevron-double-right" />
+                                <UkIcon icon="close" />
                             </button>
                         </div>
                     </div>

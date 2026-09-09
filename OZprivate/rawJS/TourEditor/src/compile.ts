@@ -8,6 +8,7 @@ import {
     oneZoomThumbUrl,
 } from './media';
 import { sanitizeTourIdentifier, tourFileSlug } from './tour';
+import { stopVisibilityClassNames, stopVisibilityFlags, defaultStopVisibility } from './stopVisibility';
 import type { EditorTour, EditorTourStop, TourLicense } from './types';
 
 /**
@@ -43,6 +44,10 @@ export interface ProductionTourStopJson {
         title?: string;
         window_text?: ProductionWindowText | ProductionWindowText[];
         media?: ProductionMedia[];
+        'visible-transition_in'?: boolean;
+        'visible-transition_out'?: boolean;
+        'hidden-active_wait'?: boolean;
+        class?: string;
     };
 }
 
@@ -79,6 +84,7 @@ function editorStopToJson(stop: EditorTourStop): ProductionTourStopJson {
         identifier: stop.identifier,
         template_data: {
             ...(stop.title ? { title: stop.title } : {}),
+            ...stopVisibilityFlags(stop.visibility ?? defaultStopVisibility),
             ...(window_text.length > 0 ? { window_text } : {}),
             ...(media.length > 0 ? { media } : {}),
         },
@@ -130,8 +136,11 @@ function stopToHtml(
     stops: ProductionTourStopJson[],
 ): string {
     const tdata = stop.template_data || {};
+    const visClass = stopVisibilityClassNames(tdata);
+    const extraClass = typeof tdata.class === 'string' ? tdata.class : '';
+    const className = ['container', 'tour_container', extraClass, visClass].filter(Boolean).join(' ');
     const stopAttrs = [
-        'class="container tour_container"',
+        `class="${escapeHtml(className)}"`,
         optionalDataAttr('ott', stop.ott),
         optionalDataAttr('qs_opts', stop.qs_opts),
         optionalDataAttr('transition_in', stop.transition_in),

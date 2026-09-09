@@ -7,6 +7,7 @@ import {
     parseMediaUrl,
 } from './media';
 import { DEFAULT_LICENSE, LICENSE_OPTIONS, isTourIdentifier, newEditorId, sanitizeTourIdentifier } from './tour';
+import { parseStopVisibility } from './stopVisibility';
 import {
     type EditorHighlight,
     type EditorMediaBlock,
@@ -90,6 +91,7 @@ function parseStop(value: unknown, index: number): EditorTourStop {
         highlights,
         textBlocks: parseWindowText(tdata.window_text, identifier),
         mediaBlocks: parseMediaList(tdata.media, identifier),
+        visibility: parseStopVisibility(tdata),
         transitionIn: parseTransition(value.transition_in),
         flyInSpeed: asFiniteNumber(value.fly_in_speed, 1),
         autoAdvance: stopWaitMs !== undefined,

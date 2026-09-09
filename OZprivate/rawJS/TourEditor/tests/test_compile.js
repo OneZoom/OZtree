@@ -141,6 +141,21 @@ test('editorTourToJson: omits defaults and empty location', (t) => {
     t.end();
 });
 
+test('editorTourToJson: writes stop visibility flags', (t) => {
+    const json = editorTourToJson(tour({
+        stops: [stop({
+            identifier: 'cats',
+            visibility: { transitionIn: true, active: false, transitionOut: true },
+        })],
+    }));
+    t.deepEqual(json.tourstops[0].template_data, {
+        'visible-transition_in': true,
+        'hidden-active_wait': true,
+        'visible-transition_out': true,
+    });
+    t.end();
+});
+
 test('tourJsonToHtml: production-like markup', (t) => {
     const html = tourJsonToHtml({
         identifier: 'demo',
@@ -214,6 +229,23 @@ test('tourJsonToHtml: OneZoom imgsrc with a negative srcId', (t) => {
         }],
     });
     t.match(html, /href="\/tree\/pic_info\/3\/-27123592"/);
+    t.end();
+});
+
+test('tourJsonToHtml: stop visibility classes', (t) => {
+    const html = tourJsonToHtml({
+        title: '',
+        description: '',
+        author: '',
+        tourstops: [{
+            identifier: 's',
+            template_data: {
+                'visible-transition_in': true,
+                'hidden-active_wait': true,
+            },
+        }],
+    });
+    t.match(html, /class="container tour_container visible-transition_in hidden-active_wait"/);
     t.end();
 });
 

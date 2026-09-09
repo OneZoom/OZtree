@@ -1,3 +1,5 @@
+import type { PhaseSelection } from './phases';
+
 export type HighlightType = 'fan' | 'path';
 
 /** Highlight string sent to the tree, e.g. ``fan:#ff6b6b@Mammalia``. */
@@ -158,6 +160,7 @@ export interface EditorTourStop {
     highlights: EditorHighlight[];
     textBlocks: EditorTextBlock[];
     mediaBlocks: EditorMediaBlock[];
+    visibility: PhaseSelection;
     transitionIn: TransitionIn;
     flyInSpeed: number;
     autoAdvance: boolean;

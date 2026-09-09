@@ -174,6 +174,26 @@ test('parseEditorTour: reads window_text, media objects, and qs_opts', (t) => {
     t.equal(loaded.stops[0].textBlocks[1].text, 'Only on fly-in');
     t.equal(loaded.stops[0].mediaBlocks[0].kind, 'wikimedia');
     t.equal(loaded.stops[0].mediaBlocks[0].filename, 'Rose_of_Jericho.gif');
+    t.deepEqual(loaded.stops[0].visibility, {
+        transitionIn: false, active: true, transitionOut: false,
+    });
+    t.end();
+});
+
+test('parseEditorTour: reads stop visibility flags', (t) => {
+    const loaded = parseEditorTour({
+        identifier: 'demo',
+        tourstops: [{
+            identifier: 'cats',
+            template_data: {
+                'visible-transition_in': true,
+                'hidden-active_wait': true,
+            },
+        }],
+    });
+    t.deepEqual(loaded.stops[0].visibility, {
+        transitionIn: true, active: false, transitionOut: false,
+    });
     t.end();
 });
 
