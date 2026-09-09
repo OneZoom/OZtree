@@ -37,6 +37,7 @@
  *   * ``visible-transition_in``: Visible whilst transitioning to the tourstop node
  *   * ``visible-transition_out``: Visible whilst transitioning to the next tourstop node
  *   * ``hidden-active_wait``: Hidden whilst at the tourstop (NB: The default is ``visible-active_wait``)
+ *   When the tour is paused, the current stop is always visible.
  * * ``data-ott``: Specifies the OTT / Pinpoint that the tourstop will view, or ``0`` for point on the tree the tour started at
  * * ``data-transition_in``: The type of transition to use, one of ``leap``, ``fly_straight``. Defaults to ``flight``
  * * ``data-transition_in_wait``: Delay start of flight, in milliseconds. Defaults to 0

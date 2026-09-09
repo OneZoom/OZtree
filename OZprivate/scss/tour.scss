@@ -35,6 +35,12 @@
       visibility: visible;
     }
 
+    /* When paused, always show the current stop so Resume is reachable even if the stop is hidden.  */
+    &[data-state=tstate-paused] > .container[data-state=tsstate-active_wait],
+    &[data-state=tstate-paused] > .container[data-state=tsstate-transition_in] {
+      visibility: visible;
+    }
+
     /* tour_resume buttons only visible the tour is paused */
     .tour_resume { display: none }
     &[data-state=tstate-paused] .tour_resume { display: initial }
