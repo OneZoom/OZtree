@@ -2,14 +2,16 @@ import UkIcon from './UkIcon';
 import PhaseToggles from './PhaseToggles';
 import { createTextBlock, moveItem } from './tour';
 import { defaultContentVisibility } from './tourContentVisibility';
+import { invertPhases, type PhaseSelection } from './phases';
 import type { EditorTextBlock } from './types';
 
 interface TextBlocksProps {
     blocks: EditorTextBlock[];
     onChange: (blocks: EditorTextBlock[]) => void;
+    containerVisibility: PhaseSelection;
 }
 
-export default function TextBlocks({ blocks, onChange }: TextBlocksProps) {
+export default function TextBlocks({ blocks, onChange, containerVisibility }: TextBlocksProps) {
     const updateBlock = (blockId: string, patch: Partial<EditorTextBlock>) => {
         onChange(blocks.map((block) => (block.id === blockId ? { ...block, ...patch } : block)));
     };
@@ -40,6 +42,7 @@ export default function TextBlocks({ blocks, onChange }: TextBlocksProps) {
                             <PhaseToggles
                                 value={block.visibility ?? defaultContentVisibility}
                                 onChange={(visibility) => updateBlock(block.id, { visibility })}
+                                disabledPhases={invertPhases(containerVisibility)}
                             />
                         </div>
                         <div className="tour-editor-item-actions uk-margin-small-top">

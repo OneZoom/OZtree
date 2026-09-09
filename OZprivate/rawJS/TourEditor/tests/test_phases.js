@@ -3,7 +3,7 @@
  *        node OZprivate/rawJS/run_tape.js OZprivate/rawJS/TourEditor/tests/test_phases.js
  */
 import test from 'tape';
-import { togglePhase } from '../src/phases';
+import { invertPhases, togglePhase } from '../src/phases';
 
 test('togglePhase: flips one phase', (t) => {
     t.deepEqual(togglePhase({
@@ -23,6 +23,19 @@ test('togglePhase: flips one phase', (t) => {
         transitionIn: false,
         active: false,
         transitionOut: false,
+    });
+    t.end();
+});
+
+test('invertPhases: flips every phase', (t) => {
+    t.deepEqual(invertPhases({
+        transitionIn: false,
+        active: true,
+        transitionOut: false,
+    }), {
+        transitionIn: true,
+        active: false,
+        transitionOut: true,
     });
     t.end();
 });

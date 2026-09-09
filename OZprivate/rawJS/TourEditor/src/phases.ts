@@ -16,3 +16,11 @@ export const PHASE_TOGGLE_OPTIONS: { phase: TourstopPhase; label: string }[] = [
 export function togglePhase(selection: PhaseSelection, phase: TourstopPhase): PhaseSelection {
     return { ...selection, [phase]: !selection[phase] };
 }
+
+export function invertPhases(selection: PhaseSelection): PhaseSelection {
+    const inverted = { ...selection };
+    for (const phase of TOURSTOP_PHASES) {
+        inverted[phase] = !selection[phase];
+    }
+    return inverted;
+}
