@@ -139,7 +139,7 @@ export type EditorThumbnailKind = 'onezoom' | 'image';
 export type EditorThumbnailMedia = Extract<EditorMediaBlock, { kind: EditorThumbnailKind }>;
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
-export type EditorMediaBlockNoId = DistributiveOmit<EditorMediaBlock, 'id'>;
+export type EditorMediaSource = DistributiveOmit<EditorMediaBlock, 'id'>;
 
 export interface EditorTour {
     identifier: string;
