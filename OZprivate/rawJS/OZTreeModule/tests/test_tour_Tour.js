@@ -313,7 +313,6 @@ test('tour:block-tourpaused', function (test) {
         }
       }, 10);
     });
-    return new Promise(resolve => setTimeout(resolve, 1000));
   }).then(function () {
     test.deepEqual(t.log.slice(-2), [
       [ 'flight-interrupted', 2202 ],
@@ -447,6 +446,122 @@ test('tour:user_forward', function (test) {
       '</div>'
     ], "Resumed, at next tourstop");
 
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
+
+test('tour:keyboard', function (test) {
+  function press(key) {
+    t.window.document.dispatchEvent(new t.window.KeyboardEvent('keydown', {
+      key: key,
+      bubbles: true,
+      cancelable: true,
+    }));
+  }
+
+  var t = setup_tour(test, `<div class="tour">
+    <div class="container" data-ott="91101" data-stop_wait="5000">t1</div>
+    <div class="container" data-ott="92202" data-stop_wait="5000">t2</div>
+  </div>`, null, false);
+
+  const iframe = t.window.document.createElement('iframe');
+  t.window.document.body.appendChild(iframe);
+  iframe.focus();
+
+  return t.tour.start().then(function () {
+    test.notEqual(
+      t.window.document.activeElement,
+      iframe,
+      "Tour start blurs a focused iframe so shortcuts reach this document",
+    );
+    return t.wait_for_tourstop_state(0, 'tsstate-transition_in');
+  }).then(function () {
+    press('ArrowRight');
+    return Promise.all([
+      t.wait_for_tourstop_state(0, 'tsstate-active_wait'),
+    ]);
+  }).then(function () {
+    test.deepEqual(t.tour_states(), [
+      'tstate-playing',
+      'tsstate-active_wait',
+      'tsstate-inactive',
+    ], "Right arrow skipped the first flight");
+
+    press('ArrowRight');
+    return Promise.all([
+      t.wait_for_tourstop_state(0, 'tsstate-transition_out'),
+      t.wait_for_tourstop_state(1, 'tsstate-transition_in'),
+    ]);
+  }).then(function () {
+    t.finish_flight();
+    return t.wait_for_tourstop_state(1, 'tsstate-active_wait');
+  }).then(function () {
+    test.deepEqual(t.tour_states(), [
+      'tstate-playing',
+      'tsstate-inactive',
+      'tsstate-active_wait',
+    ], "Right arrow advanced to the next stop");
+
+    press('ArrowLeft');
+    return t.wait_for_tourstop_state(0, 'tsstate-transition_in');
+  }).then(function () {
+    t.finish_flight();
+    return t.wait_for_tourstop_state(0, 'tsstate-active_wait');
+  }).then(function () {
+    test.deepEqual(t.tour_states(), [
+      'tstate-playing',
+      'tsstate-active_wait',
+      'tsstate-inactive',
+    ], "Left arrow returned to the previous stop");
+
+    press('Escape');
+    return t.wait_for_tour_state('tstate-inactive');
+  }).then(function () {
+    test.deepEqual(t.tour_states(), [
+      'tstate-inactive',
+      'tsstate-inactive',
+      'tsstate-inactive',
+    ], "Escape exited the tour");
+    test.deepEqual(t.log.slice(-1), [
+      ['exit_callback'],
+    ], "Escape triggered the exit callback");
+
+    press('ArrowRight');
+    test.deepEqual(t.tour.state, 'tstate-inactive', "Keys do nothing after the tour has exited");
+
+  }).then(function () {
+    test.end();
+  }).catch(function (err) {
+    console.log(err.stack);
+    test.fail(err);
+    test.end();
+  })
+});
+
+
+test('tour:resume-does-not-blur-tourstop-iframe', function (test) {
+  var t = setup_tour(test, `<div class="tour">
+    <div class="container" data-ott="91101" data-stop_wait="5000">t1<iframe></iframe></div>
+  </div>`, null, false);
+
+  return t.tour.start().then(function () {
+    return t.wait_for_tourstop_state(0, 'tsstate-transition_in');
+  }).then(function () {
+    t.finish_flight();
+    return t.wait_for_tourstop_state(0, 'tsstate-active_wait');
+  }).then(function () {
+    t.tour.user_pause();
+    const media = t.tour.container[0].querySelector('iframe');
+    media.focus();
+    test.equal(t.window.document.activeElement, media, "Media iframe can take focus while paused");
+    t.tour.user_resume();
+    test.equal(t.window.document.activeElement, media, "Resume does not blur a tourstop iframe");
   }).then(function () {
     test.end();
   }).catch(function (err) {

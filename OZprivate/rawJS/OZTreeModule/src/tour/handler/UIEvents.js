@@ -21,6 +21,9 @@
  * On clicking ``tour_backward`` / ``tour_forward``, the tour will go backwards/forwards.
  * On clicking ``tour_exit`` / ``tour_final``, the tour will close.
  *
+ * While the tour is playing or paused, keyboard shortcuts are also bound:
+ * Escape exits, ArrowLeft goes to the previous stop, ArrowRight goes to the next stop.
+ *
  * When the tour is paused (e.g. as a result of user interaction) the ``tour_resume`` button will be visible,
  * clicking it will resume the tour.
  *
@@ -165,6 +168,43 @@ function handler(tour) {
   };
   document.removeEventListener('visibilitychange', onVisibilityChange);
   document.addEventListener('visibilitychange', onVisibilityChange);
+
+  const onKeyDown = (event) => {
+    if (!tour.container || !tour.container[0].isConnected) {
+      document.removeEventListener('keydown', onKeyDown);
+      return;
+    }
+    if (tour.state === 'tstate-inactive') return;
+    if (event.repeat || event.altKey || event.ctrlKey || event.metaKey) return;
+
+    const target = event.target;
+    const tag = (target && target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (target && target.isContentEditable)) {
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      tour.user_exit();
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      tour.user_backward();
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      tour.user_forward();
+    }
+  };
+  document.addEventListener('keydown', onKeyDown);
+
+  // Tours are often started from the tours iframe modal.
+  // Blur it so we can recieve key events.
+  (new document.defaultView.MutationObserver(() => {
+    if (tour.container[0].getAttribute('data-state') !== 'tstate-playing') return;
+    const active = document.activeElement;
+    if (active && active.tagName === 'IFRAME' && !tour.container[0].contains(active)) {
+      active.blur();
+    }
+  })).observe(tour.container[0], { attributes: true, attributeFilter: ['data-state'] });
 }
 
 export default handler;
