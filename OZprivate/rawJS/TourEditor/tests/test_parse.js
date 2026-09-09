@@ -56,6 +56,7 @@ function completeTour() {
                 flyInSpeed: 2,
                 autoAdvance: true,
                 stopWaitSeconds: 5,
+                comment: 'needs a nicer photo',
             }),
         ],
     });
@@ -81,6 +82,7 @@ test('parseEditorTour: round-trips compiled production JSON', (t) => {
     t.equal(loaded.stops[0].flyInSpeed, 2);
     t.equal(loaded.stops[0].autoAdvance, true);
     t.equal(loaded.stops[0].stopWaitSeconds, 5);
+    t.equal(loaded.stops[0].comment, 'needs a nicer photo');
     t.ok(loaded.stops[0].id);
     t.ok(loaded.thumbnail.id);
     t.end();
@@ -166,6 +168,7 @@ test('parseEditorTour: reads window_text, media objects, and qs_opts', (t) => {
     t.equal(loaded.thumbnail.src, 99);
     t.equal(loaded.thumbnail.srcId, 27732437);
     t.equal(loaded.stops[0].fillScreen, true);
+    t.deepEqual(loaded.stops[0].extraQueryStrings, []);
     t.equal(loaded.stops[0].autoAdvance, true);
     t.equal(loaded.stops[0].stopWaitSeconds, 2.5);
     t.deepEqual(loaded.stops[0].highlights[0].pinpoints, ['@Felidae', '@Canidae']);
@@ -243,6 +246,197 @@ test('parseEditorTour: round-trips media visibility flags against a visible-in s
     t.deepEqual(editorTourToJson(loaded), editorTourToJson(original));
     t.equal(loaded.stops[0].mediaBlocks[1].visibility.transitionIn, true);
     t.equal(loaded.stops[0].mediaBlocks[1].visibility.active, false);
+    t.end();
+});
+
+test('parseEditorTour: flattens tourstop_shared into every stop', (t) => {
+    const loaded = parseEditorTour({
+        identifier: 'demo',
+        tourstop_shared: {
+            transition_in: 'leap',
+            fly_in_speed: 2,
+            qs_opts: '?into_node=max',
+            template_data: {
+                title: 'Shared title',
+                window_text: ['Shared text'],
+                media: ['https://www.youtube.com/embed/W86cTIoMv2U'],
+                'visible-transition_in': true,
+            },
+        },
+        tourstops: [
+            { identifier: 'cats', ott: '@Felidae' },
+            {
+                identifier: 'dogs',
+                ott: '@Canidae',
+                transition_in: 'fly_straight',
+                qs_opts: '?highlight=fan:#00aa00@Canidae',
+                template_data: {
+                    title: 'Dogs',
+                    window_text: ['Dogs text'],
+                },
+            },
+        ],
+    });
+    t.equal(loaded.stops[0].title, 'Shared title');
+    t.equal(loaded.stops[0].location, '@Felidae');
+    t.equal(loaded.stops[0].fillScreen, true);
+    t.equal(loaded.stops[0].transitionIn, 'leap');
+    t.equal(loaded.stops[0].flyInSpeed, 2);
+    t.equal(loaded.stops[0].textBlocks[0].text, 'Shared text');
+    t.equal(loaded.stops[0].mediaBlocks[0].kind, 'youtube');
+    t.deepEqual(loaded.stops[0].visibility, {
+        transitionIn: true, active: true, transitionOut: false,
+    });
+    t.equal(loaded.stops[1].title, 'Dogs');
+    t.equal(loaded.stops[1].location, '@Canidae');
+    t.equal(loaded.stops[1].fillScreen, false);
+    t.equal(loaded.stops[1].transitionIn, 'fly_straight');
+    t.equal(loaded.stops[1].flyInSpeed, 2);
+    t.equal(loaded.stops[1].textBlocks[0].text, 'Dogs text');
+    t.equal(loaded.stops[1].mediaBlocks[0].kind, 'youtube');
+    t.equal(loaded.stops[1].highlights[0].type, 'fan');
+    t.deepEqual(loaded.stops[1].highlights[0].pinpoints, ['@Canidae']);
+    t.deepEqual(loaded.stops[1].visibility, {
+        transitionIn: true, active: true, transitionOut: false,
+    });
+    t.end();
+});
+
+test('parseEditorTour: keeps unparsed qs_opts as extraQueryStrings', (t) => {
+    const loaded = parseEditorTour({
+        identifier: 'demo',
+        tourstops: [{
+            identifier: 'cats',
+            qs_opts: '?cols=popularity&highlight=&into_node=max&highlight=fan:#00aa00@Felidae&pop=ol_329457',
+            template_data: {},
+        }],
+    });
+    t.equal(loaded.stops[0].fillScreen, true);
+    t.equal(loaded.stops[0].highlights.length, 1);
+    t.deepEqual(loaded.stops[0].highlights[0].pinpoints, ['@Felidae']);
+    t.deepEqual(loaded.stops[0].extraQueryStrings, [
+        { key: 'cols', value: 'popularity' },
+        { key: 'highlight', value: '' },
+        { key: 'pop', value: 'ol_329457' },
+    ]);
+
+    const json = editorTourToJson(loaded);
+    t.equal(
+        json.tourstops[0].qs_opts,
+        '?into_node=max&highlight=fan:#00aa00@Felidae&cols=popularity&highlight=&pop=ol_329457',
+    );
+    t.end();
+});
+
+test('parseEditorTour: round-trips extraQueryStrings', (t) => {
+    const original = tour({
+        identifier: 'demo',
+        stops: [stop({
+            identifier: 'cats',
+            extraQueryStrings: [
+                { key: 'cols', value: 'popularity' },
+                { key: 'highlight', value: '' },
+            ],
+        })],
+    });
+    const json = editorTourToJson(original);
+    t.equal(json.tourstops[0].qs_opts, '?cols=popularity&highlight=');
+
+    const loaded = parseEditorTour(json);
+    t.deepEqual(loaded.stops[0].extraQueryStrings, original.stops[0].extraQueryStrings);
+    t.deepEqual(editorTourToJson(loaded), json);
+    t.end();
+});
+
+test('parseEditorTour: reads ts_autoplay, alt, and title', (t) => {
+    const loaded = parseEditorTour({
+        identifier: 'demo',
+        tourstops: [{
+            identifier: 'cats',
+            template_data: {
+                media: [{
+                    url: 'https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg',
+                    ts_autoplay: 'tsstate-transition_in tsstate-active_wait',
+                    alt: 'Song thrush',
+                    title: 'Turdus philomelos.ogg',
+                }],
+            },
+        }],
+    });
+    t.equal(loaded.stops[0].mediaBlocks[0].ts_autoplay, 'tsstate-transition_in tsstate-active_wait');
+    t.equal(loaded.stops[0].mediaBlocks[0].alt, 'Song thrush');
+    t.equal(loaded.stops[0].mediaBlocks[0].title, 'Turdus philomelos.ogg');
+    t.end();
+});
+
+test('parseEditorTour: round-trips ts_autoplay, alt, and title', (t) => {
+    const original = tour({
+        identifier: 'demo',
+        stops: [stop({
+            identifier: 'cats',
+            mediaBlocks: [{
+                id: 'm1',
+                kind: 'wikimedia',
+                filename: 'Turdus_philomelos.ogg',
+                ts_autoplay: 'tsstate-transition_in tsstate-active_wait',
+                alt: 'Song thrush',
+                title: 'Turdus philomelos.ogg',
+            }, {
+                id: 'm2',
+                kind: 'image',
+                url: 'https://example.com/quiet.jpg',
+                ts_autoplay: null,
+            }],
+        })],
+    });
+    const json = editorTourToJson(original);
+    t.deepEqual(json.tourstops[0].template_data.media, [
+        {
+            url: 'https://commons.wikimedia.org/wiki/File:Turdus_philomelos.ogg',
+            ts_autoplay: 'tsstate-transition_in tsstate-active_wait',
+            alt: 'Song thrush',
+            title: 'Turdus philomelos.ogg',
+        },
+        {
+            url: 'https://example.com/quiet.jpg',
+            ts_autoplay: null,
+        },
+    ]);
+
+    const loaded = parseEditorTour(json);
+    t.equal(loaded.stops[0].mediaBlocks[0].ts_autoplay, 'tsstate-transition_in tsstate-active_wait');
+    t.equal(loaded.stops[0].mediaBlocks[0].alt, 'Song thrush');
+    t.equal(loaded.stops[0].mediaBlocks[0].title, 'Turdus philomelos.ogg');
+    t.equal(loaded.stops[0].mediaBlocks[1].ts_autoplay, null);
+    t.deepEqual(editorTourToJson(loaded), json);
+    t.end();
+});
+
+test('parseEditorTour: retains both stop and template_data comments', (t) => {
+    const original = tour({
+        identifier: 'demo',
+        stops: [stop({
+            identifier: 'cats',
+            comment: 'stop comment',
+            templateComment: 'template comment',
+        })],
+    });
+    const json = editorTourToJson(original);
+    t.equal(json.tourstops[0].comment, 'stop comment');
+    t.equal(json.tourstops[0].template_data.comment, 'template comment');
+
+    const loaded = parseEditorTour(json);
+    t.equal(loaded.stops[0].comment, 'stop comment');
+    t.equal(loaded.stops[0].templateComment, 'template comment');
+    t.deepEqual(editorTourToJson(loaded), json);
+    t.end();
+});
+
+test('parseEditorTour: rejects invalid tourstop_shared', (t) => {
+    t.throws(
+        () => parseEditorTour({ tourstop_shared: [], tourstops: [] }),
+        /invalid shared stop data/,
+    );
     t.end();
 });
 

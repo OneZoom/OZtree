@@ -21,6 +21,7 @@
               width="150" height="150"
               alt="" style="position: absolute; left: 0; border: 1px solid #242A22; border-radius: 10px" />
           <h3 style="margin: 0">{{=tour.title}}</h3>
+          {{if tour.author:}}<p class="uk-text-meta" style="margin: 0">{{=tour.author}}</p>{{pass}}
           <p class="uk-flex-auto">{{=tour.description}}</p>
           <progress value="10" max="100">10 %</progress>
       </a>

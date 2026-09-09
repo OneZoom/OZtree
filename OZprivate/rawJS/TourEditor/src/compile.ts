@@ -42,10 +42,12 @@ export interface ProductionTourStopJson {
     transition_in?: 'fly' | 'leap' | 'fly_straight';
     fly_in_speed?: number;
     stop_wait?: number;
+    comment?: string;
     template_data: {
         title?: string;
         window_text?: ProductionWindowText | ProductionWindowText[];
         media?: ProductionMedia[];
+        comment?: string;
         'visible-transition_in'?: boolean;
         'visible-transition_out'?: boolean;
         'hidden-active_wait'?: boolean;
@@ -90,6 +92,7 @@ function editorStopToJson(stop: EditorTourStop): ProductionTourStopJson {
             ...stopVisibilityFlags(stopVisibility),
             ...(window_text.length > 0 ? { window_text } : {}),
             ...(media.length > 0 ? { media } : {}),
+            ...(stop.templateComment ? { comment: stop.templateComment } : {}),
         },
     };
 
@@ -98,6 +101,7 @@ function editorStopToJson(stop: EditorTourStop): ProductionTourStopJson {
     if (stop.transitionIn !== 'fly') out.transition_in = stop.transitionIn;
     if (stop.flyInSpeed !== 1) out.fly_in_speed = stop.flyInSpeed;
     if (stop.autoAdvance) out.stop_wait = Math.round(stop.stopWaitSeconds * 1000);
+    if (stop.comment) out.comment = stop.comment;
 
     return out;
 }
@@ -108,6 +112,9 @@ function stopQsOpts(stop: EditorTourStop): string | undefined {
     for (const highlight of stop.highlights) {
         if (highlight.pinpoints.length === 0) continue;
         parts.push(`highlight=${toHighlightStr(highlight)}`);
+    }
+    for (const { key, value } of stop.extraQueryStrings ?? []) {
+        parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
     }
     return parts.length > 0 ? `?${parts.join('&')}` : undefined;
 }
@@ -128,8 +135,17 @@ function mediaValue(block: EditorMediaBlock, stopVisibility: PhaseSelection): Pr
         block.visibility ?? defaultContentVisibility,
         stopVisibility,
     );
-    if (Object.keys(flags).length === 0) return url;
-    return { url, ...flags };
+    const extras = mediaEmbedExtras(block);
+    if (Object.keys(flags).length === 0 && Object.keys(extras).length === 0) return url;
+    return { url, ...flags, ...extras };
+}
+
+function mediaEmbedExtras(block: EditorMediaBlock): Record<string, string | null> {
+    const extras: Record<string, string | null> = {};
+    if (block.ts_autoplay !== undefined) extras.ts_autoplay = block.ts_autoplay;
+    if (block.alt) extras.alt = block.alt;
+    if (block.title) extras.title = block.title;
+    return extras;
 }
 
 /**

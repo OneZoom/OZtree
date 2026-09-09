@@ -1,6 +1,7 @@
 import { newEditorId } from './tour';
 import type {
     EditorMediaBlock,
+    EditorMediaNonSourceKey,
     EditorMediaSource,
     EditorMediaKind,
     EditorThumbnailKind,
@@ -154,12 +155,21 @@ export function parseMediaUrlAsKind(url: string, kind: EditorMediaKind): EditorM
     }
 }
 
+type MediaOwnerFields = Pick<EditorMediaBlock, EditorMediaNonSourceKey>;
+
 /** Reattach editor-owned fields. Object-spread of the fields union would keep only ``kind``. */
 export function mediaBlockFromFields<T extends EditorMediaSource>(
     fields: T,
-    previous: { id: string; visibility?: EditorMediaBlock['visibility'] },
-): T & { id: string; visibility?: EditorMediaBlock['visibility'] } {
-    return { ...fields, id: previous.id, visibility: previous.visibility };
+    previous: MediaOwnerFields,
+): T & MediaOwnerFields {
+    return {
+        ...fields,
+        id: previous.id,
+        visibility: previous.visibility,
+        ...(previous.ts_autoplay !== undefined ? { ts_autoplay: previous.ts_autoplay } : {}),
+        ...(previous.alt ? { alt: previous.alt } : {}),
+        ...(previous.title ? { title: previous.title } : {}),
+    };
 }
 
 export function mediaBlockWithKind(block: EditorMediaBlock, kind: EditorMediaKind): EditorMediaBlock {

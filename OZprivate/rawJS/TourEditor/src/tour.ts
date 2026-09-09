@@ -6,10 +6,31 @@ import type {
 } from './types';
 import { defaultStopVisibility } from './stopVisibility';
 
-export const LICENSE_OPTIONS: { value: TourLicense; label: string }[] = [
-    { value: 'all-rights-reserved', label: 'All rights reserved' },
-    { value: 'cc-by-4.0', label: 'CC BY 4.0' },
-    { value: 'cc0-1.0', label: 'CC0 1.0' },
+export interface LicenseOption {
+    value: TourLicense;
+    label: string;
+    description: string;
+    infoUrl?: string;
+}
+
+export const LICENSE_OPTIONS: LicenseOption[] = [
+    {
+        value: 'all-rights-reserved',
+        label: 'All rights reserved',
+        description: 'You retain full copyright. Others may not copy, distribute, or reuse this tour without your permission.',
+    },
+    {
+        value: 'cc-by-4.0',
+        label: 'CC BY 4.0',
+        description: 'Others may share and adapt this tour for any purpose, including commercially, as long as they give you appropriate credit.',
+        infoUrl: 'https://creativecommons.org/licenses/by/4.0/',
+    },
+    {
+        value: 'cc0-1.0',
+        label: 'CC0 1.0',
+        description: 'You waive copyright and related rights. This tour is dedicated to the public domain and may be used freely without permission or attribution.',
+        infoUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    },
 ];
 
 export const DEFAULT_LICENSE: TourLicense = 'all-rights-reserved';
@@ -72,6 +93,7 @@ export function createEmptyStop(existingStops: EditorTourStop[] = []): EditorTou
         location: null,
         fillScreen: false,
         highlights: [],
+        extraQueryStrings: [],
         textBlocks: [],
         mediaBlocks: [],
         visibility: defaultStopVisibility,

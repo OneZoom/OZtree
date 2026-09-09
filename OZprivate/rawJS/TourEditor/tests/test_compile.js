@@ -79,6 +79,8 @@ test('editorTourToJson: maps stop fields to production JSON', (t) => {
                 flyInSpeed: 2,
                 autoAdvance: true,
                 stopWaitSeconds: 5,
+                comment: 'needs a nicer photo',
+                templateComment: 'this sound should autoplay',
             }),
             stop({
                 identifier: 'dogs',
@@ -94,8 +96,10 @@ test('editorTourToJson: maps stop fields to production JSON', (t) => {
         transition_in: 'leap',
         fly_in_speed: 2,
         stop_wait: 5000,
+        comment: 'needs a nicer photo',
         template_data: {
             title: 'Cats',
+            comment: 'this sound should autoplay',
             window_text: ['Look at cats', 'And more cats'],
             media: [
                 'https://www.youtube.com/embed/W86cTIoMv2U',
@@ -127,6 +131,44 @@ test('editorTourToJson: writes a direct image thumbnail', (t) => {
         thumbnail: { id: 'th1', kind: 'image', url: 'https://example.com/cat.jpg' },
     }));
     t.equal(json.image_url, 'https://example.com/cat.jpg');
+    t.end();
+});
+
+test('editorTourToJson: writes media embed extras', (t) => {
+    const json = editorTourToJson(tour({
+        stops: [stop({
+            identifier: 'cats',
+            mediaBlocks: [{
+                id: 'm1',
+                kind: 'image',
+                url: 'https://example.com/cat.jpg',
+                ts_autoplay: 'tsstate-transition_in tsstate-active_wait',
+                alt: 'A cat',
+                title: 'Cat photo',
+            }],
+        })],
+    }));
+    t.deepEqual(json.tourstops[0].template_data.media, [{
+        url: 'https://example.com/cat.jpg',
+        ts_autoplay: 'tsstate-transition_in tsstate-active_wait',
+        alt: 'A cat',
+        title: 'Cat photo',
+    }]);
+    t.end();
+});
+
+test('editorTourToJson: writes extraQueryStrings into qs_opts', (t) => {
+    const json = editorTourToJson(tour({
+        stops: [stop({
+            identifier: 'cats',
+            fillScreen: true,
+            extraQueryStrings: [
+                { key: 'cols', value: 'popularity' },
+                { key: 'pop', value: 'ol_329457' },
+            ],
+        })],
+    }));
+    t.equal(json.tourstops[0].qs_opts, '?into_node=max&cols=popularity&pop=ol_329457');
     t.end();
 });
 
@@ -355,6 +397,29 @@ test('tourJsonToHtml: window_text visibility classes', (t) => {
     t.match(html, /<div class="window_text">Always<\/div>/);
     t.match(html, /<div class="window_text visible-transition_in">Fly in<\/div>/);
     t.match(html, /<div class="window_text visible-active_wait">Wait<\/div>/);
+    t.end();
+});
+
+test('tourJsonToHtml: media ts_autoplay, alt, and title', (t) => {
+    const html = tourJsonToHtml({
+        title: '',
+        description: '',
+        author: '',
+        tourstops: [{
+            identifier: 's',
+            template_data: {
+                media: [{
+                    url: 'https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif',
+                    ts_autoplay: 'tsstate-transition_in tsstate-active_wait',
+                    alt: 'A resurrection plant',
+                    title: 'Rose of Jericho',
+                }],
+            },
+        }],
+    });
+    t.match(html, /data-ts_autoplay="tsstate-transition_in tsstate-active_wait"/);
+    t.match(html, /alt="A resurrection plant"/);
+    t.match(html, /title="Rose of Jericho"/);
     t.end();
 });
 
