@@ -4,6 +4,7 @@ import type {
     EditorTourStop,
     TourLicense,
 } from './types';
+import { defaultStopVisibility } from './stopVisibility';
 
 export const LICENSE_OPTIONS: { value: TourLicense; label: string }[] = [
     { value: 'all-rights-reserved', label: 'All rights reserved' },
@@ -73,6 +74,7 @@ export function createEmptyStop(existingStops: EditorTourStop[] = []): EditorTou
         highlights: [],
         textBlocks: [],
         mediaBlocks: [],
+        visibility: defaultStopVisibility,
         transitionIn: 'fly',
         flyInSpeed: 1,
         autoAdvance: false,

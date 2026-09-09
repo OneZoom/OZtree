@@ -149,6 +149,10 @@ body.tree-viewer {
     flex-shrink: 0;
 }
 
+.tour-editor-stop-actions {
+    align-self: flex-end;
+}
+
 .tour-editor-location-row {
     display: flex;
     align-items: center;
@@ -259,6 +263,59 @@ body.tree-viewer {
     align-items: center;
     gap: 8px;
     margin-top: 8px;
+}
+
+.tour-editor-show-during {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.tour-editor-show-during .uk-form-label {
+    margin: 0;
+}
+
+.tour-editor-item-actions .tour-editor-phase-toggles {
+    margin-left: 8px;
+}
+
+.tour-editor-phase-toggles {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    padding: 2px;
+    background: #e4e4e4;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.tour-editor-phase-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #222;
+}
+
+.tour-editor-phase-toggle:hover:not(.is-disabled) {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.tour-editor-phase-toggle.is-active:not(.is-disabled) {
+    background: #7eb8ea;
+}
+
+.tour-editor-phase-toggle.is-disabled {
+    color: #9a9a9a;
+    cursor: default;
+    pointer-events: none;
 }
 
 .tour-editor-media-row .uk-select {

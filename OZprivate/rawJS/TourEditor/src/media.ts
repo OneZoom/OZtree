@@ -1,17 +1,10 @@
 import { newEditorId } from './tour';
 import type {
-    EditorAudioUrlMedia,
-    EditorExternalLinkMedia,
-    EditorImageUrlMedia,
     EditorMediaBlock,
-    EditorMediaBlockNoId,
+    EditorMediaSource,
     EditorMediaKind,
-    EditorOneZoomImageMedia,
     EditorThumbnailKind,
     EditorThumbnailMedia,
-    EditorToursMedia,
-    EditorVimeoMedia,
-    EditorWikimediaMedia,
     EditorYoutubeMedia,
 } from './types';
 
@@ -38,7 +31,9 @@ export function isThumbnailMedia(block: EditorMediaBlock): block is EditorThumbn
     return (THUMBNAIL_MEDIA_KINDS as readonly EditorMediaKind[]).includes(block.kind);
 }
 
-const MEDIA_PARSERS: Record<EditorMediaKind, (url: string) => EditorMediaBlockNoId | null> = {
+type MediaSource<K extends EditorMediaKind> = Extract<EditorMediaSource, { kind: K }>;
+
+const MEDIA_PARSERS: Record<EditorMediaKind, (url: string) => EditorMediaSource | null> = {
     onezoom: parseOneZoom,
     youtube: parseYoutube,
     vimeo: parseVimeo,
@@ -124,7 +119,7 @@ export function mediaBlockToUrl(block: EditorMediaBlock): string {
 export function parseMediaUrl(
     url: string,
     kinds: readonly EditorMediaKind[] = ALL_MEDIA_KINDS,
-): EditorMediaBlockNoId | null {
+): EditorMediaSource | null {
     const trimmed = url.trim();
     if (!trimmed) return null;
     const allowed = new Set(kinds);
@@ -137,7 +132,7 @@ export function parseMediaUrl(
 }
 
 /** Interpret ``url`` as ``kind``. Unrecognised values become an empty block of that kind. */
-export function parseMediaUrlAsKind(url: string, kind: EditorMediaKind): EditorMediaBlockNoId {
+export function parseMediaUrlAsKind(url: string, kind: EditorMediaKind): EditorMediaSource {
     const trimmed = url.trim();
     switch (kind) {
         case 'onezoom':
@@ -159,17 +154,17 @@ export function parseMediaUrlAsKind(url: string, kind: EditorMediaKind): EditorM
     }
 }
 
-/** Reattach the editor ``id``. Object-spread of the fields union would keep only ``kind``. */
-export function mediaBlockFromFields<T extends EditorMediaBlockNoId>(
+/** Reattach editor-owned fields. Object-spread of the fields union would keep only ``kind``. */
+export function mediaBlockFromFields<T extends EditorMediaSource>(
     fields: T,
-    id: string,
-): T & { id: string } {
-    return { ...fields, id };
+    previous: { id: string; visibility?: EditorMediaBlock['visibility'] },
+): T & { id: string; visibility?: EditorMediaBlock['visibility'] } {
+    return { ...fields, id: previous.id, visibility: previous.visibility };
 }
 
 export function mediaBlockWithKind(block: EditorMediaBlock, kind: EditorMediaKind): EditorMediaBlock {
     if (block.kind === kind) return block;
-    return mediaBlockFromFields(parseMediaUrlAsKind(mediaBlockToUrl(block), kind), block.id);
+    return mediaBlockFromFields(parseMediaUrlAsKind(mediaBlockToUrl(block), kind), block);
 }
 
 export function mediaBlockWithYoutubeTimes(
@@ -177,10 +172,7 @@ export function mediaBlockWithYoutubeTimes(
     start: number | undefined,
     end: number | undefined,
 ): EditorYoutubeMedia {
-    const next: EditorYoutubeMedia = { id: block.id, kind: 'youtube', videoId: block.videoId };
-    if (start !== undefined) next.start = start;
-    if (end !== undefined) next.end = end;
-    return next;
+    return { ...block, start, end };
 }
 
 /** Empty or invalid input clears the time; otherwise a non-negative whole number of seconds. */
@@ -230,13 +222,13 @@ export function oneZoomThumbUrl(src: number, srcId: number): string {
     return dataPathPics ? dataPathPics(src, String(srcId)) : '';
 }
 
-function parseOneZoom(url: string): Omit<EditorOneZoomImageMedia, 'id'> | null {
+function parseOneZoom(url: string): MediaSource<'onezoom'> | null {
     const match = url.match(/^(?:imgsrc:)?(-?\d+):(-?\d+)$/);
     if (!match) return null;
     return { kind: 'onezoom', src: Number(match[1]), srcId: Number(match[2]) };
 }
 
-function parseYoutube(url: string): Omit<EditorYoutubeMedia, 'id'> | null {
+function parseYoutube(url: string): MediaSource<'youtube'> | null {
     let parsed: URL;
     try {
         parsed = new URL(decodeHtmlAmpersands(url));
@@ -257,7 +249,7 @@ function parseYoutube(url: string): Omit<EditorYoutubeMedia, 'id'> | null {
     videoId = videoId.replace(/[^A-Za-z0-9_-].*$/, '');
     if (!videoId) return null;
 
-    const block: Omit<EditorYoutubeMedia, 'id'> = { kind: 'youtube', videoId };
+    const block: MediaSource<'youtube'> = { kind: 'youtube', videoId };
     const start = parseStartParam(parsed.searchParams);
     const end = parseIntParam(parsed.searchParams.get('end'));
     if (start !== undefined) block.start = start;
@@ -265,7 +257,7 @@ function parseYoutube(url: string): Omit<EditorYoutubeMedia, 'id'> | null {
     return block;
 }
 
-function parseVimeo(url: string): Omit<EditorVimeoMedia, 'id'> | null {
+function parseVimeo(url: string): MediaSource<'vimeo'> | null {
     let parsed: URL;
     try {
         parsed = new URL(url);
@@ -284,7 +276,7 @@ function parseVimeo(url: string): Omit<EditorVimeoMedia, 'id'> | null {
     return videoId ? { kind: 'vimeo', videoId } : null;
 }
 
-function parseWikimedia(url: string): Omit<EditorWikimediaMedia, 'id'> | null {
+function parseWikimedia(url: string): MediaSource<'wikimedia'> | null {
     const commons = url.match(
         new RegExp(`^https://commons\\.wikimedia\\.org/wiki/File:(.+)\\.(${MEDIA_EXT})$`, 'i'),
     );
@@ -295,7 +287,7 @@ function parseWikimedia(url: string): Omit<EditorWikimediaMedia, 'id'> | null {
     return filename ? wikimediaBlock(filename) : null;
 }
 
-function wikimediaBlock(filename: string): Omit<EditorWikimediaMedia, 'id'> {
+function wikimediaBlock(filename: string): MediaSource<'wikimedia'> {
     return { kind: 'wikimedia', filename };
 }
 
@@ -328,7 +320,7 @@ function uploadCommonsFileName(url: string): string | null {
     return match ? match[1] : null;
 }
 
-function parseTours(url: string): Omit<EditorToursMedia, 'id'> | null {
+function parseTours(url: string): MediaSource<'tours'> | null {
     const absolute = url.match(
         new RegExp(`^https://onezoom\\.github\\.io/tours/(.+\\.(?:${MEDIA_EXT}))$`, 'i'),
     );
@@ -340,12 +332,12 @@ function parseTours(url: string): Omit<EditorToursMedia, 'id'> | null {
     return null;
 }
 
-function parseImageUrl(url: string): Omit<EditorImageUrlMedia, 'id'> | null {
+function parseImageUrl(url: string): MediaSource<'image'> | null {
     if (isWikipediaHost(url)) return null;
     return new RegExp(`\\.(?:${IMAGE_EXT})$`, 'i').test(url) ? { kind: 'image', url } : null;
 }
 
-function parseAudioUrl(url: string): Omit<EditorAudioUrlMedia, 'id'> | null {
+function parseAudioUrl(url: string): MediaSource<'audio'> | null {
     if (isWikipediaHost(url)) return null;
     return new RegExp(`\\.(?:${AUDIO_EXT})$`, 'i').test(url) ? { kind: 'audio', url } : null;
 }
@@ -358,7 +350,7 @@ function isWikipediaHost(url: string): boolean {
     }
 }
 
-function parseExternalLink(url: string): Omit<EditorExternalLinkMedia, 'id'> | null {
+function parseExternalLink(url: string): MediaSource<'link'> | null {
     try {
         const parsed = new URL(url);
         if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;

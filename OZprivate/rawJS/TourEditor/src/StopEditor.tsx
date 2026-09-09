@@ -1,8 +1,10 @@
 import HighlightListEditor from './HighlightListEditor';
 import LocationPicker from './LocationPicker';
 import MediaBlocks from './MediaBlocks';
+import PhaseToggles from './PhaseToggles';
 import TextBlocks from './TextBlocks';
 import TransitionFields from './TransitionFields';
+import { defaultStopVisibility } from './stopVisibility';
 import { useHighlightTreeSync } from './useHighlightTreeSync';
 import type { EditorTourStop } from './types';
 import UkIcon from './UkIcon';
@@ -30,6 +32,13 @@ export default function StopEditor({ stop, onChange, onPreview }: StopEditorProp
                     onChange={(e) => onChange({ title: e.target.value })}
                 />
             </div>
+            <div className="uk-margin">
+                <div className="uk-form-label">Show during</div>
+                <PhaseToggles
+                    value={stop.visibility ?? defaultStopVisibility}
+                    onChange={(visibility) => onChange({ visibility })}
+                />
+            </div>
 
             <div className="tour-editor-section">
                 <h4>Location</h4>
@@ -55,6 +64,7 @@ export default function StopEditor({ stop, onChange, onPreview }: StopEditorProp
                 <TextBlocks
                     blocks={stop.textBlocks}
                     onChange={(textBlocks) => onChange({ textBlocks })}
+                    containerVisibility={stop.visibility ?? defaultStopVisibility}
                 />
             </div>
 
@@ -63,6 +73,7 @@ export default function StopEditor({ stop, onChange, onPreview }: StopEditorProp
                 <MediaBlocks
                     blocks={stop.mediaBlocks}
                     onChange={(mediaBlocks) => onChange({ mediaBlocks })}
+                    containerVisibility={stop.visibility ?? defaultStopVisibility}
                 />
             </div>
 

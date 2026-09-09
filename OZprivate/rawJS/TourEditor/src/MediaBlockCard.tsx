@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
+import PhaseToggles from './PhaseToggles';
 import UkIcon from './UkIcon';
 import {
     TOURS_URL_BASE,
@@ -13,6 +14,8 @@ import {
     parseMediaUrlAsKind,
     type MediaPreview,
 } from './media';
+import { invertPhases, type PhaseSelection } from './phases';
+import { defaultContentVisibility } from './tourContentVisibility';
 import { useNodeImageSelection } from './treeSelection';
 import type {
     EditorAudioUrlMedia,
@@ -38,6 +41,7 @@ interface MediaBlockCardProps {
     onMoveUp?: () => void;
     canMoveDown?: boolean;
     onMoveDown?: () => void;
+    containerVisibility?: PhaseSelection;
 }
 
 interface KindCardProps<T extends EditorMediaBlock> {
@@ -55,6 +59,7 @@ export default function MediaBlockCard({
     onMoveUp,
     canMoveDown,
     onMoveDown,
+    containerVisibility,
 }: MediaBlockCardProps) {
     const canonicalUrl = mediaBlockToUrl(block);
     const [urlDraft, setUrlDraft] = useState<string | null>(null);
@@ -67,11 +72,11 @@ export default function MediaBlockCard({
     const onUrlChange = (value: string) => {
         setUrlDraft(value);
         if (!value.trim()) {
-            onChange(mediaBlockFromFields(parseMediaUrlAsKind('', block.kind), block.id));
+            onChange(mediaBlockFromFields(parseMediaUrlAsKind('', block.kind), block));
             return;
         }
         const parsed = parseMediaUrl(value, kinds);
-        if (parsed) onChange(mediaBlockFromFields(parsed, block.id));
+        if (parsed) onChange(mediaBlockFromFields(parsed, block));
     };
 
     return (
@@ -90,6 +95,16 @@ export default function MediaBlockCard({
                 <div className="tour-editor-media-preview">
                     <MediaPreviewView preview={mediaPreview(block)} />
                 </div>
+                {containerVisibility && (
+                    <div className="tour-editor-show-during uk-margin-small-top">
+                        <div className="uk-form-label">Show during</div>
+                        <PhaseToggles
+                            value={block.visibility ?? defaultContentVisibility}
+                            onChange={(visibility) => onChange({ ...block, visibility })}
+                            disabledPhases={invertPhases(containerVisibility)}
+                        />
+                    </div>
+                )}
                 {(onMoveDown || onMoveUp || onRemove) && (
                     <div className="tour-editor-item-actions uk-margin-small-top">
                         {onRemove && (
@@ -185,7 +200,7 @@ function YoutubeMediaBlockCard({ block, kinds, onChange }: KindCardProps<EditorY
     const onVideoIdChange = (value: string) => {
         const parsed = parseMediaUrl(value, kinds);
         if (parsed?.kind === 'youtube') {
-            onChange(mediaBlockFromFields(parsed, block.id));
+            onChange(mediaBlockFromFields(parsed, block));
             return;
         }
         onChange({ ...block, videoId: value });
@@ -212,7 +227,7 @@ function VimeoMediaBlockCard({ block, kinds, onChange }: KindCardProps<EditorVim
     const onVideoIdChange = (value: string) => {
         const parsed = parseMediaUrl(value, kinds);
         if (parsed?.kind === 'vimeo') {
-            onChange(mediaBlockFromFields(parsed, block.id));
+            onChange(mediaBlockFromFields(parsed, block));
             return;
         }
         onChange({ ...block, videoId: value });
@@ -236,7 +251,7 @@ function WikimediaMediaBlockCard({ block, kinds, onChange }: KindCardProps<Edito
     const onFilenameChange = (value: string) => {
         const parsed = parseMediaUrl(value, kinds);
         if (parsed?.kind === 'wikimedia') {
-            onChange(mediaBlockFromFields(parsed, block.id));
+            onChange(mediaBlockFromFields(parsed, block));
             return;
         }
         onChange({ ...block, filename: value.replace(/^File:/, '') });
@@ -271,7 +286,7 @@ function ToursMediaBlockCard({ block, kinds, onChange }: KindCardProps<EditorTou
     const onPathChange = (value: string) => {
         const parsed = parseMediaUrl(value, kinds);
         if (parsed?.kind === 'tours') {
-            onChange(mediaBlockFromFields(parsed, block.id));
+            onChange(mediaBlockFromFields(parsed, block));
             return;
         }
         onChange({

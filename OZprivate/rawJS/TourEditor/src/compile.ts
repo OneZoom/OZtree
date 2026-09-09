@@ -8,7 +8,10 @@ import {
     oneZoomThumbUrl,
 } from './media';
 import { sanitizeTourIdentifier, tourFileSlug } from './tour';
-import type { EditorTour, EditorTourStop, TourLicense } from './types';
+import { stopVisibilityClassNames, stopVisibilityFlags, defaultStopVisibility } from './stopVisibility';
+import { contentVisibilityFlags, defaultContentVisibility } from './tourContentVisibility';
+import type { EditorMediaBlock, EditorTextBlock, EditorTour, EditorTourStop, TourLicense } from './types';
+import { PhaseSelection } from './phases';
 
 /**
  * Production tour JSON as documented in ``controllers/tour.py``.
@@ -43,6 +46,10 @@ export interface ProductionTourStopJson {
         title?: string;
         window_text?: ProductionWindowText | ProductionWindowText[];
         media?: ProductionMedia[];
+        'visible-transition_in'?: boolean;
+        'visible-transition_out'?: boolean;
+        'hidden-active_wait'?: boolean;
+        class?: string;
     };
 }
 
@@ -69,16 +76,18 @@ export function editorTourToJson(tour: EditorTour): ProductionTourJson {
 
 function editorStopToJson(stop: EditorTourStop): ProductionTourStopJson {
     const qs_opts = stopQsOpts(stop);
+    const stopVisibility = stop.visibility ?? defaultStopVisibility;
     const window_text = stop.textBlocks
-        .map((block) => block.text)
-        .filter((text) => text.length > 0);
+        .filter((block) => block.text.length > 0)
+        .map((block) => windowTextValue(block, stopVisibility));
     const media = stop.mediaBlocks
-        .map((block) => mediaBlockToUrl(block))
-        .filter((url) => url.length > 0);
+        .map((block) => mediaValue(block, stopVisibility))
+        .filter((item): item is ProductionMedia => item !== null);
     const out: ProductionTourStopJson = {
         identifier: stop.identifier,
         template_data: {
             ...(stop.title ? { title: stop.title } : {}),
+            ...stopVisibilityFlags(stopVisibility),
             ...(window_text.length > 0 ? { window_text } : {}),
             ...(media.length > 0 ? { media } : {}),
         },
@@ -101,6 +110,26 @@ function stopQsOpts(stop: EditorTourStop): string | undefined {
         parts.push(`highlight=${toHighlightStr(highlight)}`);
     }
     return parts.length > 0 ? `?${parts.join('&')}` : undefined;
+}
+
+function windowTextValue(block: EditorTextBlock, stopVisibility: PhaseSelection): ProductionWindowText {
+    const flags = contentVisibilityFlags(
+        block.visibility ?? defaultContentVisibility,
+        stopVisibility,
+    );
+    if (Object.keys(flags).length === 0) return block.text;
+    return { text: block.text, ...flags };
+}
+
+function mediaValue(block: EditorMediaBlock, stopVisibility: PhaseSelection): ProductionMedia | null {
+    const url = mediaBlockToUrl(block);
+    if (!url) return null;
+    const flags = contentVisibilityFlags(
+        block.visibility ?? defaultContentVisibility,
+        stopVisibility,
+    );
+    if (Object.keys(flags).length === 0) return url;
+    return { url, ...flags };
 }
 
 /**
@@ -130,8 +159,11 @@ function stopToHtml(
     stops: ProductionTourStopJson[],
 ): string {
     const tdata = stop.template_data || {};
+    const visClass = stopVisibilityClassNames(tdata);
+    const extraClass = typeof tdata.class === 'string' ? tdata.class : '';
+    const className = ['container', 'tour_container', extraClass, visClass].filter(Boolean).join(' ');
     const stopAttrs = [
-        'class="container tour_container"',
+        `class="${escapeHtml(className)}"`,
         optionalDataAttr('ott', stop.ott),
         optionalDataAttr('qs_opts', stop.qs_opts),
         optionalDataAttr('transition_in', stop.transition_in),

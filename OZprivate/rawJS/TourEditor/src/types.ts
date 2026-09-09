@@ -1,3 +1,5 @@
+import type { PhaseSelection } from './phases';
+
 export type HighlightType = 'fan' | 'path';
 
 /** Highlight string sent to the tree, e.g. ``fan:#ff6b6b@Mammalia``. */
@@ -58,10 +60,12 @@ export type TourLicense = 'all-rights-reserved' | 'cc-by-4.0' | 'cc0-1.0';
 export interface EditorTextBlock {
     id: string;
     text: string;
+    visibility?: PhaseSelection;
 }
 
 interface EditorMediaBlockBase {
     id: string;
+    visibility?: PhaseSelection;
 }
 
 /** OneZoom image: ``imgsrc:{src}:{srcId}``. ``src`` is a ``src_flags`` value, e.g. 99 for ``eol_old``. */
@@ -137,7 +141,7 @@ export type EditorThumbnailKind = 'onezoom' | 'image';
 export type EditorThumbnailMedia = Extract<EditorMediaBlock, { kind: EditorThumbnailKind }>;
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
-export type EditorMediaBlockNoId = DistributiveOmit<EditorMediaBlock, 'id'>;
+export type EditorMediaSource = DistributiveOmit<EditorMediaBlock, 'id' | 'visibility'>;
 
 export interface EditorTour {
     identifier: string;
@@ -158,6 +162,7 @@ export interface EditorTourStop {
     highlights: EditorHighlight[];
     textBlocks: EditorTextBlock[];
     mediaBlocks: EditorMediaBlock[];
+    visibility: PhaseSelection;
     transitionIn: TransitionIn;
     flyInSpeed: number;
     autoAdvance: boolean;

@@ -141,6 +141,108 @@ test('editorTourToJson: omits defaults and empty location', (t) => {
     t.end();
 });
 
+test('editorTourToJson: writes stop visibility flags', (t) => {
+    const json = editorTourToJson(tour({
+        stops: [stop({
+            identifier: 'cats',
+            visibility: { transitionIn: true, active: false, transitionOut: true },
+        })],
+    }));
+    t.deepEqual(json.tourstops[0].template_data, {
+        'visible-transition_in': true,
+        'hidden-active_wait': true,
+        'visible-transition_out': true,
+    });
+    t.end();
+});
+
+test('editorTourToJson: writes text visibility flags only when narrower than the stop', (t) => {
+    const json = editorTourToJson(tour({
+        stops: [stop({
+            identifier: 'cats',
+            visibility: { transitionIn: true, active: true, transitionOut: false },
+            textBlocks: [
+                { id: 't1', text: 'Follows the stop' },
+                { id: 't2', text: 'Only while flying in', visibility: {
+                    transitionIn: true, active: false, transitionOut: false,
+                } },
+                { id: 't3', text: 'Only while waiting', visibility: {
+                    transitionIn: false, active: true, transitionOut: false,
+                } },
+            ],
+        })],
+    }));
+    t.deepEqual(json.tourstops[0].template_data.window_text, [
+        'Follows the stop',
+        { text: 'Only while flying in', 'visible-transition_in': true },
+        { text: 'Only while waiting', 'visible-active_wait': true },
+    ]);
+    t.end();
+});
+
+test('editorTourToJson: writes media visibility flags only when narrower than the stop', (t) => {
+    const json = editorTourToJson(tour({
+        stops: [stop({
+            identifier: 'cats',
+            visibility: { transitionIn: true, active: true, transitionOut: false },
+            mediaBlocks: [
+                { id: 'm1', kind: 'image', url: 'https://example.com/follow.jpg' },
+                { id: 'm2', kind: 'image', url: 'https://example.com/in.jpg', visibility: {
+                    transitionIn: true, active: false, transitionOut: false,
+                } },
+                { id: 'm3', kind: 'youtube', videoId: 'W86cTIoMv2U', visibility: {
+                    transitionIn: false, active: true, transitionOut: false,
+                } },
+            ],
+        })],
+    }));
+    t.deepEqual(json.tourstops[0].template_data.media, [
+        'https://example.com/follow.jpg',
+        { url: 'https://example.com/in.jpg', 'visible-transition_in': true },
+        { url: 'https://www.youtube.com/embed/W86cTIoMv2U', 'visible-active_wait': true },
+    ]);
+    t.end();
+});
+
+test('editorTourToJson: omits media visibility flags that match a default stop', (t) => {
+    const json = editorTourToJson(tour({
+        stops: [stop({
+            identifier: 'cats',
+            mediaBlocks: [
+                { id: 'm1', kind: 'image', url: 'https://example.com/always.jpg', visibility: {
+                    transitionIn: true, active: true, transitionOut: true,
+                } },
+                { id: 'm2', kind: 'image', url: 'https://example.com/active.jpg', visibility: {
+                    transitionIn: false, active: true, transitionOut: false,
+                } },
+            ],
+        })],
+    }));
+    t.deepEqual(json.tourstops[0].template_data.media, [
+        'https://example.com/always.jpg',
+        'https://example.com/active.jpg',
+    ]);
+    t.end();
+});
+
+test('editorTourToJson: omits text visibility flags that match a default stop', (t) => {
+    const json = editorTourToJson(tour({
+        stops: [stop({
+            identifier: 'cats',
+            textBlocks: [
+                { id: 't1', text: 'Always', visibility: {
+                    transitionIn: true, active: true, transitionOut: true,
+                } },
+                { id: 't2', text: 'Active only', visibility: {
+                    transitionIn: false, active: true, transitionOut: false,
+                } },
+            ],
+        })],
+    }));
+    t.deepEqual(json.tourstops[0].template_data.window_text, ['Always', 'Active only']);
+    t.end();
+});
+
 test('tourJsonToHtml: production-like markup', (t) => {
     const html = tourJsonToHtml({
         identifier: 'demo',
@@ -214,6 +316,67 @@ test('tourJsonToHtml: OneZoom imgsrc with a negative srcId', (t) => {
         }],
     });
     t.match(html, /href="\/tree\/pic_info\/3\/-27123592"/);
+    t.end();
+});
+
+test('tourJsonToHtml: stop visibility classes', (t) => {
+    const html = tourJsonToHtml({
+        title: '',
+        description: '',
+        author: '',
+        tourstops: [{
+            identifier: 's',
+            template_data: {
+                'visible-transition_in': true,
+                'hidden-active_wait': true,
+            },
+        }],
+    });
+    t.match(html, /class="container tour_container visible-transition_in hidden-active_wait"/);
+    t.end();
+});
+
+test('tourJsonToHtml: window_text visibility classes', (t) => {
+    const html = tourJsonToHtml({
+        title: '',
+        description: '',
+        author: '',
+        tourstops: [{
+            identifier: 's',
+            template_data: {
+                window_text: [
+                    'Always',
+                    { text: 'Fly in', 'visible-transition_in': true },
+                    { text: 'Wait', 'visible-active_wait': true },
+                ],
+            },
+        }],
+    });
+    t.match(html, /<div class="window_text">Always<\/div>/);
+    t.match(html, /<div class="window_text visible-transition_in">Fly in<\/div>/);
+    t.match(html, /<div class="window_text visible-active_wait">Wait<\/div>/);
+    t.end();
+});
+
+test('tourJsonToHtml: media visibility classes', (t) => {
+    const html = tourJsonToHtml({
+        title: '',
+        description: '',
+        author: '',
+        tourstops: [{
+            identifier: 's',
+            template_data: {
+                media: [
+                    'https://example.com/always.jpg',
+                    { url: 'https://example.com/in.jpg', 'visible-transition_in': true },
+                    { url: 'https://example.com/wait.jpg', 'visible-active_wait': true },
+                ],
+            },
+        }],
+    });
+    t.match(html, /class="embed-image"[^>]*><img src="https:\/\/example\.com\/always\.jpg"/);
+    t.match(html, /class="embed-image visible-transition_in"/);
+    t.match(html, /class="embed-image visible-active_wait"/);
     t.end();
 });
 

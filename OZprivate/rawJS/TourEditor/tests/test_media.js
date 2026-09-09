@@ -176,19 +176,40 @@ test('mediaBlockWithKind converts via the canonical URL', (t) => {
             id: 'm1',
             kind: 'image',
             url: 'https://commons.wikimedia.org/wiki/File:Sponges_in_Caribbean_Sea,_Cayman_Islands.jpg',
+            visibility: undefined,
         },
     );
-    t.deepEqual(mediaBlockWithKind(wikimedia, 'youtube'), { id: 'm1', kind: 'youtube', videoId: '' });
+    t.deepEqual(mediaBlockWithKind(wikimedia, 'youtube'), {
+        id: 'm1', kind: 'youtube', videoId: '', visibility: undefined,
+    });
     t.deepEqual(
         mediaBlockWithKind(wikimedia, 'link'),
         {
             id: 'm1',
             kind: 'link',
             url: 'https://commons.wikimedia.org/wiki/File:Sponges_in_Caribbean_Sea,_Cayman_Islands.jpg',
+            visibility: undefined,
         },
     );
     t.deepEqual(parseMediaUrlAsKind('imgsrc:99:1', 'onezoom'), { kind: 'onezoom', src: 99, srcId: 1 });
     t.deepEqual(parseMediaUrlAsKind('https://example.com/cat.jpg', 'youtube'), { kind: 'youtube', videoId: '' });
+    t.end();
+});
+
+test('mediaBlockWithKind: keeps content visibility', (t) => {
+    const visibility = { transitionIn: true, active: false, transitionOut: false };
+    const block = {
+        id: 'm1',
+        kind: 'image',
+        url: 'https://example.com/cat.jpg',
+        visibility,
+    };
+    t.deepEqual(mediaBlockWithKind(block, 'link'), {
+        id: 'm1',
+        kind: 'link',
+        url: 'https://example.com/cat.jpg',
+        visibility,
+    });
     t.end();
 });
 
