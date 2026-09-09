@@ -17,6 +17,7 @@ import {
     type EditorTour,
     type EditorTourStop,
     type Pinpoint,
+    type QueryStringPair,
     type TourLicense,
     type TransitionIn,
 } from './types';
@@ -108,7 +109,7 @@ function parseStop(value: unknown, index: number): EditorTourStop {
         throw new TourParseError(`Stop ${identifier} is not valid.`);
     }
     const tdata = isRecord(value.template_data) ? value.template_data : {};
-    const { fillScreen, highlights } = parseQsOpts(value.qs_opts);
+    const { fillScreen, highlights, extraQueryStrings } = parseQsOpts(value.qs_opts);
     const stopWaitMs = optionalFiniteNumber(value.stop_wait);
     const comment = asString(value.comment);
     const templateComment = asString(tdata.comment);
@@ -120,6 +121,7 @@ function parseStop(value: unknown, index: number): EditorTourStop {
         location: parseOtt(value.ott),
         fillScreen,
         highlights,
+        extraQueryStrings,
         textBlocks: parseWindowText(tdata.window_text, identifier),
         mediaBlocks: parseMediaList(tdata.media, identifier),
         visibility: parseStopVisibility(tdata),
@@ -132,29 +134,44 @@ function parseStop(value: unknown, index: number): EditorTourStop {
     };
 }
 
-function parseQsOpts(value: unknown): { fillScreen: boolean; highlights: EditorHighlight[] } {
+function parseQsOpts(value: unknown): {
+    fillScreen: boolean;
+    highlights: EditorHighlight[];
+    extraQueryStrings: QueryStringPair[];
+} {
     if (typeof value !== 'string' || !value) {
-        return { fillScreen: false, highlights: [] };
+        return { fillScreen: false, highlights: [], extraQueryStrings: [] };
     }
     const highlights: EditorHighlight[] = [];
+    const extraQueryStrings: QueryStringPair[] = [];
+    let fillScreen = false;
     for (const part of value.replace(/^\?/, '').split('&')) {
-        if (!part.startsWith('highlight=')) continue;
-        let highlightStr = part.slice('highlight='.length);
-        try {
-            highlightStr = decodeURIComponent(highlightStr);
-        } catch {
-            // Keep the raw value if it is not valid URI encoding.
+        if (!part) continue;
+        const eq = part.indexOf('=');
+        const key = decodeQueryPart(eq === -1 ? part : part.slice(0, eq));
+        const raw = decodeQueryPart(eq === -1 ? '' : part.slice(eq + 1));
+        if (key === 'into_node' && raw === 'max') {
+            fillScreen = true;
+            continue;
         }
-        if (!highlightStr) continue;
-        const highlight = fromHighlightStr(highlightStr);
-        if (highlight && highlight.pinpoints.length > 0) {
-            highlights.push(highlight);
+        if (key === 'highlight') {
+            const highlight = fromHighlightStr(raw);
+            if (highlight && highlight.pinpoints.length > 0) {
+                highlights.push(highlight);
+                continue;
+            }
         }
+        extraQueryStrings.push({ key, value: raw });
     }
-    return {
-        fillScreen: value.includes('into_node=max'),
-        highlights,
-    };
+    return { fillScreen, highlights, extraQueryStrings };
+}
+
+function decodeQueryPart(value: string): string {
+    try {
+        return decodeURIComponent(value);
+    } catch {
+        return value;
+    }
 }
 
 function parseWindowText(value: unknown, stopIdentifier: string): EditorTextBlock[] {

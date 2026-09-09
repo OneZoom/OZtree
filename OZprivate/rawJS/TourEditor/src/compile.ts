@@ -113,6 +113,9 @@ function stopQsOpts(stop: EditorTourStop): string | undefined {
         if (highlight.pinpoints.length === 0) continue;
         parts.push(`highlight=${toHighlightStr(highlight)}`);
     }
+    for (const { key, value } of stop.extraQueryStrings ?? []) {
+        parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+    }
     return parts.length > 0 ? `?${parts.join('&')}` : undefined;
 }
 

@@ -168,6 +168,7 @@ test('parseEditorTour: reads window_text, media objects, and qs_opts', (t) => {
     t.equal(loaded.thumbnail.src, 99);
     t.equal(loaded.thumbnail.srcId, 27732437);
     t.equal(loaded.stops[0].fillScreen, true);
+    t.deepEqual(loaded.stops[0].extraQueryStrings, []);
     t.equal(loaded.stops[0].autoAdvance, true);
     t.equal(loaded.stops[0].stopWaitSeconds, 2.5);
     t.deepEqual(loaded.stops[0].highlights[0].pinpoints, ['@Felidae', '@Canidae']);
@@ -298,6 +299,52 @@ test('parseEditorTour: flattens tourstop_shared into every stop', (t) => {
     t.deepEqual(loaded.stops[1].visibility, {
         transitionIn: true, active: true, transitionOut: false,
     });
+    t.end();
+});
+
+test('parseEditorTour: keeps unparsed qs_opts as extraQueryStrings', (t) => {
+    const loaded = parseEditorTour({
+        identifier: 'demo',
+        tourstops: [{
+            identifier: 'cats',
+            qs_opts: '?cols=popularity&highlight=&into_node=max&highlight=fan:#00aa00@Felidae&pop=ol_329457',
+            template_data: {},
+        }],
+    });
+    t.equal(loaded.stops[0].fillScreen, true);
+    t.equal(loaded.stops[0].highlights.length, 1);
+    t.deepEqual(loaded.stops[0].highlights[0].pinpoints, ['@Felidae']);
+    t.deepEqual(loaded.stops[0].extraQueryStrings, [
+        { key: 'cols', value: 'popularity' },
+        { key: 'highlight', value: '' },
+        { key: 'pop', value: 'ol_329457' },
+    ]);
+
+    const json = editorTourToJson(loaded);
+    t.equal(
+        json.tourstops[0].qs_opts,
+        '?into_node=max&highlight=fan:#00aa00@Felidae&cols=popularity&highlight=&pop=ol_329457',
+    );
+    t.end();
+});
+
+test('parseEditorTour: round-trips extraQueryStrings', (t) => {
+    const original = tour({
+        identifier: 'demo',
+        stops: [stop({
+            identifier: 'cats',
+            extraQueryStrings: [
+                { key: 'cols', value: 'popularity' },
+                { key: 'highlight', value: '' },
+            ],
+        })],
+    });
+    const json = editorTourToJson(original);
+    t.equal(json.tourstops[0].qs_opts, '?cols=popularity&highlight=');
+
+    const loaded = parseEditorTour(json);
+    t.deepEqual(loaded.stops[0].extraQueryStrings, original.stops[0].extraQueryStrings);
+    t.deepEqual(editorTourToJson(loaded), json);
     t.end();
 });
 

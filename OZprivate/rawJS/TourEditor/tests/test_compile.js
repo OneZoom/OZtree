@@ -134,6 +134,21 @@ test('editorTourToJson: writes a direct image thumbnail', (t) => {
     t.end();
 });
 
+test('editorTourToJson: writes extraQueryStrings into qs_opts', (t) => {
+    const json = editorTourToJson(tour({
+        stops: [stop({
+            identifier: 'cats',
+            fillScreen: true,
+            extraQueryStrings: [
+                { key: 'cols', value: 'popularity' },
+                { key: 'pop', value: 'ol_329457' },
+            ],
+        })],
+    }));
+    t.equal(json.tourstops[0].qs_opts, '?into_node=max&cols=popularity&pop=ol_329457');
+    t.end();
+});
+
 test('editorTourToJson: omits defaults and empty location', (t) => {
     const json = editorTourToJson(tour({
         stops: [stop({ identifier: 'empty' })],

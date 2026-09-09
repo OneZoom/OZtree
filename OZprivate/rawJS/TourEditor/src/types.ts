@@ -153,6 +153,12 @@ export interface EditorTour {
     stops: EditorTourStop[];
 }
 
+/** A ``qs_opts`` key/value the editor does not model, kept for round-trip. */
+export interface QueryStringPair {
+    key: string;
+    value: string;
+}
+
 export interface EditorTourStop {
     id: string;
     identifier: string;
@@ -170,6 +176,7 @@ export interface EditorTourStop {
     // Some fields just need to survive the round-trip, no UI:
     comment?: string;
     templateComment?: string;
+    extraQueryStrings: QueryStringPair[];
 }
 
 export const DEFAULT_HIGHLIGHT_COLOR = '#ff6b6b';

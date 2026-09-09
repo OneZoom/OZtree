@@ -72,6 +72,7 @@ export function createEmptyStop(existingStops: EditorTourStop[] = []): EditorTou
         location: null,
         fillScreen: false,
         highlights: [],
+        extraQueryStrings: [],
         textBlocks: [],
         mediaBlocks: [],
         visibility: defaultStopVisibility,
