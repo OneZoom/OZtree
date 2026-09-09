@@ -9,7 +9,9 @@ import {
 } from './media';
 import { sanitizeTourIdentifier, tourFileSlug } from './tour';
 import { stopVisibilityClassNames, stopVisibilityFlags, defaultStopVisibility } from './stopVisibility';
-import type { EditorTour, EditorTourStop, TourLicense } from './types';
+import { contentVisibilityFlags, defaultContentVisibility } from './tourContentVisibility';
+import type { EditorTextBlock, EditorTour, EditorTourStop, TourLicense } from './types';
+import { PhaseSelection } from './phases';
 
 /**
  * Production tour JSON as documented in ``controllers/tour.py``.
@@ -74,9 +76,10 @@ export function editorTourToJson(tour: EditorTour): ProductionTourJson {
 
 function editorStopToJson(stop: EditorTourStop): ProductionTourStopJson {
     const qs_opts = stopQsOpts(stop);
+    const stopVisibility = stop.visibility ?? defaultStopVisibility;
     const window_text = stop.textBlocks
-        .map((block) => block.text)
-        .filter((text) => text.length > 0);
+        .filter((block) => block.text.length > 0)
+        .map((block) => windowTextValue(block, stopVisibility));
     const media = stop.mediaBlocks
         .map((block) => mediaBlockToUrl(block))
         .filter((url) => url.length > 0);
@@ -84,7 +87,7 @@ function editorStopToJson(stop: EditorTourStop): ProductionTourStopJson {
         identifier: stop.identifier,
         template_data: {
             ...(stop.title ? { title: stop.title } : {}),
-            ...stopVisibilityFlags(stop.visibility ?? defaultStopVisibility),
+            ...stopVisibilityFlags(stopVisibility),
             ...(window_text.length > 0 ? { window_text } : {}),
             ...(media.length > 0 ? { media } : {}),
         },
@@ -107,6 +110,15 @@ function stopQsOpts(stop: EditorTourStop): string | undefined {
         parts.push(`highlight=${toHighlightStr(highlight)}`);
     }
     return parts.length > 0 ? `?${parts.join('&')}` : undefined;
+}
+
+function windowTextValue(block: EditorTextBlock, stopVisibility: PhaseSelection): ProductionWindowText {
+    const flags = contentVisibilityFlags(
+        block.visibility ?? defaultContentVisibility,
+        stopVisibility,
+    );
+    if (Object.keys(flags).length === 0) return block.text;
+    return { text: block.text, ...flags };
 }
 
 /**

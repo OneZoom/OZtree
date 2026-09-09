@@ -60,6 +60,7 @@ export type TourLicense = 'all-rights-reserved' | 'cc-by-4.0' | 'cc0-1.0';
 export interface EditorTextBlock {
     id: string;
     text: string;
+    visibility?: PhaseSelection;
 }
 
 interface EditorMediaBlockBase {

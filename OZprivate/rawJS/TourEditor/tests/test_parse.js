@@ -171,7 +171,11 @@ test('parseEditorTour: reads window_text, media objects, and qs_opts', (t) => {
     t.deepEqual(loaded.stops[0].highlights[0].pinpoints, ['@Felidae', '@Canidae']);
     t.equal(loaded.stops[0].highlights[0].color, '#00aa00');
     t.equal(loaded.stops[0].textBlocks[0].text, 'Always visible');
+    t.equal(loaded.stops[0].textBlocks[0].visibility, undefined);
     t.equal(loaded.stops[0].textBlocks[1].text, 'Only on fly-in');
+    t.deepEqual(loaded.stops[0].textBlocks[1].visibility, {
+        transitionIn: true, active: false, transitionOut: false,
+    });
     t.equal(loaded.stops[0].mediaBlocks[0].kind, 'wikimedia');
     t.equal(loaded.stops[0].mediaBlocks[0].filename, 'Rose_of_Jericho.gif');
     t.deepEqual(loaded.stops[0].visibility, {
@@ -194,6 +198,27 @@ test('parseEditorTour: reads stop visibility flags', (t) => {
     t.deepEqual(loaded.stops[0].visibility, {
         transitionIn: true, active: false, transitionOut: false,
     });
+    t.end();
+});
+
+test('parseEditorTour: round-trips text visibility flags against a visible-in stop', (t) => {
+    const original = tour({
+        identifier: 'demo',
+        stops: [stop({
+            identifier: 'cats',
+            visibility: { transitionIn: true, active: true, transitionOut: false },
+            textBlocks: [
+                { id: 't1', text: 'Follows the stop' },
+                { id: 't2', text: 'Only in', visibility: {
+                    transitionIn: true, active: false, transitionOut: false,
+                } },
+            ],
+        })],
+    });
+    const loaded = parseEditorTour(editorTourToJson(original));
+    t.deepEqual(editorTourToJson(loaded), editorTourToJson(original));
+    t.equal(loaded.stops[0].textBlocks[1].visibility.transitionIn, true);
+    t.equal(loaded.stops[0].textBlocks[1].visibility.active, false);
     t.end();
 });
 

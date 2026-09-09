@@ -1,5 +1,7 @@
 import UkIcon from './UkIcon';
+import PhaseToggles from './PhaseToggles';
 import { createTextBlock, moveItem } from './tour';
+import { defaultContentVisibility } from './tourContentVisibility';
 import type { EditorTextBlock } from './types';
 
 interface TextBlocksProps {
@@ -8,8 +10,8 @@ interface TextBlocksProps {
 }
 
 export default function TextBlocks({ blocks, onChange }: TextBlocksProps) {
-    const updateText = (blockId: string, text: string) => {
-        onChange(blocks.map((block) => (block.id === blockId ? { ...block, text } : block)));
+    const updateBlock = (blockId: string, patch: Partial<EditorTextBlock>) => {
+        onChange(blocks.map((block) => (block.id === blockId ? { ...block, ...patch } : block)));
     };
 
     const removeBlock = (blockId: string) => {
@@ -30,9 +32,16 @@ export default function TextBlocks({ blocks, onChange }: TextBlocksProps) {
                             className="uk-textarea"
                             rows={4}
                             value={block.text}
-                            onChange={(e) => updateText(block.id, e.target.value)}
+                            onChange={(e) => updateBlock(block.id, { text: e.target.value })}
                             placeholder="Stop text"
                         />
+                        <div className="tour-editor-show-during uk-margin-small-top">
+                            <div className="uk-form-label">Show during</div>
+                            <PhaseToggles
+                                value={block.visibility ?? defaultContentVisibility}
+                                onChange={(visibility) => updateBlock(block.id, { visibility })}
+                            />
+                        </div>
                         <div className="tour-editor-item-actions uk-margin-small-top">
                             <button
                                 className="uk-button uk-button-small uk-button-danger uk-margin-small-right"

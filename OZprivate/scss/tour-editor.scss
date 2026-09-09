@@ -265,6 +265,17 @@ body.tree-viewer {
     margin-top: 8px;
 }
 
+.tour-editor-show-during {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.tour-editor-show-during .uk-form-label {
+    margin: 0;
+}
+
 .tour-editor-item-actions .tour-editor-phase-toggles {
     margin-left: 8px;
 }

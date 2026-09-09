@@ -8,6 +8,7 @@ import {
 } from './media';
 import { DEFAULT_LICENSE, LICENSE_OPTIONS, isTourIdentifier, newEditorId, sanitizeTourIdentifier } from './tour';
 import { parseStopVisibility } from './stopVisibility';
+import { parseContentVisibility } from './tourContentVisibility';
 import {
     type EditorHighlight,
     type EditorMediaBlock,
@@ -132,7 +133,11 @@ function parseWindowText(value: unknown, stopIdentifier: string): EditorTextBloc
             return { id: newEditorId(), text: item };
         }
         if (isRecord(item)) {
-            return { id: newEditorId(), text: asString(item.text) };
+            return {
+                id: newEditorId(),
+                text: asString(item.text),
+                visibility: parseContentVisibility(item),
+            };
         }
         throw new TourParseError(`Text block ${index + 1} on ${stopIdentifier} is not valid.`);
     }).filter((block) => block.text.length > 0);
