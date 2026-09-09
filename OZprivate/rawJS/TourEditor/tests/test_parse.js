@@ -246,6 +246,67 @@ test('parseEditorTour: round-trips media visibility flags against a visible-in s
     t.end();
 });
 
+test('parseEditorTour: flattens tourstop_shared into every stop', (t) => {
+    const loaded = parseEditorTour({
+        identifier: 'demo',
+        tourstop_shared: {
+            transition_in: 'leap',
+            fly_in_speed: 2,
+            qs_opts: '?into_node=max',
+            template_data: {
+                title: 'Shared title',
+                window_text: ['Shared text'],
+                media: ['https://www.youtube.com/embed/W86cTIoMv2U'],
+                'visible-transition_in': true,
+            },
+        },
+        tourstops: [
+            { identifier: 'cats', ott: '@Felidae' },
+            {
+                identifier: 'dogs',
+                ott: '@Canidae',
+                transition_in: 'fly_straight',
+                qs_opts: '?highlight=fan:#00aa00@Canidae',
+                template_data: {
+                    title: 'Dogs',
+                    window_text: ['Dogs text'],
+                },
+            },
+        ],
+    });
+    t.equal(loaded.stops[0].title, 'Shared title');
+    t.equal(loaded.stops[0].location, '@Felidae');
+    t.equal(loaded.stops[0].fillScreen, true);
+    t.equal(loaded.stops[0].transitionIn, 'leap');
+    t.equal(loaded.stops[0].flyInSpeed, 2);
+    t.equal(loaded.stops[0].textBlocks[0].text, 'Shared text');
+    t.equal(loaded.stops[0].mediaBlocks[0].kind, 'youtube');
+    t.deepEqual(loaded.stops[0].visibility, {
+        transitionIn: true, active: true, transitionOut: false,
+    });
+    t.equal(loaded.stops[1].title, 'Dogs');
+    t.equal(loaded.stops[1].location, '@Canidae');
+    t.equal(loaded.stops[1].fillScreen, false);
+    t.equal(loaded.stops[1].transitionIn, 'fly_straight');
+    t.equal(loaded.stops[1].flyInSpeed, 2);
+    t.equal(loaded.stops[1].textBlocks[0].text, 'Dogs text');
+    t.equal(loaded.stops[1].mediaBlocks[0].kind, 'youtube');
+    t.equal(loaded.stops[1].highlights[0].type, 'fan');
+    t.deepEqual(loaded.stops[1].highlights[0].pinpoints, ['@Canidae']);
+    t.deepEqual(loaded.stops[1].visibility, {
+        transitionIn: true, active: true, transitionOut: false,
+    });
+    t.end();
+});
+
+test('parseEditorTour: rejects invalid tourstop_shared', (t) => {
+    t.throws(
+        () => parseEditorTour({ tourstop_shared: [], tourstops: [] }),
+        /invalid shared stop data/,
+    );
+    t.end();
+});
+
 test('parseEditorTour: rejects a tour without stops', (t) => {
     t.throws(() => parseEditorTour({ title: 'Nope' }), /missing stops/);
     t.end();

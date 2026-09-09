@@ -51,7 +51,8 @@ export function parseEditorTour(json: unknown, filename?: string): EditorTour {
         throw new TourParseError('Tour file is missing stops.');
     }
 
-    const stops = json.tourstops.map((stop, index) => parseStop(stop, index));
+    const stops = flattenSharedTourstops(json.tourstops, json.tourstop_shared)
+        .map((stop, index) => parseStop(stop, index));
     const identifiers = new Set<string>();
     for (const stop of stops) {
         if (identifiers.has(stop.identifier)) {
@@ -69,6 +70,32 @@ export function parseEditorTour(json: unknown, filename?: string): EditorTour {
         thumbnail: parseThumbnail(json.image_url),
         stops,
     };
+}
+
+/**
+ * Merge ``tourstop_shared`` into each stop, matching ``controllers/tour.py``:
+ * shared fields first, then the stop, with ``template_data`` merged the same way.
+ */
+function flattenSharedTourstops(tourstops: unknown[], shared: unknown): unknown[] {
+    if (shared === undefined) return tourstops;
+    if (!isRecord(shared)) {
+        throw new TourParseError('Tour file has invalid shared stop data.');
+    }
+    if (shared.template_data !== undefined && !isRecord(shared.template_data)) {
+        throw new TourParseError('Tour file has invalid shared stop data.');
+    }
+    const sharedTemplate = isRecord(shared.template_data) ? shared.template_data : {};
+    return tourstops.map((stop) => {
+        if (!isRecord(stop)) return stop;
+        const stopTemplate = stop.template_data;
+        return {
+            ...shared,
+            ...stop,
+            template_data: isRecord(stopTemplate)
+                ? { ...sharedTemplate, ...stopTemplate }
+                : (stopTemplate !== undefined ? stopTemplate : { ...sharedTemplate }),
+        };
+    });
 }
 
 function parseStop(value: unknown, index: number): EditorTourStop {
