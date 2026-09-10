@@ -225,6 +225,26 @@ class TestEmbed(unittest.TestCase):
             media_embed('https://tours.onezoom.workers.dev/frogs/Various_frogs_and_toads.jpeg'),
             media_embed('frogs/Various_frogs_and_toads.jpeg', defaults=dict(url_base=embed.TOURS_URL_BASE)),
         )
+        # Per-tour worker hosts get a copyright page on the same host
+        self.assertEqual(media_embed('https://my-lovely-tour-tours.onezoom.workers.dev/frogs/Various_frogs_and_toads.jpeg'), [
+            '<a',
+            'class="embed-image"',
+            'title="frogs/Various_frogs_and_toads.jpeg"',
+            'href="https://my-lovely-tour-tours.onezoom.workers.dev/frogs/Various_frogs_and_toads.html"',
+            '><img',
+            'src="https://my-lovely-tour-tours.onezoom.workers.dev/frogs/Various_frogs_and_toads.jpeg"',
+            'alt="Various',
+            'frogs',
+            'and',
+            'toads"',
+            '/><span',
+            'class="copyright">©</span></a>',
+        ])
+        self.assertEqual(
+            media_embed('https://my-lovely-tour-tours.onezoom.workers.dev/frogs/Various_frogs_and_toads.jpeg'),
+            media_embed('frogs/Various_frogs_and_toads.jpeg', defaults=dict(
+                url_base='https://my-lovely-tour-tours.onezoom.workers.dev/')),
+        )
         # Former GitHub Pages host still embeds with a copyright page on that host
         self.assertEqual(media_embed('https://onezoom.github.io/tours/frogs/Various_frogs_and_toads.jpeg'), [
             '<a',
@@ -240,6 +260,7 @@ class TestEmbed(unittest.TestCase):
             '/><span',
             'class="copyright">©</span></a>',
         ])
+
 
 if __name__ == '__main__':
     import sys

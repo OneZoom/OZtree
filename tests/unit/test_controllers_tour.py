@@ -3,10 +3,13 @@ Run with::
 
     grunt exec:test_server:test_controllers_tour.py
 """
+import json
 import unittest
+from unittest.mock import patch
 
 import applications.OZtree.controllers.tour as tour
 from applications.OZtree.tests.unit import util
+import embed
 
 from gluon import current
 from gluon.globals import Request, Session
@@ -185,6 +188,126 @@ class TestControllersTour(unittest.TestCase):
             'tourstops': [{'identifier': "felids", 'ott': 67819}],
         })
         self.assertEqual(out['tour_identifier'], 'ut_cats')
+
+    def test_preview_tours_url_base(self):
+        """Preview resolves relative media against the default tours CDN"""
+        out = self.tour_preview({
+            'tourstops': [{'identifier': "felids", 'ott': 67819}],
+        })
+        self.assertEqual(out['tours_url_base'], embed.TOURS_URL_BASE)
+
+    def _fake_urlopen(self, payload):
+        class _Resp:
+            def __init__(self, body):
+                self._body = body if isinstance(body, bytes) else body.encode('utf-8')
+            def read(self):
+                return self._body
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                return False
+
+        def urlopen(req, timeout=None):
+            url = req.full_url if hasattr(req, 'full_url') else req
+            urlopen.urls.append((url, timeout))
+            urlopen.reqs.append(req)
+            return _Resp(payload)
+        urlopen.urls = []
+        urlopen.reqs = []
+        return urlopen
+
+    def tour_remote(self, args, payload, username='admin'):
+        urlopen = self._fake_urlopen(
+            payload if isinstance(payload, (bytes, str)) else json.dumps(payload))
+        with patch.object(tour.urllib.request, 'urlopen', urlopen):
+            out = util.call_controller(
+                tour,
+                'remote',
+                method='GET',
+                args=args,
+                username=username,
+            )
+        self._last_remote_reqs = urlopen.reqs
+        return out, urlopen.urls
+
+    def test_remote_requires_login(self):
+        """Remote preview is only for logged-in users"""
+        with self.assertRaisesRegex(HTTP, r'403') as cm:
+            util.call_controller(
+                tour, 'remote', method='GET', args=['tours', 'cats'])
+        self.assertRegex(str(cm.exception.body), r'Login required')
+
+    def test_remote_rejects_untrusted_slug(self):
+        """Worker name must be letters, digits, and hyphens"""
+        one_stop = {'tourstops': [{'identifier': "felids", 'ott': 67819}]}
+
+        def reject(slug, filename='cats'):
+            with self.assertRaisesRegex(HTTP, r'422') as cm:
+                self.tour_remote([slug, filename], one_stop)
+            self.assertRegex(str(cm.exception.body), r'letters, digits, and hyphens')
+
+        reject('evil.com')
+        reject('onezoom.workers.dev.evil')
+        reject('has_underscore')
+
+    def test_remote_rejects_bad_path(self):
+        """File path must stay under the tours worker"""
+        one_stop = {'tourstops': [{'identifier': "felids", 'ott': 67819}]}
+
+        def reject(args):
+            with self.assertRaisesRegex(HTTP, r'422'):
+                self.tour_remote(args, one_stop)
+
+        reject(['tours'])
+        reject(['tours', '..', 'cats'])
+        reject(['tours', 'dir', '..', '..', 'cats'])
+        reject(['tours', ''])
+
+    def test_remote_fetches_and_renders(self):
+        """Fetched JSON renders like preview, with the given media base URL"""
+        tour_count = db(db.tour.identifier).count()
+        doc = {
+            'identifier': "ut_remote_cats",
+            'title': "A unit test tour",
+            'tourstops': [{
+                'identifier': "felids",
+                'ott': 67819,
+                'template_data': {'title': "Cats"},
+            }],
+        }
+        out, urls = self.tour_remote(['my-lovely-tour-tours', 'cats'], doc)
+
+        self.assertEqual(urls, [(
+            'https://my-lovely-tour-tours.onezoom.workers.dev/cats.json',
+            10,
+        )])
+        self.assertIn('OneZoom', self._last_remote_reqs[0].get_header('User-agent'))
+        self.assertEqual(out['tour_identifier'], 'ut_remote_cats')
+        self.assertEqual(
+            out['tours_url_base'],
+            'https://my-lovely-tour-tours.onezoom.workers.dev/',
+        )
+        self.assertEqual(out['tour']['title'], "A unit test tour")
+        self.assertEqual(out['tour']['tourstops'][0]['ott'], 67819)
+        self.assertEqual(out['tour']['tourstops'][0]['transition_in'], 'fly')
+        self.assertEqual(current.response.view, 'tour/data.html')
+        self.assertEqual(db(db.tour.identifier).count(), tour_count)
+
+        previewed = self.tour_preview(dict(doc))['tour']
+        self.assertEqual(out['tour']['tourstops'][0]['template_data'],
+                         previewed['tourstops'][0]['template_data'])
+
+    def test_remote_nested_filename(self):
+        """A filename can include a subdirectory under the tours worker"""
+        doc = {'tourstops': [{'identifier': "felids", 'ott': 67819}]}
+        out, urls = self.tour_remote(
+            ['tours', 'frogs', 'great_apes'],
+            doc,
+        )
+        self.assertEqual(urls[0][0],
+                         'https://tours.onezoom.workers.dev/frogs/great_apes.json')
+        self.assertEqual(out['tours_url_base'],
+                         'https://tours.onezoom.workers.dev/')
 
     def test_data_errors(self):
         """Error conditions handled appropriately?"""

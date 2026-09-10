@@ -133,11 +133,11 @@ def media_embed(url, defaults=dict()):
               {element_data}
               ></video><a class="copyright" href="{url}">©</a></div>""".format(**opts)
 
-    ############### Custom tours assets at https://tours.onezoom.workers.dev/
+    ############### Custom tours assets at https://*.onezoom.workers.dev/
     # Also recognise the former GitHub Pages host. Replace the media extension with
     # .html to get a link to the copyright page on the same host.
     m = re.fullmatch(
-        r'(https://(?:tours\.onezoom\.workers\.dev|onezoom\.github\.io/tours))/(.+)\.(gif|jpg|jpeg|png|svg|ogg|mp3|ogv|webm|mpg|mpeg)',
+        r'(https://(?:(?:[a-z0-9-]+\.)*onezoom\.workers\.dev|onezoom\.github\.io/tours))/(.+)\.(gif|jpg|jpeg|png|svg|ogg|mp3|ogv|webm|mpg|mpeg)',
         opts['url'],
     )
     if m:
