@@ -61,6 +61,8 @@ config.api = {
   abort_request_threshold: 30000, //timeout for ajax call
   max_concurrent_request: 3,
 
+  user_login: null,
+
   image_details_api: null,
 
   tourstop_page: null,

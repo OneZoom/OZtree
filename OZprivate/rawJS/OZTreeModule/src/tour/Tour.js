@@ -65,6 +65,7 @@ import TourStopClass from './TourStop'
 import tree_state from '../tree_state';
 import { add_hook, remove_hook } from '../util';
 import { resolve_pinpoints } from '../navigation/pinpoint';
+import config from '../global_config';
 
 const Interaction_Action_Arr = ['mouse_down', 'mouse_wheel', 'touch_start', 'touch_move', 'touch_end']
 
@@ -74,6 +75,51 @@ const tstate = {
   PLAYING: 'tstate-playing',
   PAUSED: 'tstate-paused',
 };
+
+/** Login page, returning to the current tree URL afterwards. */
+function tour_login_url(tour_setting) {
+  const base = (config.api && config.api.user_login) || '/default/user/login';
+  const loc = new URL(window.location.href);
+  // The address bar drops ?tour= while the tour is still loading / inactive.
+  if (tour_setting) loc.searchParams.set('tour', tour_setting);
+  const next = loc.pathname + loc.search + loc.hash;
+  const sep = base.indexOf('?') >= 0 ? '&' : '?';
+  return base + sep + '_next=' + encodeURIComponent(next);
+}
+
+/**
+ * User-facing copy for a failed tour HTML fetch, as a DOM node.
+ * A 403 is treated as "not logged in" (see ``controllers/tour.py`` ``remote``).
+ */
+function tour_fetch_error_el(jqXHR, tour_setting) {
+  const el = document.createElement('div');
+  if (jqXHR && jqXHR.status === 403) {
+    const href = tour_login_url(tour_setting);
+    const a = document.createElement('a');
+    a.href = href;
+    a.textContent = 'Log in';
+    el.appendChild(a);
+    el.appendChild(document.createTextNode(' to play this tour'));
+    return el;
+  }
+  const text = ((jqXHR && jqXHR.responseText) || '').trim();
+  el.textContent = text && !text.startsWith('<')
+    ? text
+    : (jqXHR && jqXHR.status
+      ? 'The server could not load this tour (error ' + jqXHR.status + ').'
+      : 'The server could not load this tour.');
+  return el;
+}
+
+export function report_tour_fetch_error(jqXHR, tour_setting) {
+  console.error('Failed to fetch tour:', jqXHR);
+  const el = tour_fetch_error_el(jqXHR, tour_setting);
+  if (window.UIkit && window.UIkit.modal) {
+    window.UIkit.modal.alert(el.innerHTML);
+  } else {
+    alert(el.textContent);
+  }
+}
 
 class Tour {
   constructor(onezoom) {
@@ -194,8 +240,11 @@ class Tour {
     this.ready_callback = ready_callback || (() => {});
     this.interaction_hooks = {} // when we add interaction hooks, we store the ids here so we can remove them later
 
-    var resolve_tour_loaded;
-    this.tour_loaded = new Promise((resolve) => resolve_tour_loaded = resolve).then(() => {
+    var resolve_tour_loaded, reject_tour_loaded;
+    this.tour_loaded = new Promise((resolve, reject) => {
+      resolve_tour_loaded = resolve;
+      reject_tour_loaded = reject;
+    }).then(() => {
       if (window.tour_trace) console.log("Loaded tour")
       return this.ready_callback();
     });
@@ -211,9 +260,13 @@ class Tour {
         this.tour_setting = tour_setting = m[1]
         tour_start_step = parseInt(m[2])
       }
-      return $.ajax({ url: tour_setting, dataType: "html", success: (s) => {
-        return this.load_tour_from_string(s, tour_start_step).then(resolve_tour_loaded);
-      }});
+      return $.ajax({ url: tour_setting, dataType: "html" }).then(
+        (s) => this.load_tour_from_string(s, tour_start_step).then(resolve_tour_loaded),
+        (jqXHR) => {
+          report_tour_fetch_error(jqXHR, this.tour_setting);
+          reject_tour_loaded(jqXHR);
+        },
+      );
     }
   }
 

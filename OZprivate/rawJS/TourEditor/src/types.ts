@@ -105,7 +105,7 @@ export interface EditorWikimediaMedia extends EditorMediaBlockBase {
 }
 
 /**
- * Asset on ``https://onezoom.github.io/tours/{path}``.
+ * Asset on ``https://tours.onezoom.workers.dev/{path}``.
  * Extension determines if image, audio, or video, same as Wikimedia.
  */
 export interface EditorToursMedia extends EditorMediaBlockBase {

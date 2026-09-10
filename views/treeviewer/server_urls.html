@@ -16,6 +16,7 @@ var server_urls = {
   tour_list_api: "{{=URL('tour', 'list.json', scheme=True, host=True)}}",
   tour_preview_api: "{{=URL('tour', 'preview.html', scheme=True, host=True)}}",
   tour_search_api: "{{=URL('tour','search.json', scheme=True, host=True)}}",
+  user_login: "{{=URL('default', 'user', args=['login'], scheme=True, host=True)}}",
 
   static_data_url_func: function (data_name) {
       const buf_tmpl = '{{=URL("static", "FinalOutputs/data/BASEBASE_{}.EXTEXT".format(tree_version), scheme=True, host=True)}}';

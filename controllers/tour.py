@@ -11,6 +11,9 @@ OneZoom JSON tour definition
 
 A OneZoom tour can be defined as JSON, to then be inserted / fetched into the database via. ``/tour/data.html``.
 A document can also be rendered without saving it by POSTing it to ``/tour/preview.html``.
+A JSON file hosted on ``*.onezoom.workers.dev`` can be rendered the same way via
+``/tour/remote.html/<worker>/<file>`` (login required), e.g.
+``/tour/remote.html/test-tour-preview-tours/lava_lamps``.
 
 A library of tour documents is available at https://github.com/OneZoom/tours.
 
@@ -70,7 +73,7 @@ media
             "frogs/Various_frogs_and_toads.jpeg"
         ],
 
-    In the final case, the URL will be expanded to "https://onezoom.github.io/tours/frogs/Various_frogs_and_toads.jpeg".
+    In the final case, the URL will be expanded to "https://tours.onezoom.workers.dev/frogs/Various_frogs_and_toads.jpeg".
 
     By default media will autoplay when arriving at the tourstop, and stop when leaving. You can override with:
 
@@ -81,6 +84,11 @@ media
     When a media item is visible can be altered by setting ``"visible-transition_in": true``, the rules working the same as "window_text".
 
 """
+import json
+import posixpath
+import urllib.error
+import urllib.request
+
 from pymysql.err import IntegrityError
 
 from OZfunc import (
@@ -88,6 +96,7 @@ from OZfunc import (
     get_common_name, get_common_names,
     nice_name,
 )
+import embed
 import tour
 
 
@@ -122,7 +131,7 @@ def _with_table_defaults(table, doc):
 def _merged_tourstop(ts, ts_shared, **extra):
     """One tourstop document, with ``tourstop_shared`` and the DB defaults merged in.
 
-    Shared by ``data`` (before writing) and ``preview`` (before rendering), so that a
+    Shared by ``data`` (before writing) and ``preview`` / ``remote`` (before rendering), so that a
     tourstop resolves to the same values whether or not it was saved first.
     """
     return _with_table_defaults(db.tourstop, {
@@ -168,6 +177,72 @@ def _parse_tourstop_ott(ott, label):
         return int(ott_str), None
     except (TypeError, ValueError):
         raise HTTP(422, err)
+
+
+def _tour_from_document(doc):
+    """Build the tour dict ``views/tour/data.html`` expects, without touching the DB."""
+    tourstops = doc.get('tourstops') or []
+    if len(tourstops) == 0:
+        raise HTTP(422, "Must have at least one tourstop")
+    ts_shared = doc.get('tourstop_shared', {})
+
+    tour = _with_table_defaults(db.tour, doc)
+    tour['lang'] = doc.get('lang') or 'en'
+    tour['tourstops'] = []
+    for i, ts in enumerate(tourstops):
+        label = _tourstop_label(ts, i + 1)
+        try:
+            if 'symlink_tourstop' in ts:
+                raise ValueError("symlinks can only be resolved for a saved tour")
+            ts = _merged_tourstop(ts, ts_shared)
+            _parse_tourstop_ott(ts.get('ott'), label)
+            tour['tourstops'].append(ts)
+        except (AttributeError, TypeError, ValueError, KeyError) as e:
+            raise HTTP(422, "Tourstop %s: %s" % (label, e))
+    return tour
+
+
+def _tours_url_base_from_slug(slug):
+    """``https://{slug}.onezoom.workers.dev/`` from a single DNS label, or HTTP(422)."""
+    if not slug or not isinstance(slug, str):
+        raise HTTP(422, "Missing tours worker name")
+    slug = slug.strip()
+    if not slug.replace('-', '').isalnum():
+        raise HTTP(422, "tours worker name must contain only letters, digits, and hyphens")
+    return 'https://%s.onezoom.workers.dev/' % slug
+
+
+def _tours_json_url(tours_url_base, filename):
+    """Join a relative JSON path onto an already-validated tours base URL."""
+    if not filename or not isinstance(filename, str):
+        raise HTTP(422, "Missing filename")
+    rel = posixpath.normpath(filename.strip())
+    if posixpath.isabs(rel) or rel == '.' or rel == '..' or rel.startswith('../'):
+        raise HTTP(422, "filename must be relative to the tours worker")
+    return tours_url_base + rel + '.json'
+
+
+def _fetch_tour_json(url):
+    """GET (url) and parse it as a tour document object."""
+    # User agent required to pass Cloudflare Browser Integrity Check.
+    req = urllib.request.Request(url, headers={
+        'User-Agent': 'OneZoom/1.0 (+https://www.onezoom.org/)',
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            raw = resp.read()
+    except urllib.error.HTTPError as e:
+        raise HTTP(502, "Could not fetch tour JSON (%s): %s" % (e.code, url))
+    except urllib.error.URLError:
+        raise HTTP(502, "Could not fetch tour JSON: %s" % url)
+
+    try:
+        doc = json.loads(raw.decode('utf-8'))
+    except (ValueError, UnicodeDecodeError):
+        raise HTTP(422, "Tour document is not valid JSON: %s" % url)
+    if not isinstance(doc, dict):
+        raise HTTP(422, "Tour document must be a JSON object: %s" % url)
+    return doc
 
 
 def homepage_animation():
@@ -371,6 +446,7 @@ def data():
     return dict(
         tour_identifier=tour_identifier,
         tour=tour,
+        tours_url_base=embed.TOURS_URL_BASE,
     )
 
 
@@ -394,29 +470,41 @@ def preview():
         raise HTTP(415, "Tour document must be sent as application/json")
     session.forget(response)
 
-    tourstops = request.vars.get('tourstops') or []
-    if len(tourstops) == 0:
-        raise HTTP(422, "Must have at least one tourstop")
-    ts_shared = request.vars.get('tourstop_shared', {})
-
-    tour = _with_table_defaults(db.tour, request.vars)
-    tour['lang'] = request.vars.get('lang') or 'en'
-    tour['tourstops'] = []
-    for i, ts in enumerate(tourstops):
-        label = _tourstop_label(ts, i + 1)
-        try:
-            if 'symlink_tourstop' in ts:
-                raise ValueError("symlinks can only be resolved for a saved tour")
-            ts = _merged_tourstop(ts, ts_shared)
-            _parse_tourstop_ott(ts.get('ott'), label)
-            tour['tourstops'].append(ts)
-        except (AttributeError, TypeError, ValueError, KeyError) as e:
-            raise HTTP(422, "Tourstop %s: %s" % (label, e))
-
+    tour = _tour_from_document(request.vars)
     response.view = 'tour/data.html'
     return dict(
         tour_identifier=request.vars.get('identifier') or 'preview',
         tour=tour,
+        tours_url_base=embed.TOURS_URL_BASE,
+    )
+
+
+def remote():
+    """Render a tour JSON file hosted on ``*.onezoom.workers.dev``, without saving it
+
+    GET ``/tour/remote.html/<worker>/<file>``, the same URL shape as
+    ``/tour/data.html/<identifier>``. The JSON is fetched from
+    ``https://<worker>.onezoom.workers.dev/<file>.json`` and rendered with
+    ``views/tour/data.html``. Relative media paths are resolved against that worker.
+
+    Nested paths work as extra args, e.g. ``/tour/remote.html/tours/frogs/great_apes``.
+    Requires a logged-in user. Nothing is read from or written to the database.
+    """
+    auth.basic()
+    if not auth.user:
+        raise HTTP(403, "Login required to preview a remote tour")
+    if len(request.args) < 2:
+        raise HTTP(422, "Expect /tour/remote.html/<worker>/<file>")
+
+    tours_url_base = _tours_url_base_from_slug(request.args[0])
+    doc_url = _tours_json_url(tours_url_base, '/'.join(request.args[1:]))
+    tour = _tour_from_document(_fetch_tour_json(doc_url))
+
+    response.view = 'tour/data.html'
+    return dict(
+        tour_identifier=tour.get('identifier') or 'preview',
+        tour=tour,
+        tours_url_base=tours_url_base,
     )
 
 

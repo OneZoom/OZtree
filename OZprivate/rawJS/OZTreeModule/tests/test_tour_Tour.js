@@ -5,6 +5,85 @@ import test from 'tape';
 import { call_hook } from '../src/util';
 import { setup_tour } from './util_tourwrapper';
 import { getTimeoutValue, triggerTimeout } from './util_timeout';
+import Tour, { report_tour_fetch_error } from '../src/tour/Tour';
+import config from '../src/global_config';
+
+test('tour.fetch_error:403 has login link', function (test) {
+  var t = setup_tour(test, `<div class="tour"></div>`);
+  config.api.user_login = 'https://oz.example.com/default/user/login';
+  const origError = console.error;
+  const errors = [];
+  console.error = function () { errors.push(Array.from(arguments)); };
+  const htmls = [];
+  t.window.UIkit = { modal: { alert: function (html) { htmls.push(html); } } };
+  test.teardown(function () {
+    console.error = origError;
+    config.api.user_login = null;
+  });
+
+  return t.tour.tour_loaded.then(function () {
+    report_tour_fetch_error({ status: 403 }, '/tour/remote.html/tours/lava_lamps');
+    test.equal(errors[0][0], 'Failed to fetch tour:');
+    test.match(htmls[0], /<a href="https:\/\/oz.example.com\/default\/user\/login\?_next=/);
+    test.match(htmls[0], />Log in<\/a> to play this tour/);
+    test.match(htmls[0], /tour%3D/);
+    test.match(htmls[0], /lava_lamps/);
+    test.end();
+  });
+});
+
+test('tour.fetch_error:shows server message', function (test) {
+  var t = setup_tour(test, `<div class="tour"></div>`);
+
+  return t.tour.tour_loaded.then(function () {
+    report_tour_fetch_error({
+      status: 502,
+      responseText: 'Could not fetch tour JSON (403)',
+    });
+    report_tour_fetch_error({
+      status: 422,
+      responseText: 'filename must be a .json file <really>',
+    });
+    report_tour_fetch_error({
+      status: 500,
+      responseText: '<html>oops</html>',
+    });
+    const alerts = t.log.filter((x) => x[0] === 'alert').map((x) => x[1]);
+    test.equal(alerts[0], 'Could not fetch tour JSON (403)');
+    test.equal(alerts[1], 'filename must be a .json file <really>');
+    test.match(alerts[2], /error 500/);
+    test.end();
+  });
+});
+
+test('tour.setup_setting:fetch 403', function (test) {
+  var t = setup_tour(test, `<div class="tour"></div>`);
+  const origAjax = global.$.ajax;
+  const origError = console.error;
+  console.error = function () {};
+  global.$.ajax = function () {
+    return Promise.reject({ status: 403, responseText: 'Login required to preview a remote tour' });
+  };
+  if (t.window) t.window.$ = global.$;
+  test.teardown(function () {
+    if (global.$) global.$.ajax = origAjax;
+    console.error = origError;
+  });
+
+  return t.tour.tour_loaded.then(function () {
+    const tour = new Tour(t.oz);
+    tour.setup_setting('/tour/remote.html');
+    return tour.start().then(function () {
+      test.fail('Expected tour.start() to reject');
+      test.end();
+    }, function (err) {
+      test.equal(err.status, 403);
+      const alerts = t.log.filter((x) => x[0] === 'alert');
+      test.match(alerts[alerts.length - 1][1], /^Log in to play this tour$/);
+      test.end();
+    });
+  });
+});
 
 test('tour.start:notourstops', function (test) {
   var t = setup_tour(test, `<div class="tour">
