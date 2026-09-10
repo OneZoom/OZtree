@@ -10,6 +10,9 @@ from gluon.utils import web2py_uuid
 
 import img
 
+# Canonical host for tour-bundled images/audio. Relative media paths are resolved against this.
+TOURS_URL_BASE = 'https://tours.onezoom.workers.dev/'
+
 def embedize_url(url, email):
     request = current.request
     db = current.db
@@ -130,28 +133,32 @@ def media_embed(url, defaults=dict()):
               {element_data}
               ></video><a class="copyright" href="{url}">©</a></div>""".format(**opts)
 
-    ############### Custom tours assets at https://onezoom.github.io/tours/
-    # Replace the media extension with .html to get a link to the copyright page
-    m = re.fullmatch(r'https://onezoom.github.io/tours/(.+)\.(gif|jpg|jpeg|png|svg|ogg|mp3|ogv|webm|mpg|mpeg)', opts['url'])
+    ############### Custom tours assets at https://tours.onezoom.workers.dev/
+    # Also recognise the former GitHub Pages host. Replace the media extension with
+    # .html to get a link to the copyright page on the same host.
+    m = re.fullmatch(
+        r'(https://(?:tours\.onezoom\.workers\.dev|onezoom\.github\.io/tours))/(.+)\.(gif|jpg|jpeg|png|svg|ogg|mp3|ogv|webm|mpg|mpeg)',
+        opts['url'],
+    )
     if m:
         if not opts.get('alt'):
-            opts['alt'] = humanise_url(m.group(1))
+            opts['alt'] = humanise_url(m.group(2))
         if not opts.get('title'):
-            opts['title'] = "%s.%s" % (m.group(1), m.group(2))
+            opts['title'] = "%s.%s" % (m.group(2), m.group(3))
         opts['src_url'] = opts['url']
-        opts['url'] = 'https://onezoom.github.io/tours/%s.html' % m.group(1)
+        opts['url'] = '%s/%s.html' % (m.group(1), m.group(2))
 
-        if m.group(2) in ('gif', 'jpg', 'jpeg', 'png', 'svg'):
+        if m.group(3) in ('gif', 'jpg', 'jpeg', 'png', 'svg'):
             return """<a class="embed-image{klass}" title="{title}" href="{url}" {element_data}><img
               src="{src_url}"
               alt="{alt}"
             /><span class="copyright">©</span></a>""".format(**opts)
-        if m.group(2) in ('ogg', 'mp3'):
+        if m.group(3) in ('ogg', 'mp3'):
             return """<div class="embed-audio{klass}"><audio controls
               src="{src_url}"
               {element_data}
               ></audio><a class="copyright" href="{url}">©</a></div>""".format(**opts)
-        if m.group(2) in ('ogv', 'webm', 'mpg', 'mpeg'):
+        if m.group(3) in ('ogv', 'webm', 'mpg', 'mpeg'):
             return """<div class="embed-video{klass}"><video controls
               src="{src_url}"
               {element_data}

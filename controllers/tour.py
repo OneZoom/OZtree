@@ -70,7 +70,7 @@ media
             "frogs/Various_frogs_and_toads.jpeg"
         ],
 
-    In the final case, the URL will be expanded to "https://onezoom.github.io/tours/frogs/Various_frogs_and_toads.jpeg".
+    In the final case, the URL will be expanded to "https://tours.onezoom.workers.dev/frogs/Various_frogs_and_toads.jpeg".
 
     By default media will autoplay when arriving at the tourstop, and stop when leaving. You can override with:
 

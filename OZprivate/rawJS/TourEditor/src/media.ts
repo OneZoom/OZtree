@@ -9,7 +9,7 @@ import type {
     EditorYoutubeMedia,
 } from './types';
 
-export const TOURS_URL_BASE = 'https://onezoom.github.io/tours/';
+export const TOURS_URL_BASE = 'https://tours.onezoom.workers.dev/';
 export const WIKIMEDIA_FILE_BASE = 'https://commons.wikimedia.org/wiki/File:';
 
 export const MEDIA_KIND_OPTIONS: { value: EditorMediaKind; label: string }[] = [
@@ -332,7 +332,10 @@ function uploadCommonsFileName(url: string): string | null {
 
 function parseTours(url: string): MediaSource<'tours'> | null {
     const absolute = url.match(
-        new RegExp(`^https://onezoom\\.github\\.io/tours/(.+\\.(?:${MEDIA_EXT}))$`, 'i'),
+        new RegExp(
+            `^https://(?:tours\\.onezoom\\.workers\\.dev|onezoom\\.github\\.io/tours)/(.+\\.(?:${MEDIA_EXT}))$`,
+            'i',
+        ),
     );
     if (absolute) return { kind: 'tours', path: absolute[1] };
     if (/^https?:\/\//i.test(url)) return null;

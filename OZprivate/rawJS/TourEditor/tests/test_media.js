@@ -73,6 +73,10 @@ test('parseMediaUrl: Wikimedia, tours, image, audio', (t) => {
         { kind: 'wikimedia', filename: 'Sommieria_leucophylla.jpg' },
     );
     t.deepEqual(
+        parseMediaUrl('https://tours.onezoom.workers.dev/frogs/Various_frogs_and_toads.jpeg'),
+        { kind: 'tours', path: 'frogs/Various_frogs_and_toads.jpeg' },
+    );
+    t.deepEqual(
         parseMediaUrl('https://onezoom.github.io/tours/frogs/Various_frogs_and_toads.jpeg'),
         { kind: 'tours', path: 'frogs/Various_frogs_and_toads.jpeg' },
     );
