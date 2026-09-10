@@ -8,6 +8,7 @@ import unittest
 import applications.OZtree.controllers.tour as tour
 from applications.OZtree.tests.unit import util
 
+from gluon import current
 from gluon.globals import Request, Session
 from gluon.http import HTTP
 
@@ -61,6 +62,130 @@ class TestControllersTour(unittest.TestCase):
         self.assertEqual(out['tour_identifier'], tour_identifier)
         return out['tour']
 
+    def tour_preview(self, tour_body):
+        return util.call_controller(
+            tour,
+            'preview',
+            method='POST',
+            content_type='application/json',
+            vars=tour_body,
+        )
+
+    def test_preview_errors(self):
+        """Error conditions handled appropriately?"""
+        one_stop = {'tourstops': [{'identifier': "ott0", 'ott': 67819}]}
+
+        # Only POST renders a preview
+        with self.assertRaisesRegex(HTTP, r'405'):
+            util.call_controller(
+                tour, 'preview', content_type='application/json', vars=one_stop)
+
+        # A form-encoded body is refused, so a cross-origin form can't reach us
+        with self.assertRaisesRegex(HTTP, r'415') as cm:
+            util.call_controller(
+                tour,
+                'preview',
+                method='POST',
+                content_type='application/x-www-form-urlencoded',
+                vars=one_stop,
+            )
+        self.assertRegex(str(cm.exception.body), r'application/json')
+
+        # Can't preview a tour with no tourstops
+        with self.assertRaisesRegex(HTTP, r'422'):
+            self.tour_preview({'title': "A unit test tour"})
+
+        # Symlinks need a saved tour to point at
+        with self.assertRaisesRegex(HTTP, r'422') as cm:
+            self.tour_preview({'tourstops': [{
+                'identifier': "sym",
+                'symlink_tourstop': "ott0",
+            }]})
+        self.assertRegex(str(cm.exception.body), r'sym.*symlink')
+
+        # Anything that isn't a tourstop object is reported by position
+        with self.assertRaisesRegex(HTTP, r'422') as cm:
+            self.tour_preview({'tourstops': ["ott0"]})
+        self.assertRegex(str(cm.exception.body), r'Tourstop 1')
+
+        # Latin-only pinpoints are refused, matching data()
+        with self.assertRaisesRegex(HTTP, r'422') as cm:
+            self.tour_preview({'tourstops': [{
+                'identifier': "felids",
+                'ott': "@Felidae",
+            }]})
+        self.assertRegex(str(cm.exception.body), r'felids.*integer OTT')
+
+    def test_preview_matchesdata(self):
+        """A previewed document renders from the same values as a saved one"""
+        otts = util.find_unsponsored_otts(2)
+        tour_body = {
+            'identifier': "ut_tour",
+            'title': "A unit test tour",
+            'description': "It's a nice tour",
+            'author': "UT::Author",
+            'keywords': ["education"],
+            'tourstop_shared': {
+                'stop_wait': 1234,
+                'template_data': {'visible-transition_in': True},
+            },
+            'tourstops': [
+                {
+                    'ott': otts[0],
+                    'identifier': "ott0",
+                    'stop_wait': 3,
+                    'template_data': {'title': "The first tourstop"},
+                },
+                {
+                    'ott': otts[1],
+                    'identifier': "ott1",
+                },
+            ],
+        }
+        saved = self.tour_put('UT::TOUR', dict(tour_body))
+        previewed = self.tour_preview(dict(tour_body))['tour']
+
+        # Everything views/tour/data.html reads out of the tour renders the same
+        for prop in ('lang', 'author', 'title', 'description', 'image_url', 'keywords'):
+            self.assertEqual(previewed[prop], saved[prop], prop)
+        self.assertEqual(len(previewed['tourstops']), len(saved['tourstops']))
+        for prev_ts, saved_ts in zip(previewed['tourstops'], saved['tourstops']):
+            for prop in (
+                    'lang', 'ott', 'qs_opts', 'transition_in', 'fly_in_speed',
+                    'transition_in_wait', 'stop_wait', 'stop_wait_after_backward',
+                    'template_data'):
+                self.assertEqual(prev_ts[prop], saved_ts[prop], prop)
+
+    def test_preview_nodatabase(self):
+        """Preview stores nothing, and fills defaults as if the tour had been saved"""
+        tour_count = db(db.tour.identifier).count()
+        out = self.tour_preview({
+            'title': "A unit test tour",
+            'tourstops': [{
+                'identifier': "felids",
+                'ott': 67819,
+                'template_data': {'title': "Cats"},
+            }],
+        })
+
+        self.assertEqual(out['tour_identifier'], 'preview')
+        self.assertEqual(out['tour']['tourstops'][0]['ott'], 67819)
+        # Defaults are filled in as if the tour had been saved and read back
+        self.assertEqual(out['tour']['lang'], 'en')
+        self.assertEqual(out['tour']['tourstops'][0]['transition_in'], 'fly')
+        self.assertEqual(out['tour']['tourstops'][0]['fly_in_speed'], 1)
+        # Rendered by the same view as a saved tour, and nothing was written
+        self.assertEqual(current.response.view, 'tour/data.html')
+        self.assertEqual(db(db.tour.identifier).count(), tour_count)
+
+    def test_preview_identifier(self):
+        """The document's identifier ends up on the rendered tour"""
+        out = self.tour_preview({
+            'identifier': "ut_cats",
+            'tourstops': [{'identifier': "felids", 'ott': 67819}],
+        })
+        self.assertEqual(out['tour_identifier'], 'ut_cats')
+
     def test_data_errors(self):
         """Error conditions handled appropriately?"""
         # Have to include a tour identifier
@@ -99,6 +224,25 @@ class TestControllersTour(unittest.TestCase):
             })
         self.assertRegex(str(cm.exception.body), r'badstop.*integer OTT')
 
+        # Latin-only and ozid pinpoints are rejected
+        with self.assertRaisesRegex(HTTP, r'422') as cm:
+            self.tour_put('UT::TOUR', {
+                'tourstops': [{
+                    'ott': "@Felidae",
+                    'identifier': "latinonly",
+                }],
+            })
+        self.assertRegex(str(cm.exception.body), r'latinonly.*integer OTT')
+
+        with self.assertRaisesRegex(HTTP, r'422') as cm:
+            self.tour_put('UT::TOUR', {
+                'tourstops': [{
+                    'ott': "@_ozid=123456",
+                    'identifier': "badozid",
+                }],
+            })
+        self.assertRegex(str(cm.exception.body), r'badozid.*integer OTT')
+
         # Malformed ancestor pinpoint
         with self.assertRaisesRegex(HTTP, r'422') as cm:
             self.tour_put('UT::TOUR', {
@@ -107,7 +251,7 @@ class TestControllersTour(unittest.TestCase):
                     'identifier': "badanc",
                 }],
             })
-        self.assertRegex(str(cm.exception.body), r'ott ancestor')
+        self.assertRegex(str(cm.exception.body), r'badanc.*integer OTT')
 
     def test_data_storerestore(self):
         """Can we store/restore tours in the database?"""
@@ -338,6 +482,30 @@ class TestControllersTour(unittest.TestCase):
         ts = db(db.tour.id == t['id']).select(db.tour.ALL)[0].tourstop.select()[0]
         self.assertEqual(ts.ott, otts[0])
         self.assertEqual(ts.secondary_ott, otts[1])
+
+    def test_data_ott_pinpoints(self):
+        """@=OTT and @name=OTT are stored as the integer OTT"""
+        otts = util.find_unsponsored_otts(2)
+
+        t = self.tour_put('UT::TOUR', {
+            'title': "A unit test tour",
+            'description': "It's a nice tour",
+            'author': "UT::Author",
+            'tourstops': [
+                {
+                    'ott': '@=%d' % otts[0],
+                    'identifier': "bare",
+                },
+                {
+                    'ott': '@Mammalia=%d' % otts[1],
+                    'identifier': "named",
+                },
+            ],
+        })
+        self.assertEqual(
+            [ts['ott'] for ts in t['tourstops']],
+            [otts[0], otts[1]],
+        )
 
     def test_data_shareddata(self):
         """Can use tourstop_shared to fill in common tourstop values"""

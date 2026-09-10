@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { nodeToStablePinpoint } from './highlights';
+import { nodeToOTTPinpoint } from './pinpoints';
 import type { Pinpoint, TreeNode } from './types';
 
 export type NodeSelection = {
@@ -74,7 +74,7 @@ export function useNodeSelection(
 }
 
 /**
- * Intercept tree node clicks and report a stable pinpoint.
+ * Intercept tree node clicks and report an OTT pinpoint.
  * Does not know about tours, locations, or highlights.
  */
 export function useNodePinpointSelection(
@@ -82,9 +82,9 @@ export function useNodePinpointSelection(
     onActiveChanged?: (active: boolean) => void,
 ): NodeSelection {
     return useNodeSelection((node) => {
-        const pinpoint = nodeToStablePinpoint(node);
+        const pinpoint = nodeToOTTPinpoint(node);
         if (!pinpoint) {
-            console.error('Failed to create stable pinpoint from node:', node);
+            console.error('Failed to create OTT pinpoint from node:', node);
             return;
         }
         onPick(pinpoint);

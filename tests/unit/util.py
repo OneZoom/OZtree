@@ -23,7 +23,7 @@ def grunt_path():
     raise RuntimeError("Cannot find grunt executable")
 
 
-def call_controller(module, endpoint, vars={}, args=[], method=None, username=None):
+def call_controller(module, endpoint, vars={}, args=[], method=None, username=None, content_type=None):
     """Set up a semi-sane request environment, call a controller endpoint"""
     # Create request for given params
     current.request = Request(dict())
@@ -32,6 +32,8 @@ def call_controller(module, endpoint, vars={}, args=[], method=None, username=No
     current.request.args = args
     if method:
         current.request.env.request_method = method
+    if content_type:
+        current.request.env.content_type = content_type
     current.request.application = 'OZtree'
     current.request.folder = os.path.abspath('applications/OZtree')
 

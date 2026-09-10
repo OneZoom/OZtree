@@ -10,6 +10,7 @@ OneZoom JSON tour definition
 ----------------------------
 
 A OneZoom tour can be defined as JSON, to then be inserted / fetched into the database via. ``/tour/data.html``.
+A document can also be rendered without saving it by POSTing it to ``/tour/preview.html``.
 
 A library of tour documents is available at https://github.com/OneZoom/tours.
 
@@ -106,33 +107,67 @@ def _tourstop_label(ts, index):
     return ident if ident else str(index)
 
 
-def _parse_tourstop_ott(ts, label):
-    """Normalise ts['ott'] to an integer OTT (or None).
+def _with_table_defaults(table, doc):
+    """(doc) padded out with the column defaults of (table), without querying the DB.
 
-    Accepts an int, numeric string, empty/None (return to start), or
-    ``@_ancestor=OTT=OTT``. Raises HTTP(422) for anything else.
+    Anything the document leaves out returns to its default, so an unsaved document
+    has the same shape as a row read back out of (table).
     """
-    ott = ts.get('ott')
+    return {
+        **{f: table.get(f).default for f in table.fields if f not in ('created', 'updated')},
+        **doc,
+    }
+
+
+def _merged_tourstop(ts, ts_shared, **extra):
+    """One tourstop document, with ``tourstop_shared`` and the DB defaults merged in.
+
+    Shared by ``data`` (before writing) and ``preview`` (before rendering), so that a
+    tourstop resolves to the same values whether or not it was saved first.
+    """
+    return _with_table_defaults(db.tourstop, {
+        **ts_shared,
+        **ts,
+        # Deep-clone template_data, should always exist
+        "template_data": {
+            **ts_shared.get("template_data", {}),
+            **ts.get("template_data", {}),
+        },
+        **extra,
+    })
+
+
+def _parse_tourstop_ott(ott, label):
+    """Return ``(ott, secondary_ott)`` for a tourstop ott field.
+
+    Accepts an int, numeric string, empty/None (return to start),
+    ``@=OTT``, ``@name=OTT``, or ``@_ancestor=OTT=OTT``.
+    ``secondary_ott`` is set only for an ancestor pinpoint.
+    Raises HTTP(422) for anything else.
+    """
     if ott in (None, ''):
-        ts['ott'] = None
-        return
+        return None, None
     ott_str = str(ott)
-    if ott_str.startswith('@_ancestor'):
-        parts = ott_str.split('=')
-        if len(parts) != 3:
-            raise HTTP(422, "Tourstop %s: ott ancestor pinpoint must be @_ancestor=OTT=OTT, got %r" % (label, ott))
+    err = "Tourstop %s: ott must be an integer OTT, @=OTT, @name=OTT, or @_ancestor=OTT=OTT, got %r" % (label, ott)
+    if ott_str.startswith('@'):
+        parts = ott_str[1:].split('=')
+        if parts[0] == '_ancestor':
+            if len(parts) != 3:
+                raise HTTP(422, err)
+            try:
+                return int(parts[1]), int(parts[2])
+            except (TypeError, ValueError):
+                raise HTTP(422, err)
+        if parts[0].startswith('_') or len(parts) != 2:
+            raise HTTP(422, err)
         try:
-            ts['ott'] = int(parts[1])
-            ts['secondary_ott'] = int(parts[2])
+            return int(parts[1]), None
         except (TypeError, ValueError):
-            raise HTTP(422, "Tourstop %s: ott ancestor pinpoint must be @_ancestor=OTT=OTT, got %r" % (label, ott))
-        return
+            raise HTTP(422, err)
     try:
-        ts['ott'] = int(ott_str)
+        return int(ott_str), None
     except (TypeError, ValueError):
-        raise HTTP(422, "Tourstop %s: ott must be an integer OTT or @_ancestor=OTT=OTT, got %r" % (
-            label, ott,
-        ))
+        raise HTTP(422, err)
 
 
 def homepage_animation():
@@ -265,18 +300,10 @@ def data():
             for i, ts in enumerate(request.vars['tourstops']):
                 label = _tourstop_label(ts, i + 1)
                 try:
-                    ts = {
-                        # All fields not otherwise specfied return to their default
-                        **{k:db.tourstop.get(k).default for k in db.tourstop.fields if k not in ['created', 'updated']},
-                        **ts_shared,
-                        **ts,
-                        # Deep-clone template_data, should always exist
-                        "template_data": {**ts_shared.get("template_data", {}), **ts.get("template_data", {})},
-                        # Add DB references
-                        "tour": tour_id,
-                        "ord": i + 1,
-                    }
-                    _parse_tourstop_ott(ts, label)
+                    # Add DB references alongside the shared/default merge
+                    ts = _merged_tourstop(ts, ts_shared, tour=tour_id, ord=i + 1)
+                    ts['ott'], secondary_ott = _parse_tourstop_ott(ts.get('ott'), label)
+                    ts['secondary_ott'] = secondary_ott or 0
                     if 'symlink_tourstop' in ts:
                         if 'symlink_tour' not in ts:
                             ts['symlink_tour'] = tour_identifier
@@ -343,6 +370,52 @@ def data():
     # Reconstitute tour JSON
     return dict(
         tour_identifier=tour_identifier,
+        tour=tour,
+    )
+
+
+def preview():
+    """Render a POSTed tour document as tour HTML, without saving it
+
+    POST a tour document (see above) as ``application/json``, and get back the HTML
+    that ``/tour/data.html/<identifier>`` would return once that document had been
+    saved. The tour editor plays unsaved work this way, so ``views/tour/data.html``
+    stays the only place tour HTML is generated.
+
+    Nothing is read from or written to the database.
+    """
+    if request.env.request_method != 'POST':
+        raise HTTP(405, "Preview a tour by POSTing a tour document")
+    
+    # A cross-origin HTML form cannot label a body application/json,
+    # so this prevents another site from sending a user to tour HTML of its own making
+    # (and thus its own scripts) on our domain.
+    if not (request.env.content_type or '').startswith('application/json'):
+        raise HTTP(415, "Tour document must be sent as application/json")
+    session.forget(response)
+
+    tourstops = request.vars.get('tourstops') or []
+    if len(tourstops) == 0:
+        raise HTTP(422, "Must have at least one tourstop")
+    ts_shared = request.vars.get('tourstop_shared', {})
+
+    tour = _with_table_defaults(db.tour, request.vars)
+    tour['lang'] = request.vars.get('lang') or 'en'
+    tour['tourstops'] = []
+    for i, ts in enumerate(tourstops):
+        label = _tourstop_label(ts, i + 1)
+        try:
+            if 'symlink_tourstop' in ts:
+                raise ValueError("symlinks can only be resolved for a saved tour")
+            ts = _merged_tourstop(ts, ts_shared)
+            _parse_tourstop_ott(ts.get('ott'), label)
+            tour['tourstops'].append(ts)
+        except (AttributeError, TypeError, ValueError, KeyError) as e:
+            raise HTTP(422, "Tourstop %s: %s" % (label, e))
+
+    response.view = 'tour/data.html'
+    return dict(
+        tour_identifier=request.vars.get('identifier') or 'preview',
         tour=tour,
     )
 

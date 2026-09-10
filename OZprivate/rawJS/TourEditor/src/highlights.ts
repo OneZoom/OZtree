@@ -9,6 +9,7 @@ import type {
     ValidationResult,
 } from './types';
 import { DEFAULT_HIGHLIGHT_COLOR, ROOT_PINPOINT } from './types';
+import { nodeToOTTPinpoint } from './pinpoints';
 
 export function newHighlightId(): string {
     return crypto.randomUUID();
@@ -52,16 +53,6 @@ export function fromHighlightStr(str: HighlightStr): EditorHighlight | null {
     };
 }
 
-export function nodeToStablePinpoint(node: TreeNode): Pinpoint | null {
-    // For creating tours we specifically want a stable pinpoint.
-    // Fail if we can't find one.
-    const pinpoint = window.onezoom.utils.node_to_pinpoint(node);
-    if (!pinpoint || pinpoint.startsWith('@_ozid=')) {
-        return null;
-    }
-    return pinpoint;
-}
-
 export function createHighlightFromPinpoint(pinpoint: Pinpoint): EditorHighlight {
     return {
         id: newHighlightId(),
@@ -72,7 +63,7 @@ export function createHighlightFromPinpoint(pinpoint: Pinpoint): EditorHighlight
 }
 
 export function createHighlightFromNode(node: TreeNode): EditorHighlight | null {
-    const pinpoint = nodeToStablePinpoint(node);
+    const pinpoint = nodeToOTTPinpoint(node);
     if (!pinpoint) {
         console.warn('Cannot create pinpoint for node:', node);
         return null;

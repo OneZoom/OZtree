@@ -131,16 +131,14 @@ export function resolve_pinpoints(pinpoint_or_pinpoints, extra_metadata={}) {
   * Return a pinpoint string pointing at (node)
   */
 export function node_to_pinpoint(node) {
-  if (node.ott || node.latin_name) {
-    return [
-      "@",
-      node.latin_name ? tidy_latin(node.latin_name) : '',
-      node.ott ? "=" + node.ott : "",
-    ].join("")
-  }
-
+  // Prefer OTT-based options
+  if (node.ott) return "@" + (node.latin_name ? tidy_latin(node.latin_name) : "") + "=" + node.ott;
+  
   const ancestor_pinpoint = node_to_ancestor_pinpoint(node);
   if (ancestor_pinpoint) return ancestor_pinpoint;
+
+  // No OTT-based options available, try fallbacks
+  if (node.latin_name) return "@" + tidy_latin(node.latin_name);
   if (node.ozid) return "@_ozid=" + node.ozid;
   return null;
 }

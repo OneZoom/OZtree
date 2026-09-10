@@ -14,6 +14,7 @@ var server_urls = {
   update_visit_count_api: "{{try:}}{{=myconf.take('API.update_visit_count')}}{{except:}}{{=URL('API','update_visit_count.json', scheme=True, host=True)}}{{pass}}",
   tourstop_page: "{{=URL('default','tourstop.load', scheme=True, host=True)}}",
   tour_list_api: "{{=URL('tour', 'list.json', scheme=True, host=True)}}",
+  tour_preview_api: "{{=URL('tour', 'preview.html', scheme=True, host=True)}}",
   tour_search_api: "{{=URL('tour','search.json', scheme=True, host=True)}}",
 
   static_data_url_func: function (data_name) {
