@@ -45,6 +45,7 @@ def call_controller(module, endpoint, vars={}, args=[], method=None, username=No
     module.db = current.db
     module.request = current.request
     module.response = current.response
+    module.myconf = current.globalenv['myconf']
     module.auth = current.globalenv['auth']
     module.HTTP = current.globalenv['HTTP']
     module.FORM = current.globalenv['FORM']
@@ -167,9 +168,11 @@ def set_appconfig(section, key, val):
     """Update site config (section).(key) = (val). If val is None, delete"""
     myconf = current.globalenv['myconf']
     if val is None:
-        if key in myconf[section]:
+        if section in myconf and key in myconf[section]:
             del myconf[section][key]
     else:
+        if section not in myconf:
+            myconf[section] = {}
         myconf[section][key] = str(val)
     full_key = ".".join((section, key))
     if full_key in myconf.int_cache:

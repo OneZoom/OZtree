@@ -16,6 +16,9 @@ A JSON file hosted on ``*.onezoom.workers.dev`` can be rendered the same way via
 ``/tour/remote.html/test-tour-preview-tours/lava_lamps``.
 
 A library of tour documents is available at https://github.com/OneZoom/tours.
+The public can propose a new tour by POSTing a document to
+``/tour/publish.json/<filename>``, which opens a pull request against ``main``
+on https://github.com/OneZoom/tours.
 
 The document is structured as follows::
 
@@ -84,20 +87,33 @@ media
     When a media item is visible can be altered by setting ``"visible-transition_in": true``, the rules working the same as "window_text".
 
 """
+import base64
 import json
+import os
 import posixpath
+import re
+import secrets
+import time
 import urllib.error
 import urllib.request
 
+import jwt
 from pymysql.err import IntegrityError
 
 from OZfunc import (
     add_the,
-    get_common_name, get_common_names,
+    get_common_names,
     nice_name,
 )
 import embed
 import tour
+
+TOURS_GITHUB_REPO = 'OneZoom/tours'
+TOURS_GITHUB_BASE_BRANCH = 'main'
+TOURS_GITHUB_API = 'https://api.github.com'
+TOURS_PUBLISH_MAX_BYTES = 1000 * 1000
+# Cache key: (client_id, installation_id) -> (expires_at_unix, installation_access_token)
+_github_install_token_cache = {}
 
 
 def _db_error_message(e):
@@ -220,6 +236,97 @@ def _tours_json_url(tours_url_base, filename):
     if posixpath.isabs(rel) or rel == '.' or rel == '..' or rel.startswith('../'):
         raise HTTP(422, "filename must be relative to the tours worker")
     return tours_url_base + rel + '.json'
+
+
+def _tour_publish_filename(name):
+    """Repo-root ``*.json`` filename from a URL argument, or HTTP(422)."""
+    if not name or not isinstance(name, str):
+        raise HTTP(422, "Expect a filename at the end of the URL")
+    name = name.strip()
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,49}', name):
+        raise HTTP(422, "filename must be letters, digits, hyphens, and underscores")
+    return name + '.json'
+
+
+def _github_tours_token():
+    """Installation access token used to open PRs, or HTTP(503) if unset."""
+    client_id = myconf.get('github.tours_app_client_id')
+    installation_id = myconf.get('github.tours_app_installation_id')
+    path = myconf.get('github.tours_app_private_key_path')
+    if client_id is None or installation_id is None or path is None:
+        raise HTTP(503, "Tour publishing is not configured")
+    if not os.path.isabs(path):
+        path = os.path.join(request.folder, path)
+    try:
+        with open(path, 'rb') as f:
+            pem = f.read()
+    except OSError:
+        raise HTTP(503, "Tour publishing is not configured")
+
+    now = time.time()
+    cache_key = (client_id, installation_id)
+    cached = _github_install_token_cache.get(cache_key)
+    if cached and cached[0] > now + 60:
+        return cached[1]
+
+    # JWT ``iss`` is the App's client ID, not its App ID or installation ID.
+    app_jwt = jwt.encode(
+        {
+            'iat': int(now) - 60,
+            'exp': int(now) + 10 * 60,
+            'iss': client_id,
+        },
+        pem,
+        algorithm='RS256',
+    )
+    result = _github_api(
+        'POST', '/app/installations/%s/access_tokens' % installation_id, app_jwt, {})
+    token = result.get('token') if isinstance(result, dict) else None
+    if not token:
+        raise HTTP(502, "GitHub API error: could not mint installation access token")
+
+    # Installation access tokens last 1 hour; refresh a little early.
+    _github_install_token_cache[cache_key] = (now + 50 * 60, token)
+    return token
+
+
+def _github_api(method, path, token, payload=None, missing_ok=False):
+    """Call the GitHub REST API. ``missing_ok`` turns 404 into ``None``."""
+    data = None if payload is None else json.dumps(payload).encode('utf-8')
+    req = urllib.request.Request(
+        TOURS_GITHUB_API + path,
+        data=data,
+        method=method,
+        headers={
+            'Accept': 'application/vnd.github+json',
+            'Authorization': 'Bearer %s' % token,
+            'User-Agent': 'OneZoom/1.0 (+https://www.onezoom.org/)',
+            'X-GitHub-Api-Version': '2026-03-10',
+        },
+    )
+    if data is not None:
+        req.add_header('Content-Type', 'application/json')
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            raw = resp.read()
+    except urllib.error.HTTPError as e:
+        body = e.read().decode('utf-8', errors='replace')
+        if missing_ok and e.code == 404:
+            return None
+        try:
+            message = json.loads(body).get('message') or body
+        except ValueError:
+            message = body
+        raise HTTP(502, "GitHub API error (%s): %s" % (e.code, message[:500]))
+    except urllib.error.URLError:
+        raise HTTP(502, "Could not reach GitHub")
+
+    if not raw:
+        return {}
+    try:
+        return json.loads(raw.decode('utf-8'))
+    except (ValueError, UnicodeDecodeError):
+        raise HTTP(502, "GitHub API returned invalid JSON")
 
 
 def _fetch_tour_json(url):
@@ -505,6 +612,93 @@ def remote():
         tour_identifier=tour.get('identifier') or 'preview',
         tour=tour,
         tours_url_base=tours_url_base,
+    )
+
+
+def publish():
+    """Open a GitHub pull request proposing a tour JSON file
+
+    POST a tour document as ``application/json`` to ``/tour/publish.json/<filename>``. 
+    A pull request is opened against ``main`` on https://github.com/OneZoom/tours.
+    """
+    if request.env.request_method != 'POST':
+        raise HTTP(405, "Publish a tour by POSTing a tour document")
+    session.forget(response)
+
+    if len(request.args) < 1:
+        raise HTTP(422, "Expect a filename at the end of the URL")
+    filename = _tour_publish_filename(request.args[0])
+    stem = filename[:-5]
+
+    # Refuse junk before talking to GitHub
+    _tour_from_document(request.vars)
+
+    try:
+        file_body = json.dumps(request.vars, indent=2, ensure_ascii=False) + '\n'
+    except TypeError:
+        raise HTTP(422, "Tour document must be JSON-serializable")
+    
+    if len(file_body.encode('utf-8')) > TOURS_PUBLISH_MAX_BYTES:
+        raise HTTP(422, "Tour document is too large to publish")
+
+    token = _github_tours_token()
+    repo = TOURS_GITHUB_REPO
+    base = TOURS_GITHUB_BASE_BRANCH
+    branch = '%s-%s' % (stem, secrets.token_hex(4))
+
+    main_ref = _github_api('GET', '/repos/%s/git/ref/heads/%s' % (repo, base), token)
+    try:
+        main_sha = main_ref['object']['sha']
+    except (TypeError, KeyError):
+        raise HTTP(502, "GitHub API error: could not read %s SHA" % base)
+
+    existing = _github_api(
+        'GET',
+        '/repos/%s/contents/%s?ref=%s' % (repo, filename, base),
+        token,
+        missing_ok=True,
+    )
+    existing_sha = existing.get('sha') if isinstance(existing, dict) else None
+
+    _github_api('POST', '/repos/%s/git/refs' % repo, token, {
+        'ref': 'refs/heads/%s' % branch,
+        'sha': main_sha,
+    })
+
+    # commit the file
+    put_payload = {
+        'message': '%s %s' % ('Update' if existing_sha else 'Add', filename),
+        'content': base64.b64encode(file_body.encode('utf-8')).decode('ascii'),
+        'branch': branch,
+    }
+    if existing_sha:
+        put_payload['sha'] = existing_sha
+    _github_api('PUT', '/repos/%s/contents/%s' % (repo, filename), token, put_payload)
+    
+    # open a pull request
+    title = request.vars.get('title') or stem
+    pr = _github_api('POST', '/repos/%s/pulls' % repo, token, {
+        'title': '%s tour: %s' % ('Update' if existing_sha else 'Add', title),
+        'head': branch,
+        'base': base,
+        'body': '\n'.join([
+            'Submitted via the OneZoom public tour publish endpoint.',
+            '',
+            '**File:** `%s`' % filename,
+            '**Author:** %s' % (request.vars.get('author') or '(not given)'),
+            '**Description:** %s' % (request.vars.get('description') or '(not given)'),
+        ]),
+    })
+    pr_url = pr.get('html_url') if isinstance(pr, dict) else None
+    if not pr_url:
+        raise HTTP(502, "GitHub API error: pull request was not created")
+
+    response.view = 'tour/publish.json'
+    return dict(
+        filename=filename,
+        branch=branch,
+        pr_url=pr_url,
+        pr_number=pr.get('number'),
     )
 
 

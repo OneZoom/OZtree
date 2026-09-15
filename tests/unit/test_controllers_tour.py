@@ -3,8 +3,13 @@ Run with::
 
     grunt exec:test_server:test_controllers_tour.py
 """
+import base64
+import io
 import json
+import os
+import tempfile
 import unittest
+import urllib.error
 from unittest.mock import patch
 
 import applications.OZtree.controllers.tour as tour
@@ -16,12 +21,116 @@ from gluon.globals import Request, Session
 from gluon.http import HTTP
 
 
+_TEST_APP_PEM = None
+
+
+def _test_app_pem():
+    """One RSA key for GitHub App tests, generated once per process."""
+    global _TEST_APP_PEM
+    if _TEST_APP_PEM is None:
+        from cryptography.hazmat.primitives import serialization
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        _TEST_APP_PEM = key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+    return _TEST_APP_PEM
+
+
+def _jwt_payload(authorization):
+    """Decode the payload of a Bearer JWT without verifying the signature."""
+    token = authorization.split()[-1]
+    payload = token.split('.')[1]
+    payload += '=' * (-len(payload) % 4)
+    return json.loads(base64.urlsafe_b64decode(payload))
+
+
+class FakeGitHub:
+    """Respond to the GitHub REST calls ``publish()`` makes, recording each one."""
+
+    def __init__(self, file_sha=None, pr_number=42):
+        self.calls = []
+        self.main_sha = 'abc123main'
+        self.file_sha = file_sha
+        self.install_token = 'ghs_installtoken'
+        self.pr = {
+            'html_url': 'https://github.com/OneZoom/tours/pull/%d' % pr_number,
+            'number': pr_number,
+        }
+
+    def urlopen(self, req, timeout=None):
+        method = req.get_method()
+        url = req.full_url if hasattr(req, 'full_url') else req
+        payload = json.loads(req.data.decode('utf-8')) if req.data else None
+        headers = dict(req.header_items())
+        auth = req.get_header('Authorization')
+        if auth:
+            headers['Authorization'] = auth
+        self.calls.append({
+            'method': method,
+            'url': url,
+            'payload': payload,
+            'timeout': timeout,
+            'headers': headers,
+        })
+
+        if method == 'POST' and '/app/installations/' in url and url.endswith('/access_tokens'):
+            return _GithubResp({
+                'token': self.install_token,
+                'expires_at': '2099-01-01T00:00:00Z',
+            })
+        if method == 'GET' and url.endswith('/git/ref/heads/main'):
+            return _GithubResp({'object': {'sha': self.main_sha}})
+        if method == 'GET' and '/contents/' in url:
+            if self.file_sha is None:
+                raise urllib.error.HTTPError(
+                    url, 404, 'Not Found', hdrs=None,
+                    fp=io.BytesIO(b'{"message":"Not Found"}'),
+                )
+            return _GithubResp({'sha': self.file_sha})
+        if method == 'POST' and url.endswith('/git/refs'):
+            return _GithubResp({'ref': payload['ref'], 'object': {'sha': self.main_sha}})
+        if method == 'PUT' and '/contents/' in url:
+            return _GithubResp({'content': {'sha': 'newfilesha'}})
+        if method == 'POST' and url.endswith('/pulls'):
+            return _GithubResp(self.pr)
+        raise AssertionError('Unexpected GitHub call %s %s' % (method, url))
+
+
+class _GithubResp:
+    def __init__(self, body):
+        self._body = body if isinstance(body, bytes) else json.dumps(body).encode('utf-8')
+
+    def read(self):
+        return self._body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+
 class TestControllersTour(unittest.TestCase):
     maxDiff = None
 
     def tearDown(self):
         util.clear_unittest_tours()
         db.rollback()
+        tour._github_install_token_cache.clear()
+        for key in (
+                'tours_app_client_id',
+                'tours_app_private_key_path', 'tours_app_installation_id'):
+            util.set_appconfig('github', key, None)
+        pem = getattr(self, '_github_pem_file', None)
+        if pem:
+            try:
+                os.unlink(pem)
+            except OSError:
+                pass
+            self._github_pem_file = None
 
     def tour_get(self, tour_identifier):
         out = util.call_controller(tour, 'data', args=[tour_identifier])
@@ -308,6 +417,137 @@ class TestControllersTour(unittest.TestCase):
                          'https://tours.onezoom.workers.dev/frogs/great_apes.json')
         self.assertEqual(out['tours_url_base'],
                          'https://tours.onezoom.workers.dev/')
+
+    def _set_github_app(self, client_id='TESTCLIENTID', installation_id='99'):
+        util.set_appconfig('github', 'tours_app_client_id', client_id)
+        util.set_appconfig('github', 'tours_app_installation_id', installation_id)
+        if not getattr(self, '_github_pem_file', None):
+            handle, path = tempfile.mkstemp(suffix='.pem')
+            with os.fdopen(handle, 'wb') as f:
+                f.write(_test_app_pem())
+            self._github_pem_file = path
+        util.set_appconfig('github', 'tours_app_private_key_path', self._github_pem_file)
+
+    def tour_publish(self, filename, tour_body, suffix='deadbeef', github=None, configured=True, installation_id='99'):
+        if configured:
+            self._set_github_app(installation_id=installation_id)
+        if github is None:
+            github = FakeGitHub()
+        with patch.object(tour.secrets, 'token_hex', return_value=suffix), \
+             patch.object(tour.urllib.request, 'urlopen', github.urlopen):
+            out = util.call_controller(
+                tour,
+                'publish',
+                method='POST',
+                content_type='application/json',
+                args=[filename] if filename is not None else [],
+                vars=tour_body,
+            )
+        return out, github
+
+    def test_publish_errors(self):
+        """Error conditions handled appropriately?"""
+        one_stop = {'tourstops': [{'identifier': "felids", 'ott': 67819}]}
+
+        # Only POST publishes
+        with self.assertRaisesRegex(HTTP, r'405'):
+            util.call_controller(
+                tour, 'publish', method='GET',content_type='application/json',
+                args=['frogs'], vars=one_stop)
+
+        # Filename is required and must be a safe slug
+        with self.assertRaisesRegex(HTTP, r'422') as cm:
+            util.call_controller(
+                tour, 'publish', method='POST',
+                content_type='application/json', vars=one_stop)
+        self.assertRegex(str(cm.exception.body), r'filename')
+
+        github = FakeGitHub()
+        for bad in ('../etc/passwd', 'foo/bar', '.github', '', 'has space', 'frogs.json'):
+            with self.assertRaisesRegex(HTTP, r'422'):
+                self.tour_publish(bad, one_stop, github=github)
+        self.assertEqual(github.calls, [])
+
+        # Invalid tour is refused before GitHub is contacted
+        with self.assertRaisesRegex(HTTP, r'422') as cm:
+            self.tour_publish('frogs', {'title': "A unit test tour"}, github=github)
+        self.assertRegex(str(cm.exception.body), r'tourstop')
+        self.assertEqual(github.calls, [])
+
+    def test_publish_requires_token(self):
+        """Without GitHub App credentials, publishing is unavailable"""
+        one_stop = {'tourstops': [{'identifier': "felids", 'ott': 67819}]}
+        github = FakeGitHub()
+        with self.assertRaisesRegex(HTTP, r'503') as cm:
+            self.tour_publish('frogs', one_stop, github=github, configured=False)
+        self.assertRegex(str(cm.exception.body), r'not configured')
+        self.assertEqual(github.calls, [])
+
+    def test_publish_creates_pr(self):
+        """A valid document is committed on a new branch and opened as a PR against main"""
+        tour_count = db(db.tour.identifier).count()
+        doc = {
+            'identifier': "frogs",
+            'title': "A unit test tour",
+            'description': "It's a nice tour",
+            'author': "UT::Author",
+            'tourstops': [{
+                'identifier': "felids",
+                'ott': 67819,
+                'template_data': {'title': "Cats"},
+            }],
+        }
+        out, github = self.tour_publish('frogs', doc)
+
+        self.assertEqual(out['filename'], 'frogs.json')
+        self.assertEqual(out['branch'], 'frogs-deadbeef')
+        self.assertEqual(out['pr_url'], 'https://github.com/OneZoom/tours/pull/42')
+        self.assertEqual(out['pr_number'], 42)
+        self.assertEqual(current.response.view, 'tour/publish.json')
+        self.assertEqual(db(db.tour.identifier).count(), tour_count)
+
+        methods_urls = [(c['method'], c['url']) for c in github.calls]
+        self.assertEqual(methods_urls, [
+            ('POST', 'https://api.github.com/app/installations/99/access_tokens'),
+            ('GET', 'https://api.github.com/repos/OneZoom/tours/git/ref/heads/main'),
+            ('GET', 'https://api.github.com/repos/OneZoom/tours/contents/frogs.json?ref=main'),
+            ('POST', 'https://api.github.com/repos/OneZoom/tours/git/refs'),
+            ('PUT', 'https://api.github.com/repos/OneZoom/tours/contents/frogs.json'),
+            ('POST', 'https://api.github.com/repos/OneZoom/tours/pulls'),
+        ])
+        jwt_payload = _jwt_payload(github.calls[0]['headers']['Authorization'])
+        self.assertEqual(jwt_payload['iss'], 'TESTCLIENTID')
+        self.assertTrue(
+            github.calls[1]['headers'].get('Authorization', '').endswith('ghs_installtoken'))
+
+        ref_payload = github.calls[3]['payload']
+        self.assertEqual(ref_payload['ref'], 'refs/heads/frogs-deadbeef')
+        self.assertEqual(ref_payload['sha'], 'abc123main')
+
+        put_payload = github.calls[4]['payload']
+        self.assertEqual(put_payload['branch'], 'frogs-deadbeef')
+        self.assertNotIn('sha', put_payload)
+        published = json.loads(base64.b64decode(put_payload['content']))
+        self.assertEqual(published['title'], "A unit test tour")
+        self.assertEqual(published['tourstops'][0]['identifier'], "felids")
+
+        pr_payload = github.calls[5]['payload']
+        self.assertEqual(pr_payload['head'], 'frogs-deadbeef')
+        self.assertEqual(pr_payload['base'], 'main')
+        self.assertRegex(pr_payload['title'], r'Add tour: A unit test tour')
+
+    def test_publish_updates_existing_file(self):
+        """If the file already exists on main, the commit updates it"""
+        doc = {
+            'title': "Updated frogs",
+            'tourstops': [{'identifier': "felids", 'ott': 67819}],
+        }
+        github = FakeGitHub(file_sha='oldfilesha')
+        out, github = self.tour_publish('frogs', doc, github=github)
+        put_payload = github.calls[4]['payload']
+        self.assertEqual(put_payload['sha'], 'oldfilesha')
+        self.assertRegex(github.calls[5]['payload']['title'], r'Update tour:')
+        self.assertEqual(out['pr_url'], 'https://github.com/OneZoom/tours/pull/42')
 
     def test_data_errors(self):
         """Error conditions handled appropriately?"""

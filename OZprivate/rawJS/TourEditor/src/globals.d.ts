@@ -25,6 +25,7 @@ interface OneZoom {
 interface ServerUrls {
     data_path_pics: (src: number | string, srcId: number | string) => string;
     tour_preview_api?: string;
+    tour_publish_api?: string;
 }
 
 interface JQueryOn {
