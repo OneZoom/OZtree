@@ -5,6 +5,7 @@
 import test from 'tape';
 import {
     createEmptyTour,
+    isCreativeCommonsLicense,
     sanitizePartialTourIdentifier,
     sanitizeTourIdentifier,
     tourFileSlug,
@@ -32,6 +33,13 @@ test('sanitizeTourIdentifier: lowercase letters, numbers, and underscores', (t) 
     t.equal(sanitizeTourIdentifier('tour2'), 'tour2');
     t.equal(sanitizeTourIdentifier('mammal_tour'), 'mammal_tour');
     t.equal(sanitizeTourIdentifier('_my_tour_'), 'my_tour');
+    t.end();
+});
+
+test('isCreativeCommonsLicense: only CC BY and CC0', (t) => {
+    t.equal(isCreativeCommonsLicense('all-rights-reserved'), false);
+    t.equal(isCreativeCommonsLicense('cc-by-4.0'), true);
+    t.equal(isCreativeCommonsLicense('cc0-1.0'), true);
     t.end();
 });
 

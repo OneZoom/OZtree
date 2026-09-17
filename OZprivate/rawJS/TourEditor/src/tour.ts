@@ -17,7 +17,7 @@ export const LICENSE_OPTIONS: LicenseOption[] = [
     {
         value: 'all-rights-reserved',
         label: 'All rights reserved',
-        description: 'You retain full copyright. Others may not copy, distribute, or reuse this tour without your permission.',
+        description: 'You retain full copyright. Others may not copy, distribute, or reuse this tour without your permission. Select a Creative Commons license if you wish to publish to the public tour library.',
     },
     {
         value: 'cc-by-4.0',
@@ -34,6 +34,10 @@ export const LICENSE_OPTIONS: LicenseOption[] = [
 ];
 
 export const DEFAULT_LICENSE: TourLicense = 'all-rights-reserved';
+
+export function isCreativeCommonsLicense(license: TourLicense): boolean {
+    return license === 'cc-by-4.0' || license === 'cc0-1.0';
+}
 
 export function newEditorId(): string {
     return crypto.randomUUID();

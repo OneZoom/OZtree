@@ -228,6 +228,14 @@ class TestControllersTour(unittest.TestCase):
             }]})
         self.assertRegex(str(cm.exception.body), r'felids.*integer OTT')
 
+        # Unknown licenses are refused, matching data()
+        with self.assertRaisesRegex(HTTP, r'422') as cm:
+            self.tour_preview({
+                'license': 'cc-by-sa-4.0',
+                'tourstops': [{'identifier': "felids", 'ott': 67819}],
+            })
+        self.assertRegex(str(cm.exception.body), r'license must be one of')
+
     def test_preview_matchesdata(self):
         """A previewed document renders from the same values as a saved one"""
         otts = util.find_unsponsored_otts(2)
@@ -236,6 +244,7 @@ class TestControllersTour(unittest.TestCase):
             'title': "A unit test tour",
             'description': "It's a nice tour",
             'author': "UT::Author",
+            'license': "cc-by-4.0",
             'keywords': ["education"],
             'tourstop_shared': {
                 'stop_wait': 1234,
@@ -258,7 +267,7 @@ class TestControllersTour(unittest.TestCase):
         previewed = self.tour_preview(dict(tour_body))['tour']
 
         # Everything views/tour/data.html reads out of the tour renders the same
-        for prop in ('lang', 'author', 'title', 'description', 'image_url', 'keywords'):
+        for prop in ('lang', 'author', 'license', 'title', 'description', 'image_url', 'keywords'):
             self.assertEqual(previewed[prop], saved[prop], prop)
         self.assertEqual(len(previewed['tourstops']), len(saved['tourstops']))
         for prev_ts, saved_ts in zip(previewed['tourstops'], saved['tourstops']):
@@ -284,6 +293,7 @@ class TestControllersTour(unittest.TestCase):
         self.assertEqual(out['tour']['tourstops'][0]['ott'], 67819)
         # Defaults are filled in as if the tour had been saved and read back
         self.assertEqual(out['tour']['lang'], 'en')
+        self.assertEqual(out['tour']['license'], 'all-rights-reserved')
         self.assertEqual(out['tour']['tourstops'][0]['transition_in'], 'fly')
         self.assertEqual(out['tour']['tourstops'][0]['fly_in_speed'], 1)
         # Rendered by the same view as a saved tour, and nothing was written
@@ -635,6 +645,37 @@ class TestControllersTour(unittest.TestCase):
             })
         self.assertRegex(str(cm.exception.body), r'badanc.*integer OTT')
 
+    def test_data_license(self):
+        """License is stored on upload, defaulted when missing, and validated"""
+        otts = util.find_unsponsored_otts(1)
+        one_stop = [{'ott': otts[0], 'identifier': "ott0"}]
+
+        t = self.tour_put('UT::TOUR', {'tourstops': one_stop})
+        self.assertEqual(t['license'], 'all-rights-reserved')
+
+        t = self.tour_put('UT::TOUR', {
+            'license': 'cc-by-4.0',
+            'tourstops': one_stop,
+        })
+        self.assertEqual(t['license'], 'cc-by-4.0')
+        self.assertEqual(self.tour_get('UT::TOUR')['license'], 'cc-by-4.0')
+
+        t = self.tour_put('UT::TOUR', {
+            'license': 'cc0-1.0',
+            'tourstops': one_stop,
+        })
+        self.assertEqual(t['license'], 'cc0-1.0')
+
+        t = self.tour_put('UT::TOUR', {'tourstops': one_stop})
+        self.assertEqual(t['license'], 'all-rights-reserved')
+
+        with self.assertRaisesRegex(HTTP, r'422') as cm:
+            self.tour_put('UT::TOUR', {
+                'license': 'cc-by-sa-4.0',
+                'tourstops': one_stop,
+            })
+        self.assertRegex(str(cm.exception.body), r'license must be one of')
+
     def test_data_storerestore(self):
         """Can we store/restore tours in the database?"""
         otts = util.find_unsponsored_otts(10)
@@ -658,6 +699,7 @@ class TestControllersTour(unittest.TestCase):
         self.assertEqual(t['title'], "A unit test tour")
         self.assertEqual(t['description'], "It's a nice tour")
         self.assertEqual(t['author'], "UT::Author")
+        self.assertEqual(t['license'], "all-rights-reserved")
         self.assertEqual(
             [ts['ott'] for ts in t['tourstops']],
             [otts[0], otts[5]],

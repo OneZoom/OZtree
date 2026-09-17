@@ -27,6 +27,7 @@ The document is structured as follows::
         "title": "Tour title",
         "description": "Tour description",
         "author": "OneZoom",
+        "license": "cc-by-4.0",
         "tourstop_shared": { ...common tourstop definitions... }
         "tourstops": [
             {
@@ -37,6 +38,8 @@ The document is structured as follows::
             }
         ],
     }
+
+A document-level ``license`` is stored with the tour. One of ``all-rights-reserved``, ``cc-by-4.0``, or ``cc0-1.0``.
 
 Both ``template_data`` and ``tourstop_shared`` can have the same content;
 ``tourstop_shared`` is merged into every ``template_data`` section. Possible options are:
@@ -127,10 +130,23 @@ def _db_error_message(e):
     return str(e)
 
 
+TOUR_LICENSES = ('all-rights-reserved', 'cc-by-4.0', 'cc0-1.0')
+TOUR_LICENSE_DEFAULT = 'all-rights-reserved'
+
+
 def _tourstop_label(ts, index):
     """Identifier if present, otherwise 1-based index."""
     ident = ts.get('identifier') if isinstance(ts, dict) else None
     return ident if ident else str(index)
+
+
+def _tour_license(value):
+    """Return a valid tour license, defaulting when missing, or HTTP(422)."""
+    if value in (None, ''):
+        return TOUR_LICENSE_DEFAULT
+    if value not in TOUR_LICENSES:
+        raise HTTP(422, "license must be one of: %s" % ', '.join(TOUR_LICENSES))
+    return value
 
 
 def _with_table_defaults(table, doc):
@@ -205,6 +221,7 @@ def _tour_from_document(doc):
 
     tour = _with_table_defaults(db.tour, doc)
     tour['lang'] = doc.get('lang') or 'en'
+    tour['license'] = _tour_license(doc.get('license'))
     tour['tourstops'] = []
     for i, ts in enumerate(tourstops):
         label = _tourstop_label(ts, i + 1)
@@ -478,6 +495,7 @@ def data():
                 identifier=tour_identifier,
                 lang=request.vars.get('lang', 'en'),
                 author=request.vars.get('author'),
+                license=_tour_license(request.vars.get('license')),
                 image_url=request.vars.get('image_url'),
                 title=request.vars.get('title'),
                 description=request.vars.get('description'),
