@@ -128,7 +128,7 @@ test('parseMediaUrl: kinds limits which parsers run', (t) => {
     );
     t.equal(parseMediaUrl('frogs/Various_frogs_and_toads.jpeg', ['youtube']), null);
     t.deepEqual(mediaKindOptions(['youtube', 'image']).map((option) => option.value), ['youtube', 'image']);
-    t.deepEqual(THUMBNAIL_MEDIA_KINDS, ['onezoom', 'image']);
+    t.deepEqual(THUMBNAIL_MEDIA_KINDS, ['onezoom', 'wikimedia', 'tours', 'image']);
     t.deepEqual(
         parseMediaUrl('imgsrc:99:27732437', THUMBNAIL_MEDIA_KINDS),
         { kind: 'onezoom', src: 99, srcId: 27732437 },
@@ -136,6 +136,18 @@ test('parseMediaUrl: kinds limits which parsers run', (t) => {
     t.deepEqual(
         parseMediaUrl('https://example.com/cat.jpg', THUMBNAIL_MEDIA_KINDS),
         { kind: 'image', url: 'https://example.com/cat.jpg' },
+    );
+    t.deepEqual(
+        parseMediaUrl('https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif', THUMBNAIL_MEDIA_KINDS),
+        { kind: 'wikimedia', filename: 'Rose_of_Jericho.gif' },
+    );
+    t.deepEqual(
+        parseMediaUrl('frogs/Various_frogs_and_toads.jpeg', THUMBNAIL_MEDIA_KINDS),
+        { kind: 'tours', path: 'frogs/Various_frogs_and_toads.jpeg' },
+    );
+    t.deepEqual(
+        parseMediaUrl('https://tours.onezoom.workers.dev/frogs/Various_frogs_and_toads.jpeg', THUMBNAIL_MEDIA_KINDS),
+        { kind: 'tours', path: 'frogs/Various_frogs_and_toads.jpeg' },
     );
     t.equal(parseMediaUrl('https://www.youtube.com/embed/W86cTIoMv2U', THUMBNAIL_MEDIA_KINDS), null);
     t.end();

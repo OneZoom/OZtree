@@ -25,9 +25,8 @@ export const MEDIA_KIND_OPTIONS: { value: EditorMediaKind; label: string }[] = [
 
 export const ALL_MEDIA_KINDS: readonly EditorMediaKind[] = MEDIA_KIND_OPTIONS.map((option) => option.value);
 
-// Thumbnails don't have the same runtime options as tourstop media.
-// So we restrict the available types.
-export const THUMBNAIL_MEDIA_KINDS: readonly EditorThumbnailKind[] = ['onezoom', 'image'];
+// Thumbnails are images only: OneZoom tree pics, Wikimedia, tour-bundled files, or a direct image URL.
+export const THUMBNAIL_MEDIA_KINDS: readonly EditorThumbnailKind[] = ['onezoom', 'wikimedia', 'tours', 'image'];
 export function isThumbnailMedia(block: EditorMediaBlock): block is EditorThumbnailMedia {
     return (THUMBNAIL_MEDIA_KINDS as readonly EditorMediaKind[]).includes(block.kind);
 }

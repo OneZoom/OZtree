@@ -134,6 +134,22 @@ test('editorTourToJson: writes a direct image thumbnail', (t) => {
     t.end();
 });
 
+test('editorTourToJson: writes a tour-bundled image thumbnail', (t) => {
+    const json = editorTourToJson(tour({
+        thumbnail: { id: 'th1', kind: 'tours', path: 'frogs/Various_frogs_and_toads.jpeg' },
+    }));
+    t.equal(json.image_url, 'frogs/Various_frogs_and_toads.jpeg');
+    t.end();
+});
+
+test('editorTourToJson: writes a Wikimedia thumbnail', (t) => {
+    const json = editorTourToJson(tour({
+        thumbnail: { id: 'th1', kind: 'wikimedia', filename: 'Rose_of_Jericho.gif' },
+    }));
+    t.equal(json.image_url, 'https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif');
+    t.end();
+});
+
 test('editorTourToJson: writes media embed extras', (t) => {
     const json = editorTourToJson(tour({
         stops: [stop({

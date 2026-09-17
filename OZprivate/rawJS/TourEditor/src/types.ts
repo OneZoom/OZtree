@@ -143,7 +143,7 @@ export type EditorMediaBlock =
 
 export type EditorMediaKind = EditorMediaBlock['kind'];
 
-export type EditorThumbnailKind = 'onezoom' | 'image';
+export type EditorThumbnailKind = 'onezoom' | 'wikimedia' | 'tours' | 'image';
 export type EditorThumbnailMedia = Extract<EditorMediaBlock, { kind: EditorThumbnailKind }>;
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
