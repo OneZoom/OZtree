@@ -123,3 +123,20 @@ expiry_hysteresis = 5
 ;civicuk_api_key = 123abc123abc123abc123abc123abc123abc123a
 ; * ga_code: Uncomment to enable DebugView (Admin (bottom-left) -> Data Display -> DebugView)
 ;ga_debugview = yes
+
+[github]
+; GitHub App used by the public /tour/publish endpoint to open pull requests
+; on OneZoom/tours. Create it at https://github.com/organizations/OneZoom/settings/apps/new
+; with contents:write and pull_requests:write, generate a private key, then install
+; the App on the OneZoom/tours repository only.
+;
+; A GitHub App has three different IDs; we need the client ID and the installation ID:
+; * App ID - on the App settings page: https://github.com/organizations/OneZoom/settings/apps.
+; * Client ID - string on the same page. JWT issuer when authenticating as the App (not an installation).
+; * Installation ID - integer in the installation URL, 
+;   https://github.com/organizations/OneZoom/settings/installations
+;tours_app_client_id = Iv23...
+; PEM downloaded from the App settings page
+;tours_app_private_key_path = private/github_tours_app.pem
+;tours_app_installation_id = 12345678
+

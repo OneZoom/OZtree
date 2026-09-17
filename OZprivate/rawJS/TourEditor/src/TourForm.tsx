@@ -1,7 +1,7 @@
 import MediaBlockCard from './MediaBlockCard';
 import UkIcon from './UkIcon';
 import { isThumbnailMedia, THUMBNAIL_MEDIA_KINDS } from './media';
-import { LICENSE_OPTIONS, sanitizePartialTourIdentifier, sanitizeTourIdentifier, tourFileSlug } from './tour';
+import { isCreativeCommonsLicense, LICENSE_OPTIONS, sanitizePartialTourIdentifier, sanitizeTourIdentifier, tourFileSlug } from './tour';
 import type { EditorTour, TourLicense } from './types';
 import StopList from './StopList';
 
@@ -15,6 +15,7 @@ interface TourFormProps {
     onPreview: () => void;
     onOpenFile: () => void;
     onDownloadFile: () => void;
+    onPublish: () => void;
 }
 
 export default function TourForm({
@@ -27,8 +28,16 @@ export default function TourForm({
     onPreview,
     onOpenFile,
     onDownloadFile,
+    onPublish,
 }: TourFormProps) {
     const selectedLicense = LICENSE_OPTIONS.find((option) => option.value === tour.license);
+    const isCcLicense = isCreativeCommonsLicense(tour.license);
+    const canPublish = tour.stops.length > 0 && isCcLicense;
+    const publishTitle = tour.stops.length === 0
+        ? 'Add a stop to publish'
+        : isCcLicense
+            ? 'Publish tour'
+            : 'Choose a Creative Commons license to publish';
 
     return (
         <div className="uk-form-stacked">
@@ -126,26 +135,28 @@ export default function TourForm({
                     onRemove={onRemoveStop}
                     onMove={onMoveStop}
                 />
-                <button
-                    className="uk-button uk-button-default uk-margin-small-top"
-                    type="button"
-                    onClick={onAddStop}
-                >
-                    <UkIcon icon="plus" className="uk-margin-small-right" />
-                    Add stop
-                </button>
-                <button
-                    className="uk-button uk-button-primary uk-margin-small-top uk-margin-small-left"
-                    type="button"
-                    disabled={tour.stops.length === 0}
-                    title={tour.stops.length === 0 ? 'Add a stop to preview' : 'Preview tour'}
-                    onClick={onPreview}
-                >
-                    <UkIcon icon="play" className="uk-margin-small-right" />
-                    Preview tour
-                </button>
+                <div className="tour-editor-button-row uk-margin-small-top">
+                    <button
+                        className="uk-button uk-button-default"
+                        type="button"
+                        onClick={onAddStop}
+                    >
+                        <UkIcon icon="plus" className="uk-margin-small-right" />
+                        Add stop
+                    </button>
+                    <button
+                        className="uk-button uk-button-primary"
+                        type="button"
+                        disabled={tour.stops.length === 0}
+                        title={tour.stops.length === 0 ? 'Add a stop to preview' : 'Preview tour'}
+                        onClick={onPreview}
+                    >
+                        <UkIcon icon="play" className="uk-margin-small-right" />
+                        Preview tour
+                    </button>
+                </div>
             </div>
-            <div className="uk-margin">
+            <div className="tour-editor-button-row uk-margin">
                 <button
                     className="uk-button uk-button-default"
                     type="button"
@@ -155,12 +166,24 @@ export default function TourForm({
                     Open file
                 </button>
                 <button
-                    className="uk-button uk-button-default uk-margin-small-left"
+                    className="uk-button uk-button-default"
                     type="button"
                     onClick={onDownloadFile}
                 >
                     <UkIcon icon="download" className="uk-margin-small-right" />
                     Save file
+                </button>
+            </div>
+            <div className="tour-editor-button-row uk-margin">
+                <button
+                    className="uk-button uk-button-primary"
+                    type="button"
+                    disabled={!canPublish}
+                    title={publishTitle}
+                    onClick={onPublish}
+                >
+                    <UkIcon icon="cloud-upload" className="uk-margin-small-right" />
+                    Publish
                 </button>
             </div>
         </div>

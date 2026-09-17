@@ -9,6 +9,7 @@ import usernames
 
 from gluon import current
 from gluon.globals import Request
+from gluon.storage import Storage
 
 
 def grunt_path():
@@ -23,10 +24,14 @@ def grunt_path():
     raise RuntimeError("Cannot find grunt executable")
 
 
-def call_controller(module, endpoint, vars={}, args=[], method=None, username=None, content_type=None):
+def call_controller(module, endpoint, vars={}, args=[], method=None, username=None, content_type=None, get_vars=None, post_vars=None):
     """Set up a semi-sane request environment, call a controller endpoint"""
     # Create request for given params
     current.request = Request(dict())
+    if get_vars is not None:
+        current.request._get_vars = Storage(get_vars)
+    if post_vars is not None:
+        current.request._post_vars = Storage(post_vars)
     for (k, v) in vars.items():
         current.request.vars[k] = v
     current.request.args = args
@@ -45,6 +50,7 @@ def call_controller(module, endpoint, vars={}, args=[], method=None, username=No
     module.db = current.db
     module.request = current.request
     module.response = current.response
+    module.myconf = current.globalenv['myconf']
     module.auth = current.globalenv['auth']
     module.HTTP = current.globalenv['HTTP']
     module.FORM = current.globalenv['FORM']
@@ -167,9 +173,11 @@ def set_appconfig(section, key, val):
     """Update site config (section).(key) = (val). If val is None, delete"""
     myconf = current.globalenv['myconf']
     if val is None:
-        if key in myconf[section]:
+        if section in myconf and key in myconf[section]:
             del myconf[section][key]
     else:
+        if section not in myconf:
+            myconf[section] = {}
         myconf[section][key] = str(val)
     full_key = ".".join((section, key))
     if full_key in myconf.int_cache:

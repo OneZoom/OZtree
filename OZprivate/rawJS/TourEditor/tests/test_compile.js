@@ -3,7 +3,7 @@
  *        node OZprivate/rawJS/run_tape.js OZprivate/rawJS/TourEditor/tests/test_compile.js
  */
 import test from 'tape';
-import { editorTourToJson, tourJsonFilename, tourJsonString, tourPreviewHtml } from '../src/compile';
+import { editorTourToJson, tourJsonFilename, tourJsonString, tourPreviewHtml, tourPublish } from '../src/compile';
 import { createEmptyStop, createEmptyTour } from '../src/tour';
 
 function stop(partial) {
@@ -286,14 +286,20 @@ test('editorTourToJson: omits text visibility flags that match a default stop', 
 });
 
 /** Run (fn) with window / fetch stubbed out, collecting the requests fetch was given. */
-async function withFetch(response, fn) {
+async function withFetch(response, fn, serverUrls) {
     const calls = [];
     const oldWindow = global.window;
     const oldFetch = global.fetch;
-    global.window = { server_urls: { tour_preview_api: 'https://oz.example.com/tour/preview.html' } };
+    global.window = {
+        server_urls: {
+            tour_preview_api: 'https://oz.example.com/tour/preview.html',
+            tour_publish_api: 'https://oz.example.com/tour/publish.json',
+            ...serverUrls,
+        },
+    };
     global.fetch = (url, options) => {
         calls.push({ url, options });
-        return Promise.resolve(response);
+        return Promise.resolve(typeof response === 'function' ? response() : response);
     };
     try {
         return { calls, result: await fn() };
@@ -347,6 +353,78 @@ test('tourPreviewHtml: ignores an error page a tour author cannot act on', async
             t.fail('should have thrown');
         } catch (err) {
             t.equal(err.message, 'The server could not render this tour (error 500).');
+        }
+    });
+    t.end();
+});
+
+test('tourPublish: POSTs the document to /publish.json/<filename>', async (t) => {
+    const doc = editorTourToJson(tour({ title: 'My Nice Tour!', stops: [stop({})] }));
+    const { calls, result } = await withFetch({
+        ok: true,
+        status: 200,
+        text: () => Promise.resolve(JSON.stringify({
+            filename: 'my_nice_tour.json',
+            branch: 'my_nice_tour-deadbeef',
+            pr_url: 'https://github.com/OneZoom/tours/pull/42',
+            pr_number: 42,
+        })),
+    }, () => tourPublish(doc, 'my_nice_tour', 'author@example.com'));
+
+    t.equal(calls.length, 1);
+    t.equal(calls[0].url, 'https://oz.example.com/tour/publish.json/my_nice_tour?email=author%40example.com');
+    t.equal(calls[0].options.method, 'POST');
+    t.equal(calls[0].options.headers['Content-Type'], 'application/json');
+    t.deepEqual(JSON.parse(calls[0].options.body).identifier, 'my_nice_tour');
+    t.equal(JSON.parse(calls[0].options.body).email, undefined);
+    t.equal(result.pr_url, 'https://github.com/OneZoom/tours/pull/42');
+    t.equal(result.pr_number, 42);
+    t.end();
+});
+
+test('tourPublish: reports the reason the server gave', async (t) => {
+    await withFetch({
+        ok: false,
+        status: 422,
+        text: () => Promise.resolve('Must have at least one tourstop'),
+    }, async () => {
+        try {
+            await tourPublish(editorTourToJson(createEmptyTour()), 'untitled', 'author@example.com');
+            t.fail('should have thrown');
+        } catch (err) {
+            t.equal(err.message, 'Must have at least one tourstop');
+        }
+    });
+    t.end();
+});
+
+test('tourPublish: ignores an error page a tour author cannot act on', async (t) => {
+    await withFetch({
+        ok: false,
+        status: 500,
+        text: () => Promise.resolve('<html><body>Internal error</body></html>'),
+    }, async () => {
+        try {
+            await tourPublish(editorTourToJson(createEmptyTour()), 'untitled', 'author@example.com');
+            t.fail('should have thrown');
+        } catch (err) {
+            t.equal(err.message, 'The server could not publish this tour (error 500).');
+        }
+    });
+    t.end();
+});
+
+test('tourPublish: refuses a success body without a PR link', async (t) => {
+    await withFetch({
+        ok: true,
+        status: 200,
+        text: () => Promise.resolve('{"filename": "untitled.json"}'),
+    }, async () => {
+        try {
+            await tourPublish(editorTourToJson(createEmptyTour()), 'untitled', 'author@example.com');
+            t.fail('should have thrown');
+        } catch (err) {
+            t.equal(err.message, 'The server did not return a review link.');
         }
     });
     t.end();

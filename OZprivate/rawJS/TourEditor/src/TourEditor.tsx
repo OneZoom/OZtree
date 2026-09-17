@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import OpenTourModal from './OpenTourModal';
+import PublishTourModal from './PublishTourModal';
 import StopEditor from './StopEditor';
 import TourForm from './TourForm';
 import UkIcon from './UkIcon';
@@ -79,6 +80,7 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
     const [pendingPreview, setPendingPreview] = useState<PendingPreview | null>(null);
     const [previewError, setPreviewError] = useState<string | null>(null);
     const [openFileModal, setOpenFileModal] = useState(false);
+    const [publishModal, setPublishModal] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const setTour: typeof _setTour = (action) => {
         setHasUnsavedChanges(true);
@@ -233,6 +235,7 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
                                 onPreview={() => requestPreview()}
                                 onOpenFile={() => setOpenFileModal(true)}
                                 onDownloadFile={downloadTour}
+                                onPublish={() => setPublishModal(true)}
                             />
                         )}
                     </div>
@@ -242,6 +245,12 @@ export default function TourEditor({ isOpen, onClose, onOpen, onToggle }: TourEd
                 <OpenTourModal
                     onClose={() => setOpenFileModal(false)}
                     onOpen={loadTour}
+                />
+            )}
+            {publishModal && tour && (
+                <PublishTourModal
+                    tour={tour}
+                    onClose={() => setPublishModal(false)}
                 />
             )}
         </>

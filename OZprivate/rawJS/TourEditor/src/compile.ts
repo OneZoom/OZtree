@@ -141,6 +141,25 @@ function mediaEmbedExtras(block: EditorMediaBlock): Record<string, string | null
     return extras;
 }
 
+/** Pull request opened by ``/tour/publish.json/<filename>``. */
+export interface TourPublishResult {
+    filename: string;
+    branch: string;
+    pr_url: string;
+    pr_number: number;
+}
+
+/**
+ * Our own refusals come back as a plain-text reason; a framework error page
+ * would be no help to a tour author.
+ */
+function serverRefusalMessage(body: string, status: number, action: string): string {
+    const reason = body.trim();
+    return reason && !reason.startsWith('<')
+        ? reason
+        : `The server could not ${action} this tour (error ${status}).`;
+}
+
 /**
  * Turn production tour JSON into the HTML the tour engine parses.
  *
@@ -156,12 +175,41 @@ export async function tourPreviewHtml(tour: ProductionTourJson): Promise<string>
         body: JSON.stringify(tour),
     });
     if (!response.ok) {
-        // Our own refusals come back as a plain-text reason; anything else is a
-        // framework error page that would be no help to a tour author.
-        const reason = (await response.text().catch(() => '')).trim();
-        throw new Error(reason && !reason.startsWith('<')
-            ? reason
-            : `The server could not render this tour (error ${response.status}).`);
+        const reason = await response.text().catch(() => '');
+        throw new Error(serverRefusalMessage(reason, response.status, 'render'));
     }
     return response.text();
+}
+
+/**
+ * POST a tour document to ``/tour/publish.json/<filename>``, which opens a
+ * GitHub pull request against the public OneZoom tours library.
+ */
+export async function tourPublish(
+    tour: ProductionTourJson,
+    filename: string,
+    email: string,
+): Promise<TourPublishResult> {
+    const base = window.server_urls?.tour_publish_api ?? '/tour/publish.json';
+    const params = new URLSearchParams({ email });
+    const url = `${base.replace(/\/$/, '')}/${encodeURIComponent(filename)}?${params}`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tour),
+    });
+    const body = await response.text().catch(() => '');
+    if (!response.ok) {
+        throw new Error(serverRefusalMessage(body, response.status, 'publish'));
+    }
+    let result: TourPublishResult;
+    try {
+        result = JSON.parse(body) as TourPublishResult;
+    } catch {
+        throw new Error('The server did not return a publish result.');
+    }
+    if (!result?.pr_url) {
+        throw new Error('The server did not return a review link.');
+    }
+    return result;
 }

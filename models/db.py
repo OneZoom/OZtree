@@ -761,6 +761,8 @@ db.define_table('tour',
     Field('identifier', type='string', unique=True, length=20, notnull=True),  # Identifier for tour, used in URLs, e.g.
     Field('lang', type='string', notnull=True, length=3), #the 'primary' 2  or 3 letter 'lang' code for this name (e.g. 'en', 'cmn'). See http://www.w3.org/International/articles/language-tags/
     Field('author', type='text', notnull=True, default=''),  # Author of tour
+    Field('license', type='string', length=32, notnull=True, default='all-rights-reserved',
+          requires=IS_IN_SET(('all-rights-reserved', 'cc-by-4.0', 'cc0-1.0'))),  # Content license
     Field('image_url', type='string'),  # URL to image used when displaying in e.g. popular places
     Field('title', type='text', notnull=True, default=''),  # Title for tour for listings
     Field('description', type='text', notnull=True, default=''),  # Description for tour for listings
@@ -875,6 +877,15 @@ db.define_table('embed_key',
     Field('code', type='text', notnull=True),
     # Key used publicly in embedkey querystring
     Field('created', 'datetime', default=request.now),
+)
+
+# Public tour publish submissions (email is for publication updates only)
+db.define_table('tour_submissions',
+    Field('e_mail', type='string', length=200, notnull=True, requires=IS_EMAIL()),
+    Field('tour_identifier', type='string', length=64, notnull=True),
+    Field('pr_url', type='text', notnull=True),
+    Field('created', 'datetime', default=request.now),
+    format='%(tour_identifier)s',
 )
 
 # add extra indexes on OTT_ID etc in tables. Index name (ott_index) is arbitrary 
