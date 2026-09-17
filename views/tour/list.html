@@ -1,3 +1,4 @@
+{{from applications.OZtree.modules.embed import parse_media, TOURS_URL_BASE}}
 {{response.title=base_title + ': ' + T('Available Tours')}}
 {{response.files.append(URL('static', 'css/content_pages.css'))}}
 {{extend ('popup.html' if 'popup' in request.vars else 'uikit_layout.html')}}
@@ -11,12 +12,13 @@
   {{if list_title:}}<h3 class="uk-padding-small">{{=list_title}}</h3>{{pass}}
   <ul class="tours-list uk-padding-small uk-list uk-text-small uk-child-width-1-2@m" uk-grid>
 
-    {{for tour in tour_list:}}<li data-tour_identifier="{{=tour.identifier}}" style="margin-top: 0; margin-bottom: 1rem">
+    {{for tour in tour_list:}}{{media = parse_media(tour.image_url, url_base=TOURS_URL_BASE) if tour.image_url else None}}<li data-tour_identifier="{{=tour.identifier}}" style="margin-top: 0; margin-bottom: 1rem">
+      <div class="tour-item">
       <a {{if request.vars.get("popup"):}}onclick="window.parent.onezoom.controller.tour_start('{{=tour.url}}'); return(false)"{{pass}}
          class="block uk-flex uk-flex-column"
          style="min-height: 150px; padding-left: calc(150px + 1rem); position: relative;"
          href="{{=URL('default', 'life', vars=dict(tour=tour.url))}}">
-          <img src="{{=img.url(tour.image_url) if tour.image_url else URL('static','images/notAvailable.png')}}"
+          <img src="{{=media.src_url if media and media.media_type == 'image' and media.src_url else URL('static','images/notAvailable.png')}}"
            onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'"
               width="150" height="150"
               alt="" style="position: absolute; left: 0; border: 1px solid #242A22; border-radius: 10px" />
@@ -25,13 +27,30 @@
           <p class="uk-flex-auto">{{=tour.description}}</p>
           <progress value="10" max="100">10 %</progress>
       </a>
-
-      </a>
+      {{if media and media.copyright_url:}}<a class="copyright" href="{{=media.copyright_url}}" title="{{=media.title or T('Image copyright information')}}" aria-label="{{=T('Image copyright information')}}"{{if request.vars.get('popup'):}} target="_blank" rel="noopener noreferrer"{{pass}}>©</a>{{pass}}
+      </div>
     </li>{{pass}}
 
   </ul><script>OZui.tours_list.sortList(document.currentScript.previousElementSibling)</script>
 {{pass}}{{pass}}
 <style>
+ul.tours-list .tour-item {
+    position: relative;
+}
+ul.tours-list .tour-item > a.copyright {
+    position: absolute;
+    left: 8px;
+    top: 126px;
+    z-index: 1;
+    color: #fff;
+    font-size: 16px;
+    line-height: 1;
+    text-decoration: none;
+    text-shadow: 0 0 3px #000, 0 0 1px #000;
+}
+ul.tours-list .tour-item > a.copyright:hover {
+    color: #9bd05a;
+}
 ul.tours-list progress[value="0"] {
     display: none;
 }

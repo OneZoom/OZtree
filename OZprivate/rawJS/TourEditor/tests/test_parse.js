@@ -190,6 +190,36 @@ test('parseEditorTour: reads window_text, media objects, and qs_opts', (t) => {
     t.end();
 });
 
+test('parseEditorTour: reads a tour-bundled image thumbnail', (t) => {
+    const relative = parseEditorTour({
+        identifier: 'demo',
+        image_url: 'frogs/Various_frogs_and_toads.jpeg',
+        tourstops: [],
+    });
+    t.equal(relative.thumbnail.kind, 'tours');
+    t.equal(relative.thumbnail.path, 'frogs/Various_frogs_and_toads.jpeg');
+
+    const absolute = parseEditorTour({
+        identifier: 'demo',
+        image_url: 'https://tours.onezoom.workers.dev/frogs/Various_frogs_and_toads.jpeg',
+        tourstops: [],
+    });
+    t.equal(absolute.thumbnail.kind, 'tours');
+    t.equal(absolute.thumbnail.path, 'frogs/Various_frogs_and_toads.jpeg');
+    t.end();
+});
+
+test('parseEditorTour: reads a Wikimedia thumbnail', (t) => {
+    const loaded = parseEditorTour({
+        identifier: 'demo',
+        image_url: 'https://commons.wikimedia.org/wiki/File:Rose_of_Jericho.gif',
+        tourstops: [],
+    });
+    t.equal(loaded.thumbnail.kind, 'wikimedia');
+    t.equal(loaded.thumbnail.filename, 'Rose_of_Jericho.gif');
+    t.end();
+});
+
 test('parseEditorTour: reads stop visibility flags', (t) => {
     const loaded = parseEditorTour({
         identifier: 'demo',
