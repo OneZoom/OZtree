@@ -18,10 +18,11 @@
          class="block uk-flex uk-flex-column"
          style="min-height: 150px; padding-left: calc(150px + 1rem); position: relative;"
          href="{{=URL('default', 'life', vars=dict(tour=tour.url))}}">
-          <img src="{{=media.src_url if media and media.media_type == 'image' and media.src_url else URL('static','images/notAvailable.png')}}"
+          <img class="tour-thumb"
+           src="{{=media.src_url if media and media.media_type == 'image' and media.src_url else URL('static','images/notAvailable.png')}}"
            onerror="this.onerror=null; this.src='{{=URL('static','images/notAvailable.png')}}'"
               width="150" height="150"
-              alt="" style="position: absolute; left: 0; border: 1px solid #242A22; border-radius: 10px" />
+              alt="" />
           <h3 style="margin: 0">{{=tour.title}}</h3>
           {{if tour.author:}}<p class="uk-text-meta" style="margin: 0">{{=tour.author}}</p>{{pass}}
           <p class="uk-flex-auto">{{=tour.description}}</p>
@@ -36,6 +37,17 @@
 <style>
 ul.tours-list .tour-item {
     position: relative;
+}
+ul.tours-list .tour-thumb {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    object-position: center;
+    border: 1px solid #242A22;
+    border-radius: 10px;
 }
 ul.tours-list .tour-item > a.copyright {
     position: absolute;
