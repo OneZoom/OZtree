@@ -517,6 +517,22 @@ body.tree-viewer {
     to { transform: rotate(360deg); }
 }
 
+.tour-publish-email {
+    text-align: left;
+    margin: 0 0 1.25rem;
+}
+
+.tour-publish-email .uk-form-label {
+    font-size: 0.85rem;
+}
+
+.tour-publish-email-help {
+    margin: 0.5rem 0 0;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: #444;
+}
+
 .tour-publish-copy {
     margin: 1.5rem 0 1.25rem;
     font-size: 0.85rem;

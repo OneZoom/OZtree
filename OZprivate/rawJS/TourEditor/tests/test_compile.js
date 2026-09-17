@@ -369,13 +369,14 @@ test('tourPublish: POSTs the document to /publish.json/<filename>', async (t) =>
             pr_url: 'https://github.com/OneZoom/tours/pull/42',
             pr_number: 42,
         })),
-    }, () => tourPublish(doc, 'my_nice_tour'));
+    }, () => tourPublish(doc, 'my_nice_tour', 'author@example.com'));
 
     t.equal(calls.length, 1);
-    t.equal(calls[0].url, 'https://oz.example.com/tour/publish.json/my_nice_tour');
+    t.equal(calls[0].url, 'https://oz.example.com/tour/publish.json/my_nice_tour?email=author%40example.com');
     t.equal(calls[0].options.method, 'POST');
     t.equal(calls[0].options.headers['Content-Type'], 'application/json');
     t.deepEqual(JSON.parse(calls[0].options.body).identifier, 'my_nice_tour');
+    t.equal(JSON.parse(calls[0].options.body).email, undefined);
     t.equal(result.pr_url, 'https://github.com/OneZoom/tours/pull/42');
     t.equal(result.pr_number, 42);
     t.end();
@@ -388,7 +389,7 @@ test('tourPublish: reports the reason the server gave', async (t) => {
         text: () => Promise.resolve('Must have at least one tourstop'),
     }, async () => {
         try {
-            await tourPublish(editorTourToJson(createEmptyTour()), 'untitled');
+            await tourPublish(editorTourToJson(createEmptyTour()), 'untitled', 'author@example.com');
             t.fail('should have thrown');
         } catch (err) {
             t.equal(err.message, 'Must have at least one tourstop');
@@ -404,7 +405,7 @@ test('tourPublish: ignores an error page a tour author cannot act on', async (t)
         text: () => Promise.resolve('<html><body>Internal error</body></html>'),
     }, async () => {
         try {
-            await tourPublish(editorTourToJson(createEmptyTour()), 'untitled');
+            await tourPublish(editorTourToJson(createEmptyTour()), 'untitled', 'author@example.com');
             t.fail('should have thrown');
         } catch (err) {
             t.equal(err.message, 'The server could not publish this tour (error 500).');
@@ -420,7 +421,7 @@ test('tourPublish: refuses a success body without a PR link', async (t) => {
         text: () => Promise.resolve('{"filename": "untitled.json"}'),
     }, async () => {
         try {
-            await tourPublish(editorTourToJson(createEmptyTour()), 'untitled');
+            await tourPublish(editorTourToJson(createEmptyTour()), 'untitled', 'author@example.com');
             t.fail('should have thrown');
         } catch (err) {
             t.equal(err.message, 'The server did not return a review link.');

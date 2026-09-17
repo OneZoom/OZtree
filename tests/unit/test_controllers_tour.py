@@ -428,7 +428,7 @@ class TestControllersTour(unittest.TestCase):
             self._github_pem_file = path
         util.set_appconfig('github', 'tours_app_private_key_path', self._github_pem_file)
 
-    def tour_publish(self, filename, tour_body, suffix='deadbeef', github=None, configured=True, installation_id='99'):
+    def tour_publish(self, filename, tour_body, suffix='deadbeef', github=None, configured=True, installation_id='99', email='author@example.com'):
         if configured:
             self._set_github_app(installation_id=installation_id)
         if github is None:
@@ -441,7 +441,8 @@ class TestControllersTour(unittest.TestCase):
                 method='POST',
                 content_type='application/json',
                 args=[filename] if filename is not None else [],
-                vars=tour_body,
+                get_vars={'email': email} if email is not None else {},
+                post_vars=tour_body,
             )
         return out, github
 
@@ -472,6 +473,15 @@ class TestControllersTour(unittest.TestCase):
         with self.assertRaisesRegex(HTTP, r'422') as cm:
             self.tour_publish('frogs', {'title': "A unit test tour"}, github=github)
         self.assertRegex(str(cm.exception.body), r'tourstop')
+        self.assertEqual(github.calls, [])
+
+        # Email is required and must be valid, before GitHub is contacted
+        with self.assertRaisesRegex(HTTP, r'422') as cm:
+            self.tour_publish('frogs', one_stop, github=github, email=None)
+        self.assertRegex(str(cm.exception.body), r'email')
+        with self.assertRaisesRegex(HTTP, r'422') as cm:
+            self.tour_publish('frogs', one_stop, github=github, email='not-an-email')
+        self.assertRegex(str(cm.exception.body), r'email')
         self.assertEqual(github.calls, [])
 
     def test_publish_requires_token(self):
@@ -530,11 +540,17 @@ class TestControllersTour(unittest.TestCase):
         published = json.loads(base64.b64decode(put_payload['content']))
         self.assertEqual(published['title'], "A unit test tour")
         self.assertEqual(published['tourstops'][0]['identifier'], "felids")
+        self.assertNotIn('email', published)
 
         pr_payload = github.calls[5]['payload']
         self.assertEqual(pr_payload['head'], 'frogs-deadbeef')
         self.assertEqual(pr_payload['base'], 'main')
         self.assertRegex(pr_payload['title'], r'Add tour: A unit test tour')
+
+        rows = db(db.tour_submissions.pr_url == out['pr_url']).select()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].e_mail, 'author@example.com')
+        self.assertEqual(rows[0].tour_identifier, 'frogs')
 
     def test_publish_updates_existing_file(self):
         """If the file already exists on main, the commit updates it"""
@@ -548,6 +564,9 @@ class TestControllersTour(unittest.TestCase):
         self.assertEqual(put_payload['sha'], 'oldfilesha')
         self.assertRegex(github.calls[5]['payload']['title'], r'Update tour:')
         self.assertEqual(out['pr_url'], 'https://github.com/OneZoom/tours/pull/42')
+        row = db(db.tour_submissions.pr_url == out['pr_url']).select().last()
+        self.assertEqual(row.tour_identifier, 'frogs')
+        self.assertEqual(row.e_mail, 'author@example.com')
 
     def test_data_errors(self):
         """Error conditions handled appropriately?"""

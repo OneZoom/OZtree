@@ -877,6 +877,15 @@ db.define_table('embed_key',
     Field('created', 'datetime', default=request.now),
 )
 
+# Public tour publish submissions (email is for publication updates only)
+db.define_table('tour_submissions',
+    Field('e_mail', type='string', length=200, notnull=True, requires=IS_EMAIL()),
+    Field('tour_identifier', type='string', length=64, notnull=True),
+    Field('pr_url', type='text', notnull=True),
+    Field('created', 'datetime', default=request.now),
+    format='%(tour_identifier)s',
+)
+
 # add extra indexes on OTT_ID etc in tables. Index name (ott_index) is arbitrary 
 # http://stackoverflow.com/questions/4601138/what-is-the-significance-of-the-index-name-when-creating-an-index-in-mysql
 if db._uri.startswith("sqlite://"):

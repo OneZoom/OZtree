@@ -9,6 +9,7 @@ import usernames
 
 from gluon import current
 from gluon.globals import Request
+from gluon.storage import Storage
 
 
 def grunt_path():
@@ -23,10 +24,14 @@ def grunt_path():
     raise RuntimeError("Cannot find grunt executable")
 
 
-def call_controller(module, endpoint, vars={}, args=[], method=None, username=None, content_type=None):
+def call_controller(module, endpoint, vars={}, args=[], method=None, username=None, content_type=None, get_vars=None, post_vars=None):
     """Set up a semi-sane request environment, call a controller endpoint"""
     # Create request for given params
     current.request = Request(dict())
+    if get_vars is not None:
+        current.request._get_vars = Storage(get_vars)
+    if post_vars is not None:
+        current.request._post_vars = Storage(post_vars)
     for (k, v) in vars.items():
         current.request.vars[k] = v
     current.request.args = args

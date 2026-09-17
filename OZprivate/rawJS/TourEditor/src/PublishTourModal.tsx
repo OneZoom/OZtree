@@ -15,9 +15,15 @@ type PublishStatus =
     | { kind: 'success'; prUrl: string }
     | { kind: 'error'; message: string };
 
+function isValidEmail(value: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
 export default function PublishTourModal({ tour, onClose }: PublishTourModalProps) {
     const [status, setStatus] = useState<PublishStatus>({ kind: 'confirm' });
+    const [email, setEmail] = useState('');
     const submitting = useRef(false);
+    const emailOk = isValidEmail(email);
 
     useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => {
@@ -28,11 +34,11 @@ export default function PublishTourModal({ tour, onClose }: PublishTourModalProp
     }, [onClose, status.kind]);
 
     const submit = async () => {
-        if (submitting.current) return;
+        if (submitting.current || !isValidEmail(email)) return;
         submitting.current = true;
         setStatus({ kind: 'loading' });
         try {
-            const result = await tourPublish(editorTourToJson(tour), tourFileSlug(tour));
+            const result = await tourPublish(editorTourToJson(tour), tourFileSlug(tour), email.trim());
             setStatus({ kind: 'success', prUrl: result.pr_url });
         } catch (err) {
             setStatus({
@@ -82,7 +88,13 @@ export default function PublishTourModal({ tour, onClose }: PublishTourModalProp
                     </div>
                 )}
                 {status.kind === 'confirm' && (
-                    <>
+                    <form
+                        className="uk-form-stacked"
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            void submit();
+                        }}
+                    >
                         <p className="tour-open-warning">
                             <UkIcon icon="info" className="tour-open-warning-icon" />
                             <span>
@@ -90,6 +102,25 @@ export default function PublishTourModal({ tour, onClose }: PublishTourModalProp
                                 If it is accepted, it will be added to the public tour library.
                             </span>
                         </p>
+                        <div className="tour-publish-email">
+                            <label className="uk-form-label" htmlFor="tour-publish-email">
+                                Email address
+                            </label>
+                            <input
+                                id="tour-publish-email"
+                                className="uk-input"
+                                type="email"
+                                required
+                                autoComplete="email"
+                                autoFocus
+                                aria-describedby="tour-publish-email-help"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                            <p className="tour-publish-email-help" id="tour-publish-email-help">
+                                Your email stays private and will only be used to keep you updated on the publication of the tour.
+                            </p>
+                        </div>
                         <div className="tour-open-actions">
                             <button
                                 className="oz-pill uk-button"
@@ -100,13 +131,14 @@ export default function PublishTourModal({ tour, onClose }: PublishTourModalProp
                             </button>
                             <button
                                 className="oz-pill uk-button"
-                                type="button"
-                                onClick={() => void submit()}
+                                type="submit"
+                                disabled={!emailOk}
+                                title={emailOk ? undefined : 'Enter a valid email address'}
                             >
                                 Submit
                             </button>
                         </div>
-                    </>
+                    </form>
                 )}
                 {status.kind === 'error' && (
                     <>

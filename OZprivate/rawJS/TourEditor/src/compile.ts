@@ -188,9 +188,11 @@ export async function tourPreviewHtml(tour: ProductionTourJson): Promise<string>
 export async function tourPublish(
     tour: ProductionTourJson,
     filename: string,
+    email: string,
 ): Promise<TourPublishResult> {
     const base = window.server_urls?.tour_publish_api ?? '/tour/publish.json';
-    const url = `${base.replace(/\/$/, '')}/${encodeURIComponent(filename)}`;
+    const params = new URLSearchParams({ email });
+    const url = `${base.replace(/\/$/, '')}/${encodeURIComponent(filename)}?${params}`;
     const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

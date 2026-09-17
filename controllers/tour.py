@@ -17,8 +17,9 @@ A JSON file hosted on ``*.onezoom.workers.dev`` can be rendered the same way via
 
 A library of tour documents is available at https://github.com/OneZoom/tours.
 The public can propose a new tour by POSTing a document to
-``/tour/publish.json/<filename>``, which opens a pull request against ``main``
-on https://github.com/OneZoom/tours.
+``/tour/publish.json/<filename>?email=...``, which opens a pull request against ``main``
+on https://github.com/OneZoom/tours. The email is stored so we can update the author
+about publication; it is not written into the tour file.
 
 The document is structured as follows::
 
@@ -246,6 +247,17 @@ def _tour_publish_filename(name):
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,49}', name):
         raise HTTP(422, "filename must be letters, digits, hyphens, and underscores")
     return name + '.json'
+
+
+def _tour_publish_email(value):
+    """Required submitter email, or HTTP(422)."""
+    email = value.strip() if isinstance(value, str) else ''
+    if not email:
+        raise HTTP(422, "An email address is required")
+    email, error = IS_EMAIL()(email)
+    if error:
+        raise HTTP(422, "A valid email address is required")
+    return email
 
 
 def _github_tours_token():
@@ -618,7 +630,7 @@ def remote():
 def publish():
     """Open a GitHub pull request proposing a tour JSON file
 
-    POST a tour document as ``application/json`` to ``/tour/publish.json/<filename>``. 
+    POST a tour document as ``application/json`` to ``/tour/publish.json/<filename>?email=test@example.com``.
     A pull request is opened against ``main`` on https://github.com/OneZoom/tours.
     """
     if request.env.request_method != 'POST':
@@ -630,11 +642,14 @@ def publish():
     filename = _tour_publish_filename(request.args[0])
     stem = filename[:-5]
 
+    email = _tour_publish_email(request.get_vars.get('email'))
+    doc = request.post_vars
+
     # Refuse junk before talking to GitHub
-    _tour_from_document(request.vars)
+    _tour_from_document(doc)
 
     try:
-        file_body = json.dumps(request.vars, indent=2, ensure_ascii=False) + '\n'
+        file_body = json.dumps(doc, indent=2, ensure_ascii=False) + '\n'
     except TypeError:
         raise HTTP(422, "Tour document must be JSON-serializable")
     
@@ -676,7 +691,7 @@ def publish():
     _github_api('PUT', '/repos/%s/contents/%s' % (repo, filename), token, put_payload)
     
     # open a pull request
-    title = request.vars.get('title') or stem
+    title = doc.get('title') or stem
     pr = _github_api('POST', '/repos/%s/pulls' % repo, token, {
         'title': '%s tour: %s' % ('Update' if existing_sha else 'Add', title),
         'head': branch,
@@ -685,13 +700,19 @@ def publish():
             'Submitted via the OneZoom public tour publish endpoint.',
             '',
             '**File:** `%s`' % filename,
-            '**Author:** %s' % (request.vars.get('author') or '(not given)'),
-            '**Description:** %s' % (request.vars.get('description') or '(not given)'),
+            '**Author:** %s' % (doc.get('author') or '(not given)'),
+            '**Description:** %s' % (doc.get('description') or '(not given)'),
         ]),
     })
     pr_url = pr.get('html_url') if isinstance(pr, dict) else None
     if not pr_url:
         raise HTTP(502, "GitHub API error: pull request was not created")
+
+    db.tour_submissions.insert(
+        e_mail=email,
+        tour_identifier=doc.get('identifier') or stem,
+        pr_url=pr_url,
+    )
 
     response.view = 'tour/publish.json'
     return dict(
