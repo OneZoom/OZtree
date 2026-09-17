@@ -131,9 +131,9 @@ expiry_hysteresis = 5
 ; the App on the OneZoom/tours repository only.
 ;
 ; A GitHub App has three different IDs; we need the client ID and the installation ID:
-; * App ID — on the App settings page: https://github.com/organizations/OneZoom/settings/apps.
-; * Client ID — string on the same page. JWT issuer when authenticating as the App (not an installation).
-; * Installation ID — integer in the installation URL, 
+; * App ID - on the App settings page: https://github.com/organizations/OneZoom/settings/apps.
+; * Client ID - string on the same page. JWT issuer when authenticating as the App (not an installation).
+; * Installation ID - integer in the installation URL, 
 ;   https://github.com/organizations/OneZoom/settings/installations
 ;tours_app_client_id = Iv23...
 ; PEM downloaded from the App settings page
