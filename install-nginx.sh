@@ -238,7 +238,8 @@ cat <<EOF > ${NGINX_PATH}/conf.d/${WWW_IMAGES_SERVER_NAME}.conf
 
 server {
     listen 80;
-    listen 443 ssl http2;
+    listen 443 ssl;
+    http2 on;
 
     server_name ${WWW_IMAGES_SERVER_NAME};
     server_tokens off;
