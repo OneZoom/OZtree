@@ -548,21 +548,18 @@ def SHOW_RENEWAL_INFO():
                     if id_string not in id_map:
                         id_map[id_string] = []
                     id_map[id_string].append(id_string)
-    try:
-        uname_info = {
-            k:r for (k, r) in sponsorship.sponsorship_email_reminders(
-                [uname for info_for_id in id_map.values() for uname in info_for_id])}
+    uname_info = {
+        k:r for (k, r) in sponsorship.sponsorship_email_reminders(
+            [uname for info_for_id in id_map.values() for uname in info_for_id])}
     
-        renew_urls = {
-            k: {uname: uname_info[uname]["renew_url"] for uname in v}
-            for k, v in id_map.items()
-        }
-        if info:
-            response.flash = "Email information:\n" + "\n\n".join(info)
+    renew_urls = {
+        k: {uname: uname_info[uname]["renew_url"] for uname in v if uname in uname_info}
+        for k, v in id_map.items()
+    }
+    if info:
+        response.flash = "Email information:\n" + "\n\n".join(info)
 
-        return dict(urls = renew_urls)
-    except ValueError as e:
-        return dict(error = str(e))
+    return dict(urls = renew_urls)
 
 
 @OZfunc.require_https_if_nonlocal()

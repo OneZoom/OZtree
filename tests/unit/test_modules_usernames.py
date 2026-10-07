@@ -258,15 +258,14 @@ class TestUsername(unittest.TestCase):
         """Make sure we can always fish out a username"""
         otts = util.find_unsponsored_otts(4, allow_banned=True)
 
-        # User with no e-mail addresses at all, get ValueError
+        # User with no e-mail addresses at all, get None
         util.time_travel(3)
         r = util.purchase_reservation(
             otts[0:1], basket_details=dict(
             user_donor_name='Billy-no-email',
             user_sponsor_name='Billy-no-email',
         ), paypal_details=dict(PP_e_mail=None))[0]
-        with self.assertRaisesRegex(ValueError, r.username):
-            email_for_username(r.username)
+        self.assertIsNone(email_for_username(r.username))
 
         # Buy one with only a paypal e-mail address, we get that back
         util.time_travel(2)
