@@ -1,0 +1,21 @@
+name: Deploy to production
+
+on:
+  push:
+    branches:
+      - production
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/deploy-via-ssh
+        with:
+          private-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
+          host: ${{ vars.DEPLOY_SSH_HOST }}
