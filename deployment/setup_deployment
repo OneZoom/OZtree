@@ -6,16 +6,19 @@
 
 set -euo pipefail
 
-if [[ $# -ne 4 ]]; then
-  echo "Usage: $0 SSH_USERNAME SSH_HOSTNAME GITHUB_ENV GRUNT_TASK" >&2
+if [[ $# -ne 5 ]]; then
+  echo "Usage: $0 SSH_USERNAME SSH_HOSTNAME SITE_HOSTNAME GITHUB_ENV GRUNT_TASK" >&2
+  echo "SSH_HOSTNAME is the server hostname, can just be the IP if DNS not set up yet." >&2
+  echo "SITE_HOSTNAME is the domain the site is served on e.g. 'beta.onezoom.org'" >&2
   echo "GRUNT_TASK must be 'dev' or 'prod'" >&2
   exit 1
 fi
 
 ssh_user=$1
 ssh_hostname=$2
-github_env=$3
-grunt_task=$4
+site_hostname=$3
+github_env=$4
+grunt_task=$5
 script_dir=$(cd "$(dirname "$0")" && pwd)
 
 case "$grunt_task" in
@@ -50,7 +53,7 @@ trap 'ssh -O exit "${ssh_opts[@]}" "${ssh_user}@${ssh_hostname}" 2>/dev/null || 
 # copy scripts and the new public key to the remote, then install/run them in one sudo TTY session
 tmp_deploy_run=$(mktemp)
 sed \
-  -e "s|__SSH_HOSTNAME__|${ssh_hostname}|g" \
+  -e "s|__SITE_HOSTNAME__|${site_hostname}|g" \
   -e "s|__GRUNT_TASK__|${grunt_task}|g" \
   "${script_dir}/remote_deploy_script" > "$tmp_deploy_run"
 scp "${ssh_opts[@]}" "$tmp_deploy_run" "${ssh_user}@${ssh_hostname}:/tmp/deploy_run.sh"
