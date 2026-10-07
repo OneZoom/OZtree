@@ -20,13 +20,9 @@ from gluon import current
 ## Useful global variables
 #########################################################################
 
-## once in production, set is_testing=False to gain optimizations
-## this will also set migration=False for all tables, so that the DB table definitions are fixed
-is_testing = True
-
-## Read configuration
+## Read configuration. Cached for the life of the process; restart web2py
+## after editing private/appconfig.ini.
 if (
-    is_testing and
     request.env.cmd_options is not None and
     len(request.env.cmd_options.args) > 1 and
     os.path.isfile(request.env.cmd_options.args[-1])
@@ -34,10 +30,11 @@ if (
     # For unit testing, we might want to load a different appconfig.ini file, which can
     # be passed in to the rocket server as the last arg on the command-line (on the main
     # server, `request.env.cmd_options` is undefined, and we default back to appconfig.ini)
-    myconf = AppConfig(request.env.cmd_options.args[-1], reload=is_testing)
+    myconf = AppConfig(request.env.cmd_options.args[-1], reload=False)
 else:
-    # Reload config on each request when is_testing (i.e. not production)
-    myconf = AppConfig(reload=is_testing)
+    myconf = AppConfig(reload=False)
+
+is_testing = myconf.get('general.is_testing', False)
 
 ## Configure i18n
 T.set_current_languages('en', 'en-en')

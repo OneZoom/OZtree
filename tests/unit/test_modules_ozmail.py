@@ -60,7 +60,7 @@ if __name__ == '__main__':
     import sys
 
     if current.globalenv['is_testing'] != True:
-        raise RuntimeError("Do not run tests in production environments, ensure is_testing = True")
+        raise RuntimeError("Do not run tests in production environments, ensure is_testing = true")
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestOzMail))
     result = unittest.TextTestRunner(verbosity=2).run(suite)
