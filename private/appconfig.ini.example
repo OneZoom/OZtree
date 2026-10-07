@@ -35,6 +35,8 @@ url        = https://www.sandbox.paypal.com
 save_to_tmp_file_dir =
 
 [general]
+; * is_testing: enable dev mode. db migrations, more logging, stubbed emails, etc.
+is_testing = true
 ; Enable "automatic translations" behavior. Ignored unless is_testing is also set
 ; allow_translation_string_writing = 1
 ; Set a base fo the <title> HTML tag, e.g. "OneZoom Beta"
@@ -69,9 +71,8 @@ wiki_jumpout_url = /redirect/wikimedia_commons_QID/{src_id}
 ;    the code to set allow_sponsorship = 1 under any circumstances
 ; * maintenance_mins: to enable maintenance mode (e.g. when
 ;    switching beta and production to enable a new website version)
-;    set to the number of minutes you expect the site to be down
-;    note that if is_testing=False then you will probably need to
-;    restart the server for changes to this to take effect
+;    set to the number of minutes you expect the site to be down.
+;    Restart the server for changes to this file to take effect
 ; * reservation_time_limit_mins: how long to reserve a leaf while a
 ;    user is looking at the sponsor page
 ; * unpaid_time_limit_mins: how long before a sponsored leaf becomes

@@ -43,7 +43,7 @@ from selenium.webdriver.remote.remote_connection import LOGGER as selenium_logge
 if sys.version_info[0] < 3:
     raise Exception("Python 3 only")
 
-from ..util import get_db_connection, web2py_app_dir, Web2py_server, base_url
+from ..util import appconfig_contains, get_db_connection, web2py_app_dir, Web2py_server, base_url
 
 date_format = "%Y-%m-%d %H:%M:%S.%f" #used when a web2py datetime on a webpage needs converting back to datetime format
 test_email = 'test@onezoom.org'
@@ -53,18 +53,7 @@ class FunctionalTest(object):
 
     @classmethod
     def setUpClass(self):
-        def striptext_in_file(line, file):
-            """
-            look for the line as a starting line in the file, stripping whitespace
-            """
-            line = line.strip().replace(" ","")
-            for l in file:
-                if l.strip().replace(" ","").startswith(line):
-                    return True
-            return False
-        db_py_loc = os.path.realpath(os.path.join(web2py_app_dir, "models", "db.py"))
-        with open(db_py_loc, 'r') as db_py:
-            assert striptext_in_file("is_testing=True", db_py), "To do any functional testing you must set is_testing=True in " + db_py_loc
+        assert appconfig_contains("is_testing=true"), "To do any functional testing you must set is_testing = true"
         self.db = get_db_connection()
         
         

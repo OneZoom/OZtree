@@ -898,9 +898,9 @@ def sponsor_renew_request_logic(user_identifier, mailer=None, reveal_private_dat
             else:
                 if current.globalenv['is_testing']:
                     if info:
-                       info += " (NB: set is_testing to False to send to the user's email address)"
+                       info += " (NB: set is_testing = false to send to the user's email address)"
                     else:
-                        info = "set is_testing to False to send to the user's email address"
+                        info = "set is_testing = false to send to the user's email address"
 
                 # Should send to the admin address if is_testing == True
                 mail.send(**mailargs)

@@ -2149,7 +2149,7 @@ def list_controllers():
         items = find_exposed_functions(data)
         return dict(errors=[], controllers = items and sorted(items) or [])
     else:
-        return dict(errors=['To list all controllers, please switch is_testing to True in db.py'])
+        return dict(errors=['To list all controllers, please set is_testing = true'])
 
 def safe_open(a, b):
     if PY2 or 'b' in b:

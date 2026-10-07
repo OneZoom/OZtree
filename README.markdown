@@ -22,7 +22,7 @@ If you are using Visual Studio Code, perform the following steps (you will need 
 Additional notes:
 
 - You will generally need to rerun `grunt dev` any time you make code changes, before running `./web2py-run`.
-- Once tables are populated, and everything is working, you can set `migrate = 0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB, and also that changes to appconfig.ini will require a web2py restart.
+- Once tables are populated, and everything is working, you can set `migrate = 0` in `private/appconfig.ini`. This will mean that web2py will not make any changes to table structures in the DB. Changes to `private/appconfig.ini` are read when the web2py process starts, so restart it after editing that file.
 - [Create a manager account](#creating-auth-users--groups) in the auth table, e.g. so you can [view docs](#documentation).
 - MySQL is available on port 3306 if you wish to debug using local tools on your host outside the container.
 - Your MySQL database contents are stored in a Docker volume and will persist even if you rebuild your Dev Container, making this operation quick and safe. If you wish to rebuild your Dev Container from scratch with a fresh database, you will need to perform the following steps:
@@ -196,7 +196,7 @@ npm ci
 ./node_modules/.bin/grunt prod
 ```
 
-Edit ``models/db.py``, and set ``is_testing = False``.
+Set ``is_testing = false`` in ``private/appconfig.ini``.
 
 Then run the install scripts to set up nginx & supervisord:
 
