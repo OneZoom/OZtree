@@ -130,7 +130,7 @@ def donor_name_for_username(username, include_hidden=False):
     return None, None
 
 def email_for_username(username):
-    """Return the most up to date e-mail address for a given username"""
+    """Return the most up to date e-mail address for a username, or None."""
     db = current.db
     pp_e_mail = None
     for r in db(db.reservations.username == username).iterselect(
@@ -142,9 +142,7 @@ def email_for_username(username):
             return r.e_mail
         if r.PP_e_mail and not pp_e_mail:
             pp_e_mail = r.PP_e_mail
-    if pp_e_mail:
-        return pp_e_mail
-    raise ValueError("No e-mail address found for username %s" % username)
+    return pp_e_mail
 
 
 def usernames_associated_to_email(email):

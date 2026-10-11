@@ -783,7 +783,7 @@ def sponsorship_email_reminders(for_usernames=None):
     send_to = False
     for r in db(query).select(db.reservations.ALL, orderby=db.reservations.username|db.reservations.sponsorship_ends):
         if r.username != cur_username:
-            if send_to:
+            if send_to and out['email_address']:
                 yield (cur_username, out)
             # Start new user entry
             cur_username = r.username
@@ -847,7 +847,7 @@ def sponsorship_email_reminders(for_usernames=None):
             out['not_yet_due'].append(r.OTT_ID)
 
     # Yield final entry
-    if send_to:
+    if send_to and out['email_address']:
         yield (cur_username, out)
 
 def sponsor_renew_request_logic(user_identifier, mailer=None, reveal_private_data=False, automated=False):
@@ -862,10 +862,7 @@ def sponsor_renew_request_logic(user_identifier, mailer=None, reveal_private_dat
     """
     # Get all reminder blocks for usernames associated to this e-mail address
     unames = usernames.usernames_associated_to_email(user_identifier) if '@' in user_identifier else [user_identifier]
-    try:
-        user_reminders = {k:v for (k, v) in sponsorship_email_reminders(unames)}
-    except ValueError:
-        user_reminders = {}
+    user_reminders = {k:v for (k, v) in sponsorship_email_reminders(unames)}
     info = ''
     if not reveal_private_data:
         info = 'If the user %s exists in our database, we will send them an email' % user_identifier
