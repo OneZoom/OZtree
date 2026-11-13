@@ -272,7 +272,15 @@ module.exports = function (grunt) {
   grunt.registerTask("partial-install",       ["compile-js", "css", "copy:dev", "curl-dir:get_minlife", "exec:convert_links_to_local"]);
   grunt.registerTask("partial-local-install", ["compile-js", "css", "copy:dev", "curl-dir:get_local_minlife", "exec:convert_links_to_local"]);
   grunt.registerTask("web2py", ["exec:web2py_configure"]);
-  grunt.registerTask("prod", ["clean", "web2py", "exec:fetch_uikit", "compile-python", "compile-js", "css", "compress", "copy:prod", "make_release_info", "docs"]);
-  grunt.registerTask("dev",  ["clean", "web2py", "exec:fetch_uikit", "compile-js_dev", "css", "compress", "copy:dev",  "make_release_info", "docs"]);
+
+  // Tasks common to production and development builds
+  grunt.registerTask("build-common", ["exec:fetch_uikit", "css",  "compress",  "make_release_info",  "docs"]);
+
+  // Build an existing application without configuring web2py, e.g. for a parallel install such as /extinct
+  grunt.registerTask("build-prod", ["clean", "compile-python", "compile-js", "build-common", "copy:prod"]);
+  grunt.registerTask("build-dev", ["clean", "compile-js_dev", "build-common",  "copy:dev"]);
+  // Full installation (including global web2py configuration) and build
+  grunt.registerTask("prod", ["web2py", "build-prod"]);
+  grunt.registerTask("dev",  ["web2py", "build-dev"]);
   grunt.registerTask("start-dev", ['exec:web2py_start_dev']);
 };
