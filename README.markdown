@@ -207,6 +207,19 @@ sudo ./install-supervisord.sh
 
 If everything works, restart both.
 
+### Updating the deployment script
+
+The GitHub Actions deploy job runs the server's installed `/opt/deploy/run.sh`,
+not the script from the checked-out commit. After changing
+`deployment/remote_deploy_script`, an administrator must rerun
+`deployment/setup_deployment` for each affected server (this also rotates its
+deploy key). The failed job can then be retried.
+
+Before checkout, the script stashes local changes to `package.json` and
+`package-lock.json` as the `web2py` user. Review any saved changes with
+`git stash list` and `git stash show -p` in the server's OZtree directory;
+they are not reapplied automatically. Other local changes are left untouched.
+
 ## Database explorer
 
 (optional) We find it useful to have a GUI interface to connect to the database and run SQL scripts, this can be used instead of using MySQL command line (similar to Windows command line) that is installed by default with MySQL.

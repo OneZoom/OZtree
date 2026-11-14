@@ -12,8 +12,7 @@ cd /home/web2py/__SITE_HOSTNAME__/applications/OZtree
 echo "Checking out $1"
 GIT_SHA=$1
 export GIT_SHA
-su web2py -c 'git fetch origin && git checkout --detach "$GIT_SHA"'
+su web2py -c 'git fetch origin && git stash push -m "deploy: preserve package manifests" -- package.json package-lock.json && git checkout --detach "$GIT_SHA"'
 su web2py -c 'npm ci'
 su web2py -c 'grunt __GRUNT_TASK__'
 supervisorctl restart '__SITE_HOSTNAME__:*'
-
